@@ -54,7 +54,7 @@
 - S-RESEARCH：仓库 `docs/technical-data-source-decisions.md`，2026-07-20 官方/一手资料调研，覆盖移动栈、天气、地图/路线、VIIRS、DEM、星表、卫星、专业天象、推送、对象存储/CDN、离线加工、成本、POC、商务/法务门和官方证据；其中 `recommended` 不自动等于已批准 DEC，`contract_gate`/`poc_gate`/`external_confirmation` 不得由 Agent 伪造完成。
 - S-INTERACTION：仓库 `.codex/skills/uiux_design/SKILL.md` 及其 references，提供 React Native Press/Gesture Handler/Reanimated/Bottom Sheet/触觉/无障碍/双平台执行映射和上游许可；它必须先读并服从 S-DESIGN、本计划与 S-CONTEXT，不是平级或反向权威。
 - S-APPLE：Emil Kowalski `apple-design` Skill，固定审阅 revision `6bf24434f7730ad169077756cf9c7cd7bd675fc6`，MIT License；只采纳可迁移的即时反馈、直接操控、中断/速度连续、空间一致、克制触觉、无障碍与交互原型原则，不采纳其 web 代码、玻璃材质、系统字体默认或让 Android 模仿 iOS。
-- S-USER：用户指令要求以 React Native APP 为目标、细化到基本布局/具体内容/控件级、不得遗漏两份附件任一细节、参考但不复制截图；进一步要求完成技术/数据源调研和 Starward React Native 交互规范，全部写回 DESIGN.md 与 Source Plan，并由项目 Skill 执行但不形成循环权威。
+- S-USER：用户指令要求以 React Native APP 为目标、细化到基本布局/具体内容/控件级、不得遗漏两份附件任一细节、参考但不复制截图；进一步要求完成技术/数据源调研和 Starward React Native 交互规范，全部写回 DESIGN.md 与 Source Plan，并由项目 Skill 执行但不形成循环权威；数据源必须先满足真实性、目标区稳定性和合法可运营性，再在合格候选中优先选择最低实际总成本，付费时尽可能选择便宜的方案。
 
 ### 图像来源与证据处置
 
@@ -149,6 +149,9 @@
 
 <a id="forbidden-shortcut.fake-or-guaranteed-data"></a>
 - **FS fake-or-guaranteed-data**：不得用看似真实的 fixture/fallback 遮蔽缺失，也不得使用“绝对晴朗、保证可见”等确定性承诺。
+
+<a id="forbidden-shortcut.lowest-sticker-price-provider"></a>
+- **FS lowest-sticker-price-provider**：不得因免费额度或最低接口/套餐标价选择未通过来源可追溯、目标区质量/稳定性、商业许可和安全降级硬门的数据源，也不得通过漏算加权调用、计算/存储/出网、工程运维、合规、故障或迁移成本伪造“最低价”。
 
 <a id="forbidden-shortcut.coordinate-mixing"></a>
 - **FS coordinate-mixing**：不得在业务层混用 WGS84/GCJ-02、反写高德坐标为权威值、用 GCJ-02 做天文计算或依赖肉眼修正。
@@ -736,7 +739,7 @@
 #### Technical Obligations And Boundaries
 
 <a id="forecast-and-astronomy.obligation.weather-provider-normalization"></a>
-- **OBL weather-provider-normalization** [direct + external research: S-ARCH 6.1, S-RESEARCH]：天气供应商实现统一 Provider 接口并先标准化/质检再进入业务；当前推荐 QWeather 候选承担中国常规天气/预警，Open-Meteo 付费 customer endpoint 候选承担分层云/能见度/多模型，ECMWF Open Data 仅作批处理基准/后备研究，具体合同由 DEC weather-provider-contracts 决定。QWeather 天气可按条款缓存但 GeoAPI 禁止批量缓存/索引，预警展示完整 `refer.sources`；Open-Meteo 免费端点不得用于商业生产，付费数据仍保留 CC BY 4.0 attribution/modification chain；所有 key 仅服务端持有。
+- **OBL weather-provider-normalization** [direct + external research: S-ARCH 6.1, S-USER, S-RESEARCH]：天气供应商实现统一 Provider 接口并先标准化/质检再进入业务；QWeather 按量候选承担中国常规天气/预警，Open-Meteo 免费端点只用于非商业 POC、付费 customer endpoint 只在经验证的分层云/能见度/多模型增益值得其 12 个月 TCO 时采购，ECMWF Open Data 仅作批处理基准/后备研究，具体合同由 DEC weather-provider-contracts 与 DEC provider-budget-and-paid-redundancy 决定，不默认同时支付两个天气源。QWeather 天气可按条款缓存但 GeoAPI 禁止批量缓存/索引，预警展示完整 `refer.sources`；Open-Meteo 商业生产不得使用 free endpoint，付费数据仍保留 CC BY 4.0 attribution/modification chain；所有 key 仅服务端持有。
 
 <a id="forecast-and-astronomy.obligation.weather-model-schema"></a>
 - **OBL weather-model-schema** [direct: S-ARCH 6.1]：WeatherProviderRun 至少保存 id、provider、model、modelRunTime、ingestedAt、resolutionKm、status、sourceLicense；每小时记录 gridCellId/providerRunId/validTimeUtc、temperature/apparentTemperature、humidity/dewPoint/pressure、total/low/mid/highCloud、visibility、precipitationAmount/probability、windSpeed/gust/direction、fogProbability 和 qualityFlags；内部统一 SI 单位，展示层转换，空值不转 0。
@@ -2974,7 +2977,10 @@
 - **REQ core-entity-coverage** [direct: S-ARCH 7.2]：核心实体至少包含 User、UserPreferenceProfile、Equipment、Spot、SpotAccess、SpotFacility、SpotHorizonSector、SpotMedia、SpotVerification、SpotStatusHistory、WeatherProviderRun、WeatherForecastHour、AstronomyEphemeris、ObservationWindow、LightPollutionCell、HorizonProfile、RouteEstimate、NightReport、RecommendationSnapshot、Itinerary、ItineraryStop、FieldReport、ShootingPlan、CelestialEvent、NotificationSubscription、DataSourceRun、DataQualityIssue、ModerationCase、AuditLog。
 
 <a id="admin-data-operations.requirement.provider-source-registry"></a>
-- **REQ provider-source-registry** [direct + external research: S-ARCH 六, S-RESEARCH]：每类外部/计算源保存供应商、许可/条款版本、用途、覆盖、归属文本、缓存/派生/再分发/终止边界、版本/运行批次、分辨率、获取/发布时间、状态、成本/计费单位、quota/rate/SLA 和健康；天气统一 WeatherProvider（forecast/current/warnings/health）。当前推荐中国常规天气/预警以 QWeather 候选、分层云/能见度/多模型以 Open-Meteo 商业端点候选，ECMWF Open Data 作离线基准/备用研究；这不表示合同已批准，生产组合由 DEC weather-provider-contracts 与 EXT commercial-provider-rights-and-quotas 确认。
+- **REQ provider-source-registry** [direct + external research: S-ARCH 六, S-USER, S-RESEARCH]：每类外部/计算源保存供应商、许可/条款版本、用途、覆盖、归属文本、缓存/派生/再分发/终止边界、版本/运行批次、分辨率、获取/发布时间、状态、成本/计费单位、quota/rate/SLA 和健康；同时保存价格证据日期/币种/税费/汇率日期、免费量/最低消费/合同期、加权计费规则、1k/10k/100k MAU 用量、直接与隐性成本、12 个月 TCO、有效新鲜输出成本、硬门结果、预算/用量告警、续费/退出和批准记录。天气统一 WeatherProvider（forecast/current/warnings/health）。当前推荐中国常规天气/预警以 QWeather 按量候选、Open-Meteo 免费端点仅作非商业 POC且付费端点仅作经价值验证的候选、ECMWF Open Data 作离线基准/备用研究；这不表示合同已批准，生产组合由 DEC weather-provider-contracts、DEC provider-budget-and-paid-redundancy 与 EXT commercial-provider-rights-and-quotas 确认。
+
+<a id="admin-data-operations.requirement.qualified-lowest-tco-selection"></a>
+- **REQ qualified-lowest-tco-selection** [direct + external research: S-USER, S-RESEARCH]：每项数据/地图/路线/推送/对象存储能力先以不可被价格抵消的硬门筛选候选：来源/字段/版本/run/时间/修改链可追溯且同地点/时段/单位对照通过批准的真实性阈值；首发地区/目标网络的到达率、新鲜度、完整度、延迟、错误/限流/恢复通过批准的稳定性阈值；商业许可、归属、缓存/派生/再分发/地域/终止边界可证；健康、过期、熔断、迁移和诚实降级可实施。任一硬门失败即淘汰；只在提供等价最小必需能力的合格候选中，以同一日期/币种/税费、同一容量/失败场景选择预计 12 个月 TCO 最低者。默认每项能力只购买一个合格主源，以合法缓存、本地计算、开放基准或 `unknown`/隐藏降级作后备；第二付费源、套餐升级和预算上限由 DEC provider-budget-and-paid-redundancy 批准。
 
 <a id="admin-data-operations.requirement.astronomy-geo-pipelines"></a>
 - **REQ astronomy-geo-pipelines** [direct + external research: S-ARCH 6.3～6.7, S-RESEARCH]：Astronomy Engine/自有包记录算法/星表/观察者/海拔/计算时间/time scale 并以 JPL 低频黄金集验证；Gaia 星表按批准字段/星等/epoch 裁切和 HEALPix 分块并保留 release/MD5/credits/known issues；CelesTrak 使用支持六位 catalog number 的 OMM JSON/CSV + SGP4、保存 epoch/内容 hash/获取时间，服务端不短于上游两小时更新政策且任一非 200 立即停止重试并告警。EOG Annual VNL v2.2 原始 GeoTIFF（EPSG:4326、15 arc-second、radiance+coverage）保留 CC BY 4.0 notice/修改/版本/checksum，经不可变 raw→裁剪/COG/overviews/瓦片/网格指数；零值结合 cloud-free coverage，radiance 不直译实测 Bortle。Copernicus DEM GLO-30/90 经 CCM 注册/适用许可合法获取，保留补缺/nodata/DSM provenance 并预计算带算法版本/采样参数的地平线，不运行时依赖可变在线 View Service；2026-07-28 GLO-30 访问变化必须在实施日复核。
@@ -2998,7 +3004,7 @@
 - **REQ job-reliability** [direct: S-ARCH 11.2]：每个任务幂等、可重试、有唯一业务键、记录输入/输出版本和耗时、失败死信、可人工重放，不重复覆盖有效数据；批量任务有 dry-run/范围/速率/暂停/恢复和结果摘要。
 
 <a id="admin-data-operations.requirement.provider-failure-controls"></a>
-- **REQ provider-failure-controls** [direct: S-ARCH 11.3]：每个供应商适配器有超时、重试、熔断、限流、备用源、响应校验、字段缺失、用量与成本统计；外部数据先标准化/质检，不能直接进入业务接口。
+- **REQ provider-failure-controls** [direct + external research: S-ARCH 11.3, S-USER, S-RESEARCH]：每个供应商适配器有超时、有限重试、熔断、限流、备用/降级源、响应校验、字段缺失、加权用量与实际成本统计；预算/配额接近批准阈值时按已定义顺序停止非关键多模型、动画、预热或回源，禁止重试风暴、自动升档、静默产生超额或让预警/安全信息冒充 fresh。外部数据先标准化/质检，不能直接进入业务接口。
 
 <a id="admin-data-operations.requirement.spot-admin"></a>
 - **REQ spot-admin** [direct: S-PRODUCT 十四, S-ARCH 5.15]：地点后台支持新增/编辑、地图选点/坐标校验、图片、遮挡/设施、合并/去重、临时关闭、安全警告、推荐状态、精确坐标策略和版本/来源。
@@ -3007,7 +3013,7 @@
 - **REQ moderation-admin** [direct: S-PRODUCT 十四, S-ARCH 5.15]：审核覆盖地点、图片、实况、评论、纠错、举报、虚假信息、风险优先、申诉/补充和地点下线；决定保留理由、证据、操作者和审计，不能静默删除来源记录。
 
 <a id="admin-data-operations.requirement.data-source-admin"></a>
-- **REQ data-source-admin** [direct: S-PRODUCT 十四, S-ARCH 5.15]：数据源后台显示天气接口、天文计算、地图/路线、光污染版本、更新时间、异常/缺失、许可/归属、供应商健康、用量/成本和受影响范围，并能关联 DataSourceRun/DataQualityIssue。
+- **REQ data-source-admin** [direct + external research: S-PRODUCT 十四, S-ARCH 5.15, S-USER, S-RESEARCH]：数据源后台显示天气接口、天文计算、地图/路线、光污染版本、更新时间、异常/缺失、许可/归属、供应商健康、原始/加权用量、预算、实际成本、预测 12 个月 TCO、单位有效输出成本、硬门状态、续费/退出和受影响范围，并能关联 DataSourceRun/DataQualityIssue；价格证据过期、预算逼近、预测偏差或低价源质量失败均产生可追溯告警。
 
 <a id="admin-data-operations.requirement.recommendation-replay-admin"></a>
 - **REQ recommendation-replay-admin** [direct: S-PRODUCT 十四, S-ARCH 5.15/16.3]：可查看评分明细、按用户类型调试排序因素、对比推荐与现场反馈、标记错误案例，用保存的输入/数据/规则/候选/路线/阻断/解释重放 NightReport 并并排比较规则版本；规则发布边界由 DEC recommendation-weights-thresholds 决定。
@@ -3052,16 +3058,16 @@
 
 <a id="admin-data-operations.control.data-source-dashboard"></a>
 - **CTRL data-source-dashboard**
-  - Source class: direct。
+  - Source class: direct + external research。
   - Location: 后台“数据源与质量”。
-  - User task: 监视供应商/计算/数据集版本、覆盖、缺失、成本和影响。
+  - User task: 监视供应商/计算/数据集版本、覆盖、缺失、质量硬门、成本、预算和影响，并比较合格候选。
   - Trigger: 选择源/运行/地区/时间、告警深链或刷新。
-  - Input: ProviderHealth、DataSourceRun、DataQualityIssue、许可、用量/成本、依赖报告数。
+  - Input: ProviderHealth、DataSourceRun、DataQualityIssue、许可、价格证据、币种/税费、原始/加权用量、12 个月 TCO、有效输出成本、预算/配额、硬门结果、依赖报告数。
   - Loading: 最新成功快照保留并标 stale，图表/日志按需加载。
   - Empty: 无运行数据本身成为质量问题；新源显示未验证而非健康。
-  - Success: 健康/降级/熔断、最新批次、字段缺失和影响范围一致可查。
+  - Success: 健康/降级/熔断、最新批次、字段缺失、硬门、预算/TCO 和影响范围一致可查；只有合格且能力等价的候选进入成本排序。
   - Failure: 监控自身失败有独立状态，不能显示全绿。
-  - Feedback: 时间/时区、样本、阈值、来源许可和预计恢复/备用状态可见。
+  - Feedback: 时间/时区、样本、阈值、来源许可、价格证据时效、预测与实际偏差、预算余量、预计恢复/备用/退出状态可见。
 
 <a id="admin-data-operations.control.job-operations-console"></a>
 - **CTRL job-operations-console**
@@ -3126,6 +3132,9 @@
 <a id="admin-data-operations.obligation.cache-invalidation-events"></a>
 - **OBL cache-invalidation-events** [direct: S-ARCH 十]：供应商新运行、地点/风险/实况、路线、规则、数据集/算法变化发布明确失效事件；stale-while-revalidate 只在允许数据类型使用并保持旧版本标识。
 
+<a id="admin-data-operations.obligation.provider-cost-and-quota-ledger"></a>
+- **OBL provider-cost-and-quota-ledger** [direct + derived from S-USER/S-RESEARCH]：为每个候选和已用 provider 维护版本化、可审计且不含 secret 的成本/配额台账，按同一能力/地区/质量门和 1k/10k/100k MAU 的基准/上行/失败场景计算 `订阅/API/超额 + 计算 + 存储/请求/取回 + 出网/CDN + 监控/重试 + 工程运维 + 合规/归属 + 迁移/退出` 的 12 个月 TCO；免费/open data 同样计加工与托管。实际账单/有效输出按月回填预测偏差，采购/续费/升档前重取官方价格和合同；预算告警、硬上限、功能降级和第二付费源触发器可配置并由 DEC provider-budget-and-paid-redundancy 批准，任何套餐不得静默自动升级。
+
 <a id="admin-data-operations.non-completing.direct-provider-pass-through"></a>
 - **NCOMP direct-provider-pass-through** [direct: S-ARCH 11.3]：外部供应商响应未经标准化/质检直接返回移动端，不能算数据平台完成。
 
@@ -3149,6 +3158,13 @@
   - Given: 天气源字段缺失且卫星轨道过期、光污染/DEM 有明确版本。
   - When: 新批次进入系统并被后台查看。
   - Then: 天气在质检前不进入业务、轨道可信度下降，四类源的健康/版本/许可/影响可见且备用/熔断状态真实。
+
+<a id="admin-data-operations.acceptance.qualified-lowest-tco-provider-selection"></a>
+- **AC qualified-lowest-tco-provider-selection**
+  - Accepts: REQ qualified-lowest-tco-selection, REQ provider-source-registry, REQ data-source-admin, OBL provider-cost-and-quota-ledger, CTRL data-source-dashboard
+  - Given: 同一项生产能力有免费、按量和固定月费候选，其中至少一个价格更低但有真实性/目标区稳定性/许可硬门缺口，并已有 1k/10k/100k MAU 与故障场景。
+  - When: 团队选择、续费或升级生产 provider。
+  - Then: 任何硬门失败者先被淘汰；其余候选按等价最小能力和同一日期/币种/税费的 12 个月完整 TCO 排序，选择最低者并保存价格/假设/有效输出成本/降级/退出证据；第二付费源或升档只有在批准的预算与增量收益触发器成立时发生，不能因免费或标价低绕过质量，也不能静默自动购买。
 
 <a id="admin-data-operations.acceptance.api-data-status"></a>
 - **AC api-data-status**
@@ -3250,7 +3266,7 @@
 - **REQ technology-baseline** [direct: S-ARCH 1.1]：基线为 Expo + React Native + TypeScript、Development Build/自定义 Expo Native Module、高德原生地图、Expo Sensors + 必要 Core Motion/Android Sensor、Skia/GPU 天空、ARKit/ARCore 增强、TypeScript NestJS/Fastify 模块化单体、Python 气象/遥感/栅格/地形、PostgreSQL/PostGIS、Redis/BullMQ、S3 兼容对象存储/CDN、Next.js 管理后台、REST/OpenAPI + 协作 WebSocket、Astronomy Engine 封装和 Monorepo；精确版本由 DEC dependency-version-baseline 决定。
 
 <a id="quality-release-observability.requirement.official-source-production-gates"></a>
-- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：后续实现逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态；推荐不得静默升级为已采购/已许可/已校准/已通过 POC，动态版本/价格/配额/条款在锁依赖、签合同和 production gate 重取官方证据。
+- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：后续实现逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态；推荐不得静默升级为已采购/已许可/已校准/已通过 POC。动态版本/价格/配额/条款在锁依赖、签合同、续费/扩容和 production gate 重取官方证据；每项生产源先通过真实性/可追溯、首发区质量/稳定性、合法可运营和安全降级硬门，再由 REQ qualified-lowest-tco-selection 在合格等价候选中选 12 个月 TCO 最低者。
 
 <a id="quality-release-observability.requirement.interaction-motion-contract"></a>
 - **REQ interaction-motion-contract** [direct + repo evidence: S-USER, S-DESIGN, S-INTERACTION]：所有 RN 控件/转场实现即时 press-in、有效 press-out/可访问激活时单次 commit、取消不触发；直接操控保持抓取偏移和连续跟手，运行中可重抓/反向并从 live presentation value 衔接，释放速度只在合法边界/快照点内参与 settle；Bottom Sheet、地图/滚动、iOS 导航、Android system/predictive back 和辅助技术手势明确仲裁；触觉可关闭/不可用且非唯一反馈；reduced motion 移除大位移/景深/重复/弹性而非只加速；日/夜/红光的可控表面无蓝白闪，无法主题化的 OS/供应商表面不得在现场模式中静默打开，须先提示并提供取消/返回或非现场替代；双平台共享任务/状态但保留各自原生惯例，精确 token 由 DEC interaction-motion-token-baseline 与真机 POC 决定。
@@ -3419,10 +3435,10 @@
 
 <a id="quality-release-observability.acceptance.official-source-production-gates"></a>
 - **AC official-source-production-gates**
-  - Accepts: REQ official-source-production-gates, REQ provider-source-registry, REQ astronomy-geo-pipelines, OBL source-data-immutability
+  - Accepts: REQ official-source-production-gates, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ astronomy-geo-pipelines, OBL source-data-immutability, OBL provider-cost-and-quota-ledger
   - Given: 后续 Contract 准备绑定天气、高德、VIIRS、DEM、星表/卫星、推送和对象存储/CDN 的生产实现。
   - When: 按 S-RESEARCH 和当前官方页面执行依赖锁定、采购/许可、数据下载加工与 production readiness 审查。
-  - Then: 每项均保留实际 provider/version/条款/价格/quota/SLA/归属/cache/派生/再分发/region/checksum/lineage、对应 DEC/EXT 状态和 POC 证据；`recommended` 未被写成已采购，动态事实已重取，缺门项只降级或保持 pending。
+  - Then: 每项均保留实际 provider/version/条款/价格/quota/SLA/归属/cache/派生/再分发/region/checksum/lineage、真实性/首发区稳定性/许可/降级硬门、同能力 12 个月 TCO、预算与对应 DEC/EXT/POC 证据；`recommended` 未被写成已采购，动态事实已重取，未合格项只降级或保持 pending，合格项中未选择更贵方案而无批准的增量价值说明。
 
 <a id="quality-release-observability.acceptance.interaction-direct-manipulation"></a>
 - **AC interaction-direct-manipulation**
@@ -3637,10 +3653,10 @@
 <a id="external.commercial-provider-rights-and-quotas"></a>
 - **EXT commercial-provider-rights-and-quotas**
   - Status: external_confirmation_required。
-  - Result requiring confirmation: QWeather 常规/预警/AQI/GeoAPI、Open-Meteo 商业分层云/多模型、其他卫星云图/备用天气、高德原生地图/定位/搜索/路线/POI/双端离线、APNs/FCM/国内厂商/Expo 推送以及 OSS/COS/CDN 具备目标地区/渠道的生产商业使用、缓存/历史保留、派生、再展示/再分发、配额/计费单位、SLA、归属和退出/删除许可。
+  - Result requiring confirmation: QWeather 常规/预警/AQI/GeoAPI、Open-Meteo 商业分层云/多模型、其他卫星云图/备用天气、高德原生地图/定位/搜索/路线/POI/双端离线、APNs/FCM/国内厂商/Expo 推送以及 OSS/COS/CDN 具备目标地区/渠道的生产商业使用、缓存/历史保留、派生、再展示/再分发、配额/加权计费单位、SLA、归属和退出/删除许可；最低必要 SKU 的当日报价、币种/税费/最低消费、超额/续费/退出成本和 12 个月 TCO 可与等价合格候选比较。
   - Why external: API 文档与技术可行不构成购买合同、配额或再分发授权，仓库无法证明。
-  - Evidence needed: 生效合同/计划、许可条款版本、允许用途/地区/缓存/派生、quota/rate limit/SLA、归属要求、密钥环境和退出/删除义务。
-  - Affected REQ / AC: REQ weather-map-layers, REQ route-map-planning, REQ provider-source-registry, REQ provider-failure-controls, AC source-pipelines, DEC weather-provider-contracts。
+  - Evidence needed: 生效合同/计划、许可条款版本、允许用途/地区/缓存/派生、quota/rate limit/SLA、归属要求、密钥环境、退出/删除义务、价格页面/正式报价/订单、税费/汇率日期、加权用量和实际账单；供应商宣传或免费页面不能代替合同与目标区 POC。
+  - Affected REQ / AC: REQ weather-map-layers, REQ route-map-planning, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ provider-failure-controls, AC source-pipelines, AC qualified-lowest-tco-provider-selection, DEC weather-provider-contracts, DEC provider-budget-and-paid-redundancy。
 
 <a id="external.geospatial-catalog-content-licenses"></a>
 - **EXT geospatial-catalog-content-licenses**
@@ -3780,6 +3796,11 @@
   - Reason: 如果不区分推荐、合同、POC 和外部确认，后续长程任务可能把文档可行性错误解释成已有账号/许可/校准并继续生产实现。
   - Changes product meaning: no；只约束证据与发布门，真实商业/阈值选择仍在现有和新增 DEC/EXT。
 
+- Derived Item: REQ qualified-lowest-tco-selection、OBL provider-cost-and-quota-ledger、AC qualified-lowest-tco-provider-selection 与 FS lowest-sticker-price-provider。
+  - Derived From: S-USER 明确要求数据真实、稳定的前提下尽可能选择性价比高、需要付费时选择便宜方案；S-RESEARCH 的官方价格/许可/配额、目标区 POC、缓存加工和成本变量。
+  - Reason: “便宜”若不先建立不可被价格抵消的资格门和等价能力边界，会鼓励免费但不合法/不稳定的源；若只比较接口标价，又会漏掉加权调用、托管、工程、合规和退出成本。统一 12 个月 TCO 台账使该直接优先级可审计、可验收。
+  - Changes product meaning: no；落实用户已经决定的选型顺序；具体预算、阈值和付费冗余风险偏好仍留给 DEC provider-budget-and-paid-redundancy。
+
 ## 9. Decisions Required
 
 <a id="decision.dependency-version-baseline"></a>
@@ -3841,10 +3862,18 @@
 <a id="decision.weather-provider-contracts"></a>
 - **DEC weather-provider-contracts**
   - Status: decision_required
-  - Decision: 选择常规天气/预警/空气质量、分层云/能见度/多模型/卫星云图的主备生产供应商、模型集合、预报时长、地区覆盖、许可/归属/cache/历史保留、SLA/QPM、按请求或加权调用成本和降级优先级；QWeather GeoAPI 不得批量缓存/索引且预警须保留 `refer.sources`，Open-Meteo 商业生产不得使用 non-commercial free endpoint，最终以逐 SKU 合同/当前能力为准。
-  - Options: 推荐先做 QWeather 中国常规/预警 + Open-Meteo 商业分层云/多模型组合 POC，并把 NSMC FY-4B/后续业务星作为卫星实况首要调查对象；其他有中国合规/商业许可的组合；单一 QWeather/其他主源+缓存/unknown 降级后再扩多模型；卫星源自动化/再展示权未确认时延期云图而保留预报云量；ECMWF Open Data 只作服务端离线基准/后备研究，Himawari 仅在用户资格/许可成立后作为候选。
-  - Why it cannot be reliably derived: 架构明确的是 Provider 边界和推荐组合，不是已签合同；实时产品、许可和价格会变化。
-  - Affected REQ / AC: REQ model-comparison, OBL weather-provider-normalization, REQ provider-source-registry, AC source-pipelines, EXT commercial-provider-rights-and-quotas。
+  - Decision: 选择常规天气/预警/空气质量、分层云/能见度/多模型/卫星云图的最小必需生产供应商、模型集合、预报时长、地区覆盖、许可/归属/cache/历史保留、SLA/QPM、按请求或加权调用成本和降级优先级；所有候选先过真实性/首发区稳定性/许可/降级硬门，再按 12 个月 TCO 选择。QWeather GeoAPI 不得批量缓存/索引且预警须保留 `refer.sources`，Open-Meteo 商业生产不得使用 non-commercial free endpoint，最终以逐 SKU 合同/当前能力为准。
+  - Options: 低成本首选路径为先用 QWeather 按量候选验证中国常规/预警，并用 Open-Meteo 免费端点只做非商业分层云/多模型 POC；仅当增量能力、目标区质量和 12 个月 TCO 证明值得时购买最低满足的 Open-Meteo 商业档，不默认双付费；单一其他合格主源+合法缓存/unknown 降级后再扩多模型；NSMC FY-4B/后续业务星仅在自动化/再展示权和完整 TCO 通过后上线，否则延期云图而保留预报云量；ECMWF Open Data 只作服务端离线基准/后备研究，Himawari 仅在用户资格/许可成立后作为候选。
+  - Why it cannot be reliably derived: 用户已决定先合格再取最低 TCO，但架构没有已签合同、首发区 POC、等价能力证明、实时价格或最终预算；不能从官网标价推断生产组合。
+  - Affected REQ / AC: REQ model-comparison, OBL weather-provider-normalization, REQ provider-source-registry, REQ qualified-lowest-tco-selection, AC source-pipelines, AC qualified-lowest-tco-provider-selection, EXT commercial-provider-rights-and-quotas。
+
+<a id="decision.provider-budget-and-paid-redundancy"></a>
+- **DEC provider-budget-and-paid-redundancy**
+  - Status: decision_required
+  - Decision: 按 MVP/V1/V2/V3 和天气、地图/路线、卫星/栅格、推送、存储/CDN 等能力批准月度/年度预算包络、币种/税费/汇率基准、预算告警/硬上限、容量余量、套餐升降/续费审批，以及何种可用性/安全/业务损失证据足以购买第二付费源或热备。
+  - Options: 推荐精益基线——每项能力一个合格最低 TCO 付费主源 + 合法缓存/本地计算/开放基准/诚实降级，测得的增量损失大于第二来源 TCO 才增加付费冗余；按领域设置不同预算与冗余门；对经专业审查认定的关键能力预先双源、其余保持单源；在预算未批准前只做非商业 POC/staging 且阻止生产采购。
+  - Why it cannot be reliably derived: 用户决定了“质量合格后尽可能便宜”的排序，但未给可花金额、增长预测、风险价值、告警阈值、容量余量或双源触发线；Agent 不能替业务批准付款或风险偏好。
+  - Affected REQ / AC: REQ qualified-lowest-tco-selection, REQ provider-source-registry, REQ provider-failure-controls, REQ data-source-admin, REQ official-source-production-gates, OBL provider-cost-and-quota-ledger, AC qualified-lowest-tco-provider-selection, AC official-source-production-gates, EXT commercial-provider-rights-and-quotas, DEC weather-provider-contracts, DEC route-provider-fallback-and-quotas, DEC object-storage-cdn-provider-and-region。
 
 <a id="decision.seeing-data-source"></a>
 - **DEC seeing-data-source**
@@ -3882,7 +3911,7 @@
 - **DEC route-provider-fallback-and-quotas**
   - Status: decision_required
   - Decision: 高德原生 3D 地图/定位/搜索/离线与 Web Service 路线/距离矩阵/POI 的正式 SKU、技术服务许可、主备适配器、超时、配额/超额、SLA/价格、交通时效、缓存/存储、双端离线范围、外部地图应用优先级和无精确坐标时导航行为。
-  - Options: 推荐高德唯一生产源+服务端 route snapshot+缓存/直线降级并保留 provider adapter；高德主源+另一已获商业许可路线备用；按地区选择外部应用但后端统一估算；无离线许可时离线包不含底图。
+  - Options: 推荐购买满足首发闭环的高德最低必要 SKU，以唯一生产源+服务端合法 route snapshot+缓存/直线降级并保留 provider adapter；只有 DEC provider-budget-and-paid-redundancy 的实测增量价值触发时才购买另一商业路线备用；按地区选择外部应用但后端统一估算；无离线许可时离线包不含底图。
   - Why it cannot be reliably derived: Source/官方资料明确中国高德主场景、法人公开/长期使用需购买技术服务许可和可外部导航，但仓库未签具体 SKU/配额/双端离线/应用优先级，技术可行不构成授权。
   - Affected REQ / AC: REQ route-variants-and-degradation, CTRL external-navigation-action, AC route-provider-degradation, EXT commercial-provider-rights-and-quotas。
 
@@ -3985,8 +4014,8 @@
 <a id="decision.object-storage-cdn-provider-and-region"></a>
 - **DEC object-storage-cdn-provider-and-region**
   - Status: decision_required
-  - Decision: 选择首发对象存储/CDN 供应商、境内/境外 region、域名/ICP、S3 抽象边界、raw-restricted/derived-private/public-assets/user-media/audit bucket 分层、版本/加密/生命周期/恢复、公开签名/归属、跨境与容量/请求/处理/出网/CDN 成本策略。
-  - Options: 中国主场景采用阿里 OSS+CDN；采用腾讯 COS+CDN；在法务/备案完成前只部署 staging 且 production gate 阻止公开；单主供应商起步并保留接口迁移，不在 MVP 同时经营双云。
+  - Decision: 在地域/备案、许可、安全、恢复和删除硬门合格后，按同区域同规格的容量/请求/失败请求/处理/取回/出网/CDN/工程/迁移 12 个月 TCO 选择首发对象存储/CDN 供应商；同时确定境内/境外 region、域名/ICP、S3 抽象边界、raw-restricted/derived-private/public-assets/user-media/audit bucket 分层、版本/加密/生命周期/恢复、公开签名/归属和跨境策略。
+  - Options: 中国主场景在同规格报价后选阿里 OSS+CDN 或腾讯 COS+CDN 中最低合格 TCO 的一家；在法务/备案完成前只部署 staging 且 production gate 阻止公开；单主供应商起步并保留接口迁移，不在 MVP 同时经营双云；只有 DEC provider-budget-and-paid-redundancy 的触发器成立才增加第二付费云。
   - Why it cannot be reliably derived: S-ARCH 只要求 S3-compatible object storage/CDN；S-RESEARCH 证明两家均按容量/请求/流量/增值项计费且境内 CDN 依赖备案，但没有运营主体、采购报价、区域、域名、流量画像或跨境批准。
   - Affected REQ / AC: REQ production-topology, REQ china-production-compliance, REQ official-source-production-gates, AC official-source-production-gates, AC china-compliance-readiness, EXT commercial-provider-rights-and-quotas, EXT china-production-legal-readiness。
 
@@ -4048,12 +4077,12 @@
 - S-ARCH 十三～十九：环境/生产拓扑/容器/备份、Development Build/EAS/runtimeVersion、安全隐私/六级坐标/API 防护、技术/数据可观测、推荐重放、单元/黄金/契约/移动/户外测试、十项性能建议及九类技术风险全部进入 quality/admin/identity/相关 RISK 与 EXT。
 - S-ARCH 二十～二十二：概念 Monorepo 树、五层工程依赖顺序、最终聚合架构和四项长期资产已保留为 Requirement/OBL/HINT；没有把概念路径误绑定为真实 Delivery Contract 文件。
 - S-DESIGN/S-CONTEXT/S-INTERACTION/S-APPLE：品牌/视觉/日夜红光、390×844、44px、结论/行动/证据、共享地点/时间/路线状态和可访问性均已引用；新增即时 press、commit/cancel、直接操控、中断/速度、gesture arbitration、Bottom Sheet、触觉、reduced motion、平台原生差异和真机验收。DESIGN.md 是完整长期规范，项目 Skill 是单向下游 RN 伴随指南并保留上游 revision/MIT，web 玻璃/系统字体/iOS 同质化冲突未进入 Starward。
-- S-RESEARCH：移动版本策略、QWeather/Open-Meteo/ECMWF、高德/OSM 边界、EOG VNL v2.2、Copernicus DEM 访问变化、Astronomy Engine/Gaia/CelesTrak/JPL/NOAA、Expo/APNs/FCM/国内推送、OSS/COS/CDN、离线/成本/POC/采购法务门均进入 REQ/OBL/AC/EXT/DEC；推荐与已批准、技术可行与合同/校准/现场完成保持分离。
+- S-RESEARCH：移动版本策略、QWeather/Open-Meteo/ECMWF、高德/OSM 边界、EOG VNL v2.2、Copernicus DEM 访问变化、Astronomy Engine/Gaia/CelesTrak/JPL/NOAA、Expo/APNs/FCM/国内推送、OSS/COS/CDN、离线/成本/POC/采购法务门均进入 REQ/OBL/AC/EXT/DEC；新增“真实性/目标区稳定性/许可/降级硬门先淘汰，再在等价合格候选中选择 12 个月 TCO 最低者”的跨域规则、成本台账、最低采购顺序和第二付费源触发器，推荐与已批准、技术可行与合同/校准/现场完成仍保持分离。
 - S-IMG-01～10：每张图的尺寸、哈希、采纳的布局/交互证据和拒绝复制的品牌/装饰/假业务均在 Section 2 记录，并映射到首页/地图/地点/行程/极坐标/专业预报控件。
 
 ### Structural Coverage
 
-- 当前文档含 14 个独立可判定 Outcome、163 个 REQ、95 个完整状态 CTRL、42 个强制 OBL、16 个 NCOMP、119 个单场景 AC、40 个精确 Runtime Fact RISK、8 个 EXT、31 个 `decision_required` DEC、27 个非绑定 HINT、5 个 NG 和 8 个 FS。
+- 当前文档含 14 个独立可判定 Outcome、164 个 REQ、95 个完整状态 CTRL、43 个强制 OBL、16 个 NCOMP、120 个单场景 AC、40 个精确 Runtime Fact RISK、8 个 EXT、32 个 `decision_required` DEC、27 个非绑定 HINT、5 个 NG 和 9 个 FS。
 - 每个 REQ、CTRL、OBL、NCOMP 至少被一个 AC 明确接受；每个 CTRL 均独立写出 Location、User task、Trigger、Input、Loading、Empty、Success、Failure、Feedback。
 - 每个 AC 只含一组 Accepts/Given/When/Then；每个 RISK 只关联一个现有 Outcome，并使用允许的十种 Fact 之一。
 - 所有 Accepts/DEC/EXT/Affected 引用指向已声明语义键；锚点和同类型键保持唯一。
@@ -4061,12 +4090,12 @@
 
 ### Unresolved Product Semantics
 
-- 31 个 DEC 覆盖依赖与交互动效 token、OS/本地化、游客/默认偏好/首发区域、天气/视宁度/窗口、地图图层/密度、路线/推荐/安全/光污染、坐标/审核/协作、离线/后台安全/通知/AI、删除/分析、对象存储/CDN、缓存/灾备/SLO，以及 V2 内容导入和 V3 专业数据源。
+- 32 个 DEC 覆盖依赖与交互动效 token、OS/本地化、游客/默认偏好/首发区域、天气与跨域供应商预算/付费冗余、视宁度/窗口、地图图层/密度、路线/推荐/安全/光污染、坐标/审核/协作、离线/后台安全/通知/AI、删除/分析、对象存储/CDN、缓存/灾备/SLO，以及 V2 内容导入和 V3 专业数据源。
 - 在相关 DEC 被用户、产品、技术、法务或供应商证据确认前，后续 Contract 可以绑定“做出决定”的工作，但不能把任一 Options 静默当作已批准默认。
 
 ### Unbound Repository And Verification Facts
 
-- 尚未绑定真实 owner、生产实现路径、runner/proof/Assertion、依赖 lock、交互 token、真机/户外 POC、云资源、商店/证书、密钥、供应商账号/合同、生产域名、后台角色、数据校准或迁移批次；这些属于后续 `/long-task-workflow` 的仓库扫描、Context/本调研读取与 Delivery Contract 编写职责。
+- 尚未绑定真实 owner、生产实现路径、runner/proof/Assertion、依赖 lock、交互 token、真机/户外 POC、云资源、商店/证书、密钥、供应商账号/合同/采购预算/正式报价、生产域名、后台角色、数据校准、真实用量/账单或迁移批次；这些属于后续 `/long-task-workflow` 的仓库扫描、Context/本调研读取与 Delivery Contract 编写职责。
 - S-ARCH 的仓库树、Provider 类名、MapAdapter 签名和 package 结构仅为 HINT/概念义务，不证明当前仓库已有这些文件。
 - EXT 的商业许可、法务/备案、商店能力、户外设备、天文基准、摄影实拍和地点现场核验必须由真实外部证据完成；示例、模拟器或一小组样本不能冒充全量/生产确认。
 
@@ -4079,6 +4108,6 @@
 
 Completeness status:
 - Ready for further refinement: yes
-- Decisions required: DEC dependency-version-baseline, DEC interaction-motion-token-baseline, DEC supported-os-device-matrix, DEC localization-scope, DEC guest-auth-capability-matrix, DEC preference-profile-defaults, DEC mvp-launch-region-and-spot-seed, DEC weather-provider-contracts, DEC seeing-data-source, DEC observation-window-resolution, DEC candidate-routing-limits, DEC map-layer-composition-and-density, DEC route-provider-fallback-and-quotas, DEC recommendation-weights-thresholds, DEC safety-thresholds, DEC light-pollution-calibration, DEC spot-coordinate-default-visibility, DEC moderation-trust-policy, DEC collaboration-roles, DEC offline-pack-policy, DEC background-safety-policy, DEC notification-defaults-cooldowns, DEC ai-provider-privacy, DEC data-retention-deletion, DEC analytics-consent-policy, DEC object-storage-cdn-provider-and-region, DEC cache-ttl-policy, DEC recovery-objectives, DEC production-slo-measurement, DEC content-import-policy, DEC professional-tool-data-sources
+- Decisions required: DEC dependency-version-baseline, DEC interaction-motion-token-baseline, DEC supported-os-device-matrix, DEC localization-scope, DEC guest-auth-capability-matrix, DEC preference-profile-defaults, DEC mvp-launch-region-and-spot-seed, DEC weather-provider-contracts, DEC provider-budget-and-paid-redundancy, DEC seeing-data-source, DEC observation-window-resolution, DEC candidate-routing-limits, DEC map-layer-composition-and-density, DEC route-provider-fallback-and-quotas, DEC recommendation-weights-thresholds, DEC safety-thresholds, DEC light-pollution-calibration, DEC spot-coordinate-default-visibility, DEC moderation-trust-policy, DEC collaboration-roles, DEC offline-pack-policy, DEC background-safety-policy, DEC notification-defaults-cooldowns, DEC ai-provider-privacy, DEC data-retention-deletion, DEC analytics-consent-policy, DEC object-storage-cdn-provider-and-region, DEC cache-ttl-policy, DEC recovery-objectives, DEC production-slo-measurement, DEC content-import-policy, DEC professional-tool-data-sources
 - Advisory implementation hints: HINT proposed-mobile-modules, HINT report-snapshot-shape, HINT candidate-route-bound, HINT astronomy-package-capsule, HINT map-adapter-contract, HINT map-request-cancellation, HINT route-snapshot, HINT spot-section-fetching, HINT horizon-composition, HINT itinerary-snapshot-diff, HINT share-rendering, HINT sky-catalog-chunks, HINT orientation-sampling, HINT user-adjustment-overlay, HINT device-capability-catalog, HINT offline-pack-manifest, HINT sync-dependency-order, HINT duplicate-spot-review, HINT ttl-by-fact-type, HINT notification-transition-trigger, HINT toolbox-domain-reuse, HINT account-job-status, HINT profile-reference-integrity, HINT modular-monolith-events, HINT dry-run-first, HINT repository-layout, HINT slo-budgeting
-- Unbound project facts: real production owners/paths/runners/proof/Assertions, dependency lock/platform/interaction-token matrix, provider contracts/credentials/quotas, raw production datasets/checksums and calibration, storage/CDN/production infrastructure/app-store control planes, legal/licensing approvals, real-device/field POC and confirmed decision outcomes
+- Unbound project facts: real production owners/paths/runners/proof/Assertions, dependency lock/platform/interaction-token matrix, provider contracts/credentials/quotas/pricing/budgets/paid-redundancy triggers, raw production datasets/checksums and calibration, storage/CDN/production infrastructure/app-store control planes, legal/licensing approvals, real-device/field POC, actual usage/billing and confirmed decision outcomes
