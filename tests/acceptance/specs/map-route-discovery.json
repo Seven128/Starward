@@ -1,0 +1,84 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "map-route-discovery",
+  "carrier": "apps/mobile/src/features/map/index.ts",
+  "assertions": [
+    {
+      "key": "map-status-and-context",
+      "criterion": "- **AC map-status-and-context**\n  - Accepts: REQ map-content-and-status, REQ map-selection-coordination, CTRL map-search-context-bar, CTRL map-marker-density-surface\n  - Given: 当前范围同时存在主推荐、备选、风险和数据不足地点。\n  - When: 用户移动视口并选择任一地点。\n  - Then: 数量、标记状态、选中摘要和全局地点/时间上下文一致，颜色之外仍能辨认状态。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.map-status-and-context.passed"
+    },
+    {
+      "key": "filter-no-results",
+      "criterion": "- **AC filter-no-results**\n  - Accepts: REQ complete-map-filters, CTRL map-filter-sheet\n  - Given: 用户组合了互相冲突的硬筛选并得到零结果。\n  - When: 筛选应用完成。\n  - Then: 地图保留范围和筛选，指出冲突/结果数并提供逐项放宽或重置，而不是显示假地点。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.filter-no-results.passed"
+    },
+    {
+      "key": "layer-version-and-failure",
+      "criterion": "- **AC layer-version-and-failure**\n  - Accepts: REQ complete-map-layers, CTRL map-layer-selector\n  - Given: 用户切换到一个部分瓦片失败的年度光污染层。\n  - When: 新层无法完整加载。\n  - Then: 系统回退上一成功层或清晰显示缺口，图例、年份、来源和失败状态不与旧层错配。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.layer-version-and-failure.passed"
+    },
+    {
+      "key": "selected-spot-action",
+      "criterion": "- **AC selected-spot-action**\n  - Accepts: REQ selected-spot-summary, CTRL selected-spot-sheet\n  - Given: 一个地点缺少图片但有评分、设施和路线。\n  - When: 用户点击其标记并设为备选。\n  - Then: 真实缺图状态与其余摘要同时可见，备选角色同步到地图/今晚/行程且失败可回滚。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.selected-spot-action.passed"
+    },
+    {
+      "key": "route-reorder",
+      "criterion": "- **AC route-reorder**\n  - Accepts: REQ route-map-planning, REQ map-selection-coordination, CTRL route-plan-editor\n  - Given: 一个主地点、两个备选和分开的驾车/步行段均有时间窗口。\n  - When: 用户拖动改变顺序。\n  - Then: 受影响线路、编号、距离、到达时间和窗口一起重算，期间旧路线标 stale 且可撤销。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.route-reorder.passed"
+    },
+    {
+      "key": "route-mode-and-last-mile",
+      "criterion": "- **AC route-mode-and-last-mile**\n  - Accepts: REQ route-mode-coverage, CTRL route-plan-editor\n  - Given: 用户预设为骑行且目的地停车/道路结束后还有设备搬运步行段。\n  - When: 生成路线方案。\n  - Then: 骑行和最后步行/搬运分别显示距离、时间和可用性；供应商无骑行结果时明确缺失而不展示驾车 ETA。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.route-mode-and-last-mile.passed"
+    },
+    {
+      "key": "route-provider-degradation",
+      "criterion": "- **AC route-provider-degradation**\n  - Accepts: REQ route-variants-and-degradation, CTRL external-navigation-action\n  - Given: 路线供应商超时但存在缓存路线和已验证停车点。\n  - When: 用户查看并发起导航。\n  - Then: APP 标明缓存时间与非实时状态，允许导航到停车点/换应用，不把直线距离描述为驾车路线。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.route-provider-degradation.passed"
+    },
+    {
+      "key": "coordinate-round-trip",
+      "criterion": "- **AC coordinate-round-trip**\n  - Accepts: REQ search-and-candidate-bounds, OBL amap-adapter, OBL authoritative-coordinate-boundary, OBL spatial-query-boundary, NCOMP poi-as-ground-truth\n  - Given: 同一 WGS84 地点参与附近搜索、天文计算和高德展示。\n  - When: 系统生成地图标记与候选路线。\n  - Then: 搜索/天文仍使用权威坐标，高德仅显示转换结果，候选调用受上限约束且 POI 未覆盖自有地点事实。",
+      "surface": "api_contract",
+      "polarity": "negative",
+      "observation": "map-route-discovery.coordinate-round-trip.passed"
+    },
+    {
+      "key": "no-public-api-or-schema-change",
+      "criterion": "No public_api_or_schema_change violation remains for map-route-discovery; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "api_contract",
+      "polarity": "negative",
+      "observation": "map-route-discovery.public_api_or_schema_change.violated"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for map-route-discovery exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "map-route-discovery.carrier-integrity.passed"
+    },
+    {
+      "key": "no-permission-boundary-change",
+      "criterion": "No permission_boundary_change violation remains for map-route-discovery; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "map-route-discovery.permission_boundary_change.violated"
+    }
+  ]
+}

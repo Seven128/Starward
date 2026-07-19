@@ -1,0 +1,112 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "admin-data-operations",
+  "carrier": "apps/admin-web/src/app/page.tsx",
+  "assertions": [
+    {
+      "key": "domain-and-entities",
+      "criterion": "- **AC domain-and-entities**\n  - Accepts: REQ domain-module-coverage, REQ core-entity-coverage, OBL source-data-immutability\n  - Given: 一份 NightReport 涉及用户预设、地点子实体、天气运行、天文窗口、路线、推荐快照和实况。\n  - When: 管理员/工程人员追溯报告。\n  - Then: 每个领域实体和版本/来源/时区/坐标/规则关联可达，原始输入未被后续更新覆盖。",
+      "surface": "api_contract",
+      "polarity": "positive",
+      "observation": "admin-data-operations.domain-and-entities.passed"
+    },
+    {
+      "key": "api-data-status",
+      "criterion": "- **AC api-data-status**\n  - Accepts: REQ aggregate-rest-api, REQ response-data-status, OBL api-contract-generation\n  - Given: 一个聚合响应部分使用缓存、一个字段缺失并有 warning。\n  - When: 生成客户端请求 `/v1` 接口。\n  - Then: OpenAPI/客户端类型、幂等/ETag/分页/错误一致，generatedAt/expiresAt/freshness/confidence/sources/warnings/partial 准确描述降级。",
+      "surface": "api_contract",
+      "polarity": "positive",
+      "observation": "admin-data-operations.api-data-status.passed"
+    },
+    {
+      "key": "no-public-api-or-schema-change",
+      "criterion": "No public_api_or_schema_change violation remains for admin-data-operations; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "api_contract",
+      "polarity": "negative",
+      "observation": "admin-data-operations.public_api_or_schema_change.violated"
+    },
+    {
+      "key": "qualified-lowest-tco-provider-selection",
+      "criterion": "- **AC qualified-lowest-tco-provider-selection**\n  - Accepts: REQ qualified-lowest-tco-selection, REQ provider-source-registry, REQ data-source-admin, OBL provider-cost-and-quota-ledger, CTRL data-source-dashboard\n  - Given: 同一项生产能力有免费、按量和固定月费候选，其中至少一个价格更低但有真实性/目标区稳定性/许可硬门缺口，并已有 1k/10k/100k MAU 与故障场景。\n  - When: 团队选择、续费或升级生产 provider。\n  - Then: 任何硬门失败者先被淘汰；其余候选按等价最小能力和同一日期/币种/税费的 12 个月完整 TCO 排序，选择最低者并保存价格/假设/有效输出成本/降级/退出证据；第二付费源或升档只有在批准的预算与增量收益触发器成立时发生，不能因免费或标价低绕过质量，也不能静默自动购买。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.qualified-lowest-tco-provider-selection.passed"
+    },
+    {
+      "key": "job-idempotent-replay",
+      "criterion": "- **AC job-idempotent-replay**\n  - Accepts: REQ background-job-catalog, REQ job-reliability, CTRL job-operations-console\n  - Given: 任一目录任务写入后失败并进入死信。\n  - When: 授权人员以同一业务键重放。\n  - Then: 有效数据不重复覆盖，输入/输出版本、跳过/写入/失败/耗时和审计清楚且可暂停恢复。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.job-idempotent-replay.passed"
+    },
+    {
+      "key": "spot-merge-and-risk",
+      "criterion": "- **AC spot-merge-and-risk**\n  - Accepts: REQ spot-admin, CTRL admin-spot-editor\n  - Given: 两个重复地点分别有媒体、评论、受限坐标和一个最新安全警告。\n  - When: 管理员预览并确认合并。\n  - Then: 引用/来源/策略/状态历史按计划迁移，安全警告不丢，生成新版本/缓存失效/审计且可回滚。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.spot-merge-and-risk.passed"
+    },
+    {
+      "key": "moderation-case",
+      "criterion": "- **AC moderation-case**\n  - Accepts: REQ moderation-admin, CTRL moderation-queue\n  - Given: 高风险纠错附带媒体和原始 EXIF，贡献者可补充。\n  - When: 审核员处理并请求补充或下线地点。\n  - Then: 原始证据仅获授权可见，决定/理由/通知/公开状态/申诉与审计原子保存且原贡献不被覆盖。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.moderation-case.passed"
+    },
+    {
+      "key": "source-operation",
+      "criterion": "- **AC source-operation**\n  - Accepts: REQ data-source-admin, CTRL data-source-dashboard\n  - Given: 路线供应商错误率/成本异常并影响多个报告。\n  - When: 运营查看并切换/暂停供应商。\n  - Then: 健康、用量/成本、影响报告与备用状态可见，变更需权限/审计且后续报告准确标降级/恢复。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.source-operation.passed"
+    },
+    {
+      "key": "replay-and-release",
+      "criterion": "- **AC replay-and-release**\n  - Accepts: REQ recommendation-replay-admin, CTRL recommendation-replay-console, CTRL rule-release-control\n  - Given: 一个错误案例有完整历史快照和现场反馈，规则草案改变主备排序。\n  - When: 管理员重放、比较并尝试发布。\n  - Then: 历史复现与当前模拟分开，分项/阻断/解释差异可追溯；证据/审批不足时禁止发布，失败保持旧版本。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.replay-and-release.passed"
+    },
+    {
+      "key": "admin-security",
+      "criterion": "- **AC admin-security**\n  - Accepts: REQ admin-security-audit, CTRL admin-access-audit\n  - Given: 无精确坐标权限的审核员登录且 MFA 过期。\n  - When: 尝试读取 invite_only 坐标并执行地点下线。\n  - Then: 坐标字段服务端拒绝、敏感写入要求重认证，成功/失败尝试均记录不含 secret 的审计。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.admin-security.passed"
+    },
+    {
+      "key": "source-pipelines",
+      "criterion": "- **AC source-pipelines**\n  - Accepts: REQ provider-source-registry, REQ astronomy-geo-pipelines, REQ provider-failure-controls, CTRL data-source-dashboard, NCOMP direct-provider-pass-through\n  - Given: 天气源字段缺失且卫星轨道过期、光污染/DEM 有明确版本。\n  - When: 新批次进入系统并被后台查看。\n  - Then: 天气在质检前不进入业务、轨道可信度下降，四类源的健康/版本/许可/影响可见且备用/熔断状态真实。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.source-pipelines.passed"
+    },
+    {
+      "key": "cache-policy",
+      "criterion": "- **AC cache-policy**\n  - Accepts: REQ four-layer-cache, REQ cache-freshness-policy, OBL cache-invalidation-events\n  - Given: 新天气模型到达且同一网格/夜晚/预设有并发热门请求。\n  - When: 旧报告进入失效和重算。\n  - Then: 请求合并/锁/抖动/预热防击穿，旧结果仅以 stale 标识返回，新结果键含全部版本且不会污染其他预设。",
+      "surface": "data_state",
+      "polarity": "positive",
+      "observation": "admin-data-operations.cache-policy.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for admin-data-operations exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "admin-data-operations.carrier-integrity.passed"
+    },
+    {
+      "key": "no-security-boundary-change",
+      "criterion": "No security_boundary_change violation remains for admin-data-operations; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "admin-data-operations.security_boundary_change.violated"
+    },
+    {
+      "key": "no-full-population-operation",
+      "criterion": "No full_population_operation violation remains for admin-data-operations; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "population_coverage",
+      "polarity": "negative",
+      "observation": "admin-data-operations.full_population_operation.violated"
+    }
+  ]
+}

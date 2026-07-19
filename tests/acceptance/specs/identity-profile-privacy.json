@@ -1,0 +1,77 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "identity-profile-privacy",
+  "carrier": "apps/mobile/src/features/profile/index.ts",
+  "assertions": [
+    {
+      "key": "guest-login-merge",
+      "criterion": "- **AC guest-login-merge**\n  - Accepts: REQ auth-methods, REQ guest-upgrade, CTRL auth-gate-sheet, CTRL guest-data-merge\n  - Given: 游客已有偏好、收藏、行程草稿和一条待上传实况。\n  - When: 受保护动作触发可用登录并成功进入既有账号。\n  - Then: 原任务保留、用户预览逐类合并/冲突，选择内容幂等进入账号且失败不删除本地副本。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.guest-login-merge.passed"
+    },
+    {
+      "key": "session-revocation",
+      "criterion": "- **AC session-revocation**\n  - Accepts: REQ secure-sessions, CTRL session-security, OBL token-security\n  - Given: 账号有当前和另一设备会话。\n  - When: 用户重认证后撤销另一设备。\n  - Then: 服务端 refresh/access 后续使用失效、当前会话保留、审计不含令牌且失败不误报成功。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.session-revocation.passed"
+    },
+    {
+      "key": "profile-content-equipment",
+      "criterion": "- **AC profile-content-equipment**\n  - Accepts: REQ my-content-library, REQ equipment-library, REQ profile-and-notification-settings, CTRL profile-hub, CTRL content-library-browser, CTRL equipment-manager\n  - Given: 用户有跨状态贡献、离线包和被摄影方案引用的镜头。\n  - When: 在“我的”浏览并尝试删除镜头。\n  - Then: 分类状态与权威对象一致，设备删除前显示引用影响并允许归档，预设/通知入口可达。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.profile-content-equipment.passed"
+    },
+    {
+      "key": "secure-export",
+      "criterion": "- **AC secure-export**\n  - Accepts: REQ data-export, REQ privacy-compliant-analytics, CTRL export-delete-flow\n  - Given: 用户请求全部允许数据且包含协作行程和粗网格分析记录。\n  - When: 导出作业完成并下载。\n  - Then: 文件含范围/格式/版本并排除他人/第三方受限数据，链接短期受保护，分析无精确轨迹或 EXIF。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.secure-export.passed"
+    },
+    {
+      "key": "account-deletion-completion",
+      "criterion": "- **AC account-deletion-completion**\n  - Accepts: REQ account-deletion, CTRL export-delete-flow\n  - Given: 用户有公共贡献、协作行程、多个会话和待同步本地草稿。\n  - When: 完成影响预览、重认证和最终注销确认。\n  - Then: 会话撤销、各类数据按 DEC data-retention-deletion 显示可证状态，未同步草稿和不可撤回公共影响不被隐藏。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.account-deletion-completion.passed"
+    },
+    {
+      "key": "help-and-sources",
+      "criterion": "- **AC help-and-sources**\n  - Accepts: REQ help-and-product-info, CTRL help-and-source-center\n  - Given: 用户离线需要安全帮助并想查看某光污染数据归属。\n  - When: 打开帮助与来源中心。\n  - Then: 关键帮助可读，最后已知来源/许可/版本和 APP 构建可见，提交反馈不会自动附带敏感诊断。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.help-and-sources.passed"
+    },
+    {
+      "key": "location-privacy-enforced",
+      "criterion": "- **AC location-privacy-enforced**\n  - Accepts: REQ location-privacy-controls, CTRL privacy-center, OBL privacy-enforcement-server-side, NCOMP frontend-only-privacy\n  - Given: 用户关闭分析同意、删除位置历史并把地点设为 invite_only。\n  - When: 随后使用分析、分享、API 和导出。\n  - Then: 精确位置不进埋点，历史按状态删除，未授权响应/分享/导出无精确坐标，UI 与服务端记录一致。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.location-privacy-enforced.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for identity-profile-privacy exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "identity-profile-privacy.carrier-integrity.passed"
+    },
+    {
+      "key": "no-data-migration",
+      "criterion": "No data_migration violation remains for identity-profile-privacy; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "data_state",
+      "polarity": "negative",
+      "observation": "identity-profile-privacy.data_migration.violated"
+    },
+    {
+      "key": "no-security-boundary-change",
+      "criterion": "No security_boundary_change violation remains for identity-profile-privacy; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "identity-profile-privacy.security_boundary_change.violated"
+    }
+  ]
+}

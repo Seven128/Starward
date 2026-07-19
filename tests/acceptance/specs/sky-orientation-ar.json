@@ -1,0 +1,70 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "sky-orientation-ar",
+  "carrier": "apps/mobile/src/features/sky/index.ts",
+  "assertions": [
+    {
+      "key": "universal-sky",
+      "criterion": "- **AC universal-sky**\n  - Accepts: REQ universal-sky-view, REQ sky-rendering-budget, CTRL sky-canvas, CTRL sky-object-and-layer-panel\n  - Given: 中档设备在选定地点/时刻打开含星座、银河、行星和深空目标的天空。\n  - When: 用户缩放、旋转并搜索一个目标。\n  - Then: 地平线/亮星先可交互，目录按需加载，目标方位高度正确且装饰降级不丢核心信息。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.universal-sky.passed"
+    },
+    {
+      "key": "time-jump",
+      "criterion": "- **AC time-jump**\n  - Accepts: REQ sky-time-control, CTRL sky-time-scrubber\n  - Given: 本夜有月落和银河最高事件并跨午夜。\n  - When: 用户在拖动后点击“跳到银河最高”。\n  - Then: 日期/时区、画布、轨迹、遮挡和摄影入口同步到事件时刻，模拟状态不与实时混淆。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.time-jump.passed"
+    },
+    {
+      "key": "obstruction-trajectory",
+      "criterion": "- **AC obstruction-trajectory**\n  - Accepts: REQ real-obstruction-overlay, REQ celestial-trajectories, CTRL obstruction-and-trajectory-overlay\n  - Given: 银河中心轨迹有一段被有版本的山体/建筑轮廓遮挡。\n  - When: 用户查看升起、中天和落下路径。\n  - Then: 可见和遮挡区间、来源/置信度及前景重合时刻明确，纯天文轨迹未被误称现场实测。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.obstruction-trajectory.passed"
+    },
+    {
+      "key": "field-of-view",
+      "criterion": "- **AC field-of-view**\n  - Accepts: REQ camera-field-of-view, CTRL field-of-view-overlay\n  - Given: V3 用户选择已知全画幅机身与 24mm 镜头。\n  - When: 开启横向视场预览。\n  - Then: 覆盖边框按真实传感器/焦段计算并可传入摄影方案；缺少设备参数时该结果不会生成。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.field-of-view.passed"
+    },
+    {
+      "key": "ar-degradation",
+      "criterion": "- **AC ar-degradation**\n  - Accepts: REQ optional-ar, CTRL ar-mode-toggle, OBL sky-ar-separation\n  - Given: 安卓设备不支持 ARCore 或追踪在现场丢失。\n  - When: 用户请求/正在使用 AR。\n  - Then: APP 明确能力/追踪状态并切到摄像头+传感器或通用天空，同一地点/时间/目标保留且不继续显示漂移叠加。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.ar-degradation.passed"
+    },
+    {
+      "key": "low-accuracy-guidance",
+      "criterion": "- **AC low-accuracy-guidance**\n  - Accepts: REQ orientation-guidance, REQ orientation-calibration, CTRL orientation-follow-toggle, CTRL orientation-calibration-sheet, OBL orientation-engine, NCOMP uncalibrated-heading\n  - Given: 手机靠近汽车导致磁场异常。\n  - When: 用户开启方向跟随查找目标。\n  - Then: APP 标低精度并提示移开/8 字校准，错误实时跟随停止且手动北向/触控浏览可用。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.low-accuracy-guidance.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for sky-orientation-ar exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "sky-orientation-ar.carrier-integrity.passed"
+    },
+    {
+      "key": "no-public-api-or-schema-change",
+      "criterion": "No public_api_or_schema_change violation remains for sky-orientation-ar; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "api_contract",
+      "polarity": "negative",
+      "observation": "sky-orientation-ar.public_api_or_schema_change.violated"
+    },
+    {
+      "key": "no-permission-boundary-change",
+      "criterion": "No permission_boundary_change violation remains for sky-orientation-ar; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "sky-orientation-ar.permission_boundary_change.violated"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "itinerary-and-collaboration",
+  "carrier": "apps/mobile/src/features/itinerary/index.ts",
+  "assertions": [
+    {
+      "key": "create-generated-plan",
+      "criterion": "- **AC create-generated-plan**\n  - Accepts: REQ itinerary-home, REQ itinerary-inputs-and-generation, CTRL itinerary-library, CTRL itinerary-creation-form\n  - Given: 用户从一个地点快速生成并填写日期、起点、人数、目标和最晚返回。\n  - When: 系统完成草案生成。\n  - Then: 主备、出发/到达/观测/返回、路线、装备和风险均有来源/状态，草案可编辑且未自动确认出发。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.create-generated-plan.passed"
+    },
+    {
+      "key": "overview-consistency",
+      "criterion": "- **AC overview-consistency**\n  - Accepts: REQ itinerary-overview, CTRL itinerary-detail-tabs, CTRL itinerary-overview-card\n  - Given: 行程含一主一备、天气快照和驾车/徒步段。\n  - When: 用户在总览、地图和阶段面板切换。\n  - Then: 三处使用同一 revision/地点/时间，总驾驶/徒步与地图分段一致且快照时间可见。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.overview-consistency.passed"
+    },
+    {
+      "key": "candidate-to-plan",
+      "criterion": "- **AC candidate-to-plan**\n  - Accepts: REQ unplanned-candidates, CTRL candidate-tray\n  - Given: 待规划含用户、系统和好友来源候选。\n  - When: 用户从地图把一个候选拖入晚间观测阶段。\n  - Then: 来源保留，候选变为正式 Stop，编号/路线/时间/revision 同步且失败不会丢候选。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.candidate-to-plan.passed"
+    },
+    {
+      "key": "route-tradeoff",
+      "criterion": "- **AC route-tradeoff**\n  - Accepts: REQ itinerary-route-options, CTRL route-option-comparator\n  - Given: 最快路线徒步更长而设施路线可能错过窗口。\n  - When: 用户比较并选择方案。\n  - Then: 五类取舍、逐段到达条件和窗口冲突可见，选定方案以新 revision 保存而非无解释“最佳”。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.route-tradeoff.passed"
+    },
+    {
+      "key": "refresh-version",
+      "criterion": "- **AC refresh-version**\n  - Accepts: REQ versioned-editing, CTRL version-and-share-actions, OBL itinerary-version-model\n  - Given: 用户已手调顺序后天气更新改变推荐。\n  - When: 用户选择刷新计划。\n  - Then: 系统显示差异并保留用户编辑，接受结果生成可恢复版本，拒绝时原 revision 不变。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.refresh-version.passed"
+    },
+    {
+      "key": "secure-share-and-offline",
+      "criterion": "- **AC secure-share-and-offline**\n  - Accepts: REQ copy-share-export, REQ share-link-web-surface, REQ itinerary-offline-handoff, CTRL version-and-share-actions\n  - Given: 行程含一个 invite_only 地点和可公开主地点。\n  - When: 用户生成分享图片、导出列表并下载自己的观测包。\n  - Then: 公开产物隐藏受限精确坐标，自有授权包按策略包含数据并显示版本/大小/更新状态。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.secure-share-and-offline.passed"
+    },
+    {
+      "key": "collaboration-conflict",
+      "criterion": "- **AC collaboration-conflict**\n  - Accepts: REQ collaborative-plan, REQ collaboration-conflicts, CTRL collaboration-panel, OBL collaboration-transport\n  - Given: V2 两名有权成员离线修改同一出发时间、不同成员另加候选点。\n  - When: 双方重新联网同步。\n  - Then: 不冲突候选增量合并，同字段时间冲突显示双方值/作者并由用户解决，操作日志和恢复版本完整。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.collaboration-conflict.passed"
+    },
+    {
+      "key": "astronomy-timeline",
+      "criterion": "- **AC astronomy-timeline**\n  - Accepts: REQ observation-timeline, CTRL observation-timeline-editor, NCOMP day-template-copy\n  - Given: 单夜计划跨午夜且有蓝调、无月和银河窗口。\n  - When: 用户调整出发时间。\n  - Then: 真实阶段按当地观星夜重算，跨午夜不拆错日期，无法赶上的窗口在节点旁提示。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.astronomy-timeline.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for itinerary-and-collaboration exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "itinerary-and-collaboration.carrier-integrity.passed"
+    },
+    {
+      "key": "no-data-migration",
+      "criterion": "No data_migration violation remains for itinerary-and-collaboration; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "data_state",
+      "polarity": "negative",
+      "observation": "itinerary-and-collaboration.data_migration.violated"
+    },
+    {
+      "key": "no-security-boundary-change",
+      "criterion": "No security_boundary_change violation remains for itinerary-and-collaboration; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "itinerary-and-collaboration.security_boundary_change.violated"
+    }
+  ]
+}

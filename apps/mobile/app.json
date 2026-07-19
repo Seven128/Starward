@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "今晚去观星",
+    "slug": "starward",
+    "scheme": "starward",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.starward.mobile",
+      "deploymentTarget": "16.4",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "用于查询当前位置附近的观星条件；拒绝后仍可手动选择城市或出发地。",
+        "NSCameraUsageDescription": "仅在你主动使用天空定位或上传地点照片时访问相机。",
+        "NSPhotoLibraryUsageDescription": "仅在你主动选择地点或观测照片时访问相册。"
+      }
+    },
+    "android": {
+      "package": "app.starward.mobile",
+      "minSdkVersion": 24,
+      "compileSdkVersion": 36,
+      "targetSdkVersion": 36,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "用于查询当前位置附近的观星条件；拒绝后仍可手动选择城市或出发地。"
+        }
+      ],
+      "expo-status-bar",
+      "expo-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

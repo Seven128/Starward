@@ -1,0 +1,11 @@
+{
+  "name": "@starward/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./platform-boundary": "./src/platform-boundary.ts",
+    "./security-policy": "./src/security-policy.ts",
+    "./admin": "./src/admin.ts"
+  }
+}

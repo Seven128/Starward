@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-20T00:00:00Z",
+  "status": "pending-production-measurement",
+  "results": {
+    "app-start": { "status": "pending", "sampleCount": 0, "evidence": "native release artifact required" },
+    "tonight-cached": { "status": "pending", "sampleCount": 0, "evidence": "production-like dataset required" },
+    "tonight-uncached": { "status": "pending", "sampleCount": 0, "evidence": "production-like provider path required" },
+    "map-interaction": { "status": "pending", "sampleCount": 0, "evidence": "native map device run required" },
+    "route-timeout": { "status": "pending", "sampleCount": 0, "evidence": "provider POC required" },
+    "offline-restore": { "status": "pending", "sampleCount": 0, "evidence": "device restart run required" },
+    "provider-ingest": { "status": "pending", "sampleCount": 0, "evidence": "provider contract fixture required" },
+    "notification-latency": { "status": "pending", "sampleCount": 0, "evidence": "approved push channels required" },
+    "api-error-rate": { "status": "pending", "sampleCount": 0, "evidence": "staging soak required" },
+    "crash-free-session": { "status": "pending", "sampleCount": 0, "evidence": "internal distribution cohort required" }
+  }
+}

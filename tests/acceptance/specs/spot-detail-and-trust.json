@@ -1,0 +1,77 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "spot-detail-and-trust",
+  "carrier": "apps/mobile/src/features/spots/index.ts",
+  "assertions": [
+    {
+      "key": "spot-first-screen",
+      "criterion": "- **AC spot-first-screen**\n  - Accepts: REQ spot-identity-and-freshness, REQ spot-tonight-comparison, CTRL spot-hero, CTRL evidence-section-nav\n  - Given: 地点静态资料可用但今晚报告正在刷新。\n  - When: 用户打开详情。\n  - Then: 地点身份、开放/风险和旧报告新鲜度先可见，动态骨架不把旧评分伪装为当前结论。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.spot-first-screen.passed"
+    },
+    {
+      "key": "light-and-horizon",
+      "criterion": "- **AC light-and-horizon**\n  - Accepts: REQ light-pollution-evidence, REQ directional-horizon, CTRL horizon-polar-view\n  - Given: 年度 VIIRS、地形轮廓和人工遮挡来自不同版本。\n  - When: 用户查看指定方向及目标轨迹。\n  - Then: 辐射/估算 Bortle 区间、各遮挡层、有效轮廓、版本和置信度可区分，目标只在真实无遮挡区间标可用。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.light-and-horizon.passed"
+    },
+    {
+      "key": "media-provenance",
+      "criterion": "- **AC media-provenance**\n  - Accepts: REQ spot-media-provenance, CTRL spot-media-gallery, OBL media-privacy-pipeline\n  - Given: 上传样片带原始 GPS/序列信息且拍摄方向由用户结构化提交。\n  - When: 媒体审核后公开。\n  - Then: 公开资产无敏感 EXIF，方向/时间/设备/曝光和原地点核验仍可见并与图片对应。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.media-provenance.passed"
+    },
+    {
+      "key": "last-mile-and-facilities",
+      "criterion": "- **AC last-mile-and-facilities**\n  - Accepts: REQ last-mile-access, REQ facilities-and-emergency, CTRL access-facility-fact-list\n  - Given: 停车位已核验、厕所开放未知、雨后道路有临时报告。\n  - When: 用户核对到达条件。\n  - Then: 三种事实分别显示值/unknown/临时状态及时间来源，硬要求冲突被明确提升。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.last-mile-and-facilities.passed"
+    },
+    {
+      "key": "safety-overrides-score",
+      "criterion": "- **AC safety-overrides-score**\n  - Accepts: REQ spot-safety, CTRL safety-block\n  - Given: 天空评分很高但最新报告显示封路或潮汐危险。\n  - When: 用户打开地点或点击导航。\n  - Then: 风险/关闭覆盖推荐表现，系统给出取消/备选行动且不允许无提示继续。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.safety-overrides-score.passed"
+    },
+    {
+      "key": "coordinate-policy-all-exits",
+      "criterion": "- **AC coordinate-policy-all-exits**\n  - Accepts: REQ coordinate-visibility, REQ spot-actions, CTRL spot-action-dock, OBL normalized-spot-entities\n  - Given: 一个 invite_only 地点被未受邀用户打开。\n  - When: 用户尝试分享、导航、离线下载或设为行程地点。\n  - Then: 所有出口一致只提供允许的近似信息/申请路径，精确坐标未出现在 UI、深链、文件或遥测中。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.coordinate-policy-all-exits.passed"
+    },
+    {
+      "key": "reviews-and-trust",
+      "criterion": "- **AC reviews-and-trust**\n  - Accepts: REQ multidimensional-reviews, REQ trust-and-conflict, CTRL trust-panel, NCOMP single-rating\n  - Given: 地点有多个维度评价、一次具体实况和一条冲突资料。\n  - When: 用户查看评价与可信度。\n  - Then: 维度、样本、时间、贡献级别和冲突逐项可见，短实况未被平均分吞没。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.reviews-and-trust.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for spot-detail-and-trust exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "spot-detail-and-trust.carrier-integrity.passed"
+    },
+    {
+      "key": "no-persistent-data-change",
+      "criterion": "No persistent_data_change violation remains for spot-detail-and-trust; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "data_state",
+      "polarity": "negative",
+      "observation": "spot-detail-and-trust.persistent_data_change.violated"
+    },
+    {
+      "key": "no-security-boundary-change",
+      "criterion": "No security_boundary_change violation remains for spot-detail-and-trust; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "spot-detail-and-trust.security_boundary_change.violated"
+    }
+  ]
+}

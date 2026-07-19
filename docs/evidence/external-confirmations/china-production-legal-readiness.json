@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "status": "pending",
+  "releaseBlocked": true,
+  "coverage": ["ICP", "map-license", "cross-border", "storage-cdn", "personal-information"],
+  "reviewer": null,
+  "confirmedAt": null,
+  "evidenceLinks": [],
+  "note": "Qualified China legal/compliance review and final operating-entity configuration have not yet been supplied."
+}

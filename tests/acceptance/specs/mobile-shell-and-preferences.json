@@ -1,0 +1,63 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "mobile-shell-and-preferences",
+  "carrier": "apps/mobile/app/_layout.tsx",
+  "assertions": [
+    {
+      "key": "guest-manual-location",
+      "criterion": "- **AC guest-manual-location**\n  - Accepts: REQ guest-basic-query, REQ permission-minimization, CTRL permission-step\n  - Given: 新用户未登录且拒绝前台定位。\n  - When: 用户选择手动城市或出发地并继续。\n  - Then: 用户能进入基础今晚查询，界面明确使用手动位置且不重复强迫授权。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.guest-manual-location.passed"
+    },
+    {
+      "key": "preference-save-and-switch",
+      "criterion": "- **AC preference-save-and-switch**\n  - Accepts: REQ onboarding-basic-and-user-types, REQ travel-and-facility-preferences, REQ target-and-equipment-preferences, REQ preference-profiles, REQ profile-examples, CTRL preference-wizard, CTRL profile-switcher\n  - Given: 用户已填写一套带交通、设施、目标和设备条件的预设。\n  - When: 用户保存并切换为当前预设。\n  - Then: 预设摘要可见，后续推荐进入重算且旧结果在完成前被标为 stale。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.preference-save-and-switch.passed"
+    },
+    {
+      "key": "primary-navigation",
+      "criterion": "- **AC primary-navigation**\n  - Accepts: REQ five-primary-destinations, CTRL primary-tab-bar\n  - Given: APP 已进入任意一级页面。\n  - When: 用户依次选择五个一级入口。\n  - Then: 每个入口可达、选中状态明确、底栏不遮挡内容且必要的标签内状态被保留。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.primary-navigation.passed"
+    },
+    {
+      "key": "permission-scope",
+      "criterion": "- **AC permission-scope**\n  - Accepts: REQ permission-minimization, CTRL permission-step\n  - Given: 用户只进行首页附近地点查询，未开启现场行程。\n  - When: APP 请求定位能力。\n  - Then: 只请求完成该任务所需的前台权限，不请求永久后台定位。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.permission-scope.passed"
+    },
+    {
+      "key": "global-data-states",
+      "criterion": "- **AC global-data-states**\n  - Accepts: REQ global-state-language, REQ mobile-accessibility\n  - Given: 同一页面分别遇到无数据、筛选无结果、缓存过期、部分供应商失败和完全失败。\n  - When: 用户查看状态和可执行动作。\n  - Then: 五种状态语义可区分、关键内容布局稳定、可访问技术可读且不存在伪造数据。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "mobile-shell-and-preferences.global-data-states.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for mobile-shell-and-preferences exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "mobile-shell-and-preferences.carrier-integrity.passed"
+    },
+    {
+      "key": "native-app-shape",
+      "criterion": "- **AC native-app-shape**\n  - Accepts: REQ react-native-app, OBL mobile-client-stack, OBL mobile-layering, OBL native-new-architecture, NCOMP web-shell-only\n  - Given: iOS 与 Android 的目标构建环境和需要的自定义原生能力已准备。\n  - When: 两个平台启动同一业务版本。\n  - Then: 两端可进入五入口 APP 壳，原生能力通过明确适配层暴露，且结果不是网页壳或 Expo Go 限制版。",
+      "surface": "implementation_structure",
+      "polarity": "negative",
+      "observation": "mobile-shell-and-preferences.native-app-shape.passed"
+    },
+    {
+      "key": "no-permission-boundary-change",
+      "criterion": "No permission_boundary_change violation remains for mobile-shell-and-preferences; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "mobile-shell-and-preferences.permission_boundary_change.violated"
+    }
+  ]
+}

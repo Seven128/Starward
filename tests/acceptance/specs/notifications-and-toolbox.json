@@ -1,0 +1,84 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "notifications-and-toolbox",
+  "carrier": "apps/mobile/src/features/notifications/index.ts",
+  "assertions": [
+    {
+      "key": "pretrip-rule",
+      "criterion": "- **AC pretrip-rule**\n  - Accepts: REQ pretrip-notifications, REQ notification-control, CTRL notification-rule-editor\n  - Given: 用户为收藏地点设置“评分达到阈值且银河窗口前 90 分钟”并配置免打扰。\n  - When: 新模型使条件首次从不满足变为满足。\n  - Then: 规则摘要/单位/冷却生效，只在允许时段触发一次且通知说明地点、窗口、阈值和行动。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.pretrip-rule.passed"
+    },
+    {
+      "key": "intrip-risk-deeplink",
+      "criterion": "- **AC intrip-risk-deeplink**\n  - Accepts: REQ intrip-notifications, REQ notification-explainability, CTRL notification-message-deeplink\n  - Given: 行程中云量和道路状态恶化并推荐备选。\n  - When: 用户点击通知。\n  - Then: 先看到触发快照/时间再看最新状态，深链对应行程 revision 与备选比较，条件反转时不继续呈现旧结论为当前。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.intrip-risk-deeplink.passed"
+    },
+    {
+      "key": "long-term-controls",
+      "criterion": "- **AC long-term-controls**\n  - Accepts: REQ long-term-notifications, CTRL notification-settings-center\n  - Given: 用户订阅新月、流星雨和收藏地点实况但关闭长期类别。\n  - When: 相关事件到达并查看通知中心。\n  - Then: 不发送被关闭类别，规则/上次评估/系统权限状态可见且用户可单条恢复。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.long-term-controls.passed"
+    },
+    {
+      "key": "calendar-and-station",
+      "criterion": "- **AC calendar-and-station**\n  - Accepts: REQ celestial-calendar, REQ station-transits, CTRL celestial-event-detail\n  - Given: V3 用户选择本地不可见的日食和可见的空间站过境。\n  - When: 分别查看事件详情。\n  - Then: 日食明确本地不可见，过境显示开始/最高/结束、方位/高度/亮度/路径和轨道 epoch，两者均可正确设提醒/开天空。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.calendar-and-station.passed"
+    },
+    {
+      "key": "position-tools",
+      "criterion": "- **AC position-tools**\n  - Accepts: REQ object-position-tools, CTRL celestial-event-detail\n  - Given: 用户查询木星和银河中心在指定当地夜晚的位置。\n  - When: 打开位置详情和天空地图。\n  - Then: 升起/中天/落下、方位/高度/亮度与所选地点/时区一致，并复用同一 Astronomy 版本。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.position-tools.passed"
+    },
+    {
+      "key": "professional-tool-boundaries",
+      "criterion": "- **AC professional-tool-boundaries**\n  - Accepts: REQ photography-tools, REQ other-astronomy-tools, CTRL toolbox-index, CTRL astronomy-calculator-form\n  - Given: 当前版本只启用部分 V3 摄影/天象工具。\n  - When: 用户浏览目录并使用防脱焦计算。\n  - Then: 可用/实验/未来工具边界清楚，计算输出含单位/假设/版本，未启用工具不作为可操作空壳。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.professional-tool-boundaries.passed"
+    },
+    {
+      "key": "educational-content-priority",
+      "criterion": "- **AC educational-content-priority**\n  - Accepts: REQ educational-content, CTRL toolbox-index\n  - Given: APOD 和当月指南有新内容。\n  - When: 新手进入今晚首页和专业工具箱。\n  - Then: 今晚决策首屏未被内容流占据，工具箱内容区显示来源/许可/发布日期并可进入阅读。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.educational-content-priority.passed"
+    },
+    {
+      "key": "batch-dedup",
+      "criterion": "- **AC batch-dedup**\n  - Accepts: REQ event-driven-evaluation, OBL notification-evaluation-pipeline, OBL push-channel-adapters, NCOMP user-polling-cron\n  - Given: 一个 ProviderRun 影响大量网格用户且相同事件被重试。\n  - When: 后台批量评估和发送。\n  - Then: 受影响订阅按幂等键只产生允许的通知，去重/冷却/通道结果可审计且不存在逐用户轮询任务。",
+      "surface": "data_state",
+      "polarity": "negative",
+      "observation": "notifications-and-toolbox.batch-dedup.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for notifications-and-toolbox exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "notifications-and-toolbox.carrier-integrity.passed"
+    },
+    {
+      "key": "no-permission-boundary-change",
+      "criterion": "No permission_boundary_change violation remains for notifications-and-toolbox; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "notifications-and-toolbox.permission_boundary_change.violated"
+    },
+    {
+      "key": "no-full-population-operation",
+      "criterion": "No full_population_operation violation remains for notifications-and-toolbox; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "population_coverage",
+      "polarity": "negative",
+      "observation": "notifications-and-toolbox.full_population_operation.violated"
+    }
+  ]
+}

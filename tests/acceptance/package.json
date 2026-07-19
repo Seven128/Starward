@@ -1,0 +1,13 @@
+{
+  "name": "@starward/long-task-ui-verifier",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test --config playwright.config.mjs",
+    "test:list": "playwright test --config playwright.config.mjs --list"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
+}

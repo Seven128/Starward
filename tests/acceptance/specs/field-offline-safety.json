@@ -1,0 +1,77 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "field-offline-safety",
+  "carrier": "apps/mobile/src/features/field/index.ts",
+  "assertions": [
+    {
+      "key": "pack-integrity",
+      "criterion": "- **AC pack-integrity**\n  - Accepts: REQ complete-observation-pack, REQ local-storage-boundaries, CTRL offline-pack-manager, OBL offline-storage-stack\n  - Given: 行程含主备、停车/步行、地图、天气/天文、摄影、清单和联系人且设备空间足够。\n  - When: 用户下载并校验观测包。\n  - Then: 每个组件版本/大小/过期/哈希和坐标授权可见，只有全部必需组件通过才标“可离线”。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.pack-integrity.passed"
+    },
+    {
+      "key": "red-mode-accessible",
+      "criterion": "- **AC red-mode-accessible**\n  - Accepts: REQ night-red-mode, CTRL night-red-mode-toggle\n  - Given: 用户在现场从夜间切换红光并启用文本放大/reduced motion。\n  - When: 浏览地图覆盖、状态、危险和禁用工具。\n  - Then: 无白帧，危险/选择/禁用不只靠颜色且仍可读，系统 UI 无法控制的边界提前说明。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.red-mode-accessible.passed"
+    },
+    {
+      "key": "parking-and-backup-offline",
+      "criterion": "- **AC parking-and-backup-offline**\n  - Accepts: REQ parking-and-backup, CTRL return-to-parking, CTRL backup-switcher\n  - Given: 当前地点条件恶化、网络中断且包内有已验证停车点和备选路线快照。\n  - When: 用户查看停车方向并确认切换备选。\n  - Then: 方位/距离/缓存路线语义与精度可见，主备上下文原子切换且旧计划可撤回。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.parking-and-backup-offline.passed"
+    },
+    {
+      "key": "bounded-safety-session",
+      "criterion": "- **AC bounded-safety-session**\n  - Accepts: REQ safety-session, CTRL safety-session-panel, OBL bounded-background-location\n  - Given: 用户明确授权限时后台定位并设返程/联系人。\n  - When: 开启后主动结束或达到自动停止时间。\n  - Then: 开启范围/状态持续可见，结束时后台定位和计划任务可证实停止，拒绝权限时不会宣称已保护。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.bounded-safety-session.passed"
+    },
+    {
+      "key": "explicit-location-share",
+      "criterion": "- **AC explicit-location-share**\n  - Accepts: REQ location-sharing-consent, CTRL location-share-action\n  - Given: 当前地点为受限坐标且用户选择一个外部分享应用。\n  - When: 用户预览精度/接收者/有效期并确认。\n  - Then: 载荷只含策略允许字段，失败/未知不会显示已送达，也不会后台自动重发。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.explicit-location-share.passed"
+    },
+    {
+      "key": "offline-write-replay",
+      "criterion": "- **AC offline-write-replay**\n  - Accepts: REQ offline-write-sync, CTRL offline-sync-queue\n  - Given: 用户断网新增实况、两张图片并修改清单，第一次联网上传中断。\n  - When: 网络再次恢复。\n  - Then: 队列按依赖/幂等键续传且不重复发布，逐项显示待审核/已发布/失败/冲突并保留草稿。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.offline-write-replay.passed"
+    },
+    {
+      "key": "offline-field-use",
+      "criterion": "- **AC offline-field-use**\n  - Accepts: REQ field-core-status, REQ field-toolkit, REQ offline-capabilities, CTRL field-dashboard, CTRL field-tool-grid, NCOMP cached-shell-only\n  - Given: 用户在完全断网现场打开一份已校验包。\n  - When: 查看状态并依次打开离线地图、天空方向、拍摄、清单、实况和备选。\n  - Then: 所有来源承诺能力可用并标缓存时间，联网专属动作明确降级且页面不白屏。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.offline-field-use.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for field-offline-safety exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "field-offline-safety.carrier-integrity.passed"
+    },
+    {
+      "key": "no-data-migration",
+      "criterion": "No data_migration violation remains for field-offline-safety; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "data_state",
+      "polarity": "negative",
+      "observation": "field-offline-safety.data_migration.violated"
+    },
+    {
+      "key": "no-permission-boundary-change",
+      "criterion": "No permission_boundary_change violation remains for field-offline-safety; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "field-offline-safety.permission_boundary_change.violated"
+    }
+  ]
+}

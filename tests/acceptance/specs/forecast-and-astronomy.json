@@ -1,0 +1,70 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "forecast-and-astronomy",
+  "carrier": "packages/domain/src/forecast/index.ts",
+  "assertions": [
+    {
+      "key": "hourly-professional-view",
+      "criterion": "- **AC hourly-professional-view**\n  - Accepts: REQ hourly-forecast, CTRL hourly-matrix, OBL weather-model-schema\n  - Given: 目标地点有完整小时天气和月亮数据。\n  - When: 用户从摘要进入专业视图并选择一个小时。\n  - Then: 全部指标以明确单位/质量状态对齐展示，选中时间同步且没有把缺失值显示为 0。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.hourly-professional-view.passed"
+    },
+    {
+      "key": "model-disagreement",
+      "criterion": "- **AC model-disagreement**\n  - Accepts: REQ model-comparison, CTRL model-selector, OBL weather-provider-normalization\n  - Given: 两个模型对后半夜低云结论明显不同。\n  - When: 用户查看模型比较。\n  - Then: 系统先说明一致区间、分歧区间和可信度，再允许查看各模型值/批次/来源。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.model-disagreement.passed"
+    },
+    {
+      "key": "future-trend",
+      "criterion": "- **AC future-trend**\n  - Accepts: REQ fifteen-day-trend, CTRL trend-calendar\n  - Given: 用户选择远期日期。\n  - When: 查看趋势并把日期带入计划。\n  - Then: 每日条件与天文窗口可见，低可信度显著，且不会被描述为实时确定结果。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.future-trend.passed"
+    },
+    {
+      "key": "twilight-and-milky-way",
+      "criterion": "- **AC twilight-and-milky-way**\n  - Accepts: REQ twilight-timeline, REQ milky-way-visibility, CTRL twilight-window-strip\n  - Given: 银河窗口与天文黑夜、月落和地点遮挡部分重叠。\n  - When: 用户查看连续时间带。\n  - Then: 完全天黑、无月和可用银河区间分别可见，最佳区间只取真实交集。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.twilight-and-milky-way.passed"
+    },
+    {
+      "key": "layer-provenance",
+      "criterion": "- **AC layer-provenance**\n  - Accepts: REQ weather-map-layers, CTRL weather-layer-panel\n  - Given: 用户在地图选择一个有时间版本的气象或光污染图层。\n  - When: 图层完成加载。\n  - Then: 图例、数据源、生成/下次更新时间、年份或批次和透明度控制与图层一致。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.layer-provenance.passed"
+    },
+    {
+      "key": "astronomy-provenance",
+      "criterion": "- **AC astronomy-provenance**\n  - Accepts: REQ astronomy-domain, REQ satellite-data, REQ time-coordinate-provenance, OBL astronomy-versioning\n  - Given: 用户查询天体位置或空间站过境。\n  - When: 系统生成结果。\n  - Then: 结果使用正确位置/时区并携带算法/星表或轨道 epoch/版本；过期轨道降低可信度。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "forecast-and-astronomy.astronomy-provenance.passed"
+    },
+    {
+      "key": "experimental-atmosphere-label",
+      "criterion": "- **AC experimental-atmosphere-label**\n  - Accepts: REQ transparency-seeing-boundary, NCOMP experimental-seeing-as-fact\n  - Given: 没有正式视宁度供应商或现场校准。\n  - When: 用户查看大气稳定指标。\n  - Then: 产品显示“通透度估计/实验性大气稳定度”、因素、可信度和不确定性，不显示正式视宁度结论。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "forecast-and-astronomy.experimental-atmosphere-label.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for forecast-and-astronomy exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "forecast-and-astronomy.carrier-integrity.passed"
+    },
+    {
+      "key": "no-public-api-or-schema-change",
+      "criterion": "No public_api_or_schema_change violation remains for forecast-and-astronomy; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "api_contract",
+      "polarity": "negative",
+      "observation": "forecast-and-astronomy.public_api_or_schema_change.violated"
+    }
+  ]
+}

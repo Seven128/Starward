@@ -1,0 +1,63 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "shooting-assistant",
+  "carrier": "apps/mobile/src/features/shooting/index.ts",
+  "assertions": [
+    {
+      "key": "mobile-plan",
+      "criterion": "- **AC mobile-plan**\n  - Accepts: REQ shooting-inputs, REQ condition-aware-shooting, REQ mobile-output, CTRL shooting-setup-form, CTRL shooting-recommendation\n  - Given: 用户选择已知手机、银河目标、无赤道仪但有三脚架且完整条件可用。\n  - When: 生成手机方案。\n  - Then: 主摄/超广角、专业/夜景、ISO/快门/白平衡/对焦/补偿/连拍/堆栈/固定方式只按设备能力显示，依据和条件时间可追溯。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.mobile-plan.passed"
+    },
+    {
+      "key": "camera-plan-and-risk",
+      "criterion": "- **AC camera-plan-and-risk**\n  - Accepts: REQ camera-output, CTRL shooting-recommendation\n  - Given: 相机与长焦镜头无赤道仪且目标移动导致拖线风险。\n  - When: 用户查看方案。\n  - Then: 光圈/快门/ISO/白平衡/对焦/焦段/间隔/堆栈/降噪/构图完整，拖线风险和可操作替代明确。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.camera-plan-and-risk.passed"
+    },
+    {
+      "key": "preset-boundary",
+      "criterion": "- **AC preset-boundary**\n  - Accepts: REQ shooting-presets, CTRL shooting-preset-picker\n  - Given: 用户在当前版本选择一个尚未支持完整轨迹的 V3 预设。\n  - When: 预设被选中。\n  - Then: APP 明确版本/依赖并阻止无依据完整参数，可保留可用基础字段或进入自定义。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.preset-boundary.passed"
+    },
+    {
+      "key": "checklist-offline",
+      "criterion": "- **AC checklist-offline**\n  - Accepts: REQ shooting-checklists, CTRL shooting-checklist\n  - Given: 行程清单含全部出发前/现场基础项、自定义项和成员分工。\n  - When: 用户断网勾选关键项并稍后同步。\n  - Then: 状态本地保存、联网后按 revision 合并，基础清单可恢复且避免白光条款不被遗漏。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.checklist-offline.passed"
+    },
+    {
+      "key": "versioned-save",
+      "criterion": "- **AC versioned-save**\n  - Accepts: REQ plan-persistence, CTRL save-shooting-plan\n  - Given: 已保存方案后天气变化且用户曾覆盖 ISO。\n  - When: 用户重算并保存到行程。\n  - Then: 新版本保留条件/规则/AI 版本和用户覆盖差异，旧版本可查且离线包引用明确版本。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.versioned-save.passed"
+    },
+    {
+      "key": "ai-is-explanation",
+      "criterion": "- **AC ai-is-explanation**\n  - Accepts: REQ deterministic-first-ai, CTRL ai-explanation-panel, OBL versioned-rule-engine, NCOMP ai-only-parameters\n  - Given: 确定性参数已生成而 AI 服务不可用。\n  - When: 用户打开“为什么”。\n  - Then: 规则参数和基础依据仍完整可用，AI 失败独立显示且没有新参数覆盖规则结果。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.ai-is-explanation.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for shooting-assistant exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "shooting-assistant.carrier-integrity.passed"
+    },
+    {
+      "key": "no-security-boundary-change",
+      "criterion": "No security_boundary_change violation remains for shooting-assistant; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "shooting-assistant.security_boundary_change.violated"
+    }
+  ]
+}

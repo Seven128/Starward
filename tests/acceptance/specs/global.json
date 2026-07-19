@@ -1,0 +1,161 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "GLOBAL",
+  "carrier": "packages/contracts/src/platform-boundary.ts",
+  "assertions": [
+    {
+      "key": "context-atomicity",
+      "criterion": "- **AC context-atomicity**\n  - Accepts: OBL shared-decision-context, OBL conclusion-action-evidence-hierarchy\n  - Given: 用户在地图把备选 B 设为主地点并把时刻改到月落后。\n  - When: 随后进入今晚、地点、行程、天空、摄影和现场。\n  - Then: 各处共享 B/新时刻/路线与风险或明确标尚未重算，首层结论/行动和下钻证据不互相矛盾。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.context-atomicity.passed"
+    },
+    {
+      "key": "partial-data-language",
+      "criterion": "- **AC partial-data-language**\n  - Accepts: OBL data-state-and-provenance\n  - Given: 天气最新、路线缓存、光污染为年度估算且临时实况缺失。\n  - When: 任一用户面组合这些数据形成结论。\n  - Then: 四类状态/时间/来源/版本/可信度分别可见，partial/degraded 结论不使用保证性语言且能查看缺失影响。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.partial-data-language.passed"
+    },
+    {
+      "key": "time-coordinate-consistency",
+      "criterion": "- **AC time-coordinate-consistency**\n  - Accepts: OBL time-coordinate-unit-consistency\n  - Given: 用户与地点跨时区、观星夜跨午夜且高德地图显示 GCJ-02。\n  - When: 生成报告、路线、天空、离线包和分享摘要。\n  - Then: 天文/天气/存储均用同一 WGS84/UTC/IANA 语义，展示本地时间/单位明确，高德转换不反写权威坐标且无无时区时间串。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.time-coordinate-consistency.passed"
+    },
+    {
+      "key": "permission-denial-and-privacy",
+      "criterion": "- **AC permission-denial-and-privacy**\n  - Accepts: OBL permission-and-privacy-minimization\n  - Given: 游客拒绝精确/后台位置、相机和通知。\n  - When: 使用今晚、地图、天空和行程并打开相关增强入口。\n  - Then: 手动位置/静态天空/前台计时/本地设置等允许降级可用，系统不循环请求权限，服务/日志/分析/分享没有越权精确数据。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.permission-denial-and-privacy.passed"
+    },
+    {
+      "key": "offline-restart-recovery",
+      "criterion": "- **AC offline-restart-recovery**\n  - Accepts: OBL offline-critical-continuity\n  - Given: 用户断网记录实况并上传图片时 APP 被系统终止。\n  - When: 重启后仍离线，再恢复网络。\n  - Then: 关键缓存和草稿/队列恢复，写入按幂等键续传且失败/冲突可见，不重复发布或丢用户数据。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.offline-restart-recovery.passed"
+    },
+    {
+      "key": "accessible-mode-state",
+      "criterion": "- **AC accessible-mode-state**\n  - Accepts: OBL accessible-responsive-themes\n  - Given: 用户使用大字体、屏幕阅读器、reduced motion 和红光模式在小屏手机打开含错误/disabled 状态的地图或现场页。\n  - When: 读取状态并操作主要控件。\n  - Then: 安全区/内容/底部动作不重叠，焦点与名称有序、44px 目标可触、状态不只靠颜色且无高亮闪烁。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.accessible-mode-state.passed"
+    },
+    {
+      "key": "versioned-conflict-recovery",
+      "criterion": "- **AC versioned-conflict-recovery**\n  - Accepts: OBL versioned-recoverable-change\n  - Given: 用户编辑、管理员事实更新和后台重试同时涉及同一计划/地点引用。\n  - When: revision 或业务键冲突发生。\n  - Then: 原始/已保存版本保留，冲突/影响可预览并由授权流程解决，重试不重复覆盖且恢复点可追溯。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.versioned-conflict-recovery.passed"
+    },
+    {
+      "key": "release-scope-boundary",
+      "criterion": "- **AC release-scope-boundary**\n  - Accepts: OBL release-phase-integrity\n  - Given: MVP 排期同时出现 V3 AR 和小程序分享提案。\n  - When: 后续长程工作流拆分交付范围。\n  - Then: MVP 必做闭环保持可运行，V3/小程序可延后且不会以空壳阻塞；PWA/小程序不能替代 RN APP 的最终完成证明。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.release-scope-boundary.passed"
+    },
+    {
+      "key": "guard-generic-weather-dashboard",
+      "criterion": "The delivered system enforces this non-goal: - **NG generic-weather-dashboard**：不把产品做成只展示接口字段的天气仪表盘、通用星图或旅游路线工具。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-generic-weather-dashboard.violated"
+    },
+    {
+      "key": "guard-pwa-as-final-product",
+      "criterion": "The delivered system enforces this non-goal: - **NG pwa-as-final-product**：移动网页/PWA 可用于历史方案中的数据验证，但不能替代本轮明确要求的 React Native APP 完成形态。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-pwa-as-final-product.violated"
+    },
+    {
+      "key": "guard-mini-program-full-parity",
+      "criterion": "The delivered system enforces this non-goal: - **NG mini-program-full-parity**：微信小程序仅是后续分享、轻查询、邀请和拉新入口，不承担全部专业能力。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-mini-program-full-parity.violated"
+    },
+    {
+      "key": "guard-mvp-general-social-network",
+      "criterion": "The delivered system enforces this non-goal: - **NG mvp-general-social-network**：MVP 不做通用信息流、关注/粉丝、私信或与观星决策无关的动态。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-mvp-general-social-network.violated"
+    },
+    {
+      "key": "guard-mvp-heavy-professional-suite",
+      "criterion": "The delivered system enforces this non-goal: - **NG mvp-heavy-professional-suite**：MVP 不做完整内置导航、完整 AR、高精度构图、所有天象工具、大规模共同编辑、自动解析所有社交平台攻略或专业设备控制。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-mvp-heavy-professional-suite.violated"
+    },
+    {
+      "key": "guard-client-side-source-stitching",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS client-side-source-stitching**：移动端不得直接并发十几个供应商接口并在页面临时拼装结论；必须消费后端标准化、版本化、可解释的聚合结果。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-client-side-source-stitching.violated"
+    },
+    {
+      "key": "guard-unexplained-single-score",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS unexplained-single-score**：不得用一个无拆分、无阻断、无可信度、无原因的总分代表推荐。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-unexplained-single-score.violated"
+    },
+    {
+      "key": "guard-fake-or-guaranteed-data",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS fake-or-guaranteed-data**：不得用看似真实的 fixture/fallback 遮蔽缺失，也不得使用“绝对晴朗、保证可见”等确定性承诺。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-fake-or-guaranteed-data.violated"
+    },
+    {
+      "key": "guard-lowest-sticker-price-provider",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS lowest-sticker-price-provider**：不得因免费额度或最低接口/套餐标价选择未通过来源可追溯、目标区质量/稳定性、商业许可和安全降级硬门的数据源，也不得通过漏算加权调用、计算/存储/出网、工程运维、合规、故障或迁移成本伪造“最低价”。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-lowest-sticker-price-provider.violated"
+    },
+    {
+      "key": "guard-coordinate-mixing",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS coordinate-mixing**：不得在业务层混用 WGS84/GCJ-02、反写高德坐标为权威值、用 GCJ-02 做天文计算或依赖肉眼修正。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-coordinate-mixing.violated"
+    },
+    {
+      "key": "guard-ai-invented-exposure",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS ai-invented-exposure**：AI 不得随意编造曝光参数，只能解释确定性规则和提供有依据的个性化建议。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-ai-invented-exposure.violated"
+    },
+    {
+      "key": "guard-ar-only-core",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS ar-only-core**：AR 不得成为天空/现场核心路径的唯一实现；不支持设备必须有通用天空或摄像头+传感器降级。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-ar-only-core.violated"
+    },
+    {
+      "key": "guard-online-only-field-mode",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS online-only-field-mode**：仅联网可用的现场模式不算完成。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-online-only-field-mode.violated"
+    },
+    {
+      "key": "guard-static-screen-completion",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳或单一平台演示不能算 APP 完成。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "GLOBAL.guard-static-screen-completion.violated"
+    }
+  ]
+}

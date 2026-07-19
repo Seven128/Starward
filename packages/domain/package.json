@@ -1,0 +1,13 @@
+{
+  "name": "@starward/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./preferences": "./src/preferences/index.ts",
+    "./forecast": "./src/forecast/index.ts",
+    "./identity": "./src/identity/index.ts",
+    "./shooting": "./src/shooting/index.ts",
+    "./offline": "./src/offline/index.ts"
+  }
+}

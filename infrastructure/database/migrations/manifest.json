@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "starward-migration-manifest-v1",
+  "migrations": [
+    {
+      "id": "20260720_identity_sessions_privacy",
+      "scopes": ["identity-profile-privacy"],
+      "up": "infrastructure/database/migrations/20260720_identity_up.sql",
+      "down": "infrastructure/database/migrations/20260720_identity_down.sql",
+      "sha256": "ae42de0289170ee21e330d63e4f3eee67b58c77b655dc3381ca66d10b1ae42bd"
+    },
+    {
+      "id": "20260720_platform_foundation",
+      "scopes": ["platform"],
+      "up": "infrastructure/database/migrations/20260720_platform_up.sql",
+      "down": "infrastructure/database/migrations/20260720_platform_down.sql",
+      "sha256": "fcbda0bb6fdce17e3cf3c05ac3dd6d40eefb61b3d7ac9da05e4b4a3709538993"
+    }
+  ]
+}

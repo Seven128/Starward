@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "starward-feature-capability-v1",
+  "feature": "forecast-and-astronomy",
+  "version": "1.0.0",
+  "surfaces": [
+    "hourly-professional-view",
+    "model-disagreement",
+    "future-trend",
+    "twilight-and-milky-way",
+    "layer-provenance"
+  ]
+}

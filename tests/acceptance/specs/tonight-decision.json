@@ -1,0 +1,84 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "tonight-decision",
+  "carrier": "apps/mobile/src/features/tonight/index.ts",
+  "assertions": [
+    {
+      "key": "successful-night-report",
+      "criterion": "- **AC successful-night-report**\n  - Accepts: REQ night-context, REQ decision-summary, REQ condition-summary, REQ explainability-and-validity, CTRL location-date-refresh, CTRL decision-hero, OBL night-report-aggregation\n  - Given: 有有效位置、观星夜、偏好且核心数据新鲜。\n  - When: 用户请求今晚报告。\n  - Then: 一次结果先给结论/窗口/原因，再提供摘要与来源/有效期，且不要求客户端拼接供应商。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.successful-night-report.passed"
+    },
+    {
+      "key": "main-and-backups",
+      "criterion": "- **AC main-and-backups**\n  - Accepts: REQ recommended-spots, REQ primary-and-backups, CTRL recommendation-card, CTRL plan-backup-selector\n  - Given: 候选集合中存在距离、天气和暗度取舍不同的地点。\n  - When: 用户查看推荐并选择主方案。\n  - Then: 主地点与可用备选分类、原因、缺点和切换影响均可见并同步到后续表面。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.main-and-backups.passed"
+    },
+    {
+      "key": "partial-provider-failure",
+      "criterion": "- **AC partial-provider-failure**\n  - Accepts: REQ explainability-and-validity, REQ route-timeout-degradation, REQ global-state-language, CTRL condition-summary-expander\n  - Given: 一家天气供应商失败且路线供应商超时，但缓存路线和其他数据仍可用。\n  - When: 用户打开今晚首页。\n  - Then: 页面返回明确 partial/stale 结果、指出缺失与缓存来源，先显示直线/缓存路线并允许异步更新。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.partial-provider-failure.passed"
+    },
+    {
+      "key": "visible-target-selection",
+      "criterion": "- **AC visible-target-selection**\n  - Accepts: REQ visible-targets, CTRL visible-target-timeline\n  - Given: 今晚存在多个不同时段的可见目标。\n  - When: 用户选择其中一个目标。\n  - Then: 可见/最佳时间、方位、高度、难度和影响因素可见，并可将目标带入地图/天空/摄影流程。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.visible-target-selection.passed"
+    },
+    {
+      "key": "hard-safety-block",
+      "criterion": "- **AC hard-safety-block**\n  - Accepts: REQ hard-blockers, REQ layered-scoring, OBL deterministic-safety-and-scoring\n  - Given: 候选地点同时具有高天空分和已确认道路封闭。\n  - When: 推荐引擎生成结果。\n  - Then: 地点被阻断或以安全风险状态呈现，高分不能抵消封路。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "tonight-decision.hard-safety-block.passed"
+    },
+    {
+      "key": "profile-sensitive-ranking",
+      "criterion": "- **AC profile-sensitive-ranking**\n  - Accepts: REQ scoring-factor-coverage, REQ profile-weighting-intent\n  - Given: 同一候选集合包含近且有设施但较亮的地点，以及远且暗、无设施但适合摄影的地点。\n  - When: 分别使用亲子预设和银河摄影预设生成排序。\n  - Then: 两次计算保留五组完整分项并按来源定义的不同倾向产生可解释差异，安全阻断不随画像改变。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "tonight-decision.profile-sensitive-ranking.passed"
+    },
+    {
+      "key": "continuous-window-selection",
+      "criterion": "- **AC continuous-window-selection**\n  - Accepts: REQ continuous-window\n  - Given: 连续若干采样点满足条件而后续采样点不满足。\n  - When: 系统计算观测窗口。\n  - Then: 返回连续起止区间并记录所用粒度，不只返回峰值时刻。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "tonight-decision.continuous-window-selection.passed"
+    },
+    {
+      "key": "learning-cannot-override-safety",
+      "criterion": "- **AC learning-cannot-override-safety**\n  - Accepts: REQ learning-ranking-boundary, OBL deterministic-safety-and-scoring\n  - Given: 后续排序模型因历史点击偏好提高一个道路已关闭地点的相关性。\n  - When: 生成推荐结果。\n  - Then: 确定性安全阻断仍排除/阻断该地点，模型输入/版本可追溯且不能更改许可证、过期或硬条件结果。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "tonight-decision.learning-cannot-override-safety.passed"
+    },
+    {
+      "key": "no-score-only-completion",
+      "criterion": "- **AC no-score-only-completion**\n  - Accepts: NCOMP score-only-report, NCOMP client-provider-calls\n  - Given: 实现只展示总分或由客户端直接拼供应商数据。\n  - When: 检查今晚决策结果。\n  - Then: 该实现明确不得被判为 Outcome 完成。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "tonight-decision.no-score-only-completion.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for tonight-decision exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "tonight-decision.carrier-integrity.passed"
+    },
+    {
+      "key": "no-public-api-or-schema-change",
+      "criterion": "No public_api_or_schema_change violation remains for tonight-decision; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "api_contract",
+      "polarity": "negative",
+      "observation": "tonight-decision.public_api_or_schema_change.violated"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "selectionPolicy": "all hard gates first, then qualified lowest 12-month TCO",
+  "sources": [
+    {
+      "id": "qweather-candidate",
+      "capability": "china-weather-warning-air-quality-geocoding",
+      "provenance": "official provider documentation; contract not yet executed",
+      "licenseStatus": "pending-commercial-confirmation",
+      "targetRegionEvidence": "documentation candidate only; Shenzhen production POC pending",
+      "productionEnabled": false,
+      "passedGates": ["provenance"],
+      "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "quote-pending" }
+    },
+    {
+      "id": "open-meteo-candidate",
+      "capability": "layered-cloud-and-model-comparison",
+      "provenance": "official provider documentation; commercial use terms pending",
+      "licenseStatus": "pending-commercial-confirmation",
+      "targetRegionEvidence": "target-region quality and stability POC pending",
+      "productionEnabled": false,
+      "passedGates": ["provenance"],
+      "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "quote-pending" }
+    },
+    {
+      "id": "amap-native-candidate",
+      "capability": "china-map-location-search-route-poi",
+      "provenance": "official SDK documentation; account contract pending",
+      "licenseStatus": "pending-commercial-confirmation",
+      "targetRegionEvidence": "native SDK device POC pending",
+      "productionEnabled": false,
+      "passedGates": ["provenance"],
+      "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "quote-pending" }
+    }
+  ]
+}

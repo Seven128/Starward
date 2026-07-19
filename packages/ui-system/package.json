@@ -1,0 +1,10 @@
+{
+  "name": "@starward/ui-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./data-state": "./src/data-state.ts",
+    "./tokens": "./src/tokens.ts"
+  }
+}

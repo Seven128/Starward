@@ -1,0 +1,70 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "community-contribution",
+  "carrier": "apps/mobile/src/features/community/index.ts",
+  "assertions": [
+    {
+      "key": "new-spot-privacy",
+      "criterion": "- **AC new-spot-privacy**\n  - Accepts: REQ new-spot-submission, CTRL new-spot-wizard\n  - Given: 用户选择一个可能属于私人土地的精确位置并上传实景。\n  - When: 完成新地点提交。\n  - Then: 重复/土地与公开级别提示出现，精确坐标不会默认公开，草稿/审核 ID 和字段来源完整。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.new-spot-privacy.passed"
+    },
+    {
+      "key": "transient-report-expiry",
+      "criterion": "- **AC transient-report-expiry**\n  - Accepts: REQ field-report-submission, REQ long-term-vs-transient, CTRL field-report-form, OBL immutable-contribution-evidence\n  - Given: 用户报告“今晚厕所关闭、起雾、看到银河”，长期事实是通常有厕所。\n  - When: 实况发布并超过有效期。\n  - Then: 有效期内临时状态影响当前展示，过期后退出当前聚合但历史证据保留且未改写长期厕所事实。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.transient-report-expiry.passed"
+    },
+    {
+      "key": "safety-correction",
+      "criterion": "- **AC safety-correction**\n  - Accepts: REQ correction-categories, CTRL correction-report\n  - Given: 用户报告道路已封且地点存在安全风险。\n  - When: 提交含现场时间和证据的纠错。\n  - Then: 系统生成高优先级工单、说明未完成核验，并按规则在地点/导航前显示临时风险而不声称已永久关闭。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.safety-correction.passed"
+    },
+    {
+      "key": "media-sanitization",
+      "criterion": "- **AC media-sanitization**\n  - Accepts: REQ media-upload-privacy, CTRL media-privacy-review, OBL moderated-media-pipeline\n  - Given: 图片包含精确 GPS 和设备序列而用户仅确认拍摄方向/时间。\n  - When: 媒体完成处理和审核。\n  - Then: 公开版本移除敏感 EXIF，只显示确认的结构化字段；处理失败不会把原图公开。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.media-sanitization.passed"
+    },
+    {
+      "key": "trust-and-moderation-status",
+      "criterion": "- **AC trust-and-moderation-status**\n  - Accepts: REQ contribution-trust-display, REQ contribution-moderation, CTRL contribution-status-center\n  - Given: 一条贡献被两人确认、另一人争议并要求补充。\n  - When: 上传者和普通用户分别查看。\n  - Then: 上传者看到审核/补充动作，普通用户看到允许公开的上传者、时间、验证、确认数、最新实况和争议，不把争议内容显示为确定事实。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.trust-and-moderation-status.passed"
+    },
+    {
+      "key": "multidimensional-review",
+      "criterion": "- **AC multidimensional-review**\n  - Accepts: REQ light-community-scope, CTRL multidimensional-review-form, NCOMP unscoped-social-feed\n  - Given: 用户只体验了天空、交通和摄影三维度。\n  - When: 发布评价。\n  - Then: 未体验维度保持空，已填维度/时间/验证状态可见，产品未要求关注、发动态或进入通用信息流。",
+      "surface": "ui_browser",
+      "polarity": "negative",
+      "observation": "playwright.case.multidimensional-review.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for community-contribution exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "community-contribution.carrier-integrity.passed"
+    },
+    {
+      "key": "no-persistent-data-change",
+      "criterion": "No persistent_data_change violation remains for community-contribution; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "data_state",
+      "polarity": "negative",
+      "observation": "community-contribution.persistent_data_change.violated"
+    },
+    {
+      "key": "no-security-boundary-change",
+      "criterion": "No security_boundary_change violation remains for community-contribution; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "security_boundary",
+      "polarity": "negative",
+      "observation": "community-contribution.security_boundary_change.violated"
+    }
+  ]
+}

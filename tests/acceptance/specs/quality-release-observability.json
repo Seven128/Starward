@@ -1,0 +1,133 @@
+{
+  "schema_version": "starward-acceptance-spec-v1",
+  "outcome": "quality-release-observability",
+  "carrier": "packages/contracts/src/platform-boundary.ts",
+  "assertions": [
+    {
+      "key": "official-source-production-gates",
+      "criterion": "- **AC official-source-production-gates**\n  - Accepts: REQ official-source-production-gates, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ astronomy-geo-pipelines, OBL source-data-immutability, OBL provider-cost-and-quota-ledger\n  - Given: 后续 Contract 准备绑定天气、高德、VIIRS、DEM、星表/卫星、推送和对象存储/CDN 的生产实现。\n  - When: 按 S-RESEARCH 和当前官方页面执行依赖锁定、采购/许可、数据下载加工与 production readiness 审查。\n  - Then: 每项均保留实际 provider/version/条款/价格/quota/SLA/归属/cache/派生/再分发/region/checksum/lineage、真实性/首发区稳定性/许可/降级硬门、同能力 12 个月 TCO、预算与对应 DEC/EXT/POC 证据；`recommended` 未被写成已采购，动态事实已重取，未合格项只降级或保持 pending，合格项中未选择更贵方案而无批准的增量价值说明。",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "quality-release-observability.official-source-production-gates.passed"
+    },
+    {
+      "key": "carrier-integrity",
+      "criterion": "The production carrier for quality-release-observability exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "surface": "implementation_structure",
+      "polarity": "positive",
+      "observation": "quality-release-observability.carrier-integrity.passed"
+    },
+    {
+      "key": "architecture-baseline",
+      "criterion": "- **AC architecture-baseline**\n  - Accepts: REQ technology-baseline, REQ modular-monolith-topology, REQ monorepo-shape, OBL mobile-layering, NCOMP overengineered-platform\n  - Given: 团队开始绑定真实工程结构和首个端到端切片。\n  - When: 审查架构/依赖/模块边界。\n  - Then: 双端 APP、原生适配、模块化单体、工作进程、共享契约/领域包和概念仓库范围均被保留，且未无证据引入微服务平台。",
+      "surface": "implementation_structure",
+      "polarity": "negative",
+      "observation": "quality-release-observability.architecture-baseline.passed"
+    },
+    {
+      "key": "interaction-direct-manipulation",
+      "criterion": "- **AC interaction-direct-manipulation**\n  - Accepts: REQ interaction-motion-contract, OBL interaction-runtime-evidence\n  - Given: 一个地点 Marker 可打开带合法 snap points 的 Bottom Sheet，地点/路线尚未发生新的有效提交。\n  - When: 用户 press 后拖动 Sheet，释放触发 settle，并在 settle 期间反向重抓或取消本次输入。\n  - Then: press-in 立即反馈、有效 commit 只发生一次、取消不触发动作；Sheet 保持抓取偏移、从 live presentation value 无跳变地中断/反向，释放速度只选择合法边界，地点/路线提交状态不与画面分叉。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "quality-release-observability.interaction-direct-manipulation.passed"
+    },
+    {
+      "key": "interaction-gesture-arbitration",
+      "criterion": "- **AC interaction-gesture-arbitration**\n  - Accepts: REQ interaction-motion-contract, OBL interaction-runtime-evidence\n  - Given: 地图上方的 Bottom Sheet 同时包含可滚动内容，并运行于启用 iOS 导航手势或 Android system/predictive back 的目标设备。\n  - When: 用户分别从地图、Sheet handle、Sheet 内容和系统 back 区域开始对应手势。\n  - Then: map pan/pinch、sheet drag、nested scroll 与系统 back 各由预定 owner 接收，任何自定义手势都不静默抢占系统/辅助技术输入；关闭后焦点与可访问替代动作仍可恢复原任务。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "quality-release-observability.interaction-gesture-arbitration.passed"
+    },
+    {
+      "key": "interaction-accessibility-variants",
+      "criterion": "- **AC interaction-accessibility-variants**\n  - Accepts: REQ interaction-motion-contract, OBL design-and-accessibility-qa, OBL interaction-runtime-evidence\n  - Given: 用户开启 reduced motion、屏幕阅读器和 200% 文本，并关闭触觉或使用不支持触觉的设备。\n  - When: 用户完成同一个地点选择、Sheet 展开和异步路线结果流程。\n  - Then: 大位移/景深/弹性有静态或短淡变替代，关键内容/单位/动作不裁切，角色/值/焦点/完成或失败播报可用，视觉与语义反馈在无触觉时仍完整且不逐帧刷屏。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "quality-release-observability.interaction-accessibility-variants.passed"
+    },
+    {
+      "key": "interaction-red-light-continuity",
+      "criterion": "- **AC interaction-red-light-continuity**\n  - Accepts: REQ interaction-motion-contract, OBL design-and-accessibility-qa, OBL interaction-runtime-evidence\n  - Given: APP 已在暗环境低亮度红光模式中保留一个选中地点和路线任务。\n  - When: 用户打开/关闭 Sheet、调出键盘、看到 loading/error，并在原生地图或系统权限表面之间往返。\n  - Then: 任务/选择状态与规划模式一致，Starward 可控表面无蓝或亮白闪、亮度变化受控；不可控系统/地图法务表面被识别并采用事前提示或安全降级，而不是伪装成可完全着色。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "quality-release-observability.interaction-red-light-continuity.passed"
+    },
+    {
+      "key": "environment-production-isolation",
+      "criterion": "- **AC environment-production-isolation**\n  - Accepts: REQ environment-isolation, REQ production-topology\n  - Given: staging 运行媒体/通知/地理任务并执行测试登录。\n  - When: 检查其数据库、Redis、Bucket、key、证书和 OAuth。\n  - Then: 与 production 完全隔离，测试通知/数据无法到达真实用户，生产拓扑各资源角色有健康与故障域。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "quality-release-observability.environment-production-isolation.passed"
+    },
+    {
+      "key": "slo-evaluation",
+      "criterion": "- **AC slo-evaluation**\n  - Accepts: REQ performance-slos\n  - Given: 代表性生产/预发流量、主流设备、缓存命中/未命中和数据源运行可观测。\n  - When: 按 DEC production-slo-measurement 的窗口评估。\n  - Then: 十项来源建议指标分别报告分位/分母/版本；路线超时不阻塞首页并准确标缓存/直线降级，未达标不能用平均值掩盖。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "quality-release-observability.slo-evaluation.passed"
+    },
+    {
+      "key": "delivery-order-and-platform",
+      "criterion": "- **AC delivery-order-and-platform**\n  - Accepts: REQ dependency-ordered-delivery, REQ platform-extension-boundary, OBL design-and-accessibility-qa\n  - Given: 长程工作流拆解 APP、PWA 验证或小程序分享工作。\n  - When: 排序并验收交付批次。\n  - Then: 不可返工基础先于数据/决策/闭环/专业生态，APP 是最终完成形态，辅助平台不替代它，所有用户界面遵守项目 Design/a11y/状态规则。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "quality-release-observability.delivery-order-and-platform.passed"
+    },
+    {
+      "key": "test-coverage",
+      "criterion": "- **AC test-coverage**\n  - Accepts: REQ test-pyramid, REQ astronomy-golden-tests, REQ outdoor-validation, OBL coordinate-time-types, NCOMP lab-only-release\n  - Given: 候选发布涉及跨午夜、坐标转换、路线、方向、离线和天文算法。\n  - When: 执行发布前验证。\n  - Then: 单元/黄金/供应商契约/双端模拟与实机/弱无网/低电低亮/户外证据齐全，且天文权威差异在明确容差内；模拟器结果不替代 EXT outdoor-device-field-validation。",
+      "surface": "runtime_behavior",
+      "polarity": "negative",
+      "observation": "quality-release-observability.test-coverage.passed"
+    },
+    {
+      "key": "china-compliance-readiness",
+      "criterion": "- **AC china-compliance-readiness**\n  - Accepts: REQ china-production-compliance\n  - Given: 准备面向中国用户开放 production。\n  - When: 执行发布就绪审查。\n  - Then: EXT china-production-legal-readiness 对 ICP、地图、跨境、存储/CDN和个人信息逐项有外部确认；缺任一项不得宣称生产就绪。",
+      "surface": "security_boundary",
+      "polarity": "positive",
+      "observation": "quality-release-observability.china-compliance-readiness.passed"
+    },
+    {
+      "key": "security-baseline",
+      "criterion": "- **AC security-baseline**\n  - Accepts: REQ api-security-baseline\n  - Given: 未授权客户端重放签名请求、滥用上传凭证并尝试读取日志中的 key。\n  - When: 安全测试执行。\n  - Then: HTTPS/签名或幂等/限流/WAF/短期凭证/扫描生效，secret 不在客户端 JS/日志/仓库，后台敏感修改受 MFA/审计。",
+      "surface": "security_boundary",
+      "polarity": "positive",
+      "observation": "quality-release-observability.security-baseline.passed"
+    },
+    {
+      "key": "restore-objectives",
+      "criterion": "- **AC restore-objectives**\n  - Accepts: REQ backup-recovery, CTRL backup-restore-exercise\n  - Given: 隔离演练选择一个接近目标 RPO 的时间点并包含数据库/对象/地点导出。\n  - When: 完成恢复和完整性校验。\n  - Then: 实测 RPO/RTO、引用/权限/对象版本和失败项有证据；Redis 缺失不造成真值丢失。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.restore-objectives.passed"
+    },
+    {
+      "key": "native-release-boundary",
+      "criterion": "- **AC native-release-boundary**\n  - Accepts: REQ mobile-build-release, CTRL release-promotion-gate, OBL release-runtime-compatibility\n  - Given: 变更新增一个高德原生模块接口。\n  - When: 尝试通过 EAS Update 推送给旧 runtime。\n  - Then: 晋级门阻止 OTA，要求新双端二进制/runtimeVersion；JS-only 兼容修复才可按通道灰度/回滚。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.native-release-boundary.passed"
+    },
+    {
+      "key": "observability-correlation",
+      "criterion": "- **AC observability-correlation**\n  - Accepts: REQ technical-observability, REQ data-observability, CTRL technical-observability-dashboard, CTRL data-quality-dashboard\n  - Given: 某版本地图瓦片失败上升且一个天气模型字段缺失。\n  - When: 告警触发并下钻。\n  - Then: 技术问题关联版本/平台/trace，数据问题关联 ProviderRun/地区/受影响报告；无数据不显示健康且遥测不含精确位置。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.observability-correlation.passed"
+    },
+    {
+      "key": "analytics-funnel",
+      "criterion": "- **AC analytics-funnel**\n  - Accepts: REQ analytics-funnel-events, REQ product-metrics, CTRL product-metrics-dashboard\n  - Given: 同意分析的用户完成从打开到现场反馈，另一用户撤回同意。\n  - When: 指标窗口聚合。\n  - Then: 第一用户按稳定口径进入八步漏斗/北极星，撤回后的事件按策略停止；仪表盘展示分母/版本/数据质量且不含精确位置。",
+      "surface": "ui_browser",
+      "polarity": "positive",
+      "observation": "playwright.case.analytics-funnel.passed"
+    },
+    {
+      "key": "no-data-migration",
+      "criterion": "No data_migration violation remains for quality-release-observability; the declared boundary fails closed and is covered by executable verification.",
+      "surface": "data_state",
+      "polarity": "negative",
+      "observation": "quality-release-observability.data_migration.violated"
+    }
+  ]
+}

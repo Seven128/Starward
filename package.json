@@ -16,6 +16,11 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "workers/*"
+  ],
   "devDependencies": {
     "project-tiny-context-harness": "^0.6.0"
   },

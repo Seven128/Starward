@@ -1,0 +1,9 @@
+{
+  "environment": "production",
+  "database": "secret-ref:starward-production-database",
+  "redis": "secret-ref:starward-production-redis",
+  "bucket": "secret-ref:starward-production-bucket",
+  "encryptionKey": "secret-ref:starward-production-encryption-key",
+  "oauthClient": "secret-ref:starward-production-oauth-client",
+  "notificationSink": "production"
+}

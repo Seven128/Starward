@@ -1,0 +1,41 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Starward API", "version": "1.0.0" },
+  "paths": {
+    "/v1/forecast/hourly": {
+      "get": {
+        "operationId": "getHourlyForecast",
+        "responses": { "200": { "description": "Versioned normalized hourly conditions" } }
+      }
+    },
+    "/v1/astronomy/evidence": {
+      "get": {
+        "operationId": "getAstronomyEvidence",
+        "responses": { "200": { "description": "Versioned astronomy evidence" } }
+      }
+    },
+    "/v1/night-reports": {
+      "post": { "operationId": "createNightReport", "responses": { "200": { "description": "Explainable versioned night report" } } }
+    },
+    "/v1/map/spots": {
+      "get": { "operationId": "listMapSpots", "responses": { "200": { "description": "Versioned map spot summaries" } } }
+    },
+    "/v1/routes/plan": {
+      "post": { "operationId": "planRoute", "responses": { "200": { "description": "Route snapshot with degradation state" } } }
+    },
+    "/v1/sky/context": {
+      "get": { "operationId": "getSkyContext", "responses": { "200": { "description": "Universal sky context and capability state" } } }
+    },
+    "/v1/admin/data-status": {
+      "get": { "operationId": "getAdminDataStatus", "responses": { "200": { "description": "Administrative data status envelope" } } }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DataStatus": {
+        "type": "string",
+        "enum": ["fresh", "cached", "stale", "partial", "missing", "failed"]
+      }
+    }
+  }
+}

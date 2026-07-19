@@ -1,0 +1,9 @@
+{
+  "environment": "staging",
+  "database": "secret-ref:starward-staging-database",
+  "redis": "secret-ref:starward-staging-redis",
+  "bucket": "secret-ref:starward-staging-bucket",
+  "encryptionKey": "secret-ref:starward-staging-encryption-key",
+  "oauthClient": "secret-ref:starward-staging-oauth-client",
+  "notificationSink": "test-only"
+}

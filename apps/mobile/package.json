@@ -1,0 +1,56 @@
+{
+  "name": "@starward/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.6",
+    "@hookform/resolvers": "^5.4.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@starward/contracts": "file:../../packages/contracts",
+    "@starward/domain": "file:../../packages/domain",
+    "@starward/ui-system": "file:../../packages/ui-system",
+    "@tanstack/react-query": "^5.101.2",
+    "babel-preset-expo": "~57.0.0",
+    "expo": "57.0.7",
+    "expo-dev-client": "~57.0.7",
+    "expo-file-system": "~57.0.1",
+    "expo-haptics": "~57.0.1",
+    "expo-location": "~57.0.5",
+    "expo-notifications": "~57.0.6",
+    "expo-router": "~57.0.7",
+    "expo-secure-store": "~57.0.1",
+    "expo-sensors": "~57.0.2",
+    "expo-sqlite": "~57.0.1",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.82.0",
+    "react-native": "0.86.0",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-reanimated": "4.5.0",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-web": "^0.21.2",
+    "react-native-worklets": "0.10.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/react": "19.2.14",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
