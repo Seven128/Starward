@@ -5,6 +5,7 @@ profiles:
   enabled:
     - core-portable
     - workflow-default
+    - long-task
 modularity:
   limit: 300
   policy: strict_except_generated
