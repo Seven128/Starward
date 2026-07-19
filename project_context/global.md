@@ -48,6 +48,8 @@
 - Map marker, place preview, route, and detail screens share one selected-place state. Loading, empty, no-results, stale/degraded, error, and success states must remain distinguishable.
 - Planning, dark, and red-light modes change luminance and emphasis, not navigation ownership or task order.
 - DESIGN.md defines the visual identity, tokens, component appearance, and motion constraints.
+- Interactive controls provide immediate press feedback, commit only at a valid completion point, and preserve cancellation/recovery. Direct manipulation remains continuous and interruptible; platform-native back, map, scroll, and accessibility gestures retain their expected ownership.
+- React Native implementation guidance lives in `.codex/skills/uiux_design/SKILL.md`. It is downstream of DESIGN.md, this Context, and the Source Plan; its reference from DESIGN.md is discoverability rather than circular authority.
 
 ## Verification Entry Points
 
@@ -58,6 +60,7 @@
 - Tiny Context is installed and initialized.
 - The product/design contract and Open Design reference exports form the repository baseline.
 - No production application runtime or live data integration is declared yet.
+- `docs/technical-data-source-decisions.md` records current official-source research and recommendations, but no provider contract, purchase, production account, POC, calibration, or external approval is declared complete.
 
 ## Next Safe Action
 

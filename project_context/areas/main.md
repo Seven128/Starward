@@ -39,6 +39,9 @@
 - Map selection is communicated with more than color, and selected-place state remains synchronized.
 - Mode changes preserve navigation, screen ownership, selection, and progress.
 - Motion is restrained and supports reduced motion; flashing, ambient particles, broad glow, and large glass surfaces are forbidden.
+- Press feedback begins immediately, valid activation commits once, and cancellation cannot fire the action. Gesture-linked sheets, maps, time and sky controls track continuously, remain interruptible, and settle only to valid bounded states.
+- Gesture ownership explicitly resolves nested scroll, map pan/pinch, Bottom Sheet drag, iOS navigation, Android system/predictive back, and assistive interactions; essential actions always have a non-gesture accessible path.
+- Haptics are optional semantic reinforcement and never the sole feedback channel. Reduced motion removes large-axis/depth/elastic movement rather than merely accelerating it; red-light state transitions and controllable native overlays must not flash blue or bright white, while unavoidable unthemed OS/vendor handoffs require advance warning and a safe cancel/return or non-field alternative.
 - Weather and astronomy copy states uncertainty and alternatives; it never guarantees visibility.
 
 ## Code Entry Points
@@ -46,6 +49,8 @@
 - Visual authority: DESIGN.md.
 - Product context: project_context/global.md and this file.
 - Imported design references: docs/design-system/.
+- React Native interaction companion: .codex/skills/uiux_design/SKILL.md; it must obey DESIGN.md, Source Plan, and this Context.
+- Provider/data research input: docs/technical-data-source-decisions.md; recommendations are not approved production facts by themselves.
 - Production source entry points are not established yet.
 
 ## Related Role Context
@@ -54,4 +59,4 @@
 
 ## Open Risks
 
-- Provider choice, domain schema, offline/degraded rules, location privacy, route handoff, and application framework remain open and require Context updates before implementation.
+- Provider contracts, exact dependency versions, algorithm/interaction tuning, offline/degraded defaults, location privacy, route handoff, data calibration, and production infrastructure remain open and require evidence plus Context updates before implementation.

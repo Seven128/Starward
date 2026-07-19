@@ -56,3 +56,7 @@ Tiny Context does not create or restore platform Goals, invoke models, spawn age
 
 Every handoff reports exactly one of `Context: updated ...` or `Context: no durable fact change`. Never claim tests, deployment or acceptance from Context alone.
 <!-- ty-context:managed:end -->
+
+## Project-local UI Implementation Rule
+
+For Starward mobile UI, product-surface, gesture, animation, Bottom Sheet, map/card synchronization, time scrubber, sky manipulation, haptic, or accessibility work, use `.codex/skills/uiux_design/SKILL.md`. Read `DESIGN.md` and the owning Source Plan/Context first. `DESIGN.md`, the Source Plan, and owning Context are upstream authority; the project Skill is an implementation companion and must not override them.

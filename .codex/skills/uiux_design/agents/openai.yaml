@@ -1,0 +1,4 @@
+interface:
+  display_name: "Starward Interaction Design"
+  short_description: "Starward React Native interaction and motion rules"
+  default_prompt: "Use $starward-interaction-design to implement or review this React Native product surface against DESIGN.md and the Source Plan."

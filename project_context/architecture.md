@@ -13,6 +13,8 @@
 - project_context/areas/main.md: product-surface ownership, screen/state/interaction contract, and core domain behavior.
 - project_context/areas/main/verification.md: repeatable Context and design validation entry points.
 - docs/design-system/: generated CSS/JSON tokens, brand overview, source guide, component kits, and their supporting assets.
+- .codex/skills/uiux_design/: project-owned React Native implementation guidance for interaction, motion, haptics, accessibility, and platform adaptation; it is subordinate to DESIGN.md, Source Plan, and owning Context.
+- docs/technical-data-source-decisions.md: dated provider/data/stack research and recommendation evidence; recommendations remain non-authoritative until the corresponding decision and external gates are confirmed.
 - Future production code should live in explicit application directories and consume or derive from the canonical design rules rather than editing exported preview files as product UI.
 
 ## Data / Control Flow
@@ -29,6 +31,7 @@
 ## Constraints And Tradeoffs
 
 - Mobile-first behavior and outdoor/low-light use make safe-area handling, 44px touch targets, reduced motion, contrast, and low-luminance field behavior architectural UI constraints.
+- Direct-manipulation state is split from committed domain state: gesture presentation may move continuously and be interrupted, while place/time/route/itinerary changes commit only to valid coordinated states and recover cleanly on cancellation or provider failure.
 - Forecast and astronomy data are uncertain; provider data must not be presented as guaranteed truth.
 - Professional density must use aligned matrices and progressive disclosure without overwhelming the primary decision.
 
@@ -40,4 +43,4 @@
 
 ## Open Risks
 
-- External data providers, offline/degraded behavior, privacy boundaries for location, routing integration, and production application stack are not yet selected.
+- Official-source research now recommends candidate baselines for weather, maps, VIIRS, DEM, astronomy, satellite, push, storage/CDN, offline processing, and React Native interaction, but contracts, exact versions, thresholds, POCs, calibration, legal approval, and production provider selections remain open.

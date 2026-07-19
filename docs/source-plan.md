@@ -37,9 +37,9 @@
 ### 当前项目事实
 
 - 仓库/工程名为 Starward，用户侧产品名为《今晚去观星》，品牌句为“从黄昏走入星夜”。
-- 当前仓库只有 Tiny Context、DESIGN.md 与 Open Design 参考导出，没有生产 APP、后端、数据管线或真实供应商集成。
+- 当前仓库有 Tiny Context、DESIGN.md、Open Design 参考导出、项目级 React Native 交互动效 Skill 与一份官方来源技术/数据决策包；仍没有生产 APP、后端、数据管线、已购买供应商或真实生产集成。
 - DESIGN.md 已声明移动端优先、390 × 844 主视口、44px 触控目标、结论/行动/证据三级信息层、日间/夜间/红光模式、地图与时间共用曲线和圆形节点语法。
-- project_context/** 已声明地点、时间窗口、路线、到达、风险和专业证据是一组协调状态；本 Source Plan 不修改这些 Context。
+- project_context/** 已声明地点、时间窗口、路线、到达、风险和专业证据是一组协调状态，并声明 DESIGN.md/Source Plan/Context 对项目 Skill 的单向上位权威关系。
 
 ### 文本来源
 
@@ -50,8 +50,11 @@
   - 来源路径：C:\Users\777\.codex\attachments\0d11984e-40b8-43ee-b8dc-a7f4ebac3505\pasted-text.txt
   - 覆盖：目标用户、场景、五入口信息架构、全部功能、数据模型、通知、MVP/V1/V2/V3、指标、后台与风险。
 - S-DESIGN：仓库根 DESIGN.md，提供视觉 token、品牌语义、布局、组件、模式和视觉禁区。
-- S-CONTEXT：project_context/global.md、architecture.md、areas/main.md，提供已有 durable surface/interaction 边界；它们是参考事实，不由本计划修改。
-- S-USER：本轮用户指令，要求以 React Native APP 为目标、细化到基本布局/具体内容/控件级、不得遗漏两份附件任一细节、参考但不复制截图，并产出供长程工作流使用的一份 Source Plan。
+- S-CONTEXT：project_context/global.md、architecture.md、areas/main.md，提供 durable surface/interaction 边界；本轮独立 UI/Context workflow 已更新交互责任与 Skill 单向权威，供应商推荐仍未被写成已决生产事实。
+- S-RESEARCH：仓库 `docs/technical-data-source-decisions.md`，2026-07-20 官方/一手资料调研，覆盖移动栈、天气、地图/路线、VIIRS、DEM、星表、卫星、专业天象、推送、对象存储/CDN、离线加工、成本、POC、商务/法务门和官方证据；其中 `recommended` 不自动等于已批准 DEC，`contract_gate`/`poc_gate`/`external_confirmation` 不得由 Agent 伪造完成。
+- S-INTERACTION：仓库 `.codex/skills/uiux_design/SKILL.md` 及其 references，提供 React Native Press/Gesture Handler/Reanimated/Bottom Sheet/触觉/无障碍/双平台执行映射和上游许可；它必须先读并服从 S-DESIGN、本计划与 S-CONTEXT，不是平级或反向权威。
+- S-APPLE：Emil Kowalski `apple-design` Skill，固定审阅 revision `6bf24434f7730ad169077756cf9c7cd7bd675fc6`，MIT License；只采纳可迁移的即时反馈、直接操控、中断/速度连续、空间一致、克制触觉、无障碍与交互原型原则，不采纳其 web 代码、玻璃材质、系统字体默认或让 Android 模仿 iOS。
+- S-USER：用户指令要求以 React Native APP 为目标、细化到基本布局/具体内容/控件级、不得遗漏两份附件任一细节、参考但不复制截图；进一步要求完成技术/数据源调研和 Starward React Native 交互规范，全部写回 DESIGN.md 与 Source Plan，并由项目 Skill 执行但不形成循环权威。
 
 ### 图像来源与证据处置
 
@@ -98,7 +101,9 @@
 3. 实现边界和技术义务以 S-ARCH 为准。
 4. 已有视觉事实以 S-DESIGN 为准。
 5. 已有 durable 边界以 S-CONTEXT 为证据。
-6. S-IMG-01～10 只支持布局/交互推导，不允许覆盖前四类来源。
+6. S-RESEARCH 证明当前外部事实和推荐路径，但不能替代用户/产品 DEC、合同、采购、法务、POC 或现场确认。
+7. S-INTERACTION 是 S-DESIGN/本计划/S-CONTEXT 的下游实现伴随指南；S-APPLE 仅为其有署名的上游灵感，不改变 Starward 品牌或平台规则。
+8. S-IMG-01～10 只支持布局/交互推导，不允许覆盖前述权威来源。
 
 ## 3. Delivery Scope
 
@@ -731,7 +736,7 @@
 #### Technical Obligations And Boundaries
 
 <a id="forecast-and-astronomy.obligation.weather-provider-normalization"></a>
-- **OBL weather-provider-normalization** [direct: S-ARCH 6.1]：天气供应商实现统一 Provider 接口并先标准化/质检再进入业务；中国常规天气/预警可由和风类供应商承担，分层云/能见度/多模型由商业许可接口承担，具体合同由 DEC weather-provider-contracts 决定。
+- **OBL weather-provider-normalization** [direct + external research: S-ARCH 6.1, S-RESEARCH]：天气供应商实现统一 Provider 接口并先标准化/质检再进入业务；当前推荐 QWeather 候选承担中国常规天气/预警，Open-Meteo 付费 customer endpoint 候选承担分层云/能见度/多模型，ECMWF Open Data 仅作批处理基准/后备研究，具体合同由 DEC weather-provider-contracts 决定。QWeather 天气可按条款缓存但 GeoAPI 禁止批量缓存/索引，预警展示完整 `refer.sources`；Open-Meteo 免费端点不得用于商业生产，付费数据仍保留 CC BY 4.0 attribution/modification chain；所有 key 仅服务端持有。
 
 <a id="forecast-and-astronomy.obligation.weather-model-schema"></a>
 - **OBL weather-model-schema** [direct: S-ARCH 6.1]：WeatherProviderRun 至少保存 id、provider、model、modelRunTime、ingestedAt、resolutionKm、status、sourceLicense；每小时记录 gridCellId/providerRunId/validTimeUtc、temperature/apparentTemperature、humidity/dewPoint/pressure、total/low/mid/highCloud、visibility、precipitationAmount/probability、windSpeed/gust/direction、fogProbability 和 qualityFlags；内部统一 SI 单位，展示层转换，空值不转 0。
@@ -953,7 +958,7 @@
 #### Technical Obligations And Boundaries
 
 <a id="map-route-discovery.obligation.amap-adapter"></a>
-- **OBL amap-adapter** [direct: S-ARCH 4.1]：中国主场景使用 Android/iOS 高德原生 SDK，后端使用高德 Web 路线、后台使用高德 JS；React Native 上层只经统一 MapAdapter 使用用户位置、相机、Marker、Polyline、Tile Layer 和投影能力，平台差异不得渗入业务模型。
+- **OBL amap-adapter** [direct + external research: S-ARCH 4.1, S-RESEARCH]：中国主场景使用获法人技术服务许可的 Android/iOS 高德原生 3D SDK，后端使用高德 Web 路线、后台使用高德 JS；React Native 上层只经统一 MapAdapter 使用用户位置、相机、Marker、Polyline、合法 Tile Layer 和投影能力，平台差异不得渗入业务模型。MapView/OfflineMapManager 初始化前完成高德隐私告知/同意接口，披露其位置/搜索/设备/网络/传感器采集，保留不可移除 logo；离线地图只走合同允许的双端原生能力，禁止服务端抓取高德或 OSM 公共瓦片。
 
 <a id="map-route-discovery.obligation.authoritative-coordinate-boundary"></a>
 - **OBL authoritative-coordinate-boundary** [direct: S-ARCH 4.2]：数据库、天气、天文、遥感和 PostGIS 只以 WGS84 为权威；GCJ-02 仅在高德适配层生成/缓存且可按算法版本重建，保存坐标来源、水平精度和验证时间。
@@ -2602,7 +2607,7 @@
 - **OBL notification-evaluation-pipeline** [direct: S-ARCH 5.14]：订阅按地理网格/目标/阈值索引，新 ProviderRun 或状态事件触发批量评估；事件/规则/数据版本组成幂等业务键，去重、冷却、免打扰和发送结果可审计/重放。
 
 <a id="notifications-and-toolbox.obligation.push-channel-adapters"></a>
-- **OBL push-channel-adapters** [direct: S-ARCH 5.14]：APNs、FCM、国内安卓厂商和本地通知实现统一通道状态，管理令牌轮换/失效、平台优先级、回执（若有）和无推送降级，业务不得假定发送即送达。
+- **OBL push-channel-adapters** [direct + external research: S-ARCH 5.14, S-RESEARCH]：本地通知、APNs、FCM、国内安卓厂商和可替换 Expo Push 实现统一通道状态，管理令牌轮换/失效、平台/发行渠道优先级、回执（若有）、429/5xx 退避、永久错误停发、幂等事件和无推送降级；Expo Push 仅作非关键早期通道（当前 600 通知/秒/项目、无 SLA、receipt 不证明设备收到），关键天气/路线/安全状态在打开 APP 时重验，任何通道均不得被描述为救援或保证送达。
 
 <a id="notifications-and-toolbox.non-completing.user-polling-cron"></a>
 - **NCOMP user-polling-cron** [direct: S-ARCH 5.14]：为每个用户独立定时查询天气/事件、没有网格批处理/去重/冷却，不能算通知系统完成。
@@ -2969,10 +2974,10 @@
 - **REQ core-entity-coverage** [direct: S-ARCH 7.2]：核心实体至少包含 User、UserPreferenceProfile、Equipment、Spot、SpotAccess、SpotFacility、SpotHorizonSector、SpotMedia、SpotVerification、SpotStatusHistory、WeatherProviderRun、WeatherForecastHour、AstronomyEphemeris、ObservationWindow、LightPollutionCell、HorizonProfile、RouteEstimate、NightReport、RecommendationSnapshot、Itinerary、ItineraryStop、FieldReport、ShootingPlan、CelestialEvent、NotificationSubscription、DataSourceRun、DataQualityIssue、ModerationCase、AuditLog。
 
 <a id="admin-data-operations.requirement.provider-source-registry"></a>
-- **REQ provider-source-registry** [direct: S-ARCH 六]：每类外部/计算源保存供应商、许可、用途、覆盖、版本/运行批次、分辨率、状态、成本和健康；天气统一 WeatherProvider（forecast/current/warnings/health），中国常规天气/预警与分层云/多模型可采用来源建议组合，但生产合同由 DEC weather-provider-contracts 确认。
+- **REQ provider-source-registry** [direct + external research: S-ARCH 六, S-RESEARCH]：每类外部/计算源保存供应商、许可/条款版本、用途、覆盖、归属文本、缓存/派生/再分发/终止边界、版本/运行批次、分辨率、获取/发布时间、状态、成本/计费单位、quota/rate/SLA 和健康；天气统一 WeatherProvider（forecast/current/warnings/health）。当前推荐中国常规天气/预警以 QWeather 候选、分层云/能见度/多模型以 Open-Meteo 商业端点候选，ECMWF Open Data 作离线基准/备用研究；这不表示合同已批准，生产组合由 DEC weather-provider-contracts 与 EXT commercial-provider-rights-and-quotas 确认。
 
 <a id="admin-data-operations.requirement.astronomy-geo-pipelines"></a>
-- **REQ astronomy-geo-pipelines** [direct: S-ARCH 6.3～6.7]：Astronomy Engine/自有包记录算法/星表/观察者/海拔/计算时间/time scale；CelesTrak OMM JSON + SGP4 保存 epoch（空间站建议 6～12 小时、一般亮星卫星每天更新）；EOG VIIRS 年度 GeoTIFF 以 EPSG:4326、约 500m 来源分辨率经校验/裁剪/清理/COG/瓦片/网格指数并保留归属（来源文档指出许多 VNL 产品为 CC BY 4.0，实际版本仍须 EXT 确认）；Copernicus DEM GLO-30/90 合法取得、版本保存和预计算地平线，不运行时依赖可变在线 View Service。
+- **REQ astronomy-geo-pipelines** [direct + external research: S-ARCH 6.3～6.7, S-RESEARCH]：Astronomy Engine/自有包记录算法/星表/观察者/海拔/计算时间/time scale 并以 JPL 低频黄金集验证；Gaia 星表按批准字段/星等/epoch 裁切和 HEALPix 分块并保留 release/MD5/credits/known issues；CelesTrak 使用支持六位 catalog number 的 OMM JSON/CSV + SGP4、保存 epoch/内容 hash/获取时间，服务端不短于上游两小时更新政策且任一非 200 立即停止重试并告警。EOG Annual VNL v2.2 原始 GeoTIFF（EPSG:4326、15 arc-second、radiance+coverage）保留 CC BY 4.0 notice/修改/版本/checksum，经不可变 raw→裁剪/COG/overviews/瓦片/网格指数；零值结合 cloud-free coverage，radiance 不直译实测 Bortle。Copernicus DEM GLO-30/90 经 CCM 注册/适用许可合法获取，保留补缺/nodata/DSM provenance 并预计算带算法版本/采样参数的地平线，不运行时依赖可变在线 View Service；2026-07-28 GLO-30 访问变化必须在实施日复核。
 
 <a id="admin-data-operations.requirement.aggregate-rest-api"></a>
 - **REQ aggregate-rest-api** [direct: S-ARCH 九]：移动端主要 API 采用 REST/OpenAPI/JSON `/v1`、Idempotency-Key、ETag、游标分页、标准错误码和生成 TypeScript Client，不以 GraphQL 作为主接口；保留 `/night-reports`、`/spots`/corrections、`/forecasts`、`/astronomy/state|events`、`/sky/catalog-manifest`、`/routes/estimate`、`/itineraries`/offline-pack、`/field-reports`、`/media/uploads`、`/shooting-plans`、`/sync/changes|operations`、`/map-tiles/{layer}/{z}/{x}/{y}` 语义。
@@ -3113,7 +3118,7 @@
 #### Technical Obligations And Boundaries
 
 <a id="admin-data-operations.obligation.source-data-immutability"></a>
-- **OBL source-data-immutability** [direct: S-ARCH 7.1]：所有外部/用户/计算数据保存 UTC、IANA 时区、观星夜、WGS84、供应商/许可、算法/规则版本、来源/审核/可信度；不覆盖原始数据，只追加新版本，临时实况 TTL，推荐可重放。
+- **OBL source-data-immutability** [direct + external research: S-ARCH 7.1, S-RESEARCH]：所有外部/用户/计算数据保存 UTC、IANA 时区、观星夜、WGS84、供应商/适用许可与归属、下载 URL/时间/大小/checksum、原始格式/CRS/nodata/coverage、算法/工具/规则版本、lineage、来源/审核/可信度；raw restricted 对象不可变，只追加可回滚派生版本，数据库保存引用/当前指针且 Redis 不是唯一真值，临时实况 TTL，推荐可重放。供应商合同禁止保存的数据不进入 raw；删除/撤权/许可终止按 manifest 清理。
 
 <a id="admin-data-operations.obligation.api-contract-generation"></a>
 - **OBL api-contract-generation** [direct: S-ARCH 9.1]：OpenAPI 是客户端/服务端聚合契约来源，生成 TypeScript Client；错误、分页、幂等、缓存验证和数据状态统一，破坏性演进走新版本/兼容迁移。
@@ -3243,6 +3248,12 @@
 
 <a id="quality-release-observability.requirement.technology-baseline"></a>
 - **REQ technology-baseline** [direct: S-ARCH 1.1]：基线为 Expo + React Native + TypeScript、Development Build/自定义 Expo Native Module、高德原生地图、Expo Sensors + 必要 Core Motion/Android Sensor、Skia/GPU 天空、ARKit/ARCore 增强、TypeScript NestJS/Fastify 模块化单体、Python 气象/遥感/栅格/地形、PostgreSQL/PostGIS、Redis/BullMQ、S3 兼容对象存储/CDN、Next.js 管理后台、REST/OpenAPI + 协作 WebSocket、Astronomy Engine 封装和 Monorepo；精确版本由 DEC dependency-version-baseline 决定。
+
+<a id="quality-release-observability.requirement.official-source-production-gates"></a>
+- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：后续实现逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态；推荐不得静默升级为已采购/已许可/已校准/已通过 POC，动态版本/价格/配额/条款在锁依赖、签合同和 production gate 重取官方证据。
+
+<a id="quality-release-observability.requirement.interaction-motion-contract"></a>
+- **REQ interaction-motion-contract** [direct + repo evidence: S-USER, S-DESIGN, S-INTERACTION]：所有 RN 控件/转场实现即时 press-in、有效 press-out/可访问激活时单次 commit、取消不触发；直接操控保持抓取偏移和连续跟手，运行中可重抓/反向并从 live presentation value 衔接，释放速度只在合法边界/快照点内参与 settle；Bottom Sheet、地图/滚动、iOS 导航、Android system/predictive back 和辅助技术手势明确仲裁；触觉可关闭/不可用且非唯一反馈；reduced motion 移除大位移/景深/重复/弹性而非只加速；日/夜/红光的可控表面无蓝白闪，无法主题化的 OS/供应商表面不得在现场模式中静默打开，须先提示并提供取消/返回或非现场替代；双平台共享任务/状态但保留各自原生惯例，精确 token 由 DEC interaction-motion-token-baseline 与真机 POC 决定。
 
 <a id="quality-release-observability.requirement.modular-monolith-topology"></a>
 - **REQ modular-monolith-topology** [direct: S-ARCH 1.3]：起步采用模块化单体 API + 独立数据任务进程 + 独立媒体/瓦片能力，不提前拆十几个微服务、Kafka 或 Kubernetes 全家桶；只有 CPU/内存/吞吐隔离明确且有指标证据时拆热点模块。
@@ -3381,7 +3392,10 @@
 - **OBL release-runtime-compatibility** [direct: S-ARCH 十四]：每个构建记录 native runtime/JS bundle/schema/API 合约兼容范围；OTA 服务端阻止发给不兼容 runtime，回滚不跨越不可逆数据迁移。
 
 <a id="quality-release-observability.obligation.design-and-accessibility-qa"></a>
-- **OBL design-and-accessibility-qa** [direct + repo evidence: S-DESIGN/S-CONTEXT]：按 DESIGN.md 的日/夜/红光 token、结论→行动→证据层级、390×844 主视口、44px 目标、安全区、文本放大、屏幕阅读器、颜色非唯一、reduced motion、稳定 loading/empty/error/stale/disabled/saving/success 状态做视觉/交互验收；参考图不构成视觉复制权威。
+- **OBL design-and-accessibility-qa** [direct + repo evidence: S-DESIGN/S-CONTEXT/S-INTERACTION]：按 DESIGN.md 的日/夜/红光 token、结论→行动→证据层级、390×844 主视口、44px 目标、安全区、文本放大、屏幕阅读器、颜色非唯一、reduced motion、稳定 loading/empty/error/stale/disabled/saving/success 状态做视觉/交互验收；所有 UI/动效任务加载 S-INTERACTION 作为 RN 实现伴随指南，但 DESIGN.md/本计划/Context 是完整上位权威，Skill 对它们是单向依赖、冲突时无权覆盖；参考图/S-APPLE 不构成视觉复制或平台同质化权威。
+
+<a id="quality-release-observability.obligation.interaction-runtime-evidence"></a>
+- **OBL interaction-runtime-evidence** [derived from S-DESIGN/S-INTERACTION/S-RESEARCH]：交互验收同时包含纯状态/快照点决策单测、组件语义/取消/reduced-motion 分支、地图/Sheet/滚动/系统 back 集成、慢放/逐帧跳变与速度接缝审查、VoiceOver/TalkBack、文本放大、触觉开关/不可用、代表性 iPhone 与低端/高刷新 Android、低电/相机传感器影响以及暗环境红光亮度；静态截图、Skill/文档 lint、模拟器或单一 FPS 数字不能证明物理交互完成。
 
 <a id="quality-release-observability.non-completing.lab-only-release"></a>
 - **NCOMP lab-only-release** [direct: S-ARCH 17.5]：只有模拟器/单元测试、没有真实双端设备/弱网/断网/传感器/低亮/户外验证，不能算生产 APP 质量完成。
@@ -3402,6 +3416,41 @@
   - Given: 团队开始绑定真实工程结构和首个端到端切片。
   - When: 审查架构/依赖/模块边界。
   - Then: 双端 APP、原生适配、模块化单体、工作进程、共享契约/领域包和概念仓库范围均被保留，且未无证据引入微服务平台。
+
+<a id="quality-release-observability.acceptance.official-source-production-gates"></a>
+- **AC official-source-production-gates**
+  - Accepts: REQ official-source-production-gates, REQ provider-source-registry, REQ astronomy-geo-pipelines, OBL source-data-immutability
+  - Given: 后续 Contract 准备绑定天气、高德、VIIRS、DEM、星表/卫星、推送和对象存储/CDN 的生产实现。
+  - When: 按 S-RESEARCH 和当前官方页面执行依赖锁定、采购/许可、数据下载加工与 production readiness 审查。
+  - Then: 每项均保留实际 provider/version/条款/价格/quota/SLA/归属/cache/派生/再分发/region/checksum/lineage、对应 DEC/EXT 状态和 POC 证据；`recommended` 未被写成已采购，动态事实已重取，缺门项只降级或保持 pending。
+
+<a id="quality-release-observability.acceptance.interaction-direct-manipulation"></a>
+- **AC interaction-direct-manipulation**
+  - Accepts: REQ interaction-motion-contract, OBL interaction-runtime-evidence
+  - Given: 一个地点 Marker 可打开带合法 snap points 的 Bottom Sheet，地点/路线尚未发生新的有效提交。
+  - When: 用户 press 后拖动 Sheet，释放触发 settle，并在 settle 期间反向重抓或取消本次输入。
+  - Then: press-in 立即反馈、有效 commit 只发生一次、取消不触发动作；Sheet 保持抓取偏移、从 live presentation value 无跳变地中断/反向，释放速度只选择合法边界，地点/路线提交状态不与画面分叉。
+
+<a id="quality-release-observability.acceptance.interaction-gesture-arbitration"></a>
+- **AC interaction-gesture-arbitration**
+  - Accepts: REQ interaction-motion-contract, OBL interaction-runtime-evidence
+  - Given: 地图上方的 Bottom Sheet 同时包含可滚动内容，并运行于启用 iOS 导航手势或 Android system/predictive back 的目标设备。
+  - When: 用户分别从地图、Sheet handle、Sheet 内容和系统 back 区域开始对应手势。
+  - Then: map pan/pinch、sheet drag、nested scroll 与系统 back 各由预定 owner 接收，任何自定义手势都不静默抢占系统/辅助技术输入；关闭后焦点与可访问替代动作仍可恢复原任务。
+
+<a id="quality-release-observability.acceptance.interaction-accessibility-variants"></a>
+- **AC interaction-accessibility-variants**
+  - Accepts: REQ interaction-motion-contract, OBL design-and-accessibility-qa, OBL interaction-runtime-evidence
+  - Given: 用户开启 reduced motion、屏幕阅读器和 200% 文本，并关闭触觉或使用不支持触觉的设备。
+  - When: 用户完成同一个地点选择、Sheet 展开和异步路线结果流程。
+  - Then: 大位移/景深/弹性有静态或短淡变替代，关键内容/单位/动作不裁切，角色/值/焦点/完成或失败播报可用，视觉与语义反馈在无触觉时仍完整且不逐帧刷屏。
+
+<a id="quality-release-observability.acceptance.interaction-red-light-continuity"></a>
+- **AC interaction-red-light-continuity**
+  - Accepts: REQ interaction-motion-contract, OBL design-and-accessibility-qa, OBL interaction-runtime-evidence
+  - Given: APP 已在暗环境低亮度红光模式中保留一个选中地点和路线任务。
+  - When: 用户打开/关闭 Sheet、调出键盘、看到 loading/error，并在原生地图或系统权限表面之间往返。
+  - Then: 任务/选择状态与规划模式一致，Starward 可控表面无蓝或亮白闪、亮度变化受控；不可控系统/地图法务表面被识别并采用事前提示或安全降级，而不是伪装成可完全着色。
 
 <a id="quality-release-observability.acceptance.environment-production-isolation"></a>
 - **AC environment-production-isolation**
@@ -3588,7 +3637,7 @@
 <a id="external.commercial-provider-rights-and-quotas"></a>
 - **EXT commercial-provider-rights-and-quotas**
   - Status: external_confirmation_required。
-  - Result requiring confirmation: 天气（常规/分层云/多模型/预警/空气质量）、高德地图/路线/POI/离线、卫星云图、推送通道和任何备用供应商具备生产商业使用、缓存、派生、再展示、配额、SLA、归属和成本许可。
+  - Result requiring confirmation: QWeather 常规/预警/AQI/GeoAPI、Open-Meteo 商业分层云/多模型、其他卫星云图/备用天气、高德原生地图/定位/搜索/路线/POI/双端离线、APNs/FCM/国内厂商/Expo 推送以及 OSS/COS/CDN 具备目标地区/渠道的生产商业使用、缓存/历史保留、派生、再展示/再分发、配额/计费单位、SLA、归属和退出/删除许可。
   - Why external: API 文档与技术可行不构成购买合同、配额或再分发授权，仓库无法证明。
   - Evidence needed: 生效合同/计划、许可条款版本、允许用途/地区/缓存/派生、quota/rate limit/SLA、归属要求、密钥环境和退出/删除义务。
   - Affected REQ / AC: REQ weather-map-layers, REQ route-map-planning, REQ provider-source-registry, REQ provider-failure-controls, AC source-pipelines, DEC weather-provider-contracts。
@@ -3596,7 +3645,7 @@
 <a id="external.geospatial-catalog-content-licenses"></a>
 - **EXT geospatial-catalog-content-licenses**
   - Status: external_confirmation_required。
-  - Result requiring confirmation: EOG VIIRS、Copernicus DEM、星表、Astronomy Engine、CelesTrak OMM、地图底图/瓦片、NASA APOD/天文机构媒体及其派生瓦片/离线包/截图的许可、归属、版本和再分发范围适合目标地区/渠道。
+  - Result requiring confirmation: NSMC FY-4B/后续业务星或其他卫星云图、EOG Annual VNL v2.2、Copernicus DEM GLO-30/90（含 2026-07-28 后 CCM 访问/许可接受）、Gaia/其他星表、Astronomy Engine、CelesTrak OMM、JPL/NOAA 数据、地图底图/瓦片、NASA APOD/天文机构媒体及其 raw/COG/瓦片/动画/地平线/星表分块/离线包/截图的账号资格、自动化、许可、notice/credit、版本、修改标识和商业再分发范围适合目标地区/渠道；Himawari 等备用源不得越过 NMHS/研究/购买资格。
   - Why external: 数据集许可和在线服务规则会变化，派生/离线/商业分发权不能从本 Source Plan 推断。
   - Evidence needed: 官方许可/服务条款快照、来源与版本、商业/派生/缓存/离线/截图条款、必需 attribution、更新/撤下流程及法务确认。
   - Affected REQ / AC: REQ light-pollution-evidence, REQ astronomy-geo-pipelines, REQ educational-content, AC light-and-horizon, AC calendar-and-station, RISK dataset-license。
@@ -3614,13 +3663,13 @@
   - Status: external_confirmation_required。
   - Result requiring confirmation: iOS/Android 目标商店和国内安卓渠道接受地图 SDK、自定义原生模块、前台/限时后台定位、通知、相机/相册、AR、传感器和 OAuth/微信登录的声明、用途与审核材料，并在目标真机/系统版本可用。
   - Why external: 商店政策、设备支持、证书/entitlement、厂商推送和 OAuth 审核是外部控制面，模拟器与源码无法证明。
-  - Evidence needed: 支持设备/OS矩阵、权限用途文案、entitlement/证书/隐私清单、后台位置核心用途材料、厂商通道和 OAuth 审批、internal/staging 真机安装及商店审核结果。
+  - Evidence needed: 支持设备/OS矩阵、权限用途文案、entitlement/证书/隐私清单、后台位置核心用途材料、厂商通道和 OAuth 审批、iOS back gesture/Android predictive back 与自定义手势兼容、internal/staging 真机安装及商店审核结果。
   - Affected REQ / AC: REQ permission-minimization, REQ optional-ar, REQ safety-session, REQ event-driven-evaluation, REQ auth-methods, AC ar-degradation, AC bounded-safety-session, AC long-term-controls, DEC supported-os-device-matrix。
 
 <a id="external.outdoor-device-field-validation"></a>
 - **EXT outdoor-device-field-validation**
   - Status: external_confirmation_required。
-  - Result requiring confirmation: 代表性 iOS/Android 真机在真实山区/郊外、车辆/金属干扰、弱网/无网、冬夏温度、夜间低亮/红光、低电、前后台、最后一公里和长时天空条件下达到可用/降级/恢复行为。
+  - Result requiring confirmation: 代表性 iOS/Android 真机在真实山区/郊外、车辆/金属干扰、弱网/无网、冬夏温度、夜间低亮/红光、低电、前后台、最后一公里和长时天空条件下达到可用/降级/恢复行为；交互同时覆盖 press/cancel、地图/Sheet/滚动/back 仲裁、中断/反向/速度接缝、VoiceOver/TalkBack、文本放大、reduced motion、触觉关闭/不可用和红光无闪。
   - Why external: GPS、磁场、AR、亮度、电量、网络和道路/天气现场真实性无法由自动测试或室内设备完全模拟。
   - Evidence needed: 场地/日期/天气、设备/OS/传感器矩阵、已知方位/路线基准、断网/恢复步骤、截图/日志/误差/电量结果、失败与复测记录；样本不能冒充全设备总体。
   - Affected REQ / AC: REQ orientation-guidance, REQ outdoor-validation, REQ performance-slos, AC low-accuracy-guidance, AC offline-field-use, AC test-coverage, RISK sensor-observability。
@@ -3721,6 +3770,16 @@
   - Reason: 这是防止各 Outcome 独立实现后产生相互矛盾决策的最小一致性约束。
   - Changes product meaning: no；不引入新的页面或业务规则。
 
+- Derived Item: REQ interaction-motion-contract、OBL interaction-runtime-evidence 与项目 Skill 的单向权威声明。
+  - Derived From: S-USER 明确要求 DESIGN.md/方案正式落地并询问循环依赖，S-DESIGN 的长期规则、S-INTERACTION 的 RN 映射、S-APPLE 的可迁移原则以及 S-CONTEXT 的 surface responsibility。
+  - Reason: 仅安装 Skill 会让后续 Agent 可选择忽略，双向引用又可能被误解为循环规范；因此 DESIGN.md/Source Plan/Context 必须完整定义结果，Skill 只能单向消费并把它映射到 Gesture Handler/Reanimated/触觉/无障碍。
+  - Changes product meaning: no；强化现有移动交互和质量标准，不新增业务入口或 Apple 品牌。
+
+- Derived Item: REQ official-source-production-gates 及 S-RESEARCH 六态证据语言。
+  - Derived From: S-USER 要求把供应商购买、免费数据持久化、加工优化等技术细节真正调研清楚，S-ARCH 的 provider/data pipeline 边界，以及本轮官方资料。
+  - Reason: 如果不区分推荐、合同、POC 和外部确认，后续长程任务可能把文档可行性错误解释成已有账号/许可/校准并继续生产实现。
+  - Changes product meaning: no；只约束证据与发布门，真实商业/阈值选择仍在现有和新增 DEC/EXT。
+
 ## 9. Decisions Required
 
 <a id="decision.dependency-version-baseline"></a>
@@ -3730,6 +3789,14 @@
   - Options: 以项目启动时最新稳定兼容矩阵冻结；以企业长期支持/供应商认证矩阵冻结；分平台采用不同受支持基线但共享业务契约。
   - Why it cannot be reliably derived: 两份附件提供技术选型和示例文档版本，不提供最终 lockfile、目标日期兼容矩阵或维护周期；版本信息会变化。
   - Affected REQ / AC: REQ react-native-app, REQ technology-baseline, REQ mobile-build-release, AC architecture-baseline, AC native-release-boundary。
+
+<a id="decision.interaction-motion-token-baseline"></a>
+- **DEC interaction-motion-token-baseline**
+  - Status: decision_required
+  - Decision: 按交互家族确定 press feedback、方向锁/滞后、grab hit/slop、速度平滑/投影、边界阻尼、sheet snap、spring/timing、触觉语义/节流、reduced-motion 替代和地图/滚动/back 仲裁 token，并定义设备分层调优与允许差异。
+  - Options: 先以系统/维护良好组件默认值做双端 POC 后冻结；建立 Starward UI-system token 并按交互家族/平台分层；复杂物理手势延期、MVP 仅用系统转场/静态状态但仍满足取消和无障碍。
+  - Why it cannot be reliably derived: S-APPLE 的示例是 web/CSS/Pointer Events/Motion 常数，S-INTERACTION 明确不能直接复制；当前仓库无 RN 运行时、真实组件、目标设备性能或可用性测试，精确阈值/弹簧会影响手势冲突和无障碍。
+  - Affected REQ / AC: REQ interaction-motion-contract, OBL interaction-runtime-evidence, AC interaction-direct-manipulation, AC interaction-gesture-arbitration, AC interaction-accessibility-variants, AC interaction-red-light-continuity, EXT outdoor-device-field-validation。
 
 <a id="decision.supported-os-device-matrix"></a>
 - **DEC supported-os-device-matrix**
@@ -3774,8 +3841,8 @@
 <a id="decision.weather-provider-contracts"></a>
 - **DEC weather-provider-contracts**
   - Status: decision_required
-  - Decision: 选择常规天气/预警/空气质量、分层云/能见度/多模型/卫星云图的主备生产供应商、模型集合、预报时长、地区覆盖、许可、SLA、成本和降级优先级；来源文档当时记录和风小时预报约 24～168 小时、Open-Meteo 正式商业使用应采用商业端点而非非商业免费端点，最终以外部合同/当前能力为准。
-  - Options: 和风+Open-Meteo 商业组合；其他有中国合规/商业许可的多供应商组合；单主源+离线/缓存降级后再扩多模型。
+  - Decision: 选择常规天气/预警/空气质量、分层云/能见度/多模型/卫星云图的主备生产供应商、模型集合、预报时长、地区覆盖、许可/归属/cache/历史保留、SLA/QPM、按请求或加权调用成本和降级优先级；QWeather GeoAPI 不得批量缓存/索引且预警须保留 `refer.sources`，Open-Meteo 商业生产不得使用 non-commercial free endpoint，最终以逐 SKU 合同/当前能力为准。
+  - Options: 推荐先做 QWeather 中国常规/预警 + Open-Meteo 商业分层云/多模型组合 POC，并把 NSMC FY-4B/后续业务星作为卫星实况首要调查对象；其他有中国合规/商业许可的组合；单一 QWeather/其他主源+缓存/unknown 降级后再扩多模型；卫星源自动化/再展示权未确认时延期云图而保留预报云量；ECMWF Open Data 只作服务端离线基准/后备研究，Himawari 仅在用户资格/许可成立后作为候选。
   - Why it cannot be reliably derived: 架构明确的是 Provider 边界和推荐组合，不是已签合同；实时产品、许可和价格会变化。
   - Affected REQ / AC: REQ model-comparison, OBL weather-provider-normalization, REQ provider-source-registry, AC source-pipelines, EXT commercial-provider-rights-and-quotas。
 
@@ -3814,9 +3881,9 @@
 <a id="decision.route-provider-fallback-and-quotas"></a>
 - **DEC route-provider-fallback-and-quotas**
   - Status: decision_required
-  - Decision: 高德路线/距离矩阵/POI 的主备适配器、超时、配额、交通时效、缓存可用期、外部地图应用优先级和无精确坐标时导航行为。
-  - Options: 高德唯一生产源+缓存/直线降级；高德主源+另一商业路线备用；按平台/地区选择外部应用但后端统一估算。
-  - Why it cannot be reliably derived: Source 明确高德主场景和可外部导航，但未签主备合同、配额或应用优先级。
+  - Decision: 高德原生 3D 地图/定位/搜索/离线与 Web Service 路线/距离矩阵/POI 的正式 SKU、技术服务许可、主备适配器、超时、配额/超额、SLA/价格、交通时效、缓存/存储、双端离线范围、外部地图应用优先级和无精确坐标时导航行为。
+  - Options: 推荐高德唯一生产源+服务端 route snapshot+缓存/直线降级并保留 provider adapter；高德主源+另一已获商业许可路线备用；按地区选择外部应用但后端统一估算；无离线许可时离线包不含底图。
+  - Why it cannot be reliably derived: Source/官方资料明确中国高德主场景、法人公开/长期使用需购买技术服务许可和可外部导航，但仓库未签具体 SKU/配额/双端离线/应用优先级，技术可行不构成授权。
   - Affected REQ / AC: REQ route-variants-and-degradation, CTRL external-navigation-action, AC route-provider-degradation, EXT commercial-provider-rights-and-quotas。
 
 <a id="decision.recommendation-weights-thresholds"></a>
@@ -3838,9 +3905,9 @@
 <a id="decision.light-pollution-calibration"></a>
 - **DEC light-pollution-calibration**
   - Status: decision_required
-  - Decision: VIIRS 辐射/城市距离/海拔/大气/用户实测/SQM 到光污染指数、天空亮度和 Bortle 区间的模型、区域校准、置信度和更新频率。
-  - Options: MVP 只展示辐射参考指数；发布宽 Bortle 估算区间并明确方法；仅有足够 SQM/现场样本区域显示校准区间。
-  - Why it cannot be reliably derived: Source 明确不能直接映射 Bortle，但没有提供已验证模型、样本或阈值。
+  - Decision: 以 EOG Annual VNL v2.2 的 radiance/coverage/年份为基线，确定城市距离/海拔/大气/临时光源/用户实测/SQM 到光污染指数、天空亮度和 Bortle 区间的模型、区域/地貌/季节校准、样本质量、误差/置信区间和更新频率。
+  - Options: MVP 只展示 radiance 参考指数/年份/coverage；发布宽 Bortle 估算区间并明确方法/置信度；仅在足够 SQM/现场样本且独立验证区域显示校准区间。
+  - Why it cannot be reliably derived: EOG 官方资料说明云/太阳照明/杂散光/coverage/瞬态影响且零值不等于无灯，CC BY 允许派生不等于模型科学有效；当前没有区域 SQM/现场样本、阈值或验证结果。
   - Affected REQ / AC: REQ light-pollution-evidence, REQ weather-map-layers, AC light-and-horizon, EXT geospatial-catalog-content-licenses。
 
 <a id="decision.spot-coordinate-default-visibility"></a>
@@ -3870,8 +3937,8 @@
 <a id="decision.offline-pack-policy"></a>
 - **DEC offline-pack-policy**
   - Status: decision_required
-  - Decision: 默认地图范围/缩放/媒体、必需/可选组件、包大小/并发、Wi-Fi/蜂窝、自动更新、保留/清理、设备加密/锁屏后可用、账号登出/撤权和受限坐标处理。
-  - Options: 用户逐包手动下载/更新；行程自动建议但需确认；仅静态必需组件自动、动态/媒体可选；敏感包强制设备级加密与短保留。
+  - Decision: manifest/schema/runtime 下限、合法高德原生离线地图范围/缩放、路线快照、地点/VIIRS/地平线/星表/天气/媒体必需与可选组件、hash/断点/原子激活/回滚、包大小/并发/空间、Wi-Fi/蜂窝、动态/静态过期、自动更新、保留/清理、设备加密/锁屏后可用、账号登出/撤权和受限坐标处理。
+  - Options: 用户逐包手动下载/更新；行程自动建议但需确认；只自动静态必需组件、动态/媒体可选；敏感包强制设备级加密与短保留；地图离线许可未确认时包中只含合法路线快照/自有派生数据而无底图。
   - Why it cannot be reliably derived: Source 给出完整内容和技术存储，不给网络/空间/保留/加密/自动化默认。
   - Affected REQ / AC: REQ complete-observation-pack, REQ local-storage-boundaries, CTRL offline-pack-manager, AC pack-integrity。
 
@@ -3886,8 +3953,8 @@
 <a id="decision.notification-defaults-cooldowns"></a>
 - **DEC notification-defaults-cooldowns**
   - Status: decision_required
-  - Decision: 哪些类别默认关闭/建议开启、阈值/提前量、免打扰、边沿触发、同事件/同网格冷却、紧急风险例外、通道优先和历史保留。
-  - Options: 全部用户显式订阅；行程风险默认开启其余显式；按画像提供可预览建议；仅本地提醒首发再启远端推送。
+  - Decision: 哪些类别默认关闭/建议开启、阈值/提前量、免打扰、边沿触发、同事件/同网格冷却、紧急风险例外、本地/APNs/FCM/国内厂商/Expo 通道优先、receipt/失效 token/重复与历史保留。
+  - Options: 全部用户显式订阅；行程风险默认开启其余显式；按画像提供可预览建议；推荐 MVP 先本地提醒+APP 内状态，远端通道矩阵/延迟/重复 POC 后启用；Expo Push 只作非关键早期通道并保留替换能力。
   - Why it cannot be reliably derived: Source 要求用户可设并避免打扰，没有授权任何默认、提前分钟或冷却时长。
   - Affected REQ / AC: REQ notification-control, REQ event-driven-evaluation, CTRL notification-rule-editor, AC pretrip-rule。
 
@@ -3914,6 +3981,14 @@
   - Options: 明示 opt-in；必要技术遥测与可选产品分析分离；按地区 opt-in/opt-out；全部首方自建或批准第三方。
   - Why it cannot be reliably derived: Source 决定不记录精确位置和需要埋点，但不决定同意/网格/保留/供应商。
   - Affected REQ / AC: REQ privacy-compliant-analytics, REQ analytics-funnel-events, CTRL privacy-center, AC analytics-funnel, EXT china-production-legal-readiness。
+
+<a id="decision.object-storage-cdn-provider-and-region"></a>
+- **DEC object-storage-cdn-provider-and-region**
+  - Status: decision_required
+  - Decision: 选择首发对象存储/CDN 供应商、境内/境外 region、域名/ICP、S3 抽象边界、raw-restricted/derived-private/public-assets/user-media/audit bucket 分层、版本/加密/生命周期/恢复、公开签名/归属、跨境与容量/请求/处理/出网/CDN 成本策略。
+  - Options: 中国主场景采用阿里 OSS+CDN；采用腾讯 COS+CDN；在法务/备案完成前只部署 staging 且 production gate 阻止公开；单主供应商起步并保留接口迁移，不在 MVP 同时经营双云。
+  - Why it cannot be reliably derived: S-ARCH 只要求 S3-compatible object storage/CDN；S-RESEARCH 证明两家均按容量/请求/流量/增值项计费且境内 CDN 依赖备案，但没有运营主体、采购报价、区域、域名、流量画像或跨境批准。
+  - Affected REQ / AC: REQ production-topology, REQ china-production-compliance, REQ official-source-production-gates, AC official-source-production-gates, AC china-compliance-readiness, EXT commercial-provider-rights-and-quotas, EXT china-production-legal-readiness。
 
 <a id="decision.cache-ttl-policy"></a>
 - **DEC cache-ttl-policy**
@@ -3950,9 +4025,9 @@
 <a id="decision.professional-tool-data-sources"></a>
 - **DEC professional-tool-data-sources**
   - Status: decision_required
-  - Decision: V3 极光、彗星、流星流量/可见数量、日月食、APOD/机构内容和空间站凌日凌月各自的数据/算法源、覆盖、更新、许可、可信度与实验标签。
-  - Options: 逐工具只在有权威/许可源后启用；先启本地可计算工具，远端源工具后置；采用多个供应商并保留比较/降级。
-  - Why it cannot be reliably derived: Source 列出工具目标，但除空间站基础轨道外未选择这些动态内容的生产数据源或许可。
+  - Decision: V3 极光、彗星、流星流量/可见数量、日月食、APOD/机构内容和空间站通行/凌日凌月各自的数据/算法源、覆盖、更新、许可/再分发、归属、API 公平使用、可信度与实验标签；确定 Astronomy Engine/JPL/NOAA/CelesTrak/Gaia 等仅验证、生产采集或离线资产的角色。
+  - Options: 推荐先启 Astronomy Engine 可本地确定性计算工具；JPL 只作服务端低频黄金/小天体查询并遵守一次一请求/best-effort/version；NOAA SWPC 极光和其他远端工具逐项 POC；CelesTrak OMM 服务端集中缓存；NASA/APOD 逐媒体 credit/copyright，不自动再发布第三方版权；无权威/许可源工具保持 disabled/experimental。
+  - Why it cannot be reliably derived: Source 列出工具目标但未选择动态内容生产源；官方资料明确 JPL 无永久可用保证/一次一请求、CelesTrak 有更新/错误停取政策，NASA 名称也不等于每张 APOD 媒体可商业再分发。
   - Affected REQ / AC: REQ celestial-calendar, REQ station-transits, REQ other-astronomy-tools, REQ educational-content, AC professional-tool-boundaries, EXT geospatial-catalog-content-licenses。
 
 ## 10. Completeness Check
@@ -3972,12 +4047,13 @@
 - S-ARCH 九～十二：REST/OpenAPI `/v1` 端点语义、数据状态、四层缓存/所有建议 TTL/击穿保护、14 类任务/可靠性/供应商故障、媒体/EXIF/全景管线已覆盖；建议阈值没有被静默固化，相关项进入 DEC。
 - S-ARCH 十三～十九：环境/生产拓扑/容器/备份、Development Build/EAS/runtimeVersion、安全隐私/六级坐标/API 防护、技术/数据可观测、推荐重放、单元/黄金/契约/移动/户外测试、十项性能建议及九类技术风险全部进入 quality/admin/identity/相关 RISK 与 EXT。
 - S-ARCH 二十～二十二：概念 Monorepo 树、五层工程依赖顺序、最终聚合架构和四项长期资产已保留为 Requirement/OBL/HINT；没有把概念路径误绑定为真实 Delivery Contract 文件。
-- S-DESIGN/S-CONTEXT：品牌/视觉/日夜红光、390×844、44px、结论/行动/证据、共享地点/时间/路线状态和可访问性作为仓库证据引用；按 Source Plan 边界未写入 `project_context/**`。
+- S-DESIGN/S-CONTEXT/S-INTERACTION/S-APPLE：品牌/视觉/日夜红光、390×844、44px、结论/行动/证据、共享地点/时间/路线状态和可访问性均已引用；新增即时 press、commit/cancel、直接操控、中断/速度、gesture arbitration、Bottom Sheet、触觉、reduced motion、平台原生差异和真机验收。DESIGN.md 是完整长期规范，项目 Skill 是单向下游 RN 伴随指南并保留上游 revision/MIT，web 玻璃/系统字体/iOS 同质化冲突未进入 Starward。
+- S-RESEARCH：移动版本策略、QWeather/Open-Meteo/ECMWF、高德/OSM 边界、EOG VNL v2.2、Copernicus DEM 访问变化、Astronomy Engine/Gaia/CelesTrak/JPL/NOAA、Expo/APNs/FCM/国内推送、OSS/COS/CDN、离线/成本/POC/采购法务门均进入 REQ/OBL/AC/EXT/DEC；推荐与已批准、技术可行与合同/校准/现场完成保持分离。
 - S-IMG-01～10：每张图的尺寸、哈希、采纳的布局/交互证据和拒绝复制的品牌/装饰/假业务均在 Section 2 记录，并映射到首页/地图/地点/行程/极坐标/专业预报控件。
 
 ### Structural Coverage
 
-- 当前文档含 14 个独立可判定 Outcome、161 个 REQ、95 个完整状态 CTRL、41 个强制 OBL、16 个 NCOMP、114 个单场景 AC、40 个精确 Runtime Fact RISK、8 个 EXT、29 个 `decision_required` DEC、27 个非绑定 HINT、5 个 NG 和 8 个 FS。
+- 当前文档含 14 个独立可判定 Outcome、163 个 REQ、95 个完整状态 CTRL、42 个强制 OBL、16 个 NCOMP、119 个单场景 AC、40 个精确 Runtime Fact RISK、8 个 EXT、31 个 `decision_required` DEC、27 个非绑定 HINT、5 个 NG 和 8 个 FS。
 - 每个 REQ、CTRL、OBL、NCOMP 至少被一个 AC 明确接受；每个 CTRL 均独立写出 Location、User task、Trigger、Input、Loading、Empty、Success、Failure、Feedback。
 - 每个 AC 只含一组 Accepts/Given/When/Then；每个 RISK 只关联一个现有 Outcome，并使用允许的十种 Fact 之一。
 - 所有 Accepts/DEC/EXT/Affected 引用指向已声明语义键；锚点和同类型键保持唯一。
@@ -3985,24 +4061,24 @@
 
 ### Unresolved Product Semantics
 
-- 29 个 DEC 覆盖版本/OS/本地化、游客/默认偏好/首发区域、天气/视宁度/窗口、地图图层/密度、路线/推荐/安全/光污染、坐标/审核/协作、离线/后台安全/通知/AI、删除/分析/缓存/灾备/SLO，以及 V2 内容导入和 V3 专业数据源。
+- 31 个 DEC 覆盖依赖与交互动效 token、OS/本地化、游客/默认偏好/首发区域、天气/视宁度/窗口、地图图层/密度、路线/推荐/安全/光污染、坐标/审核/协作、离线/后台安全/通知/AI、删除/分析、对象存储/CDN、缓存/灾备/SLO，以及 V2 内容导入和 V3 专业数据源。
 - 在相关 DEC 被用户、产品、技术、法务或供应商证据确认前，后续 Contract 可以绑定“做出决定”的工作，但不能把任一 Options 静默当作已批准默认。
 
 ### Unbound Repository And Verification Facts
 
-- 尚未绑定真实 owner、实现路径、分支/提交、runner、测试命令、proof 文件、Assertion observation、云资源、商店/证书、密钥、供应商账号/合同、生产域名、后台角色或迁移批次；这些属于后续 `/long-task-workflow` 的仓库扫描、Context 读取与 Delivery Contract 编写职责。
+- 尚未绑定真实 owner、生产实现路径、runner/proof/Assertion、依赖 lock、交互 token、真机/户外 POC、云资源、商店/证书、密钥、供应商账号/合同、生产域名、后台角色、数据校准或迁移批次；这些属于后续 `/long-task-workflow` 的仓库扫描、Context/本调研读取与 Delivery Contract 编写职责。
 - S-ARCH 的仓库树、Provider 类名、MapAdapter 签名和 package 结构仅为 HINT/概念义务，不证明当前仓库已有这些文件。
 - EXT 的商业许可、法务/备案、商店能力、户外设备、天文基准、摄影实拍和地点现场核验必须由真实外部证据完成；示例、模拟器或一小组样本不能冒充全量/生产确认。
 
 ### Explicitly Out Of Scope For This Source Plan
 
 - 不生成交付 Contract 文件或非渲染 Source 标记，不绑定 owner/path/runner/proof/Assertion，不启动 `/long-task-workflow`，不实施 APP/后端/基础设施，也不宣称产品或任一版本已交付。
-- 不改写 `project_context/**`；本轮 Context Delta 为 none，后续 workflow 只在确认事实并按其规则同步时处理 durable Context。
+- 本轮独立 UI/Context workflow 已把交互责任、Skill 单向权威和“调研推荐不等于生产事实”写入 `project_context/**`；Source Plan 不把供应商推荐、价格、阈值或 POC 状态冒充 durable 已决事实。后续确认 DEC/合同/校准时仍须按 Tiny Context 规则更新 owning Context。
 - 不把 PWA、小程序、静态 Kit/截图、单平台 demo、假数据或后续 V3 工具壳作为 React Native APP 完成。
-- 不创建额外 Source Plan、Schema、CLI、Preflight、Compile、Receipt、Coverage Cache、Authority 或状态文件；本 Markdown 是唯一 Source Plan 产物。
+- 不创建额外 Source Plan、Schema、CLI、Preflight、Compile、Receipt、Coverage Cache、Authority 或状态文件；本 Markdown 仍是唯一 Source Plan。`docs/technical-data-source-decisions.md` 是有日期的研究证据包，项目 Skill 是实现伴随指南，二者都不是第二份 Source Plan。
 
 Completeness status:
 - Ready for further refinement: yes
-- Decisions required: DEC dependency-version-baseline, DEC supported-os-device-matrix, DEC localization-scope, DEC guest-auth-capability-matrix, DEC preference-profile-defaults, DEC mvp-launch-region-and-spot-seed, DEC weather-provider-contracts, DEC seeing-data-source, DEC observation-window-resolution, DEC candidate-routing-limits, DEC map-layer-composition-and-density, DEC route-provider-fallback-and-quotas, DEC recommendation-weights-thresholds, DEC safety-thresholds, DEC light-pollution-calibration, DEC spot-coordinate-default-visibility, DEC moderation-trust-policy, DEC collaboration-roles, DEC offline-pack-policy, DEC background-safety-policy, DEC notification-defaults-cooldowns, DEC ai-provider-privacy, DEC data-retention-deletion, DEC analytics-consent-policy, DEC cache-ttl-policy, DEC recovery-objectives, DEC production-slo-measurement, DEC content-import-policy, DEC professional-tool-data-sources
+- Decisions required: DEC dependency-version-baseline, DEC interaction-motion-token-baseline, DEC supported-os-device-matrix, DEC localization-scope, DEC guest-auth-capability-matrix, DEC preference-profile-defaults, DEC mvp-launch-region-and-spot-seed, DEC weather-provider-contracts, DEC seeing-data-source, DEC observation-window-resolution, DEC candidate-routing-limits, DEC map-layer-composition-and-density, DEC route-provider-fallback-and-quotas, DEC recommendation-weights-thresholds, DEC safety-thresholds, DEC light-pollution-calibration, DEC spot-coordinate-default-visibility, DEC moderation-trust-policy, DEC collaboration-roles, DEC offline-pack-policy, DEC background-safety-policy, DEC notification-defaults-cooldowns, DEC ai-provider-privacy, DEC data-retention-deletion, DEC analytics-consent-policy, DEC object-storage-cdn-provider-and-region, DEC cache-ttl-policy, DEC recovery-objectives, DEC production-slo-measurement, DEC content-import-policy, DEC professional-tool-data-sources
 - Advisory implementation hints: HINT proposed-mobile-modules, HINT report-snapshot-shape, HINT candidate-route-bound, HINT astronomy-package-capsule, HINT map-adapter-contract, HINT map-request-cancellation, HINT route-snapshot, HINT spot-section-fetching, HINT horizon-composition, HINT itinerary-snapshot-diff, HINT share-rendering, HINT sky-catalog-chunks, HINT orientation-sampling, HINT user-adjustment-overlay, HINT device-capability-catalog, HINT offline-pack-manifest, HINT sync-dependency-order, HINT duplicate-spot-review, HINT ttl-by-fact-type, HINT notification-transition-trigger, HINT toolbox-domain-reuse, HINT account-job-status, HINT profile-reference-integrity, HINT modular-monolith-events, HINT dry-run-first, HINT repository-layout, HINT slo-budgeting
-- Unbound project facts: real owners/paths/runners/proof/Assertions, dependency lock and platform matrix, provider contracts/credentials/quotas, production infrastructure and app-store control planes, legal/licensing approvals, field/device validation and confirmed decision outcomes
+- Unbound project facts: real production owners/paths/runners/proof/Assertions, dependency lock/platform/interaction-token matrix, provider contracts/credentials/quotas, raw production datasets/checksums and calibration, storage/CDN/production infrastructure/app-store control planes, legal/licensing approvals, real-device/field POC and confirmed decision outcomes
