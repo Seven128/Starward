@@ -70,7 +70,7 @@ components:
     rounded: "{rounded.md}"
     padding: 16px
   primary-action:
-    backgroundColor: "{colors.primary}"
+    backgroundColor: "{colors.primary-active}"
     textColor: "{colors.on-primary}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
@@ -102,6 +102,7 @@ components:
 
 - Planning mode uses 月白 canvas, 薄云 surfaces, 夜墨 text, 晨雾线 borders, and 航迹蓝 for the primary action, route, selected map node, and best observing window.
 - 航迹蓝 is a high-signal color. Prefer one primary action and one key selected state per screen; do not use it as a large decorative background.
+- Text-bearing primary controls use the darker primary-active token when normal-size white labels need WCAG AA contrast; the brighter primary remains available for routes, nodes, and non-text emphasis.
 - Semantic green, yellow, and red communicate data meaning or operational state. They do not replace the brand roles.
 - Night observing mode keeps the same information architecture while reducing luminance and using multiple dark surfaces with restrained cool-blue emphasis. Avoid a featureless pure-black product shell and broad glow.
 - Red-light field mode preserves structure and navigation while switching to a very-low-luminance warm-red hierarchy. It must not introduce blue highlights, broad white surfaces, flashing, or ambient decoration.
