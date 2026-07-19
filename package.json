@@ -1,0 +1,25 @@
+{
+  "name": "starward",
+  "version": "1.0.0",
+  "description": "Starward mobile stargazing decision product and design system.",
+  "scripts": {
+    "context:sync": "ty-context sync",
+    "context:validate": "ty-context validate-context",
+    "context:doctor": "ty-context doctor",
+    "test": "npm run context:validate"
+  },
+  "keywords": [
+    "stargazing",
+    "design-system",
+    "tiny-context"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "project-tiny-context-harness": "^0.6.0"
+  },
+  "tyContext": {
+    "harnessFolderName": ".codex"
+  }
+}
