@@ -1,0 +1,8 @@
+import { describe, expect, it } from "vitest";
+import { classifyChannelResponse, channelPolicy } from "./channel-adapters";
+import { evaluateNotificationBatch } from "./evaluate-batch";
+describe("notification pipeline", () => {
+  it("deduplicates provider retries and emits only threshold edges", () => { const event = { id: "cloud", grid: "g1", version: 4, previousValue: 20, currentValue: 60, threshold: 50, direction: "above" as const }; const value = evaluateNotificationBatch({ now: "2026-08-12T10:00:00Z", events: [event, event], subscriptions: [{ id: "s1", grid: "g1", cooldownUntil: null }] }); expect(value.notifications).toHaveLength(1); expect(value.audit.duplicateEvents).toBe(1); expect(value.perUserPolling).toBe(false); });
+  it("honors disabled categories and cooldown", () => { const value = evaluateNotificationBatch({ now: "2026-08-12T10:00:00Z", events: [{ id: "new-moon", grid: "g1", version: 1 }], subscriptions: [{ id: "off", grid: "g1", cooldownUntil: null, categoryEnabled: false }, { id: "cool", grid: "g1", cooldownUntil: "2026-08-12T11:00:00Z" }] }); expect(value.notifications).toHaveLength(0); expect(value.audit.evaluations.map((item) => item.result)).toEqual(["disabled", "cooldown"]); });
+  it("classifies retries and never treats receipts as device delivery proof", () => { expect(classifyChannelResponse({ statusCode: 202, receiptId: "r1", channel: "expo-poc" })).toMatchObject({ status: "accepted", deviceDeliveryProven: false }); expect(classifyChannelResponse({ statusCode: 429, channel: "fcm" }).status).toBe("retry"); expect(channelPolicy.guaranteesDelivery).toBe(false); });
+});
