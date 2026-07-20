@@ -16,6 +16,7 @@ import { createShootingPreviewHandler } from "./modules/shooting/shooting-previe
 import type { ProfileCommand, ProfileService } from "./modules/identity/profile-service";
 import type { ItineraryCommand, ItineraryWorkflowService } from "./modules/itinerary/itinerary-workflow-service";
 import type { FieldCommand, FieldService } from "./modules/field/field-service";
+import type { CommunityCommand, CommunityWorkflowService } from "./modules/community/community-workflow-service";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -32,6 +33,7 @@ export interface ApiDependencies {
   profile?: Pick<ProfileService, "get" | "command">;
   itineraries?: Pick<ItineraryWorkflowService, "get" | "command">;
   field?: Pick<FieldService,"get"|"command">;
+  community?: Pick<CommunityWorkflowService,"get"|"command">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -116,6 +118,7 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
     });
   }
   if(dependencies.field){app.get("/v1/field",async(_request,reply)=>reply.header("cache-control","private, no-store").send(dependencies.field!.get()));app.post<{Body:{command?:FieldCommand}}>("/v1/field/commands",async(request,reply)=>{const allowed:FieldCommand[]=["verify-pack","toggle-red","switch-backup","start-session","share-location","save-report","enter-offline"];if(!request.body?.command||!allowed.includes(request.body.command))return reply.code(400).send({code:"invalid_field_command"});return reply.header("cache-control","private, no-store").send(dependencies.field!.command(request.body.command));});}
+  if(dependencies.community){app.get("/v1/community",async(_q,r)=>r.header("cache-control","private, no-store").send(dependencies.community!.get()));app.post<{Body:{command?:CommunityCommand}}>("/v1/community/commands",async(q,r)=>{const a:CommunityCommand[]=["submit-spot","submit-report","submit-correction","upload-media","open-trust","publish-review"];if(!q.body?.command||!a.includes(q.body.command))return r.code(400).send({code:"invalid_community_command"});return r.header("cache-control","private, no-store").send(dependencies.community!.command(q.body.command));});}
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);
   app.post("/v1/night-reports", async (request, reply) => {
     const headers = Object.fromEntries(Object.entries(request.headers).map(([key, value]) => [key, value]));
