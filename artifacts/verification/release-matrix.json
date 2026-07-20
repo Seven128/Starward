@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-20T10:44:00Z",
+  "generatedAt": "2026-07-20T17:08:00Z",
   "status": "pending-native-and-field-validation",
   "releaseBlocked": true,
   "productionReady": false,
@@ -10,7 +10,7 @@
     "astronomy-golden": { "status": "pending", "sampleCount": 0, "evidence": "authoritative review required" },
     "provider-contract": { "status": "passed", "sampleCount": 11, "evidence": "apps/api/src/__tests__/production-data-integration.test.ts; contract fixtures, fail-closed composition, CDSE STAC/S3, streaming ingest, S3-compatible staged commit and provider normalization" },
     "ios-simulator": { "status": "pending", "sampleCount": 0, "evidence": "iOS build host required" },
-    "android-emulator": { "status": "passed", "sampleCount": 3, "evidence": "artifacts/verification/android/android-emulator-evidence.json" },
+    "android-emulator": { "status": "passed", "sampleCount": 3, "evidence": "artifacts/verification/android/android-emulator-evidence.json; embedded-bundle release-style cold starts and primary-tab navigation" },
     "ios-device": { "status": "pending", "sampleCount": 0, "evidence": "representative iOS devices required" },
     "android-device": { "status": "pending", "sampleCount": 0, "evidence": "representative Android devices required" },
     "weak-network": { "status": "pending", "sampleCount": 0, "evidence": "native network-conditioning run required" },

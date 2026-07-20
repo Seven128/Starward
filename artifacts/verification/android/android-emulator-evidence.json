@@ -1,22 +1,32 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-07-20T10:44:00Z",
+  "recordedAt": "2026-07-20T17:08:00Z",
   "status": "passed",
-  "scope": "android-development-build-emulator-smoke",
+  "scope": "android-release-style-emulator-smoke",
   "environment": {
     "avd": "Starward_API_36",
-    "deviceProfile": "Pixel 8a",
+    "deviceProfile": "sdk_gphone64_x86_64",
     "apiLevel": 36,
     "abi": "x86_64",
-    "applicationId": "app.starward.mobile"
+    "applicationId": "app.starward.mobile",
+    "versionName": "0.1.0",
+    "versionCode": 1
   },
   "artifact": {
-    "archivedPath": "C:/Dev/worktrees/Starward/generated-android-evidence-20260720/app/build/outputs/apk/debug/app-debug.apk",
-    "bytes": 90736597,
-    "sha256": "a3b0a81ac45109389a51fc059ceee651e804a1e05a1a151bf9ef28815aeb08d4",
+    "generatedPath": "apps/mobile/android/app/build/outputs/apk/release/app-release.apk",
+    "tracked": false,
+    "bytes": 44397797,
+    "sha256": "5eccbe45bfbeaed84d6b5214b72bf4fe606e1f5d0cb1e6652b4ff2a0b29ef620",
     "buildResult": "BUILD SUCCESSFUL",
-    "gradleTasks": 475,
+    "gradleTasks": 795,
     "nativeArchitectures": ["x86_64"],
+    "javascriptDelivery": "embedded release bundle; Metro not running",
+    "signing": "local debug keystore used by the generated release variant; not store signing",
+    "reproduction": [
+      "npx expo prebuild --platform android --no-install",
+      ".\\gradlew.bat :app:assembleRelease -PreactNativeArchitectures=x86_64 --max-workers=2 --console=plain",
+      "adb install -r app-release.apk"
+    ],
     "prebuildConfiguration": {
       "newArchEnabled": true,
       "minSdkVersion": 24,
@@ -28,35 +38,40 @@
   },
   "checks": [
     {
-      "id": "install-and-launch",
+      "id": "build-install-and-launch",
       "status": "passed",
-      "evidence": "ADB streamed install returned Success; MainActivity became topResumedActivity"
+      "sampleCount": 1,
+      "evidence": "x86_64 release-style APK built with embedded JavaScript, streamed installation returned Success, and MainActivity became topResumedActivity"
+    },
+    {
+      "id": "cold-start-product-root",
+      "status": "passed",
+      "sampleCount": 3,
+      "evidence": "three force-stop launches reached accessibility nodes for 今晚去观星 and 游客模式; two measured ActivityManager TotalTime values were 8564 ms and 5063 ms"
     },
     {
       "id": "tonight-screen",
       "status": "passed",
-      "evidence": "artifacts/verification/android/starward-home-app.png"
+      "sampleCount": 1,
+      "evidence": "artifacts/verification/android/starward-home-app.png; accessibility nodes include 从黄昏走入星夜, 位置, 推荐画像 and 今晚决策"
     },
     {
-      "id": "map-route",
+      "id": "map-navigation",
       "status": "passed",
-      "evidence": "artifacts/verification/android/starward-map-app.png"
-    },
-    {
-      "id": "profile-route",
-      "status": "passed",
-      "evidence": "artifacts/verification/android/starward-current-config.png"
+      "sampleCount": 1,
+      "evidence": "artifacts/verification/android/starward-map-app.png; tapping the 观星地图 primary tab exposed the map decision copy and explicit unavailable-provider fallback"
     },
     {
       "id": "fatal-log-scan",
       "status": "passed",
-      "evidence": "No FATAL EXCEPTION, ReactNativeJS error, or unable-to-load-script entry after final route smoke"
+      "sampleCount": 3,
+      "evidence": "No FATAL EXCEPTION, app ANR, ReactNativeJS Error/Exception, or unable-to-load-script entry in any sampled cold-start or navigation run"
     }
   ],
   "limitations": [
-    "The generated native Android project and APK are retained outside the Git worktree so app.json and config plugins remain the single CNG configuration authority.",
-    "Development build only; this is not a signed store release artifact.",
-    "Emulator evidence does not satisfy representative Android device or outdoor field validation.",
+    "The generated native Android project and APK are ignored so app.json and Expo config plugins remain the CNG configuration authority.",
+    "The release-style variant uses a local debug keystore and is machine evidence only; it is not a signed store release artifact.",
+    "Emulator evidence does not satisfy representative Android device, low-power, low-brightness, weak-network, offline-restart, or outdoor field validation.",
     "No production provider, paid quota, legal, astronomy-review, photography-review, or site-safety confirmation is inferred.",
     "iOS simulator and physical iOS validation remain pending because this Windows host cannot build iOS."
   ]

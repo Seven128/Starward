@@ -55,7 +55,8 @@
             "useDayNightTheme": true
           }
         }
-      ]
+      ],
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true

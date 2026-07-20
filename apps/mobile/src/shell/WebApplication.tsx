@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ForecastScreen } from "../features/forecast/ForecastScreen";
 import { ProfilePrivacyScreen } from "../features/profile/ProfilePrivacyScreen";
@@ -19,7 +20,7 @@ import { QualityScreen } from "../features/admin/QualityScreen";
 import { MobileShellScreen } from "./MobileShellScreen";
 
 function currentLocation() {
-  if (typeof window === "undefined") return { pathname: "/" };
+  if (Platform.OS !== "web" || typeof window === "undefined") return { pathname: "/" };
   const url = new URL(window.location.href);
   return {
     pathname: url.pathname.replace(/\/$/u, "") || "/",
