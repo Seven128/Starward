@@ -77,14 +77,44 @@ async function sourceContains(root, relatives, pattern) {
   return false;
 }
 
-async function carrierIntegrity(root, carrier) {
+const outcomeProductionCarriers = Object.freeze({
+  "mobile-shell-and-preferences": ["apps/mobile/src/shell/MobileShellScreen.tsx", "apps/mobile/src/features/preferences/PreferenceWizard.tsx"],
+  "tonight-decision": ["apps/mobile/src/features/tonight/TonightScreen.tsx"],
+  "forecast-and-astronomy": ["apps/mobile/src/features/forecast/ForecastScreen.tsx"],
+  "map-route-discovery": ["apps/mobile/src/features/map/MapScreen.tsx", "apps/mobile/src/features/map/index.ts"],
+  "spot-detail-and-trust": ["apps/mobile/src/features/spots/SpotScreen.tsx", "apps/mobile/src/features/spots/index.ts"],
+  "itinerary-and-collaboration": ["apps/mobile/src/features/itinerary/ItineraryScreen.tsx", "apps/mobile/src/features/itinerary/index.ts"],
+  "sky-orientation-ar": ["apps/mobile/src/features/sky/SkyScreen.tsx", "apps/mobile/src/features/sky/index.ts"],
+  "shooting-assistant": ["apps/mobile/src/features/shooting/ShootingScreen.tsx", "apps/mobile/src/features/shooting/index.ts"],
+  "field-offline-safety": ["apps/mobile/src/features/field/FieldScreen.tsx"],
+  "community-contribution": ["apps/mobile/src/features/community/CommunityScreen.tsx"],
+  "notifications-and-toolbox": ["apps/mobile/src/features/notifications/ToolsScreen.tsx"],
+  "identity-profile-privacy": ["apps/mobile/src/features/profile/ProfilePrivacyScreen.tsx"],
+  "admin-data-operations": ["apps/admin-web/src/app/page.tsx", "apps/mobile/src/features/admin/AdminOperationsScreen.tsx"],
+  "quality-release-observability": ["apps/mobile/src/features/admin/QualityScreen.tsx", "apps/admin-web/src/app/page.tsx", "apps/api/src/server.ts"],
+});
+
+const nonCompletingCarrierPattern = /ScenarioScreen|acceptanceFixture|acceptance-fixtures|\bfixture(?:Case|Report)?\b|fixture-|版本化产品示例/iu;
+
+async function productionCarrierHealthy(root, outcome) {
+  const paths = outcomeProductionCarriers[outcome];
+  if (!paths?.length) return false;
+  for (const relative of paths) {
+    if (!(await exists(root, relative))) return false;
+    if (nonCompletingCarrierPattern.test(await source(root, relative))) return false;
+  }
+  return true;
+}
+
+async function carrierIntegrity(root, carrier, outcome) {
   const absolute = inside(root, carrier);
   const carrierStat = await stat(absolute).catch(() => null);
   if (!carrierStat?.isFile() || carrierStat.size < 40) return false;
   const text = await readFile(absolute, "utf8");
   if (/longTask(?:Probe|Result)|acceptance(?:Passed|Result)|data-acceptance-passed/iu.test(text)) return false;
   const module = await load(root, carrier);
-  return Object.keys(module).some((name) => !/acceptance|longTask/iu.test(name));
+  return Object.keys(module).some((name) => !/acceptance|longTask/iu.test(name))
+    && await productionCarrierHealthy(root, outcome);
 }
 
 async function apiContractHealthy(root, outcome) {
@@ -382,7 +412,7 @@ function populationResult(passes, value) {
 }
 
 export async function runStructuredProbe({ root, outcome, carrier, probeName }) {
-  if (probeName === "carrier-integrity") return { passes: await carrierIntegrity(root, carrier) };
+  if (probeName === "carrier-integrity") return { passes: await carrierIntegrity(root, carrier, outcome) };
 
   switch (probeName) {
     case "admin-domain-trace": {

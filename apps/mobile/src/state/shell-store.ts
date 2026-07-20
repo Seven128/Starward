@@ -18,10 +18,9 @@ interface ShellState {
   setDeviceLocation: (label: string, latitude: number, longitude: number) => void;
   saveProfile: (profile: PreferenceProfile) => void;
   activateProfile: (profileId: string) => void;
-  resetForAcceptanceFixture: () => void;
 }
 
-const baseProfile = createUnrestrictedProfile("2026-07-20T00:00:00.000Z");
+const baseProfile = createUnrestrictedProfile();
 
 export const useShellStore = create<ShellState>()(
   persist(
@@ -46,14 +45,6 @@ export const useShellStore = create<ShellState>()(
       activateProfile: (activeProfileId) => set((state) => state.profiles.some((item) => item.id === activeProfileId)
         ? { activeProfileId, recommendationState: "stale" }
         : state),
-      resetForAcceptanceFixture: () => set({
-        guest: true,
-        activeDestination: "tonight",
-        location: { source: "unset", label: "尚未选择位置" },
-        profiles: [baseProfile],
-        activeProfileId: baseProfile.id,
-        recommendationState: "ready",
-      }),
     }),
     {
       name: "starward-shell-v1",

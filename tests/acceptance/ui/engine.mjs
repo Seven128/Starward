@@ -9,11 +9,11 @@ export async function runFrozenUiCase({ page, baseUrl, outcome, assertion }) {
   if (!route || !contract) throw new Error(`unknown_frozen_ui_case:${outcome}:${assertion.key}`);
 
   const target = new URL(route, baseUrl);
-  target.searchParams.set("acceptanceFixture", `${outcome}:${assertion.key}`);
   const response = await page.goto(target.href, { waitUntil: "domcontentloaded" });
   if (!response || !response.ok()) throw new Error(`production_route_unavailable:${target.pathname}:${response?.status() ?? "no-response"}`);
 
   await expect(page).toHaveURL((url) => url.pathname === target.pathname);
+  await expect(page).toHaveURL((url) => !url.searchParams.has("acceptanceFixture"));
   await expect(page.locator(byTestId(`screen-${outcome}`))).toBeVisible();
   await page.locator(byTestId(contract.action)).click();
 

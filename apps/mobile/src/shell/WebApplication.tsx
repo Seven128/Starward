@@ -42,7 +42,7 @@ function CurrentScreen() {
   if (pathname === "/tools") return <ToolsScreen fixture={fixture} />;
   if (pathname === "/admin/operations") return <AdminOperationsScreen fixture={fixture} />;
   if (pathname === "/admin/quality") return <QualityScreen fixture={fixture} />;
-  return <MobileShellScreen fixture={fixture} />;
+  return <MobileShellScreen />;
 }
 
 export function WebApplication() {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { createUnrestrictedProfile, profileExamples, profileImpactSummary, type PreferenceProfile } from "@starward/domain/preferences";
@@ -17,10 +17,6 @@ const destinations: Array<{ id: PrimaryDestination; label: string; glyph: string
   { id: "sky", label: "天空", glyph: "✦", testID: "primary-tab-sky" },
   { id: "profile", label: "我的", glyph: "●", testID: "primary-tab-profile" },
 ];
-
-function fixtureCase(fixture?: string): string | undefined {
-  return fixture?.split(":").at(-1);
-}
 
 function makeMilkyWayProfile(): PreferenceProfile {
   const now = new Date().toISOString();
@@ -136,9 +132,8 @@ function ProfileSwitcher({ visible, profiles, activeId, onClose, onSelect, onCre
   );
 }
 
-export function MobileShellScreen({ fixture }: { fixture?: string }) {
+export function MobileShellScreen() {
   const insets = useSafeAreaInsets();
-  const scenario = fixtureCase(fixture);
   const {
     guest,
     activeDestination,
@@ -151,18 +146,14 @@ export function MobileShellScreen({ fixture }: { fixture?: string }) {
     setDeviceLocation,
     saveProfile,
     activateProfile,
-    resetForAcceptanceFixture,
   } = useShellStore();
   const [permissionVisible, setPermissionVisible] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<PermissionDecision>("undetermined");
   const [permissionLoading, setPermissionLoading] = useState(false);
   const [manualVisible, setManualVisible] = useState(false);
+  const [manualDraft, setManualDraft] = useState("深圳市 · 南山区");
   const [profileSwitcherVisible, setProfileSwitcherVisible] = useState(false);
   const [wizardVisible, setWizardVisible] = useState(false);
-
-  useEffect(() => {
-    if (fixture) resetForAcceptanceFixture();
-  }, [fixture, resetForAcceptanceFixture]);
 
   const activeProfile = useMemo(() => profiles.find((item) => item.id === activeProfileId) ?? profiles[0] ?? createUnrestrictedProfile(), [activeProfileId, profiles]);
 
@@ -172,14 +163,16 @@ export function MobileShellScreen({ fixture }: { fixture?: string }) {
     setPermissionVisible(false);
   };
 
-  const handleManualAction = () => {
-    if (scenario === "guest-manual-location") commitManualLocation();
-    else setManualVisible(true);
-  };
+  const handleManualAction = () => setManualVisible(true);
 
-  const handleProfileAction = () => {
-    if (scenario === "preference-save-and-switch") saveProfile(makeMilkyWayProfile());
-    else setProfileSwitcherVisible(true);
+  const applyStarterProfile = () => {
+    const existing = profiles.find((item) => item.id === "milky-way-photo");
+    const profile = makeMilkyWayProfile();
+    saveProfile({
+      ...profile,
+      revision: (existing?.revision ?? 0) + 1,
+      updatedAt: new Date().toISOString(),
+    });
   };
 
   const requestForegroundLocation = async () => {
@@ -209,15 +202,38 @@ export function MobileShellScreen({ fixture }: { fixture?: string }) {
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 104 + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.contextRow}>
-          <Pressable testID="shell-set-manual-location" accessibilityRole="button" accessibilityLabel={`当前位置，${location.label}。点击手动选择`} onPress={handleManualAction} style={({ pressed }) => [styles.contextCard, pressed && styles.pressed]}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`当前位置，${location.label}。点击手动选择`} onPress={handleManualAction} style={({ pressed }) => [styles.contextCard, pressed && styles.pressed]}>
             <Text style={styles.contextLabel}>位置</Text>
             <Text testID="shell-location-label" numberOfLines={1} style={styles.contextValue}>{location.label}</Text>
             <Text testID="shell-location-source" style={styles.contextMeta}>{location.source === "manual" ? "手动位置" : location.source === "device" ? "设备前台位置" : "未设置 · 可手动选择"}</Text>
           </Pressable>
-          <Pressable testID="shell-switch-profile" accessibilityRole="button" accessibilityLabel={`当前预设，${activeProfile.name}。点击切换`} onPress={handleProfileAction} style={({ pressed }) => [styles.contextCard, pressed && styles.pressed]}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`当前预设，${activeProfile.name}。点击切换`} onPress={() => setProfileSwitcherVisible(true)} style={({ pressed }) => [styles.contextCard, pressed && styles.pressed]}>
             <Text style={styles.contextLabel}>推荐画像</Text>
             <Text testID="preference-active-profile" numberOfLines={1} style={styles.contextValue}>{activeProfile.name}</Text>
             <Text testID="preference-saved-state" style={styles.contextMeta}>{activeProfile.id === "base" ? "基础模式 · 未限制" : "已保存 · 当前使用"}</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.quickSetupCard}>
+          <Text style={styles.quickSetupEyebrow}>手动位置 · 无需登录或授权</Text>
+          <Text style={styles.quickSetupTitle}>选择今晚查询的城市或出发地</Text>
+          <TextInput
+            testID="shell-manual-location-input"
+            accessibilityLabel="今晚查询的手动位置"
+            value={manualDraft}
+            onChangeText={setManualDraft}
+            placeholder="城市或出发地"
+            placeholderTextColor={palette.textSecondary}
+            style={styles.quickSetupInput}
+          />
+          <Pressable
+            testID="shell-set-manual-location"
+            accessibilityRole="button"
+            disabled={!manualDraft.trim()}
+            onPress={() => commitManualLocation(manualDraft)}
+            style={({ pressed }) => [styles.quickSetupButton, pressed && styles.pressed, !manualDraft.trim() && styles.disabled]}
+          >
+            <Text style={styles.quickSetupButtonText}>使用这个手动位置</Text>
           </Pressable>
         </View>
 
@@ -242,6 +258,16 @@ export function MobileShellScreen({ fixture }: { fixture?: string }) {
             <DataStateCard state={location.source === "unset" ? "empty" : recommendationState === "stale" ? "stale" : "loading"} />
             <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>偏好预设</Text><Pressable accessibilityRole="button" onPress={() => setWizardVisible(true)} style={styles.smallAction}><Text style={styles.smallActionText}>编辑当前预设</Text></Pressable></View>
             <Text style={styles.profileSummary}>{profileImpactSummary(activeProfile)}</Text>
+            <View style={styles.starterProfileCard}>
+              <View style={styles.starterProfileCopy}>
+                <Text style={styles.starterProfileTitle}>银河摄影起步预设</Text>
+                <Text style={styles.starterProfileBody}>自驾 · 120 分钟 · 停车优先 · 平整平台必需 · 银河 · 相机 / 镜头 / 三脚架</Text>
+                <Text style={styles.starterProfileMeta}>这是可检查、可继续编辑的起步值，不会在未点击时自动启用。</Text>
+              </View>
+              <Pressable testID="shell-switch-profile" accessibilityRole="button" onPress={applyStarterProfile} style={({ pressed }) => [styles.starterProfileButton, pressed && styles.pressed]}>
+                <Text style={styles.starterProfileButtonText}>保存并切换</Text>
+              </Pressable>
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.exampleRow}>
               {profileExamples.map((example) => (
                 <View key={example.id} style={styles.exampleCard}>
@@ -324,6 +350,12 @@ const styles = StyleSheet.create({
   contextLabel: { color: palette.textSecondary, fontSize: typeToken.caption, fontWeight: "700" },
   contextValue: { marginTop: 5, color: palette.text, fontSize: typeToken.body, fontWeight: "700" },
   contextMeta: { marginTop: 6, color: palette.primaryActive, fontSize: 11, fontWeight: "600" },
+  quickSetupCard: { padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.control, backgroundColor: palette.surface, gap: spacing.x1 },
+  quickSetupEyebrow: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" },
+  quickSetupTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" },
+  quickSetupInput: { minHeight: minimumTouchTarget, paddingHorizontal: 12, color: palette.text, borderWidth: 1, borderColor: palette.border, borderRadius: radii.control, backgroundColor: palette.canvas },
+  quickSetupButton: { minHeight: minimumTouchTarget, alignItems: "center", justifyContent: "center", paddingHorizontal: spacing.x2, borderRadius: radii.control, backgroundColor: palette.primaryActive },
+  quickSetupButtonText: { color: palette.onPrimary, fontWeight: "700" },
   staleBanner: { padding: 12, borderWidth: 1, borderColor: "#E7B866", borderRadius: radii.control, backgroundColor: "#FFF7E8" },
   staleTitle: { color: palette.warning, fontWeight: "700" },
   staleBody: { marginTop: 4, color: palette.textSecondary, fontSize: typeToken.label, lineHeight: 18 },
@@ -347,6 +379,13 @@ const styles = StyleSheet.create({
   smallAction: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: spacing.x1 },
   smallActionText: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" },
   profileSummary: { marginTop: -8, color: palette.textSecondary, fontSize: typeToken.label, lineHeight: 19 },
+  starterProfileCard: { padding: 12, borderWidth: 1, borderColor: palette.border, borderRadius: radii.control, backgroundColor: palette.surface, gap: spacing.x1 },
+  starterProfileCopy: { gap: 4 },
+  starterProfileTitle: { color: palette.text, fontWeight: "700" },
+  starterProfileBody: { color: palette.text, fontSize: typeToken.label, lineHeight: 19 },
+  starterProfileMeta: { color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 },
+  starterProfileButton: { minHeight: minimumTouchTarget, alignItems: "center", justifyContent: "center", paddingHorizontal: spacing.x2, borderRadius: radii.control, borderWidth: 1, borderColor: palette.primaryActive },
+  starterProfileButtonText: { color: palette.primaryActive, fontWeight: "700" },
   exampleRow: { gap: spacing.x1, paddingRight: spacing.x2 },
   exampleCard: { width: 190, minHeight: 118, padding: 12, borderRadius: radii.control, borderWidth: 1, borderColor: palette.border, backgroundColor: palette.surface },
   exampleTitle: { color: palette.text, fontWeight: "700" },
