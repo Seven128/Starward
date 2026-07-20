@@ -19,16 +19,15 @@ import { QualityScreen } from "../features/admin/QualityScreen";
 import { MobileShellScreen } from "./MobileShellScreen";
 
 function currentLocation() {
-  if (typeof window === "undefined") return { pathname: "/", fixture: undefined };
+  if (typeof window === "undefined") return { pathname: "/" };
   const url = new URL(window.location.href);
   return {
     pathname: url.pathname.replace(/\/$/u, "") || "/",
-    fixture: url.searchParams.get("acceptanceFixture") ?? undefined,
   };
 }
 
 function CurrentScreen() {
-  const { pathname, fixture } = currentLocation();
+  const { pathname } = currentLocation();
   if (pathname === "/forecast") return <ForecastScreen />;
   if (pathname === "/profile") return <ProfilePrivacyScreen />;
   if (pathname === "/tonight") return <TonightScreen />;
@@ -40,8 +39,8 @@ function CurrentScreen() {
   if (pathname === "/field") return <FieldScreen />;
   if (pathname === "/community") return <CommunityScreen />;
   if (pathname === "/tools") return <ToolsScreen />;
-  if (pathname === "/admin/operations") return <AdminOperationsScreen fixture={fixture} />;
-  if (pathname === "/admin/quality") return <QualityScreen fixture={fixture} />;
+  if (pathname === "/admin/operations") return <AdminOperationsScreen />;
+  if (pathname === "/admin/quality") return <QualityScreen />;
   return <MobileShellScreen />;
 }
 

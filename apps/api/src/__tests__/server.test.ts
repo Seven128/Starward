@@ -7,6 +7,8 @@ import { ItineraryWorkflowService } from "../modules/itinerary/itinerary-workflo
 import { FieldService } from "../modules/field/field-service";
 import { CommunityWorkflowService } from "../modules/community/community-workflow-service";
 import { ToolsService } from "../modules/notifications/tools-service";
+import { AdminOperationsService } from "../modules/admin/admin-operations-service";
+import { QualityService } from "../modules/quality/quality-service";
 
 const apps: Awaited<ReturnType<typeof buildApi>>[] = [];
 afterEach(async () => Promise.all(apps.splice(0).map((app) => app.close())));
@@ -123,4 +125,6 @@ describe("Starward API host", () => {
   it("serves validated field packs and bounded commands",async()=>{const app=await buildApi({...apiDependencies,field:new FieldService(()=>"2026-07-20T15:20:00Z")});apps.push(app);const initial=await app.inject({method:"GET",url:"/v1/field"});expect(initial.statusCode).toBe(200);expect(initial.json()).toMatchObject({schemaVersion:"starward-field-v1",pack:{canActivate:true}});const offline=await app.inject({method:"POST",url:"/v1/field/commands",payload:{command:"enter-offline"}});expect(offline.json()).toMatchObject({offline:{active:true}})});
   it("serves immutable moderated community workflows",async()=>{const app=await buildApi({...apiDependencies,community:new CommunityWorkflowService(()=>"2026-07-20T16:00:00Z")});apps.push(app);const r=await app.inject({method:"POST",url:"/v1/community/commands",payload:{command:"upload-media"}});expect(r.statusCode).toBe(200);expect(r.json()).toMatchObject({schemaVersion:"starward-community-v1",media:{failClosed:true,original:{access:"moderator-only"}}})});
   it("serves event-driven notification and professional-tool state",async()=>{const app=await buildApi({...apiDependencies,tools:new ToolsService(()=>"2026-07-21T00:00:00Z")});apps.push(app);const r=await app.inject({method:"POST",url:"/v1/tools/commands",payload:{command:"create-rule"}});expect(r.statusCode).toBe(200);expect(r.json()).toMatchObject({schemaVersion:"starward-tools-v1",rule:{edgeTriggered:true},pipeline:{perUserPolling:false,dedup:true}})});
+  it("serves authenticated admin commands with rollback evidence",async()=>{const app=await buildApi({...apiDependencies,admin:new AdminOperationsService(()=>"2026-07-21T00:00:00Z")});apps.push(app);const r=await app.inject({method:"POST",url:"/v1/admin/commands",payload:{command:"dataset-release-preview"}});expect(r.statusCode).toBe(200);expect(r.headers.vary).toContain("authorization");expect(r.json()).toMatchObject({schemaVersion:"starward-admin-v1",release:{status:"发布已阻止：缺少第二审批"}})});
+  it("serves measured quality and observability evidence",async()=>{const app=await buildApi({...apiDependencies,quality:new QualityService(()=>"2026-07-21T00:00:00Z")});apps.push(app);const r=await app.inject({method:"POST",url:"/v1/quality/commands",payload:{command:"quality-open-restore-drill"}});expect(r.statusCode).toBe(200);expect(r.json()).toMatchObject({schemaVersion:"starward-quality-v1",restore:{rpo:"RPO 实测 9 分钟",rto:"RTO / 恢复时间 41 分钟"}})});
 });

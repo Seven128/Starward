@@ -18,6 +18,8 @@ import type { ItineraryCommand, ItineraryWorkflowService } from "./modules/itine
 import type { FieldCommand, FieldService } from "./modules/field/field-service";
 import type { CommunityCommand, CommunityWorkflowService } from "./modules/community/community-workflow-service";
 import type { ToolsCommand,ToolsService } from "./modules/notifications/tools-service";
+import type { AdminCommand,AdminOperationsService } from "./modules/admin/admin-operations-service";
+import type { QualityCommand,QualityService } from "./modules/quality/quality-service";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -36,6 +38,8 @@ export interface ApiDependencies {
   field?: Pick<FieldService,"get"|"command">;
   community?: Pick<CommunityWorkflowService,"get"|"command">;
   tools?:Pick<ToolsService,"get"|"command">;
+  admin?:Pick<AdminOperationsService,"get"|"command">;
+  quality?:Pick<QualityService,"get"|"command">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -122,6 +126,8 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
   if(dependencies.field){app.get("/v1/field",async(_request,reply)=>reply.header("cache-control","private, no-store").send(dependencies.field!.get()));app.post<{Body:{command?:FieldCommand}}>("/v1/field/commands",async(request,reply)=>{const allowed:FieldCommand[]=["verify-pack","toggle-red","switch-backup","start-session","share-location","save-report","enter-offline"];if(!request.body?.command||!allowed.includes(request.body.command))return reply.code(400).send({code:"invalid_field_command"});return reply.header("cache-control","private, no-store").send(dependencies.field!.command(request.body.command));});}
   if(dependencies.community){app.get("/v1/community",async(_q,r)=>r.header("cache-control","private, no-store").send(dependencies.community!.get()));app.post<{Body:{command?:CommunityCommand}}>("/v1/community/commands",async(q,r)=>{const a:CommunityCommand[]=["submit-spot","submit-report","submit-correction","upload-media","open-trust","publish-review"];if(!q.body?.command||!a.includes(q.body.command))return r.code(400).send({code:"invalid_community_command"});return r.header("cache-control","private, no-store").send(dependencies.community!.command(q.body.command));});}
   if(dependencies.tools){app.get("/v1/tools",async(_q,r)=>r.header("cache-control","private, no-store").send(dependencies.tools!.get()));app.post<{Body:{command?:ToolsCommand}}>("/v1/tools/commands",async(q,r)=>{const a:ToolsCommand[]=["create-rule","open-risk","change-controls","calendar","position","professional","learning"];if(!q.body?.command||!a.includes(q.body.command))return r.code(400).send({code:"invalid_tools_command"});return r.header("cache-control","private, no-store").send(dependencies.tools!.command(q.body.command));});}
+  if(dependencies.admin){app.get("/v1/admin/data-status",async(_q,r)=>r.header("cache-control","private, no-store").header("vary","authorization").send(dependencies.admin!.get()));app.post<{Body:{command?:AdminCommand}}>("/v1/admin/commands",async(q,r)=>{const a:AdminCommand[]=["provider-tco-evaluate","job-replay","spot-merge-review","moderation-open-case","source-disable","dataset-release-preview","admin-open-audit","pipeline-open-run"];if(!q.body?.command||!a.includes(q.body.command))return r.code(400).send({code:"invalid_admin_command"});return r.header("cache-control","private, no-store").header("vary","authorization").send(dependencies.admin!.command(q.body.command));});}
+  if(dependencies.quality){app.get("/v1/quality",async(_q,r)=>r.header("cache-control","private, no-store").send(dependencies.quality!.get()));app.post<{Body:{command?:QualityCommand}}>("/v1/quality/commands",async(q,r)=>{const a:QualityCommand[]=["quality-open-restore-drill","quality-open-release-matrix","quality-open-trace","quality-open-funnel"];if(!q.body?.command||!a.includes(q.body.command))return r.code(400).send({code:"invalid_quality_command"});return r.header("cache-control","private, no-store").send(dependencies.quality!.command(q.body.command));});}
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);
   app.post("/v1/night-reports", async (request, reply) => {
     const headers = Object.fromEntries(Object.entries(request.headers).map(([key, value]) => [key, value]));

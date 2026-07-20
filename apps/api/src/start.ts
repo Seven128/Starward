@@ -18,6 +18,8 @@ import { ItineraryWorkflowService } from "./modules/itinerary/itinerary-workflow
 import { FieldService } from "./modules/field/field-service";
 import { CommunityWorkflowService } from "./modules/community/community-workflow-service";
 import { ToolsService } from "./modules/notifications/tools-service";
+import { AdminOperationsService } from "./modules/admin/admin-operations-service";
+import { QualityService } from "./modules/quality/quality-service";
 
 const mode = process.env.STARWARD_WEATHER_MODE ?? "noncommercial-poc";
 if (mode !== "noncommercial-poc") {
@@ -127,6 +129,8 @@ const app = await buildApi({
   field: new FieldService(),
   community: new CommunityWorkflowService(),
   tools:new ToolsService(),
+  admin:new AdminOperationsService(),
+  quality:new QualityService(),
   logger: true,
 });
 
