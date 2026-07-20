@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildLocationShare, planOfflineReplay, startSafetySession, stopSafetySession, validateObservationPack } from "./index";
+import { buildLocationShare, planOfflineReplay, recoverOfflineQueue, startSafetySession, stopSafetySession, validateObservationPack } from "./index";
 
 describe("offline field domain", () => {
   it("activates only complete, licensed and checksum-valid required components", () => {
@@ -18,6 +18,22 @@ describe("offline field domain", () => {
       { id: "duplicate", idempotencyKey: "r1", revision: 1, dependsOn: [], state: "queued" as const, createdAt: "2026-07-20T00:02:00Z" },
     ];
     expect(planOfflineReplay(q).ordered.map((item) => item.id)).toEqual(["report", "media"]);
+  });
+
+  it("recovers and deduplicates legacy pending writes after a process restart", () => {
+    const recovered = recoverOfflineQueue({
+      saved: [
+        { id: "write-1", idempotencyKey: "idem-1", state: "pending" },
+        { id: "write-1-copy", idempotencyKey: "idem-1", state: "pending" },
+      ],
+      network: "restored",
+    });
+
+    expect(recovered.restoredDrafts).toBe(2);
+    expect(recovered.uploads).toHaveLength(1);
+    expect(recovered.uploads[0]).toMatchObject({ id: "write-1", idempotencyKey: "idem-1", revision: 1, dependsOn: [], state: "queued" });
+    expect(recovered.conflictsVisible).toBe(true);
+    expect(recovered.dataLoss).toBe(false);
   });
 
   it("never claims background protection without permission and stops explicitly", () => {

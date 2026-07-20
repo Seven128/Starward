@@ -38,9 +38,36 @@ export function validateObservationPack(pack: ObservationPack, input: { now: str
 
 export interface QueueItem { id: string; idempotencyKey: string; revision: number; dependsOn: string[]; state: "queued" | "uploading" | "review" | "published" | "failed" | "conflict"; createdAt: string }
 
-export function planOfflineReplay(saved: QueueItem[], completedKeys: Set<string> = new Set()) {
+export interface PersistedQueueItem {
+  id: string;
+  idempotencyKey: string;
+  revision?: number;
+  dependsOn?: string[];
+  state?: QueueItem["state"] | "pending";
+  createdAt?: string;
+}
+
+const QUEUE_STATES = new Set<QueueItem["state"]>(["queued", "uploading", "review", "published", "failed", "conflict"]);
+
+function normalizePersistedQueueItem(item: PersistedQueueItem, index: number): QueueItem {
+  const persistedState = item.state === "pending" ? "queued" : item.state;
+  const state = persistedState && QUEUE_STATES.has(persistedState) ? persistedState : "conflict";
+  const revision = Number.isSafeInteger(item.revision) && (item.revision ?? 0) > 0 ? item.revision! : 1;
+  const dependsOn = Array.isArray(item.dependsOn)
+    ? [...new Set(item.dependsOn.filter((id): id is string => typeof id === "string" && id.length > 0 && id !== item.id))]
+    : [];
+  const createdAt = typeof item.createdAt === "string" && Number.isFinite(Date.parse(item.createdAt))
+    ? item.createdAt
+    : new Date(index).toISOString();
+  return { id: item.id, idempotencyKey: item.idempotencyKey, revision, dependsOn, state, createdAt };
+}
+
+export function planOfflineReplay(saved: readonly PersistedQueueItem[], completedKeys: Set<string> = new Set()) {
   const byIdempotencyKey = new Map<string, QueueItem>();
-  saved.forEach((item) => { if (!byIdempotencyKey.has(item.idempotencyKey)) byIdempotencyKey.set(item.idempotencyKey, item); });
+  saved.forEach((item, index) => {
+    const normalized = normalizePersistedQueueItem(item, index);
+    if (!byIdempotencyKey.has(normalized.idempotencyKey)) byIdempotencyKey.set(normalized.idempotencyKey, normalized);
+  });
   const unique = [...byIdempotencyKey.values()];
   const pending = unique.filter((item) => item.state !== "published" && !completedKeys.has(item.idempotencyKey));
   const ordered: QueueItem[] = [];
@@ -53,7 +80,7 @@ export function planOfflineReplay(saved: QueueItem[], completedKeys: Set<string>
   return { ordered, conflicts: [] as QueueItem[], dataLoss: false };
 }
 
-export function recoverOfflineQueue(input: { saved: QueueItem[]; network: string; completedKeys?: Set<string> }) {
+export function recoverOfflineQueue(input: { saved: readonly PersistedQueueItem[]; network: string; completedKeys?: Set<string> }) {
   const replay = planOfflineReplay(input.saved, input.completedKeys);
   return { restoredDrafts: input.saved.length, uploads: input.network === "restored" ? replay.ordered : [], conflictsVisible: true, conflicts: replay.conflicts, dataLoss: false };
 }
