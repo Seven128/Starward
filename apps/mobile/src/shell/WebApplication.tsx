@@ -39,7 +39,7 @@ function CurrentScreen() {
   if (pathname === "/shooting") return <ShootingScreen />;
   if (pathname === "/field") return <FieldScreen />;
   if (pathname === "/community") return <CommunityScreen />;
-  if (pathname === "/tools") return <ToolsScreen fixture={fixture} />;
+  if (pathname === "/tools") return <ToolsScreen />;
   if (pathname === "/admin/operations") return <AdminOperationsScreen fixture={fixture} />;
   if (pathname === "/admin/quality") return <QualityScreen fixture={fixture} />;
   return <MobileShellScreen />;

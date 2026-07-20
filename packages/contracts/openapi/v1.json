@@ -138,6 +138,8 @@
     "/v1/field/commands": { "post": { "operationId": "applyFieldCommand", "responses": { "200": { "description": "Updated field, offline, safety, share or replay state" }, "400": { "description": "Unknown command" } } } },
     "/v1/community": { "get": { "operationId": "getCommunityContributionState", "responses": { "200": { "description": "Private immutable contribution and moderation state" } } } },
     "/v1/community/commands": { "post": { "operationId": "applyCommunityCommand", "responses": { "200": { "description": "Updated contribution workflow state" }, "400": { "description": "Unknown command" } } } },
+    "/v1/tools": { "get": { "operationId": "getNotificationAndToolState", "responses": { "200": { "description": "Notification evaluation, celestial calendar and professional tool state" } } } },
+    "/v1/tools/commands": { "post": { "operationId": "applyNotificationOrToolCommand", "responses": { "200": { "description": "Updated notification or tool state" }, "400": { "description": "Unknown command" } } } },
     "/v1/admin/data-status": {
       "get": { "operationId": "getAdminDataStatus", "responses": { "200": { "description": "Administrative data status envelope" } } }
     }

@@ -17,6 +17,7 @@ import { ProfileService } from "./modules/identity/profile-service";
 import { ItineraryWorkflowService } from "./modules/itinerary/itinerary-workflow-service";
 import { FieldService } from "./modules/field/field-service";
 import { CommunityWorkflowService } from "./modules/community/community-workflow-service";
+import { ToolsService } from "./modules/notifications/tools-service";
 
 const mode = process.env.STARWARD_WEATHER_MODE ?? "noncommercial-poc";
 if (mode !== "noncommercial-poc") {
@@ -125,6 +126,7 @@ const app = await buildApi({
   itineraries: new ItineraryWorkflowService(),
   field: new FieldService(),
   community: new CommunityWorkflowService(),
+  tools:new ToolsService(),
   logger: true,
 });
 
