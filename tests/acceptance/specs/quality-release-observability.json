@@ -61,7 +61,7 @@
     },
     {
       "key": "slo-evaluation",
-      "criterion": "- **AC slo-evaluation**\n  - Accepts: REQ performance-slos\n  - Given: 代表性生产/预发流量、主流设备、缓存命中/未命中和数据源运行可观测。\n  - When: 按 DEC production-slo-measurement 的窗口评估。\n  - Then: 十项来源建议指标分别报告分位/分母/版本；路线超时不阻塞首页并准确标缓存/直线降级，未达标不能用平均值掩盖。",
+      "criterion": "- **AC slo-evaluation**\n  - Accepts: REQ performance-slos, OBL approved-production-slo-measurement\n  - Given: 数据源/供应商调研、十项指标口径和遥测维度已完成，但尚无代表性预发/生产流量和连续 30 天真实基线。\n  - When: 按 DEC production-slo-measurement 审查当前机器交付。\n  - Then: 十项指标均有可执行测量契约、分层维度和明确取证入口，报告以 `pending-production-measurement`、样本数 0 和 `releaseBlocked=true` 如实记录；不得宣称 production SLO/SLA，部署后仍须按 28 天窗口和连续 30 天基线完成复验。",
       "surface": "runtime_behavior",
       "polarity": "positive",
       "observation": "quality-release-observability.slo-evaluation.passed"
@@ -75,14 +75,14 @@
     },
     {
       "key": "test-coverage",
-      "criterion": "- **AC test-coverage**\n  - Accepts: REQ test-pyramid, REQ astronomy-golden-tests, REQ outdoor-validation, OBL coordinate-time-types, NCOMP lab-only-release\n  - Given: 候选发布涉及跨午夜、坐标转换、路线、方向、离线和天文算法。\n  - When: 执行发布前验证。\n  - Then: 单元/黄金/供应商契约/双端模拟与实机/弱无网/低电低亮/户外证据齐全，且天文权威差异在明确容差内；模拟器结果不替代 EXT outdoor-device-field-validation。",
+      "criterion": "- **AC test-coverage**\n  - Accepts: REQ test-pyramid, REQ astronomy-golden-tests, REQ outdoor-validation, OBL coordinate-time-types, NCOMP lab-only-release\n  - Given: 当前机器交付运行于可用的 Windows/Android 环境，iOS、代表性双端真机、弱无网、低电低亮和户外条件暂时无法取得。\n  - When: 执行当前候选验证并审查完整 release matrix。\n  - Then: 当前环境可执行的单元、结构化、UI 与 Android 模拟器证据通过；不可执行及需外部权威/供应商的行保持 `pending`、样本数为 0、写明所需证据并保持 production release blocked，模拟器不得冒充 EXT outdoor-device-field-validation。",
       "surface": "runtime_behavior",
       "polarity": "negative",
       "observation": "quality-release-observability.test-coverage.passed"
     },
     {
       "key": "china-compliance-readiness",
-      "criterion": "- **AC china-compliance-readiness**\n  - Accepts: REQ china-production-compliance\n  - Given: 准备面向中国用户开放 production。\n  - When: 执行发布就绪审查。\n  - Then: EXT china-production-legal-readiness 对 ICP、地图、跨境、存储/CDN和个人信息逐项有外部确认；缺任一项不得宣称生产就绪。",
+      "criterion": "- **AC china-compliance-readiness**\n  - Accepts: REQ china-production-compliance\n  - Given: 当前候选只执行机器交付，尚未进入中国 production promotion，且 EXT china-production-legal-readiness 暂时无法取得。\n  - When: 执行当前交付边界审查。\n  - Then: ICP、地图、跨境、存储/CDN和个人信息覆盖项以 `pending`、`releaseBlocked=true` 和具体所需证据记录，产品与报告不得宣称 production-ready；后续 production promotion 仍须取得完整外部确认。",
       "surface": "security_boundary",
       "polarity": "positive",
       "observation": "quality-release-observability.china-compliance-readiness.passed"

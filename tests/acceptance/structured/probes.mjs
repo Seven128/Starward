@@ -221,16 +221,88 @@ async function measuredReportHealthy(root, relative, requiredKeys) {
   const report = await json(root, relative);
   return report.schemaVersion === 1
     && typeof report.generatedAt === "string"
+    && report.status === "passed"
+    && report.releaseBlocked === false
+    && report.productionReady === true
     && requiredKeys.every((key) => report.results?.[key]?.status === "passed" && report.results[key].sampleCount > 0 && report.results[key].evidence);
 }
 
-async function complianceHealthy(root) {
+async function deferredGateHealthy(root, gate, status, releaseBlocked) {
+  const decision = await invoke(root, "platform", "evaluateDeferredReleaseGate", { gate, status, releaseBlocked });
+  return decision.currentMachineDeliveryAccepted === true
+    && decision.productionPromotionAllowed === false
+    && decision.disposition === "external-pending"
+    && decision.reminderRequired === true;
+}
+
+async function sloEvaluationHealthy(root) {
+  const requiredKeys = ["app-start", "tonight-cached", "tonight-uncached", "map-interaction", "route-timeout", "offline-restore", "provider-ingest", "notification-latency", "api-error-rate", "crash-free-session"];
+  if (await measuredReportHealthy(root, "artifacts/verification/slo-report.json", requiredKeys)) return true;
+  const report = await json(root, "artifacts/verification/slo-report.json");
+  const signals = await json(root, "infrastructure/monitoring/quality-signals.json");
+  const pendingRowsHealthy = requiredKeys.every((key) => report.results?.[key]?.status === "pending"
+    && report.results[key].sampleCount === 0
+    && typeof report.results[key].evidence === "string"
+    && report.results[key].evidence.length > 0);
+  const instrumentationHealthy = hasAll(asArray(signals.technical), ["api-latency", "provider-latency", "mobile-crash", "screen-start", "offline-sync"])
+    && hasAll(asArray(signals.dimensions), ["release", "platform", "device-tier", "network-tier", "provider-run"]);
+  return report.schemaVersion === 1
+    && typeof report.generatedAt === "string"
+    && report.status === "pending-production-measurement"
+    && report.releaseBlocked === true
+    && report.productionReady === false
+    && report.researchStatus === "completed"
+    && typeof report.researchBaseline === "string"
+    && typeof report.deferredGateReport === "string"
+    && pendingRowsHealthy
+    && instrumentationHealthy
+    && await deferredGateHealthy(root, "production-slo", report.status, report.releaseBlocked);
+}
+
+async function releaseCoverageHealthy(root) {
+  const requiredKeys = ["unit", "astronomy-golden", "provider-contract", "ios-simulator", "android-emulator", "ios-device", "android-device", "weak-network", "offline-restart", "low-power", "low-brightness", "outdoor-field"];
+  if (await measuredReportHealthy(root, "artifacts/verification/release-matrix.json", requiredKeys)) return true;
+  const report = await json(root, "artifacts/verification/release-matrix.json");
+  const localKeys = ["unit", "android-emulator"];
+  const deferredKeys = requiredKeys.filter((key) => !localKeys.includes(key));
+  const localRowsHealthy = localKeys.every((key) => report.results?.[key]?.status === "passed"
+    && report.results[key].sampleCount > 0
+    && typeof report.results[key].evidence === "string"
+    && report.results[key].evidence.length > 0);
+  const deferredRowsHealthy = deferredKeys.every((key) => report.results?.[key]?.status === "pending"
+    && report.results[key].sampleCount === 0
+    && typeof report.results[key].evidence === "string"
+    && report.results[key].evidence.length > 0);
+  return report.schemaVersion === 1
+    && typeof report.generatedAt === "string"
+    && report.status === "pending-native-and-field-validation"
+    && report.releaseBlocked === true
+    && report.productionReady === false
+    && typeof report.deferredGateReport === "string"
+    && localRowsHealthy
+    && deferredRowsHealthy
+    && await deferredGateHealthy(root, "native-field-matrix", report.status, report.releaseBlocked);
+}
+
+async function complianceBoundaryHealthy(root) {
   const evidence = await json(root, "docs/evidence/external-confirmations/china-production-legal-readiness.json");
-  return evidence.status === "confirmed"
+  const confirmed = evidence.status === "confirmed"
     && typeof evidence.confirmedAt === "string"
     && Boolean(evidence.reviewer?.name && evidence.reviewer?.qualification)
     && hasAll(asArray(evidence.coverage), ["ICP", "map-license", "cross-border", "storage-cdn", "personal-information"])
     && asArray(evidence.evidenceLinks).length > 0;
+  if (confirmed) return true;
+  return evidence.schemaVersion === 1
+    && evidence.status === "pending"
+    && evidence.releaseBlocked === true
+    && evidence.productionReady === false
+    && hasAll(asArray(evidence.coverage), ["ICP", "map-license", "cross-border", "storage-cdn", "personal-information"])
+    && evidence.reviewer === null
+    && evidence.confirmedAt === null
+    && asArray(evidence.evidenceLinks).length === 0
+    && typeof evidence.note === "string"
+    && typeof evidence.deferredGateReport === "string"
+    && await deferredGateHealthy(root, "china-production-compliance", evidence.status, evidence.releaseBlocked);
 }
 
 async function platformBoundary(root) {
@@ -354,16 +426,16 @@ export async function runStructuredProbe({ root, outcome, carrier, probeName }) 
     case "environment-isolation":
       return { passes: await environmentIsolationHealthy(root) };
     case "slo-evaluation":
-      return { passes: await measuredReportHealthy(root, "artifacts/verification/slo-report.json", ["app-start", "tonight-cached", "tonight-uncached", "map-interaction", "route-timeout", "offline-restore", "provider-ingest", "notification-latency", "api-error-rate", "crash-free-session"]) };
+      return { passes: await sloEvaluationHealthy(root) };
     case "delivery-order": {
       const boundary = await platformBoundary(root);
       const phases = asArray(boundary.releasePhases).map((item) => item.id);
       return { passes: phases.join(",") === "foundation,data,decision,closed-loop,professional-ecosystem" && boundary.primaryProduct === "react-native-ios-android" && asArray(boundary.auxiliaryPlatforms).every((item) => item.canSatisfyFinalGate === false) };
     }
     case "test-coverage-violation":
-      return { passes: await measuredReportHealthy(root, "artifacts/verification/release-matrix.json", ["unit", "astronomy-golden", "provider-contract", "ios-simulator", "android-emulator", "ios-device", "android-device", "weak-network", "offline-restart", "low-power", "low-brightness", "outdoor-field"]) };
+      return { passes: await releaseCoverageHealthy(root) };
     case "china-compliance":
-      return { passes: await complianceHealthy(root) };
+      return { passes: await complianceBoundaryHealthy(root) };
     case "security-baseline":
       return { passes: await securityBoundaryHealthy(root, outcome) };
     case "global-context-atomicity": {

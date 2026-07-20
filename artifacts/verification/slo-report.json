@@ -2,6 +2,12 @@
   "schemaVersion": 1,
   "generatedAt": "2026-07-20T00:00:00Z",
   "status": "pending-production-measurement",
+  "releaseBlocked": true,
+  "productionReady": false,
+  "researchStatus": "completed",
+  "researchBaseline": "docs/technical-data-source-decisions.md",
+  "measurementContract": "docs/source-plan.md#decision.production-slo-measurement",
+  "deferredGateReport": "docs/evidence/current-delivery-deferred-gates.md",
   "results": {
     "app-start": { "status": "pending", "sampleCount": 0, "evidence": "native release artifact required" },
     "tonight-cached": { "status": "pending", "sampleCount": 0, "evidence": "production-like dataset required" },

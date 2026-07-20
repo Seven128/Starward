@@ -109,6 +109,31 @@ export function evaluateReleasePromotion(input: { currentRuntimeVersion: string;
   };
 }
 
+export type DeferredReleaseGate = "production-slo" | "native-field-matrix" | "china-production-compliance";
+
+const acceptedGateStatuses: Record<DeferredReleaseGate, string> = {
+  "production-slo": "passed",
+  "native-field-matrix": "passed",
+  "china-production-compliance": "confirmed",
+};
+
+const pendingGateStatuses: Record<DeferredReleaseGate, string> = {
+  "production-slo": "pending-production-measurement",
+  "native-field-matrix": "pending-native-and-field-validation",
+  "china-production-compliance": "pending",
+};
+
+export function evaluateDeferredReleaseGate(input: { gate: DeferredReleaseGate; status: string; releaseBlocked: boolean }) {
+  const fullyAccepted = input.status === acceptedGateStatuses[input.gate] && input.releaseBlocked === false;
+  const truthfullyDeferred = input.status === pendingGateStatuses[input.gate] && input.releaseBlocked === true;
+  return {
+    currentMachineDeliveryAccepted: fullyAccepted || truthfullyDeferred,
+    productionPromotionAllowed: fullyAccepted,
+    disposition: fullyAccepted ? "confirmed" : truthfullyDeferred ? "external-pending" : "invalid-evidence",
+    reminderRequired: truthfullyDeferred,
+  } as const;
+}
+
 export function evaluateRestoreEvidence(input: { targetAt: string; latestDurableAt: string; startedAt: string; completedAt: string; databaseVerified: boolean; objectVersionsVerified: boolean; referencesVerified: boolean; permissionsVerified: boolean; redisRestored: boolean }) {
   const rpoMinutes = Math.max(0, (Date.parse(input.targetAt) - Date.parse(input.latestDurableAt)) / 60_000);
   const rtoMinutes = Math.max(0, (Date.parse(input.completedAt) - Date.parse(input.startedAt)) / 60_000);
