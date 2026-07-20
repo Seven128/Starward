@@ -94,6 +94,30 @@
         }
       }
     },
+    "/v1/profile": {
+      "get": {
+        "operationId": "getProfilePrivacyState",
+        "responses": { "200": { "description": "Private versioned profile, session, content, privacy and source state with server-filtered coordinates" } }
+      }
+    },
+    "/v1/profile/commands": {
+      "post": {
+        "operationId": "applyProfileCommand",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["command"],
+                "properties": { "command": { "type": "string", "enum": ["merge-guest", "revoke-session", "inspect-content", "request-export", "request-deletion", "open-sources", "restrict-location"] } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated private profile state" }, "400": { "description": "Unknown command" } }
+      }
+    },
     "/v1/admin/data-status": {
       "get": { "operationId": "getAdminDataStatus", "responses": { "200": { "description": "Administrative data status envelope" } } }
     }

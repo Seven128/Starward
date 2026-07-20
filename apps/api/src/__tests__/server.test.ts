@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { NightReport, NightReportRequest } from "../../../../packages/contracts/src/night-report";
 import { buildApi } from "../server";
 import { SkyContextService } from "../modules/sky/sky-context-service";
+import { ProfileService } from "../modules/identity/profile-service";
 
 const apps: Awaited<ReturnType<typeof buildApi>>[] = [];
 afterEach(async () => Promise.all(apps.splice(0).map((app) => app.close())));
@@ -93,5 +94,17 @@ describe("Starward API host", () => {
     expect(response.statusCode).toBe(200);
     expect(response.headers["cache-control"]).toBe("private, max-age=300");
     expect(response.json()).toMatchObject({ schemaVersion: "starward-shooting-preview-v1" });
+  });
+
+  it("serves profile commands through a private server-enforced boundary", async () => {
+    const app = await buildApi({ ...apiDependencies, profile: new ProfileService(() => "2026-07-20T00:00:00Z") });
+    apps.push(app);
+    const initial = await app.inject({ method: "GET", url: "/v1/profile" });
+    expect(initial.statusCode).toBe(200);
+    expect(initial.headers["cache-control"]).toBe("private, no-store");
+    expect(initial.json()).toMatchObject({ schemaVersion: "starward-profile-v1", privacy: { analyticsConsent: true } });
+    const changed = await app.inject({ method: "POST", url: "/v1/profile/commands", payload: { command: "restrict-location" } });
+    expect(changed.statusCode).toBe(200);
+    expect(changed.json()).toMatchObject({ privacy: { analyticsConsent: false, sharedCoordinate: { precision: "coarse" } } });
   });
 });

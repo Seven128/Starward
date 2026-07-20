@@ -13,6 +13,7 @@ import type { SkyContextService } from "./modules/sky/sky-context-service";
 import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
 import type { ShootingPreviewService } from "./modules/shooting/shooting-preview-service";
 import { createShootingPreviewHandler } from "./modules/shooting/shooting-preview-handler";
+import type { ProfileCommand, ProfileService } from "./modules/identity/profile-service";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -26,6 +27,7 @@ export interface ApiDependencies {
   routes?: Pick<RouteService, "load">;
   sky?: Pick<SkyContextService, "get">;
   shooting?: Pick<ShootingPreviewService, "get">;
+  profile?: Pick<ProfileService, "get" | "command">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -91,6 +93,14 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
     app.get<{ Querystring: Record<string, string> }>("/v1/shooting-plans", async (request, reply) => {
       const response = await shootingHandler(request.query);
       return reply.code(response.status).header("cache-control", "private, max-age=300").send(response.body);
+    });
+  }
+  if (dependencies.profile) {
+    app.get("/v1/profile", async (_request, reply) => reply.header("cache-control", "private, no-store").header("vary", "authorization").send(dependencies.profile!.get()));
+    app.post<{ Body: { command?: ProfileCommand } }>("/v1/profile/commands", async (request, reply) => {
+      const allowed: ProfileCommand[] = ["merge-guest", "revoke-session", "inspect-content", "request-export", "request-deletion", "open-sources", "restrict-location"];
+      if (!request.body?.command || !allowed.includes(request.body.command)) return reply.code(400).header("cache-control", "no-store").send({ code: "invalid_profile_command" });
+      return reply.header("cache-control", "private, no-store").header("vary", "authorization").send(dependencies.profile!.command(request.body.command));
     });
   }
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);
