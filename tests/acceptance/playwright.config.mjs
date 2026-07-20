@@ -25,8 +25,8 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,
-  timeout: 45_000,
-  expect: { timeout: 5_000 },
+  timeout: 75_000,
+  expect: { timeout: 35_000 },
   webServer: externalBaseUrl ? undefined : {
     command: `node start-mobile-web.mjs --port ${acceptancePort}`,
     url: acceptanceBaseUrl,

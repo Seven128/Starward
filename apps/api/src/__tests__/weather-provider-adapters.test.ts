@@ -143,7 +143,8 @@ describe("weather provider normalization", () => {
     } satisfies NightReportRequest;
     const evidence = await provider.load(request);
     expect(evidence).toMatchObject({ score: 88, confidence: 0.73, version: "open-meteo/fixture-model/fixture-run;policy=approved-fixture-policy@1" });
-    expect(evidence.samples).toEqual([{ at: "2026-08-12T13:00:00.000Z", eligible: true }]);
+    expect(evidence.samples).toEqual([0, 15, 30, 45].map((minute) => ({ at: `2026-08-12T13:${String(minute).padStart(2, "0")}:00.000Z`, eligible: true })));
+    expect(evidence.summary).toMatchObject({ totalCloudPct: 12, visibilityM: 15_000, windSpeedMps: 3 });
     expect(evidence.attribution?.[0].licenseId).toBe("CC-BY-4.0");
   });
 });

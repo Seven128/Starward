@@ -1,4 +1,4 @@
-import type { DataPart, NightReport, NightReportRequest, NightReportSpot, NightReportTarget } from "../../../../../packages/contracts/src/night-report";
+import type { DataPart, NightReport, NightReportConditions, NightReportRequest, NightReportSpot, NightReportTarget } from "../../../../../packages/contracts/src/night-report";
 import { assertNightReportRequest } from "../../../../../packages/contracts/src/night-report";
 import { evaluateRecommendation, selectContinuousWindow } from "../../../../../packages/scoring-engine/src/index";
 
@@ -8,9 +8,10 @@ export type WeatherEvidence = {
   version: string;
   generatedAt: string;
   samples: Array<{ at: string; eligible: boolean }>;
-  warnings?: Array<{ id: string; title: string; sources: string[] }>;
+  warnings?: Array<{ id: string; title: string; severity?: string | null; sources: string[]; safetyBlocking?: boolean }>;
   attribution?: Array<{ label: string; url: string; licenseId: string; licenseVersion: string }>;
   qualityFlags?: string[];
+  summary?: NightReportConditions["weather"];
 };
 export type AstronomyEvidence = {
   score: number;
@@ -20,14 +21,15 @@ export type AstronomyEvidence = {
   samples: Array<{ at: string; eligible: boolean }>;
   targets: NightReportTarget[];
   limitations?: string[];
+  summary?: NightReportConditions["astronomy"];
 };
-export type SpotCandidate = { id: string; name: string; sky: number; access: number; safety: number; preference: number; roadClosure?: string; risks: string[] };
+export type SpotCandidate = { id: string; name: string; coordinate?: { lat: number; lon: number; system: "WGS84" }; sky: number; access: number; safety: number; preference: number; roadClosure?: string; risks: string[] };
 export type RouteEvidence = { spotId: string; distanceKm: number; travelMinutes: number; accessScore: number; version: string; generatedAt: string; state: "fresh" | "cached" };
 
 export type NightReportProviders = {
   weather: { load(request: NightReportRequest): Promise<WeatherEvidence> };
   astronomy: { load(request: NightReportRequest): Promise<AstronomyEvidence> };
-  spots: { find(request: NightReportRequest): Promise<{ version: string; generatedAt: string; candidates: SpotCandidate[] }> };
+  spots: { find(request: NightReportRequest): Promise<{ version: string; generatedAt: string; confidence?: number; candidates: SpotCandidate[] }> };
   routes: { load(request: NightReportRequest, candidates: SpotCandidate[]): Promise<RouteEvidence[]> };
 };
 
@@ -54,15 +56,22 @@ const missingPart = (source: string, warning: string): DataPart => ({ state: "mi
 const evidencePart = (source: string, value: { version: string; generatedAt: string; confidence?: number }, state: DataPart["state"] = "fresh"): DataPart => ({ state, source, sourceVersion: value.version, sourceTime: value.generatedAt, confidence: value.confidence ?? 0.8 });
 
 function overlapSamples(weather: WeatherEvidence, astronomy: AstronomyEvidence) {
-  const astronomyByTime = new Map(astronomy.samples.map((sample) => [sample.at, sample.eligible]));
-  return weather.samples.map((sample) => ({ at: sample.at, eligible: sample.eligible && astronomyByTime.get(sample.at) === true }));
+  const weatherSamples = [...weather.samples].sort((left, right) => left.at.localeCompare(right.at));
+  return astronomy.samples.map((sample) => {
+    const at = Date.parse(sample.at);
+    const weatherSample = [...weatherSamples].reverse().find((candidate) => {
+      const candidateAt = Date.parse(candidate.at);
+      return candidateAt <= at && at - candidateAt < 15 * 60_000;
+    });
+    return { at: sample.at, eligible: sample.eligible && weatherSample?.eligible === true };
+  });
 }
 
 function category(score: number, blocked: boolean): NightReport["decision"]["category"] {
   if (blocked) return "safety-risk";
   if (score >= 85) return "excellent";
-  if (score >= 72) return "good";
-  if (score >= 55) return "mixed";
+  if (score >= 75) return "good";
+  if (score >= 60) return "mixed";
   return "not-recommended";
 }
 
@@ -83,7 +92,7 @@ export class NightReportService {
     const parts: NightReport["parts"] = {
       weather: weather ? evidencePart("weather", weather) : missingPart("weather", "天气数据不可用，不能生成出发结论"),
       astronomy: astronomy ? evidencePart("astronomy", astronomy) : missingPart("astronomy", "天文数据不可用，不能生成观测窗口"),
-      spots: spots ? evidencePart("spot-catalog", { ...spots, confidence: 0.8 }) : missingPart("spot-catalog", "地点候选不可用"),
+      spots: spots ? evidencePart("spot-catalog", { ...spots, confidence: spots.confidence ?? 0.8 }) : missingPart("spot-catalog", "地点候选不可用"),
       route: missingPart("route", "尚未请求路线"),
     };
     const warnings = [
@@ -97,7 +106,7 @@ export class NightReportService {
         id: this.nextId(), revision: 1, requestId: request.requestId, generatedAt, expiresAt: new Date(this.now().getTime() + 15 * 60_000).toISOString(), status: "insufficient-data",
         context: { location: request.location, timezone: request.timezone, nightDate: request.nightDate, profile: request.profile, target: request.target, route: request.route },
         decision: { category: "insufficient-data", score: null, confidence: 0, summary: "关键数据不足，暂不生成出发建议", reasons: [], blockers: warnings },
-        observationWindow: null, primarySpot: null, backupSpots: [], targets: astronomy?.targets ?? [], parts, warnings,
+        observationWindow: null, primarySpot: null, backupSpots: [], targets: astronomy?.targets ?? [], conditions: { weather: weather?.summary ?? null, astronomy: astronomy?.summary ?? null, lightPollution: { radiance: null, year: null, state: "unknown", boundary: "尚未接入获许可且经区域校准的夜光数据；不显示伪造 Bortle 或 SQM" } }, parts, warnings,
         provenance: [weather && { source: "weather", version: weather.version, generatedAt: weather.generatedAt }, astronomy && { source: "astronomy", version: astronomy.version, generatedAt: astronomy.generatedAt }, spots && { source: "spot-catalog", version: spots.version, generatedAt: spots.generatedAt }].filter(Boolean) as NightReport["provenance"],
       };
       return this.repository.save(report);
@@ -113,9 +122,10 @@ export class NightReportService {
       parts.route = missingPart("route", "路线供应商不可用；不会把直线距离描述为驾车路线");
     }
     const routeBySpot = new Map(routes.map((route) => [route.spotId, route]));
+    const officialWeatherBlocks = (weather.warnings ?? []).filter((warning) => warning.safetyBlocking);
     const recommendation = evaluateRecommendation({ candidates: spots.candidates.map((spot) => {
       const route = routeBySpot.get(spot.id);
-      return { id: spot.id, sky: Math.round((spot.sky + astronomy.score) / 2), weather: weather.score, access: route?.accessScore ?? spot.access, safety: spot.safety, preference: spot.preference, roadClosure: spot.roadClosure };
+      return { id: spot.id, sky: Math.round((spot.sky + astronomy.score) / 2), weather: weather.score, access: route?.accessScore ?? spot.access, safety: spot.safety, preference: spot.preference, confidence: Math.min(weather.confidence, astronomy.confidence, parts.spots.confidence) * 100, roadClosure: spot.roadClosure, hardBlocker: officialWeatherBlocks.length > 0 };
     }), profile: request.profile });
     const ranked = [...recommendation.candidates].filter((item) => !item.safetyBlocked).sort((left, right) => right.total - left.total);
     const blocked = recommendation.candidates.filter((item) => item.safetyBlocked);
@@ -126,12 +136,35 @@ export class NightReportService {
     };
     const primaryCandidate = ranked[0];
     const primarySpot = primaryCandidate ? toSpot(primaryCandidate, "primary") : null;
-    const backupSpots = ranked.slice(1, 4).map((candidate, index) => toSpot(candidate, (["near-backup", "weather-backup", "dark-backup"] as const)[index]));
-    const window = selectContinuousWindow({ cadenceMinutes: 30, samples: overlapSamples(weather, astronomy) });
-    const observationWindow = window.start && window.end ? { start: window.start, end: window.end, durationMinutes: window.sampleCount * window.cadenceMinutes } : null;
+    const remaining = ranked.slice(1);
+    const used = new Set<string>();
+    const primarySource = primaryCandidate ? spots.candidates.find((spot) => spot.id === primaryCandidate.id) : null;
+    const pick = (role: Exclude<NightReportSpot["role"], "primary">, candidates: typeof remaining) => {
+      const candidate = candidates.find((item) => !used.has(item.id));
+      if (!candidate) return null;
+      used.add(candidate.id);
+      return toSpot(candidate, role);
+    };
+    const near = pick("near-backup", [...remaining].sort((left, right) => {
+      const leftAccess = spots.candidates.find((spot) => spot.id === left.id)?.access ?? 0;
+      const rightAccess = spots.candidates.find((spot) => spot.id === right.id)?.access ?? 0;
+      return rightAccess - leftAccess;
+    }));
+    // A weather backup requires per-candidate weather evidence. The current POC
+    // has only origin weather, so it deliberately does not manufacture one.
+    const weatherBackup = null;
+    const dark = pick("dark-backup", [...remaining].filter((item) => {
+      const source = spots.candidates.find((spot) => spot.id === item.id);
+      return source && primarySource ? source.sky > primarySource.sky : false;
+    }).sort((left, right) => (spots.candidates.find((spot) => spot.id === right.id)?.sky ?? 0) - (spots.candidates.find((spot) => spot.id === left.id)?.sky ?? 0)));
+    const backupSpots = [near, weatherBackup, dark].filter((spot): spot is NightReportSpot => spot !== null);
+    const window = selectContinuousWindow({ cadenceMinutes: 15, samples: overlapSamples(weather, astronomy) });
+    const minimumWindowMinutes = request.profile === "milky-way" ? 120 : 60;
+    const durationMinutes = window.sampleCount * window.cadenceMinutes;
+    const observationWindow = durationMinutes >= minimumWindowMinutes && window.start && window.end ? { start: window.start, end: window.end, durationMinutes } : null;
     const score = primaryCandidate ? Math.round(primaryCandidate.total) : 0;
-    const confidence = Math.round(Math.min(weather.confidence, astronomy.confidence, parts.route.confidence || 0.45) * 100) / 100;
-    const blockers = blocked.map((candidate) => `${spots.candidates.find((spot) => spot.id === candidate.id)?.name ?? candidate.id}：安全阻断`);
+    const confidence = Math.round(Math.min(weather.confidence, astronomy.confidence, parts.spots.confidence, parts.route.confidence || 0.45) * 100) / 100;
+    const blockers = [...officialWeatherBlocks.map((warning) => `官方严重预警：${warning.title}`), ...blocked.map((candidate) => `${spots.candidates.find((spot) => spot.id === candidate.id)?.name ?? candidate.id}：安全阻断`)];
     const status = parts.route.state === "missing" || parts.route.state === "cached" ? "partial" : primarySpot ? "ready" : "blocked";
     warnings.splice(0, warnings.length,
       ...Object.values(parts).flatMap((part) => part.warning ? [part.warning] : []),
@@ -142,8 +175,8 @@ export class NightReportService {
     const report: NightReport = {
       id: this.nextId(), revision: 1, requestId: request.requestId, generatedAt, expiresAt: new Date(this.now().getTime() + 15 * 60_000).toISOString(), status,
       context: { location: request.location, timezone: request.timezone, nightDate: request.nightDate, profile: request.profile, target: request.target, route: request.route },
-      decision: { category: category(score, !primarySpot), score: primarySpot ? score : null, confidence, summary: primarySpot ? `${primarySpot.name} 为当前主地点，${observationWindow ? "存在连续观测窗口" : "未找到连续观测窗口"}` : "候选均被安全条件阻断", reasons: primarySpot?.reasons ?? [], blockers },
-      observationWindow, primarySpot, backupSpots, targets: astronomy.targets, parts, warnings,
+      decision: { category: confidence < 0.6 && primarySpot ? "mixed" : category(score, !primarySpot), score: primarySpot ? score : null, confidence, summary: primarySpot ? `${primarySpot.name} 为当前主地点，${observationWindow ? "存在连续观测窗口" : `未找到满足 ${minimumWindowMinutes} 分钟的连续观测窗口`}${confidence < 0.6 ? "；数据可信度不足，不作强肯定结论" : ""}` : "候选均被安全条件阻断", reasons: primarySpot?.reasons ?? [], blockers },
+      observationWindow, primarySpot, backupSpots, targets: astronomy.targets, conditions: { weather: weather.summary ?? null, astronomy: astronomy.summary ?? null, lightPollution: { radiance: null, year: null, state: "unknown", boundary: "尚未接入获许可且经区域校准的夜光数据；不显示伪造 Bortle 或 SQM" } }, parts, warnings,
       provenance: [{ source: "weather", version: weather.version, generatedAt: weather.generatedAt }, { source: "astronomy", version: astronomy.version, generatedAt: astronomy.generatedAt }, { source: "spot-catalog", version: spots.version, generatedAt: spots.generatedAt }, ...routes.map((route) => ({ source: "route", version: route.version, generatedAt: route.generatedAt }))],
     };
     return this.repository.save(report);

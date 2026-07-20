@@ -12,7 +12,7 @@ export type NightReportRequest = {
   location: Wgs84Location;
   timezone: string;
   nightDate: string;
-  profile: "family" | "milky-way";
+  profile: "neutral" | "beginner" | "family" | "milky-way" | "visual" | "camping";
   target: string;
   route: { origin: Wgs84Location; maxTravelMinutes: number; modes: Array<"drive" | "cycle" | "transit" | "walk"> };
 };
@@ -48,6 +48,35 @@ export type NightReportTarget = {
   impact: string;
 };
 
+export type NightReportConditions = {
+  weather: {
+    at: string | null;
+    conditionText: string | null;
+    temperatureC: number | null;
+    apparentTemperatureC: number | null;
+    totalCloudPct: number | null;
+    lowCloudPct: number | null;
+    midCloudPct: number | null;
+    highCloudPct: number | null;
+    visibilityM: number | null;
+    aqi: number | null;
+    windSpeedMps: number | null;
+    windDirectionDeg: number | null;
+    precipitationProbabilityPct: number | null;
+    relativeHumidityPct: number | null;
+    dewPointC: number | null;
+  } | null;
+  astronomy: {
+    moonIllumination: number | null;
+    moonRise: string | null;
+    moonSet: string | null;
+    astronomicalDusk: string | null;
+    astronomicalDawn: string | null;
+    moonlessWindow: { start: string; end: string; durationMinutes: number } | null;
+  } | null;
+  lightPollution: { radiance: number | null; year: number | null; state: "unknown" | "available"; boundary: string };
+};
+
 export type NightReport = {
   id: string;
   revision: number;
@@ -68,6 +97,7 @@ export type NightReport = {
   primarySpot: NightReportSpot | null;
   backupSpots: NightReportSpot[];
   targets: NightReportTarget[];
+  conditions: NightReportConditions;
   parts: Record<"weather" | "astronomy" | "spots" | "route", DataPart>;
   warnings: string[];
   provenance: Array<{ source: string; version: string; generatedAt: string }>;
@@ -80,6 +110,8 @@ export function assertNightReportRequest(input: NightReportRequest) {
   if (!Number.isFinite(input.location.lon) || input.location.lon < -180 || input.location.lon > 180) throw new Error("night_report_longitude_invalid");
   if (!/^\d{4}-\d{2}-\d{2}$/u.test(input.nightDate)) throw new Error("night_report_date_invalid");
   if (!input.timezone.includes("/")) throw new Error("night_report_timezone_invalid");
+  if (!["neutral", "beginner", "family", "milky-way", "visual", "camping"].includes(input.profile)) throw new Error("night_report_profile_invalid");
+  if (!input.target || input.target.length > 80) throw new Error("night_report_target_invalid");
   if (!Number.isFinite(input.route.maxTravelMinutes) || input.route.maxTravelMinutes <= 0) throw new Error("night_report_route_limit_invalid");
   if (!input.route.modes.length) throw new Error("night_report_route_mode_required");
   return input;
@@ -95,5 +127,6 @@ export function isNightReport(value: unknown): value is NightReport {
     && Boolean(report.decision && report.parts)
     && Array.isArray(report.backupSpots)
     && Array.isArray(report.targets)
+    && Boolean(report.conditions)
     && Array.isArray(report.provenance);
 }

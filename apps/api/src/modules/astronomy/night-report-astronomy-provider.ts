@@ -4,6 +4,8 @@ import { selectContinuousWindow } from "../../../../../packages/scoring-engine/s
 import type { AstronomyEvidence } from "../night-report/night-report-service";
 
 const SUPPORTED_TARGETS = new Set<SupportedTarget>(["milky-way-core", "moon", "mercury", "venus", "mars", "jupiter", "saturn"]);
+const TARGET_ORDER: SupportedTarget[] = ["milky-way-core", "moon", "venus", "mars", "jupiter", "saturn", "mercury"];
+const TARGET_NAMES: Record<SupportedTarget, string> = { "milky-way-core": "银河核心", moon: "月亮", mercury: "水星", venus: "金星", mars: "火星", jupiter: "木星", saturn: "土星" };
 
 export interface AstronomyEligibilityResult {
   eligible: boolean;
@@ -37,39 +39,55 @@ export class AstronomyEngineNightReportProvider {
   ) {}
 
   async load(request: NightReportRequest): Promise<AstronomyEvidence> {
-    const calculation = calculateNightSky({
-      latitude: request.location.lat,
-      longitude: request.location.lon,
-      elevationM: await this.elevationM(request),
-      timezone: request.timezone,
-      nightDate: request.nightDate,
-      target: targetFromRequest(request.target),
-      cadenceMinutes: 30,
+    const elevationM = await this.elevationM(request);
+    const requestedTarget = targetFromRequest(request.target);
+    const calculations = TARGET_ORDER.map((target) => ({ target, calculation: calculateNightSky({
+      latitude: request.location.lat, longitude: request.location.lon, elevationM,
+      timezone: request.timezone, nightDate: request.nightDate, target, cadenceMinutes: 15,
+    }) }));
+    const requested = calculations.find((item) => item.target === requestedTarget)!;
+    if (!requested.calculation.samples.length) throw new Error("astronomy_night_window_unavailable");
+    const minimumMinutes = request.profile === "milky-way" ? 120 : 60;
+    const evaluatedByTarget = calculations.map(({ target, calculation }) => {
+      const targetRequest = { ...request, target };
+      const evaluated = calculation.samples.map((sample) => ({ sample, result: validate(this.policy.evaluate({ sample, calculation, request: targetRequest })) }));
+      const eligible = evaluated.map((item) => ({ at: item.sample.at, eligible: item.result.eligible }));
+      const selected = selectContinuousWindow({ cadenceMinutes: 15, samples: eligible });
+      const hasExecutableWindow = selected.sampleCount * selected.cadenceMinutes >= minimumMinutes;
+      const peak = [...evaluated].filter((item) => item.result.eligible).sort((left, right) => right.sample.targetAltitudeDeg - left.sample.targetAltitudeDeg)[0];
+      const result: NightReportTarget = {
+        id: target, name: TARGET_NAMES[target], visible: Boolean(peak && hasExecutableWindow),
+        window: hasExecutableWindow && selected.start && selected.end ? { start: selected.start, end: selected.end } : null,
+        peak: peak ? { at: peak.sample.at, altitudeDeg: peak.sample.targetAltitudeDeg, azimuthDeg: peak.sample.targetAzimuthDeg } : null,
+        difficulty: this.policy.difficulty,
+        impact: hasExecutableWindow ? (peak?.result.impact ?? "当前政策下没有合格可见窗口") : `连续时长不足 ${minimumMinutes} 分钟`,
+      };
+      return { target, calculation, evaluated, eligible, result };
     });
-    if (!calculation.samples.length) throw new Error("astronomy_night_window_unavailable");
-    const evaluated = calculation.samples.map((sample) => ({ sample, result: validate(this.policy.evaluate({ sample, calculation, request })) }));
-    const score = Math.round(evaluated.reduce((sum, item) => sum + item.result.score, 0) / evaluated.length);
-    const confidence = Math.round(Math.min(...evaluated.map((item) => item.result.confidence)) * 100) / 100;
-    const eligible = evaluated.map((item) => ({ at: item.sample.at, eligible: item.result.eligible }));
-    const selected = selectContinuousWindow({ cadenceMinutes: 30, samples: eligible });
-    const peak = [...evaluated].filter((item) => item.result.eligible).sort((left, right) => right.sample.targetAltitudeDeg - left.sample.targetAltitudeDeg)[0];
-    const target: NightReportTarget = {
-      id: request.target,
-      name: request.target === "milky-way-core" ? "银河核心" : request.target,
-      visible: Boolean(peak),
-      window: selected.start && selected.end ? { start: selected.start, end: selected.end } : null,
-      peak: peak ? { at: peak.sample.at, altitudeDeg: peak.sample.targetAltitudeDeg, azimuthDeg: peak.sample.targetAzimuthDeg } : null,
-      difficulty: this.policy.difficulty,
-      impact: peak?.result.impact ?? "当前政策下没有合格可见窗口",
-    };
+    const selectedTarget = evaluatedByTarget.find((item) => item.target === requestedTarget)!;
+    const score = Math.round(selectedTarget.evaluated.reduce((sum, item) => sum + item.result.score, 0) / selectedTarget.evaluated.length);
+    const confidence = Math.round(Math.min(...selectedTarget.evaluated.map((item) => item.result.confidence)) * 100) / 100;
+    const moonless = selectContinuousWindow({ cadenceMinutes: 15, samples: requested.calculation.samples.map((sample) => ({ at: sample.at, eligible: sample.sunAltitudeDeg <= -18 && sample.moonAltitudeDeg <= 0 })) });
+    const moonlessDuration = moonless.sampleCount * moonless.cadenceMinutes;
+    const unavailableTargets: NightReportTarget[] = [
+      ["constellations", "主要星座"], ["meteor-showers", "流星雨"], ["comets", "彗星"], ["space-station", "空间站"], ["special-events", "特殊天象"],
+    ].map(([id, name]) => ({ id, name, visible: false, window: null, peak: null, difficulty: "hard", impact: "对应星表、事件历表或轨道源尚未接入，不能推断为不可见" }));
     return {
       score,
       confidence,
-      version: `${calculation.algorithmVersion};policy=${this.policy.version}`,
+      version: `${requested.calculation.algorithmVersion};policy=${this.policy.version}`,
       generatedAt: this.now().toISOString(),
-      samples: eligible,
-      targets: [target],
-      limitations: [...calculation.limitations],
+      samples: selectedTarget.eligible,
+      targets: [...evaluatedByTarget.map((item) => item.result), ...unavailableTargets],
+      limitations: [...requested.calculation.limitations, "星座、流星雨、彗星、空间站与特殊事件需要独立获许可/版本化数据源，当前保持 unknown"],
+      summary: {
+        moonIllumination: requested.calculation.moonIlluminationAtMidpoint,
+        moonRise: requested.calculation.moonRise,
+        moonSet: requested.calculation.moonSet,
+        astronomicalDusk: requested.calculation.astronomicalDusk,
+        astronomicalDawn: requested.calculation.astronomicalDawn,
+        moonlessWindow: moonlessDuration >= 60 && moonless.start && moonless.end ? { start: moonless.start, end: moonless.end, durationMinutes: moonlessDuration } : null,
+      },
     };
   }
 }

@@ -21,6 +21,7 @@ export class OverpassSpotSearchSource implements SpotSearchProvider {
   private readonly endpoint: URL;
   private readonly now: () => Date;
   private readonly cache = new Map<string, { expiresAt: number; page: SpotSearchPage }>();
+  private readonly inflight = new Map<string, Promise<SpotSearchPage>>();
   constructor(private readonly options: OverpassSpotSearchSourceOptions = {}) {
     this.endpoint = new URL(options.endpoint ?? "https://overpass-api.de/api/interpreter");
     assertHttpsHost(this.endpoint, ["overpass-api.de"]);
@@ -34,6 +35,15 @@ export class OverpassSpotSearchSource implements SpotSearchProvider {
     const cacheKey = `${request.center.lat.toFixed(3)}:${request.center.lon.toFixed(3)}:${request.radiusMeters}:${request.limit}:${(request.requireFacilities ?? []).sort().join(",")}`;
     const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAt > this.now().getTime()) return structuredClone(cached.page);
+    const active = this.inflight.get(cacheKey);
+    if (active) return structuredClone(await active);
+    const pending = this.fetchPage(request, cacheKey);
+    this.inflight.set(cacheKey, pending);
+    try { return structuredClone(await pending); }
+    finally { this.inflight.delete(cacheKey); }
+  }
+
+  private async fetchPage(request: SpotSearchRequest, cacheKey: string): Promise<SpotSearchPage> {
     const queryRadius = Math.min(request.radiusMeters, 100_000);
     const query = `[out:json][timeout:15];(node["tourism"="viewpoint"](around:${queryRadius},${request.center.lat},${request.center.lon});node["amenity"="observatory"](around:${queryRadius},${request.center.lat},${request.center.lon}););out ${Math.min(request.limit * 4, 100)};`;
     const url = new URL(this.endpoint);

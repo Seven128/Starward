@@ -40,6 +40,9 @@ describe("deterministic astronomy core", () => {
     expect(evidence.version).toContain("policy=approved-fixture-astronomy-policy@1");
     expect(evidence.targets[0]).toMatchObject({ id: "milky-way-core", visible: true, difficulty: "medium" });
     expect(evidence.targets[0].peak?.altitudeDeg).toBeGreaterThan(20);
+    expect(evidence.targets.map((target) => target.id)).toEqual(expect.arrayContaining(["moon", "venus", "mars", "jupiter", "saturn", "constellations", "meteor-showers", "space-station"]));
+    expect(evidence.targets.find((target) => target.id === "space-station")?.impact).toContain("尚未接入");
+    expect(evidence.summary).toMatchObject({ astronomicalDusk: expect.any(String), astronomicalDawn: expect.any(String) });
     expect(evidence.limitations?.join(" ")).toContain("JPL Horizons");
   });
 });

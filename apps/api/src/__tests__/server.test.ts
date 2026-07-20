@@ -15,6 +15,7 @@ function report(requestId: string): NightReport {
     },
     decision: { category: "insufficient-data", score: null, confidence: 0, summary: "关键数据不足", reasons: [], blockers: [] },
     observationWindow: null, primarySpot: null, backupSpots: [], targets: [],
+    conditions: { weather: null, astronomy: null, lightPollution: { radiance: null, year: null, state: "unknown", boundary: "fixture" } },
     parts: {
       weather: { state: "missing", source: "weather", sourceVersion: null, sourceTime: null, confidence: 0, warning: "missing" },
       astronomy: { state: "missing", source: "astronomy", sourceVersion: null, sourceTime: null, confidence: 0, warning: "missing" },

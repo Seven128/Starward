@@ -14,10 +14,10 @@ const request: NightReportRequest = {
 };
 
 function providers(routeFailure = false): NightReportProviders {
-  const samples = ["2026-08-12T16:00:00Z", "2026-08-12T16:30:00Z", "2026-08-12T17:00:00Z", "2026-08-12T17:30:00Z"].map((at) => ({ at, eligible: true }));
+  const samples = Array.from({ length: 8 }, (_, index) => ({ at: new Date(Date.parse("2026-08-12T16:00:00Z") + index * 15 * 60_000).toISOString().replace(".000Z", "Z"), eligible: true }));
   return {
     weather: { load: async () => ({ score: 82, confidence: 0.8, version: "weather-7", generatedAt: "2026-08-12T12:00:00Z", samples }) },
-    astronomy: { load: async () => ({ score: 90, confidence: 0.9, version: "astro-5", generatedAt: "2026-08-12T12:00:00Z", samples, targets: [{ id: "milky-way-core", name: "银河核心", visible: true, window: { start: samples[0].at, end: samples[3].at }, peak: { at: samples[2].at, altitudeDeg: 34, azimuthDeg: 168 }, difficulty: "medium", impact: "月光较弱" }] }) },
+    astronomy: { load: async () => ({ score: 90, confidence: 0.9, version: "astro-5", generatedAt: "2026-08-12T12:00:00Z", samples, targets: [{ id: "milky-way-core", name: "银河核心", visible: true, window: { start: samples[0].at, end: samples[7].at }, peak: { at: samples[4].at, altitudeDeg: 34, azimuthDeg: 168 }, difficulty: "medium", impact: "月光较弱" }] }) },
     spots: { find: async () => ({ version: "spots-11", generatedAt: "2026-08-12T12:00:00Z", candidates: [
       { id: "closed-dark", name: "封闭暗点", sky: 99, access: 80, safety: 0, preference: 99, roadClosure: "confirmed", risks: ["已确认封路"] },
       { id: "safe", name: "安全主点", sky: 78, access: 76, safety: 92, preference: 84, risks: [] },
@@ -43,6 +43,7 @@ describe("NightReportService", () => {
     expect(report.decision.blockers).toContain("封闭暗点：安全阻断");
     expect(report.observationWindow).toMatchObject({ start: "2026-08-12T16:00:00Z", end: "2026-08-12T18:00:00Z", durationMinutes: 120 });
     expect(report.provenance.map((item) => item.source)).toEqual(expect.arrayContaining(["weather", "astronomy", "spot-catalog", "route"]));
+    expect(report.conditions.lightPollution).toMatchObject({ state: "unknown", radiance: null });
     expect(await repository.find("night-1")).toEqual(report);
   });
 
@@ -64,6 +65,18 @@ describe("NightReportService", () => {
     expect(report.decision.score).toBeNull();
     expect(report.primarySpot).toBeNull();
     expect(report.parts.weather.state).toBe("missing");
+  });
+
+  it("lets an active official severe warning block every high-scoring candidate", async () => {
+    const source = providers();
+    const original = source.weather.load;
+    source.weather.load = async (value) => ({ ...await original(value), warnings: [{ id: "official-red", title: "暴雨红色预警", severity: "Red", sources: ["深圳市气象台"], safetyBlocking: true }] });
+    const service = new NightReportService(source, new InMemoryNightReportRepository(), () => new Date("2026-08-12T12:00:00Z"), () => "night-warning");
+    const report = await service.create({ ...request, requestId: "request-warning" });
+    expect(report.status).toBe("blocked");
+    expect(report.primarySpot).toBeNull();
+    expect(report.decision.category).toBe("safety-risk");
+    expect(report.decision.blockers.join(" ")).toContain("暴雨红色预警");
   });
 
   it("does not overwrite an immutable snapshot id", async () => {

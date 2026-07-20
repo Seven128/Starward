@@ -31,7 +31,7 @@ function CurrentScreen() {
   const { pathname, fixture } = currentLocation();
   if (pathname === "/forecast") return <ForecastScreen />;
   if (pathname === "/profile") return <ProfilePrivacyScreen fixture={fixture} />;
-  if (pathname === "/tonight") return <TonightScreen fixture={fixture} />;
+  if (pathname === "/tonight") return <TonightScreen />;
   if (pathname === "/map") return <MapScreen />;
   if (pathname === "/spots/current" || pathname === "/spots") return <SpotScreen />;
   if (pathname === "/plans") return <ItineraryScreen fixture={fixture} />;

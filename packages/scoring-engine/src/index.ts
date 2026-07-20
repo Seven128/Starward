@@ -5,26 +5,42 @@ type Candidate = {
   access: number;
   safety: number;
   preference: number;
+  confidence?: number;
+  hardBlocker?: boolean;
   facilities?: boolean;
   roadClosure?: string;
 };
 
+export const RECOMMENDATION_POLICY_VERSION = "starward-five-factor@1";
+
 const weights = {
-  family: { sky: 0.1, weather: 0.15, access: 0.35, safety: 0.25, preference: 0.15 },
-  "milky-way": { sky: 0.4, weather: 0.2, access: 0.1, safety: 0.1, preference: 0.2 },
+  neutral: { sky: 0.35, target: 0.20, place: 0.15, travel: 0.15, confidence: 0.15 },
+  beginner: { sky: 0.25, target: 0.10, place: 0.25, travel: 0.25, confidence: 0.15 },
+  // Approved family/beginner profile: sky/target/place/travel/confidence 25/10/25/25/15.
+  family: { sky: 0.25, target: 0.10, place: 0.25, travel: 0.25, confidence: 0.15 },
+  // Approved astrophotography profile: 35/25/15/10/15.
+  "milky-way": { sky: 0.35, target: 0.25, place: 0.15, travel: 0.10, confidence: 0.15 },
+  visual: { sky: 0.40, target: 0.20, place: 0.20, travel: 0.05, confidence: 0.15 },
+  camping: { sky: 0.25, target: 0.10, place: 0.30, travel: 0.20, confidence: 0.15 },
 } as const;
 
 export function evaluateRecommendation(input: { candidates: Candidate[]; profile: keyof typeof weights; learning?: { modelVersion: string; scores: Record<string, number> } }) {
   const selectedWeights = weights[input.profile] ?? weights.family;
   const candidates = input.candidates.map((candidate) => {
-    const safetyBlocked = candidate.roadClosure === "confirmed" || candidate.safety <= 0;
-    const factors = { sky: candidate.sky, weather: candidate.weather, access: candidate.access, safety: candidate.safety, preference: candidate.preference };
+    const safetyBlocked = candidate.hardBlocker === true || candidate.roadClosure === "confirmed" || candidate.safety <= 0;
+    const factors = {
+      sky: (candidate.sky + candidate.weather) / 2,
+      target: candidate.preference,
+      place: candidate.safety,
+      travel: candidate.access,
+      confidence: candidate.confidence ?? 75,
+    };
     const deterministic = Object.entries(selectedWeights).reduce((total, [key, weight]) => total + factors[key as keyof typeof factors] * weight, 0);
     const learningAdjustment = safetyBlocked ? 0 : (input.learning?.scores[candidate.id] ?? 0) * 3;
     return { ...candidate, factors, safetyBlocked, status: safetyBlocked ? "blocked" : "eligible", total: safetyBlocked ? 0 : deterministic + learningAdjustment };
   });
   const primary = [...candidates].filter((candidate) => !candidate.safetyBlocked).sort((left, right) => right.total - left.total)[0];
-  return { primaryId: primary?.id ?? null, candidates, learning: input.learning ? { modelVersion: input.learning.modelVersion, overrodeSafety: false } : undefined };
+  return { policyVersion: RECOMMENDATION_POLICY_VERSION, primaryId: primary?.id ?? null, candidates, learning: input.learning ? { modelVersion: input.learning.modelVersion, overrodeSafety: false } : undefined };
 }
 
 export function selectContinuousWindow(input: { cadenceMinutes: number; samples: Array<{ at: string; eligible: boolean }> }) {
