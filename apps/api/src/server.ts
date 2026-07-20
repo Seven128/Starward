@@ -4,6 +4,8 @@ import type { NightReportService } from "./modules/night-report/night-report-ser
 import { createNightReportHandler } from "./modules/night-report/night-report-handler";
 import type { SpotTrustService } from "./modules/spots/spot-trust-service";
 import { createSpotTrustHandler, type SpotActorResolver } from "./modules/spots/spot-trust-handler";
+import type { ForecastQueryService } from "./modules/forecast/forecast-query-service";
+import { createForecastHandler } from "./modules/forecast/forecast-handler";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -12,6 +14,7 @@ export interface ApiDependencies {
   allowedOrigins: string[];
   logger?: boolean;
   now?: () => Date;
+  forecast?: Pick<ForecastQueryService, "get">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -38,6 +41,19 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
   });
 
   app.get("/health/live", async () => ({ status: "ok", at: (dependencies.now ?? (() => new Date()))().toISOString() }));
+  if (dependencies.forecast) {
+    const forecastHandler = createForecastHandler(dependencies.forecast);
+    app.get<{ Querystring: Record<string, string> }>("/v1/forecast/hourly", async (request, reply) => {
+      const response = await forecastHandler(request.query);
+      for (const [name, value] of Object.entries(response.headers)) reply.header(name, value);
+      return reply.code(response.status).send(response.body);
+    });
+    app.get<{ Querystring: Record<string, string> }>("/v1/astronomy/evidence", async (request, reply) => {
+      const response = await forecastHandler(request.query);
+      for (const [name, value] of Object.entries(response.headers)) reply.header(name, value);
+      return reply.code(response.status).send("astronomy" in response.body ? response.body.astronomy : response.body);
+    });
+  }
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);
   app.post("/v1/night-reports", async (request, reply) => {
     const headers = Object.fromEntries(Object.entries(request.headers).map(([key, value]) => [key, value]));

@@ -1,130 +1,113 @@
-import { useEffect, useMemo, useState } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { describeAtmosphere, intersectNightWindows, normalizeWeatherHour } from "@starward/domain/forecast";
+import type { ForecastBundle, ProfessionalForecastHour } from "@starward/contracts/forecast";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
+import { createForecastClient } from "../../data/forecast-client";
+import { useShellStore } from "../../state/shell-store";
 
 const palette = colors.planning;
+type ViewKey = "hourly-professional-view" | "model-disagreement" | "future-trend" | "twilight-and-milky-way" | "layer-provenance";
+const client = createForecastClient();
 
-type CaseKey = "hourly-professional-view" | "model-disagreement" | "future-trend" | "twilight-and-milky-way" | "layer-provenance";
-
-const actionByCase: Record<CaseKey, string> = {
-  "hourly-professional-view": "forecast-open-hourly",
-  "model-disagreement": "forecast-compare-models",
-  "future-trend": "forecast-select-future-night",
-  "twilight-and-milky-way": "forecast-open-astronomy-timeline",
-  "layer-provenance": "forecast-open-layer-details",
-};
-
-const fixtures = {
-  hour: normalizeWeatherHour({ validTimeUtc: "2026-08-12T16:00:00Z", providerRunId: "fixture-qweather-20260812-20", temperatureC: 24, totalCloud: 18, lowCloud: 8, midCloud: 12, highCloud: 22, visibilityM: 18000, windMps: 2.1, humidity: 54 }),
-  atmosphere: describeAtmosphere({ providerSeeing: null, calibrated: false, cloud: 0.18, windMps: 2.1, humidity: 0.54 }),
-};
+const actions: Array<{ key: ViewKey; testID: string; label: string }> = [
+  { key: "hourly-professional-view", testID: "forecast-open-hourly", label: "小时矩阵" },
+  { key: "model-disagreement", testID: "forecast-compare-models", label: "模型比较" },
+  { key: "future-trend", testID: "forecast-select-future-night", label: "15 日趋势" },
+  { key: "twilight-and-milky-way", testID: "forecast-open-astronomy-timeline", label: "天文时间带" },
+  { key: "layer-provenance", testID: "forecast-open-layer-details", label: "图层来源" },
+];
 
 function Evidence({ testID, title, body, meta }: { testID: string; title: string; body: string; meta?: string }) {
   return <View testID={testID} style={styles.evidence}><Text style={styles.evidenceTitle}>{title}</Text><Text style={styles.evidenceBody}>{body}</Text>{meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}</View>;
 }
+const value = (input: number | null, suffix = "") => input === null ? "暂无" : `${Math.round(input * 10) / 10}${suffix}`;
+const time = (input: string | null) => input ? input.slice(11, 16) : "--:--";
 
-function HourlyPanel() {
+function HourlyPanel({ hour }: { hour: ProfessionalForecastHour | undefined }) {
+  if (!hour) return <State title="所选观星夜暂无小时数据" body="请检查日期或稍后刷新；缺失数据不会显示成晴天。" />;
   return <View style={styles.panel}>
-    <Text style={styles.panelTitle}>20:00 · 专业小时条件</Text>
-    <Evidence testID="forecast-hourly-cloud" title="分层云" body="总云 18% · 低云 8% · 中云 12% · 高云 22%" meta="供应商层高定义已标准化；缺失值保留为空，不转成 0" />
-    <Evidence testID="forecast-hourly-transparency" title={fixtures.atmosphere.label} body="中等偏好 · 可信度 56%" meta={`因素：云量、${fixtures.hour.windMps} m/s 风、${fixtures.hour.humidity}% 湿度；${fixtures.atmosphere.uncertainty}`} />
-    <Evidence testID="forecast-hourly-seeing" title="正式视宁度未启用" body="数据未获验证，不显示 arcsec 数字" meta="实验性指标不参与安全硬阻断" />
+    <Text style={styles.panelTitle}>{time(hour.validTimeUtc)} · 专业小时条件</Text>
+    <Evidence testID="forecast-hourly-cloud" title="分层云" body={`总云 ${value(hour.totalCloudPct, "%")} · 低云 ${value(hour.lowCloudPct, "%")} · 中云 ${value(hour.midCloudPct, "%")} · 高云 ${value(hour.highCloudPct, "%")}`} meta="缺失值保留为空，不会转成 0。" />
+    <Evidence testID="forecast-hourly-transparency" title={hour.atmosphere.label} body={`可信度 ${Math.round(hour.atmosphere.confidence * 100)}% · 能见度 ${value(hour.visibilityM === null ? null : hour.visibilityM / 1000, " km")} · AOD ${value(hour.aerosolOpticalDepth)}`} meta={hour.atmosphere.uncertainty} />
+    <Evidence testID="forecast-hourly-seeing" title={hour.atmosphere.officialSeeing ? "经验证的视宁度" : "正式视宁度未启用"} body={hour.atmosphere.officialSeeing ? "由已校准供应商提供" : "不输出 arcsec 数字；实验性大气稳定度不会伪装成专业视宁度。"} meta={`温度 ${value(hour.temperatureC, "°C")} · 湿度 ${value(hour.relativeHumidityPct, "%")} · 风 ${value(hour.windSpeedMps, " m/s")}`} />
   </View>;
 }
 
-function ModelPanel() {
+function ModelPanel({ bundle }: { bundle: ForecastBundle }) {
+  const primary = bundle.primary.run;
+  const secondary = bundle.comparison?.run;
   return <View style={styles.panel}>
     <Text style={styles.panelTitle}>模型一致与分歧</Text>
-    <Evidence testID="forecast-model-a" title="主模型 · QWeather fixture" body="前半夜低云 8–14%，批次 20260812-20" meta="验收夹具，不代表实时生产数据" />
-    <Evidence testID="forecast-model-b" title="对比模型 · Open-Meteo fixture" body="前半夜接近；02:00 后低云升至 48%" meta="商业生产端点尚待合同确认" />
-    <Evidence testID="forecast-disagreement" title="02:00 后出现明显分歧" body="前半夜一致，后半夜可信度降为中低；建议按主窗口行动并临行刷新。" meta="可查看各模型来源、运行批次与分辨率" />
+    <Evidence testID="forecast-model-a" title={`主模型 · ${primary.provider} ${primary.model}`} body={`批次 ${primary.runId} · ${primary.status}`} meta={`${primary.sourceLicense} · 分辨率 ${value(primary.resolutionKm, " km")}`} />
+    <Evidence testID="forecast-model-b" title={secondary ? `对比模型 · ${secondary.provider} ${secondary.model}` : "对比模型暂不可用"} body={secondary ? `批次 ${secondary.runId} · ${secondary.status}` : "不复制主模型充当第二模型。"} meta={secondary?.sourceLicense} />
+    <Evidence testID="forecast-disagreement" title={`模型可信度 ${Math.round(bundle.modelComparison.confidence * 100)}%`} body={bundle.modelComparison.explanation} meta={`比较字段：${bundle.modelComparison.comparedFields.join("、") || "无"}`} />
   </View>;
 }
 
-function TrendPanel() {
+function TrendPanel({ bundle }: { bundle: ForecastBundle }) {
+  const trend = bundle.trends.at(-1);
   return <View style={styles.panel}>
-    <Text testID="forecast-night-selector" style={styles.panelTitle}>未来第 12 夜 · 8 月 24 日</Text>
-    <Evidence testID="forecast-trend-confidence" title="远期趋势 · 低可信度 31%" body="多云趋势，18–27°C；无月黑夜约 3 小时 10 分" meta="这是规划趋势，不是实时确定结果" />
-    <Evidence testID="forecast-validity" title="有效性边界" body="生成于 7 月 20 日；临近出发必须刷新天气、预警与路线" meta="可带入计划，但保存为带版本的趋势快照" />
+    <Text testID="forecast-night-selector" style={styles.panelTitle}>{trend ? `${trend.date} · 远期规划夜` : "暂无远期趋势"}</Text>
+    <Evidence testID="forecast-trend-confidence" title={trend ? `趋势可信度 ${Math.round(trend.confidence * 100)}%` : "趋势不可用"} body={trend ? `${trend.conditionText ?? "天气现象未知"} · ${value(trend.lowTemperatureC, "°C")}–${value(trend.highTemperatureC, "°C")} · 平均总云 ${value(trend.averageTotalCloudPct, "%")}` : "供应商没有返回可用日数据。"} meta={trend ? `无月黑夜约 ${value(trend.moonlessDarkMinutes, " 分钟")} · 目标可见 ${value(trend.targetVisibleMinutes, " 分钟")}` : undefined} />
+    <Evidence testID="forecast-validity" title="有效性边界" body={`生成 ${bundle.generatedAt} · 有效至 ${bundle.expiresAt}`} meta="远期结果只用于规划；临近出发必须刷新天气、预警和路线。" />
   </View>;
 }
 
-function TimelinePanel() {
-  const overlap = intersectNightWindows(
-    { startUtc: "2026-08-12T13:18:00Z", endUtc: "2026-08-12T21:02:00Z" },
-    { startUtc: "2026-08-12T16:20:00Z", endUtc: "2026-08-12T20:10:00Z" },
-    { startUtc: "2026-08-12T15:35:00Z", endUtc: "2026-08-12T18:45:00Z" },
-  );
+function TimelinePanel({ bundle }: { bundle: ForecastBundle }) {
+  const sky = bundle.astronomy;
   return <View style={styles.panel}>
-    <Text style={styles.panelTitle}>连续天文时间带 · Asia/Shanghai</Text>
-    <Evidence testID="astronomy-twilight" title="完全天黑" body="21:18–次日 05:02" meta="天文昏影结束至天文晨光开始" />
-    <Evidence testID="astronomy-moon-window" title="无月窗口" body="次日 00:20–04:10" meta="月落后至晨光前；月光条件单独计算" />
-    <Evidence testID="astronomy-milky-way-window" title="银河最佳真实交集" body={overlap ? `00:20–02:45 · ${overlap.durationMinutes} 分钟` : "本夜无交集"} meta="仅取完全天黑 ∩ 无月 ∩ 银河高度/遮挡可用区间" />
+    <Text style={styles.panelTitle}>连续天文时间带 · {sky.timezone}</Text>
+    <Evidence testID="astronomy-twilight" title="完全天黑" body={sky.astronomicalDarkWindow ? `${time(sky.astronomicalDarkWindow.startUtc)}–${time(sky.astronomicalDarkWindow.endUtc)} · ${sky.astronomicalDarkWindow.durationMinutes} 分钟` : "本夜无完整天文黑夜"} meta={`算法 ${sky.algorithmVersion} · ${sky.coordinateSystem}`} />
+    <Evidence testID="astronomy-moon-window" title="无月窗口" body={sky.moonlessWindow ? `${time(sky.moonlessWindow.startUtc)}–${time(sky.moonlessWindow.endUtc)} · ${sky.moonlessWindow.durationMinutes} 分钟` : "完全天黑期间没有连续无月窗口"} meta={`月升 ${time(sky.moonRise)} · 月落 ${time(sky.moonSet)}`} />
+    <Evidence testID="astronomy-milky-way-window" title="目标最佳真实交集" body={sky.bestIntersection ? `${time(sky.bestIntersection.startUtc)}–${time(sky.bestIntersection.endUtc)} · ${sky.bestIntersection.durationMinutes} 分钟` : "完全天黑、无月和目标高度没有交集"} meta={sky.limitations.join("；")} />
   </View>;
 }
 
-function LayerPanel() {
+function LayerPanel({ bundle }: { bundle: ForecastBundle }) {
+  const layer = bundle.layers[1] ?? bundle.layers[0];
   return <View style={styles.panel}>
-    <Text style={styles.panelTitle}>低云图层详情</Text>
-    <Evidence testID="forecast-layer-source" title="数据来源" body="QWeather hourly-grid fixture" meta="生产使用权与配额仍待 commercial-provider-rights-and-quotas 确认" />
-    <Evidence testID="forecast-layer-version" title="批次与图例" body="fixture-20260812-20 · 0–100% 低云覆盖 · 透明度 65%" meta="验收夹具，不是当前实时图层" />
-    <Evidence testID="forecast-layer-freshness" title="生成与更新" body="生成 20:00 · 预计下次 21:00 · 当前状态：fixture" meta="加载失败时原子回退上一可用图层，不混合半加载瓦片" />
+    <Text style={styles.panelTitle}>{layer?.name ?? "天气图层"}详情</Text>
+    <Evidence testID="forecast-layer-source" title="数据来源" body={layer ? `${layer.provider} · ${layer.model}` : "来源不可用"} meta={layer?.attribution.map((item) => `${item.label} · ${item.licenseId}`).join("；")} />
+    <Evidence testID="forecast-layer-version" title="批次与图例" body={layer ? `${layer.runId} · ${layer.legend.map((item) => item.label).join(" / ")} · 透明度 ${Math.round(layer.opacity * 100)}%` : "无可验证批次"} meta={layer?.limitation ?? undefined} />
+    <Evidence testID="forecast-layer-freshness" title="生成与更新" body={layer ? `生成 ${layer.generatedAt} · 下次更新 ${layer.nextUpdateAt}` : "更新时间不可用"} meta={`状态：${layer?.status ?? "missing"}`} />
   </View>;
 }
 
-export function ForecastScreen({ fixture }: { fixture?: string }) {
-  const fixtureCase = fixture?.split(":")[1] as CaseKey | undefined;
-  const [active, setActive] = useState<CaseKey | null>(null);
-  const [capabilityState, setCapabilityState] = useState<"loading" | "ready" | "unavailable">(Platform.OS === "web" ? "loading" : "ready");
-  const cases = useMemo(() => Object.keys(actionByCase) as CaseKey[], []);
-  useEffect(() => {
-    if (Platform.OS !== "web") return;
-    let current = true;
-    fetch("/forecast-capabilities.json", { cache: "no-store" })
-      .then(async (response) => response.ok ? response.json() : Promise.reject(new Error(`capability_manifest_${response.status}`)))
-      .then((value: { feature?: string; surfaces?: string[] }) => {
-        if (current) setCapabilityState(value.feature === "forecast-and-astronomy" && cases.every((key) => value.surfaces?.includes(key)) ? "ready" : "unavailable");
-      })
-      .catch(() => { if (current) setCapabilityState("unavailable"); });
-    return () => { current = false; };
-  }, [cases]);
+function State({ title, body, retry }: { title: string; body: string; retry?: () => void }) {
+  return <View style={styles.state}><Text style={styles.stateTitle}>{title}</Text><Text style={styles.stateBody}>{body}</Text>{retry ? <Pressable accessibilityRole="button" onPress={retry} style={styles.retry}><Text style={styles.retryText}>重试</Text></Pressable> : null}</View>;
+}
+
+export function ForecastScreen() {
+  const location = useShellStore((state) => state.location);
+  const [active, setActive] = useState<ViewKey>("hourly-professional-view");
+  const latitude = location.latitude ?? 22.529;
+  const longitude = location.longitude ?? 113.9468;
+  const nightDate = new Date().toISOString().slice(0, 10);
+  const query = useQuery({ queryKey: ["forecast", latitude, longitude, nightDate], queryFn: ({ signal }) => client.get({ latitude, longitude, timezone: "Asia/Shanghai", nightDate, target: "milky-way-core" }, signal), retry: 1 });
+  const open = (next: ViewKey) => { setActive(next); if (query.isError) void query.refetch(); };
+  const firstNightHour = query.data?.primary.hours.find((hour) => hour.validTimeUtc >= (query.data?.astronomy.astronomicalDusk ?? "")) ?? query.data?.primary.hours[0];
   return <SafeAreaView testID="screen-forecast-and-astronomy" style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.eyebrow}>完整条件</Text>
-      <Text style={styles.title}>专业天气与天文证据</Text>
-      <Text style={styles.subtitle}>位置、时区、单位、来源、批次、质量状态和不确定性一起展示。供应商不可用时保留可验证的降级状态。</Text>
-      {capabilityState === "loading" ? <View style={styles.empty}><Text style={styles.emptyTitle}>正在核对能力版本…</Text></View> : <View style={styles.actions}>{cases.map((key) => <Pressable key={key} testID={actionByCase[key]} accessibilityRole="button" onPress={() => capabilityState === "ready" ? setActive(key) : setActive(null)} style={({ pressed }) => [styles.action, fixtureCase === key && styles.actionRecommended, pressed && styles.pressed]}><Text style={styles.actionText}>{({ "hourly-professional-view": "小时矩阵", "model-disagreement": "模型比较", "future-trend": "15 日趋势", "twilight-and-milky-way": "天文时间带", "layer-provenance": "图层来源" } as Record<CaseKey, string>)[key]}</Text></Pressable>)}</View>}
-      {capabilityState === "unavailable" ? <View style={styles.empty}><Text style={styles.emptyTitle}>专业条件能力暂不可用</Text><Text style={styles.emptyBody}>能力清单缺失或版本不匹配。基础壳仍可使用，但不会伪造小时、模型、趋势、时间带或图层证据。</Text></View> : null}
-      {active === "hourly-professional-view" ? <HourlyPanel /> : null}
-      {active === "model-disagreement" ? <ModelPanel /> : null}
-      {active === "future-trend" ? <TrendPanel /> : null}
-      {active === "twilight-and-milky-way" ? <TimelinePanel /> : null}
-      {active === "layer-provenance" ? <LayerPanel /> : null}
-      {!active && capabilityState === "ready" ? <View style={styles.empty}><Text style={styles.emptyTitle}>选择一种证据视图</Text><Text style={styles.emptyBody}>摘要不会用单一分数代替专业指标；各视图共享同一选中时刻和位置上下文。</Text></View> : null}
+      <Text style={styles.eyebrow}>完整条件 · {location.label}</Text><Text style={styles.title}>专业天气与天文证据</Text>
+      <Text style={styles.subtitle}>位置、时区、来源、批次、质量状态和不确定性共同展示。供应商不可用时保留明确降级状态。</Text>
+      <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.testID} accessibilityRole="button" onPress={() => open(action.key)} style={({ pressed }) => [styles.action, active === action.key && styles.actionActive, pressed && styles.pressed]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
+      {query.isLoading ? <State title="正在加载天气和天文证据…" body="服务端正在合并小时预报、模型来源与版本化天文计算。" /> : null}
+      {query.isError ? <State title="专业条件暂不可用" body={query.error instanceof Error && query.error.message === "forecast_api_base_url_missing" ? "尚未配置 EXPO_PUBLIC_API_BASE_URL；不会以内置数字替代真实数据。" : "上游或聚合 API 请求失败；可以安全重试。"} retry={() => void query.refetch()} /> : null}
+      {query.data?.warnings.map((warning) => <View key={warning} style={styles.warning}><Text style={styles.warningText}>{warning}</Text></View>)}
+      {query.data && active === "hourly-professional-view" ? <HourlyPanel hour={firstNightHour} /> : null}
+      {query.data && active === "model-disagreement" ? <ModelPanel bundle={query.data} /> : null}
+      {query.data && active === "future-trend" ? <TrendPanel bundle={query.data} /> : null}
+      {query.data && active === "twilight-and-milky-way" ? <TimelinePanel bundle={query.data} /> : null}
+      {query.data && active === "layer-provenance" ? <LayerPanel bundle={query.data} /> : null}
     </ScrollView>
   </SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: palette.canvas },
-  content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 },
-  eyebrow: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" },
-  title: { color: palette.text, fontSize: typeToken.title, lineHeight: 32, fontWeight: "700" },
-  subtitle: { color: palette.textSecondary, fontSize: typeToken.body, lineHeight: 23 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
-  action: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: 14, borderWidth: 1, borderColor: palette.border, borderRadius: radii.pill, backgroundColor: palette.surface },
-  actionRecommended: { borderColor: palette.primaryActive },
-  actionText: { color: palette.text, fontSize: typeToken.label, fontWeight: "700" },
-  panel: { gap: spacing.x1, padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface },
-  panelTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" },
-  evidence: { minHeight: 86, padding: 12, borderRadius: radii.control, backgroundColor: palette.surfaceMuted },
-  evidenceTitle: { color: palette.text, fontSize: typeToken.body, fontWeight: "700" },
-  evidenceBody: { marginTop: 5, color: palette.text, fontSize: typeToken.label, lineHeight: 19 },
-  evidenceMeta: { marginTop: 5, color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 },
-  empty: { minHeight: 180, justifyContent: "center", padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface },
-  emptyTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" },
-  emptyBody: { marginTop: spacing.x1, color: palette.textSecondary, lineHeight: 21 },
-  pressed: { opacity: 0.7 },
+  screen: { flex: 1, backgroundColor: palette.canvas }, content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 }, eyebrow: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" }, title: { color: palette.text, fontSize: typeToken.title, lineHeight: 32, fontWeight: "700" }, subtitle: { color: palette.textSecondary, fontSize: typeToken.body, lineHeight: 23 },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 }, action: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: 14, borderWidth: 1, borderColor: palette.border, borderRadius: radii.pill, backgroundColor: palette.surface }, actionActive: { borderColor: palette.primaryActive, backgroundColor: palette.surfaceMuted }, actionText: { color: palette.text, fontSize: typeToken.label, fontWeight: "700" }, pressed: { opacity: 0.7 },
+  panel: { gap: spacing.x1, padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, panelTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" }, evidence: { minHeight: 86, padding: 12, borderRadius: radii.control, backgroundColor: palette.surfaceMuted }, evidenceTitle: { color: palette.text, fontSize: typeToken.body, fontWeight: "700" }, evidenceBody: { marginTop: 5, color: palette.text, fontSize: typeToken.label, lineHeight: 19 }, evidenceMeta: { marginTop: 5, color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 },
+  state: { minHeight: 180, justifyContent: "center", padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, stateTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" }, stateBody: { marginTop: spacing.x1, color: palette.textSecondary, lineHeight: 21 }, retry: { minHeight: minimumTouchTarget, marginTop: spacing.x2, alignItems: "center", justifyContent: "center", borderRadius: radii.control, backgroundColor: palette.primaryActive }, retryText: { color: palette.onPrimary, fontWeight: "700" }, warning: { padding: spacing.x1, borderRadius: radii.control, backgroundColor: palette.surfaceMuted }, warningText: { color: palette.text, fontSize: typeToken.caption, lineHeight: 18 },
 });

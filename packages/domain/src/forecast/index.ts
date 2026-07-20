@@ -58,9 +58,9 @@ export function computeAstronomyEvidence(input: AstronomyEvidenceInput): Astrono
 export interface AtmosphereInput {
   providerSeeing: number | null;
   calibrated: boolean;
-  cloud: number;
-  windMps: number;
-  humidity: number;
+  cloud: number | null;
+  windMps: number | null;
+  humidity: number | null;
 }
 
 export function describeAtmosphere(input: AtmosphereInput) {
@@ -70,13 +70,14 @@ export function describeAtmosphere(input: AtmosphereInput) {
     { key: "humidity", label: "相对湿度", value: input.humidity, unit: "ratio" },
   ];
   const hasOfficialSeeing = input.providerSeeing !== null && input.calibrated;
+  const availableFactors = factors.filter((factor) => factor.value !== null).length;
   return {
     label: hasOfficialSeeing ? "经验证的视宁度" : "通透度估计 / 实验性大气稳定度",
     officialSeeing: hasOfficialSeeing,
     providerValue: hasOfficialSeeing ? input.providerSeeing : null,
-    confidence: hasOfficialSeeing ? 0.82 : 0.56,
+    confidence: hasOfficialSeeing ? 0.82 : Math.round((0.26 + availableFactors * 0.1) * 100) / 100,
     factors,
-    uncertainty: hasOfficialSeeing ? "受观测设备和近地湍流影响" : "没有专业视宁度供应商或现场校准，不输出 arcsec 结论",
+    uncertainty: hasOfficialSeeing ? "受观测设备和近地湍流影响" : `没有专业视宁度供应商或现场校准，不输出 arcsec 结论；${3 - availableFactors} 项输入缺失`,
     methodVersion: "atmosphere-explainable@1.0.0",
   };
 }

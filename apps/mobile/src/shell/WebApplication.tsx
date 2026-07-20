@@ -29,7 +29,7 @@ function currentLocation() {
 
 function CurrentScreen() {
   const { pathname, fixture } = currentLocation();
-  if (pathname === "/forecast") return <ForecastScreen fixture={fixture} />;
+  if (pathname === "/forecast") return <ForecastScreen />;
   if (pathname === "/profile") return <ProfilePrivacyScreen fixture={fixture} />;
   if (pathname === "/tonight") return <TonightScreen fixture={fixture} />;
   if (pathname === "/map") return <MapScreen fixture={fixture} />;

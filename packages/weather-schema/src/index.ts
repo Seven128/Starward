@@ -12,16 +12,32 @@ export interface WeatherAttribution {
 }
 
 export interface NormalizedWeatherHour {
+  gridCellId: string;
+  providerRunId: string;
   validTimeUtc: string;
+  conditionCode: number | null;
+  conditionText: string | null;
   temperatureC: number | null;
+  apparentTemperatureC: number | null;
   relativeHumidityPct: number | null;
+  dewPointC: number | null;
+  pressureHpa: number | null;
   totalCloudPct: number | null;
   lowCloudPct: number | null;
   midCloudPct: number | null;
   highCloudPct: number | null;
   visibilityM: number | null;
   windSpeedMps: number | null;
+  windGustMps: number | null;
+  windDirectionDeg: number | null;
   precipitationMm: number | null;
+  precipitationProbabilityPct: number | null;
+  fogProbabilityPct: number | null;
+  aqi: number | null;
+  aqiScale: string | null;
+  pm25UgM3: number | null;
+  pm10UgM3: number | null;
+  aerosolOpticalDepth: number | null;
   quality: WeatherValueQuality;
   missingFields: string[];
 }
@@ -41,6 +57,11 @@ export interface NormalizedWeatherRun {
   use: ProviderUse;
   model: string;
   runId: string;
+  modelRunTimeUtc: string;
+  ingestedAt: string;
+  resolutionKm: number | null;
+  status: "complete" | "partial";
+  sourceLicense: string;
   issuedAt: string;
   expiresAt: string;
   fetchedAt: string;
@@ -84,8 +105,10 @@ export function nonNegativeOrNull(value: unknown, field: string): number | null 
 
 export function finalizeWeatherHour(input: Omit<NormalizedWeatherHour, "quality" | "missingFields">): NormalizedWeatherHour {
   const valueKeys = [
-    "temperatureC", "relativeHumidityPct", "totalCloudPct", "lowCloudPct", "midCloudPct",
-    "highCloudPct", "visibilityM", "windSpeedMps", "precipitationMm",
+    "temperatureC", "apparentTemperatureC", "relativeHumidityPct", "dewPointC", "pressureHpa",
+    "totalCloudPct", "lowCloudPct", "midCloudPct", "highCloudPct", "visibilityM", "windSpeedMps",
+    "windGustMps", "windDirectionDeg", "precipitationMm", "precipitationProbabilityPct",
+    "fogProbabilityPct", "aqi", "pm25UgM3", "pm10UgM3", "aerosolOpticalDepth",
   ] as const;
   const missingFields = valueKeys.filter((key) => input[key] === null);
   return {
@@ -97,12 +120,16 @@ export function finalizeWeatherHour(input: Omit<NormalizedWeatherHour, "quality"
 }
 
 export function assertNormalizedWeatherRun(run: NormalizedWeatherRun): NormalizedWeatherRun {
+  assertInstant(run.modelRunTimeUtc, "model_run_time");
+  assertInstant(run.ingestedAt, "ingested_at");
   assertInstant(run.issuedAt, "issued_at");
   assertInstant(run.expiresAt, "expires_at");
   assertInstant(run.fetchedAt, "fetched_at");
   if (Date.parse(run.expiresAt) <= Date.parse(run.issuedAt)) throw new RangeError("weather_run_expiry_must_follow_issue");
   if (!Number.isFinite(run.latitude) || run.latitude < -90 || run.latitude > 90) throw new RangeError("latitude_out_of_range");
   if (!Number.isFinite(run.longitude) || run.longitude < -180 || run.longitude > 180) throw new RangeError("longitude_out_of_range");
-  if (!run.runId || !run.model || !run.attribution.length) throw new TypeError("weather_run_metadata_incomplete");
+  if (!run.runId || !run.model || !run.sourceLicense || !run.attribution.length) throw new TypeError("weather_run_metadata_incomplete");
+  if (run.resolutionKm !== null && (!Number.isFinite(run.resolutionKm) || run.resolutionKm <= 0)) throw new RangeError("weather_run_resolution_invalid");
+  if (run.hours.some((hour) => hour.providerRunId !== run.runId || !hour.gridCellId)) throw new TypeError("weather_hour_run_identity_incomplete");
   return run;
 }

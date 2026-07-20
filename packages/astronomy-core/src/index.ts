@@ -33,8 +33,12 @@ export interface NightSkyCalculation {
   timezone: string;
   nightDate: string;
   target: SupportedTarget;
+  civilDusk: string | null;
+  nauticalDusk: string | null;
   astronomicalDusk: string | null;
   astronomicalDawn: string | null;
+  nauticalDawn: string | null;
+  civilDawn: string | null;
   moonRise: string | null;
   moonSet: string | null;
   moonIlluminationAtMidpoint: number | null;
@@ -101,8 +105,12 @@ export function calculateNightSky(input: AstronomyRequest): NightSkyCalculation 
   assertRequest(input);
   const observer = new Observer(input.latitude, input.longitude, input.elevationM);
   const start = localNoonUtc(input.nightDate, input.timezone);
+  const civilDusk = SearchAltitude(Body.Sun, observer, -1, start, 1.5, -6);
+  const nauticalDusk = SearchAltitude(Body.Sun, observer, -1, start, 1.5, -12);
   const dusk = SearchAltitude(Body.Sun, observer, -1, start, 1.5, -18);
   const dawn = dusk ? SearchAltitude(Body.Sun, observer, +1, dusk.AddDays(1 / 1440), 1.5, -18) : null;
+  const nauticalDawn = nauticalDusk ? SearchAltitude(Body.Sun, observer, +1, nauticalDusk.AddDays(1 / 1440), 1.5, -12) : null;
+  const civilDawn = civilDusk ? SearchAltitude(Body.Sun, observer, +1, civilDusk.AddDays(1 / 1440), 1.5, -6) : null;
   const moonRise = SearchRiseSet(Body.Moon, observer, +1, start, 1.5);
   const moonSet = SearchRiseSet(Body.Moon, observer, -1, start, 1.5);
   const samples: SkySample[] = [];
@@ -132,8 +140,12 @@ export function calculateNightSky(input: AstronomyRequest): NightSkyCalculation 
     timezone: input.timezone,
     nightDate: input.nightDate,
     target: input.target,
+    civilDusk: civilDusk?.toString() ?? null,
+    nauticalDusk: nauticalDusk?.toString() ?? null,
     astronomicalDusk: dusk?.toString() ?? null,
     astronomicalDawn: dawn?.toString() ?? null,
+    nauticalDawn: nauticalDawn?.toString() ?? null,
+    civilDawn: civilDawn?.toString() ?? null,
     moonRise: moonRise?.toString() ?? null,
     moonSet: moonSet?.toString() ?? null,
     moonIlluminationAtMidpoint: midpoint ? round(Illumination(Body.Moon, midpoint).phase_fraction, 4) : null,
