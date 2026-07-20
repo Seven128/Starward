@@ -12672,6 +12672,9 @@ outcomes:
           - apps/api/src/modules/spots/**
           - packages/domain/src/spots/**
           - workers/geospatial/**
+          - infrastructure/database/migrations/manifest.json
+          - infrastructure/database/migrations/20260720_platform_up.sql
+          - infrastructure/database/migrations/20260720_platform_down.sql
       requirements:
         - key: spot-identity-and-freshness
           statement: "- **REQ spot-identity-and-freshness** [direct: S-PRODUCT 6.5A]：详情基础信息完整包含名称、经纬度/访问级别、地址、海拔、地点类型、开放时间、收费、数据更新时间、数据可信度和最近用户实况时间。"
@@ -12863,6 +12866,9 @@ outcomes:
         - apps/api/src/modules/spots/**
         - packages/domain/src/spots/**
         - workers/geospatial/**
+        - infrastructure/database/migrations/manifest.json
+        - infrastructure/database/migrations/20260720_platform_up.sql
+        - infrastructure/database/migrations/20260720_platform_down.sql
       forbidden_paths:
         - node_modules/**
         - .git/**
@@ -13149,8 +13155,18 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/spots/index.ts
+            - apps/api/src/modules/spots/migrations/20260720_spot_trust_up.sql
+            - apps/api/src/modules/spots/migrations/20260720_spot_trust_down.sql
+            - infrastructure/database/migrations/manifest.json
+            - infrastructure/database/migrations/20260720_platform_up.sql
+            - infrastructure/database/migrations/20260720_platform_down.sql
           expected_output_paths:
             - apps/mobile/src/features/spots/index.ts
+            - apps/api/src/modules/spots/migrations/20260720_spot_trust_up.sql
+            - apps/api/src/modules/spots/migrations/20260720_spot_trust_down.sql
+            - infrastructure/database/migrations/manifest.json
+            - infrastructure/database/migrations/20260720_platform_up.sql
+            - infrastructure/database/migrations/20260720_platform_down.sql
           positive_assertions: []
           negative_assertions:
             - key: no-persistent-data-change
@@ -18261,6 +18277,7 @@ outcomes:
           - package.json
           - package-lock.json
           - Makefile
+          - .gitattributes
       requirements:
         - key: technology-baseline
           statement: "- **REQ technology-baseline** [direct: S-ARCH 1.1]：基线为 Expo + React Native + TypeScript、Development Build/自定义 Expo Native Module、高德原生地图、Expo Sensors + 必要 Core Motion/Android Sensor、Skia/GPU 天空、ARKit/ARCore 增强、TypeScript NestJS/Fastify 模块化单体、Python 气象/遥感/栅格/地形、PostgreSQL/PostGIS、Redis/BullMQ、S3 兼容对象存储/CDN、Next.js 管理后台、REST/OpenAPI + 协作 WebSocket、Astronomy Engine 封装和 Monorepo；精确版本由 DEC dependency-version-baseline 决定。"
@@ -18482,6 +18499,7 @@ outcomes:
         - package.json
         - package-lock.json
         - Makefile
+        - .gitattributes
       forbidden_paths:
         - node_modules/**
         - .git/**
