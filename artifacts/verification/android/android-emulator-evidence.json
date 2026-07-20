@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-07-20T17:08:00Z",
+  "recordedAt": "2026-07-20T22:09:30Z",
   "status": "passed",
   "scope": "android-release-style-emulator-smoke",
   "environment": {
@@ -15,8 +15,8 @@
   "artifact": {
     "generatedPath": "apps/mobile/android/app/build/outputs/apk/release/app-release.apk",
     "tracked": false,
-    "bytes": 44397797,
-    "sha256": "5eccbe45bfbeaed84d6b5214b72bf4fe606e1f5d0cb1e6652b4ff2a0b29ef620",
+    "bytes": 44548241,
+    "sha256": "635de83d574b9b770dadfc2a52173aedd8b1255fe5cc1441ab322ca5945269e3",
     "buildResult": "BUILD SUCCESSFUL",
     "gradleTasks": 795,
     "nativeArchitectures": ["x86_64"],
@@ -24,7 +24,7 @@
     "signing": "local debug keystore used by the generated release variant; not store signing",
     "reproduction": [
       "npx expo prebuild --platform android --no-install",
-      ".\\gradlew.bat :app:assembleRelease -PreactNativeArchitectures=x86_64 --max-workers=2 --console=plain",
+      "$env:NODE_ENV='production'; .\\gradlew.bat :app:assembleRelease -PreactNativeArchitectures=x86_64 --max-workers=2 --no-daemon --console=plain",
       "adb install -r app-release.apk"
     ],
     "prebuildConfiguration": {
@@ -47,19 +47,19 @@
       "id": "cold-start-product-root",
       "status": "passed",
       "sampleCount": 3,
-      "evidence": "three force-stop launches reached accessibility nodes for 今晚去观星 and 游客模式; two measured ActivityManager TotalTime values were 8564 ms and 5063 ms"
+      "evidence": "three force-stop launches reached accessibility nodes for 今晚去观星, 游客模式, 本机设置已同步 and the persisted 观星地图 tab; measured ActivityManager TotalTime values were 17392 ms, 14238 ms and 13207 ms"
     },
     {
       "id": "tonight-screen",
       "status": "passed",
       "sampleCount": 1,
-      "evidence": "artifacts/verification/android/starward-home-app.png; accessibility nodes include 从黄昏走入星夜, 位置, 推荐画像 and 今晚决策"
+      "evidence": "artifacts/verification/android/starward-home-app.png; accessibility nodes include 今晚去观星, 游客模式, 本机设置已同步, 从黄昏走入星夜, 位置, 推荐画像 and 今晚决策"
     },
     {
       "id": "map-navigation",
       "status": "passed",
       "sampleCount": 1,
-      "evidence": "artifacts/verification/android/starward-map-app.png; tapping the 观星地图 primary tab exposed the map decision copy and explicit unavailable-provider fallback"
+      "evidence": "artifacts/verification/android/starward-map-app.png; tapping the 观星地图 primary tab exposed the map decision copy, current-range empty state and explicit unavailable-provider fallback; the selected tab survived force-stop through SQLite hydration"
     },
     {
       "id": "fatal-log-scan",

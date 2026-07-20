@@ -54,7 +54,7 @@
     },
     {
       "key": "carrier-integrity",
-      "criterion": "The production carrier for identity-profile-privacy exists inside its declared owner boundary and is exercised by the frozen acceptance specification.",
+      "criterion": "The production carrier for identity-profile-privacy exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.",
       "surface": "implementation_structure",
       "polarity": "positive",
       "observation": "identity-profile-privacy.carrier-integrity.passed"

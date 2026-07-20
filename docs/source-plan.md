@@ -210,7 +210,7 @@
 
 <a id="forbidden-shortcut.static-screen-completion"></a>
 <!-- ty-source-item:start key=fs-static-screen-completion kind=forbidden_shortcut -->
-- **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳或单一平台演示不能算 APP 完成。
+- **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳、固定用户/时间/地点/结果样例、仅进程内状态、仅返回成功文案或证据卡、仅元数据模拟上传、只声明未调用的原生适配器、不可重启读回的离线包，以及未实际执行的通知/恢复/追踪，均不能算 APP 或对应 Outcome 完成；测试可用 fixture 隔离不可控外部边界，但生产载体必须接受可变输入，产生可观察的真实状态变化与适用的持久化/文件/原生/外部副作用，并诚实处理失败和降级。
 <!-- ty-source-item:end -->
 
 ## 4. Outcome Overview
@@ -6128,6 +6128,11 @@
 - **OBL personal-trial-release-profile** [direct: S-USER]：当前交付固定为个人运营主体的 owner-only 非商业个人试用版，外部服务经常性成本硬上限 CNY 200/月（CNY 2,400/年），仅在来源、个人非商业使用权、目标区质量/稳定性和安全降级均合格时免费优先；预算内也不得自动购买。全部产品能力保留，但生产供应商、公开再分发、商店生产发布和外部专业/现场背书保持关闭或未来门，未背书结果必须标 experimental/unknown/pending，转公开或商业运营需 owner 批准新的生产发布权威。
 <!-- ty-source-item:end -->
 
+<a id="cross-outcome.obligation.real-business-loop-completion"></a>
+<!-- ty-source-item:start key=global-obl-real-business-loop-completion kind=technical_obligation -->
+- **OBL real-business-loop-completion** [direct: S-USER + necessary derivation]：14 个 Outcome 的完成证据必须来自生产入口与生产载体：至少两组可变用户输入沿真实业务路由产生与输入相关的可观察状态变化；凡需求涉及账户、计划、贡献、离线包、媒体、通知、管理或质量记录，必须写入适用的持久化、文件、原生或已授权外部 sink，并由新的服务实例、进程或 APP 重启后读回；凡涉及地图、定位、传感器、相机/相册、AR、分享或通知，必须调用可替换的生产适配器并可观察 invocation/result，设备或外部能力不可用时诚实降级；失败、超时、拒权、重复或冲突不得显示成功。测试 fixture 只可替代不可控边界，不能替代生产路径、状态转移与副作用。
+<!-- ty-source-item:end -->
+
 ### Cross-Outcome Acceptance Scenarios
 
 <a id="cross-outcome.acceptance.context-atomicity"></a>
@@ -6209,6 +6214,15 @@
   - Given: 当前运营主体为个人，尚无商业合同、公开商店审批、法务/专家/代表性现场背书。
   - When: 构建并运行当前 Starward 个人试用版，或评估一个免费/付费外部来源。
   - Then: 运行配置明确 `individual-personal-trial`、owner-only、非商业、CNY 200/月与 CNY 2,400/年上限；合格免费源排序优先，预算内付费仍不自动购买；production traffic/promotion 保持关闭，未背书能力显示实验性/未知/待确认且不作安全、专业或生产就绪声明。
+<!-- ty-source-item:end -->
+
+<a id="cross-outcome.acceptance.real-business-loop-completion"></a>
+<!-- ty-source-item:start key=global-ac-real-business-loop-completion kind=acceptance -->
+- **AC real-business-loop-completion**
+  - Accepts: OBL real-business-loop-completion, FS static-screen-completion
+  - Given: 14 个 Outcome 的生产入口在隔离数据目录中分别接收至少两组不同用户、位置、时刻或业务内容，并配置可控的成功、失败与降级边界。
+  - When: 对每个 Outcome 执行其代表性创建/更新/动作/读取闭环，重建服务实例或重启 APP 后读回，再重复幂等动作并触发一次失败、超时、拒权或冲突。
+  - Then: 结果随输入变化，真实状态转移与适用的持久化/文件/原生/外部 invocation 可观察且重启后可读回；重复动作不产生重复副作用，失败路径不展示成功；任一 Outcome 若移除写入、适配器调用、重启读回或改回固定结果，其定向 Check 与 GLOBAL Check 都必须失败。
 <!-- ty-source-item:end -->
 
 ## 7. Future Production Readiness Gates（不属于当前个人试用版完成权威）

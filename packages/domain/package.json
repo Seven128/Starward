@@ -5,10 +5,12 @@
   "type": "module",
   "exports": {
     "./preferences": "./src/preferences/index.ts",
+    "./preferences/runtime": "./src/preferences/runtime.ts",
     "./forecast": "./src/forecast/index.ts",
     "./identity": "./src/identity/index.ts",
     "./shooting": "./src/shooting/index.ts",
     "./offline": "./src/offline/index.ts",
+    "./offline/runtime": "./src/offline/runtime.ts",
     "./community": "./src/community/index.ts"
   }
 }

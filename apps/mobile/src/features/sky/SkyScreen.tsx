@@ -10,6 +10,7 @@ import { OrientationEngine, type StableOrientation } from "../../../modules/orie
 import { resolveArMode } from "../../../modules/sky-ar/sky-ar-adapter";
 import { createSkyClient } from "../../data/sky-client";
 import { useShellStore } from "../../state/shell-store";
+import { persistSkyResolution } from "../../state/sky-runtime";
 
 type ViewKey = "universal-sky" | "time-jump" | "obstruction-trajectory" | "field-of-view" | "ar-degradation" | "low-accuracy-guidance";
 const palette = colors.night;
@@ -112,12 +113,18 @@ export function SkyScreen() {
   const [active, setActive] = useState<ViewKey>("universal-sky");
   const [at, setAt] = useState(() => new Date().toISOString());
   const [orientation, setOrientation] = useState<StableOrientation>(() => new OrientationEngine().unavailable());
+  const [persistenceError, setPersistenceError] = useState<string | null>(null);
   const subscription = useRef<{ stop(): void } | null>(null);
   const latitude = location.latitude ?? 22.529;
   const longitude = location.longitude ?? 113.9468;
   const request = useMemo(() => ({ latitude, longitude, elevationM: 0, timezone: "Asia/Shanghai", at, target: "milky-way-core" as const }), [latitude, longitude, at]);
   const query = useQuery({ queryKey: ["sky", request], queryFn: ({ signal }) => client.get(request, signal), retry: 1 });
   useEffect(() => () => subscription.current?.stop(), []);
+  useEffect(() => {
+    if (!query.data) return;
+    const data = query.data;
+    void persistSkyResolution({ token: data.selectedTarget?.id ?? data.context.target, at: data.context.at, algorithmVersion: data.algorithm.version, latitude: data.context.latitude, longitude: data.context.longitude, orientationAccuracy: orientation.accuracy }).then(() => setPersistenceError(null)).catch(() => setPersistenceError("天空结果未写入本机数据库；当前画面可查看，但不会冒充已保存。"));
+  }, [query.data, orientation.accuracy]);
   const open = async (key: ViewKey) => {
     setActive(key);
     if (key === "time-jump" && query.data?.bestTargetTime) setAt(query.data.bestTargetTime);
@@ -132,6 +139,7 @@ export function SkyScreen() {
     <Text style={styles.subtitle}>通用天空是主路径。方向、相机与 AR 只在能力和精度可信时增强；现场轮廓未知时不猜测。</Text>
     {query.isLoading ? <State title="正在计算天空状态…" body="服务端按 WGS84 地点、UTC 时刻和版本化天文算法定位亮星、深空目标与轨迹。" /> : null}
     {query.isError ? <State title="天空状态暂不可用" body={query.error instanceof Error && query.error.message === "sky_api_base_url_missing" ? "尚未配置 API 地址；不会以内置星位替代真实计算。" : "请求或计算失败；当前不显示旧星位。"} retry={() => void query.refetch()} /> : null}
+    {persistenceError ? <State title="本机保存失败" body={persistenceError} retry={() => void query.refetch()} /> : null}
     {query.data ? <SkyCanvas context={query.data} /> : null}
     <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" onPress={() => void open(action.key)} style={({ pressed }) => [styles.action, active === action.key && styles.actionActive, pressed && styles.pressed]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
     {query.data && active === "universal-sky" ? <UniversalPanel data={query.data} locationLabel={location.label} /> : null}

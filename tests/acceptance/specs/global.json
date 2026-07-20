@@ -67,6 +67,13 @@
       "observation": "GLOBAL.personal-trial-boundary.passed"
     },
     {
+      "key": "real-business-loop-completion",
+      "criterion": "- **AC real-business-loop-completion**\n  - Accepts: OBL real-business-loop-completion, FS static-screen-completion\n  - Given: 14 个 Outcome 的生产入口在隔离数据目录中分别接收至少两组不同用户、位置、时刻或业务内容，并配置可控的成功、失败与降级边界。\n  - When: 对每个 Outcome 执行其代表性创建/更新/动作/读取闭环，重建服务实例或重启 APP 后读回，再重复幂等动作并触发一次失败、超时、拒权或冲突。\n  - Then: 结果随输入变化，真实状态转移与适用的持久化/文件/原生/外部 invocation 可观察且重启后可读回；重复动作不产生重复副作用，失败路径不展示成功；任一 Outcome 若移除写入、适配器调用、重启读回或改回固定结果，其定向 Check 与 GLOBAL Check 都必须失败。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.real-business-loop-completion.passed"
+    },
+    {
       "key": "guard-generic-weather-dashboard",
       "criterion": "The delivered system enforces this non-goal: - **NG generic-weather-dashboard**：不把产品做成只展示接口字段的天气仪表盘、通用星图或旅游路线工具。",
       "surface": "runtime_behavior",
@@ -159,7 +166,7 @@
     },
     {
       "key": "guard-static-screen-completion",
-      "criterion": "The delivered system rejects this forbidden shortcut: - **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳或单一平台演示不能算 APP 完成。",
+      "criterion": "The delivered system rejects this forbidden shortcut: - **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳、固定用户/时间/地点/结果样例、仅进程内状态、仅返回成功文案或证据卡、仅元数据模拟上传、只声明未调用的原生适配器、不可重启读回的离线包，以及未实际执行的通知/恢复/追踪，均不能算 APP 或对应 Outcome 完成；测试可用 fixture 隔离不可控外部边界，但生产载体必须接受可变输入，产生可观察的真实状态变化与适用的持久化/文件/原生/外部副作用，并诚实处理失败和降级。",
       "surface": "runtime_behavior",
       "polarity": "negative",
       "observation": "GLOBAL.guard-static-screen-completion.violated"

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { buildLocationShare, planOfflineReplay, recoverOfflineQueue, startSafetySession, stopSafetySession, validateObservationPack } from "./index";
+import { createFieldRuntime } from "./runtime";
 
 describe("offline field domain", () => {
   it("activates only complete, licensed and checksum-valid required components", () => {
@@ -46,5 +50,24 @@ describe("offline field domain", () => {
     const payload = buildLocationShare({ latitude: 22.529, longitude: 113.9468, accuracyM: 8, capturedAt: "now", access: "public", recipient: "system-share-sheet", expiresAt: "later" });
     expect(payload.autoRetry).toBe(false);
     expect(payload.latitude).toBe(22.53);
+  });
+
+  it("commits an offline write to sqlite and a checksum-addressed filesystem artifact", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "starward-field-runtime-"));
+    try {
+      const runtime = await createFieldRuntime({ dataDir });
+      const request = { outcome: "field-offline-safety", actorId: "user-1", operation: "field.pack-and-report", idempotencyKey: "field-1", payload: { token: "report-1", reportId: "report-1" } } as const;
+      const result = await runtime.execute(request);
+      const artifact = result.sideEffects.find((effect) => effect.kind === "filesystem");
+      const artifactPath = artifact && "path" in artifact ? String(artifact.path) : "";
+      expect(result.status).toBe("succeeded");
+      expect(result.sideEffects.map((effect) => effect.kind)).toEqual(["sqlite", "filesystem"]);
+      expect(artifactPath).not.toBe("");
+      expect(await readFile(join(dataDir, artifactPath), "utf8")).toContain("report-1");
+      expect((await runtime.execute(request)).status).toBe("replayed");
+      await runtime.close();
+    } finally {
+      await rm(dataDir, { recursive: true, force: true });
+    }
   });
 });

@@ -1,10 +1,11 @@
 import type { NightReportRequest } from "../../../../../packages/contracts/src/night-report";
 import type { NightReportService } from "./night-report-service";
+import type { AwaitedNightReportRuntime } from "./runtime-types";
 
 export type NightReportHttpRequest = { body: unknown; headers: Record<string, string | string[] | undefined> };
 export type NightReportHttpResponse = { status: number; headers: Record<string, string>; body: unknown };
 
-export function createNightReportHandler(service: Pick<NightReportService, "create">) {
+export function createNightReportHandler(service: Pick<NightReportService, "create">, runtime?: AwaitedNightReportRuntime) {
   return async function handle(request: NightReportHttpRequest): Promise<NightReportHttpResponse> {
     const body = request.body as Partial<NightReportRequest> | null;
     const requestHeader = request.headers["x-request-id"];
@@ -13,6 +14,13 @@ export function createNightReportHandler(service: Pick<NightReportService, "crea
     if (!requestId || body.requestId !== requestId) return { status: 422, headers: { "cache-control": "no-store" }, body: { code: "night_report_request_id_mismatch" } };
     try {
       const report = await service.create(body as NightReportRequest);
+      if (runtime) await runtime.execute({
+        outcome: "tonight-decision",
+        actorId: "personal-trial-owner",
+        operation: "night-report.create",
+        idempotencyKey: `night-report:${report.requestId}`,
+        payload: { token: report.requestId, request: body, reportId: report.id, revision: report.revision },
+      });
       return { status: 200, headers: { "cache-control": "private, no-store", etag: `W/\"night-report-${report.id}-${report.revision}\"`, "x-request-id": report.requestId }, body: report };
     } catch (error) {
       const code = error instanceof Error ? error.message : "night_report_unknown_error";

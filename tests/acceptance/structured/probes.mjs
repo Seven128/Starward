@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { productionModules } from "./contracts.mjs";
@@ -94,6 +95,172 @@ const outcomeProductionCarriers = Object.freeze({
   "quality-release-observability": ["apps/mobile/src/features/admin/QualityScreen.tsx", "apps/admin-web/src/app/page.tsx", "apps/api/src/server.ts"],
 });
 
+const outcomeRuntimeContracts = Object.freeze({
+  "mobile-shell-and-preferences": { module: "packages/domain/src/preferences/runtime.ts", factory: "createPreferencesRuntime", operation: "preference.save", sideEffects: ["sqlite"], boundaries: [] },
+  "tonight-decision": { module: "apps/api/src/modules/night-report/runtime.ts", factory: "createNightReportRuntime", operation: "night-report.create", sideEffects: ["sqlite"], boundaries: ["weather", "astronomy", "spot-search"] },
+  "forecast-and-astronomy": { module: "apps/api/src/modules/forecast/runtime.ts", factory: "createForecastRuntime", operation: "forecast.resolve", sideEffects: ["sqlite"], boundaries: ["weather", "astronomy"] },
+  "map-route-discovery": { module: "apps/api/src/modules/map/runtime.ts", factory: "createMapRouteRuntime", operation: "route.plan", sideEffects: ["sqlite", "native-invocation"], boundaries: ["route", "native-map"] },
+  "spot-detail-and-trust": { module: "apps/api/src/modules/spots/runtime.ts", factory: "createSpotTrustRuntime", operation: "spot.detail", sideEffects: ["sqlite"], boundaries: ["spot-source"] },
+  "itinerary-and-collaboration": { module: "apps/api/src/modules/itinerary/runtime.ts", factory: "createItineraryRuntime", operation: "itinerary.create", sideEffects: ["sqlite"], boundaries: [] },
+  "sky-orientation-ar": { module: "apps/mobile/src/features/sky/runtime.ts", factory: "createSkyRuntime", operation: "sky.resolve", sideEffects: ["sqlite", "native-invocation"], boundaries: ["astronomy", "orientation"] },
+  "shooting-assistant": { module: "apps/api/src/modules/shooting/runtime.ts", factory: "createShootingRuntime", operation: "shooting.plan", sideEffects: ["sqlite"], boundaries: ["weather", "astronomy"] },
+  "field-offline-safety": { module: "packages/domain/src/offline/runtime.ts", factory: "createFieldRuntime", operation: "field.pack-and-report", sideEffects: ["sqlite", "filesystem"], boundaries: [] },
+  "community-contribution": { module: "apps/api/src/modules/community/runtime.ts", factory: "createCommunityRuntime", operation: "community.media-contribute", sideEffects: ["sqlite", "object-store"], boundaries: ["object-store"] },
+  "notifications-and-toolbox": { module: "apps/api/src/modules/notifications/runtime.ts", factory: "createNotificationToolsRuntime", operation: "notification.rule-create", sideEffects: ["sqlite", "queue", "channel"], boundaries: ["notification-channel"] },
+  "identity-profile-privacy": { module: "apps/api/src/modules/identity/runtime.ts", factory: "createIdentityRuntime", operation: "profile.update", sideEffects: ["sqlite"], boundaries: [] },
+  "admin-data-operations": { module: "apps/api/src/modules/admin/runtime.ts", factory: "createAdminRuntime", operation: "admin.job-replay", sideEffects: ["sqlite", "audit"], boundaries: [] },
+  "quality-release-observability": { module: "apps/api/src/modules/quality/runtime.ts", factory: "createQualityRuntime", operation: "quality.restore-drill", sideEffects: ["sqlite", "artifact"], boundaries: ["telemetry"] },
+});
+
+const artifactSideEffects = new Set(["filesystem", "object-store", "artifact"]);
+const runtimeForbiddenPattern = /acceptance(?:Fixture|Passed|Result)?|longTask(?:Probe|Result)?|\bfixture(?:Case|Report)?\b|data-acceptance-passed/iu;
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (isObject(value)) return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+  return JSON.stringify(value);
+}
+
+function digest(value) {
+  return createHash("sha256").update(canonicalJson(value)).digest("hex");
+}
+
+function containsToken(value, token) {
+  return canonicalJson(value).includes(token);
+}
+
+async function directoryHasDurableBytes(directory) {
+  let bytes = 0;
+  async function visit(current) {
+    for (const entry of await readdir(current, { withFileTypes: true }).catch(() => [])) {
+      const target = path.join(current, entry.name);
+      if (entry.isDirectory()) await visit(target);
+      else if (entry.isFile()) bytes += (await stat(target)).size;
+    }
+  }
+  await visit(directory);
+  return bytes > 0;
+}
+
+async function artifactReceiptsHealthy(dataDir, sideEffects) {
+  for (const effect of asArray(sideEffects).filter((item) => artifactSideEffects.has(item.kind))) {
+    if (typeof effect.path !== "string" || !effect.path) return false;
+    const absolute = path.resolve(dataDir, ...effect.path.replaceAll("\\", "/").split("/"));
+    const normalizedRoot = path.resolve(dataDir).toLowerCase();
+    const normalized = absolute.toLowerCase();
+    if (!normalized.startsWith(`${normalizedRoot}${path.sep}`)) return false;
+    const value = await stat(absolute).catch(() => null);
+    if (!value?.isFile() || value.size === 0) return false;
+    if (!/^[a-f0-9]{64}$/u.test(effect.sha256 ?? "")) return false;
+    if (createHash("sha256").update(await readFile(absolute)).digest("hex") !== effect.sha256) return false;
+  }
+  return true;
+}
+
+async function factoryReferencedByProduction(root, runtimeContract) {
+  const runtimePath = inside(root, runtimeContract.module).toLowerCase();
+  const roots = runtimeContract.module.startsWith("packages/domain/src/preferences/")
+    ? ["apps/mobile"]
+    : ["apps/api/src", "apps/mobile/src"];
+  for (const file of await walk(root, roots)) {
+    if (file.toLowerCase() === runtimePath) continue;
+    if ((await readFile(file, "utf8")).includes(runtimeContract.factory)) return true;
+  }
+  return false;
+}
+
+const runtimeShapeHealthy = (runtime) => typeof runtime?.execute === "function" && typeof runtime?.read === "function" && typeof runtime?.close === "function";
+function committedRecordsHealthy(values, requests, tokens, outcome, runtimeContract) {
+  const expectedDigest = (request) => digest({ outcome: request.outcome, actorId: request.actorId, operation: request.operation, payload: request.payload });
+  return values.every((value, index) => value?.status === "succeeded"
+    && value.outcome === outcome
+    && typeof value.entityId === "string"
+    && value.entityId.length > 0
+    && Number.isInteger(value.stateVersion)
+    && value.stateVersion > 0
+    && value.inputDigest === expectedDigest(requests[index])
+    && containsToken(value.result, tokens[index])
+    && hasAll(asArray(value.sideEffects).filter((item) => item.status === "committed").map((item) => item.kind), runtimeContract.sideEffects));
+}
+function restoredRecordsHealthy(values, originals, tokens) {
+  return values.every((value, index) => value?.status === "succeeded"
+    && value.entityId === originals[index].entityId
+    && value.inputDigest === originals[index].inputDigest
+    && containsToken(value.result, tokens[index]));
+}
+function replayHealthy(replay, original) {
+  return replay?.entityId === original.entityId
+    && replay?.inputDigest === original.inputDigest
+    && (replay.status === "replayed" || replay.replayed === true)
+    && asArray(replay.sideEffects).every((item) => item.status !== "committed");
+}
+
+async function realBusinessLoopHealthy(root, outcome) {
+  const runtimeContract = outcomeRuntimeContracts[outcome];
+  if (!runtimeContract || !(await exists(root, runtimeContract.module))) return false;
+  const runtimeSource = await source(root, runtimeContract.module);
+  if (runtimeForbiddenPattern.test(runtimeSource) || !(await factoryReferencedByProduction(root, runtimeContract))) return false;
+
+  const module = await load(root, runtimeContract.module);
+  const factory = module[runtimeContract.factory];
+  if (typeof factory !== "function") return false;
+
+  const dataDir = await mkdtemp(path.join(tmpdir(), `starward-${outcome}-`));
+  const boundaryInvocations = [];
+  const boundary = Object.freeze({
+    async invoke(request) {
+      const copy = structuredClone(request);
+      boundaryInvocations.push(copy);
+      return { status: "available", kind: copy.kind, requestDigest: digest(copy), result: { token: copy.payload?.token ?? copy.token ?? null } };
+    },
+  });
+  const releaseProfile = Object.freeze({ id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false });
+  const actorId = `actor-${outcome}`;
+  const tokens = [`${outcome}-alpha-317`, `${outcome}-beta-941`];
+  const requests = tokens.map((token, index) => ({
+    outcome,
+    actorId,
+    operation: runtimeContract.operation,
+    idempotencyKey: `${outcome}-idem-${index + 1}`,
+    payload: { token, location: index === 0 ? { lat: 22.529, lon: 113.9468 } : { lat: 39.9042, lon: 116.4074 }, instant: index === 0 ? "2026-08-12T14:00:00Z" : "2026-11-17T12:30:00Z", value: index + 1 },
+  }));
+  let firstRuntime;
+  let secondRuntime;
+  try {
+    firstRuntime = await factory({ dataDir, boundary, releaseProfile });
+    if (!runtimeShapeHealthy(firstRuntime)) return false;
+    const first = await firstRuntime.execute(requests[0]);
+    const second = await firstRuntime.execute(requests[1]);
+    if (!committedRecordsHealthy([first, second], requests, tokens, outcome, runtimeContract) || first.entityId === second.entityId || canonicalJson(first.result) === canonicalJson(second.result)) return false;
+    if (!(await artifactReceiptsHealthy(dataDir, first.sideEffects)) || !(await artifactReceiptsHealthy(dataDir, second.sideEffects))) return false;
+    await firstRuntime.close();
+    firstRuntime = null;
+
+    secondRuntime = await factory({ dataDir, boundary, releaseProfile });
+    if (!runtimeShapeHealthy(secondRuntime)) return false;
+    const restoredFirst = await secondRuntime.read({ outcome, actorId, entityId: first.entityId });
+    const restoredSecond = await secondRuntime.read({ outcome, actorId, entityId: second.entityId });
+    if (!restoredRecordsHealthy([restoredFirst, restoredSecond], [first, second], tokens)) return false;
+
+    const replay = await secondRuntime.execute(requests[0]);
+    if (!replayHealthy(replay, first)) return false;
+
+    const invalid = await secondRuntime.execute({ outcome, actorId, operation: runtimeContract.operation, idempotencyKey: `${outcome}-invalid`, payload: {} }).catch((error) => ({ status: "rejected", error }));
+    if (!(["rejected", "failed"].includes(invalid?.status)) || asArray(invalid?.sideEffects).some((item) => item.status === "committed")) return false;
+    if (!hasAll(boundaryInvocations.map((item) => item.kind), runtimeContract.boundaries)) return false;
+    return await directoryHasDurableBytes(dataDir);
+  } finally {
+    if (firstRuntime) await Promise.resolve(firstRuntime.close()).catch(() => undefined);
+    if (secondRuntime) await Promise.resolve(secondRuntime.close()).catch(() => undefined);
+    await rm(dataDir, { recursive: true, force: true });
+  }
+}
+
+async function allRealBusinessLoopsHealthy(root) {
+  for (const outcome of Object.keys(outcomeRuntimeContracts)) if (!(await realBusinessLoopHealthy(root, outcome))) return false;
+  return true;
+}
+
 const nonCompletingCarrierPattern = /ScenarioScreen|acceptanceFixture|acceptance-fixtures|\bfixture(?:Case|Report)?\b|fixture-|版本化产品示例/iu;
 
 async function productionCarrierHealthy(root, outcome) {
@@ -113,8 +280,11 @@ async function carrierIntegrity(root, carrier, outcome) {
   const text = await readFile(absolute, "utf8");
   if (/longTask(?:Probe|Result)|acceptance(?:Passed|Result)|data-acceptance-passed/iu.test(text)) return false;
   const module = await load(root, carrier);
-  return Object.keys(module).some((name) => !/acceptance|longTask/iu.test(name))
-    && await productionCarrierHealthy(root, outcome);
+  const exportedProductionCarrier = Object.keys(module).some((name) => !/acceptance|longTask/iu.test(name));
+  if (outcome === "GLOBAL") return exportedProductionCarrier && await allRealBusinessLoopsHealthy(root);
+  return exportedProductionCarrier
+    && await productionCarrierHealthy(root, outcome)
+    && await realBusinessLoopHealthy(root, outcome);
 }
 
 async function apiContractHealthy(root, outcome) {
@@ -628,8 +798,10 @@ export async function runStructuredProbe({ root, outcome, carrier, probeName }) 
       const value = await invoke(root, "fieldOffline", "restoreOfflineFieldState", { network: "offline", pack: { checksumValid: true, plan: { id: "p1" }, route: { id: "r1" }, toolbox: ["timer", "compass"] } });
       return { passes: value.usable === true && value.plan.id === "p1" && value.route.id === "r1" && hasAll(value.toolbox, ["timer", "compass"]) };
     }
+    case "global-real-business-loop":
+      return { passes: await allRealBusinessLoopsHealthy(root) };
     case "guard-runtime-completion":
-      return { passes: await nativeAppShapeHealthy(root) && await exists(root, "tests/acceptance", "directory") && await exists(root, "apps/api", "directory") };
+      return { passes: await nativeAppShapeHealthy(root) && await exists(root, "tests/acceptance", "directory") && await exists(root, "apps/api", "directory") && await allRealBusinessLoopsHealthy(root) };
     case "tonight-hard-safety": {
       const value = await invoke(root, "scoring", "evaluateRecommendation", { candidates: [{ id: "closed-dark", sky: 99, weather: 90, access: 70, safety: 0, preference: 95, roadClosure: "confirmed" }, { id: "safe", sky: 75, weather: 75, access: 75, safety: 90, preference: 70 }], profile: "milky-way" });
       return { passes: value.primaryId === "safe" && value.candidates.find((item) => item.id === "closed-dark")?.status === "blocked" };

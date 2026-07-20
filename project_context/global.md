@@ -8,7 +8,7 @@
 ## Non-goals / Boundaries
 
 - The product is not a generic weather dashboard, astronomy encyclopedia, map clone, or decorative night-sky experience.
-- The current baseline establishes the durable product and design contract plus imported design-system references; it does not claim a complete application, live forecast integration, routing backend, or field validation.
+- The repository contains a broad React Native/API implementation, but completion is not established by screens, fixed demo responses, in-process state, or generated evidence text. Each declared Outcome still requires its locked production-loop evidence.
 - Reference screenshots and Open Design exports are evidence. They must not be copied as another product's logo, proprietary branding, or exact page layout.
 
 ## Background
@@ -67,13 +67,14 @@
 ## Current State
 
 - Tiny Context is installed and initialized.
-- The product/design contract and Open Design reference exports form the repository baseline.
-- No production application runtime or live data integration is declared yet.
-- `docs/technical-data-source-decisions.md` records current official-source research and recommendations, but no provider contract, purchase, production account, POC, calibration, or external approval is declared complete.
+- The product/design contract, Open Design references, React Native application, API/workers/admin surfaces, and acceptance harness form the repository baseline.
+- A corrective audit found that several existing carriers use fixed responses, process-local state, metadata-only side effects, or declaration-only native boundaries. Those carriers are implementation scaffolding, not completed Outcomes, until variable-input, side-effect, restart-readback, failure-path, and counterfactual checks pass.
+- `docs/technical-data-source-decisions.md` records official-source research and the current individual personal-trial choices. No purchase, production traffic, public redistribution, production account, commercial contract, external approval, representative-device proof, or field validation is declared complete.
+- Current release authority is owner-only, non-commercial personal trial with a CNY 200/month external-service ceiling and qualifying free sources preferred. Future production gates do not block machine-local implementation, but they also cannot be represented as completed evidence.
 
 ## Next Safe Action
 
-- Before implementing a product surface, read DESIGN.md and project_context/areas/main.md, identify the owning screen state, and update Context first if the change alters durable responsibility, information architecture, interaction, data, or verification.
+- Before implementing a product surface, read DESIGN.md and project_context/areas/main.md, identify the owning screen state, and update Context first if the change alters durable responsibility, information architecture, interaction, data, or verification. Treat each Outcome as unfinished until its production entry, real state transition, applicable side effect, restart readback, truthful failure/degradation, and counterfactual evidence all pass.
 
 ## Context Index
 

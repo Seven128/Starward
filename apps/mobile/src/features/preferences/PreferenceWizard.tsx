@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -75,8 +76,9 @@ export function PreferenceWizard({ visible, initial, onClose, onSave }: {
   visible: boolean;
   initial: PreferenceProfile;
   onClose: () => void;
-  onSave: (profile: PreferenceProfile) => void;
+  onSave: (profile: PreferenceProfile) => Promise<void>;
 }) {
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<PreferenceProfile>({
     resolver: zodResolver(preferenceProfileSchema),
     values: initial,
@@ -84,8 +86,13 @@ export function PreferenceWizard({ visible, initial, onClose, onSave }: {
 
   const submit = handleSubmit(async (value) => {
     const now = new Date().toISOString();
-    onSave({ ...value, revision: value.revision + 1, updatedAt: now });
-    onClose();
+    setSaveError(null);
+    try {
+      await onSave({ ...value, revision: value.revision + 1, updatedAt: now });
+      onClose();
+    } catch {
+      setSaveError("保存失败，预设没有被写入本机数据库。请重试。");
+    }
   });
 
   return (
@@ -182,6 +189,7 @@ export function PreferenceWizard({ visible, initial, onClose, onSave }: {
           </Section>
         </ScrollView>
         <View style={styles.footer}>
+          {saveError ? <Text testID="preference-save-error" accessibilityLiveRegion="assertive" style={styles.errorText}>{saveError}</Text> : null}
           <Pressable accessibilityRole="button" disabled={isSubmitting} onPress={submit} style={({ pressed }) => [styles.primaryButton, pressed && styles.primaryPressed, isSubmitting && styles.disabled]}>
             <Text style={styles.primaryButtonText}>{isSubmitting ? "正在保存…" : "保存并设为当前预设"}</Text>
           </Pressable>

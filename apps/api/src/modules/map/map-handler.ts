@@ -1,6 +1,7 @@
 import type { MapSpotPage } from "../../../../../packages/contracts/src/map";
 import type { RouteService } from "./route-service";
 import type { SpotSearchProvider } from "./spot-search-service";
+import type { AwaitedMapRouteRuntime } from "./runtime-types";
 
 function number(value: unknown, field: string) {
   const parsed = Number(value);
@@ -33,7 +34,7 @@ export function createMapSpotsHandler(provider: SpotSearchProvider, now: () => D
   };
 }
 
-export function createRouteHandler(service: Pick<RouteService, "load">) {
+export function createRouteHandler(service: Pick<RouteService, "load">, runtime?: AwaitedMapRouteRuntime) {
   return async (body: unknown) => {
     try {
       if (!body || typeof body !== "object") throw new TypeError("route_body_invalid");
@@ -43,7 +44,10 @@ export function createRouteHandler(service: Pick<RouteService, "load">) {
       const mode = String(input.mode);
       if (!origin || !destination || origin.system !== "WGS84" || destination.system !== "WGS84") throw new TypeError("route_wgs84_required");
       if (!["drive", "walk", "cycle", "transit"].includes(mode)) throw new TypeError("route_mode_invalid");
-      const result = await service.load({ requestId: String(input.requestId || crypto.randomUUID()), origin: { lat: number(origin.lat, "route_origin_lat"), lon: number(origin.lon, "route_origin_lon"), system: "WGS84" }, destination: { lat: number(destination.lat, "route_destination_lat"), lon: number(destination.lon, "route_destination_lon"), system: "WGS84" }, mode: mode as "drive" | "walk" | "cycle" | "transit" });
+      const requestId = String(input.requestId || crypto.randomUUID());
+      const request = { requestId, origin: { lat: number(origin.lat, "route_origin_lat"), lon: number(origin.lon, "route_origin_lon"), system: "WGS84" as const }, destination: { lat: number(destination.lat, "route_destination_lat"), lon: number(destination.lon, "route_destination_lon"), system: "WGS84" as const }, mode: mode as "drive" | "walk" | "cycle" | "transit" };
+      const result = await service.load(request);
+      if (runtime) await runtime.execute({ outcome: "map-route-discovery", actorId: "personal-trial-owner", operation: "route.plan", idempotencyKey: `route:${requestId}`, payload: { token: requestId, origin: request.origin, destination: request.destination, mode: request.mode } });
       return { status: 200, body: result };
     } catch (error) {
       const code = error instanceof Error ? error.message : "route_request_invalid";

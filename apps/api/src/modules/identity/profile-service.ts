@@ -68,6 +68,7 @@ export class ProfileService {
   command(command: ProfileCommand): ProfileSnapshot {
     if (command === "merge-guest") this.merge = { state: "completed", selectedCount: 3, conflictCount: 1, idempotencyKeys: ["guest-merge:preferences:pref-local:3", "guest-merge:favorites:fav-local:2", "guest-merge:drafts:trip-draft:1"] };
     if (command === "revoke-session") {
+      if (this.sessions.find((session) => session.id === "session-windows")?.revokedAt) return this.get();
       const result = revokeSession(this.sessions, "session-windows", "user-demo", true);
       if (!result.ok) throw new Error(result.reason);
       this.sessions.splice(0, this.sessions.length, ...result.sessions);

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { createUnrestrictedProfile, profileExamples, profileImpactSummary, type PreferenceProfile } from "@starward/domain/preferences";
@@ -84,7 +84,7 @@ function PermissionModal({ visible, status, onClose, onAllow, onManual }: {
   );
 }
 
-function ManualLocationModal({ visible, onClose, onConfirm }: { visible: boolean; onClose: () => void; onConfirm: (label: string) => void }) {
+function ManualLocationModal({ visible, onClose, onConfirm }: { visible: boolean; onClose: () => void; onConfirm: (label: string) => Promise<void> }) {
   const [value, setValue] = useState("深圳市 · 南山区");
   return (
     <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
@@ -94,7 +94,7 @@ function ManualLocationModal({ visible, onClose, onConfirm }: { visible: boolean
           <Text style={styles.dialogTitle}>选择城市或常用出发地</Text>
           <Text style={styles.dialogBody}>位置只用于本次基础查询；可以稍后再开启设备定位。</Text>
           <TextInput accessibilityLabel="手动位置" value={value} onChangeText={setValue} style={styles.input} />
-          <Pressable accessibilityRole="button" onPress={() => onConfirm(value.trim())} disabled={!value.trim()} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, !value.trim() && styles.disabled]}>
+          <Pressable accessibilityRole="button" onPress={() => void onConfirm(value.trim())} disabled={!value.trim()} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, !value.trim() && styles.disabled]}>
             <Text style={styles.primaryButtonText}>使用这个位置</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={onClose} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>取消</Text></Pressable>
@@ -109,7 +109,7 @@ function ProfileSwitcher({ visible, profiles, activeId, onClose, onSelect, onCre
   profiles: PreferenceProfile[];
   activeId: string;
   onClose: () => void;
-  onSelect: (id: string) => void;
+  onSelect: (id: string) => Promise<void>;
   onCreate: () => void;
 }) {
   return (
@@ -119,7 +119,7 @@ function ProfileSwitcher({ visible, profiles, activeId, onClose, onSelect, onCre
           <Text style={styles.dialogEyebrow}>当前推荐画像</Text>
           <Text style={styles.dialogTitle}>切换偏好预设</Text>
           {profiles.map((profile) => (
-            <Pressable key={profile.id} accessibilityRole="radio" accessibilityState={{ selected: profile.id === activeId }} onPress={() => { onSelect(profile.id); onClose(); }} style={[styles.profileOption, profile.id === activeId && styles.profileOptionActive]}>
+            <Pressable key={profile.id} accessibilityRole="radio" accessibilityState={{ selected: profile.id === activeId }} onPress={() => { void onSelect(profile.id).then(onClose); }} style={[styles.profileOption, profile.id === activeId && styles.profileOptionActive]}>
               <Text style={styles.profileOptionTitle}>{profile.id === activeId ? "✓ " : ""}{profile.name}</Text>
               <Text style={styles.profileOptionSummary}>{profileImpactSummary(profile)}</Text>
             </Pressable>
@@ -132,6 +132,30 @@ function ProfileSwitcher({ visible, profiles, activeId, onClose, onSelect, onCre
   );
 }
 
+function DestinationContent({ destination, location, recommendationState, activeProfile, onPermission, onManual, onWizard, onStarter }: {
+  destination: PrimaryDestination;
+  location: ReturnType<typeof useShellStore.getState>["location"];
+  recommendationState: ReturnType<typeof useShellStore.getState>["recommendationState"];
+  activeProfile: PreferenceProfile;
+  onPermission(): void; onManual(): void; onWizard(): void; onStarter(): Promise<void>;
+}) {
+  return <>
+    {recommendationState === "stale" ? <View testID="preference-ranking-impact" accessibilityLiveRegion="polite" style={styles.staleBanner}><Text style={styles.staleTitle}>推荐正在按新预设重算</Text><Text style={styles.staleBody}>旧结果会保留，但已标记为缓存结果，不会冒充新结论。</Text></View> : <View testID="preference-ranking-impact"><Text style={styles.srHint}>当前预设会影响后续排序与硬性阻断。</Text></View>}
+    {destination === "tonight" ? <>
+      <View style={styles.hero}><Text style={styles.heroEyebrow}>今晚决策</Text><Text style={styles.heroTitle}>{location.source === "unset" ? "先选择位置，再判断今晚是否值得出发" : `准备查看 ${location.label} 的今晚条件`}</Text><Text style={styles.heroBody}>先给结论、可执行窗口和下一步，再下钻天气、月光、暗度、路线与风险证据。</Text><Pressable testID="shell-open-permission-feature" accessibilityRole="button" onPress={onPermission} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}><Text style={styles.primaryButtonText}>{location.source === "unset" ? "查找附近观星条件" : "更新附近位置"}</Text></Pressable><Pressable accessibilityRole="button" onPress={onManual} style={styles.inlineAction}><Text style={styles.inlineActionText}>或手动选择城市 / 出发地</Text></Pressable></View>
+      <DataStateCard state={location.source === "unset" ? "empty" : recommendationState === "stale" ? "stale" : "loading"} />
+      <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>偏好预设</Text><Pressable accessibilityRole="button" onPress={onWizard} style={styles.smallAction}><Text style={styles.smallActionText}>编辑当前预设</Text></Pressable></View>
+      <Text style={styles.profileSummary}>{profileImpactSummary(activeProfile)}</Text>
+      <View style={styles.starterProfileCard}><View style={styles.starterProfileCopy}><Text style={styles.starterProfileTitle}>银河摄影起步预设</Text><Text style={styles.starterProfileBody}>自驾 · 120 分钟 · 停车优先 · 平整平台必需 · 银河 · 相机 / 镜头 / 三脚架</Text><Text style={styles.starterProfileMeta}>这是可检查、可继续编辑的起步值，不会在未点击时自动启用。</Text></View><Pressable testID="shell-switch-profile" accessibilityRole="button" onPress={() => void onStarter()} style={({ pressed }) => [styles.starterProfileButton, pressed && styles.pressed]}><Text style={styles.starterProfileButtonText}>保存并切换</Text></Pressable></View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.exampleRow}>{profileExamples.map((example) => <View key={example.id} style={styles.exampleCard}><Text style={styles.exampleTitle}>{example.name}</Text><Text style={styles.exampleBody}>{example.summary}</Text><Text style={styles.exampleMeta}>示例 · 不会自动启用</Text></View>)}</ScrollView>
+    </> : null}
+    {destination === "map" ? <View style={styles.destinationPanel}><Text style={styles.heroEyebrow}>观星地图</Text><Text style={styles.destinationTitle}>在位置、暗度、路线和安全之间做选择</Text><Text style={styles.destinationBody}>地图会保留当前位置和推荐画像。供应商或图层尚不可用时，会明确显示缓存、缺失与降级路径。</Text><DataStateCard state="empty" /></View> : null}
+    {destination === "itinerary" ? <View style={styles.destinationPanel}><Text style={styles.heroEyebrow}>行程</Text><Text style={styles.destinationTitle}>把地点、时间窗、路线与备选装进同一个计划</Text><DataStateCard state="empty" /></View> : null}
+    {destination === "sky" ? <View style={styles.destinationPanel}><Text style={styles.heroEyebrow}>天空</Text><Text style={styles.destinationTitle}>即使相机或传感器不可用，也能查看通用天空</Text><Text style={styles.destinationBody}>相机、方向和 AR 只在你主动进入相应能力时请求；拒绝后保留静态天空路径。</Text><DataStateCard state="empty" /></View> : null}
+    {destination === "profile" ? <View style={styles.destinationPanel}><Text style={styles.heroEyebrow}>我的</Text><Text style={styles.destinationTitle}>预设、出发地、设备与隐私控制</Text><Pressable accessibilityRole="button" onPress={onWizard} style={styles.listAction}><Text style={styles.listActionTitle}>偏好预设</Text><Text style={styles.listActionMeta}>{activeProfile.name} · {profileImpactSummary(activeProfile)}</Text></Pressable><Pressable accessibilityRole="button" onPress={onManual} style={styles.listAction}><Text style={styles.listActionTitle}>常用出发地</Text><Text style={styles.listActionMeta}>{location.label}</Text></Pressable><View style={styles.listAction}><Text style={styles.listActionTitle}>隐私与权限</Text><Text style={styles.listActionMeta}>按功能请求 · 后台定位默认关闭</Text></View></View> : null}
+  </>;
+}
+
 export function MobileShellScreen() {
   const insets = useSafeAreaInsets();
   const {
@@ -141,6 +165,9 @@ export function MobileShellScreen() {
     profiles,
     activeProfileId,
     recommendationState,
+    persistenceState,
+    persistenceError,
+    hydrateFromRuntime,
     setDestination,
     setManualLocation,
     setDeviceLocation,
@@ -155,20 +182,24 @@ export function MobileShellScreen() {
   const [profileSwitcherVisible, setProfileSwitcherVisible] = useState(false);
   const [wizardVisible, setWizardVisible] = useState(false);
 
+  useEffect(() => {
+    void hydrateFromRuntime();
+  }, [hydrateFromRuntime]);
+
   const activeProfile = useMemo(() => profiles.find((item) => item.id === activeProfileId) ?? profiles[0] ?? createUnrestrictedProfile(), [activeProfileId, profiles]);
 
-  const commitManualLocation = (label = "深圳市 · 南山区") => {
-    setManualLocation(label);
+  const commitManualLocation = async (label = "深圳市 · 南山区") => {
+    await setManualLocation(label);
     setManualVisible(false);
     setPermissionVisible(false);
   };
 
   const handleManualAction = () => setManualVisible(true);
 
-  const applyStarterProfile = () => {
+  const applyStarterProfile = async () => {
     const existing = profiles.find((item) => item.id === "milky-way-photo");
     const profile = makeMilkyWayProfile();
-    saveProfile({
+    await saveProfile({
       ...profile,
       revision: (existing?.revision ?? 0) + 1,
       updatedAt: new Date().toISOString(),
@@ -182,7 +213,7 @@ export function MobileShellScreen() {
       const result = await expoPermissionGateway.requestForegroundLocation();
       setPermissionStatus(result.decision);
       if (result.decision === "granted") {
-        setDeviceLocation("当前位置", 0, 0);
+        await setDeviceLocation("当前位置", 0, 0);
         setPermissionVisible(false);
       }
     } finally {
@@ -198,6 +229,12 @@ export function MobileShellScreen() {
           <Text style={styles.date}>从黄昏走入星夜</Text>
         </View>
         <View testID="shell-guest-state" style={styles.guestPill}><Text style={styles.guestText}>{guest ? "游客模式" : "已登录"}</Text></View>
+      </View>
+
+      <View testID="shell-persistence-state" accessibilityLiveRegion="polite" style={[styles.persistenceBanner, persistenceState === "error" && styles.persistenceBannerError]}>
+        <Text style={styles.persistenceText}>
+          {persistenceState === "loading" ? "正在恢复本机设置…" : persistenceState === "saving" ? "正在写入本机数据库…" : persistenceState === "error" ? persistenceError : "本机设置已同步"}
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 104 + insets.bottom }]} keyboardShouldPersistTaps="handled">
@@ -230,82 +267,14 @@ export function MobileShellScreen() {
             testID="shell-set-manual-location"
             accessibilityRole="button"
             disabled={!manualDraft.trim()}
-            onPress={() => commitManualLocation(manualDraft)}
-            style={({ pressed }) => [styles.quickSetupButton, pressed && styles.pressed, !manualDraft.trim() && styles.disabled]}
+            onPress={() => void commitManualLocation(manualDraft)}
+            style={({ pressed }) => [styles.quickSetupButton, pressed && styles.pressed, (!manualDraft.trim() || persistenceState === "saving") && styles.disabled]}
           >
             <Text style={styles.quickSetupButtonText}>使用这个手动位置</Text>
           </Pressable>
         </View>
 
-        {recommendationState === "stale" ? (
-          <View testID="preference-ranking-impact" accessibilityLiveRegion="polite" style={styles.staleBanner}>
-            <Text style={styles.staleTitle}>推荐正在按新预设重算</Text>
-            <Text style={styles.staleBody}>旧结果会保留，但已标记为缓存结果，不会冒充新结论。</Text>
-          </View>
-        ) : <View testID="preference-ranking-impact"><Text style={styles.srHint}>当前预设会影响后续排序与硬性阻断。</Text></View>}
-
-        {activeDestination === "tonight" ? (
-          <>
-            <View style={styles.hero}>
-              <Text style={styles.heroEyebrow}>今晚决策</Text>
-              <Text style={styles.heroTitle}>{location.source === "unset" ? "先选择位置，再判断今晚是否值得出发" : `准备查看 ${location.label} 的今晚条件`}</Text>
-              <Text style={styles.heroBody}>先给结论、可执行窗口和下一步，再下钻天气、月光、暗度、路线与风险证据。</Text>
-              <Pressable testID="shell-open-permission-feature" accessibilityRole="button" onPress={() => setPermissionVisible(true)} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
-                <Text style={styles.primaryButtonText}>{location.source === "unset" ? "查找附近观星条件" : "更新附近位置"}</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" onPress={handleManualAction} style={styles.inlineAction}><Text style={styles.inlineActionText}>或手动选择城市 / 出发地</Text></Pressable>
-            </View>
-            <DataStateCard state={location.source === "unset" ? "empty" : recommendationState === "stale" ? "stale" : "loading"} />
-            <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>偏好预设</Text><Pressable accessibilityRole="button" onPress={() => setWizardVisible(true)} style={styles.smallAction}><Text style={styles.smallActionText}>编辑当前预设</Text></Pressable></View>
-            <Text style={styles.profileSummary}>{profileImpactSummary(activeProfile)}</Text>
-            <View style={styles.starterProfileCard}>
-              <View style={styles.starterProfileCopy}>
-                <Text style={styles.starterProfileTitle}>银河摄影起步预设</Text>
-                <Text style={styles.starterProfileBody}>自驾 · 120 分钟 · 停车优先 · 平整平台必需 · 银河 · 相机 / 镜头 / 三脚架</Text>
-                <Text style={styles.starterProfileMeta}>这是可检查、可继续编辑的起步值，不会在未点击时自动启用。</Text>
-              </View>
-              <Pressable testID="shell-switch-profile" accessibilityRole="button" onPress={applyStarterProfile} style={({ pressed }) => [styles.starterProfileButton, pressed && styles.pressed]}>
-                <Text style={styles.starterProfileButtonText}>保存并切换</Text>
-              </Pressable>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.exampleRow}>
-              {profileExamples.map((example) => (
-                <View key={example.id} style={styles.exampleCard}>
-                  <Text style={styles.exampleTitle}>{example.name}</Text>
-                  <Text style={styles.exampleBody}>{example.summary}</Text>
-                  <Text style={styles.exampleMeta}>示例 · 不会自动启用</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </>
-        ) : null}
-
-        {activeDestination === "map" ? (
-          <View style={styles.destinationPanel}>
-            <Text style={styles.heroEyebrow}>观星地图</Text>
-            <Text style={styles.destinationTitle}>在位置、暗度、路线和安全之间做选择</Text>
-            <Text style={styles.destinationBody}>地图会保留当前位置和推荐画像。供应商或图层尚不可用时，会明确显示缓存、缺失与降级路径。</Text>
-            <DataStateCard state="empty" />
-          </View>
-        ) : null}
-
-        {activeDestination === "itinerary" ? (
-          <View style={styles.destinationPanel}><Text style={styles.heroEyebrow}>行程</Text><Text style={styles.destinationTitle}>把地点、时间窗、路线与备选装进同一个计划</Text><DataStateCard state="empty" /></View>
-        ) : null}
-
-        {activeDestination === "sky" ? (
-          <View style={styles.destinationPanel}><Text style={styles.heroEyebrow}>天空</Text><Text style={styles.destinationTitle}>即使相机或传感器不可用，也能查看通用天空</Text><Text style={styles.destinationBody}>相机、方向和 AR 只在你主动进入相应能力时请求；拒绝后保留静态天空路径。</Text><DataStateCard state="empty" /></View>
-        ) : null}
-
-        {activeDestination === "profile" ? (
-          <View style={styles.destinationPanel}>
-            <Text style={styles.heroEyebrow}>我的</Text>
-            <Text style={styles.destinationTitle}>预设、出发地、设备与隐私控制</Text>
-            <Pressable accessibilityRole="button" onPress={() => setWizardVisible(true)} style={styles.listAction}><Text style={styles.listActionTitle}>偏好预设</Text><Text style={styles.listActionMeta}>{activeProfile.name} · {profileImpactSummary(activeProfile)}</Text></Pressable>
-            <Pressable accessibilityRole="button" onPress={handleManualAction} style={styles.listAction}><Text style={styles.listActionTitle}>常用出发地</Text><Text style={styles.listActionMeta}>{location.label}</Text></Pressable>
-            <View style={styles.listAction}><Text style={styles.listActionTitle}>隐私与权限</Text><Text style={styles.listActionMeta}>按功能请求 · 后台定位默认关闭</Text></View>
-          </View>
-        ) : null}
+        <DestinationContent destination={activeDestination} location={location} recommendationState={recommendationState} activeProfile={activeProfile} onPermission={() => setPermissionVisible(true)} onManual={handleManualAction} onWizard={() => setWizardVisible(true)} onStarter={applyStarterProfile} />
       </ScrollView>
 
       <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
@@ -318,7 +287,7 @@ export function MobileShellScreen() {
               accessibilityRole="tab"
               accessibilityLabel={item.label}
               accessibilityState={{ selected }}
-              onPress={() => setDestination(item.id)}
+              onPress={() => void setDestination(item.id)}
               style={({ pressed }) => [styles.tab, selected && styles.tabSelected, pressed && styles.pressed]}
             >
               <Text style={[styles.tabGlyph, selected && styles.tabTextSelected]}>{item.glyph}</Text>
@@ -340,6 +309,9 @@ export function MobileShellScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.canvas },
   topBar: { minHeight: 72, paddingHorizontal: spacing.x2, paddingVertical: spacing.x1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: palette.surface, borderBottomWidth: 1, borderBottomColor: palette.border },
+  persistenceBanner: { minHeight: 28, justifyContent: "center", paddingHorizontal: spacing.x2, backgroundColor: palette.surfaceMuted, borderBottomWidth: 1, borderBottomColor: palette.border },
+  persistenceBannerError: { backgroundColor: "#FFF1F0", borderBottomColor: palette.danger },
+  persistenceText: { color: palette.textSecondary, fontSize: typeToken.caption, fontWeight: "600" },
   brand: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" },
   date: { marginTop: 3, color: palette.textSecondary, fontSize: typeToken.caption },
   guestPill: { minHeight: 32, justifyContent: "center", paddingHorizontal: 12, borderRadius: radii.pill, backgroundColor: palette.surfaceMuted },

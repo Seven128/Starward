@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { finalizeWeatherHour, type NormalizedWeatherRun } from "../../../../packages/weather-schema/src/index";
 import { ForecastQueryService } from "../modules/forecast/forecast-query-service";
 import { buildApi } from "../server";
+import { createForecastHandler } from "../modules/forecast/forecast-handler";
+import { createForecastRuntime } from "../modules/forecast/runtime";
 
 function weatherRun(model: string, cloudOffset = 0): NormalizedWeatherRun {
   const issuedAt = "2026-07-20T12:00:00.000Z";
@@ -66,5 +71,26 @@ describe("forecast query service", () => {
     expect(astronomy.statusCode).toBe(200);
     expect(astronomy.json().coordinateSystem).toBe("WGS84");
     await app.close();
+  });
+
+  it("replays one cached batch but accepts a newly generated batch after process restart", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "starward-forecast-runtime-"));
+    const query = { latitude: 22.529, longitude: 113.9468, timezone: "Asia/Shanghai", nightDate: "2026-07-20", target: "milky-way-core" };
+    const boundary = { invoke: async (request: { kind: string }) => ({ status: "available", kind: request.kind }) };
+    try {
+      const firstRuntime = await createForecastRuntime({ dataDir, boundary });
+      const firstService = new ForecastQueryService({ primary: { load: async () => weatherRun("gfs_seamless") }, now: () => new Date("2026-07-20T12:05:00.000Z") });
+      const firstHandler = createForecastHandler(firstService, firstRuntime);
+      expect((await firstHandler(query)).status).toBe(200);
+      expect((await firstHandler(query)).status).toBe(200);
+      await firstRuntime.close();
+
+      const restartedRuntime = await createForecastRuntime({ dataDir, boundary });
+      const restartedService = new ForecastQueryService({ primary: { load: async () => weatherRun("gfs_seamless") }, now: () => new Date("2026-07-20T12:06:00.000Z") });
+      expect((await createForecastHandler(restartedService, restartedRuntime)(query)).status).toBe(200);
+      await restartedRuntime.close();
+    } finally {
+      await rm(dataDir, { recursive: true, force: true });
+    }
   });
 });

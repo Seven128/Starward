@@ -2,12 +2,14 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { MapSpotSummary, RouteMode } from "@starward/contracts/map";
+import type { MapRouteSnapshot, MapSpotSummary, RouteMode } from "@starward/contracts/map";
+import type { ForecastLayerDescriptor } from "@starward/contracts/forecast";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
 import { createForecastClient } from "../../data/forecast-client";
 import { createMapClient } from "../../data/map-client";
 import { useShellStore } from "../../state/shell-store";
 import { useMapSelectionStore } from "./map-selection-store";
+import { openNativeMapNavigation } from "../../native/map/native-map-gateway";
 
 const palette = colors.planning;
 const mapClient = createMapClient();
@@ -27,12 +29,52 @@ function Evidence({ testID, title, body, meta }: { testID: string; title: string
 const distance = (meters: number | null) => meters === null ? "暂无" : meters >= 1000 ? `${Math.round(meters / 100) / 10} km` : `${meters} m`;
 const duration = (seconds: number | null) => seconds === null ? "暂无" : `${Math.round(seconds / 60)} 分钟`;
 
+interface ActivePanelProps {
+  active: ViewKey; spots: MapSpotSummary[]; selected?: MapSpotSummary; generatedAt?: string; loading: boolean;
+  strictCount: number; layer?: ForecastLayerDescriptor; ordered: MapSpotSummary[]; route?: MapRouteSnapshot;
+  routeFetching: boolean; mode: RouteMode; navigationError: string | null; openNavigation(): Promise<void>;
+}
+
+function FiltersPanel({ count }: { count: number }) {
+  return <View style={styles.panel}><Evidence testID="map-active-filters" title="4 项硬筛选" body="已验证 + 停车 + 厕所 + 无障碍；安全条件不会被自动移除。" /><Evidence testID="map-empty-reason" title={count ? `${count} 个结果` : "没有符合全部条件的地点"} body="最可能冲突：开放候选尚未完成人工核验，且设施标签不能证明夜间可用。" /><Evidence testID="map-relax-filter" title="逐项放宽" body="可先移除厕所或无障碍；也可重置额外筛选，当前视口和日期保持不变。" /></View>;
+}
+
+function LayerPanel({ layer }: { layer?: ForecastLayerDescriptor }) {
+  return <View style={styles.panel}><Evidence testID="map-layer-version" title={layer ? `${layer.name} · ${layer.model}` : "低云图层暂无版本"} body={layer ? `批次 ${layer.runId} · ${layer.valueUnit} · 透明度 ${Math.round(layer.opacity * 100)}%` : "等待天气聚合服务返回。"} /><Evidence testID="map-layer-freshness" title={layer ? `生成 ${layer.generatedAt}` : "生成时间未知"} body={layer ? `预计更新 ${layer.nextUpdateAt} · ${layer.status}` : "基础地图不受影响。"} /><Evidence testID="map-layer-failure-state" title={layer?.tileUrl ? "图层已加载" : "图层不可用，未覆盖旧图例"} body={layer?.limitation ?? "点位数据仍可用；没有许可的瓦片不会被拼成覆盖层。"} /></View>;
+}
+
+function ReorderPanel({ ordered, route, fetching }: { ordered: MapSpotSummary[]; route?: MapRouteSnapshot; fetching: boolean }) {
+  return <View style={styles.panel}><Evidence testID="route-stop-order" title={ordered.length ? ordered.map((spot, index) => `${index + 1}. ${spot.name}`).join(" → ") : "暂无可排序地点"} body="主备角色和编号按同一选择状态更新。" /><Evidence testID="route-recalculation-state" title={fetching ? "正在重新计算受影响路线" : "顺序已更新；不可用路段保持缺失"} body="旧路线不会在重算期间被描述为最新。" /><Evidence testID="route-version" title={`路线请求 ${route?.requestId ?? "尚未生成"}`} body={route ? `${route.provider}@${route.providerVersion} · ${route.state}` : "等待至少一个目的地。"} /></View>;
+}
+
+function ModePanel({ mode, route, selected, navigationError, openNavigation }: Pick<ActivePanelProps, "mode" | "route" | "selected" | "navigationError" | "openNavigation">) {
+  return <View style={styles.panel}><Evidence testID="route-mode" title={`当前方式：${mode === "cycle" ? "骑行" : "驾车"}`} body={route?.navigationUsable ? `${distance(route.distanceMeters)} · ${duration(route.durationSeconds)}` : "该方式没有可验证路线，不套用其他方式 ETA。"} /><Evidence testID="route-parking-end" title="停车/道路终点" body={selected?.facilities.includes("parking") ? "POI 标有停车标签，但夜间开放和容量仍需核验。" : "未验证停车点；不能直接导航到架设位置。"} /><Evidence testID="route-last-mile" title="最后一段步行/搬运" body="步行距离与坡度尚未现场验证，当前明确缺失；不会用直线距离替代最后一段路线。" /><Pressable testID="route-open-native-map" accessibilityRole="button" onPress={() => void openNavigation()} disabled={!selected} style={[styles.nativeMapButton, !selected && styles.disabled]}><Text style={styles.nativeMapButtonText}>{route?.navigationUsable ? "用系统地图开始导航" : "在系统地图复核地点"}</Text></Pressable>{navigationError ? <Text accessibilityLiveRegion="assertive" style={styles.error}>{navigationError}</Text> : null}</View>;
+}
+
+function DegradationPanel({ route }: { route?: MapRouteSnapshot }) {
+  const title = route?.state === "cached" ? "路线供应商超时，降级到缓存" : route?.state === "fresh" ? "路线最新" : "路线降级：供应商不可用";
+  return <View style={styles.panel}><Evidence testID="route-provider-state" title={title} body={route?.warning ?? "当前没有可验证路线。"} /><Evidence testID="route-cache-age" title={route?.state === "cached" ? `缓存生成 ${route.generatedAt}` : "没有合格缓存"} body={`快照版本 ${route?.providerVersion ?? "unavailable"}`} /><Evidence testID="route-straight-line-fallback" title={`直线参考 ${distance(route?.straightLineReferenceMeters ?? null)}`} body="仅作方位参考，不是驾车路线；仍可保留停车点或交给外部地图复核。" /></View>;
+}
+
+function ActivePanel(props: ActivePanelProps) {
+  switch (props.active) {
+    case "status": return <StatusPanel spots={props.spots} selected={props.selected} generatedAt={props.generatedAt} loading={props.loading} />;
+    case "filters": return <FiltersPanel count={props.strictCount} />;
+    case "layer": return <LayerPanel layer={props.layer} />;
+    case "selected": return <SelectedPanel spot={props.selected} routeState={props.route?.state} />;
+    case "reorder": return <ReorderPanel ordered={props.ordered} route={props.route} fetching={props.routeFetching} />;
+    case "mode": return <ModePanel {...props} />;
+    case "degradation": return <DegradationPanel route={props.route} />;
+  }
+}
+
 export function MapScreen() {
   const location = useShellStore((state) => state.location);
   const [active, setActive] = useState<ViewKey>("status");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mode, setMode] = useState<RouteMode>("drive");
   const [orderReversed, setOrderReversed] = useState(false);
+  const [navigationError, setNavigationError] = useState<string | null>(null);
   const selectSharedSpot = useMapSelectionStore((state) => state.selectSpot);
   const assignRole = useMapSelectionStore((state) => state.assignRole);
   const latitude = location.latitude ?? 22.529;
@@ -56,6 +98,12 @@ export function MapScreen() {
     if (key === "mode") setMode((value) => value === "drive" ? "cycle" : "drive");
     if (key === "degradation") void route.refetch();
   };
+  const openNavigation = async () => {
+    if (!selected) return;
+    setNavigationError(null);
+    try { await openNativeMapNavigation(selected.coordinate, selected.name); }
+    catch { setNavigationError("未能打开系统地图；地点仍保留，可稍后重试。"); }
+  };
 
   return <SafeAreaView testID="screen-map-route-discovery" style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
     <Text style={styles.eyebrow}>地点与路线 · {location.label}</Text><Text style={styles.title}>观星地图</Text>
@@ -66,13 +114,7 @@ export function MapScreen() {
       {spots.isError ? <Text style={styles.error}>地点源不可用；保留视口，可重试，不显示幽灵标记。</Text> : null}
     </View>
     <View style={styles.actions}>{actionRows.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" onPress={() => activate(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
-    {active === "status" ? <StatusPanel spots={spots.data?.items ?? []} selected={selected} generatedAt={spots.data?.generatedAt} loading={spots.isLoading} /> : null}
-    {active === "filters" ? <View style={styles.panel}><Evidence testID="map-active-filters" title="4 项硬筛选" body="已验证 + 停车 + 厕所 + 无障碍；安全条件不会被自动移除。" /><Evidence testID="map-empty-reason" title={strictResults.length ? `${strictResults.length} 个结果` : "没有符合全部条件的地点"} body="最可能冲突：开放候选尚未完成人工核验，且设施标签不能证明夜间可用。" /><Evidence testID="map-relax-filter" title="逐项放宽" body="可先移除厕所或无障碍；也可重置额外筛选，当前视口和日期保持不变。" /></View> : null}
-    {active === "layer" ? <View style={styles.panel}><Evidence testID="map-layer-version" title={layer ? `${layer.name} · ${layer.model}` : "低云图层暂无版本"} body={layer ? `批次 ${layer.runId} · ${layer.valueUnit} · 透明度 ${Math.round(layer.opacity * 100)}%` : "等待天气聚合服务返回。"} /><Evidence testID="map-layer-freshness" title={layer ? `生成 ${layer.generatedAt}` : "生成时间未知"} body={layer ? `预计更新 ${layer.nextUpdateAt} · ${layer.status}` : "基础地图不受影响。"} /><Evidence testID="map-layer-failure-state" title={layer?.tileUrl ? "图层已加载" : "图层不可用，未覆盖旧图例"} body={layer?.limitation ?? "点位数据仍可用；没有许可的瓦片不会被拼成覆盖层。"} /></View> : null}
-    {active === "selected" ? <SelectedPanel spot={selected} routeState={route.data?.state} /> : null}
-    {active === "reorder" ? <View style={styles.panel}><Evidence testID="route-stop-order" title={ordered.length ? ordered.map((spot, index) => `${index + 1}. ${spot.name}`).join(" → ") : "暂无可排序地点"} body="主备角色和编号按同一选择状态更新。" /><Evidence testID="route-recalculation-state" title={route.isFetching ? "正在重新计算受影响路线" : "顺序已更新；不可用路段保持缺失"} body="旧路线不会在重算期间被描述为最新。" /><Evidence testID="route-version" title={`路线请求 ${route.data?.requestId ?? "尚未生成"}`} body={route.data ? `${route.data.provider}@${route.data.providerVersion} · ${route.data.state}` : "等待至少一个目的地。"} /></View> : null}
-    {active === "mode" ? <View style={styles.panel}><Evidence testID="route-mode" title={`当前方式：${mode === "cycle" ? "骑行" : "驾车"}`} body={route.data?.navigationUsable ? `${distance(route.data.distanceMeters)} · ${duration(route.data.durationSeconds)}` : "该方式没有可验证路线，不套用其他方式 ETA。"} /><Evidence testID="route-parking-end" title="停车/道路终点" body={selected?.facilities.includes("parking") ? "POI 标有停车标签，但夜间开放和容量仍需核验。" : "未验证停车点；不能直接导航到架设位置。"} /><Evidence testID="route-last-mile" title="最后一段步行/搬运" body="步行距离与坡度尚未现场验证，当前明确缺失；不会用直线距离替代最后一段路线。" /></View> : null}
-    {active === "degradation" ? <View style={styles.panel}><Evidence testID="route-provider-state" title={route.data?.state === "cached" ? "路线供应商超时，降级到缓存" : route.data?.state === "fresh" ? "路线最新" : "路线降级：供应商不可用"} body={route.data?.warning ?? "当前没有可验证路线。"} /><Evidence testID="route-cache-age" title={route.data?.state === "cached" ? `缓存生成 ${route.data.generatedAt}` : "没有合格缓存"} body={`快照版本 ${route.data?.providerVersion ?? "unavailable"}`} /><Evidence testID="route-straight-line-fallback" title={`直线参考 ${distance(route.data?.straightLineReferenceMeters ?? null)}`} body="仅作方位参考，不是驾车路线；仍可保留停车点或交给外部地图复核。" /></View> : null}
+    <ActivePanel active={active} spots={spots.data?.items ?? []} selected={selected} generatedAt={spots.data?.generatedAt} loading={spots.isLoading} strictCount={strictResults.length} layer={layer} ordered={ordered} route={route.data} routeFetching={route.isFetching} mode={mode} navigationError={navigationError} openNavigation={openNavigation} />
   </ScrollView></SafeAreaView>;
 }
 
@@ -89,5 +131,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.canvas }, content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 }, eyebrow: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" }, title: { color: palette.text, fontSize: typeToken.title, fontWeight: "700" }, subtitle: { color: palette.textSecondary, fontSize: typeToken.body, lineHeight: 23 },
   mapCanvas: { minHeight: 240, padding: spacing.x2, borderRadius: radii.layer, backgroundColor: "#DCE8F3", justifyContent: "space-between" }, mapCount: { color: palette.text, fontWeight: "700" }, markerRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 }, marker: { width: 92, minHeight: 62, padding: 8, borderWidth: 1, borderColor: palette.border, borderRadius: radii.control, backgroundColor: palette.surface }, markerSelected: { borderColor: palette.primaryActive, borderWidth: 2 }, markerText: { color: palette.primaryActive, fontWeight: "800" }, markerLabel: { marginTop: 4, color: palette.text, fontSize: typeToken.caption }, error: { color: palette.danger, fontSize: typeToken.caption },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 }, action: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: 12, borderWidth: 1, borderColor: palette.border, borderRadius: radii.pill, backgroundColor: palette.surface }, actionActive: { borderColor: palette.primaryActive }, actionText: { color: palette.text, fontSize: typeToken.caption, fontWeight: "700" },
+  nativeMapButton: { minHeight: minimumTouchTarget, alignItems: "center", justifyContent: "center", borderRadius: radii.control, backgroundColor: palette.primaryActive }, nativeMapButtonText: { color: palette.onPrimary, fontWeight: "700" }, disabled: { opacity: 0.5 },
   panel: { gap: spacing.x1, padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, evidence: { minHeight: 84, padding: 12, borderRadius: radii.control, backgroundColor: palette.surfaceMuted }, evidenceTitle: { color: palette.text, fontSize: typeToken.body, fontWeight: "700" }, evidenceBody: { marginTop: 5, color: palette.text, fontSize: typeToken.label, lineHeight: 19 }, evidenceMeta: { marginTop: 5, color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 },
 });

@@ -6951,7 +6951,7 @@ source_claims:
         - forbidden_shortcut.online-only-field-mode
   - key: fs-static-screen-completion
     source_ref: docs/source-plan.md#forbidden-shortcut.static-screen-completion
-    statement: "- **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳或单一平台演示不能算 APP 完成。"
+    statement: "- **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳、固定用户/时间/地点/结果样例、仅进程内状态、仅返回成功文案或证据卡、仅元数据模拟上传、只声明未调用的原生适配器、不可重启读回的离线包，以及未实际执行的通知/恢复/追踪，均不能算 APP 或对应 Outcome 完成；测试可用 fixture 隔离不可控外部边界，但生产载体必须接受可变输入，产生可观察的真实状态变化与适用的持久化/文件/原生/外部副作用，并诚实处理失败和降级。"
     disposition:
       type: global_constraint
       refs:
@@ -7047,6 +7047,18 @@ source_claims:
       type: acceptance
       refs:
         - GLOBAL.global-acceptance.personal-trial-boundary
+  - key: global-ac-real-business-loop-completion
+    source_ref: docs/source-plan.md#cross-outcome.acceptance.real-business-loop-completion
+    statement: |-
+      - **AC real-business-loop-completion**
+        - Accepts: OBL real-business-loop-completion, FS static-screen-completion
+        - Given: 14 个 Outcome 的生产入口在隔离数据目录中分别接收至少两组不同用户、位置、时刻或业务内容，并配置可控的成功、失败与降级边界。
+        - When: 对每个 Outcome 执行其代表性创建/更新/动作/读取闭环，重建服务实例或重启 APP 后读回，再重复幂等动作并触发一次失败、超时、拒权或冲突。
+        - Then: 结果随输入变化，真实状态转移与适用的持久化/文件/原生/外部 invocation 可观察且重启后可读回；重复动作不产生重复副作用，失败路径不展示成功；任一 Outcome 若移除写入、适配器调用、重启读回或改回固定结果，其定向 Check 与 GLOBAL Check 都必须失败。
+    disposition:
+      type: acceptance
+      refs:
+        - GLOBAL.global-acceptance.real-business-loop-completion
   - key: global-ac-time-coordinate-consistency
     source_ref: docs/source-plan.md#cross-outcome.acceptance.time-coordinate-consistency
     statement: |-
@@ -7120,6 +7132,13 @@ source_claims:
       type: global_constraint
       refs:
         - constraint.personal-trial-release-profile
+  - key: global-obl-real-business-loop-completion
+    source_ref: docs/source-plan.md#cross-outcome.obligation.real-business-loop-completion
+    statement: "- **OBL real-business-loop-completion** [direct: S-USER + necessary derivation]：14 个 Outcome 的完成证据必须来自生产入口与生产载体：至少两组可变用户输入沿真实业务路由产生与输入相关的可观察状态变化；凡需求涉及账户、计划、贡献、离线包、媒体、通知、管理或质量记录，必须写入适用的持久化、文件、原生或已授权外部 sink，并由新的服务实例、进程或 APP 重启后读回；凡涉及地图、定位、传感器、相机/相册、AR、分享或通知，必须调用可替换的生产适配器并可观察 invocation/result，设备或外部能力不可用时诚实降级；失败、超时、拒权、重复或冲突不得显示成功。测试 fixture 只可替代不可控边界，不能替代生产路径、状态转移与副作用。"
+    disposition:
+      type: global_constraint
+      refs:
+        - constraint.real-business-loop-completion
   - key: global-obl-shared-decision-context
     source_ref: docs/source-plan.md#cross-outcome.obligation.shared-decision-context
     statement: "- **OBL shared-decision-context** [direct + repo evidence: S-PRODUCT 闭环, S-CONTEXT]：当前位置/手动出发地、观星夜/时刻、当前偏好、观测目标、选中地点、主备角色、路线方案、行程 revision、数据新鲜度和风险是共享决策上下文；今晚、地图、详情、行程、天空、摄影和现场切换时必须原子更新或显式标 stale，不能各页维护互相矛盾副本。"
@@ -9991,6 +10010,8 @@ global:
         statement: "- **OBL release-phase-integrity** [direct: S-PRODUCT 十～十二]：MVP/V1/V2/V3 范围按 Section 3 保存；提前实现后续能力可以，但不得让 V2/V3 空壳成为 MVP 前置，也不得因后续目标尚未实现而把 MVP 的外部导航/简单行程/基础摄影/轻贡献降为静态占位；最终产品形态仍为 RN APP。"
       - key: personal-trial-release-profile
         statement: "- **OBL personal-trial-release-profile** [direct: S-USER]：当前交付固定为个人运营主体的 owner-only 非商业个人试用版，外部服务经常性成本硬上限 CNY 200/月（CNY 2,400/年），仅在来源、个人非商业使用权、目标区质量/稳定性和安全降级均合格时免费优先；预算内也不得自动购买。全部产品能力保留，但生产供应商、公开再分发、商店生产发布和外部专业/现场背书保持关闭或未来门，未背书结果必须标 experimental/unknown/pending，转公开或商业运营需 owner 批准新的生产发布权威。"
+      - key: real-business-loop-completion
+        statement: "- **OBL real-business-loop-completion** [direct: S-USER + necessary derivation]：14 个 Outcome 的完成证据必须来自生产入口与生产载体：至少两组可变用户输入沿真实业务路由产生与输入相关的可观察状态变化；凡需求涉及账户、计划、贡献、离线包、媒体、通知、管理或质量记录，必须写入适用的持久化、文件、原生或已授权外部 sink，并由新的服务实例、进程或 APP 重启后读回；凡涉及地图、定位、传感器、相机/相册、AR、分享或通知，必须调用可替换的生产适配器并可观察 invocation/result，设备或外部能力不可用时诚实降级；失败、超时、拒权、重复或冲突不得显示成功。测试 fixture 只可替代不可控边界，不能替代生产路径、状态转移与副作用。"
     forbidden_paths: []
     forbidden_shortcuts:
       - key: client-side-source-stitching
@@ -10010,7 +10031,7 @@ global:
       - key: online-only-field-mode
         statement: "- **FS online-only-field-mode**：仅联网可用的现场模式不算完成。"
       - key: static-screen-completion
-        statement: "- **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳或单一平台演示不能算 APP 完成。"
+        statement: "- **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳、固定用户/时间/地点/结果样例、仅进程内状态、仅返回成功文案或证据卡、仅元数据模拟上传、只声明未调用的原生适配器、不可重启读回的离线包，以及未实际执行的通知/恢复/追踪，均不能算 APP 或对应 Outcome 完成；测试可用 fixture 隔离不可控外部边界，但生产载体必须接受可变输入，产生可观察的真实状态变化与适用的持久化/文件/原生/外部副作用，并诚实处理失败和降级。"
   acceptance:
     checks:
       - key: global-acceptance
@@ -10041,6 +10062,9 @@ global:
           - tools/long-task/package-lock.json
         input_paths:
           - packages/contracts/src/platform-boundary.ts
+          - apps/mobile/app/_layout.tsx
+          - apps/api/src/start.ts
+          - packages/domain/src/offline/index.ts
         expected_output_paths:
           - packages/contracts/src/platform-boundary.ts
         positive_assertions:
@@ -10153,6 +10177,18 @@ global:
             observation: GLOBAL.personal-trial-boundary.passed
             operator: equals
             expected: true
+          - key: real-business-loop-completion
+            criterion: |-
+              - **AC real-business-loop-completion**
+                - Accepts: OBL real-business-loop-completion, FS static-screen-completion
+                - Given: 14 个 Outcome 的生产入口在隔离数据目录中分别接收至少两组不同用户、位置、时刻或业务内容，并配置可控的成功、失败与降级边界。
+                - When: 对每个 Outcome 执行其代表性创建/更新/动作/读取闭环，重建服务实例或重启 APP 后读回，再重复幂等动作并触发一次失败、超时、拒权或冲突。
+                - Then: 结果随输入变化，真实状态转移与适用的持久化/文件/原生/外部 invocation 可观察且重启后可读回；重复动作不产生重复副作用，失败路径不展示成功；任一 Outcome 若移除写入、适配器调用、重启读回或改回固定结果，其定向 Check 与 GLOBAL Check 都必须失败。
+            claims:
+              - constraint.real-business-loop-completion
+            observation: GLOBAL.real-business-loop-completion.passed
+            operator: equals
+            expected: true
         negative_assertions:
           - key: guard-generic-weather-dashboard
             criterion: "The delivered system enforces this non-goal: - **NG generic-weather-dashboard**：不把产品做成只展示接口字段的天气仪表盘、通用星图或旅游路线工具。"
@@ -10246,7 +10282,7 @@ global:
             operator: equals
             expected: false
           - key: guard-static-screen-completion
-            criterion: "The delivered system rejects this forbidden shortcut: - **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳或单一平台演示不能算 APP 完成。"
+            criterion: "The delivered system rejects this forbidden shortcut: - **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳、固定用户/时间/地点/结果样例、仅进程内状态、仅返回成功文案或证据卡、仅元数据模拟上传、只声明未调用的原生适配器、不可重启读回的离线包，以及未实际执行的通知/恢复/追踪，均不能算 APP 或对应 Outcome 完成；测试可用 fixture 隔离不可控外部边界，但生产载体必须接受可变输入，产生可观察的真实状态变化与适用的持久化/文件/原生/外部副作用，并诚实处理失败和降级。"
             claims:
               - forbidden_shortcut.static-screen-completion
             observation: GLOBAL.guard-static-screen-completion.violated
@@ -10266,6 +10302,7 @@ global:
           - constraint.versioned-recoverable-change
           - constraint.release-phase-integrity
           - constraint.personal-trial-release-profile
+          - constraint.real-business-loop-completion
           - non_goal.generic-weather-dashboard
           - non_goal.pwa-as-final-product
           - non_goal.mini-program-full-parity
@@ -10295,6 +10332,7 @@ global:
           - versioned-conflict-recovery
           - release-scope-boundary
           - personal-trial-boundary
+          - real-business-loop-completion
           - guard-generic-weather-dashboard
           - guard-pwa-as-final-product
           - guard-mini-program-full-parity
@@ -10475,6 +10513,7 @@ outcomes:
           target: apps/mobile/app/_layout.tsx
           carrier_paths:
             - apps/mobile/app/_layout.tsx
+            - packages/domain/src/preferences/runtime.ts
           existence: planned
     acceptance:
       checks:
@@ -10684,11 +10723,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/app/_layout.tsx
+            - packages/domain/src/preferences/runtime.ts
           expected_output_paths:
             - apps/mobile/app/_layout.tsx
+            - packages/domain/src/preferences/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for mobile-shell-and-preferences exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for mobile-shell-and-preferences exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.mobile-client-stack
@@ -10999,6 +11040,7 @@ outcomes:
           target: apps/mobile/src/features/tonight/index.ts
           carrier_paths:
             - apps/mobile/src/features/tonight/index.ts
+            - apps/api/src/modules/night-report/runtime.ts
           existence: planned
     acceptance:
       checks:
@@ -11270,11 +11312,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/tonight/index.ts
+            - apps/api/src/modules/night-report/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/tonight/index.ts
+            - apps/api/src/modules/night-report/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for tonight-decision exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for tonight-decision exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.night-report-aggregation
@@ -11545,6 +11589,7 @@ outcomes:
           target: packages/domain/src/forecast/index.ts
           carrier_paths:
             - packages/domain/src/forecast/index.ts
+            - apps/api/src/modules/forecast/runtime.ts
             - apps/mobile/public/forecast-capabilities.json
           existence: planned
     acceptance:
@@ -11778,11 +11823,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - packages/domain/src/forecast/index.ts
+            - apps/api/src/modules/forecast/runtime.ts
           expected_output_paths:
             - packages/domain/src/forecast/index.ts
+            - apps/api/src/modules/forecast/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for forecast-and-astronomy exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for forecast-and-astronomy exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.weather-provider-normalization
@@ -12140,6 +12187,7 @@ outcomes:
           target: apps/mobile/src/features/map/index.ts
           carrier_paths:
             - apps/mobile/src/features/map/index.ts
+            - apps/api/src/modules/map/runtime.ts
           existence: planned
     acceptance:
       checks:
@@ -12419,11 +12467,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/map/index.ts
+            - apps/api/src/modules/map/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/map/index.ts
+            - apps/api/src/modules/map/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for map-route-discovery exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for map-route-discovery exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.amap-adapter
@@ -12738,6 +12788,7 @@ outcomes:
           target: apps/mobile/src/features/spots/index.ts
           carrier_paths:
             - apps/mobile/src/features/spots/index.ts
+            - apps/api/src/modules/spots/runtime.ts
           existence: planned
       rollback_and_recovery:
         rollback: Stop writes for spot-detail-and-trust, restore the last compatible version or immutable source pointer, and preserve every user/external record created before the rollback boundary.
@@ -12973,11 +13024,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/spots/index.ts
+            - apps/api/src/modules/spots/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/spots/index.ts
+            - apps/api/src/modules/spots/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for spot-detail-and-trust exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for spot-detail-and-trust exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.normalized-spot-entities
@@ -13447,6 +13500,7 @@ outcomes:
           target: apps/mobile/src/features/itinerary/index.ts
           carrier_paths:
             - apps/mobile/src/features/itinerary/index.ts
+            - apps/api/src/modules/itinerary/runtime.ts
           existence: planned
       rollback_and_recovery:
         rollback: Stop writes for itinerary-and-collaboration, restore the last compatible version or immutable source pointer, and preserve every user/external record created before the rollback boundary.
@@ -13710,11 +13764,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/itinerary/index.ts
+            - apps/api/src/modules/itinerary/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/itinerary/index.ts
+            - apps/api/src/modules/itinerary/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for itinerary-and-collaboration exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for itinerary-and-collaboration exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.itinerary-version-model
@@ -14033,6 +14089,7 @@ outcomes:
           target: apps/mobile/src/features/sky/index.ts
           carrier_paths:
             - apps/mobile/src/features/sky/index.ts
+            - apps/mobile/src/features/sky/runtime.ts
           existence: planned
     acceptance:
       checks:
@@ -14246,11 +14303,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/sky/index.ts
+            - apps/mobile/src/features/sky/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/sky/index.ts
+            - apps/mobile/src/features/sky/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for sky-orientation-ar exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for sky-orientation-ar exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.orientation-engine
@@ -14636,6 +14695,7 @@ outcomes:
           target: apps/mobile/src/features/shooting/index.ts
           carrier_paths:
             - apps/mobile/src/features/shooting/index.ts
+            - apps/api/src/modules/shooting/runtime.ts
           existence: planned
     acceptance:
       checks:
@@ -14839,11 +14899,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/shooting/index.ts
+            - apps/api/src/modules/shooting/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/shooting/index.ts
+            - apps/api/src/modules/shooting/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for shooting-assistant exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for shooting-assistant exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.versioned-rule-engine
@@ -15218,6 +15280,7 @@ outcomes:
           target: apps/mobile/src/features/field/index.ts
           carrier_paths:
             - apps/mobile/src/features/field/index.ts
+            - packages/domain/src/offline/runtime.ts
           existence: planned
       rollback_and_recovery:
         rollback: Stop writes for field-offline-safety, restore the last compatible version or immutable source pointer, and preserve every user/external record created before the rollback boundary.
@@ -15459,11 +15522,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/field/index.ts
+            - packages/domain/src/offline/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/field/index.ts
+            - packages/domain/src/offline/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for field-offline-safety exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for field-offline-safety exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.offline-storage-stack
@@ -15756,6 +15821,7 @@ outcomes:
           target: apps/mobile/src/features/community/index.ts
           carrier_paths:
             - apps/mobile/src/features/community/index.ts
+            - apps/api/src/modules/community/runtime.ts
           existence: planned
       rollback_and_recovery:
         rollback: Stop writes for community-contribution, restore the last compatible version or immutable source pointer, and preserve every user/external record created before the rollback boundary.
@@ -15956,11 +16022,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/community/index.ts
+            - apps/api/src/modules/community/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/community/index.ts
+            - apps/api/src/modules/community/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for community-contribution exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for community-contribution exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.immutable-contribution-evidence
@@ -16273,6 +16341,7 @@ outcomes:
           target: apps/mobile/src/features/notifications/index.ts
           carrier_paths:
             - apps/mobile/src/features/notifications/index.ts
+            - apps/api/src/modules/notifications/runtime.ts
           existence: planned
       rollback_and_recovery:
         rollback: Stop writes for notifications-and-toolbox, restore the last compatible version or immutable source pointer, and preserve every user/external record created before the rollback boundary.
@@ -16550,11 +16619,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/notifications/index.ts
+            - apps/api/src/modules/notifications/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/notifications/index.ts
+            - apps/api/src/modules/notifications/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for notifications-and-toolbox exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for notifications-and-toolbox exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.notification-evaluation-pipeline
@@ -16929,6 +17000,7 @@ outcomes:
           target: apps/mobile/src/features/profile/index.ts
           carrier_paths:
             - apps/mobile/src/features/profile/index.ts
+            - apps/api/src/modules/identity/runtime.ts
             - packages/contracts/src/security-policy.ts
             - infrastructure/database/migrations/manifest.json
             - infrastructure/database/migrations/20260720_identity_up.sql
@@ -17183,11 +17255,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/mobile/src/features/profile/index.ts
+            - apps/api/src/modules/identity/runtime.ts
           expected_output_paths:
             - apps/mobile/src/features/profile/index.ts
+            - apps/api/src/modules/identity/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for identity-profile-privacy exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for identity-profile-privacy exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.token-security
@@ -17554,6 +17628,7 @@ outcomes:
           target: apps/admin-web/src/app/page.tsx
           carrier_paths:
             - apps/admin-web/src/app/page.tsx
+            - apps/api/src/modules/admin/runtime.ts
           existence: planned
       rollback_and_recovery:
         rollback: Stop writes for admin-data-operations, restore the last compatible version or immutable source pointer, and preserve every user/external record created before the rollback boundary.
@@ -17923,11 +17998,13 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - apps/admin-web/src/app/page.tsx
+            - apps/api/src/modules/admin/runtime.ts
           expected_output_paths:
             - apps/admin-web/src/app/page.tsx
+            - apps/api/src/modules/admin/runtime.ts
           positive_assertions:
             - key: carrier-integrity
-              criterion: The production carrier for admin-data-operations exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for admin-data-operations exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.source-data-immutability
@@ -18371,6 +18448,7 @@ outcomes:
           target: packages/contracts/src/platform-boundary.ts
           carrier_paths:
             - packages/contracts/src/platform-boundary.ts
+            - apps/api/src/modules/quality/runtime.ts
           existence: planned
       rollback_and_recovery:
         rollback: Stop writes for quality-release-observability, restore the last compatible version or immutable source pointer, and preserve every user/external record created before the rollback boundary.
@@ -18407,8 +18485,10 @@ outcomes:
             - tools/long-task/package-lock.json
           input_paths:
             - packages/contracts/src/platform-boundary.ts
+            - apps/api/src/modules/quality/runtime.ts
           expected_output_paths:
             - packages/contracts/src/platform-boundary.ts
+            - apps/api/src/modules/quality/runtime.ts
           positive_assertions:
             - key: official-source-production-gates
               criterion: |-
@@ -18423,7 +18503,7 @@ outcomes:
               operator: equals
               expected: true
             - key: carrier-integrity
-              criterion: The production carrier for quality-release-observability exists inside its declared owner boundary and is exercised by the frozen acceptance specification.
+              criterion: The production carrier for quality-release-observability exists inside its declared owner boundary, is wired into the production application, and passes the frozen variable-input business-loop proof with committed side effects, fresh-instance readback, idempotent replay, and truthful failure.
               claims:
                 - result
                 - obligation.coordinate-time-types

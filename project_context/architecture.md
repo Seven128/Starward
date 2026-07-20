@@ -2,8 +2,8 @@
 
 ## System Boundary
 
-- This repository owns the Starward product contract, visual design system, and future application implementation for 《今晚去观星》.
-- Live weather, astronomy ephemerides, light-pollution data, maps, routing, location, and user-account services are external until concrete providers and interfaces are selected.
+- This repository owns the Starward product contract, visual design system, React Native application, modular API/workers/admin implementation, data-processing code, and verification harness for 《今晚去观星》.
+- Weather, astronomy ephemerides, light-pollution data, maps, routing, location, push channels, and object storage remain replaceable boundaries. The current personal-trial profile may use qualifying free/non-commercial sources or isolated adapters; it must not imply purchased rights, production traffic, or external validation.
 - docs/design-system/ contains static Open Design exports and evidence snapshots. They are review/reference assets, not runtime architecture or a competing authority.
 
 ## Component Map
@@ -15,7 +15,8 @@
 - docs/design-system/: generated CSS/JSON tokens, brand overview, source guide, component kits, and their supporting assets.
 - .codex/skills/uiux_design/: project-owned React Native implementation guidance for interaction, motion, haptics, accessibility, and platform adaptation; it is subordinate to DESIGN.md, Source Plan, and owning Context.
 - docs/technical-data-source-decisions.md: dated provider/data/stack research and recommendation evidence; recommendations remain non-authoritative until the corresponding decision and external gates are confirmed.
-- Future production code should live in explicit application directories and consume or derive from the canonical design rules rather than editing exported preview files as product UI.
+- Production code lives under apps/, packages/, workers/, data-pipelines/, infrastructure/, and config/. It consumes or derives from canonical design rules rather than editing exported preview files as product UI.
+- Each Outcome must expose a production runtime carrier wired into the application. Acceptance invokes that carrier with variable inputs, verifies committed database/file/native/external receipts, recreates the runtime against the same isolated data directory, reads state back, checks idempotent replay, and verifies invalid/failing operations cannot report success.
 
 ## Data / Control Flow
 
@@ -40,7 +41,9 @@
 - Context integrity is checked through the Tiny Context commands in project_context/areas/main/verification.md.
 - DESIGN.md structure is linted separately from exported asset integrity.
 - Production UI verification must eventually cover representative mobile viewport, visual mode, key state, and long-content combinations; static kits alone cannot prove product behavior.
+- A service class, endpoint, adapter declaration, generated report, or screen is not completion evidence by existence. Machine acceptance must execute the production path and its counterfactual must fail when the carrier, write, adapter invocation, or restart readback is removed.
 
 ## Open Risks
 
-- Official-source research now recommends candidate baselines for weather, maps, VIIRS, DEM, astronomy, satellite, push, storage/CDN, offline processing, and React Native interaction, but contracts, exact versions, thresholds, POCs, calibration, legal approval, and production provider selections remain open.
+- Official-source research and the current personal-trial profile establish qualifying free-first choices and a CNY 200/month ceiling, but purchases, commercial contracts, public redistribution, production accounts/traffic, representative devices, outdoor validation, legal/store approval, and production provider promotion remain future gates.
+- A corrective audit found fixed responses, process-local repositories, metadata-only side effects, and declaration-only native boundaries in existing scaffolding. They must be replaced by durable production loops before any Outcome can be accepted.
