@@ -7,6 +7,17 @@
   "implementationBlocked": false,
   "productionTrafficAllowed": false,
   "productionPromotionBlocked": true,
+  "currentDeliveryProfile": {
+    "id": "individual-personal-trial",
+    "operatingEntity": "individual",
+    "distribution": "owner-only-personal-trial",
+    "commercialUse": false,
+    "monthlyExternalServicesBudgetCny": 200,
+    "annualExternalServicesBudgetCny": 2400,
+    "selectionPolicy": "eligible personal-noncommercial free source first, then qualified lowest complete TCO",
+    "purchaseRequiresExplicitApproval": true,
+    "publicStoreRelease": false
+  },
   "authority": {
     "research": "docs/technical-data-source-decisions.md",
     "operations": "docs/runbooks/production-data-integration.md",

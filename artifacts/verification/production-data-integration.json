@@ -8,6 +8,15 @@
   "externalActivationStatus": "pending",
   "productionTrafficAllowed": false,
   "productionPromotionBlocked": true,
+  "currentDeliveryProfile": {
+    "id": "individual-personal-trial",
+    "operatingEntity": "individual",
+    "distribution": "owner-only-personal-trial",
+    "monthlyExternalServicesBudgetCny": 200,
+    "annualExternalServicesBudgetCny": 2400,
+    "freeFirst": true,
+    "purchaseAuthorized": false
+  },
   "manifest": "config/data-sources/production-integration.json",
   "runbook": "docs/runbooks/production-data-integration.md",
   "testCommand": "npm --workspace @starward/api test -- --run src/__tests__/production-data-integration.test.ts (11 tests)",
@@ -43,5 +52,5 @@
     "current licence/legal confirmation",
     "target-region provider POC and production measurements"
   ],
-  "statement": "The production integration path is implemented and documented. External activation remains fail-closed and does not constitute an implementation blocker or a claim that production traffic is authorized."
+  "statement": "The complete product implementation and production integration path are implemented and documented for an individual owner-only personal trial. External activation remains fail-closed; future production evidence is an upgrade gate, not a current delivery blocker or a claim that production traffic is authorized."
 }

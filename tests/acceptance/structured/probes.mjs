@@ -264,6 +264,12 @@ async function productionIntegrationHealthy(root) {
     || manifest.externalActivationStatus !== "pending"
     || manifest.productionTrafficAllowed !== false
     || manifest.productionPromotionBlocked !== true
+    || manifest.currentDeliveryProfile?.id !== "individual-personal-trial"
+    || manifest.currentDeliveryProfile?.operatingEntity !== "individual"
+    || manifest.currentDeliveryProfile?.monthlyExternalServicesBudgetCny !== 200
+    || manifest.currentDeliveryProfile?.annualExternalServicesBudgetCny !== 2400
+    || manifest.currentDeliveryProfile?.purchaseRequiresExplicitApproval !== true
+    || manifest.currentDeliveryProfile?.publicStoreRelease !== false
     || !hasAll(asArray(manifest.sources).map((item) => item.id), requiredSourceIds)
     || runtimeFiles.some((relative) => typeof relative !== "string" || !relative)
     || !(await Promise.all(runtimeFiles.map((relative) => exists(root, relative)))).every(Boolean)) return false;
@@ -275,6 +281,11 @@ async function productionIntegrationHealthy(root) {
     || evidence.externalActivationStatus !== "pending"
     || evidence.productionTrafficAllowed !== false
     || evidence.productionPromotionBlocked !== true
+    || evidence.currentDeliveryProfile?.id !== "individual-personal-trial"
+    || evidence.currentDeliveryProfile?.monthlyExternalServicesBudgetCny !== 200
+    || evidence.currentDeliveryProfile?.annualExternalServicesBudgetCny !== 2400
+    || evidence.currentDeliveryProfile?.freeFirst !== true
+    || evidence.currentDeliveryProfile?.purchaseAuthorized !== false
     || !asArray(evidence.implementedCarriers).length
     || !hasAll(asArray(evidence.configuredSources), requiredSourceIds)
     || !asArray(evidence.externalOnlyRemainder).length) return false;
@@ -550,6 +561,27 @@ export async function runStructuredProbe({ root, outcome, carrier, probeName }) 
     case "global-release-scope": {
       const value = await invoke(root, "platform", "classifyReleaseScope", { proposals: ["mvp-decision-loop", "v3-ar", "mini-program-share"] });
       return { passes: value.requiredNow.includes("mvp-decision-loop") && value.deferrable.includes("v3-ar") && value.deferrable.includes("mini-program-share") && value.finalProduct === "react-native-ios-android" };
+    }
+    case "global-personal-trial-boundary": {
+      const boundary = await platformBoundary(root);
+      const value = await invoke(root, "platform", "selectPersonalTrialProvider", { candidates: [
+        { id: "paid-qualified", monthlyExternalCostCny: 29, passedGates: ["provenance", "quality", "stability", "personal-trial-license", "safe-degradation"] },
+        { id: "free-unqualified", monthlyExternalCostCny: 0, passedGates: ["provenance"] },
+        { id: "free-qualified", monthlyExternalCostCny: 0, passedGates: ["provenance", "quality", "stability", "personal-trial-license", "safe-degradation"] },
+      ] });
+      return { passes: boundary.releaseProfile?.id === "individual-personal-trial"
+        && boundary.releaseProfile?.operatingEntity === "individual"
+        && boundary.releaseProfile?.distribution === "owner-only-personal-trial"
+        && boundary.releaseProfile?.commercialUse === false
+        && boundary.releaseProfile?.monthlyExternalServicesBudgetCny === 200
+        && boundary.releaseProfile?.annualExternalServicesBudgetCny === 2400
+        && boundary.releaseProfile?.productionTrafficAllowed === false
+        && boundary.releaseProfile?.productionPromotionAllowed === false
+        && value.providerId === "free-qualified"
+        && value.withinBudget === true
+        && value.purchaseAuthorized === false
+        && value.productionTrafficAllowed === false
+        && value.unreviewedResultState === "experimental-or-unknown" };
     }
     case "guard-product-kind": {
       const boundary = await platformBoundary(root);

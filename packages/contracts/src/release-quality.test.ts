@@ -4,9 +4,33 @@ import {
   evaluateProductionCarrier,
   evaluateReleasePromotion,
   evaluateRestoreEvidence,
+  platformBoundary,
+  selectPersonalTrialProvider,
 } from "./platform-boundary";
 
 describe("release quality", () => {
+  it("enforces the individual personal-trial budget without authorizing purchases or production", () => {
+    const result = selectPersonalTrialProvider({ candidates: [
+      { id: "paid-qualified", monthlyExternalCostCny: 29, passedGates: ["provenance", "quality", "stability", "personal-trial-license", "safe-degradation"] },
+      { id: "free-unqualified", monthlyExternalCostCny: 0, passedGates: ["provenance"] },
+      { id: "free-qualified", monthlyExternalCostCny: 0, passedGates: ["provenance", "quality", "stability", "personal-trial-license", "safe-degradation"] },
+    ] });
+    expect(platformBoundary.releaseProfile.monthlyExternalServicesBudgetCny).toBe(200);
+    expect(result.providerId).toBe("free-qualified");
+    expect(result.withinBudget).toBe(true);
+    expect(result.purchaseAuthorized).toBe(false);
+    expect(result.productionTrafficAllowed).toBe(false);
+  });
+
+  it("blocks a qualified personal-trial provider above the monthly ceiling", () => {
+    const result = selectPersonalTrialProvider({ candidates: [
+      { id: "over-budget", monthlyExternalCostCny: 201, passedGates: ["provenance", "quality", "stability", "personal-trial-license", "safe-degradation"] },
+    ] });
+    expect(result.providerId).toBeNull();
+    expect(result.withinBudget).toBe(false);
+    expect(result.purchaseAuthorized).toBe(false);
+  });
+
   it("blocks OTA for native changes without new binaries", () => {
     expect(evaluateReleasePromotion({
       currentRuntimeVersion: "1",

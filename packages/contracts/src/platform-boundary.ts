@@ -1,6 +1,19 @@
 export const platformBoundary = {
   productPurpose: "stargazing-decision-and-field-execution",
   primaryProduct: "react-native-ios-android",
+  releaseProfile: {
+    id: "individual-personal-trial",
+    operatingEntity: "individual",
+    distribution: "owner-only-personal-trial",
+    commercialUse: false,
+    publicStoreRelease: false,
+    monthlyExternalServicesBudgetCny: 200,
+    annualExternalServicesBudgetCny: 2_400,
+    costPolicy: "eligible-free-first-then-qualified-lowest-tco",
+    productionTrafficAllowed: false,
+    productionPromotionAllowed: false,
+    futureProductionEvidenceRequired: true,
+  },
   auxiliaryPlatforms: [
     { id: "pwa", allowedCapabilities: ["historical-validation"], canSatisfyFinalGate: false },
     { id: "mini-program", allowedCapabilities: ["share", "light-query", "invite"], canSatisfyFinalGate: false },
@@ -8,6 +21,28 @@ export const platformBoundary = {
   mvpExcludedCapabilities: ["general-feed", "followers", "direct-messages", "full-navigation", "full-ar", "precision-composition", "device-control"],
   releasePhases: ["foundation", "data", "decision", "closed-loop", "professional-ecosystem"].map((id) => ({ id })),
 } as const;
+
+const personalTrialGates = ["provenance", "quality", "stability", "personal-trial-license", "safe-degradation"] as const;
+
+export function selectPersonalTrialProvider(input: {
+  candidates: Array<{ id: string; monthlyExternalCostCny: number; passedGates: string[] }>;
+}) {
+  const qualified = input.candidates
+    .filter((candidate) => personalTrialGates.every((gate) => candidate.passedGates.includes(gate)))
+    .sort((left, right) => left.monthlyExternalCostCny - right.monthlyExternalCostCny);
+  const selected = qualified.find((candidate) => candidate.monthlyExternalCostCny >= 0 && candidate.monthlyExternalCostCny <= platformBoundary.releaseProfile.monthlyExternalServicesBudgetCny) ?? null;
+  const withinBudget = selected !== null;
+  return {
+    profileId: platformBoundary.releaseProfile.id,
+    providerId: selected?.id ?? null,
+    basis: selected ? "eligible-free-first-then-qualified-lowest-tco" : "blocked-no-qualified-within-budget-personal-trial-provider",
+    withinBudget,
+    purchaseAuthorized: false,
+    productionTrafficAllowed: false,
+    productionPromotionAllowed: false,
+    unreviewedResultState: "experimental-or-unknown",
+  } as const;
+}
 
 export { evaluateProductionCarrier } from "../../data-source-runtime/src/index";
 

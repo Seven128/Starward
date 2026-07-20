@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "selectionPolicy": "all hard gates first, then qualified lowest 12-month TCO",
+  "currentDeliveryProfile": {
+    "id": "individual-personal-trial",
+    "operatingEntity": "individual",
+    "monthlyExternalServicesBudgetCny": 200,
+    "annualExternalServicesBudgetCny": 2400,
+    "freeFirst": true,
+    "purchaseRequiresExplicitApproval": true
+  },
   "integrationManifest": "config/data-sources/production-integration.json",
   "researchStatus": "completed",
   "implementationStatus": "passed",

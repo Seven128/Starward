@@ -33,6 +33,7 @@ export const structuredContracts = Object.freeze({
     "accessible-mode-state": "global-accessible-mode",
     "versioned-conflict-recovery": "global-conflict-recovery",
     "release-scope-boundary": "global-release-scope",
+    "personal-trial-boundary": "global-personal-trial-boundary",
     "guard-generic-weather-dashboard": "guard-product-kind",
     "guard-pwa-as-final-product": "guard-native-primary",
     "guard-mini-program-full-parity": "guard-mini-program-scope",

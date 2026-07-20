@@ -60,6 +60,13 @@
       "observation": "GLOBAL.release-scope-boundary.passed"
     },
     {
+      "key": "personal-trial-boundary",
+      "criterion": "- **AC personal-trial-boundary**\n  - Accepts: OBL personal-trial-release-profile\n  - Given: 当前运营主体为个人，尚无商业合同、公开商店审批、法务/专家/代表性现场背书。\n  - When: 构建并运行当前 Starward 个人试用版，或评估一个免费/付费外部来源。\n  - Then: 运行配置明确 `individual-personal-trial`、owner-only、非商业、CNY 200/月与 CNY 2,400/年上限；合格免费源排序优先，预算内付费仍不自动购买；production traffic/promotion 保持关闭，未背书能力显示实验性/未知/待确认且不作安全、专业或生产就绪声明。",
+      "surface": "runtime_behavior",
+      "polarity": "positive",
+      "observation": "GLOBAL.personal-trial-boundary.passed"
+    },
+    {
       "key": "guard-generic-weather-dashboard",
       "criterion": "The delivered system enforces this non-goal: - **NG generic-weather-dashboard**：不把产品做成只展示接口字段的天气仪表盘、通用星图或旅游路线工具。",
       "surface": "runtime_behavior",

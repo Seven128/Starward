@@ -40,6 +40,15 @@
 - Core flow: tonight conclusion → choose main/alternate place → choose departure and observing window → review route/facilities/risk → inspect professional evidence as needed → prepare equipment/checklist → use night or red-light field controls on site.
 - Durable acceptance signals are a clear first-screen recommendation, a continuous place/time/route state, professional data available through progressive disclosure, and mode changes that preserve task position.
 
+## Current Release Profile
+
+- Current operating entity: individual.
+- Current distribution: owner-only, non-commercial personal trial/internal install; no public operation or production app-store claim.
+- External-service ceiling: CNY 200 per month / CNY 2,400 per year. Prefer zero-cost sources only when their personal non-commercial terms, provenance, target-region behavior, and safe degradation are all acceptable.
+- Budget fit never authorizes a purchase, plan upgrade, second paid source, production traffic, or public redistribution.
+- Keep every implemented MVP/V1/V2/V3 capability. Capabilities without commercial, legal, store, expert, representative-device, or field evidence stay experimental, unknown, pending, disabled, or truthfully degraded.
+- Contracts, legal/store approval, expert sign-off, representative outdoor/device validation, and site-operation verification are future production-release gates. User spot/media/field-report uploads remain product behavior and are not release-evidence uploads.
+
 ## UX / Screen Brief
 
 - Primary mobile viewport: 390 × 844; important touch targets are at least 44px and fixed actions respect safe areas.

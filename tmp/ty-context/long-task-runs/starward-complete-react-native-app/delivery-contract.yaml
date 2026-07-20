@@ -2,7 +2,7 @@ schema_version: long-task-delivery-v2
 task:
   id: starward-complete-react-native-app
   title: Starward complete React Native stargazing product
-  goal: Deliver the complete MVP, V1, V2 and V3 Starward iOS/Android React Native product, its modular backend, data pipelines, admin and sharing surfaces, with truthful provider/data states, the formal Starward design and interaction system, production quality controls, and all machine-verifiable requirements passing while every named external confirmation remains explicit until supplied by its owner.
+  goal: Deliver the complete MVP, V1, V2 and V3 Starward iOS/Android React Native product, its modular backend, data pipelines, admin and sharing surfaces as an individual owner-only non-commercial personal trial with a CNY 200/month external-service ceiling, eligible-free-first selection, no automatic purchase or production activation, truthful experimental/pending states, and every machine-verifiable requirement passing; production contracts, legal/store approval, expert sign-off and representative field evidence remain future upgrade gates rather than current completion authority.
   source_paths:
     - docs/source-plan.md
   context_refs:
@@ -6900,110 +6900,6 @@ source_claims:
       type: claim
       refs:
         - tonight-decision.control.visible-target-timeline.trigger
-  - key: ext-app-store-native-capability-readiness
-    source_ref: docs/source-plan.md#external.app-store-native-capability-readiness
-    statement: |-
-      - **EXT app-store-native-capability-readiness**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: iOS/Android 目标商店和国内安卓渠道接受地图 SDK、自定义原生模块、前台/限时后台定位、通知、相机/相册、AR、传感器和 OAuth/微信登录的声明、用途与审核材料，并在目标真机/系统版本可用。
-        - Why external: 商店政策、设备支持、证书/entitlement、厂商推送和 OAuth 审核是外部控制面，模拟器与源码无法证明。
-        - Evidence needed: 支持设备/OS矩阵、权限用途文案、entitlement/证书/隐私清单、后台位置核心用途材料、厂商通道和 OAuth 审批、iOS back gesture/Android predictive back 与自定义手势兼容、internal/staging 真机安装及商店审核结果。
-        - Affected REQ / AC: REQ permission-minimization, REQ optional-ar, REQ safety-session, REQ event-driven-evaluation, REQ auth-methods, AC ar-degradation, AC bounded-safety-session, AC long-term-controls, DEC supported-os-device-matrix。
-    disposition:
-      type: external_confirmation
-      refs:
-        - app-store-native-capability-readiness
-  - key: ext-astronomy-authoritative-validation
-    source_ref: docs/source-plan.md#external.astronomy-authoritative-validation
-    statement: |-
-      - **EXT astronomy-authoritative-validation**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: 日月/行星/银河/晨昏/升中落/坐标转换和空间站结果在已声明适用范围、时标、海拔和容差内与 JPL Horizons 或另一个经确认权威基准一致。
-        - Why external: 自有算法测试能证明一致性，不能自行定义“权威正确”或可接受科学容差。
-        - Evidence needed: 基准来源/版本、黄金地点/时刻、容差理由、对比结果、例外（极区/折射/轨道过期）和天文领域审阅。
-        - Affected REQ / AC: REQ astronomy-domain, REQ astronomy-golden-tests, REQ station-transits, AC astronomy-provenance, AC test-coverage, DEC observation-window-resolution。
-    disposition:
-      type: external_confirmation
-      refs:
-        - astronomy-authoritative-validation
-  - key: ext-china-production-legal-readiness
-    source_ref: docs/source-plan.md#external.china-production-legal-readiness
-    statement: |-
-      - **EXT china-production-legal-readiness**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: 面向中国用户生产发布所需 ICP/应用备案（如适用）、地图与测绘边界、个人信息/敏感行踪单独同意、数据跨境/境内存储、CDN/对象存储、第三方 SDK 清单、隐私政策/条款/注销、未成年人/社群与地点安全责任边界均完成专业审查和实际配置。
-        - Why external: 法律适用、主体资质、云区域、SDK/商店申报和政策文本依赖运营主体与最终供应商，不能由产品/代码自证。
-        - Evidence needed: 法律/合规评审记录、备案/许可编号或不适用依据、数据流/SDK 清单、同意与保留表、跨境评估、政策版本和生产域/存储/CDN配置核验。
-        - Affected REQ / AC: REQ china-production-compliance, REQ location-privacy-controls, REQ data-export, REQ account-deletion, AC china-compliance-readiness, DEC data-retention-deletion, DEC analytics-consent-policy。
-    disposition:
-      type: external_confirmation
-      refs:
-        - china-production-legal-readiness
-  - key: ext-commercial-provider-rights-and-quotas
-    source_ref: docs/source-plan.md#external.commercial-provider-rights-and-quotas
-    statement: |-
-      - **EXT commercial-provider-rights-and-quotas**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: QWeather 常规/预警/AQI/GeoAPI、Open-Meteo 商业分层云/多模型、其他卫星云图/备用天气、高德原生地图/定位/搜索/路线/POI/双端离线、APNs/FCM/国内厂商/Expo 推送以及 OSS/COS/CDN 具备目标地区/渠道的生产商业使用、缓存/历史保留、派生、再展示/再分发、配额/加权计费单位、SLA、归属和退出/删除许可；最低必要 SKU 的当日报价、币种/税费/最低消费、超额/续费/退出成本和 12 个月 TCO 可与等价合格候选比较。
-        - Why external: API 文档与技术可行不构成购买合同、配额或再分发授权，仓库无法证明。
-        - Evidence needed: 生效合同/计划、许可条款版本、允许用途/地区/缓存/派生、quota/rate limit/SLA、归属要求、密钥环境、退出/删除义务、价格页面/正式报价/订单、税费/汇率日期、加权用量和实际账单；供应商宣传或免费页面不能代替合同与目标区 POC。
-        - Affected REQ / AC: REQ weather-map-layers, REQ route-map-planning, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ provider-failure-controls, AC source-pipelines, AC qualified-lowest-tco-provider-selection, DEC weather-provider-contracts, DEC provider-budget-and-paid-redundancy。
-    disposition:
-      type: external_confirmation
-      refs:
-        - commercial-provider-rights-and-quotas
-  - key: ext-geospatial-catalog-content-licenses
-    source_ref: docs/source-plan.md#external.geospatial-catalog-content-licenses
-    statement: |-
-      - **EXT geospatial-catalog-content-licenses**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: NSMC FY-4B/后续业务星或其他卫星云图、EOG Annual VNL v2.2、Copernicus DEM GLO-30/90（含 2026-07-28 后 CCM 访问/许可接受）、Gaia/其他星表、Astronomy Engine、CelesTrak OMM、JPL/NOAA 数据、地图底图/瓦片、NASA APOD/天文机构媒体及其 raw/COG/瓦片/动画/地平线/星表分块/离线包/截图的账号资格、自动化、许可、notice/credit、版本、修改标识和商业再分发范围适合目标地区/渠道；Himawari 等备用源不得越过 NMHS/研究/购买资格。
-        - Why external: 数据集许可和在线服务规则会变化，派生/离线/商业分发权不能从本 Source Plan 推断。
-        - Evidence needed: 官方许可/服务条款快照、来源与版本、商业/派生/缓存/离线/截图条款、必需 attribution、更新/撤下流程及法务确认。
-        - Affected REQ / AC: REQ light-pollution-evidence, REQ astronomy-geo-pipelines, REQ educational-content, AC light-and-horizon, AC calendar-and-station, RISK dataset-license。
-    disposition:
-      type: external_confirmation
-      refs:
-        - geospatial-catalog-content-licenses
-  - key: ext-outdoor-device-field-validation
-    source_ref: docs/source-plan.md#external.outdoor-device-field-validation
-    statement: |-
-      - **EXT outdoor-device-field-validation**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: 代表性 iOS/Android 真机在真实山区/郊外、车辆/金属干扰、弱网/无网、冬夏温度、夜间低亮/红光、低电、前后台、最后一公里和长时天空条件下达到可用/降级/恢复行为；交互同时覆盖 press/cancel、地图/Sheet/滚动/back 仲裁、中断/反向/速度接缝、VoiceOver/TalkBack、文本放大、reduced motion、触觉关闭/不可用和红光无闪。
-        - Why external: GPS、磁场、AR、亮度、电量、网络和道路/天气现场真实性无法由自动测试或室内设备完全模拟。
-        - Evidence needed: 场地/日期/天气、设备/OS/传感器矩阵、已知方位/路线基准、断网/恢复步骤、截图/日志/误差/电量结果、失败与复测记录；样本不能冒充全设备总体。
-        - Affected REQ / AC: REQ orientation-guidance, REQ outdoor-validation, REQ performance-slos, AC low-accuracy-guidance, AC offline-field-use, AC test-coverage, RISK sensor-observability。
-    disposition:
-      type: external_confirmation
-      refs:
-        - outdoor-device-field-validation
-  - key: ext-photography-device-expert-validation
-    source_ref: docs/source-plan.md#external.photography-device-expert-validation
-    statement: |-
-      - **EXT photography-device-expert-validation**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: 手机/相机/镜头预设、确定性曝光/拖线/堆栈/视场规则在代表性设备和目标上合理、安全、可操作，AI 解释未改变核心规则或制造虚假保证。
-        - Why external: 规则单测不能证明真实设备可设置、成像取舍或用户经验分层合理。
-        - Evidence needed: 设备/镜头/目标/条件样本、规则版本、专家审阅、实拍设置与结果、不可控因素、偏差/修改记录和 AI/规则差异审计。
-        - Affected REQ / AC: REQ mobile-output, REQ camera-output, REQ deterministic-first-ai, AC mobile-plan, AC camera-plan-and-risk, RISK parameter-observability。
-    disposition:
-      type: external_confirmation
-      refs:
-        - photography-device-expert-validation
-  - key: ext-site-access-safety-verification
-    source_ref: docs/source-plan.md#external.site-access-safety-verification
-    statement: |-
-      - **EXT site-access-safety-verification**
-        - Status: external_confirmation_required。
-        - Result requiring confirmation: 首批/MVP 地点的坐标、土地/开放/收费/门禁、停车/徒步/最后一公里、设施、光源/遮挡、潮汐/山路/治安/生态风险和坐标公开级别有可追溯的人工/现场核验。
-        - Why external: 公开 POI、遥感与用户单条上传不能证明夜间通行、安全、私人土地许可或设施开放。
-        - Evidence needed: 地点级核验记录、日期/来源/证据、权利人或官方信息（适用时）、现场路线/照片/精度、季节性/过期计划和高风险复核。
-        - Affected REQ / AC: REQ last-mile-access, REQ facilities-and-emergency, REQ spot-safety, REQ coordinate-visibility, AC last-mile-and-facilities, AC safety-overrides-score, RISK field-truth-observability。
-    disposition:
-      type: external_confirmation
-      refs:
-        - site-access-safety-verification
   - key: fs-ai-invented-exposure
     source_ref: docs/source-plan.md#forbidden-shortcut.ai-invented-exposure
     statement: "- **FS ai-invented-exposure**：AI 不得随意编造曝光参数，只能解释确定性规则和提供有依据的个性化建议。"
@@ -7139,6 +7035,18 @@ source_claims:
       type: acceptance
       refs:
         - GLOBAL.global-acceptance.release-scope-boundary
+  - key: global-ac-personal-trial-boundary
+    source_ref: docs/source-plan.md#cross-outcome.acceptance.personal-trial-boundary
+    statement: |-
+      - **AC personal-trial-boundary**
+        - Accepts: OBL personal-trial-release-profile
+        - Given: 当前运营主体为个人，尚无商业合同、公开商店审批、法务/专家/代表性现场背书。
+        - When: 构建并运行当前 Starward 个人试用版，或评估一个免费/付费外部来源。
+        - Then: 运行配置明确 `individual-personal-trial`、owner-only、非商业、CNY 200/月与 CNY 2,400/年上限；合格免费源排序优先，预算内付费仍不自动购买；production traffic/promotion 保持关闭，未背书能力显示实验性/未知/待确认且不作安全、专业或生产就绪声明。
+    disposition:
+      type: acceptance
+      refs:
+        - GLOBAL.global-acceptance.personal-trial-boundary
   - key: global-ac-time-coordinate-consistency
     source_ref: docs/source-plan.md#cross-outcome.acceptance.time-coordinate-consistency
     statement: |-
@@ -7205,6 +7113,13 @@ source_claims:
       type: global_constraint
       refs:
         - constraint.release-phase-integrity
+  - key: global-obl-personal-trial-release-profile
+    source_ref: docs/source-plan.md#cross-outcome.obligation.personal-trial-release-profile
+    statement: "- **OBL personal-trial-release-profile** [direct: S-USER]：当前交付固定为个人运营主体的 owner-only 非商业个人试用版，外部服务经常性成本硬上限 CNY 200/月（CNY 2,400/年），仅在来源、个人非商业使用权、目标区质量/稳定性和安全降级均合格时免费优先；预算内也不得自动购买。全部产品能力保留，但生产供应商、公开再分发、商店生产发布和外部专业/现场背书保持关闭或未来门，未背书结果必须标 experimental/unknown/pending，转公开或商业运营需 owner 批准新的生产发布权威。"
+    disposition:
+      type: global_constraint
+      refs:
+        - constraint.personal-trial-release-profile
   - key: global-obl-shared-decision-context
     source_ref: docs/source-plan.md#cross-outcome.obligation.shared-decision-context
     statement: "- **OBL shared-decision-context** [direct + repo evidence: S-PRODUCT 闭环, S-CONTEXT]：当前位置/手动出发地、观星夜/时刻、当前偏好、观测目标、选中地点、主备角色、路线方案、行程 revision、数据新鲜度和风险是共享决策上下文；今晚、地图、详情、行程、天空、摄影和现场切换时必须原子更新或显式标 stale，不能各页维护互相矛盾副本。"
@@ -10074,6 +9989,8 @@ global:
         statement: "- **OBL versioned-recoverable-change** [direct: S-ARCH 5.11/7.1/11.2]：外部数据、地点事实、推荐、行程、摄影、规则和审核变更保留来源/版本；写入有幂等键/revision，冲突显式，批量/危险变更先影响预览并有恢复/回滚边界；不得静默覆盖用户编辑或有效原始数据。"
       - key: release-phase-integrity
         statement: "- **OBL release-phase-integrity** [direct: S-PRODUCT 十～十二]：MVP/V1/V2/V3 范围按 Section 3 保存；提前实现后续能力可以，但不得让 V2/V3 空壳成为 MVP 前置，也不得因后续目标尚未实现而把 MVP 的外部导航/简单行程/基础摄影/轻贡献降为静态占位；最终产品形态仍为 RN APP。"
+      - key: personal-trial-release-profile
+        statement: "- **OBL personal-trial-release-profile** [direct: S-USER]：当前交付固定为个人运营主体的 owner-only 非商业个人试用版，外部服务经常性成本硬上限 CNY 200/月（CNY 2,400/年），仅在来源、个人非商业使用权、目标区质量/稳定性和安全降级均合格时免费优先；预算内也不得自动购买。全部产品能力保留，但生产供应商、公开再分发、商店生产发布和外部专业/现场背书保持关闭或未来门，未背书结果必须标 experimental/unknown/pending，转公开或商业运营需 owner 批准新的生产发布权威。"
     forbidden_paths: []
     forbidden_shortcuts:
       - key: client-side-source-stitching
@@ -10224,6 +10141,18 @@ global:
             observation: GLOBAL.release-scope-boundary.passed
             operator: equals
             expected: true
+          - key: personal-trial-boundary
+            criterion: |-
+              - **AC personal-trial-boundary**
+                - Accepts: OBL personal-trial-release-profile
+                - Given: 当前运营主体为个人，尚无商业合同、公开商店审批、法务/专家/代表性现场背书。
+                - When: 构建并运行当前 Starward 个人试用版，或评估一个免费/付费外部来源。
+                - Then: 运行配置明确 `individual-personal-trial`、owner-only、非商业、CNY 200/月与 CNY 2,400/年上限；合格免费源排序优先，预算内付费仍不自动购买；production traffic/promotion 保持关闭，未背书能力显示实验性/未知/待确认且不作安全、专业或生产就绪声明。
+            claims:
+              - constraint.personal-trial-release-profile
+            observation: GLOBAL.personal-trial-boundary.passed
+            operator: equals
+            expected: true
         negative_assertions:
           - key: guard-generic-weather-dashboard
             criterion: "The delivered system enforces this non-goal: - **NG generic-weather-dashboard**：不把产品做成只展示接口字段的天气仪表盘、通用星图或旅游路线工具。"
@@ -10336,6 +10265,7 @@ global:
           - constraint.accessible-responsive-themes
           - constraint.versioned-recoverable-change
           - constraint.release-phase-integrity
+          - constraint.personal-trial-release-profile
           - non_goal.generic-weather-dashboard
           - non_goal.pwa-as-final-product
           - non_goal.mini-program-full-parity
@@ -10364,6 +10294,7 @@ global:
           - accessible-mode-state
           - versioned-conflict-recovery
           - release-scope-boundary
+          - personal-trial-boundary
           - guard-generic-weather-dashboard
           - guard-pwa-as-final-product
           - guard-mini-program-full-parity
@@ -10378,79 +10309,6 @@ global:
           - guard-ar-only-core
           - guard-online-only-field-mode
           - guard-static-screen-completion
-    external_confirmations:
-      - key: commercial-provider-rights-and-quotas
-        description: |-
-          - **EXT commercial-provider-rights-and-quotas**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: QWeather 常规/预警/AQI/GeoAPI、Open-Meteo 商业分层云/多模型、其他卫星云图/备用天气、高德原生地图/定位/搜索/路线/POI/双端离线、APNs/FCM/国内厂商/Expo 推送以及 OSS/COS/CDN 具备目标地区/渠道的生产商业使用、缓存/历史保留、派生、再展示/再分发、配额/加权计费单位、SLA、归属和退出/删除许可；最低必要 SKU 的当日报价、币种/税费/最低消费、超额/续费/退出成本和 12 个月 TCO 可与等价合格候选比较。
-            - Why external: API 文档与技术可行不构成购买合同、配额或再分发授权，仓库无法证明。
-            - Evidence needed: 生效合同/计划、许可条款版本、允许用途/地区/缓存/派生、quota/rate limit/SLA、归属要求、密钥环境、退出/删除义务、价格页面/正式报价/订单、税费/汇率日期、加权用量和实际账单；供应商宣传或免费页面不能代替合同与目标区 POC。
-            - Affected REQ / AC: REQ weather-map-layers, REQ route-map-planning, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ provider-failure-controls, AC source-pipelines, AC qualified-lowest-tco-provider-selection, DEC weather-provider-contracts, DEC provider-budget-and-paid-redundancy。
-        owner: Product owner with procurement, finance and provider account owners
-      - key: geospatial-catalog-content-licenses
-        description: |-
-          - **EXT geospatial-catalog-content-licenses**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: NSMC FY-4B/后续业务星或其他卫星云图、EOG Annual VNL v2.2、Copernicus DEM GLO-30/90（含 2026-07-28 后 CCM 访问/许可接受）、Gaia/其他星表、Astronomy Engine、CelesTrak OMM、JPL/NOAA 数据、地图底图/瓦片、NASA APOD/天文机构媒体及其 raw/COG/瓦片/动画/地平线/星表分块/离线包/截图的账号资格、自动化、许可、notice/credit、版本、修改标识和商业再分发范围适合目标地区/渠道；Himawari 等备用源不得越过 NMHS/研究/购买资格。
-            - Why external: 数据集许可和在线服务规则会变化，派生/离线/商业分发权不能从本 Source Plan 推断。
-            - Evidence needed: 官方许可/服务条款快照、来源与版本、商业/派生/缓存/离线/截图条款、必需 attribution、更新/撤下流程及法务确认。
-            - Affected REQ / AC: REQ light-pollution-evidence, REQ astronomy-geo-pipelines, REQ educational-content, AC light-and-horizon, AC calendar-and-station, RISK dataset-license。
-        owner: Product owner with legal counsel and data-governance owner
-      - key: china-production-legal-readiness
-        description: |-
-          - **EXT china-production-legal-readiness**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: 面向中国用户生产发布所需 ICP/应用备案（如适用）、地图与测绘边界、个人信息/敏感行踪单独同意、数据跨境/境内存储、CDN/对象存储、第三方 SDK 清单、隐私政策/条款/注销、未成年人/社群与地点安全责任边界均完成专业审查和实际配置。
-            - Why external: 法律适用、主体资质、云区域、SDK/商店申报和政策文本依赖运营主体与最终供应商，不能由产品/代码自证。
-            - Evidence needed: 法律/合规评审记录、备案/许可编号或不适用依据、数据流/SDK 清单、同意与保留表、跨境评估、政策版本和生产域/存储/CDN配置核验。
-            - Affected REQ / AC: REQ china-production-compliance, REQ location-privacy-controls, REQ data-export, REQ account-deletion, AC china-compliance-readiness, DEC data-retention-deletion, DEC analytics-consent-policy。
-        owner: Operating entity with qualified China legal and compliance counsel
-      - key: app-store-native-capability-readiness
-        description: |-
-          - **EXT app-store-native-capability-readiness**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: iOS/Android 目标商店和国内安卓渠道接受地图 SDK、自定义原生模块、前台/限时后台定位、通知、相机/相册、AR、传感器和 OAuth/微信登录的声明、用途与审核材料，并在目标真机/系统版本可用。
-            - Why external: 商店政策、设备支持、证书/entitlement、厂商推送和 OAuth 审核是外部控制面，模拟器与源码无法证明。
-            - Evidence needed: 支持设备/OS矩阵、权限用途文案、entitlement/证书/隐私清单、后台位置核心用途材料、厂商通道和 OAuth 审批、iOS back gesture/Android predictive back 与自定义手势兼容、internal/staging 真机安装及商店审核结果。
-            - Affected REQ / AC: REQ permission-minimization, REQ optional-ar, REQ safety-session, REQ event-driven-evaluation, REQ auth-methods, AC ar-degradation, AC bounded-safety-session, AC long-term-controls, DEC supported-os-device-matrix。
-        owner: Mobile release owner with Apple, Google and domestic Android channel accounts
-      - key: outdoor-device-field-validation
-        description: |-
-          - **EXT outdoor-device-field-validation**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: 代表性 iOS/Android 真机在真实山区/郊外、车辆/金属干扰、弱网/无网、冬夏温度、夜间低亮/红光、低电、前后台、最后一公里和长时天空条件下达到可用/降级/恢复行为；交互同时覆盖 press/cancel、地图/Sheet/滚动/back 仲裁、中断/反向/速度接缝、VoiceOver/TalkBack、文本放大、reduced motion、触觉关闭/不可用和红光无闪。
-            - Why external: GPS、磁场、AR、亮度、电量、网络和道路/天气现场真实性无法由自动测试或室内设备完全模拟。
-            - Evidence needed: 场地/日期/天气、设备/OS/传感器矩阵、已知方位/路线基准、断网/恢复步骤、截图/日志/误差/电量结果、失败与复测记录；样本不能冒充全设备总体。
-            - Affected REQ / AC: REQ orientation-guidance, REQ outdoor-validation, REQ performance-slos, AC low-accuracy-guidance, AC offline-field-use, AC test-coverage, RISK sensor-observability。
-        owner: Field-test owner with representative device and site access
-      - key: astronomy-authoritative-validation
-        description: |-
-          - **EXT astronomy-authoritative-validation**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: 日月/行星/银河/晨昏/升中落/坐标转换和空间站结果在已声明适用范围、时标、海拔和容差内与 JPL Horizons 或另一个经确认权威基准一致。
-            - Why external: 自有算法测试能证明一致性，不能自行定义“权威正确”或可接受科学容差。
-            - Evidence needed: 基准来源/版本、黄金地点/时刻、容差理由、对比结果、例外（极区/折射/轨道过期）和天文领域审阅。
-            - Affected REQ / AC: REQ astronomy-domain, REQ astronomy-golden-tests, REQ station-transits, AC astronomy-provenance, AC test-coverage, DEC observation-window-resolution。
-        owner: Astronomy domain reviewer
-      - key: photography-device-expert-validation
-        description: |-
-          - **EXT photography-device-expert-validation**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: 手机/相机/镜头预设、确定性曝光/拖线/堆栈/视场规则在代表性设备和目标上合理、安全、可操作，AI 解释未改变核心规则或制造虚假保证。
-            - Why external: 规则单测不能证明真实设备可设置、成像取舍或用户经验分层合理。
-            - Evidence needed: 设备/镜头/目标/条件样本、规则版本、专家审阅、实拍设置与结果、不可控因素、偏差/修改记录和 AI/规则差异审计。
-            - Affected REQ / AC: REQ mobile-output, REQ camera-output, REQ deterministic-first-ai, AC mobile-plan, AC camera-plan-and-risk, RISK parameter-observability。
-        owner: Astrophotography domain reviewer with representative devices
-      - key: site-access-safety-verification
-        description: |-
-          - **EXT site-access-safety-verification**
-            - Status: external_confirmation_required。
-            - Result requiring confirmation: 首批/MVP 地点的坐标、土地/开放/收费/门禁、停车/徒步/最后一公里、设施、光源/遮挡、潮汐/山路/治安/生态风险和坐标公开级别有可追溯的人工/现场核验。
-            - Why external: 公开 POI、遥感与用户单条上传不能证明夜间通行、安全、私人土地许可或设施开放。
-            - Evidence needed: 地点级核验记录、日期/来源/证据、权利人或官方信息（适用时）、现场路线/照片/精度、季节性/过期计划和高风险复核。
-            - Affected REQ / AC: REQ last-mile-access, REQ facilities-and-emergency, REQ spot-safety, REQ coordinate-visibility, AC last-mile-and-facilities, AC safety-overrides-score, RISK field-truth-observability。
-        owner: Site operations and safety owner with local verification evidence
 outcomes:
   - key: mobile-shell-and-preferences
     title: 原生 APP 壳、初次使用与偏好
