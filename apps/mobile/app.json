@@ -6,7 +6,6 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.starward.mobile",
@@ -19,9 +18,6 @@
     },
     "android": {
       "package": "app.starward.mobile",
-      "minSdkVersion": 24,
-      "compileSdkVersion": 36,
-      "targetSdkVersion": 36,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
@@ -47,7 +43,19 @@
         }
       ],
       "expo-status-bar",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
+            "useDayNightTheme": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

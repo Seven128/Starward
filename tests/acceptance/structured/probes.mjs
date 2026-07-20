@@ -159,10 +159,19 @@ async function nativeAppShapeHealthy(root) {
   const pkg = await json(root, "apps/mobile/package.json");
   const config = await json(root, "apps/mobile/app.json");
   const deps = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
+  const expoMajor = Number.parseInt(String(deps.expo ?? "").match(/\d+/u)?.[0] ?? "0", 10);
+  const newArchitectureBaseline = expoMajor >= 55
+    ? config.expo?.newArchEnabled !== false
+    : config.expo?.newArchEnabled === true;
+  const buildProperties = (config.expo?.plugins ?? []).find((plugin) => Array.isArray(plugin) && plugin[0] === "expo-build-properties")?.[1]?.android;
   return /^~?57\./u.test(deps.expo ?? "")
     && /^0\.86(?:\.|$)/u.test(deps["react-native"] ?? "")
     && /^19\.2(?:\.|$)/u.test(deps.react ?? "")
-    && config.expo?.newArchEnabled === true
+    && newArchitectureBaseline
+    && /^~?57\./u.test(deps["expo-build-properties"] ?? "")
+    && buildProperties?.minSdkVersion === 24
+    && buildProperties?.compileSdkVersion === 36
+    && buildProperties?.targetSdkVersion === 36
     && await exists(root, "apps/mobile/modules", "directory")
     && typeof pkg.scripts?.android === "string"
     && typeof pkg.scripts?.ios === "string";

@@ -1,0 +1,1 @@
+export{createTraceContext,recordProductEvent}from"./index";import{aggregateFunnel}from"./index";export const evaluateFunnelForTest=()=>aggregateFunnel([{anonymousId:"a",step:"open"},{anonymousId:"a",step:"field-feedback"}]).denominator;

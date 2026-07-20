@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-20T10:47:00Z",
+  "command": "npm audit --json",
+  "status": "upstream-remediation-pending",
+  "counts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 10,
+    "high": 0,
+    "critical": 0
+  },
+  "rootAdvisory": {
+    "id": "GHSA-w5hq-g745-h8pq",
+    "package": "uuid",
+    "installedVersion": "7.0.3",
+    "fixedVersion": "11.1.1",
+    "dependencyPath": "expo@57.0.7 > @expo/config-plugins@57.0.5 > xcode@3.0.1 > uuid@7.0.3",
+    "affectedApi": "UUID v3/v5/v6 when a caller supplies an output buffer",
+    "observedUsage": "xcode@3.0.1 calls uuid.v4() without an output buffer in lib/pbxProject.js",
+    "runtimeExposure": "build-time iOS project generation dependency; not imported by Starward mobile runtime code"
+  },
+  "remediation": {
+    "compatibleUpstreamReleaseAvailable": false,
+    "npmSuggestedFix": "downgrade Expo to 46.0.21",
+    "decision": "rejected because it violates the locked Expo SDK 57 / React Native 0.86 baseline and is not a security upgrade",
+    "nextAction": "Track Expo config-plugins/xcode remediation and rerun audit on every dependency update; do not mark production security complete solely from this reachability review."
+  }
+}

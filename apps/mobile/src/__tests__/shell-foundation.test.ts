@@ -43,9 +43,15 @@ describe("mobile shell authority", () => {
 
   it("declares only foreground mobile permissions in the Expo application boundary", () => {
     const configPath = path.resolve(import.meta.dirname, "../../app.json");
+    const packagePath = path.resolve(import.meta.dirname, "../../package.json");
     const config = JSON.parse(readFileSync(configPath, "utf8")).expo;
+    const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
+    const expoMajor = Number.parseInt(packageJson.dependencies.expo.match(/\d+/)?.[0] ?? "0", 10);
+    const buildProperties = config.plugins.find((plugin: unknown) => Array.isArray(plugin) && plugin[0] === "expo-build-properties")?.[1]?.android;
 
-    expect(config.newArchEnabled).toBe(true);
+    expect(expoMajor).toBeGreaterThanOrEqual(55);
+    expect(config.newArchEnabled).not.toBe(false);
+    expect(buildProperties).toMatchObject({ minSdkVersion: 24, compileSdkVersion: 36, targetSdkVersion: 36, buildToolsVersion: "36.0.0" });
     expect(config.android.permissions).toEqual(expect.arrayContaining(["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "CAMERA", "POST_NOTIFICATIONS"]));
     expect(config.android.permissions).not.toContain("ACCESS_BACKGROUND_LOCATION");
     expect(config.android.blockedPermissions).toContain("android.permission.ACCESS_BACKGROUND_LOCATION");

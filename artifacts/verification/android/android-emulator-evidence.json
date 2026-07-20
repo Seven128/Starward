@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-07-20T10:44:00Z",
+  "status": "passed",
+  "scope": "android-development-build-emulator-smoke",
+  "environment": {
+    "avd": "Starward_API_36",
+    "deviceProfile": "Pixel 8a",
+    "apiLevel": 36,
+    "abi": "x86_64",
+    "applicationId": "app.starward.mobile"
+  },
+  "artifact": {
+    "archivedPath": "C:/Dev/worktrees/Starward/generated-android-evidence-20260720/app/build/outputs/apk/debug/app-debug.apk",
+    "bytes": 90736597,
+    "sha256": "a3b0a81ac45109389a51fc059ceee651e804a1e05a1a151bf9ef28815aeb08d4",
+    "buildResult": "BUILD SUCCESSFUL",
+    "gradleTasks": 475,
+    "nativeArchitectures": ["x86_64"],
+    "prebuildConfiguration": {
+      "newArchEnabled": true,
+      "minSdkVersion": 24,
+      "compileSdkVersion": 36,
+      "targetSdkVersion": 36,
+      "buildToolsVersion": "36.0.0",
+      "dayNightTheme": true
+    }
+  },
+  "checks": [
+    {
+      "id": "install-and-launch",
+      "status": "passed",
+      "evidence": "ADB streamed install returned Success; MainActivity became topResumedActivity"
+    },
+    {
+      "id": "tonight-screen",
+      "status": "passed",
+      "evidence": "artifacts/verification/android/starward-home-app.png"
+    },
+    {
+      "id": "map-route",
+      "status": "passed",
+      "evidence": "artifacts/verification/android/starward-map-app.png"
+    },
+    {
+      "id": "profile-route",
+      "status": "passed",
+      "evidence": "artifacts/verification/android/starward-current-config.png"
+    },
+    {
+      "id": "fatal-log-scan",
+      "status": "passed",
+      "evidence": "No FATAL EXCEPTION, ReactNativeJS error, or unable-to-load-script entry after final route smoke"
+    }
+  ],
+  "limitations": [
+    "The generated native Android project and APK are retained outside the Git worktree so app.json and config plugins remain the single CNG configuration authority.",
+    "Development build only; this is not a signed store release artifact.",
+    "Emulator evidence does not satisfy representative Android device or outdoor field validation.",
+    "No production provider, paid quota, legal, astronomy-review, photography-review, or site-safety confirmation is inferred.",
+    "iOS simulator and physical iOS validation remain pending because this Windows host cannot build iOS."
+  ]
+}

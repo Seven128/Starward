@@ -93,3 +93,25 @@ export function resolveVersionConflict(input: { original: unknown; saved: unknow
     duplicateWrite: false,
   };
 }
+
+export function evaluateReleasePromotion(input: { currentRuntimeVersion: string; candidateRuntimeVersion: string; nativeModulesChanged: string[]; schemaReversible: boolean; iosBinaryId?: string; androidBinaryId?: string; channel: "development" | "internal" | "staging" | "production" }) {
+  const nativeChange = input.nativeModulesChanged.length > 0;
+  const runtimeChanged = input.currentRuntimeVersion !== input.candidateRuntimeVersion;
+  const binariesReady = Boolean(input.iosBinaryId && input.androidBinaryId);
+  const otaAllowed = !nativeChange && !runtimeChanged && input.schemaReversible;
+  return {
+    promotion: nativeChange && (!runtimeChanged || !binariesReady) ? "blocked-native-binary-required" : input.schemaReversible ? "eligible" : "blocked-irreversible-migration",
+    otaAllowed,
+    requiresNewBinaries: nativeChange,
+    runtimeVersion: input.candidateRuntimeVersion,
+    channel: input.channel,
+    rollbackAllowed: input.schemaReversible,
+  };
+}
+
+export function evaluateRestoreEvidence(input: { targetAt: string; latestDurableAt: string; startedAt: string; completedAt: string; databaseVerified: boolean; objectVersionsVerified: boolean; referencesVerified: boolean; permissionsVerified: boolean; redisRestored: boolean }) {
+  const rpoMinutes = Math.max(0, (Date.parse(input.targetAt) - Date.parse(input.latestDurableAt)) / 60_000);
+  const rtoMinutes = Math.max(0, (Date.parse(input.completedAt) - Date.parse(input.startedAt)) / 60_000);
+  const integrityPassed = input.databaseVerified && input.objectVersionsVerified && input.referencesVerified && input.permissionsVerified;
+  return { rpoMinutes, rtoMinutes, integrityPassed, redisRequiredForTruth: false, redisLossAccepted: !input.redisRestored, objectivesMet: integrityPassed && rpoMinutes <= 15 && rtoMinutes <= 120 };
+}
