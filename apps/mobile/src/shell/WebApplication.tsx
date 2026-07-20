@@ -34,7 +34,7 @@ function CurrentScreen() {
   if (pathname === "/tonight") return <TonightScreen />;
   if (pathname === "/map") return <MapScreen />;
   if (pathname === "/spots/current" || pathname === "/spots") return <SpotScreen />;
-  if (pathname === "/plans") return <ItineraryScreen fixture={fixture} />;
+  if (pathname === "/plans") return <ItineraryScreen />;
   if (pathname === "/sky") return <SkyScreen />;
   if (pathname === "/shooting") return <ShootingScreen />;
   if (pathname === "/field") return <FieldScreen fixture={fixture} />;

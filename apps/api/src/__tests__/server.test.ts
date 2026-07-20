@@ -3,6 +3,7 @@ import type { NightReport, NightReportRequest } from "../../../../packages/contr
 import { buildApi } from "../server";
 import { SkyContextService } from "../modules/sky/sky-context-service";
 import { ProfileService } from "../modules/identity/profile-service";
+import { ItineraryWorkflowService } from "../modules/itinerary/itinerary-workflow-service";
 
 const apps: Awaited<ReturnType<typeof buildApi>>[] = [];
 afterEach(async () => Promise.all(apps.splice(0).map((app) => app.close())));
@@ -106,5 +107,14 @@ describe("Starward API host", () => {
     const changed = await app.inject({ method: "POST", url: "/v1/profile/commands", payload: { command: "restrict-location" } });
     expect(changed.statusCode).toBe(200);
     expect(changed.json()).toMatchObject({ privacy: { analyticsConsent: false, sharedCoordinate: { precision: "coarse" } } });
+  });
+
+  it("serves optimistic itinerary commands and server-filtered share state", async () => {
+    const app = await buildApi({ ...apiDependencies, itineraries: new ItineraryWorkflowService(() => "2026-07-20T00:00:00Z") });
+    apps.push(app);
+    const initial = await app.inject({ method: "GET", url: "/v1/itineraries" });
+    expect(initial.statusCode).toBe(200); expect(initial.headers["cache-control"]).toBe("private, no-store"); expect(initial.json()).toMatchObject({ schemaVersion: "starward-itinerary-v1", itinerary: { revision: 7 } });
+    const shared = await app.inject({ method: "POST", url: "/v1/itineraries/commands", payload: { command: "share-offline" } });
+    expect(shared.statusCode).toBe(200); expect(shared.json()).toMatchObject({ share: { publicProjection: { stops: [{ preciseCoordinateIncluded: true }, { preciseCoordinateIncluded: false }] } }, offlinePack: { state: "ready" } });
   });
 });

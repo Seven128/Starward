@@ -14,6 +14,7 @@ import { pocAstronomyEligibilityPolicy, pocWeatherEligibilityPolicy } from "./mo
 import { SkyContextService } from "./modules/sky/sky-context-service";
 import { ShootingPreviewService } from "./modules/shooting/shooting-preview-service";
 import { ProfileService } from "./modules/identity/profile-service";
+import { ItineraryWorkflowService } from "./modules/itinerary/itinerary-workflow-service";
 
 const mode = process.env.STARWARD_WEATHER_MODE ?? "noncommercial-poc";
 if (mode !== "noncommercial-poc") {
@@ -119,6 +120,7 @@ const app = await buildApi({
   sky: new SkyContextService(),
   shooting: new ShootingPreviewService(forecast),
   profile: new ProfileService(),
+  itineraries: new ItineraryWorkflowService(),
   logger: true,
 });
 

@@ -14,6 +14,7 @@ import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
 import type { ShootingPreviewService } from "./modules/shooting/shooting-preview-service";
 import { createShootingPreviewHandler } from "./modules/shooting/shooting-preview-handler";
 import type { ProfileCommand, ProfileService } from "./modules/identity/profile-service";
+import type { ItineraryCommand, ItineraryWorkflowService } from "./modules/itinerary/itinerary-workflow-service";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -28,6 +29,7 @@ export interface ApiDependencies {
   sky?: Pick<SkyContextService, "get">;
   shooting?: Pick<ShootingPreviewService, "get">;
   profile?: Pick<ProfileService, "get" | "command">;
+  itineraries?: Pick<ItineraryWorkflowService, "get" | "command">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -101,6 +103,14 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
       const allowed: ProfileCommand[] = ["merge-guest", "revoke-session", "inspect-content", "request-export", "request-deletion", "open-sources", "restrict-location"];
       if (!request.body?.command || !allowed.includes(request.body.command)) return reply.code(400).header("cache-control", "no-store").send({ code: "invalid_profile_command" });
       return reply.header("cache-control", "private, no-store").header("vary", "authorization").send(dependencies.profile!.command(request.body.command));
+    });
+  }
+  if (dependencies.itineraries) {
+    app.get("/v1/itineraries", async (_request, reply) => reply.header("cache-control", "private, no-store").header("vary", "authorization").send(dependencies.itineraries!.get()));
+    app.post<{ Body: { command?: ItineraryCommand } }>("/v1/itineraries/commands", async (request, reply) => {
+      const allowed: ItineraryCommand[] = ["generate", "overview", "add-candidate", "select-route", "refresh", "share-offline", "merge-collaboration", "astronomy-timeline"];
+      if (!request.body?.command || !allowed.includes(request.body.command)) return reply.code(400).header("cache-control", "no-store").send({ code: "invalid_itinerary_command" });
+      return reply.header("cache-control", "private, no-store").header("vary", "authorization").send(dependencies.itineraries!.command(request.body.command));
     });
   }
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);
