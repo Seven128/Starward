@@ -9,6 +9,7 @@
     "./admin": "./src/admin.ts",
     "./night-report": "./src/night-report.ts",
     "./forecast": "./src/forecast.ts",
-    "./map": "./src/map.ts"
+    "./map": "./src/map.ts",
+    "./spot": "./src/spot.ts"
   }
 }

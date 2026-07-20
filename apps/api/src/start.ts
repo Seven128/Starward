@@ -4,6 +4,8 @@ import { OpenMeteoHttpClient } from "./modules/forecast/open-meteo-http-client";
 import type { WeatherProviderGateRecord } from "./modules/forecast/provider-gate";
 import { OverpassSpotSearchSource } from "./modules/map/overpass-spot-search-source";
 import { RouteService } from "./modules/map/route-service";
+import { SpotTrustService } from "./modules/spots/spot-trust-service";
+import { PocSpotTrustRepository } from "./modules/spots/poc-spot-trust-repository";
 
 const mode = process.env.STARWARD_WEATHER_MODE ?? "noncommercial-poc";
 if (mode !== "noncommercial-poc") {
@@ -34,11 +36,12 @@ const routes = new RouteService(
   { route: async () => { throw new Error("amap_route_key_not_configured"); } },
   { findUsable: async () => null, save: async (snapshot) => snapshot },
 );
+const spotTrust = new SpotTrustService(new PocSpotTrustRepository(mapSpots));
 const allowedOrigins = (process.env.STARWARD_ALLOWED_ORIGINS ?? "http://127.0.0.1:8081,http://localhost:8081")
   .split(",").map((origin) => origin.trim()).filter(Boolean);
 const app = await buildApi({
   nightReports: { create: async () => { throw new Error("night_report_runtime_not_composed"); } },
-  spots: { getDetail: async () => { throw new Error("spot_runtime_not_composed"); } },
+  spots: spotTrust,
   resolveSpotActor: async () => ({ userId: null, verified: false, roles: [], invitedSpotIds: [] }),
   allowedOrigins,
   forecast,

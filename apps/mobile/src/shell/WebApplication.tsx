@@ -33,7 +33,7 @@ function CurrentScreen() {
   if (pathname === "/profile") return <ProfilePrivacyScreen fixture={fixture} />;
   if (pathname === "/tonight") return <TonightScreen fixture={fixture} />;
   if (pathname === "/map") return <MapScreen />;
-  if (pathname === "/spots/fixture-spot") return <SpotScreen fixture={fixture} />;
+  if (pathname === "/spots/current" || pathname === "/spots") return <SpotScreen />;
   if (pathname === "/plans") return <ItineraryScreen fixture={fixture} />;
   if (pathname === "/sky") return <SkyScreen fixture={fixture} />;
   if (pathname === "/shooting") return <ShootingScreen fixture={fixture} />;

@@ -17,7 +17,7 @@ export const outcomeRoutes = Object.freeze({
   "quality-release-observability": "/admin/quality",
   "shooting-assistant": "/shooting",
   "sky-orientation-ar": "/sky",
-  "spot-detail-and-trust": "/spots/fixture-spot",
+  "spot-detail-and-trust": "/spots/current",
   "tonight-decision": "/tonight",
 });
 
