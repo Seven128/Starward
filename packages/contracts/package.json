@@ -10,6 +10,7 @@
     "./night-report": "./src/night-report.ts",
     "./forecast": "./src/forecast.ts",
     "./map": "./src/map.ts",
-    "./spot": "./src/spot.ts"
+    "./spot": "./src/spot.ts",
+    "./sky": "./src/sky.ts"
   }
 }

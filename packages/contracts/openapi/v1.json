@@ -62,8 +62,22 @@
         }
       }
     },
-    "/v1/sky/context": {
-      "get": { "operationId": "getSkyContext", "responses": { "200": { "description": "Universal sky context and capability state" } } }
+    "/v1/sky": {
+      "get": {
+        "operationId": "getSkyContext",
+        "parameters": [
+          { "name": "latitude", "in": "query", "required": true, "schema": { "type": "number", "minimum": -90, "maximum": 90 } },
+          { "name": "longitude", "in": "query", "required": true, "schema": { "type": "number", "minimum": -180, "maximum": 180 } },
+          { "name": "elevationM", "in": "query", "required": true, "schema": { "type": "number", "minimum": -500, "maximum": 10000 } },
+          { "name": "timezone", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "at", "in": "query", "required": true, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "target", "in": "query", "required": true, "schema": { "type": "string", "enum": ["milky-way-core", "sirius", "vega", "antares", "m31"] } }
+        ],
+        "responses": {
+          "200": { "description": "Versioned universal-sky positions and target trajectory with an explicit unknown site-horizon boundary", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SkyContext" } } } },
+          "400": { "description": "Invalid coordinate, timezone, time, elevation, or target" }
+        }
+      }
     },
     "/v1/admin/data-status": {
       "get": { "operationId": "getAdminDataStatus", "responses": { "200": { "description": "Administrative data status envelope" } } }
@@ -71,6 +85,24 @@
   },
   "components": {
     "schemas": {
+      "SkyContext": {
+        "type": "object",
+        "required": ["schemaVersion", "state", "generatedAt", "algorithm", "context", "catalog", "objects", "selectedTarget", "trajectory", "bestTargetTime", "horizon", "warnings"],
+        "properties": {
+          "schemaVersion": { "const": "starward-sky-context-v1" },
+          "state": { "type": "string", "enum": ["fresh", "partial", "missing"] },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "algorithm": { "type": "object", "required": ["name", "version", "coordinateSystem", "refraction"] },
+          "context": { "type": "object", "required": ["latitude", "longitude", "elevationM", "timezone", "at", "target"] },
+          "catalog": { "type": "object", "required": ["loadedChunk", "deferredChunks", "magnitudeLimit"] },
+          "objects": { "type": "array", "items": { "type": "object", "required": ["id", "name", "kind", "magnitude", "altitudeDeg", "azimuthDeg", "visible", "obstructed"] } },
+          "selectedTarget": { "type": ["object", "null"] },
+          "trajectory": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["at", "altitudeDeg", "azimuthDeg", "aboveAstronomicalHorizon"] } },
+          "bestTargetTime": { "type": ["string", "null"], "format": "date-time" },
+          "horizon": { "type": "null" },
+          "warnings": { "type": "array", "items": { "type": "string" } }
+        }
+      },
       "DataStatus": {
         "type": "string",
         "enum": ["fresh", "cached", "stale", "partial", "missing", "failed"]

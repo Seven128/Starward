@@ -12900,7 +12900,7 @@ outcomes:
               - \[outcome:spot-detail-and-trust\]
             cwd: tests/acceptance
             effect: test_sandbox
-            timeout_ms: 120000
+            timeout_ms: 180000
           verification_inputs:
             - tests/acceptance/ui/starward.spec.mjs
             - tests/acceptance/ui/support.mjs

@@ -9,6 +9,8 @@ import { createForecastHandler } from "./modules/forecast/forecast-handler";
 import type { SpotSearchProvider } from "./modules/map/spot-search-service";
 import type { RouteService } from "./modules/map/route-service";
 import { createMapSpotsHandler, createRouteHandler } from "./modules/map/map-handler";
+import type { SkyContextService } from "./modules/sky/sky-context-service";
+import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -20,6 +22,7 @@ export interface ApiDependencies {
   forecast?: Pick<ForecastQueryService, "get">;
   mapSpots?: SpotSearchProvider;
   routes?: Pick<RouteService, "load">;
+  sky?: Pick<SkyContextService, "get">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -71,6 +74,13 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
     app.post("/v1/routes/plan", async (request, reply) => {
       const response = await routeHandler(request.body);
       return reply.code(response.status).header("cache-control", "private, no-store").send(response.body);
+    });
+  }
+  if (dependencies.sky) {
+    const skyHandler = createSkyContextHandler(dependencies.sky);
+    app.get<{ Querystring: Record<string, string> }>("/v1/sky", async (request, reply) => {
+      const response = await skyHandler(request.query);
+      return reply.code(response.status).header("cache-control", "private, max-age=900").send(response.body);
     });
   }
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);

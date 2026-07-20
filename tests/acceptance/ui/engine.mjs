@@ -2,6 +2,17 @@ import { expect } from "@playwright/test";
 import { outcomeRoutes, uiContracts } from "./contracts.mjs";
 
 const byTestId = (testId) => `[data-testid=${JSON.stringify(testId)}]`;
+const liveEndpointByOutcome = Object.freeze({
+  "sky-orientation-ar": "/v1/sky",
+  "shooting-assistant": "/v1/shooting-plans",
+  "identity-profile-privacy": "/v1/profile",
+  "itinerary-and-collaboration": "/v1/itineraries",
+  "field-offline-safety": "/v1/field",
+  "community-contribution": "/v1/community",
+  "notifications-and-toolbox": "/v1/tools",
+  "admin-data-operations": "/v1/admin/data-status",
+  "quality-release-observability": "/v1/quality",
+});
 
 export async function runFrozenUiCase({ page, baseUrl, outcome, assertion, waitForApi }) {
   const route = outcomeRoutes[outcome];
@@ -9,7 +20,8 @@ export async function runFrozenUiCase({ page, baseUrl, outcome, assertion, waitF
   if (!route || !contract) throw new Error(`unknown_frozen_ui_case:${outcome}:${assertion.key}`);
 
   const target = new URL(route, baseUrl);
-  const apiReady = waitForApi ? page.waitForResponse((response) => response.url().includes(waitForApi), { timeout: 35_000 }) : null;
+  const endpoint = waitForApi ?? liveEndpointByOutcome[outcome];
+  const apiReady = endpoint ? page.waitForResponse((response) => response.url().includes(endpoint), { timeout: 35_000 }) : null;
   const response = await page.goto(target.href, { waitUntil: "domcontentloaded" });
   if (!response || !response.ok()) throw new Error(`production_route_unavailable:${target.pathname}:${response?.status() ?? "no-response"}`);
 

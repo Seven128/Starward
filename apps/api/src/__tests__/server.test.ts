@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import type { NightReport, NightReportRequest } from "../../../../packages/contracts/src/night-report";
 import { buildApi } from "../server";
+import { SkyContextService } from "../modules/sky/sky-context-service";
 
 const apps: Awaited<ReturnType<typeof buildApi>>[] = [];
 afterEach(async () => Promise.all(apps.splice(0).map((app) => app.close())));
@@ -73,5 +74,14 @@ describe("Starward API host", () => {
     expect(response.headers["cache-control"]).toBe("private, no-store");
     expect(response.headers.vary).toContain("authorization");
     expect(response.json()).toMatchObject({ id: "spot-secret", coordinate: { level: "approximate", exact: false } });
+  });
+
+  it("serves computed sky state through the declared versioned endpoint", async () => {
+    const app = await buildApi({ ...apiDependencies, sky: new SkyContextService(() => new Date("2026-08-12T12:00:00Z")) });
+    apps.push(app);
+    const response = await app.inject({ method: "GET", url: "/v1/sky?latitude=22.529&longitude=113.9468&elevationM=0&timezone=Asia%2FShanghai&at=2026-08-12T16%3A40%3A00.000Z&target=milky-way-core" });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("private, max-age=900");
+    expect(response.json()).toMatchObject({ schemaVersion: "starward-sky-context-v1", horizon: null });
   });
 });
