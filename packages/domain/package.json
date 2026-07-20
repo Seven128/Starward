@@ -8,6 +8,7 @@
     "./forecast": "./src/forecast/index.ts",
     "./identity": "./src/identity/index.ts",
     "./shooting": "./src/shooting/index.ts",
-    "./offline": "./src/offline/index.ts"
+    "./offline": "./src/offline/index.ts",
+    "./community": "./src/community/index.ts"
   }
 }
