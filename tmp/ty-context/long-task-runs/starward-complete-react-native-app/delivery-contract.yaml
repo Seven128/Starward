@@ -18269,6 +18269,7 @@ outcomes:
           - docs/product/**
           - docs/architecture/**
           - docs/data-sources/**
+          - docs/technical-data-source-decisions.md
           - docs/adr/**
           - docs/runbooks/**
           - docs/evidence/**
@@ -18491,6 +18492,7 @@ outcomes:
         - docs/product/**
         - docs/architecture/**
         - docs/data-sources/**
+        - docs/technical-data-source-decisions.md
         - docs/adr/**
         - docs/runbooks/**
         - docs/evidence/**
