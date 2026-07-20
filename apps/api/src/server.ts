@@ -6,6 +6,9 @@ import type { SpotTrustService } from "./modules/spots/spot-trust-service";
 import { createSpotTrustHandler, type SpotActorResolver } from "./modules/spots/spot-trust-handler";
 import type { ForecastQueryService } from "./modules/forecast/forecast-query-service";
 import { createForecastHandler } from "./modules/forecast/forecast-handler";
+import type { SpotSearchProvider } from "./modules/map/spot-search-service";
+import type { RouteService } from "./modules/map/route-service";
+import { createMapSpotsHandler, createRouteHandler } from "./modules/map/map-handler";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -15,6 +18,8 @@ export interface ApiDependencies {
   logger?: boolean;
   now?: () => Date;
   forecast?: Pick<ForecastQueryService, "get">;
+  mapSpots?: SpotSearchProvider;
+  routes?: Pick<RouteService, "load">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -52,6 +57,20 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
       const response = await forecastHandler(request.query);
       for (const [name, value] of Object.entries(response.headers)) reply.header(name, value);
       return reply.code(response.status).send("astronomy" in response.body ? response.body.astronomy : response.body);
+    });
+  }
+  if (dependencies.mapSpots) {
+    const mapSpotsHandler = createMapSpotsHandler(dependencies.mapSpots, dependencies.now);
+    app.get<{ Querystring: Record<string, string> }>("/v1/map/spots", async (request, reply) => {
+      const response = await mapSpotsHandler(request.query);
+      return reply.code(response.status).header("cache-control", "private, max-age=300").send(response.body);
+    });
+  }
+  if (dependencies.routes) {
+    const routeHandler = createRouteHandler(dependencies.routes);
+    app.post("/v1/routes/plan", async (request, reply) => {
+      const response = await routeHandler(request.body);
+      return reply.code(response.status).header("cache-control", "private, no-store").send(response.body);
     });
   }
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);

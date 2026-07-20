@@ -8,6 +8,7 @@
     "./security-policy": "./src/security-policy.ts",
     "./admin": "./src/admin.ts",
     "./night-report": "./src/night-report.ts",
-    "./forecast": "./src/forecast.ts"
+    "./forecast": "./src/forecast.ts",
+    "./map": "./src/map.ts"
   }
 }

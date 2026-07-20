@@ -2,6 +2,8 @@ import { buildApi } from "./server";
 import { ForecastQueryService } from "./modules/forecast/forecast-query-service";
 import { OpenMeteoHttpClient } from "./modules/forecast/open-meteo-http-client";
 import type { WeatherProviderGateRecord } from "./modules/forecast/provider-gate";
+import { OverpassSpotSearchSource } from "./modules/map/overpass-spot-search-source";
+import { RouteService } from "./modules/map/route-service";
 
 const mode = process.env.STARWARD_WEATHER_MODE ?? "noncommercial-poc";
 if (mode !== "noncommercial-poc") {
@@ -27,6 +29,11 @@ function source(model: string) {
 }
 
 const forecast = new ForecastQueryService({ primary: source("gfs_seamless"), comparison: source("ecmwf_ifs025") });
+const mapSpots = new OverpassSpotSearchSource();
+const routes = new RouteService(
+  { route: async () => { throw new Error("amap_route_key_not_configured"); } },
+  { findUsable: async () => null, save: async (snapshot) => snapshot },
+);
 const allowedOrigins = (process.env.STARWARD_ALLOWED_ORIGINS ?? "http://127.0.0.1:8081,http://localhost:8081")
   .split(",").map((origin) => origin.trim()).filter(Boolean);
 const app = await buildApi({
@@ -35,6 +42,8 @@ const app = await buildApi({
   resolveSpotActor: async () => ({ userId: null, verified: false, roles: [], invitedSpotIds: [] }),
   allowedOrigins,
   forecast,
+  mapSpots,
+  routes,
   logger: true,
 });
 

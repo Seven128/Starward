@@ -17,9 +17,15 @@ export interface SpotSearchItem {
   status: "verified" | "provisional";
   facilities: string[];
   verificationAt: string | null;
+  mapState?: "recommended" | "caution" | "risk" | "insufficient" | "closed";
+  imageUrl?: string | null;
+  source?: { label: string; url: string; licenseId: string; fetchedAt: string };
+  factsBoundary?: string;
 }
 
 export interface SpotSearchPage { items: SpotSearchItem[]; nextCursor: string | null; }
+
+export interface SpotSearchProvider { search(request: SpotSearchRequest): Promise<SpotSearchPage>; }
 
 export type SqlQueryClient = {
   query<T extends Record<string, unknown>>(text: string, values: unknown[]): Promise<{ rows: T[] }>;
