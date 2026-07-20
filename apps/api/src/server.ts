@@ -11,6 +11,8 @@ import type { RouteService } from "./modules/map/route-service";
 import { createMapSpotsHandler, createRouteHandler } from "./modules/map/map-handler";
 import type { SkyContextService } from "./modules/sky/sky-context-service";
 import { createSkyContextHandler } from "./modules/sky/sky-context-handler";
+import type { ShootingPreviewService } from "./modules/shooting/shooting-preview-service";
+import { createShootingPreviewHandler } from "./modules/shooting/shooting-preview-handler";
 
 export interface ApiDependencies {
   nightReports: Pick<NightReportService, "create">;
@@ -23,6 +25,7 @@ export interface ApiDependencies {
   mapSpots?: SpotSearchProvider;
   routes?: Pick<RouteService, "load">;
   sky?: Pick<SkyContextService, "get">;
+  shooting?: Pick<ShootingPreviewService, "get">;
 }
 
 function normalizeOrigins(origins: string[]): Set<string> {
@@ -81,6 +84,13 @@ export async function buildApi(dependencies: ApiDependencies): Promise<FastifyIn
     app.get<{ Querystring: Record<string, string> }>("/v1/sky", async (request, reply) => {
       const response = await skyHandler(request.query);
       return reply.code(response.status).header("cache-control", "private, max-age=900").send(response.body);
+    });
+  }
+  if (dependencies.shooting) {
+    const shootingHandler = createShootingPreviewHandler(dependencies.shooting);
+    app.get<{ Querystring: Record<string, string> }>("/v1/shooting-plans", async (request, reply) => {
+      const response = await shootingHandler(request.query);
+      return reply.code(response.status).header("cache-control", "private, max-age=300").send(response.body);
     });
   }
   const nightReportHandler = createNightReportHandler(dependencies.nightReports);

@@ -36,7 +36,7 @@ function CurrentScreen() {
   if (pathname === "/spots/current" || pathname === "/spots") return <SpotScreen />;
   if (pathname === "/plans") return <ItineraryScreen fixture={fixture} />;
   if (pathname === "/sky") return <SkyScreen />;
-  if (pathname === "/shooting") return <ShootingScreen fixture={fixture} />;
+  if (pathname === "/shooting") return <ShootingScreen />;
   if (pathname === "/field") return <FieldScreen fixture={fixture} />;
   if (pathname === "/community") return <CommunityScreen fixture={fixture} />;
   if (pathname === "/tools") return <ToolsScreen fixture={fixture} />;

@@ -12,6 +12,7 @@ import type { NightReportRequest } from "../../../packages/contracts/src/night-r
 import { InMemoryNightReportRepository, NightReportService, type RouteEvidence, type SpotCandidate } from "./modules/night-report/night-report-service";
 import { pocAstronomyEligibilityPolicy, pocWeatherEligibilityPolicy } from "./modules/night-report/runtime-policies";
 import { SkyContextService } from "./modules/sky/sky-context-service";
+import { ShootingPreviewService } from "./modules/shooting/shooting-preview-service";
 
 const mode = process.env.STARWARD_WEATHER_MODE ?? "noncommercial-poc";
 if (mode !== "noncommercial-poc") {
@@ -115,6 +116,7 @@ const app = await buildApi({
   mapSpots,
   routes,
   sky: new SkyContextService(),
+  shooting: new ShootingPreviewService(forecast),
   logger: true,
 });
 

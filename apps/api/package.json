@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fastify/cors": "11.3.0",
+    "@starward/domain": "file:../../packages/domain",
     "fastify": "5.10.0",
     "pg": "8.22.0"
   },

@@ -84,4 +84,14 @@ describe("Starward API host", () => {
     expect(response.headers["cache-control"]).toBe("private, max-age=900");
     expect(response.json()).toMatchObject({ schemaVersion: "starward-sky-context-v1", horizon: null });
   });
+
+  it("serves deterministic shooting previews through a private endpoint", async () => {
+    const preview = { schemaVersion: "starward-shooting-preview-v1", phone: { result: { deterministic: true } }, camera: { result: { deterministic: true } } };
+    const app = await buildApi({ ...apiDependencies, shooting: { get: async () => preview as never } });
+    apps.push(app);
+    const response = await app.inject({ method: "GET", url: "/v1/shooting-plans?latitude=22.5&longitude=113.9&timezone=Asia%2FShanghai&nightDate=2026-08-12&locationId=spot&scheduledAt=2026-08-12T16%3A40%3A00Z&focalLengthMm=24" });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("private, max-age=300");
+    expect(response.json()).toMatchObject({ schemaVersion: "starward-shooting-preview-v1" });
+  });
 });
