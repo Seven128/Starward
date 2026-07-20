@@ -19,7 +19,7 @@ export function planGuestMerge(items: MergeItem[]) {
   };
 }
 
-export function sanitizeAnalyticsEvent(input: Record<string, unknown>) {
-  const forbidden = new Set(["latitude", "longitude", "lat", "lon", "trajectory", "contacts", "privateSpot", "exif"]);
-  return Object.fromEntries(Object.entries(input).filter(([key]) => !forbidden.has(key)));
+export function sanitizeAnalyticsEvent(input: Record<string, unknown>): Record<string, unknown> {
+  const forbidden = new Set(["latitude", "longitude", "lat", "lon", "trajectory", "contacts", "privateSpot", "exif", "exactLocation", "routeGeometry"]);
+  return Object.fromEntries(Object.entries(input).flatMap(([key, value]) => forbidden.has(key) ? [] : [[key, value && typeof value === "object" && !Array.isArray(value) ? sanitizeAnalyticsEvent(value as Record<string, unknown>) : value]]));
 }

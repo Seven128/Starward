@@ -6,7 +6,7 @@
       "scopes": ["identity-profile-privacy"],
       "up": "infrastructure/database/migrations/20260720_identity_up.sql",
       "down": "infrastructure/database/migrations/20260720_identity_down.sql",
-      "sha256": "ae42de0289170ee21e330d63e4f3eee67b58c77b655dc3381ca66d10b1ae42bd"
+      "sha256": "47776b77ee745dda52bc2791998c900b7b6608705319a013df7d817e023a82f7"
     },
     {
       "id": "20260720_platform_foundation",

@@ -1,0 +1,9 @@
+import { describe, expect, it } from "vitest";
+import { authorizeCoordinate, availableAuthMethods, buildExportProjection, createDeletionRequest, sanitizeAnalyticsPayload } from "./index";
+describe("identity and privacy domain", () => {
+  it("shows only platform and region approved login methods", () => { expect(availableAuthMethods({ platform: "ios", region: "CN", approvals: { "phone-otp": true, apple: true, wechat: false } })).toEqual(["phone-otp", "apple"]); });
+  it("enforces coordinate visibility server-side", () => { expect(authorizeCoordinate({ visibility: "invite_only", viewer: "anonymous", lat: 22.529, lon: 113.9468 }).precision).toBe("coarse"); expect(authorizeCoordinate({ visibility: "collaborators", viewer: "collaborator", lat: 22.529, lon: 113.9468 }).precision).toBe("precise"); });
+  it("removes sensitive analytics fields recursively", () => { expect(sanitizeAnalyticsPayload({ event: "open", latitude: 1, nested: { exif: {}, grid: "rough" } })).toEqual({ event: "open", nested: { grid: "rough" } }); });
+  it("creates a reauthenticated deletion timeline and immediately revokes sessions", () => { const value = createDeletionRequest({ id: "d1", userId: "u1", requestedAt: "2026-07-20T00:00:00Z", reauthenticated: true, publicContributionChoice: "anonymize-facts" }); expect(value).toMatchObject({ state: "cooling-off", sessionsRevokedAt: "2026-07-20T00:00:00Z" }); expect(value.backupExpiryBy).toBe("2026-10-18T00:00:00.000Z"); });
+  it("exports only owned allowlisted categories with a short expiry", () => { const value = buildExportProjection({ userId: "u1", generatedAt: "2026-07-20T00:00:00Z", payload: { account: {}, itineraries: [], otherUsers: ["secret"] } }); expect(value.included).toEqual(["account", "itineraries"]); expect(value.payload).not.toHaveProperty("otherUsers"); expect(value.expiresAt).toBe("2026-07-21T00:00:00.000Z"); });
+});
