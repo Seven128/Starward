@@ -15,13 +15,52 @@
       }
     },
     "/v1/night-reports": {
-      "post": { "operationId": "createNightReport", "responses": { "200": { "description": "Explainable versioned night report" } } }
+      "post": {
+        "operationId": "createNightReport",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReportRequest" } } } },
+        "responses": {
+          "200": { "description": "Explainable versioned night report", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NightReport" } } } },
+          "422": { "description": "Invalid observation context" },
+          "503": { "description": "Critical evidence unavailable" }
+        }
+      }
     },
     "/v1/map/spots": {
-      "get": { "operationId": "listMapSpots", "responses": { "200": { "description": "Versioned map spot summaries" } } }
+      "get": {
+        "operationId": "listMapSpots",
+        "parameters": [
+          { "name": "lat", "in": "query", "required": true, "schema": { "type": "number", "minimum": -90, "maximum": 90 } },
+          { "name": "lon", "in": "query", "required": true, "schema": { "type": "number", "minimum": -180, "maximum": 180 } },
+          { "name": "radiusMeters", "in": "query", "required": true, "schema": { "type": "integer", "minimum": 1, "maximum": 200000 } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 50, "default": 20 } },
+          { "name": "cursor", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Bounded WGS84 spot summaries", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SpotSearchPage" } } } },
+          "422": { "description": "Invalid spatial bound or cursor" }
+        }
+      }
     },
     "/v1/routes/plan": {
-      "post": { "operationId": "planRoute", "responses": { "200": { "description": "Route snapshot with degradation state" } } }
+      "post": {
+        "operationId": "planRoute",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RouteRequest" } } } },
+        "responses": {
+          "200": { "description": "Attributable route snapshot or honest missing-route degradation", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RouteSnapshot" } } } },
+          "422": { "description": "Invalid coordinate or mode" }
+        }
+      }
+    },
+    "/v1/spots/{spotId}": {
+      "get": {
+        "operationId": "getSpotTrustDetail",
+        "parameters": [{ "name": "spotId", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1 } }],
+        "responses": {
+          "200": { "description": "Actor-filtered spot facts and coordinate policy", "headers": { "Vary": { "schema": { "type": "string", "const": "authorization" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SpotTrustDetail" } } } },
+          "404": { "description": "Spot not found" },
+          "503": { "description": "Spot evidence unavailable" }
+        }
+      }
     },
     "/v1/sky/context": {
       "get": { "operationId": "getSkyContext", "responses": { "200": { "description": "Universal sky context and capability state" } } }
@@ -35,6 +74,78 @@
       "DataStatus": {
         "type": "string",
         "enum": ["fresh", "cached", "stale", "partial", "missing", "failed"]
+      },
+      "Wgs84Location": {
+        "type": "object",
+        "required": ["lat", "lon", "system", "label"],
+        "properties": { "lat": { "type": "number", "minimum": -90, "maximum": 90 }, "lon": { "type": "number", "minimum": -180, "maximum": 180 }, "system": { "const": "WGS84" }, "label": { "type": "string", "minLength": 1 } }
+      },
+      "Wgs84Coordinate": {
+        "type": "object",
+        "required": ["lat", "lon", "system"],
+        "properties": { "lat": { "type": "number", "minimum": -90, "maximum": 90 }, "lon": { "type": "number", "minimum": -180, "maximum": 180 }, "system": { "const": "WGS84" } }
+      },
+      "SpotSearchItem": {
+        "type": "object",
+        "required": ["id", "name", "coordinate", "distanceMeters", "status", "facilities", "verificationAt"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" }, "name": { "type": "string" }, "coordinate": { "$ref": "#/components/schemas/Wgs84Coordinate" },
+          "distanceMeters": { "type": "number", "minimum": 0 }, "status": { "type": "string", "enum": ["verified", "provisional"] },
+          "facilities": { "type": "array", "items": { "type": "string" } }, "verificationAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "SpotSearchPage": {
+        "type": "object", "required": ["items", "nextCursor"],
+        "properties": { "items": { "type": "array", "maxItems": 50, "items": { "$ref": "#/components/schemas/SpotSearchItem" } }, "nextCursor": { "type": ["string", "null"] } }
+      },
+      "SpotTrustDetail": {
+        "type": "object",
+        "required": ["id", "name", "status", "statusReason", "updatedAt", "coordinate", "facts", "actions", "trust"],
+        "properties": {
+          "id": { "type": "string" }, "name": { "type": "string" }, "status": { "type": "string", "enum": ["open", "caution", "closed"] }, "statusReason": { "type": ["string", "null"] }, "updatedAt": { "type": "string", "format": "date-time" },
+          "coordinate": { "type": "object", "required": ["level", "coordinate", "exact", "reason"], "properties": { "level": { "type": "string", "enum": ["exact", "approximate", "hidden"] }, "coordinate": { "oneOf": [{ "$ref": "#/components/schemas/Wgs84Coordinate" }, { "type": "null" }] }, "exact": { "type": "boolean" }, "reason": { "type": ["string", "null"] } } },
+          "facts": { "type": "array", "items": { "type": "object", "required": ["key", "state", "value", "sources", "conflict", "safetyConservative"] } },
+          "actions": { "type": "array", "items": { "type": "object", "required": ["action", "allowed", "coordinateLevel", "reason"] } },
+          "trust": { "type": "object", "required": ["verifiedSources", "conflicts", "fieldVerificationRequired"] }
+        }
+      },
+      "RouteRequest": {
+        "type": "object", "required": ["requestId", "origin", "destination", "mode"],
+        "properties": { "requestId": { "type": "string", "minLength": 1 }, "origin": { "$ref": "#/components/schemas/Wgs84Coordinate" }, "destination": { "$ref": "#/components/schemas/Wgs84Coordinate" }, "mode": { "type": "string", "enum": ["drive", "walk", "cycle", "transit"] } }
+      },
+      "RouteSnapshot": {
+        "type": "object",
+        "required": ["id", "requestId", "provider", "providerVersion", "generatedAt", "expiresAt", "state", "authoritativeCoordinates", "providerCoordinateSystem", "mode", "distanceMeters", "durationSeconds", "straightLineReferenceMeters", "navigationUsable", "geometry", "warning"],
+        "properties": {
+          "id": { "type": "string" }, "requestId": { "type": "string" }, "provider": { "type": "string" }, "providerVersion": { "type": "string" },
+          "generatedAt": { "type": "string", "format": "date-time" }, "expiresAt": { "type": "string", "format": "date-time" }, "state": { "type": "string", "enum": ["fresh", "cached", "missing"] },
+          "authoritativeCoordinates": { "type": "object", "required": ["origin", "destination"], "properties": { "origin": { "$ref": "#/components/schemas/Wgs84Coordinate" }, "destination": { "$ref": "#/components/schemas/Wgs84Coordinate" } } },
+          "providerCoordinateSystem": { "const": "GCJ-02" }, "mode": { "type": "string", "enum": ["drive", "walk", "cycle", "transit"] }, "distanceMeters": { "type": ["number", "null"], "minimum": 0 }, "durationSeconds": { "type": ["number", "null"], "minimum": 0 },
+          "straightLineReferenceMeters": { "type": "number", "minimum": 0 }, "navigationUsable": { "type": "boolean" }, "geometry": { "type": ["string", "null"] }, "warning": { "type": ["string", "null"] }
+        }
+      },
+      "NightReportRequest": {
+        "type": "object",
+        "required": ["requestId", "location", "timezone", "nightDate", "profile", "target", "route"],
+        "properties": {
+          "requestId": { "type": "string", "minLength": 1 }, "location": { "$ref": "#/components/schemas/Wgs84Location" }, "timezone": { "type": "string", "minLength": 3 }, "nightDate": { "type": "string", "format": "date" },
+          "profile": { "type": "string", "enum": ["family", "milky-way"] }, "target": { "type": "string", "minLength": 1 },
+          "route": { "type": "object", "required": ["origin", "maxTravelMinutes", "modes"], "properties": { "origin": { "$ref": "#/components/schemas/Wgs84Location" }, "maxTravelMinutes": { "type": "integer", "minimum": 1 }, "modes": { "type": "array", "minItems": 1, "items": { "type": "string", "enum": ["drive", "cycle", "transit", "walk"] } } } }
+        }
+      },
+      "DataPart": {
+        "type": "object", "required": ["state", "source", "sourceVersion", "sourceTime", "confidence"],
+        "properties": { "state": { "$ref": "#/components/schemas/DataStatus" }, "source": { "type": "string" }, "sourceVersion": { "type": ["string", "null"] }, "sourceTime": { "type": ["string", "null"], "format": "date-time" }, "confidence": { "type": "number", "minimum": 0, "maximum": 1 }, "warning": { "type": "string" } }
+      },
+      "NightReport": {
+        "type": "object",
+        "required": ["id", "revision", "requestId", "generatedAt", "expiresAt", "status", "context", "decision", "primarySpot", "backupSpots", "targets", "parts", "warnings", "provenance"],
+        "properties": {
+          "id": { "type": "string" }, "revision": { "type": "integer", "minimum": 1 }, "requestId": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "expiresAt": { "type": "string", "format": "date-time" },
+          "status": { "type": "string", "enum": ["ready", "partial", "insufficient-data", "blocked"] }, "context": { "type": "object" }, "decision": { "type": "object" }, "observationWindow": { "type": ["object", "null"] }, "primarySpot": { "type": ["object", "null"] }, "backupSpots": { "type": "array", "items": { "type": "object" } }, "targets": { "type": "array", "items": { "type": "object" } },
+          "parts": { "type": "object", "required": ["weather", "astronomy", "spots", "route"], "properties": { "weather": { "$ref": "#/components/schemas/DataPart" }, "astronomy": { "$ref": "#/components/schemas/DataPart" }, "spots": { "$ref": "#/components/schemas/DataPart" }, "route": { "$ref": "#/components/schemas/DataPart" } } },
+          "warnings": { "type": "array", "items": { "type": "string" } }, "provenance": { "type": "array", "items": { "type": "object", "required": ["source", "version", "generatedAt"] } }
+        }
       }
     }
   }

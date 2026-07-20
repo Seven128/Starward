@@ -6,6 +6,7 @@
   "exports": {
     "./platform-boundary": "./src/platform-boundary.ts",
     "./security-policy": "./src/security-policy.ts",
-    "./admin": "./src/admin.ts"
+    "./admin": "./src/admin.ts",
+    "./night-report": "./src/night-report.ts"
   }
 }

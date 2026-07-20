@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS route_snapshots;
+DROP TABLE IF EXISTS spots;

@@ -14,6 +14,27 @@
       "up": "infrastructure/database/migrations/20260720_platform_up.sql",
       "down": "infrastructure/database/migrations/20260720_platform_down.sql",
       "sha256": "fcbda0bb6fdce17e3cf3c05ac3dd6d40eefb61b3d7ac9da05e4b4a3709538993"
+    },
+    {
+      "id": "20260720_night_report_snapshots",
+      "scopes": ["tonight-decision"],
+      "up": "infrastructure/database/migrations/20260720_night_report_up.sql",
+      "down": "infrastructure/database/migrations/20260720_night_report_down.sql",
+      "sha256": "f10769eb82f23c4a83c0ac0dcb8b6971aec5df9970228029012a2f88497d48d1"
+    },
+    {
+      "id": "20260720_map_route_spatial",
+      "scopes": ["map-route-discovery"],
+      "up": "infrastructure/database/migrations/20260720_map_route_up.sql",
+      "down": "infrastructure/database/migrations/20260720_map_route_down.sql",
+      "sha256": "6d3790f2c163b677e0978e6cc7c6b69debeee3d26c0ebfcb822953062709cae0"
+    },
+    {
+      "id": "20260720_spot_trust_facts",
+      "scopes": ["spot-detail-and-trust"],
+      "up": "apps/api/src/modules/spots/migrations/20260720_spot_trust_up.sql",
+      "down": "apps/api/src/modules/spots/migrations/20260720_spot_trust_down.sql",
+      "sha256": "1bd6a32a2f488e22f2b33c6a44828988d58b4a3cfc8ccbc12ef006b9e5ba50de"
     }
   ]
 }

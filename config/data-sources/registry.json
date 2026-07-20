@@ -3,7 +3,7 @@
   "selectionPolicy": "all hard gates first, then qualified lowest 12-month TCO",
   "sources": [
     {
-      "id": "qweather-candidate",
+      "id": "qweather",
       "capability": "china-weather-warning-air-quality-geocoding",
       "provenance": "official provider documentation; contract not yet executed",
       "licenseStatus": "pending-commercial-confirmation",
@@ -13,7 +13,7 @@
       "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "quote-pending" }
     },
     {
-      "id": "open-meteo-candidate",
+      "id": "open-meteo",
       "capability": "layered-cloud-and-model-comparison",
       "provenance": "official provider documentation; commercial use terms pending",
       "licenseStatus": "pending-commercial-confirmation",
