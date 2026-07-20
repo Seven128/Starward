@@ -3,18 +3,20 @@ import { outcomeRoutes, uiContracts } from "./contracts.mjs";
 
 const byTestId = (testId) => `[data-testid=${JSON.stringify(testId)}]`;
 
-export async function runFrozenUiCase({ page, baseUrl, outcome, assertion }) {
+export async function runFrozenUiCase({ page, baseUrl, outcome, assertion, waitForApi }) {
   const route = outcomeRoutes[outcome];
   const contract = uiContracts[outcome]?.[assertion.key];
   if (!route || !contract) throw new Error(`unknown_frozen_ui_case:${outcome}:${assertion.key}`);
 
   const target = new URL(route, baseUrl);
+  const apiReady = waitForApi ? page.waitForResponse((response) => response.url().includes(waitForApi), { timeout: 35_000 }) : null;
   const response = await page.goto(target.href, { waitUntil: "domcontentloaded" });
   if (!response || !response.ok()) throw new Error(`production_route_unavailable:${target.pathname}:${response?.status() ?? "no-response"}`);
 
   await expect(page).toHaveURL((url) => url.pathname === target.pathname);
   await expect(page).toHaveURL((url) => !url.searchParams.has("acceptanceFixture"));
   await expect(page.locator(byTestId(`screen-${outcome}`))).toBeVisible();
+  if (apiReady) await apiReady;
   await page.locator(byTestId(contract.action)).click();
 
   for (const testId of contract.evidence) await expect(page.locator(byTestId(testId))).toBeVisible();
