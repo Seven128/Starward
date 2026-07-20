@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   evaluateDeferredReleaseGate,
+  evaluateProductionCarrier,
   evaluateReleasePromotion,
   evaluateRestoreEvidence,
 } from "./platform-boundary";
@@ -26,6 +27,19 @@ describe("release quality", () => {
     expect(result.productionPromotionAllowed).toBe(false);
     expect(result.disposition).toBe("external-pending");
     expect(result.reminderRequired).toBe(true);
+  });
+
+  it("accepts completed provider carriers while keeping unactivated traffic fail-closed", () => {
+    expect(evaluateProductionCarrier({
+      implementationStatus: "passed",
+      externalActivationStatus: "pending",
+      productionEnabled: false,
+    })).toEqual({
+      implementationComplete: true,
+      productionTrafficAllowed: false,
+      externalActivationPending: true,
+      disposition: "implemented-awaiting-external-activation",
+    });
   });
 
   it("rejects pending evidence when production is not explicitly blocked", () => {

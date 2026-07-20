@@ -11,11 +11,11 @@
   "results": {
     "app-start": { "status": "pending", "sampleCount": 0, "evidence": "native release artifact required" },
     "tonight-cached": { "status": "pending", "sampleCount": 0, "evidence": "production-like dataset required" },
-    "tonight-uncached": { "status": "pending", "sampleCount": 0, "evidence": "production-like provider path required" },
+    "tonight-uncached": { "status": "pending", "sampleCount": 0, "evidence": "activated production-provider traffic sample required; production carriers are implemented and fixture-verified" },
     "map-interaction": { "status": "pending", "sampleCount": 0, "evidence": "native map device run required" },
-    "route-timeout": { "status": "pending", "sampleCount": 0, "evidence": "provider POC required" },
+    "route-timeout": { "status": "pending", "sampleCount": 0, "evidence": "production route-provider canary sample required; v5 carrier and degradation contract tests pass" },
     "offline-restore": { "status": "pending", "sampleCount": 0, "evidence": "device restart run required" },
-    "provider-ingest": { "status": "pending", "sampleCount": 0, "evidence": "provider contract fixture required" },
+    "provider-ingest": { "status": "pending", "sampleCount": 0, "evidence": "real activated-provider sample required; production carriers and contract fixtures pass" },
     "notification-latency": { "status": "pending", "sampleCount": 0, "evidence": "approved push channels required" },
     "api-error-rate": { "status": "pending", "sampleCount": 0, "evidence": "staging soak required" },
     "crash-free-session": { "status": "pending", "sampleCount": 0, "evidence": "internal distribution cohort required" }

@@ -5,5 +5,14 @@
   "bucket": "secret-ref:starward-staging-bucket",
   "encryptionKey": "secret-ref:starward-staging-encryption-key",
   "oauthClient": "secret-ref:starward-staging-oauth-client",
+  "dataSourceManifest": "config/data-sources/production-integration.json",
+  "providerSecrets": {
+    "qweather": "secret-ref:starward-staging-qweather-fixture-or-poc-bundle",
+    "openMeteo": "secret-ref:starward-staging-open-meteo-poc-key",
+    "amapWeb": "secret-ref:starward-staging-amap-web-service-key",
+    "cdse": "secret-ref:starward-staging-cdse-s3-bundle",
+    "objectStore": "secret-ref:starward-staging-minio-bundle"
+  },
+  "providerTraffic": "fixtures-by-default-explicit-poc-only",
   "notificationSink": "test-only"
 }

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-20T00:00:00Z",
+  "status": "passed",
+  "researchStatus": "completed",
+  "implementationStatus": "passed",
+  "implementationBlocked": false,
+  "externalActivationStatus": "pending",
+  "productionTrafficAllowed": false,
+  "productionPromotionBlocked": true,
+  "manifest": "config/data-sources/production-integration.json",
+  "runbook": "docs/runbooks/production-data-integration.md",
+  "testCommand": "npm --workspace @starward/api test -- --run src/__tests__/production-data-integration.test.ts (11 tests)",
+  "implementedCarriers": [
+    "qweather-jwt-http",
+    "open-meteo-commercial-http",
+    "amap-route-v5-http",
+    "celestrak-omm-json",
+    "immutable-static-source-landing",
+    "provider-url-secret-redaction",
+    "checksum-and-content-addressed-raw",
+    "fail-closed-production-composition",
+    "streaming-staged-static-ingest",
+    "amap-transit-v5-normalization",
+    "s3-compatible-multipart-staged-object-sink",
+    "copernicus-dem-stac-and-s3-reader"
+  ],
+  "configuredSources": [
+    "qweather",
+    "open-meteo",
+    "amap-route-v5",
+    "nsmc-fy4",
+    "eog-viirs-vnl-v2.2",
+    "copernicus-dem-glo-30",
+    "gaia-dr3",
+    "celestrak-omm",
+    "astronomy-engine",
+    "s3-compatible-object-store"
+  ],
+  "externalOnlyRemainder": [
+    "commercial contract, account and quota activation",
+    "real secret issuance and rotation",
+    "current licence/legal confirmation",
+    "target-region provider POC and production measurements"
+  ],
+  "statement": "The production integration path is implemented and documented. External activation remains fail-closed and does not constitute an implementation blocker or a claim that production traffic is authorized."
+}

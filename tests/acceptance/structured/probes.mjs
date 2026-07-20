@@ -203,9 +203,60 @@ async function sourceGateHealthy(root) {
   }
   const selected = await invoke(root, "platform", "selectQualifiedProvider", { candidates: sources });
   const qualified = sources.filter((item) => item.productionEnabled === true || hasAll(asArray(item.passedGates), ["provenance", "quality", "stability", "commercial-license", "safe-degradation"]));
-  if (!qualified.length) return selected.status === "blocked";
+  if (!qualified.length) return selected.status === "blocked" && await productionIntegrationHealthy(root);
   const cheapest = [...qualified].sort((a, b) => a.tco12Month.totalCny - b.tco12Month.totalCny)[0];
-  return selected.providerId === cheapest.id && selected.basis === "qualified-lowest-12m-tco";
+  return selected.providerId === cheapest.id
+    && selected.basis === "qualified-lowest-12m-tco"
+    && await productionIntegrationHealthy(root);
+}
+
+async function productionIntegrationHealthy(root) {
+  const manifest = await json(root, "config/data-sources/production-integration.json");
+  const evidence = await json(root, "artifacts/verification/production-data-integration.json");
+  const requiredSourceIds = [
+    "qweather", "open-meteo", "amap-route-v5", "nsmc-fy4", "eog-viirs-vnl-v2.2",
+    "copernicus-dem-glo-30", "gaia-dr3", "celestrak-omm", "astronomy-engine", "s3-compatible-object-store",
+  ];
+  const runtimeFiles = [
+    manifest.runtime?.shared,
+    manifest.runtime?.objectStore,
+    ...asArray(manifest.runtime?.weather),
+    manifest.runtime?.route,
+    manifest.runtime?.composition,
+    manifest.runtime?.satelliteOrbit,
+    manifest.runtime?.copernicusDem,
+    manifest.runtime?.staticLanding,
+  ];
+  if (manifest.schemaVersion !== 1
+    || manifest.researchStatus !== "completed"
+    || manifest.implementationStatus !== "passed"
+    || manifest.implementationBlocked !== false
+    || manifest.externalActivationStatus !== "pending"
+    || manifest.productionTrafficAllowed !== false
+    || manifest.productionPromotionBlocked !== true
+    || !hasAll(asArray(manifest.sources).map((item) => item.id), requiredSourceIds)
+    || runtimeFiles.some((relative) => typeof relative !== "string" || !relative)
+    || !(await Promise.all(runtimeFiles.map((relative) => exists(root, relative)))).every(Boolean)) return false;
+  if (evidence.schemaVersion !== 1
+    || evidence.status !== "passed"
+    || evidence.researchStatus !== "completed"
+    || evidence.implementationStatus !== "passed"
+    || evidence.implementationBlocked !== false
+    || evidence.externalActivationStatus !== "pending"
+    || evidence.productionTrafficAllowed !== false
+    || evidence.productionPromotionBlocked !== true
+    || !asArray(evidence.implementedCarriers).length
+    || !hasAll(asArray(evidence.configuredSources), requiredSourceIds)
+    || !asArray(evidence.externalOnlyRemainder).length) return false;
+  const carrier = await invoke(root, "platform", "evaluateProductionCarrier", {
+    implementationStatus: manifest.implementationStatus,
+    externalActivationStatus: manifest.externalActivationStatus,
+    productionEnabled: manifest.productionTrafficAllowed,
+  });
+  return carrier.implementationComplete === true
+    && carrier.externalActivationPending === true
+    && carrier.productionTrafficAllowed === false
+    && carrier.disposition === "implemented-awaiting-external-activation";
 }
 
 async function environmentIsolationHealthy(root) {
@@ -263,7 +314,7 @@ async function releaseCoverageHealthy(root) {
   const requiredKeys = ["unit", "astronomy-golden", "provider-contract", "ios-simulator", "android-emulator", "ios-device", "android-device", "weak-network", "offline-restart", "low-power", "low-brightness", "outdoor-field"];
   if (await measuredReportHealthy(root, "artifacts/verification/release-matrix.json", requiredKeys)) return true;
   const report = await json(root, "artifacts/verification/release-matrix.json");
-  const localKeys = ["unit", "android-emulator"];
+  const localKeys = ["unit", "provider-contract", "android-emulator"];
   const deferredKeys = requiredKeys.filter((key) => !localKeys.includes(key));
   const localRowsHealthy = localKeys.every((key) => report.results?.[key]?.status === "passed"
     && report.results[key].sampleCount > 0

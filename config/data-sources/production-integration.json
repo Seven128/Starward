@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "evidenceDate": "2026-07-20",
+  "researchStatus": "completed",
+  "implementationStatus": "passed",
+  "externalActivationStatus": "pending",
+  "implementationBlocked": false,
+  "productionTrafficAllowed": false,
+  "productionPromotionBlocked": true,
+  "authority": {
+    "research": "docs/technical-data-source-decisions.md",
+    "operations": "docs/runbooks/production-data-integration.md",
+    "verification": "artifacts/verification/production-data-integration.json"
+  },
+  "runtime": {
+    "shared": "packages/data-source-runtime/src/index.ts",
+    "objectStore": "packages/data-source-runtime/src/s3-staged-immutable-raw-sink.ts",
+    "weather": [
+      "apps/api/src/modules/forecast/qweather-http-client.ts",
+      "apps/api/src/modules/forecast/open-meteo-http-client.ts"
+    ],
+    "route": "apps/api/src/modules/map/amap-route-http-adapter.ts",
+    "composition": "apps/api/src/modules/providers/production-data-source-runtime.ts",
+    "satelliteOrbit": "data-pipelines/src/celestrak-omm-client.ts",
+    "copernicusDem": "data-pipelines/src/copernicus-dem-ingest.ts",
+    "staticLanding": "data-pipelines/src/static-source-ingest.ts"
+  },
+  "sources": [
+    {
+      "id": "qweather",
+      "stage": "mvp-primary-candidate",
+      "mode": "server-pull-json",
+      "endpoint": "https://{account-api-host}/v7/weather/168h + /weatheralert/v1/current/{lat}/{lon}",
+      "authentication": "Ed25519 JWT in Authorization header; 15-minute token; private key server-only",
+      "secretRefs": ["qweather-api-host", "qweather-credential-id", "qweather-project-id", "qweather-ed25519-private-key"],
+      "scheduleAndCache": "grid/run Single Flight; hourly 30-60m; alerts 5-20m with event invalidation",
+      "normalization": "QWeather payload -> NormalizedWeatherRun; preserve source attribution and null layered-cloud fields",
+      "degradation": "serve attributable unexpired cache or mark affected factors unknown; never retain expired alert as current",
+      "activationEvidence": "commercial rights, actual project quota/QPM/SLA, price, cache/retention and target-region POC"
+    },
+    {
+      "id": "open-meteo",
+      "stage": "optional-layered-cloud-candidate",
+      "mode": "server-pull-json",
+      "endpoint": "https://customer-api.open-meteo.com/v1/forecast",
+      "authentication": "commercial apikey query parameter; server-only; free endpoint forbidden for commercial production",
+      "secretRefs": ["open-meteo-commercial-api-key"],
+      "scheduleAndCache": "explicit model/run/variable-set cache; GMT response; weighted-call budget accounting",
+      "normalization": "explicit models and SI units -> NormalizedWeatherRun with CC BY attribution/modification chain",
+      "degradation": "remove optional multi-model/layered-cloud comparison before primary weather or safety fields",
+      "activationEvidence": "paid plan, China route POC, model freshness/completeness and proven incremental value"
+    },
+    {
+      "id": "amap-route-v5",
+      "stage": "mvp-primary-candidate",
+      "mode": "server-pull-json",
+      "endpoint": "https://restapi.amap.com/v5/direction/{driving|walking|bicycling|transit/integrated}",
+      "authentication": "Web Service key server-only; native map keys isolated by package/signature/bundle id",
+      "secretRefs": ["amap-web-service-key", "amap-android-key", "amap-ios-key"],
+      "scheduleAndCache": "bounded candidates; route snapshot TTL by traffic assumptions; no unbounded retries",
+      "normalization": "WGS84 truth converted once by RouteService to GCJ-02; v5 paths and transit transits response shapes normalized separately into attributable RouteSnapshot",
+      "degradation": "use licensed unexpired route snapshot or labelled straight-line reference; external navigation remains explicit",
+      "activationEvidence": "corporate service licence, SKU/quota/price, key binding, privacy initialization and dual-platform POC"
+    },
+    {
+      "id": "nsmc-fy4",
+      "stage": "post-mvp-when-authorized",
+      "mode": "approved-order-url-to-immutable-landing",
+      "endpoint": "official NSMC order output via web/client/FTP or cloud-order download URL",
+      "authentication": "real-name reviewed NSMC/CMA account; no scraper and no invented public API",
+      "secretRefs": ["nsmc-approved-order-credential-or-short-lived-url"],
+      "scheduleAndCache": "order only approved products/regions; honor 2/6 concurrent-download and account daily quotas",
+      "normalization": "HDF/official product -> checksum -> immutable raw -> calibrated/projection-aware COG/frames -> versioned manifest",
+      "degradation": "hide live imagery and retain sourced forecast cloud layer when orders, frames or rights are unavailable",
+      "activationEvidence": "account approval, automation permission, product/channel rights, commercial derived-display terms and 30-day POC"
+    },
+    {
+      "id": "eog-viirs-vnl-v2.2",
+      "stage": "mvp-static-baseline",
+      "mode": "versioned-http-batch",
+      "endpoint": "official EOG Annual VNL v2.2 download object selected from product page",
+      "authentication": "none unless official download flow changes",
+      "secretRefs": [],
+      "scheduleAndCache": "annual version check; download once per selected release; content-addressed immutable raw",
+      "normalization": "allowlisted streaming staged ingest + SHA-256 -> gzip GeoTIFF EPSG:4326 radiance+coverage -> validate -> regional COG/overviews/tiles and point-query index",
+      "degradation": "show radiance/year/coverage only; no Bortle or visibility claim without calibrated regional evidence",
+      "activationEvidence": "saved readme/licence/citation, actual object URL, size, sha256 and attribution rendering"
+    },
+    {
+      "id": "copernicus-dem-glo-30",
+      "stage": "mvp-static-baseline",
+      "mode": "cdse-stac-plus-s3-batch",
+      "endpoint": "https://stac.dataspace.copernicus.eu/v1 + https://eodata.dataspace.copernicus.eu",
+      "authentication": "registered CDSE S3 credentials from secret manager; rotate before expiry",
+      "secretRefs": ["cdse-s3-access-key", "cdse-s3-secret-key"],
+      "scheduleAndCache": "static/version check; select first-release AOI tiles through STAC; one immutable download per object",
+      "normalization": "allowlisted streaming staged ingest + SHA-256 -> GLO-30 COG with GLO-90/nodata provenance -> regional mosaic -> versioned horizon profiles",
+      "degradation": "mark horizon unavailable/DEM-only; never treat ocean zero or missing tile as measured elevation",
+      "activationEvidence": "CDSE account/category, accepted licence, selected tile manifest, checksum and horizon accuracy POC"
+    },
+    {
+      "id": "gaia-dr3",
+      "stage": "mvp-static-baseline",
+      "mode": "esa-healpix-bulk-http",
+      "endpoint": "official Gaia DR3 bulk repository partitions",
+      "authentication": "public bulk access subject to current archive policy",
+      "secretRefs": [],
+      "scheduleAndCache": "release-based; select only intersecting HEALPix partitions; verify official MD5 then internal sha256",
+      "normalization": "allowlisted streaming staged ingest + official MD5/internal SHA-256 -> ECSV.gz approved fields/magnitude/proper-motion filters -> HEALPix mobile binary chunks and manifest",
+      "degradation": "reduce limiting magnitude/region or hide high-density layer; do not ship the full catalogue",
+      "activationEvidence": "release DOI/citation/disclaimer, field policy, selected partition list, checksums and device memory/render POC"
+    },
+    {
+      "id": "celestrak-omm",
+      "stage": "mvp-server-batch",
+      "mode": "server-pull-omm-json",
+      "endpoint": "https://celestrak.org/NORAD/elements/gp.php?GROUP={GROUP}&FORMAT=JSON",
+      "authentication": "none under current usage policy",
+      "secretRefs": [],
+      "scheduleAndCache": "minimum two-hour refresh; one fetch per update; no retry on any non-200; content-hash dedupe",
+      "normalization": "OMM JSON with 1-9 digit catalog IDs -> validated epoch -> SGP4 propagation asset",
+      "degradation": "hide stale/invalid pass and transit countdowns; preserve source epoch and fetched time",
+      "activationEvidence": "current use/re-distribution review, selected groups, non-200 alerting and propagation golden tests"
+    },
+    {
+      "id": "astronomy-engine",
+      "stage": "mvp-local-primary",
+      "mode": "deterministic-local-compute",
+      "endpoint": "none",
+      "authentication": "none",
+      "secretRefs": [],
+      "scheduleAndCache": "cache by algorithm version, WGS84 location, elevation, timezone, night and target",
+      "normalization": "UTC/IANA time, explicit elevation/refraction/horizon conventions and versioned result",
+      "degradation": "block only unvalidated calculations; do not substitute remote text or AI",
+      "activationEvidence": "pinned package and JPL-reviewed golden tolerance set"
+    },
+    {
+      "id": "eog-cdse-gaia-nsmc-static-landing",
+      "stage": "shared-production-carrier",
+      "mode": "content-addressed-immutable-object-ingest",
+      "endpoint": "approved HTTPS object URL or temporary official order URL",
+      "authentication": "source-specific credential resolved at worker only",
+      "secretRefs": ["source-specific-worker-secret"],
+      "scheduleAndCache": "source-host allowlist, streaming bounded object size, checksum before publish, staged abort/atomic commit and immutable version key",
+      "normalization": "temporary multipart/object -> raw-restricted/{source}/{datasetVersion}/{sha256}/{filename} plus lineage metadata",
+      "degradation": "quarantine checksum/schema/licence failures and retain last approved manifest",
+      "activationEvidence": "source-specific rights plus first real raw/derived manifest"
+    },
+    {
+      "id": "s3-compatible-object-store",
+      "stage": "shared-production-carrier",
+      "mode": "single-region-s3-contract",
+      "endpoint": "staging MinIO; production one approved mainland OSS or COS endpoint",
+      "authentication": "workload identity or rotated access credentials; never mobile/client embedded",
+      "secretRefs": ["object-store-endpoint", "object-store-access", "object-store-secret"],
+      "scheduleAndCache": "raw-restricted, derived-private, public-assets, user-media and audit buckets/prefixes with distinct lifecycle",
+      "normalization": "content hash, encryption, source/version/licence metadata and database current-pointer",
+      "degradation": "do not publish partial manifests; serve previous signed manifest or report unavailable",
+      "activationEvidence": "chosen mainland provider/region, price, ICP/CDN boundary, encryption, deletion and restore drill"
+    }
+  ]
+}

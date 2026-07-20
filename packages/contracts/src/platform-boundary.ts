@@ -9,6 +9,8 @@ export const platformBoundary = {
   releasePhases: ["foundation", "data", "decision", "closed-loop", "professional-ecosystem"].map((id) => ({ id })),
 } as const;
 
+export { evaluateProductionCarrier } from "../../data-source-runtime/src/index";
+
 export interface PermissionStates {
   preciseLocation: "granted" | "denied" | "undetermined";
   backgroundLocation: "granted" | "denied" | "undetermined";

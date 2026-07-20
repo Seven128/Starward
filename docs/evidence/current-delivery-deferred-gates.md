@@ -2,9 +2,11 @@
 
 状态：当前机器交付可继续验收；production promotion 必须保持阻止，直到本文列出的真实证据完成。
 
-## 1. 数据源调研与生产 SLO 不是同一份证据
+## 1. 数据源生产对接已实现，外部激活与生产 SLO 仍是独立证据
 
-[技术选型与数据源决策包](../technical-data-source-decisions.md) 已完成数据来源、真实性/稳定性/许可硬门、合格后最低 12 个月 TCO、缓存与安全降级方案的调研。这证明“应如何选择、实现和验证”，不证明供应商已经签约，也不产生真实生产性能样本。
+[技术选型与数据源决策包](../technical-data-source-decisions.md) 已完成数据来源、真实性/稳定性/许可硬门、合格后最低 12 个月 TCO、缓存与安全降级方案的调研。当前交付也已完成 [production integration manifest](../../config/data-sources/production-integration.json)、[运行手册](../runbooks/production-data-integration.md)、动态 provider carrier、流式不可变静态落盘、fail-closed 生产组合和 [fixture 验证](../../artifacts/verification/production-data-integration.json)。因此“如何对接生产”不是实现卡点，不能再以待合同为由把代码实现留空。
+
+尚未完成的是外部激活：供应商签约/报价、账号与配额审批、真实 secret 颁发与轮换、许可/再分发证据、首发区 POC 和真实生产流量。这些事实保持 `externalActivationStatus=pending`、`productionTrafficAllowed=false`，继续阻止 production promotion，但不把 `implementationStatus=passed` 改回 pending。
 
 当前交付已经建立十项指标口径、遥测信号与分层维度。真实 SLO 仍须在获批预发/生产链路上线后，按 `DEC production-slo-measurement` 的 28 天滚动窗口采集，并以连续 30 天真实基线、样本数、版本、平台、设备档、网络和冷热缓存分层复验。完成前：
 
@@ -16,7 +18,7 @@
 
 当前 Windows/Android 环境已完成可执行的自动测试与 Android 模拟器证据。以下项目延期，不阻塞当前机器交付，但继续阻塞 production release：
 
-- 天文权威黄金集审阅与商业供应商契约样本；
+- 天文权威黄金集审阅；
 - iOS 模拟器、iOS 真机和代表性 Android 真机；
 - 弱网、离线进程重启、低电、低亮与红光；
 - 山区/郊外 GPS、磁力计、车辆/金属干扰、最后一公里及长期户外验证。

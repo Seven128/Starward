@@ -8,7 +8,7 @@
   "results": {
     "unit": { "status": "passed", "sampleCount": 4, "evidence": "apps/mobile vitest" },
     "astronomy-golden": { "status": "pending", "sampleCount": 0, "evidence": "authoritative review required" },
-    "provider-contract": { "status": "pending", "sampleCount": 0, "evidence": "commercial provider fixture required" },
+    "provider-contract": { "status": "passed", "sampleCount": 11, "evidence": "apps/api/src/__tests__/production-data-integration.test.ts; contract fixtures, fail-closed composition, CDSE STAC/S3, streaming ingest, S3-compatible staged commit and provider normalization" },
     "ios-simulator": { "status": "pending", "sampleCount": 0, "evidence": "iOS build host required" },
     "android-emulator": { "status": "passed", "sampleCount": 3, "evidence": "artifacts/verification/android/android-emulator-evidence.json" },
     "ios-device": { "status": "pending", "sampleCount": 0, "evidence": "representative iOS devices required" },

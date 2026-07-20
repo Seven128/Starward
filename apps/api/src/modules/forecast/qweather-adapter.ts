@@ -33,12 +33,14 @@ export interface QWeatherAdapterInput {
   model?: string;
   licenseVersion: string;
   rawRetentionAllowed: boolean;
+  warningFetchFailed?: boolean;
 }
 
 export function normalizeQWeather(input: QWeatherAdapterInput): NormalizedWeatherRun {
   assertWeatherProviderUse(input.gate, input.use, "commercial");
   const sourceNames = input.warning?.refer?.sources?.filter(Boolean) ?? [];
   const qualityFlags = new Set<string>();
+  if (input.warningFetchFailed) qualityFlags.add("warning-feed-unavailable");
   const hours = input.forecast.hourly.map((hour, index) => {
     const lowCloudPct = percentOrNull(hour.cloudLow, `hourly_${index}_cloud_low`);
     const midCloudPct = percentOrNull(hour.cloudMid, `hourly_${index}_cloud_mid`);

@@ -965,9 +965,9 @@ source_claims:
     statement: |-
       - **AC official-source-production-gates**
         - Accepts: REQ official-source-production-gates, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ astronomy-geo-pipelines, OBL source-data-immutability, OBL provider-cost-and-quota-ledger
-        - Given: 后续 Contract 准备绑定天气、高德、VIIRS、DEM、星表/卫星、推送和对象存储/CDN 的生产实现。
-        - When: 按 S-RESEARCH 和当前官方页面执行依赖锁定、采购/许可、数据下载加工与 production readiness 审查。
-        - Then: 每项均保留实际 provider/version/条款/价格/quota/SLA/归属/cache/派生/再分发/region/checksum/lineage、真实性/首发区稳定性/许可/降级硬门、同能力 12 个月 TCO、预算与对应 DEC/EXT/POC 证据；`recommended` 未被写成已采购，动态事实已重取，未合格项只降级或保持 pending，合格项中未选择更贵方案而无批准的增量价值说明。
+        - Given: 官方资料调研已完成，生产数据 carrier 需在尚未签约、发放真实密钥或取得目标区 POC 时完成当前机器可实现部分。
+        - When: 审查 production integration manifest、运行手册、环境隔离、运行时代码和 contract fixture。
+        - Then: QWeather、Open-Meteo、高德路线 v5、EOG VIIRS、Copernicus DEM、Gaia DR3、CelesTrak OMM、获批 FY-4 订单落盘与 S3 兼容对象层均有实际 endpoint/auth/secret boundary/归一化或加工/缓存与调度/安全降级/lineage 方案；测试证明 JWT 与专属 host、商业 endpoint、驾车及公交响应、secret 脱敏、流式大小与 checksum 校验、暂存失败 abort、内容寻址不可变提交和外部未激活时无生产客户端；manifest/evidence 为 `researchStatus=completed`、`implementationStatus=passed`、`implementationBlocked=false`，外部合同、账号、许可、真实密钥和目标区流量可如实保持 `pending`，但 `productionTrafficAllowed=false` 且 promotion blocked，不得冒充已上线或生产 SLO。
     disposition:
       type: acceptance
       refs:
@@ -8845,7 +8845,7 @@ source_claims:
         - quality-release-observability.requirement.monorepo-shape
   - key: req-quality-release-observability-official-source-production-gates
     source_ref: docs/source-plan.md#quality-release-observability.requirement.official-source-production-gates
-    statement: "- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：后续实现逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态；推荐不得静默升级为已采购/已许可/已校准/已通过 POC。动态版本/价格/配额/条款在锁依赖、签合同、续费/扩容和 production gate 重取官方证据；每项生产源先通过真实性/可追溯、首发区质量/稳定性、合法可运营和安全降级硬门，再由 REQ qualified-lowest-tco-selection 在合格等价候选中选 12 个月 TCO 最低者。"
+    statement: "- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：当前机器交付必须逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并为 QWeather、Open-Meteo、高德路线、EOG VIIRS、Copernicus DEM、Gaia、CelesTrak、获批 FY-4 订单落盘和 S3 兼容对象层建立可执行生产 carrier、环境注入、校验/归一化、不可变落盘、失败降级与验收证据；同时保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态。`implementationStatus=passed` 只表示代码、配置、运行手册与 contract fixture 完成，不表示已采购、已许可、已注入真实密钥、已校准或已通过目标区 POC；外部激活未完成时生产流量和 promotion 必须 fail-closed。动态版本/价格/配额/条款在锁依赖、签合同、续费/扩容和 production gate 重取官方证据；每项生产源先通过真实性/可追溯、首发区质量/稳定性、合法可运营和安全降级硬门，再由 REQ qualified-lowest-tco-selection 在合格等价候选中选 12 个月 TCO 最低者。"
     disposition:
       type: claim
       refs:
@@ -18284,7 +18284,7 @@ outcomes:
           required_proof_surfaces:
             - implementation_structure
         - key: official-source-production-gates
-          statement: "- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：后续实现逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态；推荐不得静默升级为已采购/已许可/已校准/已通过 POC。动态版本/价格/配额/条款在锁依赖、签合同、续费/扩容和 production gate 重取官方证据；每项生产源先通过真实性/可追溯、首发区质量/稳定性、合法可运营和安全降级硬门，再由 REQ qualified-lowest-tco-selection 在合格等价候选中选 12 个月 TCO 最低者。"
+          statement: "- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：当前机器交付必须逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并为 QWeather、Open-Meteo、高德路线、EOG VIIRS、Copernicus DEM、Gaia、CelesTrak、获批 FY-4 订单落盘和 S3 兼容对象层建立可执行生产 carrier、环境注入、校验/归一化、不可变落盘、失败降级与验收证据；同时保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态。`implementationStatus=passed` 只表示代码、配置、运行手册与 contract fixture 完成，不表示已采购、已许可、已注入真实密钥、已校准或已通过目标区 POC；外部激活未完成时生产流量和 promotion 必须 fail-closed。动态版本/价格/配额/条款在锁依赖、签合同、续费/扩容和 production gate 重取官方证据；每项生产源先通过真实性/可追溯、首发区质量/稳定性、合法可运营和安全降级硬门，再由 REQ qualified-lowest-tco-selection 在合格等价候选中选 12 个月 TCO 最低者。"
           required_proof_surfaces:
             - implementation_structure
         - key: interaction-motion-contract
@@ -18554,9 +18554,9 @@ outcomes:
               criterion: |-
                 - **AC official-source-production-gates**
                   - Accepts: REQ official-source-production-gates, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ astronomy-geo-pipelines, OBL source-data-immutability, OBL provider-cost-and-quota-ledger
-                  - Given: 后续 Contract 准备绑定天气、高德、VIIRS、DEM、星表/卫星、推送和对象存储/CDN 的生产实现。
-                  - When: 按 S-RESEARCH 和当前官方页面执行依赖锁定、采购/许可、数据下载加工与 production readiness 审查。
-                  - Then: 每项均保留实际 provider/version/条款/价格/quota/SLA/归属/cache/派生/再分发/region/checksum/lineage、真实性/首发区稳定性/许可/降级硬门、同能力 12 个月 TCO、预算与对应 DEC/EXT/POC 证据；`recommended` 未被写成已采购，动态事实已重取，未合格项只降级或保持 pending，合格项中未选择更贵方案而无批准的增量价值说明。
+                  - Given: 官方资料调研已完成，生产数据 carrier 需在尚未签约、发放真实密钥或取得目标区 POC 时完成当前机器可实现部分。
+                  - When: 审查 production integration manifest、运行手册、环境隔离、运行时代码和 contract fixture。
+                  - Then: QWeather、Open-Meteo、高德路线 v5、EOG VIIRS、Copernicus DEM、Gaia DR3、CelesTrak OMM、获批 FY-4 订单落盘与 S3 兼容对象层均有实际 endpoint/auth/secret boundary/归一化或加工/缓存与调度/安全降级/lineage 方案；测试证明 JWT 与专属 host、商业 endpoint、驾车及公交响应、secret 脱敏、流式大小与 checksum 校验、暂存失败 abort、内容寻址不可变提交和外部未激活时无生产客户端；manifest/evidence 为 `researchStatus=completed`、`implementationStatus=passed`、`implementationBlocked=false`，外部合同、账号、许可、真实密钥和目标区流量可如实保持 `pending`，但 `productionTrafficAllowed=false` 且 promotion blocked，不得冒充已上线或生产 SLO。
               claims:
                 - requirement.official-source-production-gates
               observation: quality-release-observability.official-source-production-gates.passed

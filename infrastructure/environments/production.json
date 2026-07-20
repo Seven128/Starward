@@ -5,5 +5,14 @@
   "bucket": "secret-ref:starward-production-bucket",
   "encryptionKey": "secret-ref:starward-production-encryption-key",
   "oauthClient": "secret-ref:starward-production-oauth-client",
+  "dataSourceManifest": "config/data-sources/production-integration.json",
+  "providerSecrets": {
+    "qweather": "secret-ref:starward-production-qweather-jwt-bundle",
+    "openMeteo": "secret-ref:starward-production-open-meteo-api-key",
+    "amapWeb": "secret-ref:starward-production-amap-web-service-key",
+    "cdse": "secret-ref:starward-production-cdse-s3-bundle",
+    "objectStore": "secret-ref:starward-production-object-store-bundle"
+  },
+  "providerTraffic": "fail-closed-until-external-activation-confirmed",
   "notificationSink": "production"
 }
