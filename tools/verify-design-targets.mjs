@@ -77,7 +77,6 @@ const [
   opsAtlas,
   sourcePlan,
   design,
-  screenContracts,
 ] = await Promise.all([
   json("docs/design-targets/mobile-product-pages-v2/coverage-manifest.json"),
   json("docs/design-targets/ops-product-pages-v1/coverage-manifest.json"),
@@ -85,7 +84,6 @@ const [
   json("docs/design-targets/ops-controls-v2/implementation-contract.json"),
   read("docs/source-plan.md").then((buffer) => buffer.toString("utf8")),
   read("DESIGN.md").then((buffer) => buffer.toString("utf8")),
-  read("project_context/areas/main/screen-contracts.md").then((buffer) => buffer.toString("utf8")),
 ]);
 
 const mobilePageOutcomes = mobilePages.outcomes.map((outcome) => outcome.id);
@@ -139,13 +137,6 @@ requireCondition(
   opsControls.every((control) => control.ownershipVersion.unresolvedDecisions.length > 0),
   "ops_backend_authority_gap_missing",
 );
-
-for (const outcomeId of selectedOutcomeIds) {
-  requireCondition(screenContracts.includes(`## \`${outcomeId}\``), `screen_contract_surface_missing:${outcomeId}`);
-}
-for (const controlId of selectedControlIds) {
-  requireCondition(screenContracts.includes(`\`${controlId}\``), `screen_contract_control_missing:${controlId}`);
-}
 
 for (const targetId of [
   "target.mobile-product-pages-v2",

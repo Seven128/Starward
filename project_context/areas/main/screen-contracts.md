@@ -177,7 +177,7 @@
 
 ## Verification Contract
 
-- Authority integrity: `npm run design:targets:verify` must re-hash all copied target files, parse their manifests/contracts, prove 14 Surface Keys and 95 unique Control Keys, and match this registry.
+- Authority integrity: `npm run design:targets:verify` must re-hash all copied target files, parse their manifests/contracts, prove 14 Surface Keys and 95 unique Control Keys, and match the Source Plan plus `DESIGN.md` target registry. `make validate-context` and the Long-Task Authority Context snapshot separately protect this Screen Contract and its routing.
 - Semantic and state checks: project-owned unit/component/integration tests must observe the committed state and truthful failure/degradation path, not only rendered labels.
 - Visual checks: production route renders compare only against the relevant selected exact/constraint target and declared coverage; an implementation screenshot cannot become its own baseline.
 - Target-runtime checks: Android native runtime is required for current critical mobile paths. iOS implementation remains required, but macOS/Xcode/iOS Simulator and live iOS runtime checks are deferred and must be reported unverified; browser/Expo Web, Android, static structure, and historical results cannot prove iOS. Responsive desktop browser is the product runtime for owner operations.
