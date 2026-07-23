@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>今晚去观星 · 系统运营控制台设计源</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --display: Inter, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --body: Inter, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --mono: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --r: 8px;
+    }
+    * { box-sizing: border-box; }
+    html { font-size: 16px; }
+    body { margin: 0; min-width: 1180px; height: 100vh; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.5; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button, select, input[type="checkbox"] { min-height: 44px; }
+    button { border: 1px solid var(--border); border-radius: var(--r); background: var(--bg); padding: 0 14px; cursor: pointer; font-weight: 700; }
+    button:hover:not(:disabled) { background: var(--surface); border-color: var(--muted); }
+    button:disabled { cursor: not-allowed; color: var(--muted); background: var(--surface); }
+    button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); box-shadow: 0 4px 12px color-mix(in oklch, var(--fg) 14%, transparent); }
+    button.primary:hover:not(:disabled) { background: color-mix(in oklch, var(--fg) 88%, var(--bg)); }
+    button.danger { border-color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    input, select, textarea { width: 100%; min-height: 44px; border: 1px solid var(--border); border-radius: var(--r); background: var(--bg); padding: 10px 12px; }
+    input[readonly] { background: var(--surface); color: var(--muted); font-family: var(--mono); }
+    input[type="checkbox"] { width: 20px; min-height: 20px; accent-color: var(--fg); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .skip-link { position: fixed; left: 264px; top: -80px; z-index: 100; background: var(--fg); color: var(--bg); padding: 12px 16px; border-radius: var(--r); }
+    .skip-link:focus { top: 12px; }
+    .sidebar { position: fixed; inset: 0 auto 0 0; width: 248px; z-index: 20; background: var(--surface); border-right: 1px solid var(--border); padding: 24px 16px 16px; display: flex; flex-direction: column; }
+    .brand { padding: 0 8px 24px; border-bottom: 1px solid var(--border); }
+    .brand-name { font-family: var(--display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-sub { margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .sample-flag { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; border: 1px solid var(--border); border-radius: 999px; padding: 4px 8px; font: 700 10px/1 var(--mono); letter-spacing: .06em; }
+    .nav { display: flex; flex-direction: column; gap: 4px; padding-top: 20px; }
+    .nav-label { padding: 0 10px 8px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .nav button { position: relative; width: 100%; display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 8px; border-color: transparent; background: transparent; text-align: left; font-weight: 400; padding: 0 10px; }
+    .nav button .nav-index { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+    .nav button.active { background: var(--bg); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
+    .nav button .count { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+    .sidebar-foot { margin-top: auto; padding: 16px 8px 0; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+    .shell { margin-left: 248px; min-width: 932px; }
+    .topbar { position: fixed; z-index: 15; left: 248px; right: 0; top: 0; height: 72px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .title-wrap { min-width: 260px; }
+    h1 { margin: 0; font-family: var(--display); font-size: 20px; line-height: 1.2; letter-spacing: -0.02em; }
+    .top-subtitle { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .search { width: 284px; }
+    .state-select { width: 176px; }
+    .reviewer { display: flex; align-items: center; gap: 10px; padding-left: 10px; border-left: 1px solid var(--border); }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--fg); color: var(--bg); font-weight: 700; }
+    .reviewer small { display: block; color: var(--muted); }
+    .workspace { height: calc(100vh - 72px); margin-top: 72px; overflow-y: auto; overscroll-behavior: contain; padding: 24px 24px 64px; scroll-padding-top: 24px; }
+    .route-page { max-width: 1280px; margin: 0 auto; }
+    .route-page[hidden] { display: none; }
+    .decision { display: grid; grid-template-columns: 132px 1fr auto; gap: 16px; align-items: center; border: 1px solid var(--fg); border-radius: var(--r); padding: 16px; margin-bottom: 16px; background: var(--bg); }
+    .decision-label { font-weight: 700; }
+    .decision-label small { display: block; color: var(--muted); font-weight: 400; margin-top: 2px; }
+    .decision h2 { margin: 0 0 4px; font: 700 18px/1.25 var(--display); letter-spacing: -0.01em; }
+    .decision p { margin: 0; color: var(--muted); }
+    .status { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 9px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .status.strong { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+    .status.stale { border-style: dashed; }
+    .status.partial { border-style: double; }
+    .status.degraded { text-decoration: underline; text-underline-offset: 3px; }
+    .status.error { background: var(--fg); color: var(--bg); }
+    .panel { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 16px; overflow: hidden; }
+    .panel-head { min-height: 64px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); }
+    .panel-head h2, .panel-head h3 { margin: 0; font-family: var(--display); font-size: 15px; letter-spacing: -0.01em; }
+    .panel-head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 16px; }
+    .panel-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .subnav { max-width: 1280px; margin: 0 auto 16px; display: flex; gap: 8px; padding: 8px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); }
+    .subnav button[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+    .grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .split-wide { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(360px, .6fr); gap: 16px; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .field { min-width: 0; }
+    .field label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 700; }
+    .helper { color: var(--muted); font-size: 11px; margin-top: 5px; }
+    .error-text { color: var(--fg); font-weight: 700; text-decoration: underline; }
+    .subsection { padding: 14px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); }
+    .subsection h3, .subsection h4 { margin: 0 0 10px; font-size: 13px; }
+    .subsection p { margin: 0 0 8px; color: var(--muted); }
+    .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .metric { padding: 14px; border-top: 2px solid var(--fg); background: var(--surface); }
+    .metric .label { color: var(--muted); font-size: 12px; }
+    .metric .value { margin-top: 4px; font: 700 24px/1.1 var(--display); letter-spacing: -0.03em; }
+    .metric .delta { margin-top: 6px; font-size: 12px; }
+    .note { border-left: 3px solid var(--fg); padding: 10px 12px; background: var(--surface); }
+    .note strong { display: block; margin-bottom: 3px; }
+    .actions-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .actions-row .left, .actions-row .right { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); background: var(--surface); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+    tbody tr:hover { background: color-mix(in oklch, var(--surface) 66%, var(--bg)); }
+    tbody tr:last-child td { border-bottom: 0; }
+    td .secondary { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .cell-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cell-actions button { min-height: 34px; padding: 0 10px; font-size: 12px; }
+    .diff-old { text-decoration: line-through; color: var(--muted); }
+    .diff-new { font-weight: 700; }
+    .timeline { display: grid; gap: 0; }
+    .timeline-item { display: grid; grid-template-columns: 120px 20px 1fr; gap: 12px; min-height: 70px; }
+    .timeline-time { color: var(--muted); font-family: var(--mono); font-size: 11px; padding-top: 2px; }
+    .timeline-track { position: relative; }
+    .timeline-track::before { content: ""; position: absolute; left: 9px; top: 8px; bottom: -8px; border-left: 1px solid var(--border); }
+    .timeline-item:last-child .timeline-track::before { display: none; }
+    .timeline-track::after { content: ""; position: absolute; width: 9px; height: 9px; left: 5px; top: 4px; border: 2px solid var(--fg); border-radius: 50%; background: var(--bg); }
+    .timeline-item.blocked .timeline-track::after { border-radius: 2px; background: var(--fg); }
+    .timeline-content strong { display: block; }
+    .timeline-content p { margin: 3px 0 0; color: var(--muted); }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .compare-col { padding: 16px; min-width: 0; }
+    .compare-col + .compare-col { border-left: 1px solid var(--border); }
+    .compare-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 14px; }
+    .compare-result { font: 700 22px/1.2 var(--display); margin-bottom: 8px; }
+    .evidence-list { margin: 12px 0 0; padding-left: 18px; }
+    .evidence-list li { margin: 7px 0; }
+    .chart { height: 230px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); padding: 8px; color: var(--fg); }
+    .chart svg { width: 100%; height: 100%; display: block; }
+    .chart-grid { stroke: var(--border); stroke-width: 1; }
+    .chart-line { fill: none; stroke: currentColor; stroke-width: 3; vector-effect: non-scaling-stroke; }
+    .chart-area { fill: color-mix(in oklch, var(--fg) 7%, transparent); }
+    .chart-dot { fill: var(--accent); stroke: var(--bg); stroke-width: 3; }
+    .chart-label { fill: var(--muted); font: 10px var(--mono); }
+    .matrix { display: grid; grid-template-columns: 160px repeat(6, minmax(64px, 1fr)); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .matrix > div { min-height: 48px; display: flex; align-items: center; padding: 8px 10px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .matrix > div:nth-child(7n) { border-right: 0; }
+    .matrix .head { background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 700; }
+    .matrix .blocked { background: var(--fg); color: var(--bg); }
+    .queue-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(360px, .8fr); min-height: 520px; }
+    .queue-list { border-right: 1px solid var(--border); }
+    .queue-detail { padding: 16px; }
+    .privacy-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+    .privacy-row:last-child { border-bottom: 0; }
+    .privacy-row p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .share-shell { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 24px; align-items: start; }
+    .share-preview { border: 1px solid var(--border); border-radius: 24px; padding: 16px; background: var(--surface); }
+    .share-card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+    .share-card h3 { margin: 0 0 4px; font-size: 20px; }
+    .share-line { display: grid; grid-template-columns: 108px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .share-line span:first-child { color: var(--muted); }
+    .state-stage { max-width: 1280px; margin: 0 auto 16px; border: 1px solid var(--fg); border-radius: var(--r); background: var(--bg); padding: 16px; }
+    .state-stage[hidden] { display: none; }
+    .state-content { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .state-content h2 { margin: 0 0 4px; font-size: 16px; }
+    .state-content p { margin: 0; color: var(--muted); }
+    .skeletons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+    .skeleton { height: 48px; border-radius: var(--r); background: linear-gradient(90deg, var(--surface), var(--border), var(--surface)); background-size: 200% 100%; animation: loading 1.4s linear infinite; }
+    @keyframes loading { to { background-position: -200% 0; } }
+    .route-page.sim-disabled { opacity: .66; }
+    .notice { position: fixed; z-index: 40; right: 24px; bottom: 24px; width: min(420px, calc(100vw - 48px)); display: flex; gap: 12px; align-items: flex-start; background: var(--fg); color: var(--bg); border-radius: var(--r); padding: 14px; box-shadow: 0 16px 40px color-mix(in oklch, var(--fg) 22%, transparent); }
+    .notice[hidden] { display: none; }
+    .notice p { margin: 0; flex: 1; }
+    .notice button { min-width: 44px; min-height: 44px; padding: 0; background: var(--fg); color: var(--bg); border-color: var(--muted); }
+    dialog { width: min(620px, calc(100vw - 48px)); border: 1px solid var(--fg); border-radius: var(--r); padding: 0; color: var(--fg); background: var(--bg); box-shadow: 0 24px 80px color-mix(in oklch, var(--fg) 28%, transparent); }
+    dialog::backdrop { background: color-mix(in oklch, var(--fg) 48%, transparent); }
+    .dialog-head { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+    .dialog-head h2 { margin: 0; font-size: 18px; }
+    .dialog-head p { margin: 4px 0 0; color: var(--muted); }
+    .dialog-body { padding: 20px; }
+    .dialog-actions { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+    .impact-list { margin: 0; padding-left: 20px; }
+    .impact-list li { margin: 8px 0; }
+    [hidden] { display: none !important; }
+    @media (max-width: 1250px) {
+      .search { width: 220px; }
+      .split-wide, .queue-layout { grid-template-columns: 1fr; }
+      .queue-list { border-right: 0; border-bottom: 1px solid var(--border); }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#workspace" data-outcome="admin-data-operations" data-control="workspace-navigation">跳到工作区</a>
+
+  <aside class="sidebar" data-od-id="sidebar">
+    <div class="brand" data-od-id="brand-wordmark">
+      <div class="brand-name">今晚去观星 / Starward</div>
+      <div class="brand-sub">系统运营控制台 · 上游设计资源</div>
+      <span class="sample-flag">DESIGN SAMPLE · 非生产</span>
+    </div>
+    <nav class="nav" aria-label="控制台工作区" data-od-id="primary-navigation">
+      <div class="nav-label">工作区</div>
+      <button class="active" type="button" data-route="data-operations" data-outcome="admin-data-operations" data-control="workspace-navigation" data-od-id="nav-data-operations" aria-current="page"><span class="nav-index">01</span><span>数据运营</span><span class="count">4</span></button>
+      <button type="button" data-route="moderation" data-outcome="admin-data-operations" data-control="workspace-navigation" data-od-id="nav-moderation"><span class="nav-index">02</span><span>内容审核</span><span class="count">1</span></button>
+      <button type="button" data-route="recommendation" data-outcome="admin-data-operations" data-control="workspace-navigation" data-od-id="nav-recommendation"><span class="nav-index">03</span><span>推荐规则</span><span class="count">2</span></button>
+      <button type="button" data-route="release-quality" data-outcome="quality-release-observability" data-control="workspace-navigation" data-od-id="nav-release-quality"><span class="nav-index">04</span><span>发布质量</span><span class="count">3</span></button>
+      <button type="button" data-route="recovery" data-outcome="quality-release-observability" data-control="workspace-navigation" data-od-id="nav-recovery"><span class="nav-index">05</span><span>恢复演练</span><span class="count">1</span></button>
+      <button type="button" data-route="metrics" data-outcome="quality-release-observability" data-control="workspace-navigation" data-od-id="nav-metrics"><span class="nav-index">06</span><span>产品指标</span><span class="count">1</span></button>
+      <button type="button" data-route="share" data-outcome="quality-release-observability" data-control="workspace-navigation" data-od-id="nav-share"><span class="nav-index">07</span><span>分享投影</span><span class="count">轻量</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      <strong>数据边界</strong><br>
+      所有数值、供应方、审计 ID 与运行结果均为设计样例。
+    </div>
+  </aside>
+
+  <div class="shell">
+    <header class="topbar" data-od-id="topbar">
+      <div class="title-wrap">
+        <h1 id="page-title">数据运营</h1>
+        <div class="top-subtitle" id="page-subtitle">地点事实、来源健康、作业控制与访问审计</div>
+      </div>
+      <div class="top-actions">
+        <label class="sr-only" for="workspace-search">搜索设计样例</label>
+        <input class="search" id="workspace-search" type="search" placeholder="搜索地点、revision、审计 ID" data-global-control data-outcome="admin-data-operations" data-control="workspace-navigation">
+        <label class="sr-only" for="state-select">切换界面状态样例</label>
+        <select class="state-select" id="state-select" data-global-control data-outcome="admin-data-operations" data-control="state-simulator">
+          <option value="populated">正常 · populated</option>
+          <option value="loading">加载 · loading</option>
+          <option value="empty">首次空 · empty</option>
+          <option value="no-results">无结果 · no-results</option>
+          <option value="stale">过期 · stale</option>
+          <option value="partial">部分 · partial</option>
+          <option value="degraded">降级 · degraded</option>
+          <option value="error">错误 · error</option>
+          <option value="disabled">禁用 · disabled</option>
+          <option value="saving">保存中 · saving</option>
+          <option value="success">成功 · success</option>
+          <option value="edge">边界 · edge</option>
+        </select>
+        <div class="reviewer" aria-label="当前身份：设计审阅者，只读样例">
+          <div class="avatar" aria-hidden="true">审</div>
+          <div><strong>设计审阅者</strong><small>只读样例</small></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace" id="workspace" tabindex="-1" data-od-id="workspace">
+      <section class="state-stage" id="state-stage" aria-live="polite" hidden data-od-id="state-simulator"></section>
+
+      <section class="route-page" id="route-data-operations" data-route-page="data-operations" data-outcome="admin-data-operations" data-control="admin-spot-editor" data-od-id="data-operations-page">
+        <div class="decision" data-od-id="data-operations-decision">
+          <div class="decision-label">当前阻断<small>需人工判断</small></div>
+          <div><h2>revision 42 的坐标与临时实况来源冲突</h2><p>望京公园东门的长期事实偏移 84 m；不允许静默覆盖。先预览路线、时区与推荐影响。</p></div>
+          <span class="status strong">阻断 · 2 项冲突</span>
+        </div>
+
+        <section class="panel" data-outcome="admin-data-operations" data-control="admin-spot-editor" data-od-id="admin-spot-editor">
+          <div class="panel-head">
+            <div><h2>地点编辑器 · 望京公园东门</h2><p>长期事实、临时实况、来源许可与 revision 在同一决策面上</p></div>
+            <div class="panel-actions"><span class="status">草稿 revision 43</span><span class="status stale">来源待复核</span></div>
+          </div>
+          <div class="panel-body">
+            <div class="grid-3">
+              <div class="subsection">
+                <h3>长期事实</h3>
+                <div class="field"><label for="spot-name">地点名称</label><input id="spot-name" value="望京公园东门观测点" required data-validate data-outcome="admin-data-operations" data-control="admin-spot-editor" aria-describedby="spot-name-help"><div class="helper" id="spot-name-help">最长 80 字；留空后失焦才校验。</div></div>
+                <div class="field" style="margin-top:12px"><label for="spot-access">长期可达性</label><select id="spot-access" data-outcome="admin-data-operations" data-control="admin-spot-editor"><option>步行可达 · 夜间入口待确认</option><option>车辆可达</option><option>临时关闭</option></select></div>
+              </div>
+              <div class="subsection">
+                <h3>临时实况</h3>
+                <div class="field"><label for="live-window">有效窗口</label><input id="live-window" value="2026-07-22 20:00 — 23:30" class="mono" data-outcome="admin-data-operations" data-control="admin-spot-editor"></div>
+                <div class="field" style="margin-top:12px"><label for="live-state">现场状态</label><select id="live-state" data-outcome="admin-data-operations" data-control="admin-spot-editor"><option>partial · 东侧入口可用</option><option>fresh · 全部可用</option><option>error · 未能确认</option></select></div>
+              </div>
+              <div class="subsection">
+                <h3>坐标、时区与 revision</h3>
+                <div class="field-grid">
+                  <div class="field"><label for="spot-lat">纬度</label><input id="spot-lat" value="39.995820" class="mono" data-outcome="admin-data-operations" data-control="admin-spot-editor"></div>
+                  <div class="field"><label for="spot-lon">经度</label><input id="spot-lon" value="116.475310" class="mono" data-outcome="admin-data-operations" data-control="admin-spot-editor"></div>
+                  <div class="field"><label for="spot-zone">时区</label><select id="spot-zone" data-outcome="admin-data-operations" data-control="admin-spot-editor"><option>Asia/Shanghai · UTC+08</option></select></div>
+                  <div class="field"><label for="spot-revision">基于 revision</label><input id="spot-revision" value="42 · immutable" readonly data-outcome="admin-data-operations" data-control="admin-spot-editor"></div>
+                </div>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:16px">
+              <div class="subsection">
+                <h3>来源与许可</h3>
+                <table>
+                  <thead><tr><th scope="col">字段</th><th scope="col">来源版本</th><th scope="col">许可</th><th scope="col">状态</th></tr></thead>
+                  <tbody>
+                    <tr><td>坐标</td><td class="mono">MapSource-C · 18</td><td>内部编辑可用</td><td><span class="status">fresh</span></td></tr>
+                    <tr><td>入口实况</td><td class="mono">FieldNote · 07</td><td>24h 临时使用</td><td><span class="status partial">partial</span></td></tr>
+                    <tr><td>光污染等级</td><td class="mono">SkyLayer · 31</td><td>派生展示</td><td><span class="status stale">stale</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="subsection">
+                <h3>冲突与影响预览</h3>
+                <table>
+                  <thead><tr><th scope="col">字段</th><th scope="col">revision 42</th><th scope="col">草稿 43</th><th scope="col">影响</th></tr></thead>
+                  <tbody>
+                    <tr><td>经度</td><td class="mono diff-old">116.474328</td><td class="mono diff-new">116.475310</td><td>路线终点 +84 m</td></tr>
+                    <tr><td>夜间入口</td><td class="diff-old">北门</td><td class="diff-new">东门</td><td>预计到达 +6 min</td></tr>
+                    <tr><td>观测评分</td><td class="mono">74</td><td class="mono">71</td><td>候选排序 2 → 4</td></tr>
+                  </tbody>
+                </table>
+                <div class="note" style="margin-top:12px"><strong>冲突策略：保持 revision 42 生效</strong>草稿 43 只进入预览；合并前必须选择来源并写入审计理由。</div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <div class="left"><span class="mono">draft: spot-wj-east@43</span></div>
+              <div class="right">
+                <button type="button" data-action="save" data-outcome="admin-data-operations" data-control="admin-spot-editor" data-od-id="save-spot-draft">保存草稿</button>
+                <button type="button" class="primary" data-action="impact" data-title="提交地点 revision 43" data-confirm="REV-43" data-impact="7 条行程链接将重新计算；2 条推荐结果改变；revision 42 保留为恢复点。" data-recovery="可从 revision 42 一键恢复；审计记录保留差异与操作者。" data-outcome="admin-data-operations" data-control="admin-spot-editor" data-od-id="preview-spot-impact">预览影响并提交</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-outcome="admin-data-operations" data-control="data-source-dashboard" data-od-id="data-source-dashboard">
+          <div class="panel-head"><div><h2>数据源健康</h2><p>状态不是颜色：文本、边框语法与原因同时呈现</p></div><div class="panel-actions"><button type="button" data-action="clear-filters" data-outcome="admin-data-operations" data-control="data-source-dashboard">清除筛选</button></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">来源</th><th scope="col">状态 / 原因</th><th scope="col">延迟</th><th scope="col">成功率</th><th scope="col">缓存</th><th scope="col">许可</th><th scope="col">样例成本</th><th scope="col">最后成功</th></tr></thead>
+              <tbody>
+                <tr><td>SkyGrid-C1<span class="secondary">小时云量</span></td><td><span class="status">fresh · 正常</span></td><td class="mono">3m 12s</td><td class="mono">99.2%</td><td>命中 81%</td><td>派生可用</td><td class="mono">¥0.018/req</td><td class="mono">21:04:18</td></tr>
+                <tr><td>LightMap-L2<span class="secondary">光污染分层</span></td><td><span class="status stale">stale · 超过 6h</span></td><td class="mono">7h 08m</td><td class="mono">98.7%</td><td>命中 94%</td><td>仅内部</td><td class="mono">¥0.004/req</td><td class="mono">13:56:02</td></tr>
+                <tr><td>FieldNote-F7<span class="secondary">现场实况</span></td><td><span class="status partial">partial · 2/5 区域</span></td><td class="mono">18m 44s</td><td class="mono">91.4%</td><td>不缓存</td><td>24h 临时</td><td class="mono">¥0.000/req</td><td class="mono">20:48:07</td></tr>
+                <tr><td>RouteRisk-R4<span class="secondary">道路风险</span></td><td><span class="status degraded">degraded · 降级缓存</span></td><td class="mono">42m 10s</td><td class="mono">86.1%</td><td>陈旧回退</td><td>展示可用</td><td class="mono">¥0.011/req</td><td class="mono">20:20:51</td></tr>
+                <tr><td>Permit-P3<span class="secondary">地点许可</span></td><td><span class="status error">error · 授权拒绝</span></td><td class="mono">—</td><td class="mono">61.0%</td><td>禁止回退</td><td>待续期</td><td class="mono">¥0.000/req</td><td class="mono">18:02:11</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="grid-2">
+          <section class="panel" data-outcome="admin-data-operations" data-control="job-operations-console" data-od-id="job-operations-console">
+            <div class="panel-head"><div><h2>作业控制台</h2><p>重试、补数、暂停均返回幂等键与样例审计反馈</p></div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">作业</th><th scope="col">状态</th><th scope="col">幂等 / 审计</th><th scope="col">动作</th></tr></thead>
+                <tbody>
+                  <tr><td>cloud-hourly<span class="secondary mono">run-0722-2100</span></td><td><span class="status partial">partial · 38/42</span></td><td class="op-feedback mono">idem_7D2A · AUD-1842</td><td><div class="cell-actions"><button type="button" data-action="job-op" data-op="重试失败分片" data-outcome="admin-data-operations" data-control="job-operations-console">重试</button><button type="button" data-action="job-op" data-op="补数 20:00—21:00" data-outcome="admin-data-operations" data-control="job-operations-console">补数</button></div></td></tr>
+                  <tr><td>route-risk-refresh<span class="secondary mono">run-0722-2045</span></td><td><span class="status degraded">degraded · 缓存</span></td><td class="op-feedback mono">idem_09BE · AUD-1838</td><td><div class="cell-actions"><button type="button" class="danger" data-action="impact" data-title="暂停 route-risk-refresh" data-confirm="PAUSE ROUTE" data-impact="新路线风险停止刷新；现有缓存继续服务最多 60 分钟。" data-recovery="恢复作业后从最后成功游标继续；不会重复写入。" data-outcome="admin-data-operations" data-control="job-operations-console">预览并暂停</button></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel" data-outcome="admin-data-operations" data-control="admin-access-audit" data-od-id="admin-access-audit">
+            <div class="panel-head"><div><h2>访问与审计</h2><p>敏感字段默认不在普通日志中展开</p></div><span class="status">最小权限</span></div>
+            <div class="panel-body">
+              <table>
+                <thead><tr><th scope="col">角色</th><th scope="col">字段权限</th><th scope="col">敏感动作</th><th scope="col">会话</th></tr></thead>
+                <tbody>
+                  <tr><td>地点编辑者</td><td>地点事实 · 模糊坐标</td><td>revision 提交需复核</td><td class="mono">12m · MFA</td></tr>
+                  <tr><td>发布 owner</td><td>规则 diff · 门禁</td><td>提升 / 回滚</td><td class="mono">4m · hardware</td></tr>
+                  <tr><td>审计只读</td><td>脱敏日志</td><td>不可执行</td><td class="mono">28m · MFA</td></tr>
+                </tbody>
+              </table>
+              <div class="note" style="margin-top:12px"><strong>AUD-1842 · 21:06 · 样例</strong>operator role 已记录；secret、精确位置、轨迹与 EXIF 值均显示为 [REDACTED]。</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="route-page" id="route-moderation" data-route-page="moderation" data-outcome="admin-data-operations" data-control="moderation-queue" data-od-id="moderation-page" hidden>
+        <div class="decision">
+          <div class="decision-label">当前阻断<small>隐私优先</small></div>
+          <div><h2>3 项内容含可识别 EXIF 或坐标纠错</h2><p>先查看影响范围；批量操作在确认前不会改变队列，恢复边界为 moderation revision。</p></div>
+          <span class="status strong">待人工复核 · 3</span>
+        </div>
+        <section class="panel" data-outcome="admin-data-operations" data-control="moderation-queue" data-od-id="moderation-queue">
+          <div class="panel-head">
+            <div><h2>审核队列</h2><p>图片隐私、EXIF、纠错理由与可信度在同一审核上下文中</p></div>
+            <div class="panel-actions">
+              <button type="button" data-action="impact" data-title="批量应用 3 项审核决定" data-confirm="BATCH 3" data-impact="2 项批准脱敏发布；1 项退回纠错；原始提交保持只读。" data-recovery="生成 moderation revision MR-118；30 分钟内可恢复至 MR-117。" data-outcome="admin-data-operations" data-control="moderation-queue" data-od-id="batch-preview">预览批量影响</button>
+            </div>
+          </div>
+          <div class="queue-layout">
+            <div class="queue-list table-wrap">
+              <table>
+                <thead><tr><th scope="col"><span class="sr-only">选择</span></th><th scope="col">提交</th><th scope="col">隐私 / 纠错</th><th scope="col">可信度</th><th scope="col">状态</th></tr></thead>
+                <tbody>
+                  <tr><td><input type="checkbox" checked aria-label="选择 SUB-2048" data-outcome="admin-data-operations" data-control="moderation-queue"></td><td><strong>SUB-2048</strong><span class="secondary">松山湖观测点 · 图片 2</span></td><td>GPS EXIF 待移除<span class="secondary">精确坐标不展示</span></td><td class="mono">0.82</td><td><span class="status strong">阻断</span></td></tr>
+                  <tr><td><input type="checkbox" checked aria-label="选择 SUB-2049" data-outcome="admin-data-operations" data-control="moderation-queue"></td><td><strong>SUB-2049</strong><span class="secondary">海坨山停车区 · 纠错</span></td><td>入口位置 +126m<span class="secondary">需来源佐证</span></td><td class="mono">0.64</td><td><span class="status partial">复核</span></td></tr>
+                  <tr><td><input type="checkbox" checked aria-label="选择 SUB-2050" data-outcome="admin-data-operations" data-control="moderation-queue"></td><td><strong>SUB-2050</strong><span class="secondary">金山岭西台 · 图片 1</span></td><td>设备序列号待移除<span class="secondary">拍摄时间可保留</span></td><td class="mono">0.91</td><td><span class="status stale">待处理</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="queue-detail">
+              <h3 style="margin-top:0">SUB-2048 · 隐私与纠错</h3>
+              <p class="helper">仅展示字段类别与脱敏结果；普通审核日志不展开原始值。</p>
+              <div class="privacy-row"><div><strong>图片主体</strong><p>地平线与停车标识；未检测到人脸</p></div><span class="status">可预览</span></div>
+              <div class="privacy-row"><div><strong>GPS EXIF</strong><p>[REDACTED] · 精确位置仅隐私角色可见</p></div><span class="status strong">需移除</span></div>
+              <div class="privacy-row"><div><strong>设备信息</strong><p>型号可保留；序列号 [REDACTED]</p></div><span class="status partial">部分保留</span></div>
+              <div class="field" style="margin-top:16px"><label for="correction-reason">纠错与审核理由</label><textarea id="correction-reason" rows="3" required data-validate data-outcome="admin-data-operations" data-control="moderation-queue" aria-describedby="correction-help">移除 GPS 与序列号；保留拍摄时间用于实况窗口。</textarea><div class="helper" id="correction-help">理由进入审计；不写入原始敏感值。</div></div>
+              <div class="field" style="margin-top:12px"><label for="confidence">审核可信度</label><select id="confidence" data-outcome="admin-data-operations" data-control="moderation-queue"><option>高 · 有来源与隐私扫描佐证</option><option>中 · 需第二人复核</option><option>低 · 退回补充</option></select></div>
+              <div class="actions-row"><div class="left"><button type="button" data-action="save" data-outcome="admin-data-operations" data-control="moderation-queue">保存审核草稿</button></div><div class="right"><button type="button" class="primary" data-action="impact" data-title="批准 SUB-2048 的脱敏版本" data-confirm="APPROVE 2048" data-impact="公开版本移除 GPS 与序列号；原始提交继续受限保存。" data-recovery="恢复到 MR-117 将撤销公开版本，不删除审计链。" data-outcome="admin-data-operations" data-control="moderation-queue">预览后批准</button></div></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="route-page" id="route-recommendation" data-route-page="recommendation" data-outcome="admin-data-operations" data-control="recommendation-replay-console" data-od-id="recommendation-page" hidden>
+        <div class="decision">
+          <div class="decision-label">当前决策<small>同输入重放</small></div>
+          <div><h2>候选规则降低强风风险，但主地点发生变化</h2><p>不要用平均分替代解释：先核对地点、时段、偏好、目标与来源版本，再决定是否进入 owner-only。</p></div>
+          <span class="status partial">差异 · 4 项</span>
+        </div>
+        <section class="panel" data-outcome="admin-data-operations" data-control="recommendation-replay-console" data-od-id="recommendation-replay-console">
+          <div class="panel-head"><div><h2>推荐重放 · REPLAY-0722-18</h2><p>固定输入，并排比较当前规则与候选规则</p></div><button type="button" class="primary" data-action="replay" data-outcome="admin-data-operations" data-control="recommendation-replay-console">重新运行样例重放</button></div>
+          <div class="panel-body">
+            <div class="grid-4">
+              <div class="metric"><div class="label">地点输入</div><div class="delta">北京 · 海淀西北 40 km</div></div>
+              <div class="metric"><div class="label">时间输入</div><div class="delta mono">2026-07-22 · 21:00—01:00</div></div>
+              <div class="metric"><div class="label">偏好与目标</div><div class="delta">少步行 · 裸眼观测银河</div></div>
+              <div class="metric"><div class="label">来源版本</div><div class="delta mono">weather@31 · spot@42 · road@18</div></div>
+            </div>
+            <div class="compare" style="margin-top:16px">
+              <article class="compare-col">
+                <div class="compare-head"><strong>当前规则</strong><span class="status">ruleset 5.8</span></div>
+                <div class="compare-result">主地点 · 凤凰岭南线</div>
+                <p>结论：建议 21:40 后出发；预计到达 22:28。</p>
+                <ul class="evidence-list"><li>透明度 0.78；总云量 18%</li><li>路线步行 420 m；偏好匹配</li><li>阵风风险 8.6 m/s，接近阈值</li></ul>
+              </article>
+              <article class="compare-col">
+                <div class="compare-head"><strong>候选规则</strong><span class="status strong">ruleset 5.9-rc2</span></div>
+                <div class="compare-result">主地点 · 大觉寺西侧</div>
+                <p>结论：建议 22:10 后出发；预计到达 22:52。</p>
+                <ul class="evidence-list"><li>透明度 0.74；总云量 21%</li><li>路线步行 680 m；偏好略降</li><li>阵风风险 5.2 m/s，风险下降</li></ul>
+              </article>
+            </div>
+            <div class="table-wrap" style="margin-top:16px">
+              <table>
+                <thead><tr><th scope="col">差异</th><th scope="col">当前</th><th scope="col">候选</th><th scope="col">解释与风险</th></tr></thead>
+                <tbody>
+                  <tr><td>主地点</td><td>凤凰岭南线</td><td><strong>大觉寺西侧</strong></td><td>强风权重 +0.18；步行距离变长</td></tr>
+                  <tr><td>最佳窗口</td><td class="mono">22:00—00:40</td><td class="mono">22:25—00:55</td><td>候选更晚 25 min；月落后透明度更稳</td></tr>
+                  <tr><td>风险结论</td><td>阵风接近阈值</td><td>路段照明不足</td><td>风险类型转移，不代表风险消失</td></tr>
+                  <tr><td>备选地点</td><td>大觉寺西侧</td><td>凤凰岭南线</td><td>顺序互换；地点未被删除</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="note" style="margin-top:16px"><strong>解释性风险</strong>候选规则降低强风暴露，但对“少步行”偏好更不友好；需要 20 个固定场景重放后才能进入 owner-only。</div>
+          </div>
+        </section>
+
+        <section class="panel" data-outcome="admin-data-operations" data-control="rule-release-control" data-od-id="rule-release-control">
+          <div class="panel-head"><div><h2>规则发布控制 · ruleset 5.9-rc2</h2><p>草稿 → 预检 → owner-only → 观察 → 提升 / 回滚</p></div><span class="status strong" id="rule-gate-status">门禁未满足 · 2</span></div>
+          <div class="panel-body">
+            <div class="timeline">
+              <div class="timeline-item"><div class="timeline-time">已完成</div><div class="timeline-track"></div><div class="timeline-content"><strong>草稿</strong><p>差异说明、owner、恢复版本 5.8 已绑定。</p></div></div>
+              <div class="timeline-item blocked"><div class="timeline-time">阻断</div><div class="timeline-track"></div><div class="timeline-content"><strong>预检</strong><p id="rule-precheck-copy">长距离步行场景 2/20 未通过；数据许可检查待确认。</p></div></div>
+              <div class="timeline-item"><div class="timeline-time">未开始</div><div class="timeline-track"></div><div class="timeline-content"><strong>owner-only</strong><p>仅发布 owner 的样例会话可见，默认 60 分钟。</p></div></div>
+              <div class="timeline-item"><div class="timeline-time">未开始</div><div class="timeline-track"></div><div class="timeline-content"><strong>观察与提升</strong><p>未满足门禁时，“提升”保持禁用，不显示成功。</p></div></div>
+            </div>
+            <div class="actions-row">
+              <div class="left"><button type="button" data-action="precheck" data-outcome="admin-data-operations" data-control="rule-release-control">运行预检样例</button><button type="button" data-action="owner-only" data-outcome="admin-data-operations" data-control="rule-release-control">进入 owner-only 样例</button></div>
+              <div class="right"><button type="button" disabled data-outcome="admin-data-operations" data-control="rule-release-control" aria-describedby="rule-gate-status">提升到灰度</button><button type="button" class="danger" data-action="impact" data-title="回滚候选规则" data-confirm="ROLLBACK 5.9" data-impact="停止 owner-only 观察；所有样例输入恢复使用 ruleset 5.8。" data-recovery="候选差异、重放结果与观察记录继续保留。" data-outcome="admin-data-operations" data-control="rule-release-control">预览回滚</button></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="route-page" id="route-release-quality" data-route-page="release-quality" data-outcome="quality-release-observability" data-control="release-promotion-gate" data-od-id="release-quality-page" hidden>
+        <div class="decision">
+          <div class="decision-label">当前阻断<small>不可提升</small></div>
+          <div><h2>发布候选 R-2026.07.4 缺少恢复验证与许可确认</h2><p>技术错误率正常不代表质量门满足；先处理 2 个硬阻断，再进入 owner-only 观察。</p></div>
+          <span class="status strong">NO-GO · 2 blockers</span>
+        </div>
+        <div class="subnav" role="tablist" aria-label="发布质量子页面" data-od-id="release-quality-tabs">
+          <button type="button" role="tab" aria-selected="true" aria-controls="quality-view-gate" data-quality-tab="gate" data-outcome="quality-release-observability" data-control="release-promotion-gate">提升门</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="quality-view-observability" data-quality-tab="observability" data-outcome="quality-release-observability" data-control="technical-observability-dashboard">技术观测</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="quality-view-quality" data-quality-tab="quality" data-outcome="quality-release-observability" data-control="data-quality-dashboard">数据质量</button>
+        </div>
+        <section class="panel" id="quality-view-gate" role="tabpanel" tabindex="0" data-quality-view="gate" data-outcome="quality-release-observability" data-control="release-promotion-gate" data-od-id="release-promotion-gate">
+          <div class="panel-head"><div><h2>发布提升门 · R-2026.07.4</h2><p>草稿 → 预检 → owner-only → 观察 → 提升 / 回滚</p></div><span class="status strong">门禁未满足</span></div>
+          <div class="panel-body">
+            <div class="grid-4">
+              <div class="metric"><div class="label">草稿</div><div class="value">完成</div><div class="delta">owner 与差异说明已绑定</div></div>
+              <div class="metric"><div class="label">预检</div><div class="value">12 / 14</div><div class="delta">2 个硬阻断</div></div>
+              <div class="metric"><div class="label">owner-only</div><div class="value">未开始</div><div class="delta">需先清除硬阻断</div></div>
+              <div class="metric"><div class="label">恢复点</div><div class="value mono">R-2026.07.3</div><div class="delta">验证记录过期 26h</div></div>
+            </div>
+            <div class="table-wrap" style="margin-top:16px">
+              <table>
+                <thead><tr><th scope="col">门禁</th><th scope="col">状态</th><th scope="col">证据</th><th scope="col">owner / 下一步</th></tr></thead>
+                <tbody>
+                  <tr><td>恢复路径验证</td><td><span class="status strong">阻断</span></td><td>快照可读；应用验证记录过期</td><td>Release owner · 运行恢复样例</td></tr>
+                  <tr><td>来源许可确认</td><td><span class="status strong">阻断</span></td><td>Permit-P3 授权拒绝</td><td>Data steward · 更新许可或排除来源</td></tr>
+                  <tr><td>技术错误预算</td><td><span class="status">通过</span></td><td class="mono">0.31% / threshold 0.80%</td><td>观察窗口继续</td></tr>
+                  <tr><td>数据完整性</td><td><span class="status partial">部分</span></td><td>FieldNote 2/5 区域</td><td>允许 owner-only，不允许提升</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="actions-row"><div class="left"><button type="button" data-action="precheck" data-outcome="quality-release-observability" data-control="release-promotion-gate">重新运行预检样例</button><button type="button" data-action="owner-only" data-outcome="quality-release-observability" data-control="release-promotion-gate">准备 owner-only</button></div><div class="right"><button type="button" disabled data-outcome="quality-release-observability" data-control="release-promotion-gate">提升发布</button><button type="button" class="danger" data-action="impact" data-title="回滚发布候选 R-2026.07.4" data-confirm="ROLLBACK R-2026.07.4" data-impact="撤销候选表面；恢复上一个设计样例版本 R-2026.07.3。" data-recovery="保留发布证据与失败门禁；可从候选重新创建草稿。" data-outcome="quality-release-observability" data-control="release-promotion-gate">预览回滚</button></div></div>
+          </div>
+        </section>
+
+        <div>
+          <section class="panel" id="quality-view-observability" role="tabpanel" tabindex="0" data-quality-view="observability" data-outcome="quality-release-observability" data-control="technical-observability-dashboard" data-od-id="technical-observability-dashboard" hidden>
+            <div class="panel-head"><div><h2>技术观测</h2><p>候选样例会话 · 过去 90 分钟</p></div><button type="button" data-action="clear-filters" data-outcome="quality-release-observability" data-control="technical-observability-dashboard">重置筛选</button></div>
+            <div class="panel-body">
+              <div class="chart" role="img" aria-label="设计样例：过去九十分钟候选请求延迟折线，最后一个点为 218 毫秒">
+                <svg viewBox="0 0 640 220" preserveAspectRatio="none" aria-hidden="true">
+                  <line class="chart-grid" x1="50" y1="35" x2="620" y2="35"></line><line class="chart-grid" x1="50" y1="100" x2="620" y2="100"></line><line class="chart-grid" x1="50" y1="165" x2="620" y2="165"></line>
+                  <path class="chart-area" d="M50,166 L115,152 L180,160 L245,124 L310,132 L375,96 L440,110 L505,80 L570,92 L620,66 L620,190 L50,190 Z"></path>
+                  <path class="chart-line" d="M50,166 L115,152 L180,160 L245,124 L310,132 L375,96 L440,110 L505,80 L570,92 L620,66"></path>
+                  <circle class="chart-dot" cx="620" cy="66" r="6"></circle>
+                  <text class="chart-label" x="8" y="38">320ms</text><text class="chart-label" x="8" y="103">220ms</text><text class="chart-label" x="8" y="168">120ms</text><text class="chart-label" x="50" y="210">19:45</text><text class="chart-label" x="570" y="210">21:15</text>
+                </svg>
+              </div>
+              <table style="margin-top:12px"><thead><tr><th scope="col">信号</th><th scope="col">样例值</th><th scope="col">状态 / 下一步</th></tr></thead><tbody><tr><td>P95 延迟</td><td class="mono">218 ms</td><td>通过 · 继续观察</td></tr><tr><td>错误率</td><td class="mono">0.31%</td><td>通过 · 预算剩余 0.49 pp</td></tr><tr><td>降级回退</td><td class="mono">2.8%</td><td>partial · 检查 RouteRisk</td></tr></tbody></table>
+            </div>
+          </section>
+
+          <section class="panel" id="quality-view-quality" role="tabpanel" tabindex="0" data-quality-view="quality" data-outcome="quality-release-observability" data-control="data-quality-dashboard" data-od-id="data-quality-dashboard" hidden>
+            <div class="panel-head"><div><h2>数据质量</h2><p>完整性、新鲜度、许可与坐标漂移分开判断</p></div><button type="button" data-action="save" data-outcome="quality-release-observability" data-control="data-quality-dashboard">保存隔离草稿</button></div>
+            <div class="panel-body">
+              <table>
+                <thead><tr><th scope="col">数据集</th><th scope="col">完整性</th><th scope="col">新鲜度</th><th scope="col">许可</th><th scope="col">漂移</th></tr></thead>
+                <tbody>
+                  <tr><td>小时云量</td><td class="mono">99.1%</td><td>fresh</td><td>通过</td><td class="mono">—</td></tr>
+                  <tr><td>地点事实</td><td class="mono">97.6%</td><td>fresh</td><td>通过</td><td class="mono">P95 24m</td></tr>
+                  <tr><td>现场实况</td><td class="mono">40.0%</td><td>partial</td><td>24h 临时</td><td class="mono">P95 61m</td></tr>
+                  <tr><td>地点许可</td><td class="mono">88.2%</td><td>error</td><td><strong>阻断</strong></td><td class="mono">—</td></tr>
+                </tbody>
+              </table>
+              <div class="note" style="margin-top:12px"><strong>隔离建议</strong>将 Permit-P3 排除在候选发布外；这会减少 4 个地点，不等于质量达标。</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="route-page" id="route-recovery" data-route-page="recovery" data-outcome="quality-release-observability" data-control="backup-restore-exercise" data-od-id="recovery-page" hidden>
+        <div class="decision">
+          <div class="decision-label">演练结论<small>设计样例</small></div>
+          <div><h2>最近一次恢复演练在应用验证阶段失败</h2><p>快照可读不代表恢复完成；RPO 达标、RTO 超限，需沿失败路径重跑并保留证据。</p></div>
+          <span class="status strong">失败 · 不可签署</span>
+        </div>
+        <section class="panel" data-outcome="quality-release-observability" data-control="backup-restore-exercise" data-od-id="backup-restore-exercise">
+          <div class="panel-head"><div><h2>备份与恢复演练 · DRILL-2026-07-S2</h2><p>快照、目标、验证、记录与失败路径在同一页面</p></div><button type="button" class="primary" data-action="impact" data-title="开始隔离恢复演练样例" data-confirm="START DRILL" data-impact="创建隔离命名空间；读取快照 snap-0722-1800；不会连接生产环境。" data-recovery="随时取消并销毁隔离样例；保留演练日志与错误 ID。" data-outcome="quality-release-observability" data-control="backup-restore-exercise">预览并开始演练</button></div>
+          <div class="panel-body">
+            <div class="grid-4">
+              <div class="metric"><div class="label">目标 RPO</div><div class="value mono">≤ 30m</div><div class="delta">样例结果 18m · 通过</div></div>
+              <div class="metric"><div class="label">目标 RTO</div><div class="value mono">≤ 45m</div><div class="delta">样例结果 52m · 超限</div></div>
+              <div class="metric"><div class="label">恢复快照</div><div class="value mono">18:00</div><div class="delta">校验和可读 · 非完成声明</div></div>
+              <div class="metric"><div class="label">应用验证</div><div class="value">失败</div><div class="delta mono">ERR-DR-042 · 已脱敏</div></div>
+            </div>
+            <div class="split-wide" style="margin-top:16px">
+              <div class="subsection">
+                <h3>演练时间线</h3>
+                <div class="timeline">
+                  <div class="timeline-item"><div class="timeline-time">20:00</div><div class="timeline-track"></div><div class="timeline-content"><strong>锁定快照 snap-0722-1800</strong><p>校验和与对象清单可读；来源为设计样例。</p></div></div>
+                  <div class="timeline-item"><div class="timeline-time">20:08</div><div class="timeline-track"></div><div class="timeline-content"><strong>恢复数据层</strong><p>恢复 18,420 个地点 revision 与 31 个规则版本。</p></div></div>
+                  <div class="timeline-item"><div class="timeline-time">20:37</div><div class="timeline-track"></div><div class="timeline-content"><strong>运行一致性验证</strong><p>revision 引用与来源版本校验通过。</p></div></div>
+                  <div class="timeline-item blocked"><div class="timeline-time">20:52</div><div class="timeline-track"></div><div class="timeline-content"><strong>应用验证失败</strong><p>分享投影读取旧授权索引；RTO 超限 7 分钟。</p></div></div>
+                </div>
+              </div>
+              <div class="subsection">
+                <h3>失败路径与下一动作</h3>
+                <div class="note"><strong>ERR-DR-042 · 授权索引滞后</strong>不要标记“备份完成”或“恢复通过”。先重建隔离索引，再重跑只读分享用例。</div>
+                <table style="margin-top:12px"><thead><tr><th scope="col">验证</th><th scope="col">结果</th></tr></thead><tbody><tr><td>地点 revision 引用</td><td>通过</td></tr><tr><td>规则版本回放</td><td>通过</td></tr><tr><td>分享授权索引</td><td><strong>失败</strong></td></tr><tr><td>敏感字段脱敏</td><td>未执行</td></tr></tbody></table>
+                <div class="actions-row"><div class="left"><button type="button" data-action="job-op" data-op="重跑授权索引验证" data-outcome="quality-release-observability" data-control="backup-restore-exercise">重跑失败步骤</button></div><div class="right"><button type="button" class="danger" data-action="impact" data-title="取消隔离恢复演练" data-confirm="CANCEL DRILL" data-impact="停止当前隔离作业；未运行的验证项标记为取消。" data-recovery="演练记录与错误 ID 保留；可从失败步骤重新创建演练。" data-outcome="quality-release-observability" data-control="backup-restore-exercise">预览取消</button></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="route-page" id="route-metrics" data-route-page="metrics" data-outcome="quality-release-observability" data-control="product-metrics-dashboard" data-od-id="metrics-page" hidden>
+        <div class="decision">
+          <div class="decision-label">当前判断<small>样例趋势</small></div>
+          <div><h2>“看完建议后开始规划”的转化下降，主要集中在 partial 数据会话</h2><p>先分离数据状态与入口版本，再判断是否为产品变化；下列数值不代表真实运行。</p></div>
+          <span class="status partial">需分层 · 2 变量</span>
+        </div>
+        <section class="panel" data-outcome="quality-release-observability" data-control="product-metrics-dashboard" data-od-id="product-metrics-dashboard">
+          <div class="panel-head"><div><h2>产品指标 · 决策到出发链路</h2><p>设计样例数据 · 最近 14 天 · 排除内部会话</p></div><div class="panel-actions"><button type="button" data-action="clear-filters" data-outcome="quality-release-observability" data-control="product-metrics-dashboard">重置分层</button><button type="button" data-action="download-share" data-outcome="quality-release-observability" data-control="product-metrics-dashboard">下载样例 CSV</button></div></div>
+          <div class="panel-body">
+            <div class="grid-4">
+              <div class="metric"><div class="label">查看今晚建议</div><div class="value mono">8,240</div><div class="delta">设计样例会话</div></div>
+              <div class="metric"><div class="label">开始规划</div><div class="value mono">42.8%</div><div class="delta">较前一窗口 -3.4 pp</div></div>
+              <div class="metric"><div class="label">保存行程</div><div class="value mono">18.6%</div><div class="delta">partial 会话仅 9.2%</div></div>
+              <div class="metric"><div class="label">分享地点</div><div class="value mono">6.9%</div><div class="delta">授权完成率 96.1%</div></div>
+            </div>
+            <div class="grid-2" style="margin-top:16px">
+              <div>
+                <div class="chart" role="img" aria-label="设计样例：十四天内开始规划转化率从百分之四十六点二下降到百分之四十二点八">
+                  <svg viewBox="0 0 640 220" preserveAspectRatio="none" aria-hidden="true">
+                    <line class="chart-grid" x1="50" y1="35" x2="620" y2="35"></line><line class="chart-grid" x1="50" y1="100" x2="620" y2="100"></line><line class="chart-grid" x1="50" y1="165" x2="620" y2="165"></line>
+                    <path class="chart-area" d="M50,72 L94,78 L138,66 L182,84 L226,90 L270,100 L314,96 L358,118 L402,112 L446,126 L490,138 L534,132 L578,148 L620,142 L620,190 L50,190 Z"></path>
+                    <path class="chart-line" d="M50,72 L94,78 L138,66 L182,84 L226,90 L270,100 L314,96 L358,118 L402,112 L446,126 L490,138 L534,132 L578,148 L620,142"></path>
+                    <circle class="chart-dot" cx="620" cy="142" r="6"></circle>
+                    <text class="chart-label" x="8" y="38">48%</text><text class="chart-label" x="8" y="103">44%</text><text class="chart-label" x="8" y="168">40%</text><text class="chart-label" x="50" y="210">D-14</text><text class="chart-label" x="596" y="210">今天</text>
+                  </svg>
+                </div>
+                <p class="helper">趋势图编码“开始规划率”；蓝色终点仅标记当前样例窗口。</p>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th scope="col">数据状态</th><th scope="col">查看建议</th><th scope="col">开始规划</th><th scope="col">保存行程</th></tr></thead>
+                  <tbody>
+                    <tr><td>fresh</td><td class="mono">5,910</td><td class="mono">47.6%</td><td class="mono">21.4%</td></tr>
+                    <tr><td>stale</td><td class="mono">1,120</td><td class="mono">39.8%</td><td class="mono">15.1%</td></tr>
+                    <tr><td>partial</td><td class="mono">940</td><td class="mono">28.9%</td><td class="mono">9.2%</td></tr>
+                    <tr><td>degraded / error</td><td class="mono">270</td><td class="mono">18.1%</td><td class="mono">4.7%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="matrix" style="margin-top:16px" aria-label="样例漏斗矩阵">
+              <div class="head">步骤</div><div class="head">查看建议</div><div class="head">展开依据</div><div class="head">选地点</div><div class="head">看路线</div><div class="head">保存</div><div class="head">分享</div>
+              <div>全部会话</div><div class="mono">100%</div><div class="mono">62.4%</div><div class="mono">48.1%</div><div class="mono">42.8%</div><div class="mono">18.6%</div><div class="mono">6.9%</div>
+              <div>partial 会话</div><div class="mono">100%</div><div class="mono">71.3%</div><div class="mono">36.2%</div><div class="mono">28.9%</div><div class="mono">9.2%</div><div class="mono">3.1%</div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="route-page" id="route-share" data-route-page="share" data-outcome="quality-release-observability" data-control="share-projection" data-od-id="share-page" hidden>
+        <div class="decision">
+          <div class="decision-label">投影边界<small>轻量查看</small></div>
+          <div><h2>只承接行程 / 地点链接，不复制完整 App 专业能力</h2><p>查看、复制、下载与授权状态可用；不展示模型对比、专业预报矩阵、规则或后台操作。</p></div>
+          <span class="status">授权有效 · 样例</span>
+        </div>
+        <section class="panel" data-outcome="quality-release-observability" data-control="share-projection" data-od-id="share-projection">
+          <div class="panel-head"><div><h2>分享投影 · TRIP-SAMPLE-082</h2><p>设计样例链接 · 仅本地交互</p></div><span class="status">查看者 · 无编辑权限</span></div>
+          <div class="panel-body">
+            <div class="share-shell">
+              <div>
+                <div class="subsection">
+                  <h3>链接与授权</h3>
+                  <div class="field"><label for="share-link">分享链接</label><input id="share-link" readonly value="https://example.invalid/starward/trip/TRIP-SAMPLE-082" data-outcome="quality-release-observability" data-control="share-projection"></div>
+                  <div class="grid-3" style="margin-top:12px">
+                    <div class="metric"><div class="label">授权范围</div><div class="delta">地点 + 行程摘要</div></div>
+                    <div class="metric"><div class="label">有效期</div><div class="delta mono">2026-07-23 02:00</div></div>
+                    <div class="metric"><div class="label">下载</div><div class="delta">摘要文件 · 不含精确轨迹</div></div>
+                  </div>
+                  <div class="actions-row">
+                    <div class="left"><button type="button" data-action="view-share" data-outcome="quality-release-observability" data-control="share-projection">查看投影</button><button type="button" data-action="copy-share" data-outcome="quality-release-observability" data-control="share-projection">复制链接</button><button type="button" data-action="download-share" data-outcome="quality-release-observability" data-control="share-projection">下载摘要</button></div>
+                    <div class="right"><button type="button" class="danger" data-action="impact" data-title="撤销分享授权" data-confirm="REVOKE" data-impact="该样例链接立即进入 revoked；已下载的摘要无法远程收回。" data-recovery="可创建新链接，但不会恢复原链接 ID 或旧访问范围。" data-outcome="quality-release-observability" data-control="share-projection">预览撤销</button></div>
+                  </div>
+                </div>
+                <div class="note" style="margin-top:16px"><strong>不包含</strong>精确位置、完整轨迹、EXIF、后台 revision、模型来源矩阵、发布门禁或现场专业控制。</div>
+              </div>
+              <div class="share-preview" id="share-preview" tabindex="-1" aria-label="轻量分享投影预览">
+                <div class="share-card">
+                  <span class="sample-flag">共享行程 · 设计样例</span>
+                  <h3 style="margin-top:16px">今晚去大觉寺西侧</h3>
+                  <p style="color:var(--muted);margin-top:4px">建议 21:45 出发 · 最佳观测窗口 22:25—00:55</p>
+                  <div class="share-line"><span>地点</span><strong>大觉寺西侧 · 模糊位置</strong></div>
+                  <div class="share-line"><span>预计到达</span><strong class="mono">22:32</strong></div>
+                  <div class="share-line"><span>路线提醒</span><strong>末段照明不足 · 结伴</strong></div>
+                  <div class="share-line"><span>授权</span><strong>可查看与下载摘要</strong></div>
+                  <p class="helper" style="margin-top:16px">天气与路线存在不确定性；出发前重新确认。此卡片不是实时服务。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="notice" id="notice" role="status" aria-live="polite" hidden data-od-id="activity-notice">
+    <p id="notice-text"></p>
+    <button type="button" aria-label="关闭通知" data-action="dismiss-notice" data-outcome="admin-data-operations" data-control="state-simulator">关闭</button>
+  </div>
+
+  <dialog id="impact-dialog" aria-labelledby="impact-title" aria-describedby="impact-summary" data-od-id="impact-dialog">
+    <div class="dialog-head">
+      <div><h2 id="impact-title">影响预览</h2><p id="impact-summary">这是设计样例，不会连接真实服务。</p></div>
+      <button type="button" aria-label="关闭影响预览" data-action="close-dialog" data-outcome="admin-data-operations" data-control="change-safety-guard">关闭</button>
+    </div>
+    <div class="dialog-body">
+      <div id="impact-preview-stage">
+        <div class="note"><strong>先看影响，再进入确认</strong>以下范围来自设计样例；未执行任何真实变更。</div>
+        <ul class="impact-list" id="impact-list"></ul>
+        <div class="subsection" style="margin-top:16px"><h3>恢复边界</h3><p id="recovery-copy"></p></div>
+      </div>
+      <div id="impact-confirm-stage" hidden>
+        <div class="note"><strong>明确二次确认</strong>输入下方短语后才可继续；确认结果仍只是本地设计样例。</div>
+        <div class="field" style="margin-top:16px"><label for="confirm-input">输入 <span class="mono" id="confirm-phrase"></span></label><input id="confirm-input" autocomplete="off" data-outcome="admin-data-operations" data-control="change-safety-guard" aria-describedby="confirm-help"><div class="helper" id="confirm-help">输入必须完全一致。</div></div>
+      </div>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" data-action="close-dialog" data-outcome="admin-data-operations" data-control="change-safety-guard">取消</button>
+      <button type="button" class="primary" id="impact-next" data-action="impact-next" data-outcome="admin-data-operations" data-control="change-safety-guard">继续确认</button>
+      <button type="button" class="primary" id="impact-confirm" data-action="impact-confirm" data-outcome="admin-data-operations" data-control="change-safety-guard" disabled hidden>确认设计样例</button>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      'use strict';
+      var routes = {
+        'data-operations': { title: '数据运营', subtitle: '地点事实、来源健康、作业控制与访问审计', outcome: 'admin-data-operations' },
+        'moderation': { title: '内容审核', subtitle: '图片 / EXIF 隐私、纠错、可信度与批量护栏', outcome: 'admin-data-operations' },
+        'recommendation': { title: '推荐规则', subtitle: '同输入重放、解释性差异与受控规则发布', outcome: 'admin-data-operations' },
+        'release-quality': { title: '发布质量', subtitle: '提升门、技术观测与数据质量证据', outcome: 'quality-release-observability' },
+        'recovery': { title: '恢复演练', subtitle: 'RPO / RTO、快照、验证、记录与失败路径', outcome: 'quality-release-observability' },
+        'metrics': { title: '产品指标', subtitle: '决策到出发链路的分层样例指标', outcome: 'quality-release-observability' },
+        'share': { title: '分享投影', subtitle: '行程 / 地点链接的轻量查看与授权边界', outcome: 'quality-release-observability' }
+      };
+      var activeRoute = 'data-operations';
+      var loadingTimer = null;
+      var retryCount = 0;
+      var impactContext = null;
+      var workspace = document.getElementById('workspace');
+      var stateStage = document.getElementById('state-stage');
+      var stateSelect = document.getElementById('state-select');
+      var notice = document.getElementById('notice');
+      var noticeText = document.getElementById('notice-text');
+      var dialog = document.getElementById('impact-dialog');
+      var confirmInput = document.getElementById('confirm-input');
+      var confirmButton = document.getElementById('impact-confirm');
+
+      function activePage() {
+        return document.querySelector('[data-route-page="' + activeRoute + '"]');
+      }
+
+      function showNotice(message, outcome, control) {
+        noticeText.textContent = message;
+        notice.hidden = false;
+        var close = notice.querySelector('button');
+        close.dataset.outcome = outcome || routes[activeRoute].outcome;
+        close.dataset.control = control || 'state-simulator';
+      }
+
+      function setRoute(routeId) {
+        if (!routes[routeId]) return;
+        activeRoute = routeId;
+        document.querySelectorAll('[data-route-page]').forEach(function (page) {
+          page.hidden = page.dataset.routePage !== routeId;
+        });
+        document.querySelectorAll('[data-route]').forEach(function (button) {
+          var current = button.dataset.route === routeId;
+          button.classList.toggle('active', current);
+          if (current) button.setAttribute('aria-current', 'page');
+          else button.removeAttribute('aria-current');
+        });
+        document.getElementById('page-title').textContent = routes[routeId].title;
+        document.getElementById('page-subtitle').textContent = routes[routeId].subtitle;
+        document.querySelectorAll('[data-global-control]').forEach(function (control) {
+          control.dataset.outcome = routes[routeId].outcome;
+        });
+        stateSelect.value = 'populated';
+        renderState('populated');
+        workspace.scrollTop = 0;
+        workspace.focus({ preventScroll: true });
+      }
+
+      function restoreDisabledSimulation() {
+        document.querySelectorAll('[data-sim-disabled="true"]').forEach(function (control) {
+          control.disabled = false;
+          delete control.dataset.simDisabled;
+        });
+        document.querySelectorAll('.route-page').forEach(function (page) { page.classList.remove('sim-disabled'); });
+      }
+
+      function stateMarkup(state) {
+        var outcome = routes[activeRoute].outcome;
+        var commonStart = '<div class="state-content"><div>';
+        var map = {
+          empty: ['首次使用 · empty', '尚未创建任何样例配置。创建第一份草稿后，这里会显示证据与恢复点。', '创建样例草稿'],
+          'no-results': ['没有匹配结果 · no-results', '“@@@”没有匹配地点、revision 或审计 ID。可清除查询或检查特殊字符。', '清除查询'],
+          stale: ['数据已过期 · stale', '最后成功时间已超过新鲜度阈值。当前内容保留，但所有决定必须标记过期来源。', '查看来源健康'],
+          partial: ['数据不完整 · partial', '仅返回部分区域或字段；缺失项明确标注，禁止把 partial 呈现为完整成功。', '查看缺失范围'],
+          degraded: ['服务降级 · degraded', '正在使用有时限的陈旧缓存；路线风险与许可类数据禁止无条件回退。', '检查回退策略'],
+          error: ['请求失败 · error', '网络不可达，用户输入与当前筛选已保留。可重试；连续 3 次失败后转人工支持。', '立即重试'],
+          disabled: ['操作已禁用 · disabled', '当前身份为只读设计审阅者，页面控件保留可见但不可执行。', '查看权限说明'],
+          saving: ['正在保存 · saving', '草稿写入样例 revision；重复提交已锁定。可保留当前页面继续检查。', '取消样例保存'],
+          success: ['样例结果已生成 · success', '本地状态已更新；下一恢复动作是回到上一 revision。未执行任何生产操作。', '查看恢复点'],
+          edge: ['边界内容 · edge', '10,000+ 行、200 字地点名、缺失可选字段与混合 LTR/RTL 内容应保持表头、列与动作可读。', '查看边界规则']
+        };
+        if (state === 'loading') {
+          return commonStart + '<h2>正在加载 · loading</h2><p id="loading-copy">正在读取设计样例，15 秒后会提供取消与恢复提示。</p></div><button type="button" data-action="dismiss-state" data-outcome="' + outcome + '" data-control="state-simulator">取消加载</button></div><div class="skeletons" aria-hidden="true"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>';
+        }
+        var item = map[state];
+        if (!item) return '';
+        var action = state === 'error' ? 'retry-state' : 'dismiss-state';
+        return commonStart + '<h2>' + item[0] + '</h2><p>' + item[1] + '</p></div><button type="button" data-action="' + action + '" data-outcome="' + outcome + '" data-control="state-simulator">' + item[2] + '</button></div>';
+      }
+
+      function renderState(state) {
+        clearTimeout(loadingTimer);
+        restoreDisabledSimulation();
+        retryCount = state === 'error' ? retryCount : 0;
+        if (state === 'populated') {
+          stateStage.hidden = true;
+          stateStage.innerHTML = '';
+          return;
+        }
+        stateStage.hidden = false;
+        stateStage.setAttribute('role', state === 'error' ? 'alert' : 'status');
+        stateStage.innerHTML = stateMarkup(state);
+        if (state === 'disabled') {
+          activePage().classList.add('sim-disabled');
+          activePage().querySelectorAll('button, input, select, textarea').forEach(function (control) {
+            if (!control.disabled) {
+              control.disabled = true;
+              control.dataset.simDisabled = 'true';
+            }
+          });
+        }
+        if (state === 'loading') {
+          loadingTimer = setTimeout(function () {
+            var copy = document.getElementById('loading-copy');
+            if (copy) copy.textContent = '加载超过 15 秒。可取消、保留当前输入，或转为可重试错误；不会无限旋转。';
+            loadingTimer = setTimeout(function () {
+              stateSelect.value = 'error';
+              renderState('error');
+              showNotice('加载达到 60 秒，已停止动画并转为可重试错误。', routes[activeRoute].outcome, 'state-simulator');
+            }, 45000);
+          }, 15000);
+        }
+      }
+
+      function runSample(button, busyLabel, doneMessage) {
+        if (button.disabled) return;
+        var original = button.textContent;
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.textContent = busyLabel;
+        setTimeout(function () {
+          button.disabled = false;
+          button.removeAttribute('aria-busy');
+          button.textContent = original;
+          showNotice(doneMessage, button.dataset.outcome, button.dataset.control);
+        }, 900);
+      }
+
+      function openImpact(button) {
+        impactContext = {
+          outcome: button.dataset.outcome,
+          control: button.dataset.control,
+          title: button.dataset.title,
+          phrase: button.dataset.confirm,
+          impact: button.dataset.impact,
+          recovery: button.dataset.recovery
+        };
+        document.getElementById('impact-title').textContent = impactContext.title;
+        document.getElementById('impact-list').innerHTML = '<li>' + impactContext.impact + '</li><li>动作、操作者、理由与幂等键进入样例审计。</li><li>secret、精确位置、轨迹与 EXIF 原值不会写入普通日志。</li>';
+        document.getElementById('recovery-copy').textContent = impactContext.recovery;
+        document.getElementById('confirm-phrase').textContent = impactContext.phrase;
+        document.getElementById('impact-preview-stage').hidden = false;
+        document.getElementById('impact-confirm-stage').hidden = true;
+        document.getElementById('impact-next').hidden = false;
+        confirmButton.hidden = true;
+        confirmButton.disabled = true;
+        confirmInput.value = '';
+        dialog.querySelectorAll('button, input').forEach(function (control) {
+          control.dataset.outcome = impactContext.outcome;
+          control.dataset.control = impactContext.control;
+        });
+        dialog.showModal();
+      }
+
+      function validateField(field) {
+        var existing = document.getElementById(field.id + '-error');
+        if (field.required && !field.value.trim()) {
+          field.setAttribute('aria-invalid', 'true');
+          if (!existing) {
+            existing = document.createElement('div');
+            existing.id = field.id + '-error';
+            existing.className = 'helper error-text';
+            existing.setAttribute('role', 'alert');
+            existing.textContent = '此字段不能为空；输入内容后错误会立即移除。';
+            field.insertAdjacentElement('afterend', existing);
+            field.setAttribute('aria-describedby', ((field.getAttribute('aria-describedby') || '') + ' ' + existing.id).trim());
+          }
+        } else {
+          field.removeAttribute('aria-invalid');
+          if (existing) {
+            var describedBy = (field.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (id) { return id && id !== existing.id; });
+            if (describedBy.length) field.setAttribute('aria-describedby', describedBy.join(' '));
+            else field.removeAttribute('aria-describedby');
+            existing.remove();
+          }
+        }
+      }
+
+      document.querySelectorAll('[data-route]').forEach(function (button) {
+        button.addEventListener('click', function () { setRoute(button.dataset.route); });
+      });
+      document.querySelectorAll('[data-quality-tab]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          document.querySelectorAll('[data-quality-tab]').forEach(function (tab) {
+            tab.setAttribute('aria-selected', String(tab === button));
+          });
+          document.querySelectorAll('[data-quality-view]').forEach(function (view) {
+            view.hidden = view.dataset.qualityView !== button.dataset.qualityTab;
+          });
+          var target = document.querySelector('[data-quality-view="' + button.dataset.qualityTab + '"]');
+          if (target) target.focus({ preventScroll: true });
+        });
+      });
+
+      stateSelect.addEventListener('change', function () { renderState(stateSelect.value); });
+
+      document.addEventListener('blur', function (event) {
+        if (event.target.matches('[data-validate]')) validateField(event.target);
+      }, true);
+      document.addEventListener('input', function (event) {
+        if (event.target.matches('[data-validate][aria-invalid="true"]')) validateField(event.target);
+      });
+
+      confirmInput.addEventListener('input', function () {
+        confirmButton.disabled = !impactContext || confirmInput.value !== impactContext.phrase;
+      });
+
+      document.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-action]');
+        if (!button) return;
+        var action = button.dataset.action;
+        if (action === 'dismiss-notice') notice.hidden = true;
+        if (action === 'dismiss-state') { stateSelect.value = 'populated'; renderState('populated'); }
+        if (action === 'close-dialog') dialog.close();
+        if (action === 'save') runSample(button, '保存中…', '设计样例草稿已保存；可从上一 revision 恢复。');
+        if (action === 'impact') openImpact(button);
+        if (action === 'impact-next') {
+          document.getElementById('impact-preview-stage').hidden = true;
+          document.getElementById('impact-confirm-stage').hidden = false;
+          button.hidden = true;
+          confirmButton.hidden = false;
+          confirmInput.focus();
+        }
+        if (action === 'impact-confirm' && impactContext && confirmInput.value === impactContext.phrase) {
+          button.disabled = true;
+          button.setAttribute('aria-busy', 'true');
+          button.textContent = '处理中…';
+          setTimeout(function () {
+            dialog.close();
+            showNotice('设计样例结果已生成；未连接真实服务。下一恢复动作：' + impactContext.recovery, impactContext.outcome, impactContext.control);
+            button.removeAttribute('aria-busy');
+            button.textContent = '确认设计样例';
+            impactContext = null;
+          }, 1000);
+        }
+        if (action === 'job-op') {
+          runSample(button, '提交中…', '已生成样例幂等请求与审计反馈；重复点击不会创建第二次写入。');
+          var feedback = button.closest('tr') && button.closest('tr').querySelector('.op-feedback');
+          if (feedback) feedback.textContent = 'idem_SAMPLE · AUD-PENDING';
+        }
+        if (action === 'replay') runSample(button, '重放中…', '同输入样例重放完成；差异仍需 owner 判断，未自动发布。');
+        if (action === 'precheck') {
+          runSample(button, '预检中…', '预检样例完成：仍有硬阻断，提升保持禁用。');
+          var copy = document.getElementById('rule-precheck-copy');
+          if (copy) copy.textContent = '长距离步行场景仍有 1/20 未通过；数据许可仍待确认。';
+        }
+        if (action === 'owner-only') runSample(button, '准备中…', 'owner-only 样例环境已准备；门禁未满足，未发生提升。');
+        if (action === 'clear-filters') runSample(button, '重置中…', '筛选已恢复为设计样例默认值。');
+        if (action === 'retry-state') {
+          retryCount += 1;
+          var attempt = retryCount;
+          var delay = attempt === 1 ? 0 : Math.pow(2, attempt - 1) * 1000;
+          button.disabled = true;
+          button.textContent = delay ? (delay / 1000) + ' 秒后重试…' : '正在重试…';
+          setTimeout(function () {
+            if (attempt >= 3) {
+              button.textContent = '联系支持 · 复制 ERR-SAMPLE-42';
+              button.dataset.action = 'dismiss-state';
+              showNotice('连续 3 次样例重试未恢复。错误 ID：ERR-SAMPLE-42；用户输入仍保留。', routes[activeRoute].outcome, 'state-simulator');
+            } else {
+              button.disabled = false;
+              button.textContent = '再次重试 · 上次刚刚';
+            }
+          }, Math.max(delay, 600));
+        }
+        if (action === 'view-share') {
+          document.getElementById('share-preview').focus({ preventScroll: false });
+          showNotice('已定位到轻量投影；不包含完整 App 专业功能。', button.dataset.outcome, button.dataset.control);
+        }
+        if (action === 'copy-share') {
+          var value = document.getElementById('share-link').value;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(value).then(function () {
+              showNotice('设计样例链接已复制。', button.dataset.outcome, button.dataset.control);
+            }).catch(function () {
+              showNotice('浏览器阻止复制；链接仍保留在输入框中，可手动复制。', button.dataset.outcome, button.dataset.control);
+            });
+          } else showNotice('当前环境不支持自动复制；请从输入框手动复制。', button.dataset.outcome, button.dataset.control);
+        }
+        if (action === 'download-share') {
+          var isMetrics = button.dataset.control === 'product-metrics-dashboard';
+          var body = isMetrics
+            ? 'data_state,viewed_advice,started_planning,saved_trip\\nfresh,5910,47.6%,21.4%\\nstale,1120,39.8%,15.1%\\npartial,940,28.9%,9.2%\\ndegraded_error,270,18.1%,4.7%\\n'
+            : '今晚去观星 / Starward\\n设计样例数据，非真实行程或运行记录。\\n地点：大觉寺西侧（模糊位置）\\n最佳观测窗口：22:25—00:55\\n';
+          var link = document.createElement('a');
+          link.href = URL.createObjectURL(new Blob([body], { type: isMetrics ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8' }));
+          link.download = isMetrics ? 'starward-product-metrics-design-sample.csv' : 'starward-design-sample.txt';
+          link.dataset.outcome = button.dataset.outcome;
+          link.dataset.control = button.dataset.control;
+          link.click();
+          URL.revokeObjectURL(link.href);
+          showNotice(isMetrics ? '产品指标样例 CSV 已生成下载；不代表真实运行。' : '设计样例摘要已生成下载；不含精确位置、轨迹或 EXIF。', button.dataset.outcome, button.dataset.control);
+        }
+      });
+
+      dialog.addEventListener('close', function () {
+        confirmInput.value = '';
+        confirmButton.disabled = true;
+      });
+    })();
+  </script>
+</body>
+</html>

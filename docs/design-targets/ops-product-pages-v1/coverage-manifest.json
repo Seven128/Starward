@@ -1,0 +1,232 @@
+{
+  "manifestVersion": "1.0.0",
+  "artifact": {
+    "name": "Starward 系统运营控制台设计源",
+    "entry": "index.html",
+    "viewport": "1440px desktop",
+    "implementation": "self-contained HTML; no build step",
+    "sampleOnly": true,
+    "productionActions": false,
+    "stableOutcomeCount": 2,
+    "stableControlCount": 12
+  },
+  "selectorContract": {
+    "outcomeAttribute": "data-outcome",
+    "controlAttribute": "data-control",
+    "rule": "Every rendered interactive control carries both attributes. Stable control IDs remain unchanged across routes and sample states."
+  },
+  "outcomes": [
+    {
+      "id": "admin-data-operations",
+      "label": "后台数据运营",
+      "intent": "Safely inspect, edit, moderate, replay, operate jobs, and audit administrative data workflows.",
+      "stableControls": [
+        "admin-spot-editor",
+        "moderation-queue",
+        "data-source-dashboard",
+        "job-operations-console",
+        "recommendation-replay-console",
+        "rule-release-control",
+        "admin-access-audit"
+      ]
+    },
+    {
+      "id": "quality-release-observability",
+      "label": "质量、发布与可观测性",
+      "intent": "Gate releases, inspect technical and data quality, rehearse recovery, and understand product outcomes without claiming production truth.",
+      "stableControls": [
+        "release-promotion-gate",
+        "technical-observability-dashboard",
+        "data-quality-dashboard",
+        "backup-restore-exercise",
+        "product-metrics-dashboard"
+      ]
+    }
+  ],
+  "stableControls": [
+    {
+      "id": "admin-spot-editor",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": ["populated", "conflict", "disabled", "saving", "success", "error", "edge"],
+      "interactions": ["edit-spot-draft", "save-draft", "preview-impact", "typed-confirmation", "restore-revision"]
+    },
+    {
+      "id": "moderation-queue",
+      "outcome": "admin-data-operations",
+      "route": "moderation",
+      "states": ["loading", "empty", "no-results", "populated", "disabled", "saving", "success", "error", "edge"],
+      "interactions": ["select-queue-items", "inspect-exif-privacy", "record-correction", "set-confidence", "preview-batch-impact", "typed-confirmation", "restore-moderation-revision"]
+    },
+    {
+      "id": "data-source-dashboard",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": ["loading", "empty", "no-results", "fresh", "stale", "partial", "degraded", "error", "disabled", "edge"],
+      "interactions": ["inspect-source-health", "clear-filters", "inspect-license", "inspect-last-success"]
+    },
+    {
+      "id": "job-operations-console",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": ["loading", "empty", "populated", "partial", "degraded", "error", "disabled", "saving", "success"],
+      "interactions": ["retry-idempotently", "backfill-idempotently", "preview-pause-impact", "typed-confirmation", "inspect-audit-feedback"]
+    },
+    {
+      "id": "recommendation-replay-console",
+      "outcome": "admin-data-operations",
+      "route": "recommendation",
+      "states": ["loading", "empty", "populated", "partial", "error", "disabled", "saving", "success", "edge"],
+      "interactions": ["lock-replay-input", "compare-current-candidate", "inspect-conclusion-diff", "inspect-risk-diff", "run-replay"]
+    },
+    {
+      "id": "rule-release-control",
+      "outcome": "admin-data-operations",
+      "route": "recommendation",
+      "states": ["draft", "precheck-blocked", "owner-only", "observing", "promotion-disabled", "saving", "success", "error"],
+      "interactions": ["run-rule-precheck", "prepare-owner-only", "observe-rule", "promote-when-gates-pass", "preview-rollback", "typed-confirmation"]
+    },
+    {
+      "id": "admin-access-audit",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": ["loading", "empty", "no-results", "populated", "disabled", "error", "edge"],
+      "interactions": ["inspect-role-permissions", "inspect-sensitive-actions", "inspect-session", "inspect-redacted-audit-log"]
+    },
+    {
+      "id": "release-promotion-gate",
+      "outcome": "quality-release-observability",
+      "route": "release-quality",
+      "states": ["draft", "precheck-blocked", "owner-only", "observing", "promotion-disabled", "rollback-ready", "saving", "success", "error"],
+      "interactions": ["run-release-precheck", "prepare-owner-only", "observe-release", "promote-when-gates-pass", "preview-rollback", "typed-confirmation"]
+    },
+    {
+      "id": "technical-observability-dashboard",
+      "outcome": "quality-release-observability",
+      "route": "release-quality",
+      "states": ["loading", "empty", "no-results", "populated", "stale", "partial", "degraded", "error", "disabled", "edge"],
+      "interactions": ["inspect-latency-trend", "inspect-error-budget", "inspect-fallback-rate", "clear-filters"]
+    },
+    {
+      "id": "data-quality-dashboard",
+      "outcome": "quality-release-observability",
+      "route": "release-quality",
+      "states": ["loading", "empty", "no-results", "populated", "stale", "partial", "degraded", "error", "disabled", "saving", "success", "edge"],
+      "interactions": ["inspect-completeness", "inspect-freshness", "inspect-license", "inspect-coordinate-drift", "save-quarantine-draft"]
+    },
+    {
+      "id": "backup-restore-exercise",
+      "outcome": "quality-release-observability",
+      "route": "recovery",
+      "states": ["loading", "empty", "populated", "failed-validation", "disabled", "saving", "success", "error", "edge"],
+      "interactions": ["inspect-rpo-rto", "inspect-snapshot", "inspect-validation", "inspect-drill-record", "retry-failed-step", "preview-start-drill", "preview-cancel-drill", "typed-confirmation"]
+    },
+    {
+      "id": "product-metrics-dashboard",
+      "outcome": "quality-release-observability",
+      "route": "metrics",
+      "states": ["loading", "empty", "no-results", "populated", "stale", "partial", "degraded", "error", "disabled", "edge"],
+      "interactions": ["inspect-decision-funnel", "segment-by-data-state", "reset-segmentation", "download-sample"]
+    }
+  ],
+  "routes": [
+    {
+      "id": "data-operations",
+      "label": "数据运营",
+      "outcomes": ["admin-data-operations"],
+      "controls": ["admin-spot-editor", "data-source-dashboard", "job-operations-console", "admin-access-audit"],
+      "states": ["populated", "loading", "empty", "no-results", "stale", "partial", "degraded", "error", "disabled", "saving", "success", "edge"],
+      "primaryInteraction": "Resolve a revision conflict through impact preview and typed confirmation."
+    },
+    {
+      "id": "moderation",
+      "label": "内容审核",
+      "outcomes": ["admin-data-operations"],
+      "controls": ["moderation-queue"],
+      "states": ["populated", "loading", "empty", "no-results", "error", "disabled", "saving", "success", "edge"],
+      "primaryInteraction": "Review privacy, correction, and confidence evidence before guarded batch confirmation."
+    },
+    {
+      "id": "recommendation",
+      "label": "推荐规则",
+      "outcomes": ["admin-data-operations"],
+      "controls": ["recommendation-replay-console", "rule-release-control"],
+      "states": ["populated", "loading", "empty", "partial", "error", "disabled", "saving", "success", "edge"],
+      "primaryInteraction": "Compare current and candidate conclusions under identical input, then enter a gated release flow."
+    },
+    {
+      "id": "release-quality",
+      "label": "发布质量",
+      "outcomes": ["quality-release-observability"],
+      "controls": ["release-promotion-gate", "technical-observability-dashboard", "data-quality-dashboard"],
+      "states": ["populated", "loading", "empty", "no-results", "stale", "partial", "degraded", "error", "disabled", "saving", "success", "edge"],
+      "primaryInteraction": "Resolve hard blockers using technical and data evidence before promotion can become available."
+    },
+    {
+      "id": "recovery",
+      "label": "恢复演练",
+      "outcomes": ["quality-release-observability"],
+      "controls": ["backup-restore-exercise"],
+      "states": ["populated", "loading", "empty", "failed-validation", "error", "disabled", "saving", "success", "edge"],
+      "primaryInteraction": "Trace a failed restore drill from RPO/RTO through the exact failed validation and recovery action."
+    },
+    {
+      "id": "metrics",
+      "label": "产品指标",
+      "outcomes": ["quality-release-observability"],
+      "controls": ["product-metrics-dashboard"],
+      "states": ["populated", "loading", "empty", "no-results", "stale", "partial", "degraded", "error", "disabled", "edge"],
+      "primaryInteraction": "Segment the decision-to-depart funnel by data state before attributing product change."
+    },
+    {
+      "id": "share",
+      "label": "分享投影",
+      "outcomes": ["quality-release-observability"],
+      "controls": ["share-projection"],
+      "states": ["populated", "loading", "empty", "error", "disabled", "saving", "success", "edge"],
+      "primaryInteraction": "View, copy, download, or revoke a lightweight trip/place link without exposing full-app capabilities."
+    }
+  ],
+  "sampleStates": [
+    {"id": "populated", "label": "正常", "requiredEvidence": "Decision, next action, evidence, and recovery context."},
+    {"id": "loading", "label": "加载", "requiredEvidence": "Layout-matched skeleton plus a 15-second long-wait fallback."},
+    {"id": "empty", "label": "首次空", "requiredEvidence": "Headline, explanation, and primary creation action."},
+    {"id": "no-results", "label": "无结果", "requiredEvidence": "Echoed query context and a clear-filter recovery action."},
+    {"id": "stale", "label": "过期", "requiredEvidence": "Last-success context, stale reason, and decision warning."},
+    {"id": "partial", "label": "部分", "requiredEvidence": "Returned scope, missing scope, and prohibited assumptions."},
+    {"id": "degraded", "label": "降级", "requiredEvidence": "Fallback source, time limit, and non-fallback categories."},
+    {"id": "error", "label": "错误", "requiredEvidence": "Cause, preserved input, retry behavior, and support path after three failures."},
+    {"id": "disabled", "label": "禁用", "requiredEvidence": "Visible reason and permission boundary."},
+    {"id": "saving", "label": "保存中", "requiredEvidence": "Busy state, duplicate-submit lock, and cancellation/recovery context."},
+    {"id": "success", "label": "成功", "requiredEvidence": "Explicit sample-only result and the next recovery action."},
+    {"id": "edge", "label": "边界", "requiredEvidence": "Long strings, large volume, missing optional fields, and mixed-direction content remain readable."}
+  ],
+  "guardedInteractions": [
+    {
+      "id": "typed-confirmation",
+      "sequence": ["preview impact", "show recovery boundary", "type exact phrase", "show saving state", "show sample-only result", "offer next recovery action"],
+      "appliesTo": ["location revision submit", "moderation batch approval", "job pause", "rule rollback", "release rollback", "restore drill start/cancel", "share authorization revoke"]
+    },
+    {
+      "id": "idempotent-job-operation",
+      "sequence": ["preserve current input", "issue sample idempotency key", "show pending audit ID", "prevent duplicate write", "show retry/recovery feedback"],
+      "appliesTo": ["retry", "backfill", "failed-step rerun"]
+    },
+    {
+      "id": "promotion-gate",
+      "sequence": ["draft", "precheck", "owner-only", "observe", "promote or rollback"],
+      "rule": "Promotion remains disabled while any hard gate is unmet; the UI must not present a false success."
+    }
+  ],
+  "auxiliaryControls": [
+    {"id": "workspace-navigation", "purpose": "Seven-route navigation and workspace search."},
+    {"id": "state-simulator", "purpose": "Switchable common state examples and retry behavior."},
+    {"id": "change-safety-guard", "purpose": "Shared impact-preview and typed-confirmation dialog."},
+    {"id": "share-projection", "purpose": "Non-stable lightweight projection surface outside the 12 administrative controls."}
+  ],
+  "privacyBoundary": {
+    "ordinaryLogsExclude": ["secret", "exact location", "trajectory", "raw EXIF"],
+    "sampleIdentifiersOnly": true,
+    "realProvidersNamed": false
+  }
+}

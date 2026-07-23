@@ -1,0 +1,79 @@
+{
+  "schema_version": "starward-native-acceptance-v1",
+  "app_id": "app.starward.mobile",
+  "shared_context_test_id": "decision-context-revision",
+  "outcomes": {
+    "mobile-shell-and-preferences": {
+      "route": "/onboarding-preferences",
+      "action_test_id": "shell-set-manual-location",
+      "evidence_test_ids": ["shell-location-label", "shell-location-source", "shell-guest-state"]
+    },
+    "forecast-and-astronomy": {
+      "route": "/forecast",
+      "action_test_id": "forecast-open-hourly",
+      "evidence_test_ids": ["forecast-hourly-cloud", "forecast-hourly-transparency", "forecast-hourly-seeing"]
+    },
+    "identity-profile-privacy": {
+      "route": "/me",
+      "action_test_id": "profile-login-and-merge",
+      "evidence_test_ids": ["profile-merge-preview", "profile-local-data-count", "profile-merge-result"]
+    },
+    "map-route-discovery": {
+      "route": "/map",
+      "action_test_id": "map-open-status",
+      "evidence_test_ids": ["map-location-context", "map-data-state", "map-provenance"]
+    },
+    "tonight-decision": {
+      "route": "/tonight",
+      "action_test_id": "tonight-refresh",
+      "evidence_test_ids": ["tonight-decision-summary", "tonight-observation-window", "tonight-data-provenance"],
+      "cross_surfaces": [
+        { "surface_ref": "map-decision-context", "route": "/map", "test_id": "decision-context-revision" },
+        { "surface_ref": "spot-decision-context", "route": "/spot/spot-a", "test_id": "decision-context-revision" },
+        { "surface_ref": "tonight-decision-context", "route": "/tonight", "test_id": "decision-context-revision" }
+      ]
+    },
+    "notifications-and-toolbox": {
+      "route": "/toolbox",
+      "action_test_id": "tools-create-pretrip-rule",
+      "evidence_test_ids": ["notification-rule-trigger", "notification-rule-channel", "notification-rule-preview"]
+    },
+    "field-offline-safety": {
+      "route": "/field",
+      "action_test_id": "field-verify-pack",
+      "evidence_test_ids": ["offline-pack-version", "offline-pack-checksum", "offline-pack-validity"]
+    },
+    "itinerary-and-collaboration": {
+      "route": "/trips",
+      "action_test_id": "plan-generate",
+      "evidence_test_ids": ["plan-observation-window", "plan-main-spot", "plan-safety-checklist"]
+    },
+    "community-contribution": {
+      "route": "/contribute",
+      "action_test_id": "community-submit-spot",
+      "evidence_test_ids": ["spot-location-precision", "spot-consent-scope", "spot-submission-status"],
+      "cross_surfaces": [
+        { "surface_ref": "itinerary-decision-context", "route": "/trips", "test_id": "decision-context-revision" },
+        { "surface_ref": "contribution-decision-context", "route": "/contribute", "test_id": "decision-context-revision" }
+      ]
+    },
+    "shooting-assistant": {
+      "route": "/shooting",
+      "action_test_id": "shooting-create-mobile-plan",
+      "evidence_test_ids": ["shooting-phone-model", "shooting-mobile-settings", "shooting-mobile-risk"],
+      "cross_surfaces": [
+        { "surface_ref": "sky-decision-context", "route": "/sky", "test_id": "decision-context-revision" },
+        { "surface_ref": "shooting-decision-context", "route": "/shooting", "test_id": "decision-context-revision" }
+      ]
+    },
+    "quality-release-observability": {
+      "route": "/me",
+      "action_test_id": "profile-open-build-info",
+      "evidence_test_ids": ["native-build-metadata", "native-capability-status", "release-context-revision"],
+      "cross_surfaces": [
+        { "surface_ref": "native-release-context", "route": "/me", "test_id": "release-context-revision" },
+        { "surface_ref": "owner-ops-release-context", "ops_route": "/release-quality", "test_id": "release-context-revision", "target_ref": "owner-operations-web" }
+      ]
+    }
+  }
+}

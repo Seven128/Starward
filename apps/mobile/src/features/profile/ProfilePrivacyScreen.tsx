@@ -2,34 +2,420 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
-import { createProfileClient, type ProfileCommand, type ProfileSnapshot } from "../../data/profile-client";
+import {
+  colors,
+  minimumTouchTarget,
+  radii,
+  spacing,
+  type as typeToken,
+} from "@starward/ui-system/tokens";
+import {
+  createProfileClient,
+  type ProfileCommand,
+  type ProfileSnapshot,
+} from "../../data/profile-client";
+import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
+import { STARWARD_RELEASE_CONTEXT } from "@starward/contracts/release-context";
 
-const palette = colors.planning; const client = createProfileClient();
-type ViewKey = "merge" | "sessions" | "content" | "export" | "deletion" | "sources" | "privacy";
-const actions: Array<{ key: ViewKey; command: ProfileCommand; id: string; label: string }> = [
-  { key: "merge", command: "merge-guest", id: "profile-login-and-merge", label: "登录与合并" }, { key: "sessions", command: "revoke-session", id: "profile-revoke-session", label: "登录设备" },
-  { key: "content", command: "inspect-content", id: "profile-save-equipment", label: "内容与设备" }, { key: "export", command: "request-export", id: "profile-request-export", label: "数据导出" },
-  { key: "deletion", command: "request-deletion", id: "profile-confirm-deletion", label: "账号注销" }, { key: "sources", command: "open-sources", id: "profile-open-sources", label: "帮助与来源" },
-  { key: "privacy", command: "restrict-location", id: "profile-change-location-privacy", label: "位置与隐私" },
+const palette = colors.planning;
+const client = createProfileClient({ baseUrl: resolveRuntimeApiBaseUrl() });
+type ViewKey =
+  | "merge"
+  | "sessions"
+  | "content"
+  | "export"
+  | "deletion"
+  | "sources"
+  | "privacy";
+const actions: Array<{
+  key: ViewKey;
+  command: ProfileCommand;
+  id: string;
+  label: string;
+}> = [
+  {
+    key: "merge",
+    command: "merge-guest",
+    id: "profile-login-and-merge",
+    label: "登录与合并",
+  },
+  {
+    key: "sessions",
+    command: "revoke-session",
+    id: "profile-revoke-session",
+    label: "登录设备",
+  },
+  {
+    key: "content",
+    command: "inspect-content",
+    id: "profile-save-equipment",
+    label: "内容与设备",
+  },
+  {
+    key: "export",
+    command: "request-export",
+    id: "profile-request-export",
+    label: "数据导出",
+  },
+  {
+    key: "deletion",
+    command: "request-deletion",
+    id: "profile-confirm-deletion",
+    label: "账号注销",
+  },
+  {
+    key: "sources",
+    command: "open-sources",
+    id: "profile-open-sources",
+    label: "帮助与来源",
+  },
+  {
+    key: "privacy",
+    command: "restrict-location",
+    id: "profile-change-location-privacy",
+    label: "位置与隐私",
+  },
 ];
-function Evidence({ testID, title, body, meta }: { testID: string; title: string; body: string; meta?: string }) { return <View testID={testID} style={styles.evidence}><Text style={styles.evidenceTitle}>{title}</Text><Text style={styles.evidenceBody}>{body}</Text>{meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}</View>; }
+function Evidence({
+  testID,
+  title,
+  body,
+  meta,
+}: {
+  testID: string;
+  title: string;
+  body: string;
+  meta?: string;
+}) {
+  return (
+    <View testID={testID} style={styles.evidence}>
+      <Text style={styles.evidenceTitle}>{title}</Text>
+      <Text style={styles.evidenceBody}>{body}</Text>
+      {meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}
+    </View>
+  );
+}
 function Panel({ active, data }: { active: ViewKey; data: ProfileSnapshot }) {
-  const other = data.sessions.find((item) => !item.current); const current = data.sessions.find((item) => item.current); const lens = data.content.equipment.find((item) => item.id === "lens-20");
-  if (active === "merge") return <View style={styles.panel}><Evidence testID="profile-merge-preview" title={`逐类合并完成 · ${data.merge.selectedCount} 类`} body={`${data.merge.conflictCount} 个冲突采用保留双副本；每项具有 revision 和幂等键`} /><Evidence testID="profile-local-data-count" title={`本机仍保留 ${data.localGuestData.total} 项`} body="偏好、收藏、行程草稿与未选实况仍在本机" meta="远端确认前不删除，失败可重试" /><Evidence testID="profile-merge-result" title="账号合并已确认" body={`${data.merge.idempotencyKeys.length} 个幂等操作已确认；恢复原受保护任务`} /></View>;
-  if (active === "sessions") return <View style={styles.panel}><Evidence testID="session-current-device" title={current?.label ?? "当前设备"} body="当前会话保留；响应与审计均不含令牌" /><Evidence testID="session-revoked-device" title={other?.label ?? "其他设备"} body={`最近活动 ${other?.lastActiveAt ?? "未知"}`} /><Evidence testID="session-revocation-result" title={other?.revokedAt ? "其他设备已撤销" : "撤销失败"} body="服务端令牌族已失效；当前设备保持登录" /></View>;
-  if (active === "content") return <View style={styles.panel}><Evidence testID="profile-observer-type" title={data.user.observerTypes.join(" + ")} body={`贡献：发布 ${data.content.contributions.published ?? 0} · 待审 ${data.content.contributions.pending ?? 0}；离线包 ${data.content.offlinePacks}`} /><Evidence testID="profile-equipment-list" title={data.content.equipment.map((item) => item.label).join(" · ")} body={`${lens?.label} 被 ${lens?.referencedByPlans} 个摄影方案引用，删除前必须预览影响，可归档`} /><Evidence testID="profile-preference-summary" title={`当前预设 · ${data.user.activePreset}`} body="偏好、设备和通知入口共享版本化账号配置" /></View>;
-  if (active === "export") return <View style={styles.panel}><Evidence testID="export-scope" title={`JSON v${data.exportJob?.schemaVersion} · ${data.exportJob?.included.length} 类数据`} body="账号、偏好、设备、收藏、行程、本人贡献、拍摄、通知与授权" meta={`排除 ${data.exportJob?.excluded.map((item) => item.category).join("、")}`} /><Evidence testID="export-verification" title="重新认证后生成" body="单次受保护下载；不含他人私有字段、第三方受限原始数据、精确分析轨迹或 EXIF" /><Evidence testID="export-expiry" title={`有效期至 ${data.exportJob?.expiresAt ?? "生成中"}`} body="过期后必须重新申请，下载进入脱敏审计" /></View>;
-  if (active === "deletion") return <View style={styles.panel}><Evidence testID="deletion-scope" title="注销影响已确认" body="全部会话与分享撤销；协作角色、公共贡献、离线包和待同步草稿逐项处理" /><Evidence testID="deletion-retention-exceptions" title="最小保留例外" body={`冷静期至 ${data.deletion?.coolingOffEndsAt}；主系统最晚 ${data.deletion?.primaryDeleteBy}；备份最晚 ${data.deletion?.backupExpiryBy}`} /><Evidence testID="deletion-completion-status" title="删除处理中" body={`服务端状态 ${data.deletion?.state}；未同步草稿与不可撤回公共影响保持可见`} /></View>;
-  if (active === "sources") return <View style={styles.panel}><Evidence testID="help-data-sources" title="数据来源与最后已知版本" body={data.sources.items.map((item) => `${item.category}：${item.source}`).join(" · ")} /><Evidence testID="help-licenses" title={`Starward ${data.sources.appBuild} · ${data.sources.registryVersion}`} body={data.sources.items.map((item) => `${item.version} / ${item.licenseState}`).join("；")} /><Evidence testID="help-safety-boundary" title="离线安全帮助" body="天气、道路与地点可能过期；现场条件与官方指引优先。反馈默认不附位置、日志或账号敏感字段。" /></View>;
-  return <View style={styles.panel}><Evidence testID="location-storage-precision" title={`位置历史：${data.privacy.locationHistoryState}`} body={`服务端返回 ${data.privacy.sharedCoordinate.precision} 坐标 ${data.privacy.sharedCoordinate.coordinate.lat}, ${data.privacy.sharedCoordinate.coordinate.lon}`} /><Evidence testID="location-analytics-scope" title="产品分析已关闭" body={`consent revision ${data.privacy.consentRevision}；事件仅保留 ${Object.keys(data.privacy.sanitizedAnalytics).join("、")}`} /><Evidence testID="location-sharing-default" title="默认不分享精确位置" body="分享、API 与导出均按接收者授权在服务端裁剪；UI 与 consent revision 同步" /></View>;
+  const other = data.sessions.find((item) => !item.current);
+  const current = data.sessions.find((item) => item.current);
+  const lens = data.content.equipment.find((item) => item.id === "lens-20");
+  if (active === "merge")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="profile-merge-preview"
+          title={`逐类合并完成 · ${data.merge.selectedCount} 类`}
+          body={`${data.merge.conflictCount} 个冲突采用保留双副本；每项具有 revision 和幂等键`}
+        />
+        <Evidence
+          testID="profile-local-data-count"
+          title={`本机仍保留 ${data.localGuestData.total} 项`}
+          body="偏好、收藏、行程草稿与未选实况仍在本机"
+          meta="远端确认前不删除，失败可重试"
+        />
+        <Evidence
+          testID="profile-merge-result"
+          title="账号合并已确认"
+          body={`${data.merge.idempotencyKeys.length} 个幂等操作已确认；恢复原受保护任务`}
+        />
+      </View>
+    );
+  if (active === "sessions")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="session-current-device"
+          title={current?.label ?? "当前设备"}
+          body="当前会话保留；响应与审计均不含令牌"
+        />
+        <Evidence
+          testID="session-revoked-device"
+          title={other?.label ?? "其他设备"}
+          body={`最近活动 ${other?.lastActiveAt ?? "未知"}`}
+        />
+        <Evidence
+          testID="session-revocation-result"
+          title={other?.revokedAt ? "其他设备已撤销" : "撤销失败"}
+          body="服务端令牌族已失效；当前设备保持登录"
+        />
+      </View>
+    );
+  if (active === "content")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="profile-observer-type"
+          title={data.user.observerTypes.join(" + ")}
+          body={`贡献：发布 ${data.content.contributions.published ?? 0} · 待审 ${data.content.contributions.pending ?? 0}；离线包 ${data.content.offlinePacks}`}
+        />
+        <Evidence
+          testID="profile-equipment-list"
+          title={data.content.equipment.map((item) => item.label).join(" · ")}
+          body={`${lens?.label} 被 ${lens?.referencedByPlans} 个摄影方案引用，删除前必须预览影响，可归档`}
+        />
+        <Evidence
+          testID="profile-preference-summary"
+          title={`当前预设 · ${data.user.activePreset}`}
+          body="偏好、设备和通知入口共享版本化账号配置"
+        />
+      </View>
+    );
+  if (active === "export")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="export-scope"
+          title={`JSON v${data.exportJob?.schemaVersion} · ${data.exportJob?.included.length} 类数据`}
+          body="账号、偏好、设备、收藏、行程、本人贡献、拍摄、通知与授权"
+          meta={`排除 ${data.exportJob?.excluded.map((item) => item.category).join("、")}`}
+        />
+        <Evidence
+          testID="export-verification"
+          title="重新认证后生成"
+          body="单次受保护下载；不含他人私有字段、第三方受限原始数据、精确分析轨迹或 EXIF"
+        />
+        <Evidence
+          testID="export-expiry"
+          title={`有效期至 ${data.exportJob?.expiresAt ?? "生成中"}`}
+          body="过期后必须重新申请，下载进入脱敏审计"
+        />
+      </View>
+    );
+  if (active === "deletion")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="deletion-scope"
+          title="注销影响已确认"
+          body="全部会话与分享撤销；协作角色、公共贡献、离线包和待同步草稿逐项处理"
+        />
+        <Evidence
+          testID="deletion-retention-exceptions"
+          title="最小保留例外"
+          body={`冷静期至 ${data.deletion?.coolingOffEndsAt}；主系统最晚 ${data.deletion?.primaryDeleteBy}；备份最晚 ${data.deletion?.backupExpiryBy}`}
+        />
+        <Evidence
+          testID="deletion-completion-status"
+          title="删除处理中"
+          body={`服务端状态 ${data.deletion?.state}；未同步草稿与不可撤回公共影响保持可见`}
+        />
+      </View>
+    );
+  if (active === "sources")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="help-data-sources"
+          title="数据来源与最后已知版本"
+          body={data.sources.items
+            .map((item) => `${item.category}：${item.source}`)
+            .join(" · ")}
+        />
+        <Evidence
+          testID="help-licenses"
+          title={`Starward ${data.sources.appBuild} · ${data.sources.registryVersion}`}
+          body={data.sources.items
+            .map((item) => `${item.version} / ${item.licenseState}`)
+            .join("；")}
+        />
+        <Evidence
+          testID="help-safety-boundary"
+          title="离线安全帮助"
+          body="天气、道路与地点可能过期；现场条件与官方指引优先。反馈默认不附位置、日志或账号敏感字段。"
+        />
+      </View>
+    );
+  return (
+    <View style={styles.panel}>
+      <Evidence
+        testID="location-storage-precision"
+        title={`位置历史：${data.privacy.locationHistoryState}`}
+        body={`服务端返回 ${data.privacy.sharedCoordinate.precision} 坐标 ${data.privacy.sharedCoordinate.coordinate.lat}, ${data.privacy.sharedCoordinate.coordinate.lon}`}
+      />
+      <Evidence
+        testID="location-analytics-scope"
+        title="产品分析已关闭"
+        body={`consent revision ${data.privacy.consentRevision}；事件仅保留 ${Object.keys(data.privacy.sanitizedAnalytics).join("、")}`}
+      />
+      <Evidence
+        testID="location-sharing-default"
+        title="默认不分享精确位置"
+        body="分享、API 与导出均按接收者授权在服务端裁剪；UI 与 consent revision 同步"
+      />
+    </View>
+  );
 }
 export function ProfilePrivacyScreen() {
-  const [active, setActive] = useState<ViewKey | null>(null); const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ["profile"], queryFn: ({ signal }) => client.get(signal) });
-  const mutation = useMutation({ mutationFn: ({ command }: { command: ProfileCommand }) => client.command(command), onSuccess: (data) => queryClient.setQueryData(["profile"], data) });
-  const run = (item: typeof actions[number]) => { setActive(item.key); mutation.mutate({ command: item.command }); };
+  const [active, setActive] = useState<ViewKey | null>(null);
+  const [buildInfoOpen, setBuildInfoOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: ["profile"],
+    queryFn: ({ signal }) => client.get(signal),
+  });
+  const mutation = useMutation({
+    mutationFn: ({ command }: { command: ProfileCommand }) =>
+      client.command(command),
+    onSuccess: (data) => queryClient.setQueryData(["profile"], data),
+  });
+  const run = (item: (typeof actions)[number]) => {
+    setActive(item.key);
+    mutation.mutate({ command: item.command });
+  };
   const data = mutation.data ?? query.data;
-  return <SafeAreaView testID="screen-identity-profile-privacy" style={styles.screen}><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>我的 · 服务端 revision {data?.revision ?? "—"}</Text><Text style={styles.title}>账号、内容、设备与隐私</Text><Text style={styles.subtitle}>游客可先查询；受保护操作按需登录。精确位置授权、会话、导出和注销状态由服务端执行。</Text><View style={styles.actions}>{actions.map((item) => <Pressable key={item.key} testID={item.id} accessibilityRole="button" onPress={() => run(item)} disabled={mutation.isPending} style={({ pressed }) => [styles.action, pressed && styles.pressed]}><Text style={styles.actionText}>{item.label}</Text></Pressable>)}</View>{query.isLoading ? <Text style={styles.subtitle}>正在读取账号边界…</Text> : null}{query.isError ? <Pressable onPress={() => query.refetch()} style={styles.retry}><Text>账号数据暂不可用，点按重试</Text></Pressable> : null}{active && data ? <Panel active={active} data={data} /> : null}{mutation.isError ? <Text style={styles.error}>操作未确认，本机数据和原状态保持不变。</Text> : null}</ScrollView></SafeAreaView>;
+  return (
+    <SafeAreaView
+      testID="screen-identity-profile-privacy"
+      style={styles.screen}
+    >
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.eyebrow}>
+          我的 · 服务端 revision {data?.revision ?? "—"}
+        </Text>
+        <Text style={styles.title}>账号、内容、设备与隐私</Text>
+        <Text style={styles.subtitle}>
+          游客可先查询；受保护操作按需登录。精确位置授权、会话、导出和注销状态由服务端执行。
+        </Text>
+        <Text
+          testID="release-context-revision"
+        accessibilityLabel={STARWARD_RELEASE_CONTEXT.revision}
+          style={styles.evidenceMeta}
+        >
+          {STARWARD_RELEASE_CONTEXT.revision}
+        </Text>
+        <View style={styles.actions}>
+          {actions.map((item) => (
+            <Pressable
+              key={item.key}
+              testID={item.id}
+              accessibilityRole="button"
+              onPress={() => run(item)}
+              disabled={mutation.isPending}
+              style={({ pressed }) => [
+                styles.action,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={styles.actionText}>{item.label}</Text>
+            </Pressable>
+          ))}
+          <Pressable
+            testID="profile-open-build-info"
+            accessibilityRole="button"
+            onPress={() => setBuildInfoOpen((open) => !open)}
+            style={({ pressed }) => [styles.action, pressed && styles.pressed]}
+          >
+            <Text style={styles.actionText}>构建与能力</Text>
+          </Pressable>
+        </View>
+        {buildInfoOpen ? (
+          <View style={styles.panel}>
+            <Evidence
+              testID="native-build-metadata"
+              title="内部构建 · 个人试用"
+              body={`profile ${STARWARD_RELEASE_CONTEXT.profile} · 外部服务成本上限 CNY ${STARWARD_RELEASE_CONTEXT.externalServicesBudgetCny}/月`}
+            />
+            <Evidence
+              testID="native-capability-status"
+              title="原生能力验证状态"
+              body={`Android：${STARWARD_RELEASE_CONTEXT.android}；iOS：${STARWARD_RELEASE_CONTEXT.ios}`}
+              meta="暂缓 iOS 运行时验证不等于删除 iOS 实现。"
+            />
+            <Evidence
+              testID="release-context-revision"
+              title="发布上下文版本"
+              body={STARWARD_RELEASE_CONTEXT.revision}
+            />
+          </View>
+        ) : null}
+        {query.isLoading ? (
+          <Text style={styles.subtitle}>正在读取账号边界…</Text>
+        ) : null}
+        {query.isError ? (
+          <Pressable onPress={() => query.refetch()} style={styles.retry}>
+            <Text>账号数据暂不可用，点按重试</Text>
+          </Pressable>
+        ) : null}
+        {active && data ? <Panel active={active} data={data} /> : null}
+        {mutation.isError ? (
+          <Text style={styles.error}>
+            操作未确认，本机数据和原状态保持不变。
+          </Text>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
-const styles = StyleSheet.create({ screen:{flex:1,backgroundColor:palette.canvas},content:{padding:spacing.x2,paddingBottom:48,gap:spacing.x2},eyebrow:{color:palette.primaryActive,fontSize:typeToken.label,fontWeight:"700"},title:{color:palette.text,fontSize:typeToken.title,lineHeight:32,fontWeight:"700"},subtitle:{color:palette.textSecondary,fontSize:typeToken.body,lineHeight:23},actions:{flexDirection:"row",flexWrap:"wrap",gap:spacing.x1},action:{minHeight:minimumTouchTarget,justifyContent:"center",paddingHorizontal:14,borderWidth:1,borderColor:palette.border,borderRadius:radii.pill,backgroundColor:palette.surface},actionText:{color:palette.text,fontSize:typeToken.label,fontWeight:"700"},pressed:{opacity:.7},panel:{gap:spacing.x1,padding:spacing.x2,borderWidth:1,borderColor:palette.border,borderRadius:radii.layer,backgroundColor:palette.surface},evidence:{minHeight:86,padding:12,borderRadius:radii.control,backgroundColor:palette.surfaceMuted},evidenceTitle:{color:palette.text,fontSize:typeToken.body,fontWeight:"700"},evidenceBody:{marginTop:5,color:palette.text,fontSize:typeToken.label,lineHeight:19},evidenceMeta:{marginTop:5,color:palette.textSecondary,fontSize:typeToken.caption,lineHeight:17},retry:{padding:14,backgroundColor:palette.surface,borderRadius:radii.control},error:{color:palette.danger,fontSize:typeToken.label} });
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: palette.canvas },
+  content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 },
+  eyebrow: {
+    color: palette.primaryActive,
+    fontSize: typeToken.label,
+    fontWeight: "700",
+  },
+  title: {
+    color: palette.text,
+    fontSize: typeToken.title,
+    lineHeight: 32,
+    fontWeight: "700",
+  },
+  subtitle: {
+    color: palette.textSecondary,
+    fontSize: typeToken.body,
+    lineHeight: 23,
+  },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
+  action: {
+    minHeight: minimumTouchTarget,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.pill,
+    backgroundColor: palette.surface,
+  },
+  actionText: {
+    color: palette.text,
+    fontSize: typeToken.label,
+    fontWeight: "700",
+  },
+  pressed: { opacity: 0.7 },
+  panel: {
+    gap: spacing.x1,
+    padding: spacing.x2,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.layer,
+    backgroundColor: palette.surface,
+  },
+  evidence: {
+    minHeight: 86,
+    padding: 12,
+    borderRadius: radii.control,
+    backgroundColor: palette.surfaceMuted,
+  },
+  evidenceTitle: {
+    color: palette.text,
+    fontSize: typeToken.body,
+    fontWeight: "700",
+  },
+  evidenceBody: {
+    marginTop: 5,
+    color: palette.text,
+    fontSize: typeToken.label,
+    lineHeight: 19,
+  },
+  evidenceMeta: {
+    marginTop: 5,
+    color: palette.textSecondary,
+    fontSize: typeToken.caption,
+    lineHeight: 17,
+  },
+  retry: {
+    padding: 14,
+    backgroundColor: palette.surface,
+    borderRadius: radii.control,
+  },
+  error: { color: palette.danger, fontSize: typeToken.label },
+});

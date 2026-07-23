@@ -1,3 +1,4 @@
+import "./src/shell/native-route-store";
 import { registerRootComponent } from "expo";
 import { WebApplication } from "./src/shell/WebApplication";
 

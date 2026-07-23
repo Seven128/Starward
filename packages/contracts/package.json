@@ -12,6 +12,7 @@
     "./map": "./src/map.ts",
     "./spot": "./src/spot.ts",
     "./sky": "./src/sky.ts",
+    "./release-context": "./src/release-context.ts",
     "./runtime/durable-business-runtime": "./src/runtime/durable-business-runtime.ts"
   }
 }

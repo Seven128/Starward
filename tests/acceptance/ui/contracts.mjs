@@ -5,19 +5,19 @@ const scenario = (action, evidence, text) => ({
 });
 
 export const outcomeRoutes = Object.freeze({
-  "admin-data-operations": "/admin/operations",
-  "community-contribution": "/community",
+  "admin-data-operations": "/data-operations",
+  "community-contribution": "/contribute",
   "field-offline-safety": "/field",
   "forecast-and-astronomy": "/forecast",
-  "identity-profile-privacy": "/profile",
-  "itinerary-and-collaboration": "/plans",
+  "identity-profile-privacy": "/me",
+  "itinerary-and-collaboration": "/trips",
   "map-route-discovery": "/map",
-  "mobile-shell-and-preferences": "/",
-  "notifications-and-toolbox": "/tools",
-  "quality-release-observability": "/admin/quality",
+  "mobile-shell-and-preferences": "/onboarding-preferences",
+  "notifications-and-toolbox": "/toolbox",
+  "quality-release-observability": "/release-quality",
   "shooting-assistant": "/shooting",
   "sky-orientation-ar": "/sky",
-  "spot-detail-and-trust": "/spots/current",
+  "spot-detail-and-trust": "/spot/spot-a",
   "tonight-decision": "/tonight",
 });
 

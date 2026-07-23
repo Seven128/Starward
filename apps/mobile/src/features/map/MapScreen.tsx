@@ -7,13 +7,16 @@ import type { ForecastLayerDescriptor } from "@starward/contracts/forecast";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
 import { createForecastClient } from "../../data/forecast-client";
 import { createMapClient } from "../../data/map-client";
+import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { useShellStore } from "../../state/shell-store";
 import { useMapSelectionStore } from "./map-selection-store";
 import { openNativeMapNavigation } from "../../native/map/native-map-gateway";
+import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 
 const palette = colors.planning;
-const mapClient = createMapClient();
-const forecastClient = createForecastClient();
+const runtimeApiBaseUrl = resolveRuntimeApiBaseUrl();
+const mapClient = createMapClient({ baseUrl: runtimeApiBaseUrl });
+const forecastClient = createForecastClient({ baseUrl: runtimeApiBaseUrl });
 type ViewKey = "status" | "filters" | "layer" | "selected" | "reorder" | "mode" | "degradation";
 
 const actionRows: Array<{ key: ViewKey; id: string; label: string }> = [
@@ -108,6 +111,7 @@ export function MapScreen() {
   return <SafeAreaView testID="screen-map-route-discovery" style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
     <Text style={styles.eyebrow}>地点与路线 · {location.label}</Text><Text style={styles.title}>观星地图</Text>
     <Text style={styles.subtitle}>WGS84 用于业务和距离；地图/路线供应商转换只发生在适配边界。开放 POI 仅作为未验证候选。</Text>
+    <DecisionContextRevision />
     <View accessibilityLabel="地点分布画布" style={styles.mapCanvas}>
       <Text style={styles.mapCount}>{spots.isLoading ? "正在加载当前范围…" : `当前范围 ${spots.data?.items.length ?? 0} 个候选`}</Text>
       <View style={styles.markerRow}>{(spots.data?.items.slice(0, 6) ?? []).map((spot, index) => <Pressable key={spot.id} accessibilityRole="button" accessibilityLabel={`${spot.name}，${spot.mapState}`} onPress={() => { setSelectedId(spot.id); selectSharedSpot(spot); setActive("selected"); }} style={[styles.marker, selected?.id === spot.id && styles.markerSelected]}><Text style={styles.markerText}>{index + 1}</Text><Text numberOfLines={1} style={styles.markerLabel}>{spot.name}</Text></Pressable>)}</View>

@@ -1,6 +1,6 @@
 ---
 name: context_uiux_design
-description: Use when the user explicitly asks for 设计稿, 重做设计, UI/UX 设计方案, UI 设计师, UX 设计师, 视觉设计方案, 视觉专家, 交互设计方案, 界面设计方案, 页面设计方案, 原型设计, 线框图方案, 视觉规范, 设计系统方案, DESIGN.md, Impeccable review, UX designer, UI designer, frontend redesign, visual polish, or design system spec in a Minimal Context Harness project. Do not trigger for ordinary UI implementation, CSS tweaks, bug fixes, or generic mentions of 设计, design, or user experience.
+description: Use when the user explicitly asks to establish, adopt or repair durable UI/UX Design Authority, DESIGN.md, design-system governance, visual standards, stable interaction/surface Context, Impeccable review, visual polish, frontend redesign, or when material production UI lacks sufficient or consistent Design Authority in a Minimal Context Harness project. For standalone generation of low/high-fidelity wireframes, visual candidates, a design prototype or Figma handoff, use design-resource-authoring instead; do not trigger this Skill solely for resource generation, routine implementation with sufficient authority, local CSS fixes, UI bugs, explicit throwaway prototypes or generic mentions of design.
 ---
 
 # Context UIUX Design
@@ -13,19 +13,33 @@ Project-specific UI/UX and visual design rules belong in a separate project-loca
 
 ## 目标
 
-帮助 agent 把界面、交互和视觉设计结论沉淀成可恢复的 Minimal Context 和 `DESIGN.md`。
+帮助 agent 在开发工作流中审查、采纳或修复设计权威，把已经选定的界面、交互和视觉结论沉淀成可恢复的 Minimal Context 和 `DESIGN.md`，并保持实现与验证对齐。
+
+## Design Context Depth / 设计上下文深度
+
+按需使用而不是默认加载全部层级：全局体验原则；跨 surface 的 Product Surface Contract；单屏 Screen Contract；可复用的 Control interaction Context；`DESIGN.md` 视觉系统/引用解释；项目原生 authored targets；verification Context。继续使用现有 `global`、`contract`、area/subdomain、`decision-rationale`、`verification` 和 `implementation-index` 角色，不新增笼统 `design` 或 `screen` 角色。
+
+一项事实只有一个主要 owner：跨页面职责属于 Surface Context，稳定的单屏层级/交互属于 Screen/interaction Context，视觉 token/rationale/reference interpretation 属于 `DESIGN.md`，具体构图属于 selected target，交付范围与证明属于现有 Delivery Contract/verification。使用稳定 surface/control/target key 连接，不复制成彼此竞争的说明。
+
+## External Design Resource Consumption / 外部设计资源消费
+
+- `design-resource-authoring` 可以按明确请求在上游动态委托 Open Design 产生 flow、低保真、候选方向、控件状态、交互原型或条件式 Figma handoff；它不复制 provider 的提示词/模板，也不把任何资源设为全局必选。
+- 本 Skill 不承担独立资源生产。只有进入默认开发流程或 Long-Task、需要采纳稳定结论时，本 Skill 才消费这些或其他外部设计 Source。
+- 候选、灵感和未选定输出不是 Context readiness 或实现权威，不能写入 selected registry；选定目标仍必须完成 UI Authority Closure 和 `Context Delta`。
+- 消费时核对产品 Source、Screen/Control Context、`DESIGN.md`、token owner、资源稳定身份及 exact-target 覆盖条件；只把长期稳定且无冲突的事实写入其唯一 owner，不要求统一 pack、目录或工具格式。
+- 设计资源生成本身不改 `project_context/**`、`DESIGN.md` 或 production code。下游采纳、实现与验证仍由当前 Workflow Contract 或 `long-task-workflow` 负责。
 
 ## 工作方式
 
 1. 先读取 `project_context/global.md` 和 `project_context/context.toml`，按 default area、triggers、read_when 选择相关 context。
-2. 如果项目存在 `DESIGN.md`，先读取它；如果用户要求视觉体系、设计稿或界面风格，按 Google `@google/design.md` 的 DESIGN.md 格式创建或更新根目录 `DESIGN.md`。
-3. 整理或生成：用户流程、页面/组件清单、关键状态、交互反馈、响应式边界、a11y 要求、视觉约束和设计 token。
+2. 如果项目存在 `DESIGN.md`，先读取其 Design Authority 状态、唯一 token 源/生成方向和设计引用。仅当当前开发工作流经 UI Authority Closure 判断长期视觉体系需要采纳或修复时，按 Google `@google/design.md` 的格式创建或更新根目录 `DESIGN.md`；独立资源生成阶段不写入。
+3. 读取已有外部设计资源或其他 selected Source，整理需要采纳的用户流程、页面/组件清单、关键状态、交互反馈、响应式边界、a11y、视觉约束、token 和 design reference registry。若当前请求只是生成资源，转到 `design-resource-authoring`；不要在本 Skill 内复制 provider 生成流程或建立强制交付格式。
 4. 涉及 Product Surface（Web 页面、移动/桌面屏幕、游戏 UI/HUD/菜单、CLI/TUI 输出、扩展或设备界面）、前端布局、UI/UX、产品模块边界或信息放置时，把产品/页面定位检查作为前置动作：用户在这个 surface 要完成的判断、产品必须提供的信息/动作/反馈、不应常驻的信息、主层/下钻/运维/诊断/详情归属、布局和信息密度是否匹配任务。多 surface、多平台或多模块归属不清时，先读取相关 Context、搜索入口并结合已有 UI 代码/截图做信息架构 sweep，必要时使用 `context_surface_contract` 做 Surface Contract Check，再收窄到具体视觉或交互实现。该检查是下一步变更分类的输入；只有形成长期 surface 职责、信息架构、交互契约或模块边界结论时才更新 Context 或 `DESIGN.md`。
    - 若存在 Product Surface Contract，读取并对齐 primary user question、main allows/forbids、drilldown ownership、long-task state 和 verification。
-   - 若缺失且本任务改变 durable surface responsibility，输出 `Surface Contract Delta: required`，把界面职责写入 `project_context/**`；视觉 token、颜色、字体、间距、圆角和视觉 rationale 仍写入 `DESIGN.md`。
+   - 若缺失且本任务改变 durable surface responsibility，将唯一 `Context Delta` 设为 `required`，把界面职责写入 `project_context/**`；视觉 token、颜色、字体、间距、圆角和视觉 rationale 仍写入 `DESIGN.md`。
 5. 涉及输入、选择、搜索、筛选、表单/配置、调度/时间窗口、预算/配额/限流或加载/空态/错误态等 UI 控件时，用“控件交互框架”检查控件语义、反馈状态、校验、错误预防、可供性和信息密度；这只是通用判断框架，不是固定控件处方。
-6. 界面职责、流程归属和长期交互契约以 `project_context/**` 为准；`DESIGN.md` 负责视觉 token 和视觉 rationale；代码、截图和搜索结果只说明当前实现状态。Context 决定“应该是什么”，代码和截图揭示“现在是什么”，代码不能静默重定义 Context。
-7. 设计判断或第一处实现编辑前，先给出唯一长期事实判断 `Context Delta: none|required`。若输入包含产品、架构、技术、界面或验收来源，在 agent 内部逐项判断 durable surface / IA / interaction / verification constraint 已被 Context / `DESIGN.md` 覆盖、需要先更新、仅属 task-local、显式 out-of-scope 或需要真实用户决策；不要创建 `plan.md`、Task Contract 文件或 Markdown 映射表。
+6. 界面职责、流程归属和长期交互契约以 `project_context/**` 为准；`DESIGN.md` 负责视觉 token、视觉 rationale、唯一 authored token source/generation direction 和设计引用解释；versioned authored targets 保留在项目原生路径，代码与生成截图只说明当前实现状态。Context 决定“应该是什么”，代码和实现截图揭示“现在是什么”，代码不能静默重定义 Context。
+7. 设计判断或第一处实现编辑前，执行 UI Authority Closure，并给出唯一长期事实判断 `Context Delta: none|required`。对 affected stable surface/control/target keys，在 agent 内部逐项判断 durable surface / IA / interaction / verification constraint 已被 Context / `DESIGN.md` 覆盖、需要先更新、仅属 task-local、显式 out-of-scope 或需要真实用户决策；不要创建 `plan.md`、Task Contract 文件或 Markdown 映射表。冲突的 controlling owners 必须修正 Source/Context/target 或保留 decision required，不能让当前实现或 YAML 静默决定。
 8. 普通 UI bug、局部样式或 CSS 修复、测试修复或探索性 spike 不更新 Context，可先改代码；一旦形成长期交互或视觉结论，继续对齐或交付前必须回写 Context 或 `DESIGN.md`。不要把 Context 机械补成代码改动摘要。
 9. 如果二者冲突，显式标记为实现漂移、缺失工作或 Context 过期。
 10. 如果涉及已有 UI，优先结合代码入口、运行截图或用户提供的参考图来描述差异。
@@ -45,6 +59,7 @@ Project-specific UI/UX and visual design rules belong in a separate project-loca
 - `Context Delta` 只能是 `none` 或 `required`。`required` 先更新 owning Context 或 `DESIGN.md`；`none` 按现有事实工作，不制造 Context 噪音。
 - Agent 内部计划应保持页面 / 组件任务、用户判断、主辅信息归属、动作层级、输入语义、loading / empty / no-results / stale / error / degraded / success 状态、布局稳定性、非目标与验收入口清晰。
 - 触及 Product Surface 时，同时保持 surface platform、primary user question、main allows/forbids、drilldown ownership、long-task state requirement 和 verification 清晰；字段、枚举、JSON 和截图仅是实现证据。
+- 当 Product Surface 粒度不足以支持 material screen 时，使用 `screen-contract.md` 的按需结构保持 entry/exit/shared state、information hierarchy、regions、fixed/scroll/overlay ownership、navigation/variants 和 material controls 清晰；局部样式修复不补建 Screen Contract。
 - 外部来源的重要约束在内部分类为 Context / `DESIGN.md` 已覆盖、已更新、task-local、显式 out-of-scope 或需要用户决策；存在未处理项时不能声称全量完成。
 - 默认流程不要求或验证固定 `plan.md`、Task Contract 文件、Source-to-Context 表、Context-to-Implementation 表、matrix、verdict 或 evidence ledger；可选 scratch 没有固定名称或权威。
 - `Contract Conformance` 直接检查 controlling Context / `DESIGN.md` 是否到达正确 surface、状态、交互与验证路径并避开 forbidden shortcut。实现偏差修实现；缺少长期事实则返回 `Context Delta: required`，先更新长期事实再对齐。
@@ -82,13 +97,27 @@ Project-specific UI/UX and visual design rules belong in a separate project-loca
 - 视觉审查时先分清问题类型：a11y / responsive / theming / interaction / copy / performance / anti-pattern。把真正影响用户理解、操作或品牌信任的问题列为高优先级；少量纯审美偏好不要淹没关键问题。
 - Harness 默认携带 Impeccable CLI 能力；做设计稿、重做设计、视觉设计方案、设计系统方案、frontend redesign、visual polish 或既有 UI 视觉审查时，默认尝试运行 `npx impeccable detect <target>` 作为辅助证据，不必等待用户点名。其输出只能作为设计缺陷线索，不是 Harness gate，也不能替代人工截图检查、项目测试或 `validate-context`。
 
+## Design Authority Readiness / 设计权威就绪
+
+Use this check before material production UI: a new or redesigned screen, primary layout/navigation/theme/component system, high-fidelity implementation or substantial visual polish. Routine implementation with sufficient authority, local style fixes and explicit throwaway prototypes stay on the lightweight path.
+
+Configured is system-level visual authority only, not surface implementation-ready status. `DESIGN.md` 被识别为 configured 只说明项目级视觉系统不是 starter，不表示任一页面已可高保真实现。affected surface 还必须拥有充分的 Screen/Control meaning、覆盖该 claim 的 selected target/constraints、唯一 token source 和项目可执行的验证路径；任何缺失都按 UI Authority Closure 路由，而不是伪造一个全局 readiness 状态。
+
+- Read the owning surface/interaction Context, `DESIGN.md`, the authored exact-value token source and generation direction, existing production components/routes and every material design reference.
+- Classify each reference as `exact-target`, `constraint` or `inspiration`. Record the affected surface/route/component, project path or URI and relevant viewport/theme/mode/state. Exact targets authorize fidelity comparison only for those conditions; constraints authorize only their named rule; inspiration proves no reproduction claim.
+- Treat a missing `DESIGN.md`, its package starter with Design authority status: `unconfigured`, style-only prose, an inspiration-only set or conflicting references as insufficient authority for invented production layout.
+- If the user explicitly delegates standalone design-resource generation, use `design-resource-authoring` to commission the smallest sufficient set from available Product Design/Open Design capabilities. In this downstream Skill, adopt a selected target into durable Context/`DESIGN.md` only after UI Authority Closure. Ask only when an unknown material preference could change the result or the user reserves the choice.
+- Never use the implementation's own generated screenshot or diff as the target it claims to match. A target is selected Source; an implementation render is evidence. Baseline replacement requires deliberate review and cannot merely erase a failure.
+- Do not require Figma, a fixed `docs/design/**` tree, an image for every local change or universal pixel-perfect thresholds. Use project-native design assets and the smallest authority sufficient for the claimed fidelity.
+
 ## Visual Delivery Coverage / 视觉交付覆盖
 
-For material design-system, redesign, high-fidelity implementation or visual-polish work, keep a task-local **Visual Coverage Set** before implementation and verification. It is internal planning, not a required file, matrix, Context role, workflow artifact or completion authority.
+For material design-system, redesign, high-fidelity implementation or visual-polish work, keep a task-local **Visual Coverage Set** before implementation and verification. When external design Source declares coverage, reconcile it with current delivery scope rather than creating competing authority. The downstream working set remains internal planning, not a required file, matrix, Context role, workflow artifact or completion authority.
 
 - Select risk-proportional representative combinations across production surface/route/component, viewport, theme or product mode, interaction/state, content stress and accessibility/motion conditions. Do not expand the full Cartesian product unless Source explicitly requires full combination coverage, and never claim an unchecked combination.
 - Cover relevant states such as default, hover, focus, active, disabled, loading, empty/no-results, error, success and long/extreme content. Use the project's declared viewport, contrast, target-size, reduced-motion and localization rules rather than inventing universal thresholds.
 - Keep the authority split explicit: `project_context/**` owns durable surface/interaction responsibility and `DESIGN.md` owns durable visual-system semantics and rationale. Record one authored exact-value token source and one generation direction; generated CSS/theme/export files are implementation outputs, not competing authored truth. If `DESIGN.md` is not the machine-token source, name the project-native source it governs instead of hand-maintaining the same exact values twice.
+- Map every claimed fidelity combination to its selected `exact-target` or named `constraint`; do not let the Visual Coverage Set turn inspiration or missing authority into an implicit target.
 - Inspect production components or real product routes. A detached static kit, mock, poster, marketing specimen or generated showcase may guide design review, but it cannot be the only evidence for product UI behavior or fidelity.
 - Render and inspect the declared coverage with project-owned browser/component tests plus screenshots or manual review as appropriate. Report the combinations actually checked and any omitted or external review explicitly. A screenshot baseline may be updated only through deliberate review; replacing it merely to erase a diff is not verification.
 
@@ -96,14 +125,15 @@ For material design-system, redesign, high-fidelity implementation or visual-pol
 
 - 不默认创建 `.work_products/**`、UI/UX 独立文档、handoff matrix、review/test/release 文档。
 - 不要求 lifecycle phase、plan task、phase gate 或阶段 Skill。
-- 如果用户明确要求独立设计稿、mock 或页面说明，可以临时生成；长期事实仍要提炼回 `project_context/**` 和 `DESIGN.md`。
+- 如果用户明确要求独立设计稿、mock、线框图、原型或 Figma handoff，使用 `design-resource-authoring`；本 Skill 只在后续开发流程中采纳长期事实。
 - `DESIGN.md` 是视觉设计系统事实源；项目流程、模块契约和下一步动作仍以 `project_context/**` 为准。
-- 如果用户只是要求实现页面、修复 UI bug、局部改 CSS、换颜色，或只是泛泛提到“设计 / design / user experience”，不需要触发本 Skill；只有明确角色名或强相关产物名指向设计方向、界面方案、视觉体系、交互规则或长期设计事实沉淀时才使用。
+- 如果普通页面实现已经有充分 Design Authority，或用户只要求修复 UI bug、局部改 CSS、换颜色、明确的 throwaway prototype，或只是泛泛提到“设计 / design / user experience”，不需要触发本 Skill；durable 视觉体系/Context 采纳，或 material production UI 缺失/冲突的 Design Authority 才使用。明确要求设计资源产物但尚未进入采纳/实现流程时使用 `design-resource-authoring`。
 
 ## DESIGN.md 使用规则
 
 - 使用 Google `@google/design.md` 格式：YAML front matter 存 tokens，Markdown body 存设计理由。
 - 优先包含 `name`、`colors`、`typography`、`spacing`、`rounded` 和必要 `components` token。
+- 在 `Overview` 内维护 Design Authority 状态、唯一 authored token source/generation direction 和 design reference registry；每个 durable reference 记录稳定 id、surface/route/component、path/URI、`exact-target` / `constraint` / `inspiration` 解释及覆盖条件。不要添加 Google schema 不支持的 front-matter keys。
 - Markdown section 顺序优先为：`Overview`、`Colors`、`Typography`、`Layout`、`Elevation & Depth`、`Shapes`、`Components`、`Do's and Don'ts`。
 - 写入或修改后，如本地可用，运行 `npx @google/design.md lint DESIGN.md` 检查结构；不要把 lint 结果写成“已通过”除非本轮真实执行。
 - 需要给工程消费 token 时，可用 `npx @google/design.md export --format css-tailwind DESIGN.md` 或 `json-tailwind` 生成临时输出。
@@ -118,6 +148,6 @@ For material design-system, redesign, high-fidelity implementation or visual-pol
 - `areas/*/verification.md` 或 role=`verification` Context：UI smoke、截图验收、可访问性检查或项目自己的关键验证重复执行路径。
 - `areas/*/deployment.md` 或 role=`deployment` Context：前端部署、预览环境、运行拓扑或健康检查重复执行路径。
 - `project_context/context.toml`：复杂项目的产品域 area/context_unit、role、触发词、按需读取策略和可选边界规则。
-- `DESIGN.md`：视觉 identity、design tokens、组件视觉规则、do/don't 和视觉 rationale。
+- `DESIGN.md`：视觉 identity、design tokens、组件视觉规则、do/don't、视觉 rationale、唯一 token source/generation direction 和 design reference registry。
 
 不要编造 rationale；仅由当前代码或截图形态反推的理由、实现摘要、PR notes、命令输出、测试通过声明、截图审查、debug 过程和 agent reasoning 不进入 Context 或 `DESIGN.md`。

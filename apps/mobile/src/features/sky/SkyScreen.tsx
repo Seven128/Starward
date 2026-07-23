@@ -9,12 +9,14 @@ import { startExpoOrientation } from "../../../modules/orientation/expo-orientat
 import { OrientationEngine, type StableOrientation } from "../../../modules/orientation/orientation-engine";
 import { resolveArMode } from "../../../modules/sky-ar/sky-ar-adapter";
 import { createSkyClient } from "../../data/sky-client";
+import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
+import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 import { useShellStore } from "../../state/shell-store";
 import { persistSkyResolution } from "../../state/sky-runtime";
 
 type ViewKey = "universal-sky" | "time-jump" | "obstruction-trajectory" | "field-of-view" | "ar-degradation" | "low-accuracy-guidance";
 const palette = colors.night;
-const client = createSkyClient();
+const client = createSkyClient({ baseUrl: resolveRuntimeApiBaseUrl() });
 const actions: Array<{ key: ViewKey; id: string; label: string }> = [
   { key: "universal-sky", id: "sky-open-universal-view", label: "通用天空" },
   { key: "time-jump", id: "sky-jump-time", label: "目标最高" },
@@ -137,6 +139,7 @@ export function SkyScreen() {
   return <SafeAreaView testID="screen-sky-orientation-ar" style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
     <Text style={styles.eyebrow}>天空定位 · {location.label}</Text><Text style={styles.title}>目标在哪里，遮挡证据在哪里</Text>
     <Text style={styles.subtitle}>通用天空是主路径。方向、相机与 AR 只在能力和精度可信时增强；现场轮廓未知时不猜测。</Text>
+    <DecisionContextRevision />
     {query.isLoading ? <State title="正在计算天空状态…" body="服务端按 WGS84 地点、UTC 时刻和版本化天文算法定位亮星、深空目标与轨迹。" /> : null}
     {query.isError ? <State title="天空状态暂不可用" body={query.error instanceof Error && query.error.message === "sky_api_base_url_missing" ? "尚未配置 API 地址；不会以内置星位替代真实计算。" : "请求或计算失败；当前不显示旧星位。"} retry={() => void query.refetch()} /> : null}
     {persistenceError ? <State title="本机保存失败" body={persistenceError} retry={() => void query.refetch()} /> : null}

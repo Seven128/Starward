@@ -1,0 +1,201 @@
+{
+  "artifact": "Starward 全系统交互原型",
+  "locale": "zh-CN",
+  "viewport": "390x844",
+  "prototypeNotice": "设计样例；不连接实时 API、真实地图、AR、通知、相机或安全服务。",
+  "stateModel": ["success", "loading", "empty", "no-results", "stale", "partial", "degraded", "unknown", "error", "disabled", "saving"],
+  "sharedContext": ["origin", "observingNight", "moment", "preferences", "target", "selectedSpot", "primaryBackupRole", "route", "itineraryRevision", "freshness", "risk"],
+  "outcomes": [
+    {
+      "id": "mobile-shell-and-preferences",
+      "label": "原生壳 / 首次使用 / 偏好",
+      "route": "/onboarding-preferences",
+      "entry": "我的 → 偏好与权限；评审抽屉直达",
+      "states": ["success", "loading", "empty", "degraded", "error", "disabled", "saving"],
+      "controls": [
+        {"id":"primary-tab-bar","route":"global","states":["success","disabled"],"interaction":"点击五个一级 Tab；保留共享地点、时间与模式上下文。"},
+        {"id":"permission-step","route":"/onboarding-preferences","states":["success","degraded","disabled"],"interaction":"允许定位或选择手动输入；拒绝后展示受限路径。"},
+        {"id":"preference-wizard","route":"/onboarding-preferences","states":["success","saving"],"interaction":"切换观测目标、步行容忍度与摄影偏好并保存。"},
+        {"id":"profile-switcher","route":"/onboarding-preferences","states":["success","loading","error"],"interaction":"在游客与本机样例档案间切换，保留合并提示。"}
+      ]
+    },
+    {
+      "id": "tonight-decision",
+      "label": "今晚结论 / 推荐 / 主备",
+      "route": "/tonight",
+      "entry": "一级 Tab：今晚",
+      "states": ["success", "loading", "empty", "stale", "partial", "unknown", "error", "saving"],
+      "controls": [
+        {"id":"location-date-refresh","route":"/tonight","states":["success","loading","stale","error"],"interaction":"刷新北京西部 · 7 月 22 日夜间样例；重算时旧结论标记 stale。"},
+        {"id":"decision-hero","route":"/tonight","states":["success","partial","unknown"],"interaction":"展开评分依据；安全阻断时结论优先级提升。"},
+        {"id":"condition-summary-expander","route":"/tonight","states":["success","loading","partial"],"interaction":"展开云量、透明度、视宁度与月相摘要。"},
+        {"id":"visible-target-timeline","route":"/tonight","states":["success","partial","unknown"],"interaction":"拖动时刻查看木星、天琴座与银河样例可见窗口。"},
+        {"id":"recommendation-card","route":"/tonight","states":["success","no-results","stale"],"interaction":"选择清水河峡谷主地点并同步地图与行程。"},
+        {"id":"plan-backup-selector","route":"/tonight","states":["success","saving"],"interaction":"切换主地点 / 备选地点角色并更新共享上下文。"}
+      ]
+    },
+    {
+      "id": "forecast-and-astronomy",
+      "label": "专业天气 / 时间轴 / 天文证据",
+      "route": "/forecast",
+      "entry": "今晚 → 查看专业证据",
+      "states": ["success", "loading", "empty", "no-results", "stale", "partial", "unknown", "error"],
+      "controls": [
+        {"id":"hourly-matrix","route":"/forecast","states":["success","loading","stale","partial"],"interaction":"横向浏览 20:00–04:00 连续数据列；键盘可调整列焦点。"},
+        {"id":"model-selector","route":"/forecast","states":["success","loading","error"],"interaction":"在 ECMWF / GFS / CMA 样例模型间切换并标记来源版本。"},
+        {"id":"trend-calendar","route":"/forecast","states":["success","empty","unknown"],"interaction":"选择未来七夜，更新矩阵与共享观测夜。"},
+        {"id":"twilight-window-strip","route":"/forecast","states":["success","partial"],"interaction":"选择暮光 / 天文黑夜连续窗口。"},
+        {"id":"weather-layer-panel","route":"/forecast","states":["success","loading","degraded"],"interaction":"切换总云量、高云、透明度与风层；缺层时说明降级。"}
+      ]
+    },
+    {
+      "id": "map-route-discovery",
+      "label": "地图发现 / 筛选 / 路线",
+      "route": "/map",
+      "entry": "一级 Tab：地图",
+      "states": ["success", "loading", "empty", "no-results", "stale", "partial", "degraded", "error", "saving"],
+      "controls": [
+        {"id":"map-search-context-bar","route":"/map","states":["success","loading","no-results"],"interaction":"搜索地点或更改出发地；回车更新结果与共享上下文。"},
+        {"id":"map-filter-sheet","route":"/map","states":["success","saving"],"interaction":"打开三档 Bottom Sheet，设置距离、海拔、路况与光污染筛选。"},
+        {"id":"map-layer-selector","route":"/map","states":["success","loading","degraded"],"interaction":"切换地形 / 光污染 / 云量图层并保持所选地点。"},
+        {"id":"map-marker-density-surface","route":"/map","states":["success","loading","no-results","partial"],"interaction":"点击聚合或 marker；选中状态同步卡片、sheet 与路线。"},
+        {"id":"selected-spot-sheet","route":"/map","states":["success","loading","stale"],"interaction":"在约 25% / 55% / 90% 三档展开，进入地点详情。"},
+        {"id":"route-plan-editor","route":"/map","states":["success","loading","error","saving"],"interaction":"比较主路线与低风险路线，选择后更新预计到达。"},
+        {"id":"external-navigation-action","route":"/map","states":["success","disabled"],"interaction":"二次确认后展示外部导航交接说明；不实际启动第三方应用。"}
+      ]
+    },
+    {
+      "id": "spot-detail-and-trust",
+      "label": "地点详情 / 真实性 / 风险",
+      "route": "/spot/qingshuihe",
+      "entry": "地图 → 选中地点 → 地点详情",
+      "states": ["success", "loading", "empty", "stale", "partial", "unknown", "error", "saving"],
+      "controls": [
+        {"id":"spot-hero","route":"/spot/qingshuihe","states":["success","loading","stale"],"interaction":"查看设计样例地点身份、海拔、距离与数据新鲜度。"},
+        {"id":"spot-media-gallery","route":"/spot/qingshuihe","states":["success","empty","loading"],"interaction":"切换三张本地示意媒体；不宣称真实现场照片。"},
+        {"id":"evidence-section-nav","route":"/spot/qingshuihe","states":["success","disabled"],"interaction":"切换概览 / 地平线 / 到达 / 可信度分区。"},
+        {"id":"horizon-polar-view","route":"/spot/qingshuihe","states":["success","partial","unknown"],"interaction":"选择方位查看遮挡角与银河轨迹样例。"},
+        {"id":"access-facility-fact-list","route":"/spot/qingshuihe","states":["success","partial","unknown"],"interaction":"展开停车、洗手间、信号与步行事实及来源。"},
+        {"id":"safety-block","route":"/spot/qingshuihe","states":["success","stale","error"],"interaction":"确认夜间临崖与无照明风险；阻断时禁止直接出发。"},
+        {"id":"trust-panel","route":"/spot/qingshuihe","states":["success","partial","unknown"],"interaction":"查看预测、用户实况、人工核验的分离证据与可信度。"},
+        {"id":"spot-action-dock","route":"/spot/qingshuihe","states":["success","disabled","saving"],"interaction":"加入行程、设为主地点或返回地图。"}
+      ]
+    },
+    {
+      "id": "itinerary-and-collaboration",
+      "label": "行程 / 版本 / 协作",
+      "route": "/trips",
+      "entry": "一级 Tab：行程",
+      "states": ["success", "loading", "empty", "stale", "partial", "error", "disabled", "saving"],
+      "controls": [
+        {"id":"itinerary-library","route":"/trips","states":["success","loading","empty","error"],"interaction":"选择已保存行程或新建；展示 revision 与离线状态。"},
+        {"id":"itinerary-creation-form","route":"/trips","states":["success","error","saving"],"interaction":"填写出发地、到达上限、目标与同行人；失焦验证并保留输入。"},
+        {"id":"itinerary-detail-tabs","route":"/trips","states":["success","disabled"],"interaction":"切换概览 / 时间线 / 路线 / 协作。"},
+        {"id":"itinerary-overview-card","route":"/trips","states":["success","stale","partial"],"interaction":"查看主备地点、最佳窗口、预计到达与风险摘要。"},
+        {"id":"observation-timeline-editor","route":"/trips","states":["success","saving"],"interaction":"拖动出发、架设、观测与返程节点；可中断、反向。"},
+        {"id":"candidate-tray","route":"/trips","states":["success","empty"],"interaction":"添加、移除或排序候选地点。"},
+        {"id":"route-option-comparator","route":"/trips","states":["success","loading","partial"],"interaction":"比较最快 / 低风险路线并同步地图路线。"},
+        {"id":"version-and-share-actions","route":"/trips","states":["success","saving","error"],"interaction":"创建 revision、复制只读样例链接或恢复上一版。"},
+        {"id":"collaboration-panel","route":"/trips","states":["success","empty","loading","error"],"interaction":"管理样例同行者、意见与冲突提示；不发送真实邀请。"}
+      ]
+    },
+    {
+      "id": "sky-orientation-ar",
+      "label": "天空 / 方向 / 可选 AR",
+      "route": "/sky",
+      "entry": "一级 Tab：天空",
+      "states": ["success", "loading", "empty", "stale", "partial", "degraded", "unknown", "error", "disabled"],
+      "controls": [
+        {"id":"sky-canvas","route":"/sky","states":["success","loading","degraded"],"interaction":"在 2D / 3D 示意天空间切换并点选天体。"},
+        {"id":"sky-object-and-layer-panel","route":"/sky","states":["success","no-results","partial"],"interaction":"搜索天体并切换星座线、地平线与轨迹图层。"},
+        {"id":"sky-time-scrubber","route":"/sky","states":["success","stale","unknown"],"interaction":"1:1 拖动 19:30–04:30，连续更新方位、高度与天空。"},
+        {"id":"orientation-follow-toggle","route":"/sky","states":["success","degraded","disabled"],"interaction":"启停方向跟随；无传感器时转为手动方向。"},
+        {"id":"orientation-calibration-sheet","route":"/sky","states":["success","degraded","error"],"interaction":"打开校准说明并可选择手动校准。"},
+        {"id":"obstruction-and-trajectory-overlay","route":"/sky","states":["success","partial"],"interaction":"切换遮挡与未来 90 分钟轨迹叠层。"},
+        {"id":"field-of-view-overlay","route":"/sky","states":["success","empty"],"interaction":"选择器材视场，画布同步显示取景边界。"},
+        {"id":"ar-mode-toggle","route":"/sky","states":["success","degraded","disabled"],"interaction":"尝试 AR；桌面原型诚实降级为方向演示。"}
+      ]
+    },
+    {
+      "id": "shooting-assistant",
+      "label": "摄影助手",
+      "route": "/shooting",
+      "entry": "天空 → 摄影助手",
+      "states": ["success", "loading", "empty", "partial", "unknown", "error", "disabled", "saving"],
+      "controls": [
+        {"id":"shooting-setup-form","route":"/shooting","states":["success","error","saving"],"interaction":"选择机身、镜头、焦距与赤道仪；失焦验证。"},
+        {"id":"shooting-preset-picker","route":"/shooting","states":["success","empty"],"interaction":"选择银河广角 / 星轨 / 深空入门样例预设。"},
+        {"id":"shooting-recommendation","route":"/shooting","states":["success","loading","partial"],"interaction":"查看曝光、光圈、ISO、张数与时长建议并应用。"},
+        {"id":"ai-explanation-panel","route":"/shooting","states":["success","unknown","error"],"interaction":"展开规则化解释、假设与不确定性；不宣称 AI 保证。"},
+        {"id":"shooting-checklist","route":"/shooting","states":["success","saving"],"interaction":"逐项勾选对焦、稳定、露水与存储准备。"},
+        {"id":"save-shooting-plan","route":"/shooting","states":["success","saving","error"],"interaction":"保存到当前行程 revision，并可撤销。"}
+      ]
+    },
+    {
+      "id": "field-offline-safety",
+      "label": "现场 / 离线 / 安全",
+      "route": "/field",
+      "entry": "行程 → 进入现场；今晚 → 现场模式",
+      "states": ["success", "loading", "empty", "stale", "partial", "degraded", "error", "disabled", "saving"],
+      "controls": [
+        {"id":"offline-pack-manager","route":"/field","states":["success","loading","partial","error"],"interaction":"下载 / 更新 / 删除样例离线包；显示许可、大小与缓存时间。"},
+        {"id":"field-dashboard","route":"/field","states":["success","stale","degraded"],"interaction":"单手查看当前地点、剩余窗口、返程与安全状态。"},
+        {"id":"night-red-mode-toggle","route":"/field","states":["success","disabled"],"interaction":"在规划 / 夜间 / 红光间切换；信息架构与位置不变。"},
+        {"id":"field-tool-grid","route":"/field","states":["success","disabled"],"interaction":"打开计时、水平仪、手电提示与摄影计划工具。"},
+        {"id":"return-to-parking","route":"/field","states":["success","degraded","error"],"interaction":"显示返车方向、距离与离线路线；不提供安全保证。"},
+        {"id":"backup-switcher","route":"/field","states":["success","saving"],"interaction":"因云量或风险切换主备地点并同步行程 revision。"},
+        {"id":"safety-session-panel","route":"/field","states":["success","stale","error"],"interaction":"设置返程提醒与失联升级；危险停止需二次确认。"},
+        {"id":"location-share-action","route":"/field","states":["success","disabled","error"],"interaction":"确认范围与时限后生成本地样例分享状态，不真实发送。"},
+        {"id":"offline-sync-queue","route":"/field","states":["success","empty","saving","error"],"interaction":"查看待同步条目、重试与冲突；三次失败后显示错误 ID。"}
+      ]
+    },
+    {
+      "id": "community-contribution",
+      "label": "贡献 / 实况 / 评价 / 纠错",
+      "route": "/contribute",
+      "entry": "地点详情 → 贡献实况；我的 → 我的贡献",
+      "states": ["success", "loading", "empty", "partial", "error", "disabled", "saving"],
+      "controls": [
+        {"id":"new-spot-wizard","route":"/contribute","states":["success","error","saving"],"interaction":"分步提交候选地点坐标、到达与证据；草稿保留。"},
+        {"id":"field-report-form","route":"/contribute","states":["success","partial","saving"],"interaction":"提交云量、能见度、风与现场风险的时效实况。"},
+        {"id":"multidimensional-review-form","route":"/contribute","states":["success","error","saving"],"interaction":"按黑暗度、视野、到达、安全与设施评价。"},
+        {"id":"correction-report","route":"/contribute","states":["success","empty","saving"],"interaction":"选择待纠错事实、填写依据并保存草稿。"},
+        {"id":"media-privacy-review","route":"/contribute","states":["success","error","disabled"],"interaction":"确认人脸、车牌、定位与拍摄时间披露范围。"},
+        {"id":"contribution-status-center","route":"/contribute","states":["success","loading","empty","error"],"interaction":"查看草稿、审核中、需补充与已采纳状态。"}
+      ]
+    },
+    {
+      "id": "notifications-and-toolbox",
+      "label": "条件通知 / 专业工具",
+      "route": "/toolbox",
+      "entry": "我的 → 通知与工具箱",
+      "states": ["success", "loading", "empty", "no-results", "stale", "error", "disabled", "saving"],
+      "controls": [
+        {"id":"notification-rule-editor","route":"/toolbox","states":["success","error","saving"],"interaction":"编辑云量、透明度、地点与提前量规则；权限拒绝后保留规则。"},
+        {"id":"notification-settings-center","route":"/toolbox","states":["success","disabled","saving"],"interaction":"管理系统权限、静默时段、频率与渠道说明。"},
+        {"id":"notification-message-deeplink","route":"/toolbox","states":["success","stale","error"],"interaction":"打开样例通知并跳转到对应地点 / 夜晚上下文。"},
+        {"id":"toolbox-index","route":"/toolbox","states":["success","empty"],"interaction":"打开天象、月相、视场与曝光工具。"},
+        {"id":"celestial-event-detail","route":"/toolbox","states":["success","stale","unknown"],"interaction":"查看英仙座流星雨样例窗口、方向与来源。"},
+        {"id":"astronomy-calculator-form","route":"/toolbox","states":["success","error"],"interaction":"输入焦距、传感器与赤纬，计算样例视场 / 最长曝光。"}
+      ]
+    },
+    {
+      "id": "identity-profile-privacy",
+      "label": "账号 / 个人 / 设备 / 隐私",
+      "route": "/me",
+      "entry": "一级 Tab：我的",
+      "states": ["success", "loading", "empty", "partial", "error", "disabled", "saving"],
+      "controls": [
+        {"id":"auth-gate-sheet","route":"/me","states":["success","loading","error"],"interaction":"选择继续游客模式或打开本地登录样例；不进行真实认证。"},
+        {"id":"guest-data-merge","route":"/me","states":["success","partial","error","saving"],"interaction":"预览游客数据合并范围与冲突，再二次确认。"},
+        {"id":"profile-hub","route":"/me","states":["success","loading","empty"],"interaction":"查看个人摘要、偏好、贡献与同步状态。"},
+        {"id":"content-library-browser","route":"/me","states":["success","loading","empty","no-results"],"interaction":"筛选已存地点、行程、摄影计划与离线包。"},
+        {"id":"equipment-manager","route":"/me","states":["success","empty","saving"],"interaction":"添加、编辑或移除相机、镜头、望远镜与三脚架样例。"},
+        {"id":"session-security","route":"/me","states":["success","loading","error"],"interaction":"查看本机样例会话、撤销设备需二次确认。"},
+        {"id":"privacy-center","route":"/me","states":["success","saving"],"interaction":"设置精确位置、历史保留、贡献署名与诊断数据。"},
+        {"id":"export-delete-flow","route":"/me","states":["success","loading","error","disabled"],"interaction":"导出样例数据或经影响说明与二次确认进入删除流程。"},
+        {"id":"help-and-source-center","route":"/me","states":["success","loading","error"],"interaction":"查看术语、数据来源、许可、版本与已知限制。"}
+      ]
+    }
+  ]
+}

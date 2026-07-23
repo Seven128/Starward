@@ -1,1 +1,286 @@
-import{useState}from"react";import{useMutation,useQuery,useQueryClient}from"@tanstack/react-query";import{Pressable,ScrollView,StyleSheet,Text,View}from"react-native";import{SafeAreaView}from"react-native-safe-area-context";import{colors,minimumTouchTarget,radii,spacing,type as typeToken}from"@starward/ui-system/tokens";import{createCommunityClient,type CommunityCommand,type CommunitySnapshot}from"../../data/community-client";type V="spot"|"report"|"correction"|"media"|"trust"|"review";const p=colors.planning,c=createCommunityClient(),actions:Array<{key:V;command:CommunityCommand;id:string;label:string}>=[{key:"spot",command:"submit-spot",id:"community-submit-spot",label:"新地点"},{key:"report",command:"submit-report",id:"community-submit-report",label:"现场实况"},{key:"correction",command:"submit-correction",id:"community-submit-correction",label:"安全纠错"},{key:"media",command:"upload-media",id:"community-upload-media",label:"照片隐私"},{key:"trust",command:"open-trust",id:"community-open-trust",label:"审核状态"},{key:"review",command:"publish-review",id:"community-open-review-form",label:"多维评价"}];function E({id,title,body,meta}:{id:string;title:string;body:string;meta?:string}){return <View testID={id} style={s.card}><Text style={s.cardTitle}>{title}</Text><Text style={s.cardBody}>{body}</Text>{meta?<Text style={s.meta}>{meta}</Text>:null}</View>};function Panel({v,d}:{v:V;d:CommunitySnapshot}){if(v==="spot")return <View style={s.panel}><E id="spot-location-precision" title="精确位置仅供审核 · 公开为模糊位置" body={`公开 ${d.spot?.publicCoordinate.latitude}, ${d.spot?.publicCoordinate.longitude}；原始来源 user-confirmed`} meta="疑似私人土地必须核对权属、开放和公开级别"/><E id="spot-consent-scope" title="单独同意：审核员可见精确坐标" body={`可见级别 ${d.spot?.preciseCoordinate.visibility}；字段逐项确认`}/><E id="spot-submission-status" title={`草稿 ${d.spot?.draftId} · 审核 ${d.spot?.reviewId}`} body={`发现 ${d.spot?.duplicateCandidates.length} 个可能重复地点；人工审核前不公开`}/></View>;if(v==="report")return <View style={s.panel}><E id="report-expiry" title={`实况有效至 ${d.report?.evidence.expiresAt} · TTL 2 小时`} body="起雾、银河可见、厕所今晚关闭；位置/时间已核对"/><E id="report-current-state" title={`当前聚合 ${d.report?.current.current.length} 条 · 过期后 ${d.report?.afterExpiry.current.length} 条`} body="过期后退出当前聚合；长期事实仍为通常有厕所，未被改写"/><E id="report-source-time" title={`来源 ${d.report?.evidence.source} · ±${d.report?.evidence.locationAccuracyM} m`} body={`历史证据 ${d.report?.afterExpiry.immutableHistory.length} 条不可变保留`}/></View>;if(v==="correction")return <View style={s.panel}><E id="correction-safety-impact" title={`安全影响：道路封闭 · ${d.correction?.priority}`} body={`工单 ${d.correction?.caseId} · 证据 ${d.correction?.evidenceIds.length} 项`} meta="地点与导航前显示待核实警告"/><E id="correction-review-state" title={`待核实 · ${d.correction?.reviewDueHours} 小时内初审`} body={`${d.correction?.expiresUnconfirmedHours} 小时未确认则过期/降级`}/><E id="correction-original-version" title="原地点版本保留" body={`永久关闭声明 ${d.correction?.permanentClosureClaim?"是":"否"}；采纳只生成新版本`}/></View>;if(v==="media")return <View style={s.panel}><E id="media-location-stripped" title="位置已移除 · 设备序列已清理" body={`公开副本：${d.media?.publicCopy.capturedAt} / ${d.media?.publicCopy.directionDeg}° / ${d.media?.publicCopy.exposure}`}/><E id="media-review-state" title={`处理完成 · ${d.media?.state}`} body="上传、扫描、缩略、归属与审核状态分开"/><E id="media-original-protected" title="原图受保护 · 不直接分发" body={`${d.media?.original.access} / ${d.media?.original.state}；处理失败 fail closed`}/></View>;if(v==="trust")return <View style={s.panel}><E id="contributor-trust-level" title={`匿名贡献者 · 等级 ${d.trust?.level}`} body={`审核 ${d.trust?.approved} 次 · 争议率 ${d.trust?.disputeRate} · ${d.trust?.independentConfirms} 人确认`}/><E id="moderation-visible-status" title="审核：需补充 · 存在争议" body={`上传者动作 ${d.trust?.uploaderAction}；公众只见 ${d.trust?.publicState}`}/><E id="moderation-appeal-entry" title={`补充证据 / ${d.trust?.appealDays} 天内申诉响应`} body="争议内容冻结自动聚合，原始证据和决定不覆盖"/></View>;return <View style={s.panel}><E id="review-darkness-rating" title={`天空暗度 ${d.review?.dimensions.darkness}/5 · 已填写`} body={`${d.review?.visitedAt} · 到访验证 ${d.review?.verifiedVisit}`}/><E id="review-access-rating" title={`可达性 ${d.review?.dimensions.access}/5 · 已填写`} body="评价维度独立，不用综合星级掩盖风险"/><E id="review-safety-rating" title="安全：未体验 · 保持空" body={`摄影 ${d.review?.dimensions.photography}/5；社交动作 ${d.review?.socialActions.length} 项`} meta="无关注、粉丝、私信或通用动态入口"/></View>};export function CommunityScreen(){const[v,setV]=useState<V|null>(null),qc=useQueryClient(),q=useQuery({queryKey:["community"],queryFn:({signal})=>c.get(signal)}),m=useMutation({mutationFn:(x:{command:CommunityCommand})=>c.command(x.command),onSuccess:d=>qc.setQueryData(["community"],d)}),d=m.data??q.data;return <SafeAreaView testID="screen-community-contribution" style={s.screen}><ScrollView contentContainerStyle={s.content}><Text style={s.eyebrow}>社区贡献 · 证据优先</Text><Text style={s.title}>把现场信息变成可核验的帮助</Text><Text style={s.subtitle}>来源、有效期、审核和版本由服务端保存；社区内容不覆盖硬安全信息。</Text><View style={s.actions}>{actions.map(a=><Pressable key={a.key} testID={a.id} disabled={m.isPending} onPress={()=>{setV(a.key);m.mutate({command:a.command})}} style={s.action}><Text style={s.actionText}>{a.label}</Text></Pressable>)}</View>{v&&d?<Panel v={v} d={d}/>:null}</ScrollView></SafeAreaView>};const s=StyleSheet.create({screen:{flex:1,backgroundColor:p.canvas},content:{padding:spacing.x2,paddingBottom:48,gap:spacing.x2},eyebrow:{color:p.primaryActive,fontSize:typeToken.label,fontWeight:"700"},title:{color:p.text,fontSize:typeToken.title,fontWeight:"700"},subtitle:{color:p.textSecondary,lineHeight:23},actions:{flexDirection:"row",flexWrap:"wrap",gap:spacing.x1},action:{minHeight:minimumTouchTarget,justifyContent:"center",paddingHorizontal:14,borderWidth:1,borderColor:p.border,borderRadius:radii.pill,backgroundColor:p.surface},actionText:{color:p.text,fontWeight:"700"},panel:{gap:spacing.x1,padding:spacing.x2,borderRadius:radii.layer,backgroundColor:p.surface},card:{minHeight:92,padding:12,borderRadius:radii.control,backgroundColor:p.surfaceMuted},cardTitle:{color:p.text,fontWeight:"700"},cardBody:{marginTop:5,color:p.text,lineHeight:19},meta:{marginTop:5,color:p.textSecondary,fontSize:typeToken.caption}});
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  colors,
+  minimumTouchTarget,
+  radii,
+  spacing,
+  type as typeToken,
+} from "@starward/ui-system/tokens";
+import {
+  createCommunityClient,
+  type CommunityCommand,
+  type CommunitySnapshot,
+} from "../../data/community-client";
+import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
+import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
+type V = "spot" | "report" | "correction" | "media" | "trust" | "review";
+const p = colors.planning,
+  c = createCommunityClient({ baseUrl: resolveRuntimeApiBaseUrl() }),
+  actions: Array<{
+    key: V;
+    command: CommunityCommand;
+    id: string;
+    label: string;
+  }> = [
+    {
+      key: "spot",
+      command: "submit-spot",
+      id: "community-submit-spot",
+      label: "新地点",
+    },
+    {
+      key: "report",
+      command: "submit-report",
+      id: "community-submit-report",
+      label: "现场实况",
+    },
+    {
+      key: "correction",
+      command: "submit-correction",
+      id: "community-submit-correction",
+      label: "安全纠错",
+    },
+    {
+      key: "media",
+      command: "upload-media",
+      id: "community-upload-media",
+      label: "照片隐私",
+    },
+    {
+      key: "trust",
+      command: "open-trust",
+      id: "community-open-trust",
+      label: "审核状态",
+    },
+    {
+      key: "review",
+      command: "publish-review",
+      id: "community-open-review-form",
+      label: "多维评价",
+    },
+  ];
+function E({
+  id,
+  title,
+  body,
+  meta,
+}: {
+  id: string;
+  title: string;
+  body: string;
+  meta?: string;
+}) {
+  return (
+    <View testID={id} style={s.card}>
+      <Text style={s.cardTitle}>{title}</Text>
+      <Text style={s.cardBody}>{body}</Text>
+      {meta ? <Text style={s.meta}>{meta}</Text> : null}
+    </View>
+  );
+}
+function Panel({ v, d }: { v: V; d: CommunitySnapshot }) {
+  if (v === "spot")
+    return (
+      <View style={s.panel}>
+        <E
+          id="spot-location-precision"
+          title="精确位置仅供审核 · 公开为模糊位置"
+          body={`公开 ${d.spot?.publicCoordinate.latitude}, ${d.spot?.publicCoordinate.longitude}；原始来源 user-confirmed`}
+          meta="疑似私人土地必须核对权属、开放和公开级别"
+        />
+        <E
+          id="spot-consent-scope"
+          title="单独同意：审核员可见精确坐标"
+          body={`可见级别 ${d.spot?.preciseCoordinate.visibility}；字段逐项确认`}
+        />
+        <E
+          id="spot-submission-status"
+          title={`草稿 ${d.spot?.draftId} · 审核 ${d.spot?.reviewId}`}
+          body={`发现 ${d.spot?.duplicateCandidates.length} 个可能重复地点；人工审核前不公开`}
+        />
+      </View>
+    );
+  if (v === "report")
+    return (
+      <View style={s.panel}>
+        <E
+          id="report-expiry"
+          title={`实况有效至 ${d.report?.evidence.expiresAt} · TTL 2 小时`}
+          body="起雾、银河可见、厕所今晚关闭；位置/时间已核对"
+        />
+        <E
+          id="report-current-state"
+          title={`当前聚合 ${d.report?.current.current.length} 条 · 过期后 ${d.report?.afterExpiry.current.length} 条`}
+          body="过期后退出当前聚合；长期事实仍为通常有厕所，未被改写"
+        />
+        <E
+          id="report-source-time"
+          title={`来源 ${d.report?.evidence.source} · ±${d.report?.evidence.locationAccuracyM} m`}
+          body={`历史证据 ${d.report?.afterExpiry.immutableHistory.length} 条不可变保留`}
+        />
+      </View>
+    );
+  if (v === "correction")
+    return (
+      <View style={s.panel}>
+        <E
+          id="correction-safety-impact"
+          title={`安全影响：道路封闭 · ${d.correction?.priority}`}
+          body={`工单 ${d.correction?.caseId} · 证据 ${d.correction?.evidenceIds.length} 项`}
+          meta="地点与导航前显示待核实警告"
+        />
+        <E
+          id="correction-review-state"
+          title={`待核实 · ${d.correction?.reviewDueHours} 小时内初审`}
+          body={`${d.correction?.expiresUnconfirmedHours} 小时未确认则过期/降级`}
+        />
+        <E
+          id="correction-original-version"
+          title="原地点版本保留"
+          body={`永久关闭声明 ${d.correction?.permanentClosureClaim ? "是" : "否"}；采纳只生成新版本`}
+        />
+      </View>
+    );
+  if (v === "media")
+    return (
+      <View style={s.panel}>
+        <E
+          id="media-location-stripped"
+          title="位置已移除 · 设备序列已清理"
+          body={`公开副本：${d.media?.publicCopy.capturedAt} / ${d.media?.publicCopy.directionDeg}° / ${d.media?.publicCopy.exposure}`}
+        />
+        <E
+          id="media-review-state"
+          title={`处理完成 · ${d.media?.state}`}
+          body="上传、扫描、缩略、归属与审核状态分开"
+        />
+        <E
+          id="media-original-protected"
+          title="原图受保护 · 不直接分发"
+          body={`${d.media?.original.access} / ${d.media?.original.state}；处理失败 fail closed`}
+        />
+      </View>
+    );
+  if (v === "trust")
+    return (
+      <View style={s.panel}>
+        <E
+          id="contributor-trust-level"
+          title={`匿名贡献者 · 等级 ${d.trust?.level}`}
+          body={`审核 ${d.trust?.approved} 次 · 争议率 ${d.trust?.disputeRate} · ${d.trust?.independentConfirms} 人确认`}
+        />
+        <E
+          id="moderation-visible-status"
+          title="审核：需补充 · 存在争议"
+          body={`上传者动作 ${d.trust?.uploaderAction}；公众只见 ${d.trust?.publicState}`}
+        />
+        <E
+          id="moderation-appeal-entry"
+          title={`补充证据 / ${d.trust?.appealDays} 天内申诉响应`}
+          body="争议内容冻结自动聚合，原始证据和决定不覆盖"
+        />
+      </View>
+    );
+  return (
+    <View style={s.panel}>
+      <E
+        id="review-darkness-rating"
+        title={`天空暗度 ${d.review?.dimensions.darkness}/5 · 已填写`}
+        body={`${d.review?.visitedAt} · 到访验证 ${d.review?.verifiedVisit}`}
+      />
+      <E
+        id="review-access-rating"
+        title={`可达性 ${d.review?.dimensions.access}/5 · 已填写`}
+        body="评价维度独立，不用综合星级掩盖风险"
+      />
+      <E
+        id="review-safety-rating"
+        title="安全：未体验 · 保持空"
+        body={`摄影 ${d.review?.dimensions.photography}/5；社交动作 ${d.review?.socialActions.length} 项`}
+        meta="无关注、粉丝、私信或通用动态入口"
+      />
+    </View>
+  );
+}
+export function CommunityScreen() {
+  const [v, setV] = useState<V | null>(null),
+    qc = useQueryClient(),
+    q = useQuery({
+      queryKey: ["community"],
+      queryFn: ({ signal }) => c.get(signal),
+    }),
+    m = useMutation({
+      mutationFn: (x: { command: CommunityCommand }) => c.command(x.command),
+      onSuccess: (d) => qc.setQueryData(["community"], d),
+    }),
+    d = m.data ?? q.data;
+  return (
+    <SafeAreaView testID="screen-community-contribution" style={s.screen}>
+      <ScrollView contentContainerStyle={s.content}>
+        <Text style={s.eyebrow}>社区贡献 · 证据优先</Text>
+        <Text style={s.title}>把现场信息变成可核验的帮助</Text>
+        <Text style={s.subtitle}>
+          来源、有效期、审核和版本由服务端保存；社区内容不覆盖硬安全信息。
+        </Text>
+        <DecisionContextRevision />
+        <View style={s.actions}>
+          {actions.map((a) => (
+            <Pressable
+              key={a.key}
+              testID={a.id}
+              disabled={m.isPending}
+              onPress={() => {
+                setV(a.key);
+                m.mutate({ command: a.command });
+              }}
+              style={s.action}
+            >
+              <Text style={s.actionText}>{a.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {v && d ? <Panel v={v} d={d} /> : null}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: p.canvas },
+  content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 },
+  eyebrow: {
+    color: p.primaryActive,
+    fontSize: typeToken.label,
+    fontWeight: "700",
+  },
+  title: { color: p.text, fontSize: typeToken.title, fontWeight: "700" },
+  subtitle: { color: p.textSecondary, lineHeight: 23 },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
+  action: {
+    minHeight: minimumTouchTarget,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: p.border,
+    borderRadius: radii.pill,
+    backgroundColor: p.surface,
+  },
+  actionText: { color: p.text, fontWeight: "700" },
+  panel: {
+    gap: spacing.x1,
+    padding: spacing.x2,
+    borderRadius: radii.layer,
+    backgroundColor: p.surface,
+  },
+  card: {
+    minHeight: 92,
+    padding: 12,
+    borderRadius: radii.control,
+    backgroundColor: p.surfaceMuted,
+  },
+  cardTitle: { color: p.text, fontWeight: "700" },
+  cardBody: { marginTop: 5, color: p.text, lineHeight: 19 },
+  meta: { marginTop: 5, color: p.textSecondary, fontSize: typeToken.caption },
+});

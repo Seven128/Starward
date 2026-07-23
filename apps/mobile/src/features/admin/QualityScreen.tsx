@@ -1,1 +1,206 @@
-import{useState}from"react";import{useMutation,useQuery,useQueryClient}from"@tanstack/react-query";import{Pressable,ScrollView,StyleSheet,Text,View}from"react-native";import{SafeAreaView}from"react-native-safe-area-context";import{colors,minimumTouchTarget,radii,spacing,type as typeToken}from"@starward/ui-system/tokens";import{createQualityClient,type QualityCommand,type QualitySnapshot}from"../../data/quality-client";type V="restore"|"release"|"trace"|"funnel";const c=createQualityClient(),p=colors.planning,a:Array<{key:V;command:QualityCommand;id:string;label:string}>=[{key:"restore",command:"quality-open-restore-drill",id:"quality-open-restore-drill",label:"恢复演练"},{key:"release",command:"quality-open-release-matrix",id:"quality-open-release-matrix",label:"发布矩阵"},{key:"trace",command:"quality-open-trace",id:"quality-open-trace",label:"链路追踪"},{key:"funnel",command:"quality-open-funnel",id:"quality-open-funnel",label:"分析漏斗"}];function E({id,title,body}:{id:string;title:string;body:string}){return <View testID={id} style={s.e}><Text style={s.et}>{title}</Text><Text style={s.eb}>{body}</Text></View>}function P({v,d}:{v:V;d:QualitySnapshot}){if(v==="restore")return <><E id="restore-rpo-result" title="恢复点目标" body={d.restore.rpo}/><E id="restore-rto-result" title="恢复时间目标" body={d.restore.rto}/><E id="restore-drill-evidence" title="演练证据" body={d.restore.evidence}/></>;if(v==="release")return <><E id="release-ios-artifact" title="iOS 产物" body={d.release.ios}/><E id="release-android-artifact" title="Android 产物" body={d.release.android}/><E id="release-native-capability-gates" title="原生能力门" body={d.release.gates}/></>;if(v==="trace")return <><E id="trace-correlation-id" title="关联标识" body={d.trace.correlation}/><E id="trace-provider-span" title="供应商 Span" body={d.trace.provider}/><E id="trace-user-redaction" title="用户脱敏" body={d.trace.redaction}/></>;return <><E id="analytics-consent-filter" title="同意过滤" body={d.funnel.consent}/><E id="analytics-funnel-steps" title="漏斗步骤" body={d.funnel.steps}/><E id="analytics-retention-window" title="保留窗口" body={d.funnel.retention}/></>};export function QualityScreen(){const[v,setV]=useState<V|null>(null),q=useQuery({queryKey:["quality"],queryFn:({signal})=>c.get(signal)}),qc=useQueryClient(),m=useMutation({mutationFn:async(x:{key:V;command:QualityCommand})=>({key:x.key,data:await c.command(x.command)}),onSuccess:x=>{qc.setQueryData(["quality"],x.data);setV(x.key)}}),d=m.data?.data??q.data;return <SafeAreaView testID="screen-quality-release-observability" style={s.screen}><ScrollView contentContainerStyle={s.content}><Text style={s.eyebrow}>发布与质量</Text><Text style={s.title}>可恢复、可观测的原生发布</Text><Text style={s.sub}>恢复证据、二进制边界、链路关联和分析同意均由运行时结果驱动。</Text><View style={s.actions}>{a.map(x=><Pressable key={x.key} testID={x.id} disabled={m.isPending} onPress={()=>m.mutate(x)} style={s.action}><Text style={s.at}>{x.label}</Text></Pressable>)}</View>{v&&d?<View style={s.panel}><P v={v} d={d}/></View>:null}</ScrollView></SafeAreaView>};const s=StyleSheet.create({screen:{flex:1,backgroundColor:p.canvas},content:{padding:spacing.x2,paddingBottom:48,gap:spacing.x2},eyebrow:{color:p.primaryActive,fontSize:typeToken.label,fontWeight:"700"},title:{color:p.text,fontSize:typeToken.title,fontWeight:"700"},sub:{color:p.textSecondary,lineHeight:22},actions:{flexDirection:"row",flexWrap:"wrap",gap:spacing.x1},action:{minHeight:minimumTouchTarget,justifyContent:"center",paddingHorizontal:14,borderRadius:radii.pill,borderWidth:1,borderColor:p.border,backgroundColor:p.surface},at:{color:p.text,fontWeight:"700"},panel:{gap:spacing.x1,padding:spacing.x2,borderRadius:radii.layer,backgroundColor:p.surface},e:{minHeight:76,padding:12,borderRadius:radii.control,backgroundColor:p.surfaceMuted},et:{color:p.text,fontWeight:"700"},eb:{marginTop:5,color:p.text,lineHeight:19}});
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  colors,
+  minimumTouchTarget,
+  radii,
+  spacing,
+  type as typeToken,
+} from "@starward/ui-system/tokens";
+import {
+  createQualityClient,
+  type QualityCommand,
+  type QualitySnapshot,
+} from "../../data/quality-client";
+import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
+type V = "restore" | "release" | "trace" | "funnel";
+const c = createQualityClient({ baseUrl: resolveRuntimeApiBaseUrl() }),
+  p = colors.planning,
+  a: Array<{ key: V; command: QualityCommand; id: string; label: string }> = [
+    {
+      key: "restore",
+      command: "quality-open-restore-drill",
+      id: "quality-open-restore-drill",
+      label: "恢复演练",
+    },
+    {
+      key: "release",
+      command: "quality-open-release-matrix",
+      id: "quality-open-release-matrix",
+      label: "发布矩阵",
+    },
+    {
+      key: "trace",
+      command: "quality-open-trace",
+      id: "quality-open-trace",
+      label: "链路追踪",
+    },
+    {
+      key: "funnel",
+      command: "quality-open-funnel",
+      id: "quality-open-funnel",
+      label: "分析漏斗",
+    },
+  ];
+function E({ id, title, body }: { id: string; title: string; body: string }) {
+  return (
+    <View testID={id} style={s.e}>
+      <Text style={s.et}>{title}</Text>
+      <Text style={s.eb}>{body}</Text>
+    </View>
+  );
+}
+function P({ v, d }: { v: V; d: QualitySnapshot }) {
+  if (v === "restore")
+    return (
+      <>
+        <E id="restore-rpo-result" title="恢复点目标" body={d.restore.rpo} />
+        <E id="restore-rto-result" title="恢复时间目标" body={d.restore.rto} />
+        <E
+          id="restore-drill-evidence"
+          title="演练证据"
+          body={d.restore.evidence}
+        />
+      </>
+    );
+  if (v === "release")
+    return (
+      <>
+        <E id="release-ios-artifact" title="iOS 产物" body={d.release.ios} />
+        <E
+          id="release-android-artifact"
+          title="Android 产物"
+          body={d.release.android}
+        />
+        <E
+          id="release-native-capability-gates"
+          title="原生能力门"
+          body={d.release.gates}
+        />
+      </>
+    );
+  if (v === "trace")
+    return (
+      <>
+        <E
+          id="trace-correlation-id"
+          title="关联标识"
+          body={d.trace.correlation}
+        />
+        <E
+          id="trace-provider-span"
+          title="供应商 Span"
+          body={d.trace.provider}
+        />
+        <E
+          id="trace-user-redaction"
+          title="用户脱敏"
+          body={d.trace.redaction}
+        />
+      </>
+    );
+  return (
+    <>
+      <E
+        id="analytics-consent-filter"
+        title="同意过滤"
+        body={d.funnel.consent}
+      />
+      <E id="analytics-funnel-steps" title="漏斗步骤" body={d.funnel.steps} />
+      <E
+        id="analytics-retention-window"
+        title="保留窗口"
+        body={d.funnel.retention}
+      />
+    </>
+  );
+}
+export function QualityScreen() {
+  const [v, setV] = useState<V | null>(null),
+    q = useQuery({
+      queryKey: ["quality"],
+      queryFn: ({ signal }) => c.get(signal),
+    }),
+    qc = useQueryClient(),
+    m = useMutation({
+      mutationFn: async (x: { key: V; command: QualityCommand }) => ({
+        key: x.key,
+        data: await c.command(x.command),
+      }),
+      onSuccess: (x) => {
+        qc.setQueryData(["quality"], x.data);
+        setV(x.key);
+      },
+    }),
+    d = m.data?.data ?? q.data;
+  return (
+    <SafeAreaView
+      testID="screen-quality-release-observability"
+      style={s.screen}
+    >
+      <ScrollView contentContainerStyle={s.content}>
+        <Text style={s.eyebrow}>发布与质量</Text>
+        <Text style={s.title}>可恢复、可观测的原生发布</Text>
+        <Text style={s.sub}>
+          恢复证据、二进制边界、链路关联和分析同意均由运行时结果驱动。
+        </Text>
+        <View style={s.actions}>
+          {a.map((x) => (
+            <Pressable
+              key={x.key}
+              testID={x.id}
+              disabled={m.isPending}
+              onPress={() => m.mutate(x)}
+              style={s.action}
+            >
+              <Text style={s.at}>{x.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {v && d ? (
+          <View style={s.panel}>
+            <P v={v} d={d} />
+          </View>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: p.canvas },
+  content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 },
+  eyebrow: {
+    color: p.primaryActive,
+    fontSize: typeToken.label,
+    fontWeight: "700",
+  },
+  title: { color: p.text, fontSize: typeToken.title, fontWeight: "700" },
+  sub: { color: p.textSecondary, lineHeight: 22 },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
+  action: {
+    minHeight: minimumTouchTarget,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: p.border,
+    backgroundColor: p.surface,
+  },
+  at: { color: p.text, fontWeight: "700" },
+  panel: {
+    gap: spacing.x1,
+    padding: spacing.x2,
+    borderRadius: radii.layer,
+    backgroundColor: p.surface,
+  },
+  e: {
+    minHeight: 76,
+    padding: 12,
+    borderRadius: radii.control,
+    backgroundColor: p.surfaceMuted,
+  },
+  et: { color: p.text, fontWeight: "700" },
+  eb: { marginTop: 5, color: p.text, lineHeight: 19 },
+});

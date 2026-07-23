@@ -5,10 +5,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { SpotTrustDetail } from "@starward/contracts/spot";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
 import { createSpotClient } from "../../data/spot-client";
+import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { presentSpotFact, safetyOverridesRecommendation } from "./index";
+import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 
 const palette = colors.planning;
-const client = createSpotClient();
+const client = createSpotClient({ baseUrl: resolveRuntimeApiBaseUrl() });
 type ViewKey = "decision" | "light" | "media" | "access" | "safety" | "coordinate" | "reviews";
 const actions: Array<{ key: ViewKey; id: string; label: string }> = [
   { key: "decision", id: "spot-open-detail", label: "决策摘要" }, { key: "light", id: "spot-open-light-details", label: "暗度与遮挡" },
@@ -40,6 +42,7 @@ export function SpotScreen() {
   return <SafeAreaView testID="screen-spot-detail-and-trust" style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
     <Text style={styles.eyebrow}>地点证据 · {detail?.updatedAt ?? "正在同步"}</Text><Text style={styles.title}>{detail?.name ?? "正在加载地点身份…"}</Text>
     <Text style={styles.subtitle}>静态身份与动态证据分开呈现；未知、冲突、临时不可用和安全阻断不会被总分或漂亮卡片覆盖。</Text>
+    <DecisionContextRevision />
     {query.isError ? <View style={styles.error}><Text style={styles.errorTitle}>地点证据暂不可用</Text><Text style={styles.errorBody}>保留页面上下文，不展示旧评分或合成事实。</Text><Pressable onPress={() => query.refetch()} style={styles.retry}><Text style={styles.retryText}>重试</Text></Pressable></View> : null}
     <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" onPress={() => setActive(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
     {active === "decision" ? <View style={styles.panel}><Evidence testID="spot-decision-summary" title={recommendation.blocked ? "谨慎 · 资料不足或存在阻断" : "适合继续评估"} body={detail?.statusReason ?? "今晚动态报告尚未生成；不会把历史条件当成当前结论。"} /><Evidence testID="spot-observation-window" title="观测窗口正在刷新" body="地点身份先显示；天气和天文窗口需由同一日期/位置版本生成。" /><Evidence testID="spot-primary-action" title={navigateAction?.allowed ? "可加入计划并核对导航" : "先完成核验，导航暂不可用"} body={navigateAction?.reason ?? "行动权限按坐标与风险策略计算。"} /></View> : null}

@@ -1,0 +1,685 @@
+{
+  "manifestVersion": "2.0.0",
+  "artifact": {
+    "name": "Starward 运营端控件级开发设计稿 v2",
+    "entry": "index.html",
+    "resourceType": "developer-ready control atlas candidate",
+    "status": "unselected-candidate-source",
+    "stableOutcomeCount": 2,
+    "stableControlCount": 12,
+    "auxiliarySpecimens": [
+      "share-projection"
+    ],
+    "sourceCoverageManifest": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+    "implementationContract": "implementation-contract.json",
+    "productionActions": false
+  },
+  "selectorContract": {
+    "mainSpecimenSelector": "[data-outcome][data-control][data-specimen][data-state][data-route]",
+    "rule": "Exactly one main specimen per stable control; IDs, order, outcome, route and declared states copy the upstream coverage manifest."
+  },
+  "outcomes": [
+    {
+      "id": "admin-data-operations",
+      "label": "后台数据运营",
+      "intent": "Safely inspect, edit, moderate, replay, operate jobs, and audit administrative data workflows.",
+      "stableControls": [
+        "admin-spot-editor",
+        "moderation-queue",
+        "data-source-dashboard",
+        "job-operations-console",
+        "recommendation-replay-console",
+        "rule-release-control",
+        "admin-access-audit"
+      ]
+    },
+    {
+      "id": "quality-release-observability",
+      "label": "质量、发布与可观测性",
+      "intent": "Gate releases, inspect technical and data quality, rehearse recovery, and understand product outcomes without claiming production truth.",
+      "stableControls": [
+        "release-promotion-gate",
+        "technical-observability-dashboard",
+        "data-quality-dashboard",
+        "backup-restore-exercise",
+        "product-metrics-dashboard"
+      ]
+    }
+  ],
+  "stableControls": [
+    {
+      "id": "admin-spot-editor",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": [
+        "populated",
+        "conflict",
+        "disabled",
+        "saving",
+        "success",
+        "error",
+        "edge"
+      ],
+      "interactions": [
+        "edit-spot-draft",
+        "save-draft",
+        "preview-impact",
+        "typed-confirmation",
+        "restore-revision"
+      ],
+      "specimenKey": "specimen-admin-spot-editor",
+      "implementationContractKey": "#/controls/0",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/0"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#admin-spot-editor[data-outcome=\"admin-data-operations\"][data-control=\"admin-spot-editor\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#admin-data-operations.control.admin-spot-editor"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-admin-spot-editor"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-admin-spot-editor[data-outcome=\"admin-data-operations\"][data-control=\"admin-spot-editor\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/0"
+      }
+    },
+    {
+      "id": "moderation-queue",
+      "outcome": "admin-data-operations",
+      "route": "moderation",
+      "states": [
+        "loading",
+        "empty",
+        "no-results",
+        "populated",
+        "disabled",
+        "saving",
+        "success",
+        "error",
+        "edge"
+      ],
+      "interactions": [
+        "select-queue-items",
+        "inspect-exif-privacy",
+        "record-correction",
+        "set-confidence",
+        "preview-batch-impact",
+        "typed-confirmation",
+        "restore-moderation-revision"
+      ],
+      "specimenKey": "specimen-moderation-queue",
+      "implementationContractKey": "#/controls/1",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/1"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#moderation-queue[data-outcome=\"admin-data-operations\"][data-control=\"moderation-queue\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#admin-data-operations.control.moderation-queue"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-moderation-queue"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-moderation-queue[data-outcome=\"admin-data-operations\"][data-control=\"moderation-queue\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/1"
+      }
+    },
+    {
+      "id": "data-source-dashboard",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": [
+        "loading",
+        "empty",
+        "no-results",
+        "fresh",
+        "stale",
+        "partial",
+        "degraded",
+        "error",
+        "disabled",
+        "edge"
+      ],
+      "interactions": [
+        "inspect-source-health",
+        "clear-filters",
+        "inspect-license",
+        "inspect-last-success"
+      ],
+      "specimenKey": "specimen-data-source-dashboard",
+      "implementationContractKey": "#/controls/2",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/2"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#data-source-dashboard[data-outcome=\"admin-data-operations\"][data-control=\"data-source-dashboard\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#admin-data-operations.control.data-source-dashboard"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-data-source-dashboard"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-data-source-dashboard[data-outcome=\"admin-data-operations\"][data-control=\"data-source-dashboard\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/2"
+      }
+    },
+    {
+      "id": "job-operations-console",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": [
+        "loading",
+        "empty",
+        "populated",
+        "partial",
+        "degraded",
+        "error",
+        "disabled",
+        "saving",
+        "success"
+      ],
+      "interactions": [
+        "retry-idempotently",
+        "backfill-idempotently",
+        "preview-pause-impact",
+        "typed-confirmation",
+        "inspect-audit-feedback"
+      ],
+      "specimenKey": "specimen-job-operations-console",
+      "implementationContractKey": "#/controls/3",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/3"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#job-operations-console[data-outcome=\"admin-data-operations\"][data-control=\"job-operations-console\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#admin-data-operations.control.job-operations-console"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-job-operations-console"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-job-operations-console[data-outcome=\"admin-data-operations\"][data-control=\"job-operations-console\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/3"
+      }
+    },
+    {
+      "id": "recommendation-replay-console",
+      "outcome": "admin-data-operations",
+      "route": "recommendation",
+      "states": [
+        "loading",
+        "empty",
+        "populated",
+        "partial",
+        "error",
+        "disabled",
+        "saving",
+        "success",
+        "edge"
+      ],
+      "interactions": [
+        "lock-replay-input",
+        "compare-current-candidate",
+        "inspect-conclusion-diff",
+        "inspect-risk-diff",
+        "run-replay"
+      ],
+      "specimenKey": "specimen-recommendation-replay-console",
+      "implementationContractKey": "#/controls/4",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/4"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#recommendation-replay-console[data-outcome=\"admin-data-operations\"][data-control=\"recommendation-replay-console\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#admin-data-operations.control.recommendation-replay-console"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-recommendation-replay-console"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-recommendation-replay-console[data-outcome=\"admin-data-operations\"][data-control=\"recommendation-replay-console\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/4"
+      }
+    },
+    {
+      "id": "rule-release-control",
+      "outcome": "admin-data-operations",
+      "route": "recommendation",
+      "states": [
+        "draft",
+        "precheck-blocked",
+        "owner-only",
+        "observing",
+        "promotion-disabled",
+        "saving",
+        "success",
+        "error"
+      ],
+      "interactions": [
+        "run-rule-precheck",
+        "prepare-owner-only",
+        "observe-rule",
+        "promote-when-gates-pass",
+        "preview-rollback",
+        "typed-confirmation"
+      ],
+      "specimenKey": "specimen-rule-release-control",
+      "implementationContractKey": "#/controls/5",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/5"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#rule-release-control[data-outcome=\"admin-data-operations\"][data-control=\"rule-release-control\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#admin-data-operations.control.rule-release-control"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-rule-release-control"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-rule-release-control[data-outcome=\"admin-data-operations\"][data-control=\"rule-release-control\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/5"
+      }
+    },
+    {
+      "id": "admin-access-audit",
+      "outcome": "admin-data-operations",
+      "route": "data-operations",
+      "states": [
+        "loading",
+        "empty",
+        "no-results",
+        "populated",
+        "disabled",
+        "error",
+        "edge"
+      ],
+      "interactions": [
+        "inspect-role-permissions",
+        "inspect-sensitive-actions",
+        "inspect-session",
+        "inspect-redacted-audit-log"
+      ],
+      "specimenKey": "specimen-admin-access-audit",
+      "implementationContractKey": "#/controls/6",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/6"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#admin-access-audit[data-outcome=\"admin-data-operations\"][data-control=\"admin-access-audit\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#admin-data-operations.control.admin-access-audit"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-admin-access-audit"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-admin-access-audit[data-outcome=\"admin-data-operations\"][data-control=\"admin-access-audit\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/6"
+      }
+    },
+    {
+      "id": "release-promotion-gate",
+      "outcome": "quality-release-observability",
+      "route": "release-quality",
+      "states": [
+        "draft",
+        "precheck-blocked",
+        "owner-only",
+        "observing",
+        "promotion-disabled",
+        "rollback-ready",
+        "saving",
+        "success",
+        "error"
+      ],
+      "interactions": [
+        "run-release-precheck",
+        "prepare-owner-only",
+        "observe-release",
+        "promote-when-gates-pass",
+        "preview-rollback",
+        "typed-confirmation"
+      ],
+      "specimenKey": "specimen-release-promotion-gate",
+      "implementationContractKey": "#/controls/7",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/7"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#release-promotion-gate[data-outcome=\"quality-release-observability\"][data-control=\"release-promotion-gate\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#quality-release-observability.control.release-promotion-gate"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-release-promotion-gate"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-release-promotion-gate[data-outcome=\"quality-release-observability\"][data-control=\"release-promotion-gate\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/7"
+      }
+    },
+    {
+      "id": "technical-observability-dashboard",
+      "outcome": "quality-release-observability",
+      "route": "release-quality",
+      "states": [
+        "loading",
+        "empty",
+        "no-results",
+        "populated",
+        "stale",
+        "partial",
+        "degraded",
+        "error",
+        "disabled",
+        "edge"
+      ],
+      "interactions": [
+        "inspect-latency-trend",
+        "inspect-error-budget",
+        "inspect-fallback-rate",
+        "clear-filters"
+      ],
+      "specimenKey": "specimen-technical-observability-dashboard",
+      "implementationContractKey": "#/controls/8",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/8"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#technical-observability-dashboard[data-outcome=\"quality-release-observability\"][data-control=\"technical-observability-dashboard\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#quality-release-observability.control.technical-observability-dashboard"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-technical-observability-dashboard"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-technical-observability-dashboard[data-outcome=\"quality-release-observability\"][data-control=\"technical-observability-dashboard\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/8"
+      }
+    },
+    {
+      "id": "data-quality-dashboard",
+      "outcome": "quality-release-observability",
+      "route": "release-quality",
+      "states": [
+        "loading",
+        "empty",
+        "no-results",
+        "populated",
+        "stale",
+        "partial",
+        "degraded",
+        "error",
+        "disabled",
+        "saving",
+        "success",
+        "edge"
+      ],
+      "interactions": [
+        "inspect-completeness",
+        "inspect-freshness",
+        "inspect-license",
+        "inspect-coordinate-drift",
+        "save-quarantine-draft"
+      ],
+      "specimenKey": "specimen-data-quality-dashboard",
+      "implementationContractKey": "#/controls/9",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/9"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#data-quality-dashboard[data-outcome=\"quality-release-observability\"][data-control=\"data-quality-dashboard\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#quality-release-observability.control.data-quality-dashboard"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-data-quality-dashboard"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-data-quality-dashboard[data-outcome=\"quality-release-observability\"][data-control=\"data-quality-dashboard\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/9"
+      }
+    },
+    {
+      "id": "backup-restore-exercise",
+      "outcome": "quality-release-observability",
+      "route": "recovery",
+      "states": [
+        "loading",
+        "empty",
+        "populated",
+        "failed-validation",
+        "disabled",
+        "saving",
+        "success",
+        "error",
+        "edge"
+      ],
+      "interactions": [
+        "inspect-rpo-rto",
+        "inspect-snapshot",
+        "inspect-validation",
+        "inspect-drill-record",
+        "retry-failed-step",
+        "preview-start-drill",
+        "preview-cancel-drill",
+        "typed-confirmation"
+      ],
+      "specimenKey": "specimen-backup-restore-exercise",
+      "implementationContractKey": "#/controls/10",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/10"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#backup-restore-exercise[data-outcome=\"quality-release-observability\"][data-control=\"backup-restore-exercise\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#quality-release-observability.control.backup-restore-exercise"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-backup-restore-exercise"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-backup-restore-exercise[data-outcome=\"quality-release-observability\"][data-control=\"backup-restore-exercise\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/10"
+      }
+    },
+    {
+      "id": "product-metrics-dashboard",
+      "outcome": "quality-release-observability",
+      "route": "metrics",
+      "states": [
+        "loading",
+        "empty",
+        "no-results",
+        "populated",
+        "stale",
+        "partial",
+        "degraded",
+        "error",
+        "disabled",
+        "edge"
+      ],
+      "interactions": [
+        "inspect-decision-funnel",
+        "segment-by-data-state",
+        "reset-segmentation",
+        "download-sample"
+      ],
+      "specimenKey": "specimen-product-metrics-dashboard",
+      "implementationContractKey": "#/controls/11",
+      "sourceLocator": {
+        "coverageManifest": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\coverage-manifest.json",
+          "jsonPointer": "#/stableControls/11"
+        },
+        "prototype": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-system-ops-20260722-v1\\index.html",
+          "selector": "#product-metrics-dashboard[data-outcome=\"quality-release-observability\"][data-control=\"product-metrics-dashboard\"]"
+        },
+        "sourcePlan": {
+          "file": "C:\\Dev\\Starward\\docs\\source-plan.md",
+          "anchor": "#quality-release-observability.control.product-metrics-dashboard"
+        },
+        "atlasV1": {
+          "file": "C:\\Users\\777\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\starward-ops-control-atlas-20260722-v1\\index.html",
+          "selector": "#specimen-product-metrics-dashboard"
+        }
+      },
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#specimen-product-metrics-dashboard[data-outcome=\"quality-release-observability\"][data-control=\"product-metrics-dashboard\"]"
+      },
+      "implementationLocator": {
+        "file": "implementation-contract.json",
+        "jsonPointer": "#/controls/11"
+      }
+    }
+  ],
+  "auxiliarySpecimens": [
+    {
+      "id": "share-projection",
+      "stableControl": false,
+      "sourceRoute": "share",
+      "atlasLocator": {
+        "file": "index.html",
+        "selector": "#auxiliary-share-projection"
+      },
+      "note": "Retained for page-assembly context and intentionally excluded from the 12 stable controls."
+    }
+  ],
+  "authority": {
+    "identity": "upstream coverage-manifest.json",
+    "implementation": "implementation-contract.json",
+    "visualProjection": "index.html",
+    "status": "unselected candidate Source"
+  }
+}

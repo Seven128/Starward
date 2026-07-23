@@ -2,7 +2,7 @@
 
 > 文档性质：供后续 /long-task-workflow 读取的上游 Source Plan。
 >
-> 权威边界：本计划保存用户意图、必要推导、待决策项与可观察验收，不是 Delivery Contract，不绑定真实 owner、文件、runner、proof 或 Assertion，也不宣称实现完成。
+> 权威边界：本计划保存用户意图、必要推导、受委托选择、待决策项与可观察验收，不是 Delivery Contract，不绑定真实 owner、runner、proof 或 Assertion，也不宣称实现完成。页面级 UI/UX 事实在这里以稳定 Surface/Control/Target 键和 Screen Contract-ready 语义表达；本次修订已把四个不可变 Open Design 资源登记为 `selected_for_source_authoring`，其中页面原型是 constraint target，控件 implementation contract 在其声明字段/状态/viewport 内是 exact target。该选择仍不是 Context/DESIGN Authority adoption；现有实现、实现截图、资源中的样例数据和评审壳也不是目标。后续仍须由 Tiny Context 默认工作流或受保护的 Single-Goal Long-Task revision 完成 UI Authority Closure、真实文件绑定与验证闭环。
 
 ## 1. Goal And Success Definition
 
@@ -22,6 +22,7 @@
 - 用户在 React Native iOS/Android APP 中完成“判断条件 → 选择主备地点 → 生成行程 → 导航 → 现场辅助 → 实况反馈”的闭环。
 - 首页先回答今晚是否值得出发、最佳窗口、推荐地点、预计车程、可见目标和是否需要立即出发，再按需下钻专业数据。
 - 地图、地点详情、路线、行程、天空、摄影和现场模式共享一致的地点、时间、路线和风险状态。
+- 每个物料级页面在实现前都有稳定 Surface Key、信息层级、区域/空间归属、Material Control 语义、状态/模式/响应式变体、导航契约和已声明覆盖的 selected exact/constraint target；没有目标覆盖的部分不得由实现 Agent 临时“设计得好看”。
 - 断网现场仍可读取观测数据包、地图与方向信息、切换备选点、记录实况，并在联网后安全同步。
 - 推荐与预测可解释、可追溯、标注新鲜度/可信度/来源，不能把模型输出包装成确定事实。
 - 系统在安全、隐私、性能、数据质量、供应商故障和户外真实设备条件下具有明确降级与恢复路径。
@@ -30,7 +31,7 @@
 
 - 本计划覆盖产品大纲和技术架构的完整目标形态，并保留 MVP、V1、V2、V3 的范围顺序。
 - 用户本轮明确最终载体是 Expo + React Native APP；早期 PWA 只作为原大纲中的验证建议记录，不作为本交付的替代完成形态。
-- 参考图只提供信息层级、布局与交互模式证据；产品逻辑以产品大纲为准，视觉身份以项目 DESIGN.md 为准。
+- 产品逻辑以产品大纲为准；跨页面责任由 Product Surface Contract 语义治理，页面层级/区域/控件由 on-demand Screen Contract 语义治理，视觉系统与长期 token 解释由 DESIGN.md 治理，版本化 selected design target 只控制其明确声明的 Surface/viewport/mode/state/content 覆盖。参考图、候选图、现有代码和实现截图不得越级成为设计事实源。
 
 ### 当前交付配置：个人试用版
 
@@ -45,24 +46,38 @@
 ### 当前项目事实
 
 - 仓库/工程名为 Starward，用户侧产品名为《今晚去观星》，品牌句为“从黄昏走入星夜”。
-- 当前仓库有 Tiny Context、DESIGN.md、Open Design 参考导出、项目级 React Native 交互动效 Skill 与一份官方来源技术/数据决策包；仍没有生产 APP、后端、数据管线、已购买供应商或真实生产集成。
-- DESIGN.md 已声明移动端优先、390 × 844 主视口、44px 触控目标、结论/行动/证据三级信息层、日间/夜间/红光模式、地图与时间共用曲线和圆形节点语法。
-- project_context/** 已声明地点、时间窗口、路线、到达、风险和专业证据是一组协调状态，并声明 DESIGN.md/Source Plan/Context 对项目 Skill 的单向上位权威关系。
+- 当前仓库已经存在 React Native/Expo APP、API、管理表面、worker/data-pipeline、共享 packages、测试和运行证据的广泛实现；这些文件说明“当前实现是什么”，不证明产品已完成，也不自动成为页面构图、视觉选择或验收基准。供应商购买、真实生产流量、生产许可和未来发布门仍须独立证明。
+- DESIGN.md 已声明移动端优先、390 × 844 主视口、44px 触控目标、结论/行动/证据三级信息层、日间/夜间/红光模式、地图与时间共用曲线和圆形节点语法；它仍是系统级视觉/交互 Authority。四个本轮 design target 补充逐页区域、控件位置、状态、动效、平台与验收语义，但在 UI Authority Closure 前不反向改写 DESIGN.md。
+- project_context/** 已声明地点、时间窗口、路线、到达、风险和专业证据是一组协调状态，并声明 DESIGN.md/Source Plan/Context 对项目 Skill 的单向上位权威关系；当前仍没有按本计划 Surface Key 建立的页面级 Screen Contract。四个 design target 已消除上游 Source 的页面/控件信息缺口，但其 durable adoption、Screen Contract 归属和实现绑定仍是后续 UI Authority Closure 的职责。
+- Tiny Context 当前默认 Workflow Contract 已支持 UI Authority Closure：物料级 UI 实现前必须逐个 reconcile 稳定 surface/control/target key，读取 DESIGN.md、token source 和 selected target；Product Surface Contract、on-demand Screen Contract、DESIGN.md、authored target、Delivery Contract、实现和 evidence 各自承担不同层级，不能相互替代。
 
 ### 文本来源
 
 - S-ARCH：技术架构附件，2,042 行，53,663 bytes，SHA-256 1de938f5a16c1e3040ec967457479031d576b00c25d3b34c85ebb69d555b38b3。
   - 来源路径：C:\Users\777\.codex\attachments\536861fc-7965-421e-ba5c-36af501fad92\pasted-text.txt
+  - 当前会话别名：C:\Users\777\.codex\attachments\d8874db0-6c8f-4270-98d8-d89a6d4422fd\pasted-text.txt；内容与 SHA-256 完全相同，不创建第二份语义来源。
   - 覆盖：React Native/Expo、原生模块、地图/坐标、后端领域、数据源、推荐、API、缓存、任务、媒体、部署、安全、可观测性、测试、性能、风险与工程顺序。
 - S-PRODUCT：产品大纲附件，1,995 行，42,179 bytes，SHA-256 4dd9c487f89955673fcb3f59dd4e38817683835f8f204b72dee6ee4c861bf0a3。
   - 来源路径：C:\Users\777\.codex\attachments\0d11984e-40b8-43ee-b8dc-a7f4ebac3505\pasted-text.txt
+  - 当前会话别名：C:\Users\777\.codex\attachments\62ece93a-1736-4d7b-8888-c747e78816fa\pasted-text.txt，42,178 bytes，SHA-256 76fd0201aacd63f74dd87c4ca362cd59bf76f6ceea0cdb5346f1d38d4222f6a0；与前一路径逐字内容在 TrimEnd 后相同，仅缺最后一个 LF，不创建第二份语义来源。
   - 覆盖：目标用户、场景、五入口信息架构、全部功能、数据模型、通知、MVP/V1/V2/V3、指标、后台与风险。
-- S-DESIGN：仓库根 DESIGN.md，提供视觉 token、品牌语义、布局、组件、模式和视觉禁区。
-- S-CONTEXT：project_context/global.md、architecture.md、areas/main.md，提供 durable surface/interaction 边界；本轮独立 UI/Context workflow 已更新交互责任与 Skill 单向权威，供应商推荐仍未被写成已决生产事实。
+- S-DESIGN：仓库根 DESIGN.md，提供视觉 token、品牌语义、系统级布局/组件/模式和视觉禁区；当前不被解释为逐页面构图或 exact target。
+- S-CONTEXT：project_context/global.md、architecture.md、areas/main.md，提供 durable product/surface/interaction 边界；当前没有本计划所需的 on-demand Screen Contract，供应商推荐和页面候选 target 均未被写成已决 durable fact。
 - S-RESEARCH：仓库 `docs/technical-data-source-decisions.md`，2026-07-20 官方/一手资料调研，覆盖移动栈、天气、地图/路线、VIIRS、DEM、星表、卫星、专业天象、推送、对象存储/CDN、离线加工、成本、POC、商务/法务门和官方证据；其中 `recommended` 不自动等于已批准 DEC，`contract_gate`/`poc_gate`/`external_confirmation` 不得由 Agent 伪造完成。
 - S-INTERACTION：仓库 `.codex/skills/uiux_design/SKILL.md` 及其 references，提供 React Native Press/Gesture Handler/Reanimated/Bottom Sheet/触觉/无障碍/双平台执行映射和上游许可；它必须先读并服从 S-DESIGN、本计划与 S-CONTEXT，不是平级或反向权威。
 - S-APPLE：Emil Kowalski `apple-design` Skill，固定审阅 revision `6bf24434f7730ad169077756cf9c7cd7bd675fc6`，MIT License；只采纳可迁移的即时反馈、直接操控、中断/速度连续、空间一致、克制触觉、无障碍与交互原型原则，不采纳其 web 代码、玻璃材质、系统字体默认或让 Android 模仿 iOS。
 - S-USER：用户指令要求以 React Native APP 为目标、细化到基本布局/具体内容/控件级、不得遗漏两份附件任一细节、参考但不复制截图；进一步要求完成技术/数据源调研和 Starward React Native 交互规范，全部写回 DESIGN.md 与 Source Plan，并由项目 Skill 执行但不形成循环权威；数据源必须先满足真实性、目标区稳定性和合法可运营性，再在合格候选中优先选择最低实际总成本。用户随后明确当前运营主体为个人、当前阶段只做 owner-only 个人试用版、外部服务预算不超过 CNY 200/月且免费优先；正式合同/法务/商店/专家/现场背书延后到未来生产发布准备阶段，不能反向阻塞当前代码交付，也不能被伪造为已完成。
+- S-USER-UIUX-AUTHORITY：前序用户直接指令。用户确认当时只有“视觉风格/动效风格”和产品功能/大致摆放，缺少具体页面设计图、信息放置和完整交互事实；要求把页面级 UI/UX 固定下来，并让 Product Context、默认流程契约和 Single-Goal Long-Task 工作流都能消费这些信息。该来源在当时只决定 UI Authority 闭环目标、尚未选定视觉候选；其后用户确认原型总体方向满意，并由更晚的 S-USER-SOURCE-REVISION 明确选择四个最终资源进入本次 Source authoring。
+- S-USER-SOURCE-REVISION：用户于 2026-07-22 明确调用 `source-plan-authoring`，指定“两份初版方案 + 本补开发方案 + 设计资源”为本次输入，并要求按需创建 Goal、建立关键索引且不得因上下文压缩漏掉细节；此前用户已经确认首轮原型视觉方向满意，并要求继续补齐逐控件静态样式、动态状态、动效和逻辑。该指令直接选择本节登记的四个最终资源进入 Source authoring；target 精确度分类按资源本身的能力和排除项作必要/受委托解释，不把样例数据或评审壳选为产品事实。
+- S-GAP-PLAN：仓库 `docs/architecture/gap-driven-supplemental-development-plan.md`，38,634 bytes，SHA-256 `52150dd5031d068638fe3284463925ac25f37ea1553d054744ae1fe3e371f56a`。它以两份初版方案、当前 Source/Context/Design 和 `main@a88c1b0` 加工作区为证据，给出 16 项 MVP、14 Outcome、横切架构、19 个工作包、Stage 0～8 与真实验收旅程的缺口处置；其中当前代码状态是 evidence-backed，不自动成为产品意图，个人版 SQLite/私有文件/SQLite job 架构是 delegated proposal，须在本计划明确采纳后才控制当前交付。
+- S-DR-GOAL-INDEX：Open Design `starward-system-uiux-goal-index-20260722.md`，路径 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\starward-system-uiux-goal-index-20260722.md`，当前 31,491 bytes，SHA-256 `42213de35f4ebf9e4fc78b5b38d0d95d8ec637f96576da9cf53256da69304456`，Native Goal thread `019f8665-1119-77b3-abc7-07d440e32ff5`。它完整记录资源生成、替代、失败/no-op、独立静态与 Browser 审计、hash 和 non-claim；只作资源 provenance/evidence，不代替四个目标文件本身。
+- S-DR-MOBILE-PAGES：Open Design 项目 `starward-system-mobile-20260722-v2`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-system-mobile-20260722-v2`。`index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271`，`coverage-manifest.json` `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`，`README.md` `4c95723f217be83d22b0b3b86f34787a4d455408a3b3e863b817ca8cd4c53801`；覆盖 12 个移动 Outcome、83 个 stable control、390×844、五 Tab、11 个数据/操作状态、planning/night/red-light、沉浸 Map/Sky 与 25/55/90 Sheet。
+- S-DR-OPS-PAGES：Open Design 项目 `starward-system-ops-20260722-v1`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-system-ops-20260722-v1`。`index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5`，`coverage-manifest.json` `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`，`README.md` `196220d3c3b800d41badb3e3ec97095321454309e6e96780f059a482e3fc546b`；覆盖 2 个运营/质量 Outcome、12 个 stable control、7 个工作区和辅助 share projection。
+- S-DR-MOBILE-CONTROLS：Open Design 项目 `starward-mobile-control-atlas-20260722-v3`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-mobile-control-atlas-20260722-v3`。`index.html` SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`，`control-atlas-manifest.json` `50acbe4417de45a75c6d5855b5b39fd1edd2c2ef345648f497654017d7f21aab`，`implementation-contract.json` `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4`，`README.md` `425f998f414efad7a2b870583d0e5e4fb0872babb22e6774e39bc7c1a0f120fc`；覆盖 83/83 控件、每控件 15 个工程字段、12 个页面装配、208 个 Given/When/Then、A～F 高风险流程。Open Design run 仍为 `artifact-ready/run-unreconciled`，但文件 hash 稳定且独立静态/Browser 检查通过；不得误报 provider run succeeded。
+- S-DR-OPS-CONTROLS：Open Design 项目 `starward-ops-control-atlas-20260722-v2`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-ops-control-atlas-20260722-v2`。`index.html` SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`，`control-atlas-manifest.json` `0a93f4f96fcb3419e3b7394ab5bc30db7b50ea8d16baebb840425b7a03f45586`，`implementation-contract.json` `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388`，`README.md` `2fe73b0ac41c5bfe6ce4903123eebfd48ebdd4f6f07dc33e6a8ec327dbc2a76a`；覆盖 12/12 控件、7 个页面装配、32 个 Given/When/Then 与 REV-43 阻断/确认/幂等/错误/恢复流程。
+- S-WEB-UIUX-ADVICE：用户在本轮对话粘贴的 Web GPT 建议全文，属于 advisory/inspiration Source，不是直接产品 Authority。可采纳的设计方法包括“先形成可验证设计再忠实实现”、围绕“值不值得去→去哪→几点→怎么到→现场看什么”的闭环、优先锚定今晚/地图/地点详情、再覆盖小时条件/行程/现场模式、先 UX/线框再视觉选择/设计系统/实现与对比；三套方向、Figma、具体目录、固定截图数量和工具职责只是候选做法，未被自动批准。
+- S-HARNESS-UIUX：当前仓库 AGENTS.md managed Workflow Contract、`.codex/ty-context-managed/context_templates/product-surface-contract.md`、`screen-contract.md`，以及 `context_surface_contract`、`context_uiux_design`、`source-plan-authoring`、`long-task-workflow` Skills。它们提供 Source→Context/Design Authority→Contract→实现→证据的工作流边界、stable key reconciliation、candidate/selected target 分类和 Authority Lock 后 protected revision 规则，不新增 Starward 业务功能。
+- S-IMPLEMENTATION-UI：当前 `apps/mobile/**`、`packages/ui-system/**`、`docs/design-system/**` 与 `artifacts/verification/**` 的实现/预览/截图。它们只证明当前实现或历史设计探索可被审查，不能反向决定产品意图，不能作为自己的视觉 baseline，也不能替代未建立的 selected authored target。
 
 ### 图像来源与证据处置
 
@@ -104,14 +119,160 @@
 
 ### 来源优先级和冲突处理
 
-1. 本轮用户明确指令优先。
-2. 产品能力和业务规则以 S-PRODUCT 为准。
-3. 实现边界和技术义务以 S-ARCH 为准。
-4. 已有视觉事实以 S-DESIGN 为准。
-5. 已有 durable 边界以 S-CONTEXT 为证据。
+1. 用户直接指令按时间后者优先：S-USER-UIUX-AUTHORITY 建立 UI Authority 目标，后续 S-USER-SOURCE-REVISION 又明确选择四个最终资源进入本次 Source authoring；两者都不自动完成 Context/DESIGN adoption。
+2. 产品能力和业务规则以 S-PRODUCT 为准，实现边界和技术义务以 S-ARCH 为准；当前附件别名不改变语义身份。
+3. 已被 durable adoption 的跨页面责任以 S-CONTEXT 为准，视觉系统语义以 S-DESIGN 为准；本计划中标为 `context_update_required` 的页面事实尚不能伪装成已落入 Context。
+4. 未来版本化 design target 只有在状态为 selected、记录 selection basis/approver/revision/hash 且声明 coverage 后，才可按 exact 或 constraint 类别控制所覆盖页面；未声明覆盖仍回到 Screen Contract/DESIGN.md，不允许外推。
+5. S-HARNESS-UIUX 约束 Source、Context、Design Authority、Contract、实现和 evidence 的消费顺序，不替代 Starward 产品决定。
 6. S-RESEARCH 证明当前外部事实和推荐路径，但不能替代用户/产品 DEC、合同、采购、法务、POC 或现场确认。
-7. S-INTERACTION 是 S-DESIGN/本计划/S-CONTEXT 的下游实现伴随指南；S-APPLE 仅为其有署名的上游灵感，不改变 Starward 品牌或平台规则。
-8. S-IMG-01～10 只支持布局/交互推导，不允许覆盖前述权威来源。
+7. S-INTERACTION 是 S-DESIGN/本计划/S-CONTEXT/selected target 的下游实现伴随指南；S-APPLE 仅为其有署名的上游灵感，不改变 Starward 品牌或平台规则。
+8. S-WEB-UIUX-ADVICE、S-IMG-01～10、Open Design 导出和未选中的生成图只支持方法/布局/交互推导；S-IMPLEMENTATION-UI 只作当前实现证据，均不允许覆盖前述 Authority。
+
+### 本轮 UI/UX 输入处置索引
+
+| Source Key | 可读性 | 本计划处置 | 不得产生的结论 |
+| --- | --- | --- | --- |
+| `S-USER-UIUX-AUTHORITY` | 完整 | 全量纳入 UI Authority Outcome、stable key、Context/Workflow/Long-Task 衔接和验收 | 不代替尚未作出的视觉方向选择 |
+| `S-USER-SOURCE-REVISION` | 完整 | 选择四个最终 design resource 进入本次 Source authoring；要求同一 Source Plan、Goal 索引和无遗漏 | 不等于 Context/DESIGN adoption、实现授权或产品完成 |
+| `S-GAP-PLAN` | 完整 | 采纳严格缺口基线、个人版架构替代、工作包依赖、Stage 0～8 和真实验收边界；代码事实保持 evidence-backed | 不把当前代码形状、文件路径或测试脚手架提升为产品意图 |
+| `S-DR-MOBILE-PAGES` | 完整；hash 已复核，raw preview 无 console error | `selected_for_source_authoring` + `constraint`：控制 12 个移动 surface 的布局、层级、route、模式、状态、空间与已声明交互 | 桌面评审栏、iPhone 装饰壳、北京/清水河/数值/人物等样例不是产品事实；不证明原生实现 |
+| `S-DR-OPS-PAGES` | 完整；hash 已复核，raw preview 无 console error | `selected_for_source_authoring` + `constraint`：控制 2 个运营/质量 Outcome、7 个工作区和辅助分享投影的页面装配 | 不证明真实权限、发布、恢复、审计或 API 已实现 |
+| `S-DR-MOBILE-CONTROLS` | 完整；83/83、15 字段、208 AC、A～F 与 runtime 0 已复核 | `selected_for_source_authoring` + `exact-with-declared-coverage`：`implementation-contract.json` 控制每个 stable control 的视觉、状态、API/逻辑、动效、触觉、可访问性、平台、内容、资产、数据/隐私、观测、验收和版本字段；HTML 是可操作投影 | Open Design run 不得称 succeeded；候选媒体、真机 physics/传感器/触觉/性能和真实服务不在已证明范围 |
+| `S-DR-OPS-CONTROLS` | 完整；12/12、32 AC、13 执行检查和 REV-43 已复核 | `selected_for_source_authoring` + `exact-with-declared-coverage`：JSON contract 控制 12 个 stable control，HTML 是可操作投影 | 不证明真实认证/MFA、后端幂等、不可变审计、发布或恢复结果 |
+| `S-DR-GOAL-INDEX` | 完整 | 保留生成/替代/失败/no-op/验证 provenance 与不可变身份 | 不以 Goal 状态或 provider 文案代替目标文件与独立检查 |
+| `S-WEB-UIUX-ADVICE` | 完整 | 采纳 design-first、核心决策链、两波核心页面、UX→wireframe→candidate→selection→system→implementation→comparison 的方法；其余逐项标为 delegated/advisory | 不强制 Figma、不强制每轮三案、不把图片生成结果直接当 Authority、不以 pixel-perfect 作为唯一完成证明 |
+| `S-HARNESS-UIUX` | 完整 | 采纳 Product Surface/Screen/DESIGN/target/Contract/evidence 分层、UI Authority Closure、Authority Lock 与 protected revision | 不在本次 Source authoring 中直接修改 Context、运行 long-task、创建 Contract 或声明 adoption 已完成 |
+| `S-IMPLEMENTATION-UI` | 可检查 | 作为 gap audit、回归和后续 before/after evidence 输入 | 现有页面或截图不得为自己授权，也不得覆盖 selected target |
+| `S-PRODUCT` / `S-ARCH` 当前附件别名 | 完整 | 与原稳定 Source ID 合并；产品副本仅末尾 LF 差异已索引 | 不重复计数、不制造冲突版本 |
+| `S-IMG-01～10` / Open Design references | 完整 | 保留已逐张记录的局部布局与交互证据，统一归类 inspiration | 不复制品牌、具体数据、装饰或把参考产品页面当 Starward exact target |
+
+当前没有不可读输入。四个最终 design resource 均已稳定落盘并按 hash 复核；其源文件仍位于 Open Design data directory，因此后续 Contract/实现必须读取并固定这些绝对路径或将同 hash 文件受控迁入仓库，不能只写“见上文原型”。Figma 不是必需输入。Screen Contract 与 Context/DESIGN adoption 仍未完成，属于 UI Authority Closure，而不是本 Source authoring 的遗漏。
+
+### Selected Target Registry
+
+| Target Key | Source | Selection / target class | 声明覆盖 | 排除与 non-claim |
+| --- | --- | --- | --- | --- |
+| `target.mobile-product-pages-v2` | `S-DR-MOBILE-PAGES` | `selected_for_source_authoring` / constraint | 390×844；12 个移动 Outcome；五 Tab；planning/night/red-light；11 类状态；route、区域、层级、Map/Sky 沉浸布局、Sheet 25/55/90 | 样例数据、评审壳、真实 API、原生 physics/性能不受其证明 |
+| `target.ops-product-pages-v1` | `S-DR-OPS-PAGES` | `selected_for_source_authoring` / constraint | 1440px 优先响应式桌面；2 个 Outcome；7 工作区；12 stable controls；辅助 share projection；危险流程空间与反馈 | 不证明真实权限/服务端副作用；share projection 不是第 13 个 stable control |
+| `target.mobile-controls-v3` | `S-DR-MOBILE-CONTROLS` | `selected_for_source_authoring` / exact-with-declared-coverage | 83 stable controls；15 字段；12 page assemblies；208 AC；A～F；360/390/430 与 review 820/1024/1440；三模式、200% text、reduced motion | 9 个控件的真机调参/能力 POC、生产媒体、真实外部/原生边界仍待后续证明；resource run 状态不等于 artifact 失败 |
+| `target.ops-controls-v2` | `S-DR-OPS-CONTROLS` | `selected_for_source_authoring` / exact-with-declared-coverage | 12 stable controls；7 page assemblies；32 AC；REV-43；1440/1024/820 和键盘/zoom/reduced motion | 真实 backend endpoint/auth/MFA/permission/audit/restore 仍由 Contract 与实现证明 |
+
+资源自身声明的后续事实必须原样进入 Contract preflight：mobile 83 个控件中 49 个声明触觉、34 个逐项声明 iOS/Android `not-applicable` 理由；9 个控件含不会阻塞开发但会阻塞相应原生验收的 unresolved——`map-filter-sheet`、`map-marker-density-surface`、`selected-spot-sheet`、`observation-timeline-editor`、`sky-time-scrubber`、`orientation-calibration-sheet` 需要代表性设备调参，其中 `orientation-calibration-sheet` 还需 capability POC；`orientation-follow-toggle` 与 `ar-mode-toggle` 需要 capability POC；`spot-media-gallery` 需要获批生产媒体。当前 Android 所需项进入本 profile 原生验收；iOS 项继续约束实现，但其运行调参与 POC 随 iOS 运行验证一起标为 deferred/unverified，不能阻塞当前 Android target，也不能被误报完成。Ops 12 个控件均把真实 endpoint/auth/authorization 记为 downstream unresolved；这不是控件设计缺口，但没有绑定和证明前不能宣称服务端行为完成。mobile atlas 的 Open Design run `a52b37d9…` 非终态，artifact 仅凭固定 hash 和独立检查可用；不得把 `artifact-ready/run-unreconciled` 改写为 provider succeeded。
+
+Selection basis：`S-USER-SOURCE-REVISION` 直接要求将已生成设计资源作为 Source authoring 输入，且用户先前确认原型总体方向满意；页面资源自身只足以成为 constraint，控件 implementation contract 才能在明确 JSON 字段与状态覆盖内成为 exact target。该分类是必要/受委托整理，不新增产品能力，也不把候选资源文件自己的旧 `unselected candidate` 元数据改写为 durable Design Authority。
+
+Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT、S-ARCH、S-USER 与本计划控制；系统级品牌/token 由 DESIGN.md 控制；页面 target 控制空间与装配；控件 JSON contract 控制逐控件声明字段。若 exact control contract 与页面 HTML 投影冲突，以同 hash `implementation-contract.json` 为准；若它与上位产品/安全规则或 DESIGN.md 冲突，停止实现并进行 UI Authority Closure，不由实现自行挑选。
+
+### Surface / Control / Target Coverage
+
+| Outcome / surface | Route / workspace | Stable controls | Page target | Control target locator |
+| --- | --- | --- | --- | --- |
+| `mobile-shell-and-preferences` | `/onboarding-preferences` | `primary-tab-bar`, `permission-step`, `preference-wizard`, `profile-switcher` | `target.mobile-product-pages-v2` | `target.mobile-controls-v3#/controls/<control-key>` |
+| `tonight-decision` | `/tonight` | `location-date-refresh`, `decision-hero`, `condition-summary-expander`, `visible-target-timeline`, `recommendation-card`, `plan-backup-selector` | `target.mobile-product-pages-v2` | 同上 |
+| `forecast-and-astronomy` | `/forecast` | `hourly-matrix`, `model-selector`, `trend-calendar`, `twilight-window-strip`, `weather-layer-panel` | `target.mobile-product-pages-v2` | 同上 |
+| `map-route-discovery` | `/map` | `map-search-context-bar`, `map-filter-sheet`, `map-layer-selector`, `map-marker-density-surface`, `selected-spot-sheet`, `route-plan-editor`, `external-navigation-action` | `target.mobile-product-pages-v2` | 同上 |
+| `spot-detail-and-trust` | `/spot/:spotId` | `spot-hero`, `spot-media-gallery`, `evidence-section-nav`, `horizon-polar-view`, `access-facility-fact-list`, `safety-block`, `trust-panel`, `spot-action-dock` | `target.mobile-product-pages-v2` | 同上 |
+| `itinerary-and-collaboration` | `/trips` 与详情子路由 | `itinerary-library`, `itinerary-creation-form`, `itinerary-detail-tabs`, `itinerary-overview-card`, `observation-timeline-editor`, `candidate-tray`, `route-option-comparator`, `version-and-share-actions`, `collaboration-panel` | `target.mobile-product-pages-v2` | 同上 |
+| `sky-orientation-ar` | `/sky` | `sky-canvas`, `sky-object-and-layer-panel`, `sky-time-scrubber`, `orientation-follow-toggle`, `orientation-calibration-sheet`, `obstruction-and-trajectory-overlay`, `field-of-view-overlay`, `ar-mode-toggle` | `target.mobile-product-pages-v2` | 同上 |
+| `shooting-assistant` | `/shooting` | `shooting-setup-form`, `shooting-preset-picker`, `shooting-recommendation`, `ai-explanation-panel`, `shooting-checklist`, `save-shooting-plan` | `target.mobile-product-pages-v2` | 同上 |
+| `field-offline-safety` | `/field` | `offline-pack-manager`, `field-dashboard`, `night-red-mode-toggle`, `field-tool-grid`, `return-to-parking`, `backup-switcher`, `safety-session-panel`, `location-share-action`, `offline-sync-queue` | `target.mobile-product-pages-v2` | 同上 |
+| `community-contribution` | `/contribute` | `new-spot-wizard`, `field-report-form`, `multidimensional-review-form`, `correction-report`, `media-privacy-review`, `contribution-status-center` | `target.mobile-product-pages-v2` | 同上 |
+| `notifications-and-toolbox` | `/toolbox` | `notification-rule-editor`, `notification-settings-center`, `notification-message-deeplink`, `toolbox-index`, `celestial-event-detail`, `astronomy-calculator-form` | `target.mobile-product-pages-v2` | 同上 |
+| `identity-profile-privacy` | `/me` | `auth-gate-sheet`, `guest-data-merge`, `profile-hub`, `content-library-browser`, `equipment-manager`, `session-security`, `privacy-center`, `export-delete-flow`, `help-and-source-center` | `target.mobile-product-pages-v2` | 同上 |
+| `admin-data-operations` | `data-operations`, `moderation`, `recommendation` | `admin-spot-editor`, `moderation-queue`, `data-source-dashboard`, `job-operations-console`, `recommendation-replay-console`, `rule-release-control`, `admin-access-audit` | `target.ops-product-pages-v1` | `target.ops-controls-v2#/controls[identity.stableControlId=<control-key>]` |
+| `quality-release-observability` | `release-quality`, `recovery`, `metrics` | `release-promotion-gate`, `technical-observability-dashboard`, `data-quality-dashboard`, `backup-restore-exercise`, `product-metrics-dashboard` | `target.ops-product-pages-v1` | 同上 |
+
+95 个 Source Plan `CTRL` 与两个最终 control contract 的 stable IDs 是严格一一对应集合：95 个 plan key、95 个 resource key、无缺失、无多余、无重复。每个 `CTRL` 现有 Source Plan 块保存业务意图与产品反馈；上表的 exact pointer 补齐 Surface/Region/Control type/Label/Location/Visibility/Availability/Validation/Default/Interaction/Navigation/Permission/Accessibility 等独立字段及视觉、动效、平台、内容、资产、数据与验收细节。外部 target 仍须保留，因为精确非文本视觉与可操作 specimen 不能被 Markdown 转述替代。
+
+### Superseded And Rejected Design Resources
+
+- `starward-system-mobile-20260722-v1`：只作 before baseline；被 v2 的沉浸 Map/Sky 和显式红光 token 修复替代。
+- `starward-mobile-control-atlas-20260722-v1`：只有粗粒度视觉/状态，缺工程字段；superseded。
+- `starward-mobile-control-atlas-20260722-v2`：虽然静态 schema 完整，但 raw preview 因不存在的初始 flow key 与初始化顺序崩溃；其同会话 continuation 又是零文件变化的 false-positive no-op；rejected。
+- `starward-ops-control-atlas-20260722-v1`：缺 typed API/state owner/events/acceptance/motion/asset/async contract；superseded。
+- 以上资源不得成为 target、替代最终 hash、用于通过验收或在实现中与最终版本混用。
+
+### Gap Audit Baseline And Disposition
+
+`S-GAP-PLAN` 的代码审计快照是 `main@a88c1b0` 加审计时工作区；它只冻结“当时实现到了哪里”，不冻结未来文件路径或代码形状。按“原生可达 + 可变真实输入 + 真实数据/副作用 + 适用持久化 + 重启恢复 + 失败路径 + 可执行验收”的严格端到端口径，16 项初始 MVP 为 **0 项完整、10 项局部实现未闭环、6 项固定演示/声明/缺失为主**。这不是代码完成百分比，也不否定已通过的 typecheck/unit test；它表示审计时尚无一项 MVP 同时满足完整产品闭环。
+
+| MVP 项 | 审计状态 | 必须补齐的闭环 |
+| --- | --- | --- |
+| 当前位置与日期选择 | 局部实现 | 原生主路径中的日期/地点选择、文本地点坐标化、权限拒绝替代和跨页一致状态 |
+| 今晚综合结论 | 局部实现 | 真实地点级天气/天文/光污染/路线/核验地点、快照持久化、主备与解释 |
+| 基础天气 | 局部实现 | ingest/store/quality/cost、warning/AQI、目标区质量门和诚实降级 |
+| 基础天文 | 局部实现 | 银河/行星/特殊天象、版本化资产、黄金集和多地点/日期校准 |
+| 光污染地图 | 缺失 | VIIRS 区域资产、点查询/瓦片/图例、版本/回滚与来源状态 |
+| 人工初始观星点 | 缺失 | 深圳/粤港澳大湾区至少 30 个同标准核验 seed spot 及版本化事实 |
+| 地点详情 | 局部实现 | 持久化媒体、遮挡、光环境、设施/开放/风险、核验与纠错 |
+| 地点筛选 | 局部实现 | 完整天空/出行/设施/画像筛选、真实 MapView 和卡片/Sheet 协调 |
+| 地点推荐与理由 | 局部实现 | 真实候选级输入、阻断/排序/可信度、快照与重放 |
+| 主地点与备选地点 | 局部实现 | 真实备选证据及 Tonight/Map/Spot/Route/Itinerary 全链一致性 |
+| 外部地图导航 | 局部实现 | 可用路线 adapter、原生触发/返回、失败/无 key/超时降级 |
+| 简单行程卡片 | 固定演示 | 用户表单、领域实体/路线/时间线、revision、重启读回 |
+| 手机摄影基础预设 | 局部实现 | 设备/镜头/条件真实输入、保存/离线引用、规则版本与校准 |
+| 上传新地点 | 固定演示 | 真实表单/选点/媒体、领域写入、审核状态与重启读回 |
+| 评论、评分与实况 | 固定演示 | 可变用户输入、位置/时间证据、持久化、TTL job 与历史读取 |
+| 基础埋点 | 缺失 | consent 后真实事件 sink、查询、留存/删除和隐私验证 |
+
+14 个 Outcome 在同一快照下全部未达到端到端完成：`mobile-shell-and-preferences`、`tonight-decision`、`forecast-and-astronomy`、`map-route-discovery`、`spot-detail-and-trust`、`sky-orientation-ar`、`shooting-assistant` 为局部实现；`itinerary-and-collaboration`、`field-offline-safety`、`community-contribution`、`notifications-and-toolbox`、`identity-profile-privacy`、`admin-data-operations`、`quality-release-observability` 主要仍是验收脚手架。每个 Outcome 的完整目标仍由 Section 5 控制，审计状态不得被当成删减范围。
+
+实现证据的高信号缺口索引如下：
+
+- Native `./index` 与基于 Web pathname 的自定义 `WebApplication` 形成并行路由真相；原生 pathname 为 `/`，已安装 APP 主要只装配 `MobileShell`，独立 Screen 不等于用户可达。
+- 当前“观星地图”以普通 `View`/说明卡模拟，没有真实 MapView；路线启动明确以 `amap_route_key_not_configured` 失败，不能把直线参考或假路线称为已规划路线。
+- NightReport 使用进程内 repository，候选以低置信 Overpass POC 为主；VIIRS、核验地点、地点级条件和真实 route snapshot 尚未闭环。
+- 行程、现场、社区、通知、账号、后台和恢复演练大量使用 `user-demo`、固定日期/地点/结果或进程内 state；通用 command token/receipt 只证明通用日志可写读，不能替代各领域实体和副作用。
+- Expo SQLite/FileSystem/SecureStore、传感器和外部地图深链存在真实局部代码但未全部接入产品路径；AR 仍是 capability 选择，媒体没有完成选图→原始私有 sink→去敏派生→审核闭环。
+- 当前 UI 主要是动作按钮与证据卡；它与本节 selected page/control targets 尚未形成 target→实现→原生 evidence 的保真链，运行时 token 也需与 `DESIGN.md` 收敛到唯一来源。
+- 审计时 mobile/API typecheck 通过，mobile 14 个测试文件/25 个测试和 API 25 个测试文件/85 个测试通过；这些是局部工程证据，不证明产品完成。只检查 testID/文字可见或通用 token probe 的 Browser 验收必须被领域 sink、重启读回、counterfactual 和原生目标证据替换。
+- 历史 Final Receipt 的 `machine_accepted` 仅在 `audit_only`、`reusable_for_acceptance=false` 范围成立，不得用来关闭本计划 Outcome。
+
+本计划对缺口采用四类 disposition：产品能力、业务规则和 14 Outcome 全部 `keep`；个人版基础设施按下节 `simplify`；固定数据、并行 Web/native 壳、in-memory 领域状态、通用 token completion 和文字可见性证明全部 `replace`；ICP、公众商店/运营、公开 CDN、商业合同、多副本/WAF/高可用和对外 production SLO 仅 `defer-current-production-gate`，保留在 Section 7 而不参与当前个人试用完成判断。
+
+### Current Personal Runtime Architecture And Migration Ports
+
+`ARCH-PROFILE individual-personal-trial-v1` 是从 `S-GAP-PLAN` delegated proposal 经 `S-USER-SOURCE-REVISION` 本次明确采纳的当前交付架构；它高于 S-ARCH 中与当前 profile 冲突的公开生产部署细节，但不删除 S-ARCH 的未来迁移门：
+
+- 移动端：Expo Router 接管五 Tab + stack/sheet/沉浸路由；唯一 `DecisionContext` 协调地点/日期/目标/选中地点/路线/行程 revision；Expo SQLite 保存偏好、缓存、行程、离线 manifest、队列和历史，FileSystem 保存离线资产/媒体草稿/导出，SecureStore 保存 owner/device credential 与加密 key；Location/Map/Sensors/Camera/Notifications/Share 均经可替换 Native port。
+- 私有服务：单实例 Fastify 模块化 API，使用 owner auth 与受保护 API；NightReport、Forecast、Spot、Route、Itinerary、Community、Notification、Admin、Quality 使用真实 domain repository，不再由 `user-demo` 或进程内固定对象作事实源。
+- 服务端真值：SQLite WAL + migration + foreign key + transaction；附近/视口搜索用 RTree/预计算 GeoJSON；一个领域概念只允许一个活动事实源，不与 PostgreSQL 双写。
+- 任务：SQLite job/outbox + 单 worker/系统 scheduler，具备幂等、租约、重试/退避、死信、取消、审计和重放；当前不引入 Redis/BullMQ，也不以 command receipt 代替领域结果。
+- 媒体与静态资产：设备私有文件 + 私有 API 的 content-addressed 文件目录，原始/去敏派生/审核/导出按权限和 manifest 分层；默认没有公开 bucket/CDN，仍必须完成 EXIF 清理、checksum、原子提交、版本、删除和 restore。
+- 外部来源：所有网络 provider 调用经 `ProviderGateway`，统一执行许可/质量/配额/成本/健康/熔断；当前 ceiling 为 CNY 200/月、实际 paid approval 默认为 CNY 0，并以合法缓存、本地 Astronomy Engine、版本化 VIIRS/DEM/catalog 区域资产及 `disabled/degraded/unknown` 作为降级。
+- Owner 运营：Next.js 或等价轻量 owner-only 管理面必须操作真实地点/来源/任务/审核/成本/规则数据；是否同进程部署由后续 Contract 绑定，不要求公众运营平台。
+
+迁移口固定为 repository/storage/queue/auth/notification/provider ports：SQLite→PostgreSQL/PostGIS、SQLite jobs→BullMQ/其他队列、私有文件目录→S3-compatible object storage、单 owner→OAuth/多用户、本地通知/Inbox→APNs/FCM/厂商通道。迁移口不是当前双写、双部署、预建第二事实源或先付费采购的授权；只有 Section 7 的触发条件和新权威批准后才切换。
+
+### Gap Work Package, Stage And Journey Index
+
+下表把 `S-GAP-PLAN` 的 19 个工作包保留为 Contract-authoring advisory index；`DEV-*` 是交付切片身份，不绑定真实文件、owner、runner、proof 或 Stage 调度器：
+
+| Work package | 当前必须交付的含义 | 最小完成证据 | 建议 Stage |
+| --- | --- | --- | --- |
+| `DEV-AUTH-001` | 同一 Source Plan、资源 registry、stable Surface/Control/Target、Context/DESIGN delta 判定 | 输入/哈希/disposition/coverage 完整；candidate 不冒充 selected | 0 |
+| `DEV-NAV-001` | Expo Router 原生入口、五 Tab、stack/sheet、deep link/back/恢复 | Android 冷启动可达全部主 surface；iOS 原生工程、路由和平台适配完整集成但运行验证标为 deferred/unverified；移除 Web pathname 替代 | 1 |
+| `DEV-UI-001` | 唯一 token source、基础/复合控件、三模式、动效与无障碍 | selected targets 对比；状态矩阵、200% text、reader、reduced motion | 1 |
+| `DEV-STATE-001` | location/date/profile/target/spot/route/itinerary 单一共享状态 | 任一切换后各相关 surface 同 revision 或明确 stale | 1 |
+| `DEV-DATA-001` | SQLite domain schema/repository、migration、job/outbox、backup/restore | 真实实体写入；新进程读回；migration 与 restore drill | 2 |
+| `DEV-COST-001` | ProviderGateway、usage/rate/budget ledger、70/90/100 降级 | 跨月/并发/重试风暴不越过 CNY 200；paid 默认 0 | 2 |
+| `DEV-SOURCE-001` | 天气/天文/VIIRS/DEM/catalog ingest、provenance/quality | 两地点/两日期变化；缺失/过期/许可诚实；资产可回滚 | 2，后续能力延伸至 5/7 |
+| `DEV-SPOT-001` | 至少 30 个首发核验地点及全部设施/开放/风险/媒体来源 | 列表/详情/筛选/推荐读取同一持久化事实 | 3 |
+| `DEV-MAP-001` | 真实 MapView、图层、marker/sheet、route snapshot、外部导航 | 原生相机/marker/route；provider 失败时缓存/直线语义准确 | 3 |
+| `DEV-NIGHT-001` | 真实 NightReport、主备、窗口、出发/到达、解释/风险 | 两地点/日期/profile 产生差异；持久化重放；阻断高于分数 | 3 |
+| `DEV-PLAN-001` | 真实行程表单/时间线/路线/版本/分享/离线/协作 | 用户输入写入；重启恢复；刷新/冲突不丢编辑 | 3，V2 协作延伸至 6 |
+| `DEV-SKY-001` | 天空渲染、scrub、轨迹/FOV、传感器、遮挡和可选 AR | 时间/地点驱动变化；真实 sensor invocation；不支持有 fallback | 5，V3 AR 延伸至 7 |
+| `DEV-SHOOT-001` | 设备/镜头输入、规则、预设、清单、版本与计划/离线耦合 | 两组器材/条件输出不同；保存/恢复；AI disabled 不伤核心 | 3 基础，5 完整，7 专业扩展 |
+| `DEV-FIELD-001` | 真离线包、原子激活、队列、红光、停车/备选/安全会话 | 实际字节；飞行模式+杀进程可用；恢复网络只提交一次 | 5 |
+| `DEV-CONTRIB-001` | 地点/实况/评价/纠错、选图、EXIF 派生、审核/TTL | 文件与领域 sink 可读回；公开副本无敏感 EXIF；TTL 不改长期事实 | 4，V2 信任延伸至 6 |
+| `DEV-NOTIFY-001` | subscription/rule/event、本地排程、Inbox/deep link、工具算法 | 系统排程/取消或明确拒权；去重/冷却/重启/receipt | 4，完整规则延伸至 5 |
+| `DEV-ID-001` | owner/device credential、session、SecureStore、导出/删除/retention/audit | 未授权拒绝；真实导出文件；删除 job 可恢复且留审计 | 2 baseline，后续随 4/6 完成 |
+| `DEV-ADMIN-001` | 可运行私有管理面及地点/来源/成本/任务/审核/规则操作 | owner auth；真实数据变化可预览、回滚、追溯 | 8 |
+| `DEV-QUALITY-001` | root verify/CI、native E2E、telemetry、restore/performance | 当前执行生成真实 sink；无硬编码 RPO/RTO 或“证据文案” | 4 baseline，8 Final Gate |
+
+建议 Stage Gate 是：Stage 0 完成权威/目标收敛；Stage 1 原生入口、UI system 与共享状态；Stage 2 个人版数据/身份/成本/来源底座；Stage 3 完成 MVP 主闭环前 13 项；Stage 4 完成贡献、基础通知/遥测并使 16 项 MVP 全部端到端；Stage 5 完成 V1 专业预报/天空/摄影/离线现场和动态主备；Stage 6 在私有隔离环境完成 V2 两 actor 授权/协作/冲突与贡献信任；Stage 7 完成 V3 专业算法/数据/设备能力并为不支持项诚实降级；Stage 8 完成 owner-only 管理、恢复、观测、Android internal build/runtime 与 `owner-only personal trial usable` Final Gate，同时保持 iOS 开发与 build readiness 完整但运行验证为 deferred/unverified。该顺序可由后续 Contract 调整依赖，但不得并行堆空壳或让未来公众门阻塞当前真实闭环。
+
+后续 Contract 的验收至少绑定以下 10 个跨工作包旅程，并沿用 Section 5/6 对应 AC 的稳定业务语义：两地点/两日期 NightReport 与重启重放；地图选择 B 后 Tonight/Spot/Route/Itinerary/Sky/Shooting/Field 的同 revision 或 stale；真实路线成功快照及无 key/超时的缓存/直线降级；真实行程编辑与 APP/API 重启恢复；离线实际文件 SHA-256/原子激活及飞行模式+杀进程；含 EXIF 图片的私有原始 sink→去敏派生→审核→重启权限；本地通知真实排程/修改/取消/拒权 Inbox；owner auth 拒绝、SecureStore、真实导出与可审计删除；70/90/100% 成本降级且并发/重试不越过批准预算；selected page/control target 在 happy/loading/empty/stale/partial/error/permission-denied/night/red-light/large-text/reduced-motion 下完成 Android 原生保真与可中断交互，同时 iOS 实现保持相同业务/状态契约和平台差异，但 live runtime evidence 延后。
 
 ## 3. Delivery Scope
 
@@ -166,6 +327,12 @@
 - **NG mvp-heavy-professional-suite**：MVP 不做完整内置导航、完整 AR、高精度构图、所有天象工具、大规模共同编辑、自动解析所有社交平台攻略或专业设备控制。
 <!-- ty-source-item:end -->
 
+<a id="non-goal.design-tool-lock-in"></a>
+- **NG design-tool-lock-in** [derived from S-USER-UIUX-AUTHORITY, S-WEB-UIUX-ADVICE]：不把 Figma、图片生成、某个设计插件、固定目录或某种导出格式设为产品完成前提；工具可以替换，稳定 Surface/Control/Target 语义、版本化 Source、可访问 token 和可验证输出不可省略。
+
+<a id="non-goal.exhaustive-visual-cartesian-product"></a>
+- **NG exhaustive-visual-cartesian-product** [derived from S-WEB-UIUX-ADVICE, S-HARNESS-UIUX]：不要求在第一轮为所有页面×设备×方向×模式×状态×内容生成全笛卡尔高保真图；采用风险驱动 representative coverage，但每个未画组合必须有 selected constraint target、Screen Contract 或明确 out-of-scope/decision-required 状态，不能变成实现自由发挥区。
+
 ### Forbidden Shortcuts
 
 <a id="forbidden-shortcut.client-side-source-stitching"></a>
@@ -213,6 +380,18 @@
 - **FS static-screen-completion**：静态设计稿、预览 Kit、无真实状态流的页面壳、固定用户/时间/地点/结果样例、仅进程内状态、仅返回成功文案或证据卡、仅元数据模拟上传、只声明未调用的原生适配器、不可重启读回的离线包，以及未实际执行的通知/恢复/追踪，均不能算 APP 或对应 Outcome 完成；测试可用 fixture 隔离不可控外部边界，但生产载体必须接受可变输入，产生可观察的真实状态变化与适用的持久化/文件/原生/外部副作用，并诚实处理失败和降级。
 <!-- ty-source-item:end -->
 
+<a id="forbidden-shortcut.implementation-invents-design-authority"></a>
+- **FS implementation-invents-design-authority** [direct: S-USER-UIUX-AUTHORITY]：当物料级 surface/control/target 尚未闭合时，不得让 Codex、开发者或组件库自行补出卡片顺序、信息取舍、渐变、颜色、字号、圆角、阴影、动效或新组件风格；必须先修订 owning Source/Context/DESIGN/target。
+
+<a id="forbidden-shortcut.candidate-as-selected-target"></a>
+- **FS candidate-as-selected-target** [derived from S-HARNESS-UIUX]：inspiration、视觉候选、参考产品截图、图片生成结果、未批准 Figma frame 或 style-only mood board 不得被引用为 fidelity target；只有 selected exact/constraint target 在其声明 coverage 内有约束力。
+
+<a id="forbidden-shortcut.implementation-self-baseline"></a>
+- **FS implementation-self-baseline** [direct: S-USER-UIUX-AUTHORITY + derived]：现有实现、运行截图或由同一实现生成的快照不得同时充当目标和证明；baseline 必须是上游 authored target 或独立 constraint，implementation screenshot/diff 只作下游 evidence。
+
+<a id="forbidden-shortcut.browser-as-native-ui-proof"></a>
+- **FS browser-as-native-ui-proof** [derived from S-HARNESS-UIUX, S-INTERACTION]：Expo Web、Browser 预览或单一模拟器通过不能替代 iOS/Android 原生安全区、字体、地图/Sheet/back/gesture、触觉、传感器、红光闪烁与性能证明；各 required target 必须由对应 target profile 的真实载体验证。
+
 ## 4. Outcome Overview
 
 - OUT mobile-shell-and-preferences：用户进入原生 APP、完成权限/偏好/设备设置并通过五个一级入口导航。
@@ -253,7 +432,7 @@
 #### Observable Result
 
 <!-- ty-source-item:start key=result-mobile-shell-and-preferences kind=outcome_result -->
-用户可在 iOS/Android Development Build 中进入同一业务 APP，先以游客完成基础查询，在需要时授权定位/通知等能力，保存一个或多个推荐偏好预设，并稳定访问“今晚、观星地图、行程、天空、我的”五个一级入口。
+用户可在已验证的 Android Development Build 中进入业务 APP，先以游客完成基础查询，在需要时授权定位/通知等能力，保存一个或多个推荐偏好预设，并稳定访问“今晚、观星地图、行程、天空、我的”五个一级入口；同一业务 APP 的 iOS 原生工程、路由、适配与平台行为必须同步实现，但本 profile 不宣称其运行通过或可用。
 <!-- ty-source-item:end -->
 
 #### Product Requirements
@@ -523,9 +702,9 @@
 <!-- ty-source-item:start key=ac-mobile-shell-and-preferences-native-app-shape kind=acceptance -->
 - **AC native-app-shape**
   - Accepts: REQ react-native-app, OBL mobile-client-stack, OBL mobile-layering, OBL native-new-architecture, NCOMP web-shell-only
-  - Given: iOS 与 Android 的目标构建环境和需要的自定义原生能力已准备。
-  - When: 两个平台启动同一业务版本。
-  - Then: 两端可进入五入口 APP 壳，原生能力通过明确适配层暴露，且结果不是网页壳或 Expo Go 限制版。
+  - Given: Android 目标构建/运行环境与需要的自定义原生能力已准备，iOS CNG/Xcode 工程、共享路由、原生适配和平台配置已纳入同一业务版本，但当前没有 macOS/Xcode/iOS Simulator 运行环境。
+  - When: Android 冷启动该业务版本，并对 iOS 原生工程与集成边界执行非运行时结构/编译配置检查。
+  - Then: Android 可进入五入口 APP 壳且原生能力通过明确适配层暴露；iOS 不是网页壳或 Expo Go 限制版并保留完整实现载体，但结果明确为 runtime validation deferred/unverified，不能由该结构检查产生 iOS 通过或可用声明。
 <!-- ty-source-item:end -->
 
 #### Risks And Recovery
@@ -850,7 +1029,7 @@
 #### Implementation Hints
 
 - **HINT report-snapshot-shape**：保留 S-ARCH NightReport 的 context、summary、windows、weather、astronomy、visibleTargets、primary/nearbyBackup/weatherBackup/darkSkyAlternative、confidence、sources、rulesetVersion、inputHash 语义。
-- **HINT candidate-route-bound**：先用 PostGIS 距离预筛，再对前 10～20 个候选请求真实路线并返回前 3～5 个推荐，具体数量若成为成本/体验规则需由 DEC candidate-routing-limits 决定。
+- **HINT candidate-route-bound**：当前用 SQLite RTree/精确距离、未来可用 PostGIS 对等距离预筛，再对前 10～20 个候选请求真实路线并返回前 3～5 个推荐；具体数量若成为成本/体验规则需由 DEC candidate-routing-limits 决定。
 
 #### Acceptance Scenarios
 
@@ -1346,7 +1525,7 @@
 
 <a id="map-route-discovery.requirement.search-and-candidate-bounds"></a>
 <!-- ty-source-item:start key=req-map-route-discovery-search-and-candidate-bounds kind=requirement -->
-- **REQ search-and-candidate-bounds** [direct: S-ARCH 4.3～4.4]：附近搜索先用 PostGIS 距离预筛，再按天气/天文/光污染/设施过滤，只对前 10～20 个候选请求真实路线并形成前 3～5 个推荐；这些数值是来源建议，最终阈值由 DEC candidate-routing-limits 固化。
+- **REQ search-and-candidate-bounds** [direct: S-ARCH 4.3～4.4 + current-profile override: S-GAP-PLAN]：附近搜索先通过当前 SQLite RTree/预计算 GeoJSON 的 repository 空间索引距离预筛，再按天气/天文/光污染/设施过滤，只对前 10～20 个候选请求真实路线并形成前 3～5 个推荐；PostgreSQL/PostGIS 迁移后可由等价 geography/GiST/KNN 实现替换，不能改变 WGS84、上限、分页/取消和结果语义。这些数值是来源建议，最终阈值由 DEC candidate-routing-limits 固化。
 <!-- ty-source-item:end -->
 
 #### User Flow And States
@@ -1584,12 +1763,12 @@
 
 <a id="map-route-discovery.obligation.authoritative-coordinate-boundary"></a>
 <!-- ty-source-item:start key=obl-map-route-discovery-authoritative-coordinate-boundary kind=technical_obligation -->
-- **OBL authoritative-coordinate-boundary** [direct: S-ARCH 4.2]：数据库、天气、天文、遥感和 PostGIS 只以 WGS84 为权威；GCJ-02 仅在高德适配层生成/缓存且可按算法版本重建，保存坐标来源、水平精度和验证时间。
+- **OBL authoritative-coordinate-boundary** [direct: S-ARCH 4.2 + current-profile override: S-GAP-PLAN]：SQLite/RTree、天气、天文、遥感及未来 PostgreSQL/PostGIS 都只以 WGS84 为权威；GCJ-02 仅在高德适配层生成/缓存且可按算法版本重建，保存坐标来源、水平精度和验证时间。
 <!-- ty-source-item:end -->
 
 <a id="map-route-discovery.obligation.spatial-query-boundary"></a>
 <!-- ty-source-item:start key=obl-map-route-discovery-spatial-query-boundary kind=technical_obligation -->
-- **OBL spatial-query-boundary** [direct: S-ARCH 4.3～4.4]：Spot 使用 PostGIS geography(Point,4326) 与 GiST/KNN 空间索引，区域/光污染/地形/路线等用 geometry(Polygon/LineString,4326)；视口/附近查询、过滤和路线候选必须有上限、分页/游标和取消过期请求。
+- **OBL spatial-query-boundary** [direct: S-ARCH 4.3～4.4 + current-profile override: S-GAP-PLAN]：当前个人版 Spot 用 SQLite RTree 索引 WGS84 point bounding box，并以可测试的精确距离过滤；区域/光污染/地形/路线使用版本化 GeoJSON/栅格资产和预计算索引。未来 PostgreSQL/PostGIS 迁移口保留 geography(Point,4326)、GiST/KNN 与 geometry(Polygon/LineString,4326) 等价语义。两种实现的视口/附近查询、过滤和路线候选都必须有上限、分页/游标、确定排序和取消过期请求。
 <!-- ty-source-item:end -->
 
 <a id="map-route-discovery.non-completing.poi-as-ground-truth"></a>
@@ -2044,7 +2223,7 @@
 
 <a id="spot-detail-and-trust.obligation.media-privacy-pipeline"></a>
 <!-- ty-source-item:start key=obl-spot-detail-and-trust-media-privacy-pipeline kind=technical_obligation -->
-- **OBL media-privacy-pipeline** [direct: S-ARCH 12]：媒体走短期上传凭证 → 对象存储 → 服务端确认 → 处理 → EXIF 清理 → 缩略图/WebP/AVIF → 审核 → 地点归属验证 → 发布；全景另存投影、方向、北向、遮挡轮廓、识别版本和人工修正。
+- **OBL media-privacy-pipeline** [direct: S-ARCH 12 + current-profile override: S-GAP-PLAN]：当前个人版媒体走设备私有文件/owner-auth 上传 → 私有 API 临时区 → checksum/服务端确认 → content-addressed 私有原始目录 → 处理 → EXIF 清理 → 缩略图/WebP/AVIF 派生目录 → 审核 → 地点归属验证 → owner-only 可见；失败临时文件可恢复/清理，原始与派生物权限、manifest、版本和删除分别可证。未来 S3-compatible object storage/短期上传凭证/公开发布只替换 storage transport 和 visibility policy；全景始终另存投影、方向、北向、遮挡轮廓、识别版本和人工修正。
 <!-- ty-source-item:end -->
 
 <a id="spot-detail-and-trust.non-completing.single-rating"></a>
@@ -4128,7 +4307,7 @@
 
 <a id="community-contribution.obligation.moderated-media-pipeline"></a>
 <!-- ty-source-item:start key=obl-community-contribution-moderated-media-pipeline kind=technical_obligation -->
-- **OBL moderated-media-pipeline** [direct: S-ARCH 12]：客户端使用短期凭证直传对象存储，服务确认后异步处理/扫描/EXIF 清理/缩略/归属/审核；客户端只在发布状态返回后展示为公开，上传成功不等同审核通过。
+- **OBL moderated-media-pipeline** [direct: S-ARCH 12 + current-profile override: S-GAP-PLAN]：当前客户端经 owner-auth 把真实文件提交到私有 API 临时区，服务端以 SQLite job/outbox 异步完成 checksum、扫描、EXIF 清理、缩略、归属和审核，并把原始/派生/状态写入可重启读取的私有 sink；客户端只在明确 `approved` 后按 owner-only visibility 展示，上传成功不等同审核通过。未来短期凭证直传对象存储和公众可见性是 storage/visibility port 的生产迁移，不改变状态机。
 <!-- ty-source-item:end -->
 
 <a id="community-contribution.non-completing.unscoped-social-feed"></a>
@@ -5118,7 +5297,7 @@
 
 <a id="admin-data-operations.requirement.qualified-lowest-tco-selection"></a>
 <!-- ty-source-item:start key=req-admin-data-operations-qualified-lowest-tco-selection kind=requirement -->
-- **REQ qualified-lowest-tco-selection** [direct + external research: S-USER, S-RESEARCH]：每项数据/地图/路线/推送/对象存储能力先以不可被价格抵消的硬门筛选候选：来源/字段/版本/run/时间/修改链可追溯且同地点/时段/单位对照通过批准的真实性阈值；首发地区/目标网络的到达率、新鲜度、完整度、延迟、错误/限流/恢复通过批准的稳定性阈值；商业许可、归属、缓存/派生/再分发/地域/终止边界可证；健康、过期、熔断、迁移和诚实降级可实施。任一硬门失败即淘汰；只在提供等价最小必需能力的合格候选中，以同一日期/币种/税费、同一容量/失败场景选择预计 12 个月 TCO 最低者。默认每项能力只购买一个合格主源，以合法缓存、本地计算、开放基准或 `unknown`/隐藏降级作后备；第二付费源、套餐升级和预算上限由 DEC provider-budget-and-paid-redundancy 批准。
+- **REQ qualified-lowest-tco-selection** [direct + external research: S-USER, S-RESEARCH]：每项数据/地图/路线/通知/存储能力先以不可被价格抵消的硬门筛选候选：来源/字段/版本/run/时间/修改链可追溯且同地点/时段/单位对照通过批准的真实性阈值；首发地区/目标网络的到达率、新鲜度、完整度、延迟、错误/限流/恢复通过批准的稳定性阈值；当前个人非商业或未来商业许可、归属、缓存/派生/再分发/地域/终止边界可证；健康、过期、熔断、迁移和诚实降级可实施。任一硬门失败即淘汰；只在提供等价最小必需能力的合格候选中，以同一日期/币种/税费、同一容量/失败场景选择预计 12 个月 TCO 最低者。当前默认不购买，`approved_paid_budget_cny=0`；owner 批准后每项能力至多一个合格最低 TCO 主源，并以合法缓存、本地计算、开放基准或 `unknown`/隐藏降级作后备。第二付费源、套餐升级和总计 CNY 200/月硬顶由 DEC provider-budget-and-paid-redundancy 控制。
 <!-- ty-source-item:end -->
 
 <a id="admin-data-operations.requirement.astronomy-geo-pipelines"></a>
@@ -5138,7 +5317,7 @@
 
 <a id="admin-data-operations.requirement.four-layer-cache"></a>
 <!-- ty-source-item:start key=req-admin-data-operations-four-layer-cache kind=requirement -->
-- **REQ four-layer-cache** [direct: S-ARCH 十]：缓存分 L1 设备 SQLite/文件、L2 CDN 瓦片/图片/星表/静态、L3 Redis 接口/聚合、L4 PostgreSQL 规范化/物化；使用请求合并、分布式锁、Single Flight、TTL 抖动、stale-while-revalidate、热门预热和新模型批量预计算；键含网格、观星夜、Profile Hash、目标、天气/规则/光污染版本。
+- **REQ four-layer-cache** [direct: S-ARCH 十 + current-profile override: S-GAP-PLAN]：当前个人版采用 L1 设备 SQLite/文件、L2 私有静态/媒体/瓦片目录、L3 单实例 API 内存短缓存、L4 服务端 SQLite 规范化/物化真值；使用请求合并、进程内 Single Flight、SQLite lease/事务、TTL 抖动、stale-while-revalidate、受预算控制的预热和批量预计算，缓存键含网格、观星夜、Profile Hash、目标、provider/model/run、天气/规则/光污染版本。初版的 CDN/Redis/PostgreSQL 四层是未来生产 profile 的可替换实现，不得成为当前双写或引入第二真值的理由。
 <!-- ty-source-item:end -->
 
 <a id="admin-data-operations.requirement.cache-freshness-policy"></a>
@@ -5183,7 +5362,7 @@
 
 <a id="admin-data-operations.requirement.admin-security-audit"></a>
 <!-- ty-source-item:start key=req-admin-data-operations-admin-security-audit kind=requirement -->
-- **REQ admin-security-audit** [direct: S-ARCH 15.4]：后台强制 MFA、最小角色/字段权限、短会话/重新认证；所有读取敏感坐标/EXIF、写入、合并、下线、规则发布、任务重放、许可变更和用户权限变更记录不可篡改审计。
+- **REQ admin-security-audit** [direct: S-ARCH 15.4 + current-profile override: S-GAP-PLAN]：当前 owner-only 管理面强制 owner/device 认证、短会话或可撤销 session、敏感动作重新认证/二次确认、最小对象/字段授权；所有读取敏感坐标/EXIF、写入、合并、下线、规则发布、任务重放、许可变更和权限变更记录不可篡改审计。强制 MFA 与多管理员角色是 future public/multi-user profile 门；当前未启用 MFA 不得被误报为已有，也不能削弱认证、重认证或审计。
 <!-- ty-source-item:end -->
 
 #### User Flow And States
@@ -5391,10 +5570,10 @@
   - User task: 管理管理员权限并调查敏感操作。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-admin-data-operations-admin-access-audit-trigger kind=control -->
-  - Trigger: 登录/MFA、角色变更、搜索审计或敏感读取/写入。
+  - Trigger: 登录/重认证、可选 MFA（future profile）、角色/字段授权变更、搜索审计或敏感读取/写入。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-admin-data-operations-admin-access-audit-input kind=control -->
-  - Input: 角色/资源/字段范围、会话、MFA、操作/对象/版本/理由/时间和结果。
+  - Input: 当前 owner 或 future role 的资源/字段范围、会话、MFA capability/status、操作/对象/版本/理由/时间和结果。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-admin-data-operations-admin-access-audit-loading kind=control -->
   - Loading: 权限检查先于数据；审计分页/导出显示进度。
@@ -5416,7 +5595,7 @@
 
 <a id="admin-data-operations.obligation.source-data-immutability"></a>
 <!-- ty-source-item:start key=obl-admin-data-operations-source-data-immutability kind=technical_obligation -->
-- **OBL source-data-immutability** [direct + external research: S-ARCH 7.1, S-RESEARCH]：所有外部/用户/计算数据保存 UTC、IANA 时区、观星夜、WGS84、供应商/适用许可与归属、下载 URL/时间/大小/checksum、原始格式/CRS/nodata/coverage、算法/工具/规则版本、lineage、来源/审核/可信度；raw restricted 对象不可变，只追加可回滚派生版本，数据库保存引用/当前指针且 Redis 不是唯一真值，临时实况 TTL，推荐可重放。供应商合同禁止保存的数据不进入 raw；删除/撤权/许可终止按 manifest 清理。
+- **OBL source-data-immutability** [direct + external research: S-ARCH 7.1, S-RESEARCH + current-profile override: S-GAP-PLAN]：所有外部/用户/计算数据保存 UTC、IANA 时区、观星夜、WGS84、供应商/适用许可与归属、下载 URL/时间/大小/checksum、原始格式/CRS/nodata/coverage、算法/工具/规则版本、lineage、来源/审核/可信度；当前 raw restricted 内容在私有 content-addressed 文件目录中不可变，只追加可回滚派生版本，SQLite 保存 manifest/引用/当前指针，内存缓存和未来 Redis 都不是唯一真值，临时实况按 TTL 退出当前聚合且推荐可重放。供应商条款禁止保存的数据不进入 raw；删除/撤权/许可终止按 manifest 清理。
 <!-- ty-source-item:end -->
 
 <a id="admin-data-operations.obligation.api-contract-generation"></a>
@@ -5431,7 +5610,7 @@
 
 <a id="admin-data-operations.obligation.provider-cost-and-quota-ledger"></a>
 <!-- ty-source-item:start key=obl-admin-data-operations-provider-cost-and-quota-ledger kind=technical_obligation -->
-- **OBL provider-cost-and-quota-ledger** [direct + derived from S-USER/S-RESEARCH]：为每个候选和已用 provider 维护版本化、可审计且不含 secret 的成本/配额台账，按同一能力/地区/质量门和 1k/10k/100k MAU 的基准/上行/失败场景计算 `订阅/API/超额 + 计算 + 存储/请求/取回 + 出网/CDN + 监控/重试 + 工程运维 + 合规/归属 + 迁移/退出` 的 12 个月 TCO；免费/open data 同样计加工与托管。实际账单/有效输出按月回填预测偏差，采购/续费/升档前重取官方价格和合同；预算告警、硬上限、功能降级和第二付费源触发器可配置并由 DEC provider-budget-and-paid-redundancy 批准，任何套餐不得静默自动升级。
+- **OBL provider-cost-and-quota-ledger** [direct + derived from S-USER/S-RESEARCH/S-GAP-PLAN]：所有外部调用必须经过 ProviderGateway 并写 `provider_usage_event`、`provider_budget_month`、`provider_rate_snapshot`、`provider_gate` 与 `provider_health`；不得有绕行调用。为每个候选和已用 provider 维护版本化、可审计且不含 secret 的成本/配额台账，区分 `external_service_ceiling_cny=200/month` 与 `approved_paid_budget_cny=0` 默认值，按同一能力/地区/质量门及个人版实际容量和未来 1k/10k/100k MAU 场景计算 `订阅/API/超额 + 计算 + 存储/请求/取回 + 出网/CDN + 监控/重试 + 工程运维 + 合规/归属 + 迁移/退出` 的 12 个月 TCO；免费/open data 同样计加工与托管。70% 停非必要预热/刷新，90% 关闭可选多模型/动画图层/自动媒体同步，100% 原子阻断全部新增付费调用并只返回合法缓存、本地计算或 `unknown`；并发、重试和跨月切换不得穿透硬停。实际账单/有效输出按月回填，采购/续费/升档/第二付费源均须 owner 逐项批准且不得自动发生。
 <!-- ty-source-item:end -->
 
 <a id="admin-data-operations.non-completing.direct-provider-pass-through"></a>
@@ -5468,9 +5647,9 @@
 <!-- ty-source-item:start key=ac-admin-data-operations-qualified-lowest-tco-provider-selection kind=acceptance -->
 - **AC qualified-lowest-tco-provider-selection**
   - Accepts: REQ qualified-lowest-tco-selection, REQ provider-source-registry, REQ data-source-admin, OBL provider-cost-and-quota-ledger, CTRL data-source-dashboard
-  - Given: 同一项生产能力有免费、按量和固定月费候选，其中至少一个价格更低但有真实性/目标区稳定性/许可硬门缺口，并已有 1k/10k/100k MAU 与故障场景。
-  - When: 团队选择、续费或升级生产 provider。
-  - Then: 任何硬门失败者先被淘汰；其余候选按等价最小能力和同一日期/币种/税费的 12 个月完整 TCO 排序，选择最低者并保存价格/假设/有效输出成本/降级/退出证据；第二付费源或升档只有在批准的预算与增量收益触发器成立时发生，不能因免费或标价低绕过质量，也不能静默自动购买。
+  - Given: 同一项个人试用能力有免费、按量和固定月费候选，其中至少一个价格更低但有真实性/目标区稳定性/个人非商业许可硬门缺口；台账含实际 owner 容量、故障/重试场景及未来 1k/10k/100k MAU 对照。
+  - When: Owner 评估首次启用、续费或升级 provider，并把成本注入到 70/90/100% 边界。
+  - Then: 任何硬门失败者先被淘汰；其余候选按等价最小能力和同一日期/币种/税费的 12 个月完整 TCO 排序并保存价格/假设/有效输出成本/降级/退出证据。未批准时 paid=0；批准后总计仍不超过 CNY 200/月，70/90/100 分级与并发/重试硬停可执行；第二付费源或升档只有在 owner 批准的预算与增量收益触发器成立时发生，不能静默购买。
 <!-- ty-source-item:end -->
 
 <a id="admin-data-operations.acceptance.api-data-status"></a>
@@ -5540,9 +5719,9 @@
 <!-- ty-source-item:start key=ac-admin-data-operations-admin-security kind=acceptance -->
 - **AC admin-security**
   - Accepts: REQ admin-security-audit, CTRL admin-access-audit
-  - Given: 无精确坐标权限的审核员登录且 MFA 过期。
+  - Given: owner session 已过期/撤销，或 future-profile 负向测试 principal 无精确坐标权限且第二因子未满足。
   - When: 尝试读取 invite_only 坐标并执行地点下线。
-  - Then: 坐标字段服务端拒绝、敏感写入要求重认证，成功/失败尝试均记录不含 secret 的审计。
+  - Then: 服务端拒绝坐标和敏感写入并要求当前 profile 可用的重认证/二次确认，成功/失败尝试均记录不含 secret 的审计；未配置 MFA 时界面显示未启用而非伪造验证成功。
 <!-- ty-source-item:end -->
 
 #### Risks And Recovery
@@ -5562,7 +5741,7 @@
   - Fact: security_boundary_change
   - Affected Outcome: admin-data-operations
   - Basis: 后台可读取敏感坐标/证据并修改地点、规则、权限和数据源。
-  - Consequence: MFA、最小字段授权、重认证、WAF/限流、不可篡改审计和负向授权测试是发布前置条件。
+  - Consequence: 当前 owner-only 发布前必须完成 owner/device auth、最小字段授权、重认证/二次确认、限流、不可篡改审计和负向授权测试；MFA/WAF 是 future public/multi-admin profile 的附加门。
 <!-- ty-source-item:end -->
 
 <a id="admin-data-operations.risk.schema-and-api"></a>
@@ -5590,19 +5769,19 @@
 #### Observable Result
 
 <!-- ty-source-item:start key=result-quality-release-observability kind=outcome_result -->
-团队可在隔离的 development/staging/production 环境中构建、测试、灰度和发布 iOS/Android APP 与模块化后端，在不兼容原生变更时正确升级二进制/runtimeVersion；生产具备可观测、告警、数据质量、备份恢复和中国主场景合规边界，核心决策/地图/离线/传感器路径在模拟、实机和户外被验证，并以来源建议的 SLO 与产品闭环指标持续判断质量。
+Owner 可在隔离的 development 与 owner-only internal 环境中构建、安装和恢复 Android APP、单实例私有 API/worker/管理面，在不兼容原生变更时正确升级 Android 二进制/runtimeVersion；当前运行具有真实可观测、成本硬停、数据质量、SQLite/私有文件备份恢复和安全边界，核心决策/地图/离线/传感器路径在 Android 原生与适用设备条件被验证。iOS 应用、原生工程、平台适配和 build readiness 仍完整交付，但 macOS/Xcode/iOS Simulator 及 iOS build/runtime evidence 当前暂缓并保持 unverified；初版 development/staging/production 灰度、多副本拓扑、中国公众运营合规、iOS 运行验证和对外 SLO 完整保留为未来受保护 revision/Section 7 发布门，不参与当前 owner-only Android 完成声明。
 <!-- ty-source-item:end -->
 
 #### Product Requirements
 
 <a id="quality-release-observability.requirement.technology-baseline"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-technology-baseline kind=requirement -->
-- **REQ technology-baseline** [direct: S-ARCH 1.1]：基线为 Expo + React Native + TypeScript、Development Build/自定义 Expo Native Module、高德原生地图、Expo Sensors + 必要 Core Motion/Android Sensor、Skia/GPU 天空、ARKit/ARCore 增强、TypeScript NestJS/Fastify 模块化单体、Python 气象/遥感/栅格/地形、PostgreSQL/PostGIS、Redis/BullMQ、S3 兼容对象存储/CDN、Next.js 管理后台、REST/OpenAPI + 协作 WebSocket、Astronomy Engine 封装和 Monorepo；精确版本由 DEC dependency-version-baseline 决定。
+- **REQ technology-baseline** [direct: S-ARCH 1.1 + adopted profile: S-GAP-PLAN/S-USER-SOURCE-REVISION]：共享基线保留 Expo + React Native + TypeScript、Development Build/自定义 Expo Native Module、原生地图、Expo Sensors + 必要 Core Motion/Android Sensor、Skia/GPU 天空、可选 ARKit/ARCore、TypeScript Fastify 模块化单体、Python 气象/遥感/栅格/地形、Next.js owner 管理面、REST/OpenAPI + V2 协作 WebSocket、Astronomy Engine 和 Monorepo。当前 `individual-personal-trial` profile 明确采用移动端 Expo SQLite/FileSystem/SecureStore、私有 Fastify 单实例、服务端 SQLite WAL/RTree、SQLite job/outbox + 单 worker、私有 content-addressed 文件目录和 ProviderGateway；PostgreSQL/PostGIS、Redis/BullMQ、S3/CDN 只作为 future production ports，当前不得双写、双部署或成为完成前提。精确依赖版本仍由 DEC dependency-version-baseline 决定。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.official-source-production-gates"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-official-source-production-gates kind=requirement -->
-- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH]：当前机器交付必须逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、推送、对象存储/CDN、离线与成本结论，并为 QWeather、Open-Meteo、高德路线、EOG VIIRS、Copernicus DEM、Gaia、CelesTrak、获批 FY-4 订单落盘和 S3 兼容对象层建立可执行生产 carrier、环境注入、校验/归一化、不可变落盘、失败降级与验收证据；同时保留 `source_baseline`、`recommended`、`contract_gate`、`poc_gate`、`external_confirmation`、`defer` 状态。`implementationStatus=passed` 只表示代码、配置、运行手册与 contract fixture 完成，不表示已采购、已许可、已注入真实密钥、已校准或已通过目标区 POC；外部激活未完成时生产流量和 promotion 必须 fail-closed。动态版本/价格/配额/条款在锁依赖、签合同、续费/扩容和 production gate 重取官方证据；每项生产源先通过真实性/可追溯、首发区质量/稳定性、合法可运营和安全降级硬门，再由 REQ qualified-lowest-tco-selection 在合格等价候选中选 12 个月 TCO 最低者。
+- **REQ official-source-production-gates** [direct + repo evidence: S-USER, S-RESEARCH + current-profile override: S-GAP-PLAN]：当前机器交付须逐类消费 S-RESEARCH 的移动栈、天气、地图/路线、地点、VIIRS、DEM、天文/星表/卫星、专业工具、通知、私有存储、离线与成本结论，并为当前启用或可合法 POC 的来源建立 ProviderGateway/adapter、secret boundary、环境注入、校验/归一化、SQLite/私有文件不可变落盘、失败降级与验收；没有条款/账号/目标区质量门的能力可保持 `contract_gate`、`poc_gate`、`external_confirmation`、`defer` 或 `disabled`，但 UI 必须诚实且核心闭环有合法替代。EOG VIIRS、Copernicus DEM、Gaia 等许可允许的区域静态资产采用 checksum/content-addressed carrier；QWeather/Open-Meteo/高德路线/CelesTrak/FY-4 等动态来源只有在对应条款、质量、预算和凭据成立时启用；当前存储 carrier 是私有 content-addressed 文件目录，不强制 S3/CDN。`implementationStatus=passed` 只证明代码/配置/fixture/降级，不证明采购、许可、真实密钥、校准或 production traffic；公开生产仍 fail-closed。动态版本/价格/配额/条款在锁依赖、启用、续费/扩容和未来 production gate 重取官方证据，并在合格等价候选中按 12 个月 TCO 与 CNY 200/月硬顶选择。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.interaction-motion-contract"></a>
@@ -5612,7 +5791,7 @@
 
 <a id="quality-release-observability.requirement.modular-monolith-topology"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-modular-monolith-topology kind=requirement -->
-- **REQ modular-monolith-topology** [direct: S-ARCH 1.3]：起步采用模块化单体 API + 独立数据任务进程 + 独立媒体/瓦片能力，不提前拆十几个微服务、Kafka 或 Kubernetes 全家桶；只有 CPU/内存/吞吐隔离明确且有指标证据时拆热点模块。
+- **REQ modular-monolith-topology** [direct: S-ARCH 1.3 + current-profile override: S-GAP-PLAN]：当前采用单实例 Fastify 模块化单体 API + SQLite job/outbox 单 worker/系统 scheduler；媒体、瓦片和数据管线以明确 module/port 隔离，但可在个人版共享部署与私有存储。只有 CPU/内存/吞吐或故障隔离有指标证据并经 future profile 批准时才拆独立进程/热点服务；不得提前引入大量微服务、Kafka 或 Kubernetes。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.monorepo-shape"></a>
@@ -5622,37 +5801,37 @@
 
 <a id="quality-release-observability.requirement.environment-isolation"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-environment-isolation kind=requirement -->
-- **REQ environment-isolation** [direct: S-ARCH 13.1]：development、staging、production 独立数据库、Redis、对象存储 Bucket、API Key、推送证书和 OAuth 配置；测试/预发密钥、数据和通知不得接入真实用户/生产通道。
+- **REQ environment-isolation** [direct: S-ARCH 13.1 + current-profile override: S-GAP-PLAN]：当前至少隔离 development/test 与 owner-only internal：分别使用独立 SQLite 数据库、私有文件根、API key/provider credential、owner/device credential、通知通道和备份目标，测试 fixture/通知/媒体不得进入 owner internal 真值；配置不得因同机部署而共用 secret 或路径。未来 staging/production profile 再扩展为独立 PostgreSQL/Redis/bucket/OAuth/推送证书和故障域，不能反向要求当前预建这些资源。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.production-topology"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-production-topology kind=requirement -->
-- **REQ production-topology** [direct: S-ARCH 13.2～13.3]：生产链路为 CDN/WAF → 负载均衡 → 多副本 API → PostgreSQL/PostGIS 主备、Redis 高可用、对象存储、Worker、调度器、日志/监控；容器角色包括 api、worker-general/weather/geospatial/media/notification、admin-web，地理栅格与普通 API 隔离资源。
+- **REQ production-topology** [direct: S-ARCH 13.2～13.3 + profile disposition: S-USER/S-GAP-PLAN]：初版 CDN/WAF→负载均衡→多副本 API→PostgreSQL/PostGIS 主备、Redis 高可用、对象存储、多类 Worker/调度器/监控的拓扑完整保留，但分类为 `defer-current-production-gate`。当前 owner-only internal 拓扑是受保护访问的单实例 Fastify + SQLite WAL/RTree + 单 worker + 私有文件根 + owner 管理面 + 本地/私有日志监控；必须可备份、恢复、观测和诚实降级，但不要求公众域名、CDN/WAF、负载均衡、多副本或高可用。转公开/商业/多人生产前才由新发布权威选择并证明未来拓扑。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.china-production-compliance"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-china-production-compliance kind=requirement -->
-- **REQ china-production-compliance** [direct: S-ARCH 13.2]：以中国用户为主时，业务服务、数据库、媒体和日志采用符合确认结果的中国境内区域，并在生产前解决 ICP、地图授权、数据跨境、对象存储/CDN和个人信息合规；外部证明见 EXT china-production-legal-readiness。
+- **REQ china-production-compliance** [direct: S-ARCH 13.2 + current-profile disposition: S-USER]：ICP、公众域名/网站、公众商店/运营、公开对象存储/CDN、商业地图授权与对外 production 地域/跨境合规属于 Section 7 的 `defer-current-production-gate`，当前不要求取得也不得伪造。个人试用仍必须执行权限最小化、secret/精确位置/EXIF 保护、许可/归属、删除/备份和 owner-only 访问；一旦转为中国公众/商业生产，业务服务、数据库、媒体和日志的区域及 ICP、地图授权、数据跨境、个人信息等须由 EXT china-production-legal-readiness 真实确认。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.backup-recovery"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-backup-recovery kind=requirement -->
-- **REQ backup-recovery** [direct: S-ARCH 13.4]：PostgreSQL 多可用区、每日全量、持续归档/PITR；Redis 不作唯一真值；对象存储版本控制；关键地点定期导出；定期恢复演练；来源建议目标 RPO ≤ 15 分钟、RTO ≤ 2 小时，生产承诺由 DEC recovery-objectives 决定。
+- **REQ backup-recovery** [direct: S-ARCH 13.4 + current-profile override: S-GAP-PLAN]：当前对服务端 SQLite 执行一致性 online backup/快照并保存 schema/version/checksum，对私有 content-addressed 媒体/静态资产执行 manifest 驱动增量备份，对移动端用户数据/离线 manifest 提供可见导出/恢复边界；恢复到隔离目录后校验引用、权限、删除墓碑和实际 RPO/RTO，定期执行真实 restore drill。缓存可重建且不是唯一真值。PostgreSQL 多可用区/PITR、Redis、对象存储版本控制及来源建议 RPO≤15min/RTO≤2h 保留为未来 production profile；当前 owner-only 目标由 DEC recovery-objectives 的 profile override 解释。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.mobile-build-release"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-mobile-build-release kind=requirement -->
-- **REQ mobile-build-release** [direct: S-ARCH 十四]：开发长期使用 Expo Development Build 而非 Expo Go；发布通道 development/internal/staging/production；EAS Build 产出双端二进制并允许在 Windows 发起 iOS 云构建，EAS Update 只下发与原生 runtime 兼容的 JS/样式/资源，原生模块新增/修改必须重建并升级 runtimeVersion。
+- **REQ mobile-build-release** [direct: S-ARCH 十四 + current-profile disposition: S-USER + current acceptance override: S-USER 2026-07-22]：开发长期使用 Expo Development Build 而非 Expo Go；当前完成通道为 development/internal，Android 必须产出并在原生运行环境验证可安装的 owner-only 二进制。iOS 应用开发仍是本次完整交付范围，必须保留并实现 CNG/Xcode 原生工程、共享业务代码、原生适配器、安全区/导航/手势/触觉/无障碍/平台样式与构建配置；Windows 仍可发起 iOS 云构建，但当前验收不要求配置 macOS/Xcode/iOS Simulator，也不执行或要求通过 iOS 构建/运行环境检查。iOS 状态必须如实记录为“开发保留、运行验证暂缓/未验证”，不得由 Android、Web、静态结构或历史证据替代并宣称 iOS 已通过、可用或已验证；将来恢复 iOS 运行验证必须通过受保护的 Source/Contract Revision 重新启用，并提供当次真实 iOS 运行证据。staging/production 通道和商店 promotion 保留但当前关闭。EAS Update 只下发与原生 runtime 兼容的 JS/样式/资源，新增/修改原生模块必须重建并升级 runtimeVersion。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.api-security-baseline"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-api-security-baseline kind=requirement -->
-- **REQ api-security-baseline** [direct: S-ARCH 15.4]：生产要求 HTTPS、短令牌/refresh 轮换、请求签名（适用接口）、API 限流、WAF、短期上传凭证、病毒/内容扫描、后台 MFA/审计以及服务端/受限原生第三方 key；secret 不进入客户端 JS、日志、Context 或仓库。
+- **REQ api-security-baseline** [direct: S-ARCH 15.4 + current-profile override: S-GAP-PLAN]：当前私有 API 必须使用 owner/device credential、短期 session/token 或等价可撤销认证、对象/字段授权、重放/幂等保护、限流、TLS（非 loopback 传输）、上传大小/类型/checksum/扫描边界、管理危险操作二次确认与不可变审计；第三方 key 仅服务端/受限原生持有，secret 不进入客户端 JS、日志、Context 或仓库。WAF、公众短期上传凭证和强制后台 MFA 属于未来 production profile；当前没有 WAF/MFA 不能成为匿名 API、固定 `user-demo` 或无审计危险操作的理由。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.technical-observability"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-technical-observability kind=requirement -->
-- **REQ technical-observability** [direct: S-ARCH 16.1]：采用 OpenTelemetry 关联 API 延迟/错误、数据库查询、Redis 命中、外部接口耗时、任务失败、地图瓦片/图片处理失败、移动端崩溃/页面启动、离线同步失败、电量和传感器性能异常，并可按版本/平台/地区/数据源追踪且不含精确位置。
+- **REQ technical-observability** [direct: S-ARCH 16.1 + current-profile override: S-GAP-PLAN]：采用 OpenTelemetry 或可导出等价标准关联 API 延迟/错误、SQLite 查询/锁/备份、内存/文件缓存命中、ProviderGateway 调用/成本硬停、job/outbox 失败/重试、地图瓦片/图片处理、移动崩溃/页面启动、离线同步、电量和传感器性能异常，并可按版本/平台/粗地区/数据源追踪且不含精确位置；未来 Redis/PostgreSQL/多副本加入时扩展同一信号模型，不另建观测真相。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.data-observability"></a>
@@ -5692,7 +5871,7 @@
 
 <a id="quality-release-observability.requirement.dependency-ordered-delivery"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-dependency-ordered-delivery kind=requirement -->
-- **REQ dependency-ordered-delivery** [direct: S-ARCH 二十一]：建设顺序先坐标/时区观星夜/领域模型/来源许可/Monorepo/API/移动构建/PostGIS，再天气/天文/光污染/地形/高德路线/地点，再小时条件/阻断/窗口/推荐/主备/NightReport，再行程/离线/现场/实况/摄影/通知，最后天空/AR/空间站天象/协作/贡献/校准学习；这是依赖顺序，不替代 MVP/V1/V2/V3 范围。
+- **REQ dependency-ordered-delivery** [direct: S-ARCH 二十一 + current-profile override: S-GAP-PLAN]：当前顺序先完成 Source/selected target 权威、原生导航/UI/共享状态，再完成坐标/时区观星夜/领域模型/许可/Monorepo/API/移动构建、SQLite WAL/RTree/领域 repository/job/outbox/ProviderGateway；随后天气/天文/光污染/地形/地图路线/核验地点，再小时条件/阻断/窗口/推荐/主备/NightReport，再行程/MVP 贡献/基础通知，最后 V1 离线现场/天空/摄影、V2 协作/贡献信任、V3 AR/专业天象及 owner 运维 Final Gate。PostGIS/Redis/S3 迁移只在 future profile 触发。这是依赖顺序，不替代 MVP/V1/V2/V3 范围。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.platform-extension-boundary"></a>
@@ -5702,7 +5881,7 @@
 
 #### User Flow And States
 
-- 发布：构建变更 → 判断 JS-only/原生 → 选择通道/runtime → 自动/人工测试证据 → internal/staging 验证 → 灰度 production → 观察 SLO/崩溃/数据 → 推进或回滚。
+- 发布：构建变更 → 判断 JS-only/原生 → 选择通道/runtime → 自动/人工测试证据 → 当前 development/internal 安装与 owner 验证 → 观察崩溃/数据/成本/恢复 → 推进或回滚；staging/灰度 production 分支只有 Section 7 门开启后可选。
 - 事故：告警 → 关联 trace/版本/ProviderRun/地区 → 降级/熔断/暂停规则或发布 → 恢复 → 对账/重放 → 复盘/runbook 更新。
 - 恢复：选择时间点/对象版本 → 隔离环境恢复 → 完整性/引用/敏感权限校验 → 演练报告；不得第一次在生产事故中验证备份。
 - 产品测量：同意后记录粗粒度事件 → 漏斗/指标按稳定口径聚合 → 与现场反馈/数据质量关联 → 不以增长指标压过安全/可信度。
@@ -5716,13 +5895,13 @@
   - Location: CI/CD 或发布工作台。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=req-quality-release-observability-release-promotion-gate-user-task kind=requirement -->
-  - User task: 将特定 APP/API/worker/admin 版本从 internal/staging 推向 production 或回滚。
+  - User task: 当前把特定 APP/API/worker/admin 版本从 development 推向 owner-only internal 或回滚；future gate 开启后再支持 internal/staging→production。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-quality-release-observability-release-promotion-gate-trigger kind=control -->
   - Trigger: 选择构建/变更集并请求晋级。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-quality-release-observability-release-promotion-gate-input kind=control -->
-  - Input: git/build ID、runtimeVersion、原生模块 diff、迁移、测试/安全/许可证据、SLO 基线和审批。
+  - Input: git/build ID、runtimeVersion、原生模块 diff、SQLite/schema/file migration、测试/安全/许可/成本/restore 证据和 owner 审批；production SLO/法务证据仅在 future promotion 时必需。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-quality-release-observability-release-promotion-gate-loading kind=control -->
   - Loading: 构建/检查/灰度状态持续可见且可安全停止。
@@ -5883,7 +6062,7 @@
 
 <a id="quality-release-observability.obligation.interaction-runtime-evidence"></a>
 <!-- ty-source-item:start key=obl-quality-release-observability-interaction-runtime-evidence kind=technical_obligation -->
-- **OBL interaction-runtime-evidence** [derived from S-DESIGN/S-INTERACTION/S-RESEARCH]：交互验收同时包含纯状态/快照点决策单测、组件语义/取消/reduced-motion 分支、地图/Sheet/滚动/系统 back 集成、慢放/逐帧跳变与速度接缝审查、VoiceOver/TalkBack、文本放大、触觉开关/不可用、代表性 iPhone 与低端/高刷新 Android、低电/相机传感器影响以及暗环境红光亮度；静态截图、Skill/文档 lint、模拟器或单一 FPS 数字不能证明物理交互完成。
+- **OBL interaction-runtime-evidence** [derived from S-DESIGN/S-INTERACTION/S-RESEARCH + current acceptance override: S-USER 2026-07-22]：交互验收同时包含纯状态/快照点决策单测、组件语义/取消/reduced-motion 分支、地图/Sheet/滚动/系统 back 集成、慢放/逐帧跳变与速度接缝审查、TalkBack、文本放大、触觉开关/不可用、低端/高刷新 Android、低电/相机传感器影响以及暗环境红光亮度；静态截图、Skill/文档 lint、模拟器或单一 FPS 数字不能证明当前 Android 物理交互完成。VoiceOver、iOS back gesture、代表性 iPhone 和对应 iOS 触觉/性能/传感器运行证据仍是实现后的平台义务，但当前明确 deferred/unverified，不阻塞 Android target，也不得由共享测试或 Android 结果替代。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.non-completing.lab-only-release"></a>
@@ -5907,18 +6086,18 @@
 <!-- ty-source-item:start key=ac-quality-release-observability-architecture-baseline kind=acceptance -->
 - **AC architecture-baseline**
   - Accepts: REQ technology-baseline, REQ modular-monolith-topology, REQ monorepo-shape, OBL mobile-layering, NCOMP overengineered-platform
-  - Given: 团队开始绑定真实工程结构和首个端到端切片。
+  - Given: 当前个人试用 profile 开始绑定真实工程结构和首个端到端切片。
   - When: 审查架构/依赖/模块边界。
-  - Then: 双端 APP、原生适配、模块化单体、工作进程、共享契约/领域包和概念仓库范围均被保留，且未无证据引入微服务平台。
+  - Then: 双端 APP、原生 ports、Fastify 模块化单体、SQLite WAL/RTree 领域真值、SQLite job/outbox 单 worker、私有文件 store、ProviderGateway、共享契约/领域包和概念仓库范围均被保留；不存在 PostgreSQL/SQLite 双写、通用 command receipt 冒充领域 sink，且未无证据引入微服务平台。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.official-source-production-gates"></a>
 <!-- ty-source-item:start key=ac-quality-release-observability-official-source-production-gates kind=acceptance -->
 - **AC official-source-production-gates**
   - Accepts: REQ official-source-production-gates, REQ provider-source-registry, REQ qualified-lowest-tco-selection, REQ astronomy-geo-pipelines, OBL source-data-immutability, OBL provider-cost-and-quota-ledger
-  - Given: 官方资料调研已完成，生产数据 carrier 需在尚未签约、发放真实密钥或取得目标区 POC 时完成当前机器可实现部分。
-  - When: 审查 production integration manifest、运行手册、环境隔离、运行时代码和 contract fixture。
-  - Then: QWeather、Open-Meteo、高德路线 v5、EOG VIIRS、Copernicus DEM、Gaia DR3、CelesTrak OMM、获批 FY-4 订单落盘与 S3 兼容对象层均有实际 endpoint/auth/secret boundary/归一化或加工/缓存与调度/安全降级/lineage 方案；测试证明 JWT 与专属 host、商业 endpoint、驾车及公交响应、secret 脱敏、流式大小与 checksum 校验、暂存失败 abort、内容寻址不可变提交和外部未激活时无生产客户端；manifest/evidence 为 `researchStatus=completed`、`implementationStatus=passed`、`implementationBlocked=false`，外部合同、账号、许可、真实密钥和目标区流量可如实保持 `pending`，但 `productionTrafficAllowed=false` 且 promotion blocked，不得冒充已上线或生产 SLO。
+  - Given: 官方资料调研已完成，个人试用版须完成机器内可实现 carrier，同时合同、真实密钥、目标区 POC 或公众生产权仍可能未取得。
+  - When: 审查 source integration manifest、ProviderGateway、私有存储/静态资产 carrier、运行手册、环境隔离、runtime code、contract fixture 和预算 fault injection。
+  - Then: 移动栈、QWeather/Open-Meteo、高德路线、EOG VIIRS、Copernicus DEM、Gaia、CelesTrak、FY-4、专业工具、通知和存储逐项具有 `enabled-poc`、`disabled`、`contract_gate`、`poc_gate`、`external_confirmation` 或 `defer` disposition；已启用项有 endpoint/auth/secret boundary、归一化/加工、checksum/content-addressed 落盘、调度、lineage 与安全降级，未启用项不生成假数据或假成功。测试证明所有网络调用经过 ProviderGateway、secret 脱敏、暂存失败 abort、内容寻址不可变提交及 70/90/100 成本门；当前私有文件 store 可成立而无需 S3/CDN。外部合同/账号/许可/真实密钥/目标区流量可诚实保持 `pending`，`productionTrafficAllowed=false` 且 promotion blocked，不得冒充已上线或 production SLO。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.interaction-direct-manipulation"></a>
@@ -5961,9 +6140,9 @@
 <!-- ty-source-item:start key=ac-quality-release-observability-environment-production-isolation kind=acceptance -->
 - **AC environment-production-isolation**
   - Accepts: REQ environment-isolation, REQ production-topology
-  - Given: staging 运行媒体/通知/地理任务并执行测试登录。
-  - When: 检查其数据库、Redis、Bucket、key、证书和 OAuth。
-  - Then: 与 production 完全隔离，测试通知/数据无法到达真实用户，生产拓扑各资源角色有健康与故障域。
+  - Given: development/test 运行媒体、通知、地理任务，owner-only internal 保存真实个人数据。
+  - When: 检查 SQLite 路径、私有文件根、provider/API key、owner/device credential、通知通道、备份目标和进程环境。
+  - Then: 测试 fixture/通知/媒体无法进入 internal 真值，internal secret 不回流测试或日志；当前单实例角色有健康/恢复边界，未来 staging/production PostgreSQL/Redis/bucket 隔离仍明确标记为未激活 release gate。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.china-compliance-readiness"></a>
@@ -5979,9 +6158,9 @@
 <!-- ty-source-item:start key=ac-quality-release-observability-restore-objectives kind=acceptance -->
 - **AC restore-objectives**
   - Accepts: REQ backup-recovery, CTRL backup-restore-exercise
-  - Given: 隔离演练选择一个接近目标 RPO 的时间点并包含数据库/对象/地点导出。
+  - Given: 隔离演练选择一个接近当前 profile 目标 RPO 的时间点并包含 SQLite、私有 content-addressed 文件/manifest、地点和用户导出。
   - When: 完成恢复和完整性校验。
-  - Then: 实测 RPO/RTO、引用/权限/对象版本和失败项有证据；Redis 缺失不造成真值丢失。
+  - Then: 新目录/新进程能读取恢复后的真实领域数据，实测 RPO/RTO、schema/checksum、引用/权限/删除墓碑/对象版本和失败项有证据；内存缓存缺失不造成真值丢失。未来 PostgreSQL/PITR/对象存储目标不得被本次演练伪造为已完成。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.native-release-boundary"></a>
@@ -5990,16 +6169,16 @@
   - Accepts: REQ mobile-build-release, CTRL release-promotion-gate, OBL release-runtime-compatibility
   - Given: 变更新增一个高德原生模块接口。
   - When: 尝试通过 EAS Update 推送给旧 runtime。
-  - Then: 晋级门阻止 OTA，要求新双端二进制/runtimeVersion；JS-only 兼容修复才可按通道灰度/回滚。
+  - Then: 晋级门阻止 OTA；当前 Android 必须重建并升级二进制/runtimeVersion，iOS 原生工程、依赖与 runtimeVersion 必须同步更新且保持 build-ready，但实际 iOS 二进制/运行验证维持 deferred/unverified；JS-only 兼容修复才可按通道灰度/回滚。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.security-baseline"></a>
 <!-- ty-source-item:start key=ac-quality-release-observability-security-baseline kind=acceptance -->
 - **AC security-baseline**
   - Accepts: REQ api-security-baseline
-  - Given: 未授权客户端重放签名请求、滥用上传凭证并尝试读取日志中的 key。
+  - Given: 未授权客户端访问 owner API、重放写请求、提交超限/伪装媒体并尝试读取日志中的 key。
   - When: 安全测试执行。
-  - Then: HTTPS/签名或幂等/限流/WAF/短期凭证/扫描生效，secret 不在客户端 JS/日志/仓库，后台敏感修改受 MFA/审计。
+  - Then: 认证/对象授权、TLS（适用链路）、幂等/重放保护、限流、文件大小/类型/checksum/扫描、危险操作二次确认和审计生效，secret 不在客户端 JS/日志/仓库；当前无 WAF/MFA 不被误报为已有，未来 public profile 明确保留对应门。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.observability-correlation"></a>
@@ -6024,9 +6203,9 @@
 <!-- ty-source-item:start key=ac-quality-release-observability-test-coverage kind=acceptance -->
 - **AC test-coverage**
   - Accepts: REQ test-pyramid, REQ astronomy-golden-tests, REQ outdoor-validation, OBL coordinate-time-types, NCOMP lab-only-release
-  - Given: 当前机器交付运行于可用的 Windows/Android 环境，iOS、代表性双端真机、弱无网、低电低亮和户外条件暂时无法取得。
-  - When: 执行当前候选验证并审查完整 release matrix。
-  - Then: 当前环境可执行的单元、结构化、UI 与 Android 模拟器证据通过；不可执行及需外部权威/供应商的行保持 `pending`、样本数为 0、写明所需证据并保持 production release blocked，模拟器不得冒充 EXT outdoor-device-field-validation。
+  - Given: 候选要求达到当前 `owner-only personal trial usable`，其 required native target 是 Android；地图/Sheet/back/触觉/传感器/相机/通知/离线等 Android 行为不能由 Browser 或单一模拟器证明，iOS live runtime validation 则明确不在本 profile 的 required targets 中。
+  - When: 执行单元/契约/集成/UI/native E2E/故障/性能矩阵并审查 selected targets 声明的原生 POC。
+  - Then: 自动测试与 Android 可安装 internal build/runtime 均有当次证据，Android 在适用设备证明安全区、字体、system/predictive back、gesture、地图和原生 ports，涉及 Android 设备差异的 mobile control unresolved 逐项完成或阻塞当前原生验收；iOS 代码、CNG/Xcode 工程、平台配置和适配器仍由结构、类型、单元/组件及共享契约检查保护，但报告必须写 `runtime validation deferred/unverified`。完整代表性户外/季节/地点专家背书可保持 EXT `pending` 并阻塞 production claim；不得用 Browser、静态结构或模拟器替代 Android 真实 invocation/结果/降级，也不得用 Android 结果冒充 iOS runtime evidence。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.slo-evaluation"></a>
@@ -6035,7 +6214,7 @@
   - Accepts: REQ performance-slos, OBL approved-production-slo-measurement
   - Given: 数据源/供应商调研、十项指标口径和遥测维度已完成，但尚无代表性预发/生产流量和连续 30 天真实基线。
   - When: 按 DEC production-slo-measurement 审查当前机器交付。
-  - Then: 十项指标均有可执行测量契约、分层维度和明确取证入口，报告以 `pending-production-measurement`、样本数 0 和 `releaseBlocked=true` 如实记录；不得宣称 production SLO/SLA，部署后仍须按 28 天窗口和连续 30 天基线完成复验。
+  - Then: 十项指标均有可执行测量契约、分层维度和明确取证入口；当前 owner-trial 的启动/决策/地图/天空/离线/崩溃/新鲜度以代表性设备与受控网络样本报告实际值、样本数和失败，不能用常量充当证据。对外 production SLO 仍标 `pending-production-measurement`、`releaseBlocked=true`，不得宣称 SLA；未来须按 28 天窗口和连续 30 天基线复验。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.acceptance.delivery-order-and-platform"></a>
@@ -6378,17 +6557,37 @@
 - Derived Item: REQ qualified-lowest-tco-selection、OBL provider-cost-and-quota-ledger、AC qualified-lowest-tco-provider-selection 与 FS lowest-sticker-price-provider。
   - Derived From: S-USER 明确要求数据真实、稳定的前提下尽可能选择性价比高、需要付费时选择便宜方案；S-RESEARCH 的官方价格/许可/配额、目标区 POC、缓存加工和成本变量。
   - Reason: “便宜”若不先建立不可被价格抵消的资格门和等价能力边界，会鼓励免费但不合法/不稳定的源；若只比较接口标价，又会漏掉加权调用、托管、工程、合规和退出成本。统一 12 个月 TCO 台账使该直接优先级可审计、可验收。
-  - Changes product meaning: no；落实用户已经决定的选型顺序；具体预算、阈值和付费冗余风险偏好仍留给 DEC provider-budget-and-paid-redundancy。
+  - Changes product meaning: no；落实用户已经决定的选型顺序；当前总硬顶、paid=0 与 70/90/100 处置已由后续 owner 指令固化，具体采购仍留给 DEC provider-budget-and-paid-redundancy 的逐项批准。
+
+- Evidence Item: Gap Audit Baseline（16 MVP 0/10/6、14 Outcome 全部未闭环、八项高信号实现事实）。
+  - Derived From: S-GAP-PLAN 对 `main@a88c1b0` 加审计时工作区、代码入口、服务装配、测试和历史 receipt 的有界检查。
+  - Reason: 后续 Contract 必须区分“已有可复用局部代码”和“用户能从原生入口完成的真实闭环”，否则会继续用固定数据、通用 token 或文字可见性关闭 Outcome。
+  - Changes product meaning: no；它只记录当前实现 evidence，不改变两份初版方案与本计划的目标。
+
+- Delegated Item: `ARCH-PROFILE individual-personal-trial-v1`。
+  - Delegated From: S-GAP-PLAN 6.2/7 的个人版提案，经 S-USER 的个人 owner-only、CNY 200/月、暂不备案/公开生产变更及 S-USER-SOURCE-REVISION 本次明确授权采纳。
+  - Reason: S-ARCH 的 PostgreSQL/PostGIS + Redis/BullMQ + S3/CDN + public production 拓扑与当前成本/运营边界冲突；SQLite WAL/RTree、SQLite job/outbox、私有 content-addressed 文件和 ProviderGateway 可保留真实领域/恢复/成本义务而不预建公众规模基础设施。
+  - Changes product meaning: yes，受 owner 后续变更授权；只改变当前 carrier/发布 profile，不删除产品能力，初版拓扑以 migration ports 和 Section 7 future gate 保留。
+
+- Delegated Item: 四个 selected design targets 及 95 stable control 一一映射。
+  - Delegated From: S-USER-SOURCE-REVISION 要求把既有设计资源作为本计划输入，用户此前确认页面原型方向满意；S-DR-GOAL-INDEX 与四个最终 artifact 提供 hash、coverage、替代/失败和 non-claim。
+  - Reason: 页面原型只能约束布局/装配，控件 JSON 才能在声明字段内约束 exact 静态/动态/逻辑；分类可阻止样例数据、评审壳、失败 v2 atlas 或 provider run 状态越权。
+  - Changes product meaning: no；补充现有 95 CTRL 的 authored visual/interaction target，不新增业务能力，也不完成 Context/DESIGN adoption。
+
+- Advisory Item: `DEV-AUTH-001`～`DEV-QUALITY-001`、Stage 0～8 与十个真实验收旅程。
+  - Derived From: S-GAP-PLAN 的 19 工作包、依赖和弱验收复盘，本计划 14 Outcome/16 MVP/95 CTRL/AC/OBL 以及四个 selected targets。
+  - Reason: 为 Contract authoring 提供完整切片索引和强验收方向，同时避免 Source Plan 绑定真实 owner/path/runner/proof 或创建第二调度权威。
+  - Changes product meaning: no；Stage 顺序是 advisory，后续 Contract 可按真实依赖调整，但不能削弱原生可达、领域 sink、重启读回、失败路径或双端 target proof。
 
 ## 9. Decisions Required
 
 <a id="decision.dependency-version-baseline"></a>
 - **DEC dependency-version-baseline**
   - Status: approved_by_owner (2026-07-20)
-  - Decision: 选择 Expo/React Native 新架构、Expo Router、Skia/渲染、TanStack Query、Zustand、React Hook Form/Zod、Reanimated/Gesture Handler、SQLite/FileSystem/SecureStore/Location/Sensors/Notifications、NestJS/Fastify、PostgreSQL/PostGIS、Redis/BullMQ、Next.js、Python/地理库和各原生 SDK 的兼容版本基线/升级政策。
+  - Decision: 选择 Expo/React Native 新架构、Expo Router、Skia/渲染、TanStack Query、Zustand、React Hook Form/Zod、Reanimated/Gesture Handler、SQLite/FileSystem/SecureStore/Location/Sensors/Notifications、当前 Fastify + SQLite WAL/RTree + SQLite job/outbox、Next.js、Python/地理库和各原生 SDK 的兼容版本基线/升级政策；NestJS、PostgreSQL/PostGIS、Redis/BullMQ 只在 future profile 迁移时另锁兼容矩阵。
   - Options: 以项目启动时最新稳定兼容矩阵冻结；以企业长期支持/供应商认证矩阵冻结；分平台采用不同受支持基线但共享业务契约。
 <!-- ty-source-item:start key=approved-dependency-version-baseline kind=technical_obligation -->
-  - Approved resolution (owner, 2026-07-20): 新项目锁定 2026-07-20 最新正式稳定的 Expo SDK 57 / React Native 0.86 / React 19.2.3 / Node.js 22 LTS（≥22.13），只用 New Architecture 和 Development Build；移动依赖先采用 SDK 57 官方矩阵（Reanimated 4.5.0、Worklets 0.10 系列、Gesture Handler 2.32 系列、Skia 2.6.2），其余通过 `expo install`、`expo-doctor`、双端原生构建和 lockfile 冻结精确版本。启用 Worklets bundle mode 并把官方已知的 Reanimated/Hermes 内存增长列为真机门；门失败则回退 SDK 56 兼容矩阵或关闭未达标复杂动画。安全/patch 每月评估，兼容 minor 每季度在 CI+双端回归后升级，Expo/RN/原生 SDK major、runtimeVersion、schema 或权限变化单独评审并重建二进制；OTA 只发布与既有 runtime 兼容的 JS/样式/资源。
+  - Approved resolution (owner, 2026-07-20; current acceptance override 2026-07-22): 新项目锁定 2026-07-20 最新正式稳定的 Expo SDK 57 / React Native 0.86 / React 19.2.3 / Node.js 22 LTS（≥22.13），只用 New Architecture 和 Development Build；移动依赖先采用 SDK 57 官方矩阵（Reanimated 4.5.0、Worklets 0.10 系列、Gesture Handler 2.32 系列、Skia 2.6.2），其余通过 lockfile 和 Android 原生构建/运行冻结当前可验证版本，同时保持 iOS pod/project/build 配置与同一依赖矩阵同步。当前不要求 macOS/Xcode/iOS Simulator 或 iOS 构建结果，iOS 兼容状态必须标为 deferred/unverified；未来恢复 iOS 运行验证后才以双端原生构建完成该平台证据。启用 Worklets bundle mode 并把官方已知的 Reanimated/Hermes 内存增长列为当前 Android 设备门；iOS 对应门保留但暂缓。安全/patch 每月评估，兼容 minor 每季度在当前 required target 回归后升级，Expo/RN/原生 SDK major、runtimeVersion、schema 或权限变化单独评审并重建当前 required binary、同步更新 iOS build readiness；OTA 只发布与既有已验证 runtime 兼容的 JS/样式/资源。
 <!-- ty-source-item:end -->
   - Why it cannot be reliably derived: 两份附件提供技术选型和示例文档版本，不提供最终 lockfile、目标日期兼容矩阵或维护周期；版本信息会变化。
   - Affected REQ / AC: REQ react-native-app, REQ technology-baseline, REQ mobile-build-release, AC architecture-baseline, AC native-release-boundary。
@@ -6410,7 +6609,7 @@
   - Decision: 确定最低 iOS/Android、主流/最低性能档、内存/存储、传感器、ARKit/ARCore、国内厂商推送、屏幕尺寸和无 Google 服务设备的正式支持/降级矩阵。
   - Options: 较新 OS/较窄矩阵优先质量；覆盖更旧/更多安卓但扩大降级和测试；按 MVP/V1/V3 逐步扩展设备能力。
 <!-- ty-source-item:start key=approved-supported-os-device-matrix kind=technical_obligation -->
-  - Approved resolution (owner, 2026-07-20): 安装下限跟随 SDK 57：iOS 16.4+、Android 7/API 24+、compile/target API 36；正式全功能测试档为 iOS 16.4+ 支持机型与 Android 10+、≥4GB RAM、≥64GB 存储，兼容降级档为 Android 7～9、3GB RAM，2GB RAM/32-bit 不承诺。无 GMS 设备必须完成核心查询、地图、离线和本地提醒，远端推送按国内厂商通道能力显示；缺磁力计/陀螺仪/气压计时隐藏对应能力并允许手动方向，AR 仅对通过 ARKit/ARCore 认证设备开放。低端档关闭 AR、高密 Skia/粒子、昂贵模糊和复杂物理转场并降低天空帧率/图层密度，但不得降级安全、来源、状态与可访问性。
+  - Approved resolution (owner, 2026-07-20; current acceptance override 2026-07-22): 安装下限跟随 SDK 57：iOS 16.4+、Android 7/API 24+、compile/target API 36；当前 required 全功能运行测试档为 Android 10+、≥4GB RAM、≥64GB 存储，兼容降级档为 Android 7～9、3GB RAM，2GB RAM/32-bit 不承诺。iOS 16.4+ 支持矩阵继续约束代码、原生工程、capability guards 和 build configuration，但代表性 iPhone/Simulator 运行验证为 deferred/unverified。无 GMS 设备必须完成核心查询、地图、离线和本地提醒，远端推送按国内厂商通道能力显示；缺磁力计/陀螺仪/气压计时隐藏对应能力并允许手动方向，AR 仅对通过 ARKit/ARCore 认证设备开放。低端档关闭 AR、高密 Skia/粒子、昂贵模糊和复杂物理转场并降低天空帧率/图层密度，但不得降级安全、来源、状态与可访问性。
 <!-- ty-source-item:end -->
   - Why it cannot be reliably derived: Source 只要求双端/真机/AR 可选，没有授权最低版本、机型占比或性能预算。
   - Affected REQ / AC: REQ react-native-app, REQ optional-ar, REQ sky-rendering-budget, REQ performance-slos, EXT app-store-native-capability-readiness。
@@ -6473,12 +6672,12 @@
 <a id="decision.provider-budget-and-paid-redundancy"></a>
 - **DEC provider-budget-and-paid-redundancy**
   - Status: approved_by_owner (2026-07-20)
-  - Decision: 按 MVP/V1/V2/V3 和天气、地图/路线、卫星/栅格、推送、存储/CDN 等能力批准月度/年度预算包络、币种/税费/汇率基准、预算告警/硬上限、容量余量、套餐升降/续费审批，以及何种可用性/安全/业务损失证据足以购买第二付费源或热备。
+  - Decision: 当前个人试用版的全部外部经常性服务共同受 CNY 200/月、CNY 2,400/年硬包络约束，未逐项批准时实际 paid budget 为 CNY 0；按 MVP/V1/V2/V3 和天气、地图/路线、卫星/栅格、通知、存储等能力记录币种/税费/汇率、预算告警/硬上限、容量余量、套餐升降/续费审批，以及何种可用性/安全/业务损失证据足以购买第二付费源或热备。
   - Options: 推荐精益基线——每项能力一个合格最低 TCO 付费主源 + 合法缓存/本地计算/开放基准/诚实降级，测得的增量损失大于第二来源 TCO 才增加付费冗余；按领域设置不同预算与冗余门；对经专业审查认定的关键能力预先双源、其余保持单源；在预算未批准前只做非商业 POC/staging 且阻止生产采购。
 <!-- ty-source-item:start key=approved-provider-budget-and-paid-redundancy kind=technical_obligation -->
-  - Approved resolution (owner, 2026-07-20): 本决策不授权任何自动付款：未取得 owner 逐项批准前，production paid budget 为 CNY 0，开发只用本地 fixtures、允许的开放数据和非商业 POC；系统仍实现按能力/阶段/币种/税费/汇率的 12 个月 TCO 台账、70%/90% 告警和 100% 硬停/按功能降级，但具体金额由采购记录注入配置且升级/续费不得自动发生。每项能力最多一个合格最低 TCO 付费主源，保留合法缓存、本地算法、开放基准和诚实 unknown；第二付费源只在相同测试窗口内证明单源造成的已量化用户/安全/SLO 损失持续两个周期或发生一次批准的严重事件，且预期避免损失大于第二源完整 12 个月 TCO 后，由 owner 再批准。
+  - Approved resolution (owner, 2026-07-20; current-profile ceiling confirmed 2026-07-22): 本决策不授权任何自动付款。当前所有外部经常性服务合计 `external_service_ceiling_cny=200/month`、`2400/year`，未取得 owner 逐项批准前 `approved_paid_budget_cny=0`；开发只用本地 fixtures、条款允许的开放数据和非商业个人 POC。系统实现按能力/阶段/币种/税费/汇率的 12 个月 TCO 与实际 usage/rate/bill ledger：70% 停止非必要预热、后台刷新和大范围候选，90% 关闭可选多模型/动画图层/自动媒体同步，100% 原子阻断所有新增付费调用并回到合法缓存、本地计算或 `unknown`；重试、并发和跨月切换不得穿透硬停，升级/续费/充值不得自动发生。每项能力最多一个合格最低 TCO 付费主源；第二付费源只有在量化损失满足原触发条件、仍不越过总硬顶并由 owner 再批准时可启用，超过 CNY 200/月必须先形成新的 owner 决策而不是改配置绕过。
 <!-- ty-source-item:end -->
-  - Why it cannot be reliably derived: 用户决定了“质量合格后尽可能便宜”的排序，但未给可花金额、增长预测、风险价值、告警阈值、容量余量或双源触发线；Agent 不能替业务批准付款或风险偏好。
+  - Why it cannot be reliably derived: 初始两份方案只给成本优化方向；CNY 200/月硬顶、paid 默认 0 和当前个人版边界来自后续 owner 指令。能力间分配、具体采购、增长预测和例外风险价值仍不能由 Agent 推断。
   - Affected REQ / AC: REQ qualified-lowest-tco-selection, REQ provider-source-registry, REQ provider-failure-controls, REQ data-source-admin, REQ official-source-production-gates, OBL provider-cost-and-quota-ledger, AC qualified-lowest-tco-provider-selection, AC official-source-production-gates, EXT commercial-provider-rights-and-quotas, DEC weather-provider-contracts, DEC route-provider-fallback-and-quotas, DEC object-storage-cdn-provider-and-region。
 
 <a id="decision.seeing-data-source"></a>
@@ -6506,10 +6705,10 @@
 <a id="decision.candidate-routing-limits"></a>
 - **DEC candidate-routing-limits**
   - Status: approved_by_owner (2026-07-20)
-  - Decision: PostGIS 预筛半径/数量、调用真实路线候选数、最终推荐数、并发/超时/成本上限和不同地区/用户的调节规则。
+  - Decision: 当前 SQLite RTree/精确距离（未来可换 PostGIS）的预筛半径/数量、调用真实路线候选数、最终推荐数、并发/超时/成本上限和不同地区/用户的调节规则。
   - Options: 直接采用来源建议前 10～20/最终 3～5 并选具体值；按密度/配额动态；MVP 更小固定上限后用数据调整。
 <!-- ty-source-item:start key=approved-candidate-routing-limits kind=technical_obligation -->
-  - Approved resolution (owner, 2026-07-20): 先按用户明确最大距离/时间与数据覆盖做 PostGIS 预筛，单次最多 200 点；完整规则评分前 24 点，真实路线最多 8 点，最终展示 1 个主选+最多 4 个备选。路线并发 4、单候选超时 2.5 秒、整批软预算 6 秒且受 provider quota/cost circuit breaker 控制；超时先返回直线距离/合法缓存并异步补齐，不把直线当驾车时间。低密地区可扩大半径但不突破用户硬条件，高密/低端设备只收紧数量；所有动态调整保存原因、版本和实际调用成本。
+  - Approved resolution (owner, 2026-07-20; current-profile carrier override 2026-07-22): 先按用户明确最大距离/时间与数据覆盖，通过当前 SQLite RTree bounding-box + 精确距离或未来 PostGIS 等价查询预筛，单次最多 200 点；完整规则评分前 24 点，真实路线最多 8 点，最终展示 1 个主选+最多 4 个备选。路线并发 4、单候选超时 2.5 秒、整批软预算 6 秒且受 ProviderGateway quota/cost circuit breaker 控制；超时先返回直线距离/合法缓存并异步补齐，不把直线当驾车时间。低密地区可扩大半径但不突破用户硬条件，高密/低端设备只收紧数量；所有动态调整保存原因、版本和实际调用成本。
 <!-- ty-source-item:end -->
   - Why it cannot be reliably derived: 附件给的是建议区间，不是已决定阈值、配额合同或预算。
   - Affected REQ / AC: REQ search-and-candidate-bounds, REQ route-timeout-degradation, AC coordinate-round-trip, EXT commercial-provider-rights-and-quotas。
@@ -6671,12 +6870,12 @@
 <a id="decision.object-storage-cdn-provider-and-region"></a>
 - **DEC object-storage-cdn-provider-and-region**
   - Status: approved_by_owner (2026-07-20)
-  - Decision: 在地域/备案、许可、安全、恢复和删除硬门合格后，按同区域同规格的容量/请求/失败请求/处理/取回/出网/CDN/工程/迁移 12 个月 TCO 选择首发对象存储/CDN 供应商；同时确定境内/境外 region、域名/ICP、S3 抽象边界、raw-restricted/derived-private/public-assets/user-media/audit bucket 分层、版本/加密/生命周期/恢复、公开签名/归属和跨境策略。
+  - Decision: 当前个人版采用设备私有文件与私有 API content-addressed 文件目录，不要求公开对象存储/CDN、域名或 ICP；通过 storage port、manifest 与 visibility policy 保留未来对象存储/CDN 迁移。在未来公众生产触发后，再按地域/备案、许可、安全、恢复、删除和 12 个月 TCO 选择供应商/region，并确定 bucket 分层、版本/加密/生命周期/恢复、公开签名/归属和跨境策略。
   - Options: 中国主场景在同规格报价后选阿里 OSS+CDN 或腾讯 COS+CDN 中最低合格 TCO 的一家；在法务/备案完成前只部署 staging 且 production gate 阻止公开；单主供应商起步并保留接口迁移，不在 MVP 同时经营双云；只有 DEC provider-budget-and-paid-redundancy 的触发器成立才增加第二付费云。
 <!-- ty-source-item:start key=approved-object-storage-cdn-provider-and-region kind=technical_obligation -->
-  - Approved resolution (owner, 2026-07-20): 开发/staging 使用本地 S3-compatible MinIO 和同一对象契约；中国 production 只允许华南境内单 region、单供应商，在运营主体/域名 ICP/安全/删除/恢复门和 OSS/COS 同规格 12 个月 TCO 报价完成后选最低合格的一家，未确认前 production public gate 保持关闭且不假定供应商。接口不使用最低公分母以外的不可迁移能力；bucket/权限固定分为 raw-restricted、derived-private、public-assets、user-media、audit，默认私有、服务端加密、版本/生命周期/签名 URL/归属/删除任务分层，禁止未批准跨境和双云复制。第二云只按付费冗余触发器另批，不作为 MVP 默认成本。
+  - Approved resolution (owner, 2026-07-20; current-profile override confirmed 2026-07-22): 当前 development/owner internal 不强制运行 MinIO，使用设备私有文件 + 私有 API content-addressed 文件目录，并用 `raw-restricted`、`derived-private`、`user-media`、`audit` manifest/ACL/visibility 语义分层；默认私有，具备 checksum、原子提交、去敏派生、版本、加密/访问控制、生命周期、删除和 restore，当前没有 `public-assets` CDN 发布。storage port 必须可替换且业务状态机不依赖目录路径。未来中国 public production 仍只在运营主体/域名 ICP/安全/删除/恢复门及 OSS/COS 同规格 12 个月 TCO 完成后选择华南境内单 region、单供应商，未确认前 public gate 关闭且不假定供应商；禁止未批准跨境/双云复制，第二云另批并受 CNY 200/月当前硬顶或后续新预算决策约束。
 <!-- ty-source-item:end -->
-  - Why it cannot be reliably derived: S-ARCH 只要求 S3-compatible object storage/CDN；S-RESEARCH 证明两家均按容量/请求/流量/增值项计费且境内 CDN 依赖备案，但没有运营主体、采购报价、区域、域名、流量画像或跨境批准。
+  - Why it cannot be reliably derived: S-ARCH 只要求未来 S3-compatible object storage/CDN；当前私有目录替代来自后续个人 owner-only 指令。未来仍没有采购报价、域名/备案、流量画像或跨境批准。
   - Affected REQ / AC: REQ production-topology, REQ china-production-compliance, REQ official-source-production-gates, AC official-source-production-gates, AC china-compliance-readiness, EXT commercial-provider-rights-and-quotas, EXT china-production-legal-readiness。
 
 <a id="decision.cache-ttl-policy"></a>
@@ -6696,7 +6895,7 @@
   - Decision: 接受或调整来源建议 RPO≤15 分钟/RTO≤2 小时，并按用户数据、地点、媒体、缓存/瓦片、规则/审计划分恢复优先级、备份地区/加密/演练频率。
   - Options: 全业务统一建议目标；核心真值达到建议、可重建数据放宽；按 MVP 成本暂定较宽并明确不生产；多区域/同区域灾备。
 <!-- ty-source-item:start key=approved-recovery-objectives kind=technical_obligation -->
-  - Approved resolution (owner, 2026-07-20): 核心 PostgreSQL 真值（账号权限、行程/协作、地点审核、规则版本、provider/audit 元数据）目标 RPO ≤15min、RTO ≤2h；用户媒体和不可轻易重建对象 RPO ≤1h、RTO ≤8h；可从 immutable raw/官方源重建的派生瓦片/报告 RPO ≤24h、RTO ≤24h，Redis/本地缓存不备份且可清空重建。首发采用同一合规区域的加密 PITR+对象版本/生命周期，不默认昂贵跨云热备；每月抽样恢复、每季度完整隔离恢复演练，校验引用、权限、删除墓碑、受限坐标和实际 RPO/RTO。未通过演练的环境不得标 production-ready。
+  - Approved resolution (owner, 2026-07-20; current-profile carrier override confirmed 2026-07-22): 当前核心 SQLite 真值（owner 权限、行程/协作、地点审核、规则版本、provider/audit 元数据）仍以 RPO ≤15min、RTO ≤2h 为工程目标，通过 SQLite online backup/快照而非 PostgreSQL PITR 实现；私有用户媒体与不可轻易重建文件目标 RPO ≤1h、RTO ≤8h，通过 content-addressed manifest 增量备份实现；可由 immutable raw/官方源重建的派生瓦片/报告目标 RPO/RTO ≤24h，内存/本地缓存可清空重建且不备份。每月抽样、每季度完整隔离 restore，必须测量实际 RPO/RTO并校验 schema/checksum、引用、权限、删除墓碑和受限坐标，不能用常量或“演练成功”文案代替证据。未来 PostgreSQL PITR/对象版本仅在 production profile 迁移后适用；未通过当前 restore 的环境不得标 owner-trial-usable，未完成未来 carrier 门不得标 production-ready。
 <!-- ty-source-item:end -->
   - Why it cannot be reliably derived: 架构使用“建议目标”，没有业务承诺、成本、云配置或合规地区决定。
   - Affected REQ / AC: REQ backup-recovery, CTRL backup-restore-exercise, AC restore-objectives。
@@ -6746,43 +6945,50 @@
 - S-PRODUCT 七～八：Spot、Forecast、Celestial Window、Itinerary、Field Report、Shooting Plan 语义和“结论→行动→专业数据”输出层级已进入实体覆盖、各领域 Requirement 和跨 Outcome OBL。
 - S-PRODUCT 十～十二：MVP 必做/暂不做、V1/V2/V3、PWA 验证/最终 APP/小程序轻入口全部在 Section 3、release-phase-integrity 和平台验收中保留；参考图没有把装备替换为一级入口或把图文导入提前到 MVP。
 - S-PRODUCT 十三～十六：漏斗、全部关键事件、北极星/辅助指标、地点/审核/数据源/推荐后台、数据来源/地点真实性/预测不确定/公开风险/专业分层及最终页面关系均进入 quality、admin、spot、cross constraints、EXT/DEC/RISK。
-- S-ARCH 一～四：完整技术基线、模块化单体、总体拓扑、移动端分层/模块/本地库/离线包/三档定位/方向融合/天空 AR、高德适配、WGS84/GCJ-02、PostGIS 和候选限流全部有 REQ/OBL/AC 或 DEC。
+- S-ARCH 一～四：完整技术基线、模块化单体、总体拓扑、移动端分层/模块/本地库/离线包/三档定位/方向融合/天空 AR、高德适配、WGS84/GCJ-02、空间查询和候选限流全部有 REQ/OBL/AC 或 DEC；当前 SQLite RTree 与未来 PostGIS 的 carrier precedence 已显式区分。
 - S-ARCH 五～八：15 个后端领域、长期/临时实况、摄影/通知/后台、天气/通透度/视宁度/天文/银河/卫星/VIIRS/DEM/路线数据源、通用数据原则/29 个核心实体、NightReport、分层评分/阻断/连续窗口/解释/机器学习边界已覆盖。
 - S-ARCH 九～十二：REST/OpenAPI `/v1` 端点语义、数据状态、四层缓存/所有建议 TTL/击穿保护、14 类任务/可靠性/供应商故障、媒体/EXIF/全景管线已覆盖；建议阈值没有被静默固化，相关项进入 DEC。
-- S-ARCH 十三～十九：环境/生产拓扑/容器/备份、Development Build/EAS/runtimeVersion、安全隐私/六级坐标/API 防护、技术/数据可观测、推荐重放、单元/黄金/契约/移动/户外测试、十项性能建议及九类技术风险全部进入 quality/admin/identity/相关 RISK 与 EXT。
+- S-ARCH 十三～十九：环境/生产拓扑/容器/备份、Development Build/EAS/runtimeVersion、安全隐私/六级坐标/API 防护、技术/数据可观测、推荐重放、单元/黄金/契约/移动/户外测试、十项性能建议及九类技术风险全部进入 quality/admin/identity/相关 RISK 与 EXT；SQLite/private current carrier 与 PostgreSQL/Redis/S3/CDN/public future gate 不再混成同一当前完成条件。
 - S-ARCH 二十～二十二：概念 Monorepo 树、五层工程依赖顺序、最终聚合架构和四项长期资产已保留为 Requirement/OBL/HINT；没有把概念路径误绑定为真实 Delivery Contract 文件。
 - S-DESIGN/S-CONTEXT/S-INTERACTION/S-APPLE：品牌/视觉/日夜红光、390×844、44px、结论/行动/证据、共享地点/时间/路线状态和可访问性均已引用；新增即时 press、commit/cancel、直接操控、中断/速度、gesture arbitration、Bottom Sheet、触觉、reduced motion、平台原生差异和真机验收。DESIGN.md 是完整长期规范，项目 Skill 是单向下游 RN 伴随指南并保留上游 revision/MIT，web 玻璃/系统字体/iOS 同质化冲突未进入 Starward。
 - S-RESEARCH：移动版本策略、QWeather/Open-Meteo/ECMWF、高德/OSM 边界、EOG VNL v2.2、Copernicus DEM 访问变化、Astronomy Engine/Gaia/CelesTrak/JPL/NOAA、Expo/APNs/FCM/国内推送、OSS/COS/CDN、离线/成本/POC/采购法务门均进入 REQ/OBL/AC/EXT/DEC；新增“真实性/目标区稳定性/许可/降级硬门先淘汰，再在等价合格候选中选择 12 个月 TCO 最低者”的跨域规则、成本台账、最低采购顺序和第二付费源触发器，推荐与已批准、技术可行与合同/校准/现场完成仍保持分离。
 - S-IMG-01～10：每张图的尺寸、哈希、采纳的布局/交互证据和拒绝复制的品牌/装饰/假业务均在 Section 2 记录，并映射到首页/地图/地点/行程/极坐标/专业预报控件。
+- S-USER-SOURCE-REVISION/S-GAP-PLAN：owner-only、CNY 200/月/CNY 2,400/年、paid 默认 0、当前不考虑备案/公众生产的后续决定已覆盖旧方案冲突；16 MVP 的 0/10/6 严格基线、14 Outcome 状态、八项实现证据、四类 disposition、`ARCH-PROFILE individual-personal-trial-v1`、19 工作包、Stage 0～8 与十个真实验收旅程已完整索引，且代码 evidence 没有被提升为产品意图。
+- S-DR-GOAL-INDEX/S-DR-MOBILE-PAGES/S-DR-OPS-PAGES/S-DR-MOBILE-CONTROLS/S-DR-OPS-CONTROLS：所有稳定路径、最终 hash、替代/拒绝/no-op、target class、selection basis、14 Outcome/95 CTRL 映射、15/16 字段合同、208+32 AC、A～F/REV-43、响应式/三模式/状态、9 个 mobile POC/媒体 unresolved、ops endpoint/auth unresolved 与 run non-claim 均已进入 Section 2；样例内容和评审壳未成为业务事实。
 
 ### Structural Coverage
 
-- 当前文档含 14 个独立可判定 Outcome、164 个原始 REQ、95 个完整状态 CTRL、43 个原始强制 OBL、16 个 NCOMP、120 个单场景 AC、40 个精确 Runtime Fact RISK、8 个 EXT、32 个已由 owner 于 2026-07-20 批准并分别提升为 14 个 Requirement/18 个 Technical Obligation 的 DEC resolution、27 个非绑定 HINT、5 个 NG 和 9 个 FS；Contract 目标合计 178 个 Requirement 与 61 个 Technical Obligation。
+- 当前文档含 14 个独立可判定 Outcome、164 个原始 REQ、95 个完整状态 CTRL、45 个原始强制 OBL、16 个 NCOMP、122 个单场景 AC、40 个精确 Runtime Fact RISK、8 个 EXT、32 个已由 owner 批准并分别提升为 14 个 Requirement/18 个 Technical Obligation 的 DEC resolution、27 个非绑定 HINT、7 个 NG 和 13 个 FS；Contract 目标合计 178 个 Requirement 与 63 个 Technical Obligation。
 - 每个 REQ、CTRL、OBL、NCOMP 至少被一个 AC 明确接受；每个 CTRL 均独立写出 Location、User task、Trigger、Input、Loading、Empty、Success、Failure、Feedback。
 - 每个 AC 只含一组 Accepts/Given/When/Then；每个 RISK 只关联一个现有 Outcome，并使用允许的十种 Fact 之一。
 - 所有 Accepts/DEC/EXT/Affected 引用指向已声明语义键；锚点和同类型键保持唯一。
-- 直接来源、必要推导、仓库/Context 证据、外部确认、未决产品语义和 advisory hint 已分开；没有把图片参考、实现建议或实时依赖版本提升为无条件产品事实。
+- 95 个 Source Plan CTRL stable key 与 mobile 83 + ops 12 个 control contract key 严格一一对应；14 个 Outcome 均绑定一个 selected page target 和一个 selected control target locator，页面 constraint 与控件 exact-with-declared-coverage 的层级没有混用。
+- 直接、derived、delegated、advisory、implementation evidence、external confirmation 与 non-claim 已分开；19 个 `DEV-*` 和 Stage 0～8 只是 Contract authoring index，没有生成第二计划、调度器或完成 Authority。
 
 ### Approved Product Semantics And External Gates
 
-- 32 个 DEC 已由 owner 于 2026-07-20 全部批准，覆盖依赖与交互动效 token、OS/本地化、游客/默认偏好/首发区域、天气与跨域供应商预算/付费冗余、视宁度/窗口、地图图层/密度、路线/推荐/安全/光污染、坐标/审核/协作、离线/后台安全/通知/AI、删除/分析、对象存储/CDN、缓存/灾备/SLO，以及 V2 内容导入和 V3 专业数据源；每项 Approved resolution 都是独立 Material Item，并绑定到对应 Outcome 的 Requirement 或 Technical Obligation。
-- Owner 批准的是产品/技术基线，不授权付款、签约、生产公开、越权获取数据或跳过 POC/真机/现场/法务；8 个 EXT 及各 resolution 内的 contract/poc/production gate 继续保持外部确认边界，未满足时必须采用已批准的 disabled、staging、规则解释、radiance-only、unknown 或其他诚实降级。
+- 32 个 DEC 已由 owner 于 2026-07-20 批准；2026-07-22 后续指令又为预算、当前 storage/recovery carrier、空间查询/路线预筛和 runtime topology 提供 profile override。依赖/交互动效、OS/本地化、游客/偏好/首发区、供应商、视宁度/窗口、地图/路线/推荐/安全、坐标/审核/协作、离线/通知/AI、删除/分析、缓存/灾备/SLO、V2/V3 边界均仍可追踪；当前 `ARCH-PROFILE individual-personal-trial-v1` 的 SQLite/私有文件/单 worker 语义优先，原 PostgreSQL/Redis/S3/CDN 语义在 future gate 保留。
+- Owner 批准页面/控件资源进入本次 Source authoring，四个 target 的 selected 状态、class、hash 与 coverage 已固定；这不等于 `project_context/**`/`DESIGN.md` durable adoption，也不证明代码、原生行为或后端副作用。
+- Owner 批准的是产品/技术/当前 profile，不授权自动付款、签约、生产公开、越权获取数据或跳过 POC/真机/现场/法务。8 个 EXT 及各 resolution 的 contract/poc/production gate 继续保持外部确认边界；未满足时采用 `disabled`、规则解释、私有/本地 carrier、radiance-only、`unknown` 等诚实降级。
 
 ### Unbound Repository And Verification Facts
 
-- 尚未绑定真实 owner、生产实现路径、runner/proof/Assertion、依赖 lock、交互 token、真机/户外 POC、云资源、商店/证书、密钥、供应商账号/合同/采购预算/正式报价、生产域名、后台角色、数据校准、真实用量/账单或迁移批次；这些属于后续 `/long-task-workflow` 的仓库扫描、Context/本调研读取与 Delivery Contract 编写职责。
-- S-ARCH 的仓库树、Provider 类名、MapAdapter 签名和 package 结构仅为 HINT/概念义务，不证明当前仓库已有这些文件。
-- EXT 的商业许可、法务/备案、商店能力、户外设备、天文基准、摄影实拍和地点现场核验必须由真实外部证据完成；示例、模拟器或一小组样本不能冒充全量/生产确认。
+- 后续仍须绑定实际文件/owner/runner/proof/Assertion、依赖 lock、schema/migration、ProviderGateway 与 native port、Android internal build/signing/runtime、iOS 原生工程与 build readiness、真实 domain sink、备份目标和 telemetry sink；iOS 实际签名/build/runtime evidence 按当前 override 延后，S-ARCH 的仓库树/类名/签名只作 HINT，不证明当前存在。
+- 四个 Open Design target 当前在外部 stable data directory；Contract 必须绑定这些绝对路径与 hash，或把同 hash 文件受控迁入仓库。UI Authority Closure 仍须 reconcile 95 control/14 surface/4 target key 并决定 Context/Screen Contract/DESIGN token delta；不能只写“见原型”。
+- Mobile 资源的 9 个设备调参/capability/生产媒体 unresolved、49/34 haptic disposition，ops 12 控件的 endpoint/auth/authorization，以及 mobile run 的 `artifact-ready/run-unreconciled` 状态均须保留；它们不是未决产品选择，Android 对应项会阻塞当前原生验收，iOS 运行项保持 deferred/unverified 并在未来恢复该 target 时阻塞。
+- 当前外部事实仍包括 provider 条款/账号/credential/配额/实时价格和 owner 逐项 paid approval、至少 30 个核验 seed spot、VIIRS/DEM/catalog checksum 与数据校准、实际 usage/billing、代表性 Android/传感器/相机/通知/离线证据；代表性 iOS 运行证据明确延期且未验证。未来公众事实另包括 OSS/COS/region、生产基础设施/域名/备案/商店/法务/商业许可/完整户外或专家背书；这些不能由 Source Plan 伪造完成。
 
 ### Explicitly Out Of Scope For This Source Plan
 
-- 不生成交付 Contract 文件或非渲染 Source 标记，不绑定 owner/path/runner/proof/Assertion，不启动 `/long-task-workflow`，不实施 APP/后端/基础设施，也不宣称产品或任一版本已交付。
-- 本轮独立 UI/Context workflow 已把交互责任、Skill 单向权威和“调研推荐不等于生产事实”写入 `project_context/**`；Source Plan 不把供应商推荐、价格、阈值或 POC 状态冒充 durable 已决事实。后续确认 DEC/合同/校准时仍须按 Tiny Context 规则更新 owning Context。
+- 不生成交付 Contract 文件或非渲染 Source marker，不绑定真实 owner/path/runner/proof/Assertion，不启动 `/long-task-workflow`，不实施 APP/后端/基础设施，也不宣称产品或任一版本已交付。
+- 本次 Source authoring 不修改 `project_context/**` 或 `DESIGN.md`。selected targets 是普通上游 Source；后续消费工作流负责 UI Authority Closure、Context Delta、Screen Contract/DESIGN adoption、实现与项目验证。
 - 不把 PWA、小程序、静态 Kit/截图、单平台 demo、假数据或后续 V3 工具壳作为 React Native APP 完成。
-- 不创建额外 Source Plan、Schema、CLI、Preflight、Compile、Receipt、Coverage Cache、Authority 或状态文件；本 Markdown 仍是唯一 Source Plan。`docs/technical-data-source-decisions.md` 是有日期的研究证据包，项目 Skill 是实现伴随指南，二者都不是第二份 Source Plan。
+- 不创建额外 Source Plan、Schema、CLI、Preflight、Compile、Receipt、Coverage Cache、Authority 或状态文件；本 Markdown 仍是唯一 Source Plan。Gap plan、数据源研究、设计资源和项目 Skill 都是输入/伴随材料，不是竞争性 Source Plan。
 
 Completeness status:
-- Ready for further refinement: yes
-- Decisions required: none；32 个 DEC 的 Approved resolution 已由 owner 于 2026-07-20 批准并成为可追踪 Material Item。
-- Advisory implementation hints: HINT proposed-mobile-modules, HINT report-snapshot-shape, HINT candidate-route-bound, HINT astronomy-package-capsule, HINT map-adapter-contract, HINT map-request-cancellation, HINT route-snapshot, HINT spot-section-fetching, HINT horizon-composition, HINT itinerary-snapshot-diff, HINT share-rendering, HINT sky-catalog-chunks, HINT orientation-sampling, HINT user-adjustment-overlay, HINT device-capability-catalog, HINT offline-pack-manifest, HINT sync-dependency-order, HINT duplicate-spot-review, HINT ttl-by-fact-type, HINT notification-transition-trigger, HINT toolbox-domain-reuse, HINT account-job-status, HINT profile-reference-integrity, HINT modular-monolith-events, HINT dry-run-first, HINT repository-layout, HINT slo-budgeting
-- Unbound project facts: real production owners/paths/runners/proof/Assertions,安装后的精确 dependency lock 与双端 compatibility/interaction POC 证据、provider contracts/credentials/quotas/pricing/逐项付费预算批准、raw production datasets/checksums 与校准、最终 OSS/COS provider/region、production infrastructure/app-store control planes、legal/licensing approvals、real-device/field POC 和 actual usage/billing；这些属于实现证据或 EXT，不把已批准的产品决策重新降级为未决。
+- Ready for Contract authoring: yes
+- Input coverage gaps: none；两份初版方案、`S-GAP-PLAN`、Goal 索引和四个最终 design resources 均有稳定路径/identity/hash/disposition/coverage，精确非文本视觉通过外部 immutable target pointer 保留而非丢失。
+- Surface/control coverage: complete；14/14 Outcome、95/95 CTRL、83 mobile + 12 ops stable IDs、4/4 selected targets 一一映射，页面 constraint 与控件 exact-with-declared-coverage 均含排除项；9 个 mobile 原生/媒体和 ops endpoint/auth 项是已索引的下游 proof obligation，不是 Source coverage 缺口。
+- Decisions required: none；32 个既有 DEC 与 2026-07-22 current-profile override 已明确。未来 provider 购买、公众生产、法务/备案、最终云区域等是 owner approval/EXT gate，不阻塞当前 Contract authoring，也不得被自动决定。
+- Advisory implementation hints: 27 个 HINT（proposed-mobile-modules、report-snapshot-shape、candidate-route-bound、astronomy-package-capsule、map-adapter-contract、map-request-cancellation、route-snapshot、spot-section-fetching、horizon-composition、itinerary-snapshot-diff、share-rendering、sky-catalog-chunks、orientation-sampling、user-adjustment-overlay、device-capability-catalog、offline-pack-manifest、sync-dependency-order、duplicate-spot-review、ttl-by-fact-type、notification-transition-trigger、toolbox-domain-reuse、account-job-status、profile-reference-integrity、modular-monolith-events、dry-run-first、repository-layout、slo-budgeting）以及 `DEV-AUTH-001`～`DEV-QUALITY-001`/Stage 0～8；均不绑定真实文件或交付调度。
+- Unbound project facts: 实际 path/owner/runner/proof/Assertion、lock/schema/migration/native/provider/storage/telemetry binding、UI Authority Closure 与资源受控迁移、9 个 mobile POC/媒体项、12 个 ops endpoint/auth binding、Android internal build/runtime 证据、iOS build/runtime deferred/unverified 状态、核验地点和真实数据/checksum/usage/bill；公众 OSS/COS/region、域名/备案/商店/法务/商业许可/完整现场背书保持 future EXT gate。

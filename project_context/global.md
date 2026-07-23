@@ -47,6 +47,7 @@
 - External-service ceiling: CNY 200 per month / CNY 2,400 per year. Prefer zero-cost sources only when their personal non-commercial terms, provenance, target-region behavior, and safe degradation are all acceptable.
 - Budget fit never authorizes a purchase, plan upgrade, second paid source, production traffic, or public redistribution.
 - Keep every implemented MVP/V1/V2/V3 capability. Capabilities without commercial, legal, store, expert, representative-device, or field evidence stay experimental, unknown, pending, disabled, or truthfully degraded.
+- Current native runtime acceptance requires Android. iOS implementation remains in full delivery scope, including the generated native project, shared behavior, platform adapters, interaction/accessibility differences, and build configuration, but provisioning macOS/Xcode/iOS Simulator and executing iOS build/runtime checks are deferred for this profile. iOS must remain explicitly runtime-unverified/deferred and cannot inherit a usable or passed claim from Android, Web, static structure, or historical evidence.
 - Contracts, legal/store approval, expert sign-off, representative outdoor/device validation, and site-operation verification are future production-release gates. User spot/media/field-report uploads remain product behavior and are not release-evidence uploads.
 
 ## UX / Screen Brief
@@ -68,6 +69,7 @@
 
 - Tiny Context is installed and initialized.
 - The product/design contract, Open Design references, React Native application, API/workers/admin surfaces, and acceptance harness form the repository baseline.
+- Four owner-selected authored targets are adopted under `docs/design-targets/**`: mobile and operations page constraints plus their exact-with-declared-coverage control contracts. Their stable Surface/Control routing is owned by the Product Surface and Screen Contracts; static artifacts still do not prove production or native behavior.
 - A corrective audit found that several existing carriers use fixed responses, process-local state, metadata-only side effects, or declaration-only native boundaries. Those carriers are implementation scaffolding, not completed Outcomes, until variable-input, side-effect, restart-readback, failure-path, and counterfactual checks pass.
 - `docs/technical-data-source-decisions.md` records official-source research and the current individual personal-trial choices. No purchase, production traffic, public redistribution, production account, commercial contract, external approval, representative-device proof, or field validation is declared complete.
 - Current release authority is owner-only, non-commercial personal trial with a CNY 200/month external-service ceiling and qualifying free sources preferred. Future production gates do not block machine-local implementation, but they also cannot be represented as completed evidence.
@@ -79,4 +81,6 @@
 ## Context Index
 
 - [main](areas/main.md)
+- [Starward Product Surface Contract](areas/main/product-surface-contract.md)
+- [Starward Screen Contracts](areas/main/screen-contracts.md)
 - [main verification](areas/main/verification.md)

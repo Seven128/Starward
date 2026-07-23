@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Starward · 运营端控件级开发设计稿 v2</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --display: Inter, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --body: Inter, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --mono: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --r: 8px;
+    }
+    * { box-sizing: border-box; }
+    html, body { inline-size: 100%; block-size: 100%; overflow: hidden; }
+    html { background: var(--bg); }
+    body { margin: 0; color: var(--fg); background: var(--bg); font: 400 14px/1.57 var(--body); text-align: start; }
+    button, input, select, textarea { color: inherit; font: inherit; }
+    button, input, select, textarea, [role="tab"] { min-block-size: 44px; }
+    button { padding-inline: 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--bg); cursor: pointer; font-weight: 700; letter-spacing: .02em; }
+    button:hover:not(:disabled) { border-color: var(--fg); background: var(--surface); }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled, input:disabled, select:disabled, textarea:disabled { color: var(--muted); background: var(--surface); border-style: dashed; cursor: not-allowed; }
+    button.primary { color: var(--bg); background: var(--fg); border-color: var(--fg); box-shadow: 0 3px 0 var(--border); }
+    button.primary:hover:not(:disabled) { color: var(--bg); background: var(--fg); border-color: var(--accent); }
+    button.quiet { background: var(--surface); }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    input, select, textarea { inline-size: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--r); background: var(--bg); }
+    input[type="checkbox"] { inline-size: 20px; block-size: 20px; min-block-size: 20px; accent-color: var(--fg); }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    h1, h2, h3, h4, p { margin-block-start: 0; }
+    h1, h2, h3, h4 { font-family: var(--display); }
+    h1 { max-inline-size: 18ch; margin-block-end: 12px; font-size: clamp(32px, 3vw, 48px); line-height: 1.06; font-weight: 700; letter-spacing: -.03em; }
+    h2 { font-size: 24px; line-height: 1.2; letter-spacing: -.02em; }
+    h3 { font-size: 17px; line-height: 1.3; letter-spacing: -.01em; }
+    h4 { font-size: 13px; line-height: 1.4; }
+    code, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .sr-only { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .skip { position: fixed; inset-block-start: -80px; inset-inline-start: 264px; z-index: 80; padding: 12px 16px; border-radius: var(--r); color: var(--bg); background: var(--fg); }
+    .skip:focus { inset-block-start: 12px; }
+    .atlas { display: grid; grid-template-columns: 248px minmax(0,1fr) 320px; block-size: 100dvh; overflow: hidden; }
+    .rail { min-inline-size: 0; overflow: auto; background: var(--surface); }
+    .rail-start { padding: 24px 14px 32px; border-inline-end: 1px solid var(--border); }
+    .rail-end { padding: 18px 14px 32px; border-inline-start: 1px solid var(--border); }
+    .sticky { position: sticky; inset-block-start: 0; }
+    .brand { padding: 0 8px 18px; border-block-end: 1px solid var(--border); }
+    .brand strong { display: block; font-size: 17px; letter-spacing: -.01em; }
+    .brand span { display: block; margin-block-start: 4px; color: var(--muted); font-size: 12px; }
+    .candidate { display: inline-flex !important; min-block-size: 26px; align-items: center; margin-block-start: 12px !important; padding-inline: 8px; border: 1px solid var(--border); border-radius: 999px; color: var(--fg) !important; font: 700 10px/1 var(--mono); letter-spacing: .08em; }
+    .nav-group { margin-block-start: 20px; }
+    .nav-group h2, .toc h2, .inspector-label { margin: 0 8px 7px; color: var(--muted); font: 700 11px/1.4 var(--body); letter-spacing: .08em; text-transform: uppercase; }
+    .nav-group a, .toc a { position: relative; display: grid; grid-template-columns: 25px 1fr; min-block-size: 44px; align-items: center; gap: 7px; padding: 6px 8px; border-inline-start: 3px solid var(--surface); color: var(--fg); text-decoration: none; overflow-wrap: anywhere; }
+    .nav-group a:hover, .toc a:hover { background: var(--bg); }
+    .nav-group a[aria-current="true"], .toc a[aria-current="true"] { border-inline-start-color: var(--accent); background: var(--bg); font-weight: 700; }
+    .nav-index { color: var(--muted); font: 10px/1 var(--mono); }
+    .rail-note { margin: 24px 8px 0; padding-block-start: 14px; border-block-start: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+    .main { min-inline-size: 0; overflow: auto; scroll-padding-block-start: 74px; }
+    .topbar { position: sticky; inset-block-start: 0; z-index: 20; display: flex; min-block-size: 68px; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px; border-block-end: 1px solid var(--border); background: var(--bg); }
+    .topbar strong { display: block; }
+    .topbar span { color: var(--muted); font-size: 12px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .inspector-open { display: none; }
+    .board { max-inline-size: 960px; margin-inline: auto; padding: 36px 24px 96px; }
+    .overview { padding-block-end: 48px; }
+    .eyebrow { margin-block-end: 10px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .lede { max-inline-size: 68ch; color: var(--muted); font-size: 17px; line-height: 1.62; }
+    .summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); margin-block: 28px; border-block: 1px solid var(--border); }
+    .summary div { padding: 16px; border-inline-end: 1px solid var(--border); }
+    .summary div:last-child { border-inline-end: 0; }
+    .summary strong { display: block; font: 700 24px/1 var(--mono); }
+    .summary span { display: block; margin-block-start: 7px; color: var(--muted); font-size: 12px; }
+    .callout { max-inline-size: 70ch; margin-block: 24px; padding: 14px 16px; border-inline-start: 3px solid var(--accent); background: var(--surface); }
+    .callout strong { display: block; margin-block-end: 4px; }
+    .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-block: 24px; }
+    .code-block { position: relative; min-inline-size: 0; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+    .code-block button { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; min-block-size: 44px; background: var(--bg); font-size: 11px; }
+    pre { margin: 0; padding: 44px 14px 14px; overflow: auto; font: 12px/1.6 var(--mono); }
+    .contract-table, .data-table { inline-size: 100%; border-collapse: collapse; font-size: 12px; }
+    .contract-table th, .contract-table td, .data-table th, .data-table td { padding: 9px 10px; border-block-end: 1px solid var(--border); text-align: start; vertical-align: top; overflow-wrap: anywhere; }
+    .contract-table th, .data-table th { color: var(--muted); background: var(--surface); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+    .outcome-section { padding-block-start: 24px; }
+    .section-head { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px; padding-block: 28px 22px; border-block-start: 2px solid var(--fg); }
+    .section-head p { max-inline-size: 68ch; margin: 0; color: var(--muted); }
+    .section-count { color: var(--muted); text-align: end; font: 12px/1.5 var(--mono); }
+    .specimen { position: relative; padding-block: 24px 42px; border-block-start: 1px solid var(--border); outline: none; }
+    .specimen::before { content: ""; position: absolute; inset-block: 24px 42px; inset-inline-start: -12px; inline-size: 3px; background: var(--bg); }
+    .specimen.is-selected::before { background: var(--accent); }
+    .specimen-head { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: start; }
+    .specimen-head h3 { margin-block-end: 4px; }
+    .specimen-key { color: var(--muted); font: 11px/1.5 var(--mono); overflow-wrap: anywhere; }
+    .meta { display: flex; flex-wrap: wrap; justify-content: end; gap: 6px; }
+    .tag, .status { display: inline-flex; min-block-size: 28px; align-items: center; gap: 6px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .status::before { content: ""; inline-size: 8px; block-size: 8px; border: 1px solid var(--fg); border-radius: 50%; background: var(--bg); }
+    .status[data-tone="blocked"]::before, .status[data-tone="error"]::before { border-radius: 1px; background: var(--fg); }
+    .status[data-tone="stale"] { border-style: dashed; }
+    .status[data-tone="degraded"] { border-block-end: 3px double var(--fg); }
+    .state-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-block: 14px; }
+    .state-strip button { min-block-size: 44px; padding-inline: 9px; background: var(--surface); font-size: 11px; font-weight: 400; }
+    .state-strip button[aria-pressed="true"] { color: var(--bg); background: var(--fg); border-color: var(--fg); font-weight: 700; }
+    .specimen-viewport { min-inline-size: 0; overflow: auto; padding: 14px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); overscroll-behavior: contain; }
+    .specimen-render { min-inline-size: 0; border: 1px solid var(--border); border-radius: var(--r); background: var(--bg); overflow: hidden; animation: enter .12s cubic-bezier(.2,0,0,1); }
+    .specimen-render[data-tone="error"] { border-color: var(--fg); }
+    .specimen-render[data-tone="stale"] { border-style: dashed; }
+    @keyframes enter { from { opacity: .92; } to { opacity: 1; } }
+    .demo-bar { display: flex; min-block-size: 58px; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-block-end: 1px solid var(--border); }
+    .demo-bar strong { display: block; }
+    .demo-bar small { display: block; margin-block-start: 2px; color: var(--muted); }
+    .demo-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .demo-body { padding: 14px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+    .split { display: grid; grid-template-columns: minmax(0,1fr) minmax(250px,.72fr); gap: 12px; }
+    .field label { display: block; margin-block-end: 5px; font-size: 11px; font-weight: 700; letter-spacing: .02em; }
+    .helper { margin-block-start: 4px; color: var(--muted); font-size: 11px; }
+    .mini { padding: 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); }
+    .mini h4 { margin-block-end: 7px; }
+    .mini p { margin-block-end: 7px; color: var(--muted); font-size: 12px; }
+    .state-message { display: grid; min-block-size: 210px; align-content: center; justify-items: start; gap: 10px; padding: 28px; }
+    .state-message h4 { margin: 0; font-size: 17px; }
+    .state-message p { max-inline-size: 62ch; margin: 0; color: var(--muted); }
+    .skeletons { display: grid; inline-size: 100%; grid-template-columns: 1.3fr 1fr .8fr; gap: 8px; margin-block-start: 8px; }
+    .skeletons i { display: block; block-size: 44px; border: 1px dashed var(--border); border-radius: var(--r); background: var(--surface); animation: pulse .8s ease-in-out infinite alternate; }
+    @keyframes pulse { to { background: var(--border); } }
+    .data-wrap { max-inline-size: 100%; overflow: auto; }
+    .data-table tr:last-child td { border-block-end: 0; }
+    .data-table tr[data-selected="true"] { box-shadow: inset 3px 0 0 var(--accent); background: var(--surface); }
+    .metric-strip { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .metric { min-block-size: 82px; padding: 10px; border-inline-end: 1px solid var(--border); background: var(--surface); }
+    .metric:last-child { border-inline-end: 0; }
+    .metric span { display: block; color: var(--muted); font-size: 10px; }
+    .metric strong { display: block; margin-block: 4px; font: 700 18px/1.2 var(--mono); }
+    .flow { display: grid; grid-template-columns: repeat(8,minmax(0,1fr)); margin-block-end: 12px; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .flow-step { min-block-size: 58px; padding: 8px; border-inline-end: 1px solid var(--border); background: var(--surface); font-size: 10px; }
+    .flow-step:last-child { border-inline-end: 0; }
+    .flow-step strong { display: block; margin-block-end: 3px; font: 700 11px/1.2 var(--mono); }
+    .flow-step[data-done="true"] { border-block-end: 3px solid var(--accent); }
+    .flow-step[data-active="true"] { color: var(--bg); background: var(--fg); }
+    .flow-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block-start: 12px; padding-block-start: 12px; border-block-start: 1px solid var(--border); }
+    .flow-footer span { color: var(--muted); font: 11px/1.4 var(--mono); }
+    .checkline { display: grid; grid-template-columns: 24px minmax(0,1fr); min-block-size: 44px; gap: 8px; align-items: center; }
+    .checkbox-hit { display: inline-grid; inline-size: 44px; block-size: 44px; place-items: center; }
+    .error-copy { color: var(--fg); font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; }
+    .bars { display: grid; grid-template-columns: repeat(6,1fr); align-items: end; gap: 8px; block-size: 112px; padding: 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); }
+    .bars i { display: block; min-block-size: 22px; background: var(--fg); }
+    .bars i:last-child { background: var(--accent); }
+    .funnel { display: grid; grid-template-columns: repeat(4,1fr); align-items: end; gap: 8px; min-block-size: 150px; padding: 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); }
+    .funnel div { display: grid; align-content: end; gap: 5px; text-align: center; }
+    .funnel i { display: block; background: var(--fg); }
+    .timeline-row { display: grid; grid-template-columns: 74px 18px 1fr; min-block-size: 56px; gap: 8px; }
+    .timeline-row time { color: var(--muted); font: 10px/1.4 var(--mono); }
+    .timeline-node { position: relative; }
+    .timeline-node::before { content: ""; position: absolute; inset-block: 8px -8px; inset-inline-start: 8px; border-inline-start: 1px solid var(--border); }
+    .timeline-row:last-child .timeline-node::before { display: none; }
+    .timeline-node::after { content: ""; position: absolute; inset-block-start: 4px; inset-inline-start: 4px; inline-size: 8px; block-size: 8px; border: 2px solid var(--fg); border-radius: 50%; background: var(--bg); }
+    .timeline-row[data-failed="true"] .timeline-node::after { border-radius: 1px; background: var(--fg); }
+    .timeline-row p { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+    .auxiliary { padding-block: 28px; border-block-start: 1px dashed var(--border); }
+    .projection { display: grid; grid-template-columns: 1fr 260px; gap: 16px; margin-block-start: 14px; padding: 16px; border: 1px dashed var(--border); border-radius: var(--r); background: var(--surface); }
+    .projection .mini { background: var(--bg); }
+    .toc a { grid-template-columns: 1fr; min-block-size: 44px; font-size: 12px; }
+    .inspector { margin-block-start: 18px; padding-block-start: 16px; border-block-start: 1px solid var(--border); }
+    .inspector-title { margin: 0 8px 2px; font-size: 15px; overflow-wrap: anywhere; }
+    .inspector-key { margin-inline: 8px; color: var(--muted); font: 10px/1.5 var(--mono); overflow-wrap: anywhere; }
+    .inspector-tabs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; margin-block: 12px; }
+    .inspector-tabs button { min-block-size: 44px; padding-inline: 6px; background: var(--bg); font-size: 10px; }
+    .inspector-tabs button[aria-selected="true"] { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+    .inspector-panel { padding: 10px; border: 1px solid var(--border); border-radius: var(--r); background: var(--bg); overflow-wrap: anywhere; }
+    .spec-list { margin: 0; }
+    .spec-list div { display: grid; grid-template-columns: 78px 1fr; gap: 8px; padding-block: 7px; border-block-end: 1px solid var(--border); }
+    .spec-list div:last-child { border-block-end: 0; }
+    .spec-list dt { color: var(--muted); font-size: 10px; }
+    .spec-list dd { margin: 0; font-size: 11px; }
+    .chip-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .chip-list span { padding: 3px 6px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font: 10px/1.4 var(--mono); }
+    .live { position: fixed; inset-inline-end: 334px; inset-block-end: 18px; z-index: 50; max-inline-size: 420px; padding: 12px 14px; border: 1px solid var(--fg); border-radius: var(--r); color: var(--bg); background: var(--fg); }
+    .live[hidden] { display: none; }
+    @media (max-width: 1179px) {
+      .atlas { grid-template-columns: 224px minmax(0,1fr); }
+      .rail-end { display: none; }
+      .inspector-open { display: inline-flex; align-items: center; }
+      .rail-end.is-open { position: fixed; inset-block: 0; inset-inline-end: 0; z-index: 60; display: block; inline-size: min(340px,90vw); box-shadow: -8px 0 0 var(--border); }
+      .live { inset-inline-end: 18px; }
+    }
+    @media (max-width: 899px) {
+      html, body { block-size: auto; overflow: auto; }
+      .atlas { display: block; block-size: auto; overflow: visible; }
+      .rail-start { position: sticky; inset-block-start: 0; z-index: 40; padding: 10px 12px; border-inline-end: 0; border-block-end: 1px solid var(--border); overflow: visible; }
+      .brand { display: flex; align-items: center; gap: 8px; padding: 0 0 8px; }
+      .brand span, .brand .candidate, .rail-note, .nav-group h2 { display: none !important; }
+      .nav-group { display: flex; gap: 4px; margin: 0; overflow: auto; }
+      .nav-group:not(:first-of-type) { display: none; }
+      .nav-group a { flex: 0 0 auto; min-block-size: 44px; border-inline-start: 1px solid var(--border); border-block-end: 3px solid var(--surface); }
+      .nav-group a[aria-current="true"] { border-block-end-color: var(--accent); }
+      .main { overflow: visible; }
+      .topbar { inset-block-start: 82px; }
+      .board { max-inline-size: none; padding: 28px 16px 64px; }
+      .summary, .docs-grid, .section-head, .grid-2, .grid-3, .split, .projection { grid-template-columns: 1fr; }
+      .summary div { border-inline-end: 0; border-block-end: 1px solid var(--border); }
+      .section-count { text-align: start; }
+      .specimen-head { grid-template-columns: 1fr; }
+      .meta { justify-content: start; }
+      .metric-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .flow { grid-template-columns: repeat(4,minmax(0,1fr)); }
+      .live { inset-inline: 16px; inset-block-end: 16px; }
+    }
+    @media (max-width: 430px) {
+      .topbar { align-items: flex-start; padding-inline: 14px; }
+      .top-actions { flex-direction: column; align-items: stretch; }
+      .demo-bar, .flow-footer { align-items: stretch; flex-direction: column; }
+      .demo-actions button, .top-actions button { inline-size: 100%; }
+      .metric-strip { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .bars, .funnel { grid-template-columns: repeat(2,1fr); block-size: auto; min-block-size: 180px; }
+      .contract-table, .data-table { font-size: 11px; }
+      .contract-table th, .contract-table td, .data-table th, .data-table td { padding: 7px 6px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+      button:active:not(:disabled) { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main-content">跳到控件样本</a>
+  <div class="atlas">
+    <aside class="rail rail-start" data-od-id="atlas-navigation">
+      <div class="sticky">
+        <div class="brand"><strong>今晚去观星 / Starward</strong><span>运营端控件级开发设计稿 v2</span><span class="candidate">UNSELECTED CANDIDATE SOURCE</span></div>
+        <nav aria-label="控件图谱目录">
+          <div class="nav-group"><h2>概览</h2><a href="#overview" aria-current="true"><span class="nav-index">00</span><span>范围与权威</span></a><a href="#contract-map"><span class="nav-index">A</span><span>实现契约地图</span></a><a href="#workspace-data-operations"><span class="nav-index">01</span><span>REV-43 基准</span></a><a href="#assembly"><span class="nav-index">B</span><span>页面装配</span></a></div>
+          <div class="nav-group"><h2>后台数据运营 · 7</h2><a href="#specimen-admin-spot-editor" data-nav-control="admin-spot-editor"><span class="nav-index">01</span><span>admin-spot-editor</span></a><a href="#specimen-moderation-queue" data-nav-control="moderation-queue"><span class="nav-index">02</span><span>moderation-queue</span></a><a href="#specimen-data-source-dashboard" data-nav-control="data-source-dashboard"><span class="nav-index">03</span><span>data-source-dashboard</span></a><a href="#specimen-job-operations-console" data-nav-control="job-operations-console"><span class="nav-index">04</span><span>job-operations-console</span></a><a href="#specimen-recommendation-replay-console" data-nav-control="recommendation-replay-console"><span class="nav-index">05</span><span>recommendation-replay-console</span></a><a href="#specimen-rule-release-control" data-nav-control="rule-release-control"><span class="nav-index">06</span><span>rule-release-control</span></a><a href="#specimen-admin-access-audit" data-nav-control="admin-access-audit"><span class="nav-index">07</span><span>admin-access-audit</span></a></div>
+          <div class="nav-group"><h2>质量 / 发布 · 5</h2><a href="#specimen-release-promotion-gate" data-nav-control="release-promotion-gate"><span class="nav-index">08</span><span>release-promotion-gate</span></a><a href="#specimen-technical-observability-dashboard" data-nav-control="technical-observability-dashboard"><span class="nav-index">09</span><span>technical-observability-dashboard</span></a><a href="#specimen-data-quality-dashboard" data-nav-control="data-quality-dashboard"><span class="nav-index">10</span><span>data-quality-dashboard</span></a><a href="#specimen-backup-restore-exercise" data-nav-control="backup-restore-exercise"><span class="nav-index">11</span><span>backup-restore-exercise</span></a><a href="#specimen-product-metrics-dashboard" data-nav-control="product-metrics-dashboard"><span class="nav-index">12</span><span>product-metrics-dashboard</span></a></div>
+          <div class="nav-group"><h2>工程交付</h2><a href="#assembly"><span class="nav-index">D1</span><span>7 工作区装配</span></a><a href="#traceability"><span class="nav-index">D2</span><span>Traceability</span></a><a href="#acceptance"><span class="nav-index">D3</span><span>Acceptance</span></a><a href="#auxiliary-share-projection"><span class="nav-index">AUX</span><span>分享投影</span></a></div>
+        </nav>
+        <p class="rail-note"><strong>候选边界</strong><br>这是工程设计资源，不连接 API，不执行真实编辑、发布、恢复或审计。稳定覆盖精确为 2 Outcome / 12 controls。</p>
+      </div>
+    </aside>
+
+    <main class="main" id="main-content" data-od-id="atlas-article">
+      <header class="topbar" data-od-id="atlas-toolbar"><div><strong>1440 × 900 优先 · 响应式设计审查画布</strong><span id="selection-label">当前：admin-spot-editor · conflict</span></div><div class="top-actions"><button type="button" class="quiet" id="reset-selected">恢复当前样本</button><button type="button" class="inspector-open" id="open-inspector" aria-controls="right-rail" aria-expanded="false">工程 Inspector</button></div></header>
+      <div class="board">
+        <section class="overview" id="overview" data-section="overview">
+          <div class="eyebrow">Developer atlas · v2 · unselected candidate</div>
+          <h1>把页面原型拆成可实现、可验证的控件契约</h1>
+          <p class="lede">这份大设计稿保留 v1 的成熟三栏图谱方向，但把每个稳定控件提升为真正的工程交付目标：中央不是通用状态面板，而是控件自己的交互 specimen；右侧不是装饰注释，而是 Visual、States、API &amp; Logic、Motion、A11y、Assets 与 Acceptance 的实现检查器。上游 coverage manifest 继续独占稳定身份、顺序、route 与声明 states；本项目的 <code>implementation-contract.json</code> 独占控件级开发契约；HTML 只负责把契约投影成可操作样本，避免产生第二份实现权威。</p>
+          <div class="summary" aria-label="冻结范围摘要"><div><strong>2</strong><span>Outcome · 与上游一致</span></div><div><strong>12</strong><span>stable control · 唯一</span></div><div><strong>7</strong><span>页面工作区装配契约</span></div><div><strong>0</strong><span>新增 stable control</span></div></div>
+          <div class="callout"><strong>工程审查顺序</strong>先确认身份与 route，再切换控件声明 state，观察控件本体的视觉与语义差异，最后从右侧 inspector 读取 props、事件、状态机、动效、无障碍、资产与验收情景。航迹蓝只承担链接、焦点与选中；阻断、错误、成功、过期和降级都同时用文字、边框、形状或线型编码。</div>
+          <h2 id="contract-map">实现契约地图</h2>
+          <p class="lede">机器契约把 token 解析值、组件族、七个工作区装配、十二个 controls、逐 state traceability 与 verification 放在同一 JSON 中。所有不适用的状态、平台、触觉、资产或焦点陷阱都有明确原因，不依靠字段缺失表达。下方命令与代码用于说明消费方式；本稿的实际检查结果记录在 README 和 JSON 的 verification 节。</p>
+          <div class="docs-grid">
+            <div class="code-block"><button type="button" aria-label="复制命令，仅视觉示意">复制</button><pre><code>pwsh -NoProfile -Command \
+  "$m = Get-Content \
+  control-atlas-manifest.json -Raw | \
+  ConvertFrom-Json; $m.stableControls.Count"</code></pre></div>
+            <div class="code-block"><button type="button" aria-label="复制代码，仅视觉示意">复制</button><pre><code>const contract = JSON.parse(text);
+for (const control of contract.controls) {
+  assert(control.identity.route);
+  assert(control.component.typedProps.length);
+  assert(control.acceptanceScenarios.length &gt;= 2);
+  resolveTokenRefs(control, contract.tokenDictionary);
+}</code></pre></div>
+          </div>
+          <table class="contract-table" aria-label="权威分工"><thead><tr><th scope="col">层</th><th scope="col">唯一权威</th><th scope="col">本稿角色</th></tr></thead><tbody><tr><td>身份 / route / states</td><td>上游 coverage-manifest.json</td><td>精确复制与比对</td></tr><tr><td>产品语义</td><td>Source Plan</td><td>定位并转写为控件契约</td></tr><tr><td>视觉 token</td><td>user:design-md / DESIGN.md</td><td>解析为精确值</td></tr><tr><td>控件实现契约</td><td>implementation-contract.json</td><td>唯一机器可读开发资源</td></tr><tr><td>视觉 specimen</td><td>index.html</td><td>可操作投影，不声称生产实现</td></tr></tbody></table>
+        </section>
+
+        <section class="outcome-section" id="workspace-data-operations" data-section="admin-data-operations">
+          <header class="section-head"><div><div class="eyebrow">Outcome 01</div><h2>后台数据运营</h2><p>七个稳定控件覆盖地点 revision、审核、来源、作业、推荐重放、规则门禁与脱敏审计。写入先保留当前有效版本，再展示影响、权限、幂等与恢复边界；只读控件提供新鲜度、缺失、许可、监控自身故障和脱敏范围。</p></div><div class="section-count">7 stable controls<br>3 source routes</div></header>
+          <article class="specimen is-selected" id="specimen-admin-spot-editor" tabindex="-1" data-od-id="specimen-admin-spot-editor" data-outcome="admin-data-operations" data-control="admin-spot-editor" data-specimen="specimen-admin-spot-editor" data-route="data-operations" data-state="conflict" data-initial-state="conflict" data-states="populated,conflict,disabled,saving,success,error,edge"><div class="specimen-head"><div><h3>地点 Revision 编辑与危险提交</h3><div class="specimen-key">admin-spot-editor · data-operations · guarded-revision-editor</div></div><div class="meta"><span class="tag">REV-43 · H≥44 · R8</span><span class="status" data-state-badge data-tone="blocked">conflict</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="admin-spot-editor 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-moderation-queue" tabindex="-1" data-od-id="specimen-moderation-queue" data-outcome="admin-data-operations" data-control="moderation-queue" data-specimen="specimen-moderation-queue" data-route="moderation" data-state="populated" data-initial-state="populated" data-states="loading,empty,no-results,populated,disabled,saving,success,error,edge"><div class="specimen-head"><div><h3>证据驱动审核队列</h3><div class="specimen-key">moderation-queue · moderation · evidence-moderation-queue</div></div><div class="meta"><span class="tag">Queue + detail</span><span class="status" data-state-badge>populated</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="moderation-queue 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-data-source-dashboard" tabindex="-1" data-od-id="specimen-data-source-dashboard" data-outcome="admin-data-operations" data-control="data-source-dashboard" data-specimen="specimen-data-source-dashboard" data-route="data-operations" data-state="fresh" data-initial-state="fresh" data-states="loading,empty,no-results,fresh,stale,partial,degraded,error,disabled,edge"><div class="specimen-head"><div><h3>来源健康与决策边界</h3><div class="specimen-key">data-source-dashboard · data-operations · source-health-matrix</div></div><div class="meta"><span class="tag">Aligned matrix</span><span class="status" data-state-badge>fresh</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="data-source-dashboard 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-job-operations-console" tabindex="-1" data-od-id="specimen-job-operations-console" data-outcome="admin-data-operations" data-control="job-operations-console" data-specimen="specimen-job-operations-console" data-route="data-operations" data-state="partial" data-initial-state="partial" data-states="loading,empty,populated,partial,degraded,error,disabled,saving,success"><div class="specimen-head"><div><h3>幂等作业操作台</h3><div class="specimen-key">job-operations-console · data-operations · idempotent-job-console</div></div><div class="meta"><span class="tag">Retry + backfill</span><span class="status" data-state-badge>partial</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="job-operations-console 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-recommendation-replay-console" tabindex="-1" data-od-id="specimen-recommendation-replay-console" data-outcome="admin-data-operations" data-control="recommendation-replay-console" data-specimen="specimen-recommendation-replay-console" data-route="recommendation" data-state="partial" data-initial-state="partial" data-states="loading,empty,populated,partial,error,disabled,saving,success,edge"><div class="specimen-head"><div><h3>同输入推荐重放</h3><div class="specimen-key">recommendation-replay-console · recommendation · locked-input-replay</div></div><div class="meta"><span class="tag">Compare · 2 columns</span><span class="status" data-state-badge>partial</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="recommendation-replay-console 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-rule-release-control" tabindex="-1" data-od-id="specimen-rule-release-control" data-outcome="admin-data-operations" data-control="rule-release-control" data-specimen="specimen-rule-release-control" data-route="recommendation" data-state="precheck-blocked" data-initial-state="precheck-blocked" data-states="draft,precheck-blocked,owner-only,observing,promotion-disabled,saving,success,error"><div class="specimen-head"><div><h3>规则版本门禁与回滚</h3><div class="specimen-key">rule-release-control · recommendation · promotion-gate</div></div><div class="meta"><span class="tag">5-stage gate</span><span class="status" data-state-badge data-tone="blocked">precheck-blocked</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="rule-release-control 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-admin-access-audit" tabindex="-1" data-od-id="specimen-admin-access-audit" data-outcome="admin-data-operations" data-control="admin-access-audit" data-specimen="specimen-admin-access-audit" data-route="data-operations" data-state="populated" data-initial-state="populated" data-states="loading,empty,no-results,populated,disabled,error,edge"><div class="specimen-head"><div><h3>权限与脱敏审计</h3><div class="specimen-key">admin-access-audit · data-operations · read-only-audit-table</div></div><div class="meta"><span class="tag">Read only</span><span class="status" data-state-badge>populated</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="admin-access-audit 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+        </section>
+
+        <section class="outcome-section" id="workspace-release-quality" data-section="quality-release-observability">
+          <header class="section-head"><div><div class="eyebrow">Outcome 02</div><h2>质量、发布与可观测性</h2><p>五个稳定控件把发布门、技术信号、数据质量、恢复演练与产品指标串成证据链。每个控制保持独立权威：技术绿灯不能替代数据许可，快照可读不能替代恢复验证，指标相关性不能自动声明因果。</p></div><div class="section-count">5 stable controls<br>3 source routes</div></header>
+          <article class="specimen" id="specimen-release-promotion-gate" tabindex="-1" data-od-id="specimen-release-promotion-gate" data-outcome="quality-release-observability" data-control="release-promotion-gate" data-specimen="specimen-release-promotion-gate" data-route="release-quality" data-state="precheck-blocked" data-initial-state="precheck-blocked" data-states="draft,precheck-blocked,owner-only,observing,promotion-disabled,rollback-ready,saving,success,error"><div class="specimen-head"><div><h3>发布提升门与恢复点</h3><div class="specimen-key">release-promotion-gate · release-quality · promotion-gate</div></div><div class="meta"><span class="tag">Matrix + gate</span><span class="status" data-state-badge data-tone="blocked">precheck-blocked</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="release-promotion-gate 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-technical-observability-dashboard" tabindex="-1" data-od-id="specimen-technical-observability-dashboard" data-outcome="quality-release-observability" data-control="technical-observability-dashboard" data-specimen="specimen-technical-observability-dashboard" data-route="release-quality" data-state="populated" data-initial-state="populated" data-states="loading,empty,no-results,populated,stale,partial,degraded,error,disabled,edge"><div class="specimen-head"><div><h3>技术观测与告警恢复</h3><div class="specimen-key">technical-observability-dashboard · release-quality · observability-dashboard</div></div><div class="meta"><span class="tag">Chart + alert</span><span class="status" data-state-badge>populated</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="technical-observability-dashboard 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-data-quality-dashboard" tabindex="-1" data-od-id="specimen-data-quality-dashboard" data-outcome="quality-release-observability" data-control="data-quality-dashboard" data-specimen="specimen-data-quality-dashboard" data-route="release-quality" data-state="partial" data-initial-state="partial" data-states="loading,empty,no-results,populated,stale,partial,degraded,error,disabled,saving,success,edge"><div class="specimen-head"><div><h3>数据质量检查矩阵</h3><div class="specimen-key">data-quality-dashboard · release-quality · quality-evidence-matrix</div></div><div class="meta"><span class="tag">4-dimension matrix</span><span class="status" data-state-badge>partial</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="data-quality-dashboard 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-backup-restore-exercise" tabindex="-1" data-od-id="specimen-backup-restore-exercise" data-outcome="quality-release-observability" data-control="backup-restore-exercise" data-specimen="specimen-backup-restore-exercise" data-route="recovery" data-state="failed-validation" data-initial-state="failed-validation" data-states="loading,empty,populated,failed-validation,disabled,saving,success,error,edge"><div class="specimen-head"><div><h3>隔离恢复演练与失败路径</h3><div class="specimen-key">backup-restore-exercise · recovery · restore-drill-runbook</div></div><div class="meta"><span class="tag">Timeline</span><span class="status" data-state-badge data-tone="error">failed-validation</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="backup-restore-exercise 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+          <article class="specimen" id="specimen-product-metrics-dashboard" tabindex="-1" data-od-id="specimen-product-metrics-dashboard" data-outcome="quality-release-observability" data-control="product-metrics-dashboard" data-specimen="specimen-product-metrics-dashboard" data-route="metrics" data-state="partial" data-initial-state="partial" data-states="loading,empty,no-results,populated,stale,partial,degraded,error,disabled,edge"><div class="specimen-head"><div><h3>分层产品指标与决策漏斗</h3><div class="specimen-key">product-metrics-dashboard · metrics · metrics-funnel</div></div><div class="meta"><span class="tag">Funnel + segment</span><span class="status" data-state-badge>partial</span></div></div><div class="state-strip" data-state-controls role="group" aria-label="product-metrics-dashboard 状态"></div><div class="specimen-viewport"><div data-render-root></div></div></article>
+        </section>
+
+        <section class="outcome-section" id="assembly" data-section="assembly"><header class="section-head"><div><div class="eyebrow">Assembly contract</div><h2>七个工作区 · 组合而不复制权威</h2><p>数据运营组合四个控件，内容审核一个，推荐规则两个，发布质量三个，恢复演练一个，产品指标一个；分享投影作为辅助页面装配保留，但没有 stable control contract。权限、freshness、empty/error、键盘、200% zoom 与危险流程依赖在机器契约中逐工作区显式记录。</p></div><div class="section-count">7 workspaces<br>12 stable + 1 auxiliary</div></header><table class="contract-table"><thead><tr><th>工作区</th><th>stable controls</th><th>关键条件</th></tr></thead><tbody><tr><td>data-operations</td><td>4</td><td>地点写入依赖来源、作业与审计证据</td></tr><tr><td>moderation</td><td>1</td><td>原始 EXIF 需独立权限</td></tr><tr><td>recommendation</td><td>2</td><td>重放不能直接发布</td></tr><tr><td>release-quality</td><td>3</td><td>硬门未满足时提升禁用</td></tr><tr><td>recovery</td><td>1</td><td>仅隔离环境；验证失败不可签署</td></tr><tr><td>metrics</td><td>1</td><td>同意、分母与口径版本可查</td></tr><tr><td>share</td><td>0</td><td>辅助投影，不计入稳定覆盖</td></tr></tbody></table></section>
+        <section class="outcome-section" id="traceability" data-section="traceability"><header class="section-head"><div><div class="eyebrow">Traceability</div><h2>screen → control → state → acceptance</h2><p>每个 route 可以沿 JSON Pointer 找到稳定 control、prototype locator、atlas specimen、解析 token、逐 state 对象、状态机与至少两条验收情景。覆盖 manifest、Source Plan、design system、implementation contract 与 HTML 的角色互斥，避免重复 authority。</p></div><div class="section-count">12 complete chains<br>0 unmapped</div></header></section>
+        <section class="outcome-section" id="acceptance" data-section="acceptance"><header class="section-head"><div><div class="eyebrow">Acceptance</div><h2>可执行，但不冒充生产验收</h2><p>本地设计稿可以切换全部声明 states、推进 REV-43 的成功 / 错误 / 恢复、检查焦点与响应式布局。它不能证明真实 API、权限、MFA、审计不可篡改、生产发布、恢复目标、供应商许可、真实遥测或 Design Authority 已采用；这些边界在 README 与 implementation contract 中继续保持为非声明。</p></div><div class="section-count">candidate only<br>selected: false</div></header></section>
+        <article class="auxiliary" id="auxiliary-share-projection" data-od-id="auxiliary-share-projection"><div class="specimen-head"><div><h3>分享投影 · 辅助页面装配</h3><div class="specimen-key">share-projection · stableControl: false · excluded from 12</div></div><span class="tag">AUXILIARY</span></div><div class="projection"><div><p>轻量投影只承接地点与行程摘要、授权状态、查看、复制与下载边界；不复制后台 revision、发布门或完整 App 专业能力。本 v2 保留它来说明第七个工作区，但不为它生成 stable control contract。</p><div class="demo-actions"><button type="button" data-sample-action="分享样例链接已复制">复制样例链接</button><button type="button" data-sample-action="撤销边界已查看">查看撤销边界</button></div></div><div class="mini"><span class="status">授权有效 · 样例</span><h4 style="margin-block:12px 4px">今晚去大觉寺西侧</h4><p>建议 21:45 出发<br>最佳观测窗口 22:25—00:55<br>模糊位置 · 无精确轨迹</p></div></div></article>
+      </div>
+    </main>
+
+    <aside class="rail rail-end" id="right-rail" data-od-id="atlas-toc">
+      <div class="sticky">
+        <nav class="toc" aria-label="本页目录"><h2>On this page</h2><a href="#overview" aria-current="true">范围与权威</a><a href="#workspace-data-operations">后台数据运营</a><a href="#workspace-release-quality">质量、发布与可观测性</a><a href="#assembly">页面装配与追溯</a></nav>
+        <section class="inspector" data-od-id="engineering-inspector" aria-live="polite"><div class="inspector-label">Selected specimen</div><div class="inspector-title" id="inspector-title">地点 Revision 编辑与危险提交</div><div class="inspector-key" id="inspector-key">control.admin-spot-editor</div><div class="inspector-tabs" role="tablist" aria-label="工程检查器分区"><button type="button" role="tab" aria-selected="true" data-inspector-tab="visual">Visual</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="states">States</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="api">API &amp; Logic</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="motion">Motion</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="a11y">A11y</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="assets">Assets</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="acceptance">Acceptance</button></div><div class="inspector-panel" id="inspector-panel" role="tabpanel" tabindex="0"></div></section>
+      </div>
+    </aside>
+  </div>
+  <div class="live" id="live" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    (function () {
+      'use strict';
+      const meta = {
+        'admin-spot-editor':{title:'地点 Revision 编辑与危险提交',family:'guarded-revision-editor',owner:'SpotDraftController',props:['spotId:string','baseRevision:integer','draft:SpotDraft','permission:SpotEditPermission','idempotencyKey:string|null'],events:['draftChanged','impactRequested','revisionSubmitRequested','revisionRecoveryRequested'],acceptance:['AC-admin-spot-editor-01 · blocker','AC-admin-spot-editor-02 · exact-text','AC-admin-spot-editor-03 · success','AC-admin-spot-editor-04 · retry','AC-admin-spot-editor-05 · recovery'],asset:'explicit none · CSS/HTML diff and flow geometry',noun:'地点 revision',empty:'新地点从空事实表单开始，不能把 POI 候选当作已核验事实。'},
+        'moderation-queue':{title:'证据驱动审核队列',family:'evidence-moderation-queue',owner:'ModerationQueueController',props:['filter:ModerationFilter','selectedCaseIds:string[]','activeCaseId:string|null','decisionDrafts:Record','canReadSensitiveExif:boolean'],events:['caseSelectionChanged','decisionDraftChanged','batchImpactRequested','batchCommitRequested'],acceptance:['AC-moderation-queue-01 · atomic','AC-moderation-queue-02 · failure','AC-moderation-queue-03 · privacy'],asset:'explicit none · no invented thumbnail/media',noun:'审核案件',empty:'当前队列没有待办；保留最后同步时间与筛选条件。'},
+        'data-source-dashboard':{title:'来源健康与决策边界',family:'source-health-matrix',owner:'SourceHealthQuery',props:['timeRange:TimeRange','sourceIds:string[]','freshnessThresholdMinutes:integer','includeCostEvidence:boolean'],events:['sourceFilterChanged','sourceInspected','filtersCleared'],acceptance:['AC-data-source-dashboard-01 · stale','AC-data-source-dashboard-02 · monitor-failure'],asset:'explicit none · semantic table only',noun:'来源运行',empty:'没有运行数据本身是质量问题；新来源显示“未验证”，不能显示健康。'},
+        'job-operations-console':{title:'幂等作业操作台',family:'idempotent-job-console',owner:'JobOperationController',props:['jobType:string|null','runId:string|null','operation:enum|null','scope:JobScope|null','idempotencyKey:string|null'],events:['jobOperationPreviewed','jobOperationRequested','jobOperationCancelled'],acceptance:['AC-job-operations-console-01 · idempotent','AC-job-operations-console-02 · pause-block','AC-job-operations-console-03 · recovery'],asset:'explicit none · textual operation semantics',noun:'作业运行',empty:'没有失败作业；显示最近成功与最后检查，而不是隐藏过滤。'},
+        'recommendation-replay-console':{title:'同输入推荐重放',family:'locked-input-replay',owner:'ReplaySessionController',props:['snapshotId:string','baselineRuleVersion:string','candidateRuleVersion:string','weightDraft:Record','mode:enum'],events:['replayRequested','weightDraftChanged','replayCompleted'],acceptance:['AC-recommendation-replay-console-01 · trace','AC-recommendation-replay-console-02 · missing-source'],asset:'explicit none · CSS/HTML comparison',noun:'重放快照',empty:'历史快照缺少来源版本；列出无法重放部分，不用当前数据冒充历史。'},
+        'rule-release-control':{title:'规则版本门禁与回滚',family:'promotion-gate',owner:'RuleReleaseController',props:['draftVersion:string','restoreVersion:string','scope:ReleaseScope','evidence:GateEvidence[]','approverIds:string[]'],events:['precheckRequested','ownerOnlyRequested','rulePromotionRequested','ruleRollbackRequested'],acceptance:['AC-rule-release-control-01 · blocked','AC-rule-release-control-02 · promote','AC-rule-release-control-03 · rollback'],asset:'explicit none · CSS stage rail',noun:'规则发布证据',empty:'没有足够重放或审批证据；列出缺口并保持提升禁用。'},
+        'admin-access-audit':{title:'权限与脱敏审计',family:'read-only-audit-table',owner:'AuditQuery',props:['query:AuditQueryInput','cursor:string|null','fieldScope:string[]','redactionPolicyVersion:string'],events:['auditQueryChanged','auditEventInspected','redactedExportRequested'],acceptance:['AC-admin-access-audit-01 · deny','AC-admin-access-audit-02 · empty'],asset:'explicit none · semantic table',noun:'审计事件',empty:'没有匹配事件；保留过滤和保留范围，审计能力没有被关闭。'},
+        'release-promotion-gate':{title:'发布提升门与恢复点',family:'promotion-gate',owner:'ReleaseGateController',props:['candidateBuildId:string','runtimeVersion:string','channel:enum','gateEvidence:ReleaseGateEvidence[]','restoreVersion:string'],events:['releasePrecheckRequested','ownerOnlyPrepared','releasePromotionRequested','releaseRollbackRequested'],acceptance:['AC-release-promotion-gate-01 · runtime','AC-release-promotion-gate-02 · blocked','AC-release-promotion-gate-03 · rollback'],asset:'explicit none · HTML gate matrix',noun:'发布证据',empty:'缺少任何必需证据都保持 disabled；口头批准不能绕过。'},
+        'technical-observability-dashboard':{title:'技术观测与告警恢复',family:'observability-dashboard',owner:'ObservabilityQuery',props:['environment:enum','releaseId:string|null','timeRange:TimeRange','dimensions:string[]','samplingDescription:string'],events:['telemetryFilterChanged','traceDrilldownRequested','filtersCleared'],acceptance:['AC-technical-observability-dashboard-01 · correlation','AC-technical-observability-dashboard-02 · gap'],asset:'code-native graphic · #latency-bars · project-authored',noun:'遥测窗口',empty:'没有遥测数据表示监控缺口，不等于 0 错误或健康。'},
+        'data-quality-dashboard':{title:'数据质量检查矩阵',family:'quality-evidence-matrix',owner:'DataQualityQueryController',props:['datasetIds:string[]','region:CoarseRegion|null','checkVersion:string','window:TimeRange','quarantineDraft:object|null'],events:['qualityIssueInspected','quarantineDraftChanged','quarantineDraftSaveRequested'],acceptance:['AC-data-quality-dashboard-01 · unknown','AC-data-quality-dashboard-02 · quarantine'],asset:'explicit none · semantic matrix',noun:'质量检查',empty:'检查未运行或样本不足；显示 unknown，不能显示健康。'},
+        'backup-restore-exercise':{title:'隔离恢复演练与失败路径',family:'restore-drill-runbook',owner:'RestoreDrillController',props:['snapshotId:string','targetEnvironment:isolated','rpoTargetMinutes:integer','rtoTargetMinutes:integer','validationPlan:RestoreValidation[]','idempotencyKey:string|null'],events:['drillImpactRequested','drillStartRequested','failedStepRetryRequested','drillCancelRequested'],acceptance:['AC-backup-restore-exercise-01 · failure','AC-backup-restore-exercise-02 · retry','AC-backup-restore-exercise-03 · success'],asset:'explicit none · CSS timeline nodes',noun:'恢复演练',empty:'没有符合目标的备份点；立即失败并告警，不创建假成功报告。'},
+        'product-metrics-dashboard':{title:'分层产品指标与决策漏斗',family:'metrics-funnel',owner:'ProductMetricsQuery',props:['timeRange:TimeRange','definitionVersion:string','segments:MetricSegment[]','consentPolicyVersion:string','releaseCorrelation:string|null'],events:['metricSegmentationChanged','metricDefinitionInspected','sampleExportRequested'],acceptance:['AC-product-metrics-dashboard-01 · segment','AC-product-metrics-dashboard-02 · consent'],asset:'code-native graphic · #decision-funnel-bars · project-authored',noun:'指标样本',empty:'样本或同意不足；显示不可判断，不回推精确用户位置。'}
+      };
+      const stateNames = {loading:'加载',empty:'首次空','no-results':'无结果',populated:'正常',fresh:'新鲜',stale:'过期',partial:'部分',degraded:'降级',error:'错误',disabled:'禁用',saving:'保存中',success:'成功',edge:'边界',conflict:'冲突',draft:'草稿','precheck-blocked':'预检阻断','owner-only':'owner-only',observing:'观察','promotion-disabled':'提升禁用','rollback-ready':'可回滚','failed-validation':'验证失败'};
+      const specimens = Array.from(document.querySelectorAll('.specimen[data-control]'));
+      let selected = specimens[0];
+      let inspectorTab = 'visual';
+      let noticeTimer;
+      let revPhase = 0;
+      let revValidation = false;
+      let revImpact = false;
+      let revConfirm = '';
+      let revRequest = 'idle';
+      const live = document.getElementById('live');
+      const esc = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+
+      function announce(message) { clearTimeout(noticeTimer); live.textContent = message; live.hidden = false; noticeTimer = setTimeout(() => { live.hidden = true; }, 2600); }
+      function tone(state) { return state === 'error' || state === 'failed-validation' ? 'error' : state === 'stale' ? 'stale' : state === 'degraded' ? 'degraded' : state === 'conflict' || state.includes('blocked') || state === 'promotion-disabled' ? 'blocked' : ''; }
+      function shell(title, subtitle, body, actions='', state='') { return `<div class="specimen-render" data-render-kind="${esc(title)}:${esc(state)}" data-tone="${tone(state)}"><div class="demo-bar"><div><strong>${title}</strong><small>${subtitle}</small></div><div class="demo-actions">${actions}</div></div><div class="demo-body">${body}</div></div>`; }
+      function message(metaItem,state,extra='') {
+        const copy = {
+          loading:`正在加载${metaItem.noun}；保留原布局。超过 15 秒必须提供取消，60 秒停止等待并进入可重试错误。`,
+          empty:metaItem.empty,
+          'no-results':`查询“@@@ / ${metaItem.noun}”没有匹配结果；保留查询上下文并允许清除筛选。`,
+          disabled:`当前角色不能操作${metaItem.noun}；可见原因、所需角色与重新认证路径。`,
+          saving:`${metaItem.noun}正在写入设计样例；重复提交锁定，幂等键与恢复点保持可见。`,
+          success:`${metaItem.noun}已生成本地设计样例结果；显示审计/结果 ID，并提供下一恢复动作。`,
+          error:`${metaItem.noun}请求失败；输入与筛选已保留，可用同一幂等键重试并复制错误 ID。`,
+          edge:`${metaItem.noun}展示 10,000+ 条、超长标识、缺失字段与混合 LTR / RTL；标题、值和动作仍可读。`
+        };
+        const action = state === 'loading' ? '<button type="button" data-sample-action="已取消加载">取消加载</button>' : state === 'no-results' ? '<button type="button" data-sample-action="筛选已清除">清除筛选</button>' : state === 'error' ? '<button type="button" data-sample-action="已使用同一请求上下文重试">重试</button>' : state === 'success' ? '<button type="button" data-sample-action="已打开恢复动作">查看恢复</button>' : '';
+        const skeleton = state === 'loading' ? '<div class="skeletons" aria-hidden="true"><i></i><i></i><i></i></div>' : '';
+        return shell(`${metaItem.title} · ${stateNames[state] || state}`, copy[state] || extra, `<div class="state-message"><span class="status" data-tone="${tone(state)}">${state}</span><h4>${metaItem.noun} · ${stateNames[state] || state}</h4><p>${copy[state] || extra}</p>${skeleton}${action}</div>`, '', state);
+      }
+      function withContext(metaItem,state,body,subtitle) {
+        if (['loading','empty','no-results','disabled','saving','success','error','edge'].includes(state)) return message(metaItem,state);
+        const banners = {
+          stale:'上次完整结果 13:56；超过新鲜度阈值，当前证据不能独立支持发布或推荐。',
+          partial:'仅返回部分范围；缺失项用“未返回”标记，禁止将结果读作完整。',
+          degraded:'使用受限缓存回退；显示来源、截止时间与禁止回退类别。',
+          fresh:'所有显示证据在阈值内，并带最后成功时间与版本。',
+          populated:'代表性数据已加载；所有值均为设计样例。'
+        };
+        const notice = banners[state] ? `<div class="mini" style="margin-block-end:12px"><strong>${stateNames[state] || state} · ${state}</strong><p>${banners[state]}</p></div>` : '';
+        return shell(metaItem.title, subtitle, notice + body, '', state);
+      }
+      function flowMarkup(active,count=8) { const labels = count === 8 ? ['来源','Diff','阻断','影响','确认','请求','审计','恢复'] : ['草稿','预检','Owner','观察','提升']; return `<div class="flow" style="grid-template-columns:repeat(${count},minmax(0,1fr))">${labels.map((label,i)=>`<div class="flow-step" data-active="${i===active}" data-done="${i<active}"><strong>${String(i+1).padStart(2,'0')}</strong>${label}</div>`).join('')}</div>`; }
+      function renderRev() {
+        const panes = [
+          `<div class="grid-2"><div class="field"><label for="rev-source">坐标来源 / 版本</label><select id="rev-source"><option>MapSource-C · 18 · fresh</option><option>FieldNote · 07 · partial</option></select><div class="helper">选择只改变草稿；许可与最后成功保持可查。</div></div><div class="field"><label for="rev-base">基于 revision</label><input id="rev-base" value="42 · immutable" readonly><div class="helper">旧 revision 是恢复点，不可静默覆盖。</div></div></div>`,
+          `<div class="data-wrap"><table class="data-table"><thead><tr><th>字段</th><th>revision 42</th><th>草稿 43</th><th>具体影响</th></tr></thead><tbody><tr><td>经度</td><td class="mono"><s>116.474328</s></td><td class="mono"><strong>116.475310</strong></td><td>路线终点 +84m</td></tr><tr><td>夜间入口</td><td><s>北门</s></td><td><strong>东门</strong></td><td>预计到达 +6min</td></tr><tr><td>观测评分</td><td class="mono">74</td><td class="mono">71</td><td>候选 2 → 4</td></tr></tbody></table></div>`,
+          `<div class="mini"><h4>校验阻断 · 当前不能提交</h4><p>FieldNote 临时许可仅剩 03:12；路线终点变化超过 50m，需要地点编辑者与数据运营者共同复核。</p><label class="checkline"><input type="checkbox" id="rev-validation" ${revValidation?'checked':''}><span>已核对许可时限与双人复核边界（设计样例）</span></label></div>`,
+          `<div class="grid-3"><div class="mini"><h4>影响对象</h4><p><strong>7</strong> 条行程投影重新计算</p></div><div class="mini"><h4>推荐变化</h4><p><strong>2</strong> 条主地点结果改变</p></div><div class="mini"><h4>恢复边界</h4><p>revision 42 可恢复；审计链不删除</p></div></div><label class="checkline" style="margin-block-start:12px"><input type="checkbox" id="rev-impact" ${revImpact?'checked':''}><span>我已检查完整影响范围与恢复边界</span></label>`,
+          `<div class="mini"><h4>二次确认 · 精确文本门槛</h4><p>只有完全一致的 <span class="mono">REV-43</span> 才能提交；错误字符串不会启用按钮。</p><div class="field"><label for="rev-confirm">输入 REV-43</label><input id="rev-confirm" value="${esc(revConfirm)}" autocomplete="off" aria-describedby="rev-confirm-help rev-confirm-error"><div class="helper" id="rev-confirm-help">比较区分大小写，不自动修剪。</div><div class="helper error-copy" id="rev-confirm-error" ${!revConfirm || revConfirm==='REV-43'?'hidden':''}>文本不匹配；提交保持禁用。</div></div></div>`,
+          revRequest === 'error' ? `<div class="mini"><h4 class="error-copy">请求失败 · ERR-REV-43-SAMPLE</h4><p>revision 42 仍生效；草稿、确认与幂等键 <span class="mono">idem_REV43_SAMPLE</span> 已保留。</p><div class="demo-actions"><button type="button" data-rev-action="retry">重试同一请求</button><button type="button" data-rev-action="back-impact">返回影响预览</button></div></div>` : `<div class="mini" role="status"><h4>提交中 · saving</h4><p>重复提交已锁定；幂等键 <span class="mono">idem_REV43_SAMPLE</span>。使用确定性控件演示异步完成或错误。</p><div class="demo-actions"><button type="button" class="primary" data-rev-action="complete">完成请求（样例）</button><button type="button" data-rev-action="fail">模拟请求错误</button></div></div>`,
+          `<div class="mini"><h4>样例提交成功 · success</h4><p>revision 43 成为当前设计样例；审计 <span class="mono">AUD-REV-43</span> 已生成。下一动作：检查推荐变化或恢复。</p><button type="button" class="primary" data-rev-action="recover">恢复 revision 42</button></div>`,
+          `<div class="mini"><h4>已恢复到 revision 42</h4><p>恢复创建审计 <span class="mono">AUD-REV-43-RECOVERY</span>，不删除 revision 43 的差异、确认方式或操作者记录。</p><button type="button" data-rev-action="reset">重新开始 REV-43</button></div>`
+        ];
+        const disabled = (revPhase===2&&!revValidation)||(revPhase===3&&!revImpact)||(revPhase===4&&revConfirm!=='REV-43');
+        const labels = ['查看结构化 diff','检查校验阻断','查看影响范围','进入精确确认','提交 revision 43','','',''];
+        const footer = revPhase < 5 ? `<div class="flow-footer"><span>阶段 ${revPhase+1}/8 · revision 42 保持生效</span><div class="demo-actions"><button type="button" data-rev-action="reset">重置</button><button type="button" class="primary" data-rev-action="next" ${disabled?'disabled':''}>${labels[revPhase]}</button></div></div>` : '';
+        return shell('地点 revision · spot-wj-east@43', revPhase===6?'AUD-REV-43 · 可恢复':revPhase===7?'恢复已审计':'revision 42 保持生效，直至守卫提交完成', flowMarkup(revPhase)+panes[revPhase]+footer, `<span class="status" data-tone="${revPhase<6?'blocked':''}">${revPhase===5?(revRequest==='error'?'error':'saving'):revPhase===6?'success':revPhase===7?'recovered':'conflict · 2'}</span>`, revPhase===5?(revRequest==='error'?'error':'saving'):revPhase===6?'success':revPhase===7?'populated':'conflict');
+      }
+      function renderAdmin(state) {
+        const m=meta['admin-spot-editor'];
+        if (state==='conflict'||(state==='saving'&&revPhase===5)||(state==='success'&&revPhase===6)||(state==='error'&&revPhase===5)||revPhase===7) return renderRev();
+        if (['disabled','edge'].includes(state)) return message(m,state);
+        const body=`<div class="grid-2"><div class="mini"><h4>当前 revision 43 草稿</h4><p>长期事实、临时实况、来源版本与坐标策略在同一上下文。</p><div class="field"><label>地点名称</label><input value="望京公园东门观测点"></div></div><div class="mini"><h4>版本与恢复</h4><p class="mono">current: 43 · restore: 42</p><button type="button" data-sample-action="已打开 revision 历史">查看历史</button></div></div>`;
+        return shell(m.title,'当前设计样例 revision；所有写入仍需危险流程',body,'',state);
+      }
+      function renderModeration(state) { const m=meta['moderation-queue']; if (['loading','empty','no-results','disabled','saving','success','error','edge'].includes(state)) return message(m,state); const body=`<div class="split"><div class="data-wrap"><table class="data-table"><thead><tr><th>选择</th><th>案件</th><th>隐私 / 纠错</th><th>状态</th></tr></thead><tbody><tr data-selected="true"><td><label class="checkbox-hit"><input type="checkbox" checked aria-label="选择 SUB-2048"></label></td><td>SUB-2048</td><td>GPS EXIF [REDACTED]</td><td><span class="status" data-tone="blocked">阻断</span></td></tr><tr><td><label class="checkbox-hit"><input type="checkbox" checked aria-label="选择 SUB-2049"></label></td><td>SUB-2049</td><td>入口 +126m</td><td>复核</td></tr><tr><td><label class="checkbox-hit"><input type="checkbox" checked aria-label="选择 SUB-2050"></label></td><td>SUB-2050</td><td>序列号 [REDACTED]</td><td>待处理</td></tr></tbody></table></div><div class="mini"><h4>SUB-2048 · 证据</h4><p>未检测到人脸；GPS 与序列号需移除，拍摄时间可保留。</p><label>审核理由<input value="移除 GPS 与序列号；保留拍摄时间。"></label><div class="demo-actions" style="margin-block-start:10px"><button>升级</button><button class="primary">预览批量影响</button></div></div></div>`; return shell(m.title,'原始 EXIF 需独立权限；普通日志只显示类别与脱敏结果',body,'',state); }
+      function renderSource(state) { const m=meta['data-source-dashboard']; if (['loading','empty','no-results','disabled','error','edge'].includes(state)) return message(m,state); const value = state==='stale'?'7h 08m · 超阈值':state==='partial'?'2 / 5 区域':state==='degraded'?'缓存 · 剩 18m':'3m 12s · fresh'; const boundary=state==='stale'?'必须标注过期':state==='partial'?'不可视为完整':state==='degraded'?'许可类禁止回退':'可用于建议'; const body=`<div class="data-wrap"><table class="data-table"><thead><tr><th>来源</th><th>状态 / 原因</th><th>许可</th><th>最后成功</th><th>决策边界</th></tr></thead><tbody><tr><td>SkyGrid-C1</td><td><span class="status" data-tone="${tone(state)}">${value}</span></td><td>派生可用</td><td class="mono">21:04:18</td><td>${boundary}</td></tr><tr><td>RouteRisk-R4</td><td>degraded · 缓存</td><td>展示可用</td><td class="mono">20:20:51</td><td>回退 ≤60m</td></tr><tr><td>Permit-P3</td><td>error · 授权拒绝</td><td>待续期</td><td class="mono">18:02:11</td><td>禁止回退</td></tr></tbody></table></div>`; return withContext(m,state,body,'健康、许可、版本、最后成功与决策边界并列'); }
+      function renderJob(state) { const m=meta['job-operations-console']; if (['loading','empty','disabled','saving','success','error'].includes(state)) return message(m,state); const status=state==='degraded'?'degraded · 受限缓存':state==='partial'?'partial · 38/42':'populated · 42/42'; const body=`<div class="data-wrap"><table class="data-table"><thead><tr><th>作业</th><th>状态</th><th>业务键 / 审计</th><th>动作</th></tr></thead><tbody><tr><td>cloud-hourly<br><span class="mono">run-0722-2100</span></td><td>${status}</td><td class="mono">idem_7D2A · AUD-1842</td><td><div class="demo-actions"><button data-sample-action="幂等重试已请求">重试</button><button data-sample-action="补数 dry-run 已打开">补数</button></div></td></tr><tr><td>route-risk-refresh</td><td>degraded</td><td class="mono">cursor_2045</td><td><button data-sample-action="暂停影响预览已打开">预览并暂停</button></td></tr></tbody></table></div>`; return withContext(m,state,body,'重试、补数与暂停都保留业务键、范围、游标与审计'); }
+      function renderReplay(state) { const m=meta['recommendation-replay-console']; if (['loading','empty','disabled','saving','success','error','edge'].includes(state)) return message(m,state); const body=`<div class="grid-2"><div class="mini"><h4>当前 · ruleset 5.8</h4><p><strong>凤凰岭南线</strong><br>建议 21:40 后出发；阵风接近阈值。</p><p class="mono">weather@31 · spot@42</p></div><div class="mini"><h4>候选 · ruleset 5.9-rc2</h4><p><strong>大觉寺西侧</strong><br>建议 22:10 后出发；步行距离更长。</p><p class="mono">${state==='partial'?'weather@31 · stale / route missing':'all source versions locked'}</p></div></div><div class="data-wrap" style="margin-block-start:12px"><table class="data-table"><thead><tr><th>差异</th><th>当前</th><th>候选</th><th>解释</th></tr></thead><tbody><tr><td>主地点</td><td>凤凰岭南线</td><td>大觉寺西侧</td><td>强风权重 +0.18</td></tr><tr><td>步行</td><td>420m</td><td>680m</td><td>偏好略降</td></tr></tbody></table></div>`; return withContext(m,state,body,'历史复现与当前数据模拟显著区分；重放不直接发布'); }
+      function renderGate(id,state) { const m=meta[id]; if (['saving','success','error'].includes(state)) return message(m,state); const sequence=['draft','precheck-blocked','owner-only','observing',id==='release-promotion-gate'?'rollback-ready':'success']; let active=Math.max(0,sequence.indexOf(state)); if(state==='promotion-disabled') active=1; const blocker=state==='precheck-blocked'||state==='promotion-disabled'; const body=`${flowMarkup(active,5)}<div class="data-wrap"><table class="data-table"><thead><tr><th>门禁</th><th>状态</th><th>证据 / 下一步</th></tr></thead><tbody><tr><td>${id==='release-promotion-gate'?'Runtime / 原生 diff':'固定场景重放'}</td><td>${blocker?'阻断':'通过'}</td><td>${blocker?'缺少 2 项硬证据':'证据已绑定'}</td></tr><tr><td>恢复点</td><td>${state==='rollback-ready'?'可回滚':'已绑定'}</td><td class="mono">${id==='release-promotion-gate'?'R-2026.07.3':'ruleset 5.8'}</td></tr><tr><td>许可 / 质量</td><td>${blocker?'阻断':'观察'}</td><td>Permit-P3 / 长距离场景</td></tr></tbody></table></div><div class="demo-actions" style="margin-block-start:12px"><button data-sample-action="预检样例已运行">运行预检</button><button ${blocker?'disabled':''}>${state==='rollback-ready'?'预览回滚':'提升'}</button></div><p class="helper">${blocker?'提升禁用：硬门未满足；原因、owner 与解除路径同时可见。':'当前阶段仍为设计样例，不执行生产提升。'}</p>`; return shell(m.title,id==='release-promotion-gate'?'构建、runtime、测试、许可、SLO 与恢复证据':'草稿、预检、owner-only、观察、提升 / 回滚',body,'',state); }
+      function renderAudit(state) { const m=meta['admin-access-audit']; if (['loading','empty','no-results','disabled','error','edge'].includes(state)) return message(m,state); const body=`<div class="grid-2"><div class="data-wrap"><table class="data-table"><thead><tr><th>角色</th><th>字段范围</th><th>会话</th></tr></thead><tbody><tr><td>地点编辑者</td><td>事实 · 模糊坐标</td><td class="mono">12m · MFA</td></tr><tr><td>发布 owner</td><td>规则 diff · 门禁</td><td class="mono">4m · hardware</td></tr><tr><td>审计只读</td><td>脱敏日志</td><td class="mono">28m · MFA</td></tr></tbody></table></div><div class="mini"><h4>AUD-1842 · 只读</h4><p class="mono">location: [REDACTED]<br>exif.raw: [REDACTED]<br>secret: [REDACTED]</p><p>敏感读取成功或失败都记录最小必要信息。</p></div></div>`; return shell(m.title,'权限检查先于数据；审计分页、脱敏与导出范围可查',body,'',state); }
+      function renderTechnical(state) { const m=meta['technical-observability-dashboard']; if (['loading','empty','no-results','disabled','error','edge'].includes(state)) return message(m,state); const heights=state==='stale'?[32,46,40,52,56,60]:state==='degraded'?[28,34,30,38,42,48]:[30,42,36,62,50,74]; const body=`<div class="metric-strip"><div class="metric"><span>P95 延迟</span><strong>${state==='partial'?'218ms*':'218ms'}</strong><small>样本 ${state==='partial'?'62%':'100%'}</small></div><div class="metric"><span>错误率</span><strong>0.31%</strong><small>阈值 0.80%</small></div><div class="metric"><span>回退率</span><strong>${state==='degraded'?'4.9%':'2.8%'}</strong><small>${state}</small></div><div class="metric"><span>窗口</span><strong>90m</strong><small>${state==='stale'?'截至 19:45':'截至 21:15'}</small></div></div><div class="grid-2" style="margin-block-start:12px"><div class="bars" id="latency-bars" role="img" aria-label="过去九十分钟样例延迟柱状图">${heights.map(h=>`<i style="block-size:${h}px"></i>`).join('')}</div><div class="mini"><h4>ALERT-SAMPLE-18</h4><p>${state==='degraded'?'监控查询降级到聚合缓存；trace 不可用。':'RouteRisk 回退率 20:42 超阈值，20:53 恢复。'}</p><p>恢复不清除告警历史；精确位置和 secret 不进入遥测。</p></div></div>`; return withContext(m,state,body,'版本、平台、trace、依赖与采样窗口可关联'); }
+      function renderQuality(state) { const m=meta['data-quality-dashboard']; if (['loading','empty','no-results','disabled','saving','success','error','edge'].includes(state)) return message(m,state); const body=`<div class="data-wrap"><table class="data-table"><thead><tr><th>数据集</th><th>完整性</th><th>新鲜度</th><th>许可</th><th>漂移</th></tr></thead><tbody><tr><td>小时云量</td><td>99.1%</td><td>${state==='stale'?'stale':'fresh'}</td><td>通过</td><td>—</td></tr><tr><td>现场实况</td><td>${state==='partial'?'40.0%':'96.0%'}</td><td>${state}</td><td>24h 临时</td><td>P95 61m</td></tr><tr><td>地点许可</td><td>88.2%</td><td>${state==='degraded'?'unknown':'error'}</td><td><strong>阻断</strong></td><td>—</td></tr></tbody></table></div><div class="demo-actions" style="margin-block-start:12px"><button data-sample-action="隔离草稿已保存；质量仍未通过">保存隔离草稿</button></div>`; return withContext(m,state,body,'完整性、新鲜度、许可与漂移独立判断'); }
+      function renderRestore(state) { const m=meta['backup-restore-exercise']; if (['loading','empty','disabled','saving','success','error','edge'].includes(state)) return message(m,state); const failed=state==='failed-validation'; const body=`<div class="metric-strip"><div class="metric"><span>RPO ≤30m</span><strong>18m</strong><small>通过</small></div><div class="metric"><span>RTO ≤45m</span><strong>52m</strong><small>${failed?'超限':'待验证'}</small></div><div class="metric"><span>快照</span><strong>18:00</strong><small>可读 ≠ 完成</small></div><div class="metric"><span>应用验证</span><strong>${failed?'失败':'待运行'}</strong><small>${failed?'ERR-DR-042':'—'}</small></div></div><div class="split" style="margin-block-start:12px"><div><div class="timeline-row"><time>20:00</time><div class="timeline-node"></div><div><strong>锁定快照</strong><p>校验和与对象清单可读。</p></div></div><div class="timeline-row"><time>20:37</time><div class="timeline-node"></div><div><strong>一致性验证</strong><p>引用与来源版本通过。</p></div></div><div class="timeline-row" data-failed="${failed}"><time>20:52</time><div class="timeline-node"></div><div><strong>${failed?'应用验证失败':'应用验证待运行'}</strong><p>${failed?'分享授权索引滞后。':'隔离环境，不连接生产。'}</p></div></div></div><div class="mini"><h4>${failed?'失败路径':'演练准备'}</h4><p>${failed?'重建隔离索引，再用同一幂等键重跑失败步骤；不得签署完成。':'核对快照、目标环境、验证计划与写入边界。'}</p><button data-sample-action="失败步骤已进入幂等重试">${failed?'重跑失败步骤':'预览并开始'}</button></div></div>`; return shell(m.title,'快照可读不等于恢复完成；隔离失败不触碰生产',body,'',state); }
+      function renderMetrics(state) { const m=meta['product-metrics-dashboard']; if (['loading','empty','no-results','disabled','error','edge'].includes(state)) return message(m,state); const bars=state==='degraded'?[100,46,24,8]:state==='partial'?[100,62,43,19]:[100,68,49,22]; const body=`<div class="grid-2"><div class="funnel" id="decision-funnel-bars" aria-label="样例决策漏斗">${bars.map((h,i)=>`<div><strong>${h}%</strong><i style="block-size:${Math.max(24,h)}px"></i><small>${['查看建议','展开依据','开始规划','保存行程'][i]}</small></div>`).join('')}</div><div class="data-wrap"><table class="data-table"><thead><tr><th>数据状态</th><th>开始规划</th><th>保存</th></tr></thead><tbody><tr><td>fresh</td><td>47.6%</td><td>21.4%</td></tr><tr><td>stale</td><td>39.8%</td><td>15.1%</td></tr><tr><td>partial</td><td>${state==='partial'?'28.9%':'31.0%'}</td><td>9.2%</td></tr><tr><td>degraded / error</td><td>18.1%</td><td>4.7%</td></tr></tbody></table></div></div><p class="helper">口径 v2026.07 · 设计样例 · 排除内部会话；相关性不自动声明因果。</p>`; return withContext(m,state,body,'先按数据状态分层，再讨论产品变化'); }
+      const renderers = {'admin-spot-editor':renderAdmin,'moderation-queue':renderModeration,'data-source-dashboard':renderSource,'job-operations-console':renderJob,'recommendation-replay-console':renderReplay,'rule-release-control':state=>renderGate('rule-release-control',state),'admin-access-audit':renderAudit,'release-promotion-gate':state=>renderGate('release-promotion-gate',state),'technical-observability-dashboard':renderTechnical,'data-quality-dashboard':renderQuality,'backup-restore-exercise':renderRestore,'product-metrics-dashboard':renderMetrics};
+
+      function renderSpecimen(specimen) { const id=specimen.dataset.control; specimen.querySelector('[data-render-root]').innerHTML=renderers[id](specimen.dataset.state); const badge=specimen.querySelector('[data-state-badge]'); badge.textContent=specimen.dataset.state; const t=tone(specimen.dataset.state); if(t) badge.dataset.tone=t; else delete badge.dataset.tone; specimen.querySelectorAll('[data-specimen-state]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.specimenState===specimen.dataset.state))); if(specimen===selected) updateInspector(); }
+      function setState(specimen,state,announceChange=true) { if(!specimen.dataset.states.split(',').includes(state)) return false; if(specimen.dataset.control==='admin-spot-editor') { if(state==='conflict'){revPhase=0;revValidation=false;revImpact=false;revConfirm='';revRequest='idle';} if(state==='saving'){revPhase=5;revRequest='saving';} if(state==='success'){revPhase=6;revRequest='success';} if(state==='error'){revPhase=5;revRequest='error';} } specimen.dataset.state=state; renderSpecimen(specimen); if(announceChange) announce(`${specimen.dataset.control} 已切换到 ${state}；控件本体与 inspector 已更新`); return true; }
+      function setSelected(specimen) { specimens.forEach(item=>item.classList.toggle('is-selected',item===specimen)); selected=specimen; document.querySelectorAll('[data-nav-control]').forEach(link=>{if(link.dataset.navControl===specimen.dataset.control)link.setAttribute('aria-current','true');else link.removeAttribute('aria-current');}); document.getElementById('selection-label').textContent=`当前：${specimen.dataset.control} · ${specimen.dataset.state}`; updateInspector(); try{localStorage.setItem('starward-ops-atlas-v2-selected',specimen.id);}catch(_){} }
+      function rows(items) { return `<dl class="spec-list">${items.map(item=>`<div><dt>${item[0]}</dt><dd>${item[1]}</dd></div>`).join('')}</dl>`; }
+      function updateInspector() { const id=selected.dataset.control,m=meta[id],states=selected.dataset.states.split(','); document.getElementById('inspector-title').textContent=m.title; document.getElementById('inspector-key').textContent=`control.${id} · ${selected.dataset.route}`; let html=''; if(inspectorTab==='visual') html=rows([['尺寸','fill 300–920px · H≥'+(id==='admin-spot-editor'?360:250)+'px'],['Target','44px · inputs/actions'],['Spacing','8 / 12 / 16 / 24px'],['Border','1px #d9dee7 · R8'],['Type','Inter 14/22 · title 16/21'],['Mono','SFMono-Regular 12/19'],['Focus','3px #1677ff + 2px offset'],['Elevation','content none · action 0 3px border']]); if(inspectorTab==='states') html=`<p><strong>当前：</strong>${selected.dataset.state}</p><p class="helper">当前 state 由 ${m.owner} 所有；每个声明 state 都替换 ${m.family} 自身内容。未声明状态在 JSON 中为 not-applicable + reason。</p><div class="chip-list">${states.map(s=>`<span>${s}</span>`).join('')}</div>`; if(inspectorTab==='api') html=rows([['Family',m.family],['State owner',m.owner],['Props',m.props.join('<br>')],['Events',m.events.join('<br>')],['Idempotency',m.events.some(e=>/Requested|Commit/.test(e))?'writes required':'read-only / state-specific'],['Authority',`#/controls/${specimens.indexOf(selected)}`]]); if(inspectorTab==='motion') html=rows([['Property','opacity + pressed transform'],['Timing','120ms · delay 0'],['Easing','cubic-bezier(.2,0,0,1)'],['Interrupt','start from live value'],['Reverse','pointer cancel immediate'],['Reduced','0ms replacement; busy text stays'],['Haptic','not-applicable · desktop web']]); if(inspectorTab==='a11y') html=rows([['Role','region + native controls'],['Name',m.title],['Order','heading → states → body → actions'],['Keys','Tab · Enter/Space · arrows · Escape'],['Focus','3px outline; return to trigger'],['Live','polite results; blocking error explicit'],['Zoom','200% reflow; no page overflow'],['Feedback','text + line/shape/attribute']]); if(inspectorTab==='assets') html=rows([['Inventory',m.asset],['License','project-authored candidate where present'],['External','none'],['Tint','foreground / border / accent'],['Raster/media','explicit none']]); if(inspectorTab==='acceptance') html=`<p class="helper">完整 Given / When / Then 位于 implementation-contract.json。</p><ul>${m.acceptance.map(x=>`<li>${x}</li>`).join('')}</ul>`; document.getElementById('inspector-panel').innerHTML=html; document.getElementById('selection-label').textContent=`当前：${id} · ${selected.dataset.state}`; }
+      function updateRevControls() { const root=document.querySelector('#specimen-admin-spot-editor [data-render-root]'); const next=root.querySelector('[data-rev-action="next"]'); if(next) next.disabled=(revPhase===2&&!revValidation)||(revPhase===3&&!revImpact)||(revPhase===4&&revConfirm!=='REV-43'); const err=document.getElementById('rev-confirm-error'); if(err) err.hidden=!revConfirm||revConfirm==='REV-43'; }
+      function advanceRev() { if((revPhase===2&&!revValidation)||(revPhase===3&&!revImpact)||(revPhase===4&&revConfirm!=='REV-43')) return; if(revPhase===4){revPhase=5;revRequest='saving';selected.dataset.state='saving';}else revPhase+=1; renderSpecimen(document.getElementById('specimen-admin-spot-editor')); announce(`REV-43 已进入阶段 ${revPhase+1}/8`); }
+      specimens.forEach(specimen=>{ const strip=specimen.querySelector('[data-state-controls]'); specimen.dataset.states.split(',').forEach(state=>{const button=document.createElement('button');button.type='button';button.dataset.specimenState=state;button.textContent=`${stateNames[state]||state} · ${state}`;button.setAttribute('aria-pressed',String(state===specimen.dataset.state));strip.appendChild(button);});renderSpecimen(specimen);specimen.addEventListener('focusin',()=>setSelected(specimen));specimen.addEventListener('pointerdown',()=>setSelected(specimen));});
+      document.addEventListener('click',event=>{ const state=event.target.closest('[data-specimen-state]'); if(state){const specimen=state.closest('.specimen');setSelected(specimen);setState(specimen,state.dataset.specimenState);return;} const tab=event.target.closest('[data-inspector-tab]'); if(tab){inspectorTab=tab.dataset.inspectorTab;document.querySelectorAll('[data-inspector-tab]').forEach(x=>x.setAttribute('aria-selected',String(x===tab)));updateInspector();return;} const rev=event.target.closest('[data-rev-action]'); if(rev){setSelected(document.getElementById('specimen-admin-spot-editor'));const action=rev.dataset.revAction;if(action==='next')advanceRev();if(action==='reset'){revPhase=0;revValidation=false;revImpact=false;revConfirm='';revRequest='idle';selected.dataset.state='conflict';renderSpecimen(selected);}if(action==='fail'){revRequest='error';selected.dataset.state='error';renderSpecimen(selected);announce('REV-43 请求进入可恢复错误；revision 42 仍生效');}if(action==='retry'){revRequest='saving';selected.dataset.state='saving';renderSpecimen(selected);announce('使用 idem_REV43_SAMPLE 重试；未创建第二次写入');}if(action==='back-impact'){revPhase=3;revRequest='idle';selected.dataset.state='conflict';renderSpecimen(selected);}if(action==='complete'){revPhase=6;revRequest='success';selected.dataset.state='success';renderSpecimen(selected);announce('REV-43 样例成功；审计 AUD-REV-43 已生成');}if(action==='recover'){revPhase=7;selected.dataset.state='populated';renderSpecimen(selected);announce('已恢复 revision 42；恢复审计已保留');}return;} const sample=event.target.closest('[data-sample-action]');if(sample)announce(`${sample.dataset.sampleAction} · 仅本地设计样例`);});
+      document.addEventListener('change',event=>{if(event.target.id==='rev-validation'){revValidation=event.target.checked;updateRevControls();}if(event.target.id==='rev-impact'){revImpact=event.target.checked;updateRevControls();}});
+      document.addEventListener('input',event=>{if(event.target.id==='rev-confirm'){revConfirm=event.target.value;updateRevControls();}});
+      document.querySelectorAll('[data-state-controls]').forEach(group=>group.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;const buttons=Array.from(group.querySelectorAll('button'));const index=buttons.indexOf(document.activeElement);if(index<0)return;event.preventDefault();const delta=event.key==='ArrowRight'||event.key==='ArrowDown'?1:-1;buttons[(index+delta+buttons.length)%buttons.length].focus();}));
+      document.querySelector('.inspector-tabs').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;const tabs=Array.from(document.querySelectorAll('[data-inspector-tab]'));const index=tabs.indexOf(document.activeElement);if(index<0)return;event.preventDefault();const delta=event.key==='ArrowRight'||event.key==='ArrowDown'?1:-1;const next=tabs[(index+delta+tabs.length)%tabs.length];next.focus();next.click();});
+      document.getElementById('reset-selected').addEventListener('click',()=>setState(selected,selected.dataset.initialState));
+      const rightRail=document.getElementById('right-rail'),openInspector=document.getElementById('open-inspector');openInspector.addEventListener('click',()=>{const open=rightRail.classList.toggle('is-open');openInspector.setAttribute('aria-expanded',String(open));if(open)rightRail.querySelector('[data-inspector-tab]').focus();});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&rightRail.classList.contains('is-open')){rightRail.classList.remove('is-open');openInspector.setAttribute('aria-expanded','false');openInspector.focus();}});
+      const sections=Array.from(document.querySelectorAll('#overview,#workspace-data-operations,#workspace-release-quality,#assembly'));const tocLinks=Array.from(document.querySelectorAll('.toc a'));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(!visible)return;tocLinks.forEach(link=>link.setAttribute('aria-current',String(link.getAttribute('href')==='#'+visible.target.id)));},{root:document.querySelector('.main'),rootMargin:'-20% 0px -70% 0px',threshold:[0,.1]});sections.forEach(section=>observer.observe(section));
+      try{const stored=document.getElementById(localStorage.getItem('starward-ops-atlas-v2-selected'));if(stored&&stored.matches('.specimen'))setSelected(stored);else setSelected(specimens[0]);}catch(_){setSelected(specimens[0]);}
+      window.__STARWARD_ATLAS_TEST__={controls:()=>specimens.map(s=>s.dataset.control),state:(id,value)=>{const s=document.getElementById('specimen-'+id);if(value)setState(s,value,false);return s.dataset.state;},rev:()=>({phase:revPhase,validation:revValidation,impact:revImpact,confirm:revConfirm,request:revRequest,state:document.getElementById('specimen-admin-spot-editor').dataset.state}),reducedMotion:()=>matchMedia('(prefers-reduced-motion: reduce)').matches};
+    })();
+  </script>
+</body>
+</html>

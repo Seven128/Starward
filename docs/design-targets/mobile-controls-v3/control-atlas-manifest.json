@@ -1,0 +1,3027 @@
+{
+  "artifact": "Starward / 今晚去观星 · 移动端控件级开发设计稿 v3",
+  "locale": "zh-CN",
+  "viewport": "390x844",
+  "candidateStatus": "ordinary Source",
+  "selectionStatus": "unselected candidate",
+  "source": {
+    "artifact": "Starward 全系统交互原型",
+    "coverageManifest": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-system-mobile-20260722-v2/coverage-manifest.json",
+    "prototypeHtml": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-system-mobile-20260722-v2/index.html",
+    "v1AtlasManifest": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-mobile-control-atlas-20260722-v1/control-atlas-manifest.json",
+    "immutable": true,
+    "hashes": {
+      "prototypeHtml": {
+        "path": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-system-mobile-20260722-v2/index.html",
+        "sha256": "21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271",
+        "bytes": 110133,
+        "status": "frozen-read-only"
+      },
+      "coverage": {
+        "path": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-system-mobile-20260722-v2/coverage-manifest.json",
+        "sha256": "6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f",
+        "bytes": 18808,
+        "status": "frozen-read-only"
+      },
+      "prototypeReadme": {
+        "path": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-system-mobile-20260722-v2/README.md",
+        "sha256": "4c95723f217be83d22b0b3b86f34787a4d455408a3b3e863b817ca8cd4c53801",
+        "bytes": 7328,
+        "status": "frozen-read-only"
+      },
+      "v1Html": {
+        "path": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-mobile-control-atlas-20260722-v1/index.html",
+        "sha256": "8bea023ca122fa64c3772c92bdca458be144e31932abfc9551fc42342264e3ff",
+        "bytes": 177376,
+        "status": "frozen-read-only"
+      },
+      "v1Manifest": {
+        "path": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-mobile-control-atlas-20260722-v1/control-atlas-manifest.json",
+        "sha256": "1b9074e53db11969c31d7788b95ac5515d3cf1a8480c86ed1f84d015d40a54d7",
+        "bytes": 60924,
+        "status": "frozen-read-only"
+      },
+      "v1Readme": {
+        "path": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-mobile-control-atlas-20260722-v1/README.md",
+        "sha256": "07eb7ac7346cba4e92cca4966200ab4ea90f1da401a6a4ad7a4e65ce7129d922",
+        "bytes": 8863,
+        "status": "frozen-read-only"
+      },
+      "design": {
+        "path": "C:/Dev/Starward/DESIGN.md",
+        "sha256": "3ccd7211333b48bdc10eb4ee77b34058f7433a8ff80aaacea212f547754a3836",
+        "bytes": 13098,
+        "status": "frozen-read-only"
+      },
+      "sourcePlan": {
+        "path": "C:/Dev/Starward/docs/source-plan.md",
+        "sha256": "439dafc17a9a1b1aa4134df1789d40d5a75ed8ac651c2b97a57a79ce1631ca3a",
+        "bytes": 557644,
+        "status": "frozen-read-only"
+      },
+      "interactionSkill": {
+        "path": "C:/Dev/Starward/.codex/skills/uiux_design/SKILL.md",
+        "sha256": "96fd6fbbc37d76ed6d0b2c3dd1520b9a514318887cd2d5d544dfcfa55b4ed6d9",
+        "bytes": 8907,
+        "status": "frozen-read-only"
+      },
+      "interactionReference": {
+        "path": "C:/Dev/Starward/.codex/skills/uiux_design/references/react-native-interaction-contract.md",
+        "sha256": "328937755c99bc5e4dfa9d27031363dc1bb7463bbaea4bbdd801e946f1261a3c",
+        "bytes": 10254,
+        "status": "frozen-read-only"
+      },
+      "goalIndex": {
+        "path": "C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/starward-system-uiux-goal-index-20260722.md",
+        "sha256": "c0c24ed737e839daaf85a929a4f0fb3c68a30e945bfc35b93cd58fed55d55f0c",
+        "bytes": 23205,
+        "status": "frozen-read-only"
+      }
+    }
+  },
+  "summary": {
+    "outcomeCount": 12,
+    "stableControlCount": 83,
+    "uniqueControlCount": 83,
+    "sectionCount": 7,
+    "dedicatedCount": 21
+  },
+  "modeContract": {
+    "modes": [
+      "planning",
+      "night",
+      "red-light"
+    ],
+    "structureInvariant": true,
+    "redLightScope": "phone-specimens-only",
+    "redLightTokens": [
+      "#050000",
+      "#170000",
+      "#ff9b9b",
+      "#e77474",
+      "#a63f3f",
+      "#ff5454"
+    ],
+    "filterUsed": false
+  },
+  "statePresentation": [
+    "default",
+    "pressed",
+    "focus-visible",
+    "selected",
+    "disabled",
+    "loading",
+    "saving",
+    "success",
+    "error",
+    "stale",
+    "partial",
+    "degraded",
+    "unknown",
+    "empty",
+    "no-results",
+    "blocked",
+    "permission-denied",
+    "conflict",
+    "offline"
+  ],
+  "sections": [
+    {
+      "id": "foundations-shell",
+      "label": "Foundations & Shell"
+    },
+    {
+      "id": "decision-evidence",
+      "label": "Decision & Evidence"
+    },
+    {
+      "id": "map-spot",
+      "label": "Map & Spot"
+    },
+    {
+      "id": "trips-collaboration",
+      "label": "Trips & Collaboration"
+    },
+    {
+      "id": "sky-shooting",
+      "label": "Sky & Shooting"
+    },
+    {
+      "id": "field-offline-safety",
+      "label": "Field / Offline / Safety"
+    },
+    {
+      "id": "contribution-toolbox-identity",
+      "label": "Contribution / Toolbox / Identity"
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "mobile-shell-and-preferences",
+      "label": "原生壳 / 首次使用 / 偏好",
+      "route": "/onboarding-preferences",
+      "entry": "我的 → 偏好与权限；评审抽屉直达",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "degraded",
+        "error",
+        "disabled",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "mobile-shell-and-preferences",
+          "stableControlId": "primary-tab-bar",
+          "id": "primary-tab-bar",
+          "route": "global",
+          "sourceStates": [
+            "success",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "disabled"
+          ],
+          "interaction": "点击五个一级 Tab；保留共享地点、时间与模式上下文。",
+          "family": "primary-navigation",
+          "section": "foundations-shell",
+          "specimenKey": "sp-primary-tab-bar",
+          "prototypeLocator": "source:index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"primary-tab-bar\"]",
+          "atlasLocator": "index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"primary-tab-bar\"][data-specimen=\"sp-primary-tab-bar\"]",
+          "implementationContractKey": "controls.primary-tab-bar",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "mobile-shell-and-preferences",
+          "stableControlId": "permission-step",
+          "id": "permission-step",
+          "route": "/onboarding-preferences",
+          "sourceStates": [
+            "success",
+            "degraded",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "degraded",
+            "disabled"
+          ],
+          "interaction": "允许定位或选择手动输入；拒绝后展示受限路径。",
+          "family": "permission-flow",
+          "section": "foundations-shell",
+          "specimenKey": "sp-permission-step",
+          "prototypeLocator": "source:index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"permission-step\"]",
+          "atlasLocator": "index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"permission-step\"][data-specimen=\"sp-permission-step\"]",
+          "implementationContractKey": "controls.permission-step",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "mobile-shell-and-preferences",
+          "stableControlId": "preference-wizard",
+          "id": "preference-wizard",
+          "route": "/onboarding-preferences",
+          "sourceStates": [
+            "success",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "saving"
+          ],
+          "interaction": "切换观测目标、步行容忍度与摄影偏好并保存。",
+          "family": "preference-form",
+          "section": "foundations-shell",
+          "specimenKey": "sp-preference-wizard",
+          "prototypeLocator": "source:index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"preference-wizard\"]",
+          "atlasLocator": "index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"preference-wizard\"][data-specimen=\"sp-preference-wizard\"]",
+          "implementationContractKey": "controls.preference-wizard",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "mobile-shell-and-preferences",
+          "stableControlId": "profile-switcher",
+          "id": "profile-switcher",
+          "route": "/onboarding-preferences",
+          "sourceStates": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "interaction": "在游客与本机样例档案间切换，保留合并提示。",
+          "family": "identity-switcher",
+          "section": "foundations-shell",
+          "specimenKey": "sp-profile-switcher",
+          "prototypeLocator": "source:index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"profile-switcher\"]",
+          "atlasLocator": "index.html [data-outcome=\"mobile-shell-and-preferences\"][data-control=\"profile-switcher\"][data-specimen=\"sp-profile-switcher\"]",
+          "implementationContractKey": "controls.profile-switcher",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "tonight-decision",
+      "label": "今晚结论 / 推荐 / 主备",
+      "route": "/tonight",
+      "entry": "一级 Tab：今晚",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "stale",
+        "partial",
+        "unknown",
+        "error",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "tonight-decision",
+          "stableControlId": "location-date-refresh",
+          "id": "location-date-refresh",
+          "route": "/tonight",
+          "sourceStates": [
+            "success",
+            "loading",
+            "stale",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "stale",
+            "error"
+          ],
+          "interaction": "刷新北京西部 · 7 月 22 日夜间样例；重算时旧结论标记 stale。",
+          "family": "context-refresh",
+          "section": "decision-evidence",
+          "specimenKey": "sp-location-date-refresh",
+          "prototypeLocator": "source:index.html [data-outcome=\"tonight-decision\"][data-control=\"location-date-refresh\"]",
+          "atlasLocator": "index.html [data-outcome=\"tonight-decision\"][data-control=\"location-date-refresh\"][data-specimen=\"sp-location-date-refresh\"]",
+          "implementationContractKey": "controls.location-date-refresh",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "tonight-decision",
+          "stableControlId": "decision-hero",
+          "id": "decision-hero",
+          "route": "/tonight",
+          "sourceStates": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "interaction": "展开评分依据；安全阻断时结论优先级提升。",
+          "family": "decision-summary",
+          "section": "decision-evidence",
+          "specimenKey": "sp-decision-hero",
+          "prototypeLocator": "source:index.html [data-outcome=\"tonight-decision\"][data-control=\"decision-hero\"]",
+          "atlasLocator": "index.html [data-outcome=\"tonight-decision\"][data-control=\"decision-hero\"][data-specimen=\"sp-decision-hero\"]",
+          "implementationContractKey": "controls.decision-hero",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "tonight-decision",
+          "stableControlId": "condition-summary-expander",
+          "id": "condition-summary-expander",
+          "route": "/tonight",
+          "sourceStates": [
+            "success",
+            "loading",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "partial"
+          ],
+          "interaction": "展开云量、透明度、视宁度与月相摘要。",
+          "family": "evidence-disclosure",
+          "section": "decision-evidence",
+          "specimenKey": "sp-condition-summary-expander",
+          "prototypeLocator": "source:index.html [data-outcome=\"tonight-decision\"][data-control=\"condition-summary-expander\"]",
+          "atlasLocator": "index.html [data-outcome=\"tonight-decision\"][data-control=\"condition-summary-expander\"][data-specimen=\"sp-condition-summary-expander\"]",
+          "implementationContractKey": "controls.condition-summary-expander",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "tonight-decision",
+          "stableControlId": "visible-target-timeline",
+          "id": "visible-target-timeline",
+          "route": "/tonight",
+          "sourceStates": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "interaction": "拖动时刻查看木星、天琴座与银河样例可见窗口。",
+          "family": "celestial-timeline",
+          "section": "decision-evidence",
+          "specimenKey": "sp-visible-target-timeline",
+          "prototypeLocator": "source:index.html [data-outcome=\"tonight-decision\"][data-control=\"visible-target-timeline\"]",
+          "atlasLocator": "index.html [data-outcome=\"tonight-decision\"][data-control=\"visible-target-timeline\"][data-specimen=\"sp-visible-target-timeline\"]",
+          "implementationContractKey": "controls.visible-target-timeline",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "tonight-decision",
+          "stableControlId": "recommendation-card",
+          "id": "recommendation-card",
+          "route": "/tonight",
+          "sourceStates": [
+            "success",
+            "no-results",
+            "stale"
+          ],
+          "states": [
+            "success",
+            "no-results",
+            "stale"
+          ],
+          "interaction": "选择清水河峡谷主地点并同步地图与行程。",
+          "family": "spot-recommendation",
+          "section": "decision-evidence",
+          "specimenKey": "sp-recommendation-card",
+          "prototypeLocator": "source:index.html [data-outcome=\"tonight-decision\"][data-control=\"recommendation-card\"]",
+          "atlasLocator": "index.html [data-outcome=\"tonight-decision\"][data-control=\"recommendation-card\"][data-specimen=\"sp-recommendation-card\"]",
+          "implementationContractKey": "controls.recommendation-card",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "tonight-decision",
+          "stableControlId": "plan-backup-selector",
+          "id": "plan-backup-selector",
+          "route": "/tonight",
+          "sourceStates": [
+            "success",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "saving"
+          ],
+          "interaction": "切换主地点 / 备选地点角色并更新共享上下文。",
+          "family": "role-selector",
+          "section": "decision-evidence",
+          "specimenKey": "sp-plan-backup-selector",
+          "prototypeLocator": "source:index.html [data-outcome=\"tonight-decision\"][data-control=\"plan-backup-selector\"]",
+          "atlasLocator": "index.html [data-outcome=\"tonight-decision\"][data-control=\"plan-backup-selector\"][data-specimen=\"sp-plan-backup-selector\"]",
+          "implementationContractKey": "controls.plan-backup-selector",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "forecast-and-astronomy",
+      "label": "专业天气 / 时间轴 / 天文证据",
+      "route": "/forecast",
+      "entry": "今晚 → 查看专业证据",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "no-results",
+        "stale",
+        "partial",
+        "unknown",
+        "error"
+      ],
+      "controls": [
+        {
+          "outcome": "forecast-and-astronomy",
+          "stableControlId": "hourly-matrix",
+          "id": "hourly-matrix",
+          "route": "/forecast",
+          "sourceStates": [
+            "success",
+            "loading",
+            "stale",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "stale",
+            "partial"
+          ],
+          "interaction": "横向浏览 20:00–04:00 连续数据列；键盘可调整列焦点。",
+          "family": "forecast-matrix",
+          "section": "decision-evidence",
+          "specimenKey": "sp-hourly-matrix",
+          "prototypeLocator": "source:index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"hourly-matrix\"]",
+          "atlasLocator": "index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"hourly-matrix\"][data-specimen=\"sp-hourly-matrix\"]",
+          "implementationContractKey": "controls.hourly-matrix",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "forecast-and-astronomy",
+          "stableControlId": "model-selector",
+          "id": "model-selector",
+          "route": "/forecast",
+          "sourceStates": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "interaction": "在 ECMWF / GFS / CMA 样例模型间切换并标记来源版本。",
+          "family": "model-selector",
+          "section": "decision-evidence",
+          "specimenKey": "sp-model-selector",
+          "prototypeLocator": "source:index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"model-selector\"]",
+          "atlasLocator": "index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"model-selector\"][data-specimen=\"sp-model-selector\"]",
+          "implementationContractKey": "controls.model-selector",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "forecast-and-astronomy",
+          "stableControlId": "trend-calendar",
+          "id": "trend-calendar",
+          "route": "/forecast",
+          "sourceStates": [
+            "success",
+            "empty",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "empty",
+            "unknown"
+          ],
+          "interaction": "选择未来七夜，更新矩阵与共享观测夜。",
+          "family": "night-calendar",
+          "section": "decision-evidence",
+          "specimenKey": "sp-trend-calendar",
+          "prototypeLocator": "source:index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"trend-calendar\"]",
+          "atlasLocator": "index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"trend-calendar\"][data-specimen=\"sp-trend-calendar\"]",
+          "implementationContractKey": "controls.trend-calendar",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "forecast-and-astronomy",
+          "stableControlId": "twilight-window-strip",
+          "id": "twilight-window-strip",
+          "route": "/forecast",
+          "sourceStates": [
+            "success",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "partial"
+          ],
+          "interaction": "选择暮光 / 天文黑夜连续窗口。",
+          "family": "time-window",
+          "section": "decision-evidence",
+          "specimenKey": "sp-twilight-window-strip",
+          "prototypeLocator": "source:index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"twilight-window-strip\"]",
+          "atlasLocator": "index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"twilight-window-strip\"][data-specimen=\"sp-twilight-window-strip\"]",
+          "implementationContractKey": "controls.twilight-window-strip",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "forecast-and-astronomy",
+          "stableControlId": "weather-layer-panel",
+          "id": "weather-layer-panel",
+          "route": "/forecast",
+          "sourceStates": [
+            "success",
+            "loading",
+            "degraded"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "degraded"
+          ],
+          "interaction": "切换总云量、高云、透明度与风层；缺层时说明降级。",
+          "family": "layer-selector",
+          "section": "decision-evidence",
+          "specimenKey": "sp-weather-layer-panel",
+          "prototypeLocator": "source:index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"weather-layer-panel\"]",
+          "atlasLocator": "index.html [data-outcome=\"forecast-and-astronomy\"][data-control=\"weather-layer-panel\"][data-specimen=\"sp-weather-layer-panel\"]",
+          "implementationContractKey": "controls.weather-layer-panel",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "map-route-discovery",
+      "label": "地图发现 / 筛选 / 路线",
+      "route": "/map",
+      "entry": "一级 Tab：地图",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "no-results",
+        "stale",
+        "partial",
+        "degraded",
+        "error",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "map-route-discovery",
+          "stableControlId": "map-search-context-bar",
+          "id": "map-search-context-bar",
+          "route": "/map",
+          "sourceStates": [
+            "success",
+            "loading",
+            "no-results"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "no-results"
+          ],
+          "interaction": "搜索地点或更改出发地；回车更新结果与共享上下文。",
+          "family": "context-search",
+          "section": "map-spot",
+          "specimenKey": "sp-map-search-context-bar",
+          "prototypeLocator": "source:index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-search-context-bar\"]",
+          "atlasLocator": "index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-search-context-bar\"][data-specimen=\"sp-map-search-context-bar\"]",
+          "implementationContractKey": "controls.map-search-context-bar",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "map-route-discovery",
+          "stableControlId": "map-filter-sheet",
+          "id": "map-filter-sheet",
+          "route": "/map",
+          "sourceStates": [
+            "success",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "saving"
+          ],
+          "interaction": "打开三档 Bottom Sheet，设置距离、海拔、路况与光污染筛选。",
+          "family": "filter-bottom-sheet",
+          "section": "map-spot",
+          "specimenKey": "sp-map-filter-sheet",
+          "prototypeLocator": "source:index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-filter-sheet\"]",
+          "atlasLocator": "index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-filter-sheet\"][data-specimen=\"sp-map-filter-sheet\"]",
+          "implementationContractKey": "controls.map-filter-sheet",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "map-route-discovery",
+          "stableControlId": "map-layer-selector",
+          "id": "map-layer-selector",
+          "route": "/map",
+          "sourceStates": [
+            "success",
+            "loading",
+            "degraded"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "degraded"
+          ],
+          "interaction": "切换地形 / 光污染 / 云量图层并保持所选地点。",
+          "family": "map-layer-selector",
+          "section": "map-spot",
+          "specimenKey": "sp-map-layer-selector",
+          "prototypeLocator": "source:index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-layer-selector\"]",
+          "atlasLocator": "index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-layer-selector\"][data-specimen=\"sp-map-layer-selector\"]",
+          "implementationContractKey": "controls.map-layer-selector",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "map-route-discovery",
+          "stableControlId": "map-marker-density-surface",
+          "id": "map-marker-density-surface",
+          "route": "/map",
+          "sourceStates": [
+            "success",
+            "loading",
+            "no-results",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "no-results",
+            "partial"
+          ],
+          "interaction": "点击聚合或 marker；选中状态同步卡片、sheet 与路线。",
+          "family": "map-selection-surface",
+          "section": "map-spot",
+          "specimenKey": "sp-map-marker-density-surface",
+          "prototypeLocator": "source:index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-marker-density-surface\"]",
+          "atlasLocator": "index.html [data-outcome=\"map-route-discovery\"][data-control=\"map-marker-density-surface\"][data-specimen=\"sp-map-marker-density-surface\"]",
+          "implementationContractKey": "controls.map-marker-density-surface",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "map-route-discovery",
+          "stableControlId": "selected-spot-sheet",
+          "id": "selected-spot-sheet",
+          "route": "/map",
+          "sourceStates": [
+            "success",
+            "loading",
+            "stale"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "stale"
+          ],
+          "interaction": "在约 25% / 55% / 90% 三档展开，进入地点详情。",
+          "family": "spot-bottom-sheet",
+          "section": "map-spot",
+          "specimenKey": "sp-selected-spot-sheet",
+          "prototypeLocator": "source:index.html [data-outcome=\"map-route-discovery\"][data-control=\"selected-spot-sheet\"]",
+          "atlasLocator": "index.html [data-outcome=\"map-route-discovery\"][data-control=\"selected-spot-sheet\"][data-specimen=\"sp-selected-spot-sheet\"]",
+          "implementationContractKey": "controls.selected-spot-sheet",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "map-route-discovery",
+          "stableControlId": "route-plan-editor",
+          "id": "route-plan-editor",
+          "route": "/map",
+          "sourceStates": [
+            "success",
+            "loading",
+            "error",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "error",
+            "saving"
+          ],
+          "interaction": "比较主路线与低风险路线，选择后更新预计到达。",
+          "family": "route-editor",
+          "section": "map-spot",
+          "specimenKey": "sp-route-plan-editor",
+          "prototypeLocator": "source:index.html [data-outcome=\"map-route-discovery\"][data-control=\"route-plan-editor\"]",
+          "atlasLocator": "index.html [data-outcome=\"map-route-discovery\"][data-control=\"route-plan-editor\"][data-specimen=\"sp-route-plan-editor\"]",
+          "implementationContractKey": "controls.route-plan-editor",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "map-route-discovery",
+          "stableControlId": "external-navigation-action",
+          "id": "external-navigation-action",
+          "route": "/map",
+          "sourceStates": [
+            "success",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "disabled"
+          ],
+          "interaction": "二次确认后展示外部导航交接说明；不实际启动第三方应用。",
+          "family": "handoff-action",
+          "section": "map-spot",
+          "specimenKey": "sp-external-navigation-action",
+          "prototypeLocator": "source:index.html [data-outcome=\"map-route-discovery\"][data-control=\"external-navigation-action\"]",
+          "atlasLocator": "index.html [data-outcome=\"map-route-discovery\"][data-control=\"external-navigation-action\"][data-specimen=\"sp-external-navigation-action\"]",
+          "implementationContractKey": "controls.external-navigation-action",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "spot-detail-and-trust",
+      "label": "地点详情 / 真实性 / 风险",
+      "route": "/spot/qingshuihe",
+      "entry": "地图 → 选中地点 → 地点详情",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "stale",
+        "partial",
+        "unknown",
+        "error",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "spot-hero",
+          "id": "spot-hero",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "loading",
+            "stale"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "stale"
+          ],
+          "interaction": "查看设计样例地点身份、海拔、距离与数据新鲜度。",
+          "family": "spot-summary",
+          "section": "map-spot",
+          "specimenKey": "sp-spot-hero",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"spot-hero\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"spot-hero\"][data-specimen=\"sp-spot-hero\"]",
+          "implementationContractKey": "controls.spot-hero",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "spot-media-gallery",
+          "id": "spot-media-gallery",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "empty",
+            "loading"
+          ],
+          "states": [
+            "success",
+            "empty",
+            "loading"
+          ],
+          "interaction": "切换三张本地示意媒体；不宣称真实现场照片。",
+          "family": "media-gallery",
+          "section": "map-spot",
+          "specimenKey": "sp-spot-media-gallery",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"spot-media-gallery\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"spot-media-gallery\"][data-specimen=\"sp-spot-media-gallery\"]",
+          "implementationContractKey": "controls.spot-media-gallery",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "evidence-section-nav",
+          "id": "evidence-section-nav",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "disabled"
+          ],
+          "interaction": "切换概览 / 地平线 / 到达 / 可信度分区。",
+          "family": "section-navigation",
+          "section": "map-spot",
+          "specimenKey": "sp-evidence-section-nav",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"evidence-section-nav\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"evidence-section-nav\"][data-specimen=\"sp-evidence-section-nav\"]",
+          "implementationContractKey": "controls.evidence-section-nav",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "horizon-polar-view",
+          "id": "horizon-polar-view",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "interaction": "选择方位查看遮挡角与银河轨迹样例。",
+          "family": "polar-visualization",
+          "section": "map-spot",
+          "specimenKey": "sp-horizon-polar-view",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"horizon-polar-view\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"horizon-polar-view\"][data-specimen=\"sp-horizon-polar-view\"]",
+          "implementationContractKey": "controls.horizon-polar-view",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "access-facility-fact-list",
+          "id": "access-facility-fact-list",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "interaction": "展开停车、洗手间、信号与步行事实及来源。",
+          "family": "fact-list",
+          "section": "map-spot",
+          "specimenKey": "sp-access-facility-fact-list",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"access-facility-fact-list\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"access-facility-fact-list\"][data-specimen=\"sp-access-facility-fact-list\"]",
+          "implementationContractKey": "controls.access-facility-fact-list",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "safety-block",
+          "id": "safety-block",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "stale",
+            "error"
+          ],
+          "states": [
+            "success",
+            "stale",
+            "error"
+          ],
+          "interaction": "确认夜间临崖与无照明风险；阻断时禁止直接出发。",
+          "family": "safety-gate",
+          "section": "map-spot",
+          "specimenKey": "sp-safety-block",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"safety-block\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"safety-block\"][data-specimen=\"sp-safety-block\"]",
+          "implementationContractKey": "controls.safety-block",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "trust-panel",
+          "id": "trust-panel",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "partial",
+            "unknown"
+          ],
+          "interaction": "查看预测、用户实况、人工核验的分离证据与可信度。",
+          "family": "trust-evidence",
+          "section": "map-spot",
+          "specimenKey": "sp-trust-panel",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"trust-panel\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"trust-panel\"][data-specimen=\"sp-trust-panel\"]",
+          "implementationContractKey": "controls.trust-panel",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "spot-detail-and-trust",
+          "stableControlId": "spot-action-dock",
+          "id": "spot-action-dock",
+          "route": "/spot/qingshuihe",
+          "sourceStates": [
+            "success",
+            "disabled",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "disabled",
+            "saving"
+          ],
+          "interaction": "加入行程、设为主地点或返回地图。",
+          "family": "action-dock",
+          "section": "map-spot",
+          "specimenKey": "sp-spot-action-dock",
+          "prototypeLocator": "source:index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"spot-action-dock\"]",
+          "atlasLocator": "index.html [data-outcome=\"spot-detail-and-trust\"][data-control=\"spot-action-dock\"][data-specimen=\"sp-spot-action-dock\"]",
+          "implementationContractKey": "controls.spot-action-dock",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "itinerary-and-collaboration",
+      "label": "行程 / 版本 / 协作",
+      "route": "/trips",
+      "entry": "一级 Tab：行程",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "stale",
+        "partial",
+        "error",
+        "disabled",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "itinerary-library",
+          "id": "itinerary-library",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "loading",
+            "empty",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "empty",
+            "error"
+          ],
+          "interaction": "选择已保存行程或新建；展示 revision 与离线状态。",
+          "family": "content-library",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-itinerary-library",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-library\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-library\"][data-specimen=\"sp-itinerary-library\"]",
+          "implementationContractKey": "controls.itinerary-library",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "itinerary-creation-form",
+          "id": "itinerary-creation-form",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "interaction": "填写出发地、到达上限、目标与同行人；失焦验证并保留输入。",
+          "family": "itinerary-form",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-itinerary-creation-form",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-creation-form\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-creation-form\"][data-specimen=\"sp-itinerary-creation-form\"]",
+          "implementationContractKey": "controls.itinerary-creation-form",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "itinerary-detail-tabs",
+          "id": "itinerary-detail-tabs",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "disabled"
+          ],
+          "interaction": "切换概览 / 时间线 / 路线 / 协作。",
+          "family": "detail-tabs",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-itinerary-detail-tabs",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-detail-tabs\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-detail-tabs\"][data-specimen=\"sp-itinerary-detail-tabs\"]",
+          "implementationContractKey": "controls.itinerary-detail-tabs",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "itinerary-overview-card",
+          "id": "itinerary-overview-card",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "stale",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "stale",
+            "partial"
+          ],
+          "interaction": "查看主备地点、最佳窗口、预计到达与风险摘要。",
+          "family": "itinerary-summary",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-itinerary-overview-card",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-overview-card\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"itinerary-overview-card\"][data-specimen=\"sp-itinerary-overview-card\"]",
+          "implementationContractKey": "controls.itinerary-overview-card",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "observation-timeline-editor",
+          "id": "observation-timeline-editor",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "saving"
+          ],
+          "interaction": "拖动出发、架设、观测与返程节点；可中断、反向。",
+          "family": "timeline-editor",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-observation-timeline-editor",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"observation-timeline-editor\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"observation-timeline-editor\"][data-specimen=\"sp-observation-timeline-editor\"]",
+          "implementationContractKey": "controls.observation-timeline-editor",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "candidate-tray",
+          "id": "candidate-tray",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "empty"
+          ],
+          "states": [
+            "success",
+            "empty"
+          ],
+          "interaction": "添加、移除或排序候选地点。",
+          "family": "candidate-tray",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-candidate-tray",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"candidate-tray\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"candidate-tray\"][data-specimen=\"sp-candidate-tray\"]",
+          "implementationContractKey": "controls.candidate-tray",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "route-option-comparator",
+          "id": "route-option-comparator",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "loading",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "partial"
+          ],
+          "interaction": "比较最快 / 低风险路线并同步地图路线。",
+          "family": "route-comparison",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-route-option-comparator",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"route-option-comparator\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"route-option-comparator\"][data-specimen=\"sp-route-option-comparator\"]",
+          "implementationContractKey": "controls.route-option-comparator",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "version-and-share-actions",
+          "id": "version-and-share-actions",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "saving",
+            "error"
+          ],
+          "states": [
+            "success",
+            "saving",
+            "error"
+          ],
+          "interaction": "创建 revision、复制只读样例链接或恢复上一版。",
+          "family": "revision-actions",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-version-and-share-actions",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"version-and-share-actions\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"version-and-share-actions\"][data-specimen=\"sp-version-and-share-actions\"]",
+          "implementationContractKey": "controls.version-and-share-actions",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "itinerary-and-collaboration",
+          "stableControlId": "collaboration-panel",
+          "id": "collaboration-panel",
+          "route": "/trips",
+          "sourceStates": [
+            "success",
+            "empty",
+            "loading",
+            "error"
+          ],
+          "states": [
+            "success",
+            "empty",
+            "loading",
+            "error"
+          ],
+          "interaction": "管理样例同行者、意见与冲突提示；不发送真实邀请。",
+          "family": "collaboration-conflict",
+          "section": "trips-collaboration",
+          "specimenKey": "sp-collaboration-panel",
+          "prototypeLocator": "source:index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"collaboration-panel\"]",
+          "atlasLocator": "index.html [data-outcome=\"itinerary-and-collaboration\"][data-control=\"collaboration-panel\"][data-specimen=\"sp-collaboration-panel\"]",
+          "implementationContractKey": "controls.collaboration-panel",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "sky-orientation-ar",
+      "label": "天空 / 方向 / 可选 AR",
+      "route": "/sky",
+      "entry": "一级 Tab：天空",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "stale",
+        "partial",
+        "degraded",
+        "unknown",
+        "error",
+        "disabled"
+      ],
+      "controls": [
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "sky-canvas",
+          "id": "sky-canvas",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "loading",
+            "degraded"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "degraded"
+          ],
+          "interaction": "在 2D / 3D 示意天空间切换并点选天体。",
+          "family": "sky-canvas",
+          "section": "sky-shooting",
+          "specimenKey": "sp-sky-canvas",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"sky-canvas\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"sky-canvas\"][data-specimen=\"sp-sky-canvas\"]",
+          "implementationContractKey": "controls.sky-canvas",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "sky-object-and-layer-panel",
+          "id": "sky-object-and-layer-panel",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "no-results",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "no-results",
+            "partial"
+          ],
+          "interaction": "搜索天体并切换星座线、地平线与轨迹图层。",
+          "family": "sky-layer-panel",
+          "section": "sky-shooting",
+          "specimenKey": "sp-sky-object-and-layer-panel",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"sky-object-and-layer-panel\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"sky-object-and-layer-panel\"][data-specimen=\"sp-sky-object-and-layer-panel\"]",
+          "implementationContractKey": "controls.sky-object-and-layer-panel",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "sky-time-scrubber",
+          "id": "sky-time-scrubber",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "stale",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "stale",
+            "unknown"
+          ],
+          "interaction": "1:1 拖动 19:30–04:30，连续更新方位、高度与天空。",
+          "family": "time-scrubber",
+          "section": "sky-shooting",
+          "specimenKey": "sp-sky-time-scrubber",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"sky-time-scrubber\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"sky-time-scrubber\"][data-specimen=\"sp-sky-time-scrubber\"]",
+          "implementationContractKey": "controls.sky-time-scrubber",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "orientation-follow-toggle",
+          "id": "orientation-follow-toggle",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "degraded",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "degraded",
+            "disabled"
+          ],
+          "interaction": "启停方向跟随；无传感器时转为手动方向。",
+          "family": "sensor-toggle",
+          "section": "sky-shooting",
+          "specimenKey": "sp-orientation-follow-toggle",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"orientation-follow-toggle\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"orientation-follow-toggle\"][data-specimen=\"sp-orientation-follow-toggle\"]",
+          "implementationContractKey": "controls.orientation-follow-toggle",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "orientation-calibration-sheet",
+          "id": "orientation-calibration-sheet",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "degraded",
+            "error"
+          ],
+          "states": [
+            "success",
+            "degraded",
+            "error"
+          ],
+          "interaction": "打开校准说明并可选择手动校准。",
+          "family": "calibration-sheet",
+          "section": "sky-shooting",
+          "specimenKey": "sp-orientation-calibration-sheet",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"orientation-calibration-sheet\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"orientation-calibration-sheet\"][data-specimen=\"sp-orientation-calibration-sheet\"]",
+          "implementationContractKey": "controls.orientation-calibration-sheet",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "obstruction-and-trajectory-overlay",
+          "id": "obstruction-and-trajectory-overlay",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "partial"
+          ],
+          "interaction": "切换遮挡与未来 90 分钟轨迹叠层。",
+          "family": "trajectory-overlay",
+          "section": "sky-shooting",
+          "specimenKey": "sp-obstruction-and-trajectory-overlay",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"obstruction-and-trajectory-overlay\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"obstruction-and-trajectory-overlay\"][data-specimen=\"sp-obstruction-and-trajectory-overlay\"]",
+          "implementationContractKey": "controls.obstruction-and-trajectory-overlay",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "field-of-view-overlay",
+          "id": "field-of-view-overlay",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "empty"
+          ],
+          "states": [
+            "success",
+            "empty"
+          ],
+          "interaction": "选择器材视场，画布同步显示取景边界。",
+          "family": "field-of-view",
+          "section": "sky-shooting",
+          "specimenKey": "sp-field-of-view-overlay",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"field-of-view-overlay\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"field-of-view-overlay\"][data-specimen=\"sp-field-of-view-overlay\"]",
+          "implementationContractKey": "controls.field-of-view-overlay",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "sky-orientation-ar",
+          "stableControlId": "ar-mode-toggle",
+          "id": "ar-mode-toggle",
+          "route": "/sky",
+          "sourceStates": [
+            "success",
+            "degraded",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "degraded",
+            "disabled"
+          ],
+          "interaction": "尝试 AR；桌面原型诚实降级为方向演示。",
+          "family": "capability-toggle",
+          "section": "sky-shooting",
+          "specimenKey": "sp-ar-mode-toggle",
+          "prototypeLocator": "source:index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"ar-mode-toggle\"]",
+          "atlasLocator": "index.html [data-outcome=\"sky-orientation-ar\"][data-control=\"ar-mode-toggle\"][data-specimen=\"sp-ar-mode-toggle\"]",
+          "implementationContractKey": "controls.ar-mode-toggle",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "shooting-assistant",
+      "label": "摄影助手",
+      "route": "/shooting",
+      "entry": "天空 → 摄影助手",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "partial",
+        "unknown",
+        "error",
+        "disabled",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "shooting-assistant",
+          "stableControlId": "shooting-setup-form",
+          "id": "shooting-setup-form",
+          "route": "/shooting",
+          "sourceStates": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "interaction": "选择机身、镜头、焦距与赤道仪；失焦验证。",
+          "family": "equipment-form",
+          "section": "sky-shooting",
+          "specimenKey": "sp-shooting-setup-form",
+          "prototypeLocator": "source:index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-setup-form\"]",
+          "atlasLocator": "index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-setup-form\"][data-specimen=\"sp-shooting-setup-form\"]",
+          "implementationContractKey": "controls.shooting-setup-form",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "shooting-assistant",
+          "stableControlId": "shooting-preset-picker",
+          "id": "shooting-preset-picker",
+          "route": "/shooting",
+          "sourceStates": [
+            "success",
+            "empty"
+          ],
+          "states": [
+            "success",
+            "empty"
+          ],
+          "interaction": "选择银河广角 / 星轨 / 深空入门样例预设。",
+          "family": "preset-picker",
+          "section": "sky-shooting",
+          "specimenKey": "sp-shooting-preset-picker",
+          "prototypeLocator": "source:index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-preset-picker\"]",
+          "atlasLocator": "index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-preset-picker\"][data-specimen=\"sp-shooting-preset-picker\"]",
+          "implementationContractKey": "controls.shooting-preset-picker",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "shooting-assistant",
+          "stableControlId": "shooting-recommendation",
+          "id": "shooting-recommendation",
+          "route": "/shooting",
+          "sourceStates": [
+            "success",
+            "loading",
+            "partial"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "partial"
+          ],
+          "interaction": "查看曝光、光圈、ISO、张数与时长建议并应用。",
+          "family": "parameter-recommendation",
+          "section": "sky-shooting",
+          "specimenKey": "sp-shooting-recommendation",
+          "prototypeLocator": "source:index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-recommendation\"]",
+          "atlasLocator": "index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-recommendation\"][data-specimen=\"sp-shooting-recommendation\"]",
+          "implementationContractKey": "controls.shooting-recommendation",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "shooting-assistant",
+          "stableControlId": "ai-explanation-panel",
+          "id": "ai-explanation-panel",
+          "route": "/shooting",
+          "sourceStates": [
+            "success",
+            "unknown",
+            "error"
+          ],
+          "states": [
+            "success",
+            "unknown",
+            "error"
+          ],
+          "interaction": "展开规则化解释、假设与不确定性；不宣称 AI 保证。",
+          "family": "explanation-disclosure",
+          "section": "sky-shooting",
+          "specimenKey": "sp-ai-explanation-panel",
+          "prototypeLocator": "source:index.html [data-outcome=\"shooting-assistant\"][data-control=\"ai-explanation-panel\"]",
+          "atlasLocator": "index.html [data-outcome=\"shooting-assistant\"][data-control=\"ai-explanation-panel\"][data-specimen=\"sp-ai-explanation-panel\"]",
+          "implementationContractKey": "controls.ai-explanation-panel",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "shooting-assistant",
+          "stableControlId": "shooting-checklist",
+          "id": "shooting-checklist",
+          "route": "/shooting",
+          "sourceStates": [
+            "success",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "saving"
+          ],
+          "interaction": "逐项勾选对焦、稳定、露水与存储准备。",
+          "family": "task-checklist",
+          "section": "sky-shooting",
+          "specimenKey": "sp-shooting-checklist",
+          "prototypeLocator": "source:index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-checklist\"]",
+          "atlasLocator": "index.html [data-outcome=\"shooting-assistant\"][data-control=\"shooting-checklist\"][data-specimen=\"sp-shooting-checklist\"]",
+          "implementationContractKey": "controls.shooting-checklist",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "shooting-assistant",
+          "stableControlId": "save-shooting-plan",
+          "id": "save-shooting-plan",
+          "route": "/shooting",
+          "sourceStates": [
+            "success",
+            "saving",
+            "error"
+          ],
+          "states": [
+            "success",
+            "saving",
+            "error"
+          ],
+          "interaction": "保存到当前行程 revision，并可撤销。",
+          "family": "save-action",
+          "section": "sky-shooting",
+          "specimenKey": "sp-save-shooting-plan",
+          "prototypeLocator": "source:index.html [data-outcome=\"shooting-assistant\"][data-control=\"save-shooting-plan\"]",
+          "atlasLocator": "index.html [data-outcome=\"shooting-assistant\"][data-control=\"save-shooting-plan\"][data-specimen=\"sp-save-shooting-plan\"]",
+          "implementationContractKey": "controls.save-shooting-plan",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "field-offline-safety",
+      "label": "现场 / 离线 / 安全",
+      "route": "/field",
+      "entry": "行程 → 进入现场；今晚 → 现场模式",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "stale",
+        "partial",
+        "degraded",
+        "error",
+        "disabled",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "offline-pack-manager",
+          "id": "offline-pack-manager",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "loading",
+            "partial",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "partial",
+            "error"
+          ],
+          "interaction": "下载 / 更新 / 删除样例离线包；显示许可、大小与缓存时间。",
+          "family": "offline-package",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-offline-pack-manager",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"offline-pack-manager\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"offline-pack-manager\"][data-specimen=\"sp-offline-pack-manager\"]",
+          "implementationContractKey": "controls.offline-pack-manager",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "field-dashboard",
+          "id": "field-dashboard",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "stale",
+            "degraded"
+          ],
+          "states": [
+            "success",
+            "stale",
+            "degraded"
+          ],
+          "interaction": "单手查看当前地点、剩余窗口、返程与安全状态。",
+          "family": "field-dashboard",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-field-dashboard",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"field-dashboard\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"field-dashboard\"][data-specimen=\"sp-field-dashboard\"]",
+          "implementationContractKey": "controls.field-dashboard",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "night-red-mode-toggle",
+          "id": "night-red-mode-toggle",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "disabled"
+          ],
+          "interaction": "在规划 / 夜间 / 红光间切换；信息架构与位置不变。",
+          "family": "field-mode-switch",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-night-red-mode-toggle",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"night-red-mode-toggle\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"night-red-mode-toggle\"][data-specimen=\"sp-night-red-mode-toggle\"]",
+          "implementationContractKey": "controls.night-red-mode-toggle",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "field-tool-grid",
+          "id": "field-tool-grid",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "disabled"
+          ],
+          "interaction": "打开计时、水平仪、手电提示与摄影计划工具。",
+          "family": "tool-grid",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-field-tool-grid",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"field-tool-grid\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"field-tool-grid\"][data-specimen=\"sp-field-tool-grid\"]",
+          "implementationContractKey": "controls.field-tool-grid",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "return-to-parking",
+          "id": "return-to-parking",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "degraded",
+            "error"
+          ],
+          "states": [
+            "success",
+            "degraded",
+            "error"
+          ],
+          "interaction": "显示返车方向、距离与离线路线；不提供安全保证。",
+          "family": "offline-wayfinding",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-return-to-parking",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"return-to-parking\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"return-to-parking\"][data-specimen=\"sp-return-to-parking\"]",
+          "implementationContractKey": "controls.return-to-parking",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "backup-switcher",
+          "id": "backup-switcher",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "saving"
+          ],
+          "interaction": "因云量或风险切换主备地点并同步行程 revision。",
+          "family": "backup-selector",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-backup-switcher",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"backup-switcher\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"backup-switcher\"][data-specimen=\"sp-backup-switcher\"]",
+          "implementationContractKey": "controls.backup-switcher",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "safety-session-panel",
+          "id": "safety-session-panel",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "stale",
+            "error"
+          ],
+          "states": [
+            "success",
+            "stale",
+            "error"
+          ],
+          "interaction": "设置返程提醒与失联升级；危险停止需二次确认。",
+          "family": "safety-session",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-safety-session-panel",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"safety-session-panel\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"safety-session-panel\"][data-specimen=\"sp-safety-session-panel\"]",
+          "implementationContractKey": "controls.safety-session-panel",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "location-share-action",
+          "id": "location-share-action",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "disabled",
+            "error"
+          ],
+          "states": [
+            "success",
+            "disabled",
+            "error"
+          ],
+          "interaction": "确认范围与时限后生成本地样例分享状态，不真实发送。",
+          "family": "location-share",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-location-share-action",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"location-share-action\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"location-share-action\"][data-specimen=\"sp-location-share-action\"]",
+          "implementationContractKey": "controls.location-share-action",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "field-offline-safety",
+          "stableControlId": "offline-sync-queue",
+          "id": "offline-sync-queue",
+          "route": "/field",
+          "sourceStates": [
+            "success",
+            "empty",
+            "saving",
+            "error"
+          ],
+          "states": [
+            "success",
+            "empty",
+            "saving",
+            "error"
+          ],
+          "interaction": "查看待同步条目、重试与冲突；三次失败后显示错误 ID。",
+          "family": "sync-queue",
+          "section": "field-offline-safety",
+          "specimenKey": "sp-offline-sync-queue",
+          "prototypeLocator": "source:index.html [data-outcome=\"field-offline-safety\"][data-control=\"offline-sync-queue\"]",
+          "atlasLocator": "index.html [data-outcome=\"field-offline-safety\"][data-control=\"offline-sync-queue\"][data-specimen=\"sp-offline-sync-queue\"]",
+          "implementationContractKey": "controls.offline-sync-queue",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "community-contribution",
+      "label": "贡献 / 实况 / 评价 / 纠错",
+      "route": "/contribute",
+      "entry": "地点详情 → 贡献实况；我的 → 我的贡献",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "partial",
+        "error",
+        "disabled",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "community-contribution",
+          "stableControlId": "new-spot-wizard",
+          "id": "new-spot-wizard",
+          "route": "/contribute",
+          "sourceStates": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "interaction": "分步提交候选地点坐标、到达与证据；草稿保留。",
+          "family": "contribution-wizard",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-new-spot-wizard",
+          "prototypeLocator": "source:index.html [data-outcome=\"community-contribution\"][data-control=\"new-spot-wizard\"]",
+          "atlasLocator": "index.html [data-outcome=\"community-contribution\"][data-control=\"new-spot-wizard\"][data-specimen=\"sp-new-spot-wizard\"]",
+          "implementationContractKey": "controls.new-spot-wizard",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "community-contribution",
+          "stableControlId": "field-report-form",
+          "id": "field-report-form",
+          "route": "/contribute",
+          "sourceStates": [
+            "success",
+            "partial",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "partial",
+            "saving"
+          ],
+          "interaction": "提交云量、能见度、风与现场风险的时效实况。",
+          "family": "field-report",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-field-report-form",
+          "prototypeLocator": "source:index.html [data-outcome=\"community-contribution\"][data-control=\"field-report-form\"]",
+          "atlasLocator": "index.html [data-outcome=\"community-contribution\"][data-control=\"field-report-form\"][data-specimen=\"sp-field-report-form\"]",
+          "implementationContractKey": "controls.field-report-form",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "community-contribution",
+          "stableControlId": "multidimensional-review-form",
+          "id": "multidimensional-review-form",
+          "route": "/contribute",
+          "sourceStates": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "interaction": "按黑暗度、视野、到达、安全与设施评价。",
+          "family": "rating-form",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-multidimensional-review-form",
+          "prototypeLocator": "source:index.html [data-outcome=\"community-contribution\"][data-control=\"multidimensional-review-form\"]",
+          "atlasLocator": "index.html [data-outcome=\"community-contribution\"][data-control=\"multidimensional-review-form\"][data-specimen=\"sp-multidimensional-review-form\"]",
+          "implementationContractKey": "controls.multidimensional-review-form",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "community-contribution",
+          "stableControlId": "correction-report",
+          "id": "correction-report",
+          "route": "/contribute",
+          "sourceStates": [
+            "success",
+            "empty",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "empty",
+            "saving"
+          ],
+          "interaction": "选择待纠错事实、填写依据并保存草稿。",
+          "family": "correction-form",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-correction-report",
+          "prototypeLocator": "source:index.html [data-outcome=\"community-contribution\"][data-control=\"correction-report\"]",
+          "atlasLocator": "index.html [data-outcome=\"community-contribution\"][data-control=\"correction-report\"][data-specimen=\"sp-correction-report\"]",
+          "implementationContractKey": "controls.correction-report",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "community-contribution",
+          "stableControlId": "media-privacy-review",
+          "id": "media-privacy-review",
+          "route": "/contribute",
+          "sourceStates": [
+            "success",
+            "error",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "error",
+            "disabled"
+          ],
+          "interaction": "确认人脸、车牌、定位与拍摄时间披露范围。",
+          "family": "media-privacy",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-media-privacy-review",
+          "prototypeLocator": "source:index.html [data-outcome=\"community-contribution\"][data-control=\"media-privacy-review\"]",
+          "atlasLocator": "index.html [data-outcome=\"community-contribution\"][data-control=\"media-privacy-review\"][data-specimen=\"sp-media-privacy-review\"]",
+          "implementationContractKey": "controls.media-privacy-review",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "community-contribution",
+          "stableControlId": "contribution-status-center",
+          "id": "contribution-status-center",
+          "route": "/contribute",
+          "sourceStates": [
+            "success",
+            "loading",
+            "empty",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "empty",
+            "error"
+          ],
+          "interaction": "查看草稿、审核中、需补充与已采纳状态。",
+          "family": "status-center",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-contribution-status-center",
+          "prototypeLocator": "source:index.html [data-outcome=\"community-contribution\"][data-control=\"contribution-status-center\"]",
+          "atlasLocator": "index.html [data-outcome=\"community-contribution\"][data-control=\"contribution-status-center\"][data-specimen=\"sp-contribution-status-center\"]",
+          "implementationContractKey": "controls.contribution-status-center",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "notifications-and-toolbox",
+      "label": "条件通知 / 专业工具",
+      "route": "/toolbox",
+      "entry": "我的 → 通知与工具箱",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "no-results",
+        "stale",
+        "error",
+        "disabled",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "notifications-and-toolbox",
+          "stableControlId": "notification-rule-editor",
+          "id": "notification-rule-editor",
+          "route": "/toolbox",
+          "sourceStates": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "error",
+            "saving"
+          ],
+          "interaction": "编辑云量、透明度、地点与提前量规则；权限拒绝后保留规则。",
+          "family": "notification-rule",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-notification-rule-editor",
+          "prototypeLocator": "source:index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"notification-rule-editor\"]",
+          "atlasLocator": "index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"notification-rule-editor\"][data-specimen=\"sp-notification-rule-editor\"]",
+          "implementationContractKey": "controls.notification-rule-editor",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "notifications-and-toolbox",
+          "stableControlId": "notification-settings-center",
+          "id": "notification-settings-center",
+          "route": "/toolbox",
+          "sourceStates": [
+            "success",
+            "disabled",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "disabled",
+            "saving"
+          ],
+          "interaction": "管理系统权限、静默时段、频率与渠道说明。",
+          "family": "notification-settings",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-notification-settings-center",
+          "prototypeLocator": "source:index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"notification-settings-center\"]",
+          "atlasLocator": "index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"notification-settings-center\"][data-specimen=\"sp-notification-settings-center\"]",
+          "implementationContractKey": "controls.notification-settings-center",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "notifications-and-toolbox",
+          "stableControlId": "notification-message-deeplink",
+          "id": "notification-message-deeplink",
+          "route": "/toolbox",
+          "sourceStates": [
+            "success",
+            "stale",
+            "error"
+          ],
+          "states": [
+            "success",
+            "stale",
+            "error"
+          ],
+          "interaction": "打开样例通知并跳转到对应地点 / 夜晚上下文。",
+          "family": "notification-deeplink",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-notification-message-deeplink",
+          "prototypeLocator": "source:index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"notification-message-deeplink\"]",
+          "atlasLocator": "index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"notification-message-deeplink\"][data-specimen=\"sp-notification-message-deeplink\"]",
+          "implementationContractKey": "controls.notification-message-deeplink",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "notifications-and-toolbox",
+          "stableControlId": "toolbox-index",
+          "id": "toolbox-index",
+          "route": "/toolbox",
+          "sourceStates": [
+            "success",
+            "empty"
+          ],
+          "states": [
+            "success",
+            "empty"
+          ],
+          "interaction": "打开天象、月相、视场与曝光工具。",
+          "family": "toolbox-index",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-toolbox-index",
+          "prototypeLocator": "source:index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"toolbox-index\"]",
+          "atlasLocator": "index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"toolbox-index\"][data-specimen=\"sp-toolbox-index\"]",
+          "implementationContractKey": "controls.toolbox-index",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "notifications-and-toolbox",
+          "stableControlId": "celestial-event-detail",
+          "id": "celestial-event-detail",
+          "route": "/toolbox",
+          "sourceStates": [
+            "success",
+            "stale",
+            "unknown"
+          ],
+          "states": [
+            "success",
+            "stale",
+            "unknown"
+          ],
+          "interaction": "查看英仙座流星雨样例窗口、方向与来源。",
+          "family": "event-detail",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-celestial-event-detail",
+          "prototypeLocator": "source:index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"celestial-event-detail\"]",
+          "atlasLocator": "index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"celestial-event-detail\"][data-specimen=\"sp-celestial-event-detail\"]",
+          "implementationContractKey": "controls.celestial-event-detail",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "notifications-and-toolbox",
+          "stableControlId": "astronomy-calculator-form",
+          "id": "astronomy-calculator-form",
+          "route": "/toolbox",
+          "sourceStates": [
+            "success",
+            "error"
+          ],
+          "states": [
+            "success",
+            "error"
+          ],
+          "interaction": "输入焦距、传感器与赤纬，计算样例视场 / 最长曝光。",
+          "family": "calculator-form",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-astronomy-calculator-form",
+          "prototypeLocator": "source:index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"astronomy-calculator-form\"]",
+          "atlasLocator": "index.html [data-outcome=\"notifications-and-toolbox\"][data-control=\"astronomy-calculator-form\"][data-specimen=\"sp-astronomy-calculator-form\"]",
+          "implementationContractKey": "controls.astronomy-calculator-form",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    },
+    {
+      "id": "identity-profile-privacy",
+      "label": "账号 / 个人 / 设备 / 隐私",
+      "route": "/me",
+      "entry": "一级 Tab：我的",
+      "states": [
+        "success",
+        "loading",
+        "empty",
+        "partial",
+        "error",
+        "disabled",
+        "saving"
+      ],
+      "controls": [
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "auth-gate-sheet",
+          "id": "auth-gate-sheet",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "interaction": "选择继续游客模式或打开本地登录样例；不进行真实认证。",
+          "family": "auth-gate",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-auth-gate-sheet",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"auth-gate-sheet\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"auth-gate-sheet\"][data-specimen=\"sp-auth-gate-sheet\"]",
+          "implementationContractKey": "controls.auth-gate-sheet",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "guest-data-merge",
+          "id": "guest-data-merge",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "partial",
+            "error",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "partial",
+            "error",
+            "saving"
+          ],
+          "interaction": "预览游客数据合并范围与冲突，再二次确认。",
+          "family": "merge-flow",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-guest-data-merge",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"guest-data-merge\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"guest-data-merge\"][data-specimen=\"sp-guest-data-merge\"]",
+          "implementationContractKey": "controls.guest-data-merge",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "profile-hub",
+          "id": "profile-hub",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "loading",
+            "empty"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "empty"
+          ],
+          "interaction": "查看个人摘要、偏好、贡献与同步状态。",
+          "family": "profile-summary",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-profile-hub",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"profile-hub\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"profile-hub\"][data-specimen=\"sp-profile-hub\"]",
+          "implementationContractKey": "controls.profile-hub",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "content-library-browser",
+          "id": "content-library-browser",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "loading",
+            "empty",
+            "no-results"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "empty",
+            "no-results"
+          ],
+          "interaction": "筛选已存地点、行程、摄影计划与离线包。",
+          "family": "library-browser",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-content-library-browser",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"content-library-browser\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"content-library-browser\"][data-specimen=\"sp-content-library-browser\"]",
+          "implementationContractKey": "controls.content-library-browser",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "equipment-manager",
+          "id": "equipment-manager",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "empty",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "empty",
+            "saving"
+          ],
+          "interaction": "添加、编辑或移除相机、镜头、望远镜与三脚架样例。",
+          "family": "equipment-manager",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-equipment-manager",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"equipment-manager\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"equipment-manager\"][data-specimen=\"sp-equipment-manager\"]",
+          "implementationContractKey": "controls.equipment-manager",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "session-security",
+          "id": "session-security",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "interaction": "查看本机样例会话、撤销设备需二次确认。",
+          "family": "session-security",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-session-security",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"session-security\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"session-security\"][data-specimen=\"sp-session-security\"]",
+          "implementationContractKey": "controls.session-security",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "privacy-center",
+          "id": "privacy-center",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "saving"
+          ],
+          "states": [
+            "success",
+            "saving"
+          ],
+          "interaction": "设置精确位置、历史保留、贡献署名与诊断数据。",
+          "family": "privacy-settings",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-privacy-center",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"privacy-center\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"privacy-center\"][data-specimen=\"sp-privacy-center\"]",
+          "implementationContractKey": "controls.privacy-center",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "export-delete-flow",
+          "id": "export-delete-flow",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "loading",
+            "error",
+            "disabled"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "error",
+            "disabled"
+          ],
+          "interaction": "导出样例数据或经影响说明与二次确认进入删除流程。",
+          "family": "danger-flow",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-export-delete-flow",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"export-delete-flow\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"export-delete-flow\"][data-specimen=\"sp-export-delete-flow\"]",
+          "implementationContractKey": "controls.export-delete-flow",
+          "dedicated": true,
+          "shared": false,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        },
+        {
+          "outcome": "identity-profile-privacy",
+          "stableControlId": "help-and-source-center",
+          "id": "help-and-source-center",
+          "route": "/me",
+          "sourceStates": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "states": [
+            "success",
+            "loading",
+            "error"
+          ],
+          "interaction": "查看术语、数据来源、许可、版本与已知限制。",
+          "family": "source-help",
+          "section": "contribution-toolbox-identity",
+          "specimenKey": "sp-help-and-source-center",
+          "prototypeLocator": "source:index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"help-and-source-center\"]",
+          "atlasLocator": "index.html [data-outcome=\"identity-profile-privacy\"][data-control=\"help-and-source-center\"][data-specimen=\"sp-help-and-source-center\"]",
+          "implementationContractKey": "controls.help-and-source-center",
+          "dedicated": false,
+          "shared": true,
+          "modes": [
+            "planning",
+            "night",
+            "red-light"
+          ],
+          "candidateStatus": "ordinary Source",
+          "selectionStatus": "unselected candidate"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "status": "pass",
+    "executedAt": "2026-07-22T06:46:37+08:00",
+    "copiedFromV2IndexSha256": "de7ff22088b1a0ab839ebd18c648d79191c5c1ce7bbe63e5c9117d7f2319c9f1",
+    "currentV3IndexSha256": "c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a",
+    "semanticMappingUnchanged": true,
+    "static": "12/83 exact order-route-states-interaction; 83 specimens; 83 records x 15 fields; 12 page assemblies; references/IDs/dependencies/filter/44px/focus/reduced-motion/red contrast pass.",
+    "dynamic": "Raw HTTP: initial console/runtime errors 0; 10 Inspector tabs; selected-spot-sheet exact Visual/API/Motion; A/C/D/E branches; three modes; Text 200%; reduced motion; 1440x900, 1024x768, 820x900; keyboard focus pass.",
+    "candidateStatus": "ordinary Source",
+    "selectionStatus": "unselected candidate"
+  }
+}

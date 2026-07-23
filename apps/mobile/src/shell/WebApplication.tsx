@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Linking from "expo-linking";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -18,17 +19,21 @@ import { ToolsScreen } from "../features/notifications/ToolsScreen";
 import { AdminOperationsScreen } from "../features/admin/AdminOperationsScreen";
 import { QualityScreen } from "../features/admin/QualityScreen";
 import { MobileShellScreen } from "./MobileShellScreen";
+import { useNativeRouteUrl } from "./native-route-store";
+import { normalizeApplicationPathname } from "./application-route";
 
-function currentLocation() {
-  if (Platform.OS !== "web" || typeof window === "undefined") return { pathname: "/" };
-  const url = new URL(window.location.href);
-  return {
-    pathname: url.pathname.replace(/\/$/u, "") || "/",
-  };
+function currentPathname(nativeUrl: string | null) {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return normalizeApplicationPathname(new URL(window.location.href).pathname);
+  }
+  const parsedPath = nativeUrl ? Linking.parse(nativeUrl).path : null;
+  const pathname = parsedPath ? `/${parsedPath.replace(/^\/+|\/+$/gu, "")}` : "/";
+  return normalizeApplicationPathname(pathname);
 }
 
 function CurrentScreen() {
-  const { pathname } = currentLocation();
+  const nativeUrl = useNativeRouteUrl();
+  const pathname = currentPathname(nativeUrl);
   if (pathname === "/forecast") return <ForecastScreen />;
   if (pathname === "/profile") return <ProfilePrivacyScreen />;
   if (pathname === "/tonight") return <TonightScreen />;

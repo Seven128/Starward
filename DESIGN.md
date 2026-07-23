@@ -16,11 +16,19 @@ colors:
   success: "#52C41A"
   warning: "#FAAD14"
   error: "#FF4D4F"
-  night-canvas: "#1D1D1D"
-  night-surface: "#141414"
+  night-canvas: "#111111"
+  night-surface: "#111111"
   night-surface-elevated: "#272727"
-  night-text: "#DCDCDC"
-  night-primary: "#3983DC"
+  night-text: "#FFFFFF"
+  night-text-muted: "#D9DEE7"
+  night-border: "#6B7280"
+  night-primary: "#1677FF"
+  red-canvas: "#050000"
+  red-surface: "#170000"
+  red-text: "#FF9B9B"
+  red-text-muted: "#E77474"
+  red-border: "#A63F3F"
+  red-primary: "#FF5454"
 typography:
   display:
     fontFamily: "Inter"
@@ -47,10 +55,31 @@ typography:
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.57
+  caption:
+    fontFamily: "Inter"
+    fontSize: "0.6875rem"
+    fontWeight: 400
+    lineHeight: 1.5
+  opsDisplay:
+    fontFamily: "Inter"
+    fontSize: "1.5rem"
+    fontWeight: 700
+    lineHeight: 1.25
+  opsTitle:
+    fontFamily: "Inter"
+    fontSize: "1rem"
+    fontWeight: 700
+    lineHeight: 1.3125
+  opsData:
+    fontFamily: "SFMono-Regular"
+    fontSize: "0.75rem"
+    fontWeight: 400
+    lineHeight: 1.58
 rounded:
   sm: 5px
   md: 8px
   lg: 16px
+  sheet: 24px
   pill: 999px
 spacing:
   xxs: 4px
@@ -97,6 +126,14 @@ components:
 - The experience should feel credible, calm, precise, exploratory, outdoors-oriented, and intelligent. Technology is expressed through clear information organization and continuous time/space graphics, not science-fiction decoration.
 - Information follows progressive disclosure: first the conclusion, then an actionable plan, then the professional evidence.
 - This file is the authored visual authority. Generated CSS, JSON, HTML kits, and previews under docs/design-system/ are downstream reference artifacts.
+- Design Authority status: configured and adopted for the current owner-only target profile. Surface ownership still belongs to `project_context/**`, and production/runtime acceptance still belongs to the Delivery Contract and project verification.
+- Unique authored exact-value token source: this file's YAML front matter. Generation direction is `DESIGN.md` → `packages/ui-system/src/tokens.ts` and platform adapters → optional exports under `docs/design-system/**`; TypeScript, CSS, JSON, target manifests, and screenshots are consumers or verification inputs, never co-equal token authorities.
+- Selected design target registry:
+  - `target.mobile-product-pages-v2` — constraint; `docs/design-targets/mobile-product-pages-v2/index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271`, coverage manifest SHA-256 `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`; controls 390×844 composition, 12 mobile surfaces, five primary tabs, declared modes/states, and immersive Map/Sky layout, not sample facts or native behavior.
+  - `target.ops-product-pages-v1` — constraint; `docs/design-targets/ops-product-pages-v1/index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5`, coverage manifest SHA-256 `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`; controls the two operations Outcomes, seven workspace compositions, responsive desktop hierarchy, and guarded-action space, not backend behavior.
+  - `target.mobile-controls-v3` — exact-target only within declared coverage; `docs/design-targets/mobile-controls-v3/implementation-contract.json` SHA-256 `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4`, interactive projection SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`; controls the declared fields for 83 stable controls, 12 page assemblies, 208 scenarios and A–F flows, but does not prove native physics, sensors, haptics, performance, production media, or live services.
+  - `target.ops-controls-v2` — exact-target only within declared coverage; `docs/design-targets/ops-controls-v2/implementation-contract.json` SHA-256 `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388`, interactive projection SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`; controls the declared fields for 12 stable operations controls, seven page assemblies, 32 scenarios and REV-43, but does not prove authentication, authorization, API, audit, release, backup, or restore effects.
+- Target precedence is closed: product, safety, privacy, and surface meaning come from Source/Context; this file owns system token meaning; page constraints own declared composition; control JSON owns its declared per-control details and supersedes only its own HTML projection. A conflict with an upper owner fails closed and requires an authority revision.
 - This document is complete and normative on its own. `.codex/skills/uiux_design/SKILL.md` is the React Native implementation companion for applying these rules; it must read and obey this file and the Source Plan, and cannot redefine or override either one. This pointer is for discoverability, not a reciprocal authority dependency.
 
 ## Colors
@@ -105,8 +142,8 @@ components:
 - 航迹蓝 is a high-signal color. Prefer one primary action and one key selected state per screen; do not use it as a large decorative background.
 - Text-bearing primary controls use the darker primary-active token when normal-size white labels need WCAG AA contrast; the brighter primary remains available for routes, nodes, and non-text emphasis.
 - Semantic green, yellow, and red communicate data meaning or operational state. They do not replace the brand roles.
-- Night observing mode keeps the same information architecture while reducing luminance and using multiple dark surfaces with restrained cool-blue emphasis. Avoid a featureless pure-black product shell and broad glow.
-- Red-light field mode preserves structure and navigation while switching to a very-low-luminance warm-red hierarchy. It must not introduce blue highlights, broad white surfaces, flashing, or ambient decoration.
+- Night observing mode keeps the same information architecture while reducing luminance. The selected mobile target uses `night-canvas` and `night-surface` as the same low-luminance base, then uses borders, spacing, text hierarchy, and the optional elevated surface for depth; avoid a featureless undifferentiated shell and broad glow.
+- Red-light field mode preserves structure and navigation while switching to the registered low-luminance warm-red token hierarchy. It must not introduce blue highlights, broad white surfaces, CSS whole-screen filters, flashing, or ambient decoration.
 - Text and controls must retain readable contrast in every mode; selection cannot rely on color alone.
 
 ## Typography

@@ -48,15 +48,21 @@
 
 - Visual authority: DESIGN.md.
 - Product context: project_context/global.md and this file.
+- Cross-surface responsibility: project_context/areas/main/product-surface-contract.md.
+- Screen/route/control ownership: project_context/areas/main/screen-contracts.md.
 - Imported design references: docs/design-system/.
+- Selected authored targets: docs/design-targets/; their immutable files are never edited as production UI.
 - React Native interaction companion: .codex/skills/uiux_design/SKILL.md; it must obey DESIGN.md, Source Plan, and this Context.
 - Provider/data research input: docs/technical-data-source-decisions.md; recommendations are not approved production facts by themselves.
 - Production source entry points are not established yet.
 
 ## Related Role Context
 
+- Cross-surface ownership lives in project_context/areas/main/product-surface-contract.md.
+- Screen and material-control routing lives in project_context/areas/main/screen-contracts.md.
 - Repeatable checks live in project_context/areas/main/verification.md.
 
 ## Open Risks
 
 - Provider contracts, exact dependency versions, algorithm/interaction tuning, offline/degraded defaults, location privacy, route handoff, data calibration, and production infrastructure remain open and require evidence plus Context updates before implementation.
+- Nine selected mobile controls still require representative-device tuning, capability proof or licensed production media, and all twelve operations controls still require real endpoint/authentication/authorization proof. These are downstream implementation/evidence obligations rather than authority gaps.

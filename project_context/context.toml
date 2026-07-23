@@ -17,7 +17,19 @@ default = true
 path = "project_context/areas/main/verification.md"
 role = "verification"
 read_policy = "default"
-triggers = ["test", "verify", "verification", "smoke", "ci"]
+triggers = ["test", "verify", "verification", "smoke", "ci", "dev", "development", "debug", "build", "metro", "gradle", "android", "开发", "测试", "调试", "构建", "热更新"]
+
+[[context]]
+path = "project_context/areas/main/product-surface-contract.md"
+role = "contract"
+read_policy = "on-demand"
+triggers = ["surface", "screen", "ui", "ux", "mobile", "operations", "admin", "页面", "界面", "屏幕", "产品接触面", "信息架构", "页面职责", "界面职责"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["screen contract", "surface key", "control key", "route", "target.mobile", "target.ops", "控件", "路由", "页面契约", "目标设计稿"]
 
 # Example optional node:
 # [[context]]

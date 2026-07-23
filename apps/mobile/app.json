@@ -4,6 +4,9 @@
     "slug": "starward",
     "scheme": "starward",
     "version": "0.1.0",
+    "extra": {
+      "apiBaseUrl": "http://10.0.2.2:4318"
+    },
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -52,7 +55,8 @@
             "compileSdkVersion": 36,
             "targetSdkVersion": 36,
             "buildToolsVersion": "36.0.0",
-            "useDayNightTheme": true
+            "useDayNightTheme": true,
+            "usesCleartextTraffic": true
           }
         }
       ],

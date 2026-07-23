@@ -22,6 +22,7 @@ async function availableLoopbackPort() {
 
 export default defineConfig({
   testDir: "./ui",
+  testMatch: "starward.spec.mjs",
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,

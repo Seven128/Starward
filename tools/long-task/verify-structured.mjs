@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { tsImport } from "tsx/esm/api";
 import { structuredContracts, validateStructuredContracts } from "../../tests/acceptance/structured/contracts.mjs";
+import { structuredEvidenceCapabilities } from "../../tests/acceptance/structured/evidence-policy.mjs";
 import { configureTypeScriptImporter, runStructuredProbe } from "../../tests/acceptance/structured/probes.mjs";
 
 configureTypeScriptImporter(tsImport);
@@ -41,14 +42,32 @@ if (carrier.replaceAll("\\", "/") !== spec.carrier.replaceAll("\\", "/")) throw 
 
 const contractOutcome = spec.outcome;
 const observations = {};
+const evidenceRecords = [];
 const diagnostics = [];
 let population = null;
 let carrierReady = false;
+let carrierEvidence = null;
 
 try {
-  carrierReady = (await runStructuredProbe({ root, outcome: requestedOutcome, carrier, probeName: "carrier-integrity" })).passes === true;
+  const carrierResult = await runStructuredProbe({ root, outcome: contractOutcome, carrier, probeName: "carrier-integrity" });
+  carrierReady = carrierResult.passes === true;
+  carrierEvidence = carrierResult.evidence ?? null;
 } catch (error) {
   diagnostics.push(`carrier-integrity:${error instanceof Error ? error.message : String(error)}`);
+}
+
+function appendEvidence(assertion, capability) {
+  const value = carrierEvidence?.[capability];
+  if (!value) {
+    diagnostics.push(`${assertion.key}:missing_${capability}_evidence`);
+    return;
+  }
+  const base = { assertion_key: assertion.key, capability };
+  if (capability === "boundary_invocation" || capability === "external_side_effect") {
+    evidenceRecords.push({ ...base, ...value, observer_target_ref: "system-observer" });
+    return;
+  }
+  evidenceRecords.push({ ...base, ...value });
 }
 
 for (const assertion of spec.assertions.filter((item) => item.surface === surface)) {
@@ -57,7 +76,7 @@ for (const assertion of spec.assertions.filter((item) => item.surface === surfac
     try {
       const probeName = structuredContracts[contractOutcome][assertion.key];
       const result = assertion.key === "carrier-integrity"
-        ? { passes: true }
+        ? { passes: true, evidence: carrierEvidence }
         : await runStructuredProbe({ root, outcome: requestedOutcome, carrier, probeName });
       passes = result.passes === true;
       if (result.population) population = result.population;
@@ -66,17 +85,24 @@ for (const assertion of spec.assertions.filter((item) => item.surface === surfac
     }
   }
   observations[assertion.observation] = assertion.observation.endsWith(".violated") ? !passes : passes;
+  if (passes) {
+    for (const capability of structuredEvidenceCapabilities({ outcome: contractOutcome, assertion })) {
+      if (capability !== "presence") appendEvidence(assertion, capability);
+    }
+  }
 }
 
 if (surface === "population_coverage") {
-  observations[`${requestedOutcome}.population.eligible_ids`] = population?.eligibleIds ?? ["fixture-eligible"];
+  if (!population) diagnostics.push(`${requestedOutcome}:population_evidence_missing`);
+  observations[`${requestedOutcome}.population.eligible_ids`] = population?.eligibleIds ?? [];
   observations[`${requestedOutcome}.population.observed_ids`] = population?.observedIds ?? [];
-  observations[`${requestedOutcome}.population.excluded_items`] = population?.excludedItems ?? [{ id: "fixture-eligible", rule: "explicit-ineligible-only" }];
+  observations[`${requestedOutcome}.population.excluded_items`] = population?.excludedItems ?? [];
 }
 
 process.stdout.write(`${JSON.stringify({
-  schema_version: "long-task-check-result-v2",
+  schema_version: "long-task-check-result-v3",
   execution_status: "completed",
   observations,
+  evidence_records: evidenceRecords,
   diagnostics,
 })}\n`);

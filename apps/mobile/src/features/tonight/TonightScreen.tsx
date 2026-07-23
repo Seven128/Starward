@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NightReport, NightReportRequest } from "@starward/contracts/night-report";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
 import { createNightReportClient } from "../../data/night-report-client";
+import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { createTonightContext } from "./index";
 import { useShellStore } from "../../state/shell-store";
+import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 
 type ViewMode = "decision" | "spots" | "target";
 const palette = colors.planning;
-const client = createNightReportClient();
+const client = createNightReportClient({ baseUrl: resolveRuntimeApiBaseUrl() });
 
 function localDate(timezone: string, offsetDays = 0) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(Date.now() + offsetDays * 86_400_000));
@@ -87,6 +89,7 @@ export function TonightScreen() {
   const location = useShellStore((state) => state.location);
   const profiles = useShellStore((state) => state.profiles);
   const activeProfileId = useShellStore((state) => state.activeProfileId);
+  const commitDecisionContext = useShellStore((state) => state.commitDecisionContext);
   const activeProfile = profiles.find((profile) => profile.id === activeProfileId);
   const latitude = location.latitude ?? 22.529;
   const longitude = location.longitude ?? 113.9468;
@@ -105,6 +108,14 @@ export function TonightScreen() {
   const dateValid = /^\d{4}-\d{2}-\d{2}$/u.test(nightDate) && Number.isFinite(Date.parse(`${nightDate}T12:00:00Z`));
   const effectiveLabel = location.latitude === undefined || location.longitude === undefined ? "深圳市 · 南山区（POC 地区默认；未使用文本地点定位）" : location.label;
   const context = createTonightContext({ timezone: "Asia/Shanghai", target: "milky-way-core" });
+  useEffect(() => {
+    commitDecisionContext({
+      observingNight: nightDate,
+      origin: `${latitude.toFixed(4)},${longitude.toFixed(4)}`,
+      profileId: activeProfileId,
+      target: context.target,
+    });
+  }, [activeProfileId, commitDecisionContext, context.target, latitude, longitude, nightDate]);
   const query = useQuery({
     queryKey: ["night-report", latitude, longitude, reportProfile, maxTravelMinutes, nightDate, context.target],
     queryFn: ({ signal }) => client.create(requestForCurrentContext({ latitude, longitude, label: effectiveLabel, profile: reportProfile, maxTravelMinutes, nightDate }), signal),
@@ -116,6 +127,7 @@ export function TonightScreen() {
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.eyebrow}>今晚决策 · {context.timezone}</Text><Text style={styles.title}>值得出发吗？</Text>
       <Text testID="tonight-context" style={styles.context}>{effectiveLabel} · {latitude.toFixed(4)}, {longitude.toFixed(4)} · {nightDate} · {reportProfile} · {location.source === "device" ? "设备位置" : "地区默认/手动上下文"}</Text>
+      <DecisionContextRevision />
       <View style={styles.actions}>
         <Pressable testID="tonight-date-tonight" accessibilityRole="button" onPress={() => setDateMode("tonight")} style={[styles.action, dateMode === "tonight" && styles.actionActive]}><Text style={styles.actionText}>今晚</Text></Pressable>
         <Pressable testID="tonight-date-tomorrow" accessibilityRole="button" onPress={() => setDateMode("tomorrow")} style={[styles.action, dateMode === "tomorrow" && styles.actionActive]}><Text style={styles.actionText}>明晚</Text></Pressable>

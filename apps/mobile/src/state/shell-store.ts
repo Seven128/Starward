@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createUnrestrictedProfile, type PreferenceProfile } from "@starward/domain/preferences";
 import { hydratePreferenceRuntime, persistActiveProfile, persistPreferenceProfile, persistShellDestination, persistShellLocation } from "./preferences-runtime";
+import { advanceDecisionContext, createDecisionContext, type DecisionContextInput, type DecisionContextRevision } from "./decision-context";
 
 export type PrimaryDestination = "tonight" | "map" | "itinerary" | "sky" | "profile";
 export type LocationSource = "unset" | "device" | "manual";
@@ -11,6 +12,7 @@ interface ShellState {
   location: { source: LocationSource; label: string; latitude?: number; longitude?: number };
   profiles: PreferenceProfile[];
   activeProfileId: string;
+  decisionContext: DecisionContextRevision;
   recommendationState: "ready" | "stale" | "recomputing";
   persistenceState: "loading" | "ready" | "saving" | "error";
   persistenceError: string | null;
@@ -20,6 +22,7 @@ interface ShellState {
   setDeviceLocation: (label: string, latitude: number, longitude: number) => Promise<void>;
   saveProfile: (profile: PreferenceProfile) => Promise<void>;
   activateProfile: (profileId: string) => Promise<void>;
+  commitDecisionContext: (input: DecisionContextInput) => void;
 }
 
 const baseProfile = createUnrestrictedProfile();
@@ -30,6 +33,7 @@ export const useShellStore = create<ShellState>()((set, get) => ({
   location: { source: "unset", label: "尚未选择位置" },
   profiles: [baseProfile],
   activeProfileId: baseProfile.id,
+  decisionContext: createDecisionContext(baseProfile.id),
   recommendationState: "ready",
   persistenceState: "loading",
   persistenceError: null,
@@ -110,5 +114,8 @@ export const useShellStore = create<ShellState>()((set, get) => ({
       set({ persistenceState: "error", persistenceError: "当前预设未切换，请重试。" });
       throw error;
     }
+  },
+  commitDecisionContext: (input) => {
+    set((state) => ({ decisionContext: advanceDecisionContext(state.decisionContext, input) }));
   },
 }));

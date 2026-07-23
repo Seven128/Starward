@@ -13,6 +13,7 @@
 - project_context/areas/main.md: product-surface ownership, screen/state/interaction contract, and core domain behavior.
 - project_context/areas/main/verification.md: repeatable Context and design validation entry points.
 - docs/design-system/: generated CSS/JSON tokens, brand overview, source guide, component kits, and their supporting assets.
+- docs/design-targets/: immutable repo-local copies of the four owner-selected page/control targets. `DESIGN.md` interprets their coverage; they are implementation inputs and verifier baselines, not runtime modules or completion evidence.
 - .codex/skills/uiux_design/: project-owned React Native implementation guidance for interaction, motion, haptics, accessibility, and platform adaptation; it is subordinate to DESIGN.md, Source Plan, and owning Context.
 - docs/technical-data-source-decisions.md: dated provider/data/stack research and recommendation evidence; recommendations remain non-authoritative until the corresponding decision and external gates are confirmed.
 - Production code lives under apps/, packages/, workers/, data-pipelines/, infrastructure/, and config/. It consumes or derives from canonical design rules rather than editing exported preview files as product UI.
@@ -40,6 +41,7 @@
 
 - Context integrity is checked through the Tiny Context commands in project_context/areas/main/verification.md.
 - DESIGN.md structure is linted separately from exported asset integrity.
+- Selected target identity, hash, Surface/Control coverage, and registry continuity are checked by `npm run design:targets:verify` before fidelity work.
 - Production UI verification must eventually cover representative mobile viewport, visual mode, key state, and long-content combinations; static kits alone cannot prove product behavior.
 - A service class, endpoint, adapter declaration, generated report, or screen is not completion evidence by existence. Machine acceptance must execute the production path and its counterfactual must fail when the carrier, write, adapter invocation, or restart readback is removed.
 

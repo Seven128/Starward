@@ -34,6 +34,7 @@ import { AdminOperationsService } from "./modules/admin/admin-operations-service
 import { createAdminRuntime } from "./modules/admin/runtime";
 import { QualityService } from "./modules/quality/quality-service";
 import { createQualityRuntime } from "./modules/quality/runtime";
+import type { HttpTransport } from "../../../packages/data-source-runtime/src/index";
 
 const mode = process.env.STARWARD_WEATHER_MODE ?? "noncommercial-poc";
 if (mode !== "noncommercial-poc") {
@@ -47,6 +48,23 @@ const gate: WeatherProviderGateRecord = {
   licenseStatus: "noncommercial-poc-only",
 };
 
+function loopbackWeatherTransport(): HttpTransport | undefined {
+  const configured = process.env.STARWARD_WEATHER_LOOPBACK_PROXY;
+  if (!configured) return undefined;
+  const proxy = new URL(configured);
+  if (proxy.protocol !== "http:" || !["127.0.0.1", "localhost", "::1"].includes(proxy.hostname)) {
+    throw new Error("weather_loopback_proxy_must_be_loopback_http");
+  }
+  return async (input, init) => {
+    const upstream = new URL(input.toString());
+    const target = new URL(`${upstream.pathname}${upstream.search}`, proxy);
+    target.searchParams.set("__starward_upstream", upstream.hostname);
+    return fetch(target, init);
+  };
+}
+
+const weatherTransport = loopbackWeatherTransport();
+
 function source(model: string) {
   return new OpenMeteoHttpClient({
     endpointClass: "free",
@@ -55,6 +73,7 @@ function source(model: string) {
     rawRetentionAllowed: false,
     gate,
     use: "noncommercial-poc",
+    transport: weatherTransport,
   });
 }
 

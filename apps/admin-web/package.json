@@ -1,0 +1,22 @@
+{
+  "name": "@starward/admin-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:acceptance": "vite",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@starward/contracts": "0.1.0",
+    "@vitejs/plugin-react": "latest",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "6.0.3"
+  }
+}

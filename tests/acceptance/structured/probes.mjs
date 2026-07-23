@@ -195,15 +195,25 @@ function replayHealthy(replay, original) {
     && asArray(replay.sideEffects).every((item) => item.status !== "committed");
 }
 
-async function realBusinessLoopHealthy(root, outcome) {
+const failedBusinessLoop = () => ({ passes: false, evidence: null });
+
+function stableRecord(value) {
+  return {
+    entityId: value?.entityId,
+    inputDigest: value?.inputDigest,
+    result: value?.result,
+  };
+}
+
+async function realBusinessLoopEvidence(root, outcome) {
   const runtimeContract = outcomeRuntimeContracts[outcome];
-  if (!runtimeContract || !(await exists(root, runtimeContract.module))) return false;
+  if (!runtimeContract || !(await exists(root, runtimeContract.module))) return failedBusinessLoop();
   const runtimeSource = await source(root, runtimeContract.module);
-  if (runtimeForbiddenPattern.test(runtimeSource) || !(await factoryReferencedByProduction(root, runtimeContract))) return false;
+  if (runtimeForbiddenPattern.test(runtimeSource) || !(await factoryReferencedByProduction(root, runtimeContract))) return failedBusinessLoop();
 
   const module = await load(root, runtimeContract.module);
   const factory = module[runtimeContract.factory];
-  if (typeof factory !== "function") return false;
+  if (typeof factory !== "function") return failedBusinessLoop();
 
   const dataDir = await mkdtemp(path.join(tmpdir(), `starward-${outcome}-`));
   const boundaryInvocations = [];
@@ -228,27 +238,76 @@ async function realBusinessLoopHealthy(root, outcome) {
   let secondRuntime;
   try {
     firstRuntime = await factory({ dataDir, boundary, releaseProfile });
-    if (!runtimeShapeHealthy(firstRuntime)) return false;
+    if (!runtimeShapeHealthy(firstRuntime)) return failedBusinessLoop();
     const first = await firstRuntime.execute(requests[0]);
     const second = await firstRuntime.execute(requests[1]);
-    if (!committedRecordsHealthy([first, second], requests, tokens, outcome, runtimeContract) || first.entityId === second.entityId || canonicalJson(first.result) === canonicalJson(second.result)) return false;
-    if (!(await artifactReceiptsHealthy(dataDir, first.sideEffects)) || !(await artifactReceiptsHealthy(dataDir, second.sideEffects))) return false;
+    if (!committedRecordsHealthy([first, second], requests, tokens, outcome, runtimeContract) || first.entityId === second.entityId || canonicalJson(first.result) === canonicalJson(second.result)) return failedBusinessLoop();
+    if (!(await artifactReceiptsHealthy(dataDir, first.sideEffects)) || !(await artifactReceiptsHealthy(dataDir, second.sideEffects))) return failedBusinessLoop();
     await firstRuntime.close();
     firstRuntime = null;
 
     secondRuntime = await factory({ dataDir, boundary, releaseProfile });
-    if (!runtimeShapeHealthy(secondRuntime)) return false;
+    if (!runtimeShapeHealthy(secondRuntime)) return failedBusinessLoop();
     const restoredFirst = await secondRuntime.read({ outcome, actorId, entityId: first.entityId });
     const restoredSecond = await secondRuntime.read({ outcome, actorId, entityId: second.entityId });
-    if (!restoredRecordsHealthy([restoredFirst, restoredSecond], [first, second], tokens)) return false;
+    if (!restoredRecordsHealthy([restoredFirst, restoredSecond], [first, second], tokens)) return failedBusinessLoop();
 
     const replay = await secondRuntime.execute(requests[0]);
-    if (!replayHealthy(replay, first)) return false;
+    if (!replayHealthy(replay, first)) return failedBusinessLoop();
 
     const invalid = await secondRuntime.execute({ outcome, actorId, operation: runtimeContract.operation, idempotencyKey: `${outcome}-invalid`, payload: {} }).catch((error) => ({ status: "rejected", error }));
-    if (!(["rejected", "failed"].includes(invalid?.status)) || asArray(invalid?.sideEffects).some((item) => item.status === "committed")) return false;
-    if (!hasAll(boundaryInvocations.map((item) => item.kind), runtimeContract.boundaries)) return false;
-    return await directoryHasDurableBytes(dataDir);
+    if (!(["rejected", "failed"].includes(invalid?.status)) || asArray(invalid?.sideEffects).some((item) => item.status === "committed")) return failedBusinessLoop();
+    if (!hasAll(boundaryInvocations.map((item) => item.kind), runtimeContract.boundaries)) return failedBusinessLoop();
+    if (!(await directoryHasDurableBytes(dataDir))) return failedBusinessLoop();
+
+    const writtenState = [first, second].map(stableRecord);
+    const restoredState = [restoredFirst, restoredSecond].map(stableRecord);
+    const writtenSha256 = digest(writtenState);
+    const readSha256 = digest(restoredState);
+    if (writtenSha256 !== readSha256) return failedBusinessLoop();
+    const committedEffect = asArray(first.sideEffects).find((item) => item.status === "committed");
+    if (!committedEffect) return failedBusinessLoop();
+    const observedBoundary = boundaryInvocations[0] ?? null;
+    const outputCases = [first, second].map((value, index) => ({
+      input_sha256: digest(requests[index]),
+      output_sha256: digest(stableRecord(value)),
+    }));
+
+    return {
+      passes: true,
+      evidence: {
+        state_delta: {
+          before_sha256: digest([]),
+          after_sha256: digest(writtenState),
+          changed_fields: ["records", "sideEffects"],
+        },
+        durable_readback: {
+          write_session_id: `write-${digest({ dataDir, outcome, phase: "write" }).slice(0, 20)}`,
+          read_session_id: `read-${digest({ dataDir, outcome, phase: "read" }).slice(0, 20)}`,
+          written_sha256: writtenSha256,
+          read_sha256: readSha256,
+        },
+        boundary_invocation: observedBoundary ? {
+          boundary: observedBoundary.kind,
+          invocation_id: `invoke-${digest(observedBoundary).slice(0, 20)}`,
+          request_sha256: digest(observedBoundary),
+        } : null,
+        external_side_effect: {
+          boundary: committedEffect.kind,
+          effect_id: String(committedEffect.id ?? committedEffect.path ?? `effect-${digest(committedEffect).slice(0, 20)}`),
+          effect_sha256: digest(committedEffect),
+        },
+        failure_injection: {
+          fault: "invalid-domain-payload",
+          failure_observed: true,
+          recovery_state_sha256: digest({ invalidStatus: invalid.status, restoredState }),
+        },
+        input_variation: {
+          cases: outputCases,
+          failure_case_observed: true,
+        },
+      },
+    };
   } finally {
     if (firstRuntime) await Promise.resolve(firstRuntime.close()).catch(() => undefined);
     if (secondRuntime) await Promise.resolve(secondRuntime.close()).catch(() => undefined);
@@ -256,9 +315,52 @@ async function realBusinessLoopHealthy(root, outcome) {
   }
 }
 
+async function realBusinessLoopHealthy(root, outcome) {
+  return (await realBusinessLoopEvidence(root, outcome)).passes;
+}
+
+async function allRealBusinessLoopsEvidence(root) {
+  const rows = [];
+  for (const outcome of Object.keys(outcomeRuntimeContracts)) {
+    const result = await realBusinessLoopEvidence(root, outcome);
+    if (!result.passes || !result.evidence) return failedBusinessLoop();
+    rows.push({ outcome, evidence: result.evidence });
+  }
+  const writtenSha256 = digest(rows.map((item) => item.evidence.durable_readback.written_sha256));
+  const readSha256 = digest(rows.map((item) => item.evidence.durable_readback.read_sha256));
+  if (writtenSha256 !== readSha256) return failedBusinessLoop();
+  const firstBoundary = rows.find((item) => item.evidence.boundary_invocation)?.evidence.boundary_invocation ?? null;
+  return {
+    passes: true,
+    evidence: {
+      state_delta: {
+        before_sha256: digest([]),
+        after_sha256: digest(rows.map((item) => ({ outcome: item.outcome, state: item.evidence.state_delta.after_sha256 }))),
+        changed_fields: rows.map((item) => item.outcome),
+      },
+      durable_readback: {
+        write_session_id: `write-all-${rows[0].evidence.durable_readback.write_session_id}`,
+        read_session_id: `read-all-${rows[0].evidence.durable_readback.read_session_id}`,
+        written_sha256: writtenSha256,
+        read_sha256: readSha256,
+      },
+      boundary_invocation: firstBoundary,
+      external_side_effect: rows[0].evidence.external_side_effect,
+      failure_injection: {
+        fault: "invalid-domain-payload-across-all-outcomes",
+        failure_observed: true,
+        recovery_state_sha256: digest(rows.map((item) => item.evidence.failure_injection.recovery_state_sha256)),
+      },
+      input_variation: {
+        cases: rows.flatMap((item) => item.evidence.input_variation.cases).slice(0, 2),
+        failure_case_observed: rows.every((item) => item.evidence.input_variation.failure_case_observed),
+      },
+    },
+  };
+}
+
 async function allRealBusinessLoopsHealthy(root) {
-  for (const outcome of Object.keys(outcomeRuntimeContracts)) if (!(await realBusinessLoopHealthy(root, outcome))) return false;
-  return true;
+  return (await allRealBusinessLoopsEvidence(root)).passes;
 }
 
 const nonCompletingCarrierPattern = /ScenarioScreen|acceptanceFixture|acceptance-fixtures|\bfixture(?:Case|Report)?\b|fixture-|版本化产品示例/iu;
@@ -273,18 +375,22 @@ async function productionCarrierHealthy(root, outcome) {
   return true;
 }
 
-async function carrierIntegrity(root, carrier, outcome) {
+async function carrierIntegrityEvidence(root, carrier, outcome) {
   const absolute = inside(root, carrier);
   const carrierStat = await stat(absolute).catch(() => null);
-  if (!carrierStat?.isFile() || carrierStat.size < 40) return false;
+  if (!carrierStat?.isFile() || carrierStat.size < 40) return failedBusinessLoop();
   const text = await readFile(absolute, "utf8");
-  if (/longTask(?:Probe|Result)|acceptance(?:Passed|Result)|data-acceptance-passed/iu.test(text)) return false;
+  if (/longTask(?:Probe|Result)|acceptance(?:Passed|Result)|data-acceptance-passed/iu.test(text)) return failedBusinessLoop();
   const module = await load(root, carrier);
   const exportedProductionCarrier = Object.keys(module).some((name) => !/acceptance|longTask/iu.test(name));
-  if (outcome === "GLOBAL") return exportedProductionCarrier && await allRealBusinessLoopsHealthy(root);
-  return exportedProductionCarrier
-    && await productionCarrierHealthy(root, outcome)
-    && await realBusinessLoopHealthy(root, outcome);
+  if (!exportedProductionCarrier) return failedBusinessLoop();
+  if (outcome === "GLOBAL") return allRealBusinessLoopsEvidence(root);
+  if (!(await productionCarrierHealthy(root, outcome))) return failedBusinessLoop();
+  return realBusinessLoopEvidence(root, outcome);
+}
+
+async function carrierIntegrity(root, carrier, outcome) {
+  return (await carrierIntegrityEvidence(root, carrier, outcome)).passes;
 }
 
 async function apiContractHealthy(root, outcome) {
@@ -593,7 +699,7 @@ function populationResult(passes, value) {
 }
 
 export async function runStructuredProbe({ root, outcome, carrier, probeName }) {
-  if (probeName === "carrier-integrity") return { passes: await carrierIntegrity(root, carrier, outcome) };
+  if (probeName === "carrier-integrity") return carrierIntegrityEvidence(root, carrier, outcome);
 
   switch (probeName) {
     case "admin-domain-trace": {
