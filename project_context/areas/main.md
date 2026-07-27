@@ -54,7 +54,9 @@
 - Selected authored targets: docs/design-targets/; their immutable files are never edited as production UI.
 - React Native interaction companion: .codex/skills/uiux_design/SKILL.md; it must obey DESIGN.md, Source Plan, and this Context.
 - Provider/data research input: docs/technical-data-source-decisions.md; recommendations are not approved production facts by themselves.
-- Production source entry points are not established yet.
+- Mobile production entry starts at apps/mobile/index.js and apps/mobile/src/shell/WebApplication.tsx. The root MobileShellScreen currently renders five persisted destination shells, while feature Screens are separately reachable through the application-route/deep-link map; root-tab reachability and shared-state continuity are therefore implementation obligations, not established completion.
+- API production entry starts at apps/api/src/start.ts. The current owner-only composition intentionally enables the Open-Meteo noncommercial POC and selected local adapters, while route, durable domain repositories, identity and several worker/provider boundaries still require production-path wiring or honest unavailable states.
+- Owner operations entry starts at apps/admin-web/src/main.tsx. A runnable operations surface exists, but its protected endpoint, authentication, authorization and real mutation/readback boundaries remain implementation obligations.
 
 ## Related Role Context
 
@@ -64,5 +66,5 @@
 
 ## Open Risks
 
-- Provider contracts, exact dependency versions, algorithm/interaction tuning, offline/degraded defaults, location privacy, route handoff, data calibration, and production infrastructure remain open and require evidence plus Context updates before implementation.
+- Root navigation and coordinated decision-state ownership, authenticated actor propagation, typed domain persistence, provider-cost enforcement, provider contracts, exact dependency versions, algorithm/interaction tuning, offline/degraded defaults, location privacy, route handoff, data calibration, and production infrastructure remain open and require production-path evidence plus Context updates when durable semantics change.
 - Nine selected mobile controls still require representative-device tuning, capability proof or licensed production media, and all twelve operations controls still require real endpoint/authentication/authorization proof. These are downstream implementation/evidence obligations rather than authority gaps.

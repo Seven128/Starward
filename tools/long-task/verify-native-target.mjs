@@ -6,6 +6,7 @@ import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import YAML from "yaml";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDir, "../..");
@@ -27,8 +28,78 @@ function parseArgs(values) {
 }
 
 function hash(value) {
+  if (Buffer.isBuffer(value)) return createHash("sha256").update(value).digest("hex");
   const payload = typeof value === "string" ? value : JSON.stringify(value, Object.keys(value ?? {}).sort());
   return createHash("sha256").update(payload).digest("hex");
+}
+
+const asKey = (value) => String(value).replaceAll("_", "-");
+
+async function loadDesignHandoff(relativePath) {
+  const handoffPath = path.resolve(repositoryRoot, relativePath);
+  const content = await readFile(handoffPath, "utf8");
+  const match = /```yaml design-resource-handoff-v1\r?\n([\s\S]*?)\r?\n```/u.exec(content);
+  if (!match) throw new Error("design_handoff_block_missing");
+  const handoff = YAML.parse(match[1]);
+  if (handoff?.schema_version !== "design-resource-handoff-v1") throw new Error("design_handoff_schema_invalid");
+  return handoff;
+}
+
+function designAssertionPlan(handoff, outcome) {
+  const targets = handoff.targets.filter((target) =>
+    target.key === `mobile-page-constraint-${outcome}` ||
+    target.key === `mobile-control-exact-${outcome}`,
+  );
+  if (targets.length !== 2) throw new Error(`native_design_targets_incomplete:${outcome}:${targets.length}`);
+  const plan = [];
+  for (const target of targets) {
+    const rows = handoff.coverage.filter((row) => row.disposition === "covered" && row.target_refs.includes(target.key));
+    if (!rows.length) throw new Error(`native_design_coverage_missing:${target.key}`);
+    const short = asKey(target.key.replace(`-${outcome}`, ""));
+    plan.push({
+      key: `${short}-conformance`,
+      observation: `design.${outcome}.${short}-conformance.passed`,
+      capabilities: ["design_conformance", "interaction_trace", "target_runtime"],
+      method: "conformance",
+      target,
+    });
+    for (const method of [...new Set(rows.flatMap((row) => row.verification_methods))].sort()) {
+      const key = `${short}-${asKey(method)}`;
+      plan.push({
+        key,
+        observation: `design.${outcome}.${key}.passed`,
+        capabilities: method === "interaction_trace"
+          ? ["interaction_trace", "target_runtime"]
+          : method === "component_state"
+            ? ["design_conformance", "interaction_trace", "target_runtime"]
+            : ["design_conformance", "target_runtime"],
+        method,
+        target,
+      });
+    }
+  }
+  if (outcome === "mobile-shell-and-preferences") {
+    const key = "ac-mobile-shell-and-preferences-tab-state-and-native-navigation";
+    plan.push({
+      key,
+      observation: `design.${outcome}.${key}.passed`,
+      capabilities: ["interaction_trace", "target_runtime"],
+      method: "navigation",
+      target: null,
+    });
+  }
+  return plan;
+}
+
+function handoffControls(handoff, outcome) {
+  const targetKeys = new Set([
+    `mobile-page-constraint-${outcome}`,
+    `mobile-control-exact-${outcome}`,
+  ]);
+  return [...new Set(handoff.subjects
+    .filter((subject) => subject.kind === "control" && subject.target_refs.some((ref) => targetKeys.has(ref)))
+    .flatMap((subject) => subject.stable_keys))]
+    .sort();
 }
 
 function androidCmakeStagingRoot(androidAbi, temporaryRoot = tmpdir(), root = repositoryRoot) {
@@ -106,7 +177,13 @@ function spawnCapture(command, argv, options = {}) {
     });
     child.once("error", reject);
     child.once("close", (code) => {
-      const result = { code: code ?? -1, stdout: Buffer.concat(stdout).toString("utf8"), stderr: Buffer.concat(stderr).toString("utf8") };
+      const stdoutBuffer = Buffer.concat(stdout);
+      const result = {
+        code: code ?? -1,
+        stdout: stdoutBuffer.toString("utf8"),
+        stdoutBuffer,
+        stderr: Buffer.concat(stderr).toString("utf8"),
+      };
       if (result.code === 0 || options.allowFailure) resolve(result);
       else reject(new Error(`${options.label ?? command}_failed:${result.code}:${result.stderr.slice(-1200)}`));
     });
@@ -308,6 +385,15 @@ function findUiNode(xml, testId) {
   throw new Error(`native_test_id_missing:${testId}`);
 }
 
+function maybeFindUiNode(xml, testId) {
+  try {
+    return findUiNode(xml, testId);
+  } catch (error) {
+    if ((error instanceof Error ? error.message : String(error)) === `native_test_id_missing:${testId}`) return null;
+    throw error;
+  }
+}
+
 function nodeValue(attributes, testId) {
   const raw = attributes.text || attributes["content-desc"] || attributes["resource-id"] || "";
   return raw.startsWith(`${testId}:`) ? raw.slice(testId.length + 1).trim() : raw.trim();
@@ -354,10 +440,92 @@ async function androidWaitForNodes(serial, testIds, timeoutMs = 20_000) {
   throw new Error(`native_test_id_timeout:${lastMissing}`);
 }
 
+async function collectAndroidControlNodes(serial, testIds) {
+  const found = new Map();
+  let lastXml = "";
+  for (let pass = 0; pass < 16 && found.size < testIds.length; pass += 1) {
+    lastXml = await androidDump(serial);
+    for (const testId of testIds) {
+      if (found.has(testId)) continue;
+      const node = maybeFindUiNode(lastXml, testId);
+      if (node && hasMinimumVisibleBounds(node)) found.set(testId, node);
+    }
+    if (found.size === testIds.length) break;
+    await adb(serial, ["shell", "input", "swipe", "540", "1650", "540", "420", "450"]);
+    await delay(350);
+  }
+  const missing = testIds.filter((testId) => !found.has(testId));
+  if (missing.length) throw new Error(`native_design_controls_missing:${missing.join(",")}`);
+  return { nodes: found, xml: lastXml };
+}
+
+function hasMinimumVisibleBounds(node, minimumPx = 44) {
+  const bounds = /^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$/u.exec(node?.bounds ?? "");
+  return Boolean(
+    bounds
+    && Number(bounds[3]) - Number(bounds[1]) >= minimumPx
+    && Number(bounds[4]) - Number(bounds[2]) >= minimumPx,
+  );
+}
+
+function validateAndroidControlSemantics(nodes) {
+  for (const [testId, node] of nodes) {
+    const [centerX, centerY] = nodeCenter(node);
+    if (centerX < 0 || centerY < 0) throw new Error(`native_control_geometry_invalid:${testId}`);
+    if (!hasMinimumVisibleBounds(node)) {
+      throw new Error(`native_control_touch_target_too_small:${testId}`);
+    }
+    const semanticName = (node["content-desc"] || node.text || "").trim();
+    if (!semanticName || semanticName === testId) throw new Error(`native_control_accessible_name_missing:${testId}`);
+    if (node.enabled === "false") throw new Error(`native_control_unexpected_disabled:${testId}`);
+  }
+}
+
+async function androidScreenshot(serial) {
+  const result = await adb(serial, ["exec-out", "screencap", "-p"], { label: "android-screenshot" });
+  if (result.stdoutBuffer.length < 1024 || result.stdoutBuffer[0] !== 0x89 || result.stdoutBuffer[1] !== 0x50) {
+    throw new Error("android_screenshot_invalid");
+  }
+  return result.stdoutBuffer;
+}
+
 async function androidOpenRoute(serial, appId, route) {
   const deepLink = `starward://${route.startsWith("/") ? route : `/${route}`}`;
   await adb(serial, ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", deepLink, appId]);
   await delay(900);
+}
+
+async function tapAndroidNode(serial, testId) {
+  const ready = await androidWaitForNodes(serial, [testId], androidUiEvidenceTimeoutMs);
+  const [x, y] = nodeCenter(ready.nodes[testId]);
+  await adb(serial, ["shell", "input", "tap", String(x), String(y)]);
+}
+
+async function verifyPrimaryNavigation(serial) {
+  const destinations = [
+    { tab: "primary-tab-tonight", screen: "screen-tonight-decision", gesture: ["540", "1500", "540", "900", "400"] },
+    { tab: "shell-open-map-tab", screen: "screen-map-route-discovery", gesture: ["760", "1060", "360", "760", "400"] },
+    { tab: "primary-tab-itinerary", screen: "screen-itinerary-and-collaboration", gesture: ["540", "1500", "540", "900", "400"] },
+    { tab: "primary-tab-sky", screen: "screen-sky-orientation-ar", gesture: ["760", "1060", "360", "760", "400"] },
+    { tab: "primary-tab-profile", screen: "screen-identity-profile-privacy", gesture: ["540", "1500", "540", "900", "400"] },
+  ];
+  const states = new Map();
+  for (const destination of destinations) {
+    await tapAndroidNode(serial, destination.tab);
+    await androidWaitForNodes(serial, [destination.screen], androidUiEvidenceTimeoutMs);
+    await adb(serial, ["shell", "input", "swipe", ...destination.gesture]);
+    await delay(350);
+    states.set(destination.tab, await androidScreenshot(serial));
+  }
+  for (const destination of destinations) {
+    await tapAndroidNode(serial, destination.tab);
+    await androidWaitForNodes(serial, [destination.screen], androidUiEvidenceTimeoutMs);
+    await delay(350);
+    const restored = await androidScreenshot(serial);
+    if (normalizedPngDifference(states.get(destination.tab), restored) > 0.12) {
+      throw new Error(`primary_navigation_state_not_restored:${destination.tab}`);
+    }
+  }
 }
 
 async function chooseAndroidSerial() {
@@ -479,12 +647,31 @@ async function runAndroid(caseDefinition) {
   await adb(serial, ["shell", "am", "force-stop", appId]);
   await adb(serial, ["shell", "am", "start", "-W", "-n", `${appId}/.MainActivity`]);
   await androidWaitForNodes(serial, [androidAppReadyTestId], androidUiEvidenceTimeoutMs);
+  if (options.outcome === "mobile-shell-and-preferences" && options["design-handoff"]) {
+    await verifyPrimaryNavigation(serial);
+    await adb(serial, ["shell", "am", "force-stop", appId]);
+    await adb(serial, ["shell", "am", "start", "-W", "-n", `${appId}/.MainActivity`]);
+    await androidWaitForNodes(serial, [androidAppReadyTestId], androidUiEvidenceTimeoutMs);
+  }
   await androidOpenRoute(serial, appId, caseDefinition.route);
+  let controlNodes = new Map();
+  if (designControlIds.length) {
+    controlNodes = (await collectAndroidControlNodes(serial, designControlIds)).nodes;
+    validateAndroidControlSemantics(controlNodes);
+    await adb(serial, ["shell", "am", "force-stop", appId]);
+    await adb(serial, ["shell", "am", "start", "-W", "-n", `${appId}/.MainActivity`]);
+    await androidWaitForNodes(serial, [androidAppReadyTestId], androidUiEvidenceTimeoutMs);
+    await androidOpenRoute(serial, appId, caseDefinition.route);
+  }
   let ready = await androidWaitForNodes(serial, [caseDefinition.action_test_id], androidUiEvidenceTimeoutMs);
   const action = ready.nodes[caseDefinition.action_test_id];
   const [x, y] = nodeCenter(action);
   await adb(serial, ["shell", "input", "tap", String(x), String(y)]);
   ready = await androidWaitForNodes(serial, caseDefinition.evidence_test_ids, androidUiEvidenceTimeoutMs);
+  const outcomeXml = ready.xml;
+  const screenshotPng = await androidScreenshot(serial);
+  await delay(650);
+  const settledScreenshotPng = await androidScreenshot(serial);
 
   const surfaceValues = [];
   for (const surface of caseDefinition.cross_surfaces ?? []) {
@@ -499,6 +686,11 @@ async function runAndroid(caseDefinition) {
     sessionId: `android-${artifact.inputSha256.slice(0, 8)}-${artifact.apkSha256.slice(0, 8)}-${hash({ serial, startedAt }).slice(0, 8)}`,
     coldStart: true,
     surfaceValues,
+    serial,
+    controlNodes,
+    outcomeXml,
+    screenshotPng,
+    settledScreenshotPng,
   };
 }
 
@@ -648,6 +840,249 @@ async function runRemoteIos() {
   }
 }
 
+let pngCodec;
+function png() {
+  if (pngCodec) return pngCodec;
+  const requireFromAcceptance = createRequire(path.join(repositoryRoot, "tests/acceptance/package.json"));
+  pngCodec = requireFromAcceptance(requireFromAcceptance.resolve("pngjs")).PNG;
+  return pngCodec;
+}
+
+function pngDimensions(buffer) {
+  const image = png().sync.read(buffer);
+  return { width: image.width, height: image.height };
+}
+
+function normalizedPngDifference(leftBuffer, rightBuffer) {
+  const left = png().sync.read(leftBuffer);
+  const right = png().sync.read(rightBuffer);
+  const samples = 64;
+  let delta = 0;
+  for (let y = 0; y < samples; y += 1) {
+    for (let x = 0; x < samples; x += 1) {
+      const leftX = Math.min(left.width - 1, Math.floor((x + 0.5) * left.width / samples));
+      const leftY = Math.min(left.height - 1, Math.floor((y + 0.5) * left.height / samples));
+      const rightX = Math.min(right.width - 1, Math.floor((x + 0.5) * right.width / samples));
+      const rightY = Math.min(right.height - 1, Math.floor((y + 0.5) * right.height / samples));
+      const leftIndex = (leftY * left.width + leftX) * 4;
+      const rightIndex = (rightY * right.width + rightX) * 4;
+      delta += Math.abs(left.data[leftIndex] - right.data[rightIndex]);
+      delta += Math.abs(left.data[leftIndex + 1] - right.data[rightIndex + 1]);
+      delta += Math.abs(left.data[leftIndex + 2] - right.data[rightIndex + 2]);
+    }
+  }
+  return delta / (samples * samples * 3 * 255);
+}
+
+function pngColorBuckets(buffer) {
+  const image = png().sync.read(buffer);
+  const buckets = new Set();
+  const step = Math.max(1, Math.floor((image.width * image.height) / 12_000));
+  for (let pixel = 0; pixel < image.width * image.height; pixel += step) {
+    const index = pixel * 4;
+    buckets.add(`${image.data[index] >> 4}:${image.data[index + 1] >> 4}:${image.data[index + 2] >> 4}`);
+  }
+  return buckets.size;
+}
+
+async function loadChromium() {
+  const requireFromAcceptance = createRequire(path.join(repositoryRoot, "tests/acceptance/package.json"));
+  const playwrightPath = requireFromAcceptance.resolve("@playwright/test");
+  const playwrightModule = await import(pathToFileURL(playwrightPath).href);
+  const chromium = playwrightModule.chromium ?? playwrightModule.default?.chromium;
+  if (!chromium) throw new Error("design_reference_playwright_chromium_missing");
+  return chromium;
+}
+
+function designArtifactPaths(outcome, targetKey) {
+  const relativeDirectory = `artifacts/verification/design-conformance/${outcome}`;
+  return {
+    directory: path.join(repositoryRoot, ...relativeDirectory.split("/")),
+    actualRelative: `${relativeDirectory}/${targetKey}-actual.png`,
+    comparisonRelative: `${relativeDirectory}/${targetKey}-comparison.png`,
+  };
+}
+
+async function captureDesignReference(browser, target, outcome, outputPath, viewport) {
+  const entry = target.key.startsWith("mobile-page-constraint-")
+    ? "docs/design-targets/mobile-product-pages-v2/index.html"
+    : target.key.startsWith("mobile-control-exact-")
+      ? "docs/design-targets/mobile-controls-v3/index.html"
+      : null;
+  if (!entry) throw new Error(`native_design_reference_entry_unknown:${target.key}`);
+  const page = await browser.newPage({
+    viewport: {
+      width: Math.max(430, Math.min(1440, viewport.width)),
+      height: Math.max(844, Math.min(2400, viewport.height)),
+    },
+    locale: "zh-CN",
+    reducedMotion: "reduce",
+  });
+  try {
+    await page.goto(pathToFileURL(path.join(repositoryRoot, entry)).href, { waitUntil: "load" });
+    await page.addStyleTag({ content: "*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}" });
+    if (target.key.startsWith("mobile-page-constraint-")) {
+      const navigation = page.locator(`[data-outcome-id=${JSON.stringify(outcome)}]`).first();
+      await navigation.click();
+      const device = page.locator(".device").first();
+      await device.waitFor({ state: "visible" });
+      await device.screenshot({ path: outputPath, animations: "disabled" });
+      return;
+    }
+    await page.evaluate((selectedOutcome) => {
+      for (const node of document.querySelectorAll("[data-outcome]")) {
+        if (node.getAttribute("data-outcome") !== selectedOutcome) node.setAttribute("hidden", "");
+      }
+      const scroll = document.querySelector("#phoneScroll");
+      if (scroll) scroll.scrollTop = 0;
+    }, outcome);
+    const surface = page.locator("#phoneSurface").first();
+    await surface.waitFor({ state: "visible" });
+    await surface.screenshot({ path: outputPath, animations: "disabled" });
+  } finally {
+    await page.close();
+  }
+}
+
+async function materializeDesignArtifacts(runtime, plan, outcome) {
+  const byTarget = new Map();
+  const dimensions = pngDimensions(runtime.screenshotPng);
+  const chromium = await loadChromium();
+  const browser = await chromium.launch({ headless: true });
+  try {
+    for (const target of [...new Map(plan.filter((item) => item.target).map((item) => [item.target.key, item.target])).values()]) {
+      const paths = designArtifactPaths(outcome, target.key);
+      await mkdir(paths.directory, { recursive: true });
+      const actualPath = path.join(repositoryRoot, ...paths.actualRelative.split("/"));
+      const comparisonPath = path.join(repositoryRoot, ...paths.comparisonRelative.split("/"));
+      await writeFile(actualPath, runtime.screenshotPng);
+      await captureDesignReference(browser, target, outcome, comparisonPath, dimensions);
+      const comparisonPng = await readFile(comparisonPath);
+      byTarget.set(target.key, {
+        target,
+        actualPath: paths.actualRelative,
+        comparisonPath: paths.comparisonRelative,
+        actualPng: runtime.screenshotPng,
+        comparisonPng,
+      });
+    }
+  } finally {
+    await browser.close();
+  }
+  return byTarget;
+}
+
+function validateDesignMethod(method, runtime, artifact, caseDefinition) {
+  const evidenceNodes = caseDefinition.evidence_test_ids.map((testId) => findUiNode(runtime.outcomeXml, testId));
+  if (!evidenceNodes.length) throw new Error(`native_design_evidence_empty:${method}`);
+  if (["conformance", "component_state", "content", "interaction_trace"].includes(method)) {
+    for (let index = 0; index < evidenceNodes.length; index += 1) {
+      if (!nodeValue(evidenceNodes[index], caseDefinition.evidence_test_ids[index])) {
+        throw new Error(`native_design_evidence_value_empty:${caseDefinition.evidence_test_ids[index]}`);
+      }
+    }
+  }
+  if (["conformance", "accessibility_semantics", "input_method", "layout_geometry", "responsive_reflow"].includes(method)) {
+    validateAndroidControlSemantics(runtime.controlNodes);
+  }
+  if (method === "input_method") {
+    for (const [testId, node] of runtime.controlNodes) {
+      if (node.clickable !== "true" && node.focusable !== "true" && node.scrollable !== "true") {
+        throw new Error(`native_control_input_method_missing:${testId}`);
+      }
+    }
+  }
+  if (["conformance", "motion_timeline", "component_state"].includes(method) &&
+      normalizedPngDifference(runtime.screenshotPng, runtime.settledScreenshotPng) > 0.08) {
+    throw new Error(`native_motion_did_not_settle:${method}`);
+  }
+  if (["conformance", "visual_pixel"].includes(method)) {
+    const difference = normalizedPngDifference(artifact.actualPng, artifact.comparisonPng);
+    const threshold = artifact.target.interpretation === "exact_target" ? 0.55 : 0.62;
+    if (difference > threshold) throw new Error(`native_visual_difference_exceeded:${artifact.target.key}`);
+    const actualSize = pngDimensions(artifact.actualPng);
+    const comparisonSize = pngDimensions(artifact.comparisonPng);
+    const actualRatio = actualSize.width / actualSize.height;
+    const comparisonRatio = comparisonSize.width / comparisonSize.height;
+    if (Math.abs(actualRatio - comparisonRatio) > 0.45) throw new Error(`native_visual_aspect_mismatch:${artifact.target.key}`);
+  }
+  if (["conformance", "design_token", "asset_integrity"].includes(method) && pngColorBuckets(artifact.actualPng) < 12) {
+    throw new Error(`native_render_token_diversity_missing:${artifact.target.key}`);
+  }
+}
+
+async function writeDesignMethodArtifact(outcome, entry, artifact, runtime) {
+  if (!entry.target) return;
+  const paths = designArtifactPaths(outcome, entry.target.key);
+  const output = path.join(paths.directory, `${entry.target.key}-${entry.method}-evidence.json`);
+  await writeFile(output, `${JSON.stringify({
+    schema_version: "starward-native-design-method-evidence-v1",
+    outcome,
+    assertion_key: entry.key,
+    method: entry.method,
+    target: entry.target.key,
+    controls: designControlIds,
+    session_id: runtime.sessionId,
+    actual_sha256: hash(artifact.actualPng),
+    comparison_sha256: hash(artifact.comparisonPng),
+    normalized_pixel_difference: normalizedPngDifference(artifact.actualPng, artifact.comparisonPng),
+  }, null, 2)}\n`, "utf8");
+}
+
+async function buildDesignResult(runtime, caseDefinition) {
+  if (options["assertion-key"] !== designPlan[0]?.key || options.observation !== designPlan[0]?.observation) {
+    throw new Error("native_design_contract_identity_mismatch");
+  }
+  const artifacts = await materializeDesignArtifacts(runtime, designPlan, options.outcome);
+  const observations = {};
+  const evidenceRecords = [];
+  for (const entry of designPlan) {
+    const artifact = entry.target ? artifacts.get(entry.target.key) : null;
+    if (entry.target) {
+      validateDesignMethod(entry.method, runtime, artifact, caseDefinition);
+      await writeDesignMethodArtifact(options.outcome, entry, artifact, runtime);
+    }
+    observations[entry.observation] = true;
+    if (entry.capabilities.includes("target_runtime")) {
+      evidenceRecords.push({
+        assertion_key: entry.key,
+        capability: "target_runtime",
+        target_ref: options["target-ref"],
+        root_entrypoint: options["root-entrypoint"],
+        session_id: runtime.sessionId,
+        cold_start: runtime.coldStart,
+      });
+    }
+    if (entry.capabilities.includes("interaction_trace")) {
+      evidenceRecords.push({
+        assertion_key: entry.key,
+        capability: "interaction_trace",
+        target_ref: options["target-ref"],
+        given_keys: ["production-root-ready"],
+        action_keys: ["enter-production-surface", "exercise-bound-controls", "compare-frozen-target"],
+      });
+    }
+    if (entry.capabilities.includes("design_conformance")) {
+      evidenceRecords.push({
+        assertion_key: entry.key,
+        capability: "design_conformance",
+        design_target_ref: entry.target.key,
+        target_ref: options["target-ref"],
+        condition_keys: [...entry.target.condition_refs],
+        actual_artifact_path: artifact.actualPath,
+        comparison_artifact_path: artifact.comparisonPath,
+      });
+    }
+  }
+  return {
+    schema_version: "long-task-check-result-v3",
+    execution_status: "completed",
+    observations,
+    evidence_records: evidenceRecords,
+    diagnostics: [],
+  };
+}
+
 function buildResult(runtime, caseDefinition) {
   const assertionKey = options["assertion-key"];
   const evidenceRecords = [{
@@ -682,14 +1117,47 @@ function buildResult(runtime, caseDefinition) {
 let options;
 let caseDefinition;
 let startedAt;
+let designHandoff = null;
+let designPlan = [];
+let designControlIds = [];
 
 function stableFailureCode(error) {
   const value = error instanceof Error ? error.message : String(error);
   return /^[A-Za-z0-9_-]+/u.exec(value)?.[0] ?? "native_target_check_failed";
 }
 
+async function writeDesignFailureArtifact(
+  outcome,
+  error,
+  {
+    controls = designControlIds,
+    root = repositoryRoot,
+    startedAtValue = startedAt,
+  } = {},
+) {
+  if (!/^[a-z0-9-]+$/u.test(outcome)) throw new Error("native_design_failure_outcome_invalid");
+  const relativeDirectory = `artifacts/verification/design-conformance/${outcome}`;
+  const relativePath = `${relativeDirectory}/failure-evidence.json`;
+  await mkdir(path.join(root, ...relativeDirectory.split("/")), { recursive: true });
+  await writeFile(path.join(root, ...relativePath.split("/")), `${JSON.stringify({
+    schema_version: "starward-native-design-failure-evidence-v1",
+    outcome,
+    execution_status: "failed",
+    controls,
+    started_at: startedAtValue,
+    diagnostic: `native_target_check_failed:${stableFailureCode(error)}`,
+  }, null, 2)}\n`, "utf8");
+  return relativePath;
+}
+
 async function execute() {
-  if (options.conformance === "design-authority") {
+  if (options["design-handoff"]) {
+    designHandoff = await loadDesignHandoff(options["design-handoff"]);
+    designPlan = designAssertionPlan(designHandoff, options.outcome);
+    designControlIds = handoffControls(designHandoff, options.outcome);
+    if (!designControlIds.length) throw new Error(`native_design_controls_missing:${options.outcome}`);
+  }
+  if (options.conformance === "design-authority" || options["design-handoff"]) {
     await spawnCapture(process.execPath, [path.join(repositoryRoot, "tools/verify-design-targets.mjs")], {
       cwd: repositoryRoot,
       label: "design-authority-conformance",
@@ -701,7 +1169,9 @@ async function execute() {
     ? await runAndroid(caseDefinition)
     : await runIosLocal(caseDefinition);
   for (const opsSurface of (caseDefinition.cross_surfaces ?? []).filter((surface) => surface.ops_route)) runtime.surfaceValues.push(await readOpsSurface(opsSurface));
-  return buildResult(runtime, caseDefinition);
+  return options["design-handoff"]
+    ? await buildDesignResult(runtime, caseDefinition)
+    : buildResult(runtime, caseDefinition);
 }
 
 async function main(argv = process.argv.slice(2)) {
@@ -714,12 +1184,23 @@ async function main(argv = process.argv.slice(2)) {
   try {
     process.stdout.write(`${JSON.stringify(await execute())}\n`);
   } catch (error) {
+    const diagnostics = [`native_target_check_failed:${stableFailureCode(error)}`];
+    if (options["design-handoff"]) {
+      try {
+        await writeDesignFailureArtifact(options.outcome, error);
+      } catch (artifactError) {
+        diagnostics.push(`native_design_failure_artifact_write_failed:${stableFailureCode(artifactError)}`);
+      }
+    }
+    const failedObservations = Object.fromEntries(
+      (designPlan.length ? designPlan : [{ observation: options.observation }]).map((entry) => [entry.observation, false]),
+    );
     process.stdout.write(`${JSON.stringify({
       schema_version: "long-task-check-result-v3",
       execution_status: "completed",
-      observations: { [options.observation]: false },
+      observations: failedObservations,
       evidence_records: [],
-      diagnostics: [`native_target_check_failed:${stableFailureCode(error)}`],
+      diagnostics,
     })}\n`);
   }
 }
@@ -736,10 +1217,12 @@ export {
   androidJavaScriptRootTypecheckArguments,
   androidAppReadyTestId,
   androidUiEvidenceTimeoutMs,
+  hasMinimumVisibleBounds,
   isAndroidBuildInputFile,
   isTransientAndroidUiDumpError,
   normalizeAndroidBuildInputContent,
   readAndroidBuildCache,
   stableRepositoryRoot,
+  writeDesignFailureArtifact,
   writeAndroidBuildCache,
 };

@@ -17,6 +17,7 @@
 - .codex/skills/uiux_design/: project-owned React Native implementation guidance for interaction, motion, haptics, accessibility, and platform adaptation; it is subordinate to DESIGN.md, Source Plan, and owning Context.
 - docs/technical-data-source-decisions.md: dated provider/data/stack research and recommendation evidence; recommendations remain non-authoritative until the corresponding decision and external gates are confirmed.
 - Production code lives under apps/, packages/, workers/, data-pipelines/, infrastructure/, and config/. It consumes or derives from canonical design rules rather than editing exported preview files as product UI.
+- Mobile navigation truth lives in one Expo Router route tree: a persistent five-tab navigator maps Tonight, Map, Trips, Sky, and Me to `/tonight`, `/map`, `/trips`, `/sky`, and `/me`, with a route-owned nested stack under each tab. A persisted destination preference may assist restoration, but it cannot become a second router or screen-identity source.
 - Each Outcome must expose a production runtime carrier wired into the application. Acceptance invokes that carrier with variable inputs, verifies committed database/file/native/external receipts, recreates the runtime against the same isolated data directory, reads state back, checks idempotent replay, and verifies invalid/failing operations cannot report success.
 
 ## Data / Control Flow
@@ -24,6 +25,7 @@
 - The durable user flow is conclusion → place selection → departure/observing window → route and risk → professional evidence → preparation → field use.
 - Selected place, time window, route, arrival estimate, and risk are one coordinated state. Changes propagate to every surface that presents those facts.
 - Visual mode is orthogonal to task state: planning, night, and red-light modes retain the same current place and workflow position.
+- Selecting a primary tab changes the active route and rendered screen. Each tab owns its primary scroll or immersive canvas plus its nested navigation state; switching tabs never scrolls a shared page, jumps to a section anchor, or conditionally swaps pseudo-pages inside one root `ScrollView`. Tab-local route/scroll state is preserved independently while the versioned decision context remains shared across tabs.
 
 ## Design Rationale
 
@@ -34,6 +36,7 @@
 
 - Mobile-first behavior and outdoor/low-light use make safe-area handling, 44px touch targets, reduced motion, contrast, and low-luminance field behavior architectural UI constraints.
 - Direct-manipulation state is split from committed domain state: gesture presentation may move continuously and be interrupted, while place/time/route/itinerary changes commit only to valid coordinated states and recover cleanly on cancellation or provider failure.
+- Deep links activate the owning tab and nested route, while native Back first closes route-owned overlays and then pops only that tab's stack. Tab selection itself does not synthesize cross-tab Back history.
 - Forecast and astronomy data are uncertain; provider data must not be presented as guaranteed truth.
 - Professional density must use aligned matrices and progressive disclosure without overwhelming the primary decision.
 

@@ -23,6 +23,11 @@
       "action_test_id": "map-open-status",
       "evidence_test_ids": ["map-location-context", "map-data-state", "map-provenance"]
     },
+    "spot-detail-and-trust": {
+      "route": "/spot/spot-a",
+      "action_test_id": "spot-open-detail",
+      "evidence_test_ids": ["spot-decision-summary", "spot-observation-window", "spot-primary-action"]
+    },
     "tonight-decision": {
       "route": "/tonight",
       "action_test_id": "tonight-refresh",
@@ -47,6 +52,11 @@
       "route": "/trips",
       "action_test_id": "plan-generate",
       "evidence_test_ids": ["plan-observation-window", "plan-main-spot", "plan-safety-checklist"]
+    },
+    "sky-orientation-ar": {
+      "route": "/sky",
+      "action_test_id": "sky-open-universal-view",
+      "evidence_test_ids": ["sky-time-context", "sky-location-context", "sky-visible-objects"]
     },
     "community-contribution": {
       "route": "/contribute",

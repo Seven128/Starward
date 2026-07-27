@@ -18,7 +18,7 @@ Discover rather than remember:
 - functional skills and plugins;
 - rendering templates or project types;
 - design systems and their selected project binding;
-- specialist paths such as Figma, image, video or 3D/WebGL;
+- specialist paths such as collaborative design platforms, image, video or 3D/WebGL;
 - supported project creation, run, cancellation, file and artifact operations.
 
 Current structured tool names may include `list_agents`, `list_skills`, `list_plugins`, `create_project`, `get_project`, `get_active_context`, `start_run`, `get_run`, `cancel_run`, `list_files`, `get_file` and `get_artifact`. Feature-detect them; tool names and provider versions may evolve.
@@ -37,10 +37,27 @@ Prefer, in order:
 
 Never vendor a fallback template catalogue or guess a template ID from prior runs. Do not implement a transport helper unless the live host truly lacks a safe structured path; any helper may normalize metadata and transport only.
 
+## Conditional Design Authority gate and binding
+
+Before any style-bearing commission, read project `DESIGN.md` and its declared authored exact-value token source/generation direction. Style-bearing means the resource materially expresses visual fidelity, brand, typography/color/density, component visual treatment or a production-style prototype. Low-fidelity structure, IA/flow topology and semantics-only behavior/state studies are non-fidelity and do not require the gate.
+
+If authority is absent, explicitly `unconfigured`, still a starter, style-only/inspiration-only, or lacks one authored token source/generation direction, stop before creating a project or run. Direct the user to explicitly invoke `$design-system-authoring`; never auto-run it. A combined explicit request authorizes the sequence.
+
+For configured style-bearing work:
+
+1. read the adopted Open Design design-system ID and digest/provenance from project Design Authority;
+2. confirm `od://design-systems/<id>/DESIGN.md` is readable through MCP;
+3. pass that ID as `designSystem` to `create_project`;
+4. immediately call `get_project` and require `designSystemId` to match;
+5. when reusing a project, check its binding before every new style-bearing run;
+6. on missing/mismatch, prefer a new bounded project with the correct binding when MCP has no safe update method; otherwise feature-detect and verify the provider's structured update.
+
+Never silently use the provider's default or a different system. A provider-side mismatch is a synchronization/rebinding issue; it does not erase the canonical project `DESIGN.md`.
+
 ## Structured commission sequence
 
-1. Record provider version, selected agent/model, functional capability, rendering template, design system and relevant plugin/export readiness as reported live.
-2. Reuse an existing task-local project only when its scope and prior inputs match; otherwise create a bounded project.
+1. Record provider version, selected agent/model, functional capability, rendering template, adopted design system and relevant plugin/export readiness as reported live.
+2. Reuse an existing task-local project only when its scope, prior inputs and required design-system binding match; otherwise create a bounded project. For style-bearing work, pass `designSystem` and verify `get_project.designSystemId` before the run.
 3. Start a run with the product-specific commission envelope and the provider-native capability identifier.
 4. Poll with a bounded cadence. During a long run, report meaningful progress at least once per minute without flooding the user.
 5. Preserve run IDs and the latest provider diagnostic. Support cancellation when the user requests it and the provider exposes it.
@@ -71,6 +88,20 @@ Use these qualifiers when needed:
 
 In both cases preserve the exact run locator, last update, failure diagnostic and artifact hash. Do not claim provider success or downstream acceptance. Retry only when the promised resource is incomplete/corrupt or the user requests another attempt; do not discard a useful independently inspected artifact merely because the terminal state differs.
 
+## Implementation-level output profile
+
+Open Design has demonstrated that a complex Web page can emit a machine-readable implementation set such as `index.html`, component/design specifications, tokens and an asset manifest. Capability is not a per-run guarantee. When the selected resource will drive Web/App implementation, make this an explicit commission and retrieval invariant:
+
+1. request a canonical machine-readable entry and implementation-readable state, interaction, responsive, motion, semantic/accessibility and asset facts for the declared conditions;
+2. enumerate the complete output set and retrieve every selected entry/dependency without truncation;
+3. preserve exact bytes, media types and SHA-256 digests in repository-local immutable files;
+4. record `implementation_web` or `implementation_app`, the canonical entry, every dependency and `acquisition: complete`;
+5. for Web output, require every local HTML/CSS/JS dependency discovered from the frozen source to be present in the declared target set;
+6. use stable IDs/data attributes, Markdown anchors, JSON Pointers, CSS selectors/custom properties or bounded whole-file binary locators that shared preflight can resolve.
+7. before emitting `ready`, exercise every declared verification method against the canonical entry under its claimed conditions and compare facts repeated across code, specifications, tokens and asset manifests. Refine any mismatch; if it cannot be resolved, keep the affected cell `decision_required`/`unavailable` with a blocker. Preserve the checked immutable hashes and report this only as authoring source QA, never production acceptance.
+
+A PNG may be a useful derived visual baseline, but it cannot be the sole source for implementation-level state, interaction, adaptation, accessibility or motion facts. Non-Web resources use the `reference` profile; do not manufacture HTML merely to satisfy this profile.
+
 ## Explicit entry and immutable identity
 
 Provider project metadata may omit or stale its entry file. Resolve in this order:
@@ -86,22 +117,14 @@ A preview URL is mutable navigation, not immutable identity. It may be reported 
 ## Review proportional to intent
 
 - **Exploration:** open/render the requested entry, confirm artifact count/scope and obvious corruption, then show it. Do not launch a packaging or validator sequence.
-- **Handoff:** additionally inspect relevant structure, key states/transitions, viewport behavior, obvious console/runtime errors and requested interaction hooks. State exactly what was and was not checked.
+- **Handoff:** additionally perform the method-proportional source QA above, including relevant structure, states/transitions, viewport behavior, accessibility semantics, assets, obvious console/runtime errors and requested interaction hooks. State exactly what was and was not checked.
 - **Selected-source preparation:** require explicit human selection basis, preserve identity/snapshot, and prepare downstream metadata. It still does not verify production behavior.
 
 Provider self-checks, outer artifact sanity review and downstream project verification are separate evidence layers. Never claim native rendering, accessibility, responsive coverage, product correctness or acceptance unless the appropriate downstream project checks actually prove them.
 
-## Figma and other specialist paths
+## Specialist paths
 
-Figma is optional. Select it only when editable collaboration or library handoff materially benefits the request and a real connector/plugin/export path plus authentication is operational. A listed plugin, skill description or catalogue entry is not proof that editable Figma export works.
-
-If Figma is requested but unavailable:
-
-- report the missing connector/auth/export capability precisely;
-- offer a non-Figma artifact only when it still answers the user's design decision;
-- never relabel HTML, an image or a manifest record as an editable Figma design.
-
-Apply the same capability/readiness rule to image, video, 3D/WebGL and other specialist providers.
+Figma, Penpot, OpenPencil, image, video, 3D/WebGL and other providers are optional upstream producers. Use one only when its collaboration/editability or native inspection value is material and its connector/auth/read/export path is operational. A listed plugin, URL, thumbnail or metadata response is not proof of usable native input. If a requested provider is unavailable, report the missing capability precisely, offer another artifact only when it preserves the requested design decision, and never relabel an export as native editable design. Every selected provider still emits repository-readable immutable resources through the same provider-neutral handoff.
 
 ## Failure and recovery
 

@@ -14,39 +14,68 @@ import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 import { useShellStore } from "../../state/shell-store";
 import { persistSkyResolution } from "../../state/sky-runtime";
 
-type ViewKey = "universal-sky" | "time-jump" | "obstruction-trajectory" | "field-of-view" | "ar-degradation" | "low-accuracy-guidance";
+type ViewKey =
+  | "universal-sky"
+  | "object-layers"
+  | "time-jump"
+  | "orientation-follow"
+  | "low-accuracy-guidance"
+  | "obstruction-trajectory"
+  | "field-of-view"
+  | "ar-degradation";
 const palette = colors.night;
+const planningPalette = colors.planning;
 const client = createSkyClient({ baseUrl: resolveRuntimeApiBaseUrl() });
-const actions: Array<{ key: ViewKey; id: string; label: string }> = [
-  { key: "universal-sky", id: "sky-open-universal-view", label: "通用天空" },
-  { key: "time-jump", id: "sky-jump-time", label: "目标最高" },
-  { key: "obstruction-trajectory", id: "sky-add-obstruction", label: "遮挡轨迹" },
-  { key: "field-of-view", id: "sky-apply-fov", label: "视场" },
-  { key: "ar-degradation", id: "sky-open-ar", label: "AR" },
-  { key: "low-accuracy-guidance", id: "sky-calibrate-sensors", label: "方向校准" },
+const actions: Array<{ key: Exclude<ViewKey, "universal-sky">; id: string; label: string; stableControlId: string; accessibilityName: string }> = [
+  { key: "object-layers", id: "sky-open-object-layers", label: "目标/图层", stableControlId: "sky-object-and-layer-panel", accessibilityName: "天空目标与图层面板" },
+  { key: "time-jump", id: "sky-jump-time", label: "目标最高", stableControlId: "sky-time-scrubber", accessibilityName: "天空时间控制" },
+  { key: "orientation-follow", id: "sky-toggle-orientation-follow", label: "方向跟随", stableControlId: "orientation-follow-toggle", accessibilityName: "方向跟随与自由浏览切换" },
+  { key: "low-accuracy-guidance", id: "sky-calibrate-sensors", label: "方向校准", stableControlId: "orientation-calibration-sheet", accessibilityName: "方向精度与校准面板" },
+  { key: "obstruction-trajectory", id: "sky-add-obstruction", label: "遮挡轨迹", stableControlId: "obstruction-and-trajectory-overlay", accessibilityName: "遮挡与天体轨迹叠层" },
+  { key: "field-of-view", id: "sky-apply-fov", label: "视场", stableControlId: "field-of-view-overlay", accessibilityName: "设备视场覆盖层" },
+  { key: "ar-degradation", id: "sky-open-ar", label: "AR", stableControlId: "ar-mode-toggle", accessibilityName: "可选 AR 模式" },
 ];
 
-function Evidence({ testID, title, body, meta }: { testID: string; title: string; body: string; meta?: string }) {
-  return <View testID={testID} style={styles.evidence}><Text style={styles.evidenceTitle}>{title}</Text><Text style={styles.evidenceBody}>{body}</Text>{meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}</View>;
+function Evidence({ testID, title, body, meta, tone = "night" }: { testID: string; title: string; body: string; meta?: string; tone?: "night" | "planning" }) {
+  const planning = tone === "planning";
+  return <View testID={testID} style={[styles.evidence, planning && styles.evidencePlanning]}><Text style={[styles.evidenceTitle, planning && styles.evidenceTitlePlanning]}>{title}</Text><Text style={[styles.evidenceBody, planning && styles.evidenceBodyPlanning]}>{body}</Text>{meta ? <Text style={[styles.evidenceMeta, planning && styles.evidenceMetaPlanning]}>{meta}</Text> : null}</View>;
 }
 const degrees = (value: number) => `${Math.round(value * 10) / 10}°`;
 const localTime = (value: string, timezone: string) => new Intl.DateTimeFormat("zh-CN", { timeZone: timezone, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(value));
 
-function SkyCanvas({ context }: { context: SkyContext }) {
+function SkyCanvas({ context, selected, onPress }: { context: SkyContext; selected: boolean; onPress: () => void }) {
   const visible = context.objects.filter((object) => object.visible && object.obstructed !== true);
-  return <View accessibilityRole="image" accessibilityLabel={`天空目标列表，${visible.map((item) => item.name).join("、") || "当前无目录目标在地平线上"}`} style={styles.canvas}>
+  return <Pressable
+    testID="sky-open-universal-view"
+    accessibilityRole="button"
+    accessibilityLabel={`sky-canvas:天空画布，${visible.map((item) => item.name).join("、") || "当前无目录目标在地平线上"}；点按返回通用天空`}
+    accessibilityState={{ selected }}
+    onPress={onPress}
+    style={({ pressed }) => [styles.canvas, selected && styles.canvasSelected, pressed && styles.pressed]}
+  >
     <View style={styles.horizon}><Text style={styles.horizonText}>N　　　　 E　　　　 S　　　　 W</Text></View>
     {context.objects.map((object) => <View key={object.id} style={[styles.star, { left: `${5 + object.azimuthDeg / 4}%`, top: `${Math.max(7, 72 - Math.max(-10, object.altitudeDeg) * 0.65)}%`, opacity: object.visible ? 1 : 0.28 }]}><Text style={styles.starDot}>✦</Text><Text style={styles.starLabel}>{object.name}</Text></View>)}
     <Text style={styles.canvasMeta}>亮星先呈现 · {context.catalog.deferredChunks.length ? `${context.catalog.deferredChunks.join("、")}目录按视口加载` : "目录已加载"}</Text>
-  </View>;
+  </Pressable>;
 }
 
 function UniversalPanel({ data, locationLabel }: { data: SkyContext; locationLabel: string }) {
   const visible = data.objects.filter((item) => item.visible).map((item) => `${item.name} ${degrees(item.altitudeDeg)}`);
+  return <View style={[styles.panel, styles.planningPanel]}>
+    <View accessibilityElementsHidden style={styles.sheetHandle} />
+    <Evidence tone="planning" testID="sky-time-context" title={`${localTime(data.context.at, data.context.timezone)} · ${data.context.at === data.generatedAt ? "实时" : "所选时间"}`} body={`时区 ${data.context.timezone} · 计算时刻 ${data.context.at}`} meta="显示使用当地时区；计算和持久化使用 UTC。" />
+    <Evidence tone="planning" testID="sky-location-context" title={locationLabel} body={`WGS84 ${data.context.latitude.toFixed(4)}, ${data.context.longitude.toFixed(4)} · 海拔 ${data.context.elevationM} m`} meta="位置变化会重新请求天空状态。" />
+    <Evidence tone="planning" testID="sky-visible-objects" title={`当前可见 ${visible.length} 个目录目标`} body={visible.join("、") || "当前载入目录目标都在纯天文地平线下。"} meta={`${data.algorithm.name} · ${data.algorithm.version} · ${data.algorithm.refraction} 折射模型`} />
+  </View>;
+}
+
+function ObjectLayerPanel({ data }: { data: SkyContext }) {
+  const visible = data.objects.filter((item) => item.visible);
+  const unavailable = data.objects.filter((item) => !item.visible);
   return <View style={styles.panel}>
-    <Evidence testID="sky-time-context" title={`${localTime(data.context.at, data.context.timezone)} · ${data.context.at === data.generatedAt ? "实时" : "所选时间"}`} body={`时区 ${data.context.timezone} · 计算时刻 ${data.context.at}`} meta="显示使用当地时区；计算和持久化使用 UTC。" />
-    <Evidence testID="sky-location-context" title={locationLabel} body={`WGS84 ${data.context.latitude.toFixed(4)}, ${data.context.longitude.toFixed(4)} · 海拔 ${data.context.elevationM} m`} meta="位置变化会重新请求天空状态。" />
-    <Evidence testID="sky-visible-objects" title={`当前可见 ${visible.length} 个目录目标`} body={visible.join("、") || "当前载入目录目标都在纯天文地平线下。"} meta={`${data.algorithm.name} · ${data.algorithm.version} · ${data.algorithm.refraction} 折射模型`} />
+    <Evidence testID="sky-object-search-result" title={`已选择 ${data.selectedTarget?.name ?? data.context.target}`} body={data.selectedTarget ? `方位 ${degrees(data.selectedTarget.azimuthDeg)} · 高度 ${degrees(data.selectedTarget.altitudeDeg)}` : "当前目录没有匹配目标；未选择近似天体。"} meta={`已加载 ${data.catalog.loadedChunk} 目录 · 深层目录 ${data.catalog.deferredChunks.join("、") || "无待加载分块"}`} />
+    <Evidence testID="sky-layer-state" title="地平线、目标轨迹与亮星标签已开启" body={`可见 ${visible.length} 个；地平线下 ${unavailable.length} 个；不可见和遮挡保持不同语义。`} meta="星座、银河与深空目录按视口/设备能力加载，基础方位不会被装饰降级移除。" />
+    <Evidence testID="sky-layer-source" title={`天文算法 ${data.algorithm.name} ${data.algorithm.version}`} body={`折射模型 ${data.algorithm.refraction} · 生成 ${data.generatedAt}`} meta={data.warnings.length ? data.warnings.join("；") : "当前基础目录没有来源警告。"} />
   </View>;
 }
 
@@ -106,15 +135,24 @@ function CalibrationPanel({ orientation, target }: { orientation: StableOrientat
   </View>;
 }
 
+function OrientationFollowPanel({ orientation, following }: { orientation: StableOrientation; following: boolean }) {
+  return <View style={styles.panel}>
+    <Evidence testID="sky-follow-state" title={following ? "方向跟随已请求" : "自由浏览 / 手动北向"} body={following ? orientation.guidance : "天空画布保持触控浏览，不读取未经校准的单一磁力计作为真值。"} meta={`精度 ${orientation.accuracy} · ${orientation.northReference} north · 样本 ${orientation.timestampMs ? new Date(orientation.timestampMs).toISOString() : "不可用"}`} />
+    <Evidence testID="sky-follow-orientation" title={`方位 ${degrees(orientation.headingDeg)} · 俯仰 ${degrees(orientation.pitchDeg)} · 横滚 ${degrees(orientation.rollDeg)}`} body={orientation.following ? "稳定姿态可用于画布跟随。" : "跟随未建立或精度不足；画布不会显示失真的实时朝向。"} meta={`磁场异常 ${orientation.anomaly}`} />
+  </View>;
+}
+
 function State({ title, body, retry }: { title: string; body: string; retry?: () => void }) {
   return <View style={styles.state}><Text style={styles.stateTitle}>{title}</Text><Text style={styles.stateBody}>{body}</Text>{retry ? <Pressable accessibilityRole="button" onPress={retry} style={styles.retry}><Text style={styles.retryText}>重试</Text></Pressable> : null}</View>;
 }
 
 export function SkyScreen() {
   const location = useShellStore((state) => state.location);
+  const scroll = useRef<ScrollView>(null);
   const [active, setActive] = useState<ViewKey>("universal-sky");
   const [at, setAt] = useState(() => new Date().toISOString());
   const [orientation, setOrientation] = useState<StableOrientation>(() => new OrientationEngine().unavailable());
+  const [followingRequested, setFollowingRequested] = useState(false);
   const [persistenceError, setPersistenceError] = useState<string | null>(null);
   const subscription = useRef<{ stop(): void } | null>(null);
   const latitude = location.latitude ?? 22.529;
@@ -130,23 +168,42 @@ export function SkyScreen() {
   const open = async (key: ViewKey) => {
     setActive(key);
     if (key === "time-jump" && query.data?.bestTargetTime) setAt(query.data.bestTargetTime);
-    if (key === "low-accuracy-guidance") {
-      subscription.current?.stop();
+    if (key === "orientation-follow") {
+      if (subscription.current) {
+        subscription.current.stop();
+        subscription.current = null;
+        setFollowingRequested(false);
+        setOrientation(new OrientationEngine().unavailable());
+        return;
+      }
+      const next = await startExpoOrientation(setOrientation, { intervalMs: 100 });
+      subscription.current = next;
+      setFollowingRequested(Boolean(next));
+      if (!next) setOrientation(new OrientationEngine().unavailable());
+    }
+    if (key === "low-accuracy-guidance" && !subscription.current) {
       subscription.current = await startExpoOrientation(setOrientation, { intervalMs: 100 });
+      setFollowingRequested(Boolean(subscription.current));
       if (!subscription.current) setOrientation(new OrientationEngine().unavailable());
     }
   };
-  return <SafeAreaView testID="screen-sky-orientation-ar" style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
+  const openUniversalSky = () => {
+    void open("universal-sky");
+    requestAnimationFrame(() => scroll.current?.scrollToEnd({ animated: false }));
+  };
+  return <SafeAreaView testID="screen-sky-orientation-ar" style={styles.screen}><ScrollView ref={scroll} contentContainerStyle={styles.content}>
     <Text style={styles.eyebrow}>天空定位 · {location.label}</Text><Text style={styles.title}>目标在哪里，遮挡证据在哪里</Text>
     <Text style={styles.subtitle}>通用天空是主路径。方向、相机与 AR 只在能力和精度可信时增强；现场轮廓未知时不猜测。</Text>
     <DecisionContextRevision />
     {query.isLoading ? <State title="正在计算天空状态…" body="服务端按 WGS84 地点、UTC 时刻和版本化天文算法定位亮星、深空目标与轨迹。" /> : null}
     {query.isError ? <State title="天空状态暂不可用" body={query.error instanceof Error && query.error.message === "sky_api_base_url_missing" ? "尚未配置 API 地址；不会以内置星位替代真实计算。" : "请求或计算失败；当前不显示旧星位。"} retry={() => void query.refetch()} /> : null}
     {persistenceError ? <State title="本机保存失败" body={persistenceError} retry={() => void query.refetch()} /> : null}
-    {query.data ? <SkyCanvas context={query.data} /> : null}
-    <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" onPress={() => void open(action.key)} style={({ pressed }) => [styles.action, active === action.key && styles.actionActive, pressed && styles.pressed]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
+    {query.data ? <SkyCanvas context={query.data} selected={active === "universal-sky"} onPress={openUniversalSky} /> : null}
+    <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" accessibilityLabel={`${action.stableControlId}:${action.accessibilityName}`} accessibilityState={{ selected: active === action.key }} onPress={() => void open(action.key)} style={({ pressed }) => [styles.action, active === action.key && styles.actionActive, pressed && styles.pressed]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
     {query.data && active === "universal-sky" ? <UniversalPanel data={query.data} locationLabel={location.label} /> : null}
+    {query.data && active === "object-layers" ? <ObjectLayerPanel data={query.data} /> : null}
     {query.data && active === "time-jump" ? <TimePanel data={query.data} /> : null}
+    {active === "orientation-follow" ? <OrientationFollowPanel orientation={orientation} following={followingRequested} /> : null}
     {query.data && active === "obstruction-trajectory" ? <ObstructionPanel data={query.data} /> : null}
     {active === "field-of-view" ? <FovPanel /> : null}
     {query.data && active === "ar-degradation" ? <ArPanel data={query.data} /> : null}
@@ -157,8 +214,8 @@ export function SkyScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.canvas }, content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 },
   eyebrow: { color: palette.primary, fontSize: typeToken.label, fontWeight: "700" }, title: { color: palette.text, fontSize: typeToken.title, lineHeight: 32, fontWeight: "700" }, subtitle: { color: palette.textSecondary, fontSize: typeToken.body, lineHeight: 23 },
-  canvas: { height: 250, overflow: "hidden", borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: "#06101D" }, horizon: { position: "absolute", left: 12, right: 12, bottom: 42, borderTopWidth: 1, borderColor: palette.textSecondary, paddingTop: 6 }, horizonText: { color: palette.textSecondary, textAlign: "center", fontSize: typeToken.caption }, star: { position: "absolute", alignItems: "center" }, starDot: { color: palette.text, fontSize: 18 }, starLabel: { color: palette.text, fontSize: 10 }, canvasMeta: { position: "absolute", left: 12, bottom: 12, color: palette.textSecondary, fontSize: typeToken.caption },
+  canvas: { height: 250, overflow: "hidden", borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: "#06101D" }, canvasSelected: { borderColor: palette.primary, borderWidth: 2 }, horizon: { position: "absolute", left: 12, right: 12, bottom: 42, borderTopWidth: 1, borderColor: palette.textSecondary, paddingTop: 6 }, horizonText: { color: palette.textSecondary, textAlign: "center", fontSize: typeToken.caption }, star: { position: "absolute", alignItems: "center" }, starDot: { color: palette.text, fontSize: 18 }, starLabel: { color: palette.text, fontSize: 10 }, canvasMeta: { position: "absolute", left: 12, bottom: 12, color: palette.textSecondary, fontSize: typeToken.caption },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 }, action: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: 12, borderWidth: 1, borderColor: palette.border, borderRadius: radii.pill, backgroundColor: palette.surface }, actionActive: { borderColor: palette.primary }, actionText: { color: palette.text, fontSize: typeToken.caption, fontWeight: "700" }, pressed: { opacity: 0.7 },
-  panel: { gap: spacing.x1, padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, evidence: { minHeight: 86, padding: 12, borderRadius: radii.control, backgroundColor: palette.surfaceMuted }, evidenceTitle: { color: palette.text, fontSize: typeToken.body, fontWeight: "700" }, evidenceBody: { marginTop: 5, color: palette.text, fontSize: typeToken.label, lineHeight: 19 }, evidenceMeta: { marginTop: 5, color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 },
+  panel: { gap: spacing.x1, padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, planningPanel: { borderColor: planningPalette.border, borderRadius: 24, backgroundColor: planningPalette.surface }, sheetHandle: { alignSelf: "center", width: 44, height: 5, marginBottom: spacing.x1, borderRadius: radii.pill, backgroundColor: planningPalette.border }, evidence: { minHeight: 86, padding: 12, borderRadius: radii.control, backgroundColor: palette.surfaceMuted }, evidencePlanning: { backgroundColor: planningPalette.surfaceMuted }, evidenceTitle: { color: palette.text, fontSize: typeToken.body, fontWeight: "700" }, evidenceTitlePlanning: { color: planningPalette.text }, evidenceBody: { marginTop: 5, color: palette.text, fontSize: typeToken.label, lineHeight: 19 }, evidenceBodyPlanning: { color: planningPalette.text }, evidenceMeta: { marginTop: 5, color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 }, evidenceMetaPlanning: { color: planningPalette.textSecondary },
   state: { minHeight: 140, justifyContent: "center", padding: spacing.x2, borderRadius: radii.layer, backgroundColor: palette.surface }, stateTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" }, stateBody: { marginTop: spacing.x1, color: palette.textSecondary, lineHeight: 21 }, retry: { minHeight: minimumTouchTarget, marginTop: spacing.x2, alignItems: "center", justifyContent: "center", borderRadius: radii.control, backgroundColor: palette.primary }, retryText: { color: palette.onPrimary, fontWeight: "700" },
 });

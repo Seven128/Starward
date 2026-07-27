@@ -34,10 +34,15 @@ describe("shooting preview aggregation", () => {
       await firstRuntime.close();
 
       const restarted = await createShootingRuntime({ dataDir, boundary });
+      const restartedHandler = createShootingPreviewHandler(service, restarted);
+      expect((await restartedHandler(query)).status).toBe(200);
+      (bundle as { generatedAt: string }).generatedAt = "2026-08-12T12:05:00Z";
+      expect((await restartedHandler(query)).status).toBe(200);
       const records = await restarted.list({ actorId: "personal-trial-owner" });
-      expect(records).toHaveLength(1);
-      expect(records[0]?.result.payload).toMatchObject({ weatherRunId: "weather-run", astronomyVersion: "astro-v1" });
-      expect(invocations).toEqual(["weather", "astronomy"]);
+      expect(records).toHaveLength(2);
+      expect(records[0]?.result.payload).toMatchObject({ weatherRunId: "weather-run", astronomyVersion: "astro-v1", conditionsCapturedAt: "2026-08-12T12:00:00Z" });
+      expect(records[1]?.result.payload).toMatchObject({ weatherRunId: "weather-run", astronomyVersion: "astro-v1", conditionsCapturedAt: "2026-08-12T12:05:00Z" });
+      expect(invocations).toEqual(["weather", "astronomy", "weather", "astronomy"]);
       await restarted.close();
     } finally {
       await rm(dataDir, { recursive: true, force: true });

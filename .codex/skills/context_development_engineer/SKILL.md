@@ -21,14 +21,16 @@ When an active `/long-task-workflow` binding exists, that Skill owns lifecycle, 
 2. 在判断 `Context Delta` 前，用任务中明确的 area/module/API/Schema/state/security/verification/deployment 等少量高信号词，对 `project_context/**` 做一次 bounded text search；把命中的 Context 与 manifest 候选合并，只读取真正相关文件。搜索只补充语义判断，不创建索引、缓存或第二权威。
 3. 确认目标、约束、成功标准、影响域、验证/部署路径和风险。能从代码或 Context 得到的事实不要重复询问。
 4. Context 决定“应该是什么”；代码说明“现在是什么”；测试和运行证据证明行为。冲突是实现漂移、缺失工作或 stale Context，不能由代码静默重定义归属。
-5. 第一处编辑前决定唯一 `Context Delta: none|required`。影响 durable architecture boundary、module ownership、API / Schema / data contract、state / runtime semantics、dependency direction、verification / deployment semantics 或 durable rationale / tradeoff 时为 `required`，先更新 owning Context。不要创建 `plan.md`、Task Contract 文件或 Markdown 映射表。
-6. 用 Agent 内部计划保持 goal、non-goals、owner、boundaries、implementation surfaces、risk 和 verification 清晰。默认流程不要求或验证固定 `plan.md`、matrix、verdict 或 evidence ledger。
-7. 普通 bug fix、局部样式/实现漂移、小重构、package/release、测试修复或探索性 spike 不支付架构仪式成本；它们是 small code task，除非过程中形成了新的长期工程事实。
-8. 实现后运行 project-owned verification，做 `Contract Conformance` 和 Context drift check，只报告 `Context: 已更新 ...` 或 `Context: 本次无长期事实变化`。
+5. 第一处实现编辑前，完成并对用户可见地给出一次简洁、仓库事实绑定的 `Architecture Deliberation`。不输出私有思维链；输出结论及其 Context、模块/路径、symbol/extension point 和验证依据。风险只改变深度，不取消这个环节。
+6. 根据架构考量决定唯一 `Context Delta: none|required`。影响 durable architecture boundary、module ownership、API / Schema / data contract、state / runtime semantics、dependency direction、verification / deployment semantics 或 durable rationale / tradeoff 时为 `required`，先更新 owning Context。不要创建 `plan.md`、Task Contract 文件或 Markdown 映射表。
+7. 用 Agent 内部计划保持 goal、non-goals、owner、boundaries、implementation surfaces、risk 和 verification 清晰。默认流程不要求或验证固定 `plan.md`、matrix、verdict 或 evidence ledger。
+8. 实现后先运行 project-owned verification，再在 `Contract Conformance` 中对当前候选快照执行 `Architecture Conformance`，随后单独做 Context drift check；报告实现、验证、架构符合性、Context 状态和 blockers。
 
-## 风险触发 Architecture Gate
+## 必经 Architecture Deliberation
 
-仅在下列任一情况触发；这是内部判断，不是新 artifact、validator 或 delta：
+每个实现需求都执行一次。small code task 可以得到“保持现有架构”的浅层结论，但必须具体指出当前 owner / extension point、未改变的 durable boundary、验证入口，以及为何没有引入或加重技术债，不能用“无需架构考虑”跳过。
+
+出现下列任一情况时提高到完整深度：
 
 - 新长期模块/能力/公共抽象；
 - 公共 API、Schema、data contract、持久化或迁移；
@@ -37,7 +39,7 @@ When an active `/long-task-workflow` binding exists, that Skill owns lifecycle, 
 - security/permission、兼容性、降级、重试、并发或不可逆边界；
 - 一个变化异常扩散到多个不相关模块，或现有扩展点无法承载。
 
-内部保持：
+对用户可见的简洁结论覆盖适用项：
 
 - `Architecture Context Hit`：哪个现有 Context 控制本次架构判断；
 - `Decision Rationale Hit: existing|required|none`：是否存在会改变未来选择的稳定原因；
@@ -45,10 +47,27 @@ When an active `/long-task-workflow` binding exists, that Skill owns lifecycle, 
 - 正确 dependency direction 与禁止 bypass；
 - interface、input/output、state、persistence 和 lifecycle；
 - failure/retry/timeout/degraded/recovery、compatibility/migration；
+- 选择的设计与重要备选方案、拒绝原因；
+- 至少一个合理的相邻未来变化会落到哪个 extension point，且不会形成第二 source of truth 或反向依赖；
+- 触达的技术债：本次消除、保持隔离且不加重，或因缺少有 owner/reason/tracking/removal condition 的 bounded exception 而阻塞；
 - 应复用的 extension point，或新抽象为何确有净收益；
 - 哪个 project-owned lint/AST/dependency/contract test 能证明边界。
 
-持久结论进入最小 owning Context；实现细节留在代码。不要把“代码更优雅”当作架构要求，也不要让 Harness 变成跨语言通用 dependency analyzer。
+范围、owner、controlling Context、dependency direction 或选定设计发生实质变化时，原考量失效，继续实现前先更新。持久结论进入最小 owning Context；实现细节留在代码。不要把“代码更优雅”当作架构要求，也不要让 Harness 变成跨语言通用 dependency analyzer。
+
+## Architecture Conformance
+
+默认流程在项目验证之后，把架构符合性作为 `Contract Conformance` 的必检子项，只针对当前候选快照检查：
+
+- 实际改动是否逃逸预期 capability/path；
+- owner、dependency direction、service/facade/adapter 和唯一 source of truth 是否被绕过或复制；
+- API/Schema/data/state/persistence/lifecycle/recovery 是否出现未声明变化；
+- 是否命中 forbidden shortcut，是否运行了声明的 project-owned architecture/modularity checks；
+- 是否新增或加重重复、职责膨胀、脆弱耦合或无依据抽象等技术债。
+
+发现问题就返回实现并重跑受影响验证；候选代码或配置再变化，先前 closure 失效。新增或加重技术债默认阻塞交付，除非项目已有显式、收窄、带 owner/reason/tracking/removal condition 的例外。无关 legacy debt 不自动扩张任务范围，但本次触达、依赖或加重的债不能隐藏。
+
+active Long-Task 下不再执行这个默认 closure；同一架构义务由 Contract 中现有 obligations/constraints/forbidden shortcuts、owners/paths/Bindings 和 executable Checks 表达，并只由 Final Gate 对最终快照收口。
 
 ## Capability-First Delivery Boundary
 
@@ -75,17 +94,23 @@ sample provider / interface / page 证据不能替代 all-provider / all-interfa
 
 For material production UI, first confirm Design Authority readiness; then carry declared Context, `DESIGN.md` and Source intent into the real implementation without creating another workflow:
 
+- when a selected implementation handoff exists, run `ty-context design-resource preflight <handoff.md>` before fidelity implementation. Open the strict residual block and every indexed exact/constraint resource. Keep one exact task-local accounting of covered Source Items, declared verification methods, acceptance blockers, selected targets and conditions; route every applicable item to the production owner, cold-start journey and a project-owned check whose failure remains attributable. Missing applicability cells, unsupported evidence, unresolvable typed locators, incomplete/truncated implementation source, unresolved rows or stale digests fail closed. Provider retrieval and preflight prove input completeness/integrity only, not the implementation;
 - treat an unconfigured starter, style-only guidance, inspiration-only references or conflicting targets as insufficient authority for invented production layout; route explicit design authoring through `context_uiux_design` or return for a genuine material decision;
-- classify referenced targets as `exact-target`, `constraint` or `inspiration` and bind fidelity claims only to the named target/constraint conditions;
+- classify referenced targets as `exact-target`, `constraint` or `inspiration`; for every affected selected exact target/constraint, traverse its stable key from owning Context through `DESIGN.md` and open the immutable adopted locator/digest before deciding or coding—a registry mention alone is not consumption. Bind fidelity claims only to the named conditions;
+- resolve the editable upstream owner/locator/update route before changing a design resource. Missing, unreadable, stale or conflicting adopted resources fail closed for the affected claim. If the immutable target is readable but upstream editing is unavailable, implementation may consume it but a resource change remains a named manual/external boundary. Never overwrite an adopted baseline; use a new immutable version and update the owning reference;
 - identify the production token source, its generation direction, the owning components/routes and any project-local UI/UX Skill before choosing implementation values;
 - reuse production components and real product routes for states/specimens instead of building a detached static imitation as the acceptance target;
+- trace each selected target and declared viewport/mode/state condition through a stable surface/control key to its production route/component owner, cold-start real-user entry journey and project-owned rendered/interactive Check;
 - preserve approved semantic tokens and component APIs; do not bypass them with undeclared raw color, spacing, typography or motion values merely to match one screenshot;
 - implement the declared Visual Coverage Set across the applicable viewport, theme/mode, state, content-stress and accessibility/motion combinations, while avoiding an unrequested full Cartesian expansion;
-- run project-owned rendered/component/browser verification and report only the combinations actually checked. Static analysis, generated kits and screenshot artifacts are supporting review material rather than proof of every visual or behavioral claim.
+- after the first runnable vertical slice, inspect it through the real production entry so wrong shell/navigation ownership is discovered before broad rollout; rerun the affected cold-start journey on the final candidate;
+- run project-owned rendered/component/browser verification and report only the combinations actually checked. Design file hashes, registry membership and counts prove resource integrity; static analysis, generated kits and screenshot artifacts are supporting review material rather than implementation-conformance proof.
 - For each applicable material control, preserve region/location, type/label, user task, visibility/availability, trigger/input/validation/default, interaction/navigation, loading/empty/success/failure/recovery/permission/feedback and accessibility semantics. An omitted field is not permission to invent durable product behavior; resolve it through UI Authority Closure.
 - never promote the implementation's own generated screenshot/diff into its target; exact targets and acceptance-affecting baselines are selected Source/verifier inputs before comparison.
 
-If an active Long-Task applies, express material visual expectations through its existing Requirement, full Control projection, Assertion, Check, Stage, Binding and external-confirmation mechanisms. A design candidate or planned target cannot unlock fidelity implementation: selection must become real Source/registry authority and an adopted protected revision first. Do not introduce a second visual plan, acceptance document or lifecycle.
+Without an active Long-Task, final-current-candidate Contract Conformance confirms every accounted item is mapped, resolved, executed and passing. One project check may cover several methods only when each method and covered fact remains independently attributable on failure. A selected-target, implementation or declared check-input change stales closure. Any unresolved, unmapped, unexecuted, stale or indistinguishable item blocks a complete selected-design-conformance claim; report the checked scope and exact gaps. Do not persist the accounting as a matrix, Claim set, readiness state or Gate.
+
+If an active Long-Task applies, do not run the preceding default closure. Express material visual expectations through its existing Requirement, full Control projection, Product `surface_bindings`, Assertion, Check, Stage, Technical Binding and external-confirmation mechanisms. Include the validated residual handoff in real `task.source_paths` and every declared immutable resource in target verification inputs; make target keys/conditions/files equal the handoff. Map covered Source Items into the root conformance Assertion and one independent Assertion per declared verification method; bind each handoff blocker with the same Source Items and methods. Bind every Control to a required production target and root-entry journey; bind selected exact/constraint targets to typed `design_conformance` actual/comparison evidence. Final Gate is the sole Long-Task carrier. A blocker cannot be dismissed in-band, and scope removal requires revised Source/Contract authority. A design candidate or planned target cannot unlock fidelity implementation: selection must become real Context-reachable Source with one canonical adoption record and an adopted Authority Revision first. Do not introduce a second visual plan, acceptance document or lifecycle.
 
 ## Modularity Check
 
@@ -105,8 +130,8 @@ If an active Long-Task applies, express material visual expectations through its
 
 - area/domain/subdomain：产品或包责任；contract：API/schema/event/workflow/interface；foundation：稳定概念；verification/deployment：可重复路径；implementation-index：导航；decision-rationale：会影响未来选择的稳定原因。
 - 模块 Context 只保留 principles、design logic、rejected alternative/tradeoff 和长期约束；不编造 rationale，不复制实现摘要、命令输出、debug 过程、截图、日志、临时 JSON、raw payload、测试报告或 secrets。
-- `Context Delta: none|required` 是唯一长期事实结果；`Architecture Context Hit`、`Decision Rationale Hit` 与 `Modularity Check` 仍只是内部路由问题。
+- `Context Delta: none|required` 是唯一长期事实结果；`Architecture Deliberation` 是可见但 task-local 的流程检查点，`Architecture Context Hit`、`Decision Rationale Hit` 与 `Modularity Check` 仍只是内部路由问题。
 
 ## 输出边界
 
-不默认创建 `.work_products/**`、tech plan、ADR、implementation doc、review/test/release 文档或 lifecycle phases。用户明确要求独立开发/技术方案时可以临时生成；稳定结论仍提炼回 `project_context/**`。
+不默认创建 `.work_products/**`、tech plan、ADR、implementation doc、review/test/release 文档或 lifecycle phases。`Architecture Deliberation` 与 `Architecture Conformance` 通过工作更新和交付状态可见，不生成新的持久产物。用户明确要求独立开发/技术方案时可以临时生成；稳定结论仍提炼回 `project_context/**`。

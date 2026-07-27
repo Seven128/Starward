@@ -28,7 +28,7 @@
     "workers/*"
   ],
   "devDependencies": {
-    "project-tiny-context-harness": "^0.7.6",
+    "project-tiny-context-harness": "^0.8.1",
     "zod": "4.4.3"
   },
   "tyContext": {

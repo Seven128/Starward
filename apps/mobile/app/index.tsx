@@ -1,5 +1,5 @@
-import { MobileShellScreen } from "../src/shell/MobileShellScreen";
+import { Redirect } from "expo-router";
 
 export default function IndexRoute() {
-  return <MobileShellScreen />;
+  return <Redirect href="/tonight" />;
 }

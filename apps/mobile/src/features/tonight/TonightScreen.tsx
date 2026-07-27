@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NightReport, NightReportRequest } from "@starward/contracts/night-report";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
@@ -31,15 +31,61 @@ function utcTime(value?: string | null) { return value ? value.slice(11, 16) : "
 const metric = (value: number | null | undefined, suffix: string) => value === null || value === undefined ? "暂无数据" : `${Math.round(value * 10) / 10}${suffix}`;
 const categoryLabel: Record<NightReport["decision"]["category"], string> = { excellent: "非常适合", good: "适合", mixed: "条件一般", "not-recommended": "不建议", "safety-risk": "存在安全风险", "insufficient-data": "暂无法判断" };
 
-function DecisionPanel({ report }: { report: NightReport }) {
+function DecisionHero({ report, failed }: { report?: NightReport; failed: boolean }) {
+  const title = report
+    ? `${categoryLabel[report.decision.category]} · ${report.decision.score ?? "—"} 分`
+    : failed ? "今晚结论暂不可用" : "正在生成今晚结论…";
+  const body = report
+    ? `${report.decision.summary} · 可信度 ${Math.round(report.decision.confidence * 100)}% · ${report.decision.reasons.join("；") || "关键原因不足"}`
+    : failed ? "动态夜报请求失败；位置、日期和偏好上下文已保留，可安全重试。" : "正在聚合天气、天文、地点和路线；旧结果不会伪装成当前结论。";
+  const meta = report
+    ? report.decision.blockers.join("；") || "安全与可达性阻断独立于综合分数"
+    : failed ? "失败状态与静态上下文分离显示" : "加载中 · 安全阻断优先于推荐分";
+  return (
+    <View
+      testID={Platform.OS === "web" ? "tonight-decision-summary" : "decision-hero"}
+      accessibilityLabel={`tonight-decision-summary:${title}`}
+      accessible
+      focusable
+      style={styles.evidence}
+    >
+      <Text style={styles.evidenceTitle}>{title}</Text>
+      <Text style={styles.evidenceBody}>{body}</Text>
+      <Text style={styles.evidenceMeta}>{meta}</Text>
+    </View>
+  );
+}
+
+function DecisionQuickFacts({ report }: { report: NightReport }) {
+  return (
+    <View style={styles.quickFacts}>
+      <Text testID="tonight-observation-window" style={styles.quickFact}>
+        最佳观测窗口 · {report.observationWindow ? `${utcTime(report.observationWindow.start)}–${utcTime(report.observationWindow.end)} · ${report.observationWindow.durationMinutes} 分钟` : "未找到连续观测窗口"}
+      </Text>
+      <Text testID="tonight-data-provenance" style={styles.quickFact}>
+        来源与有效性 · 生成 {report.generatedAt} · 有效至 {report.expiresAt} · {report.provenance.map((item) => `${item.source}@${item.version}`).join(" · ")}
+      </Text>
+    </View>
+  );
+}
+
+function DecisionPanel({ report, onOpenSpots }: { report: NightReport; onOpenSpots: () => void }) {
   const departureAt = report.observationWindow && report.primarySpot?.travelMinutes !== null && report.primarySpot?.travelMinutes !== undefined
     ? new Date(Date.parse(report.observationWindow.start) - report.primarySpot.travelMinutes * 60_000).toISOString()
     : null;
   return <View style={styles.panel}>
-    <Evidence testID="tonight-decision-summary" title={`${categoryLabel[report.decision.category]} · ${report.decision.score ?? "—"} 分`} body={`${report.decision.summary} · 可信度 ${Math.round(report.decision.confidence * 100)}% · ${report.decision.reasons.join("；") || "关键原因不足"}`} meta={report.decision.blockers.join("；") || "安全与可达性阻断独立于综合分数"} />
-    <Evidence testID="tonight-observation-window" title="最佳观测窗口" body={report.observationWindow ? `${utcTime(report.observationWindow.start)}–${utcTime(report.observationWindow.end)} · ${report.observationWindow.durationMinutes} 分钟` : "未找到连续观测窗口"} meta={`时区 ${report.context.timezone} · 观星夜 ${report.context.nightDate}`} />
     <Evidence testID="tonight-departure-guidance" title={departureAt ? `建议 ${utcTime(departureAt)} 前出发` : "建议出发时间暂不可算"} body={departureAt ? `按当前路线预计 ${report.primarySpot?.travelMinutes} 分钟；临行刷新路线和安全状态。` : "真实路线或连续窗口缺失，不用直线距离伪造出发时间。"} />
-    <Evidence testID="tonight-data-provenance" title="来源与有效性" body={`生成 ${report.generatedAt} · 有效至 ${report.expiresAt}`} meta={report.provenance.map((item) => `${item.source}@${item.version}`).join(" · ")} />
+    <Pressable
+      testID="tonight-recommendation-summary"
+      accessibilityLabel={`recommendation-card:${report.primarySpot?.name ?? "尚未选出主地点"}`}
+      accessibilityRole="button"
+      onPress={onOpenSpots}
+      style={styles.evidence}
+    >
+      <Text style={styles.evidenceTitle}>主地点 · {report.primarySpot?.name ?? "未选出"}</Text>
+      <Text style={styles.evidenceBody}>{report.primarySpot ? `${report.primarySpot.distanceKm ?? "—"} km · ${report.primarySpot.travelMinutes ?? "—"} 分钟 · ${report.primarySpot.score} 分` : "候选均被阻断或数据不足"}</Text>
+      <Text style={styles.evidenceMeta}>{report.primarySpot?.risks.join("；") || "点击核对主地点与备选地点的取舍"}</Text>
+    </Pressable>
   </View>;
 }
 
@@ -54,7 +100,7 @@ function ConditionsPanel({ report, expanded, onToggle }: { report: NightReport; 
       <Evidence testID="tonight-condition-cloud-layers" title="专业分层条件" body={`低云 ${metric(weather?.lowCloudPct, "%")} · 中云 ${metric(weather?.midCloudPct, "%")} · 高云 ${metric(weather?.highCloudPct, "%")}`} meta={`能见度 ${metric(weather?.visibilityM === null || weather?.visibilityM === undefined ? null : weather.visibilityM / 1000, " km")} · AQI ${metric(weather?.aqi, "")} · 风向 ${metric(weather?.windDirectionDeg, "°")}`} />
       <Evidence testID="tonight-condition-light" title="光污染：暂无经校准数据" body={report.conditions.lightPollution.boundary} meta="卫星夜光不等于现场天空亮度；不输出伪造 Bortle/SQM。" />
     </> : null}
-    <Pressable testID="tonight-toggle-conditions" accessibilityRole="button" onPress={onToggle} style={styles.retry}><Text style={styles.retryText}>{expanded ? "收起专业条件" : "查看完整条件"}</Text></Pressable>
+    <Pressable testID="tonight-toggle-conditions" accessibilityLabel={`condition-summary-expander:${expanded ? "收起专业条件" : "查看完整条件"}`} accessibilityRole="button" onPress={onToggle} style={styles.retry}><Text style={styles.retryText}>{expanded ? "收起专业条件" : "查看完整条件"}</Text></Pressable>
   </View>;
 }
 
@@ -136,14 +182,16 @@ export function TonightScreen() {
       {dateMode === "custom" ? <TextInput testID="tonight-custom-date" accessibilityLabel="自定义观星夜日期" value={customDate} onChangeText={setCustomDate} placeholder="YYYY-MM-DD" style={styles.input} /> : null}
       {!dateValid ? <Text style={styles.warningText}>请输入有效的 YYYY-MM-DD 日期；旧报告不会被无效输入覆盖。</Text> : null}
       <Text style={styles.subtitle}>结论、连续窗口、主备地点和行动共享同一版本快照；缺失路线、过期来源与安全阻断不会被总分隐藏。</Text>
+      <DecisionHero report={query.data} failed={query.isError} />
+      {query.data ? <DecisionQuickFacts report={query.data} /> : null}
       <View style={styles.actions}>
-        <Pressable testID="tonight-refresh" accessibilityRole="button" onPress={() => { setMode("decision"); void query.refetch(); }} style={styles.action}><Text style={styles.actionText}>刷新夜报</Text></Pressable>
-        <Pressable testID="tonight-select-primary" accessibilityRole="button" onPress={() => load("spots")} style={styles.action}><Text style={styles.actionText}>主备地点</Text></Pressable>
-        <Pressable testID="tonight-select-target" accessibilityRole="button" onPress={() => load("target")} style={styles.action}><Text style={styles.actionText}>可见目标</Text></Pressable>
+        <Pressable testID="tonight-refresh" accessibilityLabel={`location-date-refresh:${effectiveLabel} · ${nightDate} · 刷新夜报`} accessibilityRole="button" onPress={() => { setMode("decision"); void query.refetch(); }} style={styles.action}><Text style={styles.actionText}>刷新夜报</Text></Pressable>
+        <Pressable testID="tonight-select-primary" accessibilityLabel="plan-backup-selector:查看并选择主备地点" accessibilityRole="button" onPress={() => load("spots")} style={styles.action}><Text style={styles.actionText}>主备地点</Text></Pressable>
+        <Pressable testID="tonight-select-target" accessibilityLabel="visible-target-timeline:查看今晚可见目标时间线" accessibilityRole="button" onPress={() => load("target")} style={styles.action}><Text style={styles.actionText}>可见目标</Text></Pressable>
       </View>
       {query.isFetching && !query.data ? <View style={styles.state}><Text style={styles.stateTitle}>正在生成版本化夜报…</Text><Text style={styles.stateBody}>天气、天文、地点和路线分别加载；部分失败不会被合并成假成功。</Text></View> : null}
       {query.isError ? <View style={styles.state}><Text style={styles.stateTitle}>夜报暂不可用</Text><Text style={styles.stateBody}>{query.error instanceof Error && query.error.message === "night_report_api_base_url_missing" ? "尚未配置 EXPO_PUBLIC_API_BASE_URL。可返回首页设置位置，或配置后端环境后重试。" : "请求失败；保留当前上下文，可安全重试。"}</Text><Pressable accessibilityRole="button" onPress={() => query.refetch()} style={styles.retry}><Text style={styles.retryText}>重试</Text></Pressable></View> : null}
-      {query.data && mode === "decision" ? <DecisionPanel report={query.data} /> : null}
+      {query.data && mode === "decision" ? <DecisionPanel report={query.data} onOpenSpots={() => setMode("spots")} /> : null}
       {query.data && mode === "decision" ? <ConditionsPanel report={query.data} expanded={conditionsExpanded} onToggle={() => setConditionsExpanded((value) => !value)} /> : null}
       {query.data && mode === "spots" ? <SpotsPanel report={query.data} /> : null}
       {query.data && mode === "target" ? <TargetPanel report={query.data} selectedId={selectedTargetId} onSelect={setSelectedTargetId} /> : null}
@@ -155,6 +203,7 @@ export function TonightScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.canvas }, content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 }, eyebrow: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" }, title: { color: palette.text, fontSize: typeToken.title, fontWeight: "700" }, subtitle: { color: palette.textSecondary, fontSize: typeToken.body, lineHeight: 23 },
+  quickFacts: { gap: spacing.x1, paddingHorizontal: 2 }, quickFact: { color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 18 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 }, action: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: 14, borderWidth: 1, borderColor: palette.border, borderRadius: radii.pill, backgroundColor: palette.surface }, actionText: { color: palette.text, fontSize: typeToken.label, fontWeight: "700" },
   context: { color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 18 }, input: { minHeight: minimumTouchTarget, paddingHorizontal: 12, borderWidth: 1, borderColor: palette.border, borderRadius: radii.control, color: palette.text, backgroundColor: palette.surface }, panel: { gap: spacing.x1, padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, panelTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" }, targetTabs: { gap: spacing.x1 }, actionActive: { borderColor: palette.primaryActive, backgroundColor: palette.surfaceMuted }, evidence: { minHeight: 86, padding: 12, borderRadius: radii.control, backgroundColor: palette.surfaceMuted }, evidenceTitle: { color: palette.text, fontSize: typeToken.body, fontWeight: "700" }, evidenceBody: { marginTop: 5, color: palette.text, fontSize: typeToken.label, lineHeight: 19 }, evidenceMeta: { marginTop: 5, color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 },
   state: { minHeight: 180, justifyContent: "center", padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, stateTitle: { color: palette.text, fontSize: typeToken.section, fontWeight: "700" }, stateBody: { marginTop: spacing.x1, color: palette.textSecondary, lineHeight: 21 }, warningText: { color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 18 }, retry: { minHeight: minimumTouchTarget, marginTop: spacing.x2, alignItems: "center", justifyContent: "center", borderRadius: radii.control, backgroundColor: palette.primaryActive }, retryText: { color: palette.onPrimary, fontWeight: "700" },

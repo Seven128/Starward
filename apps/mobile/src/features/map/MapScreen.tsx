@@ -19,10 +19,13 @@ const mapClient = createMapClient({ baseUrl: runtimeApiBaseUrl });
 const forecastClient = createForecastClient({ baseUrl: runtimeApiBaseUrl });
 type ViewKey = "status" | "filters" | "layer" | "selected" | "reorder" | "mode" | "degradation";
 
-const actionRows: Array<{ key: ViewKey; id: string; label: string }> = [
-  { key: "status", id: "map-open-status", label: "范围状态" }, { key: "filters", id: "map-apply-strict-filter", label: "严格筛选" },
-  { key: "layer", id: "map-toggle-light-layer", label: "环境图层" }, { key: "selected", id: "map-select-spot", label: "选择地点" },
-  { key: "reorder", id: "map-reorder-route", label: "调整顺序" }, { key: "mode", id: "map-change-route-mode", label: "出行方式" },
+const actionRows: Array<{ key: ViewKey; id: string; label: string; stableControlId?: string; accessibilityName?: string }> = [
+  { key: "status", id: "map-open-status", label: "范围状态", stableControlId: "map-search-context-bar", accessibilityName: "地图搜索与上下文" },
+  { key: "filters", id: "map-apply-strict-filter", label: "严格筛选", stableControlId: "map-filter-sheet", accessibilityName: "地图筛选 Bottom Sheet" },
+  { key: "layer", id: "map-toggle-light-layer", label: "环境图层", stableControlId: "map-layer-selector", accessibilityName: "地图图层选择" },
+  { key: "selected", id: "map-select-spot", label: "选择地点", stableControlId: "selected-spot-sheet", accessibilityName: "选中地点 Bottom Sheet" },
+  { key: "reorder", id: "map-reorder-route", label: "调整顺序", stableControlId: "route-plan-editor", accessibilityName: "路线计划编辑" },
+  { key: "mode", id: "map-change-route-mode", label: "出行方式" },
   { key: "degradation", id: "map-refresh-route", label: "刷新路线" },
 ];
 
@@ -50,8 +53,8 @@ function ReorderPanel({ ordered, route, fetching }: { ordered: MapSpotSummary[];
   return <View style={styles.panel}><Evidence testID="route-stop-order" title={ordered.length ? ordered.map((spot, index) => `${index + 1}. ${spot.name}`).join(" → ") : "暂无可排序地点"} body="主备角色和编号按同一选择状态更新。" /><Evidence testID="route-recalculation-state" title={fetching ? "正在重新计算受影响路线" : "顺序已更新；不可用路段保持缺失"} body="旧路线不会在重算期间被描述为最新。" /><Evidence testID="route-version" title={`路线请求 ${route?.requestId ?? "尚未生成"}`} body={route ? `${route.provider}@${route.providerVersion} · ${route.state}` : "等待至少一个目的地。"} /></View>;
 }
 
-function ModePanel({ mode, route, selected, navigationError, openNavigation }: Pick<ActivePanelProps, "mode" | "route" | "selected" | "navigationError" | "openNavigation">) {
-  return <View style={styles.panel}><Evidence testID="route-mode" title={`当前方式：${mode === "cycle" ? "骑行" : "驾车"}`} body={route?.navigationUsable ? `${distance(route.distanceMeters)} · ${duration(route.durationSeconds)}` : "该方式没有可验证路线，不套用其他方式 ETA。"} /><Evidence testID="route-parking-end" title="停车/道路终点" body={selected?.facilities.includes("parking") ? "POI 标有停车标签，但夜间开放和容量仍需核验。" : "未验证停车点；不能直接导航到架设位置。"} /><Evidence testID="route-last-mile" title="最后一段步行/搬运" body="步行距离与坡度尚未现场验证，当前明确缺失；不会用直线距离替代最后一段路线。" /><Pressable testID="route-open-native-map" accessibilityRole="button" onPress={() => void openNavigation()} disabled={!selected} style={[styles.nativeMapButton, !selected && styles.disabled]}><Text style={styles.nativeMapButtonText}>{route?.navigationUsable ? "用系统地图开始导航" : "在系统地图复核地点"}</Text></Pressable>{navigationError ? <Text accessibilityLiveRegion="assertive" style={styles.error}>{navigationError}</Text> : null}</View>;
+function ModePanel({ mode, route, selected }: Pick<ActivePanelProps, "mode" | "route" | "selected">) {
+  return <View style={styles.panel}><Evidence testID="route-mode" title={`当前方式：${mode === "cycle" ? "骑行" : "驾车"}`} body={route?.navigationUsable ? `${distance(route.distanceMeters)} · ${duration(route.durationSeconds)}` : "该方式没有可验证路线，不套用其他方式 ETA。"} /><Evidence testID="route-parking-end" title="停车/道路终点" body={selected?.facilities.includes("parking") ? "POI 标有停车标签，但夜间开放和容量仍需核验。" : "未验证停车点；不能直接导航到架设位置。"} /><Evidence testID="route-last-mile" title="最后一段步行/搬运" body="步行距离与坡度尚未现场验证，当前明确缺失；不会用直线距离替代最后一段路线。" /></View>;
 }
 
 function DegradationPanel({ route }: { route?: MapRouteSnapshot }) {
@@ -102,7 +105,10 @@ export function MapScreen() {
     if (key === "degradation") void route.refetch();
   };
   const openNavigation = async () => {
-    if (!selected) return;
+    if (!selected) {
+      setNavigationError("请先选择地点；当前视口和筛选会保留。");
+      return;
+    }
     setNavigationError(null);
     try { await openNativeMapNavigation(selected.coordinate, selected.name); }
     catch { setNavigationError("未能打开系统地图；地点仍保留，可稍后重试。"); }
@@ -112,13 +118,23 @@ export function MapScreen() {
     <Text style={styles.eyebrow}>地点与路线 · {location.label}</Text><Text style={styles.title}>观星地图</Text>
     <Text style={styles.subtitle}>WGS84 用于业务和距离；地图/路线供应商转换只发生在适配边界。开放 POI 仅作为未验证候选。</Text>
     <DecisionContextRevision />
-    <View accessibilityLabel="地点分布画布" style={styles.mapCanvas}>
+    <View testID="map-marker-density-surface" accessible focusable accessibilityRole="image" accessibilityLabel="Marker / cluster 同步画布" style={styles.mapCanvas}>
       <Text style={styles.mapCount}>{spots.isLoading ? "正在加载当前范围…" : `当前范围 ${spots.data?.items.length ?? 0} 个候选`}</Text>
       <View style={styles.markerRow}>{(spots.data?.items.slice(0, 6) ?? []).map((spot, index) => <Pressable key={spot.id} accessibilityRole="button" accessibilityLabel={`${spot.name}，${spot.mapState}`} onPress={() => { setSelectedId(spot.id); selectSharedSpot(spot); setActive("selected"); }} style={[styles.marker, selected?.id === spot.id && styles.markerSelected]}><Text style={styles.markerText}>{index + 1}</Text><Text numberOfLines={1} style={styles.markerLabel}>{spot.name}</Text></Pressable>)}</View>
       {spots.isError ? <Text style={styles.error}>地点源不可用；保留视口，可重试，不显示幽灵标记。</Text> : null}
     </View>
-    <View style={styles.actions}>{actionRows.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" onPress={() => activate(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
+    <View style={styles.actions}>{actionRows.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" accessibilityLabel={action.stableControlId ? `${action.stableControlId}:${action.accessibilityName}` : action.label} onPress={() => activate(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
     <ActivePanel active={active} spots={spots.data?.items ?? []} selected={selected} generatedAt={spots.data?.generatedAt} loading={spots.isLoading} strictCount={strictResults.length} layer={layer} ordered={ordered} route={route.data} routeFetching={route.isFetching} mode={mode} navigationError={navigationError} openNavigation={openNavigation} />
+    <Pressable
+      testID="route-open-native-map"
+      accessibilityRole="button"
+      accessibilityLabel="external-navigation-action:外部导航交接"
+      onPress={() => void openNavigation()}
+      style={styles.nativeMapButton}
+    >
+      <Text style={styles.nativeMapButtonText}>{route.data?.navigationUsable ? "用系统地图开始导航" : "在系统地图复核地点"}</Text>
+    </Pressable>
+    {navigationError ? <Text accessibilityLiveRegion="assertive" style={styles.error}>{navigationError}</Text> : null}
   </ScrollView></SafeAreaView>;
 }
 

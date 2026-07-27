@@ -58,8 +58,9 @@ function SectionHeading({ eyebrow, title, meta }: { eyebrow: string; title: stri
   </View>;
 }
 
-function Choice({ label, selected, disabled = false, onPress, accessibilityLabel }: { label: string; selected: boolean; disabled?: boolean; onPress: () => void; accessibilityLabel?: string }) {
+function Choice({ label, selected, disabled = false, onPress, accessibilityLabel, testID }: { label: string; selected: boolean; disabled?: boolean; onPress: () => void; accessibilityLabel?: string; testID?: string }) {
   return <Pressable
+    testID={testID}
     accessibilityRole="button"
     accessibilityLabel={accessibilityLabel ?? label}
     accessibilityState={{ selected, disabled }}
@@ -89,7 +90,7 @@ function ModelSelector({ bundle, selected, onSelect }: { bundle: ForecastBundle;
   return <View style={styles.section}>
     <SectionHeading eyebrow="预报模型" title="先看系统解释，再看模型值" meta={`${Math.round(bundle.modelComparison.confidence * 100)}% 可信度`} />
     <View style={styles.choiceRow}>
-      <Choice label={`${primary.provider} · ${primary.model}`} selected={selected === "primary"} onPress={() => onSelect("primary")} />
+      <Choice testID="model-selector" label={`${primary.provider} · ${primary.model}`} accessibilityLabel={`预报模型选择，${primary.provider} ${primary.model}`} selected={selected === "primary"} onPress={() => onSelect("primary")} />
       <Choice label={comparison ? `${comparison.provider} · ${comparison.model}` : "暂无可比较模型"} selected={selected === "comparison"} disabled={!comparison} onPress={() => onSelect("comparison")} />
     </View>
     <View style={styles.explanation}>
@@ -108,7 +109,7 @@ function TrendCalendar({ trends, selectedNight, onSelect }: { trends: ForecastTr
   const selected = trends.find((trend) => trend.date === selectedNight) ?? trends[0];
   return <View style={styles.section}>
     <SectionHeading eyebrow="15 日趋势" title="选择观测夜" meta="远期仅作规划" />
-    {trends.length ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateRow}>
+    {trends.length ? <ScrollView testID="trend-calendar" accessibilityLabel="七夜趋势日历" horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateRow}>
       {trends.map((trend) => <Pressable
         key={trend.date}
         accessibilityRole="button"
@@ -145,7 +146,9 @@ function Timeline({ bundle, onSelectTime }: { bundle: ForecastBundle; onSelectTi
       <View style={styles.timelineRail} />
       {windows.map((item) => <Pressable
         key={item.key}
+        testID={item.key === "dark" ? "twilight-window-strip" : undefined}
         accessibilityRole="button"
+        accessibilityLabel={item.key === "dark" ? `暮光与黑夜窗口，${item.label}` : undefined}
         disabled={!item.window}
         onPress={() => item.window && onSelectTime(item.window.startUtc)}
         style={({ pressed }) => [styles.timelineRow, pressed && styles.pressed]}
@@ -198,7 +201,7 @@ function HourlyMatrix({ series, selectedIndex, onSelect, timezone, isFetching }:
     </View> : null}
     {series.hours.length ? <View style={styles.matrixFrame}>
       <View style={styles.matrixLabels}><View style={styles.matrixCorner}><Text style={styles.matrixCornerText}>指标</Text></View>{matrixRows.map((row) => <View key={row.label} style={styles.matrixLabelCell}><Text style={styles.matrixLabelText}>{row.label}</Text></View>)}</View>
-      <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.matrixColumns} accessibilityLabel="小时天气矩阵，可横向浏览并选择时间列">
+      <ScrollView testID="hourly-matrix" horizontal nestedScrollEnabled showsHorizontalScrollIndicator contentContainerStyle={styles.matrixColumns} accessibilityRole="summary" accessibilityLabel="小时级连续矩阵，可横向浏览并选择时间列">
         {series.hours.map((item, index) => <Pressable
           key={item.validTimeUtc}
           accessibilityRole="button"
@@ -223,7 +226,7 @@ function LayerPanel({ layers, selectedId, onSelect, selectedTime }: { layers: Fo
   return <View style={styles.section}>
     <SectionHeading eyebrow="天气图层" title="切换一个主要证据层" meta={selectedTime ? `${time(selectedTime)} 时刻` : "未选择时间"} />
     {layers.length ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
-      {layers.map((item) => <Choice key={item.id} label={item.name} selected={item.id === layer?.id} disabled={item.status === "missing"} onPress={() => onSelect(item.id)} accessibilityLabel={`${item.name}，${item.status}`} />)}
+      {layers.map((item, index) => <Choice key={item.id} testID={index === 0 ? "weather-layer-panel" : undefined} label={item.name} selected={item.id === layer?.id} disabled={item.status === "missing"} onPress={() => onSelect(item.id)} accessibilityLabel={index === 0 ? `天气图层面板，${item.name}，${item.status}` : `${item.name}，${item.status}`} />)}
     </ScrollView> : <State title="当前范围无可用图层" body="保留基础地图；不会用无来源色块模拟天气图层。" />}
     {layer ? <View style={styles.layerPreview}>
       <View style={styles.legendRow}>{layer.legend.map((entry) => <View key={`${entry.from}-${entry.to}`} style={styles.legendItem}><View style={[styles.legendSwatch, { backgroundColor: entry.color, opacity }]} /><Text style={styles.legendText}>{entry.label}</Text></View>)}</View>
@@ -301,11 +304,11 @@ export function ForecastScreen() {
   const locationLabel = location.source === "unset" ? "深圳市 · 手动默认范围" : location.label;
 
   return <SafeAreaView testID="screen-forecast-and-astronomy" style={styles.screen}>
-    <ScrollView ref={pageScrollRef} contentContainerStyle={styles.content}>
+    <ScrollView ref={pageScrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
       <View style={styles.pageHeader}>
         <Text style={styles.eyebrow}>专业证据 · {locationLabel}</Text><Text style={styles.title}>为什么这个观星夜值得去</Text>
         <Text style={styles.subtitle}>预测、估算和版本化天文计算分别标注；缺失值、低可信度与实验边界不会被隐藏。</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionNav}>
+        <ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionNav}>
           {sectionActions.map((action) => <Pressable key={action.key} testID={action.testID} accessibilityRole="button" accessibilityState={{ selected: activeSection === action.key }} onPress={() => navigateToSection(action.key)} style={({ pressed }) => [styles.navAction, activeSection === action.key && styles.navActionActive, pressed && styles.pressed]}><Text style={[styles.navActionText, activeSection === action.key && styles.navActionTextActive]}>{action.label}</Text></Pressable>)}
         </ScrollView>
       </View>

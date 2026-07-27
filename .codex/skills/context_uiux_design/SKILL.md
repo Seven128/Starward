@@ -1,6 +1,6 @@
 ---
 name: context_uiux_design
-description: Use when the user explicitly asks to establish, adopt or repair durable UI/UX Design Authority, DESIGN.md, design-system governance, visual standards, stable interaction/surface Context, Impeccable review, visual polish, frontend redesign, or when material production UI lacks sufficient or consistent Design Authority in a Minimal Context Harness project. For standalone generation of low/high-fidelity wireframes, visual candidates, a design prototype or Figma handoff, use design-resource-authoring instead; do not trigger this Skill solely for resource generation, routine implementation with sufficient authority, local CSS fixes, UI bugs, explicit throwaway prototypes or generic mentions of design.
+description: Use when the user explicitly asks to establish, adopt or repair durable UI/UX Design Authority, DESIGN.md, design-system governance, visual standards, stable interaction/surface Context, Impeccable review, visual polish, frontend redesign, or when material production UI lacks sufficient or consistent Design Authority in a Minimal Context Harness project. For standalone generation of low/high-fidelity wireframes, visual candidates, a design prototype or implementation resource handoff, use design-resource-authoring instead; do not trigger this Skill solely for resource generation, routine implementation with sufficient authority, local CSS fixes, UI bugs, explicit throwaway prototypes or generic mentions of design.
 ---
 
 # Context UIUX Design
@@ -19,21 +19,38 @@ Project-specific UI/UX and visual design rules belong in a separate project-loca
 
 按需使用而不是默认加载全部层级：全局体验原则；跨 surface 的 Product Surface Contract；单屏 Screen Contract；可复用的 Control interaction Context；`DESIGN.md` 视觉系统/引用解释；项目原生 authored targets；verification Context。继续使用现有 `global`、`contract`、area/subdomain、`decision-rationale`、`verification` 和 `implementation-index` 角色，不新增笼统 `design` 或 `screen` 角色。
 
-一项事实只有一个主要 owner：跨页面职责属于 Surface Context，稳定的单屏层级/交互属于 Screen/interaction Context，视觉 token/rationale/reference interpretation 属于 `DESIGN.md`，具体构图属于 selected target，交付范围与证明属于现有 Delivery Contract/verification。使用稳定 surface/control/target key 连接，不复制成彼此竞争的说明。
+一项事实只有一个主要 owner：跨页面职责属于 Surface Context，稳定的单屏层级/交互属于 Screen/interaction Context，视觉 token/rationale 属于 `DESIGN.md`，具体构图属于 selected target，交付范围与证明属于当前任务或现有 Delivery Contract/verification。使用稳定 surface/control/target key 连接，不复制成彼此竞争的说明。
+
+## Design Source Projection / 设计资源事实投影
+
+消费已选资源时，先把每项 material fact 在内部分类为：已有 durable owner、需要更新 owner、task-local、out of scope 或 decision required；不要持久化这张映射。
+
+- `surface_flow`：长期跨页面职责进入 Product Surface Context；稳定单屏层级/region/navigation 进入 Screen Contract；本次交付路径留在任务/Contract。
+- `visual_content`：长期视觉系统、token、组件族视觉规则和 rationale 进入 `DESIGN.md`；产品文案/信息语义进入 Screen/Control Context；精确构图、数值和条件差异留在 immutable target。
+- `component_control` 与 `state_interaction`：可复用的控件任务、可见性、输入/校验、状态、反馈、恢复、权限和导航语义进入 Screen/interaction Context；本次实现细节留在任务/Contract。
+- `motion`：系统级 motion/reduced-motion policy 进入 `DESIGN.md`；交互行为进入 Screen/Control Context；精确 timeline/easing/关键帧留在 target/handoff。
+- `adaptation_input` 与 `accessibility`：长期响应式、平台/input/focus/语义替代规则进入 Screen/Control Context；精确 condition/value 留在 target；可重复检查入口进入 verification Context。
+- `assets`：长期资产使用/归属政策进入 owning Context 或 `DESIGN.md`；精确文件、字节和 digest 留在 target/handoff。
+- provider provenance、source profile/dependencies、coverage/applicability cells、typed locators、交付 blockers、Claims/Assertions/Progress/Final Gate 不是 durable UI/UX Context；只有它们暴露的稳定产品决定、风险或可重复验证路径才投影到对应 owner。
+
+每个 adopted target 只能有一个 canonical adoption record。项目级、系统级或 component-family target 由 `DESIGN.md` 记录；单 screen/interaction target 由 owning Screen Contract 记录。canonical record 独占 interpretation、selection basis、immutable locator/digest、condition coverage 和 editable upstream owner/locator/update route；其他 Context、handoff 或 Contract 只保留 stable target key、canonical owner/anchor 与本层 applicability。handoff 的变化型 coverage index 不复制进 Context。
 
 ## External Design Resource Consumption / 外部设计资源消费
 
-- `design-resource-authoring` 可以按明确请求在上游动态委托 Open Design 产生 flow、低保真、候选方向、控件状态、交互原型或条件式 Figma handoff；它不复制 provider 的提示词/模板，也不把任何资源设为全局必选。
+- `design-resource-authoring` 可以按明确请求在上游动态委托 Open Design 产生 flow、低保真、候选方向、组件族/独特复杂控件状态、交互原型或实现级资源；它以明确输出/开发内容为上限，在范围内补齐材料性 UI/UX 含义但不要求逐控件一份稿，不复制 provider 的提示词/模板，也不把任何资源设为全局必选。
+- `design-system-authoring` 是另一个仅显式调用的冷启动/修复 Skill：它用 Open Design 生成或选择候选，经过明确或受托选择后，把结果采纳到 canonical `DESIGN.md`、唯一 token source/direction 与 owning Context。缺少设计系统不会让本 Skill 或 `design-resource-authoring` 自动调用它。
 - 本 Skill 不承担独立资源生产。只有进入默认开发流程或 Long-Task、需要采纳稳定结论时，本 Skill 才消费这些或其他外部设计 Source。
+- 如果上游交付是用于实现的已选资源，先要求一个通过 `ty-context design-resource preflight <handoff.md>` 的 `design-resource-handoff-v1`。Web/App target 必须声明完整取得的 canonical entry 与依赖闭包；handoff 作为残余语义/coverage 适配器，以 typed locator 索引资源，并逐 subject × target × condition 闭合 surface/flow、visual/content、component/control、state/interaction、motion、adaptation/input、accessibility、assets。探索候选不需要此文件；provider/preflight 也不等于采纳或验收。
 - 候选、灵感和未选定输出不是 Context readiness 或实现权威，不能写入 selected registry；选定目标仍必须完成 UI Authority Closure 和 `Context Delta`。
-- 消费时核对产品 Source、Screen/Control Context、`DESIGN.md`、token owner、资源稳定身份及 exact-target 覆盖条件；只把长期稳定且无冲突的事实写入其唯一 owner，不要求统一 pack、目录或工具格式。
-- 设计资源生成本身不改 `project_context/**`、`DESIGN.md` 或 production code。下游采纳、实现与验证仍由当前 Workflow Contract 或 `long-task-workflow` 负责。
+- 消费时沿 owning Context 的 surface/control/target key 到 canonical adoption record，主动打开每个受影响的 selected `exact-target`/`constraint`，而不是把登记存在视为已消费。核对产品 Source、Screen/Control Context、token owner、不可变 adopted locator/digest、覆盖条件以及 editable upstream owner/locator/update route；按 Design Source Projection 只把长期稳定且无冲突的事实写入其唯一 owner，不要求统一 pack、目录或工具格式。
+- 缺失、不可读、过期或冲突的 adopted resource 对受影响 claim 一律 fail closed。若 immutable adopted target 可读而 editable upstream 不可用，可以继续理解/实现既有目标，但修改资源必须保留为明确人工/外部边界。更新经 upstream 完成后生成/批准新 immutable version 并更新 owning reference，不能静默覆盖旧基线。
+- 设计资源生成本身不改 `project_context/**`、`DESIGN.md` 或 production code；定稿后只可一次性回改初始方案。设计系统采纳则由显式 `design-system-authoring` 完成。下游实现与验证仍由当前 Workflow Contract 或 `long-task-workflow` 负责。
 
 ## 工作方式
 
 1. 先读取 `project_context/global.md` 和 `project_context/context.toml`，按 default area、triggers、read_when 选择相关 context。
-2. 如果项目存在 `DESIGN.md`，先读取其 Design Authority 状态、唯一 token 源/生成方向和设计引用。仅当当前开发工作流经 UI Authority Closure 判断长期视觉体系需要采纳或修复时，按 Google `@google/design.md` 的格式创建或更新根目录 `DESIGN.md`；独立资源生成阶段不写入。
-3. 读取已有外部设计资源或其他 selected Source，整理需要采纳的用户流程、页面/组件清单、关键状态、交互反馈、响应式边界、a11y、视觉约束、token 和 design reference registry。若当前请求只是生成资源，转到 `design-resource-authoring`；不要在本 Skill 内复制 provider 生成流程或建立强制交付格式。
+2. 如果项目存在 `DESIGN.md`，先读取其 Design Authority 状态、唯一 token 源/生成方向和由它 canonical owning 的项目/系统/component-family targets；screen-specific target 则跟随 pointer 读取 owning Screen Contract。仅当当前开发工作流经 UI Authority Closure 判断长期视觉体系需要采纳或修复时，按 Google `@google/design.md` 的格式创建或更新根目录 `DESIGN.md`；独立资源生成阶段不写入。
+3. 读取已有外部设计资源或其他 selected Source。若有 implementation handoff，先运行共享 preflight，再主动打开 handoff 索引的 exact/constraint 资源；不能用索引、provider 成功或 hash 替代资源消费。按稳定 subject/target/condition/Source-item key 应用 Design Source Projection，并为每个 adopted target 确认 exactly-one canonical owner。若当前请求只是生成资源，转到 `design-resource-authoring`；不要在本 Skill 内复制 provider 生成流程或另建交付格式。
 4. 涉及 Product Surface（Web 页面、移动/桌面屏幕、游戏 UI/HUD/菜单、CLI/TUI 输出、扩展或设备界面）、前端布局、UI/UX、产品模块边界或信息放置时，把产品/页面定位检查作为前置动作：用户在这个 surface 要完成的判断、产品必须提供的信息/动作/反馈、不应常驻的信息、主层/下钻/运维/诊断/详情归属、布局和信息密度是否匹配任务。多 surface、多平台或多模块归属不清时，先读取相关 Context、搜索入口并结合已有 UI 代码/截图做信息架构 sweep，必要时使用 `context_surface_contract` 做 Surface Contract Check，再收窄到具体视觉或交互实现。该检查是下一步变更分类的输入；只有形成长期 surface 职责、信息架构、交互契约或模块边界结论时才更新 Context 或 `DESIGN.md`。
    - 若存在 Product Surface Contract，读取并对齐 primary user question、main allows/forbids、drilldown ownership、long-task state 和 verification。
    - 若缺失且本任务改变 durable surface responsibility，将唯一 `Context Delta` 设为 `required`，把界面职责写入 `project_context/**`；视觉 token、颜色、字体、间距、圆角和视觉 rationale 仍写入 `DESIGN.md`。
@@ -103,11 +120,12 @@ Use this check before material production UI: a new or redesigned screen, primar
 
 Configured is system-level visual authority only, not surface implementation-ready status. `DESIGN.md` 被识别为 configured 只说明项目级视觉系统不是 starter，不表示任一页面已可高保真实现。affected surface 还必须拥有充分的 Screen/Control meaning、覆盖该 claim 的 selected target/constraints、唯一 token source 和项目可执行的验证路径；任何缺失都按 UI Authority Closure 路由，而不是伪造一个全局 readiness 状态。
 
-- Read the owning surface/interaction Context, `DESIGN.md`, the authored exact-value token source and generation direction, existing production components/routes and every material design reference.
+- Read the owning surface/interaction Context, `DESIGN.md`, the authored exact-value token source and generation direction, existing production components/routes and every affected selected exact/constraint resource through its immutable locator; also resolve its editable upstream/update route before authoring a resource change.
 - Classify each reference as `exact-target`, `constraint` or `inspiration`. Record the affected surface/route/component, project path or URI and relevant viewport/theme/mode/state. Exact targets authorize fidelity comparison only for those conditions; constraints authorize only their named rule; inspiration proves no reproduction claim.
 - Treat a missing `DESIGN.md`, its package starter with Design authority status: `unconfigured`, style-only prose, an inspiration-only set or conflicting references as insufficient authority for invented production layout.
-- If the user explicitly delegates standalone design-resource generation, use `design-resource-authoring` to commission the smallest sufficient set from available Product Design/Open Design capabilities. In this downstream Skill, adopt a selected target into durable Context/`DESIGN.md` only after UI Authority Closure. Ask only when an unknown material preference could change the result or the user reserves the choice.
+- If the user explicitly asks to initialize/generate/select/adopt the project design system, use the explicit-only `design-system-authoring`; never infer it from a missing starter. If the user explicitly delegates standalone resource generation, use `design-resource-authoring`. Style-bearing resources must stop on unconfigured authority and bind the adopted Open Design system; low-fidelity/IA/semantics-only resources remain lightweight. After final selection, resource authoring may reconcile accepted decisions into the initial proposal once, but this downstream Skill adopts durable target meaning only after UI Authority Closure.
 - Never use the implementation's own generated screenshot or diff as the target it claims to match. A target is selected Source; an implementation render is evidence. Baseline replacement requires deliberate review and cannot merely erase a failure.
+- Keep resource integrity and implementation conformance separate: a valid file hash, provider extraction/export, registry entry or resource count proves only acquisition/integrity, not that the production route/component renders or behaves like the selected target under the declared conditions.
 - Do not require Figma, a fixed `docs/design/**` tree, an image for every local change or universal pixel-perfect thresholds. Use project-native design assets and the smallest authority sufficient for the claimed fidelity.
 
 ## Visual Delivery Coverage / 视觉交付覆盖
@@ -119,13 +137,14 @@ For material design-system, redesign, high-fidelity implementation or visual-pol
 - Keep the authority split explicit: `project_context/**` owns durable surface/interaction responsibility and `DESIGN.md` owns durable visual-system semantics and rationale. Record one authored exact-value token source and one generation direction; generated CSS/theme/export files are implementation outputs, not competing authored truth. If `DESIGN.md` is not the machine-token source, name the project-native source it governs instead of hand-maintaining the same exact values twice.
 - Map every claimed fidelity combination to its selected `exact-target` or named `constraint`; do not let the Visual Coverage Set turn inspiration or missing authority into an implicit target.
 - Inspect production components or real product routes. A detached static kit, mock, poster, marketing specimen or generated showcase may guide design review, but it cannot be the only evidence for product UI behavior or fidelity.
+- For each selected combination, identify the cold-start real-user entry journey and inspect the first runnable production slice before expanding the rest of the UI; deep links remain supplemental when users normally enter through a shell or navigation owner.
 - Render and inspect the declared coverage with project-owned browser/component tests plus screenshots or manual review as appropriate. Report the combinations actually checked and any omitted or external review explicitly. A screenshot baseline may be updated only through deliberate review; replacing it merely to erase a diff is not verification.
 
 ## 输出边界
 
 - 不默认创建 `.work_products/**`、UI/UX 独立文档、handoff matrix、review/test/release 文档。
 - 不要求 lifecycle phase、plan task、phase gate 或阶段 Skill。
-- 如果用户明确要求独立设计稿、mock、线框图、原型或 Figma handoff，使用 `design-resource-authoring`；本 Skill 只在后续开发流程中采纳长期事实。
+- 如果用户明确要求初始化/生成/选择/采纳项目设计系统，使用仅显式调用的 `design-system-authoring`；如果明确要求独立设计稿、mock、线框图、原型或 implementation resource/handoff，使用 `design-resource-authoring`。本 Skill 只在后续开发流程中采纳其他长期事实。
 - `DESIGN.md` 是视觉设计系统事实源；项目流程、模块契约和下一步动作仍以 `project_context/**` 为准。
 - 如果普通页面实现已经有充分 Design Authority，或用户只要求修复 UI bug、局部改 CSS、换颜色、明确的 throwaway prototype，或只是泛泛提到“设计 / design / user experience”，不需要触发本 Skill；durable 视觉体系/Context 采纳，或 material production UI 缺失/冲突的 Design Authority 才使用。明确要求设计资源产物但尚未进入采纳/实现流程时使用 `design-resource-authoring`。
 
@@ -133,7 +152,7 @@ For material design-system, redesign, high-fidelity implementation or visual-pol
 
 - 使用 Google `@google/design.md` 格式：YAML front matter 存 tokens，Markdown body 存设计理由。
 - 优先包含 `name`、`colors`、`typography`、`spacing`、`rounded` 和必要 `components` token。
-- 在 `Overview` 内维护 Design Authority 状态、唯一 authored token source/generation direction 和 design reference registry；每个 durable reference 记录稳定 id、surface/route/component、path/URI、`exact-target` / `constraint` / `inspiration` 解释及覆盖条件。不要添加 Google schema 不支持的 front-matter keys。
+- 在 `Overview` 内维护 Design Authority 状态、唯一 authored token source/generation direction，以及仅由 `DESIGN.md` canonical owning 的项目/系统/component-family target records。每条 canonical record 记录 stable id、interpretation、selection basis、immutable path/URI + digest、condition coverage 和 editable upstream/update route。screen-specific target 只记录 stable id + owning Screen Contract anchor，不在两处重复完整 metadata。不要添加 Google schema 不支持的 front-matter keys。
 - Markdown section 顺序优先为：`Overview`、`Colors`、`Typography`、`Layout`、`Elevation & Depth`、`Shapes`、`Components`、`Do's and Don'ts`。
 - 写入或修改后，如本地可用，运行 `npx @google/design.md lint DESIGN.md` 检查结构；不要把 lint 结果写成“已通过”除非本轮真实执行。
 - 需要给工程消费 token 时，可用 `npx @google/design.md export --format css-tailwind DESIGN.md` 或 `json-tailwind` 生成临时输出。
@@ -148,6 +167,6 @@ For material design-system, redesign, high-fidelity implementation or visual-pol
 - `areas/*/verification.md` 或 role=`verification` Context：UI smoke、截图验收、可访问性检查或项目自己的关键验证重复执行路径。
 - `areas/*/deployment.md` 或 role=`deployment` Context：前端部署、预览环境、运行拓扑或健康检查重复执行路径。
 - `project_context/context.toml`：复杂项目的产品域 area/context_unit、role、触发词、按需读取策略和可选边界规则。
-- `DESIGN.md`：视觉 identity、design tokens、组件视觉规则、do/don't、视觉 rationale、唯一 token source/generation direction 和 design reference registry。
+- `DESIGN.md`：视觉 identity、design tokens、组件视觉规则、do/don't、视觉 rationale、唯一 token source/generation direction，以及项目/系统/component-family target 的 canonical adoption records；screen-specific target 只保留 owner/anchor pointer。
 
 不要编造 rationale；仅由当前代码或截图形态反推的理由、实现摘要、PR notes、命令输出、测试通过声明、截图审查、debug 过程和 agent reasoning 不进入 Context 或 `DESIGN.md`。

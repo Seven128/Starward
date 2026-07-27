@@ -2,7 +2,7 @@
 
 > 文档性质：供后续 /long-task-workflow 读取的上游 Source Plan。
 >
-> 权威边界：本计划保存用户意图、必要推导、受委托选择、待决策项与可观察验收，不是 Delivery Contract，不绑定真实 owner、runner、proof 或 Assertion，也不宣称实现完成。页面级 UI/UX 事实在这里以稳定 Surface/Control/Target 键和 Screen Contract-ready 语义表达；本次修订已把四个不可变 Open Design 资源登记为 `selected_for_source_authoring`，其中页面原型是 constraint target，控件 implementation contract 在其声明字段/状态/viewport 内是 exact target。该选择仍不是 Context/DESIGN Authority adoption；现有实现、实现截图、资源中的样例数据和评审壳也不是目标。后续仍须由 Tiny Context 默认工作流或受保护的 Single-Goal Long-Task revision 完成 UI Authority Closure、真实文件绑定与验证闭环。
+> 权威边界：本计划保存用户意图、必要推导、受委托选择、待决策项与可观察验收，不是 Delivery Contract，不绑定真实 owner、runner、proof 或 Assertion，也不宣称实现完成。页面级 UI/UX 事实以稳定 Surface/Control/Target 键表达；四个不可变设计资源现已受控复制到 `docs/design-targets/**` 并由 `DESIGN.md` canonical registry 采纳，其中页面原型是 constraint target，控件 implementation contract 在其声明字段/状态/viewport 内是 exact target。Product/Screen Contracts 已建立 ownership，residual implementation handoff 已生成并通过 design-resource preflight；但现有实现、实现截图、资源样例、handoff 完整性和评审壳仍不是产品完成证据。后续 Single-Goal Long-Task Contract 仍须完成真实文件绑定、实施与验证闭环。
 
 ## 1. Goal And Success Definition
 
@@ -47,37 +47,39 @@
 
 - 仓库/工程名为 Starward，用户侧产品名为《今晚去观星》，品牌句为“从黄昏走入星夜”。
 - 当前仓库已经存在 React Native/Expo APP、API、管理表面、worker/data-pipeline、共享 packages、测试和运行证据的广泛实现；这些文件说明“当前实现是什么”，不证明产品已完成，也不自动成为页面构图、视觉选择或验收基准。供应商购买、真实生产流量、生产许可和未来发布门仍须独立证明。
-- DESIGN.md 已声明移动端优先、390 × 844 主视口、44px 触控目标、结论/行动/证据三级信息层、日间/夜间/红光模式、地图与时间共用曲线和圆形节点语法；它仍是系统级视觉/交互 Authority。四个本轮 design target 补充逐页区域、控件位置、状态、动效、平台与验收语义，但在 UI Authority Closure 前不反向改写 DESIGN.md。
-- project_context/** 已声明地点、时间窗口、路线、到达、风险和专业证据是一组协调状态，并声明 DESIGN.md/Source Plan/Context 对项目 Skill 的单向上位权威关系；当前仍没有按本计划 Surface Key 建立的页面级 Screen Contract。四个 design target 已消除上游 Source 的页面/控件信息缺口，但其 durable adoption、Screen Contract 归属和实现绑定仍是后续 UI Authority Closure 的职责。
-- Tiny Context 当前默认 Workflow Contract 已支持 UI Authority Closure：物料级 UI 实现前必须逐个 reconcile 稳定 surface/control/target key，读取 DESIGN.md、token source 和 selected target；Product Surface Contract、on-demand Screen Contract、DESIGN.md、authored target、Delivery Contract、实现和 evidence 各自承担不同层级，不能相互替代。
+- DESIGN.md 已声明移动端优先、390 × 844 主视口、44px 触控目标、结论/行动/证据三级信息层、日间/夜间/红光模式、地图与时间共用曲线和圆形节点语法，并 canonical adoption 四个 repo-local design target；资源样例、run 状态和实现截图不因此成为产品事实。
+- project_context/** 已声明地点、时间窗口、路线、到达、风险和专业证据是一组协调状态；`product-surface-contract.md` 与 `screen-contracts.md` 已建立 14 Surface/95 Control 的 responsibility routing。当前剩余设计工作是生产 owner 绑定、selected-design conformance 和下游 blocker proof，不再缺 implementation handoff、Screen Contract 或 target adoption。
+- Tiny Context 默认 Workflow Contract 已支持 selected-design closure；本次完整补开发将通过一个新的 Single-Goal Long-Task 把同一义务投影到 Claims、Assertions、bindings 和 Final Gate，不能再运行一套平行 closure。
 
 ### 文本来源
 
 - S-ARCH：技术架构附件，2,042 行，53,663 bytes，SHA-256 1de938f5a16c1e3040ec967457479031d576b00c25d3b34c85ebb69d555b38b3。
-  - 来源路径：C:\Users\777\.codex\attachments\536861fc-7965-421e-ba5c-36af501fad92\pasted-text.txt
-  - 当前会话别名：C:\Users\777\.codex\attachments\d8874db0-6c8f-4270-98d8-d89a6d4422fd\pasted-text.txt；内容与 SHA-256 完全相同，不创建第二份语义来源。
+  - 当前来源路径：C:\Users\777\.codex\attachments\c27e0f73-3a63-4355-b713-45759e60fe8e\pasted-text.txt
   - 覆盖：React Native/Expo、原生模块、地图/坐标、后端领域、数据源、推荐、API、缓存、任务、媒体、部署、安全、可观测性、测试、性能、风险与工程顺序。
-- S-PRODUCT：产品大纲附件，1,995 行，42,179 bytes，SHA-256 4dd9c487f89955673fcb3f59dd4e38817683835f8f204b72dee6ee4c861bf0a3。
-  - 来源路径：C:\Users\777\.codex\attachments\0d11984e-40b8-43ee-b8dc-a7f4ebac3505\pasted-text.txt
-  - 当前会话别名：C:\Users\777\.codex\attachments\62ece93a-1736-4d7b-8888-c747e78816fa\pasted-text.txt，42,178 bytes，SHA-256 76fd0201aacd63f74dd87c4ca362cd59bf76f6ceea0cdb5346f1d38d4222f6a0；与前一路径逐字内容在 TrimEnd 后相同，仅缺最后一个 LF，不创建第二份语义来源。
+- S-PRODUCT：产品大纲附件，1,995 行，44,172 bytes，SHA-256 bd537db472da2b5baa06effc3769b837363e3489901034cb338a30af4a3e62ba。
+  - 当前来源路径：C:\Users\777\.codex\attachments\2b04420e-d962-47fb-89bc-bfa9926cb096\pasted-text.txt
   - 覆盖：目标用户、场景、五入口信息架构、全部功能、数据模型、通知、MVP/V1/V2/V3、指标、后台与风险。
 - S-DESIGN：仓库根 DESIGN.md，提供视觉 token、品牌语义、系统级布局/组件/模式和视觉禁区；当前不被解释为逐页面构图或 exact target。
-- S-CONTEXT：project_context/global.md、architecture.md、areas/main.md，提供 durable product/surface/interaction 边界；当前没有本计划所需的 on-demand Screen Contract，供应商推荐和页面候选 target 均未被写成已决 durable fact。
+- S-CONTEXT：project_context/global.md、architecture.md、areas/main.md、product-surface-contract.md、screen-contracts.md 与 verification.md，提供 durable profile、product/surface/control/interaction/verification 边界；四个 selected target 的 canonical adoption 由 DESIGN.md 持有，供应商推荐仍不自动成为已批准生产事实。
 - S-RESEARCH：仓库 `docs/technical-data-source-decisions.md`，2026-07-20 官方/一手资料调研，覆盖移动栈、天气、地图/路线、VIIRS、DEM、星表、卫星、专业天象、推送、对象存储/CDN、离线加工、成本、POC、商务/法务门和官方证据；其中 `recommended` 不自动等于已批准 DEC，`contract_gate`/`poc_gate`/`external_confirmation` 不得由 Agent 伪造完成。
 - S-INTERACTION：仓库 `.codex/skills/uiux_design/SKILL.md` 及其 references，提供 React Native Press/Gesture Handler/Reanimated/Bottom Sheet/触觉/无障碍/双平台执行映射和上游许可；它必须先读并服从 S-DESIGN、本计划与 S-CONTEXT，不是平级或反向权威。
 - S-APPLE：Emil Kowalski `apple-design` Skill，固定审阅 revision `6bf24434f7730ad169077756cf9c7cd7bd675fc6`，MIT License；只采纳可迁移的即时反馈、直接操控、中断/速度连续、空间一致、克制触觉、无障碍与交互原型原则，不采纳其 web 代码、玻璃材质、系统字体默认或让 Android 模仿 iOS。
 - S-USER：用户指令要求以 React Native APP 为目标、细化到基本布局/具体内容/控件级、不得遗漏两份附件任一细节、参考但不复制截图；进一步要求完成技术/数据源调研和 Starward React Native 交互规范，全部写回 DESIGN.md 与 Source Plan，并由项目 Skill 执行但不形成循环权威；数据源必须先满足真实性、目标区稳定性和合法可运营性，再在合格候选中优先选择最低实际总成本。用户随后明确当前运营主体为个人、当前阶段只做 owner-only 个人试用版、外部服务预算不超过 CNY 200/月且免费优先；正式合同/法务/商店/专家/现场背书延后到未来生产发布准备阶段，不能反向阻塞当前代码交付，也不能被伪造为已完成。
 - S-USER-UIUX-AUTHORITY：前序用户直接指令。用户确认当时只有“视觉风格/动效风格”和产品功能/大致摆放，缺少具体页面设计图、信息放置和完整交互事实；要求把页面级 UI/UX 固定下来，并让 Product Context、默认流程契约和 Single-Goal Long-Task 工作流都能消费这些信息。该来源在当时只决定 UI Authority 闭环目标、尚未选定视觉候选；其后用户确认原型总体方向满意，并由更晚的 S-USER-SOURCE-REVISION 明确选择四个最终资源进入本次 Source authoring。
-- S-USER-SOURCE-REVISION：用户于 2026-07-22 明确调用 `source-plan-authoring`，指定“两份初版方案 + 本补开发方案 + 设计资源”为本次输入，并要求按需创建 Goal、建立关键索引且不得因上下文压缩漏掉细节；此前用户已经确认首轮原型视觉方向满意，并要求继续补齐逐控件静态样式、动态状态、动效和逻辑。该指令直接选择本节登记的四个最终资源进入 Source authoring；target 精确度分类按资源本身的能力和排除项作必要/受委托解释，不把样例数据或评审壳选为产品事实。
-- S-GAP-PLAN：仓库 `docs/architecture/gap-driven-supplemental-development-plan.md`，38,634 bytes，SHA-256 `52150dd5031d068638fe3284463925ac25f37ea1553d054744ae1fe3e371f56a`。它以两份初版方案、当前 Source/Context/Design 和 `main@a88c1b0` 加工作区为证据，给出 16 项 MVP、14 Outcome、横切架构、19 个工作包、Stage 0～8 与真实验收旅程的缺口处置；其中当前代码状态是 evidence-backed，不自动成为产品意图，个人版 SQLite/私有文件/SQLite job 架构是 delegated proposal，须在本计划明确采纳后才控制当前交付。
+- S-USER-SOURCE-REVISION：用户于 2026-07-22 使用当时的 Source authoring 流程，指定“两份初版方案 + 本补开发方案 + 设计资源”为输入，并要求建立关键索引且不得因上下文压缩漏掉细节；该历史指令选择四个最终资源进入 Source。独立 `source-plan-authoring` 现已退役，后续不再把它作为实施前阶段。
+- S-USER-GAP-REFRESH：用户于 2026-07-25 要求创建 Goal，重新核对当前实现与初版产品/技术方案的全量缺口，交付带完整信息索引的补开发方案；设计资源缺口随后用 `design-resource-authoring` 补齐，再使用完整 Long-Task 工作流实施。
+- S-GAP-AUDIT：仓库 `docs/architecture/implementation-gap-audit.md`，28,682 bytes，SHA-256 `130f1b1422ff14c34aa1af64b887e274dd2bf1d44c12bd7f9854d70f808e40de`。它以 `main@a569b889a2c15b19efc933f774aa0f11848f0528` 加审计前工作区和当前实际 checks 为证据，确认 16 MVP 仍为 0/10/6、14 Outcome 均未严格闭环，并记录 root/feature 脱节、fixed/demo actor、typed persistence、provider/cost、Python data pipeline、生产设计一致性与 shooting idempotency/test isolation 缺口；handoff/discoverability 已刷新为完成的输入前置，不被误报为产品完成。
+- S-GAP-PLAN：仓库 `docs/architecture/gap-driven-supplemental-development-plan.md`，55,280 bytes，SHA-256 `3d7a51228b4a82bde65a78fa9bca90077112d9eda9e0c10281a9b3fa635e1470`。它基于同一 2026-07-25 审计及 2026-07-26 导航/Source 元数据刷新，给出完整产品/技术 crosswalk、当前 profile ADR、数据/状态/成本、锁定的 Python 重数据加工边界、19 工作包、Stage 0～8、强验收和后续 Single-Goal Long-Task 路径；当前代码事实保持 evidence-backed。
 - S-DR-GOAL-INDEX：Open Design `starward-system-uiux-goal-index-20260722.md`，路径 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\starward-system-uiux-goal-index-20260722.md`，当前 31,491 bytes，SHA-256 `42213de35f4ebf9e4fc78b5b38d0d95d8ec637f96576da9cf53256da69304456`，Native Goal thread `019f8665-1119-77b3-abc7-07d440e32ff5`。它完整记录资源生成、替代、失败/no-op、独立静态与 Browser 审计、hash 和 non-claim；只作资源 provenance/evidence，不代替四个目标文件本身。
-- S-DR-MOBILE-PAGES：Open Design 项目 `starward-system-mobile-20260722-v2`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-system-mobile-20260722-v2`。`index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271`，`coverage-manifest.json` `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`，`README.md` `4c95723f217be83d22b0b3b86f34787a4d455408a3b3e863b817ca8cd4c53801`；覆盖 12 个移动 Outcome、83 个 stable control、390×844、五 Tab、11 个数据/操作状态、planning/night/red-light、沉浸 Map/Sky 与 25/55/90 Sheet。
-- S-DR-OPS-PAGES：Open Design 项目 `starward-system-ops-20260722-v1`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-system-ops-20260722-v1`。`index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5`，`coverage-manifest.json` `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`，`README.md` `196220d3c3b800d41badb3e3ec97095321454309e6e96780f059a482e3fc546b`；覆盖 2 个运营/质量 Outcome、12 个 stable control、7 个工作区和辅助 share projection。
-- S-DR-MOBILE-CONTROLS：Open Design 项目 `starward-mobile-control-atlas-20260722-v3`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-mobile-control-atlas-20260722-v3`。`index.html` SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`，`control-atlas-manifest.json` `50acbe4417de45a75c6d5855b5b39fd1edd2c2ef345648f497654017d7f21aab`，`implementation-contract.json` `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4`，`README.md` `425f998f414efad7a2b870583d0e5e4fb0872babb22e6774e39bc7c1a0f120fc`；覆盖 83/83 控件、每控件 15 个工程字段、12 个页面装配、208 个 Given/When/Then、A～F 高风险流程。Open Design run 仍为 `artifact-ready/run-unreconciled`，但文件 hash 稳定且独立静态/Browser 检查通过；不得误报 provider run succeeded。
-- S-DR-OPS-CONTROLS：Open Design 项目 `starward-ops-control-atlas-20260722-v2`，目录 `C:\Users\777\AppData\Roaming\Open Design\namespaces\release-stable-win\data\projects\starward-ops-control-atlas-20260722-v2`。`index.html` SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`，`control-atlas-manifest.json` `0a93f4f96fcb3419e3b7394ab5bc30db7b50ea8d16baebb840425b7a03f45586`，`implementation-contract.json` `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388`，`README.md` `2fe73b0ac41c5bfe6ce4903123eebfd48ebdd4f6f07dc33e6a8ec327dbc2a76a`；覆盖 12/12 控件、7 个页面装配、32 个 Given/When/Then 与 REV-43 阻断/确认/幂等/错误/恢复流程。
+- S-DR-MOBILE-PAGES：repo-local canonical copy `docs/design-targets/mobile-product-pages-v2/`，来源于 Open Design `starward-system-mobile-20260722-v2`。`index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271`，`coverage-manifest.json` `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`，`README.md` `4c95723f217be83d22b0b3b86f34787a4d455408a3b3e863b817ca8cd4c53801`；覆盖 12 个移动 Outcome、83 个 stable control、390×844、五 Tab、11 个数据/操作状态、planning/night/red-light、沉浸 Map/Sky 与 25/55/90 Sheet。
+- S-DR-OPS-PAGES：repo-local canonical copy `docs/design-targets/ops-product-pages-v1/`，来源于 Open Design `starward-system-ops-20260722-v1`。`index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5`，`coverage-manifest.json` `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`，`README.md` `196220d3c3b800d41badb3e3ec97095321454309e6e96780f059a482e3fc546b`；覆盖 2 个运营/质量 Outcome、12 个 stable control、7 个工作区和辅助 share projection。
+- S-DR-MOBILE-CONTROLS：repo-local canonical copy `docs/design-targets/mobile-controls-v3/`，来源于 Open Design `starward-mobile-control-atlas-20260722-v3`。`index.html` SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`，`control-atlas-manifest.json` `50acbe4417de45a75c6d5855b5b39fd1edd2c2ef345648f497654017d7f21aab`，`implementation-contract.json` `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4`，`README.md` `425f998f414efad7a2b870583d0e5e4fb0872babb22e6774e39bc7c1a0f120fc`；覆盖 83/83 控件、15 个工程字段、12 个页面装配、208 个 Given/When/Then、A～F。资源旧元数据仍写 candidate，canonical adoption 只以 DESIGN.md 为准。
+- S-DR-OPS-CONTROLS：repo-local canonical copy `docs/design-targets/ops-controls-v2/`，来源于 Open Design `starward-ops-control-atlas-20260722-v2`。`index.html` SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`，`control-atlas-manifest.json` `0a93f4f96fcb3419e3b7394ab5bc30db7b50ea8d16baebb840425b7a03f45586`，`implementation-contract.json` `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388`，`README.md` `2fe73b0ac41c5bfe6ce4903123eebfd48ebdd4f6f07dc33e6a8ec327dbc2a76a`；覆盖 12/12 控件、7 个页面装配、32 个 Given/When/Then 与 REV-43。资源旧元数据仍写 candidate，canonical adoption 只以 DESIGN.md 为准。
+- S-DR-AUTHORING-BRIEF：仓库 `docs/design-resources/initial-product-design-resource-gap-and-authoring-brief.md`，记录全量 UI/UX 缺口审计、authoring 委托、首次 reconciliation 和 2026-07-26 导航权威刷新；它仍是 proposal/supporting Source，不替代 canonical handoff。其当前 digest 不进入 handoff 的 immutable target closure，以避免与 handoff 中冻结的本 Source Plan 形成循环摘要。
+- S-DR-HANDOFF：仓库 `docs/design-resources/starward-residual-implementation-handoff.md`，包含 155 个 marked Source Items 和唯一 strict `design-resource-handoff-v1` block；已通过 preflight，覆盖 111 subjects × 8 dimensions = 888 grouped rows，并保留 22 个 acceptance blocker lineage。它冻结本 Source Plan、gap plan/audit、Context、DESIGN 与四套 target 的当前摘要，因此本计划不反向抄写 handoff digest；当前 digest 由 authoring brief 的 post-reconciliation 记录持有。
 - S-WEB-UIUX-ADVICE：用户在本轮对话粘贴的 Web GPT 建议全文，属于 advisory/inspiration Source，不是直接产品 Authority。可采纳的设计方法包括“先形成可验证设计再忠实实现”、围绕“值不值得去→去哪→几点→怎么到→现场看什么”的闭环、优先锚定今晚/地图/地点详情、再覆盖小时条件/行程/现场模式、先 UX/线框再视觉选择/设计系统/实现与对比；三套方向、Figma、具体目录、固定截图数量和工具职责只是候选做法，未被自动批准。
-- S-HARNESS-UIUX：当前仓库 AGENTS.md managed Workflow Contract、`.codex/ty-context-managed/context_templates/product-surface-contract.md`、`screen-contract.md`，以及 `context_surface_contract`、`context_uiux_design`、`source-plan-authoring`、`long-task-workflow` Skills。它们提供 Source→Context/Design Authority→Contract→实现→证据的工作流边界、stable key reconciliation、candidate/selected target 分类和 Authority Lock 后 protected revision 规则，不新增 Starward 业务功能。
-- S-IMPLEMENTATION-UI：当前 `apps/mobile/**`、`packages/ui-system/**`、`docs/design-system/**` 与 `artifacts/verification/**` 的实现/预览/截图。它们只证明当前实现或历史设计探索可被审查，不能反向决定产品意图，不能作为自己的视觉 baseline，也不能替代未建立的 selected authored target。
+- S-HARNESS-UIUX：当前仓库 AGENTS.md managed Workflow Contract、Product/Screen Contract、`DESIGN.md`，以及 `context_surface_contract`、`context_uiux_design`、`design-resource-authoring`、`long-task-workflow` Skills。它们提供 Source→Context/Design Authority→handoff/Contract→实现→证据的边界；`source-plan-authoring` 仅保留退役兼容指针，不再是独立阶段。
+- S-IMPLEMENTATION-UI：当前 `apps/mobile/**`、`packages/ui-system/**`、`docs/design-system/**` 与 `artifacts/verification/**` 的实现/预览/截图。它们只证明当前实现或历史设计探索可被审查，不能反向决定产品意图，不能作为自己的视觉 baseline，也不能替代已采纳的 repo-local target 或当前 residual handoff。
 
 ### 图像来源与证据处置
 
@@ -119,7 +121,7 @@
 
 ### 来源优先级和冲突处理
 
-1. 用户直接指令按时间后者优先：S-USER-UIUX-AUTHORITY 建立 UI Authority 目标，后续 S-USER-SOURCE-REVISION 又明确选择四个最终资源进入本次 Source authoring；两者都不自动完成 Context/DESIGN adoption。
+1. 用户直接指令按时间后者优先：S-USER-UIUX-AUTHORITY 建立 UI Authority 目标，S-USER-SOURCE-REVISION 选择四个最终资源，S-USER-GAP-REFRESH 要求基于当前实现刷新完整补开发 Source；后续 `DESIGN.md`/Screen Contracts adoption 是当前事实，但不自动完成实现或验收。
 2. 产品能力和业务规则以 S-PRODUCT 为准，实现边界和技术义务以 S-ARCH 为准；当前附件别名不改变语义身份。
 3. 已被 durable adoption 的跨页面责任以 S-CONTEXT 为准，视觉系统语义以 S-DESIGN 为准；本计划中标为 `context_update_required` 的页面事实尚不能伪装成已落入 Context。
 4. 未来版本化 design target 只有在状态为 selected、记录 selection basis/approver/revision/hash 且声明 coverage 后，才可按 exact 或 constraint 类别控制所覆盖页面；未声明覆盖仍回到 Screen Contract/DESIGN.md，不允许外推。
@@ -133,35 +135,35 @@
 | Source Key | 可读性 | 本计划处置 | 不得产生的结论 |
 | --- | --- | --- | --- |
 | `S-USER-UIUX-AUTHORITY` | 完整 | 全量纳入 UI Authority Outcome、stable key、Context/Workflow/Long-Task 衔接和验收 | 不代替尚未作出的视觉方向选择 |
-| `S-USER-SOURCE-REVISION` | 完整 | 选择四个最终 design resource 进入本次 Source authoring；要求同一 Source Plan、Goal 索引和无遗漏 | 不等于 Context/DESIGN adoption、实现授权或产品完成 |
-| `S-GAP-PLAN` | 完整 | 采纳严格缺口基线、个人版架构替代、工作包依赖、Stage 0～8 和真实验收边界；代码事实保持 evidence-backed | 不把当前代码形状、文件路径或测试脚手架提升为产品意图 |
-| `S-DR-MOBILE-PAGES` | 完整；hash 已复核，raw preview 无 console error | `selected_for_source_authoring` + `constraint`：控制 12 个移动 surface 的布局、层级、route、模式、状态、空间与已声明交互 | 桌面评审栏、iPhone 装饰壳、北京/清水河/数值/人物等样例不是产品事实；不证明原生实现 |
-| `S-DR-OPS-PAGES` | 完整；hash 已复核，raw preview 无 console error | `selected_for_source_authoring` + `constraint`：控制 2 个运营/质量 Outcome、7 个工作区和辅助分享投影的页面装配 | 不证明真实权限、发布、恢复、审计或 API 已实现 |
-| `S-DR-MOBILE-CONTROLS` | 完整；83/83、15 字段、208 AC、A～F 与 runtime 0 已复核 | `selected_for_source_authoring` + `exact-with-declared-coverage`：`implementation-contract.json` 控制每个 stable control 的视觉、状态、API/逻辑、动效、触觉、可访问性、平台、内容、资产、数据/隐私、观测、验收和版本字段；HTML 是可操作投影 | Open Design run 不得称 succeeded；候选媒体、真机 physics/传感器/触觉/性能和真实服务不在已证明范围 |
-| `S-DR-OPS-CONTROLS` | 完整；12/12、32 AC、13 执行检查和 REV-43 已复核 | `selected_for_source_authoring` + `exact-with-declared-coverage`：JSON contract 控制 12 个 stable control，HTML 是可操作投影 | 不证明真实认证/MFA、后端幂等、不可变审计、发布或恢复结果 |
+| `S-USER-SOURCE-REVISION` | 完整 | 历史上选择四个最终 design resource 并要求同一 Source Plan、Goal 索引和无遗漏 | 历史流程名称不恢复退役的独立 Source authoring 阶段 |
+| `S-USER-GAP-REFRESH` / `S-GAP-AUDIT` / `S-GAP-PLAN` | 完整 | 采用 2026-07-25 当前实现基线、个人版 ADR、19 工作包、Stage 0～8、强验收和后续 handoff→Long-Task 顺序 | 不把当前代码形状、固定场景或测试脚手架提升为产品意图 |
+| `S-DR-MOBILE-PAGES` | 完整；repo-local hash 已复核 | `adopted` + `constraint`：控制 12 个移动 surface 的布局、层级、route、模式、状态、空间与已声明交互 | 桌面评审栏、iPhone 装饰壳、北京/清水河/数值/人物等样例不是产品事实；不证明原生实现 |
+| `S-DR-OPS-PAGES` | 完整；repo-local hash 已复核 | `adopted` + `constraint`：控制 2 个运营/质量 Outcome、7 个工作区和辅助分享投影的页面装配 | 不证明真实权限、发布、恢复、审计或 API 已实现 |
+| `S-DR-MOBILE-CONTROLS` | 完整；83/83、15 字段、208 AC、A～F 已复核 | `adopted` + `exact-with-declared-coverage`：`implementation-contract.json` 控制逐控件声明字段；HTML 是可操作投影 | 9 个设备/能力/媒体 blocker 与真实服务仍待实现/证明 |
+| `S-DR-OPS-CONTROLS` | 完整；12/12、32 AC、REV-43 已复核 | `adopted` + `exact-with-declared-coverage`：JSON contract 控制 12 个 stable control，HTML 是可操作投影 | 12 个真实 endpoint/auth/authz/audit/recovery blocker 尚未关闭 |
 | `S-DR-GOAL-INDEX` | 完整 | 保留生成/替代/失败/no-op/验证 provenance 与不可变身份 | 不以 Goal 状态或 provider 文案代替目标文件与独立检查 |
 | `S-WEB-UIUX-ADVICE` | 完整 | 采纳 design-first、核心决策链、两波核心页面、UX→wireframe→candidate→selection→system→implementation→comparison 的方法；其余逐项标为 delegated/advisory | 不强制 Figma、不强制每轮三案、不把图片生成结果直接当 Authority、不以 pixel-perfect 作为唯一完成证明 |
-| `S-HARNESS-UIUX` | 完整 | 采纳 Product Surface/Screen/DESIGN/target/Contract/evidence 分层、UI Authority Closure、Authority Lock 与 protected revision | 不在本次 Source authoring 中直接修改 Context、运行 long-task、创建 Contract 或声明 adoption 已完成 |
+| `S-HARNESS-UIUX` | 完整 | 采纳 Product Surface/Screen/DESIGN/target/handoff/Contract/evidence 分层、Authority Lock 与 protected revision | Source Plan 不自行生成 handoff、Contract、实现或验收 |
 | `S-IMPLEMENTATION-UI` | 可检查 | 作为 gap audit、回归和后续 before/after evidence 输入 | 现有页面或截图不得为自己授权，也不得覆盖 selected target |
-| `S-PRODUCT` / `S-ARCH` 当前附件别名 | 完整 | 与原稳定 Source ID 合并；产品副本仅末尾 LF 差异已索引 | 不重复计数、不制造冲突版本 |
+| `S-PRODUCT` / `S-ARCH` 当前附件 | 完整 | 使用本节登记的 2026-07-25 路径与 hash 作为当前可读 Source | 不重复计数、不由当前实现覆盖初版目标 |
 | `S-IMG-01～10` / Open Design references | 完整 | 保留已逐张记录的局部布局与交互证据，统一归类 inspiration | 不复制品牌、具体数据、装饰或把参考产品页面当 Starward exact target |
 
-当前没有不可读输入。四个最终 design resource 均已稳定落盘并按 hash 复核；其源文件仍位于 Open Design data directory，因此后续 Contract/实现必须读取并固定这些绝对路径或将同 hash 文件受控迁入仓库，不能只写“见上文原型”。Figma 不是必需输入。Screen Contract 与 Context/DESIGN adoption 仍未完成，属于 UI Authority Closure，而不是本 Source authoring 的遗漏。
+当前没有不可读输入。四个最终 design resource 已受控复制到 `docs/design-targets/**`、按 hash 复核并由 `DESIGN.md` canonical registry 采纳；Open Design 路径仅保留 provenance。Product/Screen Contracts 已建立。当前缺少的是一个满足 `design-resource-handoff-v1` 的 residual implementation handoff，以及 9 个移动与 12 个 ops 下游 blocker 的实现/证据；Figma 不是必需输入。
 
 ### Selected Target Registry
 
 | Target Key | Source | Selection / target class | 声明覆盖 | 排除与 non-claim |
 | --- | --- | --- | --- | --- |
-| `target.mobile-product-pages-v2` | `S-DR-MOBILE-PAGES` | `selected_for_source_authoring` / constraint | 390×844；12 个移动 Outcome；五 Tab；planning/night/red-light；11 类状态；route、区域、层级、Map/Sky 沉浸布局、Sheet 25/55/90 | 样例数据、评审壳、真实 API、原生 physics/性能不受其证明 |
-| `target.ops-product-pages-v1` | `S-DR-OPS-PAGES` | `selected_for_source_authoring` / constraint | 1440px 优先响应式桌面；2 个 Outcome；7 工作区；12 stable controls；辅助 share projection；危险流程空间与反馈 | 不证明真实权限/服务端副作用；share projection 不是第 13 个 stable control |
-| `target.mobile-controls-v3` | `S-DR-MOBILE-CONTROLS` | `selected_for_source_authoring` / exact-with-declared-coverage | 83 stable controls；15 字段；12 page assemblies；208 AC；A～F；360/390/430 与 review 820/1024/1440；三模式、200% text、reduced motion | 9 个控件的真机调参/能力 POC、生产媒体、真实外部/原生边界仍待后续证明；resource run 状态不等于 artifact 失败 |
-| `target.ops-controls-v2` | `S-DR-OPS-CONTROLS` | `selected_for_source_authoring` / exact-with-declared-coverage | 12 stable controls；7 page assemblies；32 AC；REV-43；1440/1024/820 和键盘/zoom/reduced motion | 真实 backend endpoint/auth/MFA/permission/audit/restore 仍由 Contract 与实现证明 |
+| `target.mobile-product-pages-v2` | `S-DR-MOBILE-PAGES` | `adopted` / constraint | 390×844；12 个移动 Outcome；五 Tab；planning/night/red-light；11 类状态；route、区域、层级、Map/Sky 沉浸布局、Sheet 25/55/90 | 样例数据、评审壳、真实 API、原生 physics/性能不受其证明 |
+| `target.ops-product-pages-v1` | `S-DR-OPS-PAGES` | `adopted` / constraint | 1440px 优先响应式桌面；2 个 Outcome；7 工作区；12 stable controls；辅助 share projection；危险流程空间与反馈 | 不证明真实权限/服务端副作用；share projection 不是第 13 个 stable control |
+| `target.mobile-controls-v3` | `S-DR-MOBILE-CONTROLS` | `adopted` / exact-with-declared-coverage | 83 stable controls；15 字段；12 page assemblies；208 AC；A～F；360/390/430 与 review 820/1024/1440；三模式、200% text、reduced motion | 9 个控件的真机调参/能力 POC、生产媒体、真实外部/原生边界仍待后续证明；resource run 状态不等于 artifact 失败 |
+| `target.ops-controls-v2` | `S-DR-OPS-CONTROLS` | `adopted` / exact-with-declared-coverage | 12 stable controls；7 page assemblies；32 AC；REV-43；1440/1024/820 和键盘/zoom/reduced motion | 真实 backend endpoint/auth/MFA/permission/audit/restore 仍由 Contract 与实现证明 |
 
 资源自身声明的后续事实必须原样进入 Contract preflight：mobile 83 个控件中 49 个声明触觉、34 个逐项声明 iOS/Android `not-applicable` 理由；9 个控件含不会阻塞开发但会阻塞相应原生验收的 unresolved——`map-filter-sheet`、`map-marker-density-surface`、`selected-spot-sheet`、`observation-timeline-editor`、`sky-time-scrubber`、`orientation-calibration-sheet` 需要代表性设备调参，其中 `orientation-calibration-sheet` 还需 capability POC；`orientation-follow-toggle` 与 `ar-mode-toggle` 需要 capability POC；`spot-media-gallery` 需要获批生产媒体。当前 Android 所需项进入本 profile 原生验收；iOS 项继续约束实现，但其运行调参与 POC 随 iOS 运行验证一起标为 deferred/unverified，不能阻塞当前 Android target，也不能被误报完成。Ops 12 个控件均把真实 endpoint/auth/authorization 记为 downstream unresolved；这不是控件设计缺口，但没有绑定和证明前不能宣称服务端行为完成。mobile atlas 的 Open Design run `a52b37d9…` 非终态，artifact 仅凭固定 hash 和独立检查可用；不得把 `artifact-ready/run-unreconciled` 改写为 provider succeeded。
 
-Selection basis：`S-USER-SOURCE-REVISION` 直接要求将已生成设计资源作为 Source authoring 输入，且用户先前确认原型总体方向满意；页面资源自身只足以成为 constraint，控件 implementation contract 才能在明确 JSON 字段与状态覆盖内成为 exact target。该分类是必要/受委托整理，不新增产品能力，也不把候选资源文件自己的旧 `unselected candidate` 元数据改写为 durable Design Authority。
+Selection basis：`S-USER-SOURCE-REVISION` 选择资源，用户确认原型总体方向；后续 `DESIGN.md` canonical registry 已完成 durable adoption。页面资源只足以成为 constraint，控件 implementation contract 才能在明确 JSON 字段与状态覆盖内成为 exact target。冻结资源中的旧 `unselected candidate` 元数据是 provenance drift，不覆盖 `DESIGN.md`；通过 residual handoff 记录 adoption、hash、解释和 editable-upstream update route，不修改冻结 baseline。
 
-Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT、S-ARCH、S-USER 与本计划控制；系统级品牌/token 由 DESIGN.md 控制；页面 target 控制空间与装配；控件 JSON contract 控制逐控件声明字段。若 exact control contract 与页面 HTML 投影冲突，以同 hash `implementation-contract.json` 为准；若它与上位产品/安全规则或 DESIGN.md 冲突，停止实现并进行 UI Authority Closure，不由实现自行挑选。
+Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT、S-ARCH、S-USER 与本计划控制；系统级品牌/token 和 canonical target adoption 由 DESIGN.md 控制；页面 target 控制空间与装配；控件 JSON contract 控制逐控件声明字段。若 exact control contract 与页面 HTML 投影冲突，以同 hash `implementation-contract.json` 为准；若它与上位产品/安全规则、Screen Contract 或 DESIGN.md 冲突，停止实现并走 Authority Revision，不由实现自行挑选。
 
 ### Surface / Control / Target Coverage
 
@@ -182,7 +184,7 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 | `admin-data-operations` | `data-operations`, `moderation`, `recommendation` | `admin-spot-editor`, `moderation-queue`, `data-source-dashboard`, `job-operations-console`, `recommendation-replay-console`, `rule-release-control`, `admin-access-audit` | `target.ops-product-pages-v1` | `target.ops-controls-v2#/controls[identity.stableControlId=<control-key>]` |
 | `quality-release-observability` | `release-quality`, `recovery`, `metrics` | `release-promotion-gate`, `technical-observability-dashboard`, `data-quality-dashboard`, `backup-restore-exercise`, `product-metrics-dashboard` | `target.ops-product-pages-v1` | 同上 |
 
-95 个 Source Plan `CTRL` 与两个最终 control contract 的 stable IDs 是严格一一对应集合：95 个 plan key、95 个 resource key、无缺失、无多余、无重复。每个 `CTRL` 现有 Source Plan 块保存业务意图与产品反馈；上表的 exact pointer 补齐 Surface/Region/Control type/Label/Location/Visibility/Availability/Validation/Default/Interaction/Navigation/Permission/Accessibility 等独立字段及视觉、动效、平台、内容、资产、数据与验收细节。外部 target 仍须保留，因为精确非文本视觉与可操作 specimen 不能被 Markdown 转述替代。
+95 个 Source Plan `CTRL` 与两个最终 control contract 的 stable IDs 是严格一一对应集合：95 个 plan key、95 个 resource key、无缺失、无多余、无重复。每个 `CTRL` 现有 Source Plan 块保存业务意图与产品反馈；上表的 exact pointer 补齐 Surface/Region/Control type/Label/Location/Visibility/Availability/Validation/Default/Interaction/Navigation/Permission/Accessibility 等独立字段及视觉、动效、平台、内容、资产、数据与验收细节。repo-local target 文件仍须作为不可变 verifier input 保留，因为精确非文本视觉与可操作 specimen 不能被 Markdown 转述替代。
 
 ### Superseded And Rejected Design Resources
 
@@ -194,7 +196,7 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 
 ### Gap Audit Baseline And Disposition
 
-`S-GAP-PLAN` 的代码审计快照是 `main@a88c1b0` 加审计时工作区；它只冻结“当时实现到了哪里”，不冻结未来文件路径或代码形状。按“原生可达 + 可变真实输入 + 真实数据/副作用 + 适用持久化 + 重启恢复 + 失败路径 + 可执行验收”的严格端到端口径，16 项初始 MVP 为 **0 项完整、10 项局部实现未闭环、6 项固定演示/声明/缺失为主**。这不是代码完成百分比，也不否定已通过的 typecheck/unit test；它表示审计时尚无一项 MVP 同时满足完整产品闭环。
+`S-GAP-AUDIT` 与 `S-GAP-PLAN` 的当前代码审计快照是 `main@a569b889a2c15b19efc933f774aa0f11848f0528` 加审计前工作区；它只冻结“当时实现到了哪里”，不冻结未来文件路径或代码形状。按“原生可达 + 可变真实输入 + 真实数据/副作用 + typed persistence + 重启恢复 + 失败/降级 + 可归因验收 + selected-design conformance”的严格端到端口径，16 项初始 MVP 仍为 **0 项完整、10 项局部实现未闭环、6 项固定演示/声明/缺失为主**，14 个 Outcome 均未严格闭环。当前快测通过不改变该结论；完整移动浏览器套件的 5 个 shooting 失败还证明 idempotency 与 run data isolation 必须进入交付。
 
 | MVP 项 | 审计状态 | 必须补齐的闭环 |
 | --- | --- | --- |
@@ -240,7 +242,7 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 - 任务：SQLite job/outbox + 单 worker/系统 scheduler，具备幂等、租约、重试/退避、死信、取消、审计和重放；当前不引入 Redis/BullMQ，也不以 command receipt 代替领域结果。
 - 媒体与静态资产：设备私有文件 + 私有 API 的 content-addressed 文件目录，原始/去敏派生/审核/导出按权限和 manifest 分层；默认没有公开 bucket/CDN，仍必须完成 EXIF 清理、checksum、原子提交、版本、删除和 restore。
 - 外部来源：所有网络 provider 调用经 `ProviderGateway`，统一执行许可/质量/配额/成本/健康/熔断；当前 ceiling 为 CNY 200/月、实际 paid approval 默认为 CNY 0，并以合法缓存、本地 Astronomy Engine、版本化 VIIRS/DEM/catalog 区域资产及 `disabled/degraded/unknown` 作为降级。
-- Owner 运营：Next.js 或等价轻量 owner-only 管理面必须操作真实地点/来源/任务/审核/成本/规则数据；是否同进程部署由后续 Contract 绑定，不要求公众运营平台。
+- Owner 运营：当前采用 Vite 或等价轻量 owner-only 管理面，必须操作真实地点/来源/任务/审核/成本/规则数据；是否同进程部署由后续 Contract 绑定，不要求公众运营平台或 SSR。
 
 迁移口固定为 repository/storage/queue/auth/notification/provider ports：SQLite→PostgreSQL/PostGIS、SQLite jobs→BullMQ/其他队列、私有文件目录→S3-compatible object storage、单 owner→OAuth/多用户、本地通知/Inbox→APNs/FCM/厂商通道。迁移口不是当前双写、双部署、预建第二事实源或先付费采购的授权；只有 Section 7 的触发条件和新权威批准后才切换。
 
@@ -412,6 +414,7 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 ### APP 基本布局与路由层级
 
 - 根壳以 390×844 为主基线：系统/安全区 → 可选页面标题或地点/日期上下文 → 可滚动内容或沉浸画布 → 底部安全区内五入口 tab。普通页面保留稳定标题/返回；地图、天空、现场可沉浸并收起底栏，但始终提供可预测返回和当前模式/地点/时间。
+- 五个一级入口不是同一长页中的五个区段：“今晚” `/tonight`、“观星地图” `/map`、“行程” `/trips`、“天空” `/sky`、“我的” `/me` 分别拥有独立根页面、页面栈和主滚动/沉浸画布；Tab 切换必须切换路由与 Screen，不得用共享 `ScrollView`、页面高度/锚点跳转或根容器条件替换伪装翻页。
 - “今晚”是纵向决策页：顶部地点/经纬度/具体观测点/日期/预设/刷新 → 结论 hero 与主行动 → 条件摘要/专业展开 → 可见目标时间线 → 三至五个推荐地点 → 主/近距/天气/暗空备选 → 日月/银河关键时间；安全阻断可在首屏越级出现。
 - “观星地图”是全屏地图任务页：顶部搜索与地点/日期/预设 → 快捷筛选/图层/定位 → 地图 Marker/聚合/路线/天体方向 → 选中地点底部 sheet；路线模式增加起终点、全程/主备/分段、编号节点、拖拽顺序和底部方案/导航动作。
 - 地点详情是 stack 页面：媒体/身份 → 今晚结论/风险/主行动 → 吸顶“今晚、天空、到达、设施、安全、实况”分区 → 光污染/地平线极坐标和实景 → 最后一公里/设施事实 → 评价/可信度 → 底部主备/导航及更多动作。
@@ -420,7 +423,7 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 - “我的”是分组列表页：游客/账号与安全、当前偏好与多预设、我的内容、设备/摄影预设、通知、离线/同步、位置与隐私、帮助/数据来源；内容列表、设备管理、导出/注销均为二级 stack，不把后台状态藏在 toast。
 - 专业预报、路线、摄影助手、专业工具箱、贡献/纠错、通知规则和隐私流程作为对应主任务的二级页面或 sheet；它们继承发起页地点/时刻/目标/行程，不另建平行上下文。
 - 现场模式从行程/地点进入独立沉浸路由：常驻地点/在线离线/定位精度/夜间或红光/安全会话 → 当前状态和返程 → 单手工具网格 → 停车/备选/安全/同步；退出前处理持续定位和待同步内容。
-- 管理后台不是 APP tab，而是独立 Next.js 受控表面；分享页/官网是轻量 Next.js 公共或授权投影，只承接链接打开/复制/下载，不复制 APP 的完整专业功能。
+- 管理后台不是 APP tab，而是当前独立 Vite owner 受控表面；分享页/官网可以是 Fastify/Vite 的轻量公共或授权投影，只承接链接打开/复制/下载，不复制 APP 的完整专业功能。
 - 所有主列表/长页/画布都分别设计 loading、empty、no-results、stale/partial/degraded、error、disabled、saving、success；底部固定动作不得遮住最后内容，键盘/文本放大/系统导航/横屏沉浸由安全区与滚动容器处理。
 
 ## 5. Outcomes
@@ -445,6 +448,11 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 <a id="mobile-shell-and-preferences.requirement.five-primary-destinations"></a>
 <!-- ty-source-item:start key=req-mobile-shell-and-preferences-five-primary-destinations kind=requirement -->
 - **REQ five-primary-destinations** [direct: S-PRODUCT 五]：全局一级入口固定为“今晚、观星地图、行程、天空、我的”；装备属于“我的/摄影/行程”内容，不因参考图而替换一级 IA。
+<!-- ty-source-item:end -->
+
+<a id="mobile-shell-and-preferences.requirement.independent-primary-routes"></a>
+<!-- ty-source-item:start key=req-mobile-shell-and-preferences-independent-primary-routes kind=requirement -->
+- **REQ independent-primary-routes** [owner decision 2026-07-26 + derived from S-CONTEXT]：五个一级入口分别映射 `/tonight`、`/map`、`/trips`、`/sky`、`/me` 五个独立根路由/Screen，并各自拥有嵌套页面栈和主滚动或沉浸画布状态。切换 Tab 必须进行真实页面/路由切换，禁止共享根 `ScrollView`、按页面高度/锚点滚动，或在一个页面内按 `activeDestination` 条件替换伪页面。
 <!-- ty-source-item:end -->
 
 <a id="mobile-shell-and-preferences.requirement.guest-basic-query"></a>
@@ -498,6 +506,7 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 - 权限拒绝：显示手动城市/坐标/出发地路径，不阻断无定位基础查询；需要后台定位时重新说明用途而不是循环弹系统框。
 - 已有用户：可选择已保存的预设和常用出发地；若产品恢复上次选择也必须明确当前值，且不把过期 NightReport 恢复为“实时”结论。
 - 多预设：切换预设后明确提示推荐需要重新计算；计算期间保留旧结果但标注 stale，不混为新结果。
+- 一级导航：切换 Tab 时保留每个 Tab 自己的页面栈与滚动/画布位置，同时继续共享版本化地点、日期、模式和选择上下文；切 Tab 不制造跨 Tab 返回历史。合法深链先激活归属 Tab 再进入二级路由，无效或过期目标回到该 Tab 根页并显示可恢复错误。
 
 #### Controls And Product Feedback
 
@@ -511,10 +520,10 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
   - User task: 在今晚、地图、行程、天空、我的之间切换。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-mobile-shell-and-preferences-primary-tab-bar-trigger kind=control -->
-  - Trigger: 点击一个标签；深链可直接激活目标标签。
+  - Trigger: 点击一个标签；深链先激活归属标签，再进入其根路由或嵌套路由。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-mobile-shell-and-preferences-primary-tab-bar-input kind=control -->
-  - Input: 五个固定目标和当前激活目标。
+  - Input: 五个固定目标、规范根路由、当前激活目标，以及各 Tab 独立的嵌套导航/滚动或画布状态。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-mobile-shell-and-preferences-primary-tab-bar-loading kind=control -->
   - Loading: 目标页显示稳定骨架，底栏保持尺寸和选中状态。
@@ -523,10 +532,10 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
   - Empty: 不适用；入口本身始终存在。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-mobile-shell-and-preferences-primary-tab-bar-success kind=control -->
-  - Success: 切换目标并保留各标签必要的导航状态。
+  - Success: 激活目标的独立路由/Screen，保留各 Tab 必要的嵌套导航与滚动/画布状态，并保持共享 DecisionContext 一致。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-mobile-shell-and-preferences-primary-tab-bar-failure kind=control -->
-  - Failure: 深链无效时返回对应入口并展示可恢复错误。
+  - Failure: 目标根页不能装载时底栏保持稳定并由目标页显示可恢复错误；深链无效或过期时返回其归属 Tab 根页并说明原因。
 <!-- ty-source-item:end -->
 <!-- ty-source-item:start key=ctrl-mobile-shell-and-preferences-primary-tab-bar-feedback kind=control -->
   - Feedback: 图标+文字、选中形状/字重/颜色多重提示、可访问选中状态。
@@ -632,6 +641,11 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 - **OBL mobile-client-stack** [direct: S-ARCH 3.1]：移动端采用 Expo Router、TanStack Query、Zustand、React Hook Form + Zod、Reanimated、Gesture Handler、Expo SQLite/FileSystem/SecureStore/Location/Sensors/Notifications；实际版本由 DEC dependency-version-baseline 决定。
 <!-- ty-source-item:end -->
 
+<a id="mobile-shell-and-preferences.obligation.primary-tab-navigation-architecture"></a>
+<!-- ty-source-item:start key=obl-mobile-shell-and-preferences-primary-tab-navigation-architecture kind=technical_obligation -->
+- **OBL primary-tab-navigation-architecture** [owner decision 2026-07-26 + derived from S-CONTEXT]：以 Expo Router Tabs（或保持同等原生 back/deep-link/a11y 语义的 native-backed Tab navigator）建立唯一五 Tab route graph，每个 Tab 下设独立 Stack；规范根路由固定为 `/tonight`、`/map`、`/trips`、`/sky`、`/me`。共享 DecisionContext 位于 navigator 外部，路由表只有一个事实源；`/plans` 等旧别名只可作迁移重定向，`activeDestination` 只可短期辅助恢复，不得继续决定另一套页面身份。
+<!-- ty-source-item:end -->
+
 <a id="mobile-shell-and-preferences.obligation.mobile-layering"></a>
 <!-- ty-source-item:start key=obl-mobile-shell-and-preferences-mobile-layering kind=technical_obligation -->
 - **OBL mobile-layering** [direct: S-ARCH 3.1–3.2]：Screen 只组合路由/生命周期；Feature 表达今晚/地图/地点/预报/天空/行程/现场/摄影/社区/我的；Domain 表达天气/天文/地理/推荐/同步；Data 负责 API/本地库/缓存；Native 隔离地图/方向/AR/亮度；UI System 和 Telemetry 横切。
@@ -674,10 +688,19 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 <a id="mobile-shell-and-preferences.acceptance.primary-navigation"></a>
 <!-- ty-source-item:start key=ac-mobile-shell-and-preferences-primary-navigation kind=acceptance -->
 - **AC primary-navigation**
-  - Accepts: REQ five-primary-destinations, CTRL primary-tab-bar
+  - Accepts: REQ five-primary-destinations, REQ independent-primary-routes, OBL primary-tab-navigation-architecture, CTRL primary-tab-bar
   - Given: APP 已进入任意一级页面。
   - When: 用户依次选择五个一级入口。
-  - Then: 每个入口可达、选中状态明确、底栏不遮挡内容且必要的标签内状态被保留。
+  - Then: 当前 route/Screen 依次成为 `/tonight`、`/map`、`/trips`、`/sky`、`/me` 对应的独立页面；选中状态明确、底栏不遮挡内容，并且没有共享根 `ScrollView`、锚点跳转或条件伪页面承担这五个目标。
+<!-- ty-source-item:end -->
+
+<a id="mobile-shell-and-preferences.acceptance.tab-state-and-native-navigation"></a>
+<!-- ty-source-item:start key=ac-mobile-shell-and-preferences-tab-state-and-native-navigation kind=acceptance -->
+- **AC tab-state-and-native-navigation**
+  - Accepts: REQ independent-primary-routes, OBL primary-tab-navigation-architecture, CTRL primary-tab-bar
+  - Given: Tonight 与 Map 分别具有可区分的滚动/画布位置，其中一个 Tab 还位于自己的二级路由。
+  - When: 用户在两者及第三个 Tab 间切换，随后从冷启动深链进入该二级路由并执行系统 Back。
+  - Then: 各 Tab 恢复自己的页面栈和滚动/画布位置；深链先激活归属 Tab；Back 先关闭归属层再弹出该 Tab 栈，且 Tab 切换本身不产生跨 Tab 返回历史。
 <!-- ty-source-item:end -->
 
 <a id="mobile-shell-and-preferences.acceptance.permission-scope"></a>
@@ -2384,7 +2407,7 @@ Target 冲突规则：产品能力/安全/隐私/真实数据规则由 S-PRODUCT
 
 <a id="itinerary-and-collaboration.requirement.share-link-web-surface"></a>
 <!-- ty-source-item:start key=req-itinerary-and-collaboration-share-link-web-surface kind=requirement -->
-- **REQ share-link-web-surface** [direct: S-PRODUCT 6.7A/6.7F, S-ARCH 总体架构]：分享链接可落到轻量 Next.js 分享页/官网或授权深链，展示允许公开的行程/地点摘要、复制到 APP/打开 APP/下载入口；它不承担完整专业能力、不替代 RN APP，并在登录/邀请撤回/坐标受限/链接过期时服务端返回正确投影。
+- **REQ share-link-web-surface** [direct: S-PRODUCT 6.7A/6.7F, S-ARCH 总体架构]：分享链接可落到轻量受控 Web 投影或授权深链，展示允许公开的行程/地点摘要、复制到 APP/打开 APP/下载入口；它不承担完整专业能力、不替代 RN APP，并在登录/邀请撤回/坐标受限/链接过期时服务端返回正确投影。
 <!-- ty-source-item:end -->
 
 <a id="itinerary-and-collaboration.requirement.collaborative-plan"></a>
@@ -5776,7 +5799,7 @@ Owner 可在隔离的 development 与 owner-only internal 环境中构建、安�
 
 <a id="quality-release-observability.requirement.technology-baseline"></a>
 <!-- ty-source-item:start key=req-quality-release-observability-technology-baseline kind=requirement -->
-- **REQ technology-baseline** [direct: S-ARCH 1.1 + adopted profile: S-GAP-PLAN/S-USER-SOURCE-REVISION]：共享基线保留 Expo + React Native + TypeScript、Development Build/自定义 Expo Native Module、原生地图、Expo Sensors + 必要 Core Motion/Android Sensor、Skia/GPU 天空、可选 ARKit/ARCore、TypeScript Fastify 模块化单体、Python 气象/遥感/栅格/地形、Next.js owner 管理面、REST/OpenAPI + V2 协作 WebSocket、Astronomy Engine 和 Monorepo。当前 `individual-personal-trial` profile 明确采用移动端 Expo SQLite/FileSystem/SecureStore、私有 Fastify 单实例、服务端 SQLite WAL/RTree、SQLite job/outbox + 单 worker、私有 content-addressed 文件目录和 ProviderGateway；PostgreSQL/PostGIS、Redis/BullMQ、S3/CDN 只作为 future production ports，当前不得双写、双部署或成为完成前提。精确依赖版本仍由 DEC dependency-version-baseline 决定。
+- **REQ technology-baseline** [direct: S-ARCH 1.1 + adopted profile: S-GAP-PLAN/S-USER-SOURCE-REVISION]：共享基线保留 Expo + React Native + TypeScript、Development Build/自定义 Expo Native Module、Expo Router 原生导航、原生地图、Expo Sensors + 必要 Core Motion/Android Sensor、Skia/GPU 天空、可选 ARKit/ARCore、TypeScript Fastify 模块化单体、Python 气象/遥感/栅格/地形、当前 Vite owner 管理面、REST/OpenAPI + V2 协作 WebSocket、Astronomy Engine 和 Monorepo。当前 `individual-personal-trial` profile 明确采用移动端 Expo SQLite/FileSystem/SecureStore、私有 Fastify 单实例、服务端 SQLite WAL/RTree、SQLite job/outbox + 单 worker、私有 content-addressed 文件目录和 ProviderGateway；PostgreSQL/PostGIS、Redis/BullMQ、S3/CDN 和需要 SSR 的管理框架只作为 future ports/alternatives，当前不得双写、双部署或成为完成前提。精确依赖版本仍由 DEC dependency-version-baseline 决定。
 <!-- ty-source-item:end -->
 
 <a id="quality-release-observability.requirement.official-source-production-gates"></a>
@@ -6560,7 +6583,7 @@ Owner 可在隔离的 development 与 owner-only internal 环境中构建、安�
   - Changes product meaning: no；落实用户已经决定的选型顺序；当前总硬顶、paid=0 与 70/90/100 处置已由后续 owner 指令固化，具体采购仍留给 DEC provider-budget-and-paid-redundancy 的逐项批准。
 
 - Evidence Item: Gap Audit Baseline（16 MVP 0/10/6、14 Outcome 全部未闭环、八项高信号实现事实）。
-  - Derived From: S-GAP-PLAN 对 `main@a88c1b0` 加审计时工作区、代码入口、服务装配、测试和历史 receipt 的有界检查。
+  - Derived From: S-GAP-AUDIT/S-GAP-PLAN 对 `main@a569b889a2c15b19efc933f774aa0f11848f0528` 加审计前工作区、代码入口、服务装配、实际 checks 和历史 receipt 的有界检查。
   - Reason: 后续 Contract 必须区分“已有可复用局部代码”和“用户能从原生入口完成的真实闭环”，否则会继续用固定数据、通用 token 或文字可见性关闭 Outcome。
   - Changes product meaning: no；它只记录当前实现 evidence，不改变两份初版方案与本计划的目标。
 
@@ -6572,7 +6595,7 @@ Owner 可在隔离的 development 与 owner-only internal 环境中构建、安�
 - Delegated Item: 四个 selected design targets 及 95 stable control 一一映射。
   - Delegated From: S-USER-SOURCE-REVISION 要求把既有设计资源作为本计划输入，用户此前确认页面原型方向满意；S-DR-GOAL-INDEX 与四个最终 artifact 提供 hash、coverage、替代/失败和 non-claim。
   - Reason: 页面原型只能约束布局/装配，控件 JSON 才能在声明字段内约束 exact 静态/动态/逻辑；分类可阻止样例数据、评审壳、失败 v2 atlas 或 provider run 状态越权。
-  - Changes product meaning: no；补充现有 95 CTRL 的 authored visual/interaction target，不新增业务能力，也不完成 Context/DESIGN adoption。
+  - Changes product meaning: no；补充现有 95 CTRL 的 authored visual/interaction target，不新增业务能力；当前 Context/DESIGN adoption 已由后续 canonical records 完成，但不等于实现或验收。
 
 - Advisory Item: `DEV-AUTH-001`～`DEV-QUALITY-001`、Stage 0～8 与十个真实验收旅程。
   - Derived From: S-GAP-PLAN 的 19 工作包、依赖和弱验收复盘，本计划 14 Outcome/16 MVP/95 CTRL/AC/OBL 以及四个 selected targets。
@@ -6584,7 +6607,7 @@ Owner 可在隔离的 development 与 owner-only internal 环境中构建、安�
 <a id="decision.dependency-version-baseline"></a>
 - **DEC dependency-version-baseline**
   - Status: approved_by_owner (2026-07-20)
-  - Decision: 选择 Expo/React Native 新架构、Expo Router、Skia/渲染、TanStack Query、Zustand、React Hook Form/Zod、Reanimated/Gesture Handler、SQLite/FileSystem/SecureStore/Location/Sensors/Notifications、当前 Fastify + SQLite WAL/RTree + SQLite job/outbox、Next.js、Python/地理库和各原生 SDK 的兼容版本基线/升级政策；NestJS、PostgreSQL/PostGIS、Redis/BullMQ 只在 future profile 迁移时另锁兼容矩阵。
+  - Decision: 选择 Expo/React Native 新架构、Expo Router、Skia/渲染、TanStack Query、Zustand、React Hook Form/Zod、Reanimated/Gesture Handler、SQLite/FileSystem/SecureStore/Location/Sensors/Notifications、当前 Fastify + SQLite WAL/RTree + SQLite job/outbox、Vite owner 管理面、Python/地理库和各原生 SDK 的兼容版本基线/升级政策；需要 SSR 的管理框架、NestJS、PostgreSQL/PostGIS、Redis/BullMQ 只在 future profile 迁移时另锁兼容矩阵。
   - Options: 以项目启动时最新稳定兼容矩阵冻结；以企业长期支持/供应商认证矩阵冻结；分平台采用不同受支持基线但共享业务契约。
 <!-- ty-source-item:start key=approved-dependency-version-baseline kind=technical_obligation -->
   - Approved resolution (owner, 2026-07-20; current acceptance override 2026-07-22): 新项目锁定 2026-07-20 最新正式稳定的 Expo SDK 57 / React Native 0.86 / React 19.2.3 / Node.js 22 LTS（≥22.13），只用 New Architecture 和 Development Build；移动依赖先采用 SDK 57 官方矩阵（Reanimated 4.5.0、Worklets 0.10 系列、Gesture Handler 2.32 系列、Skia 2.6.2），其余通过 lockfile 和 Android 原生构建/运行冻结当前可验证版本，同时保持 iOS pod/project/build 配置与同一依赖矩阵同步。当前不要求 macOS/Xcode/iOS Simulator 或 iOS 构建结果，iOS 兼容状态必须标为 deferred/unverified；未来恢复 iOS 运行验证后才以双端原生构建完成该平台证据。启用 Worklets bundle mode 并把官方已知的 Reanimated/Hermes 内存增长列为当前 Android 设备门；iOS 对应门保留但暂缓。安全/patch 每月评估，兼容 minor 每季度在当前 required target 回归后升级，Expo/RN/原生 SDK major、runtimeVersion、schema 或权限变化单独评审并重建当前 required binary、同步更新 iOS build readiness；OTA 只发布与既有已验证 runtime 兼容的 JS/样式/资源。
@@ -6953,7 +6976,7 @@ Owner 可在隔离的 development 与 owner-only internal 环境中构建、安�
 - S-DESIGN/S-CONTEXT/S-INTERACTION/S-APPLE：品牌/视觉/日夜红光、390×844、44px、结论/行动/证据、共享地点/时间/路线状态和可访问性均已引用；新增即时 press、commit/cancel、直接操控、中断/速度、gesture arbitration、Bottom Sheet、触觉、reduced motion、平台原生差异和真机验收。DESIGN.md 是完整长期规范，项目 Skill 是单向下游 RN 伴随指南并保留上游 revision/MIT，web 玻璃/系统字体/iOS 同质化冲突未进入 Starward。
 - S-RESEARCH：移动版本策略、QWeather/Open-Meteo/ECMWF、高德/OSM 边界、EOG VNL v2.2、Copernicus DEM 访问变化、Astronomy Engine/Gaia/CelesTrak/JPL/NOAA、Expo/APNs/FCM/国内推送、OSS/COS/CDN、离线/成本/POC/采购法务门均进入 REQ/OBL/AC/EXT/DEC；新增“真实性/目标区稳定性/许可/降级硬门先淘汰，再在等价合格候选中选择 12 个月 TCO 最低者”的跨域规则、成本台账、最低采购顺序和第二付费源触发器，推荐与已批准、技术可行与合同/校准/现场完成仍保持分离。
 - S-IMG-01～10：每张图的尺寸、哈希、采纳的布局/交互证据和拒绝复制的品牌/装饰/假业务均在 Section 2 记录，并映射到首页/地图/地点/行程/极坐标/专业预报控件。
-- S-USER-SOURCE-REVISION/S-GAP-PLAN：owner-only、CNY 200/月/CNY 2,400/年、paid 默认 0、当前不考虑备案/公众生产的后续决定已覆盖旧方案冲突；16 MVP 的 0/10/6 严格基线、14 Outcome 状态、八项实现证据、四类 disposition、`ARCH-PROFILE individual-personal-trial-v1`、19 工作包、Stage 0～8 与十个真实验收旅程已完整索引，且代码 evidence 没有被提升为产品意图。
+- S-USER-GAP-REFRESH/S-GAP-AUDIT/S-GAP-PLAN：owner-only、CNY 200/月/CNY 2,400/年、paid 默认 0、当前不考虑备案/公众生产的后续决定已覆盖旧方案冲突；2026-07-25 的 16 MVP 0/10/6、14 Outcome 未闭环、当前实现/测试证据、architecture decisions、19 工作包、Stage 0～8、16 条强旅程和 handoff→Long-Task 顺序已完整索引，且代码 evidence 没有被提升为产品意图。
 - S-DR-GOAL-INDEX/S-DR-MOBILE-PAGES/S-DR-OPS-PAGES/S-DR-MOBILE-CONTROLS/S-DR-OPS-CONTROLS：所有稳定路径、最终 hash、替代/拒绝/no-op、target class、selection basis、14 Outcome/95 CTRL 映射、15/16 字段合同、208+32 AC、A～F/REV-43、响应式/三模式/状态、9 个 mobile POC/媒体 unresolved、ops endpoint/auth unresolved 与 run non-claim 均已进入 Section 2；样例内容和评审壳未成为业务事实。
 
 ### Structural Coverage
@@ -6968,27 +6991,28 @@ Owner 可在隔离的 development 与 owner-only internal 环境中构建、安�
 ### Approved Product Semantics And External Gates
 
 - 32 个 DEC 已由 owner 于 2026-07-20 批准；2026-07-22 后续指令又为预算、当前 storage/recovery carrier、空间查询/路线预筛和 runtime topology 提供 profile override。依赖/交互动效、OS/本地化、游客/偏好/首发区、供应商、视宁度/窗口、地图/路线/推荐/安全、坐标/审核/协作、离线/通知/AI、删除/分析、缓存/灾备/SLO、V2/V3 边界均仍可追踪；当前 `ARCH-PROFILE individual-personal-trial-v1` 的 SQLite/私有文件/单 worker 语义优先，原 PostgreSQL/Redis/S3/CDN 语义在 future gate 保留。
-- Owner 批准页面/控件资源进入本次 Source authoring，四个 target 的 selected 状态、class、hash 与 coverage 已固定；这不等于 `project_context/**`/`DESIGN.md` durable adoption，也不证明代码、原生行为或后端副作用。
+- Owner 选择的页面/控件资源已受控复制到仓库，四个 target 的 class、hash 与 coverage 已由 `DESIGN.md` canonical registry 采纳，14 Surface/95 Control ownership 已进入 Product/Screen Contracts；这仍不证明代码、原生行为或后端副作用。
 - Owner 批准的是产品/技术/当前 profile，不授权自动付款、签约、生产公开、越权获取数据或跳过 POC/真机/现场/法务。8 个 EXT 及各 resolution 的 contract/poc/production gate 继续保持外部确认边界；未满足时采用 `disabled`、规则解释、私有/本地 carrier、radiance-only、`unknown` 等诚实降级。
 
 ### Unbound Repository And Verification Facts
 
 - 后续仍须绑定实际文件/owner/runner/proof/Assertion、依赖 lock、schema/migration、ProviderGateway 与 native port、Android internal build/signing/runtime、iOS 原生工程与 build readiness、真实 domain sink、备份目标和 telemetry sink；iOS 实际签名/build/runtime evidence 按当前 override 延后，S-ARCH 的仓库树/类名/签名只作 HINT，不证明当前存在。
-- 四个 Open Design target 当前在外部 stable data directory；Contract 必须绑定这些绝对路径与 hash，或把同 hash 文件受控迁入仓库。UI Authority Closure 仍须 reconcile 95 control/14 surface/4 target key 并决定 Context/Screen Contract/DESIGN token delta；不能只写“见原型”。
+- 四个 target 当前位于 repo-local `docs/design-targets/**`，Contract 必须绑定这些相对路径、不可变 hash 和完整 dependency closure。`docs/design-resources/starward-residual-implementation-handoff.md` 已通过 design-resource preflight，并 reconcile 95 Control、14 Surface、4 target、conditions、verification methods 和 blockers；后续 Contract 必须消费该 handoff，不能退化为只写“见原型”。
 - Mobile 资源的 9 个设备调参/capability/生产媒体 unresolved、49/34 haptic disposition，ops 12 控件的 endpoint/auth/authorization，以及 mobile run 的 `artifact-ready/run-unreconciled` 状态均须保留；它们不是未决产品选择，Android 对应项会阻塞当前原生验收，iOS 运行项保持 deferred/unverified 并在未来恢复该 target 时阻塞。
 - 当前外部事实仍包括 provider 条款/账号/credential/配额/实时价格和 owner 逐项 paid approval、至少 30 个核验 seed spot、VIIRS/DEM/catalog checksum 与数据校准、实际 usage/billing、代表性 Android/传感器/相机/通知/离线证据；代表性 iOS 运行证据明确延期且未验证。未来公众事实另包括 OSS/COS/region、生产基础设施/域名/备案/商店/法务/商业许可/完整户外或专家背书；这些不能由 Source Plan 伪造完成。
 
 ### Explicitly Out Of Scope For This Source Plan
 
-- 不生成交付 Contract 文件或非渲染 Source marker，不绑定真实 owner/path/runner/proof/Assertion，不启动 `/long-task-workflow`，不实施 APP/后端/基础设施，也不宣称产品或任一版本已交付。
-- 本次 Source authoring 不修改 `project_context/**` 或 `DESIGN.md`。selected targets 是普通上游 Source；后续消费工作流负责 UI Authority Closure、Context Delta、Screen Contract/DESIGN adoption、实现与项目验证。
+- 本次 Source 维护不生成交付 Contract 文件，不绑定真实 owner/path/runner/proof/Assertion，不启动 `/long-task-workflow`，不实施 APP/后端/基础设施，也不宣称产品或任一版本已交付；非渲染 Source marker 只用于保持既有文字可消费。
+- 2026-07-25 刷新已按默认 Workflow Contract 修正 owning Context 的当前生产入口和 mobile suite 事实；2026-07-26 已完成 Design Authority discoverability、residual handoff、导航权威与摘要闭包刷新。`DESIGN.md`、四套 frozen target 和需求逻辑保持不变；后续 Long-Task 负责实施和 Final Gate。
 - 不把 PWA、小程序、静态 Kit/截图、单平台 demo、假数据或后续 V3 工具壳作为 React Native APP 完成。
 - 不创建额外 Source Plan、Schema、CLI、Preflight、Compile、Receipt、Coverage Cache、Authority 或状态文件；本 Markdown 仍是唯一 Source Plan。Gap plan、数据源研究、设计资源和项目 Skill 都是输入/伴随材料，不是竞争性 Source Plan。
 
 Completeness status:
-- Ready for Contract authoring: yes
-- Input coverage gaps: none；两份初版方案、`S-GAP-PLAN`、Goal 索引和四个最终 design resources 均有稳定路径/identity/hash/disposition/coverage，精确非文本视觉通过外部 immutable target pointer 保留而非丢失。
-- Surface/control coverage: complete；14/14 Outcome、95/95 CTRL、83 mobile + 12 ops stable IDs、4/4 selected targets 一一映射，页面 constraint 与控件 exact-with-declared-coverage 均含排除项；9 个 mobile 原生/媒体和 ops endpoint/auth 项是已索引的下游 proof obligation，不是 Source coverage 缺口。
-- Decisions required: none；32 个既有 DEC 与 2026-07-22 current-profile override 已明确。未来 provider 购买、公众生产、法务/备案、最终云区域等是 owner approval/EXT gate，不阻塞当前 Contract authoring，也不得被自动决定。
+- Product/technical Source coverage: complete；两份初版方案、当前 profile、`S-GAP-AUDIT`、`S-GAP-PLAN`、Context/DESIGN、UI/UX authoring brief、residual handoff 和四个 repo-local design resources 均有稳定 identity/disposition/coverage。
+- Design-resource-authoring status: complete；唯一 residual implementation handoff 已生成并通过 preflight，selection 与四套 frozen target 未改变。
+- Ready for complete Long-Task Contract authoring: yes at Source/design-input level；仍须在显式启动后创建唯一 Draft，绑定真实 owner/path/runner/proof/Assertion、完成 activation-safety 路径分类并通过该工作流自己的 Preflight/Compile。此状态不是 Authority Lock、实现完成或验收通过。
+- Surface/control coverage: complete at Authority level；14/14 Outcome、95/95 CTRL、83 mobile + 12 ops stable IDs、4/4 adopted targets 一一映射。生产实现/证据尚不完整。
+- Decisions required before Contract authoring: none at current Source level；32 个既有 DEC 与 current-profile override 已明确。未来 provider 购买、公众生产、法务/备案、最终云区域等是 owner approval/EXT gate，不得被自动决定。
 - Advisory implementation hints: 27 个 HINT（proposed-mobile-modules、report-snapshot-shape、candidate-route-bound、astronomy-package-capsule、map-adapter-contract、map-request-cancellation、route-snapshot、spot-section-fetching、horizon-composition、itinerary-snapshot-diff、share-rendering、sky-catalog-chunks、orientation-sampling、user-adjustment-overlay、device-capability-catalog、offline-pack-manifest、sync-dependency-order、duplicate-spot-review、ttl-by-fact-type、notification-transition-trigger、toolbox-domain-reuse、account-job-status、profile-reference-integrity、modular-monolith-events、dry-run-first、repository-layout、slo-budgeting）以及 `DEV-AUTH-001`～`DEV-QUALITY-001`/Stage 0～8；均不绑定真实文件或交付调度。
-- Unbound project facts: 实际 path/owner/runner/proof/Assertion、lock/schema/migration/native/provider/storage/telemetry binding、UI Authority Closure 与资源受控迁移、9 个 mobile POC/媒体项、12 个 ops endpoint/auth binding、Android internal build/runtime 证据、iOS build/runtime deferred/unverified 状态、核验地点和真实数据/checksum/usage/bill；公众 OSS/COS/region、域名/备案/商店/法务/商业许可/完整现场背书保持 future EXT gate。
+- Unbound project facts: 实际 owner/runner/proof/Assertion、root-entry surface bindings、lock/schema/migration/native/provider/storage/telemetry binding、10 个 mobile blocker item（覆盖 9 个控件）、12 个 ops endpoint/auth binding、Android internal build/runtime 证据、iOS build/runtime deferred/unverified 状态、核验地点和真实数据/checksum/usage/bill；公众 OSS/COS/region、域名/备案/商店/法务/商业许可/完整现场背书保持 future EXT gate。

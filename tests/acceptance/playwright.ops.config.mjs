@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 import { createServer } from "node:net";
 
+process.env.STARWARD_DESIGN_ACCEPTANCE_RUN_ID ??= randomUUID();
 const externalBaseUrl = process.env.STARWARD_OPS_ACCEPTANCE_BASE_URL;
 const inheritedPort = process.env.STARWARD_OPS_ACCEPTANCE_RUN_PORT;
 const acceptancePort = externalBaseUrl ? null : inheritedPort ? Number(inheritedPort) : await availableLoopbackPort();
@@ -22,7 +24,7 @@ async function availableLoopbackPort() {
 
 export default defineConfig({
   testDir: "./ui",
-  testMatch: "ops.spec.mjs",
+  testMatch: ["ops.spec.mjs", "ops-target-proof.spec.mjs", "design-conformance.spec.mjs"],
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,

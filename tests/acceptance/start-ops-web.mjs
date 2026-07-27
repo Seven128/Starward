@@ -63,8 +63,8 @@ for (let attempt = 0; attempt < 60; attempt += 1) {
 if (!apiReady) throw new Error("ops_acceptance_api_not_ready");
 
 const viteCli = path.resolve(path.dirname(requireFromRepository.resolve("vite")), "../../bin/vite.js");
-const opsProcess = spawn(process.execPath, [viteCli, "--host", "127.0.0.1", "--port", String(webPort)], {
-  cwd: opsRoot,
+const opsProcess = spawn(process.execPath, [viteCli, opsRoot, "--host", "127.0.0.1", "--port", String(webPort)], {
+  cwd: dependencyRepositoryRoot,
   env: {
     ...process.env,
     STARWARD_API_BASE_URL: apiBaseUrl,

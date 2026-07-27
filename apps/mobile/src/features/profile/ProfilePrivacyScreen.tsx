@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -32,30 +33,48 @@ const actions: Array<{
   command: ProfileCommand;
   id: string;
   label: string;
+  stableControlId?: string;
+  accessibilityName?: string;
 }> = [
   {
     key: "merge",
     command: "merge-guest",
     id: "profile-login-and-merge",
     label: "登录与合并",
+    stableControlId: "auth-gate-sheet",
+    accessibilityName: "游客 / 登录闸门",
   },
   {
     key: "sessions",
     command: "revoke-session",
     id: "profile-revoke-session",
     label: "登录设备",
+    stableControlId: "session-security",
+    accessibilityName: "会话安全",
+  },
+  {
+    key: "content",
+    command: "inspect-content",
+    id: "profile-open-content-library",
+    label: "内容库",
+    stableControlId: "content-library-browser",
+    accessibilityName: "内容库",
   },
   {
     key: "content",
     command: "inspect-content",
     id: "profile-save-equipment",
-    label: "内容与设备",
+    label: "器材管理",
+    stableControlId: "equipment-manager",
+    accessibilityName: "器材管理",
   },
   {
     key: "export",
     command: "request-export",
     id: "profile-request-export",
     label: "数据导出",
+    stableControlId: "export-delete-flow",
+    accessibilityName: "导出与删除",
   },
   {
     key: "deletion",
@@ -68,12 +87,16 @@ const actions: Array<{
     command: "open-sources",
     id: "profile-open-sources",
     label: "帮助与来源",
+    stableControlId: "help-and-source-center",
+    accessibilityName: "帮助与数据来源",
   },
   {
     key: "privacy",
     command: "restrict-location",
     id: "profile-change-location-privacy",
     label: "位置与隐私",
+    stableControlId: "privacy-center",
+    accessibilityName: "隐私设置",
   },
 ];
 function Evidence({
@@ -158,6 +181,17 @@ function Panel({ active, data }: { active: ViewKey; data: ProfileSnapshot }) {
           title={`当前预设 · ${data.user.activePreset}`}
           body="偏好、设备和通知入口共享版本化账号配置"
         />
+        <Pressable
+          testID="profile-open-contributions"
+          accessibilityRole="button"
+          accessibilityLabel="从我的内容库进入贡献中心"
+          onPress={() => router.push("/contribute")}
+          style={styles.contributionEntry}
+        >
+          <Text style={styles.contributionEntryText}>
+            查看投稿、审核状态或提交新证据
+          </Text>
+        </Pressable>
       </View>
     );
   if (active === "export")
@@ -283,12 +317,50 @@ export function ProfilePrivacyScreen() {
         >
           {STARWARD_RELEASE_CONTEXT.revision}
         </Text>
+        <View
+          testID="profile-hub"
+          accessible
+          focusable
+          accessibilityRole="summary"
+          accessibilityLabel="个人摘要"
+          style={styles.profileHub}
+        >
+          <View>
+            <Text style={styles.profileHubTitle}>{data?.user.displayName ?? "正在读取个人摘要"}</Text>
+            <Text style={styles.profileHubMeta}>
+              {data
+                ? `${data.user.observerTypes.join(" + ")} · 当前预设 ${data.user.activePreset}`
+                : "保留账号、偏好与同步状态布局"}
+            </Text>
+          </View>
+          <Text style={styles.profileHubBadge}>{data ? "已登录" : "读取中"}</Text>
+        </View>
+        <Pressable
+          testID="guest-data-merge"
+          accessibilityRole="button"
+          accessibilityLabel="游客数据合并"
+          onPress={() => setActive("merge")}
+          style={({ pressed }) => [styles.mergePreview, pressed && styles.pressed]}
+        >
+          <View>
+            <Text style={styles.actionText}>预览游客数据合并</Text>
+            <Text style={styles.mergePreviewMeta}>
+              {data
+                ? `${data.localGuestData.total} 项本机数据 · ${data.merge.conflictCount} 个冲突`
+                : "登录成功后逐类选择，远端确认前不删除本机副本"}
+            </Text>
+          </View>
+          <Text style={styles.mergePreviewArrow}>›</Text>
+        </Pressable>
         <View style={styles.actions}>
           {actions.map((item) => (
             <Pressable
-              key={item.key}
+              key={item.id}
               testID={item.id}
               accessibilityRole="button"
+              accessibilityLabel={item.stableControlId
+                ? `${item.stableControlId}:${item.accessibilityName}`
+                : item.label}
               onPress={() => run(item)}
               disabled={mutation.isPending}
               style={({ pressed }) => [
@@ -366,6 +438,57 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
+  profileHub: {
+    minHeight: minimumTouchTarget,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.x1,
+    padding: spacing.x2,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.layer,
+    backgroundColor: palette.surface,
+  },
+  profileHubTitle: {
+    color: palette.text,
+    fontSize: typeToken.section,
+    fontWeight: "700",
+  },
+  profileHubMeta: {
+    marginTop: 4,
+    color: palette.textSecondary,
+    fontSize: typeToken.caption,
+    lineHeight: 17,
+  },
+  profileHubBadge: {
+    color: palette.primaryActive,
+    fontSize: typeToken.caption,
+    fontWeight: "700",
+  },
+  mergePreview: {
+    minHeight: minimumTouchTarget,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.x1,
+    padding: spacing.x2,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.control,
+    backgroundColor: palette.surface,
+  },
+  mergePreviewMeta: {
+    marginTop: 4,
+    color: palette.textSecondary,
+    fontSize: typeToken.caption,
+    lineHeight: 17,
+  },
+  mergePreviewArrow: {
+    color: palette.primaryActive,
+    fontSize: typeToken.section,
+    fontWeight: "700",
+  },
   action: {
     minHeight: minimumTouchTarget,
     justifyContent: "center",
@@ -417,5 +540,13 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surface,
     borderRadius: radii.control,
   },
+  contributionEntry: {
+    minHeight: minimumTouchTarget,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.control,
+    backgroundColor: palette.primaryActive,
+  },
+  contributionEntryText: { color: palette.onPrimary, fontWeight: "700" },
   error: { color: palette.danger, fontSize: typeToken.label },
 });

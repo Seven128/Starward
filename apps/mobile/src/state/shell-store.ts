@@ -3,7 +3,7 @@ import { createUnrestrictedProfile, type PreferenceProfile } from "@starward/dom
 import { hydratePreferenceRuntime, persistActiveProfile, persistPreferenceProfile, persistShellDestination, persistShellLocation } from "./preferences-runtime";
 import { advanceDecisionContext, createDecisionContext, type DecisionContextInput, type DecisionContextRevision } from "./decision-context";
 
-export type PrimaryDestination = "tonight" | "map" | "itinerary" | "sky" | "profile";
+export type PrimaryDestination = "tonight" | "map" | "trips" | "sky" | "me";
 export type LocationSource = "unset" | "device" | "manual";
 
 interface ShellState {

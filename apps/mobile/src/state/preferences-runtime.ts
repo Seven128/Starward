@@ -94,8 +94,9 @@ export async function hydratePreferenceRuntime(): Promise<HydratedPreferenceRunt
       activeProfileId = payload.profileId;
     } else if (record.operation === "shell.location.set" && typeof payload.label === "string" && ["unset", "device", "manual"].includes(String(payload.source))) {
       location = { source: payload.source as LocationSource, label: payload.label, latitude: typeof payload.latitude === "number" ? payload.latitude : undefined, longitude: typeof payload.longitude === "number" ? payload.longitude : undefined };
-    } else if (record.operation === "shell.destination.set" && ["tonight", "map", "itinerary", "sky", "profile"].includes(String(payload.destination))) {
-      activeDestination = payload.destination as PrimaryDestination;
+    } else if (record.operation === "shell.destination.set" && ["tonight", "map", "trips", "sky", "me", "itinerary", "profile"].includes(String(payload.destination))) {
+      const destination = payload.destination === "itinerary" ? "trips" : payload.destination === "profile" ? "me" : payload.destination;
+      activeDestination = destination as PrimaryDestination;
     }
   }
   return { profiles: [...profiles.values()], activeProfileId, location, activeDestination };

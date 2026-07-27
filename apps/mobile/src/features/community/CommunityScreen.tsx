@@ -24,42 +24,56 @@ const p = colors.planning,
     command: CommunityCommand;
     id: string;
     label: string;
+    stableControlId: string;
+    accessibilityName: string;
   }> = [
     {
       key: "spot",
       command: "submit-spot",
       id: "community-submit-spot",
       label: "新地点",
+      stableControlId: "new-spot-wizard",
+      accessibilityName: "新地点向导",
     },
     {
       key: "report",
       command: "submit-report",
       id: "community-submit-report",
       label: "现场实况",
+      stableControlId: "field-report-form",
+      accessibilityName: "现场实况表单",
     },
     {
       key: "correction",
       command: "submit-correction",
       id: "community-submit-correction",
       label: "安全纠错",
+      stableControlId: "correction-report",
+      accessibilityName: "纠错报告",
     },
     {
       key: "media",
       command: "upload-media",
       id: "community-upload-media",
       label: "照片隐私",
+      stableControlId: "media-privacy-review",
+      accessibilityName: "媒体隐私检查",
     },
     {
       key: "trust",
       command: "open-trust",
       id: "community-open-trust",
       label: "审核状态",
+      stableControlId: "contribution-status-center",
+      accessibilityName: "贡献状态中心",
     },
     {
       key: "review",
       command: "publish-review",
       id: "community-open-review-form",
       label: "多维评价",
+      stableControlId: "multidimensional-review-form",
+      accessibilityName: "多维评价表单",
     },
   ];
 function E({
@@ -219,7 +233,10 @@ export function CommunityScreen() {
     d = m.data ?? q.data;
   return (
     <SafeAreaView testID="screen-community-contribution" style={s.screen}>
-      <ScrollView contentContainerStyle={s.content}>
+      <ScrollView
+        contentContainerStyle={s.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={s.eyebrow}>社区贡献 · 证据优先</Text>
         <Text style={s.title}>把现场信息变成可核验的帮助</Text>
         <Text style={s.subtitle}>
@@ -231,6 +248,12 @@ export function CommunityScreen() {
             <Pressable
               key={a.key}
               testID={a.id}
+              accessibilityRole="button"
+              accessibilityLabel={`${a.stableControlId}:${a.accessibilityName}`}
+              accessibilityState={{
+                disabled: m.isPending,
+                busy: m.isPending,
+              }}
               disabled={m.isPending}
               onPress={() => {
                 setV(a.key);
@@ -242,7 +265,33 @@ export function CommunityScreen() {
             </Pressable>
           ))}
         </View>
+        {q.isLoading ? (
+          <Text testID="community-loading-state" style={s.subtitle}>
+            正在读取投稿、审核和隐私边界…
+          </Text>
+        ) : null}
+        {q.isError ? (
+          <View testID="community-query-error" style={s.error}>
+            <Text style={s.errorTitle}>投稿状态暂不可用</Text>
+            <Text style={s.errorBody}>
+              未确认的状态不会显示为已发布，草稿与原始媒体保持原边界。
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="重试读取投稿状态"
+              onPress={() => q.refetch()}
+              style={s.retry}
+            >
+              <Text style={s.retryText}>重试</Text>
+            </Pressable>
+          </View>
+        ) : null}
         {v && d ? <Panel v={v} d={d} /> : null}
+        {m.isError ? (
+          <Text testID="community-command-error" style={s.commandError}>
+            操作未确认；原状态、原始媒体和审核版本均保持不变，可稍后重试。
+          </Text>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -283,4 +332,21 @@ const s = StyleSheet.create({
   cardTitle: { color: p.text, fontWeight: "700" },
   cardBody: { marginTop: 5, color: p.text, lineHeight: 19 },
   meta: { marginTop: 5, color: p.textSecondary, fontSize: typeToken.caption },
+  error: {
+    padding: spacing.x2,
+    borderRadius: radii.layer,
+    backgroundColor: p.surface,
+  },
+  errorTitle: { color: p.danger, fontWeight: "700" },
+  errorBody: { marginTop: spacing.x1, color: p.textSecondary, lineHeight: 19 },
+  retry: {
+    minHeight: minimumTouchTarget,
+    marginTop: spacing.x1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.control,
+    backgroundColor: p.primaryActive,
+  },
+  retryText: { color: p.onPrimary, fontWeight: "700" },
+  commandError: { color: p.danger, lineHeight: 19 },
 });

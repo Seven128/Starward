@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -12,10 +12,12 @@ import {
   androidJavaScriptRootTypecheckArguments,
   androidAppReadyTestId,
   androidUiEvidenceTimeoutMs,
+  hasMinimumVisibleBounds,
   isAndroidBuildInputFile,
   isTransientAndroidUiDumpError,
   normalizeAndroidBuildInputContent,
   readAndroidBuildCache,
+  writeDesignFailureArtifact,
   writeAndroidBuildCache,
 } from "./verify-native-target.mjs";
 
@@ -73,6 +75,13 @@ test("Android UI evidence retries only transient UIAutomator root failures", () 
   assert.equal(isTransientAndroidUiDumpError(new Error("adb_failed:1:device offline")), false);
 });
 
+test("Android control collection ignores clipped or off-screen accessibility nodes", () => {
+  assert.equal(hasMinimumVisibleBounds({ bounds: "[87,2338][993,2211]" }), false);
+  assert.equal(hasMinimumVisibleBounds({ bounds: "[42,2202][1038,2211]" }), false);
+  assert.equal(hasMinimumVisibleBounds({ bounds: "[87,1757][993,1872]" }), true);
+  assert.equal(hasMinimumVisibleBounds({ bounds: "[0,0][44,44]" }), true);
+});
+
 test("Android build input fingerprint is deterministic and ABI-sensitive", async () => {
   const first = await androidBuildInputFingerprint("x86_64");
   const second = await androidBuildInputFingerprint("x86_64");
@@ -99,6 +108,30 @@ test("Android APK fingerprint normalizes text line endings across Harness sandbo
 
   const binary = Buffer.from([0x0d, 0x0a, 0x00, 0xff]);
   assert.equal(normalizeAndroidBuildInputContent("apps/mobile/assets/icon.png", binary), binary);
+});
+
+test("design verifier emits an attributable artifact when production execution fails", async () => {
+  const testRoot = await mkdtemp(path.join(tmpdir(), "starward-native-design-failure-test-"));
+  try {
+    const relativePath = await writeDesignFailureArtifact(
+      "mobile-shell-and-preferences",
+      new Error("native_bundle_failed:C:/sensitive/path"),
+      {
+        controls: ["profile-switcher"],
+        root: testRoot,
+        startedAtValue: "2026-07-25T00:00:00.000Z",
+      },
+    );
+    const artifact = JSON.parse(await readFile(path.join(testRoot, ...relativePath.split("/")), "utf8"));
+
+    assert.equal(artifact.schema_version, "starward-native-design-failure-evidence-v1");
+    assert.equal(artifact.execution_status, "failed");
+    assert.equal(artifact.diagnostic, "native_target_check_failed:native_bundle_failed");
+    assert.deepEqual(artifact.controls, ["profile-switcher"]);
+    assert.ok(!JSON.stringify(artifact).includes("sensitive"));
+  } finally {
+    await rm(testRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  }
 });
 
 test("Android build cache requires matching input and APK hashes", async () => {

@@ -13,7 +13,7 @@ export function createShootingPreviewHandler(service: Pick<ShootingPreviewServic
         outcome: "shooting-assistant",
         actorId: "personal-trial-owner",
         operation: "shooting.plan",
-        idempotencyKey: `shooting:${preview.provenance.weather.runId}:${token}`,
+        idempotencyKey: `shooting:${preview.provenance.weather.runId}:${preview.conditions.capturedAt}:${token}`,
         payload: {
           token,
           context: preview.context,

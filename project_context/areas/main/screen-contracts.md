@@ -15,6 +15,9 @@
 - Scroll and overlays: one active scroll owner at a time. A sheet owns its handle and bounded content scroll; map/sky owns pan/pinch only outside an active sheet/control gesture. Closing a layer restores focus and selection to its trigger.
 - Shared state: `origin`, `observingNight`, `moment`, `preferences`, `target`, `selectedSpot`, `primaryBackupRole`, `route`, `itineraryRevision`, `freshness`, and `risk` commit through one versioned decision context.
 - Navigation: Back closes the top route-owned layer before leaving the route; Android system/predictive back and iOS navigation ownership remain native. Deep links restore compatible shared state or present an honest missing/stale recovery state.
+- Primary tab roots: Tonight `/tonight`, Map `/map`, Trips `/trips`, Sky `/sky`, and Me `/me`. Each is a distinct screen route with its own nested stack and primary scroll or immersive-canvas owner inside one persistent native tab navigator.
+- Tab switching: selecting another tab activates that route/screen without scrolling a shared document, jumping to an anchor, or replacing conditional pseudo-page content inside one root `ScrollView`. Each tab preserves its own nested route and scroll/canvas position; switching tabs does not create synthetic cross-tab Back entries.
+- Deep-link and recovery: a valid deep link activates the owning tab before its nested route; an invalid or stale nested target recovers to that tab root with an attributable error. Reselect behavior remains unchanged on the current route unless the owning screen contract later declares and tests a pop-to-root or scroll-to-top action.
 - Interaction: press feedback is immediate; commit occurs once at a valid completion point; cancellation, interruption, superseding requests, and retries preserve the last safe state. Direct manipulation starts from the live presentation value and settles only to valid bounds.
 - Variants: planning, night, and red-light keep the same control/focus order. Loading, empty, no-results, stale, partial, degraded, unknown, error, offline, disabled, saving, and success appear only where applicable and never fabricate facts.
 - Accessibility: 200% text reflows without clipping the primary judgment/action; screen readers receive role/name/value and material async/safety changes; reduced motion replaces large-axis/depth/elastic movement rather than merely accelerating it.
@@ -28,7 +31,7 @@
 - Fixed / Overlay ownership: `primary-tab-bar` is safe-area fixed; `permission-step` and merge/selection layers own focus while open.
 - Material controls in order: `primary-tab-bar`, `permission-step`, `preference-wizard`, `profile-switcher`.
 - Commit / Exit: permission choice may choose a manual/degraded path; preference/profile changes commit one version and return to the prior route without losing task context.
-- Verification emphasis: native navigation/back, point-of-use denial alternative, durable profile save/switch/merge, 200% text, three modes.
+- Verification emphasis: five distinct tab route/screen identities, independent tab stack and scroll/canvas restoration, native back/deep-link recovery, point-of-use denial alternative, durable profile save/switch/merge, 200% text, three modes.
 
 ## `tonight-decision`
 

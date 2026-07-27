@@ -1,5 +1,5 @@
-import { ProfilePrivacyScreen } from "../src/features/profile/ProfilePrivacyScreen";
+import { Redirect, type Href } from "expo-router";
 
-export default function ProfileRoute() {
-  return <ProfilePrivacyScreen />;
+export default function LegacyProfileRoute() {
+  return <Redirect href={"/me" as Href} />;
 }

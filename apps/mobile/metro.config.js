@@ -11,11 +11,23 @@ const dependencyRoot = fs.existsSync(localDependencyRoot)
 if (!fs.existsSync(dependencyRoot)) throw new Error("starward_mobile_dependency_root_missing");
 const dependencyRepositoryRoot = path.resolve(dependencyRoot, "../../..");
 const config = getDefaultConfig(projectRoot);
+const defaultResolveRequest = config.resolver.resolveRequest;
 
 config.watchFolders = [...new Set([repositoryRoot, dependencyRepositoryRoot])];
 config.resolver.nodeModulesPaths = [
   dependencyRoot,
   path.resolve(dependencyRepositoryRoot, "node_modules"),
 ];
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === "expo-router/_ctx") {
+    return {
+      filePath: path.join(projectRoot, "router-context.js"),
+      type: "sourceFile",
+    };
+  }
+  return defaultResolveRequest
+    ? defaultResolveRequest(context, moduleName, platform)
+    : context.resolveRequest(context, moduleName, platform);
+};
 
 module.exports = config;
