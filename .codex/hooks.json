@@ -5,8 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"C:\\Dev\\Starward\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
-            "commandWindows": "node \"C:\\Dev\\Starward\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
+            "command": "node \"C:\\Users\\777\\AppData\\Local\\npm-cache\\_npx\\f5ff4cdd2594a57f\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
+            "commandWindows": "node \"C:\\Users\\777\\AppData\\Local\\npm-cache\\_npx\\f5ff4cdd2594a57f\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
             "timeout": 10,
             "statusMessage": "Tiny Context long-task live authority gate"
           }
@@ -18,8 +18,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"C:\\Dev\\Starward\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
-            "commandWindows": "node \"C:\\Dev\\Starward\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
+            "command": "node \"C:\\Users\\777\\AppData\\Local\\npm-cache\\_npx\\f5ff4cdd2594a57f\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
+            "commandWindows": "node \"C:\\Users\\777\\AppData\\Local\\npm-cache\\_npx\\f5ff4cdd2594a57f\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
             "timeout": 10,
             "statusMessage": "Tiny Context long-task live authority gate"
           }
@@ -31,8 +31,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"C:\\Dev\\Starward\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
-            "commandWindows": "node \"C:\\Dev\\Starward\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
+            "command": "node \"C:\\Users\\777\\AppData\\Local\\npm-cache\\_npx\\f5ff4cdd2594a57f\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
+            "commandWindows": "node \"C:\\Users\\777\\AppData\\Local\\npm-cache\\_npx\\f5ff4cdd2594a57f\\node_modules\\project-tiny-context-harness\\dist\\long-task-hook.js\"",
             "timeout": 3600,
             "statusMessage": "Tiny Context long-task live authority gate"
           }
