@@ -1,11 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
 import { createServer } from "node:net";
+import { mobileWebSessionPaths } from "./mobile-web-session.mjs";
 
 const externalBaseUrl = process.env.STARWARD_ACCEPTANCE_BASE_URL;
 const inheritedPort = process.env.STARWARD_ACCEPTANCE_RUN_PORT;
 const acceptancePort = externalBaseUrl ? null : inheritedPort ? Number(inheritedPort) : await availableLoopbackPort();
 if (!externalBaseUrl && !inheritedPort) process.env.STARWARD_ACCEPTANCE_RUN_PORT = String(acceptancePort);
 const acceptanceBaseUrl = externalBaseUrl ?? `http://127.0.0.1:${acceptancePort}`;
+const sessionDescriptorUrl = new URL(
+  mobileWebSessionPaths({ baseUrl: acceptanceBaseUrl }).descriptorPathname,
+  `${acceptanceBaseUrl}/`,
+).href;
 
 async function availableLoopbackPort() {
   const server = createServer();
@@ -30,9 +35,9 @@ export default defineConfig({
   expect: { timeout: 5_000 },
   webServer: externalBaseUrl ? undefined : {
     command: `node start-mobile-web.mjs --port ${acceptancePort}`,
-    url: acceptanceBaseUrl,
+    url: sessionDescriptorUrl,
     timeout: 120_000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     stdout: "pipe",
     stderr: "pipe",
   },

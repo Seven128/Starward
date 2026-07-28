@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { MapRouteSnapshot, MapSpotSummary, RouteMode } from "@starward/contracts/map";
@@ -117,6 +118,9 @@ export function MapScreen() {
   return <SafeAreaView testID="screen-map-route-discovery" style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
     <Text style={styles.eyebrow}>地点与路线 · {location.label}</Text><Text style={styles.title}>观星地图</Text>
     <Text style={styles.subtitle}>WGS84 用于业务和距离；地图/路线供应商转换只发生在适配边界。开放 POI 仅作为未验证候选。</Text>
+    <Pressable testID="map-open-selected-spot-detail" accessibilityRole="button" accessibilityLabel="打开当前选中地点详情" onPress={() => router.push("/spot/spot-a")} style={styles.action}>
+      <Text style={styles.actionText}>查看选中地点详情</Text>
+    </Pressable>
     <DecisionContextRevision />
     <View testID="map-marker-density-surface" accessible focusable accessibilityRole="image" accessibilityLabel="Marker / cluster 同步画布" style={styles.mapCanvas}>
       <Text style={styles.mapCount}>{spots.isLoading ? "正在加载当前范围…" : `当前范围 ${spots.data?.items.length ?? 0} 个候选`}</Text>

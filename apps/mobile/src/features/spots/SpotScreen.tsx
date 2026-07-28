@@ -9,6 +9,7 @@ import { createSpotClient } from "../../data/spot-client";
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { presentSpotFact, safetyOverridesRecommendation } from "./index";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
+import { useTabRestorationEvidence } from "../../shell/TabRestorationEvidence";
 
 const palette = colors.planning;
 const client = createSpotClient({ baseUrl: resolveRuntimeApiBaseUrl() });
@@ -37,17 +38,27 @@ function sourceText(detail: SpotTrustDetail | undefined, key: string) {
 }
 
 export function SpotScreen() {
+  const restoration = useTabRestorationEvidence({
+    testID: "tab-restoration-map",
+    tabId: "shell-open-map-tab",
+    rootRoute: "/map",
+    nestedRoute: "/spot/spot-a",
+    ownerType: "canvas",
+    ownerId: "map-spot-canvas-owner",
+  });
   const [active, setActive] = useState<ViewKey>("decision");
   const query = useQuery({ queryKey: ["spot-detail", "current"], queryFn: ({ signal }) => client.get("current", signal) });
   const detail = query.data;
   const safetyConservative = detail?.facts.some((item) => item.safetyConservative) ?? true;
   const recommendation = safetyOverridesRecommendation({ status: detail?.status ?? "caution", safetyConservative, score: null });
   const navigateAction = detail?.actions.find((item) => item.action === "navigate");
-  return <SafeAreaView testID="screen-spot-detail-and-trust" style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
+  return <SafeAreaView testID="screen-spot-detail-and-trust" style={styles.screen}><ScrollView onScroll={restoration.onScroll} scrollEventThrottle={restoration.scrollEventThrottle} contentContainerStyle={styles.content}>
+    {restoration.evidence}
     <View testID="spot-hero" accessible focusable accessibilityRole="summary" accessibilityLabel="地点身份摘要" style={styles.hero}>
       <Text style={styles.eyebrow}>地点证据 · {detail?.updatedAt ?? "正在同步"}</Text><Text style={styles.title}>{detail?.name ?? "正在加载地点身份…"}</Text>
       <Text style={styles.subtitle}>静态身份与动态证据分开呈现；未知、冲突、临时不可用和安全阻断不会被总分或漂亮卡片覆盖。</Text>
     </View>
+    {detail ? <View testID="spot-detail-ready" collapsable={false} style={styles.readySentinel} /> : null}
     <DecisionContextRevision />
     {query.isError ? <View style={styles.error}><Text style={styles.errorTitle}>地点证据暂不可用</Text><Text style={styles.errorBody}>保留页面上下文，不展示旧评分或合成事实。</Text><Pressable onPress={() => query.refetch()} style={styles.retry}><Text style={styles.retryText}>重试</Text></Pressable></View> : null}
     <View style={styles.actions}>{actions.map((action) => <Pressable key={action.key} testID={action.id} accessibilityRole="button" accessibilityLabel={`${action.stableControlId}:${action.accessibilityName}`} onPress={() => setActive(action.key)} style={[styles.action, active === action.key && styles.actionActive]}><Text style={styles.actionText}>{action.label}</Text></Pressable>)}</View>
@@ -64,6 +75,7 @@ export function SpotScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.canvas }, content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 }, eyebrow: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" }, title: { color: palette.text, fontSize: typeToken.title, fontWeight: "700" }, subtitle: { color: palette.textSecondary, fontSize: typeToken.body, lineHeight: 23 },
   hero: { minHeight: minimumTouchTarget, gap: spacing.x1 },
+  readySentinel: { width: 1, height: 1, overflow: "hidden" },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 }, action: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: 12, borderWidth: 1, borderColor: palette.border, borderRadius: radii.pill, backgroundColor: palette.surface }, actionActive: { borderColor: palette.primaryActive }, actionText: { color: palette.text, fontSize: typeToken.caption, fontWeight: "700" },
   panel: { gap: spacing.x1, padding: spacing.x2, borderWidth: 1, borderColor: palette.border, borderRadius: radii.layer, backgroundColor: palette.surface }, evidence: { minHeight: 88, padding: 12, borderRadius: radii.control, backgroundColor: palette.surfaceMuted }, evidenceTitle: { color: palette.text, fontSize: typeToken.body, fontWeight: "700" }, evidenceBody: { marginTop: 5, color: palette.text, fontSize: typeToken.label, lineHeight: 19 }, evidenceMeta: { marginTop: 5, color: palette.textSecondary, fontSize: typeToken.caption, lineHeight: 17 },
   error: { padding: spacing.x2, borderRadius: radii.layer, backgroundColor: palette.surface }, errorTitle: { color: palette.danger, fontWeight: "700" }, errorBody: { marginTop: spacing.x1, color: palette.textSecondary }, retry: { minHeight: minimumTouchTarget, marginTop: spacing.x1, alignItems: "center", justifyContent: "center", borderRadius: radii.control, backgroundColor: palette.primaryActive }, retryText: { color: palette.onPrimary, fontWeight: "700" },

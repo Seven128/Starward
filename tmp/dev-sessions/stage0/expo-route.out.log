@@ -1,0 +1,136 @@
+
+> @starward/mobile@0.1.0 web
+> expo start --web --offline --port 8081
+
+Networking has been disabled
+Starting project at C:\Dev\Starward\apps\mobile
+Logs: C:\Dev\Starward\apps\mobile\.expo\dev\logs\start.log
+Expo Autolinking module resolution enabled
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+
+Logs for your project will appear below.
+Web Bundled 4108ms apps\mobile\index.web.js (1607 modules)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  ERROR  
+
+Code: PrimaryTabBar.tsx
+[0m [90m 39 |[39m   [36mconst[39m common [33m=[39m { fill[33m:[39m [32m"none"[39m[33m,[39m stroke[33m:[39m color[33m,[39m strokeLinecap[33m:[39m [32m"round"[39m [36mas[39m [36mconst[39m[33m,[39m strokeLinejoin[33m:[39m [32m"round"[39m [36mas[39m [36mconst[39m[33m,[39m strokeWidth[33m:[39m [35m1.7[39m }[33m;[39m
+ [90m 40 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m 41 |[39m     [33m<[39m[33mSvg[39m accessibilityElementsHidden width[33m=[39m{[35m20[39m} height[33m=[39m{[35m20[39m} viewBox[33m=[39m[32m"0 0 24 24"[39m[33m>[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 42 |[39m       {id [33m===[39m [32m"tonight"[39m [33m?[39m [33m<[39m[33mPath[39m {[33m...[39mcommon} d[33m=[39m[32m"M3 12h18M6 12a6 6 0 0 1 12 0M8 17h8"[39m [33m/[39m[33m>[39m [33m:[39m [36mnull[39m}
+ [90m 43 |[39m       {id [33m===[39m [32m"map"[39m [33m?[39m [33m<[39m[33mPath[39m {[33m...[39mcommon} d[33m=[39m[32m"m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15"[39m [33m/[39m[33m>[39m [33m:[39m [36mnull[39m}
+ [90m 44 |[39m       {id [33m===[39m [32m"trips"[39m [33m?[39m [33m<[39m[33mPath[39m {[33m...[39mcommon} d[33m=[39m[32m"M5 5h14v16H5zM8 3v4m8-4v4M8 11h8m-8 4h5"[39m [33m/[39m[33m>[39m [33m:[39m [36mnull[39m}[0m
+Call Stack
+  TabIcon (apps\mobile\src\shell\PrimaryTabBar.tsx:41:5)
+  destinations.map$argument_0 (apps\mobile\src\shell\PrimaryTabBar.tsx:103:13)
+  PrimaryTabBar (apps\mobile\src\shell\PrimaryTabBar.tsx:70:21)
+  Tabs.props.tabBar (apps\mobile\app\_layout.tsx:27:50)
+  RootLayout (apps\mobile\app\_layout.tsx:18:7)
+Web Bundled 88ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  ERROR  
+
+Code: PrimaryTabBar.tsx
+[0m [90m 39 |[39m   [36mconst[39m common [33m=[39m { fill[33m:[39m [32m"none"[39m[33m,[39m stroke[33m:[39m color[33m,[39m strokeLinecap[33m:[39m [32m"round"[39m [36mas[39m [36mconst[39m[33m,[39m strokeLinejoin[33m:[39m [32m"round"[39m [36mas[39m [36mconst[39m[33m,[39m strokeWidth[33m:[39m [35m1.7[39m }[33m;[39m
+ [90m 40 |[39m   [36mreturn[39m (
+[31m[1m>[22m[39m[90m 41 |[39m     [33m<[39m[33mSvg[39m accessibilityElementsHidden width[33m=[39m{[35m20[39m} height[33m=[39m{[35m20[39m} viewBox[33m=[39m[32m"0 0 24 24"[39m[33m>[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 42 |[39m       {id [33m===[39m [32m"tonight"[39m [33m?[39m [33m<[39m[33mPath[39m {[33m...[39mcommon} d[33m=[39m[32m"M3 12h18M6 12a6 6 0 0 1 12 0M8 17h8"[39m [33m/[39m[33m>[39m [33m:[39m [36mnull[39m}
+ [90m 43 |[39m       {id [33m===[39m [32m"map"[39m [33m?[39m [33m<[39m[33mPath[39m {[33m...[39mcommon} d[33m=[39m[32m"m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15"[39m [33m/[39m[33m>[39m [33m:[39m [36mnull[39m}
+ [90m 44 |[39m       {id [33m===[39m [32m"trips"[39m [33m?[39m [33m<[39m[33mPath[39m {[33m...[39mcommon} d[33m=[39m[32m"M5 5h14v16H5zM8 3v4m8-4v4M8 11h8m-8 4h5"[39m [33m/[39m[33m>[39m [33m:[39m [36mnull[39m}[0m
+Call Stack
+  TabIcon (apps\mobile\src\shell\PrimaryTabBar.tsx:41:5)
+  destinations.map$argument_0 (apps\mobile\src\shell\PrimaryTabBar.tsx:103:13)
+  PrimaryTabBar (apps\mobile\src\shell\PrimaryTabBar.tsx:70:21)
+  Tabs.props.tabBar (apps\mobile\app\_layout.tsx:27:50)
+  RootLayout (apps\mobile\app\_layout.tsx:18:7)
+Web Bundled 73ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web Bundled 57ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web Bundled 67ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web Bundled 349ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web Bundled 74ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web  ERROR  
+
+Code: MobileShellScreen.tsx
+[0m [90m 83 |[39m         style[33m=[39m{({ pressed }) [33m=>[39m [styles[33m.[39mbackButton[33m,[39m pressed [33m&&[39m styles[33m.[39mpressed]}
+ [90m 84 |[39m       [33m>[39m
+[31m[1m>[22m[39m[90m 85 |[39m         [33m<[39m[33mSvg[39m accessibilityElementsHidden width[33m=[39m{[35m20[39m} height[33m=[39m{[35m20[39m} viewBox[33m=[39m[32m"0 0 24 24"[39m[33m>[39m
+ [90m    |[39m         [31m[1m^[22m[39m
+ [90m 86 |[39m           [33m<[39m[33mPath[39m d[33m=[39m[32m"m15 18-6-6 6-6"[39m fill[33m=[39m[32m"none"[39m stroke[33m=[39m{styles[33m.[39micon[33m.[39mcolor} strokeLinecap[33m=[39m[32m"round"[39m strokeLinejoin[33m=[39m[32m"round"[39m strokeWidth[33m=[39m{[35m2[39m} [33m/[39m[33m>[39m
+ [90m 87 |[39m         [33m<[39m[33m/[39m[33mSvg[39m[33m>[39m
+ [90m 88 |[39m       [33m<[39m[33m/[39m[33mPressable[39m[33m>[39m[0m
+Call Stack
+  ContextHeader (apps\mobile\src\shell\MobileShellScreen.tsx:85:9)
+  requestLocation (apps\mobile\src\shell\MobileShellScreen.tsx:289:40)
+  MeStackLayout (apps\mobile\app\(me)\_layout.tsx:7:25)
+  <global> (apps\mobile\app\_layout.tsx:3)
+Web Bundled 83ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+Web  ERROR  
+
+Code: MobileShellScreen.tsx
+[0m [90m 83 |[39m         style[33m=[39m{({ pressed }) [33m=>[39m [styles[33m.[39mbackButton[33m,[39m pressed [33m&&[39m styles[33m.[39mpressed]}
+ [90m 84 |[39m       [33m>[39m
+[31m[1m>[22m[39m[90m 85 |[39m         [33m<[39m[33mSvg[39m accessibilityElementsHidden width[33m=[39m{[35m20[39m} height[33m=[39m{[35m20[39m} viewBox[33m=[39m[32m"0 0 24 24"[39m[33m>[39m
+ [90m    |[39m         [31m[1m^[22m[39m
+ [90m 86 |[39m           [33m<[39m[33mPath[39m d[33m=[39m[32m"m15 18-6-6 6-6"[39m fill[33m=[39m[32m"none"[39m stroke[33m=[39m{palette[33m.[39mtext} strokeLinecap[33m=[39m[32m"round"[39m strokeLinejoin[33m=[39m[32m"round"[39m strokeWidth[33m=[39m{[35m2[39m} [33m/[39m[33m>[39m
+ [90m 87 |[39m         [33m<[39m[33m/[39m[33mSvg[39m[33m>[39m
+ [90m 88 |[39m       [33m<[39m[33m/[39m[33mPressable[39m[33m>[39m[0m
+Call Stack
+  ContextHeader (apps\mobile\src\shell\MobileShellScreen.tsx:85:9)
+  MobileShellScreen (apps\mobile\src\shell\MobileShellScreen.tsx:300:7)
+  MeStackLayout (apps\mobile\app\(me)\_layout.tsx:7:25)
+  RootLayout (apps\mobile\app\_layout.tsx:18:7)
+Web Bundled 100ms apps\mobile\index.web.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  WARN  props.pointerEvents is deprecated. Use style.pointerEvents

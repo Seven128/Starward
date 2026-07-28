@@ -15,6 +15,7 @@ import {
   type FieldSnapshot,
 } from "../../data/field-client";
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
+import { useTabRestorationEvidence } from "../../shell/TabRestorationEvidence";
 
 type ViewKey =
   | "pack"
@@ -324,6 +325,14 @@ function Panel({ view, data }: { view: ViewKey; data: FieldSnapshot }) {
 }
 
 export function FieldScreen() {
+  const restoration = useTabRestorationEvidence({
+    testID: "tab-restoration-trips",
+    tabId: "primary-tab-itinerary",
+    rootRoute: "/trips",
+    nestedRoute: "/field",
+    ownerType: "scroll",
+    ownerId: "trips-field-scroll-owner",
+  });
   const [activeView, setActiveView] = useState<ViewKey | null>(null);
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -344,14 +353,15 @@ export function FieldScreen() {
 
   return (
     <SafeAreaView testID="screen-field-offline-safety" style={[styles.screen, red && styles.redScreen]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView onScroll={restoration.onScroll} scrollEventThrottle={restoration.scrollEventThrottle} contentContainerStyle={styles.content}>
+        {restoration.evidence}
         <View
           testID="field-dashboard"
           accessible
           accessibilityLabel={`field-dashboard:现场仪表盘，${data?.activeSpot ?? "地点读取中"}，最佳窗口 00:35 至 02:20，返程与安全状态可查看`}
           style={[styles.dashboard, red && styles.redCard]}
         >
-          <Text style={[styles.eyebrow, red && styles.redText]}>现场模式 · {data?.activeSpot ?? "读取中"}</Text>
+          <Text testID={data ? "field-dashboard-ready" : undefined} style={[styles.eyebrow, red && styles.redText]}>现场模式 · {data?.activeSpot ?? "读取中"}</Text>
           <Text style={[styles.title, red && styles.redText]}>断网也能找到方向和退路</Text>
           <Text style={[styles.subtitle, red && styles.redMuted]}>
             最佳窗口 00:35–02:20 · 返程与安全状态可用

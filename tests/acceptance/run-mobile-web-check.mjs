@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateMobileWebSession } from "./mobile-web-session.mjs";
 
 const acceptanceRoot = path.dirname(fileURLToPath(import.meta.url));
 const forwarded = process.argv.slice(2);
@@ -24,19 +25,7 @@ if (forwarded.includes("--help")) {
 }
 
 const baseUrl = process.env.STARWARD_ACCEPTANCE_BASE_URL ?? "http://127.0.0.1:4173";
-if (!isolated) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5_000);
-  let response;
-  try {
-    response = await fetch(baseUrl, { signal: controller.signal });
-  } catch {
-    throw new Error(`warm_acceptance_server_unavailable:${baseUrl}`);
-  } finally {
-    clearTimeout(timeout);
-  }
-  if (!response.ok) throw new Error(`warm_acceptance_server_unhealthy:${response.status}`);
-}
+if (!isolated) await validateMobileWebSession({ baseUrl });
 
 const requireFromAcceptance = createRequire(path.join(acceptanceRoot, "package.json"));
 const playwrightCli = requireFromAcceptance.resolve("@playwright/test/cli");

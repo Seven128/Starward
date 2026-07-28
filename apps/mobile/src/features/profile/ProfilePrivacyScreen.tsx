@@ -17,6 +17,7 @@ import {
 } from "../../data/profile-client";
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { STARWARD_RELEASE_CONTEXT } from "@starward/contracts/release-context";
+import { useShellStore } from "../../state/shell-store";
 
 const palette = colors.planning;
 const client = createProfileClient({ baseUrl: resolveRuntimeApiBaseUrl() });
@@ -182,7 +183,7 @@ function Panel({ active, data }: { active: ViewKey; data: ProfileSnapshot }) {
           body="偏好、设备和通知入口共享版本化账号配置"
         />
         <Pressable
-          testID="profile-open-contributions"
+          testID="profile-open-contributions-from-library"
           accessibilityRole="button"
           accessibilityLabel="从我的内容库进入贡献中心"
           onPress={() => router.push("/contribute")}
@@ -282,6 +283,9 @@ function Panel({ active, data }: { active: ViewKey; data: ProfileSnapshot }) {
 export function ProfilePrivacyScreen() {
   const [active, setActive] = useState<ViewKey | null>(null);
   const [buildInfoOpen, setBuildInfoOpen] = useState(false);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const displayMode = useShellStore((state) => state.displayMode);
+  const setDisplayMode = useShellStore((state) => state.setDisplayMode);
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ["profile"],
@@ -317,6 +321,65 @@ export function ProfilePrivacyScreen() {
         >
           {STARWARD_RELEASE_CONTEXT.revision}
         </Text>
+        <View style={styles.primaryEntries}>
+          <Pressable
+            testID="profile-open-preferences"
+            accessibilityRole="button"
+            accessibilityLabel="偏好与权限"
+            onPress={() => router.push("/onboarding-preferences")}
+            style={({ pressed }) => [styles.primaryEntry, pressed && styles.pressed]}
+          >
+            <Text style={styles.actionText}>偏好</Text>
+          </Pressable>
+          <Pressable
+            testID="profile-open-appearance"
+            accessibilityRole="button"
+            accessibilityLabel="显示模式"
+            accessibilityState={{ expanded: appearanceOpen }}
+            onPress={() => setAppearanceOpen((open) => !open)}
+            style={({ pressed }) => [styles.primaryEntry, pressed && styles.pressed]}
+          >
+            <Text style={styles.actionText}>显示</Text>
+          </Pressable>
+          <Pressable
+            testID="profile-open-toolbox"
+            accessibilityRole="button"
+            accessibilityLabel="通知与工具箱"
+            onPress={() => router.push("/toolbox")}
+            style={({ pressed }) => [styles.primaryEntry, pressed && styles.pressed]}
+          >
+            <Text style={styles.actionText}>通知</Text>
+          </Pressable>
+          <Pressable
+            testID="profile-open-contributions"
+            accessibilityRole="button"
+            accessibilityLabel="我的贡献"
+            onPress={() => router.push("/contribute")}
+            style={({ pressed }) => [styles.primaryEntry, pressed && styles.pressed]}
+          >
+            <Text style={styles.actionText}>贡献</Text>
+          </Pressable>
+        </View>
+        {appearanceOpen ? (
+          <View accessibilityLabel="规划、夜间与红光显示模式" style={styles.appearancePanel}>
+            {([
+              ["planning", "appearance-mode-planning", "规划"],
+              ["night", "appearance-mode-night", "夜间"],
+              ["redLight", "appearance-mode-red-light", "红光"],
+            ] as const).map(([mode, testID, label]) => (
+              <Pressable
+                key={mode}
+                testID={testID}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: displayMode === mode }}
+                onPress={() => setDisplayMode(mode)}
+                style={[styles.appearanceOption, displayMode === mode && styles.appearanceOptionSelected]}
+              >
+                <Text style={[styles.appearanceOptionText, displayMode === mode && styles.appearanceOptionTextSelected]}>{label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
         <View
           testID="profile-hub"
           accessible
@@ -438,6 +501,37 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
+  primaryEntries: { flexDirection: "row", gap: spacing.x1 },
+  primaryEntry: {
+    flex: 1,
+    minWidth: minimumTouchTarget,
+    minHeight: minimumTouchTarget,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.control,
+    backgroundColor: palette.surface,
+  },
+  appearancePanel: {
+    padding: 3,
+    flexDirection: "row",
+    gap: 2,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.control,
+    backgroundColor: palette.surface,
+  },
+  appearanceOption: {
+    flex: 1,
+    minHeight: minimumTouchTarget,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 6,
+  },
+  appearanceOptionSelected: { backgroundColor: palette.text },
+  appearanceOptionText: { color: palette.text, fontSize: typeToken.label, fontWeight: "700" },
+  appearanceOptionTextSelected: { color: palette.canvas },
   profileHub: {
     minHeight: minimumTouchTarget,
     flexDirection: "row",

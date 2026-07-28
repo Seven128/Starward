@@ -13,6 +13,8 @@ import type {
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
 import { createForecastClient } from "../../data/forecast-client";
 import { useShellStore } from "../../state/shell-store";
+import { useTabRestorationEvidence } from "../../shell/TabRestorationEvidence";
+import { observingNightHours } from "./observing-night-hours";
 
 const palette = colors.planning;
 type SectionKey = "hourly-professional-view" | "model-disagreement" | "future-trend" | "twilight-and-milky-way" | "layer-provenance";
@@ -245,6 +247,14 @@ function LayerPanel({ layers, selectedId, onSelect, selectedTime }: { layers: Fo
 }
 
 export function ForecastScreen() {
+  const restoration = useTabRestorationEvidence({
+    testID: "tab-restoration-tonight",
+    tabId: "primary-tab-tonight",
+    rootRoute: "/tonight",
+    nestedRoute: "/forecast",
+    ownerType: "scroll",
+    ownerId: "tonight-forecast-scroll-owner",
+  });
   const location = useShellStore((state) => state.location);
   const [activeSection, setActiveSection] = useState<SectionKey>("hourly-professional-view");
   const [selectedNight, setSelectedNight] = useState(() => new Date().toISOString().slice(0, 10));
@@ -263,7 +273,14 @@ export function ForecastScreen() {
     placeholderData: (previous) => previous,
   });
   const bundle = query.data;
-  const series = useMemo(() => selectedModel === "comparison" && bundle?.comparison ? bundle.comparison : bundle?.primary, [bundle, selectedModel]);
+  const sourceSeries = useMemo(
+    () => selectedModel === "comparison" && bundle?.comparison ? bundle.comparison : bundle?.primary,
+    [bundle, selectedModel],
+  );
+  const series = useMemo(() => sourceSeries ? {
+    ...sourceSeries,
+    hours: observingNightHours(sourceSeries.hours, selectedNight, bundle?.context.timezone ?? "Asia/Shanghai"),
+  } : undefined, [bundle?.context.timezone, selectedNight, sourceSeries]);
 
   useEffect(() => {
     if (!series?.hours.length) { setSelectedHourIndex(0); return; }
@@ -304,9 +321,10 @@ export function ForecastScreen() {
   const locationLabel = location.source === "unset" ? "深圳市 · 手动默认范围" : location.label;
 
   return <SafeAreaView testID="screen-forecast-and-astronomy" style={styles.screen}>
-    <ScrollView ref={pageScrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+    <ScrollView ref={pageScrollRef} onScroll={restoration.onScroll} scrollEventThrottle={restoration.scrollEventThrottle} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+      {restoration.evidence}
       <View style={styles.pageHeader}>
-        <Text style={styles.eyebrow}>专业证据 · {locationLabel}</Text><Text style={styles.title}>为什么这个观星夜值得去</Text>
+        <Text testID={bundle ? "forecast-data-ready" : undefined} style={styles.eyebrow}>专业证据 · {locationLabel}</Text><Text style={styles.title}>为什么这个观星夜值得去</Text>
         <Text style={styles.subtitle}>预测、估算和版本化天文计算分别标注；缺失值、低可信度与实验边界不会被隐藏。</Text>
         <ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionNav}>
           {sectionActions.map((action) => <Pressable key={action.key} testID={action.testID} accessibilityRole="button" accessibilityState={{ selected: activeSection === action.key }} onPress={() => navigateToSection(action.key)} style={({ pressed }) => [styles.navAction, activeSection === action.key && styles.navActionActive, pressed && styles.pressed]}><Text style={[styles.navActionText, activeSection === action.key && styles.navActionTextActive]}>{action.label}</Text></Pressable>)}

@@ -1,0 +1,3 @@
+STARWARD_ANDROID_PREFLIGHT:typecheck
+STARWARD_ANDROID_PREFLIGHT:javascript-root-imports
+STARWARD_ANDROID_BUILD:{"abi":"x86_64","apk_sha256":"ddc6287c105a8fa81cd86395000b0e4e7afa830e47289ce32d4821f7bcc72ad1","build_ms":0,"cache_mode":"verified-cache-hit","input_sha256":"4555edaf65134c7500db80fb593d10c5bf296f5e8d3946a386d29d80b9af310c","install_ms":15012,"cache_root":"C:\\Users\\777\\AppData\\Local\\Temp\\starward-android-build-cache\\28b352e5c5a3e1b5\\x86_64","staging_root":"C:\\Users\\777\\AppData\\Local\\Temp\\starward-cxx-cache\\28b352e5c5a3e1b5\\x86_64"}

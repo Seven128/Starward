@@ -9,7 +9,7 @@ export class PocSpotTrustRepository implements SpotTrustRepository {
   ) {}
 
   private async candidate(id: string) {
-    const page = await this.source.search({ center: this.center, radiusMeters: 100_000, limit: 50 });
+    const page = await this.source.search({ center: this.center, radiusMeters: 100_000, limit: 20 });
     return page.items.find((item) => item.id === id) ?? (id === "current" ? page.items[0] : undefined);
   }
 

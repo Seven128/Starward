@@ -1,35 +1,191 @@
 {
   "schema_version": "starward-native-acceptance-v1",
   "app_id": "app.starward.mobile",
-  "shared_context_test_id": "decision-context-revision",
+  "shared_context_test_ids": [
+    "decision-context-location-key",
+    "decision-context-time-key",
+    "decision-context-revision"
+  ],
+  "shared_context_journeys": [
+    {
+      "surface_ref": "tonight-decision-context",
+      "screen_test_id": "screen-tonight-decision",
+      "root_journey": ["primary-tab-tonight"]
+    },
+    {
+      "surface_ref": "map-decision-context",
+      "screen_test_id": "screen-map-route-discovery",
+      "root_journey": ["shell-open-map-tab"]
+    },
+    {
+      "surface_ref": "spot-decision-context",
+      "screen_test_id": "screen-spot-detail-and-trust",
+      "root_journey": ["shell-open-map-tab", "map-open-selected-spot-detail"]
+    },
+    {
+      "surface_ref": "route-decision-context",
+      "screen_test_id": "screen-map-route-discovery",
+      "root_journey": ["shell-open-map-tab", "map-open-route-plan"],
+      "ready_test_id": "route-plan-editor"
+    },
+    {
+      "surface_ref": "trips-decision-context",
+      "screen_test_id": "screen-itinerary-and-collaboration",
+      "root_journey": ["primary-tab-itinerary"]
+    },
+    {
+      "surface_ref": "sky-decision-context",
+      "screen_test_id": "screen-sky-orientation-ar",
+      "root_journey": ["primary-tab-sky"]
+    }
+  ],
+  "primary_navigation": [
+    {
+      "tab_id": "primary-tab-tonight",
+      "route": "/tonight",
+      "root_screen_test_id": "screen-tonight-decision",
+    "nested_action_test_id": "tonight-open-forecast",
+    "nested_route": "/forecast",
+    "nested_screen_test_id": "screen-forecast-and-astronomy",
+    "nested_ready_test_id": "forecast-data-ready",
+    "state_test_id": "tab-restoration-tonight",
+      "owner_type": "scroll",
+      "gesture": [540, 1500, 540, 900, 400]
+    },
+    {
+      "tab_id": "shell-open-map-tab",
+      "route": "/map",
+      "root_screen_test_id": "screen-map-route-discovery",
+    "nested_action_test_id": "map-open-selected-spot-detail",
+    "nested_route": "/spot/spot-a",
+    "nested_screen_test_id": "screen-spot-detail-and-trust",
+    "nested_ready_test_id": "spot-detail-ready",
+    "state_test_id": "tab-restoration-map",
+      "owner_type": "canvas",
+      "gesture": [760, 1060, 360, 760, 400]
+    },
+    {
+      "tab_id": "primary-tab-itinerary",
+      "route": "/trips",
+      "root_screen_test_id": "screen-itinerary-and-collaboration",
+    "nested_action_test_id": "itinerary-open-field-mode",
+    "nested_route": "/field",
+    "nested_screen_test_id": "screen-field-offline-safety",
+    "nested_ready_test_id": "field-dashboard-ready",
+    "state_test_id": "tab-restoration-trips",
+      "owner_type": "scroll",
+      "gesture": [540, 1500, 540, 900, 400]
+    },
+    {
+      "tab_id": "primary-tab-sky",
+      "route": "/sky",
+      "root_screen_test_id": "screen-sky-orientation-ar",
+    "nested_action_test_id": "sky-open-shooting-assistant",
+    "nested_route": "/shooting",
+    "nested_screen_test_id": "screen-shooting-assistant",
+    "nested_ready_test_id": "shooting-data-ready",
+    "state_test_id": "tab-restoration-sky",
+      "owner_type": "canvas",
+      "gesture": [760, 1060, 360, 760, 400]
+    },
+    {
+      "tab_id": "primary-tab-profile",
+      "route": "/me",
+      "root_screen_test_id": "screen-identity-profile-privacy",
+    "nested_action_test_id": "profile-open-preferences",
+    "nested_route": "/onboarding-preferences",
+    "nested_screen_test_id": "screen-mobile-shell-and-preferences",
+    "nested_ready_test_id": "me-preferences-ready",
+    "state_test_id": "tab-restoration-me",
+      "owner_type": "scroll",
+      "gesture": [540, 1500, 540, 900, 400]
+    }
+  ],
+  "native_device_evidence": {
+    "representative_control_ids": [
+      "map-filter-sheet",
+      "map-marker-density-surface",
+      "selected-spot-sheet",
+      "observation-timeline-editor",
+      "sky-time-scrubber",
+      "orientation-follow-toggle",
+      "orientation-calibration-sheet",
+      "ar-mode-toggle"
+    ],
+    "gesture_control_ids": [
+      "map-filter-sheet",
+      "map-marker-density-surface",
+      "selected-spot-sheet",
+      "observation-timeline-editor",
+      "sky-time-scrubber",
+      "orientation-calibration-sheet"
+    ],
+    "orientation_status_test_ids": [
+      "orientation-capability-status",
+      "orientation-calibration-quality",
+      "orientation-follow-latency",
+      "orientation-accessible-status",
+      "orientation-manual-alternative"
+    ],
+    "ar_denied_test_ids": [
+      "ar-permission-state",
+      "ar-capability-status",
+      "ar-accessible-alternative"
+    ],
+    "ar_available_test_ids": [
+      "ar-permission-state",
+      "ar-capability-status",
+      "ar-privacy-status",
+      "ar-thermal-status",
+      "ar-tracking-quality",
+      "ar-accessible-alternative"
+    ]
+  },
+  "design_mode_journeys": {
+    "planning": ["primary-tab-profile", "profile-open-appearance", "appearance-mode-planning"],
+    "night": ["primary-tab-profile", "profile-open-appearance", "appearance-mode-night"],
+    "red-light": ["primary-tab-profile", "profile-open-appearance", "appearance-mode-red-light"]
+  },
   "outcomes": {
     "mobile-shell-and-preferences": {
       "route": "/onboarding-preferences",
+      "screen_test_id": "screen-mobile-shell-and-preferences",
+      "root_journey": ["primary-tab-profile", "profile-open-preferences"],
       "action_test_id": "shell-set-manual-location",
       "evidence_test_ids": ["shell-location-label", "shell-location-source", "shell-guest-state"]
     },
     "forecast-and-astronomy": {
       "route": "/forecast",
+      "screen_test_id": "screen-forecast-and-astronomy",
+      "root_journey": ["primary-tab-tonight", "tonight-open-forecast"],
       "action_test_id": "forecast-open-hourly",
       "evidence_test_ids": ["forecast-hourly-cloud", "forecast-hourly-transparency", "forecast-hourly-seeing"]
     },
     "identity-profile-privacy": {
       "route": "/me",
+      "screen_test_id": "screen-identity-profile-privacy",
+      "root_journey": ["primary-tab-profile"],
       "action_test_id": "profile-login-and-merge",
       "evidence_test_ids": ["profile-merge-preview", "profile-local-data-count", "profile-merge-result"]
     },
     "map-route-discovery": {
       "route": "/map",
+      "screen_test_id": "screen-map-route-discovery",
+      "root_journey": ["shell-open-map-tab"],
       "action_test_id": "map-open-status",
       "evidence_test_ids": ["map-location-context", "map-data-state", "map-provenance"]
     },
     "spot-detail-and-trust": {
       "route": "/spot/spot-a",
+      "screen_test_id": "screen-spot-detail-and-trust",
+      "root_journey": ["shell-open-map-tab", "map-open-selected-spot-detail"],
       "action_test_id": "spot-open-detail",
       "evidence_test_ids": ["spot-decision-summary", "spot-observation-window", "spot-primary-action"]
     },
     "tonight-decision": {
       "route": "/tonight",
+      "screen_test_id": "screen-tonight-decision",
+      "root_journey": ["primary-tab-tonight"],
       "action_test_id": "tonight-refresh",
       "evidence_test_ids": ["tonight-decision-summary", "tonight-observation-window", "tonight-data-provenance"],
       "cross_surfaces": [
@@ -40,26 +196,36 @@
     },
     "notifications-and-toolbox": {
       "route": "/toolbox",
+      "screen_test_id": "screen-notifications-and-toolbox",
+      "root_journey": ["primary-tab-profile", "profile-open-toolbox"],
       "action_test_id": "tools-create-pretrip-rule",
       "evidence_test_ids": ["notification-rule-trigger", "notification-rule-channel", "notification-rule-preview"]
     },
     "field-offline-safety": {
       "route": "/field",
+      "screen_test_id": "screen-field-offline-safety",
+      "root_journey": ["primary-tab-itinerary", "itinerary-open-field-mode"],
       "action_test_id": "field-verify-pack",
       "evidence_test_ids": ["offline-pack-version", "offline-pack-checksum", "offline-pack-validity"]
     },
     "itinerary-and-collaboration": {
       "route": "/trips",
+      "screen_test_id": "screen-itinerary-and-collaboration",
+      "root_journey": ["primary-tab-itinerary"],
       "action_test_id": "plan-generate",
       "evidence_test_ids": ["plan-observation-window", "plan-main-spot", "plan-safety-checklist"]
     },
     "sky-orientation-ar": {
       "route": "/sky",
+      "screen_test_id": "screen-sky-orientation-ar",
+      "root_journey": ["primary-tab-sky"],
       "action_test_id": "sky-open-universal-view",
       "evidence_test_ids": ["sky-time-context", "sky-location-context", "sky-visible-objects"]
     },
     "community-contribution": {
       "route": "/contribute",
+      "screen_test_id": "screen-community-contribution",
+      "root_journey": ["primary-tab-profile", "profile-open-contributions"],
       "action_test_id": "community-submit-spot",
       "evidence_test_ids": ["spot-location-precision", "spot-consent-scope", "spot-submission-status"],
       "cross_surfaces": [
@@ -69,6 +235,8 @@
     },
     "shooting-assistant": {
       "route": "/shooting",
+      "screen_test_id": "screen-shooting-assistant",
+      "root_journey": ["primary-tab-sky", "sky-open-shooting-assistant"],
       "action_test_id": "shooting-create-mobile-plan",
       "evidence_test_ids": ["shooting-phone-model", "shooting-mobile-settings", "shooting-mobile-risk"],
       "cross_surfaces": [
@@ -78,6 +246,8 @@
     },
     "quality-release-observability": {
       "route": "/me",
+      "screen_test_id": "screen-identity-profile-privacy",
+      "root_journey": ["primary-tab-profile"],
       "action_test_id": "profile-open-build-info",
       "evidence_test_ids": ["native-build-metadata", "native-capability-status", "release-context-revision"],
       "cross_surfaces": [

@@ -1,41 +1,518 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
-import { createItineraryClient, type ItineraryCommand, type ItinerarySnapshot } from "../../data/itinerary-client";
+import {
+  colors,
+  minimumTouchTarget,
+  radii,
+  spacing,
+  type as typeToken,
+} from "@starward/ui-system/tokens";
+import {
+  createItineraryClient,
+  type ItineraryCommand,
+  type ItinerarySnapshot,
+} from "../../data/itinerary-client";
 import { resolveRuntimeApiBaseUrl } from "../../data/runtime-api-base-url";
 import { DecisionContextRevision } from "../../shell/DecisionContextRevision";
 
-type ViewKey = "generate" | "overview" | "candidate" | "route" | "refresh" | "share" | "collaboration" | "timeline";
-const palette = colors.planning; const client = createItineraryClient({ baseUrl: resolveRuntimeApiBaseUrl() });
-const actions: Array<{ key: ViewKey; command: ItineraryCommand; id: string; label: string; stableControlId?: string; accessibilityName?: string }> = [
-  { key: "generate", command: "generate", id: "plan-generate", label: "生成计划", stableControlId: "itinerary-creation-form", accessibilityName: "行程创建表单" },
-  { key: "overview", command: "overview", id: "plan-open-overview", label: "总览", stableControlId: "itinerary-detail-tabs", accessibilityName: "行程详情分区" },
-  { key: "candidate", command: "add-candidate", id: "plan-add-candidate", label: "待规划", stableControlId: "candidate-tray", accessibilityName: "候选地点托盘" },
-  { key: "route", command: "select-route", id: "plan-compare-routes", label: "路线", stableControlId: "route-option-comparator", accessibilityName: "路线方案比较" },
+type ViewKey =
+  | "generate"
+  | "overview"
+  | "candidate"
+  | "route"
+  | "refresh"
+  | "share"
+  | "collaboration"
+  | "timeline";
+const palette = colors.planning;
+const client = createItineraryClient({ baseUrl: resolveRuntimeApiBaseUrl() });
+const actions: Array<{
+  key: ViewKey;
+  command: ItineraryCommand;
+  id: string;
+  label: string;
+  stableControlId?: string;
+  accessibilityName?: string;
+}> = [
+  {
+    key: "generate",
+    command: "generate",
+    id: "plan-generate",
+    label: "生成计划",
+    stableControlId: "itinerary-creation-form",
+    accessibilityName: "行程创建表单",
+  },
+  {
+    key: "overview",
+    command: "overview",
+    id: "plan-open-overview",
+    label: "总览",
+    stableControlId: "itinerary-detail-tabs",
+    accessibilityName: "行程详情分区",
+  },
+  {
+    key: "candidate",
+    command: "add-candidate",
+    id: "plan-add-candidate",
+    label: "待规划",
+    stableControlId: "candidate-tray",
+    accessibilityName: "候选地点托盘",
+  },
+  {
+    key: "route",
+    command: "select-route",
+    id: "plan-compare-routes",
+    label: "路线",
+    stableControlId: "route-option-comparator",
+    accessibilityName: "路线方案比较",
+  },
   { key: "refresh", command: "refresh", id: "plan-refresh", label: "刷新" },
-  { key: "share", command: "share-offline", id: "plan-create-share", label: "分享/离线", stableControlId: "version-and-share-actions", accessibilityName: "版本与分享操作" },
-  { key: "collaboration", command: "merge-collaboration", id: "plan-resolve-conflict", label: "协作", stableControlId: "collaboration-panel", accessibilityName: "协作与冲突面板" },
-  { key: "timeline", command: "astronomy-timeline", id: "plan-open-astronomy", label: "天文阶段", stableControlId: "observation-timeline-editor", accessibilityName: "观测时间线编辑" },
+  {
+    key: "share",
+    command: "share-offline",
+    id: "plan-create-share",
+    label: "分享/离线",
+    stableControlId: "version-and-share-actions",
+    accessibilityName: "版本与分享操作",
+  },
+  {
+    key: "collaboration",
+    command: "merge-collaboration",
+    id: "plan-resolve-conflict",
+    label: "协作",
+    stableControlId: "collaboration-panel",
+    accessibilityName: "协作与冲突面板",
+  },
+  {
+    key: "timeline",
+    command: "astronomy-timeline",
+    id: "plan-open-astronomy",
+    label: "天文阶段",
+    stableControlId: "observation-timeline-editor",
+    accessibilityName: "观测时间线编辑",
+  },
 ];
-function Evidence({ testID, title, body, meta }: { testID: string; title: string; body: string; meta?: string }) { return <View testID={testID} style={styles.evidence}><Text style={styles.evidenceTitle}>{title}</Text><Text style={styles.evidenceBody}>{body}</Text>{meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}</View>; }
-function localTime(value: string) { return new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value)); }
+function Evidence({
+  testID,
+  title,
+  body,
+  meta,
+}: {
+  testID: string;
+  title: string;
+  body: string;
+  meta?: string;
+}) {
+  return (
+    <View testID={testID} style={styles.evidence}>
+      <Text style={styles.evidenceTitle}>{title}</Text>
+      <Text style={styles.evidenceBody}>{body}</Text>
+      {meta ? <Text style={styles.evidenceMeta}>{meta}</Text> : null}
+    </View>
+  );
+}
+function localTime(value: string) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(value));
+}
 function Panel({ active, data }: { active: ViewKey; data: ItinerarySnapshot }) {
-  const plan = data.itinerary; const primary = plan.stops.find((item) => item.role === "primary"); const backups = plan.stops.filter((item) => item.role === "backup"); const selected = data.routes.find((item) => item.id === data.selectedRouteId) ?? data.routes[0]; const target = data.timeline.events.find((item) => item.kind === "target");
-  if (active === "generate") return <View style={styles.panel}><Evidence testID="plan-observation-window" title={`观测窗口 ${target ? `${localTime(target.startsAt)}–${localTime(target.endsAt)}` : "待计算"}`} body={`出发 ${localTime(plan.stages[0]!.startsAt)} · 到达 ${selected?.arrivalAt} · 返回 ${data.inputs.latestReturn}`} meta={`${plan.timezone}；草案 revision ${plan.revision}，${data.generation.confirmedDeparture ? "已确认" : "尚未确认出发"}`} /><Evidence testID="plan-main-spot" title={`主地点：${data.generation.primary} · 备选：${data.generation.backup}`} body={data.generation.sources.map((item) => `${item.part} ${item.version}/${item.state}`).join(" · ")} /><Evidence testID="plan-safety-checklist" title={`安全与装备 ${data.generation.risks.length + data.generation.equipment.length} 项`} body={`${data.generation.equipment.join("、")}；${data.generation.risks.join("；")}`} /></View>;
-  if (active === "overview") return <View style={styles.panel}><Evidence testID="plan-overview-map" title="路线地图与分段" body={`驾车 ${plan.routeSnapshot.driveMinutes} 分钟 · 徒步 ${plan.routeSnapshot.walkMinutes} 分钟 · 主地点 1 / 备选 ${backups.length}`} meta={`${plan.routeSnapshot.id} · ${plan.routeSnapshot.generatedAt}`} /><Evidence testID="plan-overview-timeline" title="同一观星夜阶段" body={plan.stages.map((item) => item.kind).join(" → ")} /><Evidence testID="plan-overview-version" title={`地图、阶段与地点共享版本 ${plan.revision}`} body={`天气 ${plan.weatherSnapshot.id} · ${plan.weatherSnapshot.generatedAt}；未刷新来源保持自身版本`} /></View>;
-  if (active === "candidate") { const candidate = data.candidates[0]; return <View style={styles.panel}><Evidence testID="plan-candidate-source" title={`${candidate?.name} · 来自${candidate?.source}`} body="来源、加入者、推荐原因和坐标权限随候选保留" /><Evidence testID="plan-candidate-role" title="设为备选地点" body={`当前主地点 ${primary?.spotId} 未被替换；候选状态 ${candidate?.state}`} /><Evidence testID="plan-candidate-result" title={`已加入正式 Stop · 版本 ${plan.revision}`} body="编号与 revision 已同步；路线/时间需重算，失败时候选不会删除" /></View>; }
-  if (active === "route") return <View style={styles.panel}><Evidence testID="route-distance-tradeoff" title={`${selected?.label}：${selected?.distanceKm} km / ${selected?.driveMinutes} 分钟`} body={`徒步 ${selected?.walkMinutes} 分钟 · ${selected?.toll} · ${selected?.road} · ${selected?.facilities}`} /><Evidence testID="route-risk-tradeoff" title={`风险与取舍：${selected?.risk}`} body={data.routes.map((item) => `${item.label} ${item.driveMinutes}分/${item.walkMinutes}分步行`).join("；")} /><Evidence testID="route-arrival-tradeoff" title={`预计 ${selected?.arrivalAt} 到达 · ${selected?.windowState}`} body={`选择已保存到 revision ${plan.revision}；详细导航交给外部地图`} /></View>;
-  if (active === "refresh") return <View style={styles.panel}><Evidence testID="plan-change-preview" title={`变化预览：${data.refresh.differences.join("、")}`} body={`保留用户编辑：${data.refresh.preservedUserEdits.join("、")}`} /><Evidence testID="plan-saved-version" title={`保存为版本 ${plan.revision}`} body={`原版本 ${data.refresh.previousRevision} 与操作日志保留`} /><Evidence testID="plan-refresh-result" title="刷新结果可恢复" body={`恢复点 revision ${data.refresh.recoveryRevision}；天气 ${plan.weatherSnapshot.id}，路线 ${plan.routeSnapshot.id}`} /></View>;
-  if (active === "share") return <View style={styles.panel}><Evidence testID="plan-share-scope" title="公开摘要 · 受限坐标已隐藏" body={data.share?.publicProjection.stops.map((item) => `${item.role}:${item.spotId}`).join(" · ") ?? "生成中"} meta="每次访问由服务端重新投影；撤回/过期后拒绝" /><Evidence testID="plan-share-expiry" title={`分享链接有效期至 ${data.share?.expiresAt ?? "生成中"}`} body={`导出 ${data.share?.exportedSections.join("、")}`} /><Evidence testID="plan-offline-availability" title={`观测包已下载 · revision ${data.offlinePack?.revision}`} body={`${Math.round((data.offlinePack?.sizeBytes ?? 0) / 1024)} KiB · checksum ${(data.offlinePack?.checksum ?? "").slice(0, 12)}… · ${data.offlinePack?.items.map((item) => `${item.kind}:${item.version}`).join(" / ")}`} /></View>;
-  if (active === "collaboration") { const conflict = data.collaboration.conflicts[0]; return <View style={styles.panel}><Evidence testID="plan-conflict-original" title={`原版本 ${data.collaboration.recoveryRevision} · ${conflict?.originalActor} 的值`} body={String(conflict?.original)} /><Evidence testID="plan-conflict-incoming" title={`来版 · ${conflict?.incomingActor} 的值`} body={`${String(conflict?.incoming)}；非冲突字段 ${data.collaboration.mergedFields.join("、")} 已增量合并`} /><Evidence testID="plan-conflict-resolution" title="需要解决冲突 · 保留版本" body={`字段 ${conflict?.field} 不自动覆盖；操作游标 ${data.collaboration.cursor}，恢复 revision ${data.collaboration.recoveryRevision}`} /></View>; }
-  const twilight = data.timeline.events.find((item) => item.kind === "twilight"); const moon = data.timeline.events.find((item) => item.kind === "moonset"); return <View style={styles.panel}><Evidence testID="plan-twilight-event" title={`天文昏影结束 ${twilight ? localTime(twilight.startsAt) : "未知"}`} body={`${data.timeline.observingNight}；按本地观星夜组织，不复制 DAY 模板`} /><Evidence testID="plan-moon-event" title={`月落 ${moon ? localTime(moon.startsAt) : "未知"}`} body="跨午夜仍属于同一观星夜" /><Evidence testID="plan-target-event" title={`目标银河核心 ${target ? `${localTime(target.startsAt)}–${localTime(target.endsAt)}` : "无窗口"}`} body={data.timeline.valid ? "阶段无重叠；无法赶上的窗口会在节点旁标记" : `冲突：${data.timeline.conflicts.join("、")}`} /></View>;
+  const plan = data.itinerary;
+  const primary = plan.stops.find((item) => item.role === "primary");
+  const backups = plan.stops.filter((item) => item.role === "backup");
+  const selected =
+    data.routes.find((item) => item.id === data.selectedRouteId) ??
+    data.routes[0];
+  const target = data.timeline.events.find((item) => item.kind === "target");
+  if (active === "generate")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="plan-observation-window"
+          title={`观测窗口 ${target ? `${localTime(target.startsAt)}–${localTime(target.endsAt)}` : "待计算"}`}
+          body={`出发 ${localTime(plan.stages[0]!.startsAt)} · 到达 ${selected?.arrivalAt} · 返回 ${data.inputs.latestReturn}`}
+          meta={`${plan.timezone}；草案 revision ${plan.revision}，${data.generation.confirmedDeparture ? "已确认" : "尚未确认出发"}`}
+        />
+        <Evidence
+          testID="plan-main-spot"
+          title={`主地点：${data.generation.primary} · 备选：${data.generation.backup}`}
+          body={data.generation.sources
+            .map((item) => `${item.part} ${item.version}/${item.state}`)
+            .join(" · ")}
+        />
+        <Evidence
+          testID="plan-safety-checklist"
+          title={`安全与装备 ${data.generation.risks.length + data.generation.equipment.length} 项`}
+          body={`${data.generation.equipment.join("、")}；${data.generation.risks.join("；")}`}
+        />
+      </View>
+    );
+  if (active === "overview")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="plan-overview-map"
+          title="路线地图与分段"
+          body={`驾车 ${plan.routeSnapshot.driveMinutes} 分钟 · 徒步 ${plan.routeSnapshot.walkMinutes} 分钟 · 主地点 1 / 备选 ${backups.length}`}
+          meta={`${plan.routeSnapshot.id} · ${plan.routeSnapshot.generatedAt}`}
+        />
+        <Evidence
+          testID="plan-overview-timeline"
+          title="同一观星夜阶段"
+          body={plan.stages.map((item) => item.kind).join(" → ")}
+        />
+        <Evidence
+          testID="plan-overview-version"
+          title={`地图、阶段与地点共享版本 ${plan.revision}`}
+          body={`天气 ${plan.weatherSnapshot.id} · ${plan.weatherSnapshot.generatedAt}；未刷新来源保持自身版本`}
+        />
+      </View>
+    );
+  if (active === "candidate") {
+    const candidate = data.candidates[0];
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="plan-candidate-source"
+          title={`${candidate?.name} · 来自${candidate?.source}`}
+          body="来源、加入者、推荐原因和坐标权限随候选保留"
+        />
+        <Evidence
+          testID="plan-candidate-role"
+          title="设为备选地点"
+          body={`当前主地点 ${primary?.spotId} 未被替换；候选状态 ${candidate?.state}`}
+        />
+        <Evidence
+          testID="plan-candidate-result"
+          title={`已加入正式 Stop · 版本 ${plan.revision}`}
+          body="编号与 revision 已同步；路线/时间需重算，失败时候选不会删除"
+        />
+      </View>
+    );
+  }
+  if (active === "route")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="route-distance-tradeoff"
+          title={`${selected?.label}：${selected?.distanceKm} km / ${selected?.driveMinutes} 分钟`}
+          body={`徒步 ${selected?.walkMinutes} 分钟 · ${selected?.toll} · ${selected?.road} · ${selected?.facilities}`}
+        />
+        <Evidence
+          testID="route-risk-tradeoff"
+          title={`风险与取舍：${selected?.risk}`}
+          body={data.routes
+            .map(
+              (item) =>
+                `${item.label} ${item.driveMinutes}分/${item.walkMinutes}分步行`,
+            )
+            .join("；")}
+        />
+        <Evidence
+          testID="route-arrival-tradeoff"
+          title={`预计 ${selected?.arrivalAt} 到达 · ${selected?.windowState}`}
+          body={`选择已保存到 revision ${plan.revision}；详细导航交给外部地图`}
+        />
+      </View>
+    );
+  if (active === "refresh")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="plan-change-preview"
+          title={`变化预览：${data.refresh.differences.join("、")}`}
+          body={`保留用户编辑：${data.refresh.preservedUserEdits.join("、")}`}
+        />
+        <Evidence
+          testID="plan-saved-version"
+          title={`保存为版本 ${plan.revision}`}
+          body={`原版本 ${data.refresh.previousRevision} 与操作日志保留`}
+        />
+        <Evidence
+          testID="plan-refresh-result"
+          title="刷新结果可恢复"
+          body={`恢复点 revision ${data.refresh.recoveryRevision}；天气 ${plan.weatherSnapshot.id}，路线 ${plan.routeSnapshot.id}`}
+        />
+      </View>
+    );
+  if (active === "share")
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="plan-share-scope"
+          title="公开摘要 · 受限坐标已隐藏"
+          body={
+            data.share?.publicProjection.stops
+              .map((item) => `${item.role}:${item.spotId}`)
+              .join(" · ") ?? "生成中"
+          }
+          meta="每次访问由服务端重新投影；撤回/过期后拒绝"
+        />
+        <Evidence
+          testID="plan-share-expiry"
+          title={`分享链接有效期至 ${data.share?.expiresAt ?? "生成中"}`}
+          body={`导出 ${data.share?.exportedSections.join("、")}`}
+        />
+        <Evidence
+          testID="plan-offline-availability"
+          title={`观测包已下载 · revision ${data.offlinePack?.revision}`}
+          body={`${Math.round((data.offlinePack?.sizeBytes ?? 0) / 1024)} KiB · checksum ${(data.offlinePack?.checksum ?? "").slice(0, 12)}… · ${data.offlinePack?.items.map((item) => `${item.kind}:${item.version}`).join(" / ")}`}
+        />
+      </View>
+    );
+  if (active === "collaboration") {
+    const conflict = data.collaboration.conflicts[0];
+    return (
+      <View style={styles.panel}>
+        <Evidence
+          testID="plan-conflict-original"
+          title={`原版本 ${data.collaboration.recoveryRevision} · ${conflict?.originalActor} 的值`}
+          body={String(conflict?.original)}
+        />
+        <Evidence
+          testID="plan-conflict-incoming"
+          title={`来版 · ${conflict?.incomingActor} 的值`}
+          body={`${String(conflict?.incoming)}；非冲突字段 ${data.collaboration.mergedFields.join("、")} 已增量合并`}
+        />
+        <Evidence
+          testID="plan-conflict-resolution"
+          title="需要解决冲突 · 保留版本"
+          body={`字段 ${conflict?.field} 不自动覆盖；操作游标 ${data.collaboration.cursor}，恢复 revision ${data.collaboration.recoveryRevision}`}
+        />
+      </View>
+    );
+  }
+  const twilight = data.timeline.events.find(
+    (item) => item.kind === "twilight",
+  );
+  const moon = data.timeline.events.find((item) => item.kind === "moonset");
+  return (
+    <View style={styles.panel}>
+      <Evidence
+        testID="plan-twilight-event"
+        title={`天文昏影结束 ${twilight ? localTime(twilight.startsAt) : "未知"}`}
+        body={`${data.timeline.observingNight}；按本地观星夜组织，不复制 DAY 模板`}
+      />
+      <Evidence
+        testID="plan-moon-event"
+        title={`月落 ${moon ? localTime(moon.startsAt) : "未知"}`}
+        body="跨午夜仍属于同一观星夜"
+      />
+      <Evidence
+        testID="plan-target-event"
+        title={`目标银河核心 ${target ? `${localTime(target.startsAt)}–${localTime(target.endsAt)}` : "无窗口"}`}
+        body={
+          data.timeline.valid
+            ? "阶段无重叠；无法赶上的窗口会在节点旁标记"
+            : `冲突：${data.timeline.conflicts.join("、")}`
+        }
+      />
+    </View>
+  );
 }
 export function ItineraryScreen() {
-  const [active, setActive] = useState<ViewKey | null>(null); const queryClient = useQueryClient(); const query = useQuery({ queryKey: ["itinerary"], queryFn: ({ signal }) => client.get(signal) });
-  const mutation = useMutation({ mutationFn: ({ command }: { command: ItineraryCommand }) => client.command(command), onSuccess: (data) => queryClient.setQueryData(["itinerary"], data) }); const data = mutation.data ?? query.data;
-  const run = (item: typeof actions[number]) => { setActive(item.key); mutation.mutate({ command: item.command }); };
-  return <SafeAreaView testID="screen-itinerary-and-collaboration" style={styles.screen}><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>行程 · revision {data?.itinerary.revision ?? "—"}</Text><Text style={styles.title}>{data?.itinerary.title ?? "正在读取计划"}</Text><Text style={styles.subtitle}>地点、观星夜阶段、路线、分享、离线包与协作操作绑定同一可恢复服务端版本。</Text><Pressable testID="itinerary-library" accessibilityRole="button" accessibilityLabel={`itinerary-library:已保存行程，${data?.itinerary.title ?? "正在读取"}，revision ${data?.itinerary.revision ?? "未知"}`} onPress={() => setActive("overview")} style={({ pressed }) => [styles.summaryCard, pressed && styles.pressed]}><Text style={styles.evidenceTitle}>已保存行程</Text><Text style={styles.evidenceBody}>{data?.itinerary.title ?? "正在同步"} · revision {data?.itinerary.revision ?? "—"}</Text><Text style={styles.evidenceMeta}>选择后进入同一可恢复版本；离线与冲突状态保持可见。</Text></Pressable><Pressable testID="itinerary-overview-card" accessibilityRole="button" accessibilityLabel={`itinerary-overview-card:行程总览，主备地点、最佳窗口、预计到达与风险摘要`} onPress={() => setActive("overview")} style={({ pressed }) => [styles.summaryCard, pressed && styles.pressed]}><Text style={styles.evidenceTitle}>当前总览</Text><Text style={styles.evidenceBody}>主备地点 · 最佳窗口 · 路线与风险</Text><Text style={styles.evidenceMeta}>点按查看共享 revision 的地图、阶段和来源。</Text></Pressable><DecisionContextRevision /><View style={styles.actions}>{actions.map((item) => <Pressable key={item.key} testID={item.id} accessibilityRole="button" accessibilityLabel={item.stableControlId ? `${item.stableControlId}:${item.accessibilityName}` : item.label} accessibilityState={item.stableControlId === "itinerary-detail-tabs" ? { selected: active === item.key } : undefined} onPress={() => run(item)} disabled={mutation.isPending} style={({ pressed }) => [styles.action, pressed && styles.pressed]}><Text style={styles.actionText}>{item.label}</Text></Pressable>)}</View>{query.isLoading ? <Text style={styles.subtitle}>正在同步计划…</Text> : null}{query.isError ? <Pressable onPress={() => query.refetch()} style={styles.retry}><Text>计划暂不可用，点按重试</Text></Pressable> : null}{active && data ? <Panel active={active} data={data} /> : null}{mutation.isError ? <Text style={styles.error}>写入未确认，原 revision 与本地操作仍保留。</Text> : null}</ScrollView></SafeAreaView>;
+  const [active, setActive] = useState<ViewKey | null>(null);
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: ["itinerary"],
+    queryFn: ({ signal }) => client.get(signal),
+  });
+  const mutation = useMutation({
+    mutationFn: ({ command }: { command: ItineraryCommand }) =>
+      client.command(command),
+    onSuccess: (data) => queryClient.setQueryData(["itinerary"], data),
+  });
+  const data = mutation.data ?? query.data;
+  const run = (item: (typeof actions)[number]) => {
+    setActive(item.key);
+    mutation.mutate({ command: item.command });
+  };
+  return (
+    <SafeAreaView
+      testID="screen-itinerary-and-collaboration"
+      style={styles.screen}
+    >
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.eyebrow}>
+          行程 · revision {data?.itinerary.revision ?? "—"}
+        </Text>
+        <Text style={styles.title}>
+          {data?.itinerary.title ?? "正在读取计划"}
+        </Text>
+        <Text style={styles.subtitle}>
+          地点、观星夜阶段、路线、分享、离线包与协作操作绑定同一可恢复服务端版本。
+        </Text>
+        <Pressable
+          testID="itinerary-open-field-mode"
+          accessibilityRole="button"
+          accessibilityLabel="进入行程现场模式"
+          onPress={() => router.push("/field")}
+          style={styles.action}
+        >
+          <Text style={styles.actionText}>进入现场模式</Text>
+        </Pressable>
+        <Pressable
+          testID="itinerary-library"
+          accessibilityRole="button"
+          accessibilityLabel={`itinerary-library:已保存行程，${data?.itinerary.title ?? "正在读取"}，revision ${data?.itinerary.revision ?? "未知"}`}
+          onPress={() => setActive("overview")}
+          style={({ pressed }) => [
+            styles.summaryCard,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={styles.evidenceTitle}>已保存行程</Text>
+          <Text style={styles.evidenceBody}>
+            {data?.itinerary.title ?? "正在同步"} · revision{" "}
+            {data?.itinerary.revision ?? "—"}
+          </Text>
+          <Text style={styles.evidenceMeta}>
+            选择后进入同一可恢复版本；离线与冲突状态保持可见。
+          </Text>
+        </Pressable>
+        <Pressable
+          testID="itinerary-overview-card"
+          accessibilityRole="button"
+          accessibilityLabel={`itinerary-overview-card:行程总览，主备地点、最佳窗口、预计到达与风险摘要`}
+          onPress={() => setActive("overview")}
+          style={({ pressed }) => [
+            styles.summaryCard,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={styles.evidenceTitle}>当前总览</Text>
+          <Text style={styles.evidenceBody}>
+            主备地点 · 最佳窗口 · 路线与风险
+          </Text>
+          <Text style={styles.evidenceMeta}>
+            点按查看共享 revision 的地图、阶段和来源。
+          </Text>
+        </Pressable>
+        <DecisionContextRevision />
+        <View style={styles.actions}>
+          {actions.map((item) => (
+            <Pressable
+              key={item.key}
+              testID={item.id}
+              accessibilityRole="button"
+              accessibilityLabel={
+                item.stableControlId
+                  ? `${item.stableControlId}:${item.accessibilityName}`
+                  : item.label
+              }
+              accessibilityState={
+                item.stableControlId === "itinerary-detail-tabs"
+                  ? { selected: active === item.key }
+                  : undefined
+              }
+              onPress={() => run(item)}
+              disabled={mutation.isPending}
+              style={({ pressed }) => [
+                styles.action,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={styles.actionText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {query.isLoading ? (
+          <Text style={styles.subtitle}>正在同步计划…</Text>
+        ) : null}
+        {query.isError ? (
+          <Pressable onPress={() => query.refetch()} style={styles.retry}>
+            <Text>计划暂不可用，点按重试</Text>
+          </Pressable>
+        ) : null}
+        {active && data ? <Panel active={active} data={data} /> : null}
+        {mutation.isError ? (
+          <Text style={styles.error}>
+            写入未确认，原 revision 与本地操作仍保留。
+          </Text>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
-const styles=StyleSheet.create({screen:{flex:1,backgroundColor:palette.canvas},content:{padding:spacing.x2,paddingBottom:48,gap:spacing.x2},eyebrow:{color:palette.primaryActive,fontSize:typeToken.label,fontWeight:"700"},title:{color:palette.text,fontSize:typeToken.title,fontWeight:"700"},subtitle:{color:palette.textSecondary,fontSize:typeToken.body,lineHeight:23},summaryCard:{minHeight:86,padding:12,borderWidth:1,borderColor:palette.border,borderRadius:radii.control,backgroundColor:palette.surface},actions:{flexDirection:"row",flexWrap:"wrap",gap:spacing.x1},action:{minHeight:minimumTouchTarget,justifyContent:"center",paddingHorizontal:14,borderWidth:1,borderColor:palette.border,borderRadius:radii.pill,backgroundColor:palette.surface},actionText:{color:palette.text,fontSize:typeToken.label,fontWeight:"700"},panel:{gap:spacing.x1,padding:spacing.x2,borderWidth:1,borderColor:palette.border,borderRadius:radii.layer,backgroundColor:palette.surface},evidence:{minHeight:86,padding:12,borderRadius:radii.control,backgroundColor:palette.surfaceMuted},evidenceTitle:{color:palette.text,fontSize:typeToken.body,fontWeight:"700"},evidenceBody:{marginTop:5,color:palette.text,fontSize:typeToken.label,lineHeight:19},evidenceMeta:{marginTop:5,color:palette.textSecondary,fontSize:typeToken.caption,lineHeight:17},retry:{padding:14,backgroundColor:palette.surface,borderRadius:radii.control},error:{color:palette.danger,fontSize:typeToken.label},pressed:{opacity:.7}});
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: palette.canvas },
+  content: { padding: spacing.x2, paddingBottom: 48, gap: spacing.x2 },
+  eyebrow: {
+    color: palette.primaryActive,
+    fontSize: typeToken.label,
+    fontWeight: "700",
+  },
+  title: { color: palette.text, fontSize: typeToken.title, fontWeight: "700" },
+  subtitle: {
+    color: palette.textSecondary,
+    fontSize: typeToken.body,
+    lineHeight: 23,
+  },
+  summaryCard: {
+    minHeight: 86,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.control,
+    backgroundColor: palette.surface,
+  },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
+  action: {
+    minHeight: minimumTouchTarget,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.pill,
+    backgroundColor: palette.surface,
+  },
+  actionText: {
+    color: palette.text,
+    fontSize: typeToken.label,
+    fontWeight: "700",
+  },
+  panel: {
+    gap: spacing.x1,
+    padding: spacing.x2,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radii.layer,
+    backgroundColor: palette.surface,
+  },
+  evidence: {
+    minHeight: 86,
+    padding: 12,
+    borderRadius: radii.control,
+    backgroundColor: palette.surfaceMuted,
+  },
+  evidenceTitle: {
+    color: palette.text,
+    fontSize: typeToken.body,
+    fontWeight: "700",
+  },
+  evidenceBody: {
+    marginTop: 5,
+    color: palette.text,
+    fontSize: typeToken.label,
+    lineHeight: 19,
+  },
+  evidenceMeta: {
+    marginTop: 5,
+    color: palette.textSecondary,
+    fontSize: typeToken.caption,
+    lineHeight: 17,
+  },
+  retry: {
+    padding: 14,
+    backgroundColor: palette.surface,
+    borderRadius: radii.control,
+  },
+  error: { color: palette.danger, fontSize: typeToken.label },
+  pressed: { opacity: 0.7 },
+});

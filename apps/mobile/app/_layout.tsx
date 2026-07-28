@@ -16,16 +16,22 @@ export default function RootLayout() {
   return (
     <RuntimeRoot>
       <Tabs
-        backBehavior="history"
-        detachInactiveScreens={false}
-        screenOptions={{ headerShown: false, lazy: false, popToTopOnBlur: false }}
-        tabBar={() => ReactRuntime.createElement(PrimaryTabBar)}
+        backBehavior="none"
+        detachInactiveScreens
+        screenOptions={{
+          freezeOnBlur: false,
+          headerShown: false,
+          lazy: true,
+          popToTopOnBlur: false,
+        }}
+        tabBar={(props: unknown) => ReactRuntime.createElement(PrimaryTabBar, props)}
       >
-        <Tabs.Screen name="tonight" options={{ title: "今晚" }} />
-        <Tabs.Screen name="map" options={{ title: "地图" }} />
-        <Tabs.Screen name="trips" options={{ title: "行程" }} />
-        <Tabs.Screen name="sky" options={{ title: "天空" }} />
-        <Tabs.Screen name="me" options={{ title: "我的" }} />
+        <Tabs.Screen name="index" options={{ href: null }} />
+        <Tabs.Screen name="(tonight)" options={{ title: "今晚" }} />
+        <Tabs.Screen name="(map)" options={{ title: "地图" }} />
+        <Tabs.Screen name="(trips)" options={{ title: "行程" }} />
+        <Tabs.Screen name="(sky)" options={{ title: "天空" }} />
+        <Tabs.Screen name="(me)" options={{ title: "我的" }} />
       </Tabs>
     </RuntimeRoot>
   );

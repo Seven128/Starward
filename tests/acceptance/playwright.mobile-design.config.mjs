@@ -1,0 +1,53 @@
+import { defineConfig, devices } from "@playwright/test";
+import { createServer } from "node:net";
+import { mobileWebSessionPaths } from "./mobile-web-session.mjs";
+
+const externalBaseUrl = process.env.STARWARD_ACCEPTANCE_BASE_URL;
+const inheritedPort = process.env.STARWARD_ACCEPTANCE_RUN_PORT;
+const acceptancePort = externalBaseUrl ? null : inheritedPort ? Number(inheritedPort) : await availableLoopbackPort();
+if (!externalBaseUrl && !inheritedPort) process.env.STARWARD_ACCEPTANCE_RUN_PORT = String(acceptancePort);
+const acceptanceBaseUrl = externalBaseUrl ?? `http://127.0.0.1:${acceptancePort}`;
+const sessionDescriptorUrl = new URL(
+  mobileWebSessionPaths({ baseUrl: acceptanceBaseUrl }).descriptorPathname,
+  `${acceptanceBaseUrl}/`,
+).href;
+
+async function availableLoopbackPort() {
+  const server = createServer();
+  server.unref();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address === "string") throw new Error("acceptance_port_unavailable");
+  await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  return address.port;
+}
+
+export default defineConfig({
+  testDir: "./ui",
+  testMatch: "mobile-design-diagnostic.spec.mjs",
+  fullyParallel: false,
+  forbidOnly: true,
+  retries: 0,
+  timeout: 180_000,
+  expect: { timeout: 10_000 },
+  webServer: externalBaseUrl ? undefined : {
+    command: `node start-mobile-web.mjs --port ${acceptancePort}`,
+    url: sessionDescriptorUrl,
+    timeout: 120_000,
+    reuseExistingServer: false,
+    stdout: "pipe",
+    stderr: "pipe",
+  },
+  use: {
+    ...devices["Desktop Chrome"],
+    locale: "zh-CN",
+    timezoneId: "Asia/Shanghai",
+    baseURL: acceptanceBaseUrl,
+    trace: "off",
+    screenshot: "only-on-failure",
+  },
+  projects: [{ name: "chromium-mobile-design-diagnostic", use: { browserName: "chromium" } }],
+});

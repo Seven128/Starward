@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { createServer } from "node:net";
 
 process.env.STARWARD_DESIGN_ACCEPTANCE_RUN_ID ??= randomUUID();
+process.env.STARWARD_OPS_ACCEPTANCE_ACCESS_TOKEN ??= randomUUID();
 const externalBaseUrl = process.env.STARWARD_OPS_ACCEPTANCE_BASE_URL;
 const inheritedPort = process.env.STARWARD_OPS_ACCEPTANCE_RUN_PORT;
 const acceptancePort = externalBaseUrl ? null : inheritedPort ? Number(inheritedPort) : await availableLoopbackPort();

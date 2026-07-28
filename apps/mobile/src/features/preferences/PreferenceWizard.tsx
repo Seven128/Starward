@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -13,10 +13,18 @@ import {
   type PreferenceProfile,
   type RequirementLevel,
 } from "@starward/domain/preferences";
-import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
+import { minimumTouchTarget, radii, spacing, type as typeToken, type ColorPalette } from "@starward/ui-system/tokens";
+import { useStarwardTheme } from "../../shell/useStarwardTheme";
 import { preferenceProfileSchema } from "./profile-schema";
 
-const palette = colors.planning;
+type WizardStyles = ReturnType<typeof createStyles>;
+const WizardThemeContext = createContext<{ palette: ColorPalette; styles: WizardStyles } | null>(null);
+
+function useWizardTheme() {
+  const value = useContext(WizardThemeContext);
+  if (!value) throw new Error("preference_wizard_theme_missing");
+  return value;
+}
 
 const labels = {
   observer: { beginner: "新手观星", astrophotographer: "星空摄影", "visual-observer": "目视观测", camping: "露营观星", family: "亲子观星" },
@@ -32,6 +40,7 @@ function toggleItem<T extends string>(values: T[], value: T): T[] {
 }
 
 function ChoiceChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const { styles } = useWizardTheme();
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -45,6 +54,7 @@ function ChoiceChip({ label, selected, onPress }: { label: string; selected: boo
 }
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+  const { styles } = useWizardTheme();
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -55,6 +65,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 }
 
 function BooleanRow({ label, detail, value, onValueChange }: { label: string; detail?: string; value: boolean; onValueChange: (value: boolean) => void }) {
+  const { palette, styles } = useWizardTheme();
   return (
     <View style={styles.booleanRow}>
       <View style={styles.booleanCopy}>
@@ -78,6 +89,8 @@ export function PreferenceWizard({ visible, initial, onClose, onSave }: {
   onClose: () => void;
   onSave: (profile: PreferenceProfile) => Promise<void>;
 }) {
+  const { palette } = useStarwardTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [saveError, setSaveError] = useState<string | null>(null);
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<PreferenceProfile>({
     resolver: zodResolver(preferenceProfileSchema),
@@ -96,6 +109,7 @@ export function PreferenceWizard({ visible, initial, onClose, onSave }: {
   });
 
   return (
+    <WizardThemeContext.Provider value={{ palette, styles }}>
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={styles.modal}>
         <View style={styles.modalHeader}>
@@ -196,10 +210,12 @@ export function PreferenceWizard({ visible, initial, onClose, onSave }: {
         </View>
       </SafeAreaView>
     </Modal>
+    </WizardThemeContext.Provider>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(palette: ColorPalette) {
+  return StyleSheet.create({
   modal: { flex: 1, backgroundColor: palette.canvas },
   modalHeader: { minHeight: 88, paddingHorizontal: spacing.x2, paddingVertical: spacing.x2, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: palette.border, backgroundColor: palette.surface },
   modalEyebrow: { color: palette.primaryActive, fontSize: typeToken.label, fontWeight: "700" },
@@ -214,9 +230,9 @@ const styles = StyleSheet.create({
   errorText: { color: palette.danger, fontSize: typeToken.label },
   wrap: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1 },
   chip: { minHeight: minimumTouchTarget, justifyContent: "center", paddingHorizontal: 14, borderRadius: radii.pill, borderWidth: 1, borderColor: palette.border, backgroundColor: palette.surface },
-  chipSelected: { borderColor: palette.primaryActive, backgroundColor: "#E7F0FF" },
+  chipSelected: { borderColor: palette.anchor, backgroundColor: palette.anchor },
   chipText: { color: palette.text, fontSize: typeToken.label, fontWeight: "600" },
-  chipTextSelected: { color: palette.primaryActive },
+  chipTextSelected: { color: palette.canvas },
   pressed: { opacity: 0.72 },
   numberGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.x1, marginTop: spacing.x1 },
   numberInput: { minWidth: 110, flexGrow: 1, minHeight: minimumTouchTarget, paddingHorizontal: spacing.x1, color: palette.text, backgroundColor: palette.surface, borderWidth: 1, borderColor: palette.border, borderRadius: radii.control },
@@ -225,7 +241,7 @@ const styles = StyleSheet.create({
   rowLabel: { color: palette.text, fontSize: typeToken.body, fontWeight: "600" },
   facilityList: { gap: spacing.x1 },
   requirementRow: { minHeight: minimumTouchTarget, paddingHorizontal: spacing.x2, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: radii.control, borderWidth: 1, borderColor: palette.border, backgroundColor: palette.surface },
-  requirementHard: { borderColor: palette.danger, backgroundColor: "#FFF1F0" },
+  requirementHard: { borderColor: palette.danger, borderStyle: "dashed", backgroundColor: palette.surface },
   requirementValue: { color: palette.textSecondary, fontSize: typeToken.label, fontWeight: "700" },
   requirementHardText: { color: palette.danger },
   footer: { padding: spacing.x2, borderTopWidth: 1, borderTopColor: palette.border, backgroundColor: palette.surface },
@@ -233,4 +249,5 @@ const styles = StyleSheet.create({
   primaryPressed: { transform: [{ scale: 0.99 }], opacity: 0.9 },
   primaryButtonText: { color: palette.onPrimary, fontSize: typeToken.body, fontWeight: "700" },
   disabled: { opacity: 0.55 },
-});
+  });
+}

@@ -5,9 +5,12 @@ import { type ReactNode, useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { consumeNativeRouteIntent, useNativeRouteIntent } from "./native-route-store";
+import { useStarwardTheme } from "./useStarwardTheme";
+import { DesignEvidenceRuntimeProvider } from "./DesignEvidenceRuntime";
 
 export default function RuntimeRoot({ children }: { children?: ReactNode }) {
   const nativeRouteIntent = useNativeRouteIntent();
+  const { mode, palette } = useStarwardTheme();
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: { retry: 1, staleTime: 60_000 },
@@ -21,11 +24,16 @@ export default function RuntimeRoot({ children }: { children?: ReactNode }) {
   }, [nativeRouteIntent]);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: palette.canvas }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <StatusBar style="dark" />
-          {children ?? <Slot />}
+          <DesignEvidenceRuntimeProvider>
+            <StatusBar
+              animated={false}
+              style={mode === "planning" ? "dark" : "light"}
+            />
+            {children ?? <Slot />}
+          </DesignEvidenceRuntimeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

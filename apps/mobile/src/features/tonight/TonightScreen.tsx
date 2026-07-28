@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NightReport, NightReportRequest } from "@starward/contracts/night-report";
@@ -182,6 +183,9 @@ export function TonightScreen() {
       {dateMode === "custom" ? <TextInput testID="tonight-custom-date" accessibilityLabel="自定义观星夜日期" value={customDate} onChangeText={setCustomDate} placeholder="YYYY-MM-DD" style={styles.input} /> : null}
       {!dateValid ? <Text style={styles.warningText}>请输入有效的 YYYY-MM-DD 日期；旧报告不会被无效输入覆盖。</Text> : null}
       <Text style={styles.subtitle}>结论、连续窗口、主备地点和行动共享同一版本快照；缺失路线、过期来源与安全阻断不会被总分隐藏。</Text>
+      <Pressable testID="tonight-open-forecast" accessibilityRole="button" accessibilityLabel="打开逐小时天气与天文详情" onPress={() => router.push("/forecast")} style={styles.action}>
+        <Text style={styles.actionText}>查看逐小时天气与天文</Text>
+      </Pressable>
       <DecisionHero report={query.data} failed={query.isError} />
       {query.data ? <DecisionQuickFacts report={query.data} /> : null}
       <View style={styles.actions}>

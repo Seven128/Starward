@@ -1,0 +1,18 @@
+[chromium-mobile-design-diagnostic] › ui\mobile-design-diagnostic.spec.mjs:15:1 › [diagnostic-only] selected mobile design comparison [outcome:tonight-decision]
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"population-item-start","condition":"mobile-android-390-full","controls":["decision-hero"],"mode":"planning","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-capture-start","condition":"mobile-android-390-full","mode":"planning","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-document-ready","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-selection-ready","mode":"planning","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-style-ready","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-screen-ready","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-page-captured","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-control-start","control":"decision-hero"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-control-complete","control":"decision-hero"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"reference-capture-complete","condition":"mobile-android-390-full","mode":"planning","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"production-capture-start","condition":"mobile-android-390-full","mode":"planning","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"production-mode-start","mode":"planning"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"production-mode-complete","mode":"planning"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"production-control-start","control":"decision-hero"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"production-control-complete","control":"decision-hero"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"production-capture-complete","condition":"mobile-android-390-full","mode":"planning","outcome":"tonight-decision"}
+STARWARD_MOBILE_WEB_DIAGNOSTIC_PROGRESS:{"phase":"population-item-complete","condition":"mobile-android-390-full","mode":"planning","outcome":"tonight-decision","report":"C:\\Dev\\Starward\\artifacts\\verification\\mobile-web-diagnostics\\tonight-decision-planning\\tonight-decision\\mobile-android-390-full\\planning\\report.json","viewer":"C:\\Dev\\Starward\\artifacts\\verification\\mobile-web-diagnostics\\tonight-decision-planning\\tonight-decision\\mobile-android-390-full\\planning\\index.html"}

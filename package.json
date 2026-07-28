@@ -9,9 +9,11 @@
     "design:targets:verify": "node tools/verify-design-targets.mjs",
     "dev:acceptance:mobile": "node tests/acceptance/start-mobile-web.mjs --port 4173 --watch-api",
     "test:mobile:fast": "npm run typecheck --workspace @starward/mobile && npm run test --workspace @starward/mobile",
-    "test:verification:fast": "node --test tools/long-task/verify-native-target.test.mjs",
+    "test:verification:fast": "node --test tests/acceptance/mobile-web-session.test.mjs tests/acceptance/ui/mobile-design-diagnostic-support.test.mjs tools/long-task/native-verification-session.test.mjs tools/long-task/run-native-design-diagnostic.test.mjs tools/long-task/verify-native-target.test.mjs",
     "test:acceptance:mobile": "node tests/acceptance/run-mobile-web-check.mjs --isolated",
     "test:acceptance:mobile:warm": "node tests/acceptance/run-mobile-web-check.mjs",
+    "dev:inspect:mobile:web": "node tests/acceptance/run-mobile-web-diagnostic.mjs",
+    "dev:inspect:mobile:native": "node tools/long-task/run-native-design-diagnostic.mjs",
     "test": "npm run context:validate"
   },
   "keywords": [

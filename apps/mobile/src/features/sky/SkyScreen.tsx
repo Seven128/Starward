@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { SkyContext, SkyPosition } from "@starward/contracts/sky";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
@@ -194,6 +195,9 @@ export function SkyScreen() {
   return <SafeAreaView testID="screen-sky-orientation-ar" style={styles.screen}><ScrollView ref={scroll} contentContainerStyle={styles.content}>
     <Text style={styles.eyebrow}>天空定位 · {location.label}</Text><Text style={styles.title}>目标在哪里，遮挡证据在哪里</Text>
     <Text style={styles.subtitle}>通用天空是主路径。方向、相机与 AR 只在能力和精度可信时增强；现场轮廓未知时不猜测。</Text>
+    <Pressable testID="sky-open-shooting-assistant" accessibilityRole="button" accessibilityLabel="打开摄影助手" onPress={() => router.push("/shooting")} style={styles.action}>
+      <Text style={styles.actionText}>打开摄影助手</Text>
+    </Pressable>
     <DecisionContextRevision />
     {query.isLoading ? <State title="正在计算天空状态…" body="服务端按 WGS84 地点、UTC 时刻和版本化天文算法定位亮星、深空目标与轨迹。" /> : null}
     {query.isError ? <State title="天空状态暂不可用" body={query.error instanceof Error && query.error.message === "sky_api_base_url_missing" ? "尚未配置 API 地址；不会以内置星位替代真实计算。" : "请求或计算失败；当前不显示旧星位。"} retry={() => void query.refetch()} /> : null}

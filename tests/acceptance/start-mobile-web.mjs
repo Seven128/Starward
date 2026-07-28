@@ -6,6 +6,10 @@ import { createRequire } from "node:module";
 import { createServer as createNetServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  createMobileWebSession,
+  disposeMobileWebSession,
+} from "./mobile-web-session.mjs";
 
 const acceptanceRoot = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(acceptanceRoot, "../../apps/mobile");
@@ -122,6 +126,11 @@ const watchApi = process.argv.includes("--watch-api");
 const apiPort = await availableLoopbackPort();
 const apiBaseUrl = `http://127.0.0.1:${apiPort}`;
 const weatherSandbox = await startWeatherSandbox();
+const mobileWebSession = await createMobileWebSession({
+  apiBaseUrl,
+  baseUrl: `http://127.0.0.1:${webPort}`,
+  watchApi,
+});
 const apiEntrypoint = path.join(dependencyRepositoryRoot, "apps", "api", "src", "start.ts");
 const apiProcess = spawn(process.execPath, [tsxCli, ...(watchApi ? ["watch"] : []), apiEntrypoint], {
   cwd: dependencyRepositoryRoot,
@@ -203,6 +212,8 @@ if (!apiReady) throw new Error("acceptance_api_not_ready");
 
 process.env.STARWARD_MOBILE_DEPENDENCY_ROOT = mobileDependencyRoot;
 process.env.EXPO_PUBLIC_API_BASE_URL = apiBaseUrl;
+process.env.EXPO_PUBLIC_STARWARD_ACCEPTANCE_SESSION_ID = mobileWebSession.session_id;
+process.env.EXPO_PUBLIC_STARWARD_ACCEPTANCE_STARTUP_FINGERPRINT = mobileWebSession.startup_fingerprint;
 if (!existsSync(projectDependencyLink)) {
   symlinkSync(mobileDependencyRoot, projectDependencyLink, "junction");
   projectDependencyLinkCreated = true;
@@ -222,8 +233,11 @@ function shutdown(exitCode) {
       terminateOwnedChild(expoProcess),
       terminateOwnedChild(apiProcess),
     ]);
-    await closeWeatherSandbox();
-    await removeOwnedDependencyLink();
+    await Promise.allSettled([
+      closeWeatherSandbox(),
+      removeOwnedDependencyLink(),
+      disposeMobileWebSession(mobileWebSession),
+    ]);
     process.exitCode = exitCode;
   })();
   return shutdownPromise;

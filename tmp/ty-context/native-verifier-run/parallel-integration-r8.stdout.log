@@ -1,0 +1,1 @@
+{"schema_version":"starward-native-design-diagnostic-v1","authority":"diagnostic-only","execution_status":"failed","formal_acceptance":false,"native_runtime":true,"diagnostics":["native_target_check_failed:android_uiautomator_dump_xml_missing"]}

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createUnrestrictedProfile, type PreferenceProfile } from "@starward/domain/preferences";
+import type { DisplayMode } from "@starward/ui-system/tokens";
 import { hydratePreferenceRuntime, persistActiveProfile, persistPreferenceProfile, persistShellDestination, persistShellLocation } from "./preferences-runtime";
 import { advanceDecisionContext, createDecisionContext, type DecisionContextInput, type DecisionContextRevision } from "./decision-context";
 
@@ -8,6 +9,7 @@ export type LocationSource = "unset" | "device" | "manual";
 
 interface ShellState {
   guest: true;
+  displayMode: DisplayMode;
   activeDestination: PrimaryDestination;
   location: { source: LocationSource; label: string; latitude?: number; longitude?: number };
   profiles: PreferenceProfile[];
@@ -17,6 +19,7 @@ interface ShellState {
   persistenceState: "loading" | "ready" | "saving" | "error";
   persistenceError: string | null;
   hydrateFromRuntime: () => Promise<void>;
+  setDisplayMode: (mode: DisplayMode) => void;
   setDestination: (destination: PrimaryDestination) => Promise<void>;
   setManualLocation: (label: string) => Promise<void>;
   setDeviceLocation: (label: string, latitude: number, longitude: number) => Promise<void>;
@@ -29,6 +32,7 @@ const baseProfile = createUnrestrictedProfile();
 
 export const useShellStore = create<ShellState>()((set, get) => ({
   guest: true,
+  displayMode: "planning",
   activeDestination: "tonight",
   location: { source: "unset", label: "尚未选择位置" },
   profiles: [baseProfile],
@@ -37,6 +41,7 @@ export const useShellStore = create<ShellState>()((set, get) => ({
   recommendationState: "ready",
   persistenceState: "loading",
   persistenceError: null,
+  setDisplayMode: (displayMode) => set({ displayMode }),
   hydrateFromRuntime: async () => {
     if (get().persistenceState === "ready") return;
     set({ persistenceState: "loading", persistenceError: null });

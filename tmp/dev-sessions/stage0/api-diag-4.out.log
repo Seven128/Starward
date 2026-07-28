@@ -1,0 +1,7 @@
+
+> @starward/api@0.1.0 start:poc
+> tsx src/start.ts
+
+{"level":30,"time":1785159233928,"pid":22560,"hostname":"DESKTOP-E0AA8CT","msg":"Server listening at http://127.0.0.1:4318"}
+{"level":30,"time":1785159258292,"pid":22560,"hostname":"DESKTOP-E0AA8CT","reqId":"98024ecf-85c5-4371-827c-003330c9fc5b","req":{"method":"GET","url":"/v1/map/spots?lat=22.529&lon=113.9468&radiusMeters=100000&limit=20","host":"127.0.0.1:4318","remoteAddress":"127.0.0.1","remotePort":63110},"msg":"incoming request"}
+{"level":30,"time":1785159286614,"pid":22560,"hostname":"DESKTOP-E0AA8CT","reqId":"98024ecf-85c5-4371-827c-003330c9fc5b","res":{"statusCode":503},"responseTime":28321.7248,"msg":"request completed"}

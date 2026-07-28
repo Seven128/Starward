@@ -17,7 +17,7 @@ default = true
 path = "project_context/areas/main/verification.md"
 role = "verification"
 read_policy = "default"
-triggers = ["test", "verify", "verification", "smoke", "ci", "dev", "development", "debug", "build", "metro", "gradle", "android", "开发", "测试", "调试", "构建", "热更新"]
+triggers = ["test", "verify", "verification", "smoke", "ci", "dev", "development", "debug", "build", "metro", "expo web", "react native web", "playwright", "warm session", "gradle", "java_home", "jbr", "android", "apk", "avd", "emulator", "shard", "parallel", "resume", "checkpoint", "开发", "测试", "调试", "构建", "热更新", "分片", "并行", "断点恢复"]
 
 [[context]]
 path = "project_context/areas/main/product-surface-contract.md"

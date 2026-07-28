@@ -7,7 +7,7 @@
     "extra": {
       "apiBaseUrl": "http://10.0.2.2:4318"
     },
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,

@@ -1,0 +1,4 @@
+pc_memory_init: above 4g size: 40000000
+dsound: Could not initialize DirectSoundCapture
+dsound: Reason: No sound driver is available for use, or the given GUID is not a valid DirectSound device ID
+C:\Users\777\AppData\Local\Android\Sdk\emulator\qemu\windows-x86_64\qemu-system-x86_64-headless.exe: Unable to connect character device modem: Failed to connect socket: Input/output error

@@ -2,12 +2,18 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "@playwright/test";
+import { validateMobileWebSession } from "../mobile-web-session.mjs";
 import { exerciseUiAcceptance } from "./support.mjs";
 import { validateUiContracts } from "./contracts.mjs";
 
 const specDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "specs");
 const opsOutcomes = new Set(["admin-data-operations", "quality-release-observability"]);
 const files = (await readdir(specDir)).filter((name) => name.endsWith(".json") && name !== "global.json").sort();
+
+test.beforeAll(async ({ baseURL }) => {
+  if (!baseURL) throw new Error("acceptance_base_url_missing");
+  await validateMobileWebSession({ baseUrl: baseURL });
+});
 
 for (const file of files) {
   const spec = JSON.parse(await readFile(path.join(specDir, file), "utf8"));

@@ -1,0 +1,11 @@
+
+> @starward/api@0.1.0 start:poc
+> tsx src/start.ts
+
+{"level":30,"time":1785158875609,"pid":13224,"hostname":"DESKTOP-E0AA8CT","msg":"Server listening at http://127.0.0.1:4318"}
+{"level":30,"time":1785158889021,"pid":13224,"hostname":"DESKTOP-E0AA8CT","reqId":"dd870006-36b8-4ffa-97f2-e538adbe6897","req":{"method":"GET","url":"/v1/map/spots?lat=22.529&lon=113.9468&radiusMeters=100000&limit=20","host":"127.0.0.1:4318","remoteAddress":"127.0.0.1","remotePort":54028},"msg":"incoming request"}
+{"level":30,"time":1785158904493,"pid":13224,"hostname":"DESKTOP-E0AA8CT","reqId":"dd870006-36b8-4ffa-97f2-e538adbe6897","res":{"statusCode":503},"responseTime":15470.806699999997,"msg":"request completed"}
+{"level":30,"time":1785158917949,"pid":13224,"hostname":"DESKTOP-E0AA8CT","reqId":"50160997-2810-4ce7-b3c6-f968d9749191","req":{"method":"GET","url":"/v1/map/spots?lat=22.529&lon=113.9468&radiusMeters=100000&limit=20","host":"127.0.0.1:4318","remoteAddress":"127.0.0.1","remotePort":54054},"msg":"incoming request"}
+{"level":30,"time":1785158933425,"pid":13224,"hostname":"DESKTOP-E0AA8CT","reqId":"50160997-2810-4ce7-b3c6-f968d9749191","res":{"statusCode":503},"responseTime":15474.992899999997,"msg":"request completed"}
+{"level":30,"time":1785158957570,"pid":13224,"hostname":"DESKTOP-E0AA8CT","reqId":"65d9c3ab-1e80-4876-9aaf-01442c4f9eca","req":{"method":"GET","url":"/v1/map/spots?lat=22.529&lon=113.9468&radiusMeters=25000&limit=20","host":"127.0.0.1:4318","remoteAddress":"127.0.0.1","remotePort":54091},"msg":"incoming request"}
+{"level":30,"time":1785158973841,"pid":13224,"hostname":"DESKTOP-E0AA8CT","reqId":"65d9c3ab-1e80-4876-9aaf-01442c4f9eca","res":{"statusCode":503},"responseTime":16271.232799999998,"msg":"request completed"}
