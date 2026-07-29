@@ -4,7 +4,7 @@
 
 - `product-surface-contract.md` owns cross-surface responsibility and main/drilldown placement.
 - This file owns stable route identity, semantic order, region/overlay ownership, navigation/state invariants, and the inventory of material Control Keys.
-- `DESIGN.md` owns exact authored tokens and selected target interpretation. The copied resources under `docs/design-targets/**` own concrete composition only for their declared viewport, mode, state, and content coverage.
+- `DESIGN.md` owns exact authored tokens, the active system target, and legacy-target applicability. The copied resources under `docs/design-targets/**` are currently rollback and semantic-traceability archives only; their historical composition, geometry, and styling are inactive pending a separate regeneration and explicit re-adoption.
 - `docs/source-plan.md` remains delivery Source and the Delivery Contract owns delivery scope and proof. Current code and implementation screenshots cannot redefine these contracts.
 
 ## Shared Mobile Screen Contract
@@ -21,7 +21,7 @@
 - Interaction: press feedback is immediate; commit occurs once at a valid completion point; cancellation, interruption, superseding requests, and retries preserve the last safe state. Direct manipulation starts from the live presentation value and settles only to valid bounds.
 - Variants: planning, night, and red-light keep the same control/focus order. Loading, empty, no-results, stale, partial, degraded, unknown, error, offline, disabled, saving, and success appear only where applicable and never fabricate facts.
 - Accessibility: 200% text reflows without clipping the primary judgment/action; screen readers receive role/name/value and material async/safety changes; reduced motion replaces large-axis/depth/elastic movement rather than merely accelerating it.
-- Mobile targets: `target.mobile-product-pages-v2` is the page constraint; `target.mobile-controls-v3` is exact only for the declared per-control contract fields and stated coverage.
+- Active mobile visual system: `target.system.starward-blue-skeuomorphic-2026-07-29` controls system-level appearance and three-mode posture. Historical `target.mobile-product-pages-v2` and `target.mobile-controls-v3` retain stable route/control semantics only and are not current page/control visual constraints.
 
 ## `mobile-shell-and-preferences`
 
@@ -149,7 +149,7 @@
 - Regions: workspace navigation; route heading/context; stable control composition; route-owned guarded dialog/drawer; redacted status/audit feedback.
 - Interaction: every action is keyboard reachable; writes deny by default, preserve draft/input on error, use optimistic revision or idempotency identity, and require impact/confirmation where declared.
 - State: loading, empty, no-results, fresh/populated, stale, partial, degraded, error, disabled, saving, success and edge appear only when applicable with source/version/last-success context.
-- Operations targets: `target.ops-product-pages-v1` is the workspace/page constraint; `target.ops-controls-v2` is exact only for its declared per-control contract fields and stated coverage.
+- Operations visual archives: `target.ops-product-pages-v1` and `target.ops-controls-v2` retain workspace/control semantics and rollback identity only; their historical composition and styling are inactive pending separate regeneration.
 
 ## `admin-data-operations`
 
@@ -169,20 +169,21 @@
 - Commit / Exit: promotion cannot outrun its current target; restore success requires validated readback from an isolated instance; run history and blockers remain immutable and redacted.
 - Verification emphasis: current-execution target-runtime proof, budget 70/90/100% degradation, backup/RPO/RTO/data consistency, telemetry correlation, no public-production claim.
 
-## Selected Target Registry And Coverage Boundary
+## Visual Target Registry And Coverage Boundary
 
-- `target.mobile-product-pages-v2`: constraint at `docs/design-targets/mobile-product-pages-v2/index.html` with machine coverage in `coverage-manifest.json`; controls mobile route composition, 390×844 layout, five tabs, immersive Map/Sky, three modes and declared data states, not sample facts or native behavior.
-- `target.mobile-controls-v3`: exact-with-declared-coverage at `docs/design-targets/mobile-controls-v3/implementation-contract.json`; controls the declared fields for 83 stable Control Keys, with `index.html` as its interactive projection, not production/native evidence.
-- `target.ops-product-pages-v1`: constraint at `docs/design-targets/ops-product-pages-v1/index.html` with machine coverage in `coverage-manifest.json`; controls seven workspace compositions and responsive operations layout, not backend behavior.
-- `target.ops-controls-v2`: exact-with-declared-coverage at `docs/design-targets/ops-controls-v2/implementation-contract.json`; controls the declared fields for 12 stable Control Keys, not real auth, permission, API, audit, release or restore effects.
+- `target.system.starward-blue-skeuomorphic-2026-07-29`: active system-level authority recorded in `DESIGN.md`; controls the blue planning system, near-black navy night system, strict six-value black/warm-red observation system, disciplined equipment skeuomorphism, typography, spacing, component appearance, state posture, accessibility posture, and motion posture. It does not prescribe screen-specific pixels or prove production/native behavior.
+- `target.mobile-product-pages-v2`: immutable rollback archive at `docs/design-targets/mobile-product-pages-v2/index.html`; its historical composition is inactive. Route identity, five-tab meaning, and screen responsibility remain Context-owned.
+- `target.mobile-controls-v3`: immutable rollback/semantic archive at `docs/design-targets/mobile-controls-v3/implementation-contract.json`; its 83 stable Control Keys remain traceability identifiers, while its visual values, geometry, and styling are inactive.
+- `target.ops-product-pages-v1`: immutable rollback archive at `docs/design-targets/ops-product-pages-v1/index.html`; its historical workspace composition is inactive pending separate regeneration.
+- `target.ops-controls-v2`: immutable rollback/semantic archive at `docs/design-targets/ops-controls-v2/implementation-contract.json`; its 12 stable Control Keys retain semantic traceability, not current visual authority or backend proof.
 - Nine mobile Control Keys retain downstream native/media proof obligations: `map-filter-sheet`, `map-marker-density-surface`, `selected-spot-sheet`, `spot-media-gallery`, `observation-timeline-editor`, `sky-time-scrubber`, `orientation-follow-toggle`, `orientation-calibration-sheet`, and `ar-mode-toggle`.
 - All twelve operations Control Keys retain downstream backend endpoint/authentication/authorization proof obligations. These are implementation/proof work, not design gaps and not permission to simulate success.
 
 ## Verification Contract
 
-- Authority integrity: `npm run design:targets:verify` must re-hash all copied target files, parse their manifests/contracts, prove 14 Surface Keys and 95 unique Control Keys, and match the Source Plan plus `DESIGN.md` target registry. `make validate-context` and the Long-Task Authority Context snapshot separately protect this Screen Contract and its routing.
+- Authority integrity: `npm run design:system:verify` must prove the active system record, exact DESIGN→runtime token projection, role-isomorphic modes, and strict six-value observation palette. `npm run design:targets:verify` must separately re-hash the unchanged rollback archives and prove their 14 Surface Keys/95 unique Control Keys remain semantically indexed; it cannot reactivate their visuals. `make validate-context` and the Long-Task Authority Context snapshot separately protect this Screen Contract and its routing.
 - Semantic and state checks: project-owned unit/component/integration tests must observe the committed state and truthful failure/degradation path, not only rendered labels.
-- Visual checks: production route renders compare only against the relevant selected exact/constraint target and declared coverage; an implementation screenshot cannot become its own baseline.
+- Visual checks: current system-level work checks production tokens and mode/material rules against `DESIGN.md`. Screen/control pixel-fidelity claims remain unavailable until separately regenerated resources are explicitly selected; archived targets and implementation screenshots cannot become current baselines.
 - Target-runtime checks: Android native runtime is required for current critical mobile paths. iOS implementation remains required, but macOS/Xcode/iOS Simulator and live iOS runtime checks are deferred and must be reported unverified; browser/Expo Web, Android, static structure, and historical results cannot prove iOS. Responsive desktop browser is the product runtime for owner operations.
 - Durable paths: stateful and artifact-producing flows must write the declared database/file/native/external sink, recreate the service/app against the same isolated data, read it back, and fail counterfactually when the write/boundary/readback is removed.
 - External boundary: representative outdoor/device tuning, licensed production media, expert/legal/store/public-production approval, paid activation and production provider promotion remain explicitly pending unless separately confirmed; only those marked as blocking the current owner-only target may block `target_profile_usable`.

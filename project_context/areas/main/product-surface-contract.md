@@ -156,7 +156,7 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 
 ## Cross-Surface Rules
 
-- Stable Surface Keys are the fourteen headings above. Stable Control Keys and screen routing are owned by `screen-contracts.md`; selected target interpretation and token values are owned by `DESIGN.md`.
+- Stable Surface Keys are the fourteen headings above. Stable Control Keys and screen routing are owned by `screen-contracts.md`; active system-target interpretation, legacy-target applicability, and token values are owned by `DESIGN.md`.
 - Mobile primary navigation is exactly Tonight, Map, Trips, Sky, and Me. Forecast, spot detail, shooting, field, contribution, toolbox, and onboarding/preferences are contextual or secondary routes, not extra primary tabs.
 - The five primary destinations are five distinct route/screen roots—Tonight `/tonight`, Map `/map`, Trips `/trips`, Sky `/sky`, and Me `/me`—inside one persistent native tab navigator. A shared `ScrollView`, section-anchor jump, or conditional content block that merely imitates separate pages is forbidden.
 - Each primary destination owns its route-local stack and primary scroll or immersive-canvas position. Switching away and back preserves that local task position; shared place/time/mode/selection changes continue through the versioned decision context rather than through duplicate tab state.
@@ -171,5 +171,5 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 ## Screen Contract Routing
 
 - `project_context/areas/main/screen-contracts.md` owns stable route, hierarchy, region/overlay ownership, Control inventory, mode/state variants, navigation, and target references for all fourteen Surface Keys.
-- `DESIGN.md` owns the authored tokens, visual rationale, selected target registry, and target conflict order.
+- `DESIGN.md` owns the authored tokens, visual rationale, active system adoption record, legacy-target applicability, and target conflict order.
 - `project_context/areas/main/verification.md` owns repeatable authority, product-runtime, native-runtime, persistence, recovery, and target-fidelity verification entry points.

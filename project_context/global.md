@@ -16,13 +16,14 @@
 - Product name: 《今晚去观星》.
 - Repository/engineering name: Starward.
 - Brand promise: 从黄昏走入星夜.
-- The design direction synthesizes consumer trip-planning patterns with professional astronomy information, while keeping one independent and reusable product language.
+- The selected design direction combines a blue visual system with disciplined skeuomorphism for professional observing and outdoor equipment, while keeping decision/data surfaces calm, precise, and reusable.
 
 ## Design Rationale
 
 - Users need a decision and next action before professional data, so the experience uses three layers: conclusion, executable plan, then evidence.
 - Space and time use a shared visual grammar: routes, celestial tracks, horizon arcs, circular nodes, and continuous observing windows.
 - Planning, night-observing, and red-light field modes preserve information architecture so a mode change does not force the user to relearn the workflow.
+- Planning uses cool blue-white surfaces, night uses near-black navy depth with limited blue, and red-light observation is restricted to the six registered black/warm-red values. Physical material cues belong to telescopes, coated lenses, cameras, binoculars, backpacks, tents, and vehicles rather than every data container.
 - Visual identity and exact tokens are owned by DESIGN.md. Product responsibility, information architecture, interactions, and state behavior are owned by project_context/**.
 
 ## Architecture Context
@@ -69,7 +70,7 @@
 
 - Tiny Context is installed and initialized.
 - The product/design contract, Open Design references, React Native application, API/workers/admin surfaces, and acceptance harness form the repository baseline.
-- Four owner-selected authored targets are adopted under `docs/design-targets/**`: mobile and operations page constraints plus their exact-with-declared-coverage control contracts. Their stable Surface/Control routing is owned by the Product Surface and Screen Contracts; static artifacts still do not prove production or native behavior.
+- `target.system.starward-blue-skeuomorphic-2026-07-29` is the active owner-selected visual-system target in `DESIGN.md`. The four older page/control targets under `docs/design-targets/**` remain immutable rollback and semantic-traceability archives, but their visual styling, geometry, and fidelity constraints are inactive pending a separate regeneration. Their stable Surface/Control meaning remains owned by the Product Surface and Screen Contracts; no static artifact proves production or native behavior.
 - A corrective audit found that several existing carriers use fixed responses, process-local state, metadata-only side effects, or declaration-only native boundaries. Those carriers are implementation scaffolding, not completed Outcomes, until variable-input, side-effect, restart-readback, failure-path, and counterfactual checks pass.
 - `docs/technical-data-source-decisions.md` records official-source research and the current individual personal-trial choices. No purchase, production traffic, public redistribution, production account, commercial contract, external approval, representative-device proof, or field validation is declared complete.
 - Current release authority is owner-only, non-commercial personal trial with a CNY 200/month external-service ceiling and qualifying free sources preferred. Future production gates do not block machine-local implementation, but they also cannot be represented as completed evidence.

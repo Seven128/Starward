@@ -1,14 +1,15 @@
 ---
-version: "1.0"
+version: "2.0"
 name: "今晚去观星"
-description: "A mobile-first stargazing trip decision system that turns weather, astronomy, place, route, and preparation data into one actionable journey."
+description: "A blue, materially skeuomorphic mobile stargazing decision system with planning, night, and strict black-and-warm-red observation modes."
 colors:
-  canvas: "#FFFFFF"
-  surface: "#F7F8FA"
-  surface-muted: "#EEF2F7"
-  text: "#111111"
-  text-muted: "#6B7280"
-  border: "#D9DEE7"
+  canvas: "#F3F7FF"
+  surface: "#FFFFFF"
+  surface-muted: "#E8F1FF"
+  surface-elevated: "#FFFFFF"
+  text: "#0B1B35"
+  text-muted: "#435A78"
+  border: "#6F89AA"
   primary: "#1677FF"
   primary-hover: "#4096FF"
   primary-active: "#0958D9"
@@ -16,13 +17,26 @@ colors:
   success: "#52C41A"
   warning: "#FAAD14"
   error: "#FF4D4F"
-  night-canvas: "#111111"
-  night-surface: "#111111"
-  night-surface-elevated: "#272727"
-  night-text: "#FFFFFF"
-  night-text-muted: "#D9DEE7"
-  night-border: "#6B7280"
+  material-highlight: "#FFFFFF"
+  material-body: "#6F89AA"
+  material-seam: "#435A78"
+  lens-core: "#0B1B35"
+  lens-reflection: "#4096FF"
+  rubber: "#0B1B35"
+  equipment-paint: "#0958D9"
+  fabric: "#E8F1FF"
+  fabric-stitch: "#6F89AA"
+  contact-shadow: "#0B1B35"
+  night-canvas: "#020817"
+  night-surface: "#07152B"
+  night-surface-muted: "#0E2444"
+  night-surface-elevated: "#122E52"
+  night-text: "#EDF5FF"
+  night-text-muted: "#A7BDD9"
+  night-border: "#56779E"
   night-primary: "#1677FF"
+  night-primary-hover: "#4096FF"
+  night-primary-active: "#0958D9"
   red-canvas: "#050000"
   red-surface: "#170000"
   red-text: "#FF9B9B"
@@ -31,47 +45,52 @@ colors:
   red-primary: "#FF5454"
 typography:
   display:
-    fontFamily: "Inter"
+    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "2.375rem"
     fontWeight: 700
     lineHeight: 1.25
   title:
-    fontFamily: "Inter"
+    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "1.375rem"
     fontWeight: 700
     lineHeight: 1.25
+  section:
+    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 700
+    lineHeight: 1.3125
   body:
-    fontFamily: "Inter"
+    fontFamily: "Aptos, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.57
   label:
-    fontFamily: "Inter"
+    fontFamily: "Aptos, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 700
     lineHeight: 1.3
   data:
-    fontFamily: "SFMono-Regular"
+    fontFamily: "Cascadia Mono, SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.57
   caption:
-    fontFamily: "Inter"
+    fontFamily: "Aptos, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "0.6875rem"
     fontWeight: 400
     lineHeight: 1.5
   opsDisplay:
-    fontFamily: "Inter"
+    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "1.5rem"
     fontWeight: 700
     lineHeight: 1.25
   opsTitle:
-    fontFamily: "Inter"
+    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "1rem"
     fontWeight: 700
     lineHeight: 1.3125
   opsData:
-    fontFamily: "SFMono-Regular"
+    fontFamily: "Cascadia Mono, SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace"
     fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: 1.58
@@ -123,40 +142,61 @@ components:
 
 - Product promise: 从黄昏走入星夜。
 - Starward is a mobile-first decision product, not a generic weather dashboard. It connects tonight's go/no-go conclusion, place choice, departure time, best observing window, route, risk, equipment, and on-site observation into one path.
-- The experience should feel credible, calm, precise, exploratory, outdoors-oriented, and intelligent. Technology is expressed through clear information organization and continuous time/space graphics, not science-fiction decoration.
+- The selected visual language is a blue, professionally skeuomorphic outdoor-instrument system. It feels credible, calm, precise, exploratory, and tactile without turning data surfaces into toys.
 - Information follows progressive disclosure: first the conclusion, then an actionable plan, then the professional evidence.
-- This file is the authored visual authority. Generated CSS, JSON, HTML kits, and previews under docs/design-system/ are downstream reference artifacts.
+- This file is the sole authored visual authority and exact-value token source. `packages/ui-system/src/tokens.ts` and any future CSS, JSON, HTML, platform adapter, kit, or preview are downstream consumers.
 - Design Authority status: configured and adopted for the current owner-only target profile. Surface ownership still belongs to `project_context/**`, and production/runtime acceptance still belongs to the Delivery Contract and project verification.
 
 ### Design Authority Index
 
 - Authored exact-value token source: selected — this file's YAML front matter.
 - Generation direction and generated token targets: `DESIGN.md` → `packages/ui-system/src/tokens.ts` and platform adapters → optional exports under `docs/design-system/**`; TypeScript, CSS, JSON, target manifests, and screenshots are consumers or verification inputs, never co-equal token authorities.
-- Selection basis: the owner selected the four system/component-family resources after the system-wide UI/UX reconstruction and independent source QA; this Index is their canonical adoption record. Screen and interaction ownership remains in `project_context/areas/main/screen-contracts.md`.
-- Update policy: edit the recorded Open Design upstream, export and independently review a new immutable version, then update this Index through UI Authority Closure. Never overwrite an adopted baseline.
-- `target.mobile-product-pages-v2` — `constraint`; controls 390×844 composition, 12 mobile surfaces, five primary tabs, declared planning/night/red-light modes and data states, and immersive Map/Sky layout, not sample facts or native behavior. Immutable entry: `docs/design-targets/mobile-product-pages-v2/index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271`; coverage manifest SHA-256 `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`. Editable upstream: Open Design project `starward-system-mobile-20260722-v2`; export a new repo-local version and re-adopt it.
-- `target.ops-product-pages-v1` — `constraint`; controls the two operations Outcomes, seven workspace compositions, responsive desktop hierarchy, guarded-action space and declared states, not backend behavior. Immutable entry: `docs/design-targets/ops-product-pages-v1/index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5`; coverage manifest SHA-256 `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`. Editable upstream: Open Design project `starward-system-ops-20260722-v1`; export a new repo-local version and re-adopt it.
-- `target.mobile-controls-v3` — `exact-target` only within declared coverage; controls the declared fields for 83 stable controls, 12 page assemblies, 208 scenarios, A–F flows, applicable 360/390/430 widths, modes, states and accessibility/motion conditions, but does not prove native physics, sensors, haptics, performance, production media or live services. Immutable entry: `docs/design-targets/mobile-controls-v3/implementation-contract.json` SHA-256 `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4`; interactive projection SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`. Editable upstream: Open Design project `starward-mobile-control-atlas-20260722-v3`; export a new repo-local version and re-adopt it without representing its historical nonterminal run as succeeded.
-- `target.ops-controls-v2` — `exact-target` only within declared coverage; controls the declared fields for 12 stable operations controls, seven page assemblies, 32 scenarios, REV-43, responsive desktop/input/state/accessibility conditions, but does not prove authentication, authorization, API, audit, release, backup or restore effects. Immutable entry: `docs/design-targets/ops-controls-v2/implementation-contract.json` SHA-256 `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388`; interactive projection SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`. Editable upstream: Open Design project `starward-ops-control-atlas-20260722-v2`; export a new repo-local version and re-adopt it.
-- Target precedence is closed: product, safety, privacy, and surface meaning come from Source/Context; this file owns system token meaning; page constraints own declared composition; control JSON owns its declared per-control details and supersedes only its own HTML projection. A conflict with an upper owner fails closed and requires an authority revision.
+- Active target: `target.system.starward-blue-skeuomorphic-2026-07-29`, selected by the owner on 2026-07-29 with the explicit instruction “选定这个候选”. It controls the system-level visual language, tokens, three modes, physical-material rendering, component appearance, state posture, accessibility posture, and motion posture. It does not replace product semantics or claim native/runtime conformance.
+- Provider: Open Design `0.16.1`; editable design-system ID `user:starward-2026-07-29`; bound workspace/project ID `ds-starward-2026-07-29`; selected provider body SHA-256 `280b1d3726e181591f19b6ddef96ab5d32fb61c5302af07fcee194b32f135f70`. The provider exposed no revision records at selection, so no revision ID could be accepted; the provider design-system metadata is published and this record owns project adoption.
+- Selected package integrity: `validation-manifest.json` SHA-256 `ae9d23d7d2a127b5ea1feb1a86cebd1b5a33dc1294de0ad40c9e4803a8a9be8f`. The package contained 62 required files, 16 HTML entries, role-isomorphic planning/night/observation specimens, 122 audit anchors, six-value observation pixels, and no package audit error or warning. Audit anchors are traceability markers, not a count of product controls.
+- Selection evidence was limited to the explicit owner brief and three supplied visual references: day image SHA-256 `62d286b330ce48cac73e1b1351e6c35502aac46989af971ee502466842d49fe0`, night image SHA-256 `5d5ec492c02e8d67b502ed7f672f1b8976da61d56f2702fbd7a59bbcb1ee3b5d`, and observation image SHA-256 `d8de918d08dab0f8d6f84bb097076671186a61a1494637f1e40b2fc7b97b8150`. Their logo, wording, poster/device composition, sample data, and proprietary imagery are not adopted.
+- Condition coverage: planning/day, night, and strict black-and-warm-red observation/red-light; 390×844 primary, 360/430 responsive checks, 200% text, 44×44 minimum targets, reduced motion, focus/pressed/disabled/loading/empty/no-results/stale/partial/degraded/unknown/offline/saving/error/success specimens, and decision → action → evidence hierarchy.
+- Editable upstream and update route: revise Open Design system `user:starward-2026-07-29` in project `ds-starward-2026-07-29`, review and validate the complete new package, record the new provider revision or immutable digest, and re-adopt it here. Never silently edit this authority from a generated export and never overwrite a previously selected source identity.
+- Legacy rollback baseline `target.mobile-product-pages-v2`: files remain immutable at `docs/design-targets/mobile-product-pages-v2/index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271` and `coverage-manifest.json` SHA-256 `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`. Its historical composition is inactive as a current visual constraint and will be regenerated separately.
+- Legacy rollback baseline `target.ops-product-pages-v1`: files remain immutable at `docs/design-targets/ops-product-pages-v1/index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5` and `coverage-manifest.json` SHA-256 `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`. Its historical composition is inactive as a current visual constraint and will be regenerated separately.
+- Legacy rollback baseline `target.mobile-controls-v3`: files remain immutable at `docs/design-targets/mobile-controls-v3/implementation-contract.json` SHA-256 `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4` and `index.html` SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`. Its 83 stable Control Keys, scenarios, and behavior semantics remain historical traceability data, but its visual values, geometry, and styling are inactive and were not used to author this system.
+- Legacy rollback baseline `target.ops-controls-v2`: files remain immutable at `docs/design-targets/ops-controls-v2/implementation-contract.json` SHA-256 `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388` and `index.html` SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`. Its behavior semantics remain historical traceability data, while its visual values, geometry, and styling are inactive.
+- Legacy exports under `docs/design-system/**` are retained unchanged as rollback/reference material. They are not a source for current colors, typography, component styling, geometry, imagery, or fidelity checks.
+- Target precedence is closed: Source/Context owns product, safety, privacy, information, interaction, route, and stable Control meaning; this file owns the current visual system; the runtime token module consumes it. Legacy page/control resources may support rollback and semantic traceability only. Any conflict fails closed in favor of the upper owner and requires a new explicit adoption.
 - This document is complete and normative on its own. `.codex/skills/uiux_design/SKILL.md` is the React Native implementation companion for applying these rules; it must read and obey this file and the Source Plan, and cannot redefine or override either one. This pointer is for discoverability, not a reciprocal authority dependency.
 
 ## Colors
 
-- Planning mode uses 月白 canvas, 薄云 surfaces, 夜墨 text, 晨雾线 borders, and 航迹蓝 for the primary action, route, selected map node, and best observing window.
+- Planning/day mode uses a cool `#F3F7FF` canvas, white reading surfaces, `#E8F1FF` route-field surfaces, ink-blue `#0B1B35` text, `#435A78` secondary text, `#6F89AA` borders, and 航迹蓝 for the primary action, route, selected map node, and best observing window.
 - 航迹蓝 is a high-signal color. Prefer one primary action and one key selected state per screen; do not use it as a large decorative background.
 - Text-bearing primary controls use the darker primary-active token when normal-size white labels need WCAG AA contrast; the brighter primary remains available for routes, nodes, and non-text emphasis.
 - Semantic green, yellow, and red communicate data meaning or operational state. They do not replace the brand roles.
-- Night observing mode keeps the same information architecture while reducing luminance. The selected mobile target uses `night-canvas` and `night-surface` as the same low-luminance base, then uses borders, spacing, text hierarchy, and the optional elevated surface for depth; avoid a featureless undifferentiated shell and broad glow.
-- Red-light field mode preserves structure and navigation while switching to the registered low-luminance warm-red token hierarchy. It must not introduce blue highlights, broad white surfaces, CSS whole-screen filters, flashing, or ambient decoration.
+- Night mode uses near-black navy `#020817`, ink-blue `#07152B`, deep-navy `#0E2444`, and elevated `#122E52` surfaces with `#EDF5FF`/`#A7BDD9` text and `#56779E` borders. Limited route blue is allowed; neutral-charcoal fallback, blanket blue haze, neon outlines, and broad glow are forbidden.
+- Observation/red-light mode is a strict six-value closed palette: `#050000`, `#170000`, `#FF9B9B`, `#E77474`, `#A63F3F`, and `#FF5454`. Every controllable surface, icon, map, route, selection, focus, status, loading state, transition, generated asset, and image treatment must resolve to those black/warm-red values.
+- Observation mode must not introduce blue, white, green, yellow, neutral gray, bright flashes, whole-screen CSS filters, or unannounced OS/vendor handoffs. Meaning remains available through label, icon, shape, border, and position rather than hue alone.
 - Text and controls must retain readable contrast in every mode; selection cannot rely on color alone.
+
+### Physical material roles
+
+- Skeuomorphism belongs to professional physical entities: telescope tubes and metal mounts, coated glass/lenses, rubber focus rings and grips, camera bodies and dials, binoculars, stitched camping backpacks, tent fabric and poles, and vehicle paint.
+- `material-highlight`, `material-body`, and `material-seam` describe compact metal reflections and joints. Highlights remain localized and attributable; they never wash an entire card.
+- `lens-core` and `lens-reflection` describe coated optical glass. Reflection is a small curved or angled cue, never a luminous halo.
+- `rubber` describes eyecups, grip panels, focus rings, and protected edges through low-reflectance contrast and restrained texture.
+- `equipment-paint` is reserved for controlled blue vehicle/tool surfaces; it does not turn the application canvas into product paint.
+- `fabric` and `fabric-stitch` describe backpack panels, straps, tent cloth, seams, and edge reinforcement. Stitching must follow a plausible construction line.
+- `contact-shadow` is compact and attributable to the object/control casting it. It cannot replace a missing border, create floating card stacks, or become blanket ambient blur.
+- Use at most one decisive material moment per screen. Data surfaces remain planar, aligned, and legible.
 
 ## Typography
 
-- Display and body use Inter at weights 400 and 700, falling back to system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, and sans-serif.
-- Coordinates, time, azimuth, and dense professional data may use SFMono-Regular with Consolas, Liberation Mono, Menlo, Courier, and monospace fallbacks.
+- Display, title, and section roles use Bahnschrift → DIN Alternate → Aptos Display → PingFang SC → Microsoft YaHei UI → Microsoft YaHei → system fallbacks.
+- Body, label, caption, and control roles use Aptos → PingFang SC → Microsoft YaHei UI → Microsoft YaHei → system fallbacks.
+- Coordinates, time, azimuth, units, and dense professional data use Cascadia Mono → SFMono-Regular → Consolas → Liberation Mono → Menlo → Courier → monospace.
+- These are unbundled, platform-dependent, fallback-safe stacks. No font file, license, or guaranteed platform availability is implied.
 - Titles, place names, conclusions, and key numbers use strong weight. Labels, units, and explanations remain secondary but legible.
 - Dense forecasts gain scanability from column alignment, row labels, and hierarchy; do not shrink text until it becomes difficult to read.
+- Display is 38/47.5 at 700; title 22/27.5 at 700; section 16/21 at 700; body 14/22 at 400; label 12/15.6 at 700; caption 11/16.5 at 400; data 14/22 at 400 with tabular numbers.
+- At 200% text, the conclusion, next action, units, safety state, and sheet controls reflow without clipping or horizontal page scrolling.
 - Voice is calm, concrete, and actionable. State uncertainty and alternatives instead of promising perfect visibility or guaranteed conditions.
 
 ## Layout
@@ -175,9 +215,11 @@ components:
 ## Elevation & Depth
 
 - Establish hierarchy with whitespace, 1px borders, and surface contrast before shadows.
-- Map markers, floating controls, and Bottom Sheets may use restrained elevation; avoid broad blurry shadows and glassmorphism.
+- Map markers, floating controls, Bottom Sheets, and physical-object specimens may use restrained elevation or compact contact shadows; avoid broad blurry shadows, blanket glow, and glassmorphism.
+- Depth order is surface contrast → 1px border → localized material highlight → compact attributable contact shadow.
+- Do not bevel every edge or make every container a raised object. The physical object may feel tactile; surrounding evidence remains planar.
 - Image overlays sit in one safe corner on a solid surface. If no safe corner exists, place the information below the image.
-- In night and red-light modes, depth comes from controlled luminance steps, not glow.
+- In night mode, depth comes from controlled navy luminance steps and localized reflection, not glow. In observation mode, depth must remain inside the six-value black/warm-red palette.
 
 ## Shapes
 
@@ -193,8 +235,11 @@ components:
 - Place and map components: real-place card, main/alternate place card, marker, score bubble, current location, route, Bottom Sheet, layer selector, and legend.
 - Professional components: hourly forecast matrix, sun/moon event timeline, celestial position card, sky polar plot, and photography parameter card.
 - Action components: fixed primary action, five-item bottom navigation, trip timeline, equipment grid, pre-trip checklist, and night field toolbar.
+- Physical-object components: professional telescope, camera, binoculars, camping backpack, tent, and vehicle specimens use the registered material roles for metal, coated glass, rubber, fabric/stitching, paint, and compact contact shadow. They must be real generated/local project assets or honest vector constructions with recorded provenance, never emoji or a borrowed product image.
+- Equipment tiles pair one materially credible object with its name, readiness/requirement state, and action. The object provides tactile character; the data surface stays quiet and planar.
 - A selected map node, place card, route segment, and detail screen must refer to the same place state. Route changes update distance, drive time, arrival, and risk together.
 - Inputs, filters, and selectors provide loading, empty, no-results, validation, disabled, saving, success, and error feedback where applicable.
+- Every applicable component distinguishes pressed, focus, disabled, loading, empty, no-results, stale, partial, degraded, unknown, offline, saving, error, and success. Space is reserved so a state change does not unexpectedly move the primary action.
 - Motion is fast, restrained, and continuous. Map and card selection synchronize; time changes continuously update sky and data; Bottom Sheets settle physically. Motion explains input, state, hierarchy, or continuity and never exists as ambient decoration.
 
 ## Interaction, Motion & Feedback
@@ -216,12 +261,14 @@ components:
 ## Do's and Don'ts
 
 - Do lead with whether to go tonight, then the next action, then the supporting evidence.
-- Do use real place imagery, maps, sky data, and observing equipment when they help a decision.
+- Do use real place imagery, maps, sky data, and materially credible professional equipment when they help a decision.
+- Do concentrate skeuomorphism in physical objects and decisive controls; keep data surfaces planar and aligned.
 - Do preserve the same task order across planning, night, and red-light modes.
 - Do keep professional information available without allowing it to dominate the first screen.
 - Do expose uncertainty, risk, and alternate options in user language.
 - Don't copy a source application's logo, proprietary imagery, brand color, or exact screen layout.
-- Don't use generic purple gradients, cyberpunk neon, meaningless particles, continuous flashing, large glass panels, or decorative glow.
+- Don't use generic purple gradients, cyberpunk neon, meaningless particles, continuous flashing, large glass panels, decorative glow, leather/wood nostalgia, or universal toy-like bevels.
+- Don't use old page/control target visuals as a style source. Their files are rollback artifacts and their stable keys retain semantic traceability only.
 - Don't use stacked nested cards, a first screen full of professional tables, or unsupported claims such as 完美观星, 绝对晴朗, or 保证可见.
 - Don't invent a logo, illustration, or image that is not grounded in project evidence.
 - Don't lock input until an animation finishes, animate from an obsolete target, use a gesture-only destructive action without recovery, or let motion mask stale/unknown data.

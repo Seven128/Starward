@@ -9,8 +9,9 @@
 - npm run context:sync refreshes package-managed Tiny Context surfaces after package/config changes.
 - npm run context:validate checks Context graph structure and recoverability.
 - npm run context:doctor checks installation health and reports advisory Context footprint findings.
-- npx --yes @google/design.md lint DESIGN.md checks the authored visual-system document structure.
-- npm run design:targets:verify checks selected target hashes, 14 Surface Keys, 95 Control Keys, page/control set equality, and the DESIGN registry.
+- npm run design:lint invokes the official Google design.md CLI through its Windows-safe `designmd` binary alias and checks the authored visual-system document structure.
+- npm run design:system:verify checks the active system adoption identity, exact DESIGN→runtime color/type/spacing/radius projection, mode role equality, six-value observation palette, and explicit rollback classification of the older page/control targets.
+- npm run design:targets:verify checks the unchanged rollback-target hashes, 14 Surface Keys, 95 Control Keys, page/control set equality, Source Plan equality, and their continued DESIGN index presence. It protects integrity and semantics only; it is not a current visual-fidelity check.
 - npm run test:mobile:fast runs the mobile TypeScript check and current mobile Vitest suite without starting Metro, an emulator, or an APK build.
 - npm run test:verification:fast checks Web session identity/reuse, native population/filter/shard/checkpoint semantics, installed-APK parsing, build fingerprint/cache invalidation, ABI scoping, stable CMake staging, and bounded Gradle reuse without compiling an APK.
 - npm run dev:acceptance:mobile starts one foreground API-watch + Expo Web/Fast Refresh development session on the stable local port; while it remains owned by that terminal, npm run test:acceptance:mobile:warm may rerun the existing Playwright journeys without another server startup. Formal Playwright startup remains non-watch; the warm path is repair feedback, not a replacement for Contract or Final-Gate commands.
@@ -18,12 +19,12 @@
 - npm run dev:inspect:mobile:web runs a diagnostic-only selected-design comparison against that owned warm React Native Web session. Outcome, Control, Mode and canonical mobile Condition filters narrow repair feedback; the command never emits Long-Task Check evidence and never substitutes for Android.
 - npm run dev:inspect:mobile:native runs the production Android design verifier in explicitly non-authoritative diagnostic mode with the same filters. It is for isolating a repair before a complete owning Check, not for satisfying an Assertion.
 - python C:/Users/777/.codex/skills/.system/skill-creator/scripts/quick_validate.py .codex/skills/uiux_design checks the project interaction Skill structure and metadata.
-- npx --yes impeccable detect docs/design-system/brand.html performs an auxiliary visual-design scan when the CLI can inspect the static page.
+- npx --yes impeccable detect docs/design-system/brand.html performs an auxiliary scan of the retained legacy export only; it cannot evaluate or constrain the active system.
 
 ## Required Preparation
 
 - Run npm install from the repository root before Tiny Context commands.
-- Network access may be required the first time the Google design.md or Impeccable CLIs are resolved through npx.
+- Network access may be required the first time the Google design.md or Impeccable CLIs are resolved through npx. On Windows, use the `designmd` alias exposed by `npm run design:lint`; invoking `design.md` from the repository root collides with the `DESIGN.md` file association.
 
 ## Development Feedback Ladder
 
@@ -108,9 +109,10 @@
 - Tiny Context validation completes without structural errors.
 - Doctor reports the installed package and managed surfaces as healthy; advisory findings must be reviewed rather than silently ignored.
 - Design lint completes without schema/structure errors.
+- Active system verification confirms DESIGN.md is the sole exact-value authority, runtime tokens match it, all three modes expose the same roles, and observation mode uses only the registered six black/warm-red values.
 - Project interaction Skill validation completes without frontmatter, naming, or resource errors; its authority statement keeps DESIGN.md/Source Plan/Context upstream.
-- Imported brand, light-kit, and dark-kit HTML files can resolve their local font and supporting artifact paths.
-- Every repo-local selected target retains its registered SHA-256 identity; the mobile 12/83 and operations 2/12 sets remain unique and equal between page coverage and control contracts.
+- Retained legacy brand, light-kit, and dark-kit HTML files can resolve their local font and supporting artifact paths, but remain inactive visual inputs.
+- Every repo-local rollback target retains its registered SHA-256 identity; the mobile 12/83 and operations 2/12 sets remain unique and equal between page coverage and control contracts without becoming current style baselines.
 - Every Outcome acceptance run uses at least two materially different inputs through production entry points and proves the result changes with those inputs.
 - Stateful and artifact-producing flows prove the applicable database/file/object/native sink write and read it back from a fresh service instance, process, or app restart; in-memory continuity is insufficient.
 - Native and external boundaries expose an invocation/result seam so automated tests can substitute an isolated adapter, while the production runtime either invokes the real adapter or presents an explicit unavailable/degraded state.
@@ -119,6 +121,7 @@
 ## Acceptable Warnings
 
 - Impeccable findings are review signals, not a Tiny Context gate.
+- Google design.md may report authored mode/material color roles as unused because its component frontmatter supports only a small single-mode sub-token vocabulary. These warnings are acceptable only when there are zero lint errors and `npm run design:system:verify` proves the complete three-mode runtime projection and strict observation palette.
 - Static Open Design kits are reference surfaces and cannot by themselves prove production application behavior.
 - Until production UI exists, prose and Skill validation cannot prove interruption, velocity handoff, haptics, system-gesture competition, reduced motion, frame pacing, or red-light luminance; those require automated state checks and representative real-device evidence.
 - Representative outdoor/device validation and China production promotion may remain future external gates for the current owner-only personal trial. This postpones only the external evidence; it does not waive production-path integration, local persistence, adapter invocation, honest degradation, emulator tests, or counterfactual machine evidence.

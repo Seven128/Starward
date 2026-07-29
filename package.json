@@ -6,6 +6,8 @@
     "context:sync": "ty-context sync",
     "context:validate": "ty-context validate-context",
     "context:doctor": "ty-context doctor",
+    "design:lint": "npx --yes --package @google/design.md designmd lint DESIGN.md",
+    "design:system:verify": "node tools/verify-design-system.mjs",
     "design:targets:verify": "node tools/verify-design-targets.mjs",
     "dev:acceptance:mobile": "node tests/acceptance/start-mobile-web.mjs --port 4173 --watch-api",
     "test:mobile:fast": "npm run typecheck --workspace @starward/mobile && npm run test --workspace @starward/mobile",

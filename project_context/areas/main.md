@@ -47,11 +47,12 @@
 ## Code Entry Points
 
 - Visual authority: DESIGN.md.
+- Runtime visual-token projection: packages/ui-system/src/tokens.ts; it consumes DESIGN.md and is not a second authority.
 - Product context: project_context/global.md and this file.
 - Cross-surface responsibility: project_context/areas/main/product-surface-contract.md.
 - Screen/route/control ownership: project_context/areas/main/screen-contracts.md.
-- Imported design references: docs/design-system/.
-- Selected authored targets: docs/design-targets/; their immutable files are never edited as production UI.
+- Legacy generated design references: docs/design-system/; retained unchanged for rollback/reference and inactive as current visual input.
+- Legacy authored page/control targets: docs/design-targets/; retained immutable for rollback and stable semantic traceability, with visual styling/geometry inactive pending separate regeneration.
 - React Native interaction companion: .codex/skills/uiux_design/SKILL.md; it must obey DESIGN.md, Source Plan, and this Context.
 - Provider/data research input: docs/technical-data-source-decisions.md; recommendations are not approved production facts by themselves.
 - Mobile production entry starts at apps/mobile/index.js and apps/mobile/src/shell/WebApplication.tsx. The root MobileShellScreen currently renders five persisted destination shells, while feature Screens are separately reachable through the application-route/deep-link map; root-tab reachability and shared-state continuity are therefore implementation obligations, not established completion.
@@ -67,4 +68,4 @@
 ## Open Risks
 
 - Root navigation and coordinated decision-state ownership, authenticated actor propagation, typed domain persistence, provider-cost enforcement, provider contracts, exact dependency versions, algorithm/interaction tuning, offline/degraded defaults, location privacy, route handoff, data calibration, and production infrastructure remain open and require production-path evidence plus Context updates when durable semantics change.
-- Nine selected mobile controls still require representative-device tuning, capability proof or licensed production media, and all twelve operations controls still require real endpoint/authentication/authorization proof. These are downstream implementation/evidence obligations rather than authority gaps.
+- Nine historically indexed mobile controls still require representative-device tuning, capability proof or licensed production media, and all twelve operations controls still require real endpoint/authentication/authorization proof. Their semantic obligations remain; their archived visual styling is not the active design baseline.
