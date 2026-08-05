@@ -75,6 +75,10 @@ Existing coverage is sufficient only for the conditions it explicitly specifies 
 
 Design resources express user-visible interaction semantics and the presentation of product rules. Business, data, permission and algorithmic rules remain owned by product/technical Source; reference those rules and show their visible consequences without inventing them or making a visual artifact their sole owner.
 
+### Formal selected Web/App handoff
+
+When—and only when—the direction is final-selected for a formal Web/App implementation handoff, load [formal-selected-web-app-handoff.md](formal-selected-web-app-handoff.md). That reference owns the complete atomic Expected Fact Universe, canonical acquisition, Inspector/Census, Fact × method proof and publication rules. Exploration never loads or approximates them.
+
 ## 5. Identify independent gaps
 
 For exploration, ask what remains uncertain inside the scope. For a handoff, ask which material coverage items remain `new-resource-needed`:
@@ -158,7 +162,7 @@ This is an explanatory shape, not a required file or schema. Never paste or para
 - Reuse the current Open Design project when that preserves context and provenance; preserve the prior artifact hash before overwriting a selected candidate.
 - Do not create low-fi, high-fi, component boards or native-platform copies merely because a process diagram lists them.
 - For exploration, stop as soon as the requested decision is supported.
-- For an implementation handoff, stop only when every material in-scope coverage item and every supported observable fact in the selected resources has an explicit inventory/disposition, every resource has a complete inspection closure, and the mapping leaves no material user-visible design decision for the implementer to invent. An exact target also needs full-target layout and pixel facts for every declared condition. Honest `decision-required` or `unavailable` items may stop further generation, but the result is a blocked authoring outcome: it cannot pass shared preflight, be called a ready implementation handoff or authorize fidelity work. This does not claim Design Authority or implementation acceptance.
+- For a final-selected formal Web/App implementation handoff, apply the dedicated formal reference's exact stop conditions. Honest `decision_required`, `unavailable` or capability gaps remain blocking; they cannot be called ready or authorize fidelity work.
 
 During iteration, keep accepted, rejected and unresolved implications in a task-local delta buffer. Do not require or emit an interim delta after every iteration and never continuously synchronize the initial proposal. After explicit human selection or explicitly delegated selection, consolidate the buffer once and reconcile only accepted decisions into the initial proposal. If it is a writable file, update it in place while preserving original intent/provenance; otherwise return one complete revised proposal. The operation must be idempotent, name selected artifact locators/hashes and affected stable keys, and exclude rejected/unresolved choices. Never write a Source Plan, Context, `DESIGN.md`, code, tests or Contract.
 

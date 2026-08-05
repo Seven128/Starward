@@ -170,6 +170,6 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 
 ## Screen Contract Routing
 
-- `project_context/areas/main/screen-contracts.md` owns stable route, hierarchy, region/overlay ownership, Control inventory, mode/state variants, navigation, and target references for all fourteen Surface Keys.
+- `project_context/areas/main/screen-contracts.md` remains the canonical owner/index for stable route, hierarchy, region/overlay ownership, Control inventory, mode/state variants, navigation, and target references for all fourteen Surface Keys. Its registered `screen-contracts/mobile.md` and `screen-contracts/operations.md` nodes hold the platform-specific detail without creating another authority.
 - `DESIGN.md` owns the authored tokens, visual rationale, active system adoption record, legacy-target applicability, and target conflict order.
-- `project_context/areas/main/verification.md` owns repeatable authority, product-runtime, native-runtime, persistence, recovery, and target-fidelity verification entry points.
+- `project_context/areas/main/verification.md` owns the default repeatable-verification index; its registered on-demand verification nodes own detailed authority, product-runtime, native-runtime, persistence, recovery, and target-fidelity paths.

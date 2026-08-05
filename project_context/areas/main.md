@@ -2,8 +2,9 @@
 
 ## Responsibility
 
-- Own the end-to-end mobile stargazing decision journey for 《今晚去观星》.
+- Own the cross-workspace Starward product/domain contract spanning the end-to-end mobile stargazing journey, its supporting API/workers/data paths, and the separate owner-operations surface for 《今晚去观星》.
 - Turn weather, astronomy, place, route, safety, and preparation information into one understandable and executable plan.
+- Keep consumer-mobile, service/runtime, and owner-operations responsibilities distinct even when one durable product rule crosses those implementation workspaces.
 
 ## User / System Contract
 
@@ -50,20 +51,20 @@
 - Runtime visual-token projection: packages/ui-system/src/tokens.ts; it consumes DESIGN.md and is not a second authority.
 - Product context: project_context/global.md and this file.
 - Cross-surface responsibility: project_context/areas/main/product-surface-contract.md.
-- Screen/route/control ownership: project_context/areas/main/screen-contracts.md.
+- Screen/route/control ownership: project_context/areas/main/screen-contracts.md, with mobile and owner-operations detail in its registered on-demand detail Context.
+- Current code navigation: project_context/areas/main/implementation-index.md; code remains the current implementation truth.
 - Legacy generated design references: docs/design-system/; retained unchanged for rollback/reference and inactive as current visual input.
 - Legacy authored page/control targets: docs/design-targets/; retained immutable for rollback and stable semantic traceability, with visual styling/geometry inactive pending separate regeneration.
 - React Native interaction companion: .codex/skills/uiux_design/SKILL.md; it must obey DESIGN.md, Source Plan, and this Context.
 - Provider/data research input: docs/technical-data-source-decisions.md; recommendations are not approved production facts by themselves.
-- Mobile production entry starts at apps/mobile/index.js and apps/mobile/src/shell/WebApplication.tsx. The root MobileShellScreen currently renders five persisted destination shells, while feature Screens are separately reachable through the application-route/deep-link map; root-tab reachability and shared-state continuity are therefore implementation obligations, not established completion.
-- API production entry starts at apps/api/src/start.ts. The current owner-only composition intentionally enables the Open-Meteo noncommercial POC and selected local adapters, while route, durable domain repositories, identity and several worker/provider boundaries still require production-path wiring or honest unavailable states.
-- Owner operations entry starts at apps/admin-web/src/main.tsx. A runnable operations surface exists, but its protected endpoint, authentication, authorization and real mutation/readback boundaries remain implementation obligations.
+- Mobile, API, owner-operations, and verification code entry points are indexed in project_context/areas/main/implementation-index.md so volatile code navigation does not redefine this Area's durable contract.
 
 ## Related Role Context
 
 - Cross-surface ownership lives in project_context/areas/main/product-surface-contract.md.
-- Screen and material-control routing lives in project_context/areas/main/screen-contracts.md.
-- Repeatable checks live in project_context/areas/main/verification.md.
+- Screen and material-control routing starts at project_context/areas/main/screen-contracts.md; platform detail is on-demand in project_context/areas/main/screen-contracts/mobile.md and project_context/areas/main/screen-contracts/operations.md.
+- Repeatable checks start at project_context/areas/main/verification.md; development-loop, acceptance/runtime, and Android/native detail is registered on-demand beneath project_context/areas/main/verification/.
+- Current implementation entry-point navigation lives in project_context/areas/main/implementation-index.md.
 
 ## Open Risks
 

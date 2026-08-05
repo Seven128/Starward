@@ -11,8 +11,10 @@
 - DESIGN.md: authored visual identity, tokens, modes, component styling, and visual rationale.
 - packages/ui-system/src/tokens.ts: generated runtime projection of DESIGN.md exact values; compatibility aliases may serve existing consumers but cannot originate a new visual value.
 - project_context/global.md: cross-product goals, user journey, and experience principles.
-- project_context/areas/main.md: product-surface ownership, screen/state/interaction contract, and core domain behavior.
-- project_context/areas/main/verification.md: repeatable Context and design validation entry points.
+- project_context/areas/main.md: cross-workspace Starward product/domain ownership, screen/state/interaction contract, and core domain behavior.
+- project_context/areas/main/verification.md: small default index for near-universal validation and evidence boundaries; its registered on-demand verification nodes own development-loop, acceptance/runtime, and Android/native detail.
+- project_context/areas/main/implementation-index.md: on-demand code-navigation index for current Mobile, API, owner-operations, and verification entry points; it does not own intended product or verification semantics.
+- project_context/areas/main/screen-contracts.md: canonical Screen Contract index and shared target/verification boundary; registered mobile and owner-operations detail nodes retain the existing 14 Surface/95 Control semantics without becoming new authorities.
 - docs/design-system/: unchanged legacy CSS/JSON tokens, brand overview, source guide, component kits, and supporting assets retained for rollback/reference only.
 - docs/design-targets/: immutable repo-local copies of four former page/control visual targets. Their stable keys and behavior semantics may support traceability, but their visual styling, geometry, and fidelity constraints are inactive until separately regenerated and explicitly re-adopted.
 - .codex/skills/uiux_design/: project-owned React Native implementation guidance for interaction, motion, haptics, accessibility, and platform adaptation; it is subordinate to DESIGN.md, Source Plan, and owning Context.
@@ -46,7 +48,7 @@
 
 ## Verification Implications
 
-- Context integrity is checked through the Tiny Context commands in project_context/areas/main/verification.md.
+- Context integrity is checked through the Tiny Context commands in project_context/areas/main/verification.md; specialized checks are routed from that default index to its on-demand verification nodes.
 - DESIGN.md structure is linted separately from exported asset integrity.
 - Active system authority/token projection and strict observation-palette continuity are checked by `npm run design:system:verify`. `npm run design:targets:verify` separately protects the hash and semantic inventory of the unchanged legacy archives; passing it does not reactivate their visual styling.
 - Production UI verification must eventually cover representative mobile viewport, visual mode, key state, and long-content combinations; static kits alone cannot prove product behavior.

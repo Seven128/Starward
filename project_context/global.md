@@ -33,7 +33,7 @@
 ## Context Graph
 
 - The graph manifest is project_context/context.toml.
-- The default product area is main; repeatable checks are isolated in its verification role Context.
+- The default product area is main; its small default verification index routes specialized development, acceptance/runtime, and Android/native facts to on-demand verification role Context.
 
 ## Product / Delivery Brief
 
@@ -82,6 +82,12 @@
 ## Context Index
 
 - [main](areas/main.md)
+- [main implementation index](areas/main/implementation-index.md)
 - [Starward Product Surface Contract](areas/main/product-surface-contract.md)
-- [Starward Screen Contracts](areas/main/screen-contracts.md)
+- [Starward Screen Contract index](areas/main/screen-contracts.md)
+- [Starward mobile Screen Contracts](areas/main/screen-contracts/mobile.md)
+- [Starward owner-operations Screen Contracts](areas/main/screen-contracts/operations.md)
 - [main verification](areas/main/verification.md)
+- [development-loop verification](areas/main/verification/development-loop.md)
+- [acceptance/runtime verification](areas/main/verification/acceptance-runtime.md)
+- [Android/native verification](areas/main/verification/android-native.md)
