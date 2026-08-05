@@ -47,8 +47,8 @@
 
 ## Code Entry Points
 
-- Visual authority: DESIGN.md.
-- Runtime visual-token projection: packages/ui-system/src/tokens.ts; it consumes DESIGN.md and is not a second authority.
+- Visual authority: DESIGN.md, with independently scoped native App and WeChat Mini Program profiles.
+- Native App runtime visual-token projection: packages/ui-system/src/tokens.ts; it consumes only the App profile in DESIGN.md and is not a second authority. No Mini Program runtime projection exists yet; a future adapter must consume only `DESIGN.md#wechat-mini-program--soft-instruments-v1` and cannot import this App module.
 - Product context: project_context/global.md and this file.
 - Cross-surface responsibility: project_context/areas/main/product-surface-contract.md.
 - Screen/route/control ownership: project_context/areas/main/screen-contracts.md, with mobile and owner-operations detail in its registered on-demand detail Context.

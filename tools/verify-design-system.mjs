@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { verifyMiniappDesignProfile } from "./verify-miniapp-design-profile.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const design = await readFile(path.join(root, "DESIGN.md"), "utf8");
@@ -241,15 +242,22 @@ for (const legacyTarget of [
   );
 }
 
+const miniappVerification = await verifyMiniappDesignProfile({ root, design });
+
 process.stdout.write(
   `${JSON.stringify({
-    schema_version: "starward-design-system-verification-v1",
+    schema_version: "starward-design-system-verification-v2",
     status: "passed",
     authority: "DESIGN.md",
     active_target: "target.system.starward-blue-skeuomorphic-2026-07-29",
+    active_targets: {
+      native_app: "target.system.starward-blue-skeuomorphic-2026-07-29",
+      wechat_miniapp: "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+    },
     modes: Object.keys(colors),
     color_roles_per_mode: roleKeys.length,
     observation_unique_values: observationValues.size,
+    wechat_miniapp: miniappVerification,
     legacy_visual_targets: "rollback-only",
   })}\n`,
 );

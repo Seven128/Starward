@@ -16,14 +16,14 @@
 - Product name: 《今晚去观星》.
 - Repository/engineering name: Starward.
 - Brand promise: 从黄昏走入星夜.
-- The selected design direction combines a blue visual system with disciplined skeuomorphism for professional observing and outdoor equipment, while keeping decision/data surfaces calm, precise, and reusable.
+- The native App's selected design direction combines a blue visual system with disciplined skeuomorphism for professional observing and outdoor equipment. The independently selected WeChat Mini Program direction is `target.system.wechat-miniapp-soft-instruments-2026-08-05`; it uses its own soft-instrument tokens and does not inherit App values or targets.
 
 ## Design Rationale
 
 - Users need a decision and next action before professional data, so the experience uses three layers: conclusion, executable plan, then evidence.
 - Space and time use a shared visual grammar: routes, celestial tracks, horizon arcs, circular nodes, and continuous observing windows.
 - Planning, night-observing, and red-light field modes preserve information architecture so a mode change does not force the user to relearn the workflow.
-- Planning uses cool blue-white surfaces, night uses near-black navy depth with limited blue, and red-light observation is restricted to the six registered black/warm-red values. Physical material cues belong to telescopes, coated lenses, cameras, binoculars, backpacks, tents, and vehicles rather than every data container.
+- In the native App profile, planning uses cool blue-white surfaces, night uses near-black navy depth with limited blue, and red-light observation is restricted to the six registered black/warm-red values. The Mini Program has its own role-isomorphic day/night/observation values in `DESIGN.md`; neither profile supplies values to the other. Physical/material cues remain concentrated in selected physical subjects rather than every data container.
 - Visual identity and exact tokens are owned by DESIGN.md. Product responsibility, information architecture, interactions, and state behavior are owned by project_context/**.
 
 ## Architecture Context
@@ -34,7 +34,7 @@
 
 - The graph manifest is project_context/context.toml.
 - The default product area is main; its small default verification index routes specialized development, acceptance/runtime, and Android/native facts to on-demand verification role Context.
-- Future WeChat miniapp environment/path reservations, isolation, and evidence-promotion rules are root-owned and on-demand in `project_context/development-workflow.md`; they do not register a workspace or runtime capability.
+- Future WeChat miniapp environment/path reservations, isolation, evidence-promotion rules, and the stable pointer to its selected visual target are root-owned and on-demand in `project_context/development-workflow.md`; the selected design authority does not register a workspace, Product Surface, or runtime capability.
 
 ## Product / Delivery Brief
 
@@ -55,7 +55,7 @@
 ## UX / Screen Brief
 
 - Primary mobile viewport: 390 × 844; important touch targets are at least 44px and fixed actions respect safe areas.
-- Representative surfaces: tonight home, stargazing map, place detail, route plan, weather/astronomy analysis, light-pollution map, equipment/checklist, and field controls.
+- Existing native App representative surfaces: tonight home, stargazing map, place detail, route plan, weather/astronomy analysis, light-pollution map, equipment/checklist, and field controls. No Mini Program surface set or navigation model is defined yet.
 - The first layer answers whether to go and when; the second supplies place, route, arrival, facilities, and risk; the third contains cloud layers, transparency, seeing, light pollution, lunar/solar events, model comparison, and photography details.
 - Map marker, place preview, route, and detail screens share one selected-place state. Loading, empty, no-results, stale/degraded, error, and success states must remain distinguishable.
 - Planning, dark, and red-light modes change luminance and emphasis, not navigation ownership or task order.
@@ -71,7 +71,7 @@
 
 - Tiny Context is installed and initialized.
 - The product/design contract, Open Design references, React Native application, API/workers/admin surfaces, and acceptance harness form the repository baseline.
-- `target.system.starward-blue-skeuomorphic-2026-07-29` is the active owner-selected visual-system target in `DESIGN.md`. The four older page/control targets under `docs/design-targets/**` remain immutable rollback and semantic-traceability archives, but their visual styling, geometry, and fidelity constraints are inactive pending a separate regeneration. Their stable Surface/Control meaning remains owned by the Product Surface and Screen Contracts; no static artifact proves production or native behavior.
+- `DESIGN.md` owns two independent active visual profiles: native App target `target.system.starward-blue-skeuomorphic-2026-07-29` and WeChat Mini Program target `target.system.wechat-miniapp-soft-instruments-2026-08-05`. The Mini Program target defines visual-system contracts only; no Product Surface, Screen Contract, framework, runtime projection, or acceptance is implied. The four older page/control targets under `docs/design-targets/**` remain immutable rollback and semantic-traceability archives, but their visual styling, geometry, and fidelity constraints are inactive pending a separate regeneration. Their stable Surface/Control meaning remains owned by the Product Surface and Screen Contracts; no static artifact proves production or native behavior.
 - A corrective audit found that several existing carriers use fixed responses, process-local state, metadata-only side effects, or declaration-only native boundaries. Those carriers are implementation scaffolding, not completed Outcomes, until variable-input, side-effect, restart-readback, failure-path, and counterfactual checks pass.
 - `docs/technical-data-source-decisions.md` records official-source research and the current individual personal-trial choices. No purchase, production traffic, public redistribution, production account, commercial contract, external approval, representative-device proof, or field validation is declared complete.
 - Current release authority is owner-only, non-commercial personal trial with a CNY 200/month external-service ceiling and qualifying free sources preferred. Future production gates do not block machine-local implementation, but they also cannot be represented as completed evidence.

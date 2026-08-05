@@ -2,13 +2,14 @@
 
 ## Purpose
 
-This Context owns durable responsibility and main-versus-drilldown placement for the Starward mobile product and its owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence.
+This Context owns durable responsibility and main-versus-drilldown placement for the existing Starward native mobile product and its owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. It defines no WeChat Mini Program surface; the independently selected Mini Program visual target in `DESIGN.md` does not create one.
 
 ## Current Product Boundary
 
 - The current product target is an owner-only, non-commercial personal trial. Public operation, store release, commercial activation, paid-provider purchase, legal approval, and representative field sign-off are future gates and must not appear as completed states.
 - The mobile product is the primary user surface. Owner operations is a separate authenticated desktop surface; it must not be exposed as ordinary mobile navigation or collapse raw operational detail into the consumer journey.
 - The auxiliary share projection exposes only an authorized, expiring trip/place summary. It is not a thirteenth operations control, a full mobile substitute, or a route to administrative data.
+- No Mini Program destination, navigation model, responsibility, information hierarchy, or Surface Key is currently adopted. Those remain decision-required and cannot be inferred from the native App surfaces or from the selected Mini Program visual system.
 
 ## Mobile Product Surfaces
 
@@ -156,7 +157,7 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 
 ## Cross-Surface Rules
 
-- Stable Surface Keys are the fourteen headings above. Stable Control Keys and screen routing are owned by `screen-contracts.md`; active system-target interpretation, legacy-target applicability, and token values are owned by `DESIGN.md`.
+- Stable Surface Keys are the fourteen native App/owner-operations headings above. Stable Control Keys and screen routing are owned by `screen-contracts.md`; independently scoped system-target interpretation, legacy-target applicability, and token values are owned by `DESIGN.md`. No heading in this file is automatically a Mini Program surface.
 - Mobile primary navigation is exactly Tonight, Map, Trips, Sky, and Me. Forecast, spot detail, shooting, field, contribution, toolbox, and onboarding/preferences are contextual or secondary routes, not extra primary tabs.
 - The five primary destinations are five distinct route/screen roots—Tonight `/tonight`, Map `/map`, Trips `/trips`, Sky `/sky`, and Me `/me`—inside one persistent native tab navigator. A shared `ScrollView`, section-anchor jump, or conditional content block that merely imitates separate pages is forbidden.
 - Each primary destination owns its route-local stack and primary scroll or immersive-canvas position. Switching away and back preserves that local task position; shared place/time/mode/selection changes continue through the versioned decision context rather than through duplicate tab state.
@@ -171,5 +172,5 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 ## Screen Contract Routing
 
 - `project_context/areas/main/screen-contracts.md` remains the canonical owner/index for stable route, hierarchy, region/overlay ownership, Control inventory, mode/state variants, navigation, and target references for all fourteen Surface Keys. Its registered `screen-contracts/mobile.md` and `screen-contracts/operations.md` nodes hold the platform-specific detail without creating another authority.
-- `DESIGN.md` owns the authored tokens, visual rationale, active system adoption record, legacy-target applicability, and target conflict order.
+- `DESIGN.md` owns authored tokens, visual rationale, the independent App and Mini Program system-adoption records, legacy-target applicability, and target conflict order. Its Mini Program record cannot expand this Product Surface Contract by implication.
 - `project_context/areas/main/verification.md` owns the default repeatable-verification index; its registered on-demand verification nodes own detailed authority, product-runtime, native-runtime, persistence, recovery, and target-fidelity paths.

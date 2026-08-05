@@ -1,16 +1,26 @@
 # Future WeChat Miniapp Development, Test, And Acceptance Environment Context
 
-This root-owned, on-demand verification Context is the single durable owner for the future WeChat miniapp environment topology, path reservations, isolation boundaries, evidence-promotion rules, and bootstrap decisions. It does not define miniapp product behavior, a Product Surface, a Screen Contract, a design target, an implementation workspace, or proof that any runtime exists.
+This root-owned, on-demand verification Context is the single durable owner for the future WeChat miniapp environment topology, path reservations, isolation boundaries, evidence-promotion rules, bootstrap decisions, and stable routing to its selected visual target. It does not define miniapp product behavior, a Product Surface, a Screen Contract, visual token values, an implementation workspace, or proof that any runtime exists; `DESIGN.md` owns the independently selected design target and exact values.
 
 ## Reservation Status And Scope
 
-**Reservation only：当前仓库不存在小程序 workspace、产品面、设计目标、可运行命令、CI lane 或已接受证据。**
+**设计权威已选定、运行环境仍仅预留：当前仓库不存在小程序 workspace、产品面、可运行命令、CI lane 或已接受运行证据。**
 
 - At this Context revision, `apps/wechat-miniapp/` is a local empty directory with no tracked files or child `package.json`. The root `apps/*` npm glob makes a future package discoverable only after one is intentionally created; it does not make the empty directory a registered npm workspace. The root lockfile and `npm query .workspace` currently contain no miniapp package.
-- No miniapp source, generated output, private project config, acceptance code, acceptance report, platform tool, npm script, build command, test command, WeChat DevTools project, AppID/key binding, CI job, Product Surface, Screen Contract, selected design target, design system/resource, Source Pack, or accepted evidence currently exists.
+- No miniapp source, generated runtime token output, private project config, acceptance code, acceptance report, platform tool, npm build/test command, WeChat DevTools project, AppID/key binding, CI job, Product Surface, Screen Contract, Source Pack, or accepted runtime evidence currently exists. The sole exception is the adopted visual-system target and its project-owned authority verification described below; neither is a runtime capability.
 - `docs/source-plan.md#non-goal.mini-program-full-parity` and `docs/source-plan.md#quality-release-observability.requirement.platform-extension-boundary` remain upstream product-scope constraints: a future miniapp is limited to later sharing, lightweight query, invitation, and acquisition responsibilities, does not require full APP parity, and cannot prove APP completion. This Context neither expands nor implements that product scope.
-- This reservation does not adopt, use, or modify `DESIGN.md`, Mobile/App/Admin targets, `packages/ui-system/**`, or `docs/design-*` resources as miniapp inputs. Root `DESIGN.md` remains the current shared project Design Authority, but no miniapp target or runtime projection has been adopted; future miniapp product/surface/design applicability must be resolved explicitly without borrowing another subproject's design resources.
+- Root `DESIGN.md` now owns `target.system.wechat-miniapp-soft-instruments-2026-08-05` as an independent Mini Program profile. It was authored from the indexed Mini Program brief/references and does not use Mobile/App/Admin targets, App YAML values, `packages/ui-system/**`, or legacy `docs/design-*` exports as inputs. No Mini Program runtime projection exists; future product/surface applicability must still be resolved without borrowing another subproject's resources.
 - A reserved path is not evidence that its directory, owner, command, runtime, CI lane, or acceptance carrier exists. Current implementation navigation remains in `project_context/areas/main/implementation-index.md`, which intentionally must not list these reservations as current code.
+
+## Selected Mini Program Design Authority
+
+- Stable target: `target.system.wechat-miniapp-soft-instruments-2026-08-05`.
+- Canonical owner and anchor: `DESIGN.md#wechat-mini-program--soft-instruments-v1`; root `DESIGN.md` remains the single authored exact-value source.
+- Selected source snapshot: `docs/design-resources/miniapp-design-system-2026-08-05/candidate-design-brief.md` SHA-256 `ab1faeb96a3e52125b19fdf8f224caf6cee0db79cf16a9a12f86c5af49991745`; source index SHA-256 `80cb69b9501b556ca8c186c770e5257ee5136e031e52ce54c42d7298eba3e3f7`.
+- Provider/editable upstream: Open Design `0.16.1`, `user:soft-instruments`, project `ds-soft-instruments`; the provider body digest matches the selected source. Project files, not provider state, are canonical.
+- Coverage: independent day/night/observation roles, card/elevation grammar, Tier-A functional and selective Tier-B 3D icons, `rpx` layout/spacing, component states, motion, accessibility, asset/performance posture, and cold-start red continuity.
+- Boundary: this target does not define destinations, page responsibilities, information hierarchy, account/auth, API/service reuse, framework, package architecture, route ownership, runtime behavior, or acceptance journeys. It cannot be treated as full App parity or as proof that a Mini Program exists.
+- Dependency direction: a future Mini Program package and its single generated token adapter consume the named `DESIGN.md` profile. They cannot import the App runtime token module, originate visual values, or edit the selected source snapshot in place.
 
 ## Ownership And Dependency Direction
 
@@ -66,7 +76,7 @@ Formal acceptance for a future target is the conjunction of fresh, applicable ob
 
 | Path | Reservation and current status | Future ownership and persistence rule |
 | --- | --- | --- |
-| `apps/wechat-miniapp/**` | Reserved source/workspace root; a local empty directory exists, but there is no tracked package or implementation. | Future miniapp runtime source only after explicit bootstrap. Its existence must not imply a Surface, design target, runnable package, or acceptance. |
+| `apps/wechat-miniapp/**` | Reserved source/workspace root; a local empty directory exists, but there is no tracked package or implementation. | Future miniapp runtime source only after explicit bootstrap. Its existence must not imply a Surface, an additional/implemented design target, runnable package, or acceptance. |
 | `apps/wechat-miniapp/dist/**` | Reserved, currently absent generated-output root. | Generated only, never durable Context or tracked source. Future outputs must be partitioned by environment and candidate/run identity so no layer shares a writable output directory. |
 | `apps/wechat-miniapp/project.private.config.json` | Reserved, currently absent local private WeChat project configuration. | Machine-local only. An exact ignore rule must be installed before first creation; it must never be committed, copied into reports, or treated as shared configuration authority. |
 | `tests/acceptance/miniapp/**` | Reserved, currently absent acceptance-code root. | Future trackable scenario/runner code only after real product and runtime owners exist. Code presence cannot prove a run passed. |
@@ -104,7 +114,7 @@ An app-level error label does not prove the adapter timed out or recovered; a ru
 
 ## Decision-Required Before Bootstrap Or Acceptance
 
-- Exact miniapp product responsibilities, user journeys, account/auth boundaries, Product Surface, Screen Contract, accessibility contract, and selected design authority/resource. Existing App/Admin surfaces and assets are not defaults.
+- Exact miniapp product responsibilities, user journeys, account/auth boundaries, Product Surface, Screen Contract, and surface-specific accessibility/interaction ownership. The visual authority is selected, but it does not decide these product facts; existing App/Admin surfaces and assets are not defaults.
 - Framework and package architecture; Node/npm requirements; package name; workspace/lockfile registration; H5/weapp targets; dependency and base-library versions; source/config/output layout; supported operating systems.
 - Whether the selected framework produces a faithful same-source H5 renderer. If not, the browser lane must be narrowed or replaced explicitly rather than implemented as a detached imitation.
 - Build, dev, deterministic-test, browser-acceptance, DevTools-acceptance, preview/experience, upload, cleanup, and verification commands; exact input fingerprints; exit/failure contracts; port allocation and process-ownership protocol.
@@ -119,7 +129,7 @@ An app-level error label does not prove the adapter timed out or recovered; a ru
 
 Before the reservation can be converted into current capability:
 
-1. Update the owning product/surface/design Context for the selected miniapp scope without borrowing App/Admin design artifacts by implication.
+1. Define and update the owning product/surface Context for the selected miniapp responsibilities, then consume `target.system.wechat-miniapp-soft-instruments-2026-08-05` without borrowing App/Admin design artifacts or inventing another visual authority.
 2. Create a real package manifest and intentionally register the workspace, dependency locks, versions, commands, and implementation owner; then update the implementation index from code truth.
 3. Install exact ignore rules before generating `dist/**`, `project.private.config.json`, QR/secret material, temporary projects, or reports. Confirm all secret and sensitive-artifact paths resolve outside the repository where required.
 4. Implement the isolated runner, health/fingerprint protocol, deterministic reset, failure/recovery seams, teardown, and scoped cleanup before registering a CI or acceptance lane.
@@ -136,5 +146,5 @@ Before the reservation can be converted into current capability:
 ## Repository Verification Boundary
 
 - `npm run context:validate`, `make validate-context`, `make validate-harness`, `npm run context:doctor`, and the package-managed source-parity check can validate Context structure, routing, installation health, and applicable source-workspace parity.
-- Repository review must confirm the root workspace query and lockfile still omit miniapp, reserved implementation/test/tool/report paths remain absent or intentionally untracked, the implementation index does not list them as current, and no miniapp Area, Source Pack, Product Surface, design authority, runnable command, CI lane, or accepted evidence was created.
+- Repository review must confirm the root workspace query and lockfile still omit miniapp, reserved implementation/test/tool/report paths remain absent or intentionally untracked, the implementation index does not list them as current, the selected visual target remains rooted only in `DESIGN.md`, and no miniapp Area, Source Pack, Product Surface, runnable runtime command, CI lane, or accepted runtime evidence was created.
 - These checks do not build, test, run, or accept a miniapp. No command named in this section is a miniapp capability.

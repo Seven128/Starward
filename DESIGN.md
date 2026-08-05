@@ -142,16 +142,22 @@ components:
 
 - Product promise: 从黄昏走入星夜。
 - Starward is a mobile-first decision product, not a generic weather dashboard. It connects tonight's go/no-go conclusion, place choice, departure time, best observing window, route, risk, equipment, and on-site observation into one path.
-- The selected visual language is a blue, professionally skeuomorphic outdoor-instrument system. It feels credible, calm, precise, exploratory, and tactile without turning data surfaces into toys.
+- The native App profile uses a blue, professionally skeuomorphic outdoor-instrument system. The independently adopted WeChat Mini Program profile is defined later in this file and does not inherit App values, components, layouts, typography, motion constants, or targets.
 - Information follows progressive disclosure: first the conclusion, then an actionable plan, then the professional evidence.
-- This file is the sole authored visual authority and exact-value token source. `packages/ui-system/src/tokens.ts` and any future CSS, JSON, HTML, platform adapter, kit, or preview are downstream consumers.
-- Design Authority status: configured and adopted for the current owner-only target profile. Surface ownership still belongs to `project_context/**`, and production/runtime acceptance still belongs to the Delivery Contract and project verification.
+- This file is the sole authored visual authority and exact-value token source. Its YAML front matter owns the native App profile; `## WeChat Mini Program — Soft Instruments v1` owns the independent Mini Program profile. `packages/ui-system/src/tokens.ts` consumes only the App profile, and any future Mini Program adapter must consume only the named Mini Program section.
+- Design Authority status: configured and adopted for two independent owner-selected target profiles: native App and WeChat Mini Program. Surface ownership still belongs to `project_context/**`, and neither profile alone claims production/runtime acceptance.
 
 ### Design Authority Index
 
-- Authored exact-value token source: selected — this file's YAML front matter.
-- Generation direction and generated token targets: `DESIGN.md` → `packages/ui-system/src/tokens.ts` and platform adapters → optional exports under `docs/design-system/**`; TypeScript, CSS, JSON, target manifests, and screenshots are consumers or verification inputs, never co-equal token authorities.
-- Active target: `target.system.starward-blue-skeuomorphic-2026-07-29`, selected by the owner on 2026-07-29 with the explicit instruction “选定这个候选”. It controls the system-level visual language, tokens, three modes, physical-material rendering, component appearance, state posture, accessibility posture, and motion posture. It does not replace product semantics or claim native/runtime conformance.
+- Authored exact-value token source: selected — this file. The YAML front matter is scoped to the native App profile; the exact Mini Program tables and contracts live only in the named Mini Program section below.
+- Generation direction and generated token targets: App profile `DESIGN.md` YAML → `packages/ui-system/src/tokens.ts`; future Mini Program profile `DESIGN.md#wechat-mini-program--soft-instruments-v1` → one framework adapter only after an explicit runtime bootstrap. TypeScript, WXSS, CSS, JSON, HTML, kits, manifests, screenshots, and provider files are consumers or verification inputs, never co-equal token authorities.
+- Active target (native App): `target.system.starward-blue-skeuomorphic-2026-07-29`, selected by the owner on 2026-07-29 with the explicit instruction “选定这个候选”. It controls the native App visual language, tokens, three modes, physical-material rendering, component appearance, state posture, accessibility posture, and motion posture. It does not replace product semantics or claim native/runtime conformance.
+- Active target (WeChat Mini Program): `target.system.wechat-miniapp-soft-instruments-2026-08-05`, selected by the owner on 2026-08-05 with the explicit instruction “采用此候选”. It controls the independent Mini Program visual language, exact role-isomorphic day/night/observation tokens, card/icon grammar, layout rhythm, component states, motion, accessibility, and asset posture defined in this file. It does not define a Mini Program Product Surface, Screen Contract, framework, navigation destinations, service boundary, runtime, or acceptance result.
+- Mini Program selected source: `docs/design-resources/miniapp-design-system-2026-08-05/candidate-design-brief.md` SHA-256 `ab1faeb96a3e52125b19fdf8f224caf6cee0db79cf16a9a12f86c5af49991745`; source index `docs/design-resources/miniapp-design-system-2026-08-05/source-index.md` SHA-256 `80cb69b9501b556ca8c186c770e5257ee5136e031e52ce54c42d7298eba3e3f7`. The candidate snapshot's pre-selection status line is historical lifecycle text; this canonical record owns its selected/adopted interpretation without altering the selected candidate bytes.
+- Mini Program provider provenance: Open Design `0.16.1`, design-system ID `user:soft-instruments`, review workspace/project `ds-soft-instruments`, provider body SHA-256 `ab1faeb96a3e52125b19fdf8f224caf6cee0db79cf16a9a12f86c5af49991745`. The earlier generic desktop showcase/UI-kit/token scaffold and rejected revision `01e159b2-6529-4f8b-8916-67a65576a3e1` are not selected resources. After owner selection, the provider body was synchronized exactly and published; the project binding reports the matching design-system ID.
+- Mini Program reference interpretation: all eight user-supplied images are inspiration, not exact targets or constraints. Their card softness, quiet bottom-navigation symbol posture, selective friendly 3D-object grammar, and day/night/red condition themes inform the system; their logos, poster/device composition, sample data, phone frames, branded photography, wording, and exact layouts are not adopted. The App design system and every App/Admin target are explicitly excluded as Mini Program inputs.
+- Mini Program condition coverage: day, night, and strict black/warm-red observation; `750rpx` reference geometry with safe-area/menu-capsule adaptation; responsive one/two-column composition; enlarged text; `88rpx` minimum targets; reduced motion; focus/pressed/disabled/loading/empty/stale/offline/error/success; mode-correct cold start and asset fallback. These are design contracts, not production conformance evidence.
+- Mini Program editable upstream and update route: revise Open Design system `user:soft-instruments` in project `ds-soft-instruments`, create and review a new immutable candidate/digest, obtain explicit selection, then re-adopt its values and record here. Never edit a generated runtime adapter to change the system, overwrite the selected candidate, or import values from the native App profile.
 - Provider: Open Design `0.16.1`; editable design-system ID `user:starward-2026-07-29`; bound workspace/project ID `ds-starward-2026-07-29`; selected provider body SHA-256 `280b1d3726e181591f19b6ddef96ab5d32fb61c5302af07fcee194b32f135f70`. The provider exposed no revision records at selection, so no revision ID could be accepted; the provider design-system metadata is published and this record owns project adoption.
 - Selected package integrity: `validation-manifest.json` SHA-256 `ae9d23d7d2a127b5ea1feb1a86cebd1b5a33dc1294de0ad40c9e4803a8a9be8f`. The package contained 62 required files, 16 HTML entries, role-isomorphic planning/night/observation specimens, 122 audit anchors, six-value observation pixels, and no package audit error or warning. Audit anchors are traceability markers, not a count of product controls.
 - Selection evidence was limited to the explicit owner brief and three supplied visual references: day image SHA-256 `62d286b330ce48cac73e1b1351e6c35502aac46989af971ee502466842d49fe0`, night image SHA-256 `5d5ec492c02e8d67b502ed7f672f1b8976da61d56f2702fbd7a59bbcb1ee3b5d`, and observation image SHA-256 `d8de918d08dab0f8d6f84bb097076671186a61a1494637f1e40b2fc7b97b8150`. Their logo, wording, poster/device composition, sample data, and proprietary imagery are not adopted.
@@ -162,8 +168,8 @@ components:
 - Legacy rollback baseline `target.mobile-controls-v3`: files remain immutable at `docs/design-targets/mobile-controls-v3/implementation-contract.json` SHA-256 `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4` and `index.html` SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`. Its 83 stable Control Keys, scenarios, and behavior semantics remain historical traceability data, but its visual values, geometry, and styling are inactive and were not used to author this system.
 - Legacy rollback baseline `target.ops-controls-v2`: files remain immutable at `docs/design-targets/ops-controls-v2/implementation-contract.json` SHA-256 `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388` and `index.html` SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`. Its behavior semantics remain historical traceability data, while its visual values, geometry, and styling are inactive.
 - Legacy exports under `docs/design-system/**` are retained unchanged as rollback/reference material. They are not a source for current colors, typography, component styling, geometry, imagery, or fidelity checks.
-- Target precedence is closed: Source/Context owns product, safety, privacy, information, interaction, route, and stable Control meaning; this file owns the current visual system; the runtime token module consumes it. Legacy page/control resources may support rollback and semantic traceability only. Any conflict fails closed in favor of the upper owner and requires a new explicit adoption.
-- This document is complete and normative on its own. `.codex/skills/uiux_design/SKILL.md` is the React Native implementation companion for applying these rules; it must read and obey this file and the Source Plan, and cannot redefine or override either one. This pointer is for discoverability, not a reciprocal authority dependency.
+- Target precedence is closed: Source/Context owns product, safety, privacy, information, interaction, route, and stable Control meaning; this file owns each explicitly scoped visual profile; a runtime token module may consume only its target profile. Legacy page/control resources may support rollback and semantic traceability only. Any conflict fails closed in favor of the upper owner and requires a new explicit adoption.
+- This document is complete and normative on its own for the adopted visual profiles. `.codex/skills/uiux_design/SKILL.md` remains only the React Native App implementation companion; it is not a Mini Program source or dependency. A future Mini Program implementation companion may be created only after its runtime exists and must consume, never redefine, the Mini Program profile below.
 
 ## Colors
 
@@ -272,3 +278,236 @@ components:
 - Don't use stacked nested cards, a first screen full of professional tables, or unsupported claims such as 完美观星, 绝对晴朗, or 保证可见.
 - Don't invent a logo, illustration, or image that is not grounded in project evidence.
 - Don't lock input until an animation finishes, animate from an obsolete target, use a gesture-only destructive action without recovery, or let motion mask stale/unknown data.
+
+## WeChat Mini Program — Soft Instruments v1
+
+This section is the complete canonical visual-system profile for `target.system.wechat-miniapp-soft-instruments-2026-08-05`. It was independently authored from the eight indexed user references, the explicit Mini Program brief, and bounded platform/product research. It does not inherit from or adapt the native App profile above. Where a shared English role name happens to exist in both profiles, identity of the name does not imply identity of its value or implementation.
+
+The concept is **soft instruments under three skies**:
+
+- **Instrument clarity** for maps, conditions, time, route, state, and action.
+- **Soft collectible objects** for selected astronomy/outdoor subjects.
+- **Three skies**—day, night, and observation red—using one semantic component grammar.
+
+The Mini Program should feel calm, trustworthy, compact, and gently tactile. Functional information remains precise and planar; 3D character is selective. It must not become a generic weather dashboard, a desktop SaaS surface, or a toy-like all-skeuomorphic interface.
+
+### Mini Program foundations
+
+- Author geometry in `rpx` against a `750rpx` reference canvas, then reflow for actual supported phones and runtime safe-area/menu-capsule geometry.
+- Base step: `8rpx`; page inset: `32rpx`; compact inset: `24rpx`; section gap: `40rpx`; card/grid gap: `24rpx`; card padding: `28rpx`; dense-row padding: `20rpx 24rpx`.
+- Default content is one readable column. A two-column feature grid requires at least `304rpx` per tile after gaps and collapses when available width or enlarged text would clip content.
+- Center expanded content within `960rpx`; maps and owned data matrices may use the full safe width. Horizontal page scroll is forbidden; only an explicitly owned data matrix may scroll horizontally with identifiable row labels and units.
+- Minimum interactive region: `88rpx × 88rpx`. A visibly compact `64rpx` chip is allowed only inside an `88rpx` wrapper with safe separation from adjacent controls.
+
+| Spacing role | Value |
+| --- | ---: |
+| `space-0` | `0` |
+| `space-1` | `8rpx` |
+| `space-2` | `16rpx` |
+| `space-3` | `24rpx` |
+| `space-4` | `32rpx` |
+| `space-5` | `40rpx` |
+| `space-6` | `48rpx` |
+| `space-8` | `64rpx` |
+
+| Radius role | Value |
+| --- | ---: |
+| `radius-xs` | `12rpx` |
+| `radius-sm` | `20rpx` |
+| `radius-md` | `28rpx` |
+| `radius-lg` | `40rpx` |
+| `radius-pill` | `999rpx` |
+
+| Size/border role | Value | Constraint |
+| --- | ---: | --- |
+| `size-icon-glyph` | `40rpx` | Tier-A visible glyph |
+| `size-icon-box` | `48rpx` | Tier-A optical grid |
+| `size-hit-min` | `88rpx` | minimum interactive region |
+| `size-control` | `88rpx` | standard button and compact field |
+| `size-control-lg` | `96rpx` | primary page action and full field |
+| `size-nav-item` | `112rpx` | bottom-navigation content height before safe area |
+| `border-hairline` | `1rpx` | decorative/group boundary |
+| `border-selected` | `2rpx` | selected/focused structural boundary |
+| `focus-ring` | `4rpx` | `4rpx` offset |
+
+Elevation is condition-specific:
+
+- Day standard card: `0 12rpx 36rpx rgba(25, 61, 102, 0.10), 0 2rpx 8rpx rgba(25, 61, 102, 0.06)` plus a `1rpx` cool border.
+- Day floating control: `0 8rpx 24rpx rgba(21, 55, 94, 0.14)`.
+- Night uses surface luminance and border before any compact dark shadow; blue glow is forbidden.
+- Observation uses no ambient shadow. Depth comes from black/dark-red surface steps and a warm-red border.
+- Do not stack elevated cards. Use whitespace, headings, dividers, grouped rows, or one flat inset surface.
+
+Disabled controls retain readable text and full geometry through `surface-subtle`, `text-tertiary`, a visible boundary, and no elevation; essential labels are not dimmed with global opacity. Pressed overlays use the local `primary` at `8%` in day, `12%` in night, and `16%` in observation. Loading preserves control width and label position.
+
+### Mini Program colors
+
+All three modes expose exactly the same eighteen semantic roles. A mode changes values and asset variants, never the role set.
+
+#### Day
+
+| Role | Value |
+| --- | --- |
+| `canvas` | `#F5F8FC` |
+| `surface` | `#FFFFFF` |
+| `surface-subtle` | `#EEF4FA` |
+| `surface-elevated` | `#FFFFFF` |
+| `text-primary` | `#10233F` |
+| `text-secondary` | `#526A84` |
+| `text-tertiary` | `#5C7186` |
+| `border` | `#D4E1EE` |
+| `primary` | `#1769D2` |
+| `primary-pressed` | `#0F56AE` |
+| `on-primary` | `#FFFFFF` |
+| `accent-cyan` | `#69C7F5` |
+| `accent-violet` | `#707CF2` |
+| `accent-warm` | `#EED7B1` |
+| `success` | `#238B62` |
+| `warning` | `#B86A12` |
+| `danger` | `#C83F49` |
+| `focus` | `#0B63CE` |
+
+#### Night
+
+| Role | Value |
+| --- | --- |
+| `canvas` | `#050A14` |
+| `surface` | `#0B1626` |
+| `surface-subtle` | `#102238` |
+| `surface-elevated` | `#162B45` |
+| `text-primary` | `#EEF5FF` |
+| `text-secondary` | `#A9BCD2` |
+| `text-tertiary` | `#7F96AF` |
+| `border` | `#29425F` |
+| `primary` | `#5AA7FF` |
+| `primary-pressed` | `#3389EA` |
+| `on-primary` | `#03101F` |
+| `accent-cyan` | `#67C4E9` |
+| `accent-violet` | `#8A8EF4` |
+| `accent-warm` | `#D8BE94` |
+| `success` | `#5CC99A` |
+| `warning` | `#F0B55B` |
+| `danger` | `#FF7B82` |
+| `focus` | `#82BCFF` |
+
+#### Observation red
+
+| Role | Value |
+| --- | --- |
+| `canvas` | `#000000` |
+| `surface` | `#0B0101` |
+| `surface-subtle` | `#150303` |
+| `surface-elevated` | `#200505` |
+| `text-primary` | `#F4554E` |
+| `text-secondary` | `#E44A43` |
+| `text-tertiary` | `#D84A43` |
+| `border` | `#4D1716` |
+| `primary` | `#FF514A` |
+| `primary-pressed` | `#D83B36` |
+| `on-primary` | `#000000` |
+| `accent-cyan` | `#B83A35` |
+| `accent-violet` | `#C4403A` |
+| `accent-warm` | `#D94842` |
+| `success` | `#D84A43` |
+| `warning` | `#F05A52` |
+| `danger` | `#FF6A62` |
+| `focus` | `#FF776F` |
+
+Observation is a closed black/warm-red condition for every controllable surface, icon, focus, status, loading/error state, map overlay, transition, and authored image/3D variant. Do not render blue, green, cyan, violet, yellow, neutral gray, or white; do not hide day assets under red opacity or apply a blanket filter. Set the destination canvas before the first visible frame. An unthemeable OS/vendor surface needs a warning and safe cancel/return path before handoff.
+
+`text-*` owns readable text. Accent and status roles may reinforce an icon, chart mark, short emphasis, or boundary but never replace body text. Success, warning, and danger always include label/icon/shape/position; the observation aliases intentionally stay red and cannot communicate meaning by hue. Charts pair `accent-cyan` with solid/circle, `accent-violet` with dashed/diamond, and `accent-warm` with dotted/triangle; legends repeat label, shape, and line style.
+
+### Mini Program typography and content
+
+Use the license-safe native stack `-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif`. No bundled display font is required for core readability.
+
+| Role | Size / line | Weight | Use |
+| --- | --- | ---: | --- |
+| `display` | `48rpx / 64rpx` | 700 | one short recommendation or hero value |
+| `page-title` | `36rpx / 48rpx` | 700 | page title |
+| `section-title` | `30rpx / 42rpx` | 600 | section heading |
+| `body` | `28rpx / 42rpx` | 400 | primary reading text |
+| `label` | `24rpx / 34rpx` | 500 | controls, navigation, compact metadata |
+| `caption` | `22rpx / 32rpx` | 400 | explanation and timestamps |
+| `data` | `28rpx / 40rpx` | 500 | time, percentage, angle, distance, aligned values |
+
+- Use tabular numerals where supported. Keep values and units as separate semantic spans such as `28 km`, `45 分钟`, `20:30`, and `86%`.
+- Titles wrap before truncation. Decision, warning, uncertainty, source/update time, and recovery text reflow without line clamps or font shrinking.
+- Use calm, concrete uncertainty language such as `预计`, `可能`, and `数据更新于`; never promise perfect visibility.
+- Empty, stale, offline, permission-denied, and partial states name what happened, what remains available, and the next safe action.
+
+### Mini Program icon architecture
+
+#### Tier A — functional symbols
+
+- Use for navigation, back, close, search, filter, location, layers, share, favorite, refresh, state, and form actions.
+- Base grid `48rpx`; visible glyph `40rpx`; rounded outline stroke `3rpx`; round caps/joins; optically centered simple geometry.
+- Selected navigation may combine one filled focal shape with an outline shell. Inactive stays outline-only. Icon plus text is required, and selection changes weight/fill/indicator as well as color.
+- Functional symbols never use 3D perspective, gloss, cast shadows, or texture.
+
+#### Tier B — semantic 3D subjects
+
+Allowed subjects are four-point star, five-point star, tent, telescope, binoculars, camera, hiking backpack, and a gender-neutral avatar. They are for category entry, equipment recommendation, empty-state focal art, onboarding, or one hero moment—not back/close/filter/status and not every row.
+
+The grammar is a large readable silhouette; subtle three-quarter/isometric view; rounded construction; smooth polymer/enamel; localized highlights; soft top-left key light; blue-white body with restrained cyan/deep-blue/beige/blue-violet accents; one compact contact shadow; transparent bounds; no neon halo. One icon has one dominant object. Four/five-point stars remain broad and rounded; tent is a readable A-frame; telescope has a stable three-leg mount; binoculars retain two joined barrels; camera has one dominant lens; backpack retains lid/straps/front pocket; avatar avoids gender-coded hair, makeup, clothing, and biometric realism.
+
+Canonical day master prompt:
+
+> Create one isolated minimalist 3D **[SUBJECT]** icon for a friendly astronomy/outdoor Mini Program. Use a large unmistakable silhouette, rounded construction, subtle three-quarter/isometric perspective, smooth polymer-and-enamel material, soft top-left key light, restrained blue/white body with cyan, deep-blue, beige, or blue-violet accents, one compact contact shadow, transparent background, centered composition, and generous clear space. Warm, handcrafted, modern digital rendering; no text, logo, brand, interface frame, character franchise, or scenery.
+
+- Night keeps geometry/camera identical, reduces white/highlight luminance, deepens blue, and uses a compact dark contact shadow without glow.
+- Observation rerenders identical geometry only in the observation black/warm-red palette. No inherited cool/white pixels, bloom, or filter.
+- Negative prompt: photorealism, scratches, glare, brand, text, watermark, busy background, multiple dominant objects, fragile details, neon, glow, lens flare, particles, hard shadow, or protected studio/character imitation.
+- Display target `128rpx–176rpx`; verified `2x` master; default budget `≤72KB` per tile and `≤160KB` per hero after visual QA.
+
+### Mini Program component and interaction contracts
+
+| Component | Required contract |
+| --- | --- |
+| Page shell | safe top/bottom and capsule clearance; mode-correct first frame; loading/offline/permission boundary |
+| Standard card | `radius-md`, `28rpx` padding, `1rpx` border; static or whole-card target; no nested elevation |
+| Feature tile | one Tier-B object, short label, optional two-line explanation; whole tile owns interaction |
+| Button | primary/secondary/quiet/destructive, optional Tier-A icon; default/pressed/focus/disabled/loading/success/error |
+| Icon action | `40rpx` glyph in `88rpx` hit region with accessible name; selected is not color-only |
+| Chip/segment | single/multi select with label and optional count/check; active value stays discoverable |
+| Field/list cell | label, value/input, helper/error, optional one trailing action; state space reserves geometry |
+| Bottom navigation | three to five destinations only after Product Surface approval; icon + label; safe-area reserved |
+| Sheet/dialog | title/content/actions/close route; contained read/focus order; interruptible sheet drag; explicit destructive confirmation |
+| Banner/toast | banner for persistent/actionable state; toast only for non-critical acknowledgement, never sole recovery |
+| Empty/skeleton | final geometry reserved; optional one Tier-B object; no bright shimmer in night/observation |
+| Data matrix | aligned rows/time columns/values/units/legend/source/update time; owned scroll; stale/partial/missing cells |
+| Map | solid controls and Tier-A icons; marker selection uses shape/label; loading/offline/permission are explicit |
+| Equipment tile | Tier-B subject plus name and required/readiness label; optional/required/packed/missing is non-color encoded |
+
+One local decision layer has at most one visually dominant primary action. One row has at most one persistent trailing action. A press begins feedback on touch-down, commits once on valid release, and never commits after drag-away/cancel/disable. Cards cannot contain nested pressable actions without explicit event/focus ownership. Critical actions cannot exist only behind a hidden swipe.
+
+Day/night may follow system or an explicit preference. Observation is explicit and never inferred only from sunset. If a field session ended in observation mode, bootstrap black/red until deliberate exit to prevent a cold-start white flash. Route, scroll, selection, input, and pending task state survive mode changes.
+
+### Mini Program motion and accessibility
+
+| Event | Duration | Property / constraint |
+| --- | ---: | --- |
+| Press-in | `≤100ms` | same-frame surface/tint; optional `scale(0.985)` outside map/destructive controls |
+| Release/cancel | `120ms` | surface/tint/scale return; cancelled press never commits |
+| State/content swap | `160ms` | opacity with stable geometry |
+| Compact sheet/panel | `220ms` | interruptible translate + opacity using `cubic-bezier(0.2, 0.8, 0.2, 1)` |
+| Mode transition | `240ms` | destination-safe color/media crossfade; destination canvas first |
+| Reduced motion | `0–100ms` | immediate or opacity only; no scale/parallax/depth/large translation |
+
+- Avoid bounce, elastic overshoot, idle floating, icon spinning, decorative particles, and motion that must finish before input is accepted.
+- Optional haptics may reinforce a discrete selection, meaningful success, warning, or error only when a future adapter verifies capability and preference. Haptics are never required for understanding.
+- Every control exposes role, concise name, value/state, and disabled/expanded/selected semantics as applicable. Decorative Tier-B art is hidden from assistive reading unless it carries unique content.
+- Reading/focus order follows visible order. Modal layers contain it and return it to the invoking control.
+- Normal text targets at least `4.5:1`; large text and essential graphical boundaries target at least `3:1`. Color, motion, vibration, and sound are never sole state channels.
+- Enlarged text, landscape, safe-area changes, and long Chinese labels cannot hide the primary decision, warning, or recovery action.
+- Night and observation are display modes, not substitutes for contrast, screen reading, magnification, motor access, or color-vision accessibility.
+
+### Mini Program assets, performance, and exclusions
+
+- Functional icons are code-native/vector when the chosen Mini Program stack safely supports them. Tier-B subjects are optimized raster assets with authored day/night/observation variants.
+- Naming direction: `icon3d-[subject]--[day|night|observation]@[density].[webp|png]`; Tier-A uses `icon-[name].svg` or the selected stack's equivalent.
+- All variants share silhouette, camera, crop, transparent bounds, and display size. Export sRGB, strip metadata, inspect edges at `1x`/`2x`, and verify observation assets contain no unintended cool/white pixels.
+- Do not ship the `1254×1254` references as tiles. Lazy-load below-fold Tier-B art with a mode-correct fixed-geometry placeholder. Failure falls back to a Tier-A symbol plus text.
+- Do not create a giant unrelated sprite. A future component-library/framework adapter consumes these semantic roles and cannot originate a competing value.
+- Do not copy the reference posters, logos, sample data, phone frames, branded photography, exact layouts, the native App system, App/Admin targets, or React Native interaction constants.
+- Do not apply skeuomorphism to every card/button/status/data point; use broad glass blur, neon, purple gradients, ambient stars, glossy data bevels, stacked shadows, or a whole-screen red filter; invent full App parity or navigation ownership; or claim production fidelity/accessibility merely from this authority.
