@@ -11,6 +11,7 @@
 - DESIGN.md: authored visual identity, tokens, modes, component styling, and visual rationale.
 - packages/ui-system/src/tokens.ts: generated runtime projection of DESIGN.md exact values; compatibility aliases may serve existing consumers but cannot originate a new visual value.
 - project_context/global.md: cross-product goals, user journey, and experience principles.
+- project_context/development-workflow.md: root-owned on-demand reservation for the future WeChat miniapp development/test/acceptance environment, paths, isolation, and evidence-promotion topology; it owns no current workspace or runtime.
 - project_context/areas/main.md: cross-workspace Starward product/domain ownership, screen/state/interaction contract, and core domain behavior.
 - project_context/areas/main/verification.md: small default index for near-universal validation and evidence boundaries; its registered on-demand verification nodes own development-loop, acceptance/runtime, and Android/native detail.
 - project_context/areas/main/implementation-index.md: on-demand code-navigation index for current Mobile, API, owner-operations, and verification entry points; it does not own intended product or verification semantics.

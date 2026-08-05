@@ -28,6 +28,12 @@ kind = "app"
 default = true
 
 [[context]]
+path = "project_context/development-workflow.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["wechat miniapp", "miniapp environment", "miniapp development", "miniapp test", "miniapp acceptance", "wechat devtools", "representative-device acceptance", "微信小程序", "小程序环境路径", "微信开发环境", "小程序开发", "小程序测试", "小程序验收", "微信开发者工具", "小程序真机验收"]
+
+[[context]]
 path = "project_context/areas/main/verification.md"
 role = "verification"
 read_policy = "default"

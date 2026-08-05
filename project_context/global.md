@@ -34,6 +34,7 @@
 
 - The graph manifest is project_context/context.toml.
 - The default product area is main; its small default verification index routes specialized development, acceptance/runtime, and Android/native facts to on-demand verification role Context.
+- Future WeChat miniapp environment/path reservations, isolation, and evidence-promotion rules are root-owned and on-demand in `project_context/development-workflow.md`; they do not register a workspace or runtime capability.
 
 ## Product / Delivery Brief
 
@@ -81,6 +82,7 @@
 
 ## Context Index
 
+- [future WeChat miniapp development/test/acceptance environment](development-workflow.md)
 - [main](areas/main.md)
 - [main implementation index](areas/main/implementation-index.md)
 - [Starward Product Surface Contract](areas/main/product-surface-contract.md)
