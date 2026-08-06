@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>今晚去观星 · 地图页设计候选</title>
+  <style>
+    /* Soft Instruments v1 — 750rpx reference rendered at 1rpx = .5 CSS px */
+    :root {
+      --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px; --space-8:32px;
+      --radius-xs:6px; --radius-sm:10px; --radius-md:14px; --radius-lg:20px; --radius-pill:999px;
+      --hit:44px; --control:44px; --nav:56px;
+      --review-bg:#e9eef4; --review-fg:#10233F;
+    }
+    * { box-sizing:border-box; }
+    html, body { margin:0; min-height:100%; font-family:var(--font); }
+    body { background:var(--review-bg); color:var(--review-fg); overflow-x:hidden; }
+    button, input, select { font:inherit; }
+    button { -webkit-tap-highlight-color:transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+      outline:2px solid var(--focus, #0B63CE); outline-offset:2px;
+    }
+    [hidden] { display:none !important; }
+
+    .artifact { min-height:100dvh; display:grid; grid-template-columns:minmax(270px, 316px) minmax(320px, 1fr); }
+    .review-panel { background:#f7f9fc; border-right:1px solid #cbd7e4; padding:24px; overflow:auto; position:relative; z-index:20; }
+    .eyebrow { margin:0 0 8px; color:#526A84; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    .review-panel h1 { margin:0; font-size:23px; line-height:1.3; letter-spacing:-.02em; }
+    .review-panel .lede { margin:10px 0 20px; color:#526A84; font-size:13px; line-height:1.65; }
+    .review-group { padding:16px 0; border-top:1px solid #d9e3ed; }
+    .review-label { display:block; margin-bottom:9px; font-size:12px; font-weight:700; color:#526A84; }
+    .mode-switch { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+    .review-button, .review-select, .review-summary {
+      min-height:40px; border:1px solid #c6d4e2; border-radius:10px; background:#fff; color:#10233F; padding:8px 10px;
+    }
+    .review-button { cursor:pointer; font-size:12px; font-weight:650; }
+    .review-button[aria-pressed="true"] { background:#10233F; border-color:#10233F; color:#fff; box-shadow:0 5px 14px rgba(16,35,63,.18); }
+    .review-select { width:100%; font-size:13px; }
+    .toggle-row { min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:13px; }
+    .switch { width:46px; height:28px; padding:3px; border:0; border-radius:999px; background:#c8d4e0; cursor:pointer; }
+    .switch::after { content:""; display:block; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(16,35,63,.22); transition:transform 160ms ease-out; }
+    .switch[aria-checked="true"] { background:#1769D2; }
+    .switch[aria-checked="true"]::after { transform:translateX(18px); }
+    .coverage { margin:0; padding:0; list-style:none; display:grid; gap:8px; }
+    .coverage li { display:flex; gap:8px; color:#526A84; font-size:12px; line-height:1.45; }
+    .coverage li::before { content:"✓"; color:#238B62; font-weight:800; }
+    .review-note { margin:0; color:#526A84; font-size:12px; line-height:1.6; }
+
+    .stage { display:grid; place-items:center; min-width:0; padding:22px; }
+    .miniapp {
+      --canvas:#F5F8FC; --surface:#FFFFFF; --surface-subtle:#EEF4FA; --surface-elevated:#FFFFFF;
+      --text-primary:#10233F; --text-secondary:#526A84; --text-tertiary:#5C7186; --border:#D4E1EE;
+      --primary:#1769D2; --primary-pressed:#0F56AE; --on-primary:#FFFFFF; --accent-cyan:#69C7F5;
+      --accent-violet:#707CF2; --accent-warm:#EED7B1; --success:#238B62; --warning:#B86A12;
+      --danger:#C83F49; --focus:#0B63CE; --shadow-card:0 6px 18px rgba(25,61,102,.10),0 1px 4px rgba(25,61,102,.06);
+      --map-land:#e7eef5; --map-park:#d9e9df; --map-water:#cbe4ee; --map-road:#ffffff; --map-road-edge:#c8d7e4;
+      width:min(100%, 390px); height:min(844px, calc(100dvh - 44px)); min-height:620px; position:relative; overflow:hidden;
+      color:var(--text-primary); background:var(--canvas); border:1px solid color-mix(in srgb, var(--border) 88%, transparent);
+      border-radius:28px; box-shadow:0 24px 70px rgba(26,45,70,.22); isolation:isolate;
+    }
+    .miniapp[data-mode="night"] {
+      --canvas:#050A14; --surface:#0B1626; --surface-subtle:#102238; --surface-elevated:#162B45;
+      --text-primary:#EEF5FF; --text-secondary:#A9BCD2; --text-tertiary:#7F96AF; --border:#29425F;
+      --primary:#5AA7FF; --primary-pressed:#3389EA; --on-primary:#03101F; --accent-cyan:#67C4E9;
+      --accent-violet:#8A8EF4; --accent-warm:#D8BE94; --success:#5CC99A; --warning:#F0B55B;
+      --danger:#FF7B82; --focus:#82BCFF; --shadow-card:0 5px 14px rgba(0,0,0,.32);
+      --map-land:#0d1c2d; --map-park:#102b2a; --map-water:#102d3c; --map-road:#2a3d51; --map-road-edge:#13263a;
+    }
+    .miniapp[data-mode="observation"] {
+      --canvas:#000000; --surface:#0B0101; --surface-subtle:#150303; --surface-elevated:#200505;
+      --text-primary:#F4554E; --text-secondary:#E44A43; --text-tertiary:#D84A43; --border:#4D1716;
+      --primary:#FF514A; --primary-pressed:#D83B36; --on-primary:#000000; --accent-cyan:#B83A35;
+      --accent-violet:#C4403A; --accent-warm:#D94842; --success:#D84A43; --warning:#F05A52;
+      --danger:#FF6A62; --focus:#FF776F; --shadow-card:none;
+      --map-land:#080000; --map-park:#100101; --map-water:#160202; --map-road:#30100e; --map-road-edge:#4D1716;
+      border-color:#4D1716; box-shadow:none;
+    }
+    .miniapp, .miniapp * { transition:background-color 240ms cubic-bezier(.2,.8,.2,1), color 240ms ease-out, border-color 240ms ease-out, opacity 160ms ease-out; }
+    .miniapp.reduce-motion, .miniapp.reduce-motion * { transition-duration:80ms !important; animation:none !important; scroll-behavior:auto !important; }
+
+    .app-shell { height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
+    .top-chrome { position:relative; z-index:10; background:var(--canvas); padding:calc(10px + env(safe-area-inset-top, 0px)) 16px 8px; }
+    .status-row { height:27px; display:flex; align-items:center; justify-content:space-between; padding-right:2px; font-size:12px; font-variant-numeric:tabular-nums; font-weight:650; }
+    .system-marks { display:flex; align-items:center; gap:5px; color:var(--text-primary); }
+    .signal { width:14px; height:9px; display:grid; grid-template-columns:repeat(4, 2px); align-items:end; gap:1px; }
+    .signal i { display:block; background:currentColor; border-radius:1px; }
+    .signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+    .battery { width:18px; height:9px; border:1px solid currentColor; border-radius:2px; padding:1px; position:relative; }
+    .battery::before { content:""; display:block; width:75%; height:100%; background:currentColor; border-radius:1px; }
+    .battery::after { content:""; position:absolute; right:-3px; top:2px; width:2px; height:4px; background:currentColor; border-radius:0 1px 1px 0; }
+    .nav-row { min-height:44px; display:grid; grid-template-columns:44px 1fr 92px; align-items:center; }
+    .nav-row h2 { margin:0; text-align:center; font-size:18px; line-height:24px; }
+    .capsule { justify-self:end; width:88px; height:32px; border:1px solid var(--border); border-radius:999px; display:flex; align-items:center; justify-content:space-evenly; background:var(--surface); }
+    .capsule .dots { letter-spacing:2px; font-weight:800; transform:translateY(-3px); }
+    .capsule .ring { width:13px; height:13px; border:2px solid currentColor; border-radius:50%; box-shadow:inset 0 0 0 2px var(--surface); background:currentColor; }
+    .demo-label { grid-column:1 / -1; justify-self:center; margin-top:2px; color:var(--text-secondary); font-size:11px; font-weight:650; }
+
+    .map-region { min-height:0; position:relative; overflow:hidden; background:var(--map-land); }
+    .map-art { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .map-art .land { fill:var(--map-land); }
+    .map-art .park { fill:var(--map-park); stroke:var(--border); stroke-width:2; }
+    .map-art .water { fill:var(--map-water); }
+    .map-art .minor { fill:none; stroke:var(--map-road-edge); stroke-width:13; stroke-linecap:round; stroke-linejoin:round; }
+    .map-art .road { fill:none; stroke:var(--map-road); stroke-width:9; stroke-linecap:round; stroke-linejoin:round; }
+    .map-art .route { fill:none; stroke:var(--primary); stroke-width:7; stroke-linecap:round; stroke-dasharray:1 13; opacity:.9; }
+    .map-art text { fill:var(--text-tertiary); font:500 21px var(--font); }
+    .light-grid { position:absolute; inset:0; pointer-events:none; opacity:.78; background:
+      radial-gradient(circle at 23% 74%, color-mix(in srgb,var(--accent-violet) 45%,transparent) 0 10%, transparent 25%),
+      radial-gradient(circle at 76% 31%, color-mix(in srgb,var(--accent-warm) 56%,transparent) 0 12%, transparent 32%),
+      radial-gradient(circle at 58% 72%, color-mix(in srgb,var(--accent-cyan) 46%,transparent) 0 11%, transparent 29%);
+    }
+    .map-legal { position:absolute; left:12px; bottom:9px; color:var(--text-tertiary); font-size:9px; background:color-mix(in srgb,var(--surface) 88%,transparent); padding:3px 5px; border-radius:4px; }
+
+    .map-tools { position:absolute; z-index:4; top:12px; left:12px; right:12px; display:grid; gap:10px; pointer-events:none; }
+    .search-trigger { pointer-events:auto; width:100%; min-height:48px; display:grid; grid-template-columns:24px 1fr auto; align-items:center; gap:8px; text-align:left; padding:0 12px; border:1px solid var(--border); border-radius:12px; color:var(--text-secondary); background:color-mix(in srgb,var(--surface) 94%,transparent); box-shadow:var(--shadow-card); cursor:pointer; }
+    .search-trigger strong { color:var(--text-primary); font-size:14px; font-weight:500; }
+    .search-trigger small { color:var(--text-tertiary); font-size:11px; }
+    .chips { pointer-events:auto; display:flex; gap:8px; overflow:auto; scrollbar-width:none; padding-bottom:2px; }
+    .chips::-webkit-scrollbar { display:none; }
+    .chip { flex:0 0 auto; min-height:44px; border:1px solid var(--border); border-radius:var(--radius-pill); padding:0 12px; color:var(--text-secondary); background:var(--surface); font-size:12px; font-weight:600; cursor:pointer; }
+    .chip[aria-pressed="true"] { color:var(--text-primary); border:2px solid var(--primary); padding:0 11px; }
+    .chip[aria-pressed="true"]::before { content:"✓ "; color:var(--primary); font-weight:800; }
+    .chip.more::after { content:"  +"; color:var(--primary); }
+    .icon { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .icon-fill { fill:currentColor; }
+
+    .marker { position:absolute; z-index:3; min-width:44px; min-height:44px; border:0; background:transparent; color:var(--text-primary); display:grid; place-items:center; cursor:pointer; }
+    .marker-core { min-width:30px; height:34px; padding:0 8px; display:flex; align-items:center; justify-content:center; gap:4px; background:var(--surface); border:2px solid var(--primary); border-radius:16px 16px 16px 4px; box-shadow:var(--shadow-card); transform:rotate(-45deg); }
+    .marker-core > * { transform:rotate(45deg); }
+    .marker .icon { width:16px; height:16px; color:var(--primary); }
+    .marker-label { position:absolute; top:39px; white-space:nowrap; padding:3px 7px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-primary); font-size:10px; font-weight:650; box-shadow:var(--shadow-card); }
+    .marker[aria-selected="true"] .marker-core { min-width:38px; height:42px; background:var(--primary); color:var(--on-primary); border-color:var(--surface); border-width:3px; }
+    .marker[aria-selected="true"] .icon { color:var(--on-primary); }
+    .marker.favorite .marker-core::after { content:"★"; transform:rotate(45deg); color:var(--primary); font-size:9px; }
+    .marker.closed .marker-core { border-style:dashed; border-color:var(--danger); }
+    .marker.approx .marker-core { border-radius:50%; border-style:dashed; }
+    .marker.insufficient .marker-core { border-color:var(--text-tertiary); }
+    .marker.m1{left:57%;top:43%}.marker.m2{left:17%;top:51%}.marker.m3{right:8%;top:25%}.marker.m4{right:24%;top:66%}.marker.m5{left:36%;top:31%}
+    .cluster { position:absolute; z-index:3; left:11%; top:23%; min-width:48px; min-height:48px; border:4px solid color-mix(in srgb,var(--surface) 70%,transparent); border-radius:50%; background:var(--primary); color:var(--on-primary); font-weight:800; box-shadow:var(--shadow-card); cursor:pointer; }
+    .cluster small { display:block; font-size:8px; font-weight:600; }
+    .floating-controls { position:absolute; right:12px; bottom:100px; z-index:5; display:grid; gap:8px; }
+    .icon-button { width:44px; min-width:44px; height:44px; border:1px solid var(--border); border-radius:12px; color:var(--text-primary); background:var(--surface); display:grid; place-items:center; cursor:pointer; box-shadow:var(--shadow-card); }
+    .icon-button:active, .search-trigger:active, .chip:active, .nav-item:active, .secondary-action:active { background:color-mix(in srgb,var(--primary) 8%,var(--surface)); transition-duration:80ms; }
+    .miniapp[data-mode="night"] .icon-button:active, .miniapp[data-mode="night"] .chip:active { background:color-mix(in srgb,var(--primary) 12%,var(--surface)); }
+    .miniapp[data-mode="observation"] .icon-button:active, .miniapp[data-mode="observation"] .chip:active { background:color-mix(in srgb,var(--primary) 16%,var(--surface)); }
+    .icon-button[aria-pressed="true"] { border:2px solid var(--primary); color:var(--primary); }
+
+    .state-banner { position:absolute; z-index:7; left:12px; right:68px; top:108px; min-height:44px; display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface-elevated); box-shadow:var(--shadow-card); }
+    .state-banner .icon { flex:0 0 auto; color:var(--warning); }
+    .state-banner p { margin:0; flex:1; font-size:11px; line-height:1.45; color:var(--text-secondary); }
+    .state-banner strong { display:block; color:var(--text-primary); }
+    .inline-link { min-width:44px; min-height:44px; padding:0 8px; border:0; background:transparent; color:var(--primary); font-size:11px; font-weight:700; cursor:pointer; }
+
+    .spot-card { position:absolute; z-index:6; left:12px; right:12px; bottom:12px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-elevated); box-shadow:var(--shadow-card); }
+    .spot-head { display:grid; grid-template-columns:72px minmax(0,1fr) 44px; gap:10px; align-items:start; }
+    .media-placeholder { height:68px; position:relative; overflow:hidden; border-radius:10px; background:var(--surface-subtle); border:1px solid var(--border); }
+    .media-placeholder::before, .media-placeholder::after { content:""; position:absolute; left:-10%; width:120%; height:34px; border-radius:50%; border-top:2px solid var(--accent-cyan); transform:rotate(-8deg); }
+    .media-placeholder::before{bottom:6px}.media-placeholder::after{bottom:18px;border-color:var(--accent-violet);transform:rotate(7deg)}
+    .media-tag { position:absolute; left:5px; bottom:5px; z-index:1; padding:3px 5px; border-radius:5px; background:var(--surface); border:1px solid var(--border); color:var(--text-secondary); font-size:8px; font-weight:700; }
+    .spot-title-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .spot-title-row h3 { margin:0; font-size:16px; line-height:22px; }
+    .status-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 6px; border:1px solid var(--warning); border-radius:6px; color:var(--text-primary); font-size:10px; font-weight:700; }
+    .status-pill::before { content:"◇"; color:var(--warning); }
+    .spot-meta { margin:4px 0 0; color:var(--text-secondary); font-size:11px; line-height:1.5; }
+    .spot-meta strong { color:var(--text-primary); font-weight:650; }
+    .favorite-button { box-shadow:none; }
+    .favorite-button[aria-pressed="true"] .icon { fill:var(--primary); color:var(--primary); }
+    .data-strip { display:grid; grid-template-columns:repeat(3,1fr); margin:10px 0; padding:8px 0; border-block:1px solid var(--border); }
+    .datum { padding:0 8px; min-width:0; }
+    .datum + .datum { border-left:1px solid var(--border); }
+    .datum span { display:block; color:var(--text-tertiary); font-size:9px; }
+    .datum strong { display:block; margin-top:2px; color:var(--text-primary); font-size:13px; line-height:18px; font-variant-numeric:tabular-nums; }
+    .datum small { margin-left:2px; color:var(--text-secondary); font-size:9px; font-weight:500; }
+    .facility-row { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:9px; }
+    .facility { padding:3px 6px; border-radius:5px; background:var(--surface-subtle); color:var(--text-secondary); font-size:9px; }
+    .facility::before { content:"✓ "; color:var(--success); font-weight:800; }
+    .facility.unknown::before { content:"? "; color:var(--warning); }
+    .route-row { min-height:40px; display:grid; grid-template-columns:20px minmax(0,1fr) auto; align-items:center; gap:7px; margin-bottom:8px; padding:5px 8px; border-radius:8px; background:var(--surface-subtle); color:var(--text-secondary); }
+    .route-row strong { display:block; color:var(--text-primary); font-size:11px; }
+    .route-row span { font-size:9px; line-height:1.4; }
+    .secondary-action { min-width:44px; min-height:44px; padding:0 8px; border:0; background:transparent; color:var(--primary); font-size:11px; font-weight:700; cursor:pointer; }
+    .secondary-action:disabled { color:var(--text-tertiary); cursor:not-allowed; text-decoration:line-through; }
+    .card-actions { display:grid; grid-template-columns:1fr 1.45fr; gap:8px; }
+    .button { min-height:44px; border-radius:10px; padding:0 14px; font-weight:700; font-size:13px; cursor:pointer; }
+    .button.secondary { border:1px solid var(--border); background:var(--surface); color:var(--text-primary); }
+    .button.primary { border:1px solid var(--primary); background:var(--primary); color:var(--on-primary); box-shadow:0 5px 13px color-mix(in srgb,var(--primary) 24%,transparent); }
+    .button.primary:active { background:var(--primary-pressed); border-color:var(--primary-pressed); transition-duration:80ms; }
+    .button:disabled { border-color:var(--border); background:var(--surface-subtle); color:var(--text-tertiary); box-shadow:none; cursor:not-allowed; }
+
+    .global-nav { position:relative; z-index:12; min-height:calc(var(--nav) + env(safe-area-inset-bottom, 0px)); padding:4px 20px env(safe-area-inset-bottom, 0px); display:grid; grid-template-columns:repeat(3,1fr); background:var(--surface); border-top:1px solid var(--border); }
+    .nav-item { min-height:56px; border:0; background:transparent; color:var(--text-tertiary); display:grid; align-content:center; justify-items:center; gap:2px; position:relative; cursor:pointer; font-size:10px; }
+    .nav-item .icon { width:21px; height:21px; }
+    .nav-item[aria-current="page"] { color:var(--primary); font-weight:800; }
+    .nav-item[aria-current="page"]::before { content:""; position:absolute; top:1px; width:26px; height:3px; border-radius:999px; background:var(--primary); }
+    .nav-item[aria-current="page"] .nav-icon-wrap { width:36px; height:28px; display:grid; place-items:center; border-radius:14px; background:color-mix(in srgb,var(--primary) 13%,var(--surface)); }
+
+    .overlay { position:absolute; inset:0; z-index:30; display:grid; background:color-mix(in srgb,var(--canvas) 35%,transparent); }
+    .overlay.full { background:var(--canvas); grid-template-rows:auto minmax(0,1fr); }
+    .overlay-bar { min-height:76px; padding:calc(12px + env(safe-area-inset-top,0px)) 12px 10px; display:grid; grid-template-columns:44px 1fr 44px; gap:6px; align-items:end; background:var(--canvas); border-bottom:1px solid var(--border); }
+    .search-field { height:44px; display:flex; align-items:center; gap:8px; padding:0 11px; border:2px solid var(--primary); border-radius:10px; background:var(--surface); }
+    .search-field input { min-width:0; flex:1; border:0; outline:0; color:var(--text-primary); background:transparent; font-size:14px; }
+    .search-field input::placeholder { color:var(--text-tertiary); }
+    .overlay-content { overflow:auto; padding:16px; background:var(--canvas); }
+    .result-section + .result-section { margin-top:18px; }
+    .section-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    .section-heading h3 { margin:0; font-size:14px; }
+    .section-heading span { color:var(--text-tertiary); font-size:10px; }
+    .result-row { width:100%; min-height:52px; display:grid; grid-template-columns:32px minmax(0,1fr) auto; gap:9px; align-items:center; text-align:left; border:0; border-bottom:1px solid var(--border); background:transparent; color:var(--text-primary); cursor:pointer; }
+    .result-row .result-icon { width:30px; height:30px; display:grid; place-items:center; border-radius:8px; background:var(--surface-subtle); color:var(--primary); }
+    .result-row strong { display:block; font-size:12px; }
+    .result-row small { display:block; margin-top:2px; color:var(--text-secondary); font-size:10px; line-height:1.4; }
+    .result-row > span:last-child { color:var(--text-tertiary); font-size:10px; }
+    .empty-state { min-height:320px; display:grid; place-items:center; text-align:center; padding:32px; }
+    .empty-symbol { width:56px; height:56px; margin:auto; display:grid; place-items:center; border:1px dashed var(--border); border-radius:50%; color:var(--text-tertiary); }
+    .empty-state h3 { margin:14px 0 6px; font-size:16px; }
+    .empty-state p { margin:0 0 14px; color:var(--text-secondary); font-size:12px; line-height:1.6; }
+
+    .sheet-backdrop { align-items:end; background:color-mix(in srgb,var(--text-primary) 28%,transparent); }
+    .sheet { max-height:84%; overflow:auto; padding:8px 16px calc(16px + env(safe-area-inset-bottom,0px)); border:1px solid var(--border); border-bottom:0; border-radius:20px 20px 0 0; background:var(--surface-elevated); box-shadow:var(--shadow-card); animation:sheet-in 220ms cubic-bezier(.2,.8,.2,1); }
+    @keyframes sheet-in { from { transform:translateY(24px); opacity:.6; } }
+    .handle { width:34px; height:4px; margin:0 auto 10px; border-radius:999px; background:var(--border); }
+    .sheet-head { min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .sheet-head h3 { margin:0; font-size:17px; }
+    .sheet-head p { margin:2px 0 0; color:var(--text-secondary); font-size:10px; }
+    .filter-group { padding:12px 0; border-top:1px solid var(--border); }
+    .filter-group h4 { margin:0 0 8px; font-size:12px; }
+    .filter-grid { display:flex; flex-wrap:wrap; gap:8px; }
+    .filter-option { min-height:44px; padding:0 11px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text-secondary); font-size:11px; font-weight:600; cursor:pointer; }
+    .filter-option[aria-pressed="true"] { border:2px solid var(--primary); color:var(--text-primary); }
+    .filter-option[aria-pressed="true"]::before { content:"✓ "; color:var(--primary); }
+    .filter-option:disabled { color:var(--text-tertiary); border-style:dashed; background:var(--surface-subtle); cursor:not-allowed; }
+    .sheet-actions { position:sticky; bottom:-16px; display:grid; grid-template-columns:1fr 1.5fr; gap:8px; padding:10px 0 0; background:var(--surface-elevated); }
+    #filterSheet .sheet { width:100%; max-height:88%; overflow:hidden; display:grid; grid-template-rows:auto auto minmax(0,1fr) auto; padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)); }
+    .filter-scroll { min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:4px 2px 10px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    .filter-scroll .filter-group:first-child { border-top:0; }
+    .filter-criterion { border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; }
+    .filter-criterion + .filter-criterion { margin-top:8px; }
+    .criterion-toggle { width:100%; min-height:44px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; padding:8px 11px; border:0; background:var(--surface); color:var(--text-primary); text-align:left; cursor:pointer; }
+    .criterion-copy { min-width:0; }
+    .criterion-label { display:block; font-size:12px; font-weight:700; line-height:1.4; }
+    .criterion-summary { display:block; margin-top:2px; color:var(--text-secondary); font-size:10px; line-height:1.45; overflow-wrap:anywhere; }
+    .criterion-chevron { width:24px; height:24px; display:grid; place-items:center; color:var(--text-secondary); transition:transform 160ms ease-out; }
+    .criterion-toggle[aria-expanded="true"] .criterion-chevron { transform:rotate(180deg); }
+    .criterion-region { padding:10px; border-top:1px solid var(--border); background:var(--surface-subtle); animation:filter-swap 160ms ease-out; }
+    @keyframes filter-swap { from { opacity:.35; } }
+    .terminal-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .terminal-option { width:100%; min-width:0; min-height:44px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text-secondary); font-size:11px; font-weight:600; line-height:1.4; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
+    .terminal-option[aria-pressed="true"] { border:2px solid var(--primary); color:var(--text-primary); }
+    .terminal-option[aria-pressed="true"]::before { content:"✓ "; color:var(--primary); font-weight:800; }
+    .filter-limit { margin:0 0 8px; padding:8px 10px; border-radius:8px; background:var(--surface-subtle); color:var(--text-secondary); font-size:10px; line-height:1.55; }
+    #filterSheet .sheet-actions { bottom:auto; padding-top:10px; border-top:1px solid var(--border); }
+    .legend { display:grid; gap:9px; margin:10px 0; }
+    .legend-row { display:grid; grid-template-columns:58px 1fr auto; align-items:center; gap:8px; color:var(--text-secondary); font-size:11px; }
+    .legend-scale { height:9px; border-radius:999px; border:1px solid var(--border); background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet),var(--accent-warm)); }
+    .legend-note { margin:0; padding:10px; border-radius:8px; background:var(--surface-subtle); color:var(--text-secondary); font-size:10px; line-height:1.55; }
+    .route-summary { margin:8px 0 12px; padding:12px; border:1px solid var(--border); border-radius:12px; background:var(--surface-subtle); }
+    .route-summary h4 { margin:0 0 6px; font-size:13px; }
+    .route-summary p { margin:0; color:var(--text-secondary); font-size:11px; line-height:1.55; }
+    .route-metrics { display:flex; gap:18px; margin:10px 0; }
+    .route-metrics strong { font-size:18px; font-variant-numeric:tabular-nums; }
+    .route-metrics small { margin-left:2px; color:var(--text-secondary); font-size:10px; }
+    .vendor-warning { margin:10px 0; padding:9px; border:1px solid var(--warning); border-radius:8px; color:var(--text-secondary); font-size:10px; line-height:1.5; }
+
+    .map-state { position:absolute; z-index:8; inset:112px 16px 86px; display:grid; place-items:center; pointer-events:none; }
+    .map-state-card { width:min(100%,270px); padding:18px; text-align:center; border:1px solid var(--border); border-radius:14px; background:var(--surface-elevated); box-shadow:var(--shadow-card); pointer-events:auto; }
+    .map-state-card h3 { margin:10px 0 5px; font-size:15px; }
+    .map-state-card p { margin:0 0 12px; color:var(--text-secondary); font-size:11px; line-height:1.55; }
+    .spinner { width:32px; height:32px; margin:auto; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .skeleton { height:10px; border-radius:5px; background:var(--surface-subtle); }
+    .skeleton + .skeleton { margin-top:7px; }
+    .toast { position:absolute; z-index:50; left:24px; right:24px; bottom:76px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface-elevated); color:var(--text-primary); box-shadow:var(--shadow-card); font-size:11px; line-height:1.45; text-align:center; }
+    .large-text .search-trigger strong { font-size:17px; line-height:22px; }
+    .large-text .chip { font-size:14px; min-height:44px; }
+    .large-text .spot-title-row h3 { font-size:19px; line-height:25px; }
+    .large-text .spot-meta, .large-text .route-row strong { font-size:13px; }
+    .large-text .spot-meta, .large-text .route-row span { line-height:1.65; }
+    .large-text .datum span, .large-text .facility { font-size:11px; }
+    .large-text .spot-card { max-height:56%; overflow:auto; }
+    .large-text .criterion-label { font-size:15px; }
+    .large-text .criterion-summary, .large-text .terminal-option, .large-text .filter-limit { font-size:13px; line-height:1.55; }
+    .large-text .terminal-grid { grid-template-columns:1fr; }
+
+    @media (max-width:760px) {
+      .artifact { display:block; }
+      .review-panel { border-right:0; border-bottom:1px solid #cbd7e4; padding:10px 14px; }
+      .review-panel h1, .review-panel .lede, .coverage, .review-note { display:none; }
+      .review-panel .eyebrow { margin:0 0 7px; font-size:10px; }
+      .review-panel > .review-group { display:none; }
+      .review-panel > .review-group:first-of-type { display:block; padding-top:8px; }
+      .review-compact { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+      .review-group { padding:0; border:0; }
+      .review-group:nth-of-type(n+3) { display:none; }
+      .review-label { margin-bottom:5px; font-size:10px; }
+      .review-button, .review-select { min-height:36px; }
+      .stage { padding:0; place-items:start center; }
+      .miniapp { width:100%; height:calc(100dvh - 100px); min-height:580px; border:0; border-radius:0; box-shadow:none; }
+    }
+    @media (max-width:350px) {
+      .review-compact { grid-template-columns:1fr; }
+      .mode-switch { gap:4px; }
+      .miniapp { height:calc(100dvh - 154px); }
+      .spot-head { grid-template-columns:60px minmax(0,1fr) 44px; }
+      .media-placeholder { height:60px; }
+      .facility-row .facility:nth-child(n+4) { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute"><defs>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 4 4"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="8" cy="6" r="1.5" class="icon-fill"/><circle cx="15" cy="12" r="1.5" class="icon-fill"/><circle cx="12" cy="18" r="1.5" class="icon-fill"/></symbol>
+    <symbol id="i-location" viewBox="0 0 24 24"><path d="m20 4-7.2 16-2.3-6.5L4 11.2 20 4Z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6-5.5 6-11a6 6 0 1 0-12 0c0 5.5 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3V9a3 3 0 0 1 3-3"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M18.5 10A7 7 0 0 0 6 7M5.5 14A7 7 0 0 0 18 17"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15.5A8.2 8.2 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15M15 6v15"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5M12 17v.5"/></symbol>
+  </defs></svg>
+
+  <main class="artifact" data-od-id="map-review-artifact">
+    <aside class="review-panel" data-od-id="review-controls">
+      <p class="eyebrow">未采纳候选 · Review artifact</p>
+      <h1>今晚去观星<br>地图页</h1>
+      <p class="lede">Soft Instruments v1 下的一页完整评审资源。所有地点、距离、时间与结论均为演示数据。</p>
+      <div class="review-compact">
+        <section class="review-group">
+          <span class="review-label">视觉模式 · 状态保持</span>
+          <div class="mode-switch" role="group" aria-label="视觉模式">
+            <button class="review-button" data-mode-button="day" aria-pressed="true">日间</button>
+            <button class="review-button" data-mode-button="night" aria-pressed="false">夜间</button>
+            <button class="review-button" data-mode-button="observation" aria-pressed="false">观测红</button>
+          </div>
+        </section>
+        <section class="review-group">
+          <label class="review-label" for="scenarioSelect">页面情景 · 可逐项检查</label>
+          <select class="review-select" id="scenarioSelect">
+            <option value="ready">默认 · 可用地图</option>
+            <option value="selected">选点 · 卡片与路线同步</option>
+            <option value="search">搜索 · 分组结果</option>
+            <option value="no-results">搜索 · 无结果</option>
+            <option value="search-degraded">搜索服务降级</option>
+            <option value="filters">筛选面板</option>
+            <option value="layer">光害估算图层</option>
+            <option value="permission">位置权限被拒</option>
+            <option value="partial">数据部分可用</option>
+            <option value="stale">数据陈旧但可用</option>
+            <option value="offline">离线 · 仅缓存</option>
+            <option value="route-unavailable">路线不可用</option>
+            <option value="layer-unavailable">图层不可用</option>
+            <option value="sensitive">敏感位置 · 近似坐标</option>
+            <option value="closed">点位临时关闭</option>
+            <option value="loading">加载中</option>
+            <option value="empty">区域内暂无点位</option>
+            <option value="error">页面错误 · 可恢复</option>
+            <option value="commercial">商用增强服务降级</option>
+            <option value="large-text">系统大字 · 内容重排</option>
+          </select>
+        </section>
+      </div>
+      <section class="review-group">
+        <div class="toggle-row"><span>减少动态效果</span><button class="switch" id="motionSwitch" role="switch" aria-checked="false" aria-label="减少动态效果"></button></div>
+      </section>
+      <section class="review-group">
+        <span class="review-label">设计说明</span>
+        <ul class="coverage">
+          <li>层级：搜索与筛选 → 地图证据 → 选点摘要 → 全局导航。</li>
+          <li>不变量：模式、图层与弹层切换均保留中心、筛选和当前选点。</li>
+          <li>状态：缺失不作零值；过期不再标为推荐；失败保留静态事实。</li>
+          <li>边界：路线只给概览，外部地图接管导航；观测红模式先行警告。</li>
+          <li>验证：真实地图、授权、生命周期、安全区和性能仍需微信真机确认。</li>
+        </ul>
+      </section>
+      <section class="review-group"><p class="review-note">演示地图为内联矢量模拟，不含真实瓦片、坐标、图片或服务调用。候选未构成 Product Surface 采纳。</p></section>
+    </aside>
+
+    <section class="stage" aria-label="手机画布">
+      <article class="miniapp" id="miniapp" data-mode="day" data-od-id="miniapp-map-page">
+        <div class="app-shell">
+          <header class="top-chrome" data-od-id="miniapp-safe-header">
+            <div class="status-row"><span>20:18</span><div class="system-marks"><span class="signal"><i></i><i></i><i></i><i></i></span><span>5G</span><span class="battery"></span></div></div>
+            <div class="nav-row"><span></span><h2 data-od-id="page-title">地图</h2><div class="capsule" aria-label="微信小程序菜单示意"><span class="dots">•••</span><span class="ring"></span></div><div class="demo-label">演示区域 · 示例数据</div></div>
+          </header>
+
+          <section class="map-region" id="mapRegion" data-od-id="map-simulation" aria-label="演示地图区域">
+            <svg class="map-art" viewBox="0 0 750 950" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect class="land" width="750" height="950"/>
+              <path class="water" d="M590-20c-75 104-81 179-29 237s45 131-7 195-70 150-34 254 106 161 230 177V-20Z"/>
+              <path class="park" d="M72 438c88-76 213-91 292-14s45 178-48 229-227 51-282-34-11-139 38-181Z"/>
+              <path class="minor" d="M-20 162C160 170 216 267 342 291s230-72 430-17M76 954c72-185 178-251 325-296s242-137 356-277M-30 717c132-57 251-81 376-39s251 22 429-62"/>
+              <path class="road" d="M-20 162C160 170 216 267 342 291s230-72 430-17M76 954c72-185 178-251 325-296s242-137 356-277M-30 717c132-57 251-81 376-39s251 22 429-62"/>
+              <path class="minor" d="M115-20c5 135 99 217 116 333s-56 207-66 336 78 218 106 321M457-20c-22 147 44 243 20 339s-109 176-84 300 104 204 101 351"/>
+              <path class="road" d="M115-20c5 135 99 217 116 333s-56 207-66 336 78 218 106 321M457-20c-22 147 44 243 20 339s-109 176-84 300 104 204 101 351"/>
+              <path id="routePath" class="route" d="M385 715C350 658 337 612 377 552s70-91 76-169" hidden/>
+              <text x="65" y="402">试行观测区域</text><text x="504" y="617">示意水域</text><text x="277" y="198">环岭路</text><text x="90" y="754">南岸路</text>
+            </svg>
+            <div class="light-grid" id="lightGrid" hidden></div>
+            <div class="map-tools">
+              <button class="search-trigger" id="searchTrigger" data-od-id="map-search" aria-label="搜索地点"><svg class="icon"><use href="#i-search"/></svg><strong>想去哪里看星星？</strong><small>城市 / 地点</small></button>
+              <div class="chips" id="quickFilters" aria-label="快捷筛选"></div>
+            </div>
+
+            <div class="state-banner" id="stateBanner" role="status" hidden><svg class="icon"><use href="#i-alert"/></svg><p id="bannerText"></p><button class="inline-link" id="bannerAction">处理</button></div>
+
+            <button class="cluster" aria-label="展开包含 8 个观星点的聚合标记">8<small>点位</small></button>
+            <button class="marker m1" data-spot="bay" aria-label="示例海湾观星点" aria-selected="false"><span class="marker-core"><svg class="icon"><use href="#i-pin"/></svg></span><span class="marker-label" hidden>示例·海湾观星点</span></button>
+            <button class="marker m2 favorite" data-spot="ridge" aria-label="已收藏的示例山脊点" aria-selected="false"><span class="marker-core"><svg class="icon"><use href="#i-pin"/></svg></span></button>
+            <button class="marker m3 closed" data-spot="closed" aria-label="临时关闭的示例东堤点" aria-selected="false"><span class="marker-core"><svg class="icon"><use href="#i-alert"/></svg></span></button>
+            <button class="marker m4 approx" data-spot="sensitive" aria-label="近似位置的示例保护区点" aria-selected="false"><span class="marker-core"><svg class="icon"><use href="#i-pin"/></svg></span></button>
+            <button class="marker m5 insufficient" data-spot="insufficient" aria-label="数据不足的示例北坡点" aria-selected="false"><span class="marker-core"><span>?</span></span></button>
+
+            <div class="floating-controls" data-od-id="map-controls">
+              <button class="icon-button" id="locateTrigger" aria-label="使用当前位置"><svg class="icon"><use href="#i-location"/></svg></button>
+              <button class="icon-button" id="layerTrigger" aria-label="选择地图图层" aria-pressed="false"><svg class="icon"><use href="#i-layers"/></svg></button>
+              <button class="icon-button" id="refreshTrigger" aria-label="刷新当前区域"><svg class="icon"><use href="#i-refresh"/></svg></button>
+            </div>
+            <span class="map-legal">地图视觉模拟 · 服务商/审图号待接入</span>
+
+            <section class="spot-card" id="spotCard" data-od-id="selected-spot-card" hidden>
+              <div class="spot-head">
+                <div class="media-placeholder" aria-label="实景图片待补示例占位"><span class="media-tag">实景待补 · 示例</span></div>
+                <div><div class="spot-title-row"><h3 id="spotName">示例·海湾观星点</h3><span class="status-pill" id="tonightState">可考虑</span></div><p class="spot-meta"><strong id="pollutionState">较低 · 产品估算</strong><br><span id="freshnessText">20:10 更新 · 产品计算 / 示例</span></p></div>
+                <button class="icon-button favorite-button" id="favoriteButton" aria-label="收藏点位" aria-pressed="false"><svg class="icon"><use href="#i-star"/></svg></button>
+              </div>
+              <div class="data-strip">
+                <div class="datum"><span id="distanceLabel">驾车距离</span><strong id="distanceValue">28<small>km</small></strong></div>
+                <div class="datum"><span id="driveLabel">预计用时</span><strong id="driveValue">45<small>分钟</small></strong></div>
+                <div class="datum"><span>位置精度</span><strong id="coordValue">区域级</strong></div>
+              </div>
+              <div class="facility-row" id="facilityRow"><span class="facility">停车</span><span class="facility">厕所</span><span class="facility">观景台</span><span class="facility unknown">充电未知</span></div>
+              <div class="route-row"><svg class="icon"><use href="#i-route"/></svg><div><strong id="routeTitle">路线概览可用</strong><span id="routeMeta">最后 1.2 km 为窄路 · 目标已同步</span></div><button class="secondary-action" id="routeTrigger">路线</button></div>
+              <div class="card-actions"><button class="button secondary" id="recenterButton">回到点位</button><button class="button primary" id="detailButton" data-od-id="view-detail-cta">查看详情</button></div>
+            </section>
+
+            <div class="map-state" id="mapState" hidden><div class="map-state-card" id="mapStateCard"></div></div>
+          </section>
+
+          <nav class="global-nav" data-od-id="global-navigation" aria-label="候选全局导航">
+            <button class="nav-item" data-nav="night"><svg class="icon"><use href="#i-moon"/></svg><span>夜空</span></button>
+            <button class="nav-item" aria-current="page" data-nav="map"><span class="nav-icon-wrap"><svg class="icon"><use href="#i-map"/></svg></span><span>地图</span></button>
+            <button class="nav-item" data-nav="my"><svg class="icon"><use href="#i-user"/></svg><span>我的</span></button>
+          </nav>
+        </div>
+
+        <section class="overlay full" id="searchOverlay" role="dialog" aria-modal="true" aria-labelledby="searchTitle" hidden>
+          <div class="overlay-bar"><button class="icon-button overlay-close" aria-label="关闭搜索"><svg class="icon"><use href="#i-back"/></svg></button><label class="search-field"><svg class="icon"><use href="#i-search"/></svg><input id="searchInput" placeholder="想去哪里看星星？" autocomplete="off" /><span id="searchTitle" hidden>搜索地点</span></label><button class="inline-link" id="clearSearch">清空</button></div>
+          <div class="overlay-content"><p class="legend-note" id="searchNotice" hidden>搜索服务暂时降级：当前仅显示缓存的历史与示例点位，普通地点结果可能不完整。地图浏览仍可使用。</p><div id="searchResults">
+            <section class="result-section"><div class="section-heading"><h3>观星点</h3><span>正式点位 · 示例</span></div><button class="result-row" data-result-spot="bay"><span class="result-icon"><svg class="icon"><use href="#i-star"/></svg></span><span><strong>示例·海湾观星点</strong><small>较低光害估算 · 距试行区域中心 28 km</small></span><span>点位</span></button></section>
+            <section class="result-section"><div class="section-heading"><h3>普通地点</h3><span>不会自动成为点位</span></div><button class="result-row" data-result-place="park"><span class="result-icon"><svg class="icon"><use href="#i-pin"/></svg></span><span><strong>示例·南岸公园</strong><small>移动地图后可“查看此处夜空”</small></span><span>地点</span></button></section>
+            <section class="result-section"><div class="section-heading"><h3>历史搜索</h3><span>仅本机示意</span></div><button class="result-row" data-result-place="history"><span class="result-icon"><svg class="icon"><use href="#i-refresh"/></svg></span><span><strong>试行区域北侧</strong><small>上次浏览 · 筛选状态可恢复</small></span><span>历史</span></button></section>
+          </div><div id="searchEmpty" class="empty-state" hidden><div><div class="empty-symbol"><svg class="icon"><use href="#i-search"/></svg></div><h3>没有找到相关地点</h3><p>试试城市、区县、常用地名，或回到地图浏览示例点位。</p><button class="button secondary overlay-close">返回地图</button></div></div></div>
+        </section>
+
+        <section class="overlay sheet-backdrop" id="filterSheet" role="dialog" aria-modal="true" aria-labelledby="filterTitle" hidden>
+          <div class="sheet"><div class="handle" aria-hidden="true"></div><div class="sheet-head"><div><h3 id="filterTitle">筛选观星点</h3><p><span id="filterCount">1</span> 项草稿 · <span id="filterCommittedCount">1</span> 项已应用</p></div><button class="icon-button" id="cancelFilters" aria-label="关闭筛选"><svg class="icon"><use href="#i-close"/></svg></button></div>
+            <div class="filter-scroll" id="filterTree" aria-label="筛选条件层级"></div>
+            <div class="sheet-actions"><button class="button secondary" id="resetFilters">重置</button><button class="button primary" id="applyFilters">应用筛选</button></div>
+          </div>
+        </section>
+
+        <section class="overlay sheet-backdrop" id="layerSheet" role="dialog" aria-modal="true" aria-labelledby="layerTitle" hidden>
+          <div class="sheet"><div class="handle"></div><div class="sheet-head"><div><h3 id="layerTitle">地图图层</h3><p>标准地图 + 一层业务辅助信息</p></div><button class="icon-button overlay-close" aria-label="关闭图层"><svg class="icon"><use href="#i-close"/></svg></button></div>
+            <p class="legend-note" id="layerUnavailableNote" hidden>光害估算图层当前不可用，已自动回到标准地图。点位卡中最后可用的估算仍保留，并继续显示来源与更新时间。</p>
+            <div class="filter-group"><div class="filter-grid"><button class="filter-option layer-option" data-layer="standard" aria-pressed="true">标准地图</button><button class="filter-option layer-option" data-layer="light" aria-pressed="false">光害估算</button><button class="filter-option layer-option" data-layer="favorites" aria-pressed="false">收藏点位</button><button class="filter-option layer-option" data-layer="recommended" aria-pressed="false">今晚可考虑</button></div></div>
+            <section id="lightLegend" hidden><div class="section-heading"><h3>光害估算图例</h3><span>适合缩放级别显示</span></div><div class="legend"><div class="legend-row"><span>相对较低</span><div class="legend-scale"></div><span>相对较高</span></div></div><p class="legend-note">来源：产品试算 / 示例栅格<br>数据日期：2026-07 · 仅供区域比较<br>精度：区域级估算，非最终 Bortle 分级；现场能见度仍受云量、月光与遮挡影响。</p></section>
+            <div class="sheet-actions"><button class="button secondary overlay-close">取消</button><button class="button primary overlay-close" id="applyLayer">显示图层</button></div>
+          </div>
+        </section>
+
+        <section class="overlay sheet-backdrop" id="routeSheet" role="dialog" aria-modal="true" aria-labelledby="routeSheetTitle" hidden>
+          <div class="sheet"><div class="handle"></div><div class="sheet-head"><div><h3 id="routeSheetTitle">前往示例·海湾观星点</h3><p>路线概览 · 示例数据</p></div><button class="icon-button overlay-close" aria-label="关闭路线"><svg class="icon"><use href="#i-close"/></svg></button></div>
+            <div class="route-summary"><h4 id="routeSheetStatus">驾车路线可用</h4><div class="route-metrics"><strong id="routeSheetDistance">28<small>km</small></strong><strong id="routeSheetTime">45<small>分钟</small></strong></div><p id="routeSheetCopy">预计经环岭路到达；最后 1.2 km 为窄路。外部地图将接管详细导航。</p></div>
+            <div class="vendor-warning" id="vendorWarning" hidden>即将离开观测红界面。系统或第三方地图可能显示明亮、非红色界面；可取消并留在本页。</div>
+            <div class="sheet-actions"><button class="button secondary overlay-close">取消</button><button class="button primary" id="externalMapButton">打开外部地图</button></div>
+          </div>
+        </section>
+
+        <section class="overlay sheet-backdrop" id="permissionSheet" role="dialog" aria-modal="true" aria-labelledby="permissionTitle" hidden>
+          <div class="sheet"><div class="handle"></div><div class="sheet-head"><div><h3 id="permissionTitle">使用当前位置</h3><p>仅在你主动使用时请求</p></div><button class="icon-button overlay-close" aria-label="关闭位置请求"><svg class="icon"><use href="#i-close"/></svg></button></div><p class="legend-note">用于将地图移动到附近区域，不会默认持续定位，也不会在普通记录中展示精确坐标。拒绝后仍可浏览演示区域或手动选择城市。</p><div class="sheet-actions"><button class="button secondary overlay-close">暂不使用</button><button class="button primary" id="permissionDemo">继续（演示拒绝）</button></div></div>
+        </section>
+
+        <div class="toast" id="toast" role="status" hidden></div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const app = document.querySelector('#miniapp');
+      const $ = (s, root=document) => root.querySelector(s);
+      const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+      const overlays = $$('.overlay');
+      const FILTER_MODEL = [
+        {id:'stargazing',label:'观星条件',criteria:[
+          {id:'lightLevel',label:'光害等级',selection:'single',values:['2级以下','3级以下','4级以下','5级以下','6级以下']},
+          {id:'obstruction',label:'遮挡',selection:'single',values:['遮挡面积 50% 以下','遮挡面积 30% 以下','无遮挡']},
+          {id:'lightDirection',label:'光害方向',selection:'single',values:['全部无光害','西边无光害','东北无光害']}
+        ]},
+        {id:'spot',label:'观测点',criteria:[
+          {id:'driveTime',label:'驾车时间',selection:'single',values:['2小时内','4小时内','6小时内']},
+          {id:'journey',label:'行程信息',selection:'multi',values:['驾车直达','公共交通','不要徒步','不要登山']},
+          {id:'elevation',label:'海拔',selection:'single',values:['1000米以下','2000米以下','3000米以下','4000米以下','6000米以下']}
+        ]},
+        {id:'site',label:'场地信息',selection:'multi',values:['有停车','有厕所','可充电','能露营']}
+      ];
+      const initialFilters = {lightLevel:'4级以下',driveTime:'2小时内',site:['有停车']};
+      const state = { mode:'day', scenario:'ready', selected:null, layer:'standard', favorites:new Set(['ridge']), lastFocus:null, filters:cloneFilters(initialFilters), draftFilters:null, filterSessionBase:null, expandedCriterion:null };
+      const spots = {
+        bay:{name:'示例·海湾观星点', tonight:'可考虑', pollution:'较低 · 产品估算', freshness:'20:10 更新 · 产品计算 / 示例', distance:'28', time:'45', coord:'区域级', route:'路线概览可用', routeMeta:'最后 1.2 km 为窄路 · 目标已同步'},
+        ridge:{name:'示例·山脊停车点', tonight:'可考虑', pollution:'中低 · 产品估算', freshness:'19:50 更新 · 产品计算 / 示例', distance:'36', time:'58', coord:'区域级', route:'路线概览可用', routeMeta:'停车后步行约 8 分钟 · 目标已同步'},
+        closed:{name:'示例·东堤观测点', tonight:'临时关闭', pollution:'点位静态信息仍可查看', freshness:'关闭信息 18:40 更新 · 示例', distance:'—', time:'—', coord:'已隐藏', route:'不提供路线', routeMeta:'临时关闭，目标未发送至外部地图'},
+        sensitive:{name:'示例·保护区边缘点', tonight:'位置受限', pollution:'较低 · 产品估算', freshness:'区域说明 20:00 更新 · 示例', distance:'约 31', time:'—', coord:'近似区域', route:'精确目标受限', routeMeta:'仅显示安全到达区域，不提供精确坐标'},
+        insufficient:{name:'示例·北坡空地', tonight:'数据不足', pollution:'光害估算不可用', freshness:'部分资料待补 · 示例', distance:'22', time:'—', coord:'区域级', route:'路线待确认', routeMeta:'仍可查看静态设施信息'}
+      };
+
+      function cloneFilters(filters){ return JSON.parse(JSON.stringify(filters || {})); }
+      function criterionById(id){ for(const group of FILTER_MODEL){ const found=(group.criteria||[]).find(item=>item.id===id); if(found) return found; if(group.id===id && group.values) return group; } return null; }
+      function valuesFor(filters, criterion){ const value=filters?.[criterion.id]; return Array.isArray(value)?value:(value?[value]:[]); }
+      function filterCount(filters){ return FILTER_MODEL.reduce((total,group)=>total+(group.criteria||[group]).reduce((sum,item)=>sum+valuesFor(filters,item).length,0),0); }
+      function summaryFor(filters, criterion){ const values=valuesFor(filters,criterion); if(!values.length) return '未选择'; if(values.length<=2) return values.join('、'); return `${values[0]} 等 ${values.length} 项`; }
+      function icon(id){ return `<svg class="icon"><use href="#${id}"/></svg>`; }
+      function discardFilterDraft(){ state.draftFilters=null; state.filterSessionBase=null; state.expandedCriterion=null; }
+      function cancelFilterDraft(){ if(state.filterSessionBase) state.filters=cloneFilters(state.filterSessionBase); discardFilterDraft(); }
+      function closeOverlays(){ if(!$('#filterSheet').hidden) cancelFilterDraft(); overlays.forEach(o => o.hidden = true); if(state.lastFocus){ state.lastFocus.focus({preventScroll:true}); state.lastFocus=null; } }
+      function openOverlay(id, trigger){ closeOverlays(); const el=$('#'+id); el.hidden=false; state.lastFocus=trigger||document.activeElement; requestAnimationFrame(()=>$('.overlay-close, input, button',el)?.focus({preventScroll:true})); }
+      function toast(message){ const el=$('#toast'); el.textContent=message; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,2400); }
+      function setBanner(title, copy, action='了解'){ $('#stateBanner').hidden=false; $('#bannerText').innerHTML=`<strong>${title}</strong>${copy}`; $('#bannerAction').textContent=action; }
+      function clearBanner(){ $('#stateBanner').hidden=true; }
+      function setMapState(kind){
+        const wrap=$('#mapState'), card=$('#mapStateCard');
+        if(!kind){ wrap.hidden=true; return; }
+        wrap.hidden=false;
+        if(kind==='loading') card.innerHTML=`<div class="spinner"></div><h3>正在载入演示区域</h3><p>地图骨架保持稳定；移动地图时不会每帧显示加载动画。</p><div class="skeleton"></div><div class="skeleton" style="width:72%;margin-inline:auto"></div>`;
+        if(kind==='empty') card.innerHTML=`${icon('i-map')}<h3>这个区域暂无示例点位</h3><p>可以移动地图、减少筛选，或手动选择其他试行区域。</p><button class="button secondary" data-state-action="reset">重置筛选</button>`;
+        if(kind==='filtered-empty') card.innerHTML=`${icon('i-filter')}<h3>当前筛选组合没有示例点位</h3><p>这是演示区域内的本地筛选结果，不代表真实服务为空。可以减少条件后再次应用。</p><button class="button secondary" data-state-action="adjust">调整筛选</button>`;
+        if(kind==='error') card.innerHTML=`${icon('i-alert')}<h3>地图数据暂时没有载入</h3><p>已保留区域与筛选。可重试，或继续使用搜索选择城市。</p><button class="button primary" data-state-action="retry">重新载入</button>`;
+      }
+      function renderQuickFilters(){
+        const specs=[['lightLevel','光害等级'],['driveTime','驾车时间'],['site','场地信息']];
+        const buttons=specs.map(([id,label])=>{ const criterion=criterionById(id), values=valuesFor(state.filters,criterion); const detail=values.length===1?values[0]:(values.length?`${values.length} 项`:''); return `<button class="chip" aria-pressed="${values.length>0}" data-quick-criterion="${id}">${label}${detail?` · ${detail}`:''}</button>`; });
+        const count=filterCount(state.filters); buttons.push(`<button class="chip more" id="filterTrigger" aria-pressed="${count>0}" data-quick-criterion="">更多${count?` · ${count}`:''}</button>`); $('#quickFilters').innerHTML=buttons.join('');
+      }
+      function renderFilterSheet(){
+        const draft=state.draftFilters || {};
+        $('#filterCount').textContent=filterCount(draft);
+        $('#filterCommittedCount').textContent=filterCount(state.filters);
+        $('#filterTree').innerHTML=`<p class="filter-limit">光害等级为产品估算；遮挡比例与光害方向为候选筛选语义。本原型只演示本地状态，不请求真实服务。</p>`+FILTER_MODEL.map(group=>{
+          if(group.criteria){
+            return `<section class="filter-group" aria-labelledby="filter-group-${group.id}"><h4 id="filter-group-${group.id}">${group.label}</h4>${group.criteria.map(criterion=>{ const expanded=state.expandedCriterion===criterion.id; const selected=valuesFor(draft,criterion); return `<div class="filter-criterion"><button class="criterion-toggle" data-criterion="${criterion.id}" aria-expanded="${expanded}" aria-controls="filter-region-${criterion.id}"><span class="criterion-copy"><span class="criterion-label">${criterion.label}</span><span class="criterion-summary">${summaryFor(draft,criterion)}</span></span><span class="criterion-chevron" aria-hidden="true">⌄</span></button><div class="criterion-region" id="filter-region-${criterion.id}" ${expanded?'':'hidden'}>${expanded?`<div class="terminal-grid">${criterion.values.map(value=>`<button class="terminal-option" data-terminal-criterion="${criterion.id}" data-terminal-value="${value}" aria-pressed="${selected.includes(value)}">${value}</button>`).join('')}</div>`:''}</div></div>`; }).join('')}</section>`;
+          }
+          const selected=valuesFor(draft,group); return `<section class="filter-group" aria-labelledby="filter-group-${group.id}"><h4 id="filter-group-${group.id}">${group.label}</h4><div class="terminal-grid">${group.values.map(value=>`<button class="terminal-option" data-terminal-criterion="${group.id}" data-terminal-value="${value}" aria-pressed="${selected.includes(value)}">${value}</button>`).join('')}</div></section>`;
+        }).join('');
+      }
+      function openFilterSheet(trigger, criterionId=null){
+        closeOverlays(); state.filterSessionBase=cloneFilters(state.filters); state.draftFilters=cloneFilters(state.filters); state.expandedCriterion=criterionId; renderFilterSheet(); const sheet=$('#filterSheet'); sheet.hidden=false; state.lastFocus=trigger||document.activeElement; requestAnimationFrame(()=>$('.criterion-toggle, .terminal-option, button',sheet)?.focus({preventScroll:true}));
+      }
+      function updateDraftSelection(criterionId,value){
+        const criterion=criterionById(criterionId); if(!criterion) return; const current=valuesFor(state.draftFilters,criterion);
+        if(criterion.selection==='single'){
+          if(current[0]===value) delete state.draftFilters[criterionId]; else state.draftFilters[criterionId]=value;
+        }else{
+          const next=current.includes(value)?current.filter(item=>item!==value):[...current,value]; if(next.length) state.draftFilters[criterionId]=next; else delete state.draftFilters[criterionId];
+        }
+        renderFilterSheet();
+      }
+      function applyFilterDraft(){
+        const before=JSON.stringify(state.filters); state.filters=cloneFilters(state.draftFilters); const changed=before!==JSON.stringify(state.filters); const count=filterCount(state.filters); state.filterSessionBase=null; discardFilterDraft(); closeOverlays(); renderQuickFilters(); setMapState(null); clearBanner();
+        const strict=valuesFor(state.filters,criterionById('lightDirection')).includes('全部无光害') && valuesFor(state.filters,criterionById('obstruction')).includes('无遮挡');
+        if(strict){ setMapState('filtered-empty'); toast('筛选已应用 · 当前组合在演示数据中无结果'); }
+        else if(changed){ setBanner('筛选已应用 · 示例数据',count?`已按 ${count} 项终端条件更新本地演示结果；没有请求真实服务。`:'已清除全部筛选，恢复演示区域样例。','查看筛选'); $('#bannerAction').onclick=()=>openFilterSheet($('#bannerAction')); toast(`筛选已提交 · ${count} 项`); }
+        else toast('筛选未变化 · 保留当前演示结果');
+      }
+      function setRouteVisible(visible){
+        $('#routePath').toggleAttribute('hidden',!visible);
+      }
+      function selectSpot(key){
+        state.selected=key; const spot=spots[key];
+        $$('.marker').forEach(m=>{ const selected=m.dataset.spot===key; m.setAttribute('aria-selected',selected); m.classList.toggle('favorite',state.favorites.has(m.dataset.spot)); const label=$('.marker-label',m); if(label) label.hidden=!selected; });
+        $('#spotCard').hidden=false; $('#spotName').textContent=spot.name; $('#tonightState').textContent=spot.tonight; $('#pollutionState').textContent=spot.pollution; $('#freshnessText').textContent=spot.freshness;
+        $('#distanceLabel').textContent='驾车距离'; $('#driveLabel').textContent='预计用时';
+        $('#distanceValue').innerHTML=spot.distance==='—'?'—':`${spot.distance}<small>km</small>`; $('#driveValue').innerHTML=spot.time==='—'?'—':`${spot.time}<small>分钟</small>`; $('#coordValue').textContent=spot.coord;
+        const isFavorite=state.favorites.has(key); $('#favoriteButton').setAttribute('aria-pressed',isFavorite); $('#favoriteButton').setAttribute('aria-label',isFavorite?'取消收藏点位':'收藏点位');
+        $('#routeTitle').textContent=spot.route; $('#routeMeta').textContent=spot.routeMeta;
+        const routeAllowed=!['closed','sensitive','insufficient'].includes(key); setRouteVisible(routeAllowed && state.scenario!=='route-unavailable');
+        const routePaths={bay:'M385 715C350 658 337 612 377 552s70-91 76-169',ridge:'M385 715C314 669 264 619 197 548s-64-109-31-158'};
+        if(routePaths[key]) $('#routePath').setAttribute('d',routePaths[key]);
+        $('#routeSheetTitle').textContent=`前往${spot.name}`;
+        $('#routeSheetStatus').textContent=spot.route;
+        $('#routeSheetDistance').innerHTML=spot.distance==='—'?'—':`${spot.distance}<small>km</small>`;
+        $('#routeSheetTime').innerHTML=spot.time==='—'?'—':`${spot.time}<small>分钟</small>`;
+        $('#routeSheetCopy').textContent=`${spot.routeMeta}。${routeAllowed?'外部地图将接管详细导航。':'不会发送未经允许的精确导航目标。'}`;
+        $('#routeTrigger').disabled=key==='closed'; $('#routeTrigger').setAttribute('aria-disabled',key==='closed');
+        $('#externalMapButton').disabled=['closed','sensitive'].includes(key);
+      }
+      function resetVisualState(){
+        closeOverlays(); clearBanner(); setMapState(null); app.classList.remove('large-text'); $('#spotCard').hidden=true; setRouteVisible(false); $('#lightGrid').hidden=state.layer!=='light';
+        $('#searchNotice').hidden=true; $('#layerUnavailableNote').hidden=true;
+        $$('.marker').forEach(m=>{m.setAttribute('aria-selected','false'); const l=$('.marker-label',m); if(l)l.hidden=true;});
+        $('#routeSheetStatus').textContent='驾车路线可用'; $('#routeSheetDistance').innerHTML='28<small>km</small>'; $('#routeSheetTime').innerHTML='45<small>分钟</small>'; $('#routeSheetCopy').textContent='预计经环岭路到达；最后 1.2 km 为窄路。外部地图将接管详细导航。';
+        $('#routeTrigger').disabled=false; $('#externalMapButton').disabled=false; $('#bannerAction').onclick=null;
+      }
+      function activateScenario(value){
+        state.scenario=value; resetVisualState();
+        switch(value){
+          case 'selected': selectSpot('bay'); break;
+          case 'search': openOverlay('searchOverlay',$('#searchTrigger')); $('#searchEmpty').hidden=true; $('#searchResults').hidden=false; break;
+          case 'no-results': openOverlay('searchOverlay',$('#searchTrigger')); $('#searchInput').value='不存在的地点'; $('#searchResults').hidden=true; $('#searchEmpty').hidden=false; break;
+          case 'search-degraded': openOverlay('searchOverlay',$('#searchTrigger')); $('#searchInput').value=''; $('#searchResults').hidden=false; $('#searchEmpty').hidden=true; $('#searchNotice').hidden=false; break;
+          case 'filters': openFilterSheet($('#filterTrigger')); break;
+          case 'layer': state.layer='light'; $('#lightGrid').hidden=false; updateLayerUI(); openOverlay('layerSheet',$('#layerTrigger')); break;
+          case 'permission': setBanner('未获得位置权限','仍可浏览演示区域，或手动选择城市；不会反复请求。','选择城市'); $('#bannerAction').onclick=()=>openOverlay('searchOverlay',$('#bannerAction')); break;
+          case 'partial': selectSpot('insufficient'); setBanner('部分数据暂缺','路线时间与光害估算缺失，静态设施和区域位置仍可用。','查看说明'); break;
+          case 'stale': selectSpot('bay'); $('#tonightState').textContent='待复核'; $('#freshnessText').textContent='昨日 20:10 更新 · 已陈旧 / 示例'; setBanner('数据已陈旧','保留上次可用事实，但不继续标记为“推荐”。','刷新'); break;
+          case 'offline': selectSpot('bay'); $('#tonightState').textContent='缓存结论'; setBanner('当前离线 · 仅缓存','点位与上次路线仍可查看；实时搜索和刷新不可用。','选择城市'); break;
+          case 'route-unavailable': selectSpot('bay'); setRouteVisible(false); $('#distanceLabel').textContent='非路线距离'; $('#distanceValue').innerHTML='24<small>km</small>'; $('#driveLabel').textContent='预计驾车时间'; $('#driveValue').innerHTML='—<small>不可用</small>'; $('#routeTitle').textContent='路线待刷新'; $('#routeMeta').textContent='非路线距离 24 km · 未绘制路线'; $('#routeSheetStatus').textContent='路线暂不可用'; $('#routeSheetDistance').innerHTML='24<small>km · 非路线距离</small>'; $('#routeSheetTime').textContent='—'; $('#routeSheetCopy').textContent='路线服务未返回可验证结果，因此不绘制路线。仍可查看非路线距离与点位静态说明。'; break;
+          case 'layer-unavailable': state.layer='standard'; updateLayerUI(); openOverlay('layerSheet',$('#layerTrigger')); $('#lightLegend').hidden=true; $('#layerUnavailableNote').hidden=false; break;
+          case 'sensitive': selectSpot('sensitive'); setBanner('位置为近似区域','为保护敏感点位，不显示或发送精确导航目标。','知道了'); break;
+          case 'closed': selectSpot('closed'); setBanner('点位临时关闭','保留静态信息用于判断；路线和外部导航已停用。','查看说明'); break;
+          case 'loading': setMapState('loading'); break;
+          case 'empty': setMapState('empty'); break;
+          case 'error': setMapState('error'); break;
+          case 'commercial': selectSpot('bay'); setBanner('商用增强服务已降级','云图、实时路况与普通地点搜索暂不可用；Demo 点位和缓存事实继续可用。','查看范围'); break;
+          case 'large-text': app.classList.add('large-text'); selectSpot('bay'); setBanner('系统大字已启用','标题、关键数值、状态与操作允许换行；卡片区域可独立滚动。','知道了'); break;
+          case 'ready': state.selected=null; state.layer='standard'; updateLayerUI(); break;
+          default: state.selected=null;
+        }
+      }
+      function updateLayerUI(){
+        $$('.layer-option').forEach(b=>b.setAttribute('aria-pressed',b.dataset.layer===state.layer));
+        $('#lightGrid').hidden=state.layer!=='light'; $('#lightLegend').hidden=state.layer!=='light'; $('#layerTrigger').setAttribute('aria-pressed',state.layer!=='standard');
+      }
+
+      $$('[data-mode-button]').forEach(btn=>btn.addEventListener('click',()=>{
+        state.mode=btn.dataset.modeButton; app.dataset.mode=state.mode; $$('[data-mode-button]').forEach(b=>b.setAttribute('aria-pressed',b===btn)); $('#vendorWarning').hidden=state.mode!=='observation';
+      }));
+      $('#motionSwitch').addEventListener('click',e=>{ const on=e.currentTarget.getAttribute('aria-checked')!=='true'; e.currentTarget.setAttribute('aria-checked',on); app.classList.toggle('reduce-motion',on); });
+      $('#scenarioSelect').addEventListener('change',e=>activateScenario(e.target.value));
+      $('#searchTrigger').addEventListener('click',e=>{ $('#searchInput').value=''; $('#searchResults').hidden=false; $('#searchEmpty').hidden=true; openOverlay('searchOverlay',e.currentTarget); });
+      $('#searchInput').addEventListener('input',e=>{ const none=/无|不存在|火星/.test(e.target.value); $('#searchResults').hidden=none; $('#searchEmpty').hidden=!none; });
+      $('#clearSearch').addEventListener('click',()=>{ $('#searchInput').value=''; $('#searchResults').hidden=false; $('#searchEmpty').hidden=true; $('#searchInput').focus(); });
+      $('#quickFilters').addEventListener('click',e=>{ const button=e.target.closest('[data-quick-criterion]'); if(button) openFilterSheet(button,button.dataset.quickCriterion||null); });
+      $('#layerTrigger').addEventListener('click',e=>openOverlay('layerSheet',e.currentTarget));
+      $('#locateTrigger').addEventListener('click',e=>openOverlay('permissionSheet',e.currentTarget));
+      $('#permissionDemo').addEventListener('click',()=>{ closeOverlays(); $('#scenarioSelect').value='permission'; activateScenario('permission'); });
+      $$('.overlay-close').forEach(btn=>btn.addEventListener('click',closeOverlays));
+      $$('.marker').forEach(btn=>btn.addEventListener('click',()=>{ state.scenario='selected'; $('#scenarioSelect').value='selected'; resetVisualState(); selectSpot(btn.dataset.spot); }));
+      $('.cluster').addEventListener('click',()=>toast('已放大聚合区域 · 示例：将逐步展开 8 个点位'));
+      $$('[data-result-spot]').forEach(btn=>btn.addEventListener('click',()=>{ closeOverlays(); selectSpot(btn.dataset.resultSpot); toast('地图、标记与点位卡已同步'); }));
+      $$('[data-result-place]').forEach(btn=>btn.addEventListener('click',()=>{ closeOverlays(); toast('已移动到普通地点 · 可查看此处夜空，不会成为正式点位'); }));
+      $('#filterTree').addEventListener('click',e=>{ const parent=e.target.closest('[data-criterion]'); if(parent){ const id=parent.dataset.criterion; state.expandedCriterion=state.expandedCriterion===id?null:id; renderFilterSheet(); requestAnimationFrame(()=>$(`[data-criterion="${id}"]`,$('#filterTree'))?.focus({preventScroll:true})); return; } const terminal=e.target.closest('[data-terminal-criterion]'); if(terminal) updateDraftSelection(terminal.dataset.terminalCriterion,terminal.dataset.terminalValue); });
+      $('#resetFilters').addEventListener('click',()=>{ state.draftFilters={}; renderFilterSheet(); toast('筛选草稿已重置 · 应用后才会更新地图'); });
+      $('#cancelFilters').addEventListener('click',closeOverlays);
+      $('#applyFilters').addEventListener('click',applyFilterDraft);
+      $$('.layer-option').forEach(btn=>btn.addEventListener('click',()=>{ state.layer=btn.dataset.layer; updateLayerUI(); }));
+      $('#routeTrigger').addEventListener('click',e=>{ if(!e.currentTarget.disabled) openOverlay('routeSheet',e.currentTarget); });
+      $('#externalMapButton').addEventListener('click',()=>toast(state.mode==='observation'?'外部界面警告已确认 · 本原型不启动真实地图':'外部导航交接示意 · 本原型不启动真实地图'));
+      $('#favoriteButton').addEventListener('click',e=>{ if(!state.selected) return; const isFavorite=!state.favorites.has(state.selected); if(isFavorite) state.favorites.add(state.selected); else state.favorites.delete(state.selected); e.currentTarget.setAttribute('aria-pressed',isFavorite); e.currentTarget.setAttribute('aria-label',isFavorite?'取消收藏点位':'收藏点位'); const marker=$(`.marker[data-spot="${state.selected}"]`); marker?.classList.toggle('favorite',isFavorite); toast(isFavorite?'已收藏 · 标记状态同步':'已取消收藏'); });
+      $('#recenterButton').addEventListener('click',()=>toast('已回到当前点位 · 中心、缩放与筛选保持'));
+      $('#detailButton').addEventListener('click',()=>toast('详情页不在本次范围；返回后恢复此地图、筛选与选点状态'));
+      $('#refreshTrigger').addEventListener('click',()=>{ setBanner('已开始后台刷新','当前地图和选点保持不动；新数据返回后再更新状态。','取消'); setTimeout(clearBanner,1800); });
+      $('.global-nav').addEventListener('click',e=>{ const item=e.target.closest('[data-nav]'); if(item && item.dataset.nav!=='map') toast(`${item.textContent.trim()}页仅作全局导航上下文，本次未设计`); });
+      $('#mapState').addEventListener('click',e=>{ const action=e.target.dataset.stateAction; if(action==='adjust'){ openFilterSheet(e.target); return; } if(action){ $('#scenarioSelect').value='ready'; activateScenario('ready'); toast(action==='retry'?'已恢复演示地图':'已返回演示地图；已提交筛选保持'); } });
+      document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeOverlays(); });
+      renderQuickFilters();
+      activateScenario('ready');
+    })();
+  </script>
+</body>
+</html>
