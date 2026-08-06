@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "my-content-prototype.html",
+  "entry": "my-content-prototype.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T17:12:38.809Z",
+  "updatedAt": "2026-08-05T17:12:38.809Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

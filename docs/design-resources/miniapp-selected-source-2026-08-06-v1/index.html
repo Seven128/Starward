@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>今晚去观星 · 小程序选定设计资源 V1</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", sans-serif; background:#f3efe5; color:#242826; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:0; }
+    main { width:min(1120px, 100%); margin:0 auto; padding:clamp(20px, 5vw, 56px); }
+    header { padding:clamp(24px, 6vw, 64px); border:1px solid #c9c1ae; border-radius:28px; background:#fbf7ed; box-shadow:0 16px 42px rgba(49,42,27,.08); }
+    .eyebrow { margin:0 0 10px; color:#646b61; font-size:14px; letter-spacing:.08em; }
+    h1 { margin:0; font-size:clamp(28px, 7vw, 54px); line-height:1.08; }
+    header p { max-width:760px; margin:18px 0 0; line-height:1.75; }
+    section { margin-top:36px; }
+    h2 { margin:0 0 16px; font-size:22px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr)); gap:16px; }
+    a { display:flex; min-height:88px; padding:18px; border:1px solid #cbc3b1; border-radius:20px; background:#fffdf7; color:inherit; text-decoration:none; flex-direction:column; justify-content:center; gap:6px; }
+    a:hover, a:focus-visible { border-color:#586c60; outline:3px solid rgba(88,108,96,.22); outline-offset:2px; }
+    a strong { font-size:17px; }
+    a span { color:#656b64; line-height:1.5; }
+    .note { margin-top:28px; padding:18px 20px; border-left:4px solid #697d70; background:#e9eee8; line-height:1.7; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">SELECTED DESIGN RESOURCE SUITE · 2026-08-06 · V1</p>
+      <h1>今晚去观星<br>微信小程序设计资源</h1>
+      <p>这是已完成需求变更闭环、跨资源一致性修复和独立审计后的选定资源入口。资源按页面、组件、状态、交互、响应式与语义资产分层；它们是开发约束来源，不冒充微信原生运行时或像素级生产验收结果。</p>
+    </header>
+
+    <section aria-labelledby="product-heading">
+      <h2 id="product-heading">全产品页面与跨页面资源</h2>
+      <div class="grid">
+        <a href="artifacts/app-01-flow-route-map.html"><strong>APP-01 · 流程与路由图</strong><span>完整页面族、入口、下钻与夜空归属。</span></a>
+        <a href="artifacts/app-02-spot-detail-prototype.html"><strong>APP-02 · 观星点详情</strong><span>概览、攻略、场地、夜空及真实代表媒体。</span></a>
+        <a href="artifacts/app-03-spot-night-prototype.html"><strong>APP-03 · 点位夜空</strong><span>点位上下文、今晚目标与计算/数据边界。</span></a>
+        <a href="artifacts/app-04-my-content-prototype.html"><strong>APP-04 · 我的与内容导入</strong><span>四标签、主页链接、外部帖子导入与关联点位。</span></a>
+        <a href="artifacts/app-05-shared-component-control-atlas.html"><strong>APP-05 · 共享组件控件图谱</strong><span>组件、控件、状态和可访问名称。</span></a>
+        <a href="artifacts/app-06-cross-app-interaction-motion-accessibility.html"><strong>APP-06 · 交互、动效与无障碍</strong><span>跨页面状态变化、焦点、播报和降级策略。</span></a>
+        <a href="artifacts/app-07-responsive-mode-state-matrix.html"><strong>APP-07 · 响应式与模式矩阵</strong><span>宽度、字号、主题、加载/空/错等条件。</span></a>
+        <a href="artifacts/app-08-semantic-asset-atlas.html"><strong>APP-08 · 语义资产图谱</strong><span>图标、媒体、来源、授权与替换边界。</span></a>
+      </div>
+    </section>
+
+    <section aria-labelledby="map-heading">
+      <h2 id="map-heading">地图页面专项资源</h2>
+      <div class="grid">
+        <a href="artifacts/map-01-page-prototype.html"><strong>MAP-01 · 地图页原型</strong><span>筛选入口、27 项平铺条件、草稿/应用/重置。</span></a>
+        <a href="artifacts/map-02-page-anatomy.html"><strong>MAP-02 · 页面解剖</strong><span>层级、布局、信息与操作责任。</span></a>
+        <a href="artifacts/map-03-component-control-atlas.html"><strong>MAP-03 · 组件控件图谱</strong><span>地图控件、筛选标签、卡片与状态。</span></a>
+        <a href="artifacts/map-04-interaction-motion-accessibility.html"><strong>MAP-04 · 交互动效无障碍</strong><span>点击、弹层、焦点、键盘、播报和减弱动效。</span></a>
+      </div>
+    </section>
+
+    <p class="note">审计说明、资源哈希与非声明边界见 <a href="selection-and-qa.md">selection-and-qa.md</a>；方案变更对账见 <a href="proposal-reconciliation-index.md">proposal-reconciliation-index.md</a>。</p>
+  </main>
+</body>
+</html>

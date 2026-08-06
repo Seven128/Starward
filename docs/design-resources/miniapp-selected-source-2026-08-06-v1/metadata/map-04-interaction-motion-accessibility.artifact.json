@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "interaction-motion-accessibility.html",
+  "entry": "interaction-motion-accessibility.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T11:01:28.402Z",
+  "updatedAt": "2026-08-05T11:01:28.402Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

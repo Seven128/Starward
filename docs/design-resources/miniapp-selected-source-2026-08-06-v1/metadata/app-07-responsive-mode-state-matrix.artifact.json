@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "responsive-mode-state-matrix.html",
+  "entry": "responsive-mode-state-matrix.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T18:14:11.476Z",
+  "updatedAt": "2026-08-05T18:14:11.476Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

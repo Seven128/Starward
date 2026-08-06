@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "page-anatomy.html",
+  "entry": "page-anatomy.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T10:59:30.519Z",
+  "updatedAt": "2026-08-05T10:59:30.519Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

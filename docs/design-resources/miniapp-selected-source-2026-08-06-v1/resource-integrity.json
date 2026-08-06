@@ -1,0 +1,66 @@
+{
+  "schema_version": "starward-selected-resource-integrity-v1",
+  "algorithm": "sha256",
+  "resources": {
+    "hub": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/index.html",
+      "sha256": "09565ba3cc83d6946b5ff667d5e188a2a22a983260739ab05ccfeaa46fc835ec"
+    },
+    "app01": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-01-flow-route-map.html",
+      "sha256": "6bae53abb1182f7ed88402a677996eb45902331f5b8d40b9eea1f3ece01498ea"
+    },
+    "app02": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-02-spot-detail-prototype.html",
+      "sha256": "38ad5bbafbcec0fb3f0fccd70828758e3680ef50beaa0e70c9422664634fa414"
+    },
+    "app03": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-03-spot-night-prototype.html",
+      "sha256": "ba24315112fb385ad61602fe0436829f2f92c3c681b418010859519c08103ce0"
+    },
+    "app04": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-04-my-content-prototype.html",
+      "sha256": "34af973cd4ece4ad000da63fc456f0f6f4e57c93a0f27f6a5bcf3eb16cd2e59c"
+    },
+    "app05": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-05-shared-component-control-atlas.html",
+      "sha256": "fe9674eb2a304ba0a530045f194db1b9217171aa3edabab62d701bba76fc9d44"
+    },
+    "app06": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-06-cross-app-interaction-motion-accessibility.html",
+      "sha256": "c3b827b8700a21f3d04a5079e91f78187615ddf7e50aa9818517c491d1478615"
+    },
+    "app07": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-07-responsive-mode-state-matrix.html",
+      "sha256": "b043c46ae6dbde8d83d1ae1e7a12ccd80bb781f02d81aa5dc7d5b6e255108319"
+    },
+    "app08": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-08-semantic-asset-atlas.html",
+      "sha256": "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534"
+    },
+    "map01": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-01-page-prototype.html",
+      "sha256": "f079fa7d4ff5277e89ee2fa75413cf9471d52d2bd64da2793d9f6908293d32d2"
+    },
+    "map02": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-02-page-anatomy.html",
+      "sha256": "ca8f635966a7827cf914985132d13b52857d36e25529c70559a42e4bbde12f9f"
+    },
+    "map03": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-03-component-control-atlas.html",
+      "sha256": "27a25286f48d8a8746f98849cb8fa602a0d18610d6ae24b1e88090c90cc14cc0"
+    },
+    "map04": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-04-interaction-motion-accessibility.html",
+      "sha256": "60263d4d398299ccdecda8aa2e81ab2c511082d01f3ad23b6b6d51dfd95ed198"
+    },
+    "design-system": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/design-system-snapshot.md",
+      "sha256": "7e8cd38dd19a98ccc863d1d156c3cf462de415549d3e8d961863b382135132b7"
+    },
+    "qa": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/selection-and-qa.md",
+      "sha256": "8ee14bea74a64a992e1f0ccf09436710436353229de86f973876c9eafd7504fc"
+    }
+  }
+}

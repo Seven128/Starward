@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "shared-component-control-atlas.html",
+  "entry": "shared-component-control-atlas.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T17:49:56.210Z",
+  "updatedAt": "2026-08-05T17:49:56.210Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

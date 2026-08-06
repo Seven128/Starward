@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "app-flow-and-route-map.html",
+  "entry": "app-flow-and-route-map.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T16:19:25.346Z",
+  "updatedAt": "2026-08-05T16:19:25.346Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

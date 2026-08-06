@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "spot-detail-prototype.html",
+  "entry": "spot-detail-prototype.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T16:31:01.356Z",
+  "updatedAt": "2026-08-05T16:31:01.356Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

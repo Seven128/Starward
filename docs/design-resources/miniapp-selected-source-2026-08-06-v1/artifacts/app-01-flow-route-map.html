@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="day" data-scale="default" data-edition="demo" data-auth="guest">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>今晚去观星 · 全产品流程与路由图</title>
+  <style>
+    :root{
+      --canvas:#F5F8FC;--surface:#FFFFFF;--surface-subtle:#EEF4FA;--surface-elevated:#FFFFFF;
+      --text-primary:#10233F;--text-secondary:#526A84;--text-tertiary:#5C7186;--border:#D4E1EE;
+      --primary:#1769D2;--primary-pressed:#0F56AE;--on-primary:#FFFFFF;--accent-cyan:#69C7F5;
+      --accent-violet:#707CF2;--accent-warm:#EED7B1;--success:#238B62;--warning:#B86A12;
+      --danger:#C83F49;--focus:#0B63CE;--shadow:0 6px 18px rgba(25,61,102,.10),0 1px 4px rgba(25,61,102,.06);
+      --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;
+      --radius-xs:6px;--radius-sm:10px;--radius-md:14px;--radius-lg:20px;--hit:44px;
+      --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    }
+    html[data-mode="night"]{
+      --canvas:#050A14;--surface:#0B1626;--surface-subtle:#102238;--surface-elevated:#162B45;
+      --text-primary:#EEF5FF;--text-secondary:#A9BCD2;--text-tertiary:#7F96AF;--border:#29425F;
+      --primary:#5AA7FF;--primary-pressed:#3389EA;--on-primary:#03101F;--accent-cyan:#67C4E9;
+      --accent-violet:#8A8EF4;--accent-warm:#D8BE94;--success:#5CC99A;--warning:#F0B55B;
+      --danger:#FF7B82;--focus:#82BCFF;--shadow:0 5px 16px rgba(0,0,0,.28);
+    }
+    html[data-mode="observation"]{
+      --canvas:#000000;--surface:#0B0101;--surface-subtle:#150303;--surface-elevated:#200505;
+      --text-primary:#F4554E;--text-secondary:#E44A43;--text-tertiary:#D84A43;--border:#4D1716;
+      --primary:#FF514A;--primary-pressed:#D83B36;--on-primary:#000000;--accent-cyan:#B83A35;
+      --accent-violet:#C4403A;--accent-warm:#D94842;--success:#D84A43;--warning:#F05A52;
+      --danger:#FF6A62;--focus:#FF776F;--shadow:none;
+    }
+    html[data-mode="observation"] *{transition:none!important;animation:none!important;filter:none!important;text-shadow:none!important}
+    *{box-sizing:border-box}
+    html{background:var(--canvas);color:var(--text-primary);font-family:var(--font);scroll-behavior:smooth}
+    html[data-scale="large"]{font-size:118%}
+    body{margin:0;min-width:0;background:var(--canvas);transition:background 240ms cubic-bezier(.2,.8,.2,1),color 240ms}
+    button,input,select{font:inherit;color:inherit}
+    button{min-width:var(--hit);min-height:var(--hit)}
+    button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+    .app{max-width:1440px;margin:auto;padding:calc(env(safe-area-inset-top) + 16px) clamp(12px,3vw,32px) calc(env(safe-area-inset-bottom) + 32px)}
+    .candidate{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-pill,999px);background:var(--surface-subtle);font-size:.73rem;font-weight:700;letter-spacing:.03em}
+    .candidate::before{content:"";width:8px;height:8px;border:2px solid currentColor;border-radius:50%}
+    .hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin:18px 0 24px}
+    h1,h2,h3,h4,p{margin-top:0}h1{font-size:clamp(1.8rem,4vw,3.2rem);line-height:1.12;margin-bottom:10px;max-width:16ch}
+    .hero p{color:var(--text-secondary);line-height:1.6;max-width:72ch;margin-bottom:0}
+    .control-cluster,.segmented{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .control,.mode-button,.top-tab{border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);padding:8px 12px;cursor:pointer;transition:background 100ms,transform 120ms,border 120ms}
+    .control:active,.mode-button:active,.top-tab:active{background:color-mix(in srgb,var(--primary) 12%,var(--surface))}
+    .mode-button[aria-pressed="true"],.control.active,.top-tab[aria-selected="true"]{border:2px solid var(--primary);font-weight:700;background:var(--surface-subtle)}
+    .workspace{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(300px,.78fr);gap:20px;align-items:start}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow)}
+    .panel-head{display:flex;justify-content:space-between;gap:16px;align-items:start;padding:18px 18px 14px;border-bottom:1px solid var(--border)}
+    .panel-head h2{font-size:1.1rem;margin-bottom:5px}.panel-head p{font-size:.82rem;color:var(--text-secondary);margin:0;line-height:1.5}
+    .board{overflow:hidden}.board-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,.36fr);gap:8px;padding:12px 18px;background:var(--surface-subtle)}
+    .field{min-height:44px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);padding:0 12px;width:100%}
+    .global-shell{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:18px;padding:8px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-subtle)}
+    .global-shell span{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;font-weight:650}
+    .global-shell .default{position:relative;background:var(--surface);border:2px solid var(--primary);color:var(--text-primary)}
+    .global-shell .default::after{content:"默认候选";position:absolute;bottom:-9px;padding:1px 6px;border-radius:99px;background:var(--primary);color:var(--on-primary);font-size:.62rem}
+    .context-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 18px 18px}
+    .context{padding:12px;background:var(--surface-subtle);border-radius:var(--radius-sm);border:1px solid var(--border);min-width:0}
+    .context small{display:block;color:var(--text-tertiary);margin-bottom:4px}.context b{display:block;overflow-wrap:anywhere;font-size:.84rem}
+    .route-groups{padding:0 18px 18px;display:grid;gap:12px}
+    .route-group{border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden}
+    .route-group>header{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--surface-subtle)}
+    .route-group h3{font-size:.94rem;margin:0}.route-group header span{font-size:.72rem;color:var(--text-tertiary)}
+    .node-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;padding:10px}
+    .route-node{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:start;min-height:64px;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);padding:10px;cursor:pointer}
+    .route-node:hover{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 6%,var(--surface))}
+    .route-node .id{font:700 .7rem ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--primary)}
+    .route-node strong{font-size:.83rem;line-height:1.35;display:block}.route-node small{display:block;color:var(--text-secondary);line-height:1.4;margin-top:3px}
+    .gate{font-size:.62rem;padding:3px 6px;border-radius:99px;border:1px solid var(--border);white-space:nowrap}
+    .gate.commercial{border-style:dashed;color:var(--warning)}
+    html[data-edition="demo"] .route-node[data-gate="commercial"]{background:var(--surface-subtle)}
+    html[data-edition="demo"] .route-node[data-gate="commercial"]::after{content:"商用增强 · Demo 不开放";grid-column:2/4;color:var(--warning);font-size:.68rem}
+    html[data-auth="guest"] .route-node[data-auth="required"] .gate::before{content:"登录后 · "}
+    .inspector{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+    .inspector-body{padding:18px}.inspector-empty{color:var(--text-secondary);line-height:1.7}
+    .inspector h3{font-size:1.2rem;margin:0 0 6px}.route-code{font:700 .74rem ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--primary)}
+    .fact-list{display:grid;gap:10px;margin:16px 0}.fact{padding:11px 12px;border-left:3px solid var(--primary);background:var(--surface-subtle);border-radius:0 10px 10px 0}
+    .fact small{display:block;color:var(--text-tertiary);margin-bottom:3px}.fact p{margin:0;font-size:.83rem;line-height:1.5}
+    .close-inspector{display:none}
+    .journeys,.taxonomy,.branches,.coverage{margin-top:20px;overflow:hidden}
+    .top-tabs{display:flex;gap:4px;padding:10px 14px;overflow:auto;border-bottom:1px solid var(--border);scrollbar-width:thin}
+    .top-tab{white-space:normal;min-width:var(--hit);min-height:var(--hit);padding:8px 10px;font-size:.78rem;line-height:1.35}
+    .journey-body{padding:18px}.journey-title{display:flex;gap:10px;align-items:start}.journey-no{display:grid;place-items:center;min-width:36px;height:36px;border-radius:50%;background:var(--primary);color:var(--on-primary);font-weight:800}
+    .journey-title h3{margin:0 0 4px;font-size:1rem}.journey-title p{margin:0;color:var(--text-secondary);font-size:.8rem}
+    .flowline{display:grid;gap:8px;margin-top:16px}.flow-step{display:grid;grid-template-columns:32px 1fr;gap:10px;position:relative}
+    .flow-step:not(:last-child)::after{content:"";position:absolute;left:15px;top:30px;bottom:-10px;border-left:2px solid var(--border)}
+    .step-dot{width:32px;height:32px;border:2px solid var(--primary);border-radius:50%;display:grid;place-items:center;background:var(--surface);font-size:.7rem;font-weight:800;z-index:1}
+    .step-card{padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-subtle)}
+    .step-card b{font-size:.84rem}.step-card p{font-size:.78rem;line-height:1.5;color:var(--text-secondary);margin:4px 0 0}.step-card .recovery{color:var(--warning)}
+    .taxonomy-body,.branches-body,.coverage-body{padding:18px}
+    .tax-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.tax-group{border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;background:var(--surface-subtle)}
+    .tax-group h3{font-size:.92rem}.criterion{padding-top:10px;border-top:1px solid var(--border);margin-top:10px}.criterion b{font-size:.78rem}.terms{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.term{padding:5px 7px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xs);font-size:.7rem}
+    .decision-note{margin-top:12px;padding:12px;border:1px dashed var(--warning);border-radius:var(--radius-sm);font-size:.78rem;line-height:1.6;color:var(--text-secondary)}
+    .branch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.branch{padding:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-subtle)}
+    .branch h3{font-size:.88rem}.branch ul{padding-left:18px;margin:0;color:var(--text-secondary);font-size:.77rem;line-height:1.65}
+    .coverage-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}.coverage-item{padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)}
+    .coverage-item b{font-size:.8rem}.coverage-item p{font-size:.73rem;color:var(--text-secondary);line-height:1.5;margin:4px 0 0}
+    .admin-strip{margin-top:20px;padding:16px 18px;border:1px dashed var(--border);border-radius:var(--radius-md);background:var(--surface-subtle);color:var(--text-secondary);font-size:.8rem;line-height:1.6}
+    .admin-strip b{color:var(--text-primary)}
+    .no-results{padding:28px;text-align:center;color:var(--text-secondary)}
+    footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:20px;color:var(--text-tertiary);font-size:.72rem;line-height:1.6}
+    @media(max-width:860px){.workspace{grid-template-columns:1fr}.inspector{position:fixed;z-index:20;inset:auto 0 0;max-height:82vh;border-radius:20px 20px 0 0;transform:translateY(110%);transition:transform 220ms cubic-bezier(.2,.8,.2,1)}.inspector.open{transform:none}.close-inspector{display:inline-flex}.hero{grid-template-columns:1fr}.tax-grid{grid-template-columns:1fr}.context-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:430px){.app{padding-inline:12px}.hero{margin-top:14px}.board-tools{grid-template-columns:1fr}.node-grid{grid-template-columns:1fr}.global-shell{margin-inline:12px}.context-strip{margin-inline:12px;grid-template-columns:1fr}.route-groups{padding-inline:12px}.panel-head,.journey-body,.taxonomy-body,.branches-body,.coverage-body{padding-inline:14px}.route-node{min-height:72px}.control-cluster{align-items:stretch}.control-cluster>*{flex:1 1 calc(50% - 8px)}.candidate{font-size:.68rem}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <main class="app" data-od-id="app-flow-route-map">
+    <span class="candidate" data-od-id="candidate-label">设计候选 · 示例数据 · 未选定</span>
+    <header class="hero" data-od-id="artifact-heading">
+      <div><h1>全产品流程与路由图</h1><p>用同一条点位上下文线串起地图找点、详情判断、场地与安全、详情夜空与观测，以及收藏、外部主页、跨平台内容导入和审核分支。点击任一路由查看来源、返回所有权与恢复策略。</p></div>
+      <div class="control-cluster" aria-label="审阅显示设置">
+        <button class="mode-button" data-mode-choice="day" aria-pressed="true">日间</button>
+        <button class="mode-button" data-mode-choice="night" aria-pressed="false">夜间</button>
+        <button class="mode-button" data-mode-choice="observation" aria-pressed="false">观测红</button>
+        <button class="control" id="scaleToggle" aria-pressed="false">大字：关</button>
+        <button class="control" id="editionToggle" aria-pressed="false">版本：Demo</button>
+        <button class="control" id="authToggle" aria-pressed="false">身份：访客</button>
+      </div>
+    </header>
+
+    <section class="workspace" aria-label="路由总览与检查器">
+      <article class="panel board" data-od-id="route-topology-board">
+        <header class="panel-head"><div><h2>路由拓扑 · 全部用户可见表面</h2><p>主包、分包、弹层与公共状态都保留来源与返回责任；Demo 门槛不等于删除。</p></div><span class="route-code" id="routeCount">0 routes</span></header>
+        <div class="board-tools">
+          <label><span class="sr-only" hidden>搜索路由</span><input class="field" id="routeSearch" type="search" placeholder="搜索名称、编号、职责或路由" autocomplete="off"></label>
+          <select class="field" id="groupFilter" aria-label="按分区筛选"><option value="all">全部分区</option></select>
+        </div>
+        <nav class="global-shell" aria-label="候选全局导航，两项" data-od-id="candidate-global-nav"><span class="default">▣ 地图</span><span>○ 我的</span></nav>
+        <div class="context-strip" aria-label="共享上下文">
+          <div class="context"><small>SelectedSpot</small><b>示例·海湾观星点 · spot_demo_01</b></div>
+          <div class="context"><small>SkyContext</small><b>2026-08-06 · 20:30 · Asia/Shanghai</b></div>
+          <div class="context"><small>Target / Mode</small><b>银河中心 · day / night / observation</b></div>
+          <div class="context"><small>Return state</small><b>地图中心、缩放、筛选、图层、选点卡</b></div>
+        </div>
+        <div class="route-groups" id="routeGroups"></div>
+      </article>
+
+      <aside class="panel inspector" id="routeInspector" aria-label="路由详情检查器" aria-live="polite">
+        <header class="panel-head"><div><h2>单路由检查器</h2><p>点击左侧节点，窄屏将从底部展开。</p></div><button class="control close-inspector" id="closeInspector" aria-label="关闭路由详情">关闭</button></header>
+        <div class="inspector-body" id="inspectorBody"><p class="inspector-empty">尚未选择路由。先看总览，再逐一核对职责、上下文、分支与恢复路径。</p></div>
+      </aside>
+    </section>
+
+    <section class="panel journeys" data-od-id="twelve-journeys">
+      <header class="panel-head"><div><h2>12 条核心旅程 · 分支与恢复</h2><p>每条都显示主路径、失败分支、仍可用事实与上下文恢复。</p></div><span class="route-code">APP-01 / §4</span></header>
+      <div class="top-tabs" id="journeyTabs" role="tablist" aria-label="选择旅程"></div>
+      <div class="journey-body" id="journeyBody" role="tabpanel"></div>
+    </section>
+
+    <section class="panel taxonomy" data-od-id="map-filter-taxonomy">
+      <header class="panel-head"><div><h2>地图既有筛选语言 · 只引用，不重建</h2><p>与四个 existing-covered 地图资源保持逐字一致；下列阈值与算法仍待产品/技术确认。</p></div><span class="route-code">MAP-01…04</span></header>
+      <div class="taxonomy-body"><div class="tax-grid" id="taxonomyGrid"></div><div class="decision-note">候选假设：光害等级、遮挡、光害方向、驾车时间、海拔为可取消的单选；行程信息、场地信息为多选；“全部无光害”与方向选择互斥；筛选草稿仅由“应用筛选”提交。确切计算、边界与数据来源尚未选定。</div></div>
+    </section>
+
+    <section class="panel branches" data-od-id="cross-cutting-branches">
+      <header class="panel-head"><div><h2>跨流程分支 · 失败不是断路</h2><p>分支均说明发生了什么、仍可用什么，以及下一步；缺失不显示为 0。</p></div></header>
+      <div class="branches-body"><div class="branch-grid" id="branchGrid"></div></div>
+    </section>
+
+    <section class="panel coverage" data-od-id="coverage-locator">
+      <header class="panel-head"><div><h2>覆盖定位器</h2><p>本板只拥有拓扑；页面层级、组件、交互与矩阵由各自资源拥有。</p></div></header>
+      <div class="coverage-body"><div class="coverage-grid" id="coverageGrid"></div></div>
+    </section>
+
+    <aside class="admin-strip" data-od-id="admin-boundary"><b>中性依赖边界 · 非 Mini Program 页面：</b>运营/管理侧提供点位生命周期、坐标保护、来源许可、内容审核、纠错、审计历史与功能开关结果。本资源只展示这些结果如何回到用户侧，不定义或美化管理后台。</aside>
+    <footer><span>750rpx 参考 · 8rpx 基线 · 32rpx 页面边距 · 88rpx 最小触控</span><span>日 / 夜 / 观测红同构 · 观测模式仅黑与暖红</span><span>任务局部候选，不代表产品面、运行时、供应商或法律采纳</span></footer>
+  </main>
+
+  <script>
+  (()=>{
+    'use strict';
+    const groups=[
+      {id:'global',name:'主包 · 全局与地图',note:'主入口 / existing-covered',routes:[
+        ['G-01','全局壳','global/shell','胶囊安全区、地图 / 我的两项导航、模式与返回恢复','Demo + 商用','APP-01 / APP-05 / APP-06 / APP-07','主入口或详情返回','恢复原一级页与任务状态','route, mode, safe-area, pending work'],
+        ['M-01','地图','pages/map/index','搜索、筛选、图层、标记、选点卡、权限与降级','Demo + 商用 · 已覆盖','MAP-01…04','小程序默认候选入口','恢复中心/缩放/筛选/图层/选点卡','bbox, zoom, filters, layer, selectedSpot']
+      ]},
+      {id:'spot',name:'Spot 分包',note:'详情 / 场地 / 内容',routes:[
+        ['S-01','Spot 详情壳','spot/detail','固定页头、收藏、地址、导航与概览 / 攻略 / 场地 / 夜空四段独立加载','Demo + 商用','APP-02','地图选点卡 / 收藏 / 文章','返回来源并恢复其滚动与选择','spot_id, SkyContext, origin, scrollBySegment'],
+        ['S-02','Spot 概览','spot/detail?segment=overview','实拍代表媒体优先，随后今晚结论、路线、设施与来源','Demo + 商用','APP-02','Spot 首次加载','留在壳；兄弟段不受错误影响','TonightDecision, mediaProvenance, freshness, routeState'],
+        ['S-05','攻略','spot/guides','官方/认证作者/用户来源、更新与实地核验','Demo + 商用 · 来源混合不同','APP-02 / APP-04','Spot 分段 / 文章','返回攻略滚动与筛选','spot_id, guide_id, provenance'],
+        ['S-03','Spot 场地','spot/field','到达、停车、设施、遮挡、光害方向与安全','Demo + 商用','APP-02','Spot 分段','恢复本段滚动；静态事实不随时间刷新','spot_id, staticFieldVersion'],
+        ['S-04','Spot 夜空','spot/detail?segment=sky','绑定 spot_id 的结论、推荐目标与专业数据 / 天图 / 观测红下钻','Demo + 商用','APP-02 / APP-03','Spot 夜空分段','所有下钻返回同一详情夜空分段与滚动位置','spot_id, localDateTime, timezone, target, segmentScroll'],
+        ['S-06','照片与图库','spot/photos','图库、来源、上传者、审核与示例/待补/失败/空','Demo + 商用','APP-02 / APP-04','概览媒体','关闭后返回媒体触发器','spot_id, mediaState, verification'],
+        ['S-07','数据来源','spot/data-source','来源、许可、更新时间、估算/置信/覆盖与冲突','Demo + 商用','APP-02','所有来源摘要','关闭后返回来源触发器','sourceClass, freshness, coverage, conflict'],
+        ['S-08','路线与设施详情','spot/route-facility','最后道路、设施、季节/未知、外部目标与安全','Demo + 商用','APP-02','概览 / 场地','返回原摘要；不创建内部逐向导航','routeState, facilityState, coordinateVisibility'],
+        ['S-09','外部地图选择','spot/external-map','目标预览、可用外部选择、观测红警告与取消','Demo + 商用','APP-02 / APP-06','导航动作','取消返回导航按钮；外部返回恢复 Spot','destinationState, mode, vendorAvailability']
+      ]},
+      {id:'spot-sky',name:'Spot 夜空下钻',note:'必须由观星点详情与 spot_id 拥有',routes:[
+        ['N-03','专业数据','spot/sky/detail','小时矩阵、事件、单位、图例、缺失/部分/陈旧','Demo + 商用','APP-03 / APP-05','观星点详情 > 夜空','返回同一详情夜空分段与原时间列','spot_id, SkyContext, selectedHour, freshness'],
+        ['N-04','目标列表','spot/sky/targets','搜索筛选、方向、高度、窗口、难度与选择','Demo + 商用','APP-03','观星点详情 > 夜空 / 天图','返回并保留目标与筛选','spot_id, SkyContext, target, targetFilters'],
+        ['N-05','简化天图','spot/sky/map','2D 半球、方向环、地平线、星体、目标与时间滑块','Demo · 商用增强','APP-03 / APP-06','观星点详情 > 夜空 / 目标','返回原时间、目标和夜空分段','spot_id, SkyContext, target, orientation, sensorState'],
+        ['N-06','天图传感器状态','spot/sky/sensor-sheet','已校准/低精度/不可用/手动与恢复','Demo + 商用','APP-03 / APP-06','简化天图','关闭后返回方向控件','spot_id, sensorState, manualBearing'],
+        ['N-07','观测红模式','spot/sky/observe','手动进入的黑暖红现场工具、缓存年龄与安全退出','Demo + 商用','APP-03 / APP-06 / APP-07','详情夜空 / 天图','安全退出返回同一 spot_id、详情分段、时间与目标','spot_id, SkyContext, target, mode, offlineAge']
+      ]},
+      {id:'my',name:'My 分包',note:'用户 / 设置 / 内容',routes:[
+        ['Y-01','我的','pages/my/index','资料摘要、收藏、主页外链、观星帖导入、设置与商用入口','Demo + 商用','APP-04','全局我的','恢复本页滚动与身份状态','authState, edition, preferences'],
+        ['Y-02','收藏列表','favorite/list','排序、中密度卡、今晚状态、打开与取消收藏回滚','Demo + 商用','APP-04 / APP-06','我的 / 收藏动作','返回排序与列表位置','favorites, sort, optimisticMutation'],
+        ['Y-03','轻量观测计划','plan/detail','Spot、日期窗口、目标、路线/安全、提醒与新鲜度','Demo 有限 + 商用','APP-04','我的 / Spot','返回计划列表并保留草稿','spot_id, SkyContext, target, reminderState'],
+        ['Y-04','个人资料','profile/detail','访客/资料、贡献者身份、上传、记录与外部主页入口','Demo + 商用差异','APP-04','我的','返回身份摘要','authState, contributorState'],
+        ['Y-04A','外部主页链接','profile/external-links','平台文字、URL、公开范围、编辑、排序、删除与复制链接回退','商用或白名单','APP-04','我的 / 个人资料','未保存先提示；保存后返回原触发器','authState, profileLinks, runtimeOpenCapability','commercial','required'],
+        ['Y-05','设置','settings/index','模式、单位、位置、来源、通知、隐私、存储、账户与关于','Demo + 商用','APP-04','我的','返回设置滚动','preferences, permissionStates'],
+        ['Y-06','显示模式设置','settings/mode','日夜默认与手动观测红入口规则','Demo + 商用','APP-04 / APP-06','设置','保存后保留当前任务','modePreference, currentMode'],
+        ['Y-07','单位设置','settings/units','温度、距离、风速单位与即时预览','Demo + 商用','APP-04','设置','保存后语义更新','temperatureUnit, distanceUnit, windUnit'],
+        ['Y-08','位置与权限','settings/location-permission','默认地点、权限状态、系统设置入口与手动替代','Demo + 商用','APP-04','设置 / 权限说明','返回仍保留手动方案','locationPreference, permissionState'],
+        ['Y-09','数据来源与更新','settings/data-source','来源类别、更新策略、估算/示例与署名','Demo + 商用','APP-04','设置 / 来源','返回来源摘要','sourcePolicy, updatePolicy'],
+        ['Y-10','提醒与订阅','settings/notifications','价值说明与接受/拒绝/过期的微信订阅状态','商用 · Demo 隐藏或不可用','APP-04 / APP-06','计划 / 设置','返回来源动作并保留选择','subscriptionState, authReturn','commercial','required'],
+        ['Y-11','隐私、账户与数据','settings/privacy-account','位置处理、缓存、导出/删除、注销确认与进度','商用 · Demo 有政策页','APP-04 / APP-06','设置','失败可重试且不误报完成','consentVersion, deletionJob, exportJob','commercial','required'],
+        ['Y-12','关于、协议与反馈','settings/about','版本来源、服务/隐私协议、许可署名与反馈','Demo + 商用','APP-04','设置','返回原条目','buildProvenance, policyVersion']
+      ]},
+      {id:'auth-content',name:'Auth / Content 分包',note:'身份 / 阅读 / 商用贡献',routes:[
+        ['A-01','微信登录','pages/auth/index','访客价值、登录理由、同意、取消/失败/成功与任务续接','身份动作触发 · 商用','APP-04 / APP-06','收藏同步 / 提交 / 提醒','取消或成功均回原动作','authReturn, requestedAction, consent','commercial','required'],
+        ['C-01','文章详情','article/detail','标题、来源、作者、验证、日期、正文与相关 Spot','Demo + 商用','APP-02 / APP-04','攻略 / 内容入口','返回原攻略位置','article_id, spot_id, provenance'],
+        ['C-02','提交中心与记录','submission/index','草稿到归档全状态、纠错、申诉与历史','商用或白名单','APP-04','我的 / 登录续接','返回状态筛选','drafts, moderationState, authReturn','commercial','required'],
+        ['C-03','提交/纠正 Spot','submission/spot','敏感坐标、场地设施、证据、来源、同意、草稿与校验','商用或白名单','APP-04 / APP-06','提交中心','保留草稿与上传会话','draft, coordinateSensitivity, uploadSession','commercial','required'],
+        ['C-04','现场报告/纠错','submission/field-report','道路、设施、季节、安全、有效日期、证据与审核','商用或白名单','APP-04','Spot / 提交中心','保留草稿；不自动发布','draft, effectiveDate, evidence','commercial','required'],
+        ['C-05','媒体上传','submission/media','选择、压缩、上传、重试、移除、排序、来源、EXIF 与审核','商用或白名单','APP-04 / APP-06','各提交表单','后台/前台恢复会话','uploadSession, draft, moderationState','commercial','required'],
+        ['C-06','文章投稿','submission/article','标题正文、媒体、关联 Spot、权利、预览、草稿与恢复','商用或白名单','APP-04','提交中心','保留草稿与拒绝修改点','draft, articleMedia, rights','commercial','required'],
+        ['C-07','个人贡献主页','contributor/profile','自己的已发布/审核中/隐藏内容与纠错历史','商用','APP-04','个人资料','返回资料上下文','contributorState, contentFilter','commercial','required']
+        ,['C-08','导入我的观星帖','content/import','来源平台、分享链接、权利确认、解析状态、可编辑草稿与来源沿袭','商用或白名单','APP-04','我的 / 提交中心','失败不清草稿；返回恢复步骤与输入','importDraft, sourceLineage, parserState, authReturn','commercial','required']
+        ,['C-09','导入帖关联 / 新增点位提案','content/import/spot-association','关联已有观星点，或把新增地点作为独立提案送审','商用或白名单','APP-04','导入草稿','审核结果回到同一导入草稿；不自动创建 spot_id','importDraft, spotAssociation, spotProposalModeration','commercial','required']
+      ]},
+      {id:'common',name:'公共弹层与状态',note:'按需加载 / 全局恢复',routes:[
+        ['P-01','权限说明','common/permission','位置、照片/相机、传感器、通知的用途与替代','按需 · Demo + 商用','APP-01 / APP-03 / APP-04','触发权限的具体动作','取消回触发器且不循环请求','permissionType, origin, manualAlternative'],
+        ['P-02','隐私与协议','common/privacy-protocol','简要说明、完整政策、版本、日期与外链状态','Demo + 商用','APP-04','登录 / 设置 / 提交','返回触发器','policyType, version, effectiveDate'],
+        ['P-03','数据来源说明','common/provenance','官方/作者/用户/供应商/计算/估算/示例与冲突','Demo + 商用','APP-02 / APP-04','来源摘要','返回来源触发器','sourceClass, freshness, conflict'],
+        ['P-04','通用错误页','common/error','发生内容、仍可用事实、重试/返回/手动替代/联系','Demo + 商用','APP-01 / APP-07','任一不可局部恢复的表面','回到安全来源且保留上下文','errorFamily, origin, referenceId?'],
+        ['P-05','离线与更新反馈','common/offline-update','缓存年龄、后台刷新、失败与恢复在线且不跳位','Demo + 商用','APP-01 / APP-06 / APP-07','全局壳 / 页面局部','恢复不移焦点、不清选择','onlineState, cacheAge, pendingRefresh']
+      ]}
+    ];
+    const journeys=[
+      ['地图到外部导航','地图浏览 → 选点 → 详情 → 今晚/场地 → 外部导航 → 返回',['地图保留中心、缩放、已提交筛选与图层','打开“示例·海湾观星点”详情并读取今晚与硬阻断','查看最后道路、停车、设施与风险','选择外部地图；只交接目的地，不绘制逐向路线','从外部返回，恢复 Spot；返回地图恢复选点卡'],['路线失败：显示非路线直线距离或缓存年龄；不画伪路线','坐标受限/关闭：不发送精确目标，提供安全区域或返回']],
+      ['普通地点找附近观星点','普通地点搜索 → 移动区域 → 选择附近点位或提案',['搜索普通城市、景区或 POI 时只移动地图视口','持续标注“普通地点 · 尚无 spot_id”','展示附近正式观星点并允许进入详情','没有合适点位时可调整区域，或发起“建议新增观星点”','新增建议进入独立审核，不暗中创建 spot_id'],['搜索供应商降级：保留当前地图、历史与手动区域','附近为空：继续地图浏览或保存点位提案草稿']],
+      ['Spot 到观测红','Spot → 详情夜空 → 目标 → 天图 → 观测模式 → 安全退出',['详情夜空段携带必需的 spot_id 与 SkyContext','选择候选目标并打开简化天图','手动进入观测红；点位/时间/目标不变','仅显示必要时间、方向、目标、天气变化与缓存年龄','明确退出并回到同一详情夜空分段与滚动位置'],['传感器低精度/不可用：改用手动方向','外部表面不可保持红色：预警，可取消']],
+      ['主页外链编辑','我的 → 个人资料 → 外部主页链接 → 保存/复制',['使用平台文字与统一外链符号，不伪造 Logo','添加小红书、微博、视频号或其他平台 URL','校验协议、长度、危险 scheme、重复项与公开范围','保存后回到原触发器并保持排序','直接打开能力受微信与平台策略约束；始终提供复制链接'],['未保存关闭：提示继续编辑或明确放弃','私密链接：只在自己的编辑视图可见，不出现在公开主页']],
+      ['收藏闭环','地图/详情收藏 → 我的收藏 → 排序/打开/取消',['收藏触摸按下只反馈，有效释放才提交','乐观更新并同步到“我的”','按距离/收藏时间/近期条件排序','打开详情，返回保留列表位置','取消收藏失败则回滚并解释'],['今晚动态摘要失败：收藏本身不删除','未登录：本地 Demo 收藏可浏览；跨端同步动作再触发登录']],
+      ['访客身份续接','访客浏览 → 身份动作 → 微信登录 → 续接',['访客可浏览公开地图、Spot、夜空与内容','在投稿/提醒/跨端记录等动作点解释登录价值','取消：回原动作且不丢安全输入','失败：保留来源并可重试','成功：只续接原请求，不扩张其他权限'],['用户取消：不循环弹窗','登录失败：提供重试与继续访客']],
+      ['攻略到相关 Spot','攻略/文章 → 来源验证 → 相关 Spot → 详情',['文章页持续显示来源类别、作者、验证与更新','相关 Spot 是明确动作，不把用户内容当实时事实','Spot 详情继承来源入口','返回文章恢复阅读位置'],['文章离线：显示缓存年龄','关联 Spot 下架：保留文章来源并解释不可进入']],
+      ['商用提交与审核','草稿 → 媒体 → 提交 → 审核 → 修改/申诉',['登录/白名单门槛后建立耐久草稿','媒体移除 EXIF GPS 并保留来源/权利说明','上传失败可重试/移除/排序，草稿不丢','草稿 → 审核中 → 已通过待发布 → 已发布','未通过可编辑重提；下架/争议按允许范围申诉'],['后台/前台切换：恢复 uploadSession','审核服务降级：保持“审核中”，不自动发布']],
+      ['跨平台观星帖导入','我的 → 导入观星帖 → 编辑 → 关联或新增点位送审',['选择小红书、微博、视频号或其他平台，并粘贴分享链接','确认拥有导入与编辑权；原平台、原链接和导入时间持续可见','解析成功或部分成功后进入可编辑草稿；失败可手动导入且不清空已编辑内容','关联已有观星点，或填写新增观星地点提案','保存草稿、预览、提交；新增点位始终进入审核'],['不支持/私密/限流/网络失败：重试或手动导入','自动解析能力依赖平台许可与运行时适配，不宣称已有 API 权限']],
+      ['数据降级恢复','部分/陈旧/离线/供应商降级 → 保留事实 → 重试',['状态标明数据年龄、缺失范围与来源','有效缓存继续显示但不伪装实时','过期结论不保留“推荐”','后台重试不清空选择、不移动焦点','恢复后局部更新并提示'],['天气失败：缓存/次级规范化数据或不可用','AI 失败：保留确定性数据，不编造叙述']],
+      ['受限或关闭 Spot','近似/受限/关闭 → 解释 → 安全替代',['近似位置只显示区域级范围','受限位置不输出精确坐标','临时关闭保留静态资料但禁用路线','提供返回地图、查看附近区域或阅读安全说明'],['导航动作被禁止时保持可读原因','坐标状态变化后刷新选点与详情，不保留旧精确目标']],
+      ['跨模式保持任务','日间/夜间/观测红切换 → 保持上下文',['目标模式背景先于可见过渡生效','保留当前路由、Spot、地点、日期时间、目标与安全草稿','日夜媒体切换同构资产；观测红使用独立暖红资产','外部不可主题化表面先警告并可取消'],['上一场结束于观测红：冷启动先黑红，直到主动退出','减少动态：0–100ms 淡变或立即切换']]
+    ];
+    const taxonomy=[
+      ['观星条件',[['光害等级',['2级以下','3级以下','4级以下','5级以下','6级以下']],['遮挡',['遮挡面积 50% 以下','遮挡面积 30% 以下','无遮挡']],['光害方向',['全部无光害','西边无光害','东北无光害']]]],
+      ['观测点',[['驾车时间',['2小时内','4小时内','6小时内']],['行程信息',['驾车直达','公共交通','不要徒步','不要登山']],['海拔',['1000米以下','2000米以下','3000米以下','4000米以下','6000米以下']]]],
+      ['场地信息',[['可多选',['有停车','有厕所','可充电','能露营']]]]
+    ];
+    const branches=[
+      ['权限与手动路径',['位置：仅主动触发，一次性用途说明','拒绝仍可浏览演示区或手动城市','照片/相机、传感器、通知各自单独请求']],
+      ['新鲜度与离线',['FRESH / STALE_USABLE / PARTIAL / EXPIRED','UNAVAILABLE / ESTIMATED / SAMPLE_DATA','离线显示缓存年龄；过期不得保持推荐']],
+      ['供应商降级',['搜索失败保留当前地图/历史/手动区域','天气失败使用有效缓存或明确不可用','图层失败回标准地图并保留点位级估算']],
+      ['坐标与生命周期',['精确 / 近似 / 受限 / 隐藏','草稿 / 已发布 / 暂停 / 关闭 / 归档','关闭或受限时不发送精确外部目标']],
+      ['上传与审核',['草稿与 uploadSession 跨前后台保存','上传失败可重试、移除、排序','审核中不自动发布；未通过可编辑重提']],
+      ['身份与版本',['访客可浏览公开价值','商用身份动作在使用点触发登录','Demo/商用共用语义，门槛持续可见']],
+      ['外部地图边界',['只交接已审阅目的地','可用供应商与许可待运行时确认','观测红先警告明亮不可主题化界面']],
+      ['硬安全阻断',['硬阻断不能被平均分抵消','数据不足明确不可判断','安全替代优先于继续导航']]
+      ,['地图筛选入口',['地图首屏始终显示 Tier-A 图标 + “筛选” + 已应用数量','Sheet 三组条件平铺，27 个终端标签立即可达','无 accordion、dropdown、chevron 或 aria-expanded；Apply 才提交 draft']]
+    ];
+    const coverage=[
+      ['MAP-01…04 · 既有覆盖','地图高保真、结构、地图控件与交互实验；四文件保持原哈希，不在本委托修改。'],
+      ['APP-01 · 当前文件','全路由、12 旅程、上下文与全局分支的主要所有者。'],
+      ['APP-02 · Spot','Spot 壳、概览/攻略/场地/夜空、图库/来源/路线/外部地图。'],
+      ['APP-03 · Spot Night','保留稳定文件名，但只代表“观星点详情 > 夜空”：专业数据、目标、简化天图、传感器与观测红。'],
+      ['APP-04 · My/Content','我的、收藏、计划、设置、外部主页链接、跨平台导入、提交、媒体与审核。'],
+      ['APP-05 · 组件（后续阶段）','二十类非地图共享组件的精确结构、状态、尺寸与可访问性。'],
+      ['APP-06 · 交互（后续阶段）','触摸取消、恢复、焦点、表单、上传、离线与减少动态实验。'],
+      ['APP-07 · 矩阵（后续阶段）','320/375/430、大字、三模式、页面/新鲜度/降级矩阵。'],
+      ['APP-08 · 资产（后续阶段）','Tier-A 与仅限八个 Tier-B 主体；本阶段不创建。']
+    ];
+    const state={selected:null,lastTrigger:null,journey:0};
+    const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const allRoutes=groups.flatMap(g=>g.routes.map(r=>({group:g.id,groupName:g.name,data:r})));
+    function renderRoutes(){
+      const q=document.querySelector('#routeSearch').value.trim().toLowerCase();
+      const gf=document.querySelector('#groupFilter').value;
+      let shown=0;
+      document.querySelector('#routeGroups').innerHTML=groups.filter(g=>gf==='all'||gf===g.id).map(g=>{
+        const rows=g.routes.filter(r=>!q||r.join(' ').toLowerCase().includes(q));shown+=rows.length;
+        if(!rows.length)return '';
+        return `<section class="route-group" data-od-id="route-group-${g.id}"><header><h3>${esc(g.name)}</h3><span>${esc(g.note)} · ${rows.length}</span></header><div class="node-grid">${rows.map(r=>{
+          const commercial=r[9]==='commercial';const auth=r[10]==='required';
+          return `<button class="route-node" data-route="${r[0]}" data-gate="${commercial?'commercial':'shared'}" data-auth="${auth?'required':'public'}" aria-label="查看 ${esc(r[1])} 路由详情"><span class="id">${r[0]}</span><span><strong>${esc(r[1])}</strong><small>${esc(r[2])}<br>${esc(r[3])}</small></span><span class="gate ${commercial?'commercial':''}">${commercial?'商用':'共用'}</span></button>`
+        }).join('')}</div></section>`
+      }).join('')||'<div class="no-results">没有匹配路由。可清空搜索或切换分区。</div>';
+      document.querySelector('#routeCount').textContent=`${shown} / ${allRoutes.length} routes`;
+      document.querySelectorAll('.route-node').forEach(btn=>btn.addEventListener('click',()=>openInspector(btn.dataset.route,btn)));
+    }
+    function openInspector(id,trigger){
+      const item=allRoutes.find(x=>x.data[0]===id);if(!item)return;state.selected=id;state.lastTrigger=trigger;const r=item.data;
+      const gate=r[9]==='commercial'?'商用增强或白名单；Demo 保留门槛说明':'Demo 与商用共用语义';
+      const auth=r[10]==='required'?'身份动作在使用点触发；取消/失败后回原动作':'公开浏览或按动作再判定身份';
+      document.querySelector('#inspectorBody').innerHTML=`<span class="route-code">${r[0]} · ${esc(item.groupName)}</span><h3>${esc(r[1])}</h3><p class="inspector-empty">${esc(r[3])}</p><div class="fact-list"><div class="fact"><small>Route / Surface</small><p>${esc(r[2])}</p></div><div class="fact"><small>Availability / Gate</small><p>${esc(r[4])}<br>${gate}<br>${auth}</p></div><div class="fact"><small>Origin owner</small><p>${esc(r[6])}</p></div><div class="fact"><small>Return & recovery</small><p>${esc(r[7])}</p></div><div class="fact"><small>Context payload</small><p>${esc(r[8])}</p></div><div class="fact"><small>Coverage owner</small><p>${esc(r[5])}</p></div></div><p class="decision-note">状态语言：INITIAL / LOADING / READY / EMPTY / PARTIAL / STALE / ERROR / PERMISSION_DENIED；界面以平静中文呈现，不暴露原始错误码。</p>`;
+      const inspector=document.querySelector('#routeInspector');inspector.classList.add('open');if(innerWidth<=860)document.querySelector('#closeInspector').focus();
+    }
+    function renderJourney(){
+      const j=journeys[state.journey];
+      document.querySelectorAll('.top-tab').forEach((b,i)=>b.setAttribute('aria-selected',i===state.journey?'true':'false'));
+      const cards=[...j[2].map((s,i)=>[String(i+1).padStart(2,'0'),s,'']),...j[3].map((s,i)=>['↳',s,'恢复分支'])];
+      document.querySelector('#journeyBody').innerHTML=`<div class="journey-title"><span class="journey-no">${state.journey+1}</span><div><h3>${esc(j[0])}</h3><p>${esc(j[1])}</p></div></div><div class="flowline">${cards.map(c=>`<div class="flow-step"><span class="step-dot">${c[0]}</span><div class="step-card"><b>${esc(c[1])}</b>${c[2]?`<p class="recovery">${c[2]} · 不丢失已选上下文</p>`:''}</div></div>`).join('')}</div>`;
+    }
+    function init(){
+      const select=document.querySelector('#groupFilter');groups.forEach(g=>select.insertAdjacentHTML('beforeend',`<option value="${g.id}">${esc(g.name)}</option>`));
+      document.querySelector('#journeyTabs').innerHTML=journeys.map((j,i)=>`<button class="top-tab" role="tab" aria-selected="${i===0}" data-index="${i}">${i+1} · ${esc(j[0])}</button>`).join('');
+      document.querySelector('#taxonomyGrid').innerHTML=taxonomy.map(g=>`<article class="tax-group"><h3>${g[0]}</h3>${g[1].map(c=>`<div class="criterion"><b>${c[0]}</b><div class="terms">${c[1].map(t=>`<span class="term">${t}</span>`).join('')}</div></div>`).join('')}</article>`).join('');
+      document.querySelector('#branchGrid').innerHTML=branches.map(b=>`<article class="branch"><h3>${b[0]}</h3><ul>${b[1].map(x=>`<li>${x}</li>`).join('')}</ul></article>`).join('');
+      document.querySelector('#coverageGrid').innerHTML=coverage.map(c=>`<article class="coverage-item"><b>${c[0]}</b><p>${c[1]}</p></article>`).join('');
+      document.querySelectorAll('[data-mode-choice]').forEach(b=>b.addEventListener('click',()=>{document.documentElement.dataset.mode=b.dataset.modeChoice;document.querySelectorAll('[data-mode-choice]').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'))}));
+      document.querySelector('#scaleToggle').addEventListener('click',e=>{const large=document.documentElement.dataset.scale!=='large';document.documentElement.dataset.scale=large?'large':'default';e.currentTarget.textContent=`大字：${large?'开':'关'}`;e.currentTarget.setAttribute('aria-pressed',large)});
+      document.querySelector('#editionToggle').addEventListener('click',e=>{const commercial=document.documentElement.dataset.edition!=='commercial';document.documentElement.dataset.edition=commercial?'commercial':'demo';e.currentTarget.textContent=`版本：${commercial?'商用增强':'Demo'}`;e.currentTarget.setAttribute('aria-pressed',commercial)});
+      document.querySelector('#authToggle').addEventListener('click',e=>{const signed=document.documentElement.dataset.auth!=='signed';document.documentElement.dataset.auth=signed?'signed':'guest';e.currentTarget.textContent=`身份：${signed?'已登录':'访客'}`;e.currentTarget.setAttribute('aria-pressed',signed)});
+      document.querySelector('#routeSearch').addEventListener('input',renderRoutes);select.addEventListener('change',renderRoutes);
+      document.querySelectorAll('.top-tab').forEach(b=>b.addEventListener('click',()=>{state.journey=Number(b.dataset.index);renderJourney()}));
+      document.querySelector('#closeInspector').addEventListener('click',()=>{document.querySelector('#routeInspector').classList.remove('open');state.lastTrigger?.focus()});
+      addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('#routeInspector').classList.contains('open'))document.querySelector('#closeInspector').click()});
+      renderRoutes();renderJourney();
+    }
+    init();
+  })();
+  </script>
+</body>
+</html>

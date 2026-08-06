@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "cross-app-interaction-motion-accessibility.html",
+  "entry": "cross-app-interaction-motion-accessibility.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T17:51:17.668Z",
+  "updatedAt": "2026-08-05T17:51:17.668Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

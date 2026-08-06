@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "component-control-atlas.html",
+  "entry": "component-control-atlas.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T11:01:28.400Z",
+  "updatedAt": "2026-08-05T11:01:28.400Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}
