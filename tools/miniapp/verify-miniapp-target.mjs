@@ -26,6 +26,8 @@ const DESIGN_COMPARISON = "artifacts/miniapp/design/constraint-comparison.json";
 const DESIGN_METHOD = "artifacts/miniapp/design/asset-integrity.json";
 const DESIGN_OBSERVATIONS =
   "artifacts/miniapp/design/asset-integrity-observations.json";
+const GLOBAL_CONFORMANCE_CURRENT =
+  "artifacts/miniapp/global/current-conformance.json";
 const APP_STATE_CARRIER =
   "apps/wechat-miniapp/src/authority/delivery-carrier.json";
 const MAX_COMMAND_OUTPUT = 16 * 1024 * 1024;
@@ -1442,6 +1444,73 @@ function recordsFor({
   return records;
 }
 
+function isLivenessAssertion(assertion) {
+  return (
+    assertion.key === "target-liveness" ||
+    assertion.key === "global-target-liveness" ||
+    assertion.observation.endsWith("target-live") ||
+    assertion.key === "browser-proxy-live"
+  );
+}
+
+function failedBooleanObservation(expected, assertionKey) {
+  if (typeof expected !== "boolean")
+    throw new Error(`non_boolean_failed_observation_unsupported:${assertionKey}`);
+  return !expected;
+}
+
+function carrierOutcomeStatus(carrier, check) {
+  return check.scope === "global-conformance"
+    ? carrier.global?.conformance ?? null
+    : carrier.outcomes?.[check.scope]?.status ?? null;
+}
+
+function counterfactualControlFor(spec, check, status) {
+  return (spec.counterfactual_controls ?? []).find(
+    (control) =>
+      control.scope === check.scope &&
+      control.surface === check.surface &&
+      control.check_key === check.check_key &&
+      control.status === status,
+  );
+}
+
+function populationRequirementFor(spec, check) {
+  return (spec.population_requirements ?? []).find(
+    (requirement) =>
+      requirement.scope === check.scope &&
+      requirement.surface === check.surface &&
+      requirement.check_key === check.check_key,
+  );
+}
+
+async function writeGlobalConformanceArtifact({
+  carrier,
+  carrierStatus,
+  snapshotValid,
+  authorityValid,
+  candidateCheckPassed,
+  checkPassed,
+  observations,
+  evidenceRecords,
+}) {
+  const value = {
+    schema_version: "miniapp-global-conformance-v1",
+    source_snapshot_sha256: carrier.source_snapshot?.sha256 ?? null,
+    carrier_status: carrierStatus,
+    snapshot_valid: snapshotValid,
+    authority_valid: authorityValid,
+    candidate_check_passed: candidateCheckPassed,
+    check_passed: checkPassed,
+    observation_count: Object.keys(observations).length,
+    evidence_record_count: evidenceRecords.length,
+  };
+  return {
+    path: GLOBAL_CONFORMANCE_CURRENT,
+    sha256: await writeJson(GLOBAL_CONFORMANCE_CURRENT, value),
+  };
+}
+
 async function verify(spec, options) {
   const check = spec.checks.find(
     (candidate) =>
@@ -1456,14 +1525,20 @@ async function verify(spec, options) {
   const sourceAuthority = await parseSourceAuthority();
   const authority = await authorityResults(spec, sourceAuthority);
   const authorityValid = Object.values(authority).every((row) => row.passed);
+  const carrierStatus = carrierOutcomeStatus(carrier, check);
   const carrierOutcomePassed =
     check.scope === "global-conformance"
-      ? carrier.global?.conformance === "passed" &&
+      ? carrierStatus === "passed" &&
         Object.values(carrier.outcomes ?? {}).every(
           (outcome) => outcome.status === "passed",
         )
-      : carrier.outcomes?.[check.scope]?.status === "passed";
-  const counterfactual = !carrierOutcomePassed;
+      : carrierStatus === "passed";
+  const counterfactualControl = counterfactualControlFor(
+    spec,
+    check,
+    carrierStatus,
+  );
+  const counterfactual = counterfactualControl !== undefined;
   let execution;
   if (check.scope === "global-conformance" || counterfactual) {
     const carrierNative = carrier.native?.success;
@@ -1487,8 +1562,9 @@ async function verify(spec, options) {
   } else {
     execution = await executeCurrentCheck(check);
   }
-  const checkPassed =
-    snapshotValid && authorityValid && carrierOutcomePassed && execution.passed;
+  const candidateCheckPassed =
+    snapshotValid && authorityValid && execution.passed;
+  const checkPassed = candidateCheckPassed && carrierOutcomePassed;
   const currentOutcome = {
     ...(carrier.outcomes ?? {}),
     ...(check.scope === "global-conformance"
@@ -1540,13 +1616,27 @@ async function verify(spec, options) {
     : null;
   const observations = {};
   const evidenceRecords = [];
+  const populationRequirement = populationRequirementFor(spec, check);
+  if (populationRequirement) {
+    const ids = [
+      ...(execution.inspection?.spot_ids ?? carrier.inspection?.spot_ids ?? []),
+    ];
+    observations[populationRequirement.observations.universe_ids] = ids;
+    observations[populationRequirement.observations.eligible_ids] = ids;
+    observations[populationRequirement.observations.observed_ids] = ids;
+    observations[populationRequirement.observations.excluded_items] = [];
+  }
+  const counterfactualFailures = new Set(
+    counterfactualControl?.expected_assertion_failures ?? [],
+  );
   for (const assertion of check.assertions) {
-    const liveness =
-      assertion.key === "target-liveness" ||
-      assertion.key === "global-target-liveness" ||
-      assertion.observation.endsWith("target-live") ||
-      assertion.key === "browser-proxy-live";
-    let assertionPassed = liveness ? execution.liveness : checkPassed;
+    const liveness = isLivenessAssertion(assertion);
+    let assertionPassed = liveness
+      ? snapshotValid && authorityValid && execution.liveness
+      : counterfactual
+        ? candidateCheckPassed
+        : checkPassed;
+    if (counterfactualFailures.has(assertion.key)) assertionPassed = false;
     if (assertion.evidence_capabilities.includes("semantic_fact"))
       assertionPassed =
         assertionPassed &&
@@ -1561,7 +1651,7 @@ async function verify(spec, options) {
       assertionPassed = assertionPassed && design?.method_passed === true;
     observations[assertion.observation] = assertionPassed
       ? assertion.expected
-      : null;
+      : failedBooleanObservation(assertion.expected, assertion.key);
     evidenceRecords.push(
       ...recordsFor({
         assertion,
@@ -1575,6 +1665,19 @@ async function verify(spec, options) {
       }),
     );
   }
+  const globalArtifact =
+    check.scope === "global-conformance"
+      ? await writeGlobalConformanceArtifact({
+          carrier,
+          carrierStatus,
+          snapshotValid,
+          authorityValid,
+          candidateCheckPassed,
+          checkPassed,
+          observations,
+          evidenceRecords,
+        })
+      : null;
   process.stdout.write(
     `${JSON.stringify({
       schema_version: "long-task-check-result-v3",
@@ -1584,11 +1687,14 @@ async function verify(spec, options) {
       diagnostics: {
         snapshot_valid: snapshotValid,
         authority_valid: authorityValid,
+        carrier_outcome_status: carrierStatus,
         carrier_outcome_passed: carrierOutcomePassed,
         counterfactual,
+        counterfactual_control: counterfactualControl?.key ?? null,
         current_check_passed: execution.passed,
         semantic_passed: semantic?.passed ?? null,
         design_passed: design?.passed ?? null,
+        global_artifact: globalArtifact,
       },
     })}\n`,
   );

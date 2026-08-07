@@ -151,14 +151,31 @@ test("every frozen selected design resource has a production probe binding", asy
 
 test("native acceptance owns a clean build, exclusive current session and fail-closed evidence", async () => {
   const runner = await text("tools", "miniapp", "run-wechat-devtools-session.mjs");
+  const ignore = await text(".gitignore");
   for (const required of [
     "await rm(generatedRoot, { force: true, recursive: true })",
     "directorySnapshot(generatedRoot)",
     'project_root: "apps/wechat-miniapp/project.config.json"',
     "const wechatAutomationPort = 9420",
+    'const wechatAcceptanceSdkVersion = "3.17.1"',
     "const devtoolsPortStableWindowMs = 5_000",
-    "waitForPortsStablyClosed([23977, automationPort], 60_000)",
+    "quitWechatDevtoolsAndWait",
+    "const budgets = [Math.min(15_000, timeoutMs)",
     "cwd: path.dirname(devtoolsExecutable)",
+    "cwd: root",
+    "prepareWechatProjectIdentity",
+    "restoreWechatProjectIdentity",
+    '"project.private.config.json"',
+    "projectname: projectName",
+    "libVersion: wechatAcceptanceSdkVersion",
+    "waitForWechatProjectBinding",
+    "observeWechatWatcherProjects",
+    "Get-CimInstance Win32_Process",
+    "wxfilewatcher_x64.exe",
+    "wechat_devtools_project_binding_mismatch",
+    "wechat_base_library_mismatch",
+    "private_config_ownership_lost",
+    "project_identity_restore",
     "deterministic default-state cold start",
     'miniProgram.reLaunch("/content/settings/index")',
     "activateDayModeThroughProductionControl",
@@ -227,10 +244,22 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   ])
     assert.ok(runner.includes(required), required);
   assert.doesNotMatch(runner, /stageCurrentCandidate|starward-miniapp-devtools-/u);
+  assert.doesNotMatch(runner, /cwd: projectPath/u);
   assert.doesNotMatch(runner, /selector: "\.map-page\.theme-day"/u);
   assert.doesNotMatch(runner, /miniProgram\.on\("console"/u);
   assert.doesNotMatch(runner, /native\(\)\.authorizeCancel\(/u);
   assert.doesNotMatch(runner, /JSON\.stringify\(event \?\? null\)/u);
+  assert.match(ignore, /^apps\/wechat-miniapp\/project\.private\.config\.json$/mu);
+  assert.ok(
+    runner.indexOf("projectIdentitySession = await prepareWechatProjectIdentity") <
+      runner.indexOf('await openObservedSession("setup")'),
+    "the private project identity must exist before DevTools opens the current candidate",
+  );
+  assert.ok(
+    runner.indexOf("await waitForWechatProjectBinding") <
+      runner.indexOf("return waitForAutomationConnection"),
+    "the actual native watcher path must bind before the automator socket is trusted",
+  );
   assert.ok(
     runner.indexOf(
       'const neutralPage = await miniProgram.reLaunch("/pages/auth/index")',
@@ -248,9 +277,16 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "degradation must establish the canonical evidence state before the BFF fault window",
   );
   assert.ok(
-    runner.indexOf("result.cleanup = await teardownNativeSession") <
+    runner.indexOf("const nativeCleanup = await teardownNativeSession") <
       runner.indexOf("await writeJson(runEvidencePath, result)"),
     "final evidence must be written only after teardown has been observed",
+  );
+  assert.ok(
+    runner.indexOf(
+      "const projectIdentityRestore = await restoreWechatProjectIdentity",
+    ) <
+      runner.indexOf("await writeJson(runEvidencePath, result)"),
+    "final evidence must be written only after private project identity restoration",
   );
 });
 
@@ -377,6 +413,10 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "failureInjectionRecord",
     "currentCheckEvidencePassed",
     "commandEvidenceSummary",
+    "failedBooleanObservation",
+    "counterfactualControlFor",
+    "populationRequirementFor",
+    "writeGlobalConformanceArtifact",
     '"const SEEDS: readonly OsmSpotSeed[] = Object.freeze(["',
     'catalog.includes("SEEDS.map(toSpot)")',
     "catalogProjectionBound",
@@ -448,4 +488,44 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   );
   assert.match(launcher, /BCryptOpenAlgorithmProvider/u);
   assert.match(launcher, /return 125/u);
+});
+
+test("Final-Gate adapter projects exact counterfactual and population authority", async () => {
+  const spec = await json("tools", "miniapp", "verification-spec.json");
+  assert.ok(spec.counterfactual_controls.length > 0);
+  assert.equal(
+    new Set(spec.counterfactual_controls.map((row) => row.key)).size,
+    spec.counterfactual_controls.length,
+  );
+  for (const control of spec.counterfactual_controls) {
+    assert.match(control.status, /^semantic-failure/u);
+    const check = spec.checks.find(
+      (row) =>
+        row.scope === control.scope &&
+        row.surface === control.surface &&
+        row.check_key === control.check_key,
+    );
+    assert.ok(check, `${control.scope}:${control.check_key}`);
+    const assertionKeys = new Set(
+      check.assertions.map((assertion) => assertion.key),
+    );
+    for (const key of [
+      ...control.expected_assertion_failures,
+      ...control.preserved_assertions,
+    ])
+      assert.ok(assertionKeys.has(key), `${control.key}:${key}`);
+  }
+  assert.deepEqual(spec.population_requirements, [
+    {
+      scope: "map-discovery",
+      surface: "population_coverage",
+      check_key: "map-population",
+      observations: {
+        universe_ids: "map-discovery.population.universe-ids",
+        eligible_ids: "map-discovery.population.eligible-ids",
+        observed_ids: "map-discovery.population.observed-ids",
+        excluded_items: "map-discovery.population.excluded-items",
+      },
+    },
+  ]);
 });

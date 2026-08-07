@@ -56,6 +56,7 @@ const acceptanceBootstrapState = JSON.parse(
   ),
 );
 const wechatAutomationPort = 9420;
+const wechatAcceptanceSdkVersion = "3.17.1";
 const devtoolsPortStableWindowMs = 5_000;
 const currentEvidencePath = path.join(
   root,
@@ -210,6 +211,195 @@ async function writeJson(absolute, value) {
   await writeFile(absolute, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+async function readOptionalFile(absolute) {
+  try {
+    return await readFile(absolute);
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function normalizeWindowsPath(value) {
+  return path
+    .resolve(value)
+    .replace(/^\\\\\?\\/u, "")
+    .replaceAll("/", "\\")
+    .replace(/\\+$/u, "")
+    .toLowerCase();
+}
+
+async function prepareWechatProjectIdentity(candidateSha256) {
+  const privateConfigPath = path.join(
+    sourceProjectPath,
+    "project.private.config.json",
+  );
+  const originalBytes = await readOptionalFile(privateConfigPath);
+  let original = {};
+  if (originalBytes) {
+    try {
+      original = JSON.parse(originalBytes.toString("utf8"));
+    } catch (error) {
+      throw new Error(
+        `wechat_private_project_config_invalid:${sha256(String(error?.message ?? error))}`,
+      );
+    }
+    if (!original || Array.isArray(original) || typeof original !== "object")
+      throw new Error("wechat_private_project_config_not_object");
+  }
+  const projectName = `starward-final-${sha256(
+    `${normalizeWindowsPath(root)}\0${candidateSha256}`,
+  ).slice(0, 16)}`;
+  const appliedBytes = Buffer.from(
+    `${JSON.stringify(
+      {
+        ...original,
+        projectname: projectName,
+        libVersion: wechatAcceptanceSdkVersion,
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+  await writeFile(privateConfigPath, appliedBytes);
+  const readback = await readFile(privateConfigPath);
+  if (sha256(readback) !== sha256(appliedBytes))
+    throw new Error("wechat_private_project_config_write_mismatch");
+  return {
+    privateConfigPath,
+    originalBytes,
+    appliedBytes,
+    evidence: {
+      status: "prepared",
+      path: "apps/wechat-miniapp/project.private.config.json",
+      scope: "machine-local formal-session override",
+      project_name_sha256: sha256(projectName),
+      base_library_version: wechatAcceptanceSdkVersion,
+      original_exists: originalBytes !== null,
+      original_sha256: originalBytes ? sha256(originalBytes) : null,
+      applied_sha256: sha256(appliedBytes),
+      restoration_required: true,
+    },
+  };
+}
+
+async function restoreWechatProjectIdentity(session) {
+  if (!session)
+    return {
+      status: "not_required",
+      restored_original: false,
+    };
+  const currentBytes = await readOptionalFile(session.privateConfigPath);
+  const currentSha256 = currentBytes ? sha256(currentBytes) : null;
+  const originalSha256 = session.originalBytes
+    ? sha256(session.originalBytes)
+    : null;
+  const appliedSha256 = sha256(session.appliedBytes);
+  const alreadyRestored = currentSha256 === originalSha256;
+  if (!alreadyRestored && currentSha256 !== appliedSha256)
+    return {
+      status: "failed",
+      reason: "private_config_ownership_lost",
+      current_sha256: currentSha256,
+      applied_sha256: appliedSha256,
+      original_sha256: originalSha256,
+    };
+  if (!alreadyRestored) {
+    if (session.originalBytes)
+      await writeFile(session.privateConfigPath, session.originalBytes);
+    else await rm(session.privateConfigPath, { force: true });
+  }
+  const restoredBytes = await readOptionalFile(session.privateConfigPath);
+  const restoredSha256 = restoredBytes ? sha256(restoredBytes) : null;
+  return {
+    status: restoredSha256 === originalSha256 ? "passed" : "failed",
+    restored_original: restoredSha256 === originalSha256,
+    original_exists: session.originalBytes !== null,
+    original_sha256: originalSha256,
+    restored_sha256: restoredSha256,
+  };
+}
+
+function watcherProjectPath(commandLine) {
+  const match = String(commandLine ?? "").match(
+    /wxfilewatcher_x64\.exe"?\s+(?:"([^"]+)"|(.+))$/iu,
+  );
+  return match ? String(match[1] ?? match[2]).trim() : null;
+}
+
+function observeWechatWatcherProjects() {
+  const observation = spawnSync(
+    "powershell.exe",
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "$ErrorActionPreference='Stop'; $rows=@(Get-CimInstance Win32_Process -Filter \"Name='wxfilewatcher_x64.exe'\" | ForEach-Object { $_.CommandLine }); ConvertTo-Json -Compress -InputObject $rows",
+    ],
+    {
+      encoding: "utf8",
+      maxBuffer: 2 * 1024 * 1024,
+      windowsHide: true,
+    },
+  );
+  if (observation.status !== 0)
+    throw new Error(
+      `wechat_watcher_observation_failed:${observation.status}:${sha256(
+        `${observation.stdout ?? ""}\n${observation.stderr ?? ""}\n${observation.error?.message ?? ""}`,
+      )}`,
+    );
+  let commandLines;
+  try {
+    commandLines = JSON.parse(String(observation.stdout ?? "[]").trim() || "[]");
+  } catch (error) {
+    throw new Error(
+      `wechat_watcher_observation_invalid:${sha256(String(error?.message ?? error))}`,
+    );
+  }
+  if (!Array.isArray(commandLines)) commandLines = [commandLines];
+  const projects = commandLines
+    .map(watcherProjectPath)
+    .filter(Boolean)
+    .map(normalizeWindowsPath);
+  return {
+    processCount: commandLines.length,
+    projects,
+  };
+}
+
+async function waitForWechatProjectBinding(projectPath, timeoutMs = 30_000) {
+  const deadline = Date.now() + timeoutMs;
+  const expected = normalizeWindowsPath(projectPath);
+  let lastObservation = { processCount: 0, projects: [] };
+  while (Date.now() < deadline) {
+    lastObservation = observeWechatWatcherProjects();
+    if (
+      lastObservation.processCount === 1 &&
+      lastObservation.projects.length === 1 &&
+      lastObservation.projects[0] === expected
+    )
+      return {
+        status: "passed",
+        observer: "Win32_Process wxfilewatcher_x64.exe command line",
+        expected_project_root: "apps/wechat-miniapp",
+        expected_project_path_sha256: sha256(expected),
+        observed_process_count: 1,
+        observed_project_path_sha256: sha256(lastObservation.projects[0]),
+      };
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(
+    `wechat_devtools_project_binding_mismatch:${sha256(
+      canonical({
+        expected_sha256: sha256(expected),
+        observed_process_count: lastObservation.processCount,
+        observed_project_path_sha256s: lastObservation.projects.map(sha256),
+      }),
+    )}`,
+  );
+}
+
 async function waitForHttp(url, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -327,7 +517,11 @@ function runWechatCli(projectPath, args, options = {}) {
     cwd: path.dirname(devtoolsExecutable),
     env: {
       ...process.env,
-      cwd: projectPath,
+      // Match the official cli.bat contract: the executable runs from the
+      // installed tool directory while its `cwd` environment binding names the
+      // caller workspace. The requested project is independently bound below
+      // through a unique private identity and the actual file-watcher path.
+      cwd: root,
       ELECTRON: "",
       ELECTRON_RUN_AS_NODE: "1",
     },
@@ -487,7 +681,7 @@ function quitWechatDevtools(projectPath) {
     cwd: path.dirname(devtoolsExecutable),
     env: {
       ...process.env,
-      cwd: projectPath,
+      cwd: root,
       ELECTRON: "",
       ELECTRON_RUN_AS_NODE: "1",
     },
@@ -504,13 +698,51 @@ function quitWechatDevtools(projectPath) {
   };
 }
 
+async function quitWechatDevtoolsAndWait(
+  projectPath,
+  ports,
+  timeoutMs = 60_000,
+) {
+  const attempts = [];
+  const budgets = [Math.min(15_000, timeoutMs), Math.max(0, timeoutMs - 15_000)];
+  for (let index = 0; index < budgets.length; index += 1) {
+    const quit = quitWechatDevtools(projectPath);
+    const attempt = {
+      attempt: index + 1,
+      quit_status: quit.status,
+      exit_code: quit.exit_code,
+      diagnostic_sha256: quit.diagnostic_sha256,
+      ports_status: "pending",
+    };
+    attempts.push(attempt);
+    if (quit.status === "passed" && budgets[index] > 0) {
+      try {
+        await waitForPortsStablyClosed(ports, budgets[index]);
+        attempt.ports_status = "passed";
+        return {
+          status: "passed",
+          attempt_count: attempts.length,
+          attempts,
+        };
+      } catch (error) {
+        attempt.ports_status = "failed";
+        attempt.ports_diagnostic_sha256 = sha256(
+          String(error?.message ?? error),
+        );
+      }
+    } else attempt.ports_status = "not_checked";
+  }
+  throw new Error(
+    `wechat_devtools_shutdown_failed:${sha256(canonical(attempts))}`,
+  );
+}
+
 async function startWechatAutomation(projectPath, automationPort) {
-  const quit = quitWechatDevtools(projectPath);
-  if (quit.status !== "passed")
-    throw new Error(
-      `wechat_devtools_quit_failed:${quit.exit_code}:${quit.diagnostic_sha256}`,
-    );
-  await waitForPortsStablyClosed([23977, automationPort], 60_000);
+  await quitWechatDevtoolsAndWait(
+    projectPath,
+    [23977, automationPort],
+    60_000,
+  );
   const launchOutput = [];
   const cliProcess = runWechatCli(projectPath, [
     "auto",
@@ -526,11 +758,21 @@ async function startWechatAutomation(projectPath, automationPort) {
   };
   cliProcess.stdout.on("data", remember);
   cliProcess.stderr.on("data", remember);
-  return {
-    automationPort,
-    cliProcess,
-    launchDiagnostic: () => sha256(launchOutput.join("")),
-  };
+  try {
+    const projectPathBinding = await waitForWechatProjectBinding(
+      projectPath,
+      30_000,
+    );
+    return {
+      automationPort,
+      cliProcess,
+      projectPathBinding,
+      launchDiagnostic: () => sha256(launchOutput.join("")),
+    };
+  } catch (error) {
+    if (cliProcess.exitCode === null) stopProcessTree(cliProcess.pid);
+    throw error;
+  }
 }
 
 async function connectWechatAutomation(launch) {
@@ -572,16 +814,14 @@ async function teardownNativeSession({
   }
   if (devtoolsLaunch?.cliProcess?.exitCode === null)
     stopProcessTree(devtoolsLaunch.cliProcess.pid);
-  const quit = quitWechatDevtools(projectPath);
-  if (quit.status !== "passed")
-    failures.push(`devtools_quit:${quit.diagnostic_sha256}`);
   try {
-    await waitForPortsStablyClosed(
+    await quitWechatDevtoolsAndWait(
+      projectPath,
       [automationPort, 23977].filter(Boolean),
       60_000,
     );
   } catch (error) {
-    failures.push(`devtools_ports:${sha256(String(error?.message ?? error))}`);
+    failures.push(`devtools_shutdown:${sha256(String(error?.message ?? error))}`);
   }
   if (apiProcess) stopProcessTree(apiProcess.pid);
   if (apiPort) {
@@ -594,6 +834,7 @@ async function teardownNativeSession({
   return {
     status: failures.length === 0 ? "passed" : "failed",
     failure_count: failures.length,
+    failure_kinds: failures.map((failure) => failure.split(":", 1)[0]),
     failures_sha256: failures.length > 0 ? sha256(canonical(failures)) : null,
   };
 }
@@ -1127,6 +1368,8 @@ async function main() {
   let detachRuntimeObservers;
   let apiPort;
   let automationPort;
+  let projectIdentitySession;
+  let devtoolsToolInfo;
   let capturedError;
   const runtimeStartedAt = Date.now();
   const runtimeEvents = [];
@@ -1203,8 +1446,11 @@ async function main() {
     bundle_after: null,
     project_session: {
       status: "pending",
-      kind: "exclusive canonical WeChat DevTools project session",
-      mutation_guard: "candidate and generated-bundle before/after fingerprints",
+      kind: "exclusive current-candidate WeChat DevTools project session",
+      mutation_guard:
+        "candidate and generated-bundle before/after fingerprints plus exact private-config restoration",
+      identity: { status: "pending" },
+      path_bindings: [],
     },
     setup: null,
     runtime: null,
@@ -1232,14 +1478,32 @@ async function main() {
           automationPort,
         );
         attemptProgram = await connectWechatAutomation(attemptLaunch);
+        const toolInfo = await attemptProgram.send("Tool.getInfo");
+        if (toolInfo.SDKVersion !== wechatAcceptanceSdkVersion)
+          throw new Error(
+            `wechat_base_library_mismatch:${sha256(
+              String(toolInfo.SDKVersion ?? "missing"),
+            )}`,
+          );
         attemptDetachRuntimeObservers =
           await attachRuntimeObservers(attemptProgram);
         await waitForInitialPage(attemptProgram, 60_000);
-        startupAttempts.push({ stage, attempt, status: "passed" });
+        startupAttempts.push({
+          stage,
+          attempt,
+          status: "passed",
+          project_path_binding: attemptLaunch.projectPathBinding,
+          base_library_version: toolInfo.SDKVersion,
+        });
+        result.project_session.path_bindings.push({
+          stage,
+          ...attemptLaunch.projectPathBinding,
+        });
         return {
           launch: attemptLaunch,
           program: attemptProgram,
           detachRuntimeObservers: attemptDetachRuntimeObservers,
+          toolInfo,
         };
       } catch (error) {
         const attemptRecord = {
@@ -1263,11 +1527,13 @@ async function main() {
         }
         if (attemptLaunch?.cliProcess?.exitCode === null)
           stopProcessTree(attemptLaunch.cliProcess.pid);
-        const quit = quitWechatDevtools(sourceProjectPath);
         try {
-          await waitForPortsStablyClosed([23977, automationPort], 60_000);
-          attemptRecord.cleanup_status =
-            quit.status === "passed" ? "passed" : "failed";
+          await quitWechatDevtoolsAndWait(
+            sourceProjectPath,
+            [23977, automationPort],
+            60_000,
+          );
+          attemptRecord.cleanup_status = "passed";
         } catch {
           attemptRecord.cleanup_status = "failed";
         }
@@ -1287,9 +1553,17 @@ async function main() {
     result.toolchain.api_port = apiPort;
     result.build = await buildCurrentCandidate(apiPort);
     apiProcess = await startApi(apiPort);
+    projectIdentitySession = await prepareWechatProjectIdentity(before.sha256);
+    result.project_session.identity = projectIdentitySession.evidence;
     runtimePhase = "setup-startup";
-    ({ launch: devtoolsLaunch, program: miniProgram, detachRuntimeObservers } =
-      await openObservedSession("setup"));
+    ({
+      launch: devtoolsLaunch,
+      program: miniProgram,
+      detachRuntimeObservers,
+      toolInfo: devtoolsToolInfo,
+    } = await openObservedSession("setup"));
+    result.toolchain.devtools_version = devtoolsToolInfo.version;
+    result.toolchain.base_library_version = devtoolsToolInfo.SDKVersion;
     runtimePhase = "setup-reset-before-control";
     const setupReset = await resetThroughAcceptanceControl(miniProgram);
     runtimePhase = "setup-diagnostics-clear";
@@ -1336,8 +1610,15 @@ async function main() {
       evidence_session: false,
     };
     runtimePhase = "evidence-startup";
-    ({ launch: devtoolsLaunch, program: miniProgram, detachRuntimeObservers } =
-      await openObservedSession("evidence"));
+    const setupToolIdentity = sha256(canonical(devtoolsToolInfo));
+    ({
+      launch: devtoolsLaunch,
+      program: miniProgram,
+      detachRuntimeObservers,
+      toolInfo: devtoolsToolInfo,
+    } = await openObservedSession("evidence"));
+    if (sha256(canonical(devtoolsToolInfo)) !== setupToolIdentity)
+      throw new Error("wechat_tool_identity_changed_between_session_stages");
     runtimePhase = "evidence-reset-before-control";
     result.setup.evidence_reset = await resetThroughAcceptanceControl(miniProgram);
     result.setup.evidence_live_control = {
@@ -1354,9 +1635,6 @@ async function main() {
       requestDiagnosticStorageKey,
       [],
     );
-    const toolInfo = await miniProgram.send("Tool.getInfo");
-    result.toolchain.devtools_version = toolInfo.version;
-    result.toolchain.base_library_version = toolInfo.SDKVersion;
     result.toolchain.cli_launch_diagnostic_sha256 =
       devtoolsLaunch.launchDiagnostic();
     result.runtime = await miniProgram.systemInfo().then((info) => ({
@@ -1510,7 +1788,7 @@ async function main() {
     ).catch(() => null);
     result.project_session.status = "failed";
   }
-  result.cleanup = await teardownNativeSession({
+  const nativeCleanup = await teardownNativeSession({
     miniProgram,
     devtoolsLaunch,
     apiProcess,
@@ -1522,8 +1800,37 @@ async function main() {
     failure_count: 1,
     failures_sha256: sha256(String(error?.message ?? error)),
   }));
+  const projectIdentityRestore = await restoreWechatProjectIdentity(
+    projectIdentitySession,
+  ).catch((error) => ({
+    status: "failed",
+    reason: "private_config_restore_exception",
+    diagnostic_sha256: sha256(String(error?.message ?? error)),
+  }));
+  result.cleanup = {
+    ...nativeCleanup,
+    project_identity_restore: projectIdentityRestore,
+  };
+  result.project_session.identity = {
+    ...result.project_session.identity,
+    restoration_status: projectIdentityRestore.status,
+  };
+  if (projectIdentityRestore.status === "failed") {
+    result.cleanup = {
+      ...result.cleanup,
+      status: "failed",
+      failure_count: (result.cleanup.failure_count ?? 0) + 1,
+      failures_sha256: sha256(
+        canonical({
+          native: result.cleanup.failures_sha256,
+          project_identity_restore: projectIdentityRestore,
+        }),
+      ),
+    };
+  }
   if (result.cleanup.status !== "passed") {
     result.status = "failed";
+    result.project_session.status = "failed";
     result.error ??= {
       message: `native_session_teardown_failed:${result.cleanup.failures_sha256}`,
       stack_sha256: null,
