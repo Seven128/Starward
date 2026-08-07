@@ -6,6 +6,5 @@ apps/mobile/modules/design-evidence/android/build/
 apps/wechat-miniapp/dist/
 apps/wechat-miniapp/project.private.config.json
 apps/wechat-miniapp/.swc/
-apps/wechat-miniapp/src/authority/delivery-carrier.json
 artifacts/miniapp/
 tmp/ty-context/long-task-runs/
