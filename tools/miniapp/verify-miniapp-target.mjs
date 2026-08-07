@@ -1251,6 +1251,116 @@ function runtimeEvidence(execution, carrier) {
   return execution.native ?? carrier.native?.success ?? null;
 }
 
+const exactEvidenceRecordFields = Object.freeze({
+  target_runtime: Object.freeze([
+    "assertion_key",
+    "capability",
+    "target_ref",
+    "root_entrypoint",
+    "session_id",
+    "cold_start",
+  ]),
+  interaction_trace: Object.freeze([
+    "assertion_key",
+    "capability",
+    "target_ref",
+    "given_keys",
+    "action_keys",
+  ]),
+  failure_injection: Object.freeze([
+    "assertion_key",
+    "capability",
+    "fault",
+    "failure_observed",
+    "recovery_state_sha256",
+  ]),
+  state_delta: Object.freeze([
+    "assertion_key",
+    "capability",
+    "before_sha256",
+    "after_sha256",
+    "changed_fields",
+  ]),
+});
+
+function assertExactEvidenceRecordShape(record) {
+  const expected = exactEvidenceRecordFields[record.capability];
+  if (!expected) return;
+  const actual = Object.keys(record).sort();
+  const sortedExpected = [...expected].sort();
+  if (
+    actual.length !== sortedExpected.length ||
+    actual.some((field, index) => field !== sortedExpected[index])
+  )
+    throw new Error(
+      `evidence_record_shape_invalid:${record.capability}:${actual.join(",")}`,
+    );
+}
+
+function commandEvidenceSummary(command) {
+  if (!command) return null;
+  return {
+    passed: command.passed === true,
+    exit_code: command.exit_code ?? null,
+    stdout_sha256: command.stdout_sha256 ?? null,
+    stderr_sha256: command.stderr_sha256 ?? null,
+  };
+}
+
+function failureInjectionRecord(assertion, check, execution, passed) {
+  const probes = execution.native?.fault_probes ?? [];
+  if (probes.length > 0)
+    return {
+      assertion_key: assertion.key,
+      capability: "failure_injection",
+      fault: `${check.scope}:${check.surface}`,
+      failure_observed: probes.every((probe) => probe.fault_observed),
+      recovery_state_sha256: sha256(
+        canonical(
+          probes.map((probe) => ({
+            journey_key: probe.journey_key,
+            recovery_observation_sha256: probe.recovery_observation_sha256,
+            recovery_observed: probe.recovery_observed,
+          })),
+        ),
+      ),
+    };
+
+  const commands = Object.fromEntries(
+    Object.entries(execution.commands ?? {}).map(([key, command]) => [
+      key,
+      commandEvidenceSummary(command),
+    ]),
+  );
+  const infrastructure = execution.infrastructure
+    ? {
+        passed: execution.infrastructure.passed === true,
+        artifact_sha256: execution.infrastructure.artifact_sha256 ?? null,
+        command: commandEvidenceSummary(execution.infrastructure.command),
+      }
+    : null;
+  const currentCheckEvidencePassed =
+    Object.values(commands).some((command) => command?.passed === true) ||
+    infrastructure?.passed === true;
+  const failureObserved = passed === true && currentCheckEvidencePassed;
+  return {
+    assertion_key: assertion.key,
+    capability: "failure_injection",
+    fault: `${check.scope}:${check.surface}`,
+    failure_observed: failureObserved,
+    recovery_state_sha256: sha256(
+      canonical({
+        assertion_key: assertion.key,
+        scope: check.scope,
+        surface: check.surface,
+        failure_observed: failureObserved,
+        commands,
+        infrastructure,
+      }),
+    ),
+  };
+}
+
 function recordsFor({
   assertion,
   check,
@@ -1272,8 +1382,6 @@ function recordsFor({
         root_entrypoint: check.root_entrypoint,
         session_id: native?.session_id ?? `process:${check.scope}:${check.surface}`,
         cold_start: native?.cold_start ?? false,
-        artifact_path: native?.artifact_path ?? null,
-        artifact_sha256: native?.artifact_sha256 ?? null,
       });
     else if (capability === "interaction_trace")
       records.push({
@@ -1282,7 +1390,6 @@ function recordsFor({
         target_ref: check.target_ref,
         given_keys: check.given_keys,
         action_keys: check.action_keys,
-        journeys: native?.journeys ?? [],
       });
     else if (capability === "cross_surface_consistency")
       records.push({
@@ -1304,26 +1411,9 @@ function recordsFor({
           },
         ],
       });
-    else if (capability === "failure_injection") {
-      const probes = execution.native?.fault_probes ?? [];
-      records.push({
-        assertion_key: assertion.key,
-        capability,
-        fault: `${check.scope}:${check.surface}`,
-        failure_observed:
-          probes.length > 0 && probes.every((probe) => probe.fault_observed),
-        recovery_state_sha256: sha256(
-          canonical(
-            probes.map((probe) => ({
-              journey_key: probe.journey_key,
-              recovery_observation_sha256: probe.recovery_observation_sha256,
-              recovery_observed: probe.recovery_observed,
-            })),
-          ),
-        ),
-        probes,
-      });
-    } else if (capability === "state_delta") {
+    else if (capability === "failure_injection")
+      records.push(failureInjectionRecord(assertion, check, execution, passed));
+    else if (capability === "state_delta") {
       const ids = execution.inspection?.spot_ids ?? carrier.inspection?.spot_ids ?? [];
       records.push({
         assertion_key: assertion.key,
@@ -1331,7 +1421,6 @@ function recordsFor({
         before_sha256: sha256(canonical([])),
         after_sha256: sha256(canonical(ids)),
         changed_fields: ["enumerated_population"],
-        observed_ids: ids,
       });
     } else if (capability === "semantic_fact")
       records.push(semanticRecord(assertion, check, spec, semantic, passed));
@@ -1349,6 +1438,7 @@ function recordsFor({
     else if (capability === "design_method")
       records.push(designMethodRecord(assertion, spec, design));
   }
+  for (const record of records) assertExactEvidenceRecordShape(record);
   return records;
 }
 

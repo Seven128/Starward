@@ -56,6 +56,7 @@ const acceptanceBootstrapState = JSON.parse(
   ),
 );
 const wechatAutomationPort = 9420;
+const devtoolsPortStableWindowMs = 5_000;
 const currentEvidencePath = path.join(
   root,
   "artifacts",
@@ -377,7 +378,7 @@ async function waitForPortClosed(port, timeoutMs) {
 async function waitForPortsStablyClosed(
   ports,
   timeoutMs,
-  stableWindowMs = 1_000,
+  stableWindowMs = devtoolsPortStableWindowMs,
 ) {
   const deadline = Date.now() + timeoutMs;
   let closedSince = null;
@@ -408,6 +409,53 @@ async function waitForInitialPage(miniProgram, timeoutMs) {
   }
   throw new Error(
     `wechat_initial_page_timeout:${sha256(String(lastError?.message ?? lastError ?? "empty_page_stack"))}`,
+  );
+}
+
+async function enableRuntimeLog(program, timeoutMs = 30_000) {
+  const deadline = Date.now() + timeoutMs;
+  let lastError;
+  while (Date.now() < deadline) {
+    try {
+      await program.send("App.enableLog");
+      return;
+    } catch (error) {
+      lastError = error;
+      if (
+        !/timeout waiting for automator response/iu.test(
+          String(error?.message ?? error),
+        )
+      )
+        throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    }
+  }
+  throw new Error(
+    `wechat_runtime_log_enable_timeout:${sha256(String(lastError?.message ?? lastError ?? ""))}`,
+  );
+}
+
+function isAutomatorResponseTimeout(error) {
+  return /timeout waiting for automator response/iu.test(
+    String(error?.message ?? error),
+  );
+}
+
+async function retryIdempotentAutomatorOperation(label, operation) {
+  let lastError;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isAutomatorResponseTimeout(error) || attempt === 2) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    }
+  }
+  throw new Error(
+    `wechat_idempotent_automator_operation_unreachable:${label}:${sha256(
+      String(lastError?.message ?? lastError ?? ""),
+    )}`,
   );
 }
 
@@ -580,7 +628,10 @@ async function activateDayModeThroughProductionControl(
   setRuntimePhase = () => {},
 ) {
   setRuntimePhase("setup-day-control-route");
-  const settingsPage = await miniProgram.reLaunch("/content/settings/index");
+  const settingsPage = await retryIdempotentAutomatorOperation(
+    "setup-day-control-route",
+    () => miniProgram.reLaunch("/content/settings/index"),
+  );
   if (!settingsPage) throw new Error("native_setup_settings_route_unavailable");
   const modeButtons = await waitForSelector(
     settingsPage,
@@ -611,7 +662,10 @@ async function resetThroughAcceptanceControl(miniProgram) {
   // WeChat report the cancelled RequestTask promises as opaque console errors.
   // Always move to the production, network-free permission page first so every
   // setup, evidence and degradation reset has the same stable lifecycle owner.
-  const neutralPage = await miniProgram.reLaunch("/pages/auth/index");
+  const neutralPage = await retryIdempotentAutomatorOperation(
+    "acceptance-reset-route",
+    () => miniProgram.reLaunch("/pages/auth/index"),
+  );
   if (!neutralPage) throw new Error("native_reset_route_unavailable");
   await waitForSelector(neutralPage, ".permission-page", 1);
   const reset = await miniProgram.evaluate(function () {
@@ -727,7 +781,10 @@ async function waitForRecoveryControl(page, probe, timeoutMs = 10_000) {
 }
 
 async function captureJourney(miniProgram, runRoot, definition) {
-  const page = await miniProgram.reLaunch(definition.url);
+  const page = await retryIdempotentAutomatorOperation(
+    `journey-route:${definition.key}`,
+    () => miniProgram.reLaunch(definition.url),
+  );
   if (!page) throw new Error(`native_route_unavailable:${definition.url}`);
   await waitForSelector(page, definition.root, 1);
   await page.waitFor(definition.settleMs ?? 1_000);
@@ -752,7 +809,10 @@ async function captureJourney(miniProgram, runRoot, definition) {
   };
   const screenshotName = `${definition.order.toString().padStart(2, "0")}-${definition.key}.png`;
   const screenshotAbsolute = path.join(runRoot, screenshotName);
-  await miniProgram.screenshot({ path: screenshotAbsolute });
+  await retryIdempotentAutomatorOperation(
+    `journey-screenshot:${definition.key}`,
+    () => miniProgram.screenshot({ path: screenshotAbsolute }),
+  );
   return {
     key: definition.key,
     status:
@@ -989,7 +1049,10 @@ async function captureFaultAndRecovery({
 }) {
   const probe = faultProbeByJourney[definition.key];
   if (!probe) throw new Error(`native_fault_probe_missing:${definition.key}`);
-  const page = await miniProgram.reLaunch(definition.url);
+  const page = await retryIdempotentAutomatorOperation(
+    `fault-route:${definition.key}`,
+    () => miniProgram.reLaunch(definition.url),
+  );
   if (!page) throw new Error(`native_fault_page_missing:${definition.key}`);
   const faultWxml = await waitForRootFragment(
     page,
@@ -1002,7 +1065,10 @@ async function captureFaultAndRecovery({
     runRoot,
     `fault-${definition.key}.png`,
   );
-  await miniProgram.screenshot({ path: faultScreenshot });
+  await retryIdempotentAutomatorOperation(
+    `fault-screenshot:${definition.key}`,
+    () => miniProgram.screenshot({ path: faultScreenshot }),
+  );
 
   await restartApi();
   const recoveryControl = await waitForRecoveryControl(page, probe);
@@ -1018,7 +1084,10 @@ async function captureFaultAndRecovery({
     runRoot,
     `recovered-${definition.key}.png`,
   );
-  await miniProgram.screenshot({ path: recoveryScreenshot });
+  await retryIdempotentAutomatorOperation(
+    `recovery-screenshot:${definition.key}`,
+    () => miniProgram.screenshot({ path: recoveryScreenshot }),
+  );
   return {
     status: faultObserved && recoveryObserved ? "passed" : "failed",
     kind: "bff_process_unavailable_then_restarted",
@@ -1065,7 +1134,7 @@ async function main() {
   const startupAttempts = [];
   let runtimePhase = "setup";
   const attachRuntimeObservers = async (program) => {
-    await program.send("App.enableLog");
+    await enableRuntimeLog(program);
     const onConsole = (event) => {
       const rendered = runtimeEventJson(event);
       const level = String(
@@ -1432,6 +1501,7 @@ async function main() {
     detachRuntimeObservers = undefined;
     result.error = {
       message: String(error?.message ?? error),
+      phase: runtimePhase,
       stack_sha256: sha256(String(error?.stack ?? "")),
     };
     result.candidate_after = await candidateSnapshot().catch(() => null);

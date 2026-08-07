@@ -126,6 +126,9 @@ test("map remains map-first and preserves the selected-resource card anatomy", a
   // design-binding: map.selected-card-anatomy
   // design-binding: map.quick-filter-and-control-hierarchy
   await page.goto("/");
+  await expect(
+    page.locator(".selected-card-wrap .soft-button--primary"),
+  ).toHaveCount(1);
   const geometry = await page.evaluate(() => {
     const box = (selector) => {
       const element = document.querySelector(selector);

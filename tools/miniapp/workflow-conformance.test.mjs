@@ -156,6 +156,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "directorySnapshot(generatedRoot)",
     'project_root: "apps/wechat-miniapp/project.config.json"',
     "const wechatAutomationPort = 9420",
+    "const devtoolsPortStableWindowMs = 5_000",
     "waitForPortsStablyClosed([23977, automationPort], 60_000)",
     "cwd: path.dirname(devtoolsExecutable)",
     "deterministic default-state cold start",
@@ -188,6 +189,12 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "result.cleanup.status !== \"passed\"",
     'await program.send("App.enableLog")',
     "runtimeEventJson",
+    "enableRuntimeLog",
+    "timeout waiting for automator response",
+    "wechat_runtime_log_enable_timeout",
+    "retryIdempotentAutomatorOperation",
+    "isAutomatorResponseTimeout",
+    "phase: runtimePhase",
     "offset_ms: Date.now() - runtimeStartedAt",
     "safeRuntimeExcerpt",
     "diagnostic_excerpt: safeRuntimeExcerpt(error)",
@@ -365,6 +372,11 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "buildDesignArtifacts",
     "validateSnapshot",
     "runtime_quiescence",
+    "assertExactEvidenceRecordShape",
+    "evidence_record_shape_invalid",
+    "failureInjectionRecord",
+    "currentCheckEvidencePassed",
+    "commandEvidenceSummary",
     '"const SEEDS: readonly OsmSpotSeed[] = Object.freeze(["',
     'catalog.includes("SEEDS.map(toSpot)")',
     "catalogProjectionBound",
@@ -389,6 +401,22 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     verifier,
     /sha256\(`\$\{check\.scope\}:before`\)/u,
   );
+  for (const unsupportedEvidenceField of [
+    "artifact_path: native?.artifact_path",
+    "artifact_sha256: native?.artifact_sha256",
+    "journeys: native?.journeys",
+    "probes,",
+    "observed_ids: ids",
+  ])
+    assert.ok(
+      !verifier
+        .slice(
+          verifier.indexOf("function recordsFor"),
+          verifier.indexOf("async function verify"),
+        )
+        .includes(unsupportedEvidenceField),
+      unsupportedEvidenceField,
+    );
   assert.match(
     verifier,
     /const actual = sourceAuthority\.items\.get\(template\.source_item_key\)/u,
