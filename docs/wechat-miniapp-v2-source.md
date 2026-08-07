@@ -4964,7 +4964,7 @@ catalogs:
       - - input.context.002
         - context
         - project_context/areas/main/implementation-index.md
-        - 099c82acb8b3f343fad51a57e7f2bfb68ac01e14dd3c00ae2cc953d93a8a49a4
+        - 8a7782309968c2411103bf1b785d938d92c72b70a0e8563941e862ad80520d10
         - non_ui_material
         - - fact.complete-demo.architecture.deliberation
         - - architecture-deliberation
@@ -21542,7 +21542,7 @@ fact_sets:
             - complete-demo-terminal-state
           derivation: null
         - - complete-demo-terminal-state
-      - - 30c98ce6af9a28a4ec4b188f2eea6e30c1f9c72e48b7188b27b273784e53c416
+      - - 7a47a983100dc8bcbc3f61e8ebc06c5e9984a49fc085c889778b06894657036b
         - fact.complete-demo.architecture.deliberation
         - cell.complete-demo.architecture.deliberation
         - complete-demo
@@ -26346,7 +26346,7 @@ obligations:
           - /proof_obligations/95/comparison/parameters/value
           - complete-demo-terminal-state
     - - proof.complete-demo.architecture.deliberation
-      - 08f532948717d029744bdd01e652ebb5d6c1bd74166e5674a45b32ff8492e40f
+      - 0f390f57ce24cac3b1efc68815ce474e404f07bde48436174780b9a51f4c8647
       - fact.complete-demo.architecture.deliberation
       - structure_ref: structure.2452d8bed0c5383752c792bd
         arguments:

@@ -373,6 +373,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "for ($attempt = 1; $attempt -le 20; $attempt += 1)",
     "Start-Sleep -Milliseconds 250",
     "node_modules\\.bin\\ty-context.cmd",
+    "ValidateSet('verify', 'diagnose-revision', 'final-gate', 'close')",
   ])
     assert.ok(proofWrapper.includes(required), required);
 });

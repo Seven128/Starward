@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true, Position = 0)]
-    [ValidateSet('verify', 'diagnose-revision', 'final-gate')]
+    [ValidateSet('verify', 'diagnose-revision', 'final-gate', 'close')]
     [string]$Command,
 
     [Parameter(Mandatory = $true, Position = 1)]
