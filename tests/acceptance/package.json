@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "playwright test --config playwright.config.mjs",
-    "test:list": "playwright test --config playwright.config.mjs --list"
+    "test:list": "playwright test --config playwright.config.mjs --list",
+    "test:miniapp": "playwright test --config miniapp/playwright.config.mjs",
+    "test:miniapp:list": "playwright test --config miniapp/playwright.config.mjs --list"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

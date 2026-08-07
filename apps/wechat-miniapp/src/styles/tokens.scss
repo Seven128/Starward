@@ -1,0 +1,80 @@
+$font-native: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+
+page,
+.theme-day {
+  --canvas: #f5f8fc;
+  --surface: #ffffff;
+  --surface-subtle: #eef4fa;
+  --surface-elevated: #ffffff;
+  --text-primary: #10233f;
+  --text-secondary: #526a84;
+  --text-tertiary: #5c7186;
+  --text-muted: var(--text-tertiary);
+  --border: #d4e1ee;
+  --primary: #1769d2;
+  --primary-pressed: #0f56ae;
+  --on-primary: #ffffff;
+  --accent-cyan: #69c7f5;
+  --accent-violet: #707cf2;
+  --accent-warm: #eed7b1;
+  --success: #238b62;
+  --warning: #b86a12;
+  --danger: #c83f49;
+  --focus: #0b63ce;
+  --pressed-overlay: rgba(23, 105, 210, 0.08);
+  --elevation-card: 0 12rpx 36rpx rgba(25, 61, 102, 0.1), 0 2rpx 8rpx rgba(25, 61, 102, 0.06);
+  --elevation-floating: 0 8rpx 24rpx rgba(21, 55, 94, 0.14);
+  --map-tint: rgba(214, 228, 240, 0.78);
+}
+
+.theme-night {
+  --canvas: #050a14;
+  --surface: #0b1626;
+  --surface-subtle: #102238;
+  --surface-elevated: #162b45;
+  --text-primary: #eef5ff;
+  --text-secondary: #a9bcd2;
+  --text-tertiary: #7f96af;
+  --text-muted: var(--text-tertiary);
+  --border: #29425f;
+  --primary: #5aa7ff;
+  --primary-pressed: #3389ea;
+  --on-primary: #03101f;
+  --accent-cyan: #67c4e9;
+  --accent-violet: #8a8ef4;
+  --accent-warm: #d8be94;
+  --success: #5cc99a;
+  --warning: #f0b55b;
+  --danger: #ff7b82;
+  --focus: #82bcff;
+  --pressed-overlay: rgba(90, 167, 255, 0.12);
+  --elevation-card: none;
+  --elevation-floating: 0 8rpx 24rpx rgba(0, 0, 0, 0.24);
+  --map-tint: rgba(9, 24, 40, 0.72);
+}
+
+.theme-observation {
+  --canvas: #000000;
+  --surface: #0b0101;
+  --surface-subtle: #150303;
+  --surface-elevated: #200505;
+  --text-primary: #f4554e;
+  --text-secondary: #e44a43;
+  --text-tertiary: #d84a43;
+  --text-muted: var(--text-tertiary);
+  --border: #4d1716;
+  --primary: #ff514a;
+  --primary-pressed: #d83b36;
+  --on-primary: #000000;
+  --accent-cyan: #b83a35;
+  --accent-violet: #c4403a;
+  --accent-warm: #d94842;
+  --success: #d84a43;
+  --warning: #f05a52;
+  --danger: #ff6a62;
+  --focus: #ff776f;
+  --pressed-overlay: rgba(255, 81, 74, 0.16);
+  --elevation-card: none;
+  --elevation-floating: none;
+  --map-tint: #000000;
+}

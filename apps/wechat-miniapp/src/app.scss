@@ -1,0 +1,149 @@
+@use "./styles/tokens.scss";
+
+page {
+  width: 100%;
+  min-height: 100%;
+  background: var(--canvas);
+  color: var(--text-primary);
+  font-family: tokens.$font-native;
+  font-size: 28rpx;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Taro H5 diagnostics render the system tab bar as a sibling stacking context. */
+taro-tabbar,
+.taro-tabbar__tabbar {
+  z-index: 100 !important;
+}
+
+view, text, button, input, textarea, scroll-view, image, canvas, map, slider, picker, switch {
+  box-sizing: border-box;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+}
+
+button::after { border: 0; }
+
+.theme-page {
+  min-height: 100vh;
+  background: var(--canvas);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+.large-text { font-size: 32rpx; }
+.large-text .type-caption { font-size: 28rpx; line-height: 40rpx; }
+.large-text .type-label { font-size: 30rpx; line-height: 42rpx; }
+.large-text .type-body { font-size: 34rpx; line-height: 50rpx; }
+
+.type-display { font-size: 48rpx; line-height: 64rpx; font-weight: 700; letter-spacing: -0.02em; }
+.type-page-title { font-size: 36rpx; line-height: 48rpx; font-weight: 700; }
+.type-section { font-size: 30rpx; line-height: 42rpx; font-weight: 600; }
+.type-body { font-size: 28rpx; line-height: 42rpx; }
+.type-label { font-size: 24rpx; line-height: 34rpx; font-weight: 500; }
+.type-caption { font-size: 22rpx; line-height: 32rpx; color: var(--text-secondary); }
+.type-data { font-size: 28rpx; line-height: 40rpx; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.safe-top { padding-top: max(28rpx, env(safe-area-inset-top)); }
+.safe-bottom { padding-bottom: max(28rpx, env(safe-area-inset-bottom)); }
+
+.card {
+  background: var(--surface);
+  border: 1rpx solid var(--border);
+  border-radius: 28rpx;
+  box-shadow: var(--elevation-card);
+}
+
+.soft-button {
+  min-height: 88rpx;
+  min-width: 88rpx;
+  padding: 18rpx 28rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 20rpx;
+  background: var(--surface);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  font-weight: 500;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.soft-button--primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.soft-button--danger { color: var(--danger); border-color: var(--danger); }
+.soft-button--ghost { background: transparent; }
+.soft-button[disabled="true"] { color: var(--text-tertiary); background: var(--surface-subtle); border-color: var(--border); box-shadow: none; }
+.soft-button:active { background: linear-gradient(var(--pressed-overlay), var(--pressed-overlay)), var(--surface); }
+.soft-button--primary:active { background: var(--primary-pressed); }
+.soft-button + .soft-button { margin-top: 0; }
+
+.focus-ring:focus, .soft-button:focus, .chip:focus, input:focus, textarea:focus {
+  outline: 4rpx solid var(--focus);
+  outline-offset: 4rpx;
+}
+
+.chip {
+  min-height: 88rpx;
+  padding: 18rpx 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40rpx;
+  border: 1rpx solid var(--border);
+  color: var(--text-secondary);
+  background: var(--surface);
+  text-align: center;
+}
+.chip--selected { border-width: 2rpx; border-color: var(--primary); color: var(--primary); font-weight: 600; background: var(--surface-subtle); }
+.chip--selected::before { content: "\2713"; margin-right: 8rpx; }
+
+.field {
+  min-height: 88rpx;
+  width: 100%;
+  padding: 20rpx 24rpx;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1rpx solid var(--border);
+  border-radius: 20rpx;
+}
+.field-textarea { min-height: 220rpx; }
+
+.section-stack { display: flex; flex-direction: column; gap: 24rpx; }
+.page-inset { padding-left: 32rpx; padding-right: 32rpx; }
+.compact-inset { padding-left: 24rpx; padding-right: 24rpx; }
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 40rpx;
+  border: 1rpx solid var(--border);
+  color: var(--text-secondary);
+  background: var(--surface-subtle);
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+.status-tag--warning { color: var(--warning); border-color: var(--warning); }
+.status-tag--danger { color: var(--danger); border-color: var(--danger); }
+
+.reduced-motion .soft-button,
+.reduced-motion.soft-button {
+  transition-duration: 80ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soft-button {
+    transition-duration: 80ms !important;
+  }
+}

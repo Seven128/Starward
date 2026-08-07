@@ -1,0 +1,22 @@
+{
+  "name": "@starward/miniapp-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@starward/coordinate-system": "*"
+  },
+  "scripts": {
+    "generate:sdk": "node ../../tools/miniapp/generate-miniapp-sdk.mjs",
+    "check:sdk": "node ../../tools/miniapp/generate-miniapp-sdk.mjs --check",
+    "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

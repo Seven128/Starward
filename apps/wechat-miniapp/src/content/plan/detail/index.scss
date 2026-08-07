@@ -1,0 +1,4 @@
+.plan-form { display: flex; flex-direction: column; gap: 24rpx; padding-top: 24rpx; }
+.form-group { display: flex; flex-direction: column; gap: 10rpx; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16rpx; }
+@media (max-width: 340px) { .form-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 2,
+  "authorityTarget": "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+  "designSource": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-03-component-control-atlas.html#atlas-markers",
+  "interpretation": "30x34 normal pin and 38x42 selected pin; selected state uses size, fill, outline, check and label rather than color alone. Marker and native TabBar night/observation variants preserve geometry while resolving every opaque pixel to their exact mode roles.",
+  "generatedAt": "2026-08-06",
+  "assets": [
+    {
+      "path": "spot-marker-night.png",
+      "sha256": "eadfb8f466cf5eae02f47c72b133084a116e83bc1d4fe0316f1464bb9a73e6a5"
+    },
+    {
+      "path": "spot-marker-observation.png",
+      "sha256": "ec12a6157cbc6de62fc1cfa95dd9298946361c672ef8bfe2294b48d66a2759ae"
+    },
+    {
+      "path": "spot-marker-selected-night.png",
+      "sha256": "79031514ae0b18bbc0bfd8d8f8dfdc018932162c2cf5f390f543f41cbce2fbb9"
+    },
+    {
+      "path": "spot-marker-selected-observation.png",
+      "sha256": "000e737c53181d2874a786313c43785df55b8dae9069e51d33cfadb2490e9a62"
+    },
+    {
+      "path": "spot-marker-selected.png",
+      "sha256": "1d4c6e94ed272b3a6cc991e7f9a567469565a7e193fcbaccd0dd0a0c70c2fb08"
+    },
+    {
+      "path": "spot-marker.png",
+      "sha256": "b54a2d8cbb523cd7dd4efc32615d683c7f0aa172c7f9abc5b3d00d7164682747"
+    },
+    {
+      "path": "tab-map-night.png",
+      "sha256": "cdeb945db447c2f6b70a912787922551cb7978913bb7274ba809329c700e8006"
+    },
+    {
+      "path": "tab-map-observation.png",
+      "sha256": "553ba596f1fadcacef8897b623e8a7317fe0f51c4a35d3e5bc1983a5bf637218"
+    },
+    {
+      "path": "tab-map-selected-night.png",
+      "sha256": "18bd5b469a163755958ebcd0a1f7518ac28c1c5d962409b2911aeca1169988b5"
+    },
+    {
+      "path": "tab-map-selected-observation.png",
+      "sha256": "cc9760dcb6e3fd6f61f7284f2071b22f6ce6827a7674c49d58084548fb4966f8"
+    },
+    {
+      "path": "tab-map-selected.png",
+      "sha256": "b8ebc09a56acfaa4e61e4965197dccae90a25730ea0b60117fd56873d2624b69"
+    },
+    {
+      "path": "tab-map.png",
+      "sha256": "95471c4ea0d8e593cbb82122e0193623203a2b3944871382df3388dc77159acc"
+    },
+    {
+      "path": "tab-my-night.png",
+      "sha256": "7333b04ed6e4c9ab03d558354c6988933751609aa1950f63237f5da66fe6a952"
+    },
+    {
+      "path": "tab-my-observation.png",
+      "sha256": "f8f135e567bdf3b51e227f6b42eb0b2ae5e7dfb13ef41561ea351deb71929f9c"
+    },
+    {
+      "path": "tab-my-selected-night.png",
+      "sha256": "469a39c7569cc0264715ab82d6a44f15940ffb1f020a0db96c3c5115fa157f11"
+    },
+    {
+      "path": "tab-my-selected-observation.png",
+      "sha256": "ba8bfd93cbfc8333c01004024cf03390bd8481f7a504ef752b0ab9e7753a04da"
+    },
+    {
+      "path": "tab-my-selected.png",
+      "sha256": "49e3dbc2761d884a5cc9795ca56b20c840e1a4a3039cdb5bca0b9a5196866d5e"
+    },
+    {
+      "path": "tab-my.png",
+      "sha256": "cd8ad7a3e9c57b7887c0b10fa9696f5449fec49062ae083609d15e9d47d3ba45"
+    }
+  ]
+}

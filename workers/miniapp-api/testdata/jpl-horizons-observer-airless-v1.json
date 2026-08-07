@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "datasetId": "jpl-horizons-observer-airless-v1",
+  "retrievedAt": "2026-08-06T12:51:30Z",
+  "source": {
+    "provider": "NASA/JPL Horizons API",
+    "apiVersion": "1.2",
+    "documentationUrl": "https://ssd-api.jpl.nasa.gov/doc/horizons.html",
+    "endpoint": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "usage": "Offline release validation only; never called by the Mini Program runtime",
+    "queryConvention": {
+      "ephemerisType": "OBSERVER",
+      "center": "coord@399",
+      "coordinateType": "GEODETIC",
+      "quantities": "4",
+      "apparent": "AIRLESS",
+      "angleFormat": "DEG",
+      "timeScale": "UTC"
+    }
+  },
+  "toleranceDeg": {
+    "azimuth": 0.01,
+    "altitude": 0.01
+  },
+  "pointCases": [
+    {
+      "id": "northern-low-altitude-jupiter",
+      "target": "jupiter",
+      "command": "599",
+      "observer": { "latitude": 22.5431, "longitude": 114.0579, "elevationM": 10 },
+      "at": "2026-08-06T14:00:00.000Z",
+      "expected": { "azimuthDeg": 320.67412, "altitudeDeg": -38.509457 },
+      "rawRow": "2026-Aug-06 14:00, , , 320.674120, -38.509457"
+    },
+    {
+      "id": "southern-hemisphere-venus",
+      "target": "venus",
+      "command": "299",
+      "observer": { "latitude": -33.8688, "longitude": 151.2093, "elevationM": 58 },
+      "at": "2026-12-15T10:00:00.000Z",
+      "expected": { "azimuthDeg": 195.520604, "altitudeDeg": -43.30005 },
+      "rawRow": "2026-Dec-15 10:00,N,m, 195.520604, -43.300050"
+    },
+    {
+      "id": "high-altitude-saturn",
+      "target": "saturn",
+      "command": "699",
+      "observer": { "latitude": 19.8207, "longitude": -155.4681, "elevationM": 4205 },
+      "at": "2026-10-01T08:00:00.000Z",
+      "expected": { "azimuthDeg": 111.418219, "altitudeDeg": 49.669442 },
+      "rawRow": "2026-Oct-01 08:00, ,m, 111.418219, 49.669442"
+    },
+    {
+      "id": "cross-local-midnight-moon-before",
+      "target": "moon",
+      "command": "301",
+      "observer": { "latitude": 40.7128, "longitude": -74.006, "elevationM": 10 },
+      "at": "2026-11-02T04:30:00.000Z",
+      "expected": { "azimuthDeg": 68.959879, "altitudeDeg": 1.840032 },
+      "rawRow": "2026-Nov-02 04:30, ,m, 68.959879, 1.840032"
+    },
+    {
+      "id": "cross-local-midnight-moon-after",
+      "target": "moon",
+      "command": "301",
+      "observer": { "latitude": 40.7128, "longitude": -74.006, "elevationM": 10 },
+      "at": "2026-11-02T06:30:00.000Z",
+      "expected": { "azimuthDeg": 87.350068, "altitudeDeg": 23.037504 },
+      "rawRow": "2026-Nov-02 06:30, ,m, 87.350068, 23.037504"
+    },
+    {
+      "id": "altitude-parallax-sea-level-moon",
+      "target": "moon",
+      "command": "301",
+      "observer": { "latitude": 19.8207, "longitude": -155.4681, "elevationM": 0 },
+      "at": "2026-10-01T08:00:00.000Z",
+      "expected": { "azimuthDeg": 64.19427, "altitudeDeg": 6.575216 },
+      "rawRow": "2026-Oct-01 08:00, ,m, 64.194270, 6.575216"
+    },
+    {
+      "id": "altitude-parallax-summit-moon",
+      "target": "moon",
+      "command": "301",
+      "observer": { "latitude": 19.8207, "longitude": -155.4681, "elevationM": 4205 },
+      "at": "2026-10-01T08:00:00.000Z",
+      "expected": { "azimuthDeg": 64.19427, "altitudeDeg": 6.574567 },
+      "rawRow": "2026-Oct-01 08:00, ,m, 64.194270, 6.574567"
+    }
+  ],
+  "rangeCases": [
+    {
+      "id": "no-moon-rise-or-set-within-search-window",
+      "target": "moon",
+      "command": "301",
+      "observer": { "latitude": 66, "longitude": 15, "elevationM": 0 },
+      "start": "2026-01-01T12:00:00.000Z",
+      "stop": "2026-01-03T00:00:00.000Z",
+      "stepMinutes": 60,
+      "rowCount": 37,
+      "minimumAltitudeDeg": 3.252622,
+      "maximumAltitudeDeg": 51.173233,
+      "expected": { "moonRise": null, "moonSet": null }
+    },
+    {
+      "id": "extreme-latitude-midnight-sun-no-astronomical-night",
+      "target": "sun",
+      "command": "10",
+      "observer": { "latitude": 69.6492, "longitude": 18.9553, "elevationM": 0 },
+      "start": "2026-06-21T10:00:00.000Z",
+      "stop": "2026-06-22T22:00:00.000Z",
+      "stepMinutes": 60,
+      "rowCount": 37,
+      "minimumAltitudeDeg": 3.117136,
+      "maximumAltitudeDeg": 43.739649,
+      "expected": { "astronomicalDusk": null, "astronomicalDawn": null, "sampleCount": 0 }
+    }
+  ]
+}

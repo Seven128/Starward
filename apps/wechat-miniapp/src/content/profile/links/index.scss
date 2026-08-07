@@ -1,0 +1,9 @@
+.links-content { padding-top: 24rpx; display: flex; flex-direction: column; gap: 24rpx; }
+.link-form { padding: 28rpx; display: flex; flex-direction: column; gap: 20rpx; }
+.form-group { display: flex; flex-direction: column; gap: 10rpx; }
+.visibility-row { min-height: 96rpx; display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.visibility-row > view { display: flex; flex-direction: column; }
+.link-card { padding: 24rpx; display: flex; flex-direction: column; gap: 16rpx; }
+.link-card > view:first-child { display: flex; flex-direction: column; gap: 6rpx; min-width: 0; }
+.link-url { word-break: break-all; }
+.link-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12rpx; }

@@ -1,0 +1,44 @@
+{
+  "name": "@starward/wechat-miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "今晚去观星 - Taro WeChat Mini Program Demo",
+  "type": "module",
+  "scripts": {
+    "build:weapp": "taro build --type weapp",
+    "build:h5": "taro build --type h5",
+    "dev:weapp": "taro build --type weapp --watch",
+    "dev:h5": "taro build --type h5 --watch",
+    "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@starward/miniapp-contracts": "*",
+    "@tanstack/react-query": "5.90.21",
+    "@tarojs/components": "4.2.1",
+    "@tarojs/plugin-framework-react": "4.2.1",
+    "@tarojs/plugin-platform-h5": "4.2.1",
+    "@tarojs/plugin-platform-weapp": "4.2.1",
+    "@tarojs/react": "4.2.1",
+    "@tarojs/router": "4.2.1",
+    "@tarojs/runtime": "4.2.1",
+    "@tarojs/taro": "4.2.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "5.0.14"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "7.29.7",
+    "@tarojs/cli": "4.2.1",
+    "@tarojs/webpack5-runner": "4.2.1",
+    "@types/react": "18.3.28",
+    "@types/react-dom": "18.3.7",
+    "babel-preset-taro": "4.2.1",
+    "css-loader": "7.1.2",
+    "postcss": "8.5.6",
+    "sass": "1.93.2",
+    "style-loader": "4.0.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

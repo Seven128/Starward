@@ -1,0 +1,6 @@
+{
+  "name": "@starward/miniapp-admin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Demo operations console served by the Mini Program modular-monolith BFF"
+}

@@ -1,0 +1,54 @@
+.map-page { height: 100vh; display: flex; flex-direction: column; }
+.map-workspace { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--map-tint); }
+.map-toolbar { position: absolute; top: 16rpx; left: 0; right: 0; z-index: 25; display: flex; flex-direction: column; gap: 12rpx; pointer-events: none; }
+.map-toolbar > view { pointer-events: auto; }
+.search-box { min-height: 88rpx; display: grid; grid-template-columns: 40rpx minmax(0, 1fr) 88rpx; gap: 8rpx; align-items: center; padding: 0 0 0 24rpx; border-radius: 28rpx; border: 1rpx solid var(--border); background: var(--surface); box-shadow: var(--elevation-floating); }
+.search-box__input { min-height: 88rpx; width: 100%; color: var(--text-primary); }
+.search-box .soft-button { width: 88rpx; min-width: 88rpx; padding: 0; border: 0; border-radius: 0 28rpx 28rpx 0; }
+.quick-filter-scroll { width: 100%; height: 88rpx; white-space: nowrap; pointer-events: auto; }
+.quick-filter-track { display: inline-flex; align-items: flex-start; gap: 12rpx; height: 88rpx; padding-right: 24rpx; vertical-align: top; }
+.quick-filter { display: inline-flex; flex: none; width: auto; min-width: 0; height: 88rpx; min-height: 88rpx; margin: 0; padding: 14rpx 20rpx; border-radius: 999rpx; font-size: 24rpx; white-space: nowrap; vertical-align: top; }
+.map-banner { position: absolute; top: 224rpx; left: 0; right: 0; z-index: 24; }
+.map-banner__compact { min-height: 104rpx; padding: 8rpx 12rpx 8rpx 18rpx; display: grid; grid-template-columns: 40rpx minmax(0, 1fr) 88rpx; align-items: center; gap: 12rpx; box-shadow: var(--elevation-floating); }
+.map-banner__icon { width: 40rpx; height: 40rpx; display: flex; align-items: center; justify-content: center; border: 2rpx solid var(--warning); border-radius: 20rpx; color: var(--warning); font-weight: 700; }
+.map-banner__copy { min-width: 0; display: flex; flex-direction: column; gap: 2rpx; }
+.map-banner__action { width: 88rpx; min-width: 88rpx; padding: 0; border: 0; }
+.map-stage { position: absolute; inset: 0; background: var(--surface-subtle); overflow: hidden; }
+.map-stage--proxy { min-height: 360rpx; }
+.native-map { width: 100%; height: 100%; }
+.map-proxy { position: relative; width: 100%; height: 100%; overflow: hidden; color: var(--text-primary); background: linear-gradient(160deg, var(--map-tint), var(--surface-subtle)); }
+.map-proxy__water { position: absolute; top: -8%; right: -28%; width: 62%; height: 116%; transform: rotate(8deg); border-radius: 48%; background: rgba(105,199,245,.18); }
+.map-proxy__road { position: absolute; height: 12rpx; border: 3rpx solid rgba(255,255,255,.9); border-left: 0; border-right: 0; background: rgba(212,225,238,.72); }
+.map-proxy__road--one { top: 40%; left: -20%; width: 148%; transform: rotate(-10deg); }
+.map-proxy__road--two { top: 18%; left: 34%; width: 96%; transform: rotate(72deg); }
+.map-proxy__road--three { top: 68%; left: -8%; width: 104%; transform: rotate(18deg); }
+.map-proxy__region { position: absolute; top: 46%; left: 28rpx; color: var(--text-tertiary); font-size: 22rpx; }
+.map-proxy__pin { position: absolute; width: 64rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; border: 3rpx solid var(--primary); border-radius: 32rpx 32rpx 32rpx 8rpx; transform: rotate(-45deg); color: var(--primary); background: var(--surface); box-shadow: var(--elevation-floating); font-size: 34rpx; }
+.map-proxy__pin--one { top: 34%; left: 58%; }
+.map-proxy__pin--two { top: 58%; left: 22%; }
+.map-proxy__pin::first-letter { transform: rotate(45deg); }
+.map-proxy__notice { position: absolute; left: 24rpx; bottom: calc(48vh + 56rpx); max-width: 360rpx; display: flex; flex-direction: column; align-items: flex-start; gap: 4rpx; padding: 12rpx 16rpx; border: 1rpx solid var(--border); border-radius: 16rpx; background: rgba(255,255,255,.92); }
+.map-proxy__notice .soft-button { width: auto; min-height: 88rpx; padding: 8rpx 0 0; border: 0; }
+.map-proxy__eyebrow { color: var(--primary); font-size: 20rpx; font-weight: 700; letter-spacing: .08em; }
+.map-paused { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12rpx; background: var(--map-tint); text-align: center; padding: 32rpx; }
+.map-floating-tools { position: absolute; right: 24rpx; top: 320rpx; z-index: 18; display: flex; flex-direction: column; gap: 12rpx; }
+.map-floating-tools .soft-button { width: 88rpx; min-width: 88rpx; padding: 0; border-radius: 28rpx; box-shadow: var(--elevation-floating); font-size: 34rpx; }
+.light-legend { position: absolute; left: 24rpx; bottom: calc(48vh + 56rpx); z-index: 8; padding: 14rpx 18rpx; border-radius: 16rpx; color: #10233f; background: rgba(255,255,255,.94); font-size: 20rpx; line-height: 30rpx; border: 1rpx solid #d4e1ee; }
+.map-status { position: absolute; left: 0; right: 0; bottom: calc(48vh + 40rpx); z-index: 20; }
+.map-status .status-panel { padding: 14rpx 18rpx; box-shadow: var(--elevation-floating); }
+.selected-card-wrap { position: absolute; left: 0; right: 0; bottom: 16rpx; z-index: 20; }
+.map-page--h5 .selected-card-wrap { bottom: calc(50px + 24rpx); }
+.map-page--h5 .map-status { bottom: calc(50px + 48vh + 40rpx); }
+.map-page--h5 .light-legend, .map-page--h5 .map-proxy__notice { bottom: calc(50px + 48vh + 56rpx); }
+.selected-card-scroll { max-height: 48vh; border-radius: 28rpx; }
+.sr-live { position: fixed; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.panel-backdrop { position: fixed; inset: 0; z-index: 10010; background: rgba(5,10,20,.46); display: flex; align-items: flex-end; }
+.panel-backdrop--avoid-tabbar { bottom: var(--taro-tabbar-height, 50px); }
+.search-panel { width: 100%; height: 88vh; border-radius: 40rpx 40rpx 0 0; background: var(--canvas); display: flex; flex-direction: column; padding: 24rpx 32rpx 0; }
+.panel-header, .history-header { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.panel-header { padding-bottom: 20rpx; }
+.panel-scroll { flex: 1; min-height: 0; }
+.panel-scroll .section-stack { padding-bottom: 48rpx; }
+.history-row, .ordinary-place { min-height: 88rpx; padding: 20rpx; display: flex; flex-direction: column; justify-content: center; border-bottom: 1rpx solid var(--border); }
+.ordinary-place { border: 1rpx solid var(--border); border-radius: 20rpx; gap: 8rpx; background: var(--surface-subtle); }
+@media (max-width: 340px) { .map-toolbar { top: 12rpx; } .quick-filter { padding-inline: 16rpx; } }

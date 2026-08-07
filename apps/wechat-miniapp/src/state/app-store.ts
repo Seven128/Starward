@@ -1,0 +1,395 @@
+import Taro from "@tarojs/taro";
+import {
+  EMPTY_FILTER_STATE,
+  DEFAULT_USER_PREFERENCES,
+  cloneFilterState,
+  type DisplayMode,
+  type FilterState,
+  type ImportDraft,
+  type MyTab,
+  type ObservationPlan,
+  type ProfileLink,
+  type SpotId,
+  type UserPreferences,
+  type UserPreferencesRecord,
+} from "@starward/miniapp-contracts";
+import { create } from "zustand";
+import {
+  addBoundedSearchHistory,
+  applyFilterDraft,
+  beginFilterDraft,
+  cancelFilterDraft,
+  enterObservationMode,
+  exitObservationMode,
+  restorePriorMode,
+  restoreStartupMode,
+  setDisplayMode,
+  toggleFavoriteRelation,
+  toggleFilterDraft,
+} from "./app-transitions";
+import acceptanceBootstrapJson from "./acceptance-bootstrap.json";
+
+const STORAGE_KEY = "starward.wechat-miniapp.state.v1";
+
+export interface MapViewportState {
+  center: { latitude: number; longitude: number };
+  zoom: number;
+  layer: "NORMAL" | "LIGHT_POLLUTION";
+  loadedViewport: string;
+  cardIndex: number;
+}
+
+export interface PersistedState {
+  mode: DisplayMode;
+  priorMode: Exclude<DisplayMode, "OBSERVATION">;
+  preferences: UserPreferences;
+  preferencesRevision: number;
+  preferencesDirty: boolean;
+  preferencesUpdatedAt: string | null;
+  viewport: MapViewportState;
+  committedFilters: FilterState;
+  selectedSpotId: SpotId | null;
+  searchHistory: string[];
+  favoriteIds: SpotId[];
+  plans: ObservationPlan[];
+  profileLinks: ProfileLink[];
+  importDraft: ImportDraft | null;
+  skySelection: { spotId: SpotId | null; localDate: string; timeIndex: number };
+}
+
+export type LocationState =
+  | "DEFAULT_REGION"
+  | "REQUESTING"
+  | "GRANTED"
+  | "DENIED"
+  | "UNAVAILABLE";
+
+interface AppState extends PersistedState {
+  priorMode: Exclude<DisplayMode, "OBSERVATION">;
+  draftFilters: FilterState;
+  filterSheetOpen: boolean;
+  locationState: LocationState;
+  myTab: MyTab;
+  toast: string;
+  hydrate(): void;
+  setToast(message: string): void;
+  setMode(mode: DisplayMode): void;
+  enterObservation(): void;
+  exitObservation(): void;
+  setPreference<K extends keyof UserPreferences>(
+    key: K,
+    value: UserPreferences[K],
+  ): void;
+  applyServerPreferences(record: UserPreferencesRecord): void;
+  markPreferencesSynced(record: UserPreferencesRecord): void;
+  setViewport(patch: Partial<MapViewportState>): void;
+  selectSpot(spotId: SpotId | null): void;
+  openFilters(): void;
+  toggleDraftFilter(optionId: string): void;
+  resetDraftFilters(): void;
+  cancelFilters(): void;
+  applyFilters(): void;
+  setLocationState(state: AppState["locationState"]): void;
+  addSearchHistory(query: string): void;
+  clearSearchHistory(): void;
+  toggleFavorite(spotId: SpotId): boolean;
+  replaceFavoriteIds(spotIds: readonly SpotId[]): void;
+  setMyTab(tab: MyTab): void;
+  savePlan(plan: ObservationPlan): void;
+  replacePlans(plans: readonly ObservationPlan[]): void;
+  deletePlan(planId: string): void;
+  saveProfileLink(link: ProfileLink): void;
+  replaceProfileLinks(links: readonly ProfileLink[]): void;
+  setImportDraft(draft: ImportDraft | null): void;
+  setSkySelection(patch: Partial<AppState["skySelection"]>): void;
+  clearLocalCache(): void;
+}
+
+const DEFAULT_VIEWPORT: MapViewportState = {
+  center: { latitude: 22.5431, longitude: 114.0579 },
+  zoom: 8,
+  layer: "NORMAL",
+  loadedViewport: "shenzhen-trial-region-v1",
+  cardIndex: 0,
+};
+
+function loadPersisted(): Partial<PersistedState> {
+  try {
+    const value = Taro.getStorageSync(STORAGE_KEY) as
+      | Partial<PersistedState>
+      | string;
+    return typeof value === "string"
+      ? (JSON.parse(value) as Partial<PersistedState>)
+      : value || {};
+  } catch {
+    return {};
+  }
+}
+
+function persisted(state: AppState): PersistedState {
+  const durableMode = restoreStartupMode(state.mode, state.priorMode);
+  return {
+    mode: durableMode,
+    priorMode: state.priorMode,
+    preferences: { ...state.preferences, displayMode: durableMode },
+    preferencesRevision: state.preferencesRevision,
+    preferencesDirty: state.preferencesDirty,
+    preferencesUpdatedAt: state.preferencesUpdatedAt,
+    viewport: state.viewport,
+    committedFilters: state.committedFilters,
+    selectedSpotId: state.selectedSpotId,
+    searchHistory: state.searchHistory,
+    favoriteIds: state.favoriteIds,
+    plans: state.plans,
+    profileLinks: state.profileLinks,
+    importDraft: state.importDraft,
+    skySelection: state.skySelection,
+  };
+}
+
+const BOOTSTRAP_STATE = loadPersisted();
+const BOOTSTRAP_MODE = restoreStartupMode(
+  BOOTSTRAP_STATE.mode,
+  BOOTSTRAP_STATE.priorMode,
+);
+const BOOTSTRAP_FILTERS =
+  BOOTSTRAP_STATE.committedFilters ?? EMPTY_FILTER_STATE;
+
+export const useAppStore = create<AppState>((set, get) => {
+  const commit = (
+    patch: Partial<AppState> | ((state: AppState) => Partial<AppState>),
+  ) => {
+    set(patch as Partial<AppState>);
+    queueMicrotask(() => {
+      try {
+        Taro.setStorageSync(STORAGE_KEY, persisted(get()));
+      } catch {
+        /* storage denial is surfaced by callers where material */
+      }
+    });
+  };
+  return {
+    mode: BOOTSTRAP_MODE,
+    priorMode: restorePriorMode(
+      BOOTSTRAP_STATE.mode,
+      BOOTSTRAP_STATE.priorMode,
+    ),
+    preferences: {
+      ...DEFAULT_USER_PREFERENCES,
+      ...BOOTSTRAP_STATE.preferences,
+      displayMode: BOOTSTRAP_MODE,
+    },
+    preferencesRevision: BOOTSTRAP_STATE.preferencesRevision ?? 0,
+    preferencesDirty: BOOTSTRAP_STATE.preferencesDirty ?? false,
+    preferencesUpdatedAt: BOOTSTRAP_STATE.preferencesUpdatedAt ?? null,
+    viewport: { ...DEFAULT_VIEWPORT, ...BOOTSTRAP_STATE.viewport },
+    committedFilters: BOOTSTRAP_FILTERS,
+    draftFilters: cloneFilterState(BOOTSTRAP_FILTERS),
+    selectedSpotId: BOOTSTRAP_STATE.selectedSpotId ?? null,
+    searchHistory: BOOTSTRAP_STATE.searchHistory ?? [],
+    favoriteIds: BOOTSTRAP_STATE.favoriteIds ?? [],
+    plans: BOOTSTRAP_STATE.plans ?? [],
+    profileLinks: BOOTSTRAP_STATE.profileLinks ?? [],
+    importDraft: BOOTSTRAP_STATE.importDraft ?? null,
+    skySelection: BOOTSTRAP_STATE.skySelection ?? {
+      spotId: null,
+      localDate: "",
+      timeIndex: 0,
+    },
+    filterSheetOpen: false,
+    locationState: "DEFAULT_REGION",
+    myTab: "MY",
+    toast: "",
+    hydrate() {
+      const saved = loadPersisted();
+      const startupMode = restoreStartupMode(saved.mode, saved.priorMode);
+      set({
+        ...saved,
+        mode: startupMode,
+        preferences: {
+          ...DEFAULT_USER_PREFERENCES,
+          ...saved.preferences,
+          displayMode: startupMode,
+        },
+        preferencesRevision: saved.preferencesRevision ?? 0,
+        preferencesDirty: saved.preferencesDirty ?? false,
+        preferencesUpdatedAt: saved.preferencesUpdatedAt ?? null,
+        viewport: { ...DEFAULT_VIEWPORT, ...saved.viewport },
+        committedFilters: saved.committedFilters ?? EMPTY_FILTER_STATE,
+        draftFilters: cloneFilterState(
+          saved.committedFilters ?? EMPTY_FILTER_STATE,
+        ),
+        priorMode: restorePriorMode(saved.mode, saved.priorMode),
+      });
+    },
+    setToast(message) {
+      set({ toast: message });
+    },
+    setMode(mode) {
+      commit((state) => ({
+        ...setDisplayMode(mode, state.priorMode, state.preferences),
+        preferencesDirty: true,
+      }));
+    },
+    enterObservation() {
+      commit((state) => enterObservationMode(state.mode));
+    },
+    exitObservation() {
+      commit((state) =>
+        exitObservationMode(state.priorMode, state.preferences),
+      );
+    },
+    setPreference(key, value) {
+      commit((state) => ({
+        preferences: { ...state.preferences, [key]: value },
+        preferencesDirty: true,
+      }));
+    },
+    applyServerPreferences(record) {
+      commit((state) =>
+        state.preferencesDirty
+          ? {
+              preferencesRevision: record.revision,
+              preferencesUpdatedAt: record.updatedAt,
+            }
+          : {
+              preferences: record.preferences,
+              preferencesRevision: record.revision,
+              preferencesDirty: false,
+              preferencesUpdatedAt: record.updatedAt,
+            },
+      );
+    },
+    markPreferencesSynced(record) {
+      commit({
+        preferences: record.preferences,
+        preferencesRevision: record.revision,
+        preferencesDirty: false,
+        preferencesUpdatedAt: record.updatedAt,
+      });
+    },
+    setViewport(patch) {
+      commit((state) => ({ viewport: { ...state.viewport, ...patch } }));
+    },
+    selectSpot(spotId) {
+      commit({ selectedSpotId: spotId });
+    },
+    openFilters() {
+      set((state) => beginFilterDraft(state.committedFilters));
+    },
+    toggleDraftFilter(optionId) {
+      set((state) => toggleFilterDraft(state.draftFilters, optionId));
+    },
+    resetDraftFilters() {
+      set({ draftFilters: cloneFilterState(EMPTY_FILTER_STATE) });
+    },
+    cancelFilters() {
+      set((state) => cancelFilterDraft(state.committedFilters));
+    },
+    applyFilters() {
+      commit((state) => applyFilterDraft(state.draftFilters));
+    },
+    setLocationState(locationState) {
+      set({ locationState });
+    },
+    addSearchHistory(query) {
+      commit((state) => ({
+        searchHistory: addBoundedSearchHistory(state.searchHistory, query),
+      }));
+    },
+    clearSearchHistory() {
+      commit({ searchHistory: [] });
+    },
+    toggleFavorite(spotId) {
+      const transition = toggleFavoriteRelation(get().favoriteIds, spotId);
+      commit({ favoriteIds: transition.favoriteIds });
+      return transition.favorite;
+    },
+    replaceFavoriteIds(favoriteIds) {
+      commit({ favoriteIds: [...favoriteIds] });
+    },
+    setMyTab(myTab) {
+      set({ myTab });
+    },
+    savePlan(plan) {
+      commit((state) => ({
+        plans: [
+          ...state.plans.filter((item) => item.planId !== plan.planId),
+          plan,
+        ],
+      }));
+    },
+    replacePlans(plans) {
+      commit({ plans: [...plans] });
+    },
+    deletePlan(planId) {
+      commit((state) => ({
+        plans: state.plans.filter((item) => item.planId !== planId),
+      }));
+    },
+    saveProfileLink(link) {
+      commit((state) => ({
+        profileLinks: [
+          ...state.profileLinks.filter(
+            (item) => item.profileLinkId !== link.profileLinkId,
+          ),
+          link,
+        ].sort((a, b) => a.sortOrder - b.sortOrder),
+      }));
+    },
+    replaceProfileLinks(profileLinks) {
+      commit({ profileLinks: [...profileLinks] });
+    },
+    setImportDraft(importDraft) {
+      commit({ importDraft });
+    },
+    setSkySelection(patch) {
+      commit((state) => ({
+        skySelection: { ...state.skySelection, ...patch },
+      }));
+    },
+    clearLocalCache() {
+      try {
+        Taro.removeStorageSync(STORAGE_KEY);
+      } catch {
+        /* visible success below still resets in-memory state */
+      }
+      set({
+        viewport: DEFAULT_VIEWPORT,
+        committedFilters: EMPTY_FILTER_STATE,
+        draftFilters: EMPTY_FILTER_STATE,
+        selectedSpotId: null,
+        searchHistory: [],
+        toast:
+          "本地地图、筛选、搜索与夜空临时缓存已清除；持久化收藏、计划、主页链接和导入草稿保持不变。",
+        skySelection: { spotId: null, localDate: "", timeIndex: 0 },
+      });
+      queueMicrotask(() => {
+        try {
+          Taro.setStorageSync(STORAGE_KEY, persisted(get()));
+        } catch {
+          /* cache clear already completed in memory */
+        }
+      });
+    },
+  };
+});
+
+export function resetAppStoreForAcceptance(): PersistedState {
+  if (!__MINIAPP_ACCEPTANCE_DIAGNOSTICS__)
+    throw new Error("acceptance_state_reset_unavailable");
+  const next = JSON.parse(
+    JSON.stringify(acceptanceBootstrapJson),
+  ) as PersistedState;
+  useAppStore.setState({
+    ...next,
+    draftFilters: cloneFilterState(next.committedFilters),
+    filterSheetOpen: false,
+    locationState: "DEFAULT_REGION",
+    myTab: "MY",
+    toast: "",
+  });
+  const snapshot = persisted(useAppStore.getState());
+  Taro.setStorageSync(STORAGE_KEY, snapshot);
+  return snapshot;
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "starward-miniapp-api-operations-v1",
+  "basePath": "/v1",
+  "operations": [
+    { "id": "capabilitiesGet", "method": "GET", "path": "/capabilities", "requestType": "void", "responseType": "CapabilitiesData" },
+    { "id": "mapSceneGet", "method": "GET", "path": "/map/scene", "requestType": "MapSceneRequest", "responseType": "MapSceneData" },
+    { "id": "searchGet", "method": "GET", "path": "/search/places", "requestType": "void", "responseType": "SearchData" },
+    { "id": "spotDetailGet", "method": "GET", "path": "/spots/{spotId}", "requestType": "void", "responseType": "SpotDetailData" },
+    { "id": "spotOverviewGet", "method": "GET", "path": "/spots/{spotId}/overview", "requestType": "void", "responseType": "SpotDetailData" },
+    { "id": "spotGuidesGet", "method": "GET", "path": "/spots/{spotId}/guides", "requestType": "void", "responseType": "SpotGuidesData" },
+    { "id": "spotSiteGet", "method": "GET", "path": "/spots/{spotId}/site", "requestType": "void", "responseType": "SpotSiteData" },
+    { "id": "spotSkyGet", "method": "GET", "path": "/spots/{spotId}/sky", "requestType": "void", "responseType": "SkyReportData" },
+    { "id": "favoritesGet", "method": "GET", "path": "/favorites", "requestType": "void", "responseType": "FavoritesData" },
+    { "id": "favoritePut", "method": "PUT", "path": "/favorites/{spotId}", "requestType": "FavoriteMutationRequest", "responseType": "FavoritesData" },
+    { "id": "libraryGet", "method": "GET", "path": "/library", "requestType": "void", "responseType": "UserLibraryData" },
+    { "id": "preferencesGet", "method": "GET", "path": "/preferences", "requestType": "void", "responseType": "UserPreferencesRecord" },
+    { "id": "preferencesPut", "method": "PUT", "path": "/preferences", "requestType": "PreferencesSaveRequest", "responseType": "UserPreferencesRecord" },
+    { "id": "plansGet", "method": "GET", "path": "/plans", "requestType": "void", "responseType": "PlansData" },
+    { "id": "planPut", "method": "PUT", "path": "/plans/{planId}", "requestType": "PlanSaveRequest", "responseType": "ObservationPlan" },
+    { "id": "planDelete", "method": "DELETE", "path": "/plans/{planId}", "requestType": "void", "responseType": "PlansData" },
+    { "id": "profileLinksGet", "method": "GET", "path": "/profile-links", "requestType": "void", "responseType": "ProfileLinksData" },
+    { "id": "profileLinkPost", "method": "POST", "path": "/profile-links", "requestType": "ProfileLinkSaveRequest", "responseType": "ProfileLink" },
+    { "id": "profileLinkDelete", "method": "DELETE", "path": "/profile-links/{profileLinkId}", "requestType": "void", "responseType": "ProfileLinksData" },
+    { "id": "importsGet", "method": "GET", "path": "/imports", "requestType": "void", "responseType": "ImportsData" },
+    { "id": "importPost", "method": "POST", "path": "/imports", "requestType": "ImportCreateRequest", "responseType": "ImportDraft" },
+    { "id": "importGet", "method": "GET", "path": "/imports/{importId}", "requestType": "void", "responseType": "ImportDraft" },
+    { "id": "importPut", "method": "PUT", "path": "/imports/{importId}", "requestType": "ImportUpdateRequest", "responseType": "ImportDraft" },
+    { "id": "operationsGet", "method": "GET", "path": "/operations", "requestType": "void", "responseType": "OperationsData" }
+  ]
+}

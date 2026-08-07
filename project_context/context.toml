@@ -86,3 +86,9 @@ path = "project_context/areas/main/screen-contracts/operations.md"
 role = "subdomain"
 read_policy = "on-demand"
 triggers = ["operations screen", "admin", "owner operations", "target.ops", "data-operations", "moderation", "recommendation", "release-quality", "recovery", "metrics", "运营后台", "管理端"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["wechat miniapp screen", "miniapp route", "miniapp surface", "miniapp control", "map my navigation", "spot sky", "profile link", "post import", "微信小程序页面", "小程序路由", "地图我的", "点位夜空", "主页链接", "观星帖导入"]

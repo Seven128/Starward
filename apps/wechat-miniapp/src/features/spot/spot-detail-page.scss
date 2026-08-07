@@ -1,0 +1,32 @@
+.spot-detail { height: 100vh; display: flex; flex-direction: column; }
+.segment-nav { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); position: sticky; top: 0; z-index: 20; background: var(--canvas); border-bottom: 1rpx solid var(--border); }
+.segment-tab { min-height: 88rpx; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); border-bottom: 2rpx solid transparent; font-weight: 500; }
+.segment-tab--active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.spot-detail__scroll { flex: 1; min-height: 0; }
+.spot-content { padding-top: 24rpx; padding-bottom: 160rpx; }
+.media-rail { width: 100%; white-space: nowrap; }
+.media-card { width: min(68vw, 480rpx); display: inline-flex; flex-direction: column; overflow: hidden; margin-right: 20rpx; white-space: normal; vertical-align: top; }
+.media-card__image { width: 100%; height: 320rpx; background: var(--surface-subtle); }
+.media-card__caption { padding: 16rpx; display: flex; flex-direction: column; gap: 6rpx; }
+.decision-card, .route-card, .targets-card, .safety-card { padding: 24rpx; display: flex; flex-direction: column; gap: 12rpx; }
+.decision-card__top, .route-card__top, .facility-row__top, .sources-link { display: flex; align-items: flex-start; justify-content: space-between; gap: 16rpx; }
+.route-card__top > view { display: flex; flex-direction: column; gap: 4rpx; min-width: 0; }
+.decision-card__top > view { display: flex; flex-direction: column; gap: 8rpx; }
+.factor { padding: 14rpx 18rpx; border-radius: 20rpx; background: var(--surface-subtle); border-left: 4rpx solid var(--border); display: flex; flex-direction: column; }
+.factor--blocker { border-left-color: var(--danger); }
+.factor--caution, .factor--unknown { border-left-color: var(--warning); }
+.factor--positive { border-left-color: var(--success); }
+.facility-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; }
+.facility-grid__title { grid-column: 1 / -1; }
+.facility-tile { min-height: 144rpx; padding: 20rpx; display: flex; flex-direction: column; gap: 8rpx; }
+.sources-link { min-height: 112rpx; padding: 24rpx 28rpx; align-items: center; }
+.sources-link > view { display: flex; flex-direction: column; }
+.guide-card { overflow: hidden; display: grid; grid-template-columns: 240rpx minmax(0, 1fr); }
+.guide-card__media { width: 240rpx; height: 100%; min-height: 300rpx; background: var(--surface-subtle); }
+.guide-card__body { padding: 24rpx; display: flex; flex-direction: column; gap: 12rpx; }
+.facility-row { padding: 24rpx; display: flex; flex-direction: column; gap: 14rpx; }
+.target-row { padding: 18rpx 0; border-bottom: 2rpx solid var(--border); display: flex; flex-direction: column; gap: 8rpx; }
+.target-row > view { display: flex; justify-content: space-between; gap: 12rpx; }
+.detail-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: .9fr 1fr 1.35fr; gap: 12rpx; padding: 16rpx 24rpx; background: var(--surface); border-top: 1rpx solid var(--border); box-shadow: 0 -8rpx 24rpx rgba(21,55,94,.12); }
+.detail-actions .soft-button { padding: 12rpx; font-size: 24rpx; }
+@media (max-width: 340px) { .guide-card { grid-template-columns: 1fr; } .guide-card__media { width: 100%; height: 240rpx; min-height: 0; } .detail-actions { grid-template-columns: 1fr 1fr; } .detail-actions .soft-button:last-child { grid-column: 1 / -1; } }

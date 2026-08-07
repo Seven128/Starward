@@ -2,14 +2,15 @@
 
 ## Purpose
 
-This Context owns durable responsibility and main-versus-drilldown placement for the existing Starward native mobile product and its owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. It defines no WeChat Mini Program surface; the independently selected Mini Program visual target in `DESIGN.md` does not create one.
+This Context owns durable responsibility and main-versus-drilldown placement for the Starward native mobile product, the independently scoped WeChat Mini Program, and owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. The Mini Program surfaces below were adopted from the immutable V2.0 product/technical plans; their exact visual values remain owned only by `DESIGN.md`.
 
 ## Current Product Boundary
 
 - The current product target is an owner-only, non-commercial personal trial. Public operation, store release, commercial activation, paid-provider purchase, legal approval, and representative field sign-off are future gates and must not appear as completed states.
 - The mobile product is the primary user surface. Owner operations is a separate authenticated desktop surface; it must not be exposed as ordinary mobile navigation or collapse raw operational detail into the consumer journey.
 - The auxiliary share projection exposes only an authorized, expiring trip/place summary. It is not a thirteenth operations control, a full mobile substitute, or a route to administrative data.
-- No Mini Program destination, navigation model, responsibility, information hierarchy, or Surface Key is currently adopted. Those remain decision-required and cannot be inferred from the native App surfaces or from the selected Mini Program visual system.
+- The WeChat Mini Program is an independently completable product carrier for the V2.0 Demo baseline. It coexists with the native App and does not prove, replace, inherit, or silently shrink that product. Its primary navigation is exactly Map and My; its Night Sky capability is formal-spot drilldown only.
+- The previous repository posture that limited a future Mini Program to share/light-query/invitation remains native-App provenance only and is superseded for the independent `apps/wechat-miniapp/**` product by `docs/wechat-miniapp-v2-source.md`. Shared owners must model both product carriers rather than overwriting the App boundary.
 
 ## Mobile Product Surfaces
 
@@ -133,6 +134,55 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 - Drilldown Ownership: high-impact merge/export/delete/session actions use focused guarded flows; ordinary profile remains concise.
 - Long Task State Requirement: auth/session/export/delete operations expose operation identity, progress, idempotency, expiry, retry, audit and restart recovery.
 
+## WeChat Mini Program Surfaces
+
+### `miniapp-map-discovery`
+
+- Surface: `pages/map/index` and its route-owned filter/layer/selected-spot overlays.
+- Surface Platform: WeChat Mini Program, Taro + React + TypeScript.
+- Primary User Question: Which formal stargazing spot fits the selected place/date/filters, and what safe next action is available?
+- Main Surface Allows: one-time location with manual fallback, grouped search, 27 flat filters, source-dated light layer, coordinated marker/card/route selection, Spot Detail and external-navigation handoff.
+- Main Surface Forbids: ordinary POIs as formal spots, unsynchronized selection, hidden filter state, unlabelled sample facts, or straight-line distance described as a route.
+- Drilldown Ownership: formal place evidence belongs to `miniapp-spot-detail`; provider navigation remains an explicit handoff.
+
+### `miniapp-spot-detail`
+
+- Surface: Spot package detail shell with Overview/Guides/Site/Night Sky segments.
+- Surface Platform: WeChat Mini Program subpackage.
+- Primary User Question: Is this formal spot suitable, reachable, trustworthy and safe tonight?
+- Main Surface Allows: representative licensed media, hard-blocker-aware conclusion, route/facilities/provenance, guides, site facts, favorite/plan/navigation and Night Sky entry.
+- Main Surface Forbids: hard blockers averaged away, missing facts shown as zero, unlicensed media as truth, or a Night Sky entry without `spot_id`.
+- Drilldown Ownership: professional sky data and observation execution belong to `miniapp-spot-night`; article detail remains content drilldown.
+
+### `miniapp-spot-night`
+
+- Surface: `spot/sky` plus delegated `sky/detail`, `sky/map`, `sky/targets`, and `sky/observe` routes.
+- Surface Platform: WeChat Mini Program subpackages and native canvas/sensor adapters.
+- Primary User Question: What is observable from this formal spot, and how can the user orient and observe without losing dark adaptation?
+- Main Surface Allows: summary and aligned professional evidence, structured targets, versioned 2D sky, time scrub, sensor/manual orientation and closed warm-red observation mode.
+- Main Surface Forbids: global/current-location sky entry, examples as live facts, Demo AR/full catalogue, sensor-only controls, or white/blue flashes in observation mode.
+- Drilldown Ownership: source/algorithm detail remains progressive evidence; the formal spot/time context remains shared and immutable across sky routes.
+
+### `miniapp-my-library`
+
+- Surface: `pages/my/index`, Favorites, Plan and Settings routes.
+- Surface Platform: WeChat Mini Program main/user subpackages.
+- Primary User Question: How can the user manage profile, favorites, plans and preferences without merging their responsibilities?
+- Main Surface Allows: equal My/Favorites/Plan/Settings tabs, concise profile home, medium-density favorites, recoverable plan editing and objective-fact-preserving preferences.
+- Main Surface Forbids: page horizontal scrolling, plan/official sample cards on My home, duplicate Spot Detail, or provider failure deleting static favorite state.
+- Drilldown Ownership: profile links and imported content belong to `miniapp-profile-content`; Spot cards return to the unified formal detail.
+
+### `miniapp-profile-content`
+
+- Surface: `profile/links`, `content/import`, gated `submission/*` and related preview/status routes.
+- Surface Platform: WeChat Mini Program user/content subpackage.
+- Primary User Question: How can a user preserve external identity/content provenance while retaining copy/manual fallbacks, rights, privacy and moderation?
+- Main Surface Allows: neutral external links with copy-first recovery; rights attestation; parser capability gate; manual import; editable draft; formal spot association or independent proposal; lineage, sanitization and review status.
+- Main Surface Forbids: platform affiliation claims, dangerous URLs, unlicensed parsing, edited-field overwrite, proposal-to-spot shortcut or unreviewed public UGC.
+- Drilldown Ownership: operations moderation remains in authenticated owner operations; the Mini Program shows only user-relevant status and recovery.
+
+The stable Mini Program Control inventory, route/package bindings, cross-control invariants and responsive/motion/accessibility responsibilities are owned by `screen-contracts/wechat-miniapp.md`.
+
 ## Owner Operations Surfaces
 
 ### `admin-data-operations`
@@ -157,7 +207,7 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 
 ## Cross-Surface Rules
 
-- Stable Surface Keys are the fourteen native App/owner-operations headings above. Stable Control Keys and screen routing are owned by `screen-contracts.md`; independently scoped system-target interpretation, legacy-target applicability, and token values are owned by `DESIGN.md`. No heading in this file is automatically a Mini Program surface.
+- Stable Surface Keys are the fourteen native App/owner-operations headings plus the five explicitly named Mini Program surfaces above. Stable Control Keys and screen routing are owned by `screen-contracts.md` and its registered detail nodes; independently scoped system-target interpretation, legacy-target applicability, and token values are owned by `DESIGN.md`.
 - Mobile primary navigation is exactly Tonight, Map, Trips, Sky, and Me. Forecast, spot detail, shooting, field, contribution, toolbox, and onboarding/preferences are contextual or secondary routes, not extra primary tabs.
 - The five primary destinations are five distinct route/screen roots—Tonight `/tonight`, Map `/map`, Trips `/trips`, Sky `/sky`, and Me `/me`—inside one persistent native tab navigator. A shared `ScrollView`, section-anchor jump, or conditional content block that merely imitates separate pages is forbidden.
 - Each primary destination owns its route-local stack and primary scroll or immersive-canvas position. Switching away and back preserves that local task position; shared place/time/mode/selection changes continue through the versioned decision context rather than through duplicate tab state.
@@ -168,9 +218,10 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 - Critical or mutating work cannot be represented by a transient success label. Its owning surface exposes operation identity, committed state, applicable external/native boundary result, retry/recovery, and restart readback.
 - Owner operations deny by default, redact ordinary telemetry and audit views, and require impact preview plus explicit confirmation for high-risk actions. Current owner-only access does not waive authentication, authorization, privacy, idempotency, or audit behavior.
 - The CNY 200/month ceiling and paid-default-zero policy are visible at decision points that could consume external cost. Budget state may degrade or block a capability; it never silently purchases, upgrades, or adds a paid source.
+- The Mini Program independently uses a Demo external-services hard ceiling of CNY 300/month excluding application/database IaaS. That budget does not authorize purchase, commercial use, provider promotion or public production traffic; provider/license/cost gates remain explicit.
 
 ## Screen Contract Routing
 
-- `project_context/areas/main/screen-contracts.md` remains the canonical owner/index for stable route, hierarchy, region/overlay ownership, Control inventory, mode/state variants, navigation, and target references for all fourteen Surface Keys. Its registered `screen-contracts/mobile.md` and `screen-contracts/operations.md` nodes hold the platform-specific detail without creating another authority.
+- `project_context/areas/main/screen-contracts.md` remains the canonical owner/index for stable route, hierarchy, region/overlay ownership, Control inventory, mode/state variants, navigation, and target references. Its registered `screen-contracts/mobile.md`, `screen-contracts/wechat-miniapp.md`, and `screen-contracts/operations.md` nodes hold platform-specific detail without creating another authority.
 - `DESIGN.md` owns authored tokens, visual rationale, the independent App and Mini Program system-adoption records, legacy-target applicability, and target conflict order. Its Mini Program record cannot expand this Product Surface Contract by implication.
 - `project_context/areas/main/verification.md` owns the default repeatable-verification index; its registered on-demand verification nodes own detailed authority, product-runtime, native-runtime, persistence, recovery, and target-fidelity paths.

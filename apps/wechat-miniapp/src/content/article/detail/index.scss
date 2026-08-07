@@ -1,0 +1,6 @@
+.article-content { padding-top: 24rpx; display: flex; flex-direction: column; gap: 24rpx; }
+.article-meta, .article-tip, .article-ref { padding: 28rpx; display: flex; flex-direction: column; gap: 12rpx; }
+.article-paragraph { white-space: pre-wrap; }
+.article-media { overflow: hidden; display: flex; flex-direction: column; gap: 12rpx; padding-bottom: 20rpx; }
+.article-media image { width: 100%; height: 420rpx; background: var(--surface-subtle); }
+.article-media text { margin: 0 20rpx; }

@@ -1,0 +1,273 @@
+{
+  "schema_version": "starward-miniapp-selected-design-bindings-v1",
+  "design_target": "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+  "authorities": [
+    {
+      "key": "design-authority",
+      "path": "DESIGN.md",
+      "sha256": "45ddfecf8ad3c9da7edc94312f15d3684d513603b5f317a91ade1de264e4ceb0"
+    },
+    {
+      "key": "selected-fact-manifest",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/fact-manifest.json",
+      "sha256": "91b4261b8bb0572473bf179cabf1af3992b3d0be3639a4ac9c397665b2df92b3"
+    },
+    {
+      "key": "formal-handoff",
+      "path": "docs/design-resources/miniapp-selected-handoff-2026-08-06/miniapp-complete-product-selected-v1.md",
+      "sha256": "d1e9513b93dc75319f6c2c2d37a242898803c16bf2266fabbecf44aa330d5ba3"
+    }
+  ],
+  "resources": [
+    {
+      "id": "APP-01",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-01-flow-route-map.html",
+      "sha256": "6bae53abb1182f7ed88402a677996eb45902331f5b8d40b9eea1f3ece01498ea",
+      "source_markers": [
+        "data-od-id=\"twelve-journeys\"",
+        "data-od-id=\"map-filter-taxonomy\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/app.config.ts",
+          "all_of": ["pages/map/index", "pages/my/index", "root: \"spot\"", "detail/index", "sky/index"]
+        },
+        {
+          "path": "tests/acceptance/miniapp/ui-proxy.spec.mjs",
+          "all_of": ["map filter draft, search, list and formal-spot detail", "spot night keeps spot/date/time context"]
+        }
+      ]
+    },
+    {
+      "id": "APP-02",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-02-spot-detail-prototype.html",
+      "sha256": "38ad5bbafbcec0fb3f0fccd70828758e3680ef50beaa0e70c9422664634fa414",
+      "source_markers": [
+        "data-od-id=\"representative-media\"",
+        "data-od-id=\"tonight-decision\"",
+        "data-od-id=\"facility-summary\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx",
+          "all_of": ["media-card", "decision-card", "route-card", "facility-grid", "data-segment=\"overview\""]
+        },
+        {
+          "path": "tests/acceptance/miniapp/design-conformance.spec.mjs",
+          "all_of": ["spot detail and night pages preserve the selected resource hierarchy"]
+        }
+      ]
+    },
+    {
+      "id": "APP-03",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-03-spot-night-prototype.html",
+      "sha256": "ba24315112fb385ad61602fe0436829f2f92c3c681b418010859519c08103ce0",
+      "source_markers": [
+        "data-od-id=\"professional-matrix\"",
+        "data-od-id=\"target-list\"",
+        "data-od-id=\"simplified-sky-map\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "all_of": ["data-route={`sky-${view.toLowerCase()}`}", "metric-grid", "观测时间滑杆"]
+        },
+        {
+          "path": "apps/wechat-miniapp/src/sky/map/index.tsx",
+          "all_of": ["data-route=\"sky-map\"", "accessible-sky"]
+        }
+      ]
+    },
+    {
+      "id": "APP-04",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-04-my-content-prototype.html",
+      "sha256": "34af973cd4ece4ad000da63fc456f0f6f4e57c93a0f27f6a5bcf3eb16cd2e59c",
+      "source_markers": [
+        "data-od-id=\"profile-summary\"",
+        "data-od-id=\"external-profile-links\"",
+        "data-od-id=\"external-post-import-source\"",
+        "data-od-id=\"settings-families\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "all_of": ["data-my-tab=\"my\"", "data-my-tab=\"favorites\"", "data-my-tab=\"plan\"", "data-my-tab=\"settings\""]
+        },
+        {
+          "path": "tests/acceptance/miniapp/ui-proxy.spec.mjs",
+          "all_of": ["external-link validation and own-post manual import", "My owns favorites, plans, settings"]
+        }
+      ]
+    },
+    {
+      "id": "APP-05",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-05-shared-component-control-atlas.html",
+      "sha256": "fe9674eb2a304ba0a530045f194db1b9217171aa3edabab62d701bba76fc9d44",
+      "source_markers": [
+        "data-od-id=\"component-family-list\"",
+        "Tier-B 语义柔软仪器"
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/components/filter-sheet.tsx",
+          "all_of": ["FILTER_OPTIONS", "filter-group__grid", "应用筛选"]
+        },
+        {
+          "path": "apps/wechat-miniapp/src/components/status-panel.tsx",
+          "all_of": ["PERMISSION_DENIED", "STALE", "PARTIAL", "ERROR", "EMPTY"]
+        }
+      ]
+    },
+    {
+      "id": "APP-06",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-06-cross-app-interaction-motion-accessibility.html",
+      "sha256": "c3b827b8700a21f3d04a5079e91f78187615ddf7e50aa9818517c491d1478615",
+      "source_markers": [
+        "data-od-id=\"scenario-labs\"",
+        "data-od-id=\"scope-boundary\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/app.scss",
+          "all_of": ["@media (prefers-reduced-motion: reduce)", "outline: 4rpx solid var(--focus)", "outline-offset: 4rpx"],
+          "none_of": ["transform: scale("]
+        },
+        {
+          "path": "tests/acceptance/miniapp/ui-proxy.spec.mjs",
+          "all_of": ["expectResponsiveAndTouchable", "browser console and page runtime stay error-free"]
+        }
+      ]
+    },
+    {
+      "id": "APP-07",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-07-responsive-mode-state-matrix.html",
+      "sha256": "b043c46ae6dbde8d83d1ae1e7a12ccd80bb781f02d81aa5dc7d5b6e255108319",
+      "source_markers": [
+        "data-od-id=\"cross-product-matrix\"",
+        "data-od-id=\"mode-comparison\"",
+        "data-od-id=\"width-comparison\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/styles/tokens.scss",
+          "all_of": [".theme-day", ".theme-night", ".theme-observation"]
+        },
+        {
+          "path": "tests/acceptance/miniapp/design-conformance.spec.mjs",
+          "all_of": ["paletteFromDesign"]
+        },
+        {
+          "path": "tests/acceptance/miniapp/playwright.config.mjs",
+          "all_of": ["wechat-h5-320", "wechat-h5-375", "wechat-h5-430-reduced-motion"]
+        }
+      ]
+    },
+    {
+      "id": "APP-08",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-08-semantic-asset-atlas.html",
+      "sha256": "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534",
+      "source_markers": [
+        "data-od-id=\"tier-a-atlas\"",
+        "data-od-id=\"tier-b-atlas\"",
+        "data-od-id=\"photo-link-import-policy\""
+      ],
+      "production_probes": [
+        {
+          "path": "tools/miniapp/generate-semantic-assets.mjs",
+          "all_of": ["selected_semantic_asset_source_changed", "source-derived-local-svg", "subjects", "modes"]
+        },
+        {
+          "path": "apps/wechat-miniapp/src/components/semantic-asset.tsx",
+          "all_of": ["neutral-avatar", "OBSERVATION", "/assets/semantic/"]
+        }
+      ]
+    },
+    {
+      "id": "MAP-01",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-01-page-prototype.html",
+      "sha256": "f079fa7d4ff5277e89ee2fa75413cf9471d52d2bd64da2793d9f6908293d32d2",
+      "source_markers": [
+        "data-od-id=\"selected-spot-card\"",
+        "data-od-id=\"map-controls\"",
+        "data-od-id=\"global-navigation\"",
+        "id=\"quickFilters\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "all_of": ["QUICK_FILTER_GROUPS", "map-floating-tools", "selected-card-scroll", "路线能力边界"]
+        },
+        {
+          "path": "tests/acceptance/miniapp/design-conformance.spec.mjs",
+          "all_of": ["design-binding: map.selected-card-anatomy", "design-binding: map.quick-filter-and-control-hierarchy"]
+        }
+      ]
+    },
+    {
+      "id": "MAP-02",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-02-page-anatomy.html",
+      "sha256": "ca8f635966a7827cf914985132d13b52857d36e25529c70559a42e4bbde12f9f",
+      "source_markers": [
+        "data-od-id=\"filter-sheet-anatomy\"",
+        "data-od-id=\"responsive-rules\"",
+        "data-od-id=\"ordinary-place-branch\"",
+        "data-od-id=\"restoration-contract\""
+      ],
+      "production_probes": [
+        {
+          "path": "packages/miniapp-contracts/src/filters.ts",
+          "all_of": ["FILTER_OPTIONS.length !== 27", "CANCELABLE_SINGLE", "MULTIPLE"]
+        },
+        {
+          "path": "apps/wechat-miniapp/src/state/app-transitions.test.ts",
+          "all_of": ["discarded on cancel", "committed only on apply"]
+        }
+      ]
+    },
+    {
+      "id": "MAP-03",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-03-component-control-atlas.html",
+      "sha256": "27a25286f48d8a8746f98849cb8fa602a0d18610d6ae24b1e88090c90cc14cc0",
+      "source_markers": [
+        "data-od-id=\"atlas-selected-card\"",
+        "data-od-id=\"spot-card-actions\"",
+        "data-od-id=\"atlas-map-controls\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/components/spot-card.tsx",
+          "all_of": ["spot-card__data-strip", "spot-card__facilities", "spot-card__route-row", "spot-card__actions", "回到点位", "查看详情"]
+        },
+        {
+          "path": "tools/miniapp/run-wechat-devtools-session.mjs",
+          "all_of": [".selected-card-wrap .spot-card__datum", ".selected-card-wrap .spot-card__route-row"]
+        }
+      ]
+    },
+    {
+      "id": "MAP-04",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-04-interaction-motion-accessibility.html",
+      "sha256": "60263d4d398299ccdecda8aa2e81ab2c511082d01f3ad23b6b6d51dfd95ed198",
+      "source_markers": [
+        "data-od-id=\"interaction-flows\"",
+        "data-od-id=\"focus-accessibility\"",
+        "data-od-id=\"lifecycle-resource-notes\"",
+        "data-od-id=\"mode-token-proof\""
+      ],
+      "production_probes": [
+        {
+          "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "all_of": ["useDidHide", "regionTimer", "setTimeout", "aria-live=\"polite\""]
+        },
+        {
+          "path": "apps/wechat-miniapp/src/services/api-client.ts",
+          "all_of": ["RequestTask.abort", "bff_request_timeout"]
+        },
+        {
+          "path": "tests/acceptance/miniapp/ui-proxy.spec.mjs",
+          "all_of": ["reducedMotion", "horizontalOverflow", "tooSmall"]
+        }
+      ]
+    }
+  ]
+}

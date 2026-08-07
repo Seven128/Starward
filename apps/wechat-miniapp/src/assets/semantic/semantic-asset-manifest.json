@@ -1,0 +1,167 @@
+{
+  "schema_version": "starward-selected-semantic-assets-v1",
+  "source": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-08-semantic-asset-atlas.html",
+  "source_sha256": "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534",
+  "design_target": "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+  "subjects": [
+    "four-point-star",
+    "five-point-star",
+    "tent",
+    "telescope",
+    "binoculars",
+    "camera",
+    "backpack",
+    "neutral-avatar"
+  ],
+  "modes": [
+    "day",
+    "night",
+    "observation"
+  ],
+  "assets": [
+    {
+      "file": "four-point-star-day.svg",
+      "sha256": "9bc531efb39abb958c55db17d06c8a34b912efb95c2d6ef80749ed95f319c05f",
+      "bytes": 733,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "four-point-star-night.svg",
+      "sha256": "d7417a38330d14da8ec5616844578c3428854bb507fb2f2cda26ec36d89af206",
+      "bytes": 733,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "four-point-star-observation.svg",
+      "sha256": "1f8f2f53b6078f4e51ed8eaf7f8d220b1bf00da40c8d39b6a1eff86b93dd3fda",
+      "bytes": 733,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "five-point-star-day.svg",
+      "sha256": "6d4fd0345781bc274137f6f91045b2037c281448e99eb2b11dfbebb7e02ec139",
+      "bytes": 726,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "five-point-star-night.svg",
+      "sha256": "65a8bb963b2700b04efe7896c511b915aff1a0f551c053bac94a1ec3b131b5d6",
+      "bytes": 726,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "five-point-star-observation.svg",
+      "sha256": "9d6356cac7c5177d4a3358836d81b7226f0674cacbfa90d9cdf986ce0b9909ef",
+      "bytes": 726,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "tent-day.svg",
+      "sha256": "c85ead94cc4f6aeeedfa6b60855f13c5512f1da80e08b90e404b827a6d675fe2",
+      "bytes": 725,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "tent-night.svg",
+      "sha256": "7000828bb44710df778befbd103cd37f6b4776a9f3c2b3ae4e01dd450129a80d",
+      "bytes": 725,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "tent-observation.svg",
+      "sha256": "2fd0734310c47033fc463aec2531bed71897f3b4d6940e0f91e63395e0956019",
+      "bytes": 725,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "telescope-day.svg",
+      "sha256": "d13b8b49c9572f829a24070f7a920b1d02aa2a919228fdd48f61004e23fe2fbe",
+      "bytes": 854,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "telescope-night.svg",
+      "sha256": "cfe6530ad99d8ebc9761a0ae4cf75828d36cddf3a8e2beba2376b09602cea800",
+      "bytes": 854,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "telescope-observation.svg",
+      "sha256": "b4cbde325fdeb794fb858ab638c5d79d9c583f3aec9adb2d2cb831f0ff400156",
+      "bytes": 854,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "binoculars-day.svg",
+      "sha256": "c3a55bfbcdb9d5a8224c18e1ce2b68c55eb8c6db685bf6ae3786730811bddbeb",
+      "bytes": 879,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "binoculars-night.svg",
+      "sha256": "8e90d9a458e6a3a0124ffd5e158a9df97fe1a34b454a4dcd2adc0aef3ab48b26",
+      "bytes": 879,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "binoculars-observation.svg",
+      "sha256": "a4d5422ea6693dcd2ce6c8ca96a2c54e369c9762a44e3978ce89ec7c060a2075",
+      "bytes": 879,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "camera-day.svg",
+      "sha256": "16ffc89b873cefaacde3f1fe3bd949581d708f397f5b825493b3108fa3ef109f",
+      "bytes": 792,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "camera-night.svg",
+      "sha256": "8d8859cd8dd9712858a22ac490de2ad06a8d9a68ed0c9322d8f9b26c7107d0a9",
+      "bytes": 792,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "camera-observation.svg",
+      "sha256": "c3d21a6fc7ae0185a585642d218d25830dae4c1f3a1574a1c321e99a2a6d09e5",
+      "bytes": 792,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "backpack-day.svg",
+      "sha256": "2339c86710909ea8961726ec6017b658116676ea3697530448ffb85404e66710",
+      "bytes": 810,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "backpack-night.svg",
+      "sha256": "d247dd962888bd8a00c4303d306a767ee495a41ddf43c932565d2b31fb30270c",
+      "bytes": 810,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "backpack-observation.svg",
+      "sha256": "d5c0d5f295d4905ef4918d42adb9220a2e9693992dbe2fc021ec443cc5f772d7",
+      "bytes": 810,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "neutral-avatar-day.svg",
+      "sha256": "b68ac66c13b52725aa899514814f62535aef7abffac04c5cd5e8d4925b5e48ff",
+      "bytes": 787,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "neutral-avatar-night.svg",
+      "sha256": "80a498c9000693c53ccdd2ce170960b5aef84460bf822a4eb4f9d4a60ee55eec",
+      "bytes": 787,
+      "representation": "source-derived-local-svg"
+    },
+    {
+      "file": "neutral-avatar-observation.svg",
+      "sha256": "3e3bb6cb035a1f36c578e1a5a7e60e042c3169ed39a9afb1426866ab8753ad62",
+      "bytes": 787,
+      "representation": "source-derived-local-svg"
+    }
+  ]
+}

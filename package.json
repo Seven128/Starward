@@ -16,6 +16,28 @@
     "test:acceptance:mobile:warm": "node tests/acceptance/run-mobile-web-check.mjs",
     "dev:inspect:mobile:web": "node tests/acceptance/run-mobile-web-diagnostic.mjs",
     "dev:inspect:mobile:native": "node tools/long-task/run-native-design-diagnostic.mjs",
+    "dev:miniapp": "node tools/miniapp/start-development-session.mjs",
+    "dev:miniapp:api": "npm run dev --workspace @starward/miniapp-api",
+    "dev:miniapp:worker": "npm run dev:worker --workspace @starward/miniapp-api",
+    "dev:miniapp:weapp": "npm run dev:weapp --workspace @starward/wechat-miniapp",
+    "dev:miniapp:h5": "npm run dev:h5 --workspace @starward/wechat-miniapp",
+    "miniapp:icons": "node tools/miniapp/generate-mode-icons.mjs",
+    "check:miniapp:icons": "node tools/miniapp/generate-mode-icons.mjs --check",
+    "miniapp:semantic-assets": "node tools/miniapp/generate-semantic-assets.mjs",
+    "check:miniapp:semantic-assets": "node tools/miniapp/generate-semantic-assets.mjs --check",
+    "check:miniapp:sdk": "node tools/miniapp/generate-miniapp-sdk.mjs --check",
+    "test:miniapp:design-bindings": "node tools/miniapp/verify-selected-design-bindings.mjs",
+    "test:miniapp:design": "npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings && npm run test:miniapp:h5",
+    "test:miniapp:workflow": "node --test tools/miniapp/workflow-conformance.test.mjs",
+    "test:miniapp:infrastructure": "node tools/miniapp/run-infrastructure-check.mjs",
+    "test:miniapp:h5": "npm --prefix tests/acceptance run test:miniapp",
+    "test:miniapp:native": "node tools/miniapp/run-wechat-devtools-session.mjs",
+    "miniapp:infra:up": "docker compose -f infra/miniapp/docker-compose.yml up -d --wait",
+    "miniapp:infra:down": "docker compose -f infra/miniapp/docker-compose.yml down",
+    "miniapp:backup": "node tools/miniapp/backup-restore.mjs backup",
+    "miniapp:restore": "node tools/miniapp/backup-restore.mjs restore",
+    "check:miniapp:fast": "npm run check:miniapp:sdk && npm run typecheck --workspace @starward/miniapp-contracts && npm run typecheck --workspace @starward/miniapp-api && npm run typecheck --workspace @starward/wechat-miniapp && npm run test --workspace @starward/miniapp-contracts && npm run test --workspace @starward/miniapp-api && npm run test --workspace @starward/wechat-miniapp && npm run design:system:verify && npm run test:miniapp:workflow && npm run check:miniapp:icons && npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings",
+    "test:miniapp:current": "npm run check:miniapp:fast && npm run test:miniapp:h5 && npm run test:miniapp:native",
     "test": "npm run context:validate"
   },
   "keywords": [
@@ -32,6 +54,8 @@
     "workers/*"
   ],
   "devDependencies": {
+    "miniprogram-automator": "^0.12.1",
+    "pngjs": "^7.0.0",
     "project-tiny-context-harness": "^0.8.12",
     "zod": "4.4.3"
   },

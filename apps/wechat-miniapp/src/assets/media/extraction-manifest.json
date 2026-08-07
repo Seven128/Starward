@@ -1,0 +1,27 @@
+{
+  "schema_version": "starward-selected-media-extraction-v1",
+  "generated_from_immutable_selected_resource": true,
+  "media": [
+    {
+      "id": "orion",
+      "file": "orion-constellation.jpg",
+      "bytes": 185397,
+      "sha256": "b15774005d111c0996d60628acc686bef95df61d3b3bc2445a355530441da690",
+      "source": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-02-spot-detail-prototype.html"
+    },
+    {
+      "id": "milky-way",
+      "file": "milky-way-night-sky.jpg",
+      "bytes": 195664,
+      "sha256": "111ef8c070ee2a57240e662431bdbe6295f36508f860e1ee83a370f7c52984ea",
+      "source": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-02-spot-detail-prototype.html"
+    },
+    {
+      "id": "star-trails",
+      "file": "star-trails.jpg",
+      "bytes": 71701,
+      "sha256": "8be8e65db35f26201fe8d20057491dc1de79cb3e2219493dc77352ef8f9563d4",
+      "source": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-02-spot-detail-prototype.html"
+    }
+  ]
+}

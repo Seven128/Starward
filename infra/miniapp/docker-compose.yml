@@ -1,0 +1,35 @@
+name: starward-miniapp-demo
+
+services:
+  postgres:
+    image: postgis/postgis:17-3.5-alpine@sha256:14827e5c7d4c10f3672130882718dfc6926823175e00baa16fa0a05b87c6e660
+    environment:
+      POSTGRES_DB: starward_miniapp
+      POSTGRES_USER: starward_miniapp
+      POSTGRES_PASSWORD: local_demo_only
+    ports:
+      - "${MINIAPP_POSTGRES_PORT:-55432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U starward_miniapp -d starward_miniapp"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - miniapp-postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.4-alpine@sha256:9702d01c1f10c3ea9f48211b4362e44f154ff02d063e6f7268eba804059f53bf
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "${MINIAPP_REDIS_PORT:-56379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - miniapp-redis:/data
+
+volumes:
+  miniapp-postgres:
+  miniapp-redis:

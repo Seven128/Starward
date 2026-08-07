@@ -1,0 +1,43 @@
+{
+  "mode": "DAY",
+  "priorMode": "DAY",
+  "preferences": {
+    "defaultPlace": "深圳",
+    "locationPreference": "ASK_ONCE",
+    "experience": "BEGINNER",
+    "maxDriveMinutes": 180,
+    "requiredFacilities": [],
+    "equipment": "未设置",
+    "capturePreference": "目视与手机",
+    "displayMode": "DAY",
+    "notificationEnabled": false,
+    "largeText": false,
+    "reducedMotion": false
+  },
+  "preferencesRevision": 0,
+  "preferencesDirty": false,
+  "preferencesUpdatedAt": null,
+  "viewport": {
+    "center": { "latitude": 22.5431, "longitude": 114.0579 },
+    "zoom": 8,
+    "layer": "NORMAL",
+    "loadedViewport": "shenzhen-trial-region-v1",
+    "cardIndex": 0
+  },
+  "committedFilters": {
+    "LIGHT": [],
+    "OBSTRUCTION": [],
+    "LIGHT_DIRECTION": [],
+    "DRIVE_TIME": [],
+    "TRIP": [],
+    "ALTITUDE": [],
+    "FACILITY": []
+  },
+  "selectedSpotId": null,
+  "searchHistory": [],
+  "favoriteIds": [],
+  "plans": [],
+  "profileLinks": [],
+  "importDraft": null,
+  "skySelection": { "spotId": null, "localDate": "", "timeIndex": 0 }
+}
