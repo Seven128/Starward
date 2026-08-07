@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const at = (...segments) => path.join(root, ...segments);
@@ -151,6 +151,11 @@ test("every frozen selected design resource has a production probe binding", asy
 
 test("native acceptance owns a clean build, exclusive current session and fail-closed evidence", async () => {
   const runner = await text("tools", "miniapp", "run-wechat-devtools-session.mjs");
+  const proofWrapper = await text(
+    "tools",
+    "miniapp",
+    "invoke-wechat-long-task-proof.ps1",
+  );
   const ignore = await text(".gitignore");
   for (const required of [
     "await rm(generatedRoot, { force: true, recursive: true })",
@@ -160,15 +165,50 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'const wechatAcceptanceSdkVersion = "3.17.1"',
     "const devtoolsPortStableWindowMs = 5_000",
     "quitWechatDevtoolsAndWait",
-    "const budgets = [Math.min(15_000, timeoutMs)",
+    "const firstBudget = Math.min(30_000, timeoutMs)",
+    "closure_authority",
+    "const wechatIdeHttpPort = 23977",
+    "verifyWechatProcessEnvironment",
+    "wechatToolEnvironment",
+    "wechat_process_temp_must_be_outside_harness_snapshot_root",
+    "observeWechatIdeInstances",
+    "forceStopWechatIdeInstances",
+    "force_exact_root_process_trees",
+    "official_cli_quit_retry_without_observed_root",
+    "unreadable_callback_port_count",
+    "observed_callback_ports",
+    "observed_ide_http_ports",
+    "waitForWechatIdeClosed",
+    "wechat_devtools_ide_did_not_close",
     "cwd: path.dirname(devtoolsExecutable)",
     "cwd: root",
     "prepareWechatProjectIdentity",
     "restoreWechatProjectIdentity",
+    "restoreWechatPublicProjectConfig",
+    "public_config_semantic_ownership_lost",
+    "formatting_normalization_detected",
+    "verifyWechatSnapshotLocation",
+    "wechatFinalGateTempRoot",
+    "wechat_snapshot_location_must_be_physical",
+    "wechat_snapshot_location_outside_supported_root",
+    "wechat_snapshot_temp_environment_mismatch",
+    "wechat_snapshot_not_harness_owned",
+    'mode: canonical ? "canonical_workspace" : "isolated_harness_snapshot"',
+    'observed_path_mode: "direct_physical_candidate"',
+    "expected_project_path_sha256",
+    "every_watcher_targets_candidate",
+    "waitForWechatWatchersClosed",
+    "wechat_devtools_watchers_did_not_close",
     '"project.private.config.json"',
     "projectname: projectName",
     "libVersion: wechatAcceptanceSdkVersion",
     "waitForWechatProjectBinding",
+    "refreshWechatProjectConfig",
+    "same-bytes project.config.json rewrite after watcher binding",
+    "wechat_project_config_refresh_changed_candidate_bytes",
+    "registerWechatSnapshotProject",
+    "tool project/config identity only; no product journey or acceptance claim",
+    "wechat_snapshot_registration_project_close_failed",
     "observeWechatWatcherProjects",
     "Get-CimInstance Win32_Process",
     "wxfilewatcher_x64.exe",
@@ -176,6 +216,8 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "wechat_base_library_mismatch",
     "private_config_ownership_lost",
     "project_identity_restore",
+    "evidence_shutdown",
+    "public_config_restoration",
     "deterministic default-state cold start",
     'miniProgram.reLaunch("/content/settings/index")',
     "activateDayModeThroughProductionControl",
@@ -244,6 +286,8 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   ])
     assert.ok(runner.includes(required), required);
   assert.doesNotMatch(runner, /stageCurrentCandidate|starward-miniapp-devtools-/u);
+  assert.doesNotMatch(runner, /\bsubst(?:\.exe)?\b|\bsymlink\(|\bjunction\b/iu);
+  assert.doesNotMatch(runner, /project-tiny-context-harness.*\.cli|writeFile\([^)]*\.cli/iu);
   assert.doesNotMatch(runner, /cwd: projectPath/u);
   assert.doesNotMatch(runner, /selector: "\.map-page\.theme-day"/u);
   assert.doesNotMatch(runner, /miniProgram\.on\("console"/u);
@@ -251,14 +295,29 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   assert.doesNotMatch(runner, /JSON\.stringify\(event \?\? null\)/u);
   assert.match(ignore, /^apps\/wechat-miniapp\/project\.private\.config\.json$/mu);
   assert.ok(
+    runner.indexOf("await verifyWechatSnapshotLocation()") <
+      runner.indexOf("projectIdentitySession = await prepareWechatProjectIdentity"),
+    "the physical Harness snapshot location must be verified before private identity and DevTools startup",
+  );
+  assert.ok(
     runner.indexOf("projectIdentitySession = await prepareWechatProjectIdentity") <
-      runner.indexOf('await openObservedSession("setup")'),
+      runner.indexOf("await registerWechatSnapshotProject"),
     "the private project identity must exist before DevTools opens the current candidate",
+  );
+  assert.ok(
+    runner.indexOf("await registerWechatSnapshotProject") <
+      runner.indexOf('await openObservedSession("setup")'),
+    "a newly materialized physical snapshot must complete its non-product project registration before the setup acceptance session",
   );
   assert.ok(
     runner.indexOf("await waitForWechatProjectBinding") <
       runner.indexOf("return waitForAutomationConnection"),
     "the actual native watcher path must bind before the automator socket is trusted",
+  );
+  assert.ok(
+    runner.indexOf("await waitForWechatProjectBinding") <
+      runner.indexOf("await refreshWechatProjectConfig"),
+    "the exact watcher binding must precede the same-byte dynamic project-config refresh",
   );
   assert.ok(
     runner.indexOf(
@@ -287,6 +346,106 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     ) <
       runner.indexOf("await writeJson(runEvidencePath, result)"),
     "final evidence must be written only after private project identity restoration",
+  );
+  const finalDrain = runner.slice(
+    runner.indexOf('runtimePhase = "evidence-final-drain"'),
+    runner.indexOf("const nativeCleanup = await teardownNativeSession"),
+  );
+  assert.ok(
+    finalDrain.indexOf("await quitWechatDevtoolsAndWait") <
+      finalDrain.indexOf("await restoreWechatPublicProjectConfig"),
+    "public project bytes may be restored only after the evidence IDE and watcher lifecycle is closed",
+  );
+  assert.ok(
+    finalDrain.indexOf("await restoreWechatPublicProjectConfig") <
+      finalDrain.indexOf("const after = await candidateSnapshot()"),
+    "the final candidate fingerprint must be collected after exact public-config restoration",
+  );
+  for (const required of [
+    "C:\\Dev\\.starward-tmp",
+    "$env:TEMP = $invocationRoot",
+    "$env:TMP = $invocationRoot",
+    "ty-context-*",
+    "wechat_long_task_snapshot_cleanup_incomplete",
+    "wechat_long_task_invocation_cleanup_target_invalid",
+    "Remove-Item -LiteralPath $resolvedInvocationRoot -Recurse -Force",
+    "apply-ty-context-harness-compatibility.mjs",
+    "for ($attempt = 1; $attempt -le 20; $attempt += 1)",
+    "Start-Sleep -Milliseconds 250",
+    "node_modules\\.bin\\ty-context.cmd",
+  ])
+    assert.ok(proofWrapper.includes(required), required);
+});
+
+test("project Harness compatibility patch is version-pinned and only strengthens exact temporary-root cleanup", async () => {
+  const rootPackage = await json("package.json");
+  const patcher = await text(
+    "tools",
+    "miniapp",
+    "apply-ty-context-harness-compatibility.mjs",
+  );
+  const workspaceRuntime = await text(
+    "node_modules",
+    "project-tiny-context-harness",
+    "dist",
+    "lib",
+    "long-task-workspace.js",
+  );
+  const counterfactualRuntime = await text(
+    "node_modules",
+    "project-tiny-context-harness",
+    "dist",
+    "lib",
+    "long-task-counterfactual-sandbox.js",
+  );
+
+  assert.equal(
+    rootPackage.scripts.postinstall,
+    "node tools/miniapp/apply-ty-context-harness-compatibility.mjs",
+  );
+  assert.equal(
+    rootPackage.scripts["check:miniapp:harness-compatibility"],
+    "node tools/miniapp/apply-ty-context-harness-compatibility.mjs --check",
+  );
+  assert.match(patcher, /const expectedVersion = "0\.8\.12"/u);
+  assert.match(patcher, /ty_context_harness_compatibility_version_mismatch/u);
+  assert.match(patcher, /ty_context_harness_compatibility_unknown_source_shape/u);
+  assert.match(patcher, /acceptance_semantics_changed: false/u);
+  assert.match(
+    workspaceRuntime,
+    /recursive: true, force: true, maxRetries: 20, retryDelay: 250/u,
+  );
+  assert.match(
+    counterfactualRuntime,
+    /REMOVE_RETRY_LIMIT = process\.platform === "win32" \? 20 : 2/u,
+  );
+  assert.match(counterfactualRuntime, /REMOVE_RETRY_DELAY_MS = 250/u);
+  assert.doesNotMatch(
+    patcher,
+    /long-task-final-v2|long-task-verifier-v2|delivery-contract|machine_accepted/u,
+  );
+});
+
+test("infrastructure verification survives the Harness-minimal process environment", async () => {
+  const runtimePath = at(
+    "tools",
+    "miniapp",
+    "docker-compose-runtime.mjs",
+  );
+  const { dockerComposeInvocation } = await import(
+    pathToFileURL(runtimePath).href
+  );
+  assert.deepEqual(dockerComposeInvocation(["version"], "win32"), {
+    command: "docker-compose",
+    args: ["version"],
+  });
+  assert.deepEqual(dockerComposeInvocation(["version"], "linux"), {
+    command: "docker",
+    args: ["compose", "version"],
+  });
+  assert.throws(
+    () => dockerComposeInvocation([1], "win32"),
+    /docker_compose_arguments_invalid/u,
   );
 });
 
@@ -392,6 +551,11 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
 
 test("Final-Gate verifier derives actuals from the current candidate and fails closed", async () => {
   const rootPackage = await json("package.json");
+  const verificationSpec = await json(
+    "tools",
+    "miniapp",
+    "verification-spec.json",
+  );
   const verifier = await text(
     "tools",
     "miniapp",
@@ -469,11 +633,44 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     verifier,
     /const actual = resource\?\.path \? await fileSha\(resource\.path\)/u,
   );
+  assert.match(verifier, /counterfactualProjectionFiles/u);
+  assert.match(verifier, /projection\.required_exact_paths/u);
+  assert.match(verifier, /projection\.required_tree_roots/u);
+  assert.match(verifier, /empty_required_tree_roots/u);
+  assert.match(verifier, /mode: "complete_candidate"/u);
+  assert.match(verifier, /mode: "counterfactual_projection"/u);
+  assert.match(verifier, /mismatched_files: mismatched\.slice\(0, 20\)/u);
   assert.match(
     verifier,
-    /const snapshotValid = await validateSnapshot\(carrier\)/u,
+    /const snapshotValidation = await validateSnapshot\(spec, carrier, \{/u,
+  );
+  for (const requiredPath of [
+    "package.json",
+    "package-lock.json",
+    "docs/wechat-miniapp-v2-source.md",
+    "DESIGN.md",
+    "docs/design-resources/miniapp-selected-handoff-2026-08-06/miniapp-complete-product-selected-v1.md",
+    "tools/miniapp/verification-spec.json",
+    "tools/miniapp/verify-miniapp-target.mjs",
+    "tools/miniapp/verify-miniapp-target-launcher.c",
+    "tools/miniapp/verify-miniapp-target.exe",
+  ])
+    assert.ok(
+      verificationSpec.counterfactual_projection.required_exact_paths.includes(
+        requiredPath,
+      ),
+      requiredPath,
+    );
+  assert.deepEqual(
+    verificationSpec.counterfactual_projection.required_tree_roots,
+    ["docs/design-resources/miniapp-selected-source-2026-08-06-v1"],
   );
   const verifyBody = verifier.slice(verifier.indexOf("async function verify"));
+  assert.ok(
+    verifyBody.indexOf("const counterfactualControl") <
+      verifyBody.indexOf("const snapshotValidation"),
+    "counterfactual projection mode must be selected only from the declared carrier mutation status",
+  );
   assert.ok(
     verifyBody.indexOf("if (!snapshotValid)") <
       verifyBody.indexOf("const sourceAuthority = await parseSourceAuthority()"),
@@ -488,10 +685,29 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     verifier,
     /if \(record\) records\.push\(record\);/u,
   );
-  assert.match(verifier, /const current = await snapshotManifest\(\)/u);
+  assert.match(verifier, /const current = await snapshotManifest\(spec\)/u);
   assert.match(verifier, /source_closure_passed: sourceClosure/u);
   assert.match(verifier, /actualEnvironment = await readJson\(DESIGN_ENVIRONMENT\)/u);
   assert.match(verifier, /actualParameters = await readJson\(DESIGN_PARAMETERS\)/u);
+  const crossSurfaceEvidence = verifier.slice(
+    verifier.indexOf('else if (capability === "cross_surface_consistency")'),
+    verifier.indexOf('else if (capability === "failure_injection")'),
+  );
+  assert.match(
+    crossSurfaceEvidence,
+    /const sharedStateSha256 = carrier\.source_snapshot\?\.sha256 \?\? null/u,
+  );
+  assert.equal(
+    [...crossSurfaceEvidence.matchAll(/state_sha256: sharedStateSha256/gu)]
+      .length,
+    2,
+    "native and browser observations must bind the same validated candidate-state identity",
+  );
+  assert.doesNotMatch(
+    crossSurfaceEvidence,
+    /candidate_sha256|stdout_sha256/u,
+    "runtime-specific artifact hashes cannot impersonate one cross-surface state version",
+  );
   const embeddedDigest = [
     ...(launcher.match(
       /expected_script_sha256\[32\]\s*=\s*\{([\s\S]*?)\};/u,

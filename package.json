@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Starward mobile stargazing decision product and design system.",
   "scripts": {
+    "postinstall": "node tools/miniapp/apply-ty-context-harness-compatibility.mjs",
     "context:sync": "ty-context sync",
     "context:validate": "ty-context validate-context",
     "context:doctor": "ty-context doctor",
@@ -29,6 +30,7 @@
     "test:miniapp:design-bindings": "node tools/miniapp/verify-selected-design-bindings.mjs",
     "test:miniapp:design": "npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings && npm run test:miniapp:h5",
     "test:miniapp:workflow": "node --test tools/miniapp/workflow-conformance.test.mjs",
+    "check:miniapp:harness-compatibility": "node tools/miniapp/apply-ty-context-harness-compatibility.mjs --check",
     "test:miniapp:infrastructure": "node tools/miniapp/run-infrastructure-check.mjs",
     "test:miniapp:h5": "npm --prefix tests/acceptance run test:miniapp",
     "test:miniapp:native": "node tools/miniapp/run-wechat-devtools-session.mjs",
@@ -37,7 +39,7 @@
     "miniapp:infra:down": "docker compose -f infra/miniapp/docker-compose.yml down",
     "miniapp:backup": "node tools/miniapp/backup-restore.mjs backup",
     "miniapp:restore": "node tools/miniapp/backup-restore.mjs restore",
-    "check:miniapp:fast": "npm run check:miniapp:sdk && npm run typecheck --workspace @starward/miniapp-contracts && npm run typecheck --workspace @starward/miniapp-api && npm run typecheck --workspace @starward/wechat-miniapp && npm run test --workspace @starward/miniapp-contracts && npm run test --workspace @starward/miniapp-api && npm run test --workspace @starward/wechat-miniapp && npm run design:system:verify && npm run test:miniapp:workflow && npm run check:miniapp:icons && npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings",
+    "check:miniapp:fast": "npm run check:miniapp:harness-compatibility && npm run check:miniapp:sdk && npm run typecheck --workspace @starward/miniapp-contracts && npm run typecheck --workspace @starward/miniapp-api && npm run typecheck --workspace @starward/wechat-miniapp && npm run test --workspace @starward/miniapp-contracts && npm run test --workspace @starward/miniapp-api && npm run test --workspace @starward/wechat-miniapp && npm run design:system:verify && npm run test:miniapp:workflow && npm run check:miniapp:icons && npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings",
     "test:miniapp:current": "npm run check:miniapp:fast && npm run test:miniapp:h5 && npm run test:miniapp:native",
     "test": "npm run context:validate"
   },

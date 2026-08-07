@@ -4,6 +4,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
 
 const { Client } = pg;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -17,9 +18,17 @@ function assertDatabaseName(databaseName) {
 }
 
 function runDockerPostgres(args, options = {}) {
+  const compose = dockerComposeInvocation([
+    "-f",
+    composePath,
+    "exec",
+    "-T",
+    "postgres",
+    ...args,
+  ]);
   const result = spawnSync(
-    "docker",
-    ["compose", "-f", composePath, "exec", "-T", "postgres", ...args],
+    compose.command,
+    compose.args,
     {
       cwd: root,
       windowsHide: true,

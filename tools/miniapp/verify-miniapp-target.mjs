@@ -10,17 +10,19 @@ const SPEC_PATH = "tools/miniapp/verification-spec.json";
 const SOURCE_PATH = "docs/wechat-miniapp-v2-source.md";
 const HANDOFF_SOURCE =
   "docs/design-resources/miniapp-selected-handoff-2026-08-06/miniapp-complete-product-selected-v1.md";
+const SELECTED_RESOURCE_ROOT =
+  "docs/design-resources/miniapp-selected-source-2026-08-06-v1";
 const NATIVE_RUNNER = "tools/miniapp/run-wechat-devtools-session.mjs";
 const NATIVE_CURRENT = "artifacts/miniapp/native/wechat-devtools-session.json";
 const INFRA_CURRENT = "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json";
 const DESIGN_BINDING_CURRENT =
   "artifacts/miniapp/design/selected-design-binding-conformance.json";
 const RESOURCE_INTEGRITY =
-  "docs/design-resources/miniapp-selected-source-2026-08-06-v1/resource-integrity.json";
+  `${SELECTED_RESOURCE_ROOT}/resource-integrity.json`;
 const DESIGN_ENVIRONMENT =
-  "docs/design-resources/miniapp-selected-source-2026-08-06-v1/render-environment.json";
+  `${SELECTED_RESOURCE_ROOT}/render-environment.json`;
 const DESIGN_PARAMETERS =
-  "docs/design-resources/miniapp-selected-source-2026-08-06-v1/proof-parameters.json";
+  `${SELECTED_RESOURCE_ROOT}/proof-parameters.json`;
 const DESIGN_ACTUAL = "artifacts/miniapp/design/production-actual.json";
 const DESIGN_COMPARISON = "artifacts/miniapp/design/constraint-comparison.json";
 const DESIGN_METHOD = "artifacts/miniapp/design/asset-integrity.json";
@@ -435,8 +437,9 @@ async function inspectCandidate() {
   };
 }
 
-async function snapshotManifest() {
-  const roots = [
+async function snapshotManifest(spec) {
+  const projection = spec.counterfactual_projection ?? {};
+  const roots = [...new Set([
     "apps/wechat-miniapp/src",
     "apps/wechat-miniapp/config",
     "apps/wechat-miniapp/package.json",
@@ -454,7 +457,9 @@ async function snapshotManifest() {
     "package-lock.json",
     "DESIGN.md",
     SOURCE_PATH,
-  ];
+    ...(projection.required_exact_paths ?? []),
+    ...(projection.required_tree_roots ?? []),
+  ])];
   const files = [];
   for (const item of roots) {
     const absolute = repositoryPath(item);
@@ -895,7 +900,7 @@ async function collect(spec) {
     nativeSuccess,
     nativeDegradation,
   });
-  const snapshot = await snapshotManifest();
+  const snapshot = await snapshotManifest(spec);
   const authorityPassed = Object.values(authority).every((row) => row.passed);
   const globalConformance =
     authorityPassed &&
@@ -965,13 +970,75 @@ async function collect(spec) {
   if (!passed) process.exitCode = 1;
 }
 
-async function validateSnapshot(carrier) {
-  if (carrier.spec_sha256 !== (await fileSha(SPEC_PATH))) return false;
-  const current = await snapshotManifest();
-  return (
-    current.sha256 === carrier.source_snapshot?.sha256 &&
-    canonical(current.files) === canonical(carrier.source_snapshot?.files ?? {})
+function counterfactualProjectionFiles(spec, expected) {
+  const projection = spec.counterfactual_projection ?? {};
+  const exact = projection.required_exact_paths ?? [];
+  const treeRoots = projection.required_tree_roots ?? [];
+  const expectedFiles = Object.keys(expected);
+  const treeFiles = expectedFiles.filter((file) =>
+    treeRoots.some((rootPath) => file.startsWith(`${rootPath}/`)),
   );
+  const emptyTreeRoots = treeRoots.filter(
+    (rootPath) => !treeFiles.some((file) => file.startsWith(`${rootPath}/`)),
+  );
+  return {
+    files: [...new Set([...exact, ...treeFiles])].sort(),
+    emptyTreeRoots,
+  };
+}
+
+async function validateSnapshot(spec, carrier, { counterfactual = false } = {}) {
+  const expectedSpecSha = carrier.spec_sha256 ?? null;
+  const actualSpecSha = await fileSha(SPEC_PATH);
+  if (expectedSpecSha !== actualSpecSha)
+    return {
+      passed: false,
+      mode: counterfactual ? "counterfactual_projection" : "complete_candidate",
+      reason: "verification_spec_mismatch",
+      expected_spec_sha256: expectedSpecSha,
+      actual_spec_sha256: actualSpecSha,
+    };
+  const current = await snapshotManifest(spec);
+  const expected = carrier.source_snapshot?.files ?? {};
+  if (!counterfactual) {
+    const passed =
+      current.sha256 === carrier.source_snapshot?.sha256 &&
+      canonical(current.files) === canonical(expected);
+    return {
+      passed,
+      mode: "complete_candidate",
+      reason: passed ? null : "complete_candidate_snapshot_mismatch",
+      expected_snapshot_sha256: carrier.source_snapshot?.sha256 ?? null,
+      actual_snapshot_sha256: current.sha256,
+      expected_file_count: Object.keys(expected).length,
+      actual_file_count: Object.keys(current.files).length,
+    };
+  }
+  const mismatched = Object.entries(current.files)
+    .filter(([file, digest]) => expected[file] !== digest)
+    .map(([file]) => file);
+  const requiredProjection = counterfactualProjectionFiles(spec, expected);
+  const missingRequired = requiredProjection.files.filter(
+    (file) => current.files[file] !== expected[file],
+  );
+  const passed =
+    requiredProjection.files.length > 0 &&
+    requiredProjection.emptyTreeRoots.length === 0 &&
+    Object.keys(current.files).length >= requiredProjection.files.length &&
+    mismatched.length === 0 &&
+    missingRequired.length === 0;
+  return {
+    passed,
+    mode: "counterfactual_projection",
+    reason: passed ? null : "counterfactual_projection_mismatch",
+    expected_snapshot_sha256: carrier.source_snapshot?.sha256 ?? null,
+    projected_snapshot_sha256: current.sha256,
+    projected_file_count: Object.keys(current.files).length,
+    required_projection_file_count: requiredProjection.files.length,
+    mismatched_files: mismatched.slice(0, 20),
+    missing_required_files: missingRequired.slice(0, 20),
+    empty_required_tree_roots: requiredProjection.emptyTreeRoots,
+  };
 }
 
 function h5PatternForScope(scope) {
@@ -1400,7 +1467,8 @@ function recordsFor({
         given_keys: check.given_keys,
         action_keys: check.action_keys,
       });
-    else if (capability === "cross_surface_consistency")
+    else if (capability === "cross_surface_consistency") {
+      const sharedStateSha256 = carrier.source_snapshot?.sha256 ?? null;
       records.push({
         assertion_key: assertion.key,
         capability,
@@ -1408,18 +1476,16 @@ function recordsFor({
           {
             surface_ref: "native-miniapp",
             target_ref: "wechat-devtools-native",
-            state_sha256: native?.candidate_sha256 ?? null,
+            state_sha256: sharedStateSha256,
           },
           {
             surface_ref: "browser-diagnostic",
             target_ref: "miniapp-browser-proxy",
-            state_sha256:
-              execution.h5?.command?.stdout_sha256 ??
-              carrier.suites?.h5?.command?.stdout_sha256 ??
-              null,
+            state_sha256: sharedStateSha256,
           },
         ],
       });
+    }
     else if (capability === "failure_injection") {
       const record = failureInjectionRecord(assertion, check, execution, passed);
       if (record) records.push(record);
@@ -1484,7 +1550,7 @@ function counterfactualControlFor(spec, check, status) {
   );
 }
 
-function emitStaleCarrierResult(check, carrier) {
+function emitStaleCarrierResult(check, carrier, snapshotValidation) {
   const assertions = [...check.assertions];
   const observations = Object.fromEntries(
     assertions.map((assertion) => [
@@ -1501,6 +1567,7 @@ function emitStaleCarrierResult(check, carrier) {
       diagnostics: {
         blocker: "delivery_carrier_snapshot_stale",
         carrier_generated_at: carrier.generated_at ?? null,
+        snapshot_validation: snapshotValidation,
         required_action:
           "freeze verifier/spec/runner inputs, then run npm run prepare:miniapp:final-candidate",
       },
@@ -1555,15 +1622,24 @@ async function verify(spec, options) {
   const carrier = await readJson(spec.delivery_carrier);
   if (carrier.schema_version !== spec.carrier_schema_version)
     throw new Error("delivery_carrier_schema_mismatch");
-  const snapshotValid = await validateSnapshot(carrier);
+  const carrierStatus = carrierOutcomeStatus(carrier, check);
+  const counterfactualControl = counterfactualControlFor(
+    spec,
+    check,
+    carrierStatus,
+  );
+  const counterfactual = counterfactualControl !== undefined;
+  const snapshotValidation = await validateSnapshot(spec, carrier, {
+    counterfactual,
+  });
+  const snapshotValid = snapshotValidation.passed;
   if (!snapshotValid) {
-    emitStaleCarrierResult(check, carrier);
+    emitStaleCarrierResult(check, carrier, snapshotValidation);
     return;
   }
   const sourceAuthority = await parseSourceAuthority();
   const authority = await authorityResults(spec, sourceAuthority);
   const authorityValid = Object.values(authority).every((row) => row.passed);
-  const carrierStatus = carrierOutcomeStatus(carrier, check);
   const carrierOutcomePassed =
     check.scope === "global-conformance"
       ? carrierStatus === "passed" &&
@@ -1571,12 +1647,6 @@ async function verify(spec, options) {
           (outcome) => outcome.status === "passed",
         )
       : carrierStatus === "passed";
-  const counterfactualControl = counterfactualControlFor(
-    spec,
-    check,
-    carrierStatus,
-  );
-  const counterfactual = counterfactualControl !== undefined;
   let execution;
   if (check.scope === "global-conformance" || counterfactual) {
     const carrierNative = carrier.native?.success;
@@ -1724,6 +1794,7 @@ async function verify(spec, options) {
       evidence_records: evidenceRecords,
       diagnostics: {
         snapshot_valid: snapshotValid,
+        snapshot_validation_mode: snapshotValidation.mode,
         authority_valid: authorityValid,
         carrier_outcome_status: carrierStatus,
         carrier_outcome_passed: carrierOutcomePassed,

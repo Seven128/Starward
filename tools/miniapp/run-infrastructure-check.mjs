@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import Redis from "ioredis";
 import pg from "pg";
 import { createBackup, restoreBackup } from "./backup-restore.mjs";
+import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
 
 const { Client } = pg;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -120,7 +121,14 @@ function stopProcessTree(pid) {
 }
 
 stage("compose:start");
-run("docker", ["compose", "-f", composePath, "up", "-d", "--wait"]);
+const composeUp = dockerComposeInvocation([
+  "-f",
+  composePath,
+  "up",
+  "-d",
+  "--wait",
+]);
+run(composeUp.command, composeUp.args);
 stage("compose:ready");
 const admin = new Client({ connectionString: adminUrl });
 await admin.connect();
