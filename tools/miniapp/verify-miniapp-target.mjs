@@ -1311,12 +1311,17 @@ function commandEvidenceSummary(command) {
 
 function failureInjectionRecord(assertion, check, execution, passed) {
   const probes = execution.native?.fault_probes ?? [];
-  if (probes.length > 0)
+  if (probes.length > 0) {
+    const failureObserved = probes.every(
+      (probe) =>
+        probe.fault_observed === true && probe.recovery_observed === true,
+    );
+    if (!failureObserved) return null;
     return {
       assertion_key: assertion.key,
       capability: "failure_injection",
       fault: `${check.scope}:${check.surface}`,
-      failure_observed: probes.every((probe) => probe.fault_observed),
+      failure_observed: failureObserved,
       recovery_state_sha256: sha256(
         canonical(
           probes.map((probe) => ({
@@ -1327,6 +1332,7 @@ function failureInjectionRecord(assertion, check, execution, passed) {
         ),
       ),
     };
+  }
 
   const commands = Object.fromEntries(
     Object.entries(execution.commands ?? {}).map(([key, command]) => [
@@ -1345,6 +1351,7 @@ function failureInjectionRecord(assertion, check, execution, passed) {
     Object.values(commands).some((command) => command?.passed === true) ||
     infrastructure?.passed === true;
   const failureObserved = passed === true && currentCheckEvidencePassed;
+  if (!failureObserved) return null;
   return {
     assertion_key: assertion.key,
     capability: "failure_injection",
@@ -1413,8 +1420,10 @@ function recordsFor({
           },
         ],
       });
-    else if (capability === "failure_injection")
-      records.push(failureInjectionRecord(assertion, check, execution, passed));
+    else if (capability === "failure_injection") {
+      const record = failureInjectionRecord(assertion, check, execution, passed);
+      if (record) records.push(record);
+    }
     else if (capability === "state_delta") {
       const ids = execution.inspection?.spot_ids ?? carrier.inspection?.spot_ids ?? [];
       records.push({
@@ -1475,6 +1484,31 @@ function counterfactualControlFor(spec, check, status) {
   );
 }
 
+function emitStaleCarrierResult(check, carrier) {
+  const assertions = [...check.assertions];
+  const observations = Object.fromEntries(
+    assertions.map((assertion) => [
+      assertion.observation,
+      failedBooleanObservation(assertion.expected, assertion.key),
+    ]),
+  );
+  process.stdout.write(
+    `${JSON.stringify({
+      schema_version: "long-task-check-result-v3",
+      execution_status: "completed",
+      observations,
+      evidence_records: [],
+      diagnostics: {
+        blocker: "delivery_carrier_snapshot_stale",
+        carrier_generated_at: carrier.generated_at ?? null,
+        required_action:
+          "freeze verifier/spec/runner inputs, then run npm run prepare:miniapp:final-candidate",
+      },
+    })}\n`,
+  );
+  process.exitCode = 2;
+}
+
 function populationRequirementFor(spec, check) {
   return (spec.population_requirements ?? []).find(
     (requirement) =>
@@ -1522,6 +1556,10 @@ async function verify(spec, options) {
   if (carrier.schema_version !== spec.carrier_schema_version)
     throw new Error("delivery_carrier_schema_mismatch");
   const snapshotValid = await validateSnapshot(carrier);
+  if (!snapshotValid) {
+    emitStaleCarrierResult(check, carrier);
+    return;
+  }
   const sourceAuthority = await parseSourceAuthority();
   const authority = await authorityResults(spec, sourceAuthority);
   const authorityValid = Object.values(authority).every((row) => row.passed);

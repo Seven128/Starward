@@ -383,7 +383,7 @@ Completion requires fresh machine_accepted, no pending External Confirmation, Go
 <!-- ty-source-item:end -->
 
 <!-- ty-source-item:start key=architecture-deliberation kind=technical_obligation aspect=architecture -->
-Architecture Deliberation: apps/wechat-miniapp/** owns the independently completable Mini Program; workers/miniapp-api/** and packages/miniapp-contracts/** own server adapters and typed boundaries; the current extension points are the V2 domain ports, one FilterSchema/selection/time/import truth, DESIGN.md tokens and the project-owned current-candidate verification runner. Dependencies flow UI → generated contracts/domain ports → server adapters, with explicit request, cache, persistence, permission, lifecycle, cancellation, failure and recovery boundaries. The selected product design is a Taro native WeChat Mini Program plus modular-monolith backend and frozen Soft Instruments constraint suite; the verification design reuses the installed official WeChat DevTools CLI and miniprogram-automator behind a bounded runner that gives each immutable candidate path a unique reversible machine-local project identity, pins the accepted SDK, verifies the actual native watcher binding and restores prior private state. Rejected alternatives are HTML/WebView delivery, React Native semantic inheritance, direct provider calls, duplicated stores/tokens, premature microservices, a hand-built WeChat simulator, canonical-checkout substitution and trust in GUI import/socket state. A future nationwide/multi-provider/approved-UGC change must extend adapters, feature gates and read models without changing spot_id, route or surface ownership; a future DevTools/SDK change must revise the declared environment binding instead of weakening the path/identity checks. Existing React Native debt is untouched; new Mini Program debt, duplicate truth, owner bypass, silent failure, mutable private-config loss and unsupported quality claims are forbidden. Project checks bind context, build, API/data/security, population, deterministic astronomy, cost, current WeChat DevTools journeys, exact candidate-path identity, responsive/accessibility/motion, failure recovery and independent final conformance. Correctness and maintainability are mandatory; reliability/resource lifecycle, consistency, performance/cost, security/privacy/safety, compatibility/rollout and operability/testability are all material and receive falsifiable Final-Gate assertions.
+Architecture Deliberation: apps/wechat-miniapp/** owns the independently completable Mini Program; workers/miniapp-api/** and packages/miniapp-contracts/** own server adapters and typed boundaries; the current extension points are the V2 domain ports, one FilterSchema/selection/time/import truth, DESIGN.md tokens and the project-owned current-candidate verification runner. Dependencies flow UI → generated contracts/domain ports → server adapters, with explicit request, cache, persistence, permission, lifecycle, cancellation, failure and recovery boundaries. The selected product design is a Taro native WeChat Mini Program plus modular-monolith backend and frozen Soft Instruments constraint suite; the verification design reuses the installed official WeChat DevTools CLI and miniprogram-automator behind a bounded runner that gives each immutable candidate path a unique reversible machine-local project identity, pins the accepted SDK, verifies the actual native watcher binding and restores prior private state. After Authority and every verifier/spec/runner byte are frozen, one explicit project-owned preparation command collects and commits the exact current delivery carrier; ordinary Checks fail stale before expensive execution and never refresh that carrier because Harness-owned counterfactual sandboxes must be able to mutate it. Rejected alternatives are HTML/WebView delivery, React Native semantic inheritance, direct provider calls, duplicated stores/tokens, premature microservices, a hand-built WeChat simulator, canonical-checkout substitution, trust in GUI import/socket state, manual carrier hash repair and implicit per-Check carrier refresh. A future nationwide/multi-provider/approved-UGC change must extend adapters, feature gates and read models without changing spot_id, route or surface ownership; a future DevTools/SDK change must revise the declared environment binding and recollect the carrier instead of weakening the path/identity checks. Existing React Native debt is untouched; new Mini Program debt, duplicate truth, owner bypass, silent failure, mutable private-config loss, schema-invalid negative evidence and unsupported quality claims are forbidden. Project checks bind context, build, API/data/security, population, deterministic astronomy, cost, current WeChat DevTools journeys, exact candidate-path identity, responsive/accessibility/motion, failure recovery and independent final conformance. Correctness and maintainability are mandatory; reliability/resource lifecycle, consistency, performance/cost, security/privacy/safety, compatibility/rollout and operability/testability are all material and receive falsifiable Final-Gate assertions.
 <!-- ty-source-item:end -->
 
 <!-- ty-source-item:start key=constraint-product-v2-authority kind=technical_obligation -->
@@ -1169,7 +1169,7 @@ capacity:
     facts: 291
     obligations: 291
     census: 2507
-    canonical_bytes: 4050585
+    canonical_bytes: 4051036
   maximum:
     inputs: 512
     catalog_rows: 2048
@@ -1481,7 +1481,7 @@ inspector:
   trust: frozen_executable
   identity: tmp/ty-context/long-task-runs/wechat-miniapp-v2-demo/author-draft.mjs
   version: 1.0.0
-  implementation_sha256: e2cd510a8a95548690dd8cc72d8ee7a5c9df4c5e2f00854c75b45bad2c628dce
+  implementation_sha256: 921c5bd0c754b2514ec9a5e4ee8911c0b2b72982d95fd719b11f562033b2c4f8
   capabilities:
     - source_inventory
     - context_inventory
@@ -3396,7 +3396,7 @@ catalogs:
       - - input.source.architecture.deliberation
         - source_item
         - architecture-deliberation
-        - c49c68fd8d6ae1509ed3d6db3b947c6087f1ed5afbcd1fba06b1fd7b88f44358
+        - 66661a644cb2ffec7c2aa5c1765c744a80f2c456806122743e275ad0b6390323
         - non_ui_material
         - - fact.complete-demo.architecture.deliberation
         - - architecture-deliberation
@@ -4964,7 +4964,7 @@ catalogs:
       - - input.context.002
         - context
         - project_context/areas/main/implementation-index.md
-        - c210d9cf3870f10ec15a903cb58e291c851359b07e5e2299bd300e02b30917f5
+        - f0bb9421f9a1ea9e3814d8dac007a16f18783fd140945af9131f78ce8c2a3685
         - non_ui_material
         - - fact.complete-demo.architecture.deliberation
         - - architecture-deliberation
@@ -5012,7 +5012,7 @@ catalogs:
       - - input.context.008
         - context
         - project_context/areas/main/verification/acceptance-runtime.md
-        - d2fe87a3f2c29b3793fa9aa2ea512a53591ad80d15936740c1069250e2eb1132
+        - 76c2bfe3d27f80e649a0c17c84a6873ead11027d5111605aeb56bd45d4549575
         - non_ui_material
         - - fact.complete-demo.architecture.deliberation
         - - architecture-deliberation
@@ -5060,7 +5060,7 @@ catalogs:
       - - input.context.014
         - context
         - project_context/development-workflow.md
-        - 0d5b998604a96f9ca9f33d04c7b90972ca7c58a23713102ecdb5cf3e06c00c93
+        - 69f129a67ba7155c7245e8307e56bdbac43da5953b1af33b0c88185e1dc75517
         - non_ui_material
         - - fact.complete-demo.architecture.deliberation
         - - architecture-deliberation
@@ -19468,7 +19468,7 @@ catalogs:
       trust: frozen_executable
       identity: tools/miniapp/verify-miniapp-target.exe
       version: 2.0.0
-      sha256: 5f61d624b870dbe03227381915dbeefa2507ed6b5b3a00d55198d6bd67f3ad43
+      sha256: 9e00d262ed4899122c806b6720659e96c9cdbedf9c876712a1e60452f8bb82bd
       capabilities:
         - exact_value
     columns: []
@@ -21542,7 +21542,7 @@ fact_sets:
             - complete-demo-terminal-state
           derivation: null
         - - complete-demo-terminal-state
-      - - a021884e31f15349d1fce07c94c42c794e9c121d589a33f73462419711ada403
+      - - 7ecdc997429efb10847daa48de9a010494ce509b7f817d46344c2a5c9cb70e63
         - fact.complete-demo.architecture.deliberation
         - cell.complete-demo.architecture.deliberation
         - complete-demo
@@ -21555,8 +21555,8 @@ fact_sets:
           arguments:
             - input.source.architecture.deliberation
             - architecture-deliberation
-            - 47787293be80946cc10ea471160b05ab5feb7a14eefef18a00c2ab85fa8f65e9
-            - "Architecture Deliberation: apps/wechat-miniapp/** owns the independently completable Mini Program; workers/miniapp-api/** and packages/miniapp-contracts/** own server adapters and typed boundaries; the current extension points are the V2 domain ports, one FilterSchema/selection/time/import truth, DESIGN.md tokens and the project-owned current-candidate verification runner. Dependencies flow UI → generated contracts/domain ports → server adapters, with explicit request, cache, persistence, permission, lifecycle, cancellation, failure and recovery boundaries. The selected product design is a Taro native WeChat Mini Program plus modular-monolith backend and frozen Soft Instruments constraint suite; the verification design reuses the installed official WeChat DevTools CLI and miniprogram-automator behind a bounded runner that gives each immutable candidate path a unique reversible machine-local project identity, pins the accepted SDK, verifies the actual native watcher binding and restores prior private state. Rejected alternatives are HTML/WebView delivery, React Native semantic inheritance, direct provider calls, duplicated stores/tokens, premature microservices, a hand-built WeChat simulator, canonical-checkout substitution and trust in GUI import/socket state. A future nationwide/multi-provider/approved-UGC change must extend adapters, feature gates and read models without changing spot_id, route or surface ownership; a future DevTools/SDK change must revise the declared environment binding instead of weakening the path/identity checks. Existing React Native debt is untouched; new Mini Program debt, duplicate truth, owner bypass, silent failure, mutable private-config loss and unsupported quality claims are forbidden. Project checks bind context, build, API/data/security, population, deterministic astronomy, cost, current WeChat DevTools journeys, exact candidate-path identity, responsive/accessibility/motion, failure recovery and independent final conformance. Correctness and maintainability are mandatory; reliability/resource lifecycle, consistency, performance/cost, security/privacy/safety, compatibility/rollout and operability/testability are all material and receive falsifiable Final-Gate assertions."
+            - 1fbf7a26a1f6d5eac31ccc4f6a73a068d38393f13d761e220cb0384c0e2ea163
+            - "Architecture Deliberation: apps/wechat-miniapp/** owns the independently completable Mini Program; workers/miniapp-api/** and packages/miniapp-contracts/** own server adapters and typed boundaries; the current extension points are the V2 domain ports, one FilterSchema/selection/time/import truth, DESIGN.md tokens and the project-owned current-candidate verification runner. Dependencies flow UI → generated contracts/domain ports → server adapters, with explicit request, cache, persistence, permission, lifecycle, cancellation, failure and recovery boundaries. The selected product design is a Taro native WeChat Mini Program plus modular-monolith backend and frozen Soft Instruments constraint suite; the verification design reuses the installed official WeChat DevTools CLI and miniprogram-automator behind a bounded runner that gives each immutable candidate path a unique reversible machine-local project identity, pins the accepted SDK, verifies the actual native watcher binding and restores prior private state. After Authority and every verifier/spec/runner byte are frozen, one explicit project-owned preparation command collects and commits the exact current delivery carrier; ordinary Checks fail stale before expensive execution and never refresh that carrier because Harness-owned counterfactual sandboxes must be able to mutate it. Rejected alternatives are HTML/WebView delivery, React Native semantic inheritance, direct provider calls, duplicated stores/tokens, premature microservices, a hand-built WeChat simulator, canonical-checkout substitution, trust in GUI import/socket state, manual carrier hash repair and implicit per-Check carrier refresh. A future nationwide/multi-provider/approved-UGC change must extend adapters, feature gates and read models without changing spot_id, route or surface ownership; a future DevTools/SDK change must revise the declared environment binding and recollect the carrier instead of weakening the path/identity checks. Existing React Native debt is untouched; new Mini Program debt, duplicate truth, owner bypass, silent failure, mutable private-config loss, schema-invalid negative evidence and unsupported quality claims are forbidden. Project checks bind context, build, API/data/security, population, deterministic astronomy, cost, current WeChat DevTools journeys, exact candidate-path identity, responsive/accessibility/motion, failure recovery and independent final conformance. Correctness and maintainability are mandatory; reliability/resource lifecycle, consistency, performance/cost, security/privacy/safety, compatibility/rollout and operability/testability are all material and receive falsifiable Final-Gate assertions."
         - kind: direct
           authority_ref: architecture-deliberation
           basis_refs:
@@ -26346,7 +26346,7 @@ obligations:
           - /proof_obligations/95/comparison/parameters/value
           - complete-demo-terminal-state
     - - proof.complete-demo.architecture.deliberation
-      - e6231eaa7558e4ece99b035df71f1294f0d4eaadd21fdb8e5eae4d7095cf0a6d
+      - 6fa26ca32366464454b00bceb4efa50e6d63326926f264b83c61223e1a3082a0
       - fact.complete-demo.architecture.deliberation
       - structure_ref: structure.2452d8bed0c5383752c792bd
         arguments:

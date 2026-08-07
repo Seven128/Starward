@@ -391,6 +391,7 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
 });
 
 test("Final-Gate verifier derives actuals from the current candidate and fails closed", async () => {
+  const rootPackage = await json("package.json");
   const verifier = await text(
     "tools",
     "miniapp",
@@ -417,6 +418,8 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "counterfactualControlFor",
     "populationRequirementFor",
     "writeGlobalConformanceArtifact",
+    "emitStaleCarrierResult",
+    "delivery_carrier_snapshot_stale",
     '"const SEEDS: readonly OsmSpotSeed[] = Object.freeze(["',
     'catalog.includes("SEEDS.map(toSpot)")',
     "catalogProjectionBound",
@@ -469,6 +472,21 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   assert.match(
     verifier,
     /const snapshotValid = await validateSnapshot\(carrier\)/u,
+  );
+  const verifyBody = verifier.slice(verifier.indexOf("async function verify"));
+  assert.ok(
+    verifyBody.indexOf("if (!snapshotValid)") <
+      verifyBody.indexOf("const sourceAuthority = await parseSourceAuthority()"),
+    "stale candidate carriers must fail before any expensive product execution",
+  );
+  assert.equal(
+    rootPackage.scripts["prepare:miniapp:final-candidate"],
+    ".\\tools\\miniapp\\verify-miniapp-target.exe --collect current",
+  );
+  assert.match(verifier, /if \(!failureObserved\) return null;/u);
+  assert.match(
+    verifier,
+    /if \(record\) records\.push\(record\);/u,
   );
   assert.match(verifier, /const current = await snapshotManifest\(\)/u);
   assert.match(verifier, /source_closure_passed: sourceClosure/u);
