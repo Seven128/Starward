@@ -10,7 +10,7 @@ const packageRoot = path.join(
   "project-tiny-context-harness",
 );
 const checkOnly = process.argv.slice(2).includes("--check");
-const expectedVersion = "0.8.12";
+const expectedVersion = "0.8.16";
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -80,11 +80,11 @@ if (packageJson.version !== expectedVersion)
 const results = [];
 results.push(
   await ensureKnownReplacement({
-    relativePath: "dist/lib/long-task-workspace.js",
+    relativePath: "dist/lib/long-task-workspace-snapshot.js",
     original: "rm(temporary, { recursive: true, force: true })",
     replacement:
       "rm(temporary, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 })",
-    expectedOccurrences: 2,
+    expectedOccurrences: 3,
   }),
 );
 results.push(

@@ -390,7 +390,7 @@ test("project Harness compatibility patch is version-pinned and only strengthens
     "project-tiny-context-harness",
     "dist",
     "lib",
-    "long-task-workspace.js",
+    "long-task-workspace-snapshot.js",
   );
   const counterfactualRuntime = await text(
     "node_modules",
@@ -408,7 +408,7 @@ test("project Harness compatibility patch is version-pinned and only strengthens
     rootPackage.scripts["check:miniapp:harness-compatibility"],
     "node tools/miniapp/apply-ty-context-harness-compatibility.mjs --check",
   );
-  assert.match(patcher, /const expectedVersion = "0\.8\.12"/u);
+  assert.match(patcher, /const expectedVersion = "0\.8\.16"/u);
   assert.match(patcher, /ty_context_harness_compatibility_version_mismatch/u);
   assert.match(patcher, /ty_context_harness_compatibility_unknown_source_shape/u);
   assert.match(patcher, /acceptance_semantics_changed: false/u);
