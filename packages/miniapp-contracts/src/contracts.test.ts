@@ -14,9 +14,40 @@ import {
   viewportRadiusKm,
 } from "./index.ts";
 
-test("the filter schema has exactly the V2.0 terminal population", () => {
-  assert.equal(FILTER_OPTIONS.length, 27);
-  assert.equal(new Set(FILTER_OPTIONS.map((item) => item.label)).size, 27);
+test("the filter schema has the exact ordered V2.1.1 10+8 population", () => {
+  assert.equal(FILTER_OPTIONS.length, 18);
+  assert.equal(new Set(FILTER_OPTIONS.map((item) => item.label)).size, 18);
+  assert.deepEqual(
+    FILTER_OPTIONS.map((item) => item.label),
+    [
+      "今晚推荐",
+      "最佳窗口时长",
+      "距离/驾车时间",
+      "光害",
+      "少云",
+      "停车",
+      "厕所",
+      "可驾车直达",
+      "摄影前景",
+      "可露营/驻车",
+      "特定天象",
+      "低云阈值",
+      "月亮影响",
+      "徒步难度",
+      "信号",
+      "充电",
+      "天空开阔方向",
+      "最近核验时间",
+    ],
+  );
+  assert.equal(
+    FILTER_OPTIONS.filter((item) => item.tier === "FIRST_LEVEL").length,
+    10,
+  );
+  assert.equal(
+    FILTER_OPTIONS.filter((item) => item.tier === "ADVANCED").length,
+    8,
+  );
 });
 
 test("filter state accepts only the complete stable enum closure", () => {
@@ -25,15 +56,15 @@ test("filter state accepts only the complete stable enum closure", () => {
     () =>
       assertFilterState({
         ...EMPTY_FILTER_STATE,
-        LIGHT: ["light-lte-2", "light-lte-3"],
+        LIGHT_POLLUTION: ["lightPollution", "lightPollution"],
       }),
-    /filter_state_invalid:LIGHT:multiple/u,
+    /filter_state_invalid:LIGHT_POLLUTION:duplicate/u,
   );
   assert.throws(
     () =>
       assertFilterState({
         ...EMPTY_FILTER_STATE,
-        FACILITY: ["provider-internal-field"],
+        PARKING: ["provider-internal-field"],
       }),
     /unknown_option/u,
   );

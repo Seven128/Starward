@@ -1,34 +1,108 @@
-.my-page { height: 100vh; display: flex; flex-direction: column; }
-.my-tabs { flex: none; background: var(--canvas); padding-bottom: 16rpx; }
-.my-tabs__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12rpx; }
-.my-tab { min-height: 88rpx; padding: 16rpx 8rpx; display: flex; align-items: center; justify-content: center; border: 1rpx solid var(--border); border-radius: 20rpx; color: var(--text-secondary); background: var(--surface); font-weight: 500; }
-.my-tab--active { border-width: 2rpx; border-color: var(--primary); color: var(--primary); background: var(--surface-subtle); font-weight: 600; }
-.my-tab--active::before { content: "\25cf"; margin-right: 8rpx; font-size: 16rpx; }
-.large-text .my-tabs__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.my-page__scroll { flex: 1; min-height: 0; }
-.my-content { padding-top: 16rpx; padding-bottom: 40rpx; }
-.profile-card { padding: 20rpx 24rpx; display: grid; grid-template-columns: 88rpx minmax(0, 1fr) auto; align-items: center; gap: 20rpx; }
-.avatar { width: 88rpx; height: 88rpx; border: 1rpx solid var(--border); border-radius: 28rpx; display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--primary); background: var(--surface-subtle); }
-.avatar__asset { width: 84rpx; height: 84rpx; }
-.profile-card__copy { display: flex; flex-direction: column; gap: 8rpx; min-width: 0; }
-.profile-card .soft-button { min-width: 112rpx; }
-.entry-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; }
-.entry-card { min-height: 176rpx; padding: 20rpx; display: flex; flex-direction: column; align-items: flex-start; gap: 8rpx; border: 1rpx solid var(--border); border-radius: 20rpx; color: var(--text); background: var(--surface-subtle); text-align: left; }
-.entry-card__icon { width: 56rpx; height: 56rpx; border: 1rpx solid var(--text-secondary); border-radius: 16rpx; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 28rpx; line-height: 56rpx; }
-.demo-boundary { padding: 24rpx; display: flex; flex-direction: column; gap: 18rpx; background: var(--surface-subtle); box-shadow: none; }
-.demo-boundary__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; }
-.demo-boundary__heading > view { display: flex; flex-direction: column; gap: 8rpx; }
-.demo-boundary__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; }
-.preference-summary, .settings-card { padding: 28rpx; display: flex; flex-direction: column; gap: 18rpx; }
-.summary-row, .setting-row, .library-header { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; min-height: 72rpx; }
-.setting-row > view { display: flex; flex-direction: column; min-width: 0; }
-.library-header > view { display: flex; flex-direction: column; }
-.sort-control { min-height: 88rpx; padding: 18rpx 24rpx; border: 1rpx solid var(--border); border-radius: 20rpx; display: flex; align-items: center; background: var(--surface); }
-.plan-card { padding: 24rpx; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20rpx; }
-.plan-card > view:first-child { display: flex; flex-direction: column; gap: 8rpx; }
-.plan-card__actions { display: flex; flex-direction: column; gap: 12rpx; }
-.mode-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; }
-.settings-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; }
-.facility-choice-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; }
-@media (max-width: 340px) { .profile-card { grid-template-columns: 72rpx minmax(0, 1fr); } .profile-card .soft-button { grid-column: 1 / -1; } .avatar { width: 72rpx; height: 72rpx; } .entry-grid, .mode-grid, .demo-boundary__actions { grid-template-columns: 1fr; } .plan-card { grid-template-columns: 1fr; } .plan-card__actions { flex-direction: row; } }
-@media (max-width: 340px) { .facility-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.my-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.my-page__scroll {
+  flex: 1;
+  min-height: 0;
+}
+.my-content {
+  padding-top: 20rpx;
+  padding-bottom: 152rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.profile-summary {
+  min-height: 136rpx;
+  padding: 22rpx 24rpx;
+  display: grid;
+  grid-template-columns: 88rpx minmax(0, 1fr);
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: none;
+}
+.profile-summary__avatar {
+  width: 88rpx;
+  height: 88rpx;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid var(--border);
+  border-radius: 28rpx;
+  background: var(--surface-subtle);
+}
+.profile-summary__asset {
+  width: 84rpx;
+  height: 84rpx;
+}
+.profile-summary__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.account-entry-list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1rpx solid var(--border);
+  border-radius: 24rpx;
+  background: var(--surface);
+}
+.account-entry-list__label {
+  padding: 20rpx 24rpx 12rpx;
+  color: var(--text-secondary);
+  background: var(--surface-subtle);
+}
+.account-row {
+  width: 100%;
+  min-height: 112rpx;
+  padding: 18rpx 24rpx;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40rpx;
+  align-items: center;
+  gap: 16rpx;
+  border: 0;
+  border-top: 1rpx solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  text-align: left;
+}
+.account-row__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4rpx;
+}
+.account-row__chevron {
+  justify-self: end;
+  color: var(--text-secondary);
+  font-size: 40rpx;
+  line-height: 1;
+}
+.account-row:active {
+  background:
+    linear-gradient(var(--pressed-overlay), var(--pressed-overlay)),
+    var(--surface);
+}
+@media (max-width: 340px) {
+  .my-content {
+    padding-left: 24rpx;
+    padding-right: 24rpx;
+  }
+  .profile-summary {
+    grid-template-columns: 72rpx minmax(0, 1fr);
+  }
+  .profile-summary__avatar {
+    width: 72rpx;
+    height: 72rpx;
+  }
+  .profile-summary__asset {
+    width: 68rpx;
+    height: 68rpx;
+  }
+}

@@ -1,0 +1,70 @@
+.settings-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.settings-page__scroll {
+  flex: 1;
+  min-height: 0;
+}
+.settings-content {
+  padding-top: 20rpx;
+  padding-bottom: 96rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.settings-card {
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  box-shadow: none;
+}
+.settings-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+.facility-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+.settings-summary-row,
+.setting-row,
+.observation-setting {
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+.setting-row > view,
+.observation-setting > view {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.observation-setting {
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border);
+}
+.observation-setting .chip {
+  flex: none;
+}
+@media (max-width: 340px) {
+  .facility-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .observation-setting {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,26 +1,223 @@
-.sky-page { height: 100vh; display: flex; flex-direction: column; }
-.sky-page__scroll { flex: 1; min-height: 0; }
-.sky-content { padding-top: 20rpx; padding-bottom: 48rpx; display: flex; flex-direction: column; gap: 20rpx; }
-.sky-context { padding: 20rpx 24rpx; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16rpx; }
-.sky-context > view:first-child { display: flex; flex-direction: column; min-width: 0; }
-.date-control { min-height: 88rpx; padding: 18rpx 24rpx; display: flex; align-items: center; border-radius: 20rpx; border: 1rpx solid var(--border); background: var(--surface-subtle); }
-.sky-decision, .time-card, .sky-targets, .hourly-card, .professional-card { padding: 24rpx; display: flex; flex-direction: column; gap: 14rpx; }
-.sky-decision__top, .time-card__header, .sky-section-header, .sky-target__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16rpx; }
-.sky-decision__top > view, .time-card__header > view, .sky-target__top > view { display: flex; flex-direction: column; gap: 6rpx; min-width: 0; }
-.sky-factor { padding: 14rpx 18rpx; border-radius: 20rpx; background: var(--surface-subtle); border-left: 4rpx solid var(--border); display: flex; flex-direction: column; }
-.sky-factor--blocker { border-left-color: var(--danger); }
-.sky-factor--caution, .sky-factor--unknown { border-left-color: var(--warning); }
-.sky-factor--positive { border-left-color: var(--success); }
-.sky-target { padding: 20rpx 0; display: flex; flex-direction: column; gap: 12rpx; border-bottom: 2rpx solid var(--border); }
-.metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1rpx solid var(--border); border-radius: 20rpx; overflow: hidden; }
-.metric-grid > view { min-height: 112rpx; padding: 16rpx; display: flex; flex-direction: column; background: var(--surface-subtle); border-right: 1rpx solid var(--border); border-bottom: 1rpx solid var(--border); }
-.metric-grid > view:nth-child(3n) { border-right: 0; }
-.metric-grid > view:nth-last-child(-n+3) { border-bottom: 0; }
-.sky-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16rpx; }
-.sources-stack { display: flex; flex-direction: column; gap: 16rpx; }
-.professional-table { width: 100%; }
-.professional-table__inner { min-width: 1260rpx; }
-.professional-row { min-height: 80rpx; display: grid; grid-template-columns: 130rpx repeat(8, 140rpx); align-items: center; border-bottom: 1rpx solid var(--border); }
-.professional-row text { padding: 12rpx; font-size: 22rpx; line-height: 32rpx; font-variant-numeric: tabular-nums; }
-.professional-row--head { position: sticky; top: 0; background: var(--surface-subtle); font-weight: 700; }
-@media (max-width: 340px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sky-actions { grid-template-columns: 1fr; } }
+.sky-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+}
+.sky-page__scroll {
+  flex: 1;
+  min-height: 0;
+}
+.sky-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8rpx;
+  margin: 0 24rpx 4rpx;
+  padding: 6rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 18rpx;
+  background: var(--surface-subtle);
+}
+.sky-tabs__item {
+  min-height: 76rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14rpx;
+  color: var(--text-secondary);
+  font-size: 25rpx;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+.sky-tabs__item:active {
+  transform: scale(0.98);
+}
+.sky-tabs__item--active {
+  color: var(--text-primary);
+  background: var(--surface);
+  box-shadow: 0 4rpx 12rpx rgba(22, 40, 66, 0.08);
+  font-weight: 700;
+}
+.sky-content {
+  padding-top: 20rpx;
+  padding-bottom: 56rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.sky-context-error {
+  padding-top: 32rpx;
+}
+.sky-context {
+  padding: 20rpx 24rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+.sky-context__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+.sky-summary-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.sky-decision,
+.time-card,
+.sky-scene,
+.sky-targets,
+.hourly-card,
+.professional-card,
+.sky-compact-data {
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+.sky-decision__top,
+.time-card__header,
+.sky-section-header,
+.sky-target__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+.sky-decision__top > view,
+.time-card__header > view,
+.sky-target__top > view {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+.sky-summary-grid,
+.time-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+.sky-summary-grid > view,
+.time-metrics > view {
+  min-width: 0;
+  padding: 14rpx;
+  border-radius: 14rpx;
+  background: var(--surface-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.sky-factor {
+  padding: 14rpx 18rpx;
+  border-radius: 18rpx;
+  background: var(--surface-subtle);
+  border-left: 4rpx solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.sky-factor--blocker {
+  border-left-color: var(--danger);
+}
+.sky-factor--caution,
+.sky-factor--unknown {
+  border-left-color: var(--warning);
+}
+.sky-factor--positive {
+  border-left-color: var(--success);
+}
+.sky-scene__canvas {
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  display: block;
+  border-radius: 18rpx;
+  background: #07101c;
+}
+.orientation-control {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  padding-top: 4rpx;
+}
+.orientation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.orientation-actions .soft-button {
+  min-width: 82rpx;
+}
+.sky-target {
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  border-bottom: 2rpx solid var(--border);
+}
+.sky-target:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.sky-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+.sources-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+.professional-table {
+  width: 100%;
+}
+.professional-table__inner {
+  min-width: 1260rpx;
+}
+.professional-row {
+  min-height: 80rpx;
+  display: grid;
+  grid-template-columns: 130rpx repeat(8, 140rpx);
+  align-items: center;
+  border-bottom: 1rpx solid var(--border);
+}
+.professional-row text {
+  padding: 12rpx;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-variant-numeric: tabular-nums;
+}
+.professional-row--head {
+  position: sticky;
+  left: 0;
+  top: 0;
+  background: var(--surface-subtle);
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky-tabs__item {
+    transition-duration: 1ms;
+  }
+}
+@media (max-width: 340px) {
+  .sky-summary-grid,
+  .time-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sky-actions {
+    grid-template-columns: 1fr;
+  }
+  .sky-scene__canvas {
+    height: 260px;
+    min-height: 260px;
+  }
+}

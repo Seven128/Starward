@@ -20,7 +20,6 @@ export default defineAppConfig({
       root: "content",
       pages: [
         "article/detail/index",
-        "favorite/list/index",
         "plan/detail/index",
         "profile/links/index",
         "import/index",

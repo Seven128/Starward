@@ -45,6 +45,14 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       // doing so leaves native queries permanently paused before queryFn.
       ...(target === "h5"
         ? {
+            // Keep the stateful Taro router singleton on one module identity.
+            // npm may otherwise place a second same-version router below
+            // taro-h5; that copy never receives setHistory and navigateTo
+            // fails before a production-derived child route can open.
+            "@tarojs/router": path.resolve(
+              here,
+              "../node_modules/@tarojs/router",
+            ),
             "@tanstack/query-core": path.resolve(
               here,
               "../node_modules/@tanstack/query-core/build/legacy/index.js",

@@ -74,7 +74,9 @@ function currentLocalDate(timezone: string) {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(new Date());
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const value = Object.fromEntries(
+    parts.map((part) => [part.type, part.value]),
+  );
   return `${value.year}-${value.month}-${value.day}`;
 }
 
@@ -126,10 +128,13 @@ function rankSpotsByPreferences(
     return {
       spot,
       index,
-      score: (placeMatch ? 8 : 0) + facilityMatches * 3 + (beginnerAccess ? 1 : 0),
+      score:
+        (placeMatch ? 8 : 0) + facilityMatches * 3 + (beginnerAccess ? 1 : 0),
     };
   });
-  scored.sort((left, right) => right.score - left.score || left.index - right.index);
+  scored.sort(
+    (left, right) => right.score - left.score || left.index - right.index,
+  );
   const applied = [
     ...(place ? [`默认地点“${preferences.defaultPlace.trim()}”`] : []),
     ...(preferences.requiredFacilities.length
@@ -177,7 +182,8 @@ function assertUserPreferences(value: UserPreferences) {
     value.maxDriveMinutes > 360 ||
     !Array.isArray(value.requiredFacilities) ||
     value.requiredFacilities.length > 8 ||
-    new Set(value.requiredFacilities).size !== value.requiredFacilities.length ||
+    new Set(value.requiredFacilities).size !==
+      value.requiredFacilities.length ||
     value.requiredFacilities.some((facility) => !facilities.has(facility)) ||
     typeof value.equipment !== "string" ||
     value.equipment.length > 120 ||
@@ -227,9 +233,9 @@ export class MiniappService {
     if (storageMode !== "postgres")
       throw new Error(`unsupported_storage_mode:${storageMode}`);
     if (!databaseUrl) throw new Error("postgres_database_url_required");
-    const repository = await new PostgresMiniappRepository(databaseUrl).initialize(
-      { migrate: process.env.MINIAPP_AUTO_MIGRATE === "1" },
-    );
+    const repository = await new PostgresMiniappRepository(
+      databaseUrl,
+    ).initialize({ migrate: process.env.MINIAPP_AUTO_MIGRATE === "1" });
     const redisUrl = process.env.REDIS_URL?.trim();
     const cache = redisUrl
       ? await new RedisCache(
@@ -293,7 +299,10 @@ export class MiniappService {
   async getMapScene(input: {
     filters?: FilterState;
     query?: string;
-    viewport?: { center: { latitude: number; longitude: number }; zoom: number };
+    viewport?: {
+      center: { latitude: number; longitude: number };
+      zoom: number;
+    };
     preferences?: SpotRankingPreferences;
   }) {
     const filters = input.filters ?? EMPTY_FILTER_STATE;
@@ -358,7 +367,7 @@ export class MiniappService {
         radiusKm!,
       );
     }
-    const routeFilterUnavailable = filters.DRIVE_TIME.length > 0;
+    const routeFilterUnavailable = filters.DISTANCE_DRIVE_TIME.length > 0;
     const filteredByKnownFacts = filterSpots(viewportSpots, filters).filter(
       (spot) =>
         !input.query ||
@@ -434,10 +443,10 @@ export class MiniappService {
     const all = await this.repository.listSpots();
     const formalSpots = normalized
       ? all.filter((spot) =>
-            `${spot.name}${spot.region}${spot.address}`
-              .toLowerCase()
-              .includes(normalized.toLowerCase()),
-          )
+          `${spot.name}${spot.region}${spot.address}`
+            .toLowerCase()
+            .includes(normalized.toLowerCase()),
+        )
       : [];
     const ordinaryPlaces =
       normalized && formalSpots.length === 0
@@ -478,14 +487,15 @@ export class MiniappService {
       at: null,
       targetProfile: "BEGINNER",
     });
-    const sources = [
-      ...detail.dataDisclosure,
-      ...sky.sources,
-    ].filter(
+    const sources = [...detail.dataDisclosure, ...sky.sources].filter(
       (source, index, all) =>
         all.findIndex((candidate) => candidate.id === source.id) === index,
     );
-    const hydrated = { ...detail, decision: sky.data.decision, dataDisclosure: sources };
+    const hydrated = {
+      ...detail,
+      decision: sky.data.decision,
+      dataDisclosure: sources,
+    };
     this.telemetry.event("spot_detail_loaded", {
       spotId,
       state: hydrated.decision.freshness,
@@ -579,13 +589,14 @@ export class MiniappService {
   }
 
   async getUserLibrary() {
-    const [favorites, plans, profileLinks, preferences, imports] = await Promise.all([
-      this.getFavorites(),
-      this.repository.listPlans(),
-      this.repository.listProfileLinks(),
-      this.repository.getPreferences(),
-      this.repository.listImportDrafts(),
-    ]);
+    const [favorites, plans, profileLinks, preferences, imports] =
+      await Promise.all([
+        this.getFavorites(),
+        this.repository.listPlans(),
+        this.repository.listProfileLinks(),
+        this.repository.getPreferences(),
+        this.repository.listImportDrafts(),
+      ]);
     return envelope(
       {
         favoriteSpots: favorites.data.favorites,
@@ -646,9 +657,10 @@ export class MiniappService {
 
   async getPlans() {
     const cacheKey = "plans:demo-user";
-    const cached = await this.cache.get<
-      ApiEnvelope<{ plans: readonly ObservationPlan[] }>
-    >(cacheKey);
+    const cached =
+      await this.cache.get<ApiEnvelope<{ plans: readonly ObservationPlan[] }>>(
+        cacheKey,
+      );
     if (cached) return cached;
     const result = envelope(
       { plans: await this.repository.listPlans() },
@@ -717,10 +729,10 @@ export class MiniappService {
       throw new Error("profile_link_label_invalid");
     if (
       (await this.repository.listProfileLinks()).some(
-          (link) =>
-            link.url === validation.normalizedUrl &&
-            link.profileLinkId !== input.profileLinkId,
-        )
+        (link) =>
+          link.url === validation.normalizedUrl &&
+          link.profileLinkId !== input.profileLinkId,
+      )
     )
       throw new Error("profile_link_duplicate");
     const now = new Date().toISOString();
@@ -800,9 +812,12 @@ export class MiniappService {
   async getImportDraft(id: string) {
     const draft = await this.repository.getImportDraft(id);
     if (!draft) throw new Error("import_draft_not_found");
-    return envelope(draft, "FRESH", [], [
-      "来源沿袭、字段修订和两条独立审核状态从持久化草稿回读。",
-    ]);
+    return envelope(
+      draft,
+      "FRESH",
+      [],
+      ["来源沿袭、字段修订和两条独立审核状态从持久化草稿回读。"],
+    );
   }
 
   async listImportDrafts() {
@@ -869,11 +884,7 @@ export class MiniappService {
         throw new Error("import_stage_transition_invalid");
       if (input.stage === "EDIT_DRAFT" && !next.rightsConfirmed)
         throw new Error("rights_attestation_required");
-      if (
-        input.stage === "PREVIEW" &&
-        !next.spotId &&
-        !next.spotProposalId
-      )
+      if (input.stage === "PREVIEW" && !next.spotId && !next.spotProposalId)
         throw new Error("spot_or_proposal_required");
       if (
         input.stage === "SUBMIT" &&

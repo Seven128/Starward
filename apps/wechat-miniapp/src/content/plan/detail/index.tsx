@@ -7,12 +7,14 @@ import {
   type PlanId,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
+import { NotificationRegion } from "@/components/notification";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
+  deleteObservationPlan,
   getPlans,
   MiniappApiError,
   saveObservationPlan,
@@ -33,7 +35,14 @@ export default function PlanEditorPage() {
   const plans = useAppStore((state) => state.plans);
   const savePlan = useAppStore((state) => state.savePlan);
   const replacePlans = useAppStore((state) => state.replacePlans);
+  const notify = useAppStore((state) => state.notify);
   const existing = plans.find((plan) => plan.planId === router.params.planId);
+  const [activePlanId, setActivePlanId] = useState<PlanId | null>(
+    existing?.planId ?? null,
+  );
+  const activePlan = activePlanId
+    ? (plans.find((plan) => plan.planId === activePlanId) ?? null)
+    : null;
   const planQuery = useResourceQuery({
     queryKey: ["plans"],
     queryFn: (signal) => getPlans(signal),
@@ -50,10 +59,47 @@ export default function PlanEditorPage() {
   const [localDate, setLocalDate] = useState(existing?.localDate ?? today());
   const [localTime, setLocalTime] = useState(existing?.localTime ?? "22:00");
   const [notes, setNotes] = useState(existing?.notes ?? "");
-  const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const initializedFromRemote = useRef(Boolean(existing));
+  const initialDraft = useRef({
+    spotIndex,
+    localDate,
+    localTime,
+    notes,
+  });
   const themeClass = useThemeClass();
+  const applyPlan = (plan: ObservationPlan) => {
+    const nextSpotIndex = Math.max(
+      0,
+      DEMO_SPOTS.findIndex((spot) => spot.spotId === plan.spotId),
+    );
+    setActivePlanId(plan.planId);
+    setSpotIndex(nextSpotIndex);
+    setLocalDate(plan.localDate);
+    setLocalTime(plan.localTime);
+    setNotes(plan.notes);
+    initialDraft.current = {
+      spotIndex: nextSpotIndex,
+      localDate: plan.localDate,
+      localTime: plan.localTime,
+      notes: plan.notes,
+    };
+  };
+  const startNewPlan = () => {
+    const nextDate = today();
+    setActivePlanId(null);
+    setSpotIndex(0);
+    setLocalDate(nextDate);
+    setLocalTime("22:00");
+    setNotes("");
+    initialDraft.current = {
+      spotIndex: 0,
+      localDate: nextDate,
+      localTime: "22:00",
+      notes: "",
+    };
+  };
   useEffect(() => {
     if (!planQuery.data) return;
     replacePlans(planQuery.data.data.plans);
@@ -61,28 +107,55 @@ export default function PlanEditorPage() {
   useEffect(() => {
     if (!existing || initializedFromRemote.current) return;
     initializedFromRemote.current = true;
-    setSpotIndex(
-      Math.max(
-        0,
-        DEMO_SPOTS.findIndex((spot) => spot.spotId === existing.spotId),
-      ),
-    );
-    setLocalDate(existing.localDate);
-    setLocalTime(existing.localTime);
-    setNotes(existing.notes);
+    applyPlan(existing);
   }, [existing]);
+  const isDirty = activePlan
+    ? activePlan.spotId !== DEMO_SPOTS[spotIndex]?.spotId ||
+      activePlan.localDate !== localDate ||
+      activePlan.localTime !== localTime ||
+      activePlan.notes !== notes
+    : spotIndex !== initialDraft.current.spotIndex ||
+      localDate !== initialDraft.current.localDate ||
+      localTime !== initialDraft.current.localTime ||
+      notes !== initialDraft.current.notes;
+  const announce = (
+    tone: "error" | "warning" | "info" | "success",
+    title: string,
+    body: string,
+  ) => {
+    notify({
+      owner: "plan",
+      placement: "inline",
+      tone,
+      title,
+      body,
+      dismissible: true,
+      dedupeKey: `plan-${tone}-${title}-${body.slice(0, 48)}`,
+    });
+  };
   const save = async () => {
     const spot = DEMO_SPOTS[spotIndex];
-    if (!spot) return;
+    if (!spot) {
+      announce(
+        "error",
+        "计划未保存",
+        "请先选择一个正式观星点；本页草稿仍保留。 ",
+      );
+      return;
+    }
     if (
       !/^\d{4}-\d{2}-\d{2}$/u.test(localDate) ||
       !/^\d{2}:\d{2}$/u.test(localTime)
     ) {
-      setStatus("日期或时间格式无效；草稿仍保留。");
+      announce(
+        "error",
+        "计划未保存",
+        "日期或时间格式无效；本页草稿仍保留，可修正后重试。",
+      );
       return;
     }
     const planId =
-      existing?.planId ??
+      activePlanId ??
       (`plan:${Date.now()}-${Math.random().toString(16).slice(2)}` as PlanId);
     const plan: Omit<ObservationPlan, "revision" | "updatedAt"> = {
       planId,
@@ -95,31 +168,128 @@ export default function PlanEditorPage() {
     try {
       const response = await saveObservationPlan(
         plan,
-        existing?.revision ?? null,
+        activePlan?.revision ?? null,
       );
       savePlan(response.data);
-      setStatus(
-        `计划已持久化并回读修订 ${response.data.revision}；动态事实仍以详情/夜空当前数据为准。`,
+      setActivePlanId(response.data.planId);
+      announce(
+        "success",
+        "计划已保存",
+        `已持久化并回读修订 ${response.data.revision}；动态事实仍以详情/夜空当前数据为准。`,
       );
-      await Taro.showToast({ title: "计划已保存", icon: "success" });
     } catch (error) {
       if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         const current = await planQuery.refetch().catch(() => undefined);
         if (current) replacePlans(current.data.plans);
-        setStatus(
-          "计划已在其他位置更新；已刷新服务端版本，但本页输入完整保留。请核对后再次保存。",
+        announce(
+          "warning",
+          "计划有新修订",
+          "服务端版本已刷新，但本页输入完整保留；请核对后再次保存。",
         );
       } else {
-        setStatus(`保存失败：${errorMessage(error)}。输入完整保留，可重试。`);
+        announce(
+          "error",
+          "计划保存失败",
+          `${errorMessage(error)}；输入完整保留，可重试。`,
+        );
       }
     } finally {
       setSaving(false);
     }
   };
+  const remove = async () => {
+    if (!activePlan) return;
+    const confirmation = await Taro.showModal({
+      title: "删除观测计划？",
+      content: `删除后本计划将从服务端移除${isDirty ? "，本页未保存修改也会丢弃" : ""}；取消或失败时本页内容保持不变。`,
+      confirmText: "删除",
+      confirmColor: "#B53A3A",
+    });
+    if (!confirmation.confirm) return;
+    setDeleting(true);
+    try {
+      const response = await deleteObservationPlan(activePlan.planId);
+      replacePlans(response.data.plans);
+      announce(
+        "success",
+        "计划已删除",
+        "已从服务端回读计划列表，即将返回 My。",
+      );
+      await Taro.navigateBack().catch(() =>
+        Taro.switchTab({ url: "/pages/my/index" }),
+      );
+    } catch (error) {
+      announce(
+        "error",
+        "计划删除失败",
+        `${errorMessage(error)}；计划与本页草稿保持不变，可重试。`,
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
   return (
-    <View className={`${themeClass} plan-editor`} data-route="plan-editor">
-      <CustomNav title={existing ? "编辑计划" : "新建计划"} back />
+    <View
+      className={`${themeClass} plan-editor`}
+      data-route="plan-editor"
+      data-od-id="my-plan"
+    >
+      <CustomNav
+        title={activePlan ? "编辑计划" : "新建计划"}
+        back
+        backOdId="my-plan-back-action"
+      />
       <View className="plan-form page-inset safe-bottom">
+        <View data-od-id="my-plan-notification-state">
+          <NotificationRegion owner="plan" placement="inline" />
+        </View>
+        <View className="plan-list card" data-od-id="plan-list">
+          <View className="plan-list__heading">
+            <Text className="type-section">已有计划</Text>
+            <SoftButton label="新建观测计划" onClick={startNewPlan}>
+              新建
+            </SoftButton>
+          </View>
+          {plans.length ? (
+            plans.map((plan) => {
+              const spot = DEMO_SPOTS.find(
+                (item) => item.spotId === plan.spotId,
+              );
+              return (
+                <View
+                  className={`plan-list__item${activePlanId === plan.planId ? " plan-list__item--active" : ""}`}
+                  key={plan.planId}
+                >
+                  <View className="plan-list__copy">
+                    <Text className="type-label">
+                      {spot?.name ?? "正式观星点"}
+                    </Text>
+                    <Text className="type-caption">
+                      {plan.localDate} · {plan.localTime}
+                      {plan.notes ? ` · ${plan.notes}` : ""}
+                    </Text>
+                  </View>
+                  <SoftButton
+                    label={`编辑${spot?.name ?? "观测"}计划`}
+                    onClick={() => applyPlan(plan)}
+                  >
+                    编辑
+                  </SoftButton>
+                </View>
+              );
+            })
+          ) : (
+            <Text className="type-caption">
+              暂无已保存计划；可以从下方开始新建。
+            </Text>
+          )}
+        </View>
+        {isDirty ? (
+          <StatusPanel
+            state="PARTIAL"
+            detail="本页有未保存修改；返回、保存失败或冲突时草稿会保留。"
+          />
+        ) : null}
         <View className="form-group">
           <Text className="type-label">正式观星点</Text>
           <Picker
@@ -187,16 +357,6 @@ export default function PlanEditorPage() {
             onRecover={() => void planQuery.refetch()}
           />
         ) : null}
-        {status ? (
-          <StatusPanel
-            state={
-              status.includes("失败") || status.includes("无效")
-                ? "ERROR"
-                : "READY"
-            }
-            detail={status}
-          />
-        ) : null}
         <SoftButton
           variant="primary"
           disabled={saving}
@@ -205,6 +365,16 @@ export default function PlanEditorPage() {
         >
           {saving ? "保存中…" : "保存计划"}
         </SoftButton>
+        {activePlan ? (
+          <SoftButton
+            variant="danger"
+            disabled={saving || deleting}
+            label="删除观测计划"
+            onClick={() => void remove()}
+          >
+            {deleting ? "删除中…" : "删除计划"}
+          </SoftButton>
+        ) : null}
       </View>
     </View>
   );

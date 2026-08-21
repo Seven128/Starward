@@ -1,4 +1,4 @@
-import { MyLibraryPage } from "@/features/my/my-library-page";
-export default function Page() {
-  return <MyLibraryPage initialTab="FAVORITES" />;
+/** Retired by V2.1.1: Finder Wanted is the sole saved-place browser. */
+export default function RetiredFavoritesRoute() {
+  return null;
 }

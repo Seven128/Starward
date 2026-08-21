@@ -7,11 +7,15 @@ export function CustomNav({
   title,
   subtitle,
   back = false,
+  backOdId,
+  odId,
   right,
 }: {
   title: string;
   subtitle?: string | undefined;
   back?: boolean | undefined;
+  backOdId?: string | undefined;
+  odId?: string | undefined;
   right?: React.ReactNode | undefined;
 }) {
   let statusBarHeight = 0;
@@ -23,6 +27,7 @@ export function CustomNav({
   return (
     <View
       className="custom-nav safe-top"
+      {...(odId ? { "data-od-id": odId } : {})}
       {...(statusBarHeight > 0
         ? { style: { paddingTop: `${statusBarHeight}px` } }
         : {})}
@@ -30,17 +35,19 @@ export function CustomNav({
       <View className="custom-nav__bar">
         <View className="custom-nav__side">
           {back ? (
-            <SoftButton
-              variant="ghost"
-              label="返回"
-              onClick={() =>
-                Taro.navigateBack().catch(() =>
-                  Taro.switchTab({ url: "/pages/map/index" }),
-                )
-              }
-            >
-              ←
-            </SoftButton>
+            <View {...(backOdId ? { "data-od-id": backOdId } : {})}>
+              <SoftButton
+                variant="ghost"
+                label="返回"
+                onClick={() =>
+                  Taro.navigateBack().catch(() =>
+                    Taro.switchTab({ url: "/pages/map/index" }),
+                  )
+                }
+              >
+                ←
+              </SoftButton>
+            </View>
           ) : null}
         </View>
         <View className="custom-nav__title">

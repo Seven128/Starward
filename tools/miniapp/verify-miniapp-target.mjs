@@ -5,24 +5,26 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const SPEC_PATH = "tools/miniapp/verification-spec.json";
-const SOURCE_PATH = "docs/wechat-miniapp-v2-source.md";
-const HANDOFF_SOURCE =
+const root = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+);
+let SPEC_PATH = "tools/miniapp/verification-spec.json";
+let SOURCE_PATH = "docs/wechat-miniapp-v2-source.md";
+let HANDOFF_SOURCE =
   "docs/design-resources/miniapp-selected-handoff-2026-08-06/miniapp-complete-product-selected-v1.md";
-const SELECTED_RESOURCE_ROOT =
+let SELECTED_RESOURCE_ROOT =
   "docs/design-resources/miniapp-selected-source-2026-08-06-v1";
 const NATIVE_RUNNER = "tools/miniapp/run-wechat-devtools-session.mjs";
 const NATIVE_CURRENT = "artifacts/miniapp/native/wechat-devtools-session.json";
-const INFRA_CURRENT = "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json";
+const INFRA_CURRENT =
+  "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json";
 const DESIGN_BINDING_CURRENT =
   "artifacts/miniapp/design/selected-design-binding-conformance.json";
-const RESOURCE_INTEGRITY =
-  `${SELECTED_RESOURCE_ROOT}/resource-integrity.json`;
-const DESIGN_ENVIRONMENT =
-  `${SELECTED_RESOURCE_ROOT}/render-environment.json`;
-const DESIGN_PARAMETERS =
-  `${SELECTED_RESOURCE_ROOT}/proof-parameters.json`;
+let RESOURCE_INTEGRITY = `${SELECTED_RESOURCE_ROOT}/resource-integrity.json`;
+let DESIGN_ENVIRONMENT = `${SELECTED_RESOURCE_ROOT}/render-environment.json`;
+let DESIGN_PARAMETERS = `${SELECTED_RESOURCE_ROOT}/proof-parameters.json`;
 const DESIGN_ACTUAL = "artifacts/miniapp/design/production-actual.json";
 const DESIGN_COMPARISON = "artifacts/miniapp/design/constraint-comparison.json";
 const DESIGN_METHOD = "artifacts/miniapp/design/asset-integrity.json";
@@ -85,7 +87,10 @@ function parseArgs(values) {
 }
 
 function repositoryPath(relative) {
-  const resolved = path.resolve(root, ...relative.replaceAll("\\", "/").split("/"));
+  const resolved = path.resolve(
+    root,
+    ...relative.replaceAll("\\", "/").split("/"),
+  );
   const normalizedRoot = path.resolve(root).toLowerCase();
   const normalized = resolved.toLowerCase();
   if (
@@ -94,6 +99,23 @@ function repositoryPath(relative) {
   )
     throw new Error(`path_outside_repository:${relative}`);
   return resolved;
+}
+
+function bindAuthorityPaths(spec) {
+  const semanticSource = spec?.authority?.semantic_manifest?.path;
+  const handoffSource = spec?.authority?.handoff?.path;
+  const resourceManifest = spec?.authority?.resource_manifest?.path;
+  if (!semanticSource || !handoffSource || !resourceManifest)
+    throw new Error("verification_spec_authority_paths_missing");
+  const normalizedResourceManifest = resourceManifest.replaceAll("\\", "/");
+  const separator = normalizedResourceManifest.lastIndexOf("/");
+  if (separator <= 0) throw new Error("resource_manifest_parent_missing");
+  SOURCE_PATH = semanticSource;
+  HANDOFF_SOURCE = handoffSource;
+  SELECTED_RESOURCE_ROOT = normalizedResourceManifest.slice(0, separator);
+  RESOURCE_INTEGRITY = `${SELECTED_RESOURCE_ROOT}/resource-integrity.json`;
+  DESIGN_ENVIRONMENT = `${SELECTED_RESOURCE_ROOT}/render-environment.json`;
+  DESIGN_PARAMETERS = `${SELECTED_RESOURCE_ROOT}/proof-parameters.json`;
 }
 
 function canonical(value) {
@@ -133,7 +155,9 @@ async function listFiles(relative, predicate = () => true) {
       const absolute = path.join(directory, entry.name);
       if (entry.isDirectory()) await visit(absolute);
       else if (entry.isFile()) {
-        const repoRelative = path.relative(root, absolute).replaceAll("\\", "/");
+        const repoRelative = path
+          .relative(root, absolute)
+          .replaceAll("\\", "/");
         if (predicate(repoRelative)) rows.push(repoRelative);
       }
     }
@@ -188,7 +212,9 @@ async function run(command, args, cwd = root, timeoutMs = 900_000) {
       const err = Buffer.concat(stderr);
       resolve({
         passed:
-          exitCode === 0 && errorCode === null && outputBytes <= MAX_COMMAND_OUTPUT,
+          exitCode === 0 &&
+          errorCode === null &&
+          outputBytes <= MAX_COMMAND_OUTPUT,
         exit_code: exitCode,
         duration_ms: Date.now() - startedAt,
         stdout_sha256: sha256(out),
@@ -222,7 +248,12 @@ function runNpm(args, cwd = root, timeoutMs = 900_000) {
 }
 
 function runNode(relative, args = [], cwd = root, timeoutMs = 900_000) {
-  return run(process.execPath, [repositoryPath(relative), ...args], cwd, timeoutMs);
+  return run(
+    process.execPath,
+    [repositoryPath(relative), ...args],
+    cwd,
+    timeoutMs,
+  );
 }
 
 async function parseSourceAuthority() {
@@ -296,7 +327,9 @@ async function authorityResults(spec, sourceAuthority = null) {
     const absolute = path.isAbsolute(authority.path)
       ? authority.path
       : repositoryPath(authority.path);
-    const actual = await readFile(absolute).then(sha256).catch(() => null);
+    const actual = await readFile(absolute)
+      .then(sha256)
+      .catch(() => null);
     rows[key] = {
       passed: actual === authority.sha256,
       expected_sha256: authority.sha256,
@@ -307,10 +340,13 @@ async function authorityResults(spec, sourceAuthority = null) {
 }
 
 async function inspectCandidate() {
+  const driftCorrection = SOURCE_PATH.includes("v2-1-1");
+  const expectedRouteCount = driftCorrection ? 18 : 19;
+  const expectedFilterCount = driftCorrection ? 18 : 27;
   const project = await readJson("apps/wechat-miniapp/project.config.json");
-  const appConfig = await readJson("apps/wechat-miniapp/dist/weapp/app.json").catch(
-    () => null,
-  );
+  const appConfig = await readJson(
+    "apps/wechat-miniapp/dist/weapp/app.json",
+  ).catch(() => null);
   const contracts = await readFile(
     repositoryPath("packages/miniapp-contracts/src/filters.ts"),
     "utf8",
@@ -335,9 +371,8 @@ async function inspectCandidate() {
     repositoryPath("apps/wechat-miniapp/src/services/cache-policy.ts"),
     "utf8",
   );
-  const appSources = await listFiles(
-    "apps/wechat-miniapp/src",
-    (file) => /\.(?:ts|tsx)$/u.test(file),
+  const appSources = await listFiles("apps/wechat-miniapp/src", (file) =>
+    /\.(?:ts|tsx)$/u.test(file),
   );
   const appText = (
     await Promise.all(
@@ -361,17 +396,14 @@ async function inspectCandidate() {
   const seedStart = catalog.indexOf(
     "const SEEDS: readonly OsmSpotSeed[] = Object.freeze([",
   );
-  const seedEnd =
-    seedStart < 0 ? -1 : catalog.indexOf("\n]);", seedStart);
+  const seedEnd = seedStart < 0 ? -1 : catalog.indexOf("\n]);", seedStart);
   const seedBlock =
-    seedStart < 0 || seedEnd < 0
-      ? ""
-      : catalog.slice(seedStart, seedEnd + 4);
+    seedStart < 0 || seedEnd < 0 ? "" : catalog.slice(seedStart, seedEnd + 4);
   const seedIds = [...seedBlock.matchAll(/^\s+id:\s*"([a-z0-9-]+)",$/gmu)].map(
     (match) => match[1],
   );
   const catalogProjectionBound =
-    catalog.includes('spotId: `spot:${seed.id}` as SpotId') &&
+    catalog.includes("spotId: `spot:${seed.id}` as SpotId") &&
     catalog.includes("SEEDS.map(toSpot)");
   const spotIds = catalogProjectionBound
     ? seedIds.map((seedId) => `spot:${seedId}`)
@@ -392,9 +424,10 @@ async function inspectCandidate() {
     native_project:
       project.compileType === "miniprogram" &&
       project.miniprogramRoot === "dist/weapp/" &&
-      routeCount === 19,
+      routeCount === expectedRouteCount,
     filter_population:
-      filterIds.length === 27 && new Set(filterIds).size === filterIds.length,
+      filterIds.length === expectedFilterCount &&
+      new Set(filterIds).size === filterIds.length,
     curated_spots:
       catalogProjectionBound &&
       spotIds.length === 26 &&
@@ -423,7 +456,7 @@ async function inspectCandidate() {
       cachePolicy.includes("responseCacheKey") && cachePolicy.includes("path"),
     package_budget: totalBytes > 0 && totalBytes < 2 * 1024 * 1024,
     route_files:
-      routeCount === 19 &&
+      routeCount === expectedRouteCount &&
       weappFiles.some((file) => file.endsWith("pages/map/index.js")) &&
       weappFiles.some((file) => file.endsWith("content/import/index.js")),
   };
@@ -439,27 +472,29 @@ async function inspectCandidate() {
 
 async function snapshotManifest(spec) {
   const projection = spec.counterfactual_projection ?? {};
-  const roots = [...new Set([
-    "apps/wechat-miniapp/src",
-    "apps/wechat-miniapp/config",
-    "apps/wechat-miniapp/package.json",
-    "apps/wechat-miniapp/project.config.json",
-    "packages/miniapp-contracts/src",
-    "packages/miniapp-contracts/package.json",
-    "workers/miniapp-api/src",
-    "workers/miniapp-api/package.json",
-    "tests/acceptance/miniapp",
-    "tests/acceptance/package.json",
-    "tests/acceptance/package-lock.json",
-    "tools/miniapp",
-    "infra/miniapp",
-    "package.json",
-    "package-lock.json",
-    "DESIGN.md",
-    SOURCE_PATH,
-    ...(projection.required_exact_paths ?? []),
-    ...(projection.required_tree_roots ?? []),
-  ])];
+  const roots = [
+    ...new Set([
+      "apps/wechat-miniapp/src",
+      "apps/wechat-miniapp/config",
+      "apps/wechat-miniapp/package.json",
+      "apps/wechat-miniapp/project.config.json",
+      "packages/miniapp-contracts/src",
+      "packages/miniapp-contracts/package.json",
+      "workers/miniapp-api/src",
+      "workers/miniapp-api/package.json",
+      "tests/acceptance/miniapp",
+      "tests/acceptance/package.json",
+      "tests/acceptance/package-lock.json",
+      "tools/miniapp",
+      "infra/miniapp",
+      "package.json",
+      "package-lock.json",
+      "DESIGN.md",
+      SOURCE_PATH,
+      ...(projection.required_exact_paths ?? []),
+      ...(projection.required_tree_roots ?? []),
+    ]),
+  ];
   const files = [];
   for (const item of roots) {
     const absolute = repositoryPath(item);
@@ -479,14 +514,17 @@ async function snapshotManifest(spec) {
       );
   }
   const hashes = {};
-  for (const file of [...new Set(files)].sort()) hashes[file] = await fileSha(file);
+  for (const file of [...new Set(files)].sort())
+    hashes[file] = await fileSha(file);
   return { files: hashes, sha256: sha256(canonical(hashes)) };
 }
 
 function faultProbes(nativeEvidence) {
   if (Array.isArray(nativeEvidence?.fault_injection?.probes))
     return nativeEvidence.fault_injection.probes;
-  return nativeEvidence?.fault_injection ? [nativeEvidence.fault_injection] : [];
+  return nativeEvidence?.fault_injection
+    ? [nativeEvidence.fault_injection]
+    : [];
 }
 
 async function summarizeNative(nativeEvidence, command) {
@@ -528,7 +566,8 @@ async function summarizeNative(nativeEvidence, command) {
   const evidencePath = `artifacts/miniapp/native/runs/${nativeEvidence.run_id}/session.json`;
   const candidateStable =
     nativeEvidence?.candidate_before?.sha256 &&
-    nativeEvidence.candidate_before.sha256 === nativeEvidence?.candidate_after?.sha256;
+    nativeEvidence.candidate_before.sha256 ===
+      nativeEvidence?.candidate_after?.sha256;
   const bundleStable =
     nativeEvidence?.build?.bundle?.files_sha256 &&
     nativeEvidence.build.bundle.files_sha256 ===
@@ -537,7 +576,8 @@ async function summarizeNative(nativeEvidence, command) {
     command.passed &&
     nativeEvidence?.status === "passed" &&
     nativeEvidence?.cold_start === true &&
-    nativeEvidence?.project_root === "apps/wechat-miniapp/project.config.json" &&
+    nativeEvidence?.project_root ===
+      "apps/wechat-miniapp/project.config.json" &&
     nativeEvidence?.cleanup?.status === "passed" &&
     journeys.length > 0 &&
     journeys.every((journey) => journey.status === "passed") &&
@@ -552,8 +592,8 @@ async function summarizeNative(nativeEvidence, command) {
             probe.fault_observed === true &&
             probe.recovery_observed === true,
         ))) &&
-    (nativeEvidence?.runtime_observation?.unexpected_console_error_count ?? 0) ===
-      0;
+    (nativeEvidence?.runtime_observation?.unexpected_console_error_count ??
+      0) === 0;
   return {
     passed,
     command,
@@ -577,7 +617,9 @@ async function summarizeNative(nativeEvidence, command) {
 }
 
 async function runNative(scope, mode) {
-  const command = await runNode(NATIVE_RUNNER, ["--scope", scope, "--mode", mode]);
+  const args = ["--scope", scope, "--mode", mode];
+  if (SOURCE_PATH.includes("v2-1-1")) args.push("--profile", "v2-1-1");
+  const command = await runNode(NATIVE_RUNNER, args);
   const evidence = await readJson(NATIVE_CURRENT).catch(() => null);
   return summarizeNative(evidence ?? {}, command);
 }
@@ -627,17 +669,33 @@ async function runContractsTests() {
 }
 
 function requiredJourneyPass(nativeEvidence, outcome) {
-  const expected = journeyKeysByOutcome[outcome] ?? [];
+  const declared = journeyKeysByOutcome[outcome] ?? [];
+  const expected = SOURCE_PATH.includes("v2-1-1")
+    ? declared.filter(
+        (key) =>
+          key !== "favorites" &&
+          key !== "simplified-sky-map" &&
+          key !== "observation-mode",
+      )
+    : declared;
   const actual = new Map(
-    (nativeEvidence?.journeys ?? []).map((journey) => [journey.key, journey.status]),
+    (nativeEvidence?.journeys ?? []).map((journey) => [
+      journey.key,
+      journey.status,
+    ]),
   );
-  return expected.length > 0 && expected.every((key) => actual.get(key) === "passed");
+  return (
+    expected.length > 0 && expected.every((key) => actual.get(key) === "passed")
+  );
 }
 
 function requiredFaultPass(nativeEvidence, outcome) {
   const expected = faultKeysByOutcome[outcome] ?? [];
   const actual = new Map(
-    (nativeEvidence?.fault_probes ?? []).map((probe) => [probe.journey_key, probe]),
+    (nativeEvidence?.fault_probes ?? []).map((probe) => [
+      probe.journey_key,
+      probe,
+    ]),
   );
   return (
     expected.length > 0 &&
@@ -652,12 +710,19 @@ function requiredFaultPass(nativeEvidence, outcome) {
   );
 }
 
-function outcomeStatuses({ fast, infrastructure, h5, nativeSuccess, nativeDegradation }) {
+function outcomeStatuses({
+  fast,
+  infrastructure,
+  h5,
+  nativeSuccess,
+  nativeDegradation,
+}) {
   const rows = {};
   for (const outcome of Object.keys(journeyKeysByOutcome)) {
-    const requiresInfrastructure = ["platform-operations", "complete-demo"].includes(
-      outcome,
-    );
+    const requiresInfrastructure = [
+      "platform-operations",
+      "complete-demo",
+    ].includes(outcome);
     const requiresH5 = outcome === "complete-demo";
     const passed =
       fast.passed &&
@@ -742,7 +807,12 @@ function observedEnvironment(spec, evidence) {
   return { value, sha256: sha256(canonical(value)) };
 }
 
-async function buildSemanticArtifact(spec, sourceAuthority, evidence, scope = null) {
+async function buildSemanticArtifact(
+  spec,
+  sourceAuthority,
+  evidence,
+  scope = null,
+) {
   const templates = scope
     ? spec.semantic_templates.filter((item) => item.outcome_ref === scope)
     : spec.semantic_templates;
@@ -759,7 +829,8 @@ async function buildSemanticArtifact(spec, sourceAuthority, evidence, scope = nu
     return {
       index,
       source_item_key: template.source_item_key,
-      source_ref: sourceAuthority.item_sources.get(template.source_item_key) ?? null,
+      source_ref:
+        sourceAuthority.item_sources.get(template.source_item_key) ?? null,
       fact_ref: template.fact_ref,
       actual,
       actual_sha256: actualSha,
@@ -798,8 +869,7 @@ async function buildDesignArtifacts(spec, evidence) {
   const environmentSha =
     environmentValue === null ? null : sha256(environmentValue);
   const parameterValue = actualParameters.asset_integrity ?? null;
-  const parameterSha =
-    parameterValue === null ? null : sha256(parameterValue);
+  const parameterSha = parameterValue === null ? null : sha256(parameterValue);
   const binding = await readJson(DESIGN_BINDING_CURRENT).catch(() => null);
   const factResults = [];
   for (const expectation of spec.design_evidence.fact_expectations) {
@@ -807,7 +877,9 @@ async function buildDesignArtifacts(spec, evidence) {
       .replace(/^fact\./u, "")
       .replace(/\.digest$/u, "");
     const resource = integrity.resources?.[resourceKey];
-    const actual = resource?.path ? await fileSha(resource.path).catch(() => null) : null;
+    const actual = resource?.path
+      ? await fileSha(resource.path).catch(() => null)
+      : null;
     const actualSha = actual ? sha256(actual) : null;
     factResults.push({
       fact_ref: expectation.fact_ref,
@@ -987,7 +1059,11 @@ function counterfactualProjectionFiles(spec, expected) {
   };
 }
 
-async function validateSnapshot(spec, carrier, { counterfactual = false } = {}) {
+async function validateSnapshot(
+  spec,
+  carrier,
+  { counterfactual = false } = {},
+) {
   const expectedSpecSha = carrier.spec_sha256 ?? null;
   const actualSpecSha = await fileSha(SPEC_PATH);
   if (expectedSpecSha !== actualSpecSha)
@@ -1066,7 +1142,9 @@ async function executeCurrentCheck(check) {
       check.scope === "global-conformance" ? "complete-demo" : check.scope,
       "success",
     );
-    if (["spot-night", "profile-content", "complete-demo"].includes(check.scope))
+    if (
+      ["spot-night", "profile-content", "complete-demo"].includes(check.scope)
+    )
       execution.h5 = await runH5(h5PatternForScope(check.scope));
     if (["platform-operations", "complete-demo"].includes(check.scope))
       execution.infrastructure = await runInfrastructure();
@@ -1084,7 +1162,8 @@ async function executeCurrentCheck(check) {
   if (check.surface === "degradation") {
     execution.native = await runNative(check.scope, "degradation");
     execution.passed =
-      execution.native.passed && requiredFaultPass(execution.native, check.scope);
+      execution.native.passed &&
+      requiredFaultPass(execution.native, check.scope);
     execution.liveness = execution.native.passed;
     return execution;
   }
@@ -1162,14 +1241,18 @@ function semanticRecord(assertion, check, spec, semantic, passed) {
     (fact) => fact.source_item_key === assertion.key.replace(/^sf-/u, ""),
   );
   if (index < 0)
-    throw new Error(`semantic_observation_missing:${check.scope}:${assertion.key}`);
+    throw new Error(
+      `semantic_observation_missing:${check.scope}:${assertion.key}`,
+    );
   const row = semantic.facts[index];
   const template = spec.semantic_templates.find(
     (item) =>
       item.assertion_key === assertion.key && item.outcome_ref === check.scope,
   );
   if (!template)
-    throw new Error(`semantic_template_missing:${check.scope}:${assertion.key}`);
+    throw new Error(
+      `semantic_template_missing:${check.scope}:${assertion.key}`,
+    );
   const comparisonPassed = passed && row.comparison.passed;
   return {
     assertion_key: assertion.key,
@@ -1456,7 +1539,8 @@ function recordsFor({
         capability,
         target_ref: check.target_ref,
         root_entrypoint: check.root_entrypoint,
-        session_id: native?.session_id ?? `process:${check.scope}:${check.surface}`,
+        session_id:
+          native?.session_id ?? `process:${check.scope}:${check.surface}`,
         cold_start: native?.cold_start ?? false,
       });
     else if (capability === "interaction_trace")
@@ -1485,13 +1569,17 @@ function recordsFor({
           },
         ],
       });
-    }
-    else if (capability === "failure_injection") {
-      const record = failureInjectionRecord(assertion, check, execution, passed);
+    } else if (capability === "failure_injection") {
+      const record = failureInjectionRecord(
+        assertion,
+        check,
+        execution,
+        passed,
+      );
       if (record) records.push(record);
-    }
-    else if (capability === "state_delta") {
-      const ids = execution.inspection?.spot_ids ?? carrier.inspection?.spot_ids ?? [];
+    } else if (capability === "state_delta") {
+      const ids =
+        execution.inspection?.spot_ids ?? carrier.inspection?.spot_ids ?? [];
       records.push({
         assertion_key: assertion.key,
         capability,
@@ -1530,14 +1618,16 @@ function isLivenessAssertion(assertion) {
 
 function failedBooleanObservation(expected, assertionKey) {
   if (typeof expected !== "boolean")
-    throw new Error(`non_boolean_failed_observation_unsupported:${assertionKey}`);
+    throw new Error(
+      `non_boolean_failed_observation_unsupported:${assertionKey}`,
+    );
   return !expected;
 }
 
 function carrierOutcomeStatus(carrier, check) {
   return check.scope === "global-conformance"
-    ? carrier.global?.conformance ?? null
-    : carrier.outcomes?.[check.scope]?.status ?? null;
+    ? (carrier.global?.conformance ?? null)
+    : (carrier.outcomes?.[check.scope]?.status ?? null);
 }
 
 function counterfactualControlFor(spec, check, status) {
@@ -1615,10 +1705,13 @@ async function writeGlobalConformanceArtifact({
 async function verify(spec, options) {
   const check = spec.checks.find(
     (candidate) =>
-      candidate.scope === options.scope && candidate.surface === options.surface,
+      candidate.scope === options.scope &&
+      candidate.surface === options.surface,
   );
   if (!check)
-    throw new Error(`verification_scope_unknown:${options.scope}:${options.surface}`);
+    throw new Error(
+      `verification_scope_unknown:${options.scope}:${options.surface}`,
+    );
   const carrier = await readJson(spec.delivery_carrier);
   if (carrier.schema_version !== spec.carrier_schema_version)
     throw new Error("delivery_carrier_schema_mismatch");
@@ -1691,7 +1784,9 @@ async function verify(spec, options) {
       authority.semantic_manifest?.source_closure_passed === true,
     outcomes: currentOutcome,
     global_conformance:
-      check.scope === "global-conformance" ? checkPassed : carrier.global?.conformance === "passed",
+      check.scope === "global-conformance"
+        ? checkPassed
+        : carrier.global?.conformance === "passed",
     fast_passed:
       execution.commands?.fast?.passed ?? carrier.suites?.fast?.passed === true,
     h5_passed: execution.h5?.passed ?? carrier.suites?.h5?.passed === true,
@@ -1810,7 +1905,9 @@ async function verify(spec, options) {
 }
 
 const options = parseArgs(process.argv.slice(2));
+if (options.spec) SPEC_PATH = options.spec;
 const spec = await readJson(SPEC_PATH);
+bindAuthorityPaths(spec);
 if (options.collect === "current") await collect(spec);
 else {
   if (!options.scope || !options.surface)

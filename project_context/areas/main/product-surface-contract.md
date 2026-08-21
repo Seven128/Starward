@@ -2,15 +2,15 @@
 
 ## Purpose
 
-This Context owns durable responsibility and main-versus-drilldown placement for the Starward native mobile product, the independently scoped WeChat Mini Program, and owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. The Mini Program surfaces below were adopted from the immutable V2.0 product/technical plans; their exact visual values remain owned only by `DESIGN.md`.
+This Context owns durable responsibility and main-versus-drilldown placement for the Starward native mobile product, the independently scoped WeChat Mini Program, and owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. The Mini Program surfaces below were adopted from the immutable corrected V2.1.1 product/technical plans under their 0A/disposition precedence and selected-v3 constraint; their exact visual values remain owned only by `DESIGN.md`.
 
 ## Current Product Boundary
 
 - The current product target is an owner-only, non-commercial personal trial. Public operation, store release, commercial activation, paid-provider purchase, legal approval, and representative field sign-off are future gates and must not appear as completed states.
 - The mobile product is the primary user surface. Owner operations is a separate authenticated desktop surface; it must not be exposed as ordinary mobile navigation or collapse raw operational detail into the consumer journey.
 - The auxiliary share projection exposes only an authorized, expiring trip/place summary. It is not a thirteenth operations control, a full mobile substitute, or a route to administrative data.
-- The WeChat Mini Program is an independently completable product carrier for the V2.0 Demo baseline. It coexists with the native App and does not prove, replace, inherit, or silently shrink that product. Its primary navigation is exactly Map and My; its Night Sky capability is formal-spot drilldown only.
-- The previous repository posture that limited a future Mini Program to share/light-query/invitation remains native-App provenance only and is superseded for the independent `apps/wechat-miniapp/**` product by `docs/wechat-miniapp-v2-source.md`. Shared owners must model both product carriers rather than overwriting the App boundary.
+- The WeChat Mini Program is an independently completable product carrier for the corrected V2.1.1 Demo baseline. It coexists with the native App and does not prove, replace, inherit, or silently shrink that product. Its primary navigation is exactly Map and My; its Night capability is formal-Spot-Detail drilldown only.
+- The previous repository posture that limited a future Mini Program to share/light-query/invitation remains native-App provenance only and is superseded for the independent `apps/wechat-miniapp/**` product by `docs/wechat-miniapp-v2-1-1-source.md`. Shared owners must model both product carriers rather than overwriting the App boundary.
 
 ## Mobile Product Surfaces
 

@@ -11,13 +11,17 @@ const root = path.resolve(
 const bindingRelative = "tools/miniapp/selected-design-bindings.json";
 const defaultOutput =
   "artifacts/miniapp/design/selected-design-binding-conformance.json";
+const expectedTarget = "target-miniapp-drift-correction-selected-constraint-v3";
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
 function repositoryPath(relative) {
-  const absolute = path.resolve(root, ...relative.replaceAll("\\", "/").split("/"));
+  const absolute = path.resolve(
+    root,
+    ...relative.replaceAll("\\", "/").split("/"),
+  );
   const normalizedRoot = root.toLowerCase();
   const normalized = absolute.toLowerCase();
   if (
@@ -33,16 +37,25 @@ function argument(name, fallback) {
   return index < 0 ? fallback : process.argv[index + 1];
 }
 
-async function inspectFrozenPackage() {
-  const inspector = repositoryPath(
-    "docs/design-resources/miniapp-selected-source-2026-08-06-v1/frozen-inspector.mjs",
+function handoffPayload(markdown) {
+  const match = markdown.match(
+    /```yaml design-resource-handoff-v1\s*([\s\S]*?)```/u,
   );
+  if (!match?.[1]) throw new Error("selected_handoff_payload_missing");
+  return JSON.parse(match[1]);
+}
+
+async function inspectFrozenPackage(inspectorPath) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [inspector, root], {
-      cwd: root,
-      windowsHide: true,
-      shell: false,
-    });
+    const child = spawn(
+      process.execPath,
+      [repositoryPath(inspectorPath), root],
+      {
+        cwd: root,
+        windowsHide: true,
+        shell: false,
+      },
+    );
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (chunk) => {
@@ -69,128 +82,128 @@ async function inspectFrozenPackage() {
 const bindingBytes = await readFile(repositoryPath(bindingRelative));
 const binding = JSON.parse(bindingBytes.toString("utf8"));
 const failures = [];
-const inspected = await inspectFrozenPackage();
+if (binding.schema_version !== "starward-miniapp-selected-design-bindings-v2")
+  failures.push("binding_schema_invalid");
+if (binding.design_target !== expectedTarget)
+  failures.push("design_target_invalid");
+
+const handoffBytes = await readFile(repositoryPath(binding.handoff.path)).catch(
+  () => null,
+);
+const handoffIdentityPassed =
+  Boolean(handoffBytes) && sha256(handoffBytes) === binding.handoff.sha256;
+if (!handoffIdentityPassed) failures.push("handoff_identity_mismatch");
+const handoff = handoffBytes
+  ? handoffPayload(handoffBytes.toString("utf8"))
+  : null;
+if (!handoff?.targets?.some((target) => target.key === expectedTarget))
+  failures.push("handoff_target_mismatch");
+
+const handoffResources = handoff?.resources ?? [];
+const inspectorPath = handoffResources.find(
+  (item) => item.key === "resource.inspector",
+)?.path;
+if (!inspectorPath) throw new Error("handoff_inspector_missing");
+const inspected = await inspectFrozenPackage(inspectorPath);
 const inspectorResources = new Map(
   inspected.resources.map((item) => [item.path, item]),
 );
 
-if (binding.schema_version !== "starward-miniapp-selected-design-bindings-v1")
-  failures.push("binding_schema_invalid");
+const expectedResources = handoffResources.map(
+  ({ key, role, path: resourcePath, sha256: digest }) => ({
+    key,
+    role,
+    path: resourcePath,
+    sha256: digest,
+  }),
+);
+if (JSON.stringify(binding.resources) !== JSON.stringify(expectedResources))
+  failures.push("resource_binding_population_or_identity_invalid");
 if (
-  binding.design_target !==
-  "target.system.wechat-miniapp-soft-instruments-2026-08-05"
+  new Set(binding.resources.map((item) => item.key)).size !==
+  binding.resources.length
 )
-  failures.push("design_target_invalid");
+  failures.push("resource_binding_key_duplicate");
+
+const resourceResults = [];
+for (const resource of binding.resources) {
+  const bytes = await readFile(repositoryPath(resource.path)).catch(() => null);
+  const actualSha = bytes ? sha256(bytes) : null;
+  const inspectorSha = inspectorResources.get(resource.path)?.sha256 ?? null;
+  const inspectorPassed =
+    resource.key === "resource.manifest"
+      ? inspectorSha === null
+      : inspectorSha === resource.sha256;
+  const passed = actualSha === resource.sha256 && inspectorPassed;
+  if (!passed) failures.push(`resource_identity_failed:${resource.key}`);
+  resourceResults.push({
+    ...resource,
+    actual_sha256: actualSha,
+    inspector_sha256: inspectorSha,
+    passed,
+  });
+}
+if (inspectorResources.size !== binding.resources.length - 1)
+  failures.push("inspector_resource_population_mismatch");
 
 const authorityResults = [];
 for (const authority of binding.authorities) {
-  const bytes = await readFile(repositoryPath(authority.path)).catch(() => null);
+  const bytes = await readFile(repositoryPath(authority.path)).catch(
+    () => null,
+  );
   const actualSha = bytes ? sha256(bytes) : null;
   const passed = actualSha === authority.sha256;
   if (!passed) failures.push(`authority_mismatch:${authority.key}`);
   authorityResults.push({ ...authority, actual_sha256: actualSha, passed });
 }
 
-const expectedResourceIds = [
-  "APP-01",
-  "APP-02",
-  "APP-03",
-  "APP-04",
-  "APP-05",
-  "APP-06",
-  "APP-07",
-  "APP-08",
-  "MAP-01",
-  "MAP-02",
-  "MAP-03",
-  "MAP-04",
-];
-const actualResourceIds = binding.resources.map((item) => item.id);
-if (
-  JSON.stringify(actualResourceIds) !== JSON.stringify(expectedResourceIds) ||
-  new Set(actualResourceIds).size !== expectedResourceIds.length
-)
-  failures.push("resource_binding_population_invalid");
-
-const resourceResults = [];
-const productionFiles = new Map();
-for (const resource of binding.resources) {
-  const sourceBytes = await readFile(repositoryPath(resource.path)).catch(
+const probeResults = [];
+for (const probe of binding.production_probes) {
+  const production = await readFile(repositoryPath(probe.path), "utf8").catch(
     () => null,
   );
-  const sourceText = sourceBytes?.toString("utf8") ?? "";
-  const actualSha = sourceBytes ? sha256(sourceBytes) : null;
-  const inspector = inspectorResources.get(resource.path);
-  const sourceIdentityPassed =
-    actualSha === resource.sha256 && inspector?.sha256 === resource.sha256;
-  const markerResults = resource.source_markers.map((marker) => ({
+  const allOf = (probe.all_of ?? []).map((marker) => ({
     marker,
-    passed: sourceText.includes(marker),
+    passed: production?.includes(marker) ?? false,
   }));
-  const probeResults = [];
-  for (const probe of resource.production_probes) {
-    let production = productionFiles.get(probe.path);
-    if (production === undefined) {
-      production = await readFile(repositoryPath(probe.path), "utf8").catch(
-        () => null,
-      );
-      productionFiles.set(probe.path, production);
-    }
-    const all = (probe.all_of ?? []).map((marker) => ({
-      marker,
-      passed: typeof production === "string" && production.includes(marker),
-    }));
-    const none = (probe.none_of ?? []).map((marker) => ({
-      marker,
-      passed: typeof production === "string" && !production.includes(marker),
-    }));
-    probeResults.push({
-      path: probe.path,
-      passed: [...all, ...none].every((item) => item.passed),
-      all_of: all,
-      none_of: none,
-    });
-  }
-  const passed =
-    sourceIdentityPassed &&
-    markerResults.every((item) => item.passed) &&
-    probeResults.every((item) => item.passed);
-  if (!passed) failures.push(`resource_binding_failed:${resource.id}`);
-  resourceResults.push({
-    id: resource.id,
-    path: resource.path,
-    expected_sha256: resource.sha256,
-    actual_sha256: actualSha,
-    inspector_sha256: inspector?.sha256 ?? null,
-    source_identity_passed: sourceIdentityPassed,
-    source_markers: markerResults,
-    production_probes: probeResults,
-    passed,
-  });
+  const noneOf = (probe.none_of ?? []).map((marker) => ({
+    marker,
+    passed: production ? !production.includes(marker) : false,
+  }));
+  const passed = [...allOf, ...noneOf].every((item) => item.passed);
+  if (!passed) failures.push(`production_probe_failed:${probe.key}`);
+  probeResults.push({ ...probe, all_of: allOf, none_of: noneOf, passed });
 }
 
-const semanticManifestPath =
-  "apps/wechat-miniapp/src/assets/semantic/semantic-asset-manifest.json";
-const semanticManifest = JSON.parse(
-  await readFile(repositoryPath(semanticManifestPath), "utf8"),
+const manifestResource = binding.resources.find(
+  (item) => item.key === "resource.manifest",
 );
-const semanticAssetPassed =
-  semanticManifest.source_sha256 ===
-    "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534" &&
-  semanticManifest.subjects?.length === 8 &&
-  semanticManifest.modes?.length === 3 &&
-  semanticManifest.assets?.length === 24;
-if (!semanticAssetPassed) failures.push("semantic_asset_closure_failed");
+const manifest = JSON.parse(
+  await readFile(repositoryPath(manifestResource.path), "utf8"),
+);
+const census = new Map(
+  manifest.generation.collections.map((item) => [
+    item.name,
+    item.expected_count,
+  ]),
+);
+const manifestCensusPassed =
+  census.get("fact_cells") === 1090 &&
+  census.get("facts") === 5 &&
+  census.get("proof_obligations") === 5 &&
+  census.get("acceptance_blockers") === 0;
+if (!manifestCensusPassed) failures.push("selected_manifest_census_mismatch");
 
 const outputRelative = argument("--output", defaultOutput);
 if (!outputRelative) throw new Error("output_argument_missing");
 const output = {
-  schema_version: "starward-miniapp-selected-design-binding-result-v1",
+  schema_version: "starward-miniapp-selected-design-binding-result-v2",
   generated_at: new Date().toISOString(),
   status: failures.length === 0 ? "passed" : "failed",
   design_target: binding.design_target,
   binding_path: bindingRelative,
   binding_sha256: sha256(bindingBytes),
+  handoff: { ...binding.handoff, passed: handoffIdentityPassed },
   frozen_inspector: {
     identity: inspected.inspector,
     traversal: inspected.traversal,
@@ -199,17 +212,12 @@ const output = {
   },
   authorities: authorityResults,
   resources: resourceResults,
-  semantic_asset_closure: {
-    path: semanticManifestPath,
-    source_sha256: semanticManifest.source_sha256,
-    subject_count: semanticManifest.subjects?.length ?? 0,
-    mode_count: semanticManifest.modes?.length ?? 0,
-    asset_count: semanticManifest.assets?.length ?? 0,
-    passed: semanticAssetPassed,
-  },
+  production_probes: probeResults,
+  manifest_census: Object.fromEntries(census),
+  manifest_census_passed: manifestCensusPassed,
   limitations: [
-    "This result proves immutable selected-resource identity and explicit source-to-production probe bindings.",
-    "It does not replace fresh H5 multi-viewport behavior, native WeChat DevTools journeys, accessibility observations, or Final Gate.",
+    "This result proves complete immutable v3 selected-resource identity and declared production probe bindings.",
+    "It does not replace fresh H5/native journeys, layout/pixel/accessibility/motion observations, real-provider validation, or Final Gate.",
   ],
   failures,
 };

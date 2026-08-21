@@ -7,6 +7,7 @@ import {
   type ProfileLink,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
+import { NotificationRegion } from "@/components/notification";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
@@ -38,11 +39,11 @@ export default function ProfileLinksPage() {
   const links = useAppStore((state) => state.profileLinks);
   const saveProfileLink = useAppStore((state) => state.saveProfileLink);
   const replaceProfileLinks = useAppStore((state) => state.replaceProfileLinks);
+  const notify = useAppStore((state) => state.notify);
   const [platformIndex, setPlatformIndex] = useState(0);
   const [displayName, setDisplayName] = useState("");
   const [url, setUrl] = useState("");
   const [isPublic, setPublic] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const [saving, setSaving] = useState(false);
   const [removingId, setRemovingId] = useState("");
   const linkQuery = useResourceQuery({
@@ -53,20 +54,37 @@ export default function ProfileLinksPage() {
   useEffect(() => {
     if (linkQuery.data) replaceProfileLinks(linkQuery.data.data.links);
   }, [linkQuery.data, replaceProfileLinks]);
+  const announce = (
+    tone: "error" | "warning" | "info" | "success",
+    title: string,
+    body: string,
+  ) => {
+    notify({
+      owner: "profile-links",
+      placement: "inline",
+      tone,
+      title,
+      body,
+      dismissible: true,
+      dedupeKey: `profile-links-${tone}-${title}-${body.slice(0, 48)}`,
+    });
+  };
   const save = async () => {
     const validation = validateExternalUrl(url);
     if (!validation.ok || !validation.normalizedUrl) {
-      setFeedback(
+      announce(
+        "error",
+        "链接未保存",
         `链接未保存：${validation.code}。${validation.recovery.join(" ")}；草稿仍保留。`,
       );
       return;
     }
     if (!displayName.trim() || displayName.length > 80) {
-      setFeedback("展示名称需为 1–80 个字符；草稿仍保留。");
+      announce("error", "链接未保存", "展示名称需为 1–80 个字符；草稿仍保留。");
       return;
     }
     if (links.some((link) => link.url === validation.normalizedUrl)) {
-      setFeedback("这个链接已经存在；草稿仍保留。");
+      announce("warning", "链接未保存", "这个链接已经存在；草稿仍保留。");
       return;
     }
     setSaving(true);
@@ -81,11 +99,17 @@ export default function ProfileLinksPage() {
       saveProfileLink(result.data);
       setDisplayName("");
       setUrl("");
-      setFeedback(
+      announce(
+        "success",
+        "链接已保存",
         "链接已持久化。保存不表示平台隶属、API、抓取或深链授权。",
       );
     } catch (error) {
-      setFeedback(`链接未保存：${errorMessage(error)}；输入完整保留，可重试。`);
+      announce(
+        "error",
+        "链接未保存",
+        `${errorMessage(error)}；输入完整保留，可重试。`,
+      );
     } finally {
       setSaving(false);
     }
@@ -98,7 +122,18 @@ export default function ProfileLinksPage() {
       confirmText: "复制链接",
       cancelText: "取消",
     });
-    if (result.confirm) await Taro.setClipboardData({ data: link.url });
+    if (result.confirm) {
+      try {
+        await Taro.setClipboardData({ data: link.url });
+        announce(
+          "success",
+          "已复制链接",
+          "直接打开能力未启用；复制回退可继续使用。 ",
+        );
+      } catch (error) {
+        announce("error", "复制失败", `${errorMessage(error)}；原链接仍保留。`);
+      }
+    }
   };
   const remove = async (link: ProfileLink) => {
     const confirmation = await Taro.showModal({
@@ -111,9 +146,13 @@ export default function ProfileLinksPage() {
     try {
       const result = await deleteProfileLink(link.profileLinkId);
       replaceProfileLinks(result.data.links);
-      setFeedback("链接已删除并从服务端回读。");
+      announce("success", "链接已删除", "已从服务端回读外部主页链接列表。 ");
     } catch (error) {
-      setFeedback(`链接未删除：${errorMessage(error)}；原链接保持不变。`);
+      announce(
+        "error",
+        "链接未删除",
+        `${errorMessage(error)}；原链接保持不变。`,
+      );
     } finally {
       setRemovingId("");
     }
@@ -122,6 +161,7 @@ export default function ProfileLinksPage() {
     <View className={`${themeClass} links-page`} data-route="profile-links">
       <CustomNav title="外部主页链接" subtitle="中性标识 · 复制回退" back />
       <View className="links-content page-inset safe-bottom">
+        <NotificationRegion owner="profile-links" placement="inline" />
         <StatusPanel
           state="PARTIAL"
           detail="只保存用户声明的平台、名称、URL 与可见性；不抓取第三方资料，不保存 Cookie、Token 或第三方账号数据。"
@@ -193,18 +233,6 @@ export default function ProfileLinksPage() {
             {saving ? "保存中…" : "保存链接"}
           </SoftButton>
         </View>
-        {feedback ? (
-          <StatusPanel
-            state={
-              feedback.includes("未保存") ||
-              feedback.includes("需为") ||
-              feedback.includes("已经")
-                ? "ERROR"
-                : "READY"
-            }
-            detail={feedback}
-          />
-        ) : null}
         <View className="section-stack">
           <Text className="type-section">已保存链接</Text>
           {links.length ? (
@@ -222,7 +250,23 @@ export default function ProfileLinksPage() {
                 <View className="link-actions">
                   <SoftButton
                     label={`复制${link.displayName}链接`}
-                    onClick={() => Taro.setClipboardData({ data: link.url })}
+                    onClick={() =>
+                      Taro.setClipboardData({ data: link.url })
+                        .then(() =>
+                          announce(
+                            "success",
+                            "已复制链接",
+                            "复制回退可继续使用。",
+                          ),
+                        )
+                        .catch((error) =>
+                          announce(
+                            "error",
+                            "复制失败",
+                            `${errorMessage(error)}；原链接仍保留。`,
+                          ),
+                        )
+                    }
                   >
                     复制
                   </SoftButton>

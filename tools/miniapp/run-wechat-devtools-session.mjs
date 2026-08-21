@@ -15,7 +15,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import automator from "miniprogram-automator";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const root = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+);
 const cliArgs = new Map();
 for (let index = 2; index < process.argv.length; index += 2) {
   const key = process.argv[index];
@@ -26,16 +30,19 @@ for (let index = 2; index < process.argv.length; index += 2) {
 }
 const acceptanceScope = cliArgs.get("--scope") ?? "complete-demo";
 const acceptanceMode = cliArgs.get("--mode") ?? "success";
-if (![
-  "global-conformance",
-  "map-discovery",
-  "spot-detail",
-  "spot-night",
-  "my-library",
-  "profile-content",
-  "platform-operations",
-  "complete-demo",
-].includes(acceptanceScope))
+const acceptanceProfile = cliArgs.get("--profile") ?? "v2";
+if (
+  ![
+    "global-conformance",
+    "map-discovery",
+    "spot-detail",
+    "spot-night",
+    "my-library",
+    "profile-content",
+    "platform-operations",
+    "complete-demo",
+  ].includes(acceptanceScope)
+)
   throw new Error(`unknown_native_acceptance_scope:${acceptanceScope}`);
 if (!["success", "degradation"].includes(acceptanceMode))
   throw new Error(`unknown_native_acceptance_mode:${acceptanceMode}`);
@@ -48,9 +55,7 @@ const devtoolsCliBootstrap =
   "const e=process.argv[1],a=process.argv.slice(2).filter(function(x){return x!=='--electron'});if(!process.env.cwd)process.env.cwd=process.cwd();process.argv=[process.execPath,'--ms-enable-electron-run-as-node',e,'--electron'].concat(a);require(e)";
 const sourceProjectPath = path.join(root, "apps", "wechat-miniapp");
 const canonicalWorkspaceRoot = path.resolve("C:\\Dev\\Starward");
-const wechatFinalGateTempRoot = path.resolve(
-  "C:\\Dev\\.starward-tmp",
-);
+const wechatFinalGateTempRoot = path.resolve("C:\\Dev\\.starward-tmp");
 const wechatProcessTemp = process.env.LOCALAPPDATA
   ? path.join(process.env.LOCALAPPDATA, "Temp")
   : null;
@@ -172,7 +177,10 @@ function canonical(value) {
 }
 
 function repositoryPath(relative) {
-  const resolved = path.resolve(root, ...relative.replaceAll("\\", "/").split("/"));
+  const resolved = path.resolve(
+    root,
+    ...relative.replaceAll("\\", "/").split("/"),
+  );
   const normalizedRoot = root.toLowerCase();
   const normalized = resolved.toLowerCase();
   if (
@@ -317,7 +325,9 @@ async function verifyWechatProcessEnvironment() {
   if (requested !== physical)
     throw new Error("wechat_process_temp_environment_must_be_physical");
   if (isPathWithin(normalizeWindowsPath(wechatFinalGateTempRoot), physical))
-    throw new Error("wechat_process_temp_must_be_outside_harness_snapshot_root");
+    throw new Error(
+      "wechat_process_temp_must_be_outside_harness_snapshot_root",
+    );
   return {
     status: "passed",
     kind: "system user temporary directory isolated from Harness snapshots",
@@ -351,7 +361,10 @@ async function prepareWechatProjectIdentity(candidateSha256, projectPath) {
     typeof originalPublicConfig !== "object"
   )
     throw new Error("wechat_public_project_config_not_object");
-  const privateConfigPath = path.join(projectPath, "project.private.config.json");
+  const privateConfigPath = path.join(
+    projectPath,
+    "project.private.config.json",
+  );
   const originalBytes = await readOptionalFile(privateConfigPath);
   let original = {};
   if (originalBytes) {
@@ -528,7 +541,9 @@ function observeWechatWatcherProjects() {
     );
   let commandLines;
   try {
-    commandLines = JSON.parse(String(observation.stdout ?? "[]").trim() || "[]");
+    commandLines = JSON.parse(
+      String(observation.stdout ?? "[]").trim() || "[]",
+    );
   } catch (error) {
     throw new Error(
       `wechat_watcher_observation_invalid:${sha256(String(error?.message ?? error))}`,
@@ -568,7 +583,9 @@ function observeWechatIdeInstances() {
     );
   let commandLines;
   try {
-    commandLines = JSON.parse(String(observation.stdout ?? "[]").trim() || "[]");
+    commandLines = JSON.parse(
+      String(observation.stdout ?? "[]").trim() || "[]",
+    );
   } catch (error) {
     throw new Error(
       `wechat_ide_observation_invalid:${sha256(String(error?.message ?? error))}`,
@@ -648,8 +665,8 @@ function forceStopWechatIdeInstances(observation) {
       throw new Error(
         `wechat_ide_process_tree_stop_failed:${sha256(
           canonical(
-            materialFailures.map(({ process_id: _processId, ...failure }) =>
-              failure,
+            materialFailures.map(
+              ({ process_id: _processId, ...failure }) => failure,
             ),
           ),
         )}`,
@@ -663,10 +680,7 @@ function forceStopWechatIdeInstances(observation) {
   };
 }
 
-async function waitForWechatProjectBinding(
-  projectPath,
-  timeoutMs = 30_000,
-) {
+async function waitForWechatProjectBinding(projectPath, timeoutMs = 30_000) {
   const deadline = Date.now() + timeoutMs;
   const expected = normalizeWindowsPath(projectPath);
   let lastObservation = { processCount: 0, projects: [] };
@@ -749,9 +763,14 @@ async function waitForHttp(url, timeoutMs) {
 async function assertPortFree(url) {
   try {
     const response = await fetch(url);
-    if (response.ok) throw new Error(`formal_session_port_already_in_use:${url}`);
+    if (response.ok)
+      throw new Error(`formal_session_port_already_in_use:${url}`);
   } catch (error) {
-    if (String(error?.message ?? error).startsWith("formal_session_port_already_in_use"))
+    if (
+      String(error?.message ?? error).startsWith(
+        "formal_session_port_already_in_use",
+      )
+    )
       throw error;
   }
 }
@@ -927,7 +946,9 @@ async function waitForPortsStablyClosed(
     }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
-  throw new Error(`wechat_devtools_ports_did_not_stably_close:${ports.join(",")}`);
+  throw new Error(
+    `wechat_devtools_ports_did_not_stably_close:${ports.join(",")}`,
+  );
 }
 
 async function waitForWechatWatchersClosed(timeoutMs) {
@@ -1056,7 +1077,11 @@ async function waitForRuntimeEventQuiescence(
       quietSince = Date.now();
     }
     if (Date.now() - quietSince >= quietWindowMs)
-      return { status: "passed", event_count: observedCount, quiet_window_ms: quietWindowMs };
+      return {
+        status: "passed",
+        event_count: observedCount,
+        quiet_window_ms: quietWindowMs,
+      };
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error("native_runtime_events_did_not_quiesce");
@@ -1126,7 +1151,7 @@ async function quitWechatDevtoolsAndWait(
       } else if (ideBefore.processCount > 0) {
         action = {
           kind: "force_exact_root_process_trees",
-          ...(forceStopWechatIdeInstances(ideBefore)),
+          ...forceStopWechatIdeInstances(ideBefore),
         };
       } else if (ideServiceLiveBefore) {
         const quit = quitWechatDevtools();
@@ -1165,8 +1190,7 @@ async function quitWechatDevtoolsAndWait(
       ide_service_live_before: ideServiceLiveBefore,
       observed_ide_process_count: ideBefore.processCount,
       observed_ide_process_ids_sha256: sha256(canonical(ideBefore.processIds)),
-      unreadable_callback_port_count:
-        ideBefore.unreadableCallbackPortCount,
+      unreadable_callback_port_count: ideBefore.unreadableCallbackPortCount,
       observed_callback_ports: ideBefore.callbackPorts,
       observed_ide_http_ports: ideBefore.ideHttpPorts,
       observed_ports: observedPorts,
@@ -1219,10 +1243,7 @@ async function quitWechatDevtoolsAndWait(
   );
 }
 
-async function startWechatAutomation(
-  projectPath,
-  automationPort,
-) {
+async function startWechatAutomation(projectPath, automationPort) {
   await quitWechatDevtoolsAndWait(
     projectPath,
     [wechatIdeHttpPort, automationPort],
@@ -1382,7 +1403,9 @@ async function teardownNativeSession({
       try {
         miniProgram.disconnect();
       } catch {}
-      failures.push(`mini_program_close:${sha256(String(error?.message ?? error))}`);
+      failures.push(
+        `mini_program_close:${sha256(String(error?.message ?? error))}`,
+      );
     }
   }
   if (devtoolsLaunch?.cliProcess?.exitCode === null)
@@ -1394,14 +1417,18 @@ async function teardownNativeSession({
       60_000,
     );
   } catch (error) {
-    failures.push(`devtools_shutdown:${sha256(String(error?.message ?? error))}`);
+    failures.push(
+      `devtools_shutdown:${sha256(String(error?.message ?? error))}`,
+    );
   }
   if (apiProcess) stopProcessTree(apiProcess.pid);
   if (apiPort) {
     try {
       await waitForPortClosed(apiPort, 15_000);
     } catch (error) {
-      failures.push(`api_port:${apiPort}:${sha256(String(error?.message ?? error))}`);
+      failures.push(
+        `api_port:${apiPort}:${sha256(String(error?.message ?? error))}`,
+      );
     }
   }
   return {
@@ -1412,17 +1439,29 @@ async function teardownNativeSession({
   };
 }
 
-async function waitForSelector(page, selector, minimum = 1, timeoutMs = 20_000) {
+async function waitForSelector(
+  page,
+  selector,
+  minimum = 1,
+  timeoutMs = 20_000,
+) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const elements = await page.$$(selector).catch(() => []);
     if (elements.length >= minimum) return elements;
     await page.waitFor(250);
   }
-  throw new Error(`native_selector_timeout:${page.path}:${selector}:${minimum}`);
+  throw new Error(
+    `native_selector_timeout:${page.path}:${selector}:${minimum}`,
+  );
 }
 
-async function waitForElementClass(page, selector, className, timeoutMs = 10_000) {
+async function waitForElementClass(
+  page,
+  selector,
+  className,
+  timeoutMs = 10_000,
+) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const element = await page.$(selector).catch(() => null);
@@ -1556,6 +1595,95 @@ async function waitForSelectorSet(page, definitions, timeoutMs = 20_000) {
   return false;
 }
 
+async function waitForSelectorAbsent(page, selector, timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const elements = await page.$$(selector).catch(() => []);
+    if (elements.length === 0) return true;
+    await page.waitFor(250);
+  }
+  return false;
+}
+
+async function captureJourneyInteractions(
+  page,
+  miniProgram,
+  runRoot,
+  definition,
+) {
+  const steps = definition.interactions ?? [];
+  if (steps.length === 0) return null;
+  const observations = [];
+  for (const step of steps) {
+    const stepObservations = [];
+    if (step.tap) {
+      const controls = await waitForSelector(
+        page,
+        step.tap,
+        step.minimum ?? 1,
+        step.timeoutMs ?? 20_000,
+      );
+      const control = controls[step.index ?? 0];
+      if (!control)
+        throw new Error(
+          `native_interaction_control_missing:${definition.key}:${step.key}`,
+        );
+      await control.tap();
+    }
+    if (step.waitFor?.length) {
+      const ready = await waitForSelectorSet(
+        page,
+        step.waitFor,
+        step.timeoutMs ?? 20_000,
+      );
+      if (!ready)
+        throw new Error(
+          `native_interaction_wait_timeout:${definition.key}:${step.key}`,
+        );
+    }
+    if (step.waitForAbsent?.length) {
+      for (const selector of step.waitForAbsent) {
+        const absent = await waitForSelectorAbsent(
+          page,
+          selector,
+          step.timeoutMs ?? 20_000,
+        );
+        if (!absent)
+          throw new Error(
+            `native_interaction_absent_timeout:${definition.key}:${step.key}:${selector}`,
+          );
+      }
+    }
+    for (const selector of step.inspect ?? []) {
+      const elements = await page.$$(selector.selector).catch(() => []);
+      stepObservations.push(await inspectSelector(page, selector));
+      if (elements.length < selector.minimum)
+        throw new Error(
+          `native_interaction_selector_timeout:${definition.key}:${step.key}:${selector.selector}:${selector.minimum}`,
+        );
+    }
+    observations.push({ key: step.key, selectors: stepObservations });
+  }
+  const screenshotName = `${definition.order.toString().padStart(2, "0")}-${definition.key}-interactions.png`;
+  const screenshotAbsolute = path.join(runRoot, screenshotName);
+  if (definition.interactionsScreenshot !== false)
+    await retryIdempotentAutomatorOperation(
+      `journey-interactions-screenshot:${definition.key}`,
+      () => miniProgram.screenshot({ path: screenshotAbsolute }),
+    );
+  return {
+    status: "passed",
+    steps: observations,
+    ...(definition.interactionsScreenshot === false
+      ? {}
+      : {
+          screenshot: path
+            .relative(root, screenshotAbsolute)
+            .replaceAll("\\", "/"),
+        }),
+  };
+}
+
 async function waitForRootFragment(
   page,
   rootSelector,
@@ -1568,7 +1696,10 @@ async function waitForRootFragment(
   while (Date.now() < deadline) {
     const rootElement = await page.$(rootSelector).catch(() => null);
     latestWxml = rootElement ? await rootElement.wxml().catch(() => "") : "";
-    if (latestWxml.length > 0 && latestWxml.includes(fragment) === expectedPresence)
+    if (
+      latestWxml.length > 0 &&
+      latestWxml.includes(fragment) === expectedPresence
+    )
       return latestWxml;
     await page.waitFor(250);
   }
@@ -1607,11 +1738,15 @@ async function captureJourney(miniProgram, runRoot, definition) {
   for (const selector of definition.selectors)
     selectors.push(await inspectSelector(page, selector));
   const rootElement = await page.$(definition.root);
-  const rootWxml = rootElement ? await rootElement.outerWxml().catch(() => "") : "";
+  const rootWxml = rootElement
+    ? await rootElement.outerWxml().catch(() => "")
+    : "";
   const rootClass = rootElement
     ? String(await rootElement.attribute("class").catch(() => ""))
     : "";
-  const rootClasses = [...new Set(rootClass.split(/\s+/u).filter(Boolean))].sort();
+  const rootClasses = [
+    ...new Set(rootClass.split(/\s+/u).filter(Boolean)),
+  ].sort();
   const expectedRootClasses = definition.rootClasses ?? [];
   const missingRootClasses = expectedRootClasses.filter(
     (className) => !rootClasses.includes(className),
@@ -1626,6 +1761,12 @@ async function captureJourney(miniProgram, runRoot, definition) {
   await retryIdempotentAutomatorOperation(
     `journey-screenshot:${definition.key}`,
     () => miniProgram.screenshot({ path: screenshotAbsolute }),
+  );
+  const interactions = await captureJourneyInteractions(
+    page,
+    miniProgram,
+    runRoot,
+    definition,
   );
   return {
     key: definition.key,
@@ -1645,6 +1786,7 @@ async function captureJourney(miniProgram, runRoot, definition) {
     root_wxml_length: rootWxml.length,
     selectors,
     screenshot: path.relative(root, screenshotAbsolute).replaceAll("\\", "/"),
+    ...(interactions ? { interactions } : {}),
     injected_fixture: definition.injectedFixture ?? null,
   };
 }
@@ -1659,15 +1801,127 @@ const journeys = [
     settleMs: 1_500,
     selectors: [
       { selector: ".native-map", minimum: 1, styles: ["width", "height"] },
-      { selector: ".map-banner", minimum: 1, styles: ["min-height"] },
-      { selector: ".search-box", minimum: 1, styles: ["min-height", "border-radius"] },
-      { selector: ".quick-filter", minimum: 4, styles: ["min-height", "border-radius"] },
-      { selector: ".map-floating-tools .soft-button", minimum: 4, styles: ["min-height"] },
-      { selector: ".selected-card-wrap .spot-card", minimum: 1, styles: ["border-radius"] },
-      { selector: ".selected-card-wrap .spot-card__datum", minimum: 3, styles: ["min-height"] },
-      { selector: ".selected-card-wrap .spot-card__facilities .status-tag", minimum: 4, styles: ["min-height"] },
-      { selector: ".selected-card-wrap .spot-card__route-row", minimum: 1, styles: ["display"] },
-      { selector: ".selected-card-wrap .spot-card__actions .soft-button", minimum: 2, styles: ["min-height"] },
+      {
+        selector: "[data-od-id='default-formal-markers']",
+        minimum: 1,
+        styles: ["width", "height"],
+      },
+      {
+        selector: ".map-finder-trigger",
+        minimum: 1,
+        styles: ["min-height", "border-radius"],
+      },
+      {
+        selector: "[data-od-id='map-search-summary']",
+        minimum: 1,
+        styles: ["min-height", "border-radius"],
+      },
+      {
+        selector: ".map-conditions-bar",
+        minimum: 1,
+        styles: ["min-height", "border-radius"],
+      },
+      {
+        selector: "[data-od-id='map-analysis-time-bar']",
+        minimum: 1,
+        styles: ["min-height", "border-radius"],
+      },
+      { selector: "[data-od-id='map-observing-conditions-icon']", minimum: 1 },
+      { selector: "[data-od-id='map-permission-state']", minimum: 1 },
+      {
+        selector: ".map-floating-tools .soft-button",
+        minimum: 2,
+        styles: ["min-height"],
+      },
+    ],
+    interactions: [
+      {
+        key: "finder-open",
+        tap: "[data-od-id='map-search-summary']",
+        waitFor: [
+          { selector: "[data-od-id='spot-finder-sheet']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-search-input']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-search-icon']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-result-scroll']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-wanted-section']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-other-section']", minimum: 1 },
+        ],
+        inspect: [
+          { selector: "[data-od-id='spot-finder-search-input']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-search-icon']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-result-scroll']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-wanted-section']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-other-section']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-city-heading']", minimum: 1 },
+          {
+            selector: "[data-od-id='spot-finder-section-chevron']",
+            minimum: 2,
+          },
+        ],
+      },
+      {
+        key: "finder-filter-open",
+        tap: "[data-od-id='spot-finder-filter-disclosure'] .soft-button",
+        waitFor: [
+          { selector: "[data-od-id='spot-finder-filter-overlay']", minimum: 1 },
+          {
+            selector: "[data-od-id='spot-finder-filter-first-level']",
+            minimum: 1,
+          },
+          {
+            selector: "[data-od-id='spot-finder-filter-advanced']",
+            minimum: 1,
+          },
+          { selector: "[data-od-id='spot-finder-filter-choice']", minimum: 18 },
+        ],
+        inspect: [
+          { selector: "[data-od-id='spot-finder-filter-choice']", minimum: 18 },
+          { selector: "[data-od-id='spot-finder-filter-revert']", minimum: 1 },
+          { selector: "[data-od-id='spot-finder-filter-commit']", minimum: 1 },
+        ],
+      },
+      {
+        key: "finder-filter-revert",
+        tap: "[data-od-id='spot-finder-filter-revert'] .soft-button",
+        waitFor: [
+          { selector: "[data-od-id='spot-finder-result-scroll']", minimum: 1 },
+        ],
+        waitForAbsent: ["[data-od-id='spot-finder-filter-overlay']"],
+      },
+      {
+        key: "finder-close",
+        tap: "[data-od-id='map-search-summary']",
+        waitForAbsent: ["[data-od-id='spot-finder-search-input']"],
+      },
+      {
+        key: "conditions-open",
+        tap: "[data-od-id='map-analysis-time-bar']",
+        waitFor: [
+          { selector: "[data-od-id='map-analysis-focus-panel']", minimum: 1 },
+          { selector: "[data-od-id='map-analysis-time-scrubber']", minimum: 1 },
+          { selector: "[data-od-id='map-analysis-time-value']", minimum: 1 },
+          { selector: "[data-od-id='map-analysis-layer-choice']", minimum: 4 },
+        ],
+        inspect: [
+          { selector: "[data-od-id='map-analysis-close']", minimum: 1 },
+          { selector: "[data-od-id='map-analysis-time-scrubber']", minimum: 1 },
+          { selector: "[data-od-id='map-analysis-time-value']", minimum: 1 },
+          { selector: "[data-od-id='map-analysis-layer-choice']", minimum: 4 },
+        ],
+      },
+      {
+        key: "conditions-light-preview",
+        tap: "[data-od-id='map-analysis-layer-choice']",
+        index: 1,
+        waitFor: [
+          { selector: "[data-od-id='selected-card-star']", minimum: 1 },
+        ],
+      },
+      {
+        key: "conditions-commit",
+        tap: ".conditions-panel__actions .soft-button--primary",
+        waitForAbsent: ["[data-od-id='map-analysis-time-scrubber']"],
+      },
     ],
   },
   {
@@ -1677,29 +1931,42 @@ const journeys = [
     root: ".spot-detail",
     rootClasses: ["spot-detail", "theme-day"],
     selectors: [
-      { selector: ".segment-tab", minimum: 4, styles: ["min-height"] },
-      { selector: ".media-card", minimum: 1, styles: ["width", "border-radius"] },
+      { selector: ".segment-tab", minimum: 3, styles: ["min-height"] },
+      {
+        selector: ".media-card",
+        minimum: 1,
+        styles: ["width", "border-radius"],
+      },
       { selector: ".decision-card", minimum: 1, styles: ["border-radius"] },
-      { selector: ".detail-actions .soft-button", minimum: 3, styles: ["min-height"] },
+      { selector: ".spot-night-entry", minimum: 1, styles: ["min-height"] },
+      { selector: ".quiet-route-action", minimum: 1, styles: ["min-height"] },
     ],
   },
   {
     order: 9,
     key: "spot-night",
-    url: "/spot/sky/index?spotId=spot%3Asz-astronomical-observatory",
+    url: "/spot/sky/index?spotId=spot%3Asz-astronomical-observatory&date=2026-08-06&selectedAt=2026-08-06T20%3A00%3A00%2B08%3A00&timezone=Asia%2FShanghai&dataRevision=demo-insufficient%3Aspot%3Asz-astronomical-observatory%3A2026-08-06",
     root: ".sky-page",
     rootClasses: ["sky-page", "theme-night"],
     selectors: [
       { selector: ".sky-subnav__tab", minimum: 4, styles: ["min-height"] },
-      { selector: ".sky-decision", minimum: 1, styles: ["background-color", "box-shadow"] },
+      {
+        selector: ".sky-decision",
+        minimum: 1,
+        styles: ["background-color", "box-shadow"],
+      },
       { selector: ".metric-grid", minimum: 1, styles: ["border-radius"] },
-      { selector: ".sky-actions .soft-button--primary", minimum: 1, styles: ["min-height"] },
+      {
+        selector: ".sky-actions .soft-button--primary",
+        minimum: 1,
+        styles: ["min-height"],
+      },
     ],
   },
   {
     order: 10,
     key: "simplified-sky-map",
-    url: "/sky/map/index?spotId=spot%3Asz-astronomical-observatory",
+    url: "/sky/map/index?spotId=spot%3Asz-astronomical-observatory&date=2026-08-06&selectedAt=2026-08-06T20%3A00%3A00%2B08%3A00&timezone=Asia%2FShanghai&dataRevision=demo-insufficient%3Aspot%3Asz-astronomical-observatory%3A2026-08-06",
     root: ".sky-map-page",
     rootClasses: ["sky-map-page", "theme-night"],
     selectors: [
@@ -1711,13 +1978,21 @@ const journeys = [
   {
     order: 11,
     key: "observation-mode",
-    url: "/sky/observe/index?spotId=spot%3Asz-astronomical-observatory",
+    url: "/sky/observe/index?spotId=spot%3Asz-astronomical-observatory&date=2026-08-06&selectedAt=2026-08-06T20%3A00%3A00%2B08%3A00&timezone=Asia%2FShanghai&dataRevision=demo-insufficient%3Aspot%3Asz-astronomical-observatory%3A2026-08-06",
     root: ".observe-page",
     rootClasses: ["observe-page", "theme-observation"],
     selectors: [
-      { selector: ".observe-decision", minimum: 1, styles: ["background-color", "border-color"] },
+      {
+        selector: ".observe-decision",
+        minimum: 1,
+        styles: ["background-color", "border-color"],
+      },
       { selector: ".observe-grid", minimum: 1, styles: ["display"] },
-      { selector: ".observe-actions .soft-button--primary", minimum: 1, styles: ["min-height"] },
+      {
+        selector: ".observe-actions .soft-button--primary",
+        minimum: 1,
+        styles: ["min-height"],
+      },
     ],
   },
   {
@@ -1727,10 +2002,13 @@ const journeys = [
     root: ".my-page",
     rootClasses: ["my-page", "theme-day"],
     selectors: [
-      { selector: ".my-tab", minimum: 4, styles: ["min-height"] },
-      { selector: ".profile-card", minimum: 1, styles: ["border-radius"] },
-      { selector: ".entry-card", minimum: 4, styles: ["min-height"] },
-      { selector: ".demo-boundary", minimum: 1, styles: ["border-radius"] },
+      { selector: ".profile-summary", minimum: 1, styles: ["border-radius"] },
+      { selector: ".account-row", minimum: 4, styles: ["min-height"] },
+      {
+        selector: "[data-od-id='my-settings-action'] .soft-button",
+        minimum: 1,
+        styles: ["min-height"],
+      },
     ],
   },
   {
@@ -1752,7 +2030,11 @@ const journeys = [
     rootClasses: ["plan-editor", "theme-day"],
     selectors: [
       { selector: ".plan-form", minimum: 1, styles: ["width"] },
-      { selector: ".field", minimum: 4, styles: ["min-height", "border-radius"] },
+      {
+        selector: ".field",
+        minimum: 4,
+        styles: ["min-height", "border-radius"],
+      },
       { selector: ".soft-button--primary", minimum: 1, styles: ["min-height"] },
     ],
   },
@@ -1784,12 +2066,20 @@ const journeys = [
     order: 8,
     key: "settings",
     url: "/content/settings/index",
-    root: ".my-page",
-    rootClasses: ["my-page", "theme-day"],
+    root: ".settings-page",
+    rootClasses: ["settings-page", "theme-day"],
     selectors: [
-      { selector: ".my-tab", minimum: 4, styles: ["min-height"] },
       { selector: ".settings-card", minimum: 4, styles: ["border-radius"] },
-      { selector: ".mode-grid .chip", minimum: 3, styles: ["min-height"] },
+      {
+        selector: ".settings-choice-grid .chip",
+        minimum: 2,
+        styles: ["min-height"],
+      },
+      {
+        selector: "[data-od-id='observation-mode-entry'] .chip",
+        minimum: 1,
+        styles: ["min-height"],
+      },
     ],
   },
 ];
@@ -1875,10 +2165,7 @@ async function captureFaultAndRecovery({
     true,
   );
   const faultObserved = true;
-  const faultScreenshot = path.join(
-    runRoot,
-    `fault-${definition.key}.png`,
-  );
+  const faultScreenshot = path.join(runRoot, `fault-${definition.key}.png`);
   await retryIdempotentAutomatorOperation(
     `fault-screenshot:${definition.key}`,
     () => miniProgram.screenshot({ path: faultScreenshot }),
@@ -1908,13 +2195,13 @@ async function captureFaultAndRecovery({
     journey_key: definition.key,
     fault_observed: faultObserved,
     fault_observation_sha256: sha256(faultWxml),
-    fault_screenshot: path.relative(root, faultScreenshot).replaceAll("\\", "/"),
+    fault_screenshot: path
+      .relative(root, faultScreenshot)
+      .replaceAll("\\", "/"),
     recovery_control_selector: probe.recoverySelector,
     recovery_control_index: recoveryControl.index,
     recovery_control_label: probe.recoveryLabel,
-    recovery_control_observed_label_sha256: sha256(
-      recoveryControl.controlText,
-    ),
+    recovery_control_observed_label_sha256: sha256(recoveryControl.controlText),
     recovery_observed: recoveryObserved,
     recovery_observation_sha256: sha256(recoveredWxml),
     recovery_screenshot: path
@@ -1925,7 +2212,14 @@ async function captureFaultAndRecovery({
 
 async function main() {
   const runId = `wechat-devtools-${new Date().toISOString().replaceAll(/[:.]/gu, "-")}-${randomUUID().slice(0, 8)}`;
-  const runRoot = path.join(root, "artifacts", "miniapp", "native", "runs", runId);
+  const runRoot = path.join(
+    root,
+    "artifacts",
+    "miniapp",
+    "native",
+    "runs",
+    runId,
+  );
   await mkdir(runRoot, { recursive: true });
   const startedAt = new Date().toISOString();
   await writeJson(currentEvidencePath, {
@@ -1983,7 +2277,11 @@ async function main() {
     EventEmitter.prototype.on.call(program, "exception", onException);
     return () => {
       EventEmitter.prototype.removeListener.call(program, "console", onConsole);
-      EventEmitter.prototype.removeListener.call(program, "exception", onException);
+      EventEmitter.prototype.removeListener.call(
+        program,
+        "exception",
+        onException,
+      );
     };
   };
   const captureUnhandledRejection = (reason) => {
@@ -2009,7 +2307,15 @@ async function main() {
     release_action: "none",
     toolchain: {
       automator_version: JSON.parse(
-        await readFile(path.join(root, "node_modules", "miniprogram-automator", "package.json"), "utf8"),
+        await readFile(
+          path.join(
+            root,
+            "node_modules",
+            "miniprogram-automator",
+            "package.json",
+          ),
+          "utf8",
+        ),
       ).version,
       cli_sha256: sha256(await readFile(cliPath)),
     },
@@ -2105,8 +2411,7 @@ async function main() {
             attemptLaunch?.launchDiagnostic?.() ?? null,
           cli_launch_diagnostic_excerpt:
             attemptLaunch?.launchDiagnosticExcerpt?.() ?? null,
-          project_config_refresh:
-            attemptLaunch?.projectConfigRefresh ?? null,
+          project_config_refresh: attemptLaunch?.projectConfigRefresh ?? null,
           failure_observation: {
             automation_port_live: await canConnect(automationPort),
             ide_http_port_live: await canConnect(wechatIdeHttpPort),
@@ -2165,11 +2470,12 @@ async function main() {
       await verifyWechatSnapshotLocation();
     result.toolchain.process_environment =
       await verifyWechatProcessEnvironment();
-    result.project_session.preparation_shutdown = await quitWechatDevtoolsAndWait(
-      sourceProjectPath,
-      [wechatIdeHttpPort, automationPort],
-      60_000,
-    );
+    result.project_session.preparation_shutdown =
+      await quitWechatDevtoolsAndWait(
+        sourceProjectPath,
+        [wechatIdeHttpPort, automationPort],
+        60_000,
+      );
     result.build = await buildCurrentCandidate(apiPort);
     apiProcess = await startApi(apiPort);
     projectIdentitySession = await prepareWechatProjectIdentity(
@@ -2211,9 +2517,8 @@ async function main() {
     const setupRequestDiagnostics = await miniProgram
       .callWxMethod("getStorageSync", requestDiagnosticStorageKey)
       .catch(() => []);
-    const setupRuntimeQuiescence = await waitForRuntimeEventQuiescence(
-      runtimeEvents,
-    );
+    const setupRuntimeQuiescence =
+      await waitForRuntimeEventQuiescence(runtimeEvents);
     detachRuntimeObservers();
     detachRuntimeObservers = undefined;
     runtimePhase = "setup-close";
@@ -2249,7 +2554,8 @@ async function main() {
     if (sha256(canonical(devtoolsToolInfo)) !== setupToolIdentity)
       throw new Error("wechat_tool_identity_changed_between_session_stages");
     runtimePhase = "evidence-reset-before-control";
-    result.setup.evidence_reset = await resetThroughAcceptanceControl(miniProgram);
+    result.setup.evidence_reset =
+      await resetThroughAcceptanceControl(miniProgram);
     result.setup.evidence_live_control = {
       status: "passed",
       route: result.setup.evidence_reset.neutral_route,
@@ -2278,7 +2584,11 @@ async function main() {
       sdk_version: info.SDKVersion,
       orientation: info.deviceOrientation,
     }));
-    const selectedJourneyKeys = journeyKeysByScope[acceptanceScope];
+    const selectedJourneyKeys = journeyKeysByScope[acceptanceScope].filter(
+      (key) =>
+        acceptanceProfile !== "v2-1-1" ||
+        !["favorites", "simplified-sky-map", "observation-mode"].includes(key),
+    );
     const selectedJourneys = journeys
       .filter((journey) => selectedJourneyKeys.includes(journey.key))
       .sort((left, right) => left.order - right.order);
@@ -2308,17 +2618,16 @@ async function main() {
           apiProcess = undefined;
         }
         const faultResult = await captureFaultAndRecovery({
-            miniProgram,
-            runRoot,
-            definition: faultJourney,
-            restartApi: async () => {
-              apiProcess = await startApi(apiPort);
-            },
-          });
+          miniProgram,
+          runRoot,
+          definition: faultJourney,
+          restartApi: async () => {
+            apiProcess = await startApi(apiPort);
+          },
+        });
         runtimePhase = `recovery-drain:${faultJourney.key}`;
-        faultResult.runtime_quiescence = await waitForRuntimeEventQuiescence(
-          runtimeEvents,
-        );
+        faultResult.runtime_quiescence =
+          await waitForRuntimeEventQuiescence(runtimeEvents);
         faultResults.push(faultResult);
         runtimePhase = "post-recovery";
         result.journeys.push(
@@ -2356,9 +2665,8 @@ async function main() {
       }
     }
     runtimePhase = "evidence-final-drain";
-    const evidenceRuntimeQuiescence = await waitForRuntimeEventQuiescence(
-      runtimeEvents,
-    );
+    const evidenceRuntimeQuiescence =
+      await waitForRuntimeEventQuiescence(runtimeEvents);
     detachRuntimeObservers();
     detachRuntimeObservers = undefined;
     result.request_diagnostics = await miniProgram
@@ -2390,7 +2698,9 @@ async function main() {
     );
     result.candidate_after = after;
     result.bundle_after = bundleAfter;
-    const exceptions = runtimeEvents.filter((entry) => entry.kind === "exception");
+    const exceptions = runtimeEvents.filter(
+      (entry) => entry.kind === "exception",
+    );
     const consoleErrors = runtimeEvents.filter(
       (entry) =>
         entry.kind === "console" && ["error", "assert"].includes(entry.level),
@@ -2410,7 +2720,9 @@ async function main() {
       unexpected_console_error_count: unexpectedConsoleErrors.length,
       final_quiescence: evidenceRuntimeQuiescence,
     };
-    const journeysPassed = result.journeys.every((journey) => journey.status === "passed");
+    const journeysPassed = result.journeys.every(
+      (journey) => journey.status === "passed",
+    );
     result.status =
       journeysPassed &&
       (acceptanceMode === "success" ||
@@ -2460,9 +2772,7 @@ async function main() {
     ...result.project_session.identity,
     restoration_status: projectIdentityRestore.status,
   };
-  if (
-    projectIdentityRestore.status === "failed"
-  ) {
+  if (projectIdentityRestore.status === "failed") {
     result.cleanup = {
       ...result.cleanup,
       status: "failed",

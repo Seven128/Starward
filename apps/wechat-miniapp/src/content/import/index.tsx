@@ -16,6 +16,7 @@ import {
   type PlatformKind,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
+import { NotificationRegion } from "@/components/notification";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
@@ -67,8 +68,23 @@ export default function ImportPage() {
   );
   const [url, setUrl] = useState(stored?.originalUrl ?? "");
   const [rights, setRights] = useState(stored?.rightsConfirmed ?? false);
-  const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
+  const notify = useAppStore((state) => state.notify);
+  const announce = (
+    tone: "error" | "warning" | "info" | "success",
+    title: string,
+    body: string,
+  ) => {
+    notify({
+      owner: "profile-content",
+      placement: "inline",
+      tone,
+      title,
+      body,
+      dismissible: true,
+      dedupeKey: `profile-content-${tone}-${title}-${body.slice(0, 48)}`,
+    });
+  };
   const saveLocal = (next: ImportDraft) => {
     setDraft(next);
     setStored(next);
@@ -92,7 +108,9 @@ export default function ImportPage() {
   const start = async () => {
     const validation = validateExternalUrl(url);
     if (!validation.ok || !validation.normalizedUrl) {
-      setFeedback(
+      announce(
+        "error",
+        "来源未保存",
         `来源链接无效：${validation.code}。${validation.recovery.join(" ")}；输入未清空。`,
       );
       return;
@@ -105,11 +123,13 @@ export default function ImportPage() {
         rightsConfirmed: rights,
       });
       saveLocal(result.data);
-      setFeedback(
+      announce(
+        "warning",
+        "来源已保存",
         "来源已持久化。自动解析未获许可；手动导入始终可用。",
       );
     } catch (error) {
-      setFeedback(`来源未保存：${errorMessage(error)}；输入未清空。`);
+      announce("error", "来源未保存", `${errorMessage(error)}；输入未清空。`);
     } finally {
       setBusy(false);
     }
@@ -157,11 +177,17 @@ export default function ImportPage() {
     } catch (error) {
       if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         await preserveDraftAfterConflict(local);
-        setFeedback(
+        announce(
+          "warning",
+          "草稿有新修订",
           "服务端草稿已有新修订；已刷新版本号并保留本页全部人工输入，请核对后重试。",
         );
       } else {
-        setFeedback(`草稿未同步：${errorMessage(error)}；本页输入完整保留。`);
+        announce(
+          "error",
+          "草稿未同步",
+          `${errorMessage(error)}；本页输入完整保留，可重试。`,
+        );
       }
       return null;
     } finally {
@@ -171,11 +197,19 @@ export default function ImportPage() {
   const go = async (stage: ImportStage) => {
     if (!draft) return;
     if (stage === "EDIT_DRAFT" && !draft.rightsConfirmed) {
-      setFeedback("必须先确认本人拥有导入与再发布权利；草稿未清空。");
+      announce(
+        "error",
+        "无法进入编辑",
+        "必须先确认本人拥有导入与再发布权利；草稿未清空。",
+      );
       return;
     }
     if (stage === "PREVIEW" && !draft.spotId && !draft.spotProposalId) {
-      setFeedback("预览前请选择正式点位或创建独立点位提案。");
+      announce(
+        "error",
+        "无法预览",
+        "预览前请选择正式点位或创建独立点位提案；草稿仍保留。",
+      );
       return;
     }
     if (
@@ -184,7 +218,11 @@ export default function ImportPage() {
         !draft.body.value.trim() ||
         !draft.rightsConfirmed)
     ) {
-      setFeedback("提交前需完成权利确认、标题和正文；草稿未清空。");
+      announce(
+        "error",
+        "无法提交",
+        "提交前需完成权利确认、标题和正文；草稿未清空。",
+      );
       return;
     }
     const saved = await persist(draft, {
@@ -196,10 +234,12 @@ export default function ImportPage() {
       visibility: draft.visibility.value,
     });
     if (!saved) return;
-    setFeedback(
+    announce(
+      stage === "SUBMIT" ? "success" : "info",
+      stage === "SUBMIT" ? "已提交审核" : `已进入${STAGE_LABEL[stage]}`,
       stage === "SUBMIT"
-        ? "内容已进入 Demo 待审核状态；点位提案保持独立审核，不会自动创建正式点位。"
-        : `已进入${STAGE_LABEL[stage]}。`,
+        ? "Demo 已完成提交闭环：内容进入待审核状态；点位提案保持独立审核，不会自动创建正式点位。"
+        : `已进入${STAGE_LABEL[stage]}；当前草稿仍可返回修改。`,
     );
   };
   const associateSpot = async (index: number) => {
@@ -207,13 +247,20 @@ export default function ImportPage() {
     const spot = DEMO_SPOTS[index];
     if (!spot) return;
     const saved = await persist(draft, { spotId: spot.spotId });
-    if (saved) setFeedback(`已关联正式点位：${spot.name}。`);
+    if (saved)
+      announce(
+        "success",
+        "已关联正式点位",
+        `${spot.name}；仍可返回编辑或更换关联。`,
+      );
   };
   const createProposal = async () => {
     if (!draft) return;
     const saved = await persist(draft, { createProposal: true });
     if (saved)
-      setFeedback(
+      announce(
+        "warning",
+        "已创建独立点位提案",
         "已创建独立点位提案草稿；它不会自动成为正式观星点。",
       );
   };
@@ -222,6 +269,7 @@ export default function ImportPage() {
     <View className={`${themeClass} import-page`} data-route="own-post-import">
       <CustomNav title="导入我的观星帖" subtitle="白名单 · 手动闭环" back />
       <View className="import-content page-inset safe-bottom">
+        <NotificationRegion owner="profile-content" placement="inline" />
         <View
           className="stage-track"
           aria-label={`导入流程，当前${STAGE_LABEL[currentStage]}`}
@@ -374,7 +422,10 @@ export default function ImportPage() {
                 }
               />
             </View>
-            <View className="form-group" data-capability="media-upload-disabled">
+            <View
+              className="form-group"
+              data-capability="media-upload-disabled"
+            >
               <Text className="type-label">媒体</Text>
               <StatusPanel
                 state="PARTIAL"
@@ -530,14 +581,24 @@ export default function ImportPage() {
               </View>
             ) : (
               <>
-                <StatusPanel
-                  state="READY"
-                  detail="Demo 已完成提交闭环：来源、草稿、正式点位/提案、预览与两条独立审核状态都保留。本次不自动公开。"
-                />
                 <SoftButton
                   label="复制原始来源链接"
                   onClick={() =>
                     Taro.setClipboardData({ data: draft.originalUrl })
+                      .then(() =>
+                        announce(
+                          "success",
+                          "已复制来源",
+                          "原始来源链接已复制；来源沿袭仍保留。",
+                        ),
+                      )
+                      .catch((error) =>
+                        announce(
+                          "error",
+                          "复制失败",
+                          `${errorMessage(error)}；原始来源链接仍保留。`,
+                        ),
+                      )
                   }
                 >
                   复制来源
@@ -545,18 +606,6 @@ export default function ImportPage() {
               </>
             )}
           </View>
-        ) : null}
-        {feedback ? (
-          <StatusPanel
-            state={
-              feedback.includes("无效") ||
-              feedback.includes("必须") ||
-              feedback.includes("需")
-                ? "ERROR"
-                : "READY"
-            }
-            detail={feedback}
-          />
         ) : null}
       </View>
     </View>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { FacilityStatus } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { DataStateBadge } from "@/components/data-state-badge";
+import { NotificationRegion } from "@/components/notification";
 import { Provenance } from "@/components/provenance";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
@@ -11,7 +12,6 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
-  getSkyReport,
   getSpotGuides,
   getSpotOverview,
   getSpotSite,
@@ -19,12 +19,11 @@ import {
 import { useAppStore } from "@/state/app-store";
 import "./spot-detail-page.scss";
 
-export type SpotSegment = "OVERVIEW" | "GUIDES" | "SITE" | "SKY";
+export type SpotSegment = "OVERVIEW" | "GUIDES" | "SITE";
 const SEGMENTS: ReadonlyArray<{ key: SpotSegment; label: string }> = [
   { key: "OVERVIEW", label: "概览" },
   { key: "GUIDES", label: "攻略" },
   { key: "SITE", label: "场地" },
-  { key: "SKY", label: "夜空" },
 ];
 const FACILITY_LABEL = {
   PARKING: "停车",
@@ -77,6 +76,8 @@ export function SpotDetailPage({
   const favoriteIds = useAppStore((state) => state.favoriteIds);
   const { toggleFavorite } = useFavoriteMutation();
   const selectSpot = useAppStore((state) => state.selectSpot);
+  const selectedAt = useAppStore((state) => state.selectedAt);
+  const setSelectedAt = useAppStore((state) => state.setSelectedAt);
   const overview = useResourceQuery({
     queryKey: ["spot-overview", spotId],
     queryFn: (signal) => getSpotOverview(spotId, signal),
@@ -91,11 +92,6 @@ export function SpotDetailPage({
     queryKey: ["spot-site", spotId],
     queryFn: (signal) => getSpotSite(spotId, signal),
     enabled: segment === "SITE" && Boolean(overview.data),
-  });
-  const sky = useResourceQuery({
-    queryKey: ["spot-sky-preview", spotId, today()],
-    queryFn: (signal) => getSkyReport(spotId, today(), signal),
-    enabled: segment === "SKY" && Boolean(overview.data),
   });
   const detail = overview.data?.data;
   const favorite = favoriteIds.includes(spotId as (typeof favoriteIds)[number]);
@@ -112,6 +108,10 @@ export function SpotDetailPage({
           ]
         : [],
     [detail],
+  );
+  const segmentIndex = Math.max(
+    0,
+    SEGMENTS.findIndex((item) => item.key === segment),
   );
 
   if (!spotId.startsWith("spot:"))
@@ -164,9 +164,30 @@ export function SpotDetailPage({
   };
   const openNight = () => {
     if (!detail) return;
+    const fallbackDate = today();
+    const storedAt = Date.parse(selectedAt);
+    const nightSelectedAt = Number.isFinite(storedAt)
+      ? selectedAt
+      : `${fallbackDate}T20:00:00+08:00`;
+    const localDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: detail.spot.timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(Date.parse(nightSelectedAt) - 12 * 60 * 60 * 1000));
+    if (nightSelectedAt !== selectedAt) setSelectedAt(nightSelectedAt);
     selectSpot(detail.spot.spotId);
+    const params = [
+      ["spotId", detail.spot.spotId],
+      ["date", localDate],
+      ["selectedAt", nightSelectedAt],
+      ["timezone", detail.spot.timezone],
+      ["dataRevision", detail.decision.inputDigest],
+    ]
+      .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+      .join("&");
     void Taro.navigateTo({
-      url: `/spot/sky/index?spotId=${encodeURIComponent(detail.spot.spotId)}`,
+      url: `/spot/sky/index?${params.toString()}`,
     });
   };
 
@@ -176,22 +197,10 @@ export function SpotDetailPage({
       data-route="spot-detail"
       data-spot-id={spotId}
     >
-      <CustomNav
-        title={detail?.spot.name ?? "观星点详情"}
-        subtitle={detail?.spot.region}
-        back
-        right={
-          detail ? (
-            <SoftButton
-              variant="ghost"
-              label={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
-              onClick={() => void toggleFavorite(detail.spot.spotId)}
-            >
-              {favorite ? "★" : "☆"}
-            </SoftButton>
-          ) : null
-        }
-      />
+      <CustomNav title="观星点详情" back />
+      <View className="page-inset">
+        <NotificationRegion owner="spot-detail" />
+      </View>
       {overview.isPending ? (
         <View className="page-inset">
           <StatusPanel
@@ -210,31 +219,79 @@ export function SpotDetailPage({
         </View>
       ) : (
         <>
+          <View className="spot-identity page-inset" data-od-id="spot-detail">
+            <View className="spot-identity__name-row">
+              <Text className="type-page-title">{detail.spot.name}</Text>
+              <Button
+                className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : ""}`}
+                data-od-id="spot-detail-favorite"
+                aria-label={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
+                aria-pressed={favorite}
+                onClick={() => void toggleFavorite(detail.spot.spotId)}
+              >
+                <Text aria-hidden="true">{favorite ? "★" : "☆"}</Text>
+              </Button>
+            </View>
+            <Text className="type-caption">
+              {detail.spot.region} · {detail.spot.address}
+            </Text>
+            <View className="spot-identity__actions">
+              <Text className="type-caption">
+                正式点位 · {detail.spot.timezone} · WGS84
+              </Text>
+              <Button
+                className="spot-night-entry focus-ring"
+                data-od-id="spot-detail-night-entry"
+                aria-label={`查看${detail.spot.name}此处夜空`}
+                onClick={openNight}
+              >
+                <Text>查看此处夜空 →</Text>
+              </Button>
+            </View>
+          </View>
           <View
             className="segment-nav page-inset"
+            data-od-id="spot-detail-tabs"
             role="tablist"
             aria-label="观星点详情分段"
           >
-            {SEGMENTS.map((item) => (
+            {SEGMENTS.map((item, index) => (
               <Button
                 key={item.key}
+                id={`spot-segment-tab-${item.key.toLowerCase()}`}
                 className={`segment-tab focus-ring${segment === item.key ? " segment-tab--active" : ""}`}
                 aria-selected={segment === item.key}
+                aria-controls={`spot-detail-panel-${item.key.toLowerCase()}`}
+                aria-role="tab"
                 onClick={() => setSegment(item.key)}
               >
                 <Text>{item.label}</Text>
               </Button>
             ))}
+            <View
+              className="segment-indicator"
+              data-od-id="spot-detail-tab-indicator"
+              aria-hidden="true"
+              style={{ transform: `translateX(${segmentIndex * 100}%)` }}
+            />
           </View>
           <ScrollView
             scrollY
             className="spot-detail__scroll"
+            data-od-id="spot-detail-panel"
             enhanced
             showScrollbar={false}
           >
             <View className="spot-content page-inset safe-bottom">
               {segment === "OVERVIEW" ? (
-                <View className="section-stack" data-segment="overview">
+                <View
+                  className="section-stack segment-panel"
+                  data-segment="overview"
+                  data-od-id="spot-detail-overview"
+                  id="spot-detail-panel-overview"
+                  role="tabpanel"
+                  aria-labelledby="spot-segment-tab-overview"
+                >
                   <View>
                     <Text className="type-section">代表媒体</Text>
                     <Text className="type-caption">
@@ -303,9 +360,6 @@ export function SpotDetailPage({
                         <Text className="type-caption">{factor.detail}</Text>
                       </View>
                     ))}
-                    <SoftButton label="查看当前点位夜空" onClick={openNight}>
-                      查看夜空详情
-                    </SoftButton>
                   </View>
                   <View className="route-card card">
                     <View className="route-card__top">
@@ -332,13 +386,14 @@ export function SpotDetailPage({
                     <Text className="type-caption">
                       {detail.route.parkingGuidance}
                     </Text>
-                    <SoftButton
-                      variant="primary"
-                      label="去这里，打开外部地图"
+                    <Button
+                      className="quiet-route-action focus-ring"
+                      data-od-id="spot-detail-route-action"
+                      aria-label={`去这里，打开${detail.spot.name}外部地图`}
                       onClick={openNavigation}
                     >
-                      去这里
-                    </SoftButton>
+                      <Text>去这里 →</Text>
+                    </Button>
                   </View>
                   <View className="facility-grid">
                     <Text className="type-section facility-grid__title">
@@ -360,6 +415,7 @@ export function SpotDetailPage({
                   </View>
                   <Button
                     className="sources-link card"
+                    data-od-id="spot-source-evidence"
                     onClick={() =>
                       Taro.navigateTo({
                         url: `/spot/data-source/index?spotId=${encodeURIComponent(spotId)}`,
@@ -398,7 +454,13 @@ export function SpotDetailPage({
                 </View>
               ) : null}
               {segment === "GUIDES" ? (
-                <View className="section-stack" data-segment="guides">
+                <View
+                  className="section-stack segment-panel"
+                  data-segment="guides"
+                  id="spot-detail-panel-guides"
+                  role="tabpanel"
+                  aria-labelledby="spot-segment-tab-guides"
+                >
                   <View>
                     <Text className="type-section">官方与白名单攻略</Text>
                     <Text className="type-caption">
@@ -417,12 +479,18 @@ export function SpotDetailPage({
                   ) : (
                     guides.data?.data.guides.map((guide) => (
                       <View className="guide-card card" key={guide.articleId}>
-                        <Image
-                          className="guide-card__media"
-                          src={detail.spot.media[0]!.thumbnailPath}
-                          mode="aspectFill"
-                          aria-label={detail.spot.media[0]!.alt}
-                        />
+                        {detail.spot.media[0] ? (
+                          <Image
+                            className="guide-card__media"
+                            src={detail.spot.media[0].thumbnailPath}
+                            mode="aspectFill"
+                            aria-label={detail.spot.media[0].alt}
+                          />
+                        ) : (
+                          <View className="guide-card__media guide-card__media--empty">
+                            <Text className="type-caption">暂无授权媒体</Text>
+                          </View>
+                        )}
                         <View className="guide-card__body">
                           <Text className="type-section">{guide.title}</Text>
                           <Text className="type-body">{guide.summary}</Text>
@@ -448,7 +516,14 @@ export function SpotDetailPage({
                 </View>
               ) : null}
               {segment === "SITE" ? (
-                <View className="section-stack" data-segment="site">
+                <View
+                  className="section-stack segment-panel"
+                  data-segment="site"
+                  data-od-id="spot-detail-site"
+                  id="spot-detail-panel-site"
+                  role="tabpanel"
+                  aria-labelledby="spot-segment-tab-site"
+                >
                   <View>
                     <Text className="type-section">按真实出行顺序核验场地</Text>
                     <Text className="type-caption">
@@ -499,111 +574,8 @@ export function SpotDetailPage({
                   )}
                 </View>
               ) : null}
-              {segment === "SKY" ? (
-                <View className="section-stack" data-segment="sky">
-                  <View>
-                    <Text className="type-section">
-                      {detail.spot.name} · 夜空
-                    </Text>
-                    <Text className="type-caption">
-                      正式 spot_id + 当地日期 + 时区；不能切换为普通地点。
-                    </Text>
-                  </View>
-                  {sky.isPending ? (
-                    <StatusPanel
-                      state="LOADING"
-                      detail="正在按需加载夜空摘要。"
-                    />
-                  ) : sky.isError ? (
-                    <StatusPanel
-                      state="ERROR"
-                      detail="夜空计算失败；静态场地和攻略仍可用。"
-                      recoveryLabel="重试夜空"
-                      onRecover={() => void sky.refetch()}
-                    />
-                  ) : sky.data ? (
-                    <>
-                      <View className="decision-card card">
-                        <View className="decision-card__top">
-                          <Text className="type-section">今晚结论</Text>
-                          <DataStateBadge state={sky.data.dataState} />
-                        </View>
-                        <Text className="type-page-title">
-                          {sky.data.data.decision.label}
-                        </Text>
-                        <Text className="type-body">
-                          月亮：{sky.data.data.moonSummary}
-                        </Text>
-                        <Text className="type-body">
-                          银河：{sky.data.data.milkyWayDirection}
-                        </Text>
-                      </View>
-                      <View className="targets-card card">
-                        <Text className="type-section">今晚推荐观测目标</Text>
-                        {sky.data.data.targets.length ? (
-                          sky.data.data.targets.map((target) => (
-                            <View className="target-row" key={target.targetId}>
-                              <View>
-                                <Text className="type-label">
-                                  {target.displayName}
-                                </Text>
-                                <Text className="type-caption">
-                                  {target.window
-                                    ? `${target.window.start}—${target.window.end}`
-                                    : "窗口不足"}{" "}
-                                  · {target.direction} ·{" "}
-                                  {target.altitudeDeg ?? "?"}°
-                                </Text>
-                              </View>
-                              <Text className="type-caption">
-                                {target.reason}
-                              </Text>
-                            </View>
-                          ))
-                        ) : (
-                          <StatusPanel
-                            state="EMPTY"
-                            detail="没有把猎户座、木星、金星、流星雨或伴月设计示例冒充当前可见目标。启动计算 BFF 后按当前点位/日期生成。"
-                          />
-                        )}
-                      </View>
-                      <SoftButton
-                        variant="primary"
-                        label="打开完整夜空页面"
-                        onClick={openNight}
-                      >
-                        完整夜空与观测模式
-                      </SoftButton>
-                      {sky.data.warnings.length ? (
-                        <StatusPanel
-                          state="PARTIAL"
-                          detail={sky.data.warnings.join(" ")}
-                        />
-                      ) : null}
-                    </>
-                  ) : null}
-                </View>
-              ) : null}
             </View>
           </ScrollView>
-          <View className="detail-actions safe-bottom">
-            <SoftButton
-              label={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
-              onClick={() => void toggleFavorite(detail.spot.spotId)}
-            >
-              {favorite ? "★ 已收藏" : "☆ 收藏"}
-            </SoftButton>
-            <SoftButton label="查看当前点位夜空" onClick={openNight}>
-              查看夜空
-            </SoftButton>
-            <SoftButton
-              variant="primary"
-              label="去这里，打开外部地图"
-              onClick={openNavigation}
-            >
-              去这里
-            </SoftButton>
-          </View>
         </>
       )}
     </View>

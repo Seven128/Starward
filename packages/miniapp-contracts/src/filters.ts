@@ -1,20 +1,57 @@
 import type { SpotSummary } from "./types.ts";
 
+export type FilterTier = "FIRST_LEVEL" | "ADVANCED";
+
 export type FilterGroupKey =
-  | "LIGHT"
-  | "OBSTRUCTION"
-  | "LIGHT_DIRECTION"
-  | "DRIVE_TIME"
-  | "TRIP"
-  | "ALTITUDE"
-  | "FACILITY";
-export type FilterSelectionMode = "CANCELABLE_SINGLE" | "MULTIPLE";
+  | "TONIGHT_RECOMMENDED"
+  | "BEST_WINDOW_DURATION"
+  | "DISTANCE_DRIVE_TIME"
+  | "LIGHT_POLLUTION"
+  | "LESS_CLOUD"
+  | "PARKING"
+  | "RESTROOM"
+  | "DRIVE_UP_ACCESS"
+  | "PHOTO_FOREGROUND"
+  | "CAMPING_OVERNIGHT_PARKING"
+  | "SPECIFIC_CELESTIAL_EVENT"
+  | "LOW_CLOUD_THRESHOLD"
+  | "MOON_IMPACT"
+  | "HIKING_DIFFICULTY"
+  | "SIGNAL"
+  | "CHARGING"
+  | "OPEN_SKY_DIRECTION"
+  | "LAST_VERIFIED_AT";
+
+export type FilterOptionId =
+  | "tonightRecommended"
+  | "bestWindowDuration"
+  | "distanceDriveTime"
+  | "lightPollution"
+  | "lessCloud"
+  | "parking"
+  | "restroom"
+  | "driveUpAccess"
+  | "photoForeground"
+  | "campingOvernightParking"
+  | "specificCelestialEvent"
+  | "lowCloudThreshold"
+  | "moonImpact"
+  | "hikingDifficulty"
+  | "signal"
+  | "charging"
+  | "openSkyDirection"
+  | "lastVerifiedAt";
+
+export type FilterSelectionMode = "CANCELABLE_SINGLE";
+export type FilterEvidence = "STATIC_SPOT" | "DYNAMIC_CONTEXT";
 
 export interface FilterOption {
-  id: string;
+  id: FilterOptionId;
   label: string;
   group: FilterGroupKey;
+  tier: FilterTier;
   mode: FilterSelectionMode;
+  evidence: FilterEvidence;
   test: (spot: SpotSummary) => boolean;
 }
 
@@ -23,264 +60,207 @@ const facility = (spot: SpotSummary, type: string) =>
     (item) => item.type === type && item.status === "AVAILABLE",
   );
 
+const dynamicUnavailable = () => false;
+
+/**
+ * V2.1.1 is one flat, ordered 10+8 taxonomy. Options whose current
+ * SpotSummary cannot truthfully answer a time/provider-dependent predicate
+ * return no match instead of manufacturing a favourable value.
+ */
 export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
   {
-    id: "light-lte-2",
-    label: "2级以下",
-    group: "LIGHT",
+    id: "tonightRecommended",
+    label: "今晚推荐",
+    group: "TONIGHT_RECOMMENDED",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) =>
-      s.lightPollution.levelAtMost !== null &&
-      s.lightPollution.levelAtMost <= 2,
+    evidence: "DYNAMIC_CONTEXT",
+    test: dynamicUnavailable,
   },
   {
-    id: "light-lte-3",
-    label: "3级以下",
-    group: "LIGHT",
+    id: "bestWindowDuration",
+    label: "最佳窗口时长",
+    group: "BEST_WINDOW_DURATION",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) =>
-      s.lightPollution.levelAtMost !== null &&
-      s.lightPollution.levelAtMost <= 3,
+    evidence: "DYNAMIC_CONTEXT",
+    test: dynamicUnavailable,
   },
   {
-    id: "light-lte-4",
-    label: "4级以下",
-    group: "LIGHT",
+    id: "distanceDriveTime",
+    label: "距离/驾车时间",
+    group: "DISTANCE_DRIVE_TIME",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) =>
-      s.lightPollution.levelAtMost !== null &&
-      s.lightPollution.levelAtMost <= 4,
+    evidence: "DYNAMIC_CONTEXT",
+    test: dynamicUnavailable,
   },
   {
-    id: "light-lte-5",
-    label: "5级以下",
-    group: "LIGHT",
+    id: "lightPollution",
+    label: "光害",
+    group: "LIGHT_POLLUTION",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) =>
-      s.lightPollution.levelAtMost !== null &&
-      s.lightPollution.levelAtMost <= 5,
+    evidence: "STATIC_SPOT",
+    test: (spot) => spot.lightPollution.levelAtMost !== null,
   },
   {
-    id: "light-lte-6",
-    label: "6级以下",
-    group: "LIGHT",
+    id: "lessCloud",
+    label: "少云",
+    group: "LESS_CLOUD",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) =>
-      s.lightPollution.levelAtMost !== null &&
-      s.lightPollution.levelAtMost <= 6,
+    evidence: "DYNAMIC_CONTEXT",
+    test: dynamicUnavailable,
   },
   {
-    id: "obstruction-lte-50",
-    label: "遮挡面积 50% 以下",
-    group: "OBSTRUCTION",
+    id: "parking",
+    label: "停车",
+    group: "PARKING",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.obstructionPercent !== null && s.obstructionPercent <= 50,
+    evidence: "STATIC_SPOT",
+    test: (spot) => facility(spot, "PARKING"),
   },
   {
-    id: "obstruction-lte-30",
-    label: "遮挡面积 30% 以下",
-    group: "OBSTRUCTION",
+    id: "restroom",
+    label: "厕所",
+    group: "RESTROOM",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.obstructionPercent !== null && s.obstructionPercent <= 30,
+    evidence: "STATIC_SPOT",
+    test: (spot) => facility(spot, "TOILET"),
   },
   {
-    id: "obstruction-none",
-    label: "无遮挡",
-    group: "OBSTRUCTION",
+    id: "driveUpAccess",
+    label: "可驾车直达",
+    group: "DRIVE_UP_ACCESS",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.obstructionPercent === 0,
+    evidence: "STATIC_SPOT",
+    test: (spot) => spot.accessTags.includes("DRIVE_TO"),
   },
   {
-    id: "direction-all",
-    label: "全部无光害",
-    group: "LIGHT_DIRECTION",
+    id: "photoForeground",
+    label: "摄影前景",
+    group: "PHOTO_FOREGROUND",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.clearDirections.includes("ALL"),
+    evidence: "STATIC_SPOT",
+    test: (spot) => spot.media.some((item) => item.isSiteSpecific),
   },
   {
-    id: "direction-west",
-    label: "西边无光害",
-    group: "LIGHT_DIRECTION",
+    id: "campingOvernightParking",
+    label: "可露营/驻车",
+    group: "CAMPING_OVERNIGHT_PARKING",
+    tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
-    test: (s) =>
-      s.clearDirections.includes("WEST") || s.clearDirections.includes("ALL"),
+    evidence: "STATIC_SPOT",
+    test: (spot) => facility(spot, "CAMPING"),
   },
   {
-    id: "direction-northeast",
-    label: "东北无光害",
-    group: "LIGHT_DIRECTION",
+    id: "specificCelestialEvent",
+    label: "特定天象",
+    group: "SPECIFIC_CELESTIAL_EVENT",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: (s) =>
-      s.clearDirections.includes("NORTHEAST") ||
-      s.clearDirections.includes("ALL"),
+    evidence: "DYNAMIC_CONTEXT",
+    test: dynamicUnavailable,
   },
   {
-    id: "drive-lte-120",
-    label: "2小时内",
-    group: "DRIVE_TIME",
+    id: "lowCloudThreshold",
+    label: "低云阈值",
+    group: "LOW_CLOUD_THRESHOLD",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: () => true,
+    evidence: "DYNAMIC_CONTEXT",
+    test: dynamicUnavailable,
   },
   {
-    id: "drive-lte-240",
-    label: "4小时内",
-    group: "DRIVE_TIME",
+    id: "moonImpact",
+    label: "月亮影响",
+    group: "MOON_IMPACT",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: () => true,
+    evidence: "DYNAMIC_CONTEXT",
+    test: dynamicUnavailable,
   },
   {
-    id: "drive-lte-360",
-    label: "6小时内",
-    group: "DRIVE_TIME",
+    id: "hikingDifficulty",
+    label: "徒步难度",
+    group: "HIKING_DIFFICULTY",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: () => true,
+    evidence: "STATIC_SPOT",
+    test: (spot) => spot.accessTags.includes("NO_HIKE"),
   },
   {
-    id: "trip-drive",
-    label: "驾车直达",
-    group: "TRIP",
-    mode: "MULTIPLE",
-    test: (s) => s.accessTags.includes("DRIVE_TO"),
-  },
-  {
-    id: "trip-transit",
-    label: "公共交通",
-    group: "TRIP",
-    mode: "MULTIPLE",
-    test: (s) => s.accessTags.includes("PUBLIC_TRANSIT"),
-  },
-  {
-    id: "trip-no-hike",
-    label: "不要徒步",
-    group: "TRIP",
-    mode: "MULTIPLE",
-    test: (s) => s.accessTags.includes("NO_HIKE"),
-  },
-  {
-    id: "trip-no-climb",
-    label: "不要登山",
-    group: "TRIP",
-    mode: "MULTIPLE",
-    test: (s) => s.accessTags.includes("NO_CLIMB"),
-  },
-  {
-    id: "altitude-lte-1000",
-    label: "1000米以下",
-    group: "ALTITUDE",
+    id: "signal",
+    label: "信号",
+    group: "SIGNAL",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.altitudeM !== null && s.altitudeM <= 1000,
+    evidence: "STATIC_SPOT",
+    test: (spot) => facility(spot, "SIGNAL"),
   },
   {
-    id: "altitude-lte-2000",
-    label: "2000米以下",
-    group: "ALTITUDE",
+    id: "charging",
+    label: "充电",
+    group: "CHARGING",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.altitudeM !== null && s.altitudeM <= 2000,
+    evidence: "STATIC_SPOT",
+    test: (spot) => facility(spot, "CHARGING"),
   },
   {
-    id: "altitude-lte-3000",
-    label: "3000米以下",
-    group: "ALTITUDE",
+    id: "openSkyDirection",
+    label: "天空开阔方向",
+    group: "OPEN_SKY_DIRECTION",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.altitudeM !== null && s.altitudeM <= 3000,
+    evidence: "STATIC_SPOT",
+    test: (spot) => spot.clearDirections.length > 0,
   },
   {
-    id: "altitude-lte-4000",
-    label: "4000米以下",
-    group: "ALTITUDE",
+    id: "lastVerifiedAt",
+    label: "最近核验时间",
+    group: "LAST_VERIFIED_AT",
+    tier: "ADVANCED",
     mode: "CANCELABLE_SINGLE",
-    test: (s) => s.altitudeM !== null && s.altitudeM <= 4000,
-  },
-  {
-    id: "altitude-lte-6000",
-    label: "6000米以下",
-    group: "ALTITUDE",
-    mode: "CANCELABLE_SINGLE",
-    test: (s) => s.altitudeM !== null && s.altitudeM <= 6000,
-  },
-  {
-    id: "facility-parking",
-    label: "有停车",
-    group: "FACILITY",
-    mode: "MULTIPLE",
-    test: (s) => facility(s, "PARKING"),
-  },
-  {
-    id: "facility-toilet",
-    label: "有厕所",
-    group: "FACILITY",
-    mode: "MULTIPLE",
-    test: (s) => facility(s, "TOILET"),
-  },
-  {
-    id: "facility-charging",
-    label: "可充电",
-    group: "FACILITY",
-    mode: "MULTIPLE",
-    test: (s) => facility(s, "CHARGING"),
-  },
-  {
-    id: "facility-camping",
-    label: "能露营",
-    group: "FACILITY",
-    mode: "MULTIPLE",
-    test: (s) => facility(s, "CAMPING"),
+    evidence: "STATIC_SPOT",
+    test: (spot) => spot.lastVerifiedAt !== null,
   },
 ]);
 
 export const FILTER_GROUPS: ReadonlyArray<{
   key: FilterGroupKey;
-  section: string;
+  section: "首层筛选" | "高级筛选";
   title: string;
   mode: FilterSelectionMode;
-}> = Object.freeze([
-  {
-    key: "LIGHT",
-    section: "观星条件",
-    title: "光害等级",
-    mode: "CANCELABLE_SINGLE",
-  },
-  {
-    key: "OBSTRUCTION",
-    section: "观星条件",
-    title: "遮挡",
-    mode: "CANCELABLE_SINGLE",
-  },
-  {
-    key: "LIGHT_DIRECTION",
-    section: "观星条件",
-    title: "光害方向",
-    mode: "CANCELABLE_SINGLE",
-  },
-  {
-    key: "DRIVE_TIME",
-    section: "观测点",
-    title: "驾车时间",
-    mode: "CANCELABLE_SINGLE",
-  },
-  { key: "TRIP", section: "观测点", title: "行程信息", mode: "MULTIPLE" },
-  {
-    key: "ALTITUDE",
-    section: "观测点",
-    title: "海拔",
-    mode: "CANCELABLE_SINGLE",
-  },
-  { key: "FACILITY", section: "场地信息", title: "场地信息", mode: "MULTIPLE" },
-]);
+}> = Object.freeze(
+  FILTER_OPTIONS.map((option) => {
+    const section: "首层筛选" | "高级筛选" =
+      option.tier === "FIRST_LEVEL" ? "首层筛选" : "高级筛选";
+    return {
+      key: option.group,
+      section,
+      title: option.label,
+      mode: option.mode,
+    };
+  }),
+);
 
 export type FilterState = Readonly<Record<FilterGroupKey, readonly string[]>>;
 
-export const EMPTY_FILTER_STATE: FilterState = Object.freeze({
-  LIGHT: Object.freeze([]),
-  OBSTRUCTION: Object.freeze([]),
-  LIGHT_DIRECTION: Object.freeze([]),
-  DRIVE_TIME: Object.freeze([]),
-  TRIP: Object.freeze([]),
-  ALTITUDE: Object.freeze([]),
-  FACILITY: Object.freeze([]),
-});
+export const EMPTY_FILTER_STATE: FilterState = Object.freeze(
+  Object.fromEntries(
+    FILTER_GROUPS.map(({ key }) => [key, Object.freeze([])]),
+  ) as unknown as FilterState,
+);
 
-export function assertFilterState(value: unknown): asserts value is FilterState {
+export function assertFilterState(
+  value: unknown,
+): asserts value is FilterState {
   if (typeof value !== "object" || value === null || Array.isArray(value))
     throw new Error("filter_state_invalid:not_object");
   const record = value as Record<string, unknown>;
@@ -293,25 +273,28 @@ export function assertFilterState(value: unknown): asserts value is FilterState 
     throw new Error("filter_state_invalid:key_set");
   for (const group of FILTER_GROUPS) {
     const selected = record[group.key];
-    if (!Array.isArray(selected) || selected.some((id) => typeof id !== "string"))
+    if (
+      !Array.isArray(selected) ||
+      selected.some((id) => typeof id !== "string")
+    )
       throw new Error(`filter_state_invalid:${group.key}:not_string_array`);
     if (new Set(selected).size !== selected.length)
       throw new Error(`filter_state_invalid:${group.key}:duplicate`);
-    if (group.mode === "CANCELABLE_SINGLE" && selected.length > 1)
+    if (selected.length > 1)
       throw new Error(`filter_state_invalid:${group.key}:multiple`);
     const allowed = new Set(
       FILTER_OPTIONS.filter((option) => option.group === group.key).map(
         (option) => option.id,
       ),
     );
-    if (selected.some((id) => !allowed.has(id)))
+    if (selected.some((id) => !allowed.has(id as FilterOptionId)))
       throw new Error(`filter_state_invalid:${group.key}:unknown_option`);
   }
 }
 
 export function cloneFilterState(state: FilterState): FilterState {
   return Object.fromEntries(
-    Object.entries(state).map(([key, value]) => [key, [...value]]),
+    FILTER_GROUPS.map(({ key }) => [key, [...(state[key] ?? [])]]),
   ) as unknown as FilterState;
 }
 
@@ -323,17 +306,13 @@ export function toggleFilter(
   if (!option) throw new Error(`unknown_filter:${optionId}`);
   const next = cloneFilterState(state) as Record<FilterGroupKey, string[]>;
   const selected = next[option.group];
-  next[option.group] = selected.includes(optionId)
-    ? selected.filter((id) => id !== optionId)
-    : option.mode === "CANCELABLE_SINGLE"
-      ? [optionId]
-      : [...selected, optionId];
+  next[option.group] = selected.includes(optionId) ? [] : [optionId];
   return next;
 }
 
 export function countAppliedFilters(state: FilterState): number {
-  return Object.values(state).reduce(
-    (total, selected) => total + selected.length,
+  return FILTER_GROUPS.reduce(
+    (total, { key }) => total + (state[key]?.length ?? 0),
     0,
   );
 }
@@ -342,16 +321,21 @@ export function filterSpots(
   spots: readonly SpotSummary[],
   state: FilterState,
 ): SpotSummary[] {
-  const active = Object.values(state)
-    .flat()
+  const active = FILTER_GROUPS.flatMap(({ key }) => state[key] ?? [])
     .map((id) => FILTER_OPTIONS.find((item) => item.id === id))
     .filter((item): item is FilterOption => Boolean(item));
   return spots.filter((spot) => active.every((option) => option.test(spot)));
 }
 
+const firstLevel = FILTER_OPTIONS.filter(
+  (option) => option.tier === "FIRST_LEVEL",
+);
+const advanced = FILTER_OPTIONS.filter((option) => option.tier === "ADVANCED");
 if (
-  FILTER_OPTIONS.length !== 27 ||
-  new Set(FILTER_OPTIONS.map((item) => item.id)).size !== 27
+  FILTER_OPTIONS.length !== 18 ||
+  firstLevel.length !== 10 ||
+  advanced.length !== 8 ||
+  new Set(FILTER_OPTIONS.map((item) => item.id)).size !== 18
 ) {
-  throw new Error("filter_schema_must_have_exactly_27_unique_terminal_options");
+  throw new Error("filter_schema_must_be_exact_ordered_10_plus_8");
 }

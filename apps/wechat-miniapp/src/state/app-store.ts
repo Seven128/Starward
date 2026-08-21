@@ -27,6 +27,12 @@ import {
   toggleFavoriteRelation,
   toggleFilterDraft,
 } from "./app-transitions";
+import {
+  dismissNotification as removeNotification,
+  enqueueNotification,
+  type NotificationIntent,
+  type NotificationRecord,
+} from "./notification";
 import acceptanceBootstrapJson from "./acceptance-bootstrap.json";
 
 const STORAGE_KEY = "starward.wechat-miniapp.state.v1";
@@ -39,6 +45,28 @@ export interface MapViewportState {
   cardIndex: number;
 }
 
+export type AnalysisOverlay = "NONE" | "LIGHT" | "TOTAL_CLOUD" | "OPPORTUNITY";
+export type SourceLiftOwner = "FINDER" | "CONDITIONS";
+export type SourceLiftPhase =
+  "IDLE" | "LIFTING" | "FOCUSED" | "RESTORING" | "CANCELLED";
+
+export interface SourceLiftRuntimeState {
+  owner: SourceLiftOwner | null;
+  phase: SourceLiftPhase;
+  variant: "panelOnly" | "mapCoupled" | null;
+  origin: {
+    viewport: MapViewportState;
+    selectedSpotId: SpotId | null;
+    finderQuery: string;
+    selectedAt: string;
+    analysisOverlay: AnalysisOverlay;
+  } | null;
+  finishOptions: {
+    restoreMap: boolean;
+    discardFilterDraft: boolean;
+  };
+}
+
 export interface PersistedState {
   mode: DisplayMode;
   priorMode: Exclude<DisplayMode, "OBSERVATION">;
@@ -47,6 +75,9 @@ export interface PersistedState {
   preferencesDirty: boolean;
   preferencesUpdatedAt: string | null;
   viewport: MapViewportState;
+  finderQuery: string;
+  selectedAt: string;
+  analysisOverlay: AnalysisOverlay;
   committedFilters: FilterState;
   selectedSpotId: SpotId | null;
   searchHistory: string[];
@@ -58,11 +89,7 @@ export interface PersistedState {
 }
 
 export type LocationState =
-  | "DEFAULT_REGION"
-  | "REQUESTING"
-  | "GRANTED"
-  | "DENIED"
-  | "UNAVAILABLE";
+  "DEFAULT_REGION" | "REQUESTING" | "GRANTED" | "DENIED" | "UNAVAILABLE";
 
 interface AppState extends PersistedState {
   priorMode: Exclude<DisplayMode, "OBSERVATION">;
@@ -71,8 +98,13 @@ interface AppState extends PersistedState {
   locationState: LocationState;
   myTab: MyTab;
   toast: string;
+  notifications: NotificationRecord[];
+  sourceLift: SourceLiftRuntimeState;
   hydrate(): void;
   setToast(message: string): void;
+  notify(intent: NotificationIntent): void;
+  dismissNotification(id: string): void;
+  clearNotifications(owner?: string): void;
   setMode(mode: DisplayMode): void;
   enterObservation(): void;
   exitObservation(): void;
@@ -83,6 +115,19 @@ interface AppState extends PersistedState {
   applyServerPreferences(record: UserPreferencesRecord): void;
   markPreferencesSynced(record: UserPreferencesRecord): void;
   setViewport(patch: Partial<MapViewportState>): void;
+  setFinderQuery(query: string): void;
+  setSelectedAt(value: string): void;
+  setAnalysisOverlay(overlay: AnalysisOverlay): void;
+  openSourceLift(owner: SourceLiftOwner): void;
+  focusSourceLift(owner: SourceLiftOwner): void;
+  closeSourceLift(
+    owner: SourceLiftOwner,
+    options?: { restoreMap?: boolean; discardFilterDraft?: boolean },
+  ): void;
+  finishSourceLift(
+    owner: SourceLiftOwner,
+    options?: { restoreMap?: boolean; discardFilterDraft?: boolean },
+  ): void;
   selectSpot(spotId: SpotId | null): void;
   openFilters(): void;
   toggleDraftFilter(optionId: string): void;
@@ -116,8 +161,7 @@ const DEFAULT_VIEWPORT: MapViewportState = {
 function loadPersisted(): Partial<PersistedState> {
   try {
     const value = Taro.getStorageSync(STORAGE_KEY) as
-      | Partial<PersistedState>
-      | string;
+      Partial<PersistedState> | string;
     return typeof value === "string"
       ? (JSON.parse(value) as Partial<PersistedState>)
       : value || {};
@@ -136,6 +180,9 @@ function persisted(state: AppState): PersistedState {
     preferencesDirty: state.preferencesDirty,
     preferencesUpdatedAt: state.preferencesUpdatedAt,
     viewport: state.viewport,
+    finderQuery: state.finderQuery,
+    selectedAt: state.selectedAt,
+    analysisOverlay: state.analysisOverlay,
     committedFilters: state.committedFilters,
     selectedSpotId: state.selectedSpotId,
     searchHistory: state.searchHistory,
@@ -152,8 +199,9 @@ const BOOTSTRAP_MODE = restoreStartupMode(
   BOOTSTRAP_STATE.mode,
   BOOTSTRAP_STATE.priorMode,
 );
-const BOOTSTRAP_FILTERS =
-  BOOTSTRAP_STATE.committedFilters ?? EMPTY_FILTER_STATE;
+const BOOTSTRAP_FILTERS = cloneFilterState(
+  BOOTSTRAP_STATE.committedFilters ?? EMPTY_FILTER_STATE,
+);
 
 export const useAppStore = create<AppState>((set, get) => {
   const commit = (
@@ -183,6 +231,9 @@ export const useAppStore = create<AppState>((set, get) => {
     preferencesDirty: BOOTSTRAP_STATE.preferencesDirty ?? false,
     preferencesUpdatedAt: BOOTSTRAP_STATE.preferencesUpdatedAt ?? null,
     viewport: { ...DEFAULT_VIEWPORT, ...BOOTSTRAP_STATE.viewport },
+    finderQuery: BOOTSTRAP_STATE.finderQuery ?? "",
+    selectedAt: BOOTSTRAP_STATE.selectedAt ?? "",
+    analysisOverlay: BOOTSTRAP_STATE.analysisOverlay ?? "NONE",
     committedFilters: BOOTSTRAP_FILTERS,
     draftFilters: cloneFilterState(BOOTSTRAP_FILTERS),
     selectedSpotId: BOOTSTRAP_STATE.selectedSpotId ?? null,
@@ -200,6 +251,14 @@ export const useAppStore = create<AppState>((set, get) => {
     locationState: "DEFAULT_REGION",
     myTab: "MY",
     toast: "",
+    notifications: [],
+    sourceLift: {
+      owner: null,
+      phase: "IDLE",
+      variant: null,
+      origin: null,
+      finishOptions: { restoreMap: true, discardFilterDraft: true },
+    },
     hydrate() {
       const saved = loadPersisted();
       const startupMode = restoreStartupMode(saved.mode, saved.priorMode);
@@ -215,7 +274,12 @@ export const useAppStore = create<AppState>((set, get) => {
         preferencesDirty: saved.preferencesDirty ?? false,
         preferencesUpdatedAt: saved.preferencesUpdatedAt ?? null,
         viewport: { ...DEFAULT_VIEWPORT, ...saved.viewport },
-        committedFilters: saved.committedFilters ?? EMPTY_FILTER_STATE,
+        finderQuery: saved.finderQuery ?? "",
+        selectedAt: saved.selectedAt ?? "",
+        analysisOverlay: saved.analysisOverlay ?? "NONE",
+        committedFilters: cloneFilterState(
+          saved.committedFilters ?? EMPTY_FILTER_STATE,
+        ),
         draftFilters: cloneFilterState(
           saved.committedFilters ?? EMPTY_FILTER_STATE,
         ),
@@ -223,7 +287,37 @@ export const useAppStore = create<AppState>((set, get) => {
       });
     },
     setToast(message) {
-      set({ toast: message });
+      set((state) => ({
+        toast: message,
+        notifications: message
+          ? enqueueNotification(state.notifications, {
+              owner: "global",
+              placement: "floating",
+              tone: "success",
+              title: "操作已完成",
+              body: message,
+              dismissible: true,
+              dedupeKey: `legacy-toast:${message}`,
+            })
+          : state.notifications,
+      }));
+    },
+    notify(intent) {
+      set((state) => ({
+        notifications: enqueueNotification(state.notifications, intent),
+      }));
+    },
+    dismissNotification(id) {
+      set((state) => ({
+        notifications: removeNotification(state.notifications, id),
+      }));
+    },
+    clearNotifications(owner) {
+      set((state) => ({
+        notifications: owner
+          ? state.notifications.filter((item) => item.owner !== owner)
+          : [],
+      }));
     },
     setMode(mode) {
       commit((state) => ({
@@ -270,6 +364,85 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     setViewport(patch) {
       commit((state) => ({ viewport: { ...state.viewport, ...patch } }));
+    },
+    setFinderQuery(finderQuery) {
+      commit({ finderQuery });
+    },
+    setSelectedAt(selectedAt) {
+      commit({ selectedAt });
+    },
+    setAnalysisOverlay(analysisOverlay) {
+      commit({ analysisOverlay });
+    },
+    openSourceLift(owner) {
+      set((state) => ({
+        sourceLift: {
+          owner,
+          phase: "LIFTING",
+          variant: owner === "FINDER" ? "panelOnly" : "mapCoupled",
+          origin: {
+            viewport: {
+              ...state.viewport,
+              center: { ...state.viewport.center },
+            },
+            selectedSpotId: state.selectedSpotId,
+            finderQuery: state.finderQuery,
+            selectedAt: state.selectedAt,
+            analysisOverlay: state.analysisOverlay,
+          },
+          finishOptions: { restoreMap: true, discardFilterDraft: true },
+        },
+      }));
+    },
+    focusSourceLift(owner) {
+      set((state) =>
+        state.sourceLift.owner === owner
+          ? { sourceLift: { ...state.sourceLift, phase: "FOCUSED" } }
+          : {},
+      );
+    },
+    closeSourceLift(owner, options) {
+      set((state) =>
+        state.sourceLift.owner === owner
+          ? {
+              sourceLift: {
+                ...state.sourceLift,
+                phase: "RESTORING",
+                finishOptions: {
+                  restoreMap: options?.restoreMap ?? true,
+                  discardFilterDraft: options?.discardFilterDraft ?? true,
+                },
+              },
+            }
+          : {},
+      );
+    },
+    finishSourceLift(owner, options) {
+      set((state) => {
+        if (state.sourceLift.owner !== owner) return {};
+        const origin = state.sourceLift.origin;
+        const finishOptions = options ?? state.sourceLift.finishOptions;
+        return {
+          ...(finishOptions.restoreMap !== false && origin
+            ? {
+                viewport: origin.viewport,
+                selectedSpotId: origin.selectedSpotId,
+                selectedAt: origin.selectedAt,
+                analysisOverlay: origin.analysisOverlay,
+              }
+            : {}),
+          ...(finishOptions.discardFilterDraft !== false
+            ? cancelFilterDraft(state.committedFilters)
+            : {}),
+          sourceLift: {
+            owner: null,
+            phase: "IDLE" as const,
+            variant: null,
+            origin: null,
+            finishOptions: { restoreMap: true, discardFilterDraft: true },
+          },
+        };
+      });
     },
     selectSpot(spotId) {
       commit({ selectedSpotId: spotId });
@@ -349,6 +522,8 @@ export const useAppStore = create<AppState>((set, get) => {
       }));
     },
     clearLocalCache() {
+      const message =
+        "本地地图、筛选、搜索与夜空临时缓存已清除；持久化收藏、计划、主页链接和导入草稿保持不变。";
       try {
         Taro.removeStorageSync(STORAGE_KEY);
       } catch {
@@ -356,12 +531,23 @@ export const useAppStore = create<AppState>((set, get) => {
       }
       set({
         viewport: DEFAULT_VIEWPORT,
+        finderQuery: "",
+        selectedAt: "",
+        analysisOverlay: "NONE",
         committedFilters: EMPTY_FILTER_STATE,
         draftFilters: EMPTY_FILTER_STATE,
         selectedSpotId: null,
         searchHistory: [],
-        toast:
-          "本地地图、筛选、搜索与夜空临时缓存已清除；持久化收藏、计划、主页链接和导入草稿保持不变。",
+        toast: message,
+        notifications: enqueueNotification(get().notifications, {
+          owner: "settings",
+          placement: "floating",
+          tone: "success",
+          title: "临时缓存已清除",
+          body: message,
+          dismissible: true,
+          dedupeKey: "settings-cache-cleared",
+        }),
         skySelection: { spotId: null, localDate: "", timeIndex: 0 },
       });
       queueMicrotask(() => {
@@ -388,6 +574,14 @@ export function resetAppStoreForAcceptance(): PersistedState {
     locationState: "DEFAULT_REGION",
     myTab: "MY",
     toast: "",
+    notifications: [],
+    sourceLift: {
+      owner: null,
+      phase: "IDLE",
+      variant: null,
+      origin: null,
+      finishOptions: { restoreMap: true, discardFilterDraft: true },
+    },
   });
   const snapshot = persisted(useAppStore.getState());
   Taro.setStorageSync(STORAGE_KEY, snapshot);

@@ -5,7 +5,11 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const root = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+);
 const at = (...segments) => path.join(root, ...segments);
 const text = (...segments) => readFile(at(...segments), "utf8");
 const json = async (...segments) => JSON.parse(await text(...segments));
@@ -14,7 +18,12 @@ const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 test("Mini Program H5 acceptance uses one pinned project-owned Playwright", async () => {
   const rootPackage = await json("package.json");
   const acceptancePackage = await json("tests", "acceptance", "package.json");
-  const config = await text("tests", "acceptance", "miniapp", "playwright.config.mjs");
+  const config = await text(
+    "tests",
+    "acceptance",
+    "miniapp",
+    "playwright.config.mjs",
+  );
   assert.equal(acceptancePackage.devDependencies["@playwright/test"], "1.61.1");
   assert.equal(
     rootPackage.scripts["test:miniapp:h5"],
@@ -47,14 +56,8 @@ test("H5 diagnostics bind TanStack Query's Taro-compatible build and fail fast o
     path.join(root, "tools/miniapp/start-h5-acceptance.mjs"),
     "utf8",
   );
-  assert.match(
-    config,
-    /@tanstack\/query-core\/build\/legacy\/index\.js/u,
-  );
-  assert.match(
-    config,
-    /@tanstack\/react-query\/build\/legacy\/index\.js/u,
-  );
+  assert.match(config, /@tanstack\/query-core\/build\/legacy\/index\.js/u);
+  assert.match(config, /@tanstack\/react-query\/build\/legacy\/index\.js/u);
   assert.match(config, /target === "h5"/u);
   assert.match(server, /spawnSync\(process\.execPath, \["--check", file\]/u);
   assert.match(server, /h5_bundle_syntax_invalid/u);
@@ -124,33 +127,48 @@ test("every frozen selected design resource has a production probe binding", asy
   );
   assert.equal(
     bindings.schema_version,
-    "starward-miniapp-selected-design-bindings-v1",
+    "starward-miniapp-selected-design-bindings-v2",
   );
   assert.deepEqual(
-    bindings.resources.map((resource) => resource.id),
+    bindings.resources.map((resource) => resource.key),
     [
-      "APP-01",
-      "APP-02",
-      "APP-03",
-      "APP-04",
-      "APP-05",
-      "APP-06",
-      "APP-07",
-      "APP-08",
-      "MAP-01",
-      "MAP-02",
-      "MAP-03",
-      "MAP-04",
+      "resource.prototype",
+      "resource.requirements",
+      "resource.design-system",
+      "resource.qa",
+      "resource.reconciliation",
+      "resource.selected-readme",
+      "resource.provider-readme",
+      "resource.provider-manifest",
+      "resource.provider-brand",
+      "resource.provider-sidecar",
+      "resource.integrity",
+      "resource.proof-parameters",
+      "resource.environment",
+      "resource.inspector",
+      "resource.oracle",
+      "resource.manifest",
     ],
   );
   for (const resource of bindings.resources) {
-    assert.ok(resource.source_markers.length > 0, resource.id);
-    assert.ok(resource.production_probes.length > 0, resource.id);
+    assert.match(
+      resource.path,
+      /^docs\/design-resources\/miniapp-selected-source-2026-08-22-v3\//u,
+    );
+    assert.match(resource.sha256, /^[a-f0-9]{64}$/u);
+  }
+  assert.ok(bindings.production_probes.length >= 10);
+  for (const probe of bindings.production_probes) {
+    assert.ok(probe.all_of.length > 0, probe.key);
   }
 });
 
 test("native acceptance owns a clean build, exclusive current session and fail-closed evidence", async () => {
-  const runner = await text("tools", "miniapp", "run-wechat-devtools-session.mjs");
+  const runner = await text(
+    "tools",
+    "miniapp",
+    "run-wechat-devtools-session.mjs",
+  );
   const proofWrapper = await text(
     "tools",
     "miniapp",
@@ -238,14 +256,14 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "unexpectedConsoleErrors.length === 0",
     '"complete-demo": [\n    "map-cold-start-location-fallback",\n    "formal-spot-detail",\n    "spot-night",\n    "my-home",\n    "profile-links",',
     "bff_process_unavailable_then_restarted_matrix",
-    "release_action: \"none\"",
+    'release_action: "none"',
     'rootClasses: ["map-page", "theme-day", "location-default-region"]',
     'rootClasses: ["sky-page", "theme-night"]',
     'rootClasses: ["observe-page", "theme-observation"]',
     "missingRootClasses",
     "waitForSelectorSet",
     "teardownNativeSession",
-    "result.cleanup.status !== \"passed\"",
+    'result.cleanup.status !== "passed"',
     'await program.send("App.enableLog")',
     "runtimeEventJson",
     "enableRuntimeLog",
@@ -258,7 +276,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "safeRuntimeExcerpt",
     "diagnostic_excerpt: safeRuntimeExcerpt(error)",
     'EventEmitter.prototype.on.call(program, "console"',
-    "EventEmitter.prototype.removeListener.call(program, \"console\"",
+    'EventEmitter.prototype.removeListener.call(program, "console"',
     'process.on("unhandledRejection", captureUnhandledRejection)',
     "runnerFaults.length > 0",
     "const attemptLimit = 2",
@@ -285,23 +303,35 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'recoverySelector: ".status-panel__recovery"',
   ])
     assert.ok(runner.includes(required), required);
-  assert.doesNotMatch(runner, /stageCurrentCandidate|starward-miniapp-devtools-/u);
+  assert.doesNotMatch(
+    runner,
+    /stageCurrentCandidate|starward-miniapp-devtools-/u,
+  );
   assert.doesNotMatch(runner, /\bsubst(?:\.exe)?\b|\bsymlink\(|\bjunction\b/iu);
-  assert.doesNotMatch(runner, /project-tiny-context-harness.*\.cli|writeFile\([^)]*\.cli/iu);
+  assert.doesNotMatch(
+    runner,
+    /project-tiny-context-harness.*\.cli|writeFile\([^)]*\.cli/iu,
+  );
   assert.doesNotMatch(runner, /cwd: projectPath/u);
   assert.doesNotMatch(runner, /selector: "\.map-page\.theme-day"/u);
   assert.doesNotMatch(runner, /miniProgram\.on\("console"/u);
   assert.doesNotMatch(runner, /native\(\)\.authorizeCancel\(/u);
   assert.doesNotMatch(runner, /JSON\.stringify\(event \?\? null\)/u);
-  assert.match(ignore, /^apps\/wechat-miniapp\/project\.private\.config\.json$/mu);
+  assert.match(
+    ignore,
+    /^apps\/wechat-miniapp\/project\.private\.config\.json$/mu,
+  );
   assert.ok(
     runner.indexOf("await verifyWechatSnapshotLocation()") <
-      runner.indexOf("projectIdentitySession = await prepareWechatProjectIdentity"),
+      runner.indexOf(
+        "projectIdentitySession = await prepareWechatProjectIdentity",
+      ),
     "the physical Harness snapshot location must be verified before private identity and DevTools startup",
   );
   assert.ok(
-    runner.indexOf("projectIdentitySession = await prepareWechatProjectIdentity") <
-      runner.indexOf("await registerWechatSnapshotProject"),
+    runner.indexOf(
+      "projectIdentitySession = await prepareWechatProjectIdentity",
+    ) < runner.indexOf("await registerWechatSnapshotProject"),
     "the private project identity must exist before DevTools opens the current candidate",
   );
   assert.ok(
@@ -343,8 +373,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   assert.ok(
     runner.indexOf(
       "const projectIdentityRestore = await restoreWechatProjectIdentity",
-    ) <
-      runner.indexOf("await writeJson(runEvidencePath, result)"),
+    ) < runner.indexOf("await writeJson(runEvidencePath, result)"),
     "final evidence must be written only after private project identity restoration",
   );
   const finalDrain = runner.slice(
@@ -410,7 +439,10 @@ test("project Harness compatibility patch is version-pinned and only strengthens
   );
   assert.match(patcher, /const expectedVersion = "0\.8\.16"/u);
   assert.match(patcher, /ty_context_harness_compatibility_version_mismatch/u);
-  assert.match(patcher, /ty_context_harness_compatibility_unknown_source_shape/u);
+  assert.match(
+    patcher,
+    /ty_context_harness_compatibility_unknown_source_shape/u,
+  );
   assert.match(patcher, /acceptance_semantics_changed: false/u);
   assert.match(
     workspaceRuntime,
@@ -428,11 +460,7 @@ test("project Harness compatibility patch is version-pinned and only strengthens
 });
 
 test("infrastructure verification survives the Harness-minimal process environment", async () => {
-  const runtimePath = at(
-    "tools",
-    "miniapp",
-    "docker-compose-runtime.mjs",
-  );
+  const runtimePath = at("tools", "miniapp", "docker-compose-runtime.mjs");
   const { dockerComposeInvocation } = await import(
     pathToFileURL(runtimePath).href
   );
@@ -519,23 +547,55 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
     "location must only be requested by the explicit map control",
   );
   assert.match(mapPage, /仅在你点击定位时请求一次位置权限/u);
-  assert.match(mapPage, /location-\$\{locationState\.toLowerCase\(\)/u);
+  assert.match(
+    mapPage,
+    /" map-page location-"\s*\+\s*locationState\.toLowerCase\(\)/u,
+  );
   assert.match(mapPage, /className="map-refresh-control"/u);
   assert.deepEqual(seed.committedFilters, {
-    LIGHT: [],
-    OBSTRUCTION: [],
-    LIGHT_DIRECTION: [],
-    DRIVE_TIME: [],
-    TRIP: [],
-    ALTITUDE: [],
-    FACILITY: [],
+    TONIGHT_RECOMMENDED: [],
+    BEST_WINDOW_DURATION: [],
+    DISTANCE_DRIVE_TIME: [],
+    LIGHT_POLLUTION: [],
+    LESS_CLOUD: [],
+    PARKING: [],
+    RESTROOM: [],
+    DRIVE_UP_ACCESS: [],
+    PHOTO_FOREGROUND: [],
+    CAMPING_OVERNIGHT_PARKING: [],
+    SPECIFIC_CELESTIAL_EVENT: [],
+    LOW_CLOUD_THRESHOLD: [],
+    MOON_IMPACT: [],
+    HIKING_DIFFICULTY: [],
+    SIGNAL: [],
+    CHARGING: [],
+    OPEN_SKY_DIRECTION: [],
+    LAST_VERIFIED_AT: [],
   });
 });
 
 test("native safe-area chrome and transient observation mode preserve DESIGN authority", async () => {
-  const chrome = await text("apps", "wechat-miniapp", "src", "theme", "native-chrome.ts");
-  const navigation = await text("apps", "wechat-miniapp", "src", "components", "custom-nav.tsx");
-  const store = await text("apps", "wechat-miniapp", "src", "state", "app-store.ts");
+  const chrome = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "theme",
+    "native-chrome.ts",
+  );
+  const navigation = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "components",
+    "custom-nav.tsx",
+  );
+  const store = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "state",
+    "app-store.ts",
+  );
   for (const role of [
     "#F5F8FC",
     "#1769D2",
@@ -557,11 +617,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "miniapp",
     "verification-spec.json",
   );
-  const verifier = await text(
-    "tools",
-    "miniapp",
-    "verify-miniapp-target.mjs",
-  );
+  const verifier = await text("tools", "miniapp", "verify-miniapp-target.mjs");
   const launcher = await text(
     "tools",
     "miniapp",
@@ -592,23 +648,14 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     assert.ok(verifier.includes(required), required);
 
   assert.doesNotMatch(verifier, /actual:\s*template\.expected\.value/u);
-  assert.doesNotMatch(
-    verifier,
-    /actualSha\s*=\s*template\.expected\.sha256/u,
-  );
+  assert.doesNotMatch(verifier, /actualSha\s*=\s*template\.expected\.sha256/u);
   assert.doesNotMatch(
     verifier,
     /environment_sha256:\s*expectation\.environment\.definition\.sha256/u,
   );
   assert.doesNotMatch(verifier, /failure_observed:\s*true/u);
-  assert.doesNotMatch(
-    verifier,
-    /catalog\.matchAll\(\/\^\\s\+spotId:/u,
-  );
-  assert.doesNotMatch(
-    verifier,
-    /sha256\(`\$\{check\.scope\}:before`\)/u,
-  );
+  assert.doesNotMatch(verifier, /catalog\.matchAll\(\/\^\\s\+spotId:/u);
+  assert.doesNotMatch(verifier, /sha256\(`\$\{check\.scope\}:before`\)/u);
   for (const unsupportedEvidenceField of [
     "artifact_path: native?.artifact_path",
     "artifact_sha256: native?.artifact_sha256",
@@ -632,7 +679,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   assert.match(verifier, /\[HANDOFF_SOURCE, handoff\]/u);
   assert.match(
     verifier,
-    /const actual = resource\?\.path \? await fileSha\(resource\.path\)/u,
+    /const actual = resource\?\.path\s*\?\s*await fileSha\(resource\.path\)/u,
   );
   assert.match(verifier, /counterfactualProjectionFiles/u);
   assert.match(verifier, /projection\.required_exact_paths/u);
@@ -674,7 +721,9 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   );
   assert.ok(
     verifyBody.indexOf("if (!snapshotValid)") <
-      verifyBody.indexOf("const sourceAuthority = await parseSourceAuthority()"),
+      verifyBody.indexOf(
+        "const sourceAuthority = await parseSourceAuthority()",
+      ),
     "stale candidate carriers must fail before any expensive product execution",
   );
   assert.equal(
@@ -682,14 +731,17 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     ".\\tools\\miniapp\\verify-miniapp-target.exe --collect current",
   );
   assert.match(verifier, /if \(!failureObserved\) return null;/u);
-  assert.match(
-    verifier,
-    /if \(record\) records\.push\(record\);/u,
-  );
+  assert.match(verifier, /if \(record\) records\.push\(record\);/u);
   assert.match(verifier, /const current = await snapshotManifest\(spec\)/u);
   assert.match(verifier, /source_closure_passed: sourceClosure/u);
-  assert.match(verifier, /actualEnvironment = await readJson\(DESIGN_ENVIRONMENT\)/u);
-  assert.match(verifier, /actualParameters = await readJson\(DESIGN_PARAMETERS\)/u);
+  assert.match(
+    verifier,
+    /actualEnvironment = await readJson\(DESIGN_ENVIRONMENT\)/u,
+  );
+  assert.match(
+    verifier,
+    /actualParameters = await readJson\(DESIGN_PARAMETERS\)/u,
+  );
   const crossSurfaceEvidence = verifier.slice(
     verifier.indexOf('else if (capability === "cross_surface_consistency")'),
     verifier.indexOf('else if (capability === "failure_injection")'),
@@ -710,9 +762,11 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "runtime-specific artifact hashes cannot impersonate one cross-surface state version",
   );
   const embeddedDigest = [
-    ...(launcher.match(
-      /expected_script_sha256\[32\]\s*=\s*\{([\s\S]*?)\};/u,
-    )?.[1] ?? "").matchAll(/0x([0-9a-f]{2})/gu),
+    ...(
+      launcher.match(
+        /expected_script_sha256\[32\]\s*=\s*\{([\s\S]*?)\};/u,
+      )?.[1] ?? ""
+    ).matchAll(/0x([0-9a-f]{2})/gu),
   ]
     .map((match) => match[1])
     .join("");

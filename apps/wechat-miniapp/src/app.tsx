@@ -6,12 +6,17 @@ import { resetApiClientForAcceptance } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { resetAppStoreForAcceptance } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
+import { FloatingNotificationHost } from "@/components/notification";
 import "./app.scss";
 
 if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
   const runtime = globalThis as typeof globalThis & {
     __STARWARD_MINIAPP_ACCEPTANCE__?: {
-      reset(): { status: "passed"; cancelledRequests: number; snapshot: unknown };
+      reset(): {
+        status: "passed";
+        cancelledRequests: number;
+        snapshot: unknown;
+      };
     };
   };
   runtime.__STARWARD_MINIAPP_ACCEPTANCE__ = {
@@ -34,6 +39,8 @@ export default function App({ children }: PropsWithChildren) {
   });
   return (
     <QueryClientProvider client={miniappQueryClient}>
+      {/* Taro H5 requires the active taro_page to remain the last router child. */}
+      <FloatingNotificationHost />
       {children}
     </QueryClientProvider>
   );

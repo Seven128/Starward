@@ -1,0 +1,558 @@
+{
+  "schema_version": "miniapp-verification-spec-v1",
+  "carrier_schema_version": "miniapp-delivery-carrier-v1",
+  "delivery_carrier": "apps/wechat-miniapp/src/authority/delivery-carrier.json",
+  "counterfactual_projection": {
+    "required_exact_paths": [
+      "package.json",
+      "package-lock.json",
+      "docs/wechat-miniapp-v2-1-1-source.md",
+      "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序产品方案_V2.1.1_LongTask输入定稿版.md",
+      "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序技术架构与技术实现方案_V2.1.1_LongTask输入定稿版.md",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/selected-requirement-dispositions.json",
+      "DESIGN.md",
+      "docs/design-resources/miniapp-selected-handoff-2026-08-22-v3/miniapp-drift-correction-selected-v3.md",
+      "tools/miniapp/verification-spec-v2-1-1.json",
+      "tools/miniapp/verify-miniapp-target.mjs",
+      "tools/miniapp/verify-miniapp-target-launcher.c",
+      "tools/miniapp/verify-miniapp-target.exe"
+    ],
+    "required_tree_roots": [
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3"
+    ]
+  },
+  "authority": {
+    "product_v2": {
+      "path": "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序产品方案_V2.1.1_LongTask输入定稿版.md",
+      "sha256": "ee158a18e81f0ed5cd8051fa8cd6cfc009ef4782eedb7c17ce11674acecaa42e"
+    },
+    "technical_v2": {
+      "path": "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序技术架构与技术实现方案_V2.1.1_LongTask输入定稿版.md",
+      "sha256": "77a510c8a5fe32c425bebb5d113028ccb275ba9443c3678ef7dc40eb9e6be7da"
+    },
+    "selected_requirement_dispositions": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/selected-requirement-dispositions.json",
+      "sha256": "d70651613570f9bef7fd029ad05aa628e3bb22fb5a6f93822565477c25989d70"
+    },
+    "design": {
+      "path": "DESIGN.md",
+      "sha256": "45ddfecf8ad3c9da7edc94312f15d3684d513603b5f317a91ade1de264e4ceb0",
+      "target": "target.system.wechat-miniapp-soft-instruments-2026-08-05"
+    },
+    "resource_manifest": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/fact-manifest.json",
+      "sha256": "1718e207fea167757453f558adb9fa143103498f4eaad369f4e927183e265605"
+    },
+    "handoff": {
+      "path": "docs/design-resources/miniapp-selected-handoff-2026-08-22-v3/miniapp-drift-correction-selected-v3.md",
+      "sha256": "f78dff0deb579ee8435ee32b8ef33a10bb97d8dcc7f4584d4c7579614455cf7a"
+    },
+    "semantic_manifest": {
+      "path": "docs/wechat-miniapp-v2-1-1-source.md",
+      "key": "wechat-miniapp-v2-1-1.semantic-facts",
+      "sha256": "0d239c168ac167e05d28a94064b2b86cccd7c1e016713f96d45af81bcdc2e6ff"
+    }
+  },
+  "counterfactual_controls": [],
+  "population_requirements": [],
+  "semantic_templates": [],
+  "design_evidence": {
+    "design_target_ref": "target-miniapp-drift-correction-selected-constraint-v3",
+    "target_ref": "wechat-devtools-native",
+    "condition_keys": ["condition-authoring-source-v3"],
+    "actual_artifact_path": "artifacts/miniapp/design/production-actual.json",
+    "comparison_artifact_path": "artifacts/miniapp/design/constraint-comparison.json",
+    "method": "asset_integrity",
+    "method_artifact_path": "artifacts/miniapp/design/asset-integrity.json",
+    "observation_artifact_path": "artifacts/miniapp/design/asset-integrity-observations.json",
+    "fact_refs": [
+      "fact.prototype.digest",
+      "fact.requirements.digest",
+      "fact.design-system.digest",
+      "fact.qa.digest",
+      "fact.reconciliation.digest"
+    ],
+    "fact_expectations": [
+      {
+        "fact_ref": "fact.prototype.digest",
+        "subject_ref": "subject.prototype",
+        "variation_ref": "variation.prototype",
+        "property_ref": "custom.canonical-resource-sha256",
+        "observation_sensitivity": "plain",
+        "expected": {
+          "locator": {
+            "resource_ref": "resource.integrity",
+            "kind": "json_pointer",
+            "value": "/resources/prototype/sha256"
+          },
+          "sha256": "b21d2204d21ff9d8a5dffb26dad460c657f2f6803725c7db275ff1935f663cfc"
+        },
+        "comparison": {
+          "comparator": "asset_equal",
+          "mode": "exact",
+          "parameters": {
+            "locator": {
+              "resource_ref": "resource.proof-parameters",
+              "kind": "json_pointer",
+              "value": "/asset_integrity"
+            },
+            "sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30"
+          },
+          "tolerance": null,
+          "mask": null
+        },
+        "oracle": {
+          "key": "oracle.asset-integrity",
+          "trust": "frozen_executable",
+          "identity": "starward-dra-asset-integrity-oracle",
+          "version": "2.0.0",
+          "sha256": "d23ef05300fc448ac21a594c8f91deae77a7a41756bf94bf4a89ae97c7d0159e"
+        },
+        "environment": {
+          "key": "environment.canonical-source-bytes",
+          "identity": "canonical-source-bytes-no-render-v3",
+          "definition": {
+            "locator": {
+              "resource_ref": "resource.environment",
+              "kind": "json_pointer",
+              "value": "/identity"
+            },
+            "sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c"
+          }
+        }
+      },
+      {
+        "fact_ref": "fact.requirements.digest",
+        "subject_ref": "subject.requirements",
+        "variation_ref": "variation.requirements",
+        "property_ref": "custom.canonical-resource-sha256",
+        "observation_sensitivity": "plain",
+        "expected": {
+          "locator": {
+            "resource_ref": "resource.integrity",
+            "kind": "json_pointer",
+            "value": "/resources/requirements/sha256"
+          },
+          "sha256": "6e4da2de6ee59c2a4542fa0edc12cda67f4517005c1128ac655a5d37454a0274"
+        },
+        "comparison": {
+          "comparator": "asset_equal",
+          "mode": "exact",
+          "parameters": {
+            "locator": {
+              "resource_ref": "resource.proof-parameters",
+              "kind": "json_pointer",
+              "value": "/asset_integrity"
+            },
+            "sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30"
+          },
+          "tolerance": null,
+          "mask": null
+        },
+        "oracle": {
+          "key": "oracle.asset-integrity",
+          "trust": "frozen_executable",
+          "identity": "starward-dra-asset-integrity-oracle",
+          "version": "2.0.0",
+          "sha256": "d23ef05300fc448ac21a594c8f91deae77a7a41756bf94bf4a89ae97c7d0159e"
+        },
+        "environment": {
+          "key": "environment.canonical-source-bytes",
+          "identity": "canonical-source-bytes-no-render-v3",
+          "definition": {
+            "locator": {
+              "resource_ref": "resource.environment",
+              "kind": "json_pointer",
+              "value": "/identity"
+            },
+            "sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c"
+          }
+        }
+      },
+      {
+        "fact_ref": "fact.design-system.digest",
+        "subject_ref": "subject.design-system",
+        "variation_ref": "variation.design-system",
+        "property_ref": "custom.canonical-resource-sha256",
+        "observation_sensitivity": "plain",
+        "expected": {
+          "locator": {
+            "resource_ref": "resource.integrity",
+            "kind": "json_pointer",
+            "value": "/resources/design-system/sha256"
+          },
+          "sha256": "b2ea1ad04a3e06e1ceb45fdc74683b1e6478d4d6681f0c9115f87095bb783ffd"
+        },
+        "comparison": {
+          "comparator": "asset_equal",
+          "mode": "exact",
+          "parameters": {
+            "locator": {
+              "resource_ref": "resource.proof-parameters",
+              "kind": "json_pointer",
+              "value": "/asset_integrity"
+            },
+            "sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30"
+          },
+          "tolerance": null,
+          "mask": null
+        },
+        "oracle": {
+          "key": "oracle.asset-integrity",
+          "trust": "frozen_executable",
+          "identity": "starward-dra-asset-integrity-oracle",
+          "version": "2.0.0",
+          "sha256": "d23ef05300fc448ac21a594c8f91deae77a7a41756bf94bf4a89ae97c7d0159e"
+        },
+        "environment": {
+          "key": "environment.canonical-source-bytes",
+          "identity": "canonical-source-bytes-no-render-v3",
+          "definition": {
+            "locator": {
+              "resource_ref": "resource.environment",
+              "kind": "json_pointer",
+              "value": "/identity"
+            },
+            "sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c"
+          }
+        }
+      },
+      {
+        "fact_ref": "fact.qa.digest",
+        "subject_ref": "subject.qa",
+        "variation_ref": "variation.qa",
+        "property_ref": "custom.canonical-resource-sha256",
+        "observation_sensitivity": "plain",
+        "expected": {
+          "locator": {
+            "resource_ref": "resource.integrity",
+            "kind": "json_pointer",
+            "value": "/resources/qa/sha256"
+          },
+          "sha256": "3d2bd13539838db169bce9f4553ea1cf3dceb3c8ceb67523851e2313232cbf03"
+        },
+        "comparison": {
+          "comparator": "asset_equal",
+          "mode": "exact",
+          "parameters": {
+            "locator": {
+              "resource_ref": "resource.proof-parameters",
+              "kind": "json_pointer",
+              "value": "/asset_integrity"
+            },
+            "sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30"
+          },
+          "tolerance": null,
+          "mask": null
+        },
+        "oracle": {
+          "key": "oracle.asset-integrity",
+          "trust": "frozen_executable",
+          "identity": "starward-dra-asset-integrity-oracle",
+          "version": "2.0.0",
+          "sha256": "d23ef05300fc448ac21a594c8f91deae77a7a41756bf94bf4a89ae97c7d0159e"
+        },
+        "environment": {
+          "key": "environment.canonical-source-bytes",
+          "identity": "canonical-source-bytes-no-render-v3",
+          "definition": {
+            "locator": {
+              "resource_ref": "resource.environment",
+              "kind": "json_pointer",
+              "value": "/identity"
+            },
+            "sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c"
+          }
+        }
+      },
+      {
+        "fact_ref": "fact.reconciliation.digest",
+        "subject_ref": "subject.reconciliation",
+        "variation_ref": "variation.reconciliation",
+        "property_ref": "custom.canonical-resource-sha256",
+        "observation_sensitivity": "plain",
+        "expected": {
+          "locator": {
+            "resource_ref": "resource.integrity",
+            "kind": "json_pointer",
+            "value": "/resources/reconciliation/sha256"
+          },
+          "sha256": "6d118fd74fe0adc50efdc2a1dadf9ecd4376bd390602985e008059f73e82722f"
+        },
+        "comparison": {
+          "comparator": "asset_equal",
+          "mode": "exact",
+          "parameters": {
+            "locator": {
+              "resource_ref": "resource.proof-parameters",
+              "kind": "json_pointer",
+              "value": "/asset_integrity"
+            },
+            "sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30"
+          },
+          "tolerance": null,
+          "mask": null
+        },
+        "oracle": {
+          "key": "oracle.asset-integrity",
+          "trust": "frozen_executable",
+          "identity": "starward-dra-asset-integrity-oracle",
+          "version": "2.0.0",
+          "sha256": "d23ef05300fc448ac21a594c8f91deae77a7a41756bf94bf4a89ae97c7d0159e"
+        },
+        "environment": {
+          "key": "environment.canonical-source-bytes",
+          "identity": "canonical-source-bytes-no-render-v3",
+          "definition": {
+            "locator": {
+              "resource_ref": "resource.environment",
+              "kind": "json_pointer",
+              "value": "/identity"
+            },
+            "sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c"
+          }
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "scope": "map-discovery",
+      "surface": "runtime_behavior",
+      "check_key": "map-discovery-runtime",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-map-discovery"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "map-discovery",
+      "surface": "degradation",
+      "check_key": "map-discovery-degradation",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["degraded-candidate-built"],
+      "action_keys": ["recover-map-discovery"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "map-discovery",
+      "surface": "population_coverage",
+      "check_key": "map-population",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-map-discovery"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "map-discovery",
+      "surface": "security_boundary",
+      "check_key": "map-discovery-security",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-map-discovery"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "spot-detail",
+      "surface": "runtime_behavior",
+      "check_key": "spot-detail-runtime",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-spot-detail"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "spot-detail",
+      "surface": "degradation",
+      "check_key": "spot-detail-degradation",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["degraded-candidate-built"],
+      "action_keys": ["recover-spot-detail"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "spot-night",
+      "surface": "runtime_behavior",
+      "check_key": "spot-night-runtime",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-spot-night"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "spot-night",
+      "surface": "degradation",
+      "check_key": "spot-night-degradation",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["degraded-candidate-built"],
+      "action_keys": ["recover-spot-night"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "my-library",
+      "surface": "runtime_behavior",
+      "check_key": "my-library-runtime",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-my-library"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "my-library",
+      "surface": "degradation",
+      "check_key": "my-library-degradation",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["degraded-candidate-built"],
+      "action_keys": ["recover-my-library"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "profile-content",
+      "surface": "runtime_behavior",
+      "check_key": "profile-content-runtime",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-profile-content"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "profile-content",
+      "surface": "degradation",
+      "check_key": "profile-content-degradation",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["degraded-candidate-built"],
+      "action_keys": ["recover-profile-content"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "profile-content",
+      "surface": "security_boundary",
+      "check_key": "profile-content-security",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-profile-content"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "platform-operations",
+      "surface": "runtime_behavior",
+      "check_key": "platform-operations-runtime",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-platform-operations"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "platform-operations",
+      "surface": "degradation",
+      "check_key": "platform-operations-degradation",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["degraded-candidate-built"],
+      "action_keys": ["recover-platform-operations"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "platform-operations",
+      "surface": "security_boundary",
+      "check_key": "platform-operations-security",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-platform-operations"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "platform-operations",
+      "surface": "api_contract",
+      "check_key": "platform-api-contract",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-platform-operations"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "platform-operations",
+      "surface": "data_state",
+      "check_key": "platform-data-state",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": ["execute-platform-operations"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "complete-demo",
+      "surface": "runtime_behavior",
+      "check_key": "complete-demo-runtime",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["authority-ready", "candidate-built"],
+      "action_keys": [
+        "enter-shared-shell",
+        "enter-map-discovery",
+        "enter-spot-detail",
+        "enter-spot-night",
+        "enter-my-library",
+        "enter-profile-content"
+      ],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "complete-demo",
+      "surface": "degradation",
+      "check_key": "complete-demo-degradation",
+      "target_ref": "wechat-devtools-native",
+      "root_entrypoint": "apps/wechat-miniapp/project.config.json",
+      "given_keys": ["degraded-candidate-built"],
+      "action_keys": ["recover-complete-demo"],
+      "assertions": [],
+      "observations": []
+    },
+    {
+      "scope": "complete-demo",
+      "surface": "ui_browser",
+      "check_key": "complete-demo-browser",
+      "target_ref": "miniapp-browser-proxy",
+      "root_entrypoint": "tests/acceptance/miniapp/ui-proxy.spec.mjs",
+      "given_keys": ["browser-proxy-ready"],
+      "action_keys": ["inspect-browser-proxy"],
+      "assertions": [],
+      "observations": []
+    }
+  ]
+}

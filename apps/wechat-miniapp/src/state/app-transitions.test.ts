@@ -21,14 +21,16 @@ import {
 test("filter draft is discarded on cancel and committed only on apply", () => {
   const initial = cloneFilterState(EMPTY_FILTER_STATE);
   const opened = beginFilterDraft(initial);
-  const toggled = toggleFilterDraft(opened.draftFilters, "light-lte-2");
-  assert.deepEqual(toggled.draftFilters.LIGHT, ["light-lte-2"]);
+  const toggled = toggleFilterDraft(opened.draftFilters, "lightPollution");
+  assert.deepEqual(toggled.draftFilters.LIGHT_POLLUTION, ["lightPollution"]);
 
   const cancelled = cancelFilterDraft(initial);
-  assert.deepEqual(cancelled.draftFilters.LIGHT, []);
+  assert.deepEqual(cancelled.draftFilters.LIGHT_POLLUTION, []);
 
   const applied = applyFilterDraft(toggled.draftFilters);
-  assert.deepEqual(applied.committedFilters.LIGHT, ["light-lte-2"]);
+  assert.deepEqual(applied.committedFilters.LIGHT_POLLUTION, [
+    "lightPollution",
+  ]);
   assert.equal(applied.filterSheetOpen, false);
 });
 

@@ -17,13 +17,6 @@ modularity:
       reason: Complete V2 Demo import workflow is intentionally kept stable for this Final Gate; its page orchestration and branch count require a bounded post-baseline extraction.
       tracking_issue: WECHAT-MINIAPP-MOD-001
       expiry_condition: Split import parsing, permission and recovery orchestration before the next functional change to this file.
-    - path: apps/wechat-miniapp/src/features/my/my-library-page.tsx
-      category: legacy_migration
-      owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: Complete V2 Demo My-library states are stable for this Final Gate; extracting tab-specific owners is deferred to avoid destabilizing the verified baseline.
-      tracking_issue: WECHAT-MINIAPP-MOD-001
-      expiry_condition: Extract favorites, plans and settings presenters before the next functional change to this file.
     - path: apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
       category: legacy_migration
       owner: wechat-miniapp-maintainers
