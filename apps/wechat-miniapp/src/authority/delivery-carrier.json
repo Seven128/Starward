@@ -1,16 +1,16 @@
 {
   "schema_version": "miniapp-delivery-carrier-v1",
-  "generated_at": "2026-08-07T20:42:25.202Z",
-  "spec_sha256": "1496766c2908d8183ee041c726a9ddc1d1bae1e54705b67449d17653b73ec8b3",
+  "generated_at": "2026-08-21T21:54:01.795Z",
+  "spec_sha256": "0597f77b81f6c56119134850a5a88eb5f28b01f9fa68647bf5c5e7ac134f4d92",
   "source_snapshot": {
     "files": {
       "DESIGN.md": "45ddfecf8ad3c9da7edc94312f15d3684d513603b5f317a91ade1de264e4ceb0",
-      "apps/wechat-miniapp/config/index.ts": "86f0279e80d3b1943008231bca9494865a3f5c02a0d7f0629f58e21b205e6ee6",
+      "apps/wechat-miniapp/config/index.ts": "28f1ce7b972bd8d128e6ad8cff87f5e840a36793441fb93e32b7561c99c1600e",
       "apps/wechat-miniapp/package.json": "f7aa9923ec43bf3890e829719246b5b5ee650610052a656a2d4c6611598a2e96",
       "apps/wechat-miniapp/project.config.json": "68bd3c55f831b8ade984cf5ba4134627c394ce49bd739f6332c16e1b67e6903e",
-      "apps/wechat-miniapp/src/app.config.ts": "286ca5c9abb6f2968b4a4a31ac2d7546a56ff37481d24cf118e874394f760ab2",
-      "apps/wechat-miniapp/src/app.scss": "1c457020fce6bcbd9d904c5935453d335458d787e38fa54e30c34760d26a9e69",
-      "apps/wechat-miniapp/src/app.tsx": "b9fc3e619f36a74bcf8efca7e99534a27550789b238ba717e05d84d9d9fab9bb",
+      "apps/wechat-miniapp/src/app.config.ts": "c3f12c38af1cf6fa1eeea7aa584285f390a285a257019a25edccdcfe7f0b09da",
+      "apps/wechat-miniapp/src/app.scss": "288016dd5aaf825d474725c93577e06cf365960094cbe27dc9c30874888af810",
+      "apps/wechat-miniapp/src/app.tsx": "f36e3646e8da8075d6a3021b4b1347c245adf0dc80b7c41e240818716688e332",
       "apps/wechat-miniapp/src/assets/icons/marker-manifest.json": "c1d3140b0a498115c98015a605560a791fac8e8de49b187d537988b821102269",
       "apps/wechat-miniapp/src/assets/icons/spot-marker-night.png": "eadfb8f466cf5eae02f47c72b133084a116e83bc1d4fe0316f1464bb9a73e6a5",
       "apps/wechat-miniapp/src/assets/icons/spot-marker-observation.png": "ec12a6157cbc6de62fc1cfa95dd9298946361c672ef8bfe2294b48d66a2759ae",
@@ -60,42 +60,47 @@
       "apps/wechat-miniapp/src/assets/semantic/tent-night.svg": "7000828bb44710df778befbd103cd37f6b4776a9f3c2b3ae4e01dd450129a80d",
       "apps/wechat-miniapp/src/assets/semantic/tent-observation.svg": "2fd0734310c47033fc463aec2531bed71897f3b4d6940e0f91e63395e0956019",
       "apps/wechat-miniapp/src/components/custom-nav.scss": "68015cd464b30f8a1281e65dd2d71224a68fe13e4eb561bdce4699c6c142dbc4",
-      "apps/wechat-miniapp/src/components/custom-nav.tsx": "eb73503da08c0ab2bb7201b229c5fc720acced0d1e40852163bdb641bbc148b3",
+      "apps/wechat-miniapp/src/components/custom-nav.tsx": "03b92d32a9d9ba66bcd954a3a3de91eccd85fee9701240e14e4cf25f6c234c38",
       "apps/wechat-miniapp/src/components/data-state-badge.tsx": "a1d329f6e9bc50e4f44b51b5f17df12c5cb4046bb29518c011058263c8192eca",
-      "apps/wechat-miniapp/src/components/filter-sheet.scss": "6cdf938a85d797dbd308d78ad063acdfdd8944f9e0467a07e268529637af23c9",
-      "apps/wechat-miniapp/src/components/filter-sheet.tsx": "6ef0761b0f71c8c8efbef6e0590e81138c87f9a3630d4d053204fef07068e6c8",
+      "apps/wechat-miniapp/src/components/filter-sheet.scss": "5ce2e35182f4df381dda52671eb9c366a933bb5c2592da98b4af6d67325c27de",
+      "apps/wechat-miniapp/src/components/filter-sheet.tsx": "9e066c8aa82586abc4e94919fbdc854ab379685c6c680f7d54c1b2ceede16731",
+      "apps/wechat-miniapp/src/components/notification.scss": "34466d55b935cca3489079b1d8495a4e39854e1c393c84f01a0f90d181b74913",
+      "apps/wechat-miniapp/src/components/notification.tsx": "bb4a4ba0b3109567a341cec9cd89294b7369df95e72620f217b7ac52d0690c2a",
       "apps/wechat-miniapp/src/components/provenance.scss": "4e7154e15c9220f77be3dedfc39144a01f1bcc53511da0709dab80f345ef9948",
       "apps/wechat-miniapp/src/components/provenance.tsx": "1e11cb023c66c7007ab5843c9cf471dae76866c2642259e6cef72a4f354f7060",
       "apps/wechat-miniapp/src/components/semantic-asset.tsx": "7bfbad96aeb46a729978e402f7f0b2efb9e563565f2dedc8dc8d451909822622",
       "apps/wechat-miniapp/src/components/sky-subnav.scss": "8242b9027bf6516a545bfc64eb10fa8a6b5ad81ca5225b47fbc2d718110790cf",
       "apps/wechat-miniapp/src/components/sky-subnav.tsx": "2404eeb1680cae0fa24bcc0aef459c7c001887e35bf716070cdf7cd77acdbd8a",
       "apps/wechat-miniapp/src/components/soft-button.tsx": "30441143e9d7c7171f7ddc50206a45ae01325c4db906a3763783fe80fd21c391",
-      "apps/wechat-miniapp/src/components/spot-card.scss": "4bc4f25f8e77f9a190cdbd499c76af96df15c28af14e61ed45f427d6517a1b62",
-      "apps/wechat-miniapp/src/components/spot-card.tsx": "56d664ab8682189fd34664734eb3ef00a07309bfa74955ea539bb54158cc1701",
+      "apps/wechat-miniapp/src/components/source-lift-focus-layer.scss": "c9059356ceae93317101316383918d96fac689f0c214c58d6c391e44cdb67129",
+      "apps/wechat-miniapp/src/components/source-lift-focus-layer.tsx": "7a99db9e4c4854acff1baec8a97d3f6e9c7adca6a5c7f050ab9e3459a59c06c8",
+      "apps/wechat-miniapp/src/components/spot-card.scss": "54b0e5a8668500a2f17ff844241c66de9f8e8f0b9f66a004af7e6a54ff415d7a",
+      "apps/wechat-miniapp/src/components/spot-card.tsx": "f44bca4cdedd29a206b5d57ddfc6193993cbe1e7a091b4bda5c9757f5060a6fc",
       "apps/wechat-miniapp/src/components/status-panel.scss": "0584e9848e2c1a1ce6b02d9195e00912f76eaa0e30264731dd3231e729bf6f14",
       "apps/wechat-miniapp/src/components/status-panel.tsx": "5ca8160af3ba48cb178193ebdaf2e988dbdf080d503a15ed4de6a9f2f8d93ee3",
       "apps/wechat-miniapp/src/content/article/detail/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
       "apps/wechat-miniapp/src/content/article/detail/index.scss": "c83438ddb39974c6fce93dbed1acc9c9ad2ba45da8be2d6f37654b309471cbf6",
       "apps/wechat-miniapp/src/content/article/detail/index.tsx": "1257e956cc85568461286024ccca1f0d5c9df3c99251c1daebffe0f276c197f2",
       "apps/wechat-miniapp/src/content/favorite/list/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
-      "apps/wechat-miniapp/src/content/favorite/list/index.tsx": "ba6a41a955a08b941edd18772750dba5dddc638a227f6d8f48f2a7a9527edf71",
+      "apps/wechat-miniapp/src/content/favorite/list/index.tsx": "57f8177e2c15288846ad41af27db62cf65823b8e724d6f290a19945735683d96",
       "apps/wechat-miniapp/src/content/import/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
       "apps/wechat-miniapp/src/content/import/index.scss": "50d8a27d1837df41b6942abb66100d110536e9388417ab852c424e87d04487f6",
-      "apps/wechat-miniapp/src/content/import/index.tsx": "0c3b1dedfe82dbfc8d3b78515b4091a22b69a968f1881da251ad1402f88a51bc",
+      "apps/wechat-miniapp/src/content/import/index.tsx": "2a9782d41f016f3b9851bf706b15c703f7007d25a55620b1e2df195d37e12d4a",
       "apps/wechat-miniapp/src/content/plan/detail/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
-      "apps/wechat-miniapp/src/content/plan/detail/index.scss": "b71a025fe5e53648aa57d5c5e3baae9bdf116a63d467a4b6fd880aeeb263e76b",
-      "apps/wechat-miniapp/src/content/plan/detail/index.tsx": "59ab5f9604994990f7cf52dcbf3b4eff0097c11de6c37012a1df038b0af85d70",
+      "apps/wechat-miniapp/src/content/plan/detail/index.scss": "9a8bff76702f8ecdaa0a3a6a4bed6764e17e42e4691d6e2b4e489f01a09be6e9",
+      "apps/wechat-miniapp/src/content/plan/detail/index.tsx": "3ed4c20e51f1fbf4355f07e3e69583d80eee5c7792516006536cad32afb0ce5e",
       "apps/wechat-miniapp/src/content/profile/links/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
       "apps/wechat-miniapp/src/content/profile/links/index.scss": "daf4766bffe8159b14a04bc17b259cea15e520625072e14d1dc1a2572484db5d",
-      "apps/wechat-miniapp/src/content/profile/links/index.tsx": "ce6fb1b320d49ecb7de5bd53cd17d518e7272b9bbab22734d2ade434d0e07074",
+      "apps/wechat-miniapp/src/content/profile/links/index.tsx": "5dc65562f2f61e82f58fe4e09af4b43c4cea6fbfcb82a62627eac580fe01f808",
       "apps/wechat-miniapp/src/content/settings/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
-      "apps/wechat-miniapp/src/content/settings/index.tsx": "72b53214db016fc0ac4534543475a5f5b489d79242ba07f0f2baf4d00f0fb973",
-      "apps/wechat-miniapp/src/features/my/my-library-page.scss": "7ade8b7a421c68f111976ed911f250d21c6ea91b0bf1b5c23c7f3c8a3ca94b13",
-      "apps/wechat-miniapp/src/features/my/my-library-page.tsx": "93822171a7d7a967bb412692462dd6c2378bc5111d07a76ece21358a8e54ff5a",
-      "apps/wechat-miniapp/src/features/sky/spot-sky-page.scss": "3ba062b74cec02b07c98439069bc5f393441aad87cea90f27b268ad8e9e2ac0f",
-      "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": "2d5a379c366251d3c6b39d74ac6f3d2ed93988c412af9e26b992908e96951523",
-      "apps/wechat-miniapp/src/features/spot/spot-detail-page.scss": "44ea49cc1c36a09c1fc3733284025010a873f8a143035816b283d639474ca971",
-      "apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx": "3cc63c405c17252fddf7d8ccfb1dea82269ec569b1d8a9092e83a8033e646331",
+      "apps/wechat-miniapp/src/content/settings/index.scss": "7cc64eb201d8b852c4a9ef1c0be21497a83b667adb820f5f1f9c37b201481545",
+      "apps/wechat-miniapp/src/content/settings/index.tsx": "d70957702eef429850979b942708de5b3b090638ce1d8e198e23e5a630fc1ad7",
+      "apps/wechat-miniapp/src/features/my/my-library-page.scss": "2af0e9a18d829d362f0b7faab530668ddfc978ecec9a3a108583f5b006879e1c",
+      "apps/wechat-miniapp/src/features/my/my-library-page.tsx": "356b7232848d34fbacb0f9e39eca9af67cb4e2747e22d843642c0a574984c836",
+      "apps/wechat-miniapp/src/features/sky/spot-sky-page.scss": "fdc3289c803ee544ce1b48b374d408fdb2700ced61f0a81f3cff95b7a5d107ed",
+      "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": "1e892772aae0df0670e96b7342e53ad9566cbcb42d46c4f4c741e02f02266bb8",
+      "apps/wechat-miniapp/src/features/spot/spot-detail-page.scss": "3000116a9e506c583f738ecd53126e0dc89b0c3fc1474310b3324579561a1a68",
+      "apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx": "c299cb2e4bc9683f0541d9e05f0cb2ae3ff7d1ef0af8701db0895bc1c2151c1c",
       "apps/wechat-miniapp/src/hooks/use-favorite-mutation.ts": "4a3da9754ba49a06a9ef2a7b6efcf84f3e6bd76b274dbbfaf8df2d3f166e7d30",
       "apps/wechat-miniapp/src/hooks/use-preferences-sync.ts": "483f68b169ab32f9bb8e52cb555d2b59eec8e11f0cfc6bd8676daffbedc102b7",
       "apps/wechat-miniapp/src/hooks/use-resource-query.ts": "52cb8636502e79be0bed2b3734cd66fa358e95e74f4d66f84669be75271ad455",
@@ -105,8 +110,8 @@
       "apps/wechat-miniapp/src/pages/auth/index.scss": "1a9af4bbab7aa2e7652b267b632421677695a9ea970c3db77bcbbf9c2038a5e0",
       "apps/wechat-miniapp/src/pages/auth/index.tsx": "4d7707158ddc51b465bc87b434e9987eed45b0f723bc855939ed04eb58f97eca",
       "apps/wechat-miniapp/src/pages/map/index.config.ts": "1697f0ffe18bbd9a07dff8eaddc0762ca452bb0b37c5ebbd8562c3f268cd273e",
-      "apps/wechat-miniapp/src/pages/map/index.scss": "2bb0ed355df4e17b90da019cd01b2cbfce6cf4054365694d902a2c24e639f2ff",
-      "apps/wechat-miniapp/src/pages/map/index.tsx": "f2e5f5d83ccc8ac01e4af3c08895118377a60a697fc0e171feed15b10e242bcd",
+      "apps/wechat-miniapp/src/pages/map/index.scss": "ad24b1f4de4f7112a1919459d0bd720a1abbeade3949f721bd3263ee0e2a5d5a",
+      "apps/wechat-miniapp/src/pages/map/index.tsx": "542d0111762985abdcac48135186f1a1ea39a829a8404d404c97037454793505",
       "apps/wechat-miniapp/src/pages/my/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
       "apps/wechat-miniapp/src/pages/my/index.tsx": "28f5aa3d18aa77e98b8bbe64a1992c619d7510bbe9b056d31400a422c98baf02",
       "apps/wechat-miniapp/src/services/acceptance-diagnostics.ts": "83f9b36055e19a0c4c676a8692cfc30232b0f8b11733d04b4ce359b8c090a9f1",
@@ -142,58 +147,44 @@
       "apps/wechat-miniapp/src/spot/photos/photos.scss": "e528068c3bf962c31eca7a468d1cba381ba3cc8094aeda9421b87b85730c67a8",
       "apps/wechat-miniapp/src/spot/sky/index.config.ts": "af3a11f3a03fa39191dcd2f47117ea43cdfb9e8d48fb18b94aeed80b05ad1ab5",
       "apps/wechat-miniapp/src/spot/sky/index.tsx": "d46806a753def234e728aa238e9aaf08c49641666dfaa9ae98c86daa5a425f89",
-      "apps/wechat-miniapp/src/state/acceptance-bootstrap.json": "0785582c0bc7c78506d615708c90e6938bee6fbd1bab1318fc22f35adc43c805",
-      "apps/wechat-miniapp/src/state/app-store.ts": "57d6a3aea61778b1df0b09061959f9f12e5cdda30a815c9c74858e75e65ffcc3",
-      "apps/wechat-miniapp/src/state/app-transitions.test.ts": "a11db53bcf50ff0ddc988697f7006f21c28981addf8815db2eed9c8b15a11a2b",
+      "apps/wechat-miniapp/src/state/acceptance-bootstrap.json": "b514b0cd3e546d8542a77907e5a452101d5d3cd642df71ecd7d6b5de39ba2396",
+      "apps/wechat-miniapp/src/state/app-store.ts": "4b72bc79e38e35cbfd87181e0c398754e4fbd5267fd83be0f6b23dcb45fa51f1",
+      "apps/wechat-miniapp/src/state/app-transitions.test.ts": "1844b7816bf14f62cd84ecd6c4f21b9b7d77992c0761cfd597e62e8ae747f67a",
       "apps/wechat-miniapp/src/state/app-transitions.ts": "9c2aa0360c3975ce841bbf214fee4981a479381fa87bf7a743b3bc1d28e5460c",
+      "apps/wechat-miniapp/src/state/notification.test.ts": "6edff2faefc834b6f281ea8f17fd0cf4e83fa0d28887e930df1749f4b818b819",
+      "apps/wechat-miniapp/src/state/notification.ts": "e80f9177c6e513c618dc883fa111c44a88c2764566e1a38fb460380a39cc8693",
       "apps/wechat-miniapp/src/styles/tokens.scss": "5e11c083fc2ce19bbd905eb742f07a36dc763cdb0988d8c3d58cb7e1fc40add5",
       "apps/wechat-miniapp/src/theme/native-chrome.ts": "b0220340217eb98eeeb854a117cccdd1c0e6bdd06ecc993bdded65d73ee0508c",
       "apps/wechat-miniapp/src/types/global.d.ts": "f2007fa957c642573f5876863f104f8c355b24ed57c9f2c866995542815a3d5a",
-      "docs/design-resources/miniapp-selected-handoff-2026-08-06/miniapp-complete-product-selected-v1.md": "d1e9513b93dc75319f6c2c2d37a242898803c16bf2266fabbecf44aa330d5ba3",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-01-flow-route-map.html": "6bae53abb1182f7ed88402a677996eb45902331f5b8d40b9eea1f3ece01498ea",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-02-spot-detail-prototype.html": "38ad5bbafbcec0fb3f0fccd70828758e3680ef50beaa0e70c9422664634fa414",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-03-spot-night-prototype.html": "ba24315112fb385ad61602fe0436829f2f92c3c681b418010859519c08103ce0",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-04-my-content-prototype.html": "34af973cd4ece4ad000da63fc456f0f6f4e57c93a0f27f6a5bcf3eb16cd2e59c",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-05-shared-component-control-atlas.html": "fe9674eb2a304ba0a530045f194db1b9217171aa3edabab62d701bba76fc9d44",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-06-cross-app-interaction-motion-accessibility.html": "c3b827b8700a21f3d04a5079e91f78187615ddf7e50aa9818517c491d1478615",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-07-responsive-mode-state-matrix.html": "b043c46ae6dbde8d83d1ae1e7a12ccd80bb781f02d81aa5dc7d5b6e255108319",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-08-semantic-asset-atlas.html": "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-01-page-prototype.html": "f079fa7d4ff5277e89ee2fa75413cf9471d52d2bd64da2793d9f6908293d32d2",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-02-page-anatomy.html": "ca8f635966a7827cf914985132d13b52857d36e25529c70559a42e4bbde12f9f",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-03-component-control-atlas.html": "27a25286f48d8a8746f98849cb8fa602a0d18610d6ae24b1e88090c90cc14cc0",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-04-interaction-motion-accessibility.html": "60263d4d398299ccdecda8aa2e81ab2c511082d01f3ad23b6b6d51dfd95ed198",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/design-system-snapshot.md": "7e8cd38dd19a98ccc863d1d156c3cf462de415549d3e8d961863b382135132b7",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/fact-manifest.json": "91b4261b8bb0572473bf179cabf1af3992b3d0be3639a4ac9c397665b2df92b3",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/frozen-inspector.mjs": "600d46e51db611a41cf0ef85609530a9f5d25f64c2543d59fbb380fb15dac25b",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/frozen-oracle.mjs": "2282f4336b265970d1b0ca4711f50822646a94c619006ad0eaedf077b112657a",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/index.html": "09565ba3cc83d6946b5ff667d5e188a2a22a983260739ab05ccfeaa46fc835ec",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-01-flow-route-map.artifact.json": "ddfdc5910e69d95763a7844d86e282ebf98082cb54a894fd025f2b8b02d96702",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-02-spot-detail-prototype.artifact.json": "0269e098d7ba7f259e0637a9a4b0cb42d042cd8da92998d840adb8977cd5e22e",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-03-spot-night-prototype.artifact.json": "af5b8049e29598fd431d4776a08fc80cef422dfa21f3b5c83424dbcf5d07425b",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-04-my-content-prototype.artifact.json": "a7dfc291daee1fb3c01f21f277798826bb3816bbcf5fd24d8f526498a9cd41b5",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-05-shared-component-control-atlas.artifact.json": "9a03902502803741130e06107c8d4b305045702a0dbe51e31e960e083d4a61db",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-06-cross-app-interaction-motion-accessibility.artifact.json": "2b854d18b73a689aaa131ca11b5f04e0597eb62a0c4711964bba2ff92690b2d8",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-07-responsive-mode-state-matrix.artifact.json": "21f9f23e5d237cd9d478e8a93010bd15dac2b5bad9f85648f200e6f8f6eabee6",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/app-08-semantic-asset-atlas.artifact.json": "4cffdc090a29106efe15c1f65a51256dbb6a5dbcbbbe7c0a160c21b4864b9e6d",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/map-01-page-prototype.artifact.json": "6ac2e199fc7a5ce38ebe7e5411fc562526468671a4f758e109714fe3b708aa9c",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/map-02-page-anatomy.artifact.json": "84c17c1453d56488d40e8bb1541a2fd3800ba5f8939795fe526ef87eb02dae7f",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/map-03-component-control-atlas.artifact.json": "6d548c95cf8f7b4102acb70a608e58315a54d4797d655b28048bb91251cbf1b0",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/metadata/map-04-interaction-motion-accessibility.artifact.json": "d12e3da4969c2906e57ef38911a94d4a0a7b1c02c55f9f104db40abe1d095931",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/proof-parameters.json": "f7c8db5be98e3218e340506881a88b1df967967c81be5dfe82432965ac8e129a",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/proposal-reconciliation-index.md": "583f5cacb1a048a69cd8fe9087823d8622acc68615a9417c706f33a85a10d1e2",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/render-environment.json": "9ff396b1e41299af09b5565f85b9fabf70c610a3da5a8b7320efdbafeaac2b74",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/resource-integrity.json": "d7f2d03fa5a156422dd92d771fc0fdf4f2953d131e35760c9101a9cf5b68fede",
-      "docs/design-resources/miniapp-selected-source-2026-08-06-v1/selection-and-qa.md": "8ee14bea74a64a992e1f0ccf09436710436353229de86f973876c9eafd7504fc",
-      "docs/wechat-miniapp-v2-source.md": "43371183a5dd6ff65701f71aa4bf0f65af6502f8121f127b55f94f6d5c904cac",
+      "docs/design-resources/miniapp-selected-handoff-2026-08-22-v3/miniapp-drift-correction-selected-v3.md": "f78dff0deb579ee8435ee32b8ef33a10bb97d8dcc7f4584d4c7579614455cf7a",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/README.md": "05efea432e6482f2e03f32352d9379883609742bd262c5b7b02c457a33cda406",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/design-system-snapshot.md": "0e7bae98b00455b604839da4cdc4f9a92b534d3adfd970ed8980ec99b8ae7eba",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/fact-manifest.json": "1718e207fea167757453f558adb9fa143103498f4eaad369f4e927183e265605",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/frozen-inspector.mjs": "a1f4eef7b25fe4a4357780b5a6160618e11c27ec1ab7a790332654e6a2aa61a8",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/frozen-oracle.mjs": "d23ef05300fc448ac21a594c8f91deae77a7a41756bf94bf4a89ae97c7d0159e",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/index.html": "9f7e60c1233d76d9a00800d594af273cc9ecc5f537840ddc4e72a407286e5e31",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/proof-parameters.json": "8717567b31a8dc843afc9769b96c09491b55cc1566196cbd008b54e83dbd5e8a",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/proposal-reconciliation-index.md": "1e112923fae63e826be923167586674d00a4dd09931aa1d0ca502275c5a478d3",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/provider/README.md": "dd6699cfc4d28ec88ad82b473b196f7911244c70652ace4d8db4fe8b04f40409",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/provider/brand-spec.md": "c1552347fd06724a45b12acb51032a8619a94f9b3b6aa36361a824a184e6dfa1",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/provider/index.html.artifact.json": "258ecfc3b548ab004ddc158713f6f478a5c764e8e6434d0b37e80199372a23e9",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/provider/resource-manifest.json": "754ae81ee957ea672ad9199c1cdea09737a74ac00632ad8a8e675a92bac2582f",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/render-environment.json": "2c87e3c38a1f0d31aca9b57c1b97d400219436121033dec71347ceaebd55c4a5",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/resource-integrity.json": "7dfd04efbc6a8577699e1b48c2b077fd3dee20f18cec822999a1622e6ad70028",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/selected-requirement-dispositions.json": "d70651613570f9bef7fd029ad05aa628e3bb22fb5a6f93822565477c25989d70",
+      "docs/design-resources/miniapp-selected-source-2026-08-22-v3/selection-and-qa.md": "a0de9a0a4a983712d336cba8b0f436651589314df5526c015ff2c58ce25f66c3",
+      "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序产品方案_V2.1.1_LongTask输入定稿版.md": "ee158a18e81f0ed5cd8051fa8cd6cfc009ef4782eedb7c17ce11674acecaa42e",
+      "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序技术架构与技术实现方案_V2.1.1_LongTask输入定稿版.md": "77a510c8a5fe32c425bebb5d113028ccb275ba9443c3678ef7dc40eb9e6be7da",
+      "docs/wechat-miniapp-v2-1-1-source.md": "f2a29578af72b0eacc2cadf054ccfb081a099af641d85b057507e1578d09d564",
       "infra/miniapp/docker-compose.yml": "27f643d9e917129066f388506e6b44dfa94927593c11cc339c60532cb5101268",
-      "package-lock.json": "d4f18a7a540383780f5cec526362796b0d616cd345c67292664b64f97bb20661",
-      "package.json": "2d169b08384ccea236c5593bff8c99804666b225486654fada26f75a9ddd048f",
+      "package-lock.json": "ffcd12dbc355e5b0029fabedf39ced5fcd2097b88a28e2eef22b3daca21621ab",
+      "package.json": "5079349d70054c47baec07db1eaa5370df69c5af496ef43ba85617e361eca4a7",
       "packages/miniapp-contracts/package.json": "2cc152bfd37470a538e7060d5dce00c66e54832e58bf815de148bc7cfdd6a1b4",
       "packages/miniapp-contracts/src/api-shapes.ts": "ddb1963f9b1467eb2714cdaf645dce8fb673851c91775a080cf0679be70025ed",
       "packages/miniapp-contracts/src/catalog.ts": "94c3eaf459a12788ec7f6e0b178adf14f0de0dd73428c808f0f61e332d697648",
-      "packages/miniapp-contracts/src/contracts.test.ts": "280a73d12315d83918bd87d0c0c7e2c30a30f0acb4e07cb7b01002d0675af7ff",
+      "packages/miniapp-contracts/src/contracts.test.ts": "19261718277791dc28182a3576bddf9ece2e4213aca37e3be00d36463591d458",
       "packages/miniapp-contracts/src/feature-flags.ts": "877074a3c040a61cc2bcb3eb69f7dae5e50ed72350022b6c5ea508ab82c7a9a3",
-      "packages/miniapp-contracts/src/filters.ts": "f4e06977a5c77578f005645d858601121f0f7590ec1c05716514060410baf687",
+      "packages/miniapp-contracts/src/filters.ts": "84e50219cc86dea5558b5187e34fbf7acd2b774a6ad99a7de70309186f57ef24",
       "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts": "752b946265a493dd0cc13ce3a54fd0cc62880e398d049c22867574ac35735a1a",
       "packages/miniapp-contracts/src/index-types.ts": "83f7703e14e2879234deacf0a9cdd388820937007663065ab67971db7de49534",
       "packages/miniapp-contracts/src/index.ts": "3d8b8f3f36717903e1a01571b93935c5cc8fe5ecc7f59a8f817cea1e9db63764",
@@ -203,12 +194,12 @@
       "packages/miniapp-contracts/src/url-policy.ts": "f456f5fc00a1223291a22b98735cf01f2f6f14f51466f90b6c12d8eff0bf6954",
       "packages/miniapp-contracts/src/viewport.ts": "e4f2f450abe6b1cbde1a6b0decf3c97ccac27862831cb8f4e1bc4e6109bd12e9",
       "tests/acceptance/miniapp/acceptance-state.mjs": "5deac26b9cf20575513bfaa370865b3f87c7fd0b6dc7e86d3096edf5ee1f45f7",
-      "tests/acceptance/miniapp/design-conformance.spec.mjs": "d0f666d6d215784626f62080bfc431d1d19bb16bfcab44f48e60be60852395ce",
+      "tests/acceptance/miniapp/design-conformance.spec.mjs": "d657566bda99373d830c713efc9a093d664282adda2a98aa0623ac70692143f7",
       "tests/acceptance/miniapp/playwright.config.mjs": "817bf6d535d7efa9eeaa0bcbb73b813e6295484851a0e815357c26f35ed45e5d",
-      "tests/acceptance/miniapp/ui-proxy.spec.mjs": "e579c9fe554100e8b2864c5cddfdd715cb9331a4dc5c69712df5e4ccdec2d22f",
+      "tests/acceptance/miniapp/ui-proxy.spec.mjs": "621922adcbc6c103a0d8d2d0ce908e5c9b83291d4215c7d2da03c2a2695b5bb8",
       "tests/acceptance/package-lock.json": "aed40d62eceb91c0da821f507feea6c31d801cc2b3cdc2fe761d8001befd04d5",
       "tests/acceptance/package.json": "e5daad13034d60715f5ff9b0997a95be2a41ed1381047abf6a71eb2e6351032e",
-      "tools/miniapp/apply-ty-context-harness-compatibility.mjs": "e6f94a3870549ff9d94d8faadc4f8bbb03d8c6b39c4169605030a2c3615661cb",
+      "tools/miniapp/apply-ty-context-harness-compatibility.mjs": "206a8d46916b894e59e3cd77dcd66cf78f0a18e14a8317f0e81bdca083145598",
       "tools/miniapp/backup-restore.mjs": "fe4b2162d84e9749e516691787604654c73aaa4807d0523cffa1d61aa15e3920",
       "tools/miniapp/docker-compose-runtime.mjs": "a30be06ba07682a65b1e19aac0799e9ec0000547186470bafdc333f1240c3bef",
       "tools/miniapp/extract-selected-media.mjs": "f7a8abf4215fc58a366c77df18cfc1d8aa6693b7b07de5c2b3201736ce4f8a8a",
@@ -219,16 +210,17 @@
       "tools/miniapp/generate-tab-assets.ps1": "2bbdd52b1b8c371b7797add6567fe4ff63194d73de2fd3f221db6430cd0ba65a",
       "tools/miniapp/invoke-wechat-long-task-proof.ps1": "547ee773dc4c93fd6f72f1ad065321f717481e5c3d6d4065b356391f032d0e2e",
       "tools/miniapp/run-infrastructure-check.mjs": "4b9b195eb11bc078ecef0703fd336da39437b6f3b893b9743102dc7cc26fcb0a",
-      "tools/miniapp/run-wechat-devtools-session.mjs": "f48ed4df355838a7f75ea5b00eed9e496828cc99b028fb0067ef1bedcf54d7a9",
-      "tools/miniapp/selected-design-bindings.json": "0fe9f20c38b0ef8739647719880a57fd06075339ff0ca529cb276720d9025ca3",
+      "tools/miniapp/run-wechat-devtools-session.mjs": "4a29ab2407a2a1d5fee7037bd3c53058614552470faf8758a15334246e63c4ba",
+      "tools/miniapp/selected-design-bindings.json": "341a188910f9d76870240c954e2e83a0c117ce2d9017d6b5a37faa39c77c9c93",
       "tools/miniapp/start-development-session.mjs": "9bf9ed80f3e4bc0661d3e28ef1369d67c58098f38007a4c38f8f3f2ba4e0e836",
       "tools/miniapp/start-h5-acceptance.mjs": "5703488ebb99dc2da84a5923824c339b0e36fb57dbd02c2e4059d70cf842220f",
+      "tools/miniapp/verification-spec-v2-1-1.json": "0597f77b81f6c56119134850a5a88eb5f28b01f9fa68647bf5c5e7ac134f4d92",
       "tools/miniapp/verification-spec.json": "1496766c2908d8183ee041c726a9ddc1d1bae1e54705b67449d17653b73ec8b3",
-      "tools/miniapp/verify-miniapp-target-launcher.c": "fa813c6a5cd0b6c36bda6c835238a8bf773c4a21d3907ef72b7c9e9ad8e3e6ea",
-      "tools/miniapp/verify-miniapp-target.exe": "956b85ca21bcdaa0250de72007349445debe5b593c7f8a24a8d5194b91ac6019",
-      "tools/miniapp/verify-miniapp-target.mjs": "ff8860b1dc2cf0a1dfc2bcc3769632db50cd291664a4c35c561b5fe3e7723bdb",
-      "tools/miniapp/verify-selected-design-bindings.mjs": "95f8156681c6155c3bb381377603a251fbc4a6f8f093e73ea518c45d13a0cd35",
-      "tools/miniapp/workflow-conformance.test.mjs": "f84bcae7237b0d2950a5ff06b298a1cdbc9593836375b3b6985dcf5b99123bff",
+      "tools/miniapp/verify-miniapp-target-launcher.c": "68caa14c5781e5c976e0c82c0ab9574c6b066baaa17123300b8cee6dd3d452cc",
+      "tools/miniapp/verify-miniapp-target.exe": "a343abf98a2c030aa8aef2e2c8d54e0ebd19da552fb77b58b5b6602c215e3581",
+      "tools/miniapp/verify-miniapp-target.mjs": "9f127df775b02c0aa320894e654f885b428d4d0a67d5ac7ce8d74af13d84b505",
+      "tools/miniapp/verify-selected-design-bindings.mjs": "ba8221a3bd9319d7614ad4641648c3ff296da7e2c0b3033681556fa914212400",
+      "tools/miniapp/workflow-conformance.test.mjs": "39d35ee66770cdf2210929f62b40ab2b0720a6f7b19452e08b76c7469e19eeda",
       "workers/miniapp-api/package.json": "8d506bd98928240f9fa321df4517dfc985f8c0d41b95bdf60caa3906c8b6f859",
       "workers/miniapp-api/src/acceptance-controller.test.ts": "bd216628b7cb3c363b1ae934983135081b56de1d568fb2c09fc5eaaef51fa585",
       "workers/miniapp-api/src/acceptance.controller.ts": "678abdac05f8098c1b00d474f2fe6272d193734c906705dce2496673b46e3eb1",
@@ -249,7 +241,7 @@
       "workers/miniapp-api/src/main.ts": "fa67a40b0323603b62b60840732cba6138e4e8c5a462b03bb519d029ce0b6bf7",
       "workers/miniapp-api/src/miniapp-api.test.ts": "607a5cf636a8eded510606b306deb9e843f48c690ac4d2c6745003fcffbca389",
       "workers/miniapp-api/src/miniapp-infrastructure.test.ts": "607761aab2c01d8da57a086d0679077a3606ea8a29be845525d1ec65036ecadd",
-      "workers/miniapp-api/src/miniapp-service.ts": "9f4bbb63d559a3cffdbaec70619b2ea629a02e8d365bc49e5fe06ed2032d83bc",
+      "workers/miniapp-api/src/miniapp-service.ts": "48735a987d629dceb56cb5310d7d750540a51fac22af4a8953b165b168238e95",
       "workers/miniapp-api/src/outbox-worker.ts": "bdaa0c00c77132fc3ecf9aad85fed62d251715d869de5c34c5bad8c65bae3858",
       "workers/miniapp-api/src/ports.ts": "c048adb5a73c139d949538246f374eae50de89224c9e3fbe7c6748e490734100",
       "workers/miniapp-api/src/postgres-repository.ts": "315e209f79698067d3bd8addc5dcec9337d421640185ae9d70e8acf0cb0c83a6",
@@ -259,18 +251,23 @@
       "workers/miniapp-api/src/security.ts": "3915799f54041664c1a110c1d6274460e7abd7b83bb395602edfb57429d43249",
       "workers/miniapp-api/src/worker.ts": "f57606340f39b548c830988890c79dbd7e7b3d0a5fff9bfed5a7abb1a75c0652"
     },
-    "sha256": "8384d970782e03d82e59b1482cd9da0974acdf09aa380c8808f66c7f2b230219"
+    "sha256": "314af36fe4788ce58201512d0c184177c7ee3494df156d04fb5bea40fe1215d0"
   },
   "authority": {
     "product_v2": {
       "passed": true,
-      "expected_sha256": "602592e4143050ff93987da3259833f4e642830b85e885c0e28d30162ca69058",
-      "actual_sha256": "602592e4143050ff93987da3259833f4e642830b85e885c0e28d30162ca69058"
+      "expected_sha256": "ee158a18e81f0ed5cd8051fa8cd6cfc009ef4782eedb7c17ce11674acecaa42e",
+      "actual_sha256": "ee158a18e81f0ed5cd8051fa8cd6cfc009ef4782eedb7c17ce11674acecaa42e"
     },
     "technical_v2": {
       "passed": true,
-      "expected_sha256": "bd15c4159c9b72ca31be3418816efbc6619b0c4ae9ded552a2bbef82bd35e190",
-      "actual_sha256": "bd15c4159c9b72ca31be3418816efbc6619b0c4ae9ded552a2bbef82bd35e190"
+      "expected_sha256": "77a510c8a5fe32c425bebb5d113028ccb275ba9443c3678ef7dc40eb9e6be7da",
+      "actual_sha256": "77a510c8a5fe32c425bebb5d113028ccb275ba9443c3678ef7dc40eb9e6be7da"
+    },
+    "selected_requirement_dispositions": {
+      "passed": true,
+      "expected_sha256": "d70651613570f9bef7fd029ad05aa628e3bb22fb5a6f93822565477c25989d70",
+      "actual_sha256": "d70651613570f9bef7fd029ad05aa628e3bb22fb5a6f93822565477c25989d70"
     },
     "design": {
       "passed": true,
@@ -279,35 +276,35 @@
     },
     "resource_manifest": {
       "passed": true,
-      "expected_sha256": "91b4261b8bb0572473bf179cabf1af3992b3d0be3639a4ac9c397665b2df92b3",
-      "actual_sha256": "91b4261b8bb0572473bf179cabf1af3992b3d0be3639a4ac9c397665b2df92b3"
+      "expected_sha256": "1718e207fea167757453f558adb9fa143103498f4eaad369f4e927183e265605",
+      "actual_sha256": "1718e207fea167757453f558adb9fa143103498f4eaad369f4e927183e265605"
     },
     "handoff": {
       "passed": true,
-      "expected_sha256": "d1e9513b93dc75319f6c2c2d37a242898803c16bf2266fabbecf44aa330d5ba3",
-      "actual_sha256": "d1e9513b93dc75319f6c2c2d37a242898803c16bf2266fabbecf44aa330d5ba3"
+      "expected_sha256": "f78dff0deb579ee8435ee32b8ef33a10bb97d8dcc7f4584d4c7579614455cf7a",
+      "actual_sha256": "f78dff0deb579ee8435ee32b8ef33a10bb97d8dcc7f4584d4c7579614455cf7a"
     },
     "semantic_manifest": {
-      "passed": true,
-      "expected_sha256": "5dd79e294b1a660860a8466e7023cd6b37bf6edb0b16f782810b22b750e4545e",
-      "actual_sha256": "5dd79e294b1a660860a8466e7023cd6b37bf6edb0b16f782810b22b750e4545e",
-      "source_closure_passed": true,
-      "source_item_count": 291,
-      "template_count": 291
+      "passed": false,
+      "expected_sha256": "0d239c168ac167e05d28a94064b2b86cccd7c1e016713f96d45af81bcdc2e6ff",
+      "actual_sha256": "0d239c168ac167e05d28a94064b2b86cccd7c1e016713f96d45af81bcdc2e6ff",
+      "source_closure_passed": false,
+      "source_item_count": 462,
+      "template_count": 0
     }
   },
   "source": {
-    "item_count": 291,
-    "semantic_manifest_sha256": "5dd79e294b1a660860a8466e7023cd6b37bf6edb0b16f782810b22b750e4545e"
+    "item_count": 462,
+    "semantic_manifest_sha256": "0d239c168ac167e05d28a94064b2b86cccd7c1e016713f96d45af81bcdc2e6ff"
   },
   "suites": {
     "fast": {
       "passed": true,
       "exit_code": 0,
-      "duration_ms": 16631,
-      "stdout_sha256": "49451038adc1e2eb2330e6062e1f989fc9e9bbfa5f86276a19359835d4344273",
+      "duration_ms": 14861,
+      "stdout_sha256": "f35217d8fbcb99abbf2f1a94b5f264c14645aa430f154447344f639bbe57ea41",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_line_count": 113,
+      "stdout_line_count": 115,
       "stderr_line_count": 0,
       "diagnostic_sha256": null
     },
@@ -316,15 +313,15 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 13908,
-        "stdout_sha256": "181d77253ae6c9432d265cebe1d7441e7f9a5eba54d933abcdae710a048d8167",
+        "duration_ms": 11792,
+        "stdout_sha256": "bd0027ecae5c4fe062357d186d776122ee91b1a591ed456570b9fc006572ce7f",
         "stderr_sha256": "30745afe699b237e4868b2f15f702636dd4090c24f37d0388f006c9c50098d94",
         "stdout_line_count": 3,
         "stderr_line_count": 8,
         "diagnostic_sha256": null
       },
       "artifact_path": "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json",
-      "artifact_sha256": "499b9b11ea39ecd5638ce8c765f75a31ba6ab9344c517ec46cee982e30e46172",
+      "artifact_sha256": "3c6efceea3c71c4e1c10867b0fb35c6486c20be62cb3d430232da01a2de5a870",
       "checks": null
     },
     "h5": {
@@ -332,11 +329,11 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 63191,
-        "stdout_sha256": "1eabc97f35c537f5bbcfe8287701ebdc7d6395c7e624b4f1d0d7a96996940df9",
-        "stderr_sha256": "a63085a3c2ba018c7182c2aec70ea37787a936412a8d265b5f830f68b8e0c2e7",
-        "stdout_line_count": 29,
-        "stderr_line_count": 7,
+        "duration_ms": 72289,
+        "stdout_sha256": "bad73a78ef9bc4084d24ff039db52baa201659e50f7110db5774b58be3d42f77",
+        "stderr_sha256": "b629c6d86bcf4671e8033918ca7ea013e9795c2c74dd5d2daefd96ddaed80e7d",
+        "stdout_line_count": 32,
+        "stderr_line_count": 21,
         "diagnostic_sha256": null
       },
       "grep": null
@@ -358,7 +355,7 @@
       "package_budget": true,
       "route_files": true
     },
-    "route_count": 19,
+    "route_count": 18,
     "spot_ids": [
       "spot:sz-astronomical-observatory",
       "spot:sz-judiaosha",
@@ -388,604 +385,119 @@
       "spot:zq-dinghushan"
     ],
     "filter_ids": [
-      "light-lte-2",
-      "light-lte-3",
-      "light-lte-4",
-      "light-lte-5",
-      "light-lte-6",
-      "obstruction-lte-50",
-      "obstruction-lte-30",
-      "obstruction-none",
-      "direction-all",
-      "direction-west",
-      "direction-northeast",
-      "drive-lte-120",
-      "drive-lte-240",
-      "drive-lte-360",
-      "trip-drive",
-      "trip-transit",
-      "trip-no-hike",
-      "trip-no-climb",
-      "altitude-lte-1000",
-      "altitude-lte-2000",
-      "altitude-lte-3000",
-      "altitude-lte-4000",
-      "altitude-lte-6000",
-      "facility-parking",
-      "facility-toilet",
-      "facility-charging",
-      "facility-camping"
+      "tonightRecommended",
+      "bestWindowDuration",
+      "distanceDriveTime",
+      "lightPollution",
+      "lessCloud",
+      "parking",
+      "restroom",
+      "driveUpAccess",
+      "photoForeground",
+      "campingOvernightParking",
+      "specificCelestialEvent",
+      "lowCloudThreshold",
+      "moonImpact",
+      "hikingDifficulty",
+      "signal",
+      "charging",
+      "openSkyDirection",
+      "lastVerifiedAt"
     ],
-    "weapp_total_bytes": 1138259
+    "weapp_total_bytes": 1177244
   },
   "native": {
     "success": {
-      "passed": true,
+      "passed": false,
       "command": {
-        "passed": true,
-        "exit_code": 0,
-        "duration_ms": 212495,
-        "stdout_sha256": "37e124f099ce5f7f1d83670face061954b0232b1c4419a404f595e78b0af904d",
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "passed": false,
+        "exit_code": 1,
+        "duration_ms": 170967,
+        "stdout_sha256": "76e2df16e11431899fa5389835fac84df2fe37adeca35466cf3e87f5883fad90",
+        "stderr_sha256": "5803381b7b1d28125c4f86253f815f7cd0df856a9803b61d1cdc1da9004acb12",
         "stdout_line_count": 1,
-        "stderr_line_count": 0,
+        "stderr_line_count": 9,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/session.json",
-      "artifact_sha256": "bc6af2a0c88f566a1494d5aa633822dd16896f30fb7f591e16b54a983414d487",
-      "session_id": "wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8",
-      "run_id": "wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-21T21-48-20-244Z-49159ed9/session.json",
+      "artifact_sha256": "ddebe08515053591d5f032ffac901b29fb030bfeb414c467fd714d0f3c32b4bb",
+      "session_id": "wechat-devtools-2026-08-21T21-48-20-244Z-49159ed9",
+      "run_id": "wechat-devtools-2026-08-21T21-48-20-244Z-49159ed9",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "complete-demo",
       "mode": "success",
-      "candidate_sha256": "2009f31b40c9c8ef44b0c28d2bac69d36963cd4a87da722af470a0dd5d1bfd8e",
-      "bundle_sha256": "3fa00d172c390ba683868defd6ac506e4691678af9516ac676e7263a4ecb1822",
+      "candidate_sha256": "ab6eaf33f78329e9d8b649476401d7e7147927bdadd6a87b78b2b7306d767538",
+      "bundle_sha256": "d6fd0565892b199f5deb115d273e4dd7f7644d78adac9feca1d76f119168847f",
       "candidate_stable": true,
       "bundle_stable": true,
-      "journeys": [
-        {
-          "key": "map-cold-start-location-fallback",
-          "status": "passed",
-          "root_classes": [
-            "location-default-region",
-            "map-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "c6764051abdba679f4041424ce448db7fd6e01fcb5cedfdef2a1bcfd90f4ca23",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/01-map-cold-start-location-fallback.png",
-          "screenshot_sha256": "2a4963ebdf4758631c256c0ebd1973d1fd27b6c2a0c8011ac084c33dcbc821bd"
-        },
-        {
-          "key": "formal-spot-detail",
-          "status": "passed",
-          "root_classes": [
-            "spot-detail",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "e934f1f6308f202509c7ce265ba350f7eb506ca026c5eed9995c4babc98d88ff",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/02-formal-spot-detail.png",
-          "screenshot_sha256": "55448733f9f4b93fa5144104c4d6047b23a6a36338d02c44cf570d068ae4ee90"
-        },
-        {
-          "key": "my-home",
-          "status": "passed",
-          "root_classes": [
-            "my-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "f11e3cf6335668e7e2833128eecc37e5a09c8c372778c2c5354a200b7573bf5f",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/03-my-home.png",
-          "screenshot_sha256": "7e8ca5d78a98c5d81be0bb0e7c1d5b39faa57ccaa6a370bf523b19ce1f290b28"
-        },
-        {
-          "key": "favorites",
-          "status": "passed",
-          "root_classes": [
-            "my-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "aea83d610acc2237431c8ecd0b56f131d06ffd8b6174859c6b62e5986dc1af26",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/04-favorites.png",
-          "screenshot_sha256": "bb9a5289be882a809f9344ab39f50c31959ab30a3a26a44fcba5d04bb456f191"
-        },
-        {
-          "key": "plan-editor",
-          "status": "passed",
-          "root_classes": [
-            "plan-editor",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "4b92fa39a75a478dfae975792f0bfbeda151ce76ac52c864c8d95215cc1dd6bb",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/05-plan-editor.png",
-          "screenshot_sha256": "342c73f730d86bfff2cfc3287db33fd6c7d31f3b06a3297be46c22d882957bd0"
-        },
-        {
-          "key": "profile-links",
-          "status": "passed",
-          "root_classes": [
-            "links-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "ba7820048102cfa17bc222c5ea5dde52d11ea8e0715be91ac7f10b91f6d8547f",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/06-profile-links.png",
-          "screenshot_sha256": "5df75e52ca87df04720d1ca71fdd6e3be5c0b90658b580116af962b759084fa3"
-        },
-        {
-          "key": "own-post-import",
-          "status": "passed",
-          "root_classes": [
-            "import-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "dce92bc79de4788d5e993fa15c667341f0f4c8a57e43fefb5ca743ad27c396eb",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/07-own-post-import.png",
-          "screenshot_sha256": "5480206821f1a8fdd0d1b54f116ca2c5a9d2065d99425d3cd34ff605d3c07ec4"
-        },
-        {
-          "key": "settings",
-          "status": "passed",
-          "root_classes": [
-            "my-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "48750ae73b9b95a38035813503df8e188e95c62d9473796134da8fd74785d68d",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/08-settings.png",
-          "screenshot_sha256": "780a06f08f08f6abec46fc93b63165d98b70c396493cbdf6fbded6342975eeb9"
-        },
-        {
-          "key": "spot-night",
-          "status": "passed",
-          "root_classes": [
-            "sky-page",
-            "theme-night",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "a3cdd865eb773c2b11b1f1f115f387361666fc68b57d4331c9a7b9855697f8d6",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/09-spot-night.png",
-          "screenshot_sha256": "249bce8b6b2bc0381a216185808482855adea3e42db4fc673b620ce6473ae805"
-        },
-        {
-          "key": "simplified-sky-map",
-          "status": "passed",
-          "root_classes": [
-            "sky-map-page",
-            "theme-night",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "d1182604b79369f7c64b63d3c2c59487e6fb0ed725c9530231a55e4acd7ec098",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/10-simplified-sky-map.png",
-          "screenshot_sha256": "1a65b709ceaac84b005669ee97570e91b4b60b8175505ed8866ec9ae85856fa8"
-        },
-        {
-          "key": "observation-mode",
-          "status": "passed",
-          "root_classes": [
-            "observe-page",
-            "safe-bottom",
-            "safe-top",
-            "theme-observation"
-          ],
-          "root_wxml_sha256": "ea6618a1e5aa968cbb88d888d29be401efca255e19d1c3b2019e09c9f6bbe67c",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-35-06-475Z-70768bf8/11-observation-mode.png",
-          "screenshot_sha256": "3e9200f7818011fe385cd523dc1f05a3de3684f904561ffcf45ac1bf67026cc6"
-        }
-      ],
+      "journeys": [],
       "fault_probes": [],
-      "runtime_observation": {
-        "exception_count": 0,
-        "expected_fault_console_error_count": 0,
-        "unexpected_console_error_count": 0,
-        "final_quiescence": {
-          "status": "passed",
-          "event_count": 15,
-          "quiet_window_ms": 750
-        }
-      },
+      "runtime_observation": null,
       "cleanup_status": "passed"
     },
     "degradation": {
-      "passed": true,
+      "passed": false,
       "command": {
-        "passed": true,
-        "exit_code": 0,
-        "duration_ms": 226807,
-        "stdout_sha256": "d791d855ba1a492fcc36f60c8acbd2ab8d82f195aa734a80e2eb6a5f38448615",
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "passed": false,
+        "exit_code": 1,
+        "duration_ms": 171069,
+        "stdout_sha256": "b3280f45f91c9d80de9155f10abe538c98dc152c5da329ef2ba7bb50976e3228",
+        "stderr_sha256": "5803381b7b1d28125c4f86253f815f7cd0df856a9803b61d1cdc1da9004acb12",
         "stdout_line_count": 1,
-        "stderr_line_count": 0,
+        "stderr_line_count": 9,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/session.json",
-      "artifact_sha256": "890b0fc8b554930378d330af2d0add21e162e59e42b56c5d54ba88535a634e6e",
-      "session_id": "wechat-devtools-2026-08-07T20-38-38-891Z-498642a7",
-      "run_id": "wechat-devtools-2026-08-07T20-38-38-891Z-498642a7",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-21T21-51-11-203Z-0f132d99/session.json",
+      "artifact_sha256": "e0ac44757d18d074fecf86b1c49d1403ab66e71e2ca64d24ddb82efdb689c6ae",
+      "session_id": "wechat-devtools-2026-08-21T21-51-11-203Z-0f132d99",
+      "run_id": "wechat-devtools-2026-08-21T21-51-11-203Z-0f132d99",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "complete-demo",
       "mode": "degradation",
-      "candidate_sha256": "2009f31b40c9c8ef44b0c28d2bac69d36963cd4a87da722af470a0dd5d1bfd8e",
-      "bundle_sha256": "b325d69bec2daad9819cf1943dc7c3ae1c55c8a9f2d73eaca979e9df071c4b1f",
+      "candidate_sha256": "ab6eaf33f78329e9d8b649476401d7e7147927bdadd6a87b78b2b7306d767538",
+      "bundle_sha256": "32f7d22eb8a7e9802bb2189dbd5347fe90d3c46a2069d906d6d27025337151db",
       "candidate_stable": true,
       "bundle_stable": true,
-      "journeys": [
-        {
-          "key": "map-cold-start-location-fallback",
-          "status": "passed",
-          "root_classes": [
-            "location-default-region",
-            "map-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "6d295cafecd527b28ed602e84c0397512f3602c19a7eaadbec9b00bb79e20d31",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/01-map-cold-start-location-fallback.png",
-          "screenshot_sha256": "d3e62ba1d862d8b6e8437cff9de8ba50c56e4e9d012434523f8551207eaa9a4c"
-        },
-        {
-          "key": "formal-spot-detail",
-          "status": "passed",
-          "root_classes": [
-            "spot-detail",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "fc04afaee49546c5396a9e497680bf2d3cbad1efe2bb8448258d6f7cec8f786e",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/02-formal-spot-detail.png",
-          "screenshot_sha256": "8f389c3e42c092f603c19d39c3695c789853ecec9fe683c58890957a93fd4b27"
-        },
-        {
-          "key": "spot-night",
-          "status": "passed",
-          "root_classes": [
-            "sky-page",
-            "theme-night",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "0a0e4efc8a1a40634db04e7bb815a07a88cb02452c5225750768a26c884b3c08",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/09-spot-night.png",
-          "screenshot_sha256": "5218dd8328a7df7617014ad095428f8da8880335bc2768ff39652cd3e58f0f1e"
-        },
-        {
-          "key": "my-home",
-          "status": "passed",
-          "root_classes": [
-            "my-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "b9a6c5ac6cac3f0943372e4f214bfffb6b8aabe93f6af9a268cf979093fe7169",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/03-my-home.png",
-          "screenshot_sha256": "7b5d81dbb390b601c14757f349ba8ffc1b2efdc1f4f9d6622227b041a898219d"
-        },
-        {
-          "key": "profile-links",
-          "status": "passed",
-          "root_classes": [
-            "links-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "6a152f3f3c6d17ea2f5fa5f8528e0a3ef8697a64cbea331a0e2e15359cc1ffcd",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/06-profile-links.png",
-          "screenshot_sha256": "0ca5a9de2c6c8a5e5e9b38d62f2655afa64a864ad796bcc8023b58e5e6e1d610"
-        }
-      ],
-      "fault_probes": [
-        {
-          "journey_key": "map-cold-start-location-fallback",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "06682b3f421ed887dff54f41fb6a35e6110e631b2e0cc07dc3239b233126bd74",
-          "recovery_observation_sha256": "984bcaff633428e6fbe8cb6f8c77cd7bcc0bbe3fc3bca246447d4ba5c8447ea8",
-          "recovery_control_selector": ".map-refresh-control",
-          "recovery_control_label": "刷新当前区域",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/fault-map-cold-start-location-fallback.png",
-          "fault_screenshot_sha256": "c03a7a692cd9e42bc75cf69dc9649f142a1166024196801122568e87a1a9d8bb",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/recovered-map-cold-start-location-fallback.png",
-          "recovery_screenshot_sha256": "9a4e480eafa00bea8397b77754817e40ed7727849c36e58ccbab8d1e5eccb54e",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 10,
-            "quiet_window_ms": 750
-          }
-        },
-        {
-          "journey_key": "formal-spot-detail",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "6fe26e8395091a2598ff9bfebdd8f07d1474626bc9de920d8f50cb0bf48e031a",
-          "recovery_observation_sha256": "605aed1cc1ffca23629e3f0776d98e34f6c025b06ff7735fe5c5b380d7e879d8",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重试概览",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/fault-formal-spot-detail.png",
-          "fault_screenshot_sha256": "00747d9c9db3a892a6ad272276301a6445ed83364cf01b627c50898991a59fc9",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/recovered-formal-spot-detail.png",
-          "recovery_screenshot_sha256": "8f389c3e42c092f603c19d39c3695c789853ecec9fe683c58890957a93fd4b27",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 13,
-            "quiet_window_ms": 750
-          }
-        },
-        {
-          "journey_key": "spot-night",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "8488d69cd87742d62bb175d0cdadffe3cf51b1644210ec3f630f273ca02a4511",
-          "recovery_observation_sha256": "f74046992c5068bd771a6664809a48bb3eb1d93d13bc5751732174a30398e232",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重新计算",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/fault-spot-night.png",
-          "fault_screenshot_sha256": "ba75991e4592764c7bba7a5deffbff45308892294352920e0f7a5e82e096aecc",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/recovered-spot-night.png",
-          "recovery_screenshot_sha256": "5218dd8328a7df7617014ad095428f8da8880335bc2768ff39652cd3e58f0f1e",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 18,
-            "quiet_window_ms": 750
-          }
-        },
-        {
-          "journey_key": "my-home",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "0dc3ba6d99775104ea37e41e5c46e970741fcb0438a7de1c3e97eb2da33718e0",
-          "recovery_observation_sha256": "07dec0c5f63a822803262b68c9cd7a47ffc1b70d76b3879f2e32e106ba289330",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重试同步",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/fault-my-home.png",
-          "fault_screenshot_sha256": "b24943149092c240edd337b375a3cbab471108da5e820499d9231fe98daf0fa5",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/recovered-my-home.png",
-          "recovery_screenshot_sha256": "7b5d81dbb390b601c14757f349ba8ffc1b2efdc1f4f9d6622227b041a898219d",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 23,
-            "quiet_window_ms": 750
-          }
-        },
-        {
-          "journey_key": "profile-links",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "f3ecd2f2d3d038d9e2e4b5a405c2c180e5e4f9496185125659bb4a260f411403",
-          "recovery_observation_sha256": "e19a4b8efd99c53919dc34528b8d566654f0cbf5635b6f6474c07eac979462a1",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重试回读",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/fault-profile-links.png",
-          "fault_screenshot_sha256": "8de3bcf83df5faf1834e2d63592f79446a68fea6540fa12154614ba97b469a31",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-07T20-38-38-891Z-498642a7/recovered-profile-links.png",
-          "recovery_screenshot_sha256": "533844f36680cac19b3c0cb715cbdef4a4aa8bd008918156953c61d3d81fe335",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 27,
-            "quiet_window_ms": 750
-          }
-        }
-      ],
-      "runtime_observation": {
-        "exception_count": 0,
-        "expected_fault_console_error_count": 8,
-        "unexpected_console_error_count": 0,
-        "final_quiescence": {
-          "status": "passed",
-          "event_count": 28,
-          "quiet_window_ms": 750
-        }
-      },
+      "journeys": [],
+      "fault_probes": [],
+      "runtime_observation": null,
       "cleanup_status": "passed"
     }
   },
   "design": {
-    "passed": true,
+    "passed": false,
     "method_passed": true,
     "facts": [
       {
-        "fact_ref": "fact.hub.digest",
-        "subject_ref": "subject.hub",
-        "variation_ref": "variation.hub",
+        "fact_ref": "fact.prototype.digest",
+        "subject_ref": "subject.prototype",
+        "variation_ref": "variation.prototype",
         "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/index.html",
-        "actual": "09565ba3cc83d6946b5ff667d5e188a2a22a983260739ab05ccfeaa46fc835ec",
-        "actual_sha256": "66977fe95c16ef62321d6edd6538a72510405acaf02a08159dab7c1bdebe0501",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "66977fe95c16ef62321d6edd6538a72510405acaf02a08159dab7c1bdebe0501",
+        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/index.html",
+        "actual": "9f7e60c1233d76d9a00800d594af273cc9ecc5f537840ddc4e72a407286e5e31",
+        "actual_sha256": "b21d2204d21ff9d8a5dffb26dad460c657f2f6803725c7db275ff1935f663cfc",
+        "actual_environment": "canonical-source-bytes-no-render-v3",
+        "environment_sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c",
+        "actual_comparison_parameters": "sha256-exact-resource-bytes-v3",
+        "comparison_parameters_sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30",
+        "expected_sha256": "b21d2204d21ff9d8a5dffb26dad460c657f2f6803725c7db275ff1935f663cfc",
         "passed": true
       },
       {
-        "fact_ref": "fact.app01.digest",
-        "subject_ref": "subject.app01",
-        "variation_ref": "variation.app01",
+        "fact_ref": "fact.requirements.digest",
+        "subject_ref": "subject.requirements",
+        "variation_ref": "variation.requirements",
         "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-01-flow-route-map.html",
-        "actual": "6bae53abb1182f7ed88402a677996eb45902331f5b8d40b9eea1f3ece01498ea",
-        "actual_sha256": "27812c340fe68cdeacdf7caba0910264673b69129dc94f89e929e91c11f2bbd9",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "27812c340fe68cdeacdf7caba0910264673b69129dc94f89e929e91c11f2bbd9",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.app02.digest",
-        "subject_ref": "subject.app02",
-        "variation_ref": "variation.app02",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-02-spot-detail-prototype.html",
-        "actual": "38ad5bbafbcec0fb3f0fccd70828758e3680ef50beaa0e70c9422664634fa414",
-        "actual_sha256": "e22ca68dbe2113f9d25f70f2e68de91362dfd0406945b8ec6c49224c3666ed55",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "e22ca68dbe2113f9d25f70f2e68de91362dfd0406945b8ec6c49224c3666ed55",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.app03.digest",
-        "subject_ref": "subject.app03",
-        "variation_ref": "variation.app03",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-03-spot-night-prototype.html",
-        "actual": "ba24315112fb385ad61602fe0436829f2f92c3c681b418010859519c08103ce0",
-        "actual_sha256": "975e125493b49596d3c325d39e1b6bc7b86f32dd1c7afd36b105860140238438",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "975e125493b49596d3c325d39e1b6bc7b86f32dd1c7afd36b105860140238438",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.app04.digest",
-        "subject_ref": "subject.app04",
-        "variation_ref": "variation.app04",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-04-my-content-prototype.html",
-        "actual": "34af973cd4ece4ad000da63fc456f0f6f4e57c93a0f27f6a5bcf3eb16cd2e59c",
-        "actual_sha256": "9b36c202e53531620e49ff3d381abba53b2ffebb8feaa771bdc729bb1cd34c3b",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "9b36c202e53531620e49ff3d381abba53b2ffebb8feaa771bdc729bb1cd34c3b",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.app05.digest",
-        "subject_ref": "subject.app05",
-        "variation_ref": "variation.app05",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-05-shared-component-control-atlas.html",
-        "actual": "fe9674eb2a304ba0a530045f194db1b9217171aa3edabab62d701bba76fc9d44",
-        "actual_sha256": "1d0705316913953de658b8bd2f05fe21ae25711f40d707d9131626887d5fea76",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "1d0705316913953de658b8bd2f05fe21ae25711f40d707d9131626887d5fea76",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.app06.digest",
-        "subject_ref": "subject.app06",
-        "variation_ref": "variation.app06",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-06-cross-app-interaction-motion-accessibility.html",
-        "actual": "c3b827b8700a21f3d04a5079e91f78187615ddf7e50aa9818517c491d1478615",
-        "actual_sha256": "e1b04be199869bb2d1e1e34ba997e687d54f65d1ef233aba703d1ba72ba5bc88",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "e1b04be199869bb2d1e1e34ba997e687d54f65d1ef233aba703d1ba72ba5bc88",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.app07.digest",
-        "subject_ref": "subject.app07",
-        "variation_ref": "variation.app07",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-07-responsive-mode-state-matrix.html",
-        "actual": "b043c46ae6dbde8d83d1ae1e7a12ccd80bb781f02d81aa5dc7d5b6e255108319",
-        "actual_sha256": "c666fe7ed9e97fc50e20a9ce737181481d6a2c94a0e47bccf610622cf80f9f13",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "c666fe7ed9e97fc50e20a9ce737181481d6a2c94a0e47bccf610622cf80f9f13",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.app08.digest",
-        "subject_ref": "subject.app08",
-        "variation_ref": "variation.app08",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-08-semantic-asset-atlas.html",
-        "actual": "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534",
-        "actual_sha256": "11be8611dc96a9f88e016f60d0d4d223f207062c8d9f42318726b645bcc09161",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "11be8611dc96a9f88e016f60d0d4d223f207062c8d9f42318726b645bcc09161",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.map01.digest",
-        "subject_ref": "subject.map01",
-        "variation_ref": "variation.map01",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-01-page-prototype.html",
-        "actual": "f079fa7d4ff5277e89ee2fa75413cf9471d52d2bd64da2793d9f6908293d32d2",
-        "actual_sha256": "4ba14d1e4589424ba177eaf832874b39d09ebd28880aef5d3628b2782844fc0f",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "4ba14d1e4589424ba177eaf832874b39d09ebd28880aef5d3628b2782844fc0f",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.map02.digest",
-        "subject_ref": "subject.map02",
-        "variation_ref": "variation.map02",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-02-page-anatomy.html",
-        "actual": "ca8f635966a7827cf914985132d13b52857d36e25529c70559a42e4bbde12f9f",
-        "actual_sha256": "8299177a62fec51647534e0838c071ad5ba9d8b919955b00b6cd0771d08e70a9",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "8299177a62fec51647534e0838c071ad5ba9d8b919955b00b6cd0771d08e70a9",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.map03.digest",
-        "subject_ref": "subject.map03",
-        "variation_ref": "variation.map03",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-03-component-control-atlas.html",
-        "actual": "27a25286f48d8a8746f98849cb8fa602a0d18610d6ae24b1e88090c90cc14cc0",
-        "actual_sha256": "ebb91eebbef83e32ee0b78e65c23a617c68ba185cea38bd8766faaae0b02df95",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "ebb91eebbef83e32ee0b78e65c23a617c68ba185cea38bd8766faaae0b02df95",
-        "passed": true
-      },
-      {
-        "fact_ref": "fact.map04.digest",
-        "subject_ref": "subject.map04",
-        "variation_ref": "variation.map04",
-        "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-04-interaction-motion-accessibility.html",
-        "actual": "60263d4d398299ccdecda8aa2e81ab2c511082d01f3ad23b6b6d51dfd95ed198",
-        "actual_sha256": "738daea2d9cb96b1b733b4f37ab315edb81cd4f0d8fae2d8d14637b88db54aca",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "738daea2d9cb96b1b733b4f37ab315edb81cd4f0d8fae2d8d14637b88db54aca",
+        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/selected-requirement-dispositions.json",
+        "actual": "d70651613570f9bef7fd029ad05aa628e3bb22fb5a6f93822565477c25989d70",
+        "actual_sha256": "6e4da2de6ee59c2a4542fa0edc12cda67f4517005c1128ac655a5d37454a0274",
+        "actual_environment": "canonical-source-bytes-no-render-v3",
+        "environment_sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c",
+        "actual_comparison_parameters": "sha256-exact-resource-bytes-v3",
+        "comparison_parameters_sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30",
+        "expected_sha256": "6e4da2de6ee59c2a4542fa0edc12cda67f4517005c1128ac655a5d37454a0274",
         "passed": true
       },
       {
@@ -993,14 +505,14 @@
         "subject_ref": "subject.design-system",
         "variation_ref": "variation.design-system",
         "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/design-system-snapshot.md",
-        "actual": "7e8cd38dd19a98ccc863d1d156c3cf462de415549d3e8d961863b382135132b7",
-        "actual_sha256": "355f3d369927f859108ccb82b3c98428c6246d2dcc0915250b9e591ecb1ffbe9",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "355f3d369927f859108ccb82b3c98428c6246d2dcc0915250b9e591ecb1ffbe9",
+        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/design-system-snapshot.md",
+        "actual": "0e7bae98b00455b604839da4cdc4f9a92b534d3adfd970ed8980ec99b8ae7eba",
+        "actual_sha256": "b2ea1ad04a3e06e1ceb45fdc74683b1e6478d4d6681f0c9115f87095bb783ffd",
+        "actual_environment": "canonical-source-bytes-no-render-v3",
+        "environment_sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c",
+        "actual_comparison_parameters": "sha256-exact-resource-bytes-v3",
+        "comparison_parameters_sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30",
+        "expected_sha256": "b2ea1ad04a3e06e1ceb45fdc74683b1e6478d4d6681f0c9115f87095bb783ffd",
         "passed": true
       },
       {
@@ -1008,113 +520,128 @@
         "subject_ref": "subject.qa",
         "variation_ref": "variation.qa",
         "property_ref": "custom.canonical-resource-sha256",
-        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-06-v1/selection-and-qa.md",
-        "actual": "8ee14bea74a64a992e1f0ccf09436710436353229de86f973876c9eafd7504fc",
-        "actual_sha256": "c84bbe4e44f81f19deb16589bc18855250aede76cafb9765ee154d8655bdc753",
-        "actual_environment": "canonical-source-bytes-no-render-v1",
-        "environment_sha256": "7d28482425617cb8564cb7304eb0f604232b0d29da3945d35b56af83e2ea3a7f",
-        "actual_comparison_parameters": "sha256-exact-resource-bytes-v1",
-        "comparison_parameters_sha256": "9a389d587c183fb5ec078df8a7a109eee886b36e73daef40d89969e60c083f5f",
-        "expected_sha256": "c84bbe4e44f81f19deb16589bc18855250aede76cafb9765ee154d8655bdc753",
+        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/selection-and-qa.md",
+        "actual": "a0de9a0a4a983712d336cba8b0f436651589314df5526c015ff2c58ce25f66c3",
+        "actual_sha256": "3d2bd13539838db169bce9f4553ea1cf3dceb3c8ceb67523851e2313232cbf03",
+        "actual_environment": "canonical-source-bytes-no-render-v3",
+        "environment_sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c",
+        "actual_comparison_parameters": "sha256-exact-resource-bytes-v3",
+        "comparison_parameters_sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30",
+        "expected_sha256": "3d2bd13539838db169bce9f4553ea1cf3dceb3c8ceb67523851e2313232cbf03",
+        "passed": true
+      },
+      {
+        "fact_ref": "fact.reconciliation.digest",
+        "subject_ref": "subject.reconciliation",
+        "variation_ref": "variation.reconciliation",
+        "property_ref": "custom.canonical-resource-sha256",
+        "resource_path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/proposal-reconciliation-index.md",
+        "actual": "1e112923fae63e826be923167586674d00a4dd09931aa1d0ca502275c5a478d3",
+        "actual_sha256": "6d118fd74fe0adc50efdc2a1dadf9ecd4376bd390602985e008059f73e82722f",
+        "actual_environment": "canonical-source-bytes-no-render-v3",
+        "environment_sha256": "f1c681cc60220c16bedd35747d857022864b0481c3ee242a368a4cc249e62e3c",
+        "actual_comparison_parameters": "sha256-exact-resource-bytes-v3",
+        "comparison_parameters_sha256": "bb016afe1a610e610e470d7061eb505c17f62c6eb8f34449e4d37e762fe91c30",
+        "expected_sha256": "6d118fd74fe0adc50efdc2a1dadf9ecd4376bd390602985e008059f73e82722f",
         "passed": true
       }
     ],
     "artifacts": {
       "observations": {
         "path": "artifacts/miniapp/design/asset-integrity-observations.json",
-        "sha256": "1010d96b76d42393d007d1e01131c36bf0cf624b52c24b331ecdb903c3cc0b62"
+        "sha256": "388d02e7c46a372d7bf410b22c9489bc073badba558a0aab1a9888688ccf3b7c"
       },
       "method": {
         "path": "artifacts/miniapp/design/asset-integrity.json",
-        "sha256": "8011a884a2209cf0fcce4b66a5485f66e16af9ee4400a8b7a3317be837e57230"
+        "sha256": "be5b1654be8c67b57c96b129dc50f55bdd2364ba608d8338fcb7e89b31fcdbe6"
       },
       "actual": {
         "path": "artifacts/miniapp/design/production-actual.json",
-        "sha256": "a4ca9d67c2fe956ba5bf1924c17fd22cb427f931f5a19aa8d0a3f6ffc2838ae0"
+        "sha256": "b15f4e9b7461ddb8b40978a37160a995a2d265f0842061c5e739381c3221c641"
       },
       "comparison": {
         "path": "artifacts/miniapp/design/constraint-comparison.json",
-        "sha256": "5cfcc72ebc3b0da242fc6259467a0be0b228593f6000ceede79edf462362dd11"
+        "sha256": "4ea3c1b8f23bd3f691a1cd0c91ca802cf7a53d75b020a097c229f0cb72784d40"
       }
     }
   },
   "semantic": {
-    "passed": true,
+    "passed": false,
     "artifact_path": "artifacts/miniapp/semantic/current-candidate.json",
-    "artifact_sha256": "738c561b94e53dd4724504583b9c42bf847b1c47eddd73ffbaf063d0e9e5a995"
+    "artifact_sha256": "a07f114f78e719fa728d16fb55ea43425536fef17583aaeb162ae1a35468e2f4"
   },
   "global": {
-    "conformance": "passed"
+    "conformance": "failed"
   },
   "outcomes": {
     "map-discovery": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": true,
-        "native_degradation": true
+        "native_success": false,
+        "native_degradation": false
       }
     },
     "spot-detail": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": true,
-        "native_degradation": true
+        "native_success": false,
+        "native_degradation": false
       }
     },
     "spot-night": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": true,
-        "native_degradation": true
+        "native_success": false,
+        "native_degradation": false
       }
     },
     "my-library": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": true,
-        "native_degradation": true
+        "native_success": false,
+        "native_degradation": false
       }
     },
     "profile-content": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": true,
-        "native_degradation": true
+        "native_success": false,
+        "native_degradation": false
       }
     },
     "platform-operations": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": true,
-        "native_degradation": true
+        "native_success": false,
+        "native_degradation": false
       }
     },
     "complete-demo": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": true,
-        "native_degradation": true
+        "native_success": false,
+        "native_degradation": false
       }
     }
   }

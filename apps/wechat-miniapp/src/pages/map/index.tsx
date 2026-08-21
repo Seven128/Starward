@@ -1031,9 +1031,11 @@ export default function MapPage() {
             <View data-od-id="map-permission-state">
               <SoftButton
                 label={
-                  locationState === "DENIED"
-                    ? "重新请求一次性定位"
-                    : "请求一次性定位（仅在你点击定位时请求一次位置权限）"
+                  locationState === "DEFAULT_REGION"
+                    ? "请求一次性定位（仅在你点击定位时请求一次位置权限）"
+                    : locationState === "DENIED"
+                      ? "重新请求一次性定位"
+                      : "更新一次性定位"
                 }
                 onClick={locateMap}
               >
