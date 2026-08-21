@@ -200,7 +200,9 @@ test("Spot Detail has three tabs and hands a complete observation-night context 
   await openDetailFromMap(page);
   const detail = page.locator('[data-route="spot-detail"]');
   await expect(detail).toHaveAttribute("data-spot-id", SPOT_ID);
-  expect(await detail.locator(".segment-tab").allTextContents()).toEqual([
+  const segmentTabs = detail.locator(".segment-tab");
+  await expect(segmentTabs).toHaveCount(3);
+  expect(await segmentTabs.allTextContents()).toEqual([
     "概览",
     "攻略",
     "场地",
