@@ -1,0 +1,4 @@
+{
+  "identity": "canonical-source-bytes-no-render-v3",
+  "description": "Asset-integrity proof compares immutable selected-source bytes; it does not claim production rendering conformance."
+}

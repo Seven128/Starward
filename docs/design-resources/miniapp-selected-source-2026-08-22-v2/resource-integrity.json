@@ -1,0 +1,26 @@
+{
+  "schema_version": "starward-selected-resource-integrity-v2",
+  "algorithm": "sha256",
+  "resources": {
+    "prototype": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v2/index.html",
+      "sha256": "9f7e60c1233d76d9a00800d594af273cc9ecc5f537840ddc4e72a407286e5e31"
+    },
+    "requirements": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v2/selected-requirement-dispositions.json",
+      "sha256": "42cca805584baedd7baea44f7ed82cdf47065385ab75066c47b5bb87874f12ce"
+    },
+    "design-system": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v2/design-system-snapshot.md",
+      "sha256": "e56b8bd97389b99a9f04a87d91d49d6da4ff8d59925e15e0c47da24370b0d335"
+    },
+    "qa": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v2/selection-and-qa.md",
+      "sha256": "cb711a13d2d179750cdea1b6c4f8847d9366a485cabe885a75110d682deaae93"
+    },
+    "reconciliation": {
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v2/proposal-reconciliation-index.md",
+      "sha256": "8b18010e8e0b2066caf19daf018bafd30096a0f67d215ce613547ddae6c394bb"
+    }
+  }
+}

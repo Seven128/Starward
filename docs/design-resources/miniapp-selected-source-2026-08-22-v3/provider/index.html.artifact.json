@@ -1,0 +1,223 @@
+{
+  "schema": "open-design-artifact-sidecar/candidate-1",
+  "artifactId": "starward-miniapp-v2-drift-correction-2026-08-20",
+  "canonicalEntry": "index.html",
+  "canonicalEntrySha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31",
+  "title": "今晚去观星 Mini Program V2.0 · 常规账户中心与独立设置候选",
+  "kind": "interactive-review-workbench",
+  "classification": [
+    "style-bearing",
+    "handoff-candidate",
+    "unselected-candidate",
+    "sample-only",
+    "non-production",
+    "rolling-review-snapshot"
+  ],
+  "selection": {
+    "status": "unselected",
+    "adopted": false,
+    "designAuthority": false,
+    "exactTarget": false,
+    "productionReady": false,
+    "reviewLoopOpen": true
+  },
+  "manifestLifecycle": {
+    "status": "rolling-current-snapshot-index",
+    "finalExhaustiveSelectedDesignManifest": false,
+    "purpose": "keep current candidate bytes, requirement dispositions, locators and provenance synchronized while user review continues",
+    "finalizationTrigger": "explicit candidate selection followed by one-time S1/S2 reconciliation and selected-design authority closure"
+  },
+  "visualBinding": {
+    "designSystem": "user:soft-instruments",
+    "designSystemDigest": "5dd2e7acf43973793a8ae70bd0db8266c7253f27ebdeb6d944657b83e3a855e6",
+    "target": "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+    "changed": false
+  },
+  "revision": {
+    "date": "2026-08-22",
+    "scope": "same DRA review loop; U24-U33 current snapshot",
+    "origin": "later explicit-user accepted requirements recorded in WORK_INDEX.md sections 3.7-3.9 and open-design-commission.md sections 26-30",
+    "materialChange": true,
+    "summary": "My root is now a conventional account center with title-only header, quiet gear Settings entry, concise profile summary and ordinary Plan/Settings rows. Favorites are removed from My but remain in Finder Wanted and Detail Favorite. Plan and Settings are standalone child routes with exact Back/focus/scroll restoration; Settings remains the sole observation-mode entry and both children reuse the shared Notification family."
+  },
+  "fileRelationships": {
+    "canonicalEntry": {
+      "path": "index.html",
+      "sha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31",
+      "state": "byte-identical Open Design output; provider current-byte browser QA passed and outer byte/static review completed"
+    },
+    "readme": {
+      "path": "README.md",
+      "sha256": "DD6699CFC4D28EC88AD82B473B196F7911244C70652ACE4D8DB4FE8B04F40409",
+      "state": "byte-identical Open Design output; provider independent-NOT-RUN wording describes only its boundary"
+    },
+    "manifest": {
+      "path": "resource-manifest.json",
+      "sha256": "754AE81EE957EA672AD9199C1CDEA09737A74AC00632AD8A8E675A92BAC2582F",
+      "state": "byte-identical Open Design rolling current-snapshot requirement, locator and provider-QA index; not a selected-design Fact manifest"
+    },
+    "designSystemBinding": {
+      "path": "brand-spec.md",
+      "sha256": "C1552347FD06724A45B12ACB51032A8619A94F9B3B6AA36361A824A184E6DFA1",
+      "state": "byte-identical and unchanged"
+    },
+    "sidecar": {
+      "path": "index.html.artifact.json",
+      "state": "repository-owned provenance and outer-QA companion; not an Open Design canonical project file"
+    },
+    "resourceFilesAdded": 0
+  },
+  "provenance": {
+    "provider": "Open Design 0.16.1",
+    "project": "starward-miniapp-v2-drift-correction-2026-08-20",
+    "conversation": "61006884-d0d8-48d2-bc4c-f0136e8ade3b",
+    "binding": {
+      "modelRequested": "gpt-5.6-sol",
+      "modelEffective": "gpt-5.6-sol",
+      "reasoningRequested": "xhigh",
+      "reasoningEffective": "xhigh",
+      "designSystem": "user:soft-instruments"
+    },
+    "currentRun": {
+      "runId": "08dc6555-0032-4350-a8fc-e03b7104da1f",
+      "status": "succeeded",
+      "exitCode": 0,
+      "endedWithUnfinishedWork": false,
+      "scope": "U33 My account center, standalone Plan/Settings, notification migration and U24-U32 regression"
+    },
+    "priorRuns": "preserved in WORK_INDEX.md and open-design-commission.md",
+    "providerBrowserEvidence": {
+      "status": "captured",
+      "surface": "Browser plugin current-byte localhost run",
+      "screenshotsAndStructuredResults": "retained in the run event stream"
+    },
+    "outerEvidence": {
+      "status": "completed with browser re-execution qualification",
+      "byteIdentity": "four Open Design canonical files match provider bytes",
+      "staticAndLedger": "passed",
+      "providerScreenshotAndStructuredResultInspection": "passed",
+      "browserReexecution": "blocked by Browser file:// URL security policy; no workaround or alternate browser surface used"
+    }
+  },
+  "contextBoundary": {
+    "providerRunsModifiedRepositoryContext": false,
+    "outerWorkflowUpdated": [
+      "project_context/architecture.md",
+      "project_context/areas/main/product-surface-contract.md",
+      "project_context/areas/main/screen-contracts/wechat-miniapp.md"
+    ],
+    "durableUpdate": "My account-center ownership, standalone Plan/Settings child routes, Finder/Detail favorite ownership, sole Settings observation entry, shared Notification reuse and Back/focus/scroll restoration",
+    "sourceReconciliation": "S1/S2 remain byte-unchanged until explicit candidate selection and one-time accepted/rejected/superseded/unresolved writeback",
+    "designAuthorityAdopted": false
+  },
+  "requirements": {
+    "total": 97,
+    "active": 78,
+    "covered": 73,
+    "coveredActiveRemainder": 1,
+    "partial": 3,
+    "excluded": 1,
+    "inactiveSuperseded": 19,
+    "decisionRequired": 0,
+    "currentExplicitUserIds": [
+      "USER-SOURCE-LIFT-RESTORE-CONTINUITY-001",
+      "USER-FINDER-FOCUSED-ICON-DEDUP-001",
+      "USER-FILTER-DIRTY-ACTION-POLISH-001",
+      "USER-SPOT-DETAIL-HEADER-CORE-INFO-001",
+      "USER-MINIAPP-SCROLLBAR-CHROME-001",
+      "USER-SPOT-DETAIL-TAB-MOTION-001",
+      "USER-OBSERVATION-MODE-SETTINGS-001",
+      "USER-CARD-SELECTION-STAR-001",
+      "USER-NOTIFICATION-COMPONENT-FAMILY-001",
+      "USER-MY-ACCOUNT-CENTER-001"
+    ],
+    "currentExplicitUserStatus": "covered",
+    "preservedDispositions": {
+      "activeRemainder": [
+        "USER-NIGHT-TIME-FOCUS-001"
+      ],
+      "partial": [
+        "SPOT-001",
+        "SPOT-002",
+        "MY-004"
+      ],
+      "excluded": [
+        "DATA-005"
+      ]
+    }
+  },
+  "verification": {
+    "providerCandidateLocal": {
+      "status": "PASSED",
+      "date": "2026-08-22",
+      "canonicalEntrySha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31",
+      "requirementsTotal": 97,
+      "requirementsActive": 78,
+      "consoleErrorsOrWarnings": 0,
+      "remoteRuntimeDependencies": 0,
+      "myAccountCenter": {
+        "matrixCombinations": 36,
+        "viewports": [
+          "320x800",
+          "375x900",
+          "430x932"
+        ],
+        "modes": [
+          "day",
+          "night",
+          "observation"
+        ],
+        "text": [
+          "normal",
+          "large"
+        ],
+        "motion": [
+          "normal",
+          "candidate-reduced"
+        ],
+        "horizontalOverflowFailures": 0,
+        "visibleActionsBelow44Px": 0,
+        "oldSubtitleTabsAndMyFavoriteElements": 0,
+        "gearTargetPx": 44,
+        "planTargetPx": 60,
+        "exactBackScrollAndLogicalFocusRestore": true
+      },
+      "criticalRegression": "U24-U32 passed on the same canonical entry bytes"
+    },
+    "outerIndependent": {
+      "lifecycle": "COMPLETED_WITH_BROWSER_REEXECUTION_QUALIFICATION",
+      "resourceQaStatus": "PASSED_FOR_UNSELECTED_REVIEW_CANDIDATE",
+      "staticAndProvenancePassed": true,
+      "visualEvidenceInspectionPassed": true,
+      "independentBrowserReexecutionPassedClaim": false,
+      "browserReexecutionBlocker": "Browser URL policy rejected the local file:// page; policy prohibited workaround or alternate surface",
+      "verifiedCanonicalEntry": {
+        "path": "index.html",
+        "sha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31"
+      },
+      "nonClaims": [
+        "product acceptance",
+        "formal selection",
+        "selected-design preflight",
+        "native WeChat verification",
+        "production conformance",
+        "real Provider or field validation"
+      ]
+    }
+  },
+  "runtime": {
+    "selfContained": true,
+    "externalScripts": 0,
+    "externalStyles": 0,
+    "externalImages": 0,
+    "remoteRuntimeDependencies": 0
+  },
+  "nonClaims": [
+    "not selected or adopted",
+    "not Design Authority or formal exact-target adoption",
+    "not a production Mini Program implementation",
+    "not a final selected-design Fact universe",
+    "no independent browser re-execution claim for U33",
+    "not real Provider, route, weather, light-pollution, facility, safety, auth, media or device evidence"
+  ]
+}

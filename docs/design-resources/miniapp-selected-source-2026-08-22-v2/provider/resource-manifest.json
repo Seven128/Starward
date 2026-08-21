@@ -1,0 +1,873 @@
+{
+  "schema": "open-design-resource-manifest/candidate-2",
+  "artifactId": "starward-miniapp-v2-drift-correction-2026-08-20",
+  "title": "今晚去观星 Mini Program V2.0 账户中心、共享通知与连续 SourceLift 候选",
+  "classification": [
+    "style-bearing",
+    "handoff-candidate",
+    "unselected-candidate",
+    "sample-data",
+    "non-production"
+  ],
+  "entry": "index.html",
+  "authority": {
+    "productSource": {
+      "path": "C:/Users/777/Downloads/今晚去观星_微信小程序产品方案_V2.0_漂移纠偏与天象观测机会增强版.md",
+      "sha256": "AF2D9B60C59B23D3040133974AB8C8AEA99DB43C566317AA3EDE4241C0786944",
+      "relationship": "background constraint; conflicting legacy three-tab and global-Night projection is inactive for this candidate"
+    },
+    "technicalSource": {
+      "path": "C:/Users/777/Downloads/今晚去观星_微信小程序技术架构与技术实现方案_V2.0_漂移纠偏与天象观测机会增强版.md",
+      "sha256": "82A281D1CD2D21556383876A24C62B7614CAB9531B7A98ED37535FC62041A98E",
+      "relationship": "background constraint; no production code or source file was edited"
+    },
+    "designSystem": {
+      "binding": "user:soft-instruments",
+      "target": "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+      "canonicalProfile": "C:/Dev/Starward/DESIGN.md#wechat-mini-program--soft-instruments-v1",
+      "relationship": "exact visual authority"
+    },
+    "durableSurfaceContract": "C:/Dev/Starward/project_context/areas/main/product-surface-contract.md",
+    "durableScreenContract": "C:/Dev/Starward/project_context/areas/main/screen-contracts/wechat-miniapp.md",
+    "activeDelta": [
+      "C:/Dev/Starward/docs/design-resources/miniapp-v2-drift-correction-2026-08-20/open-design-commission.md#26",
+      "C:/Dev/Starward/docs/design-resources/miniapp-v2-drift-correction-2026-08-20/WORK_INDEX.md#3.5",
+      "conversation 61006884-d0d8-48d2-bc4c-f0136e8ade3b / U32 USER-NOTIFICATION-COMPONENT-FAMILY-001",
+      "current review delta / U33 USER-MY-ACCOUNT-CENTER-001"
+    ]
+  },
+  "files": [
+    {
+      "path": "index.html",
+      "role": "self-contained responsive interactive review workbench and canonical entry",
+      "sha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31",
+      "relationship": "major-revised current candidate; no remote runtime dependency"
+    },
+    {
+      "path": "resource-manifest.json",
+      "role": "current authority, route, requirement, supersession, locator and QA metadata"
+    },
+    {
+      "path": "README.md",
+      "role": "human-readable topology, journey, state-machine, inactive-meaning and limitation record",
+      "sha256": "DD6699CFC4D28EC88AD82B473B196F7911244C70652ACE4D8DB4FE8B04F40409"
+    },
+    {
+      "path": "brand-spec.md",
+      "role": "documentary Soft Instruments binding",
+      "sha256": "C1552347FD06724A45B12ACB51032A8619A94F9B3B6AA36361A824A184E6DFA1",
+      "relationship": "byte-identical and unchanged"
+    }
+  ],
+  "runtimeDependencies": [],
+  "productTopology": {
+    "primaryNavigation": [
+      "pages/map/index",
+      "pages/my/index"
+    ],
+    "defaultRoute": "pages/map/index",
+    "formalSpotJourney": [
+      "pages/map/index via formal marker or Finder Wanted",
+      "spot/detail",
+      "spot/sky"
+    ],
+    "nightOwnership": "formal spot child route only",
+    "formalContextKeys": [
+      "spot_id",
+      "date",
+      "selectedAt",
+      "timezone",
+      "dataRevision",
+      "algorithmRevision"
+    ]
+  },
+  "stateModel": {
+    "selectedTimeTruth": "state.selectedAt",
+    "selectedTimePreview": "state.previewAt; cleared on cancel and atomically committed to state.selectedAt on valid release/change",
+    "selectedSpotTruth": "state.selectedSpot",
+    "mapNode": "#mapSurface",
+    "analyticalOverlayTruth": "state.activeOverlay",
+    "overlayValues": [
+      "NONE",
+      "LIGHT",
+      "TOTAL_CLOUD",
+      "OPPORTUNITY"
+    ],
+    "defaultOverlay": "NONE",
+    "finderQueryTruth": "state.finderQuery",
+    "finderFilterTruth": "state.filterDraft and state.committedFilters",
+    "finderPartitionTruth": "state.wantedExpanded and state.otherExpanded",
+    "favoriteIdentityTruth": "state.favoriteIds",
+    "focusLayerTruth": "SourceLiftFocusLayer plus state.topLayer/state.liftPhase/state.liftVariant",
+    "sourceLiftStates": ["IDLE","LIFTING","FOCUSED","RESTORING","CANCELLED"],
+    "sourceLiftVariants": ["panelOnly","mapCoupled"],
+    "mapPhysicalIdentity": "one live #mapSurface[data-physical-identity] remains under the overlay owner through restore while one equal-geometry source-lift-origin-placeholder owns the unchanged origin flow",
+    "finderDisclosureTruth": "state.finderDisclosure; query and filters are mutually exclusive anchored overlays",
+    "detailPanelTruth": "state.detailTab plus state.detailPanelEpoch; one committed spot-detail-panel exists at a time, cancels its prior element animation on retarget and starts the final content at opacity 0 before a 160ms monotonic enter",
+    "myRouteTruth": "state.route is the sole owner for my, myPlan and mySettings; state.myRootScroll and state.myChildOpener restore the exact root scroll and logical opener focus after explicit, system-history or keyboard Back",
+    "observationModeTruth": "state.mode; standalone My Settings owns the sole observation-mode-entry and state.preObservationMode owns exact Day/Night restoration",
+    "notificationTruth": "one frozen NotificationComponent renderer plus notificationDefinitions; tone and placement are orthogonal data axes, Map Spot Night and Plan inline owners deterministically expose one current state plus an accessible residual summary, Settings mode recovery and other acknowledgements use the same queued floating renderer",
+    "focusLayersMutuallyExclusive": true,
+    "secondMapMounted": false,
+    "secondSelectedAtStore": false,
+    "secondSelectedSpotStore": false
+  },
+  "implementationHandoff": {
+    "countedRequirement": "USER-UI-LIBRARY-REUSE-001",
+    "inlineSvgIcons": "self-contained authoring carrier only; not a production mandate",
+    "productionPriority": [
+      "approved Mini Program component and icon assets",
+      "mature lightweight compatible themeable library",
+      "bounded project implementation"
+    ],
+    "mustPreserve": [
+      "DESIGN semantic roles and all three modes",
+      "44px minimum targets",
+      "accessible role/name/state and non-color encoding",
+      "WeChat Mini Program and Taro compatibility",
+      "license compatibility",
+      "one token truth and one icon truth"
+    ],
+    "reject": [
+      "unjustified heavy UI library",
+      "second token or icon system",
+      "platform or license incompatibility",
+      "library that cannot preserve DESIGN theming or accessibility"
+    ],
+    "runtimeLibrarySelectedOrBundled": false
+  },
+  "sections": [
+    {"id":"global-shell","locator":"index.html [data-od-id=mini-program-frame]","routes":["pages/map/index","pages/my/index","spot/detail","spot/sky"],"conditions":["user-phone vertical scroll remains operable","Firefox and Chromium/WebKit native scrollbar chrome hidden at zero layout width","page horizontal overflow forbidden"]},
+    {"id":"primary-navigation","locator":"index.html [data-od-id=primary-navigation]","conditions":["exactly Map and My","equal width","Map default","hidden on route-owned child pages"]},
+    {"id":"map","locator":"index.html [data-od-id=map-search-trigger] + [data-od-id=map-base] containing [data-od-id=map-analysis-time-bar]","conditions":["compact header/search/map/navigation share the first phone viewport","one Search summary entry","one compact in-map 观测条件 bar with Tier-A gauge","one ordinary base map","six formal markers default","NONE default overlay","no product-rationale or routine gesture copy"]},
+    {"id":"notification-family","locator":"index.html [data-od-id=notification-inline] + [data-od-id=notification-floating] containing [data-od-id=notification-feedback]","conditions":["one shared renderer across Map Spot Night Plan and Settings recovery feedback","tone info warning error success is orthogonal to placement inline floating","one full notification per local owner and one queued floating acknowledgement","error warning info success deterministic priority","accurate accessible residual count and summary","44px named quiet trailing action or dismiss","160ms stable-geometry opacity and immediate reduced-motion convergence","floating does not alter page Map SourceLift navigation scroll or owner geometry","observation values remain closed black and warm red"]},
+    {"id":"source-lift-focus-layer","locator":"index.html [data-od-id=source-lift-focus-layer] + [data-od-id=source-lift-origin-placeholder]","conditions":["IDLE LIFTING FOCUSED RESTORING CANCELLED","panelOnly and mapCoupled","live node remains under overlay owner until one-frame placeholder replacement","origin flow and phone scroll geometry invariant through restore","transparent unclipped transitional map dock","reduced-motion equivalent","opener focus return"]},
+    {"id":"spot-finder","locator":"index.html [data-od-id=spot-finder-title-toggle] → [data-od-id=spot-finder-search-input] + [data-od-id=spot-finder-search-icon] + [data-od-id=spot-finder-filter-overlay] + [data-od-id=spot-finder-filter-choice] + [data-od-id=spot-finder-filter-revert] + [data-od-id=spot-finder-filter-commit]","conditions":["panelOnly source lift","lifted 查找观星点 header is the only explicit toggle/close route and visible Search cue","field-local Search glyph has focused-hidden visibility state and no padding reservation","query overlay is field-anchored","query and filter overlays are mutually exclusive","8px title-to-editor overlay gap","exact uniform 10 plus 8 filters","20x20 Tier-A SVG revert and commit paths inside 44px transparent circular targets","Wanted and Other only as first-level disclosures","city headings are not disclosures","one owned result scroll with hidden scrollbar chrome","result returns to same map callout"]},
+    {"id":"map-analysis-time","locator":"index.html [data-od-id=map-analysis-time-bar] → [data-od-id=map-analysis-focus-layer] containing [data-od-id=map-analysis-layer-control] + [data-od-id=map-analysis-layer-choice]","conditions":["mapCoupled source lift","same physical map and immutable equal-height identity placeholder","NONE LIGHT TOTAL_CLOUD OPPORTUNITY mutually exclusive","one selectedAt plus cancellable preview","one visible exact local datetime","no internal focus-panel scroll","quiet borderless 44px close","LIGHT source-period static","map never fades","selected layer uses the shared half-clipped selected-card-star plus border and aria-checked"]},
+    {"id":"map-callout","locator":"index.html [data-od-id=map-selected-spot-callout]","conditions":["formal spot only","compact values","immediate border press-in","valid release or accessible activation commit","drag-away and pointercancel do not navigate"]},
+    {"id":"spot-detail","locator":"index.html [data-od-id=spot-detail] + [data-od-id=spot-detail-tabs] + [data-od-id=spot-detail-tab-indicator] + [data-od-id=spot-detail-panel]","conditions":["identity header has no availability or changing-conditions chips or synonyms","borderless 44px Favorite beside name","quiet trailing Go here action below title and distance","one upper Night child entry","Overview Guides Site","stable translating active indicator","one committed accessible panel starts each final content at opacity 0 and uses a cancellable 160ms monotonic element animation; rapid-retarget epoch owns final cleanup","facilities contain facts without page-action row"]},
+    {"id":"spot-night","locator":"index.html [data-od-id=spot-night] + [data-od-id=sky-professional-matrix]","conditions":["formal spot child route","local time focus","sky orientation locality","no mode-entry card or control","horizontally reachable professional matrix with native bar hidden and white no-footprint custom overlay indicator","Back restores Detail state"]},
+    {"id":"my","locator":"index.html [data-od-id=my-account-center] + [data-od-id=my-account-header] + [data-od-id=my-settings-action] → [data-od-id=my-plan] or [data-od-id=my-settings]","conditions":["conventional calm account center with no peer tabs subtitle or Favorites content","concise profile summary and ordinary grouped entries","44px quiet Tier-A gear opens standalone Settings","understated Plan row opens standalone Plan","one route owner restores exact My root scroll and logical opener focus for explicit system-history and keyboard Back","Finder Wanted and Detail Favorite retain the favorite relation","Settings owns the sole named observation enter or active exit control","mode changes without route change and exit restores prior Day or Night"]}
+  ],
+  "reviewerRoutes": [
+    "Map default and all four analysis overlays",
+    "Finder query filters partitions cities no-results reopen-state dismissals",
+    "map time preview cancel commit and exact value",
+    "callout idle pressed cancel commit",
+    "Spot Detail action hierarchy and tab motion",
+    "Spot Night local time focus and horizontal professional matrix",
+    "My account center with standalone Plan and Settings plus exact Back scroll and opener-focus restoration",
+    "day night observation",
+    "large text and reduced motion",
+    "permission stale dynamic-provider and offline failures through one shared inline Notification queue plus inspectable floating acknowledgement"
+  ],
+  "supersession": [
+    {
+      "active": "USER-PRODUCT-COPY-BOUNDARY-001",
+      "supersedes": "phone-visible reviewer and product-rationale copy",
+      "inactiveMeaning": ["SAMPLE_DATA phone banner","route debug revision provider-QA strings","routine gesture tutorial","product-thinking slogans"],
+      "activeRemainder": ["user-relevant source date freshness uncertainty limitation permission failure recovery copy","outer reviewer provenance disclosure"]
+    },
+    {
+      "active": "USER-FINDER-TOGGLE-POLISH-001",
+      "supersedes": ["USER-SEARCH-LIFT-COMPACT-001","USER-FINDER-COMPACT-HIERARCHY-001"],
+      "inactiveMeaning": ["standalone Finder X","查找与比较 title","query overlay below Filter","visible scrollbar chrome","uneven long-label filter spans","small unbalanced section chevrons"],
+      "activeRemainder": ["compact committed Search summary","panelOnly SourceLift","one query plus filter projection","exact 18 filters","draft revert and commit","Wanted and Other partitions","city headings","retained state","failure and static identity","same map callout"]
+    },
+    {
+      "active": "USER-SOURCE-LIFT-RESTORE-CONTINUITY-001",
+      "refines": "USER-SOURCE-LIFT-FOCUS-LAYER-001",
+      "inactiveMeaning": ["reinserting the live node before reverse animation","moving or doubling the origin flow during restore","opaque or clipped transitional map dock"],
+      "activeRemainder": ["one live node","one immutable origin placeholder","current-geometry reverse","one-frame atomic owner swap","opener focus"]
+    },
+    {
+      "active": "USER-FINDER-FOCUSED-ICON-DEDUP-001",
+      "refines": "USER-FINDER-TOGGLE-POLISH-001",
+      "inactiveMeaning": ["focused Finder field-local visible Search glyph","focused field left padding reservation"],
+      "activeRemainder": ["idle compact Search glyph","programmatic input label","lifted header as sole focused Search cue"]
+    },
+    {
+      "active": "USER-FILTER-DIRTY-ACTION-POLISH-001",
+      "refines": "USER-FINDER-TOGGLE-POLISH-001",
+      "inactiveMeaning": ["font cross or check inside dirty actions","filter editor touching the title row"],
+      "activeRemainder": ["44px transparent actions","distinct accessible names","20x20 Tier-A SVG paths","anchored non-flow editor"]
+    },
+    {
+      "active": "USER-OBSERVATION-MODE-SETTINGS-001",
+      "supersedes": "prior visible Spot Night mode-entry placement only",
+      "inactiveMeaning": ["Spot Night observation-entry card or control","route change when entering observation from Settings"],
+      "activeRemainder": ["USER-SPOT-NIGHT-002","one global mode store","closed observation palette","exact prior Day or Night restoration"]
+    },
+    {
+      "active": "USER-MY-ACCOUNT-CENTER-001",
+      "refines": ["MY-001","MY-002","MY-003","MY-004","USER-OBSERVATION-MODE-SETTINGS-001","USER-NOTIFICATION-COMPONENT-FAMILY-001"],
+      "inactiveMeaning": ["My subtitle 收藏、计划与显示偏好","flat 我的 收藏 计划 设置 peer tabs","myTab or pseudo-page switching","My Favorite count row list cards or child page","My-local notification markup"],
+      "activeRemainder": ["Finder Wanted saved-place browser","one Detail Favorite toggle and preserved favorite relation","standalone Plan with recoverable plan sync states","standalone Settings with the sole observation-mode control","shared NotificationComponent","one history route owner with exact My root scroll and opener-focus restoration"]
+    },
+    {
+      "active": "USER-FINDER-CITY-GROUPING-001",
+      "supersedes": "city-as-nested-disclosure grouping",
+      "inactiveMeaning": ["city accordion","city as third disclosure level"],
+      "activeRemainder": ["Wanted and Other as the only first-level collapsible partitions","city sticky headings inside each partition"]
+    },
+    {
+      "active": ["USER-MAP-FIRST-VIEWPORT-001","USER-SOURCE-LIFT-FOCUS-LAYER-001"],
+      "supersedes": ["USER-MAP-ANALYSIS-TIME-001","permanent above-map analysis/time panel"],
+      "inactiveMeaning": ["expanded analysis controls before the map","duplicate light-pollution tab or bar","second map or remount","persistent pan and zoom chrome"],
+      "activeRemainder": ["one physical map","one selectedAt","one active overlay","formal markers persist","LIGHT static honesty","dynamic cloud and opportunity preview","equal-height map placeholder","reduced-motion equivalent"]
+    },
+    {
+      "active": "USER-OBSERVING-CONDITIONS-COMPACT-001",
+      "refines": ["USER-SOURCE-LIFT-FOCUS-LAYER-001","USER-SOFT-INSTRUMENTS-APPLICATION-001"],
+      "inactiveMeaning": ["分析与时段 label","Favorite or star-like conditions symbol","duplicate selectedAt rendering","scrollable analysis control surface","oversized bordered close square"],
+      "activeRemainder": ["one physical non-fading map","mapCoupled lifecycle","one programmatic selectedAt","preview commit cancel","four mutually exclusive overlays","source-period static honesty"]
+    },
+    {
+      "active": "USER-SPOT-DETAIL-QUIET-ACTIONS-001",
+      "supersedes": ["USER-SPOT-DETAIL-ACTIONS-001","repeated 收藏 查看夜空 去这里 facilities-card row"],
+      "inactiveMeaning": ["visible Favorite border or button chrome","filled route block","duplicate 查看夜空 action","page-level action row inside facilities"],
+      "activeRemainder": ["44px Favorite hit region beside name","quiet trailing 去这里 →","one upper formal Night child entry","Overview Guides Site"]
+    },
+    {
+      "active": "USER-SPOT-NIGHT-002",
+      "supersedes": "USER-NIGHT-TIME-FOCUS-001",
+      "inactiveMeaning": [
+        "global Night route scope"
+      ],
+      "activeRemainder": [
+        "local scrubber",
+        "current time",
+        "opportunity cloud moon stability feedback",
+        "explicit secondary disclosure"
+      ]
+    },
+    {
+      "active": "USER-PRIMARY-NAV-002",
+      "supersedes": [
+        "NAV-001 legacy three-tab projection",
+        "NAV-002 global Night projection"
+      ],
+      "inactiveMeaning": [
+        "夜空 / 地图 / 我的 primary navigation",
+        "Night without formal spot_id"
+      ]
+    }
+  ],
+  "inactiveVisibleMeaning": [
+    "three primary tabs 夜空 / 地图 / 我的",
+    "global Night and ordinary or candidate Night actions",
+    "full Observation Context card above Map",
+    "detailed location cards below Map",
+    "separate Search Filter Favorites and accessibility-list entries or dialogs",
+    "Favorites-only modal and standalone Filter modal",
+    "city nested disclosures",
+    "horizontal or menu-owned map layer controls",
+    "permanent expanded analysis/time panel above Map",
+    "near-full-height standard Finder Sheet and large boxed filter composition",
+    "Reset Cancel Apply filter action row",
+    "filled or bordered Favorite and route action treatment",
+    "facilities-card 收藏 查看夜空 去这里 action row",
+    "permanent pan arrows and plus/minus zoom",
+    "default LIGHT and forced-LIGHT restoration",
+    "global route scope for Night time focus"
+    ,"My subtitle and flat peer route tabs"
+    ,"My Favorite count row list cards or standalone child page"
+  ],
+  "coverageSemantics": "covered means this unselected candidate exposes a reproducible visible UI or state-machine locator. It does not claim production services, provider correctness, real facts, native Mini Program behavior, product acceptance, selection or authority adoption. inactive-superseded meaning is retained as history only and is not counted as current covered UI.",
+  "requirements": {
+    "NAV-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-PRIMARY-NAV-002","reason":"legacy exact 夜空/地图/我的 projection is absent"},
+    "NAV-002": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-NIGHT-002","reason":"Night no longer resolves without formal spot_id"},
+    "CTX-001": {"status":"covered","locator":"[data-od-id=spot-night]","reason":"formal spot context carries one spot/date/time/timezone/freshness projection without phone-visible debug revision copy"},
+    "CTX-002": {"status":"covered","locator":"[data-od-id=spot-night-time-focus]","reason":"cross-midnight selectedAt remains in one observing night"},
+    "CTX-003": {"status":"covered","locator":"[data-od-id=spot-detail] and [data-od-id=spot-night]","reason":"Back restores Spot Detail section and scroll; mode keeps route ownership"},
+    "MODE-001": {"status":"covered","locator":"[data-od-id=mini-program-frame] + [data-od-id=my-settings]","reason":"day night observation share one semantic role set and one document mode store; standalone Settings is the sole explicit observation enter and exit owner"},
+    "LOC-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-NIGHT-002","reason":"ordinary-place Night action is inactive"},
+    "LOC-002": {"status":"covered","locator":"[data-od-id=map-base]","reason":"ordinary map context cannot synthesize formal Spot Night"},
+    "LOC-003": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-MAP-CONTENT-BOUNDARY-002","reason":"candidate detailed card and Night action are inactive on Map"},
+    "LOC-004": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-MAP-CONTENT-BOUNDARY-002","reason":"three-location detailed comparison is absent from Map"},
+    "SPOT-001": {"status":"partial","locator":"[data-od-id=spot-detail]","reason":"complete evidence structure is visible; no verified production spot facts are supplied"},
+    "SPOT-002": {"status":"partial","locator":"[data-od-id=spot-detail-site]","reason":"site evidence and recovery posture are visible; real coordinate authorization and enforcement are not verified"},
+    "EVT-001": {"status":"covered","locator":"[data-od-id=spot-source-evidence]","reason":"event or target identity update time and limitation slots are explicit without production claims"},
+    "EVT-002": {"status":"covered","locator":"[data-od-id=spot-source-evidence]","reason":"formal detail keeps event evidence with local night context"},
+    "EVT-003": {"status":"covered","locator":"[data-od-id=spot-source-evidence]","reason":"source and computation are not presented as live provider truth"},
+    "EVT-004": {"status":"covered","locator":"[data-od-id=spot-source-evidence]","reason":"visible copy rejects actual ZHR visible-count implication"},
+    "EVT-005": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-NIGHT-002","reason":"legacy global Event to Night loop is inactive"},
+    "EVT-006": {"status":"covered","locator":"[data-od-id=spot-source-evidence]","reason":"daily observing profile remains a formal-detail evidence slot without a global Night topology"},
+    "SKY-001": {"status":"covered","locator":"[data-od-id=spot-night]","reason":"formal Spot Night owns understandable opportunity summary"},
+    "SKY-002": {"status":"covered","locator":"[data-od-id=spot-night]","reason":"primary continuous window is visible with explicit uncertainty"},
+    "SKY-003": {"status":"covered","locator":"[data-od-id=spot-night-time-focus] and [data-od-id=map-analysis-focus-panel]","reason":"one state.selectedAt drives both map analysis and formal-spot time focus"},
+    "SKY-004": {"status":"covered","locator":"[data-od-id=sky-professional-matrix]","reason":"professional bounded matrix represents aligned cloud evidence, remains horizontally reachable and replaces native scrollbar chrome with a no-footprint white overlay indicator"},
+    "SKY-005": {"status":"covered","locator":"[data-od-id=spot-source-evidence]","reason":"update source and limitation slots are explicit without provider claims"},
+    "SKY-006": {"status":"covered","locator":"[data-od-id=spot-night-time-focus]","reason":"moon and observing-condition feedback are co-located"},
+    "SKY-007": {"status":"covered","locator":"[data-od-id=sky-scene]","reason":"versioned 2D sky scene and manual orientation path are visible"},
+    "OBS-001": {"status":"covered","locator":"[data-od-id=my-settings] containing [data-od-id=observation-mode-entry]","reason":"closed black and warm-red mode is explicitly entered or exited only in the standalone Settings child route without leaving it"},
+    "OBS-002": {"status":"covered","locator":"[data-od-id=mini-program-frame] + [data-od-id=spot-night]","reason":"one global display mode preserves route tab scroll spot selectedAt and formal Spot Night context; exit restores the exact prior Day or Night mode"},
+    "MAP-001": {"status":"covered","locator":"[data-od-id=map-search-trigger] and [data-od-id=map-permission-state]","reason":"Finder search and manual city alternatives survive location denial"},
+    "MAP-002": {"status":"covered","locator":"[data-od-id=map-search-trigger] → [data-od-id=spot-finder-sheet]","reason":"one self-explanatory Search entry exposes formal results without fabricating dynamic truth"},
+    "MAP-003": {"status":"covered","locator":"[data-od-id=map-analysis-time-bar] → [data-od-id=map-analysis-focus-panel]","reason":"compact in-map status and focused controls use the same selectedAt beside the same physical map"},
+    "MAP-004": {"status":"covered","locator":"[data-od-id=map-analysis-layer-control] + [data-od-id=map-base]","reason":"ordinary base plus at most one optional mutually exclusive analytical overlay"},
+    "MAP-005": {"status":"covered","locator":"[data-od-id=map-analysis-time-bar] + [data-od-id=map-analysis-focus-panel]","reason":"status and operable disclosure distinguish source-period static LIGHT from time-dependent cloud and opportunity"},
+    "MAP-006": {"status":"covered","locator":"[data-od-id=default-formal-markers]","reason":"formal selected and closed markers use shape border icon and accessible labels"},
+    "MAP-007": {"status":"covered","locator":"[data-od-id=map-selected-spot-callout] + [data-od-id=spot-finder-result-card]","reason":"marker callout and Finder result share state.selectedSpot and the same map"},
+    "MAP-008": {"status":"covered","locator":"[data-od-id=spot-detail-overview] and [data-od-id=map-provider-failure]","reason":"distance route drive and provider-failure semantics stay in detail or failure recovery"},
+    "MAP-009": {"status":"covered","locator":"[data-od-id=spot-finder-filter-overlay] containing [data-od-id=spot-finder-filter-first-level] and [data-od-id=spot-finder-filter-advanced]","reason":"anchored Finder filtering exposes exactly 18 Source §9.7 terminal filters as 10 first-level plus 8 advanced items with one opening snapshot/filterDraft/committedFilters truth, dirty-only revert/commit and bounded owned scroll; no nested dialog"},
+    "DETAIL-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-NIGHT-002","reason":"legacy four-tab order is replaced by Overview Guides Site plus child spot/sky"},
+    "DETAIL-002": {"status":"covered","locator":"[data-od-id=spot-detail-overview]","reason":"decision window factors route facilities media event guides and provenance are owned by detail"},
+    "DETAIL-003": {"status":"covered","locator":"[data-od-id=spot-detail-site]","reason":"arrival-order site evidence is visible"},
+    "DETAIL-004": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-NIGHT-002","reason":"Night is not a Detail tab; it is the spot/sky child route"},
+    "DETAIL-005": {"status":"covered","locator":"[data-od-id=spot-detail-overview]","reason":"media placeholder explicitly does not prove site facts or license"},
+    "DETAIL-006": {"status":"covered","locator":"[data-od-id=spot-detail]","reason":"static detail ownership remains when dynamic summaries fail"},
+    "DETAIL-007": {"status":"covered","locator":"[data-od-id=spot-detail-favorite] + [data-od-id=spot-detail-route-action] + [data-od-id=spot-detail-night-entry]","reason":"favorite route and Night actions remain detail-owned with clean identity hierarchy"},
+    "DEC-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-MAP-CONTENT-BOUNDARY-002","reason":"legacy three-location comparison is removed from Map"},
+    "DEC-002": {"status":"covered","locator":"[data-od-id=spot-detail-site]","reason":"visible copy requires hard blocker precedence over score and navigation"},
+    "DEC-003": {"status":"covered","locator":"[data-od-id=spot-detail-overview]","reason":"favorable adverse safety and uncertainty are visible"},
+    "DEC-004": {"status":"covered","locator":"[data-od-id=spot-night-time-focus]","reason":"condition and stability remain distinct feedback with explicit uncertainty"},
+    "DEC-005": {"status":"covered","locator":"[data-od-id=my-settings]","reason":"preference is stated as ranking and explanation only"},
+    "DATA-001": {"status":"covered","locator":"[data-od-id=spot-source-evidence]","reason":"source update freshness and limitation slots remain visible"},
+    "DATA-002": {"status":"covered","locator":"[data-od-id=map-analysis-focus-panel]","reason":"LIGHT is explicitly source-period static and its visual treatment does not move with selectedAt"},
+    "DATA-003": {"status":"covered","locator":"[data-od-id=spot-detail-site]","reason":"missing facts are labelled unknown rather than fabricated zero"},
+    "DATA-004": {"status":"covered","locator":"[data-od-id=map-provider-failure] and [data-od-id=spot-finder-wanted-section] and [data-od-id=spot-detail-favorite]","reason":"failure preserves static spot and the favorite relation exposed by Finder Wanted plus Detail Favorite"},
+    "DATA-005": {"status":"excluded","locator":"[data-od-id=mini-program-frame]","reason":"no production provider exists and real-data success cannot be claimed"},
+    "MY-001": {"status":"covered","locator":"[data-od-id=spot-finder-wanted-section] + [data-od-id=spot-detail-favorite]","reason":"the favorite relation remains under stale and Provider failure through Finder Wanted and the one Detail Favorite toggle; My contains no Favorite page or list"},
+    "MY-002": {"status":"covered","locator":"[data-od-id=my-plan]","reason":"the standalone Plan child route keeps a formal plan bound to a formal spot_id"},
+    "MY-003": {"status":"covered","locator":"[data-od-id=my-plan] containing [data-od-id=my-plan-notification-state]","reason":"the standalone Plan child route keeps spot night timezone window and recoverable sync status while shared notifications do not remove the plan"},
+    "MY-004": {"status":"partial","locator":"[data-od-id=my-settings]","reason":"privacy posture is visible; real WeChat identity and backend isolation are unverified"},
+    "SCOPE-001": {"status":"covered","locator":"[data-od-id=my-account-center]","reason":"the concise account center adds no commerce membership coupon order profile-import or unrelated business scope"},
+    "GOV-001": {"status":"covered","locator":"resource-manifest.json requirements","reason":"all prior and current user IDs retain explicit dispositions"},
+    "USER-UX-FOCUS-PATTERN-001": {"status":"covered","locator":"[data-od-id=source-lift-focus-layer] + [data-od-id=spot-night-time-focus]","reason":"mutual exclusion scrim close Escape Back focus return interruption and reduced motion share one lifecycle"},
+    "USER-NIGHT-TIME-FOCUS-001": {"status":"covered-active-remainder","locator":"[data-od-id=spot-night-time-focus]","supersededBy":"USER-SPOT-NIGHT-002","inactiveMeaning":"global Night route scope","activeRemainder":"local scrubber current time opportunity cloud moon stability and explicit disclosure"},
+    "USER-MAP-SELECTION-FOCUS-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-FINDER-001","reason":"its picker composition is inactive; one selected spot and focus lifecycle are counted only under the unified Finder"},
+    "USER-SKY-ORIENTATION-LOCALITY-001": {"status":"covered","locator":"[data-od-id=sky-scene] + [data-od-id=sky-orientation-control]","reason":"orientation control status and sky feedback are co-located"},
+    "USER-MAP-TIME-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-MAP-ANALYSIS-TIME-001","reason":"map relocation dock placeholder and priorOverlay lifecycle are inactive"},
+    "USER-UX-LOCALITY-001": {"status":"covered","locator":"[data-od-id=map-analysis-focus-layer] + [data-od-id=spot-finder-sheet] + [data-od-id=spot-night-time-focus] + [data-od-id=sky-scene]","reason":"continuous control current value result feedback and owned scroll stay local to their task"},
+    "USER-MAP-CONTENT-BOUNDARY-002": {"status":"covered","locator":"[data-od-id=map-search-trigger] + [data-od-id=map-analysis-time-bar] + [data-od-id=spot-detail]","reason":"Map keeps compact selection and analysis; complete evidence lives in Spot Detail"},
+    "USER-MAP-LAYERS-002": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-MAP-ANALYSIS-TIME-001","reason":"its separate in-map layer menu is absent; four overlay meanings are counted only in the analysis/time panel"},
+    "USER-MAP-TIME-002": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-MAP-ANALYSIS-TIME-001","reason":"persistent in-map bar and map relocation focus are absent"},
+    "USER-MAP-DIRECT-GESTURES-002": {"status":"covered","locator":"[data-od-id=map-base] + [data-od-id=map-search-trigger]","reason":"pan pinch tap plus one accessible Finder alternative; no permanent pan or zoom buttons"},
+    "USER-MAP-CALLOUT-002": {"status":"covered","locator":"[data-od-id=map-selected-spot-callout]","reason":"compact formal callout has immediate border press-in and valid-release-only navigation with visible cancel review state"},
+    "USER-MAP-FAVORITES-002": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-FINDER-001","reason":"standalone Favorites modal is absent; favorite identity is counted in the Finder Wanted partition and My"},
+    "USER-PRIMARY-NAV-002": {"status":"covered","locator":"[data-od-id=primary-navigation]","reason":"exact equal Map and My destinations with Map default and no global Night"},
+    "USER-SPOT-NIGHT-002": {"status":"covered","locator":"[data-od-id=spot-detail-night-entry] → [data-od-id=spot-night] → [data-od-id=spot-night-time-focus]","reason":"formal spot child route inherits spot time timezone and freshness; ordinary or candidate locations cannot synthesize it"},
+    "USER-UI-LIBRARY-REUSE-001": {"status":"covered","locator":"resource-manifest.json implementationHandoff and README.md","reason":"inline SVG is authoring-only; production reuse and lightweight compatible boundaries are explicit without bundling a library"},
+    "USER-PRODUCT-COPY-BOUNDARY-001": {"status":"covered","locator":"[data-od-id=mini-program-frame] + [data-od-id=review-workbench]","reason":"phone contains production-clean user copy while sample unselected provenance disclosure remains outside the phone"},
+    "USER-SPOT-FINDER-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-FINDER-TOGGLE-POLISH-001","reason":"historical near-full-height standard Sheet and large inline filter composition are replaced; useful query/filter/partition/callout semantics are fully carried forward"},
+    "USER-FINDER-CITY-GROUPING-001": {"status":"covered","locator":"[data-od-id=spot-finder-wanted-section] + [data-od-id=spot-finder-other-section] containing [data-od-id=spot-finder-city-heading]","reason":"Wanted and Other are the only first-level collapsible partitions; city is a sticky heading only"},
+    "USER-MAP-ANALYSIS-TIME-001": {"status":"inactive-superseded","locator":null,"supersededBy":["USER-MAP-FIRST-VIEWPORT-001","USER-SOURCE-LIFT-FOCUS-LAYER-001"],"reason":"historical permanent above-map panel is replaced by compact in-map status and mapCoupled focus while one-map/selectedAt/overlay semantics continue"},
+    "USER-SPOT-DETAIL-ACTIONS-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-SPOT-DETAIL-QUIET-ACTIONS-001","reason":"historical visible Favorite and route treatment is replaced by quiet header actions"},
+    "USER-MAP-FIRST-VIEWPORT-001": {"status":"covered","locator":"[data-od-id=mini-program-frame] containing [data-od-id=map-search-summary] + [data-od-id=map-base] + [data-od-id=primary-navigation]","reason":"compact header Search summary remaining-height map and Map/My navigation share the first 320x800 375x900 and 430x932 phone viewport; six formal markers are default and no permanent pan/zoom chrome exists"},
+    "USER-SOURCE-LIFT-FOCUS-LAYER-001": {"status":"covered","locator":"[data-od-id=source-lift-focus-layer] + [data-od-id=source-lift-origin-placeholder] + [data-od-id=map-base]","reason":"named SourceLiftFocusLayer exposes IDLE LIFTING FOCUSED RESTORING CANCELLED with panelOnly/mapCoupled, exact identity placeholder, one physical non-fading map, interruptible reverse, reduced-motion equivalent and opener-focus return"},
+    "USER-SEARCH-LIFT-COMPACT-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-FINDER-TOGGLE-POLISH-001","reason":"its compact committed summary, panelOnly lifecycle, query projection and same-map callout remain active through U23; its prior standalone close and overlay polish are inactive"},
+    "USER-FINDER-COMPACT-HIERARCHY-001": {"status":"inactive-superseded","locator":null,"supersededBy":"USER-FINDER-TOGGLE-POLISH-001","reason":"its exact 10+8 filters, draft semantics, partitions, city groups and retained state remain active through U23; its prior close, grid and scrollbar composition are inactive"},
+    "USER-OBSERVING-CONDITIONS-COMPACT-001": {"status":"covered","locator":"[data-od-id=map-analysis-time-bar] + [data-od-id=map-observing-conditions-icon] → [data-od-id=map-analysis-focus-panel] containing [data-od-id=map-analysis-close] + [data-od-id=map-analysis-time-scrubber] + [data-od-id=map-analysis-time-value]","reason":"one 观测条件 bar uses a Tier-A gauge; mapCoupled keeps one physical non-fading map while a non-scrollable compact panel exposes one visible selectedAt value, preview/commit/cancel slider semantics and one quiet borderless 44px close"},
+    "USER-FINDER-TOGGLE-POLISH-001": {"status":"covered","locator":"[data-od-id=spot-finder-title-toggle] + [data-od-id=spot-finder-title-chevron] → [data-od-id=spot-finder-search-input] + [data-od-id=spot-finder-search-icon] + [data-od-id=spot-finder-query-overlay] + [data-od-id=spot-finder-filter-disclosure] + [data-od-id=spot-finder-filter-overlay] + [data-od-id=spot-finder-filter-choice] + [data-od-id=spot-finder-result-scroll] + [data-od-id=spot-finder-wanted-section] + [data-od-id=spot-finder-other-section] + [data-od-id=spot-finder-section-chevron]","reason":"the lifted 查找观星点 source header is the only explicit toggle and reports expanded state; the idle source retains a conventional Search glyph while focused rendering is narrowed by U25; the field owns a true anchored fading query overlay; query/filter remain exclusive; 18 uniform compact choices, hidden scrollbar chrome, balanced disclosure rows, retained state and same-map callout preserve all active Finder semantics"},
+    "USER-SPOT-DETAIL-QUIET-ACTIONS-001": {"status":"covered","locator":"[data-od-id=spot-detail-favorite] + [data-od-id=spot-detail-route-action] + [data-od-id=spot-detail-night-entry]","reason":"borderless 22px Favorite glyph uses a 44px hit region beside the name; 去这里 → is one quiet trailing action; one upper Night entry remains and facilities contain no page action row"},
+    "USER-SOFT-INSTRUMENTS-APPLICATION-001": {"status":"covered","locator":"[data-od-id=map-base] + [data-od-id=map-analysis-time-bar] + [data-od-id=map-analysis-focus-panel] + [data-od-id=spot-detail]","reason":"existing Soft Instruments tokens and hierarchy are applied without a second system: map/place/data lead, primary blue is high-signal, LIGHT is warm, TOTAL_CLOUD cyan, OPPORTUNITY violet, status semantics are non-color reinforced and elevation remains restrained"},
+    "USER-SOURCE-LIFT-RESTORE-CONTINUITY-001": {"status":"covered","locator":"[data-od-id=source-lift-focus-layer] + [data-od-id=source-lift-origin-placeholder] + [data-od-id=map-base]","reason":"panelOnly and mapCoupled retain the single live node under the overlay owner through restoring or cancelled while one immutable placeholder owns origin flow; the sole history owner records exact outer and phone scroll positions, sets scrollRestoration manual before pushState, holds it through popstate plus atomic replaceWith cleanup and restores the prior mode two rendering frames after settlement without scrollTo; all entry and opener focus calls prevent scroll"},
+    "USER-FINDER-FOCUSED-ICON-DEDUP-001": {"status":"covered","locator":"[data-od-id=spot-finder-title-toggle] + [data-od-id=spot-finder-search-input] + [data-od-id=spot-finder-search-icon]","reason":"focused panelOnly exposes the lifted header as the sole visible Search cue; the field-local decorative glyph is focused-hidden and its left padding reservation is removed while the input retains an accessible label and idle Search remains conventional"},
+    "USER-FILTER-DIRTY-ACTION-POLISH-001": {"status":"covered","locator":"[data-od-id=spot-finder-filter-overlay] + [data-od-id=spot-finder-filter-revert] + [data-od-id=spot-finder-filter-commit]","reason":"dirty revert and commit use distinct 20x20 Tier-A SVG paths centered in transparent circular 44px targets; the anchored editor keeps an 8px visible title-row gap without affecting result or phone scroll geometry"},
+    "USER-SPOT-DETAIL-HEADER-CORE-INFO-001": {"status":"covered","locator":"[data-od-id=spot-detail] + [data-od-id=spot-detail-overview] + [data-od-id=spot-source-evidence] + [data-od-id=spot-detail-site]","reason":"identity header contains neither removed chip nor a synonym; Tonight conditions, freshness, limitations and facility evidence remain only in interpretable evidence regions while Favorite route and Night entry keep their quiet hierarchy"},
+    "USER-MINIAPP-SCROLLBAR-CHROME-001": {"status":"covered","locator":"[data-od-id=mini-program-frame] + [data-od-id=spot-detail] + [data-od-id=spot-night] + [data-od-id=sky-professional-matrix]","reason":"all user-phone vertical scrolling remains operable with Firefox and Chromium/WebKit native chrome hidden at zero layout width; only the professional matrix owns horizontal overflow and uses a white semi-transparent no-footprint custom overlay indicator"},
+    "USER-SPOT-DETAIL-TAB-MOTION-001": {"status":"covered","locator":"[data-od-id=spot-detail-tabs] + [data-od-id=spot-detail-tab-indicator] + [data-od-id=spot-detail-panel]","reason":"Overview Guides Site uses one stable translating indicator and one committed accessible panel; each effective switch cancels the panel's prior animation, establishes the new content at opacity 0 and runs a 160ms monotonic element animation to 1, while the epoch restricts final cleanup to the last retarget and both candidate and system reduced motion resolve immediately"},
+    "USER-OBSERVATION-MODE-SETTINGS-001": {"status":"covered","locator":"[data-od-id=my-settings] containing [data-od-id=observation-mode-entry] + [data-od-id=my-settings-back-action] + [data-od-id=spot-night]","reason":"Spot Night contains no mode-entry card; the standalone Settings child route owns the sole named enter or active exit control, changes the one document mode without leaving Settings and restores the exact prior Day or Night mode and context"},
+    "USER-CARD-SELECTION-STAR-001": {"status":"covered","locator":"[data-od-id=spot-finder-filter-choice] + [data-od-id=map-analysis-layer-choice] containing [data-od-id=selected-card-star]","reason":"all 18 Filter cards and four Conditions layer cards share one top-right half-clipped rounded star decorator in selected state plus border aria state and accessible naming; its gradient uses only current primary warm cyan violet semantic roles whose Observation values are closed warm reds"},
+    "USER-NOTIFICATION-COMPONENT-FAMILY-001": {"status":"covered","locator":"[data-od-id=notification-inline] + [data-od-id=notification-floating] + [data-od-id=my-plan-notification-state] + [data-od-id=my-settings] containing [data-od-id=notification-feedback] + [data-od-id=notification-icon] + [data-od-id=notification-title] + [data-od-id=notification-body] + [data-od-id=notification-action] + [data-od-id=notification-dismiss] + [data-od-id=notification-residual-count]","reason":"one actually reused NotificationComponent renders Map permission stale and Provider queues, Spot Night offline, Plan stale and Provider sync states, Settings observation recovery feedback, and queued floating acknowledgements; tone and placement are orthogonal data axes, each inline owner shows one compact full notification with deterministic residual preservation, all actions are named 44px quiet targets, live urgency is appropriate, reduced motion converges immediately and Observation stays closed black/warm red"},
+    "USER-MY-ACCOUNT-CENTER-001": {"status":"covered","locator":"[data-od-id=my-account-center] + [data-od-id=my-account-header] + [data-od-id=my-settings-action] + [data-od-id=my-profile-summary] + [data-od-id=my-grouped-entry-list] + [data-od-id=my-plan-entry] → [data-od-id=my-plan] or [data-od-id=my-settings] containing [data-od-id=observation-mode-entry] + [data-od-id=my-plan-back-action] + [data-od-id=my-settings-back-action]","reason":"My is a calm conventional account center with title-only header, quiet 44px Tier-A gear, concise profile summary and ordinary Plan/Settings entries; Plan and Settings are standalone child routes owned by state.route with explicit system-history and keyboard Back restoring exact My root scroll and logical opener focus; My has zero subtitle peer tabs or Favorite content while Finder Wanted and Detail Favorite retain the saved-place relation and Plan owns the migrated shared stale/provider notification state"}
+  },
+  "summary": {
+    "total": 97,
+    "active": 78,
+    "covered": 73,
+    "partial": 3,
+    "excluded": 1,
+    "inactiveSuperseded": 19,
+    "coveredActiveRemainder": 1,
+    "decisionRequired": 0
+  },
+  "historicalVerificationSuperseded": {
+    "kind": "prior-byte run-side evidence only; inactive and not transferred to current bytes",
+    "date": "2026-08-21",
+    "verifiedCanonicalEntry": {
+      "path": "index.html",
+      "sha256": "26EDF20E9AE016A8911CF78CF8F9F8AB3293274BBE36BD001EDAA3E81BDBD506"
+    },
+    "candidateLocal": {
+      "status": "passed",
+      "static": {
+        "jsonParsed": true,
+        "inlineJavaScriptBlocksParsed": 2,
+        "duplicateAuthoredIds": 0,
+        "requiredLocatorReferencesMissing": 0,
+        "remoteRuntimeUrls": 0,
+        "requirementsTotal": 74,
+        "requirementsUnique": 74,
+        "map009Present": true,
+        "brandSpecByteIdentical": true
+      },
+      "browser": {
+        "surface": "Browser/Chrome plugin current-byte localhost run",
+        "widthsPx": [
+          "320x800",
+          "375x900",
+          "430x932"
+        ],
+        "normalHorizontalOverflowFailures": 0,
+        "largeTextHorizontalOverflowFailures": 0,
+        "visibleActionsBelow44Px": 0,
+        "defaultMap": {
+          "physicalMapNodes": 1,
+          "formalMarkersVisible": 4,
+          "activeOverlay": "NONE",
+          "timeBars": 1,
+          "layerControls": 1,
+          "primaryNavigationItems": 2
+        },
+        "mapTimeFocus": {
+          "normalReducedNormalRoundTrip": true,
+          "physicalMapNodes": 1,
+          "mapOpacity": 1,
+          "originPlaceholderEqualHeight": true,
+          "priorOverlayRestored": true,
+          "viewportRestored": true,
+          "selectionRestored": true,
+          "sourceGhostsAfterClose": 0,
+          "openerFocusRestored": true
+        },
+        "mapUtilities": {
+          "layerValues": [
+            "NONE",
+            "LIGHT",
+            "TOTAL_CLOUD",
+            "OPPORTUNITY"
+          ],
+          "searchFormalRows": 4,
+          "filterModal": {
+            "source": "S1 product Source §9.7",
+            "terminalCount": 18,
+            "firstLevelCount": 10,
+            "advancedCount": 8,
+            "exactLabelsInOrder": [
+              "今晚推荐",
+              "最佳窗口时长",
+              "距离/驾车时间",
+              "光害",
+              "少云",
+              "停车",
+              "厕所",
+              "可驾车直达",
+              "摄影前景",
+              "可露营/驻车",
+              "特定天象",
+              "低云阈值",
+              "月亮影响",
+              "徒步难度",
+              "信号",
+              "充电",
+              "天空开阔方向",
+              "最近核验时间"
+            ],
+            "allLabelsMechanicallyExercised": true,
+            "oneFocusLayer": true,
+            "oneFilterDraftCommittedTruth": true,
+            "cancelWithoutCommit": true,
+            "resetDraftOnlyUntilApply": true,
+            "applyCommittedExactCount": 4,
+            "committedCountVisibleOnTrigger": true,
+            "focusContainedAndReturned": true,
+            "dismissals": [
+              "explicit-close",
+              "scrim",
+              "Escape",
+              "system-Back"
+            ],
+            "largeTextOwnedScroll": {
+              "320x800": {"overflowY":"auto","scrollClientHeight":653,"scrollHeight":1091,"pageAndPhoneScrollStayed":true,"lastItemFullyVisible":true},
+              "375x900": {"overflowY":"auto","scrollClientHeight":737,"scrollHeight":1091,"pageAndPhoneScrollStayed":true,"lastItemFullyVisible":true},
+              "430x932": {"overflowY":"auto","scrollClientHeight":784,"scrollHeight":1065,"pageAndPhoneScrollStayed":true,"lastItemFullyVisible":true}
+            }
+          },
+          "favoritesOwnOverflow": "auto",
+          "favoritesMapRelocation": false,
+          "favoritesStates": [
+            "ready",
+            "empty",
+            "stale-summary",
+            "dynamic-provider-failure",
+            "select"
+          ]
+        },
+        "callout": {
+          "visibleIdlePressedCancelCommitReviewPaths": true,
+          "cancelReviewNavigated": false,
+          "keyboardActivationEnteredSpotDetail": true,
+          "selectionAndRiskNonColorEncoded": true
+        },
+        "routes": {
+          "myFavoriteUsesUnifiedSpotDetail": true,
+          "spotNightFormalContextInherited": true,
+          "spotNightOverlayBackStayedOnRoute": true,
+          "spotNightSystemBackRestoredDetailSection": true,
+          "observationExitedBeforeLeavingSpotNight": true
+        },
+        "runtimeDuplicateIds": 0,
+        "openFocusLayersAtEnd": 0,
+        "consoleWarningsOrErrors": 0
+      },
+      "nonClaims": [
+        "independent external QA",
+        "native Mini Program verification",
+        "production conformance",
+        "real Provider or field validation"
+      ]
+    },
+    "independent": {
+      "status": "NOT RUN for current bytes",
+      "passedClaim": false,
+      "reason": "external independent QA has not run on the final index.html and README hashes; historical results are not transferred"
+    },
+    "optionalImageExport": {
+      "status": "unavailable",
+      "reason": "Open Design CLI reported screenshot export is only available in the desktop runtime",
+      "retried": false
+    }
+  },
+  "verification": {
+    "kind": "provider-side current-byte candidate-local checks only",
+    "date": "2026-08-22",
+    "verifiedCanonicalEntry": {
+      "path": "index.html",
+      "sha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31"
+    },
+    "candidateLocal": {
+      "status": "passed",
+      "static": {
+        "jsonParsed": true,
+        "inlineJavaScriptBlocksParsed": 2,
+        "duplicateAuthoredIds": 0,
+        "requiredLocatorReferencesMissing": 0,
+        "remoteRuntimeUrls": 0,
+        "literalLegacyFinderChevrons": 0,
+        "tierAInlineChevronDefinitions": 1,
+        "requirementsTotal": 97,
+        "requirementsUnique": 97,
+        "requirementsSha256": "16C1D3B27D4976DEA450C772047B6469455DB6AC7A96B75B8CF20789036F62E8",
+        "activeRequirements": 78,
+        "decisionRequired": 0,
+        "brandSpecByteIdentical": true,
+        "brandSpecSha256": "C1552347FD06724A45B12ACB51032A8619A94F9B3B6AA36361A824A184E6DFA1"
+      },
+      "browser": {
+        "surface": "Browser plugin Chrome-extension current-byte localhost run through a read-only project server",
+        "viewportsPx": ["320x800","375x900","430x932"],
+        "modes": ["day","night","observation entered and exited only in the standalone My Settings route"],
+        "normalAndLargeTextHorizontalOverflowFailures": 0,
+        "visibleActionsBelow44Px": 0,
+        "reducedMotionApplied": true,
+        "phoneProhibitedCopyMatches": 0,
+        "phoneLifecycleDebugTokensVisibleAt375x900": 0,
+        "sourceLiftOuterInspectorObservableIn": ["Search","Analysis"],
+        "notificationFamily": {
+          "requirement": "USER-NOTIFICATION-COMPONENT-FAMILY-001",
+          "sharedRenderer": "NotificationComponent",
+          "obsoleteBannerInstances": 0,
+          "toneAxis": ["info","warning","error","success"],
+          "placementAxis": ["inline","floating"],
+          "mapPriority": ["providerFailure:error","dynamicStale:warning","permissionDenied:info"],
+          "mapConcurrentFullInlineCount": 1,
+          "mapConcurrentResidual": "另有 2 条通知：1 条注意，1 条提示",
+          "mapQueueAdvancedWithoutStateLoss": true,
+          "spotNightOfflinePreservedStaticAndMatrix": true,
+          "planProviderThenStalePreservedPlanContent": true,
+          "floatingQueueFullCountAtOnce": 1,
+          "floatingPassiveFocusTheft": false,
+          "floatingGeometryInvariant": ["phone","screen","Search","Map","Bottom Navigation","outer scroll","phone scroll"],
+          "responsiveNormalAndLarge": {
+            "viewportsPx": ["320x800","375x900","430x932"],
+            "inlineFullCountEach": 1,
+            "noticeHeightPxRange": [61.6,74.6],
+            "searchHeightPxRange": [52,60],
+            "mapHeightPxRange": [521.8,658.8],
+            "horizontalOverflowFailures": 0,
+            "phoneScrollRangePx": 0,
+            "actionMinimumPx": 44
+          },
+          "motion": {"normalAnimationDurationMs":160,"candidateReducedDurationMs":0.01,"layoutOrBounceAnimation":false},
+          "liveSemantics": {"infoAndSuccess":"status polite","providerError":"alert assertive","passiveFloatingFocus":false},
+          "modeParity": ["day","night","observation"],
+          "observationComputedRolesClosedBlackWarmRed": true
+        },
+        "myAccountCenterU33": {
+          "requirement": "USER-MY-ACCOUNT-CENTER-001",
+          "viewportsPx": ["320x800","375x900","430x932"],
+          "matrixCombinations": 36,
+          "textModes": ["normal","large"],
+          "displayModes": ["day","night","observation"],
+          "motionModes": ["normal","candidate-reduced"],
+          "titleOnlyMyHeader": true,
+          "subtitlePeerTabsAndMyFavoriteElements": 0,
+          "gearTargetPx": 44,
+          "planEntryTargetPx": 60,
+          "horizontalOverflowFailures": 0,
+          "duplicateRuntimeIds": 0,
+          "visibleUnnamedActions": 0,
+          "verticalScrollbarChromeVisible": false,
+          "planStandaloneRoute": true,
+          "settingsStandaloneRoute": true,
+          "namedBackActions": ["my-plan-back-action","my-settings-back-action"],
+          "explicitSystemHistoryAndKeyboardBackRestoredExactRootScrollAndLogicalOpenerFocus": true,
+          "settingsObservationEntryCount": 1,
+          "spotNightObservationEntryCount": 0,
+          "finderWantedAndDetailFavoriteRetained": true,
+          "sharedNotificationReuse": ["Plan inline stale/provider arbitration","Settings floating observation recovery"]
+        },
+        "criticalRegressionCurrentBytes": {
+          "finderVisibleSearchCues": 1,
+          "finderFieldIconVisible": false,
+          "dirtyTargetsPx": [44,44],
+          "dirtySvgPx": [20,20],
+          "dirtySvgCenterDeltaPx": [0,0],
+          "detailRemovedChipMatches": 0,
+          "detailRapidFinal": {"panels":1,"selectedTabs":1,"ariaLabelledby":"detail-tab-guides"},
+          "detailCandidateReducedOpacity": 1,
+          "longDetailScrollRangePx": 437,
+          "longDetailLastContentReachable": true,
+          "observationOwnedOnlyBySettings": true,
+          "sharedSelectedStarInFilterAndAnalysis": true,
+          "sourceLiftAndAnalysisSettled": {"phase":"IDLE","mapCount":1,"placeholderCount":0,"openLayers":0,"openerFocusRestored":true},
+          "myAccountCenter": {"subtitleMatches":0,"peerRouteTabs":0,"myFavoriteElements":0,"gearTargetPx":44,"planTargetPx":60,"planStandalone":true,"settingsStandalone":true,"explicitSystemAndKeyboardBackRestoredScrollAndLogicalOpener":true,"finderWantedRetained":true,"detailFavoriteRetained":true,"settingsObservationEntryCount":1,"spotNightObservationEntryCount":0,"planSharedNotificationQueue":true,"settingsSharedFloatingRecovery":true}
+        },
+        "historyContinuity": {
+          "requirement": "USER-SOURCE-LIFT-RESTORE-CONTINUITY-001",
+          "ownerCount": 1,
+          "scrollRestorationLease": "manual before layer pushState through popstate and atomic live-node return; prior value restored two rendering frames after settlement",
+          "preOpenSnapshot": ["window.scrollX","window.scrollY","phoneScroll.scrollTop","history.scrollRestoration"],
+          "usesScrollToOrVisualCover": false,
+          "preexistingStaleOuterScrollYByViewport": {"320x800":616,"375x900":658.4,"430x932":674.4},
+          "finderFocusedClose375": {"sampledFrames":49,"outerScrollY":0,"phoneY":8,"mapOriginY":130.8,"phoneScrollTop":0,"mapCount":1,"nonIdlePlaceholderCount":1,"idlePlaceholderCount":0,"mapOpacity":1,"mapVisibility":"visible","mapDisplay":"block","geometryMonotonic":true,"openerFocusRestored":true},
+          "finderLiftingInterrupt375": {"sampledFrames":65,"liftingFramesBeforeInterrupt":2,"cancelledFrames":34,"liftingTowardFocusMonotonic":true,"cancelTowardOriginMonotonic":true,"outerAndFlowInvariant":true,"idleMapCount":1,"idlePlaceholderCount":0},
+          "finderRepeatedCycles375": {"cycles":3,"sampledFrames":210,"allCyclesReachedFocusedRestoringIdle":true,"outerAndFlowInvariant":true,"idleMapCountEach":1,"idlePlaceholderCountEach":0,"openerFocusRestoredEach":true},
+          "finderAndAnalysisByViewport": {"320x800":{"sampledFrames":228,"outerScrollY":0,"phoneY":0,"mapOriginY":122.8,"analysisOpenAndCloseMonotonic":true},"375x900":{"sampledFrames":122,"outerScrollY":0,"phoneY":8,"mapOriginY":130.8,"analysisOpenAndCloseMonotonic":true},"430x932":{"sampledFrames":228,"outerScrollY":0,"phoneY":8,"mapOriginY":130.8,"analysisOpenAndCloseMonotonic":true}},
+          "nonzeroPhoneScrollRoundTrip375": {"sampledFrames":106,"outerScrollY":0,"phoneScrollTop":13.6,"outerAndPhoneScrollInvariant":true,"idleMapCount":1,"idlePlaceholderCount":0},
+          "systemBackNonzeroScroll375": {"sampledFrames":98,"outerScrollY":155.2,"phoneScrollTop":13.6,"phoneY":-147.2,"phases":["FOCUSED","RESTORING","IDLE"],"outerAndFlowInvariant":true,"routeAfter":"map","idleMapCount":1,"idlePlaceholderCount":0,"openerFocusRestored":true},
+          "dismissalsVerified": ["title-toggle","real-scrim","Escape","quiet-close","system-Back","LIFTING-interrupt","immediate-cleanup"],
+          "normalAndCandidateReducedMotionVerified": true
+        },
+        "firstViewportMap": {
+          "headerSearchMapAndNavigationVisibleAt": ["320x800","375x900","430x932"],
+          "phoneScrollDeltaAtAllWidths": 0,
+          "largeText320UsableMapHeightPx": 604.4,
+          "normalAndLargeTextHorizontalOverflowFailures": 0
+        },
+        "defaultMap": {
+          "visibleSearchTriggers": 1,
+          "analysisTimeBarsInsideMap": 1,
+          "analysisTimeBarTitle": "观测条件",
+          "observingConditionsGaugeLocators": 1,
+          "retiredAnalysisAndTimeTextMatches": 0,
+          "physicalMapNodes": 1,
+          "formalMarkersVisible": 6,
+          "activeOverlay": "NONE",
+          "overlayValues": ["NONE","LIGHT","TOTAL_CLOUD","OPPORTUNITY"],
+          "primaryNavigationItems": 2,
+          "retiredVisibleControls": 0
+        },
+        "finder": {
+          "sourceLiftVariant": "panelOnly",
+          "liftedTitle": "查找观星点",
+          "titleToggleAriaExpanded": true,
+          "titleChevronContainerPx": [20,20],
+          "titleChevronSvgPx": [18,18],
+          "titleChevronStrokePx": 2,
+          "titleChevronTransitionMs": 160,
+          "titleChevronRotationDeg": {"closed":0,"expanded":180},
+          "standaloneCloseControls": 0,
+          "retiredFinderCompareTextMatches": 0,
+          "visibleSearchGlyphsInFocusedComposition": 1,
+          "visibleSearchGlyphsInsideField": 0,
+          "focusedInputPaddingLeftPx": 11,
+          "queryOverlayFieldGapPx": 4,
+          "searchToFilterGapPx": 12.8,
+          "filterTitleToEditorVisibleGapPxAtScaled375Viewport": 6.4,
+          "queryOverlaySurvivedFocusInside": true,
+          "keyboardSuggestionCommittedBeforeClose": true,
+          "querySuggestionKeydownKeys": ["Enter"," ","Spacebar"],
+          "querySuggestionPreventDefaultAndStopPropagation": true,
+          "querySuggestionSubmissionCountPerActivation": {"Enter":1,"Space":1,"pointerClick":1},
+          "querySuggestionUpdatedInputClosedOverlayAndRetainedInputFocus": true,
+          "pointerSuggestionCommittedBeforeClose": true,
+          "trueOutsideBlurFadedAndCleared": true,
+          "visibleDialogsOnMap": 1,
+          "nestedDialogs": 0,
+          "ownedOverflowY": "auto",
+          "initialWantedOtherCounts": [3,3],
+          "citiesPerPartition": ["上海","杭州","湖州"],
+          "terminalFilterCount": 18,
+          "firstLevelCount": 10,
+          "advancedCount": 8,
+          "exactLabelsInOrder": ["今晚推荐","最佳窗口时长","距离/驾车时间","光害","少云","停车","厕所","可驾车直达","摄影前景","可露营/驻车","特定天象","低云阈值","月亮影响","徒步难度","信号","充电","天空开阔方向","最近核验时间"],
+          "filterUniformGrid": {
+            "normalFontAndRowPx": [12,54],
+            "largeFontAndRowPx": [13,60],
+            "equalColumnWidthsAtAllViewports": true,
+            "minimumTargetPx": 44
+          },
+          "ownedScrollPresentation": {
+            "filterOverflowY": "auto",
+            "resultOverflowY": "auto",
+            "scrollbarWidth": "none",
+            "webkitScrollbarDisplay": "none",
+            "lastResultReachableAtAllViewportsAndTextModes": true
+          },
+          "sectionRows": {
+            "balancedInlinePaddingPx": [10,10],
+            "targetHeightPx": 44,
+            "chevronContainerPx": [20,20],
+            "chevronSvgPx": [18,18],
+            "chevronStrokePx": 2,
+            "chevronTransitionMs": 160,
+            "chevronRotationDeg": {"closed":0,"expanded":180},
+            "fullRowActivationRotatedAndUpdatedExpandedState": true
+          },
+          "queryAndFilterOverlaysMutuallyExclusive": true,
+          "overlaysDoNotChangeResultScrollGeometry": true,
+          "dirtyOnlyRevertAndCommit": true,
+          "dirtyActionTargetsPx": [44,44],
+          "dirtyActionSvgViewBoxes": ["0 0 20 20","0 0 20 20"],
+          "dirtyActionFontGlyphText": "",
+          "revertRestoredOpeningSnapshot": true,
+          "commitAppliedAtomically": true,
+          "appliedLightPollutionCounts": {"wanted":2,"other":2},
+          "jointQueryHangzhouCounts": {"wanted":0,"other":1},
+          "noResultsCounts": {"wanted":0,"other":0},
+          "queryFilterPartitionAndScrollPreservedOnReopen": true,
+          "largeTextLastFilterFullyVisibleAtAllViewports": true,
+          "phoneScrollMovedDuringOwnedScroll": false,
+          "dismissals": ["title-toggle","real-scrim","Escape","system-Back"],
+          "focusTrapAndOpenerReturn": true,
+          "staticIdentityPreservedUnderStaleAndDynamicFailure": true,
+          "resultSelectionStayedOnMap": true,
+          "resultSelectionMapNodes": 1,
+          "resultSelectionOpenedSameCallout": true
+        },
+        "analysisTime": {
+          "sourceLiftVariant": "mapCoupled",
+          "statesImplemented": ["IDLE","LIFTING","FOCUSED","RESTORING","CANCELLED"],
+          "focusedHeading": "观测条件",
+          "panelOverflowY": "hidden",
+          "panelScrollRangePxAtAllViewportsNormalAndLarge": 0,
+          "panelHeightPx": {"normal":314.6,"large":322.6},
+          "clippedControls": 0,
+          "visibleSelectedAtStringsInPanel": 1,
+          "quietClose": {"targetPx":[44,44],"glyphPx":20,"borderPx":0,"background":"transparent"},
+          "companionMapHeightPxRange": {"normal":[462.2,570.2],"large":[454.2,562.2]},
+          "physicalMapNodesDuringRoundTrip": 1,
+          "physicalIdentityBeforeDuringAfter": "map-1",
+          "placeholderIdentityMatched": true,
+          "originPlaceholderHeightPx": 696.4,
+          "mapOpacityDuringFocus": 1,
+          "mapOpacityAnimated": false,
+          "exclusiveOverlayCheckedCount": 1,
+          "formalMarkersPersistForAllOverlays": true,
+          "previewUpdatedLoadedCloudAndCondition": true,
+          "previewRangeAndValue": {"programmaticValue":"2","visible":"08-20 21:30"},
+          "cancelRestoredCommittedValue": {"programmaticValue":"8","visible":"08-21 00:30"},
+          "validCommitUpdatedSoleSelectedAt": {"programmaticValue":"2","visible":"08-20 21:30"},
+          "lightStaticClassOpacityTransformUnchangedAcrossTimePreview": true,
+          "lightSourcePeriodVisible": "2026-08",
+          "dismissalImplementation": ["scrim","quiet-close","Escape","system-Back"],
+          "rapidInterruptionRecoveredToIdle": true,
+          "originGeometryInvariantAtStableSampledEndpoints": ["320x800","375x900","430x932"],
+          "originPlaceholderMovedDuringRestoreImplementation": false,
+          "liveNodeReinsertedBeforeRestoreAnimation": false,
+          "atomicSwapMechanism": "requestAnimationFrame plus placeholder.replaceWith(liveNode)",
+          "transitionalMapDock": "transparent borderless shadowless and overflow-visible",
+          "reducedMotionTransitionDurationMs": 0.01,
+          "ghostsAfterRestore": 0,
+          "openerFocusRestored": true
+        },
+        "callout": {
+          "finderDidNotEnterDetail": true,
+          "keyboardActivationEnteredDetail": true,
+          "dragAwayDidNotNavigate": true,
+          "validReleaseOnlyImplementationPresent": true
+        },
+        "detail": {
+          "favoriteBesideName": true,
+          "favoriteHitPx": 44,
+          "favoriteGlyphPx": 22,
+          "favoriteVisibleBorder": false,
+          "routeText": "去这里 →",
+          "routeHitPx": 44,
+          "routeVisibleBorderOrFill": false,
+          "nightEntryUpperHierarchyCount": 1,
+          "facilitiesPageActionCount": 0,
+          "cardGapPx": 20,
+          "favoritePartitionIdentityRoundTrip": true,
+          "removedIdentityChipTextMatches": 0,
+          "detailTabIndicatorTransitionMs": 160,
+          "detailPanelAnimation": "single committed tabpanel node; cancel prior element animation, set opacity 0, animate monotonically to 1 for 160ms, epoch-gated final cleanup",
+          "detailPanelComputedOpacityTimeline": [
+            {"elapsedMs":3.9,"opacity":0},
+            {"elapsedMs":81.2,"opacity":0.666833},
+            {"elapsedMs":164.3,"opacity":1}
+          ],
+          "detailPanelOpacityMonotonicToOne": true,
+          "rapidRetargetSequence": ["SITE","OVERVIEW","GUIDES"],
+          "rapidRetargetImmediateFinal": {"selected":"GUIDES","ariaLabelledby":"detail-tab-guides","opacity":0,"panels":1,"selectedTabs":1},
+          "rapidRetargetFinalOpacityTimeline": [
+            {"elapsedMs":7.9,"opacity":0},
+            {"elapsedMs":82.7,"opacity":0.665058},
+            {"elapsedMs":166.2,"opacity":1}
+          ],
+          "detailPanelsAfterRapidRetarget": 1,
+          "detailSelectedTabsAfterRapidRetarget": 1,
+          "detailAriaLabelledbyAfterRapidRetarget": "detail-tab-guides",
+          "candidateReducedMotionOpacityAtMs": {"0":1,"80":1},
+          "systemPrefersReducedMotionOpacityAtMs": {"0":1,"80":1},
+          "reducedDetailPanelConvergenceMs": 0
+        },
+        "routes": {
+          "spotNightLocalTimeFocus": true,
+          "observationEntryOwnedOnlyByStandaloneMySettings": true,
+          "settingsModeChangeNavigated": false,
+          "spotNightModeEntryControls": 0,
+          "observationExitRestoredPriorMode": "day",
+          "spotNightConsumedGlobalObservationMode": true,
+          "spotNightBackRestoredDetailTab": true,
+          "myAccountCenterHasFavoriteContent": false,
+          "finderWantedAndDetailFavoriteRemainCurrent": true,
+          "myPlanAndSettingsStandalone": true,
+          "myChildExplicitSystemAndKeyboardBackRestoredRootScrollAndLogicalOpener": true,
+          "spotDetailVerticalScrollbarChromeHidden": true,
+          "spotNightVerticalScrollbarChromeHidden": true,
+          "professionalMatrixNativeScrollbarHidden": true,
+          "professionalMatrixKeyboardReachedEnd": true,
+          "professionalMatrixCustomIndicatorRgba": "rgba(255, 255, 255, 0.66)",
+          "selectedLayerStarsChecked": 4,
+          "selectedLayerStarOffsetPx": [-11.2,-11.2],
+          "observationSelectedStarStopColorsRgb": ["255 81 74","217 72 66","184 58 53","196 64 58"]
+        },
+        "runtimeDuplicateIds": 0,
+        "openFocusLayersAtEnd": 0,
+        "consoleWarningsOrErrors": 0
+      },
+      "modelObservation": {
+        "requestedModel": "not exposed by current run surface",
+        "effectiveModel": "GPT-5-based Codex per agent runtime identity; finer build not exposed",
+        "reasoningConfiguration": "not exposed by current run surface"
+      },
+      "nonClaims": ["independent external QA","native Mini Program verification","production conformance","real Provider or field validation","selection or authority adoption"]
+    },
+    "independent": {
+      "status": "NOT RUN for current bytes",
+      "passedClaim": false,
+      "reason": "provider self-QA stops at the provider boundary; external independent QA has not run on the final index.html and README hashes, and prior-hash QA is not transferred"
+    }
+  },
+  "limitations": [
+    "Unselected candidate only; no selection, authority adoption, Context edit, production code, Figma file or selected handoff was created.",
+    "All phone facts and values are sample-only candidate data; that classification is disclosed in the outer reviewer shell rather than repeated as product chrome.",
+    "No production Provider, route, facility, safety, media-license, backend, device-sensor, native WeChat, field or production-conformance evidence is claimed.",
+    "Reviewer controls and inspector are outside the phone and are not proposed product UI.",
+    "Current-byte independent external design-resource QA remains unresolved until run separately on the final hash."
+  ]
+}

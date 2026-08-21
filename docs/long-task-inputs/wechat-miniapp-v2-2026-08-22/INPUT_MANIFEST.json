@@ -1,0 +1,87 @@
+{
+  "schema_version": "starward-long-task-intake-v1",
+  "status": "ready-for-long-task-authoring",
+  "workspace": "C:/Dev/Starward",
+  "repository_head_at_intake": "2c5af28d04f4876bc84e9254b9ce2fa97c153695",
+  "repository_branch_at_intake": "main",
+  "worktree_note": "The intake was authored on a dirty worktree containing current DRA and Context changes; Long Task must snapshot actual state and preserve unrelated user edits.",
+  "objective": "Implement and verify the complete Tonight Stargazing WeChat Mini Program V2.1.1 Demo in real production owners without claiming production release or unobserved external facts.",
+  "contract_policy": "The long-task-workflow owns exactly one delivery-contract.yaml; this file is an intake index, not a Contract or result ledger.",
+  "sources": [
+    {
+      "role": "product-authority",
+      "path": "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序产品方案_V2.1.1_LongTask输入定稿版.md",
+      "sha256": "EE158A18E81F0ED5CD8051FA8CD6CFC009EF4782EEDB7C17CE11674ACECAA42E"
+    },
+    {
+      "role": "technical-authority",
+      "path": "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序技术架构与技术实现方案_V2.1.1_LongTask输入定稿版.md",
+      "sha256": "77A510C8A5FE32C425BEBB5D113028CCB275BA9443C3678EF7DC40EB9E6BE7DA"
+    },
+    {
+      "role": "formal-selected-design-constraint",
+      "path": "docs/design-resources/miniapp-selected-handoff-2026-08-22-v3/miniapp-drift-correction-selected-v3.md",
+      "sha256": "F78DFF0DEB579EE8435EE32B8EF33A10BB97D8DCC7F4584D4C7579614455CF7A"
+    },
+    {
+      "role": "selected-requirement-dispositions",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/selected-requirement-dispositions.json",
+      "sha256": "D70651613570F9BEF7FD029AD05AA628E3BB22FB5A6F93822565477C25989D70"
+    },
+    {
+      "role": "selected-canonical-entry",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/index.html",
+      "sha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31"
+    },
+    {
+      "role": "selected-observable-fact-manifest",
+      "path": "docs/design-resources/miniapp-selected-source-2026-08-22-v3/fact-manifest.json",
+      "sha256": "1718E207FEA167757453F558ADB9FA143103498F4EAAD369F4E927183E265605"
+    },
+    {
+      "role": "design-authority",
+      "path": "DESIGN.md",
+      "target": "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+      "sha256_at_intake": "45DDFECF8AD3C9DA7EDC94312F15D3684D513603B5F317A91ADE1DE264E4CEB0"
+    },
+    {
+      "role": "marked-source-backbone-requires-reconciliation",
+      "path": "docs/wechat-miniapp-v2-source.md",
+      "sha256_at_intake": "43371183A5DD6FF65701F71AA4BF0F65AF6502F8121F127B55F94F6D5C904CAC"
+    }
+  ],
+  "selected_design": {
+    "scope_key": "scope-miniapp-drift-correction-selected-v3",
+    "target_key": "target-miniapp-drift-correction-selected-constraint-v3",
+    "condition_key": "condition-authoring-source-v3",
+    "subjects": 5,
+    "properties": 218,
+    "fact_cells": 1090,
+    "facts": 5,
+    "proof_obligations": 5,
+    "acceptance_blockers": 0,
+    "interpretation": "constraint"
+  },
+  "production_owners": [
+    "apps/wechat-miniapp/**",
+    "workers/miniapp-api/**",
+    "packages/miniapp-contracts/**"
+  ],
+  "supporting_owners": [
+    "tools/miniapp/**",
+    "tests/acceptance/**",
+    "infra/miniapp/**",
+    "project_context/**",
+    "DESIGN.md"
+  ],
+  "known_stale_bindings": [
+    "docs/wechat-miniapp-v2-source.md contains 27 filters, My/Favorites/Plan/Settings peer tabs, old selected-v1 binding, and other superseded facts.",
+    "project_context/areas/main/screen-contracts.md must be checked for an old selected-v1 canonical record.",
+    "project_context/areas/main/verification/acceptance-runtime.md must be checked for an old selected-v1 verification binding."
+  ],
+  "original_inputs_preserved": {
+    "product_v2_0_sha256": "AF2D9B60C59B23D3040133974AB8C8AEA99DB43C566317AA3EDE4241C0786944",
+    "technical_v2_0_sha256": "82A281D1CD2D21556383876A24C62B7614CAB9531B7A98ED37535FC62041A98E",
+    "selected_v2_canonical_sha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31"
+  }
+}

@@ -1,0 +1,581 @@
+{
+  "schema_version": "starward-miniapp-selected-requirement-dispositions-v1",
+  "selection": {
+    "status": "selected",
+    "selected_at": "2026-08-22",
+    "basis": "The user ended the requirement-change loop and explicitly delegated DRA completion. V3 preserves the selected U33 bytes and all dispositions while correcting downstream proposal metadata for Long-Task intake.",
+    "selected_resource_sha256": "9F7E60C1233D76D9A00800D594AF273CC9ECC5F537840DDC4E72A407286E5E31",
+    "supersedes_selected_resource_version": "miniapp-selected-source-2026-08-22-v2",
+    "immutable_version": "miniapp-selected-source-2026-08-22-v3"
+  },
+  "design_authority": {
+    "target": "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+    "binding": "user:soft-instruments",
+    "binding_digest": "5dd2e7acf43973793a8ae70bd0db8266c7253f27ebdeb6d944657b83e3a855e6",
+    "design_md_sha256": "45DDFECF8AD3C9DA7EDC94312F15D3684D513603B5F317A91ADE1DE264E4CEB0"
+  },
+  "proposal_sources": {
+    "product": {
+      "path": "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序产品方案_V2.1.1_LongTask输入定稿版.md",
+      "sha256": "EE158A18E81F0ED5CD8051FA8CD6CFC009EF4782EEDB7C17CE11674ACECAA42E"
+    },
+    "technical": {
+      "path": "docs/design-resources/miniapp-v2-drift-correction-2026-08-20/reconciled/今晚去观星_微信小程序技术架构与技术实现方案_V2.1.1_LongTask输入定稿版.md",
+      "sha256": "77A510C8A5FE32C425BEBB5D113028CCB275BA9443C3678EF7DC40EB9E6BE7DA"
+    }
+  },
+  "requirements": {
+    "NAV-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-PRIMARY-NAV-002",
+      "reason": "legacy exact 夜空/地图/我的 projection is absent"
+    },
+    "NAV-002": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-NIGHT-002",
+      "reason": "Night no longer resolves without formal spot_id"
+    },
+    "CTX-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-night]",
+      "reason": "formal spot context carries one spot/date/time/timezone/freshness projection without phone-visible debug revision copy"
+    },
+    "CTX-002": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-night-time-focus]",
+      "reason": "cross-midnight selectedAt remains in one observing night"
+    },
+    "CTX-003": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail] and [data-od-id=spot-night]",
+      "reason": "Back restores Spot Detail section and scroll; mode keeps route ownership"
+    },
+    "MODE-001": {
+      "status": "covered",
+      "locator": "[data-od-id=mini-program-frame] + [data-od-id=my-settings]",
+      "reason": "day night observation share one semantic role set and one document mode store; standalone Settings is the sole explicit observation enter and exit owner"
+    },
+    "LOC-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-NIGHT-002",
+      "reason": "ordinary-place Night action is inactive"
+    },
+    "LOC-002": {
+      "status": "covered",
+      "locator": "[data-od-id=map-base]",
+      "reason": "ordinary map context cannot synthesize formal Spot Night"
+    },
+    "LOC-003": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-MAP-CONTENT-BOUNDARY-002",
+      "reason": "candidate detailed card and Night action are inactive on Map"
+    },
+    "LOC-004": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-MAP-CONTENT-BOUNDARY-002",
+      "reason": "three-location detailed comparison is absent from Map"
+    },
+    "SPOT-001": {
+      "status": "partial",
+      "locator": "[data-od-id=spot-detail]",
+      "reason": "complete evidence structure is visible; no verified production spot facts are supplied"
+    },
+    "SPOT-002": {
+      "status": "partial",
+      "locator": "[data-od-id=spot-detail-site]",
+      "reason": "site evidence and recovery posture are visible; real coordinate authorization and enforcement are not verified"
+    },
+    "EVT-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-source-evidence]",
+      "reason": "event or target identity update time and limitation slots are explicit without production claims"
+    },
+    "EVT-002": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-source-evidence]",
+      "reason": "formal detail keeps event evidence with local night context"
+    },
+    "EVT-003": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-source-evidence]",
+      "reason": "source and computation are not presented as live provider truth"
+    },
+    "EVT-004": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-source-evidence]",
+      "reason": "visible copy rejects actual ZHR visible-count implication"
+    },
+    "EVT-005": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-NIGHT-002",
+      "reason": "legacy global Event to Night loop is inactive"
+    },
+    "EVT-006": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-source-evidence]",
+      "reason": "daily observing profile remains a formal-detail evidence slot without a global Night topology"
+    },
+    "SKY-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-night]",
+      "reason": "formal Spot Night owns understandable opportunity summary"
+    },
+    "SKY-002": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-night]",
+      "reason": "primary continuous window is visible with explicit uncertainty"
+    },
+    "SKY-003": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-night-time-focus] and [data-od-id=map-analysis-focus-panel]",
+      "reason": "one state.selectedAt drives both map analysis and formal-spot time focus"
+    },
+    "SKY-004": {
+      "status": "covered",
+      "locator": "[data-od-id=sky-professional-matrix]",
+      "reason": "professional bounded matrix represents aligned cloud evidence, remains horizontally reachable and replaces native scrollbar chrome with a no-footprint white overlay indicator"
+    },
+    "SKY-005": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-source-evidence]",
+      "reason": "update source and limitation slots are explicit without provider claims"
+    },
+    "SKY-006": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-night-time-focus]",
+      "reason": "moon and observing-condition feedback are co-located"
+    },
+    "SKY-007": {
+      "status": "covered",
+      "locator": "[data-od-id=sky-scene]",
+      "reason": "versioned 2D sky scene and manual orientation path are visible"
+    },
+    "OBS-001": {
+      "status": "covered",
+      "locator": "[data-od-id=my-settings] containing [data-od-id=observation-mode-entry]",
+      "reason": "closed black and warm-red mode is explicitly entered or exited only in the standalone Settings child route without leaving it"
+    },
+    "OBS-002": {
+      "status": "covered",
+      "locator": "[data-od-id=mini-program-frame] + [data-od-id=spot-night]",
+      "reason": "one global display mode preserves route tab scroll spot selectedAt and formal Spot Night context; exit restores the exact prior Day or Night mode"
+    },
+    "MAP-001": {
+      "status": "covered",
+      "locator": "[data-od-id=map-search-trigger] and [data-od-id=map-permission-state]",
+      "reason": "Finder search and manual city alternatives survive location denial"
+    },
+    "MAP-002": {
+      "status": "covered",
+      "locator": "[data-od-id=map-search-trigger] → [data-od-id=spot-finder-sheet]",
+      "reason": "one self-explanatory Search entry exposes formal results without fabricating dynamic truth"
+    },
+    "MAP-003": {
+      "status": "covered",
+      "locator": "[data-od-id=map-analysis-time-bar] → [data-od-id=map-analysis-focus-panel]",
+      "reason": "compact in-map status and focused controls use the same selectedAt beside the same physical map"
+    },
+    "MAP-004": {
+      "status": "covered",
+      "locator": "[data-od-id=map-analysis-layer-control] + [data-od-id=map-base]",
+      "reason": "ordinary base plus at most one optional mutually exclusive analytical overlay"
+    },
+    "MAP-005": {
+      "status": "covered",
+      "locator": "[data-od-id=map-analysis-time-bar] + [data-od-id=map-analysis-focus-panel]",
+      "reason": "status and operable disclosure distinguish source-period static LIGHT from time-dependent cloud and opportunity"
+    },
+    "MAP-006": {
+      "status": "covered",
+      "locator": "[data-od-id=default-formal-markers]",
+      "reason": "formal selected and closed markers use shape border icon and accessible labels"
+    },
+    "MAP-007": {
+      "status": "covered",
+      "locator": "[data-od-id=map-selected-spot-callout] + [data-od-id=spot-finder-result-card]",
+      "reason": "marker callout and Finder result share state.selectedSpot and the same map"
+    },
+    "MAP-008": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-overview] and [data-od-id=map-provider-failure]",
+      "reason": "distance route drive and provider-failure semantics stay in detail or failure recovery"
+    },
+    "MAP-009": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-finder-filter-overlay] containing [data-od-id=spot-finder-filter-first-level] and [data-od-id=spot-finder-filter-advanced]",
+      "reason": "anchored Finder filtering exposes exactly 18 Source §9.7 terminal filters as 10 first-level plus 8 advanced items with one opening snapshot/filterDraft/committedFilters truth, dirty-only revert/commit and bounded owned scroll; no nested dialog"
+    },
+    "DETAIL-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-NIGHT-002",
+      "reason": "legacy four-tab order is replaced by Overview Guides Site plus child spot/sky"
+    },
+    "DETAIL-002": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-overview]",
+      "reason": "decision window factors route facilities media event guides and provenance are owned by detail"
+    },
+    "DETAIL-003": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-site]",
+      "reason": "arrival-order site evidence is visible"
+    },
+    "DETAIL-004": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-NIGHT-002",
+      "reason": "Night is not a Detail tab; it is the spot/sky child route"
+    },
+    "DETAIL-005": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-overview]",
+      "reason": "media placeholder explicitly does not prove site facts or license"
+    },
+    "DETAIL-006": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail]",
+      "reason": "static detail ownership remains when dynamic summaries fail"
+    },
+    "DETAIL-007": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-favorite] + [data-od-id=spot-detail-route-action] + [data-od-id=spot-detail-night-entry]",
+      "reason": "favorite route and Night actions remain detail-owned with clean identity hierarchy"
+    },
+    "DEC-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-MAP-CONTENT-BOUNDARY-002",
+      "reason": "legacy three-location comparison is removed from Map"
+    },
+    "DEC-002": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-site]",
+      "reason": "visible copy requires hard blocker precedence over score and navigation"
+    },
+    "DEC-003": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-overview]",
+      "reason": "favorable adverse safety and uncertainty are visible"
+    },
+    "DEC-004": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-night-time-focus]",
+      "reason": "condition and stability remain distinct feedback with explicit uncertainty"
+    },
+    "DEC-005": {
+      "status": "covered",
+      "locator": "[data-od-id=my-settings]",
+      "reason": "preference is stated as ranking and explanation only"
+    },
+    "DATA-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-source-evidence]",
+      "reason": "source update freshness and limitation slots remain visible"
+    },
+    "DATA-002": {
+      "status": "covered",
+      "locator": "[data-od-id=map-analysis-focus-panel]",
+      "reason": "LIGHT is explicitly source-period static and its visual treatment does not move with selectedAt"
+    },
+    "DATA-003": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-site]",
+      "reason": "missing facts are labelled unknown rather than fabricated zero"
+    },
+    "DATA-004": {
+      "status": "covered",
+      "locator": "[data-od-id=map-provider-failure] and [data-od-id=spot-finder-wanted-section] and [data-od-id=spot-detail-favorite]",
+      "reason": "failure preserves static spot and the favorite relation exposed by Finder Wanted plus Detail Favorite"
+    },
+    "DATA-005": {
+      "status": "excluded",
+      "locator": "[data-od-id=mini-program-frame]",
+      "reason": "no production provider exists and real-data success cannot be claimed"
+    },
+    "MY-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-finder-wanted-section] + [data-od-id=spot-detail-favorite]",
+      "reason": "the favorite relation remains under stale and Provider failure through Finder Wanted and the one Detail Favorite toggle; My contains no Favorite page or list"
+    },
+    "MY-002": {
+      "status": "covered",
+      "locator": "[data-od-id=my-plan]",
+      "reason": "the standalone Plan child route keeps a formal plan bound to a formal spot_id"
+    },
+    "MY-003": {
+      "status": "covered",
+      "locator": "[data-od-id=my-plan] containing [data-od-id=my-plan-notification-state]",
+      "reason": "the standalone Plan child route keeps spot night timezone window and recoverable sync status while shared notifications do not remove the plan"
+    },
+    "MY-004": {
+      "status": "partial",
+      "locator": "[data-od-id=my-settings]",
+      "reason": "privacy posture is visible; real WeChat identity and backend isolation are unverified"
+    },
+    "SCOPE-001": {
+      "status": "covered",
+      "locator": "[data-od-id=my-account-center]",
+      "reason": "the concise account center adds no commerce membership coupon order profile-import or unrelated business scope"
+    },
+    "GOV-001": {
+      "status": "covered",
+      "locator": "resource-manifest.json requirements",
+      "reason": "all prior and current user IDs retain explicit dispositions"
+    },
+    "USER-UX-FOCUS-PATTERN-001": {
+      "status": "covered",
+      "locator": "[data-od-id=source-lift-focus-layer] + [data-od-id=spot-night-time-focus]",
+      "reason": "mutual exclusion scrim close Escape Back focus return interruption and reduced motion share one lifecycle"
+    },
+    "USER-NIGHT-TIME-FOCUS-001": {
+      "status": "covered-active-remainder",
+      "locator": "[data-od-id=spot-night-time-focus]",
+      "supersededBy": "USER-SPOT-NIGHT-002",
+      "inactiveMeaning": "global Night route scope",
+      "activeRemainder": "local scrubber current time opportunity cloud moon stability and explicit disclosure"
+    },
+    "USER-MAP-SELECTION-FOCUS-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-FINDER-001",
+      "reason": "its picker composition is inactive; one selected spot and focus lifecycle are counted only under the unified Finder"
+    },
+    "USER-SKY-ORIENTATION-LOCALITY-001": {
+      "status": "covered",
+      "locator": "[data-od-id=sky-scene] + [data-od-id=sky-orientation-control]",
+      "reason": "orientation control status and sky feedback are co-located"
+    },
+    "USER-MAP-TIME-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-MAP-ANALYSIS-TIME-001",
+      "reason": "map relocation dock placeholder and priorOverlay lifecycle are inactive"
+    },
+    "USER-UX-LOCALITY-001": {
+      "status": "covered",
+      "locator": "[data-od-id=map-analysis-focus-layer] + [data-od-id=spot-finder-sheet] + [data-od-id=spot-night-time-focus] + [data-od-id=sky-scene]",
+      "reason": "continuous control current value result feedback and owned scroll stay local to their task"
+    },
+    "USER-MAP-CONTENT-BOUNDARY-002": {
+      "status": "covered",
+      "locator": "[data-od-id=map-search-trigger] + [data-od-id=map-analysis-time-bar] + [data-od-id=spot-detail]",
+      "reason": "Map keeps compact selection and analysis; complete evidence lives in Spot Detail"
+    },
+    "USER-MAP-LAYERS-002": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-MAP-ANALYSIS-TIME-001",
+      "reason": "its separate in-map layer menu is absent; four overlay meanings are counted only in the analysis/time panel"
+    },
+    "USER-MAP-TIME-002": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-MAP-ANALYSIS-TIME-001",
+      "reason": "persistent in-map bar and map relocation focus are absent"
+    },
+    "USER-MAP-DIRECT-GESTURES-002": {
+      "status": "covered",
+      "locator": "[data-od-id=map-base] + [data-od-id=map-search-trigger]",
+      "reason": "pan pinch tap plus one accessible Finder alternative; no permanent pan or zoom buttons"
+    },
+    "USER-MAP-CALLOUT-002": {
+      "status": "covered",
+      "locator": "[data-od-id=map-selected-spot-callout]",
+      "reason": "compact formal callout has immediate border press-in and valid-release-only navigation with visible cancel review state"
+    },
+    "USER-MAP-FAVORITES-002": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-FINDER-001",
+      "reason": "standalone Favorites modal is absent; favorite identity is counted in the Finder Wanted partition and My"
+    },
+    "USER-PRIMARY-NAV-002": {
+      "status": "covered",
+      "locator": "[data-od-id=primary-navigation]",
+      "reason": "exact equal Map and My destinations with Map default and no global Night"
+    },
+    "USER-SPOT-NIGHT-002": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-night-entry] → [data-od-id=spot-night] → [data-od-id=spot-night-time-focus]",
+      "reason": "formal spot child route inherits spot time timezone and freshness; ordinary or candidate locations cannot synthesize it"
+    },
+    "USER-UI-LIBRARY-REUSE-001": {
+      "status": "covered",
+      "locator": "resource-manifest.json implementationHandoff and README.md",
+      "reason": "inline SVG is authoring-only; production reuse and lightweight compatible boundaries are explicit without bundling a library"
+    },
+    "USER-PRODUCT-COPY-BOUNDARY-001": {
+      "status": "covered",
+      "locator": "[data-od-id=mini-program-frame] + [data-od-id=review-workbench]",
+      "reason": "phone contains production-clean user copy while sample unselected provenance disclosure remains outside the phone"
+    },
+    "USER-SPOT-FINDER-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-FINDER-TOGGLE-POLISH-001",
+      "reason": "historical near-full-height standard Sheet and large inline filter composition are replaced; useful query/filter/partition/callout semantics are fully carried forward"
+    },
+    "USER-FINDER-CITY-GROUPING-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-finder-wanted-section] + [data-od-id=spot-finder-other-section] containing [data-od-id=spot-finder-city-heading]",
+      "reason": "Wanted and Other are the only first-level collapsible partitions; city is a sticky heading only"
+    },
+    "USER-MAP-ANALYSIS-TIME-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": [
+        "USER-MAP-FIRST-VIEWPORT-001",
+        "USER-SOURCE-LIFT-FOCUS-LAYER-001"
+      ],
+      "reason": "historical permanent above-map panel is replaced by compact in-map status and mapCoupled focus while one-map/selectedAt/overlay semantics continue"
+    },
+    "USER-SPOT-DETAIL-ACTIONS-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-SPOT-DETAIL-QUIET-ACTIONS-001",
+      "reason": "historical visible Favorite and route treatment is replaced by quiet header actions"
+    },
+    "USER-MAP-FIRST-VIEWPORT-001": {
+      "status": "covered",
+      "locator": "[data-od-id=mini-program-frame] containing [data-od-id=map-search-summary] + [data-od-id=map-base] + [data-od-id=primary-navigation]",
+      "reason": "compact header Search summary remaining-height map and Map/My navigation share the first 320x800 375x900 and 430x932 phone viewport; six formal markers are default and no permanent pan/zoom chrome exists"
+    },
+    "USER-SOURCE-LIFT-FOCUS-LAYER-001": {
+      "status": "covered",
+      "locator": "[data-od-id=source-lift-focus-layer] + [data-od-id=source-lift-origin-placeholder] + [data-od-id=map-base]",
+      "reason": "named SourceLiftFocusLayer exposes IDLE LIFTING FOCUSED RESTORING CANCELLED with panelOnly/mapCoupled, exact identity placeholder, one physical non-fading map, interruptible reverse, reduced-motion equivalent and opener-focus return"
+    },
+    "USER-SEARCH-LIFT-COMPACT-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-FINDER-TOGGLE-POLISH-001",
+      "reason": "its compact committed summary, panelOnly lifecycle, query projection and same-map callout remain active through U23; its prior standalone close and overlay polish are inactive"
+    },
+    "USER-FINDER-COMPACT-HIERARCHY-001": {
+      "status": "inactive-superseded",
+      "locator": null,
+      "supersededBy": "USER-FINDER-TOGGLE-POLISH-001",
+      "reason": "its exact 10+8 filters, draft semantics, partitions, city groups and retained state remain active through U23; its prior close, grid and scrollbar composition are inactive"
+    },
+    "USER-OBSERVING-CONDITIONS-COMPACT-001": {
+      "status": "covered",
+      "locator": "[data-od-id=map-analysis-time-bar] + [data-od-id=map-observing-conditions-icon] → [data-od-id=map-analysis-focus-panel] containing [data-od-id=map-analysis-close] + [data-od-id=map-analysis-time-scrubber] + [data-od-id=map-analysis-time-value]",
+      "reason": "one 观测条件 bar uses a Tier-A gauge; mapCoupled keeps one physical non-fading map while a non-scrollable compact panel exposes one visible selectedAt value, preview/commit/cancel slider semantics and one quiet borderless 44px close"
+    },
+    "USER-FINDER-TOGGLE-POLISH-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-finder-title-toggle] + [data-od-id=spot-finder-title-chevron] → [data-od-id=spot-finder-search-input] + [data-od-id=spot-finder-search-icon] + [data-od-id=spot-finder-query-overlay] + [data-od-id=spot-finder-filter-disclosure] + [data-od-id=spot-finder-filter-overlay] + [data-od-id=spot-finder-filter-choice] + [data-od-id=spot-finder-result-scroll] + [data-od-id=spot-finder-wanted-section] + [data-od-id=spot-finder-other-section] + [data-od-id=spot-finder-section-chevron]",
+      "reason": "the lifted 查找观星点 source header is the only explicit toggle and reports expanded state; the idle source retains a conventional Search glyph while focused rendering is narrowed by U25; the field owns a true anchored fading query overlay; query/filter remain exclusive; 18 uniform compact choices, hidden scrollbar chrome, balanced disclosure rows, retained state and same-map callout preserve all active Finder semantics"
+    },
+    "USER-SPOT-DETAIL-QUIET-ACTIONS-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-favorite] + [data-od-id=spot-detail-route-action] + [data-od-id=spot-detail-night-entry]",
+      "reason": "borderless 22px Favorite glyph uses a 44px hit region beside the name; 去这里 → is one quiet trailing action; one upper Night entry remains and facilities contain no page action row"
+    },
+    "USER-SOFT-INSTRUMENTS-APPLICATION-001": {
+      "status": "covered",
+      "locator": "[data-od-id=map-base] + [data-od-id=map-analysis-time-bar] + [data-od-id=map-analysis-focus-panel] + [data-od-id=spot-detail]",
+      "reason": "existing Soft Instruments tokens and hierarchy are applied without a second system: map/place/data lead, primary blue is high-signal, LIGHT is warm, TOTAL_CLOUD cyan, OPPORTUNITY violet, status semantics are non-color reinforced and elevation remains restrained"
+    },
+    "USER-SOURCE-LIFT-RESTORE-CONTINUITY-001": {
+      "status": "covered",
+      "locator": "[data-od-id=source-lift-focus-layer] + [data-od-id=source-lift-origin-placeholder] + [data-od-id=map-base]",
+      "reason": "panelOnly and mapCoupled retain the single live node under the overlay owner through restoring or cancelled while one immutable placeholder owns origin flow; the sole history owner records exact outer and phone scroll positions, sets scrollRestoration manual before pushState, holds it through popstate plus atomic replaceWith cleanup and restores the prior mode two rendering frames after settlement without scrollTo; all entry and opener focus calls prevent scroll"
+    },
+    "USER-FINDER-FOCUSED-ICON-DEDUP-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-finder-title-toggle] + [data-od-id=spot-finder-search-input] + [data-od-id=spot-finder-search-icon]",
+      "reason": "focused panelOnly exposes the lifted header as the sole visible Search cue; the field-local decorative glyph is focused-hidden and its left padding reservation is removed while the input retains an accessible label and idle Search remains conventional"
+    },
+    "USER-FILTER-DIRTY-ACTION-POLISH-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-finder-filter-overlay] + [data-od-id=spot-finder-filter-revert] + [data-od-id=spot-finder-filter-commit]",
+      "reason": "dirty revert and commit use distinct 20x20 Tier-A SVG paths centered in transparent circular 44px targets; the anchored editor keeps an 8px visible title-row gap without affecting result or phone scroll geometry"
+    },
+    "USER-SPOT-DETAIL-HEADER-CORE-INFO-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail] + [data-od-id=spot-detail-overview] + [data-od-id=spot-source-evidence] + [data-od-id=spot-detail-site]",
+      "reason": "identity header contains neither removed chip nor a synonym; Tonight conditions, freshness, limitations and facility evidence remain only in interpretable evidence regions while Favorite route and Night entry keep their quiet hierarchy"
+    },
+    "USER-MINIAPP-SCROLLBAR-CHROME-001": {
+      "status": "covered",
+      "locator": "[data-od-id=mini-program-frame] + [data-od-id=spot-detail] + [data-od-id=spot-night] + [data-od-id=sky-professional-matrix]",
+      "reason": "all user-phone vertical scrolling remains operable with Firefox and Chromium/WebKit native chrome hidden at zero layout width; only the professional matrix owns horizontal overflow and uses a white semi-transparent no-footprint custom overlay indicator"
+    },
+    "USER-SPOT-DETAIL-TAB-MOTION-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-detail-tabs] + [data-od-id=spot-detail-tab-indicator] + [data-od-id=spot-detail-panel]",
+      "reason": "Overview Guides Site uses one stable translating indicator and one committed accessible panel; each effective switch cancels the panel's prior animation, establishes the new content at opacity 0 and runs a 160ms monotonic element animation to 1, while the epoch restricts final cleanup to the last retarget and both candidate and system reduced motion resolve immediately"
+    },
+    "USER-OBSERVATION-MODE-SETTINGS-001": {
+      "status": "covered",
+      "locator": "[data-od-id=my-settings] containing [data-od-id=observation-mode-entry] + [data-od-id=my-settings-back-action] + [data-od-id=spot-night]",
+      "reason": "Spot Night contains no mode-entry card; the standalone Settings child route owns the sole named enter or active exit control, changes the one document mode without leaving Settings and restores the exact prior Day or Night mode and context"
+    },
+    "USER-CARD-SELECTION-STAR-001": {
+      "status": "covered",
+      "locator": "[data-od-id=spot-finder-filter-choice] + [data-od-id=map-analysis-layer-choice] containing [data-od-id=selected-card-star]",
+      "reason": "all 18 Filter cards and four Conditions layer cards share one top-right half-clipped rounded star decorator in selected state plus border aria state and accessible naming; its gradient uses only current primary warm cyan violet semantic roles whose Observation values are closed warm reds"
+    },
+    "USER-NOTIFICATION-COMPONENT-FAMILY-001": {
+      "status": "covered",
+      "locator": "[data-od-id=notification-inline] + [data-od-id=notification-floating] + [data-od-id=my-plan-notification-state] + [data-od-id=my-settings] containing [data-od-id=notification-feedback] + [data-od-id=notification-icon] + [data-od-id=notification-title] + [data-od-id=notification-body] + [data-od-id=notification-action] + [data-od-id=notification-dismiss] + [data-od-id=notification-residual-count]",
+      "reason": "one actually reused NotificationComponent renders Map permission stale and Provider queues, Spot Night offline, Plan stale and Provider sync states, Settings observation recovery feedback, and queued floating acknowledgements; tone and placement are orthogonal data axes, each inline owner shows one compact full notification with deterministic residual preservation, all actions are named 44px quiet targets, live urgency is appropriate, reduced motion converges immediately and Observation stays closed black/warm red"
+    },
+    "USER-MY-ACCOUNT-CENTER-001": {
+      "status": "covered",
+      "locator": "[data-od-id=my-account-center] + [data-od-id=my-account-header] + [data-od-id=my-settings-action] + [data-od-id=my-profile-summary] + [data-od-id=my-grouped-entry-list] + [data-od-id=my-plan-entry] → [data-od-id=my-plan] or [data-od-id=my-settings] containing [data-od-id=observation-mode-entry] + [data-od-id=my-plan-back-action] + [data-od-id=my-settings-back-action]",
+      "reason": "My is a calm conventional account center with title-only header, quiet 44px Tier-A gear, concise profile summary and ordinary Plan/Settings entries; Plan and Settings are standalone child routes owned by state.route with explicit system-history and keyboard Back restoring exact My root scroll and logical opener focus; My has zero subtitle peer tabs or Favorite content while Finder Wanted and Detail Favorite retain the saved-place relation and Plan owns the migrated shared stale/provider notification state"
+    }
+  },
+  "summary": {
+    "total": 97,
+    "active": 78,
+    "covered": 73,
+    "partial": 3,
+    "excluded": 1,
+    "inactiveSuperseded": 19,
+    "coveredActiveRemainder": 1,
+    "decisionRequired": 0
+  },
+  "inactive_ids": [
+    "NAV-001",
+    "NAV-002",
+    "LOC-001",
+    "LOC-003",
+    "LOC-004",
+    "EVT-005",
+    "DETAIL-001",
+    "DETAIL-004",
+    "DEC-001",
+    "USER-MAP-SELECTION-FOCUS-001",
+    "USER-MAP-TIME-001",
+    "USER-MAP-LAYERS-002",
+    "USER-MAP-TIME-002",
+    "USER-MAP-FAVORITES-002",
+    "USER-SPOT-FINDER-001",
+    "USER-MAP-ANALYSIS-TIME-001",
+    "USER-SPOT-DETAIL-ACTIONS-001",
+    "USER-SEARCH-LIFT-COMPACT-001",
+    "USER-FINDER-COMPACT-HIERARCHY-001"
+  ],
+  "active_remainder_ids": [
+    "USER-NIGHT-TIME-FOCUS-001"
+  ],
+  "partial_ids": [
+    "SPOT-001",
+    "SPOT-002",
+    "MY-004"
+  ],
+  "excluded_ids": [
+    "DATA-005"
+  ],
+  "decision_required_ids": []
+}

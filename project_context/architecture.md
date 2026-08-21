@@ -34,7 +34,7 @@
 ## Data / Control Flow
 
 - The existing native App durable user flow remains conclusion → place selection → departure/observing window → route and risk → professional evidence → preparation → field use.
-- The independent Mini Program durable flow is Map discovery → formal Spot Detail → hard-blocker-aware Tonight decision → Guides/Site/Spot Night → external navigation/favorite/plan → observation mode, with a separate My branch for profile/favorites/plans/settings and gated profile-link/import workflows. Only a formal `spot_id` can establish Spot Night context.
+- The independent Mini Program durable flow is Map discovery and Finder `想去` favorite browsing → formal Spot Detail → hard-blocker-aware Tonight decision → Guides/Site/Spot Night → external navigation/favorite/plan → observation mode, with a separate My account-center branch for profile, Plan and Settings plus gated profile-link/import workflows. My does not duplicate favorite browsing; it opens Plan and Settings as child routes, and Settings owns the sole observation-mode entry. Only a formal `spot_id` can establish Spot Night context.
 - Selected place, time window, route, arrival estimate, and risk are one coordinated state. Changes propagate to every surface that presents those facts.
 - Visual mode is orthogonal to task state: planning, night, and red-light modes retain the same current place and workflow position.
 - Mini Program day/night/observation modes are likewise orthogonal to route/domain state. Observation mode uses the closed Mini Program warm-red system and exits to the exact prior presentation context; it does not inherit native App token values.

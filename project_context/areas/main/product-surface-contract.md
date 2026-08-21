@@ -138,20 +138,20 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 
 ### `miniapp-map-discovery`
 
-- Surface: `pages/map/index` and its route-owned filter/layer/selected-spot overlays.
+- Surface: `pages/map/index` and its route-owned `SourceLiftFocusLayer`, Finder suggestion/filter, and selected-spot overlays.
 - Surface Platform: WeChat Mini Program, Taro + React + TypeScript.
-- Primary User Question: Which formal stargazing spot fits the selected place/date/filters, and what safe next action is available?
-- Main Surface Allows: one-time location with manual fallback, grouped search, 27 flat filters, source-dated light layer, coordinated marker/card/route selection, Spot Detail and external-navigation handoff.
-- Main Surface Forbids: ordinary POIs as formal spots, unsynchronized selection, hidden filter state, unlabelled sample facts, or straight-line distance described as a route.
-- Drilldown Ownership: formal place evidence belongs to `miniapp-spot-detail`; provider navigation remains an explicit handoff.
+- Primary User Question: Which formal stargazing spots should I filter or compare from a simplified map view, and which one should I inspect next?
+- Main Surface Allows: one-time location with manual fallback; a compact page header and one high-density `搜索` bar summarizing the active query/city, at most two high-priority committed filters and a remaining-count cue; one route-owned `SourceLiftFocusLayer.panelOnly` Finder whose lifted `查找观星点` source header is itself the expanded/collapsed control, followed by name/city search whose field-local Search glyph is suppressed while the lifted header already supplies that cue, mutually exclusive anchored search-suggestion or filter-editor overlays, the Source-defined 18 flat terminal filters (10 first-level plus 8 advanced) under one draft/commit/revert owner, and one jointly filtered formal-spot result projection divided only into collapsible `想去` and `其他观星点` partitions with city headings; hidden scrollbar chrome with retained touch/wheel/keyboard reachability for the bounded Finder/filter/result owners; the ordinary base map as the remaining first-viewport subject with formal-spot markers visible by default; one compact in-map `观测条件` status bar with a condition/instrument symbol, the active analysis/time summary and an entry to `SourceLiftFocusLayer.mapCoupled`, whose non-scrolling compact control surface shows one visible selected local time and co-locates the controls with the same physical map; layout-neutral overlay lifting and atomically continuous restoration for both SourceLift variants; compact selected-spot callouts; coordinated Finder-result/marker/callout selection; Spot Detail and explicit external-navigation handoff.
+- Main Surface Forbids: separate peer entries for Search, Filter, point list and Favorites; an independent Finder close button or redundant `查找与比较` heading beside the lifted source-header toggle; duplicate Search glyphs in one focused Finder composition; a nested Finder child Modal or simultaneously open suggestion/filter overlays; search suggestions detached from their field or left visible after focus leaves the field-plus-overlay group; a permanent expanded analysis dashboard above the map; a scrollable or visibly scroll-barred observing-condition control surface; a Favorite/star metaphor for observing conditions; duplicated visible renderings of the same selected time; a second or remounted map in the analysis focus state; a SourceLift opening or restoration that changes the underlying page/map flow geometry, exposes a blank/white terminal frame or snaps the map; treating the base map as a peer layer tab; hiding formal spots until a separate tab is selected; duplicating light/time as another bar or peer tab; Finder dropdowns changing the owner scroll geometry rather than overlaying it with bounded owned overflow; hiding scrollbar chrome by disabling, clipping or otherwise making long Finder/filter/results unreachable; undersized, optically misaligned or non-rotating disclosure chevrons; permanent pan-arrow or zoom-stepper chrome when direct pan/pinch is available; full Observation Context, detailed place cards or complete facility/route/safety evidence on the map; a Finder result jumping directly to Detail; ordinary POIs masquerading as formal spots; unsynchronized selection; hidden committed filter state; product-design rationale, ordinary gesture tutorials, route/debug/reviewer metadata or sample-disclosure chrome inside the user phone surface; or straight-line distance described as a route. User-relevant freshness, provenance, limitations and uncertainty remain visible in their owning product drilldown rather than being removed with reviewer metadata.
+- Drilldown Ownership: complete formal-place decision, route, facility, safety, media and provenance evidence belongs to `miniapp-spot-detail`; formal-spot sky belongs below that detail in `miniapp-spot-night`; provider navigation remains an explicit handoff.
 
 ### `miniapp-spot-detail`
 
-- Surface: Spot package detail shell with Overview/Guides/Site/Night Sky segments.
+- Surface: Spot package `spot/detail` shell with Overview/Guides/Site content and an explicit child-route entry to `spot/sky`.
 - Surface Platform: WeChat Mini Program subpackage.
 - Primary User Question: Is this formal spot suitable, reachable, trustworthy and safe tonight?
-- Main Surface Allows: representative licensed media, hard-blocker-aware conclusion, route/facilities/provenance, guides, site facts, favorite/plan/navigation and Night Sky entry.
-- Main Surface Forbids: hard blockers averaged away, missing facts shown as zero, unlicensed media as truth, or a Night Sky entry without `spot_id`.
+- Main Surface Allows: a spaced identity/header region with the spot name and a visually quiet accessible Favorite icon action in its transparent hit region, a distance/route row with one quiet trailing `去这里 →` action rather than a filled block, only user-interpretable decision facts inside their owning content, representative licensed media, hard-blocker-aware conclusion, route/facilities/provenance, animated Overview/Guides/Site segmentation, plan actions and one explicit Night Sky child-page entry.
+- Main Surface Forbids: unexplained status chips such as generic data-availability or changing-conditions badges in the identity header, hard blockers averaged away, missing facts shown as zero, unlicensed media as truth, a Night Sky entry without `spot_id`, an instantaneous un-signalled segment content swap, or repeating page-level Favorite/Night/navigation actions as a crowded action row inside the facilities card.
 - Drilldown Ownership: professional sky data and observation execution belong to `miniapp-spot-night`; article detail remains content drilldown.
 
 ### `miniapp-spot-night`
@@ -159,18 +159,22 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 - Surface: `spot/sky` plus delegated `sky/detail`, `sky/map`, `sky/targets`, and `sky/observe` routes.
 - Surface Platform: WeChat Mini Program subpackages and native canvas/sensor adapters.
 - Primary User Question: What is observable from this formal spot, and how can the user orient and observe without losing dark adaptation?
-- Main Surface Allows: summary and aligned professional evidence, structured targets, versioned 2D sky, time scrub, sensor/manual orientation and closed warm-red observation mode.
-- Main Surface Forbids: global/current-location sky entry, examples as live facts, Demo AR/full catalogue, sensor-only controls, or white/blue flashes in observation mode.
+- Main Surface Allows: summary and aligned professional evidence, structured targets, versioned 2D sky, time scrub, sensor/manual orientation and consumption of the closed warm-red observation presentation configured from `miniapp-my-library` Settings.
+- Main Surface Forbids: a local `进入观测红模式` entry on the Spot Night page, global/current-location sky entry, examples as live facts, Demo AR/full catalogue, sensor-only controls, or white/blue flashes in observation mode.
 - Drilldown Ownership: source/algorithm detail remains progressive evidence; the formal spot/time context remains shared and immutable across sky routes.
 
 ### `miniapp-my-library`
 
-- Surface: `pages/my/index`, Favorites, Plan and Settings routes.
+- Surface: `pages/my/index` account center plus Plan and Settings child routes. Routine favorite browsing remains in `miniapp-map-discovery` Finder `想去`; the favorite relation is also operable from formal Spot Detail.
 - Surface Platform: WeChat Mini Program main/user subpackages.
-- Primary User Question: How can the user manage profile, favorites, plans and preferences without merging their responsibilities?
-- Main Surface Allows: equal My/Favorites/Plan/Settings tabs, concise profile home, medium-density favorites, recoverable plan editing and objective-fact-preserving preferences.
-- Main Surface Forbids: page horizontal scrolling, plan/official sample cards on My home, duplicate Spot Detail, or provider failure deleting static favorite state.
+- Primary User Question: How can the user understand their account state and reach plans or settings without mixing those tasks into the root page?
+- Main Surface Allows: a title-only account-center header with one conventional Tier-A Settings gear action; a concise login/profile summary; a small grouped list of routine account entries; a quiet Plan row that opens a recoverable Plan child route; an independent Settings child route for objective-fact-preserving preferences and the explicit enter/exit control for the closed warm-red observation presentation.
+- Main Surface Forbids: peer My/Favorites/Plan/Settings tabs; a “收藏、计划与显示偏好” explanatory subtitle; any Favorite count, row, list or duplicate favorite-browsing page on the My root; page horizontal scrolling; plan/official sample cards on My home; copied e-commerce orders/coupons/membership/promotion modules or third-party brand styling; duplicate Spot Detail; or provider failure deleting the static favorite relation retained by Finder/Detail.
 - Drilldown Ownership: profile links and imported content belong to `miniapp-profile-content`; Spot cards return to the unified formal detail.
+
+Across all Mini Program user scenes, vertical scrolling may remain available where content requires it but its scrollbar chrome is hidden and consumes no layout width. Horizontal scrolling is exceptional and belongs only to an explicitly bounded row or data matrix; when a visible indicator is necessary it overlays the content, consumes no layout height/width and uses a white semi-transparent presentation that remains legible in the active mode.
+
+Across all Mini Program user scenes, persistent/actionable permission, stale, offline and failure feedback uses one shared inline Notification family in the owning surface's document flow; non-critical acknowledgement uses the same family's floating safe-area variant without changing page, Map or scroll geometry. Severity and placement are independent. One owner exposes at most one full notification at a time, preserves concurrent states through deterministic severity order and an accessible residual count/queue, and never replaces the sole recovery path with an auto-dismissing toast or a stack of full-height cards.
 
 ### `miniapp-profile-content`
 
