@@ -50,7 +50,7 @@
     "semantic_manifest": {
       "path": "docs/wechat-miniapp-v2-1-1-source.md",
       "key": "wechat-miniapp-v2-1-1.semantic-facts",
-      "sha256": "0d239c168ac167e05d28a94064b2b86cccd7c1e016713f96d45af81bcdc2e6ff"
+      "sha256": "21a1817c1b19ce865c3f1f694df2fa295dc5affe53e246e38ebcf375cf840676"
     }
   },
   "counterfactual_controls": [],
@@ -59,7 +59,9 @@
   "design_evidence": {
     "design_target_ref": "target-miniapp-drift-correction-selected-constraint-v3",
     "target_ref": "wechat-devtools-native",
-    "condition_keys": ["condition-authoring-source-v3"],
+    "condition_keys": [
+      "condition-authoring-source-v3"
+    ],
     "actual_artifact_path": "artifacts/miniapp/design/production-actual.json",
     "comparison_artifact_path": "artifacts/miniapp/design/constraint-comparison.json",
     "method": "asset_integrity",
@@ -322,8 +324,13 @@
       "check_key": "map-discovery-runtime",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-map-discovery"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-map-discovery"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -333,8 +340,12 @@
       "check_key": "map-discovery-degradation",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["degraded-candidate-built"],
-      "action_keys": ["recover-map-discovery"],
+      "given_keys": [
+        "degraded-candidate-built"
+      ],
+      "action_keys": [
+        "recover-map-discovery"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -344,8 +355,13 @@
       "check_key": "map-population",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-map-discovery"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-map-discovery"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -355,8 +371,13 @@
       "check_key": "map-discovery-security",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-map-discovery"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-map-discovery"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -366,8 +387,13 @@
       "check_key": "spot-detail-runtime",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-spot-detail"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-spot-detail"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -377,8 +403,12 @@
       "check_key": "spot-detail-degradation",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["degraded-candidate-built"],
-      "action_keys": ["recover-spot-detail"],
+      "given_keys": [
+        "degraded-candidate-built"
+      ],
+      "action_keys": [
+        "recover-spot-detail"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -388,8 +418,13 @@
       "check_key": "spot-night-runtime",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-spot-night"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-spot-night"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -399,8 +434,12 @@
       "check_key": "spot-night-degradation",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["degraded-candidate-built"],
-      "action_keys": ["recover-spot-night"],
+      "given_keys": [
+        "degraded-candidate-built"
+      ],
+      "action_keys": [
+        "recover-spot-night"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -410,8 +449,13 @@
       "check_key": "my-library-runtime",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-my-library"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-my-library"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -421,8 +465,12 @@
       "check_key": "my-library-degradation",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["degraded-candidate-built"],
-      "action_keys": ["recover-my-library"],
+      "given_keys": [
+        "degraded-candidate-built"
+      ],
+      "action_keys": [
+        "recover-my-library"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -432,8 +480,13 @@
       "check_key": "profile-content-runtime",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-profile-content"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-profile-content"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -443,8 +496,12 @@
       "check_key": "profile-content-degradation",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["degraded-candidate-built"],
-      "action_keys": ["recover-profile-content"],
+      "given_keys": [
+        "degraded-candidate-built"
+      ],
+      "action_keys": [
+        "recover-profile-content"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -454,8 +511,13 @@
       "check_key": "profile-content-security",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-profile-content"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-profile-content"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -465,8 +527,13 @@
       "check_key": "platform-operations-runtime",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-platform-operations"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-platform-operations"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -476,8 +543,12 @@
       "check_key": "platform-operations-degradation",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["degraded-candidate-built"],
-      "action_keys": ["recover-platform-operations"],
+      "given_keys": [
+        "degraded-candidate-built"
+      ],
+      "action_keys": [
+        "recover-platform-operations"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -487,8 +558,13 @@
       "check_key": "platform-operations-security",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-platform-operations"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-platform-operations"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -498,8 +574,13 @@
       "check_key": "platform-api-contract",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-platform-operations"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-platform-operations"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -509,8 +590,13 @@
       "check_key": "platform-data-state",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
-      "action_keys": ["execute-platform-operations"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
+      "action_keys": [
+        "execute-platform-operations"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -520,7 +606,10 @@
       "check_key": "complete-demo-runtime",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["authority-ready", "candidate-built"],
+      "given_keys": [
+        "authority-ready",
+        "candidate-built"
+      ],
       "action_keys": [
         "enter-shared-shell",
         "enter-map-discovery",
@@ -538,8 +627,12 @@
       "check_key": "complete-demo-degradation",
       "target_ref": "wechat-devtools-native",
       "root_entrypoint": "apps/wechat-miniapp/project.config.json",
-      "given_keys": ["degraded-candidate-built"],
-      "action_keys": ["recover-complete-demo"],
+      "given_keys": [
+        "degraded-candidate-built"
+      ],
+      "action_keys": [
+        "recover-complete-demo"
+      ],
       "assertions": [],
       "observations": []
     },
@@ -549,8 +642,12 @@
       "check_key": "complete-demo-browser",
       "target_ref": "miniapp-browser-proxy",
       "root_entrypoint": "tests/acceptance/miniapp/ui-proxy.spec.mjs",
-      "given_keys": ["browser-proxy-ready"],
-      "action_keys": ["inspect-browser-proxy"],
+      "given_keys": [
+        "browser-proxy-ready"
+      ],
+      "action_keys": [
+        "inspect-browser-proxy"
+      ],
       "assertions": [],
       "observations": []
     }

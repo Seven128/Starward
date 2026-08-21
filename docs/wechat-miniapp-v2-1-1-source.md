@@ -25439,7 +25439,7 @@ catalogs:
       trust: frozen_executable
       identity: tools/miniapp/verify-miniapp-target.exe
       version: 2.0.0
-      sha256: 956b85ca21bcdaa0250de72007349445debe5b593c7f8a24a8d5194b91ac6019
+      sha256: e289a1bcabe0cb09adbe8bb656e9bbc4430460d7407ef941e51e4dfae973dc49
       capabilities:
         - exact_value
     columns: []

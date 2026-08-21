@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { parse as parseYaml } from "yaml";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -736,6 +737,14 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   assert.match(verifier, /source_closure_passed: sourceClosure/u);
   assert.match(
     verifier,
+    /manifestSourceKeys\.every\(\(item\) => parsed\.items\.has\(item\)\)/u,
+  );
+  assert.match(
+    verifier,
+    /templateKeys\.every\(\(item\) => uniqueManifestSourceKeys\.has\(item\)\)/u,
+  );
+  assert.match(
+    verifier,
     /actualEnvironment = await readJson\(DESIGN_ENVIRONMENT\)/u,
   );
   assert.match(
@@ -777,6 +786,42 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   );
   assert.match(launcher, /BCryptOpenAlgorithmProvider/u);
   assert.match(launcher, /return 125/u);
+});
+
+test("V2.1.1 semantic Source closure stays distinct from machine-observable templates", async () => {
+  const source = await text("docs", "wechat-miniapp-v2-1-1-source.md");
+  const handoff = await text(
+    "docs",
+    "design-resources",
+    "miniapp-selected-handoff-2026-08-22-v3",
+    "miniapp-drift-correction-selected-v3.md",
+  );
+  const spec = await json(
+    "tools",
+    "miniapp",
+    "verification-spec-v2-1-1.json",
+  );
+  const manifestText =
+    /```yaml semantic-fact-compact-carrier-v1\s*\r?\n([\s\S]*?)\r?\n```/u.exec(
+      source,
+    )?.[1];
+  assert.ok(manifestText);
+  const manifest = parseYaml(manifestText);
+  const markerKeys = [...`${source}\n${handoff}`.matchAll(
+    /<!--\s*ty-source-item:start\s+[^>]*?\bkey=([^\s>]+)/gu,
+  )].map((match) => match[1]);
+  const manifestKeys = manifest.scope.source_item_refs;
+  const templateKeys = spec.semantic_templates.map(
+    (item) => item.source_item_key,
+  );
+  assert.equal(new Set(markerKeys).size, markerKeys.length);
+  assert.equal(new Set(manifestKeys).size, manifestKeys.length);
+  assert.equal(new Set(templateKeys).size, templateKeys.length);
+  assert.equal(manifestKeys.length, 460);
+  assert.equal(markerKeys.length, 462);
+  assert.deepEqual(templateKeys, []);
+  assert.ok(manifestKeys.every((key) => markerKeys.includes(key)));
+  assert.ok(templateKeys.every((key) => manifestKeys.includes(key)));
 });
 
 test("Final-Gate adapter projects exact counterfactual and population authority", async () => {

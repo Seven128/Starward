@@ -299,13 +299,16 @@ async function authorityResults(spec, sourceAuthority = null) {
         (item) => item.source_item_key,
       );
       const uniqueTemplateKeys = new Set(templateKeys);
-      const sourceKeys = [...parsed.items.keys()];
+      const manifestSourceKeys = parsed.manifest?.scope?.source_item_refs ?? [];
+      const uniqueManifestSourceKeys = new Set(manifestSourceKeys);
       const sourceClosure =
+        Array.isArray(manifestSourceKeys) &&
+        uniqueManifestSourceKeys.size === manifestSourceKeys.length &&
         uniqueTemplateKeys.size === templateKeys.length &&
-        sourceKeys.length === templateKeys.length &&
-        sourceKeys.every((item) => uniqueTemplateKeys.has(item));
+        manifestSourceKeys.length > 0 &&
+        manifestSourceKeys.every((item) => parsed.items.has(item)) &&
+        templateKeys.every((item) => uniqueManifestSourceKeys.has(item));
       const templatesBound =
-        spec.semantic_templates.length > 0 &&
         spec.semantic_templates.every(
           (item) => item.manifest_sha256 === authority.sha256,
         );
@@ -319,7 +322,8 @@ async function authorityResults(spec, sourceAuthority = null) {
         expected_sha256: authority.sha256,
         actual_sha256: actual,
         source_closure_passed: sourceClosure,
-        source_item_count: sourceKeys.length,
+        source_item_count: parsed.items.size,
+        manifest_source_item_count: manifestSourceKeys.length,
         template_count: templateKeys.length,
       };
       continue;
