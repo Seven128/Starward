@@ -594,6 +594,20 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
     "components",
     "custom-nav.tsx",
   );
+  const sourceLift = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "components",
+    "source-lift-focus-layer.tsx",
+  );
+  const sourceLiftStyles = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "components",
+    "source-lift-focus-layer.scss",
+  );
   const store = await text(
     "apps",
     "wechat-miniapp",
@@ -611,6 +625,11 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   ])
     assert.ok(chrome.includes(role), role);
   assert.match(navigation, /getWindowInfo\(\)\.statusBarHeight/u);
+  assert.match(sourceLift, /getWindowInfo\(\)\.statusBarHeight/u);
+  assert.match(sourceLift, /Number\.isFinite\(nativeStatusBarHeight\)/u);
+  assert.match(sourceLift, /--source-lift-status-bar-height/u);
+  assert.match(sourceLiftStyles, /--source-lift-status-bar-height/u);
+  assert.match(sourceLiftStyles, /env\(safe-area-inset-top\)/u);
   assert.match(store, /restoreStartupMode\(state\.mode, state\.priorMode\)/u);
   assert.match(store, /mode: BOOTSTRAP_MODE/u);
 });

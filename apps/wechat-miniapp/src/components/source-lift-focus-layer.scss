@@ -25,7 +25,12 @@
 .source-lift-source--lifted {
   position: fixed;
   z-index: 10023;
-  top: calc(env(safe-area-inset-top) + 16rpx);
+  top: calc(
+    max(
+        env(safe-area-inset-top),
+        var(--source-lift-status-bar-height, 0px)
+      ) + 16rpx
+  );
   right: 24rpx;
   bottom: auto;
   left: 24rpx;
@@ -49,13 +54,23 @@
 .source-lift-composition {
   position: fixed;
   z-index: 10022;
-  inset: 128rpx 24rpx calc(124rpx + env(safe-area-inset-bottom));
+  inset: calc(
+      max(
+          env(safe-area-inset-top),
+          var(--source-lift-status-bar-height, 0px)
+        ) + 128rpx
+    ) 24rpx calc(124rpx + env(safe-area-inset-bottom));
   display: flex;
   min-height: 0;
   pointer-events: auto;
 }
 .source-lift-focus-layer--mapCoupled .source-lift-composition {
-  inset: 128rpx 24rpx calc(124rpx + env(safe-area-inset-bottom));
+  inset: calc(
+      max(
+          env(safe-area-inset-top),
+          var(--source-lift-status-bar-height, 0px)
+        ) + 128rpx
+    ) 24rpx calc(124rpx + env(safe-area-inset-bottom));
 }
 .source-lift-composition__content {
   min-height: 0;

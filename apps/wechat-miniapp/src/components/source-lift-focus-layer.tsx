@@ -1,5 +1,6 @@
+import Taro from "@tarojs/taro";
 import { View } from "@tarojs/components";
-import type { PropsWithChildren, ReactNode } from "react";
+import type { CSSProperties, PropsWithChildren, ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import {
   useAppStore,
@@ -41,6 +42,22 @@ export function SourceLiftFocusLayer({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = runtime.owner === owner && runtime.phase !== "IDLE";
   const phase: SourceLiftPhase = active ? runtime.phase : "IDLE";
+  let statusBarHeight = 0;
+  try {
+    const nativeStatusBarHeight = Taro.getWindowInfo().statusBarHeight;
+    if (
+      typeof nativeStatusBarHeight === "number" &&
+      Number.isFinite(nativeStatusBarHeight) &&
+      nativeStatusBarHeight >= 0
+    ) {
+      statusBarHeight = nativeStatusBarHeight;
+    }
+  } catch {
+    // H5 diagnostic builds may not expose native window metrics.
+  }
+  const nativeSafeTopStyle = {
+    "--source-lift-status-bar-height": `${statusBarHeight}px`,
+  } as CSSProperties;
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -88,6 +105,7 @@ export function SourceLiftFocusLayer({
       role={active ? "dialog" : "presentation"}
       aria-modal={active ? "true" : "false"}
       ariaLabel={ariaLabel}
+      style={nativeSafeTopStyle}
     >
       <View
         className="source-lift-origin-placeholder"
