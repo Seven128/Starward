@@ -90,9 +90,6 @@
   font-size: 34rpx;
   color: var(--text-secondary);
 }
-.notification__dismiss::before {
-  content: "×";
-}
 @keyframes notification-enter {
   from {
     opacity: 0;

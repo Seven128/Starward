@@ -186,38 +186,6 @@ button::after {
   margin-top: 0;
 }
 
-/* WeChat does not preserve Taro's aria-label on Button. Keep icon-only
-   controls named through native button content without changing layout. */
-.native-accessibility-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-.soft-button--icon-back::before {
-  content: "←";
-}
-.soft-button--icon-settings::before {
-  content: "⚙";
-}
-.soft-button--icon-favorite::before {
-  content: "☆";
-}
-.soft-button--icon-favorite-active::before {
-  content: "★";
-}
-.soft-button--icon-locate::before {
-  content: "◎";
-}
-.soft-button--icon-refresh::before {
-  content: "↻";
-}
-
 .focus-ring:focus,
 .soft-button:focus,
 .chip:focus,

@@ -39,13 +39,14 @@ export function CustomNav({
               <SoftButton
                 variant="ghost"
                 label="返回"
-                icon="back"
                 onClick={() =>
                   Taro.navigateBack().catch(() =>
                     Taro.switchTab({ url: "/pages/map/index" }),
                   )
                 }
-              />
+              >
+                ←
+              </SoftButton>
             </View>
           ) : null}
         </View>

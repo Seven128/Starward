@@ -41,12 +41,6 @@
 .spot-favorite-action--active {
   color: var(--accent-warm);
 }
-.spot-favorite-action--active::before {
-  content: "★";
-}
-.spot-favorite-action--inactive::before {
-  content: "☆";
-}
 .spot-identity__actions {
   display: flex;
   align-items: center;

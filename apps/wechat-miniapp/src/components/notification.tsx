@@ -78,14 +78,13 @@ export function NotificationComponent({
       ) : null}
       {notification.dismissible && onDismiss ? (
         <Button
+          compileMode
           className="notification__dismiss focus-ring"
           data-od-id="notification-dismiss"
           aria-label={`关闭通知：${notification.title}`}
           onClick={onDismiss}
         >
-          <Text className="native-accessibility-label">
-            关闭通知：{notification.title}
-          </Text>
+          <Text aria-hidden="true">×</Text>
         </Button>
       ) : null}
     </View>
