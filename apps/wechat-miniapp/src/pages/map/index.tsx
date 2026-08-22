@@ -1037,20 +1037,16 @@ export default function MapPage() {
                       ? "重新请求一次性定位"
                       : "更新一次性定位"
                 }
-                iconOnly
+                icon="locate"
                 onClick={locateMap}
-              >
-                ◎
-              </SoftButton>
+              />
             </View>
             <SoftButton
               className="map-refresh-control"
               label="刷新当前区域"
-              iconOnly
+              icon="refresh"
               onClick={refreshMap}
-            >
-              ↻
-            </SoftButton>
+            />
           </View>
 
           {selected ? (

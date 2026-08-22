@@ -223,13 +223,12 @@ export function SpotDetailPage({
             <View className="spot-identity__name-row">
               <Text className="type-page-title">{detail.spot.name}</Text>
               <Button
-                className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : ""}`}
+                className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : " spot-favorite-action--inactive"}`}
                 data-od-id="spot-detail-favorite"
                 aria-label={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
                 aria-pressed={favorite}
                 onClick={() => void toggleFavorite(detail.spot.spotId)}
               >
-                <Text aria-hidden="true">{favorite ? "★" : "☆"}</Text>
                 <Text className="native-accessibility-label">
                   {favorite ? "取消收藏" : "收藏"}
                   {detail.spot.name}

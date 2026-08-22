@@ -83,7 +83,6 @@ export function NotificationComponent({
           aria-label={`关闭通知：${notification.title}`}
           onClick={onDismiss}
         >
-          <Text aria-hidden="true">×</Text>
           <Text className="native-accessibility-label">
             关闭通知：{notification.title}
           </Text>

@@ -76,11 +76,9 @@ export function MyLibraryPage() {
             <SoftButton
               label="打开设置"
               variant="ghost"
-              iconOnly
+              icon="settings"
               onClick={openSettings}
-            >
-              ⚙
-            </SoftButton>
+            />
           </View>
         }
       />

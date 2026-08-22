@@ -97,11 +97,9 @@ export function SpotCard({
               variant="ghost"
               className="spot-card__favorite"
               label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
-              iconOnly
+              icon={favorite ? "favorite-active" : "favorite"}
               onClick={onFavorite}
-            >
-              {favorite ? "★" : "☆"}
-            </SoftButton>
+            />
           </View>
         ) : null}
         {canOpen ? (
@@ -164,11 +162,9 @@ export function SpotCard({
             variant="ghost"
             className="spot-card__favorite"
             label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
-            iconOnly
+            icon={favorite ? "favorite-active" : "favorite"}
             onClick={onFavorite}
-          >
-            {favorite ? "★" : "☆"}
-          </SoftButton>
+          />
         ) : null}
       </View>
     );
@@ -204,11 +200,9 @@ export function SpotCard({
               variant="ghost"
               className="spot-card__favorite"
               label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
-              iconOnly
+              icon={favorite ? "favorite-active" : "favorite"}
               onClick={onFavorite}
-            >
-              {favorite ? "★" : "☆"}
-            </SoftButton>
+            />
           ) : null}
         </View>
         <View className="spot-card__meta">

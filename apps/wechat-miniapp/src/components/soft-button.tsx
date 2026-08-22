@@ -5,29 +5,30 @@ export function SoftButton({
   children,
   variant = "default",
   label,
-  iconOnly = false,
+  icon,
   disabled = false,
   onClick,
   className = "",
 }: PropsWithChildren<{
   variant?: "default" | "primary" | "danger" | "ghost";
   label: string;
-  iconOnly?: boolean;
+  icon?: "back" | "settings" | "favorite" | "favorite-active" | "locate" | "refresh";
   disabled?: boolean;
   className?: string;
   onClick?: () => void;
 }>) {
   return (
     <Button
-      className={`soft-button soft-button--${variant} focus-ring ${className}`}
+      className={`soft-button soft-button--${variant}${icon ? ` soft-button--icon-${icon}` : ""} focus-ring ${className}`}
       aria-label={label}
       {...(disabled ? { disabled: true } : {})}
       onClick={() => onClick?.()}
     >
-      <Text aria-hidden={iconOnly}>{children}</Text>
-      {iconOnly ? (
+      {icon ? (
         <Text className="native-accessibility-label">{label}</Text>
-      ) : null}
+      ) : (
+        <Text>{children}</Text>
+      )}
     </Button>
   );
 }
