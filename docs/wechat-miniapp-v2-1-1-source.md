@@ -36547,7 +36547,7 @@ obligations:
           - /proof_obligations/206/comparison/parameters/value
           - selected-disposition-user-ux-locality-001
     - - proof.complete-demo.architecture.deliberation
-      - 5fc04d702ae5eeabb519aa820278c51664e3c795d83cfc10c6411665fc7abf78
+      - 46f5669d309bb20a1124a71bef78248bac1712e87ab7566825af17938fb82558
       - fact.complete-demo.architecture.deliberation
       - structure_ref: structure.c16b78a63099ad880e3a8d16
         arguments:
