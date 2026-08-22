@@ -217,7 +217,9 @@
   top: 214rpx;
   pointer-events: none;
 }
-.map-status > * {
+.map-status .notification,
+.map-status .status-panel,
+.map-status__provider-failure {
   pointer-events: auto;
 }
 .map-status .status-panel,

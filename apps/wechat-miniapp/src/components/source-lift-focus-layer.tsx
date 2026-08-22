@@ -51,8 +51,13 @@ export function SourceLiftFocusLayer({
       timer.current = setTimeout(() => {
         finishSourceLift(owner);
         const documentRef = globalThis.document;
-        documentRef
-          ?.getElementById(`source-lift-toggle-${owner.toLowerCase()}`)
+        const sourceElement =
+          documentRef && typeof documentRef.getElementById === "function"
+            ? documentRef.getElementById(
+                `source-lift-toggle-${owner.toLowerCase()}`,
+              )
+            : null;
+        sourceElement
           ?.querySelector<HTMLElement>("button,[role=button],input")
           ?.focus();
       }, duration);
@@ -113,7 +118,7 @@ export function SourceLiftFocusLayer({
             }
             onClick={(event) => event.stopPropagation()}
           >
-            {children}
+            <View className="source-lift-composition__content">{children}</View>
           </View>
         </>
       ) : null}

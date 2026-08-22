@@ -1067,7 +1067,10 @@ export default function MapPage() {
         <View className="map-status compact-inset">
           <NotificationRegion owner="map" placement="inline" />
           {mapRuntimeError ? (
-            <View data-od-id="map-provider-failure">
+            <View
+              className="map-status__provider-failure"
+              data-od-id="map-provider-failure"
+            >
               <StatusPanel
                 state="ERROR"
                 detail="原生地图当前无法渲染；Finder 和正式点位状态仍可使用。"

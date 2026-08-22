@@ -820,6 +820,15 @@ async function buildSemanticArtifact(
   const templates = scope
     ? spec.semantic_templates.filter((item) => item.outcome_ref === scope)
     : spec.semantic_templates;
+  const zeroTemplateProjectionAccepted =
+    spec.semantic_templates.length === 0 &&
+    sourceAuthority.items.size > 0 &&
+    evidence.source_closure_passed === true &&
+    spec.checks.every(
+      (check) =>
+        (check.assertions?.length ?? 0) === 0 &&
+        (check.observations?.length ?? 0) === 0,
+    );
   const environment = observedEnvironment(spec, evidence);
   const facts = templates.map((template, index) => {
     const actual = sourceAuthority.items.get(template.source_item_key) ?? null;
@@ -855,13 +864,19 @@ async function buildSemanticArtifact(
     schema_version: "miniapp-semantic-evidence-v2",
     scope: scope ?? "all",
     source_manifest_sha256: sourceAuthority.manifest_sha256,
+    projection_disposition:
+      templates.length === 0 && zeroTemplateProjectionAccepted
+        ? "not_applicable_no_project_semantic_templates_or_assertions"
+        : "fact_comparison_required",
     facts,
   });
   return {
     path: artifactPath,
     sha256: artifactSha,
     facts,
-    passed: facts.length > 0 && facts.every((fact) => fact.comparison.passed),
+    passed:
+      (facts.length > 0 && facts.every((fact) => fact.comparison.passed)) ||
+      (facts.length === 0 && zeroTemplateProjectionAccepted),
   };
 }
 

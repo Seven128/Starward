@@ -57,9 +57,11 @@
 .source-lift-focus-layer--mapCoupled .source-lift-composition {
   inset: 128rpx 24rpx calc(124rpx + env(safe-area-inset-bottom));
 }
-.source-lift-composition > * {
+.source-lift-composition__content {
   min-height: 0;
   flex: 1;
+  display: grid;
+  width: 100%;
 }
 @media (prefers-reduced-motion: reduce) {
   .source-lift-source,

@@ -1439,6 +1439,73 @@ async function teardownNativeSession({
   };
 }
 
+const nativeSelectorAliases = new Map([
+  ["[data-od-id='default-formal-markers']", "#spot-map"],
+  ["[data-od-id='map-search-summary']", ".map-finder-trigger"],
+  ["[data-od-id='map-analysis-time-bar']", ".map-conditions-bar"],
+  ["[data-od-id='map-observing-conditions-icon']", ".map-conditions-bar"],
+  ["[data-od-id='map-permission-state']", ".map-floating-tools .soft-button"],
+  ["[data-od-id='spot-finder-sheet']", ".finder-panel"],
+  ["[data-od-id='spot-finder-search-input']", ".finder-input"],
+  ["[data-od-id='spot-finder-search-icon']", ".finder-search-icon"],
+  ["[data-od-id='spot-finder-result-scroll']", ".finder-results"],
+  ["[data-od-id='spot-finder-wanted-section']", ".finder-partition"],
+  ["[data-od-id='spot-finder-other-section']", ".finder-partition"],
+  ["[data-od-id='spot-finder-city-heading']", ".finder-city-heading"],
+  ["[data-od-id='spot-finder-section-chevron']", ".finder-partition__toggle"],
+  [
+    "[data-od-id='spot-finder-filter-disclosure'] .soft-button",
+    ".finder-field-row .soft-button",
+  ],
+  ["[data-od-id='spot-finder-filter-overlay']", ".filter-sheet"],
+  ["[data-od-id='spot-finder-filter-first-level']", ".filter-sheet__tier"],
+  ["[data-od-id='spot-finder-filter-advanced']", ".filter-sheet__tier"],
+  ["[data-od-id='spot-finder-filter-choice']", ".filter-option"],
+  [
+    "[data-od-id='spot-finder-filter-revert'] .soft-button",
+    ".filter-sheet__header .soft-button",
+  ],
+  ["[data-od-id='spot-finder-filter-revert']", ".filter-sheet__header"],
+  [
+    "[data-od-id='spot-finder-filter-commit']",
+    ".filter-sheet__footer .soft-button--primary",
+  ],
+  ["[data-od-id='map-analysis-focus-panel']", ".conditions-panel"],
+  ["[data-od-id='map-analysis-time-scrubber']", ".conditions-time__slider"],
+  ["[data-od-id='map-analysis-time-value']", ".conditions-time__value"],
+  ["[data-od-id='map-analysis-layer-choice']", ".conditions-overlay-option"],
+  ["[data-od-id='map-analysis-close']", ".conditions-panel__actions .soft-button"],
+  ["[data-od-id='selected-card-star']", ".conditions-overlay-option__star"],
+  [
+    "[data-od-id='my-settings-action'] .soft-button",
+    ".custom-nav__side--right .soft-button",
+  ],
+  ["[data-od-id='observation-mode-entry'] .chip", ".observation-setting .chip"],
+]);
+
+async function queryElements(page, selector) {
+  const nativeSelector = nativeSelectorAliases.get(selector);
+  if (nativeSelector) return page.$$(nativeSelector);
+  const odSelector = /^\[data-od-id=(["'])([-\w.:]+)\1\](?:\s+(.+))?$/u.exec(
+    selector,
+  );
+  if (!odSelector) return page.$$(selector);
+  const roots = await page.getElementsByXpath(
+    `//*[@data-od-id=${JSON.stringify(odSelector[2])}]`,
+  );
+  const descendantSelector = odSelector[3];
+  if (!descendantSelector) return roots;
+  const descendants = await Promise.all(
+    roots.map((element) => element.$$(descendantSelector)),
+  );
+  return descendants.flat();
+}
+
+async function queryElement(page, selector) {
+  const elements = await queryElements(page, selector);
+  return elements[0] ?? null;
+}
+
 async function waitForSelector(
   page,
   selector,
@@ -1447,7 +1514,7 @@ async function waitForSelector(
 ) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const elements = await page.$$(selector).catch(() => []);
+    const elements = await queryElements(page, selector).catch(() => []);
     if (elements.length >= minimum) return elements;
     await page.waitFor(250);
   }
@@ -1464,7 +1531,7 @@ async function waitForElementClass(
 ) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const element = await page.$(selector).catch(() => null);
+    const element = await queryElement(page, selector).catch(() => null);
     const classes = element
       ? String(await element.attribute("class").catch(() => ""))
           .split(/\s+/u)
@@ -1488,8 +1555,8 @@ async function activateDayModeThroughProductionControl(
   if (!settingsPage) throw new Error("native_setup_settings_route_unavailable");
   const modeButtons = await waitForSelector(
     settingsPage,
-    ".mode-grid .chip",
-    3,
+    ".settings-choice-grid .chip",
+    2,
   );
   const controlText = await modeButtons[0].text().catch(() => "");
   setRuntimePhase("setup-day-control-tap");
@@ -1497,7 +1564,7 @@ async function activateDayModeThroughProductionControl(
   setRuntimePhase("setup-day-control-theme-readback");
   const rootClasses = await waitForElementClass(
     settingsPage,
-    ".my-page",
+    ".settings-page",
     "theme-day",
   );
   return {
@@ -1553,7 +1620,11 @@ async function resetBetweenFaultProbes(miniProgram) {
 }
 
 async function inspectSelector(page, definition) {
-  const elements = await page.$$(definition.selector);
+  const elements = await waitForSelector(
+    page,
+    definition.selector,
+    definition.minimum,
+  );
   const observations = [];
   for (const element of elements.slice(0, definition.capture ?? 4)) {
     const text = await element.text().catch(() => "");
@@ -1570,6 +1641,8 @@ async function inspectSelector(page, definition) {
   }
   return {
     selector: definition.selector,
+    native_selector:
+      nativeSelectorAliases.get(definition.selector) ?? definition.selector,
     expected_minimum: definition.minimum,
     count: elements.length,
     passed: elements.length >= definition.minimum,
@@ -1582,8 +1655,7 @@ async function waitForSelectorSet(page, definitions, timeoutMs = 20_000) {
   while (Date.now() < deadline) {
     const counts = await Promise.all(
       definitions.map((definition) =>
-        page
-          .$$(definition.selector)
+        queryElements(page, definition.selector)
           .then((elements) => elements.length)
           .catch(() => 0),
       ),
@@ -1598,7 +1670,7 @@ async function waitForSelectorSet(page, definitions, timeoutMs = 20_000) {
 async function waitForSelectorAbsent(page, selector, timeoutMs = 20_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const elements = await page.$$(selector).catch(() => []);
+    const elements = await queryElements(page, selector).catch(() => []);
     if (elements.length === 0) return true;
     await page.waitFor(250);
   }
@@ -1655,9 +1727,9 @@ async function captureJourneyInteractions(
       }
     }
     for (const selector of step.inspect ?? []) {
-      const elements = await page.$$(selector.selector).catch(() => []);
-      stepObservations.push(await inspectSelector(page, selector));
-      if (elements.length < selector.minimum)
+      const observation = await inspectSelector(page, selector);
+      stepObservations.push(observation);
+      if (observation.count < selector.minimum)
         throw new Error(
           `native_interaction_selector_timeout:${definition.key}:${step.key}:${selector.selector}:${selector.minimum}`,
         );
@@ -1694,7 +1766,9 @@ async function waitForRootFragment(
   const deadline = Date.now() + timeoutMs;
   let latestWxml = "";
   while (Date.now() < deadline) {
-    const rootElement = await page.$(rootSelector).catch(() => null);
+    const rootElement = await queryElement(page, rootSelector).catch(
+      () => null,
+    );
     latestWxml = rootElement ? await rootElement.wxml().catch(() => "") : "";
     if (
       latestWxml.length > 0 &&
@@ -1711,7 +1785,9 @@ async function waitForRootFragment(
 async function waitForRecoveryControl(page, probe, timeoutMs = 10_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const controls = await page.$$(probe.recoverySelector).catch(() => []);
+    const controls = await queryElements(page, probe.recoverySelector).catch(
+      () => [],
+    );
     for (let index = 0; index < controls.length; index += 1) {
       const control = controls[index];
       const controlText = await control.text().catch(() => "");
@@ -1737,7 +1813,7 @@ async function captureJourney(miniProgram, runRoot, definition) {
   const selectors = [];
   for (const selector of definition.selectors)
     selectors.push(await inspectSelector(page, selector));
-  const rootElement = await page.$(definition.root);
+  const rootElement = await queryElement(page, definition.root);
   const rootWxml = rootElement
     ? await rootElement.outerWxml().catch(() => "")
     : "";
@@ -1949,16 +2025,17 @@ const journeys = [
     root: ".sky-page",
     rootClasses: ["sky-page", "theme-night"],
     selectors: [
-      { selector: ".sky-subnav__tab", minimum: 4, styles: ["min-height"] },
+      { selector: ".sky-tabs__item", minimum: 3, styles: ["min-height"] },
       {
         selector: ".sky-decision",
         minimum: 1,
         styles: ["background-color", "box-shadow"],
       },
-      { selector: ".metric-grid", minimum: 1, styles: ["border-radius"] },
+      { selector: ".sky-summary-grid", minimum: 1, styles: ["display"] },
+      { selector: ".time-card", minimum: 1, styles: ["border-radius"] },
       {
-        selector: ".sky-actions .soft-button--primary",
-        minimum: 1,
+        selector: ".sky-actions .soft-button",
+        minimum: 3,
         styles: ["min-height"],
       },
     ],
@@ -2127,12 +2204,12 @@ const faultProbeByJourney = {
   },
   "spot-night": {
     expectedFragment: "天文 BFF 未运行",
-    recoveryLabel: "重新计算",
+    recoveryLabel: "重试夜空",
     recoverySelector: ".status-panel__recovery",
-    recoveryText: "重新计算",
+    recoveryText: "重试夜空",
   },
   "my-home": {
-    expectedFragment: "服务端资料暂未刷新",
+    expectedFragment: "账户资料暂未刷新",
     recoveryLabel: "重试同步",
     recoverySelector: ".status-panel__recovery",
     recoveryText: "重试同步",

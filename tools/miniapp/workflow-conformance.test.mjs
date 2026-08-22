@@ -240,10 +240,14 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "deterministic default-state cold start",
     'miniProgram.reLaunch("/content/settings/index")',
     "activateDayModeThroughProductionControl",
+    "getElementsByXpath",
+    "async function queryElements(page, selector)",
+    "const nativeSelectorAliases = new Map([",
+    `["[data-od-id='default-formal-markers']", "#spot-map"]`,
     'setRuntimePhase("setup-day-control-tap")',
     "post_control_state_disposition",
     "my_tab_disposition",
-    'waitForElementClass(\n    settingsPage,\n    ".my-page",\n    "theme-day"',
+    'waitForElementClass(\n    settingsPage,\n    ".settings-page",\n    "theme-day"',
     '"setStorageSync"',
     "resetThroughAcceptanceControl",
     "native_reset_route_unavailable",
@@ -300,7 +304,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "waitForRootFragment",
     "waitForRecoveryControl",
     'recoveryLabel: "重试同步"',
-    'recoveryLabel: "重新计算"',
+    'recoveryLabel: "重试夜空"',
     'recoverySelector: ".status-panel__recovery"',
   ])
     assert.ok(runner.includes(required), required);
@@ -729,12 +733,13 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   );
   assert.equal(
     rootPackage.scripts["prepare:miniapp:final-candidate"],
-    ".\\tools\\miniapp\\verify-miniapp-target.exe --collect current",
+    ".\\tools\\miniapp\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-v2-1-1.json",
   );
   assert.match(verifier, /if \(!failureObserved\) return null;/u);
   assert.match(verifier, /if \(record\) records\.push\(record\);/u);
   assert.match(verifier, /const current = await snapshotManifest\(spec\)/u);
   assert.match(verifier, /source_closure_passed: sourceClosure/u);
+  assert.match(verifier, /zeroTemplateProjectionAccepted/u);
   assert.match(
     verifier,
     /manifestSourceKeys\.every\(\(item\) => parsed\.items\.has\(item\)\)/u,

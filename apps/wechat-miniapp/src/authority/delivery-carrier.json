@@ -1,6 +1,6 @@
 {
   "schema_version": "miniapp-delivery-carrier-v1",
-  "generated_at": "2026-08-21T22:30:09.436Z",
+  "generated_at": "2026-08-22T05:31:17.102Z",
   "spec_sha256": "42ac5bd56c0fc39ec082dc5b090b6ff1b8f50372c0bf0bd9d274119e65719213",
   "source_snapshot": {
     "files": {
@@ -72,8 +72,8 @@
       "apps/wechat-miniapp/src/components/sky-subnav.scss": "8242b9027bf6516a545bfc64eb10fa8a6b5ad81ca5225b47fbc2d718110790cf",
       "apps/wechat-miniapp/src/components/sky-subnav.tsx": "2404eeb1680cae0fa24bcc0aef459c7c001887e35bf716070cdf7cd77acdbd8a",
       "apps/wechat-miniapp/src/components/soft-button.tsx": "30441143e9d7c7171f7ddc50206a45ae01325c4db906a3763783fe80fd21c391",
-      "apps/wechat-miniapp/src/components/source-lift-focus-layer.scss": "c9059356ceae93317101316383918d96fac689f0c214c58d6c391e44cdb67129",
-      "apps/wechat-miniapp/src/components/source-lift-focus-layer.tsx": "7a99db9e4c4854acff1baec8a97d3f6e9c7adca6a5c7f050ab9e3459a59c06c8",
+      "apps/wechat-miniapp/src/components/source-lift-focus-layer.scss": "d733abc315f742ff86af1436268b8cc6564b48d2c152c18445df7b6205407863",
+      "apps/wechat-miniapp/src/components/source-lift-focus-layer.tsx": "d0673a0de97fd164cfed9490a9895236c8b7083a56c84b0beb85f987ab8ddd79",
       "apps/wechat-miniapp/src/components/spot-card.scss": "54b0e5a8668500a2f17ff844241c66de9f8e8f0b9f66a004af7e6a54ff415d7a",
       "apps/wechat-miniapp/src/components/spot-card.tsx": "f44bca4cdedd29a206b5d57ddfc6193993cbe1e7a091b4bda5c9757f5060a6fc",
       "apps/wechat-miniapp/src/components/status-panel.scss": "0584e9848e2c1a1ce6b02d9195e00912f76eaa0e30264731dd3231e729bf6f14",
@@ -98,7 +98,7 @@
       "apps/wechat-miniapp/src/features/my/my-library-page.scss": "2af0e9a18d829d362f0b7faab530668ddfc978ecec9a3a108583f5b006879e1c",
       "apps/wechat-miniapp/src/features/my/my-library-page.tsx": "356b7232848d34fbacb0f9e39eca9af67cb4e2747e22d843642c0a574984c836",
       "apps/wechat-miniapp/src/features/sky/spot-sky-page.scss": "fdc3289c803ee544ce1b48b374d408fdb2700ced61f0a81f3cff95b7a5d107ed",
-      "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": "1e892772aae0df0670e96b7342e53ad9566cbcb42d46c4f4c741e02f02266bb8",
+      "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": "ef0f8b93889dd8c56fdc9d2af6c4bc2780fedb7cb53b7ece0aa7abf51a5d4fc7",
       "apps/wechat-miniapp/src/features/spot/spot-detail-page.scss": "3000116a9e506c583f738ecd53126e0dc89b0c3fc1474310b3324579561a1a68",
       "apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx": "c299cb2e4bc9683f0541d9e05f0cb2ae3ff7d1ef0af8701db0895bc1c2151c1c",
       "apps/wechat-miniapp/src/hooks/use-favorite-mutation.ts": "4a3da9754ba49a06a9ef2a7b6efcf84f3e6bd76b274dbbfaf8df2d3f166e7d30",
@@ -110,8 +110,8 @@
       "apps/wechat-miniapp/src/pages/auth/index.scss": "1a9af4bbab7aa2e7652b267b632421677695a9ea970c3db77bcbbf9c2038a5e0",
       "apps/wechat-miniapp/src/pages/auth/index.tsx": "4d7707158ddc51b465bc87b434e9987eed45b0f723bc855939ed04eb58f97eca",
       "apps/wechat-miniapp/src/pages/map/index.config.ts": "1697f0ffe18bbd9a07dff8eaddc0762ca452bb0b37c5ebbd8562c3f268cd273e",
-      "apps/wechat-miniapp/src/pages/map/index.scss": "ad24b1f4de4f7112a1919459d0bd720a1abbeade3949f721bd3263ee0e2a5d5a",
-      "apps/wechat-miniapp/src/pages/map/index.tsx": "542d0111762985abdcac48135186f1a1ea39a829a8404d404c97037454793505",
+      "apps/wechat-miniapp/src/pages/map/index.scss": "3574366dd590a9d505ec450225824fc28734118ab73eca868f27591ef9f36e40",
+      "apps/wechat-miniapp/src/pages/map/index.tsx": "471ee8c6d2f83a546239acaaa00e0448697fd5a4f18a3a293e0c669dc0fd038b",
       "apps/wechat-miniapp/src/pages/my/index.config.ts": "52323358287c9e61cfc1ea6b74fe5249436557bc8bb64428bd2a5a321c314198",
       "apps/wechat-miniapp/src/pages/my/index.tsx": "28f5aa3d18aa77e98b8bbe64a1992c619d7510bbe9b056d31400a422c98baf02",
       "apps/wechat-miniapp/src/services/acceptance-diagnostics.ts": "83f9b36055e19a0c4c676a8692cfc30232b0f8b11733d04b4ce359b8c090a9f1",
@@ -178,7 +178,7 @@
       "docs/wechat-miniapp-v2-1-1-source.md": "9cb65b4966c9cd328d738621f84596bff6735deb2c60407970083f0b60b39bdf",
       "infra/miniapp/docker-compose.yml": "27f643d9e917129066f388506e6b44dfa94927593c11cc339c60532cb5101268",
       "package-lock.json": "ffcd12dbc355e5b0029fabedf39ced5fcd2097b88a28e2eef22b3daca21621ab",
-      "package.json": "5079349d70054c47baec07db1eaa5370df69c5af496ef43ba85617e361eca4a7",
+      "package.json": "9841a7b31a72a1348291fecc1d05ae861de0003c5aa7e7a90ac02b5c010eb1e3",
       "packages/miniapp-contracts/package.json": "2cc152bfd37470a538e7060d5dce00c66e54832e58bf815de148bc7cfdd6a1b4",
       "packages/miniapp-contracts/src/api-shapes.ts": "ddb1963f9b1467eb2714cdaf645dce8fb673851c91775a080cf0679be70025ed",
       "packages/miniapp-contracts/src/catalog.ts": "94c3eaf459a12788ec7f6e0b178adf14f0de0dd73428c808f0f61e332d697648",
@@ -210,17 +210,17 @@
       "tools/miniapp/generate-tab-assets.ps1": "2bbdd52b1b8c371b7797add6567fe4ff63194d73de2fd3f221db6430cd0ba65a",
       "tools/miniapp/invoke-wechat-long-task-proof.ps1": "547ee773dc4c93fd6f72f1ad065321f717481e5c3d6d4065b356391f032d0e2e",
       "tools/miniapp/run-infrastructure-check.mjs": "4b9b195eb11bc078ecef0703fd336da39437b6f3b893b9743102dc7cc26fcb0a",
-      "tools/miniapp/run-wechat-devtools-session.mjs": "4a29ab2407a2a1d5fee7037bd3c53058614552470faf8758a15334246e63c4ba",
+      "tools/miniapp/run-wechat-devtools-session.mjs": "a79a6ef6bccd3f5a3ce0eeb1d9d926a1ca8d58ace41aeb79fa94d9d16c679768",
       "tools/miniapp/selected-design-bindings.json": "341a188910f9d76870240c954e2e83a0c117ce2d9017d6b5a37faa39c77c9c93",
       "tools/miniapp/start-development-session.mjs": "9bf9ed80f3e4bc0661d3e28ef1369d67c58098f38007a4c38f8f3f2ba4e0e836",
       "tools/miniapp/start-h5-acceptance.mjs": "5703488ebb99dc2da84a5923824c339b0e36fb57dbd02c2e4059d70cf842220f",
       "tools/miniapp/verification-spec-v2-1-1.json": "42ac5bd56c0fc39ec082dc5b090b6ff1b8f50372c0bf0bd9d274119e65719213",
       "tools/miniapp/verification-spec.json": "1496766c2908d8183ee041c726a9ddc1d1bae1e54705b67449d17653b73ec8b3",
-      "tools/miniapp/verify-miniapp-target-launcher.c": "a7e74b58e85c430a98740e1b4ab69d30b2b806ede2452d93b3af9a371f5ad596",
-      "tools/miniapp/verify-miniapp-target.exe": "e289a1bcabe0cb09adbe8bb656e9bbc4430460d7407ef941e51e4dfae973dc49",
-      "tools/miniapp/verify-miniapp-target.mjs": "c3e576a200f875b2460859d1d58007be4f859445174234d164ef4d33e256be85",
+      "tools/miniapp/verify-miniapp-target-launcher.c": "604417b21fa8843fb2b139a1f8b8a1299c91ae059bc759a953bad53468ac70f8",
+      "tools/miniapp/verify-miniapp-target.exe": "d9daa2e5e94898bd6f0857001eba749354b730be674fe5f253fe22cc28c6b601",
+      "tools/miniapp/verify-miniapp-target.mjs": "0809a2d32884156b057f1bb5f7cf76330274abb77aef5d0f8842b9497bae09a5",
       "tools/miniapp/verify-selected-design-bindings.mjs": "ba8221a3bd9319d7614ad4641648c3ff296da7e2c0b3033681556fa914212400",
-      "tools/miniapp/workflow-conformance.test.mjs": "7c153f5c44751a2c742a09ff596d07498d3351b4e99c18c2630579a6bf3667e5",
+      "tools/miniapp/workflow-conformance.test.mjs": "360ddab6ec0c8cff4aa9b8f481d1986054087cc7a1e9ce7c4861ec6b822df50c",
       "workers/miniapp-api/package.json": "8d506bd98928240f9fa321df4517dfc985f8c0d41b95bdf60caa3906c8b6f859",
       "workers/miniapp-api/src/acceptance-controller.test.ts": "bd216628b7cb3c363b1ae934983135081b56de1d568fb2c09fc5eaaef51fa585",
       "workers/miniapp-api/src/acceptance.controller.ts": "678abdac05f8098c1b00d474f2fe6272d193734c906705dce2496673b46e3eb1",
@@ -251,7 +251,7 @@
       "workers/miniapp-api/src/security.ts": "3915799f54041664c1a110c1d6274460e7abd7b83bb395602edfb57429d43249",
       "workers/miniapp-api/src/worker.ts": "f57606340f39b548c830988890c79dbd7e7b3d0a5fff9bfed5a7abb1a75c0652"
     },
-    "sha256": "a2f006fedf806ff4d066dcb635fc05baea521030bc72a7bba1ddd37784bd27f9"
+    "sha256": "9fdc4d335315f5452754533c88a236caa9b539088cd71004e0d68f83bf702a34"
   },
   "authority": {
     "product_v2": {
@@ -302,8 +302,8 @@
     "fast": {
       "passed": true,
       "exit_code": 0,
-      "duration_ms": 14919,
-      "stdout_sha256": "dd7ad76e8044886a9f96bc7be2dc199e16adcd9776bd4e50215e3b89fb855677",
+      "duration_ms": 13759,
+      "stdout_sha256": "51eb20d33c8283e6feb6b4237dd6382a2e59cfddb3bd691cac03016c8862305c",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout_line_count": 116,
       "stderr_line_count": 0,
@@ -314,15 +314,15 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 11773,
-        "stdout_sha256": "9d4d8a4b5731da19db1e25e1c27090b8245ca6adb675d94618878798a96dfec5",
+        "duration_ms": 10812,
+        "stdout_sha256": "ac6e9cf396b384d3a98b5dead72d5b628cf699dc1e0682df2eef34733045d943",
         "stderr_sha256": "30745afe699b237e4868b2f15f702636dd4090c24f37d0388f006c9c50098d94",
         "stdout_line_count": 3,
         "stderr_line_count": 8,
         "diagnostic_sha256": null
       },
       "artifact_path": "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json",
-      "artifact_sha256": "c1a61c4443cf73dd68a40153f50989c3621b5d597d89bbc2d85394f67e3db308",
+      "artifact_sha256": "2b826eceee1e8319bf4535044542e635a66c1ccd2510d2bc320ecaaa25b6a6f1",
       "checks": null
     },
     "h5": {
@@ -330,9 +330,9 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 70978,
-        "stdout_sha256": "20daf97db8ec6b7f6ccfa4d83a6c80ac383ad3958feac79668fec69ebe206dd4",
-        "stderr_sha256": "e02faf9f02688ab28f5c7d43f51d81d9c5383792b42abcf675a2e163490e2ff9",
+        "duration_ms": 66643,
+        "stdout_sha256": "be8e541782d04e83282a97b7b0f85bba5f3664de6018d6e6aaf371672fdb09a3",
+        "stderr_sha256": "d797811d53bbfebf5255df9e55ed7678b28ee33d6827588748a18458dbb77611",
         "stdout_line_count": 32,
         "stderr_line_count": 21,
         "diagnostic_sha256": null
@@ -405,70 +405,344 @@
       "openSkyDirection",
       "lastVerifiedAt"
     ],
-    "weapp_total_bytes": 1177244
+    "weapp_total_bytes": 1178571
   },
   "native": {
     "success": {
-      "passed": false,
+      "passed": true,
       "command": {
-        "passed": false,
-        "exit_code": 1,
-        "duration_ms": 171153,
-        "stdout_sha256": "21a2dd2b66b3b7a5f63b2f54f78cad00d6e08e2bad18a96cf642d67ae4916dce",
-        "stderr_sha256": "5803381b7b1d28125c4f86253f815f7cd0df856a9803b61d1cdc1da9004acb12",
+        "passed": true,
+        "exit_code": 0,
+        "duration_ms": 172568,
+        "stdout_sha256": "e7ba5749345fe559574e59682c94ae91d5b456d40bc41d64efef88f3d0259079",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_line_count": 1,
-        "stderr_line_count": 9,
+        "stderr_line_count": 0,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-21T22-24-28-758Z-6d967066/session.json",
-      "artifact_sha256": "92e71adf94ece1e8999b57d97855aba2091415036d25d4d39059e553ca86b2c0",
-      "session_id": "wechat-devtools-2026-08-21T22-24-28-758Z-6d967066",
-      "run_id": "wechat-devtools-2026-08-21T22-24-28-758Z-6d967066",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/session.json",
+      "artifact_sha256": "18b7178750778a9899afda45251999092e5fe1cd0dcb6443b6eba0bd1d385f78",
+      "session_id": "wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138",
+      "run_id": "wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "complete-demo",
       "mode": "success",
-      "candidate_sha256": "a5de266f0b26a33c2e20e1c9e8000c994fbff03764bff51e6cb7d9f6d20a5651",
-      "bundle_sha256": "e75ee98702d862d504db306d8f940f16cc5fd93c9ed609dd250653fe8791ef56",
+      "candidate_sha256": "8f1d4521c17694ba02f0da9debef98a369a3411e48106a83687261414409a5ea",
+      "bundle_sha256": "b54a81d3b0e6094cc36a4f58983f353e9b5df5cdafa378252df743d1f8de8a9d",
       "candidate_stable": true,
       "bundle_stable": true,
-      "journeys": [],
+      "journeys": [
+        {
+          "key": "map-cold-start-location-fallback",
+          "status": "passed",
+          "root_classes": [
+            "location-default-region",
+            "map-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "f0ba370b57aef0f206952d60fccf5c7ea29191adb46871f6c7981b67a1b47259",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/01-map-cold-start-location-fallback.png",
+          "screenshot_sha256": "da42abd2d55298b6a6edd544e12d9a8db982d7b014f59b4109afd8eb8c8d4361"
+        },
+        {
+          "key": "formal-spot-detail",
+          "status": "passed",
+          "root_classes": [
+            "spot-detail",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "2605698d3a3a4996762ce01be4339543baacfafbb07a2478439cdae33f824d44",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/02-formal-spot-detail.png",
+          "screenshot_sha256": "a4afc30148a48edaa50e669e1dcd089046b376234c3ad79539db63e8991afab7"
+        },
+        {
+          "key": "my-home",
+          "status": "passed",
+          "root_classes": [
+            "my-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "231395eeff02d99af87569d8407db7594b40080eae02fc86dafbfbd1f4d1595a",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/03-my-home.png",
+          "screenshot_sha256": "76ee4a9667b418b4f357f915cc74c8bb827918d01cef1992d440025af6858737"
+        },
+        {
+          "key": "plan-editor",
+          "status": "passed",
+          "root_classes": [
+            "plan-editor",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "29eb9d041955cbe1b3e7095f3bc6259f22c3dba3053181e31199d0ff898992eb",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/05-plan-editor.png",
+          "screenshot_sha256": "afef36674e680134d654ae9721987719af69e8091492437a25092877f4552734"
+        },
+        {
+          "key": "profile-links",
+          "status": "passed",
+          "root_classes": [
+            "links-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "d6008c62dedf44ea80287a86c0d861572497861aaa34484ad13b8e45f89fbb23",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/06-profile-links.png",
+          "screenshot_sha256": "d27871ea3627aba2e9bb38283edbc9efcb46c4be80cfbfa9f3f7c06267404150"
+        },
+        {
+          "key": "own-post-import",
+          "status": "passed",
+          "root_classes": [
+            "import-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "efa62ed96cb5678a78a314810a90f9e4798f9b179fd6f11a84d2225ceb3a2f5c",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/07-own-post-import.png",
+          "screenshot_sha256": "1c825a0d3a4b2c3db893975e64171bf84e45c13dc2f707268fc4141db99e47d7"
+        },
+        {
+          "key": "settings",
+          "status": "passed",
+          "root_classes": [
+            "settings-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "7fa3ab3f5bbe9da551f55549f60f8ddc88a440028c589d7625048af11e63a2f7",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/08-settings.png",
+          "screenshot_sha256": "9f4c4531e909bad10167d722dc95553d1dd693630846a2146b846220f24be637"
+        },
+        {
+          "key": "spot-night",
+          "status": "passed",
+          "root_classes": [
+            "sky-page",
+            "theme-night",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "696a7d8515e22c4a038c45de73bda8918f1396e1f3df1ca8ab353f7326f7452e",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-23-17-136Z-e11b9138/09-spot-night.png",
+          "screenshot_sha256": "cbce06b77dbc0a42f160cfaaf25cbe7a128f3f756b7f7a04958b982d092e0835"
+        }
+      ],
       "fault_probes": [],
-      "runtime_observation": null,
+      "runtime_observation": {
+        "exception_count": 0,
+        "expected_fault_console_error_count": 0,
+        "unexpected_console_error_count": 0,
+        "final_quiescence": {
+          "status": "passed",
+          "event_count": 12,
+          "quiet_window_ms": 750
+        }
+      },
       "cleanup_status": "passed"
     },
     "degradation": {
-      "passed": false,
+      "passed": true,
       "command": {
-        "passed": false,
-        "exit_code": 1,
-        "duration_ms": 170001,
-        "stdout_sha256": "d8209f9aae3fc5b50b8133f736f20fba0265d6e38d6b269afb48ea6ecc48a3ce",
-        "stderr_sha256": "5803381b7b1d28125c4f86253f815f7cd0df856a9803b61d1cdc1da9004acb12",
+        "passed": true,
+        "exit_code": 0,
+        "duration_ms": 307983,
+        "stdout_sha256": "ce4471b8a29e7f8fb956515b506c81fe70a77775eb0059947a0370b9d2e40da6",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_line_count": 1,
-        "stderr_line_count": 9,
+        "stderr_line_count": 0,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-21T22-27-19-903Z-120343af/session.json",
-      "artifact_sha256": "d2827ff2571c1548a9b368f8a6434e7b74732a455f419d1bc67752a7179d46e0",
-      "session_id": "wechat-devtools-2026-08-21T22-27-19-903Z-120343af",
-      "run_id": "wechat-devtools-2026-08-21T22-27-19-903Z-120343af",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/session.json",
+      "artifact_sha256": "26e5e812d0d8b594454275eade27eb321ec84105b576b598d72c7c5cdbbd82fe",
+      "session_id": "wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92",
+      "run_id": "wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "complete-demo",
       "mode": "degradation",
-      "candidate_sha256": "a5de266f0b26a33c2e20e1c9e8000c994fbff03764bff51e6cb7d9f6d20a5651",
-      "bundle_sha256": "e3c5c0039aeb213857e613b1b7328231f4b6ea51b1eefa3f5688402f172f2aa5",
+      "candidate_sha256": "8f1d4521c17694ba02f0da9debef98a369a3411e48106a83687261414409a5ea",
+      "bundle_sha256": "b1f9317ce7edbd210d056924cc63db2f743330f05d2d76b23ee421d72b64df82",
       "candidate_stable": true,
       "bundle_stable": true,
-      "journeys": [],
-      "fault_probes": [],
-      "runtime_observation": null,
+      "journeys": [
+        {
+          "key": "map-cold-start-location-fallback",
+          "status": "passed",
+          "root_classes": [
+            "location-default-region",
+            "map-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "bb65c65c657028f20016da386ecdb722edd8634b713ea8627a56bfc6419fd1a9",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/01-map-cold-start-location-fallback.png",
+          "screenshot_sha256": "57f72be7abf6c020977493e223860f1fe96ab822e6b152d2d1eba8fae4a64e96"
+        },
+        {
+          "key": "formal-spot-detail",
+          "status": "passed",
+          "root_classes": [
+            "spot-detail",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "f8838dcbfbaf464177f7f2a3deb186541b66468f8de06f28337220b5c61ff469",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/02-formal-spot-detail.png",
+          "screenshot_sha256": "8a0fb4003087d65439a9cb4a21edfd6baeead414bb4deecad8c233f7a6633d98"
+        },
+        {
+          "key": "spot-night",
+          "status": "passed",
+          "root_classes": [
+            "sky-page",
+            "theme-night",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "0754dbc5b2ea95645370001a4ad64df9bab5fe8cb9da091edd7cfc128a355303",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/09-spot-night.png",
+          "screenshot_sha256": "bbdb2f75bba7cdf4b3dc3190915dc23e7b3bc0bf14c416c12f2bd2d03ba3052c"
+        },
+        {
+          "key": "my-home",
+          "status": "passed",
+          "root_classes": [
+            "my-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "df6c3560443b8750f6e779432af566c4fe92c03c129af3aa7e35ca9388ba91bb",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/03-my-home.png",
+          "screenshot_sha256": "5b610feb2c09473bd4fdf53f692203df4754213b2cc73c2af587786b21bebf98"
+        },
+        {
+          "key": "profile-links",
+          "status": "passed",
+          "root_classes": [
+            "links-page",
+            "theme-day",
+            "theme-page"
+          ],
+          "root_wxml_sha256": "6bfb863ac0844b72f67eaeb94e51f4992abfec063212078483ddf049b9a70af2",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/06-profile-links.png",
+          "screenshot_sha256": "7ceff0e3a847d7925f53bd88c669f9f439f7bcf5e533cf90802345bd73d96947"
+        }
+      ],
+      "fault_probes": [
+        {
+          "journey_key": "map-cold-start-location-fallback",
+          "status": "passed",
+          "fault_observed": true,
+          "recovery_observed": true,
+          "fault_observation_sha256": "4e2ce92961f726e67533a0485ef64bc529d322fa5078964b0c01b70a0c25cfa4",
+          "recovery_observation_sha256": "992e53e01f48aacd5c994cfe06ec794ca5090c927a118c2a7dd9d41a34bd578f",
+          "recovery_control_selector": ".map-refresh-control",
+          "recovery_control_label": "刷新当前区域",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/fault-map-cold-start-location-fallback.png",
+          "fault_screenshot_sha256": "d0ea16abdf6dd02966f5b8c1d9a944953a5d110ff11ca136afe0cd2dc7602089",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/recovered-map-cold-start-location-fallback.png",
+          "recovery_screenshot_sha256": "103709a1e460dddb2fd619d5bb0809e6e29aa375cc31f8da185e05fb22df6026",
+          "runtime_quiescence": {
+            "status": "passed",
+            "event_count": 7,
+            "quiet_window_ms": 750
+          }
+        },
+        {
+          "journey_key": "formal-spot-detail",
+          "status": "passed",
+          "fault_observed": true,
+          "recovery_observed": true,
+          "fault_observation_sha256": "5ac12298b655f5901d6ceff84ca47d387430cdaf2eefa6ab46a47b1e65a4c7fe",
+          "recovery_observation_sha256": "d6e359b29749aeb885299ad641dbb61df8e1843d70718082bf5b586677c0394c",
+          "recovery_control_selector": ".status-panel__recovery",
+          "recovery_control_label": "重试概览",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/fault-formal-spot-detail.png",
+          "fault_screenshot_sha256": "2aaacd7aa8bc02425e79f04105f111bacd23ce031b425580f356563b7a76f76b",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/recovered-formal-spot-detail.png",
+          "recovery_screenshot_sha256": "8a0fb4003087d65439a9cb4a21edfd6baeead414bb4deecad8c233f7a6633d98",
+          "runtime_quiescence": {
+            "status": "passed",
+            "event_count": 10,
+            "quiet_window_ms": 750
+          }
+        },
+        {
+          "journey_key": "spot-night",
+          "status": "passed",
+          "fault_observed": true,
+          "recovery_observed": true,
+          "fault_observation_sha256": "2a7fc487eb3b1ffd8b82b84e9e18a874372dd765c5366b8ee6c02bf135110e5a",
+          "recovery_observation_sha256": "1fd127321d29b7e258539f2c3b44da382c36a964a1bcd48432391314f7cf4aea",
+          "recovery_control_selector": ".status-panel__recovery",
+          "recovery_control_label": "重试夜空",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/fault-spot-night.png",
+          "fault_screenshot_sha256": "10b416e8bbe071ab4f7cc01545a2ae928a90877b10d546d2adca50f0ba691014",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/recovered-spot-night.png",
+          "recovery_screenshot_sha256": "35815f0fa9740434a1b166e277716cfcaa756e139ee047050758024b0e7a7458",
+          "runtime_quiescence": {
+            "status": "passed",
+            "event_count": 14,
+            "quiet_window_ms": 750
+          }
+        },
+        {
+          "journey_key": "my-home",
+          "status": "passed",
+          "fault_observed": true,
+          "recovery_observed": true,
+          "fault_observation_sha256": "bf01692a3530e70239f9e719f5684a8b8a7261f39299d0fac6a6804260dd37cc",
+          "recovery_observation_sha256": "c36658b2db41879cec1ff74e83f754a1fcb0c4a5b8d5cc7b54f1b432cf250a58",
+          "recovery_control_selector": ".status-panel__recovery",
+          "recovery_control_label": "重试同步",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/fault-my-home.png",
+          "fault_screenshot_sha256": "aeb7807c0b44a38c482879491fbedb8d6568cb503d61d5bb17a6d14d18cbd0a8",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/recovered-my-home.png",
+          "recovery_screenshot_sha256": "5b610feb2c09473bd4fdf53f692203df4754213b2cc73c2af587786b21bebf98",
+          "runtime_quiescence": {
+            "status": "passed",
+            "event_count": 18,
+            "quiet_window_ms": 750
+          }
+        },
+        {
+          "journey_key": "profile-links",
+          "status": "passed",
+          "fault_observed": true,
+          "recovery_observed": true,
+          "fault_observation_sha256": "e58ea6dd2ba42083c5260eed14f277f4754403f25748e45e9aee4994fefa6557",
+          "recovery_observation_sha256": "ad0328d443002a3a0e62b3fca73bac3a0c7283c4fc66d70ce542ae31ad329166",
+          "recovery_control_selector": ".status-panel__recovery",
+          "recovery_control_label": "重试回读",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/fault-profile-links.png",
+          "fault_screenshot_sha256": "e18a5656446eb765e04770b615b43646b677209717c972ea00bf4bdaef733453",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-08-22T05-26-09-575Z-cbfa1e92/recovered-profile-links.png",
+          "recovery_screenshot_sha256": "7ceff0e3a847d7925f53bd88c669f9f439f7bcf5e533cf90802345bd73d96947",
+          "runtime_quiescence": {
+            "status": "passed",
+            "event_count": 22,
+            "quiet_window_ms": 750
+          }
+        }
+      ],
+      "runtime_observation": {
+        "exception_count": 0,
+        "expected_fault_console_error_count": 7,
+        "unexpected_console_error_count": 0,
+        "final_quiescence": {
+          "status": "passed",
+          "event_count": 23,
+          "quiet_window_ms": 750
+        }
+      },
       "cleanup_status": "passed"
     }
   },
   "design": {
-    "passed": false,
+    "passed": true,
     "method_passed": true,
     "facts": [
       {
@@ -554,95 +828,95 @@
       },
       "method": {
         "path": "artifacts/miniapp/design/asset-integrity.json",
-        "sha256": "4c7f9104cac5119ad115199e870ea154c15d41d01ff8eb03b69d5cb28202566c"
+        "sha256": "763c9f864324d14ca88ae24e6e7b5a181e784952b48de7ce0e23144e7f983c53"
       },
       "actual": {
         "path": "artifacts/miniapp/design/production-actual.json",
-        "sha256": "a20c26781b6026dd1482ad0b8f44fadc891c6ee7d326f5397ca54deeeee3afc5"
+        "sha256": "6197641c34dbe6e472a1e5393ba638babbd592d10facd57a6c48300aa18b9df4"
       },
       "comparison": {
         "path": "artifacts/miniapp/design/constraint-comparison.json",
-        "sha256": "4ea3c1b8f23bd3f691a1cd0c91ca802cf7a53d75b020a097c229f0cb72784d40"
+        "sha256": "cc3fe6527737ec6083e74b62476e6544193a391e6aff1a3f8ac36ec14e3cb53a"
       }
     }
   },
   "semantic": {
-    "passed": false,
+    "passed": true,
     "artifact_path": "artifacts/miniapp/semantic/current-candidate.json",
-    "artifact_sha256": "f69c59d4803cb811a0e3658e6a7aadd0bd0e81c87464f885b6ed1bf3e26c0fb7"
+    "artifact_sha256": "01aedbb251557fdea7d5c8eb45f062cf91a5837178a38b28bd9dfa66cc28c731"
   },
   "global": {
-    "conformance": "failed"
+    "conformance": "passed"
   },
   "outcomes": {
     "map-discovery": {
-      "status": "failed",
+      "status": "passed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": false,
-        "native_degradation": false
+        "native_success": true,
+        "native_degradation": true
       }
     },
     "spot-detail": {
-      "status": "failed",
+      "status": "passed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": false,
-        "native_degradation": false
+        "native_success": true,
+        "native_degradation": true
       }
     },
     "spot-night": {
-      "status": "failed",
+      "status": "passed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": false,
-        "native_degradation": false
+        "native_success": true,
+        "native_degradation": true
       }
     },
     "my-library": {
-      "status": "failed",
+      "status": "passed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": false,
-        "native_degradation": false
+        "native_success": true,
+        "native_degradation": true
       }
     },
     "profile-content": {
-      "status": "failed",
+      "status": "passed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": false,
-        "native_degradation": false
+        "native_success": true,
+        "native_degradation": true
       }
     },
     "platform-operations": {
-      "status": "failed",
+      "status": "passed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": false,
-        "native_degradation": false
+        "native_success": true,
+        "native_degradation": true
       }
     },
     "complete-demo": {
-      "status": "failed",
+      "status": "passed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
-        "native_success": false,
-        "native_degradation": false
+        "native_success": true,
+        "native_degradation": true
       }
     }
   }

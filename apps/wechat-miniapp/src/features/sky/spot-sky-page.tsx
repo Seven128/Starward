@@ -542,6 +542,16 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
             </View>
             <DataStateBadge state={report.data?.dataState ?? "UNAVAILABLE"} />
           </View>
+          {reportData &&
+          (report.data?.dataState === "UNAVAILABLE" ||
+            report.data?.dataState === "EXPIRED") ? (
+            <StatusPanel
+              state="ERROR"
+              detail="当前夜空数据不可用；正式点位、观测时间和来源说明保持可见，不会用缓存或示例结果替代今晚结论。"
+              recoveryLabel="重试夜空"
+              onRecover={() => void report.refetch()}
+            />
+          ) : null}
           {report.isPending ? (
             <StatusPanel
               state="LOADING"
