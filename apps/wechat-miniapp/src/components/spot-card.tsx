@@ -97,6 +97,7 @@ export function SpotCard({
               variant="ghost"
               className="spot-card__favorite"
               label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
+              iconOnly
               onClick={onFavorite}
             >
               {favorite ? "★" : "☆"}
@@ -163,6 +164,7 @@ export function SpotCard({
             variant="ghost"
             className="spot-card__favorite"
             label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
+            iconOnly
             onClick={onFavorite}
           >
             {favorite ? "★" : "☆"}
@@ -202,6 +204,7 @@ export function SpotCard({
               variant="ghost"
               className="spot-card__favorite"
               label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
+              iconOnly
               onClick={onFavorite}
             >
               {favorite ? "★" : "☆"}

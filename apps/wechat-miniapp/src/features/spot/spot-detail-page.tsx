@@ -230,6 +230,10 @@ export function SpotDetailPage({
                 onClick={() => void toggleFavorite(detail.spot.spotId)}
               >
                 <Text aria-hidden="true">{favorite ? "★" : "☆"}</Text>
+                <Text className="native-accessibility-label">
+                  {favorite ? "取消收藏" : "收藏"}
+                  {detail.spot.name}
+                </Text>
               </Button>
             </View>
             <Text className="type-caption">

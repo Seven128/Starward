@@ -73,7 +73,12 @@ export function MyLibraryPage() {
         odId="my-account-header"
         right={
           <View data-od-id="my-settings-action">
-            <SoftButton label="打开设置" variant="ghost" onClick={openSettings}>
+            <SoftButton
+              label="打开设置"
+              variant="ghost"
+              iconOnly
+              onClick={openSettings}
+            >
               ⚙
             </SoftButton>
           </View>

@@ -1037,6 +1037,7 @@ export default function MapPage() {
                       ? "重新请求一次性定位"
                       : "更新一次性定位"
                 }
+                iconOnly
                 onClick={locateMap}
               >
                 ◎
@@ -1045,6 +1046,7 @@ export default function MapPage() {
             <SoftButton
               className="map-refresh-control"
               label="刷新当前区域"
+              iconOnly
               onClick={refreshMap}
             >
               ↻

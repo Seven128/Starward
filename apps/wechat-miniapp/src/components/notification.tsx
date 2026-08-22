@@ -84,6 +84,9 @@ export function NotificationComponent({
           onClick={onDismiss}
         >
           <Text aria-hidden="true">×</Text>
+          <Text className="native-accessibility-label">
+            关闭通知：{notification.title}
+          </Text>
         </Button>
       ) : null}
     </View>
