@@ -226,8 +226,7 @@ export function SpotDetailPage({
                 compileMode
                 className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : ""}`}
                 data-od-id="spot-detail-favorite"
-                aria-label={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
-                aria-pressed={favorite}
+                ariaLabel={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
                 onClick={() => void toggleFavorite(detail.spot.spotId)}
               >
                 <Text aria-hidden="true">{favorite ? "★" : "☆"}</Text>

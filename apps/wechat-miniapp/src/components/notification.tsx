@@ -81,7 +81,7 @@ export function NotificationComponent({
           compileMode
           className="notification__dismiss focus-ring"
           data-od-id="notification-dismiss"
-          aria-label={`关闭通知：${notification.title}`}
+          ariaLabel={`关闭通知：${notification.title}`}
           onClick={onDismiss}
         >
           <Text aria-hidden="true">×</Text>
