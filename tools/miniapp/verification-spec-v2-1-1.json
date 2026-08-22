@@ -50,7 +50,7 @@
     "semantic_manifest": {
       "path": "docs/wechat-miniapp-v2-1-1-source.md",
       "key": "wechat-miniapp-v2-1-1.semantic-facts",
-      "sha256": "21a1817c1b19ce865c3f1f694df2fa295dc5affe53e246e38ebcf375cf840676"
+      "sha256": "0da96a051e5270c2947c4bfbe090e8bd1859046643a9184b155f2ce2259b8995"
     }
   },
   "counterfactual_controls": [],

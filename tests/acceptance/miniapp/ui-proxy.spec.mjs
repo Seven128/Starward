@@ -3,6 +3,19 @@ import { resetAcceptanceState } from "./acceptance-state.mjs";
 
 const SPOT_ID = "spot:sz-astronomical-observatory";
 
+function currentDateInTimezone(timeZone) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(
+    parts.map((part) => [part.type, part.value]),
+  );
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
 function watchRuntime(page) {
   const faults = [];
   page.on("pageerror", (error) => faults.push(`pageerror: ${error.message}`));
@@ -212,11 +225,12 @@ test("Spot Detail has three tabs and hands a complete observation-night context 
     detail.getByLabel("去这里，打开深圳市天文台外部地图"),
   ).toBeVisible();
 
+  const expectedLocalDate = currentDateInTimezone("Asia/Shanghai");
   await detail.getByLabel("查看深圳市天文台此处夜空").click();
   const sky = page.locator('[data-route="spot-night"]');
   await expect(sky).toHaveAttribute("data-spot-id", SPOT_ID);
   await expect(sky.locator('[data-od-id="spot-night-context"]')).toContainText(
-    "2026-08-22",
+    expectedLocalDate,
   );
   await expect(sky.getByLabel("调整观测时间")).toBeVisible();
   await expect(sky.locator('[data-od-id="sky-scene"]')).toBeVisible();
