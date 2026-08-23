@@ -5,10 +5,8 @@ import {
   cloneFilterState,
   type DisplayMode,
   type FilterState,
-  type ImportDraft,
-  type MyTab,
+  type ObservationContext,
   type ObservationPlan,
-  type ProfileLink,
   type SpotId,
   type UserPreferences,
   type UserPreferencesRecord,
@@ -23,6 +21,7 @@ import {
   exitObservationMode,
   restorePriorMode,
   restoreStartupMode,
+  revertFilterDraft,
   setDisplayMode,
   toggleFavoriteRelation,
   toggleFilterDraft,
@@ -35,12 +34,12 @@ import {
 } from "./notification";
 import acceptanceBootstrapJson from "./acceptance-bootstrap.json";
 
-const STORAGE_KEY = "starward.wechat-miniapp.state.v1";
+const STORAGE_KEY = "starward.wechat-miniapp.state.current";
 
 export interface MapViewportState {
   center: { latitude: number; longitude: number };
   zoom: number;
-  layer: "NORMAL" | "LIGHT_POLLUTION";
+  layer: "NORMAL" | "LIGHT_POLLUTION" | "CLOUD" | "OPPORTUNITY";
   loadedViewport: string;
   cardIndex: number;
 }
@@ -58,7 +57,7 @@ export interface SourceLiftRuntimeState {
     viewport: MapViewportState;
     selectedSpotId: SpotId | null;
     finderQuery: string;
-    selectedAt: string;
+    observationContext: ObservationContext | null;
     analysisOverlay: AnalysisOverlay;
   } | null;
   finishOptions: {
@@ -76,16 +75,13 @@ export interface PersistedState {
   preferencesUpdatedAt: string | null;
   viewport: MapViewportState;
   finderQuery: string;
-  selectedAt: string;
+  observationContext: ObservationContext | null;
   analysisOverlay: AnalysisOverlay;
   committedFilters: FilterState;
   selectedSpotId: SpotId | null;
   searchHistory: string[];
   favoriteIds: SpotId[];
   plans: ObservationPlan[];
-  profileLinks: ProfileLink[];
-  importDraft: ImportDraft | null;
-  skySelection: { spotId: SpotId | null; localDate: string; timeIndex: number };
 }
 
 export type LocationState =
@@ -94,14 +90,12 @@ export type LocationState =
 interface AppState extends PersistedState {
   priorMode: Exclude<DisplayMode, "OBSERVATION">;
   draftFilters: FilterState;
+  filterSnapshot: FilterState;
   filterSheetOpen: boolean;
   locationState: LocationState;
-  myTab: MyTab;
-  toast: string;
   notifications: NotificationRecord[];
   sourceLift: SourceLiftRuntimeState;
   hydrate(): void;
-  setToast(message: string): void;
   notify(intent: NotificationIntent): void;
   dismissNotification(id: string): void;
   clearNotifications(owner?: string): void;
@@ -116,7 +110,7 @@ interface AppState extends PersistedState {
   markPreferencesSynced(record: UserPreferencesRecord): void;
   setViewport(patch: Partial<MapViewportState>): void;
   setFinderQuery(query: string): void;
-  setSelectedAt(value: string): void;
+  setObservationContext(context: ObservationContext | null): void;
   setAnalysisOverlay(overlay: AnalysisOverlay): void;
   openSourceLift(owner: SourceLiftOwner): void;
   focusSourceLift(owner: SourceLiftOwner): void;
@@ -131,7 +125,7 @@ interface AppState extends PersistedState {
   selectSpot(spotId: SpotId | null): void;
   openFilters(): void;
   toggleDraftFilter(optionId: string): void;
-  resetDraftFilters(): void;
+  revertFilters(): void;
   cancelFilters(): void;
   applyFilters(): void;
   setLocationState(state: AppState["locationState"]): void;
@@ -139,14 +133,9 @@ interface AppState extends PersistedState {
   clearSearchHistory(): void;
   toggleFavorite(spotId: SpotId): boolean;
   replaceFavoriteIds(spotIds: readonly SpotId[]): void;
-  setMyTab(tab: MyTab): void;
   savePlan(plan: ObservationPlan): void;
   replacePlans(plans: readonly ObservationPlan[]): void;
   deletePlan(planId: string): void;
-  saveProfileLink(link: ProfileLink): void;
-  replaceProfileLinks(links: readonly ProfileLink[]): void;
-  setImportDraft(draft: ImportDraft | null): void;
-  setSkySelection(patch: Partial<AppState["skySelection"]>): void;
   clearLocalCache(): void;
 }
 
@@ -154,7 +143,7 @@ const DEFAULT_VIEWPORT: MapViewportState = {
   center: { latitude: 22.5431, longitude: 114.0579 },
   zoom: 8,
   layer: "NORMAL",
-  loadedViewport: "shenzhen-trial-region-v1",
+  loadedViewport: "greater-bay-area-current",
   cardIndex: 0,
 };
 
@@ -172,6 +161,10 @@ function loadPersisted(): Partial<PersistedState> {
 
 function persisted(state: AppState): PersistedState {
   const durableMode = restoreStartupMode(state.mode, state.priorMode);
+  const durableContext =
+    state.observationContext?.privacyClass === "SESSION_PRECISE"
+      ? null
+      : state.observationContext;
   return {
     mode: durableMode,
     priorMode: state.priorMode,
@@ -181,17 +174,24 @@ function persisted(state: AppState): PersistedState {
     preferencesUpdatedAt: state.preferencesUpdatedAt,
     viewport: state.viewport,
     finderQuery: state.finderQuery,
-    selectedAt: state.selectedAt,
+    observationContext: durableContext,
     analysisOverlay: state.analysisOverlay,
     committedFilters: state.committedFilters,
     selectedSpotId: state.selectedSpotId,
     searchHistory: state.searchHistory,
     favoriteIds: state.favoriteIds,
     plans: state.plans,
-    profileLinks: state.profileLinks,
-    importDraft: state.importDraft,
-    skySelection: state.skySelection,
   };
+}
+
+function usableObservationContext(
+  value: ObservationContext | null | undefined,
+) {
+  return value?.schemaVersion === "observation-context-v2" &&
+    Number.isFinite(Date.parse(value.expiresAt)) &&
+    Date.parse(value.expiresAt) > Date.now()
+    ? value
+    : null;
 }
 
 const BOOTSTRAP_STATE = loadPersisted();
@@ -202,6 +202,7 @@ const BOOTSTRAP_MODE = restoreStartupMode(
 const BOOTSTRAP_FILTERS = cloneFilterState(
   BOOTSTRAP_STATE.committedFilters ?? EMPTY_FILTER_STATE,
 );
+let runtimeHydrated = false;
 
 export const useAppStore = create<AppState>((set, get) => {
   const commit = (
@@ -232,25 +233,19 @@ export const useAppStore = create<AppState>((set, get) => {
     preferencesUpdatedAt: BOOTSTRAP_STATE.preferencesUpdatedAt ?? null,
     viewport: { ...DEFAULT_VIEWPORT, ...BOOTSTRAP_STATE.viewport },
     finderQuery: BOOTSTRAP_STATE.finderQuery ?? "",
-    selectedAt: BOOTSTRAP_STATE.selectedAt ?? "",
+    observationContext: usableObservationContext(
+      BOOTSTRAP_STATE.observationContext,
+    ),
     analysisOverlay: BOOTSTRAP_STATE.analysisOverlay ?? "NONE",
     committedFilters: BOOTSTRAP_FILTERS,
     draftFilters: cloneFilterState(BOOTSTRAP_FILTERS),
+    filterSnapshot: cloneFilterState(BOOTSTRAP_FILTERS),
     selectedSpotId: BOOTSTRAP_STATE.selectedSpotId ?? null,
     searchHistory: BOOTSTRAP_STATE.searchHistory ?? [],
     favoriteIds: BOOTSTRAP_STATE.favoriteIds ?? [],
     plans: BOOTSTRAP_STATE.plans ?? [],
-    profileLinks: BOOTSTRAP_STATE.profileLinks ?? [],
-    importDraft: BOOTSTRAP_STATE.importDraft ?? null,
-    skySelection: BOOTSTRAP_STATE.skySelection ?? {
-      spotId: null,
-      localDate: "",
-      timeIndex: 0,
-    },
     filterSheetOpen: false,
     locationState: "DEFAULT_REGION",
-    myTab: "MY",
-    toast: "",
     notifications: [],
     sourceLift: {
       owner: null,
@@ -260,6 +255,8 @@ export const useAppStore = create<AppState>((set, get) => {
       finishOptions: { restoreMap: true, discardFilterDraft: true },
     },
     hydrate() {
+      if (runtimeHydrated) return;
+      runtimeHydrated = true;
       const saved = loadPersisted();
       const startupMode = restoreStartupMode(saved.mode, saved.priorMode);
       set({
@@ -275,7 +272,9 @@ export const useAppStore = create<AppState>((set, get) => {
         preferencesUpdatedAt: saved.preferencesUpdatedAt ?? null,
         viewport: { ...DEFAULT_VIEWPORT, ...saved.viewport },
         finderQuery: saved.finderQuery ?? "",
-        selectedAt: saved.selectedAt ?? "",
+        observationContext: usableObservationContext(
+          saved.observationContext,
+        ),
         analysisOverlay: saved.analysisOverlay ?? "NONE",
         committedFilters: cloneFilterState(
           saved.committedFilters ?? EMPTY_FILTER_STATE,
@@ -283,24 +282,11 @@ export const useAppStore = create<AppState>((set, get) => {
         draftFilters: cloneFilterState(
           saved.committedFilters ?? EMPTY_FILTER_STATE,
         ),
+        filterSnapshot: cloneFilterState(
+          saved.committedFilters ?? EMPTY_FILTER_STATE,
+        ),
         priorMode: restorePriorMode(saved.mode, saved.priorMode),
       });
-    },
-    setToast(message) {
-      set((state) => ({
-        toast: message,
-        notifications: message
-          ? enqueueNotification(state.notifications, {
-              owner: "global",
-              placement: "floating",
-              tone: "success",
-              title: "操作已完成",
-              body: message,
-              dismissible: true,
-              dedupeKey: `legacy-toast:${message}`,
-            })
-          : state.notifications,
-      }));
     },
     notify(intent) {
       set((state) => ({
@@ -368,8 +354,17 @@ export const useAppStore = create<AppState>((set, get) => {
     setFinderQuery(finderQuery) {
       commit({ finderQuery });
     },
-    setSelectedAt(selectedAt) {
-      commit({ selectedAt });
+    setObservationContext(observationContext) {
+      set({ observationContext });
+      try {
+        // Observation Context binds every downstream request and route. Persist
+        // this rare transition before navigation so a background page cannot
+        // leave storage one context behind the in-memory owner.
+        Taro.setStorageSync(STORAGE_KEY, persisted(get()));
+      } catch {
+        // The active session still remains correct in memory. Restart recovery
+        // fails closed when storage is unavailable.
+      }
     },
     setAnalysisOverlay(analysisOverlay) {
       commit({ analysisOverlay });
@@ -387,7 +382,7 @@ export const useAppStore = create<AppState>((set, get) => {
             },
             selectedSpotId: state.selectedSpotId,
             finderQuery: state.finderQuery,
-            selectedAt: state.selectedAt,
+            observationContext: state.observationContext,
             analysisOverlay: state.analysisOverlay,
           },
           finishOptions: { restoreMap: true, discardFilterDraft: true },
@@ -427,7 +422,7 @@ export const useAppStore = create<AppState>((set, get) => {
             ? {
                 viewport: origin.viewport,
                 selectedSpotId: origin.selectedSpotId,
-                selectedAt: origin.selectedAt,
+                observationContext: origin.observationContext,
                 analysisOverlay: origin.analysisOverlay,
               }
             : {}),
@@ -453,8 +448,8 @@ export const useAppStore = create<AppState>((set, get) => {
     toggleDraftFilter(optionId) {
       set((state) => toggleFilterDraft(state.draftFilters, optionId));
     },
-    resetDraftFilters() {
-      set({ draftFilters: cloneFilterState(EMPTY_FILTER_STATE) });
+    revertFilters() {
+      set((state) => revertFilterDraft(state.filterSnapshot));
     },
     cancelFilters() {
       set((state) => cancelFilterDraft(state.committedFilters));
@@ -481,9 +476,6 @@ export const useAppStore = create<AppState>((set, get) => {
     replaceFavoriteIds(favoriteIds) {
       commit({ favoriteIds: [...favoriteIds] });
     },
-    setMyTab(myTab) {
-      set({ myTab });
-    },
     savePlan(plan) {
       commit((state) => ({
         plans: [
@@ -500,27 +492,6 @@ export const useAppStore = create<AppState>((set, get) => {
         plans: state.plans.filter((item) => item.planId !== planId),
       }));
     },
-    saveProfileLink(link) {
-      commit((state) => ({
-        profileLinks: [
-          ...state.profileLinks.filter(
-            (item) => item.profileLinkId !== link.profileLinkId,
-          ),
-          link,
-        ].sort((a, b) => a.sortOrder - b.sortOrder),
-      }));
-    },
-    replaceProfileLinks(profileLinks) {
-      commit({ profileLinks: [...profileLinks] });
-    },
-    setImportDraft(importDraft) {
-      commit({ importDraft });
-    },
-    setSkySelection(patch) {
-      commit((state) => ({
-        skySelection: { ...state.skySelection, ...patch },
-      }));
-    },
     clearLocalCache() {
       const message =
         "本地地图、筛选、搜索与夜空临时缓存已清除；持久化收藏、计划、主页链接和导入草稿保持不变。";
@@ -532,13 +503,13 @@ export const useAppStore = create<AppState>((set, get) => {
       set({
         viewport: DEFAULT_VIEWPORT,
         finderQuery: "",
-        selectedAt: "",
+        observationContext: null,
         analysisOverlay: "NONE",
         committedFilters: EMPTY_FILTER_STATE,
         draftFilters: EMPTY_FILTER_STATE,
+        filterSnapshot: EMPTY_FILTER_STATE,
         selectedSpotId: null,
         searchHistory: [],
-        toast: message,
         notifications: enqueueNotification(get().notifications, {
           owner: "settings",
           placement: "floating",
@@ -548,7 +519,6 @@ export const useAppStore = create<AppState>((set, get) => {
           dismissible: true,
           dedupeKey: "settings-cache-cleared",
         }),
-        skySelection: { spotId: null, localDate: "", timeIndex: 0 },
       });
       queueMicrotask(() => {
         try {
@@ -570,10 +540,9 @@ export function resetAppStoreForAcceptance(): PersistedState {
   useAppStore.setState({
     ...next,
     draftFilters: cloneFilterState(next.committedFilters),
+    filterSnapshot: cloneFilterState(next.committedFilters),
     filterSheetOpen: false,
     locationState: "DEFAULT_REGION",
-    myTab: "MY",
-    toast: "",
     notifications: [],
     sourceLift: {
       owner: null,

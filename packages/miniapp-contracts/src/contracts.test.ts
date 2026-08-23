@@ -1,20 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEMO_FEATURE_FLAGS,
-  DEMO_POPULATION_DISCLOSURE,
-  DEMO_SPOTS,
-  FEATURE_FLAG_KEYS,
   EMPTY_FILTER_STATE,
+  FEATURE_FLAG_KEYS,
   FILTER_OPTIONS,
+  SELECTED_FEATURE_FLAGS,
+  assertFeatureFlagClosure,
   assertFilterState,
-  buildDemoSpotDetail,
   cloneUserPreferences,
   DEFAULT_USER_PREFERENCES,
   viewportRadiusKm,
 } from "./index.ts";
+import {
+  TEST_POPULATION_DISCLOSURE,
+  TEST_SPOTS,
+  buildTestSpotDetail,
+} from "./catalog.ts";
 
-test("the filter schema has the exact ordered V2.1.1 10+8 population", () => {
+test("the current filter schema has the exact ordered 10+8 population", () => {
   assert.equal(FILTER_OPTIONS.length, 18);
   assert.equal(new Set(FILTER_OPTIONS.map((item) => item.label)).size, 18);
   assert.deepEqual(
@@ -70,19 +73,24 @@ test("filter state accepts only the complete stable enum closure", () => {
   );
 });
 
-test("the curated Demo population is complete, stable and provenance-bearing", () => {
-  assert.equal(DEMO_POPULATION_DISCLOSURE.eligibleCount, DEMO_SPOTS.length);
-  assert.ok(DEMO_SPOTS.length >= 20 && DEMO_SPOTS.length <= 50);
-  for (const spot of DEMO_SPOTS) {
+test("the explicit test population is stable and cannot claim field truth", () => {
+  assert.equal(TEST_POPULATION_DISCLOSURE.eligibleCount, TEST_SPOTS.length);
+  assert.ok(TEST_SPOTS.length >= 20 && TEST_SPOTS.length <= 50);
+  for (const spot of TEST_SPOTS) {
     assert.match(spot.spotId, /^spot:/u);
-    assert.equal(spot.source.provider, "OpenStreetMap Nominatim");
-    assert.match(spot.source.license, /Open Database License/u);
+    assert.equal(spot.source.kind, "OPEN_DATA");
+    assert.equal(spot.status, "DATA_INSUFFICIENT");
     assert.equal(spot.wgs84.system, "WGS84");
     assert.equal(spot.gcj02.derivedFrom, "WGS84");
     assert.ok(spot.media.length >= 1);
     assert.equal(spot.media[0]?.isSiteSpecific, false);
     assert.ok(
       spot.facilities.every((facility) => facility.status === "UNKNOWN"),
+    );
+    assert.ok(
+      spot.facilities.every(
+        (facility) => facility.source.kind === "TEST_FIXTURE",
+      ),
     );
   }
 });
@@ -94,7 +102,7 @@ test("viewport radius keeps Web Mercator kilometre units and the 20% buffer", ()
   assert.equal(viewportRadiusKm(20), 8);
 });
 
-test("user preference snapshots do not depend on a host structuredClone", () => {
+test("user preference snapshots remain independent", () => {
   const snapshot = cloneUserPreferences(DEFAULT_USER_PREFERENCES);
   assert.deepEqual(snapshot, DEFAULT_USER_PREFERENCES);
   assert.notEqual(snapshot, DEFAULT_USER_PREFERENCES);
@@ -104,10 +112,10 @@ test("user preference snapshots do not depend on a host structuredClone", () => 
   );
 });
 
-test("insufficient current facts fail closed before scoring", () => {
-  const detail = buildDemoSpotDetail(DEMO_SPOTS[0]!.spotId)!;
+test("test fixtures fail closed before scoring", () => {
+  const detail = buildTestSpotDetail(TEST_SPOTS[0]!.spotId)!;
   assert.equal(detail.decision.recommendation, "DATA_INSUFFICIENT");
-  assert.equal(detail.decision.bestWindow, null);
+  assert.equal(detail.decision.skyOpportunity.primaryWindow, null);
   assert.ok(
     detail.decision.factors.some((factor) => factor.severity === "BLOCKER"),
   );
@@ -115,12 +123,17 @@ test("insufficient current facts fail closed before scoring", () => {
   assert.equal(detail.route.driveMinutes, null);
 });
 
-test("commercial evolution is closed behind exactly seven audited flags", () => {
-  assert.equal(FEATURE_FLAG_KEYS.length, 7);
+test("the current feature set is one exact boolean closure", () => {
+  assert.equal(FEATURE_FLAG_KEYS.length, 14);
   assert.deepEqual(
-    Object.keys(DEMO_FEATURE_FLAGS).sort(),
+    Object.keys(SELECTED_FEATURE_FLAGS).sort(),
     [...FEATURE_FLAG_KEYS].sort(),
   );
-  assert.equal(DEMO_FEATURE_FLAGS.COMMERCIAL_LICENSE_MODE, false);
-  assert.equal(DEMO_FEATURE_FLAGS.UGC_MODE, "WHITELIST_MANUAL_IMPORT");
+  assert.doesNotThrow(() =>
+    assertFeatureFlagClosure(SELECTED_FEATURE_FLAGS),
+  );
+  assert.equal(SELECTED_FEATURE_FLAGS.GLOBAL_NIGHT_TAB_ENABLED, false);
+  assert.equal(SELECTED_FEATURE_FLAGS.ORDINARY_PLACE_SKY_ENABLED, false);
+  assert.equal(SELECTED_FEATURE_FLAGS.DARK_SKY_CANDIDATES_ENABLED, false);
+  assert.equal(SELECTED_FEATURE_FLAGS.REAL_WEATHER_ENABLED, true);
 });

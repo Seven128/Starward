@@ -1,4 +1,3 @@
-import Taro from "@tarojs/taro";
 import { useMutation } from "@tanstack/react-query";
 import type { SpotId } from "@starward/miniapp-contracts";
 import {
@@ -24,15 +23,28 @@ export function useFavoriteMutation() {
         .replaceFavoriteIds(
           response.data.favorites.map((spot) => spot.spotId),
         );
-      useAppStore
-        .getState()
-        .setToast(favorite ? "已收藏并同步。" : "已取消收藏并同步。");
+      useAppStore.getState().notify({
+        owner: "favorites",
+        placement: "floating",
+        tone: "success",
+        title: favorite ? "已收藏" : "已取消收藏",
+        body: favorite ? "收藏关系已同步。" : "收藏关系已取消并同步。",
+        dismissible: true,
+        dedupeKey: favorite ? "favorite-saved" : "favorite-removed",
+      });
       return true;
     } catch (error) {
       useAppStore.getState().replaceFavoriteIds(before);
       const detail = `收藏未保存，已恢复操作前状态：${errorMessage(error)}。可检查连接后重试。`;
-      useAppStore.getState().setToast(detail);
-      await Taro.showToast({ title: "收藏失败，已回滚", icon: "none" });
+      useAppStore.getState().notify({
+        owner: "favorites",
+        placement: "floating",
+        tone: "error",
+        title: "收藏失败，已回滚",
+        body: detail,
+        dismissible: true,
+        dedupeKey: `favorite-failed-${spotId}`,
+      });
       return false;
     }
   };

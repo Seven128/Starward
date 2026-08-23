@@ -10,14 +10,20 @@ import {
 } from "@tarojs/components";
 import type { BaseEventOrig, MapProps } from "@tarojs/components";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import {
+  FILTER_GROUPS,
   countAppliedFilters,
+  type DarkSkyCandidateRef,
   type DisplayMode,
+  type MapLayerKind,
+  type OrdinaryPlaceRef,
   type SpotSummary,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { FilterSheet } from "@/components/filter-sheet";
 import { NotificationRegion } from "@/components/notification";
+import { SelectedCardStar } from "@/components/selected-card-star";
 import { SoftButton } from "@/components/soft-button";
 import { SourceLiftFocusLayer } from "@/components/source-lift-focus-layer";
 import { SpotCard } from "@/components/spot-card";
@@ -25,35 +31,74 @@ import { StatusPanel } from "@/components/status-panel";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
-import { getMapScene } from "@/services/api-client";
+import {
+  errorMessage,
+  getMapScene,
+  resolveObservationContext,
+  restoreObservationContext,
+  searchPlaces,
+  updateObservationContext,
+} from "@/services/api-client";
 import { useAppStore, type AnalysisOverlay } from "@/state/app-store";
+import {
+  nearestMapTimeFrameIndex,
+  projectedLayerPolygons,
+  projectMapEvaluations,
+} from "./map-time-frame";
 import "./index.scss";
 
-const isH5Proxy = process.env.TARO_ENV === "h5";
-
-function currentLocalSelectedAt() {
-  const now = new Date();
-  const offsetMinutes = -now.getTimezoneOffset();
-  const sign = offsetMinutes >= 0 ? "+" : "-";
-  const absoluteOffset = Math.abs(offsetMinutes);
-  const offsetHours = String(Math.floor(absoluteOffset / 60)).padStart(2, "0");
-  const offsetRemainder = String(absoluteOffset % 60).padStart(2, "0");
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 19);
-  return local + sign + offsetHours + ":" + offsetRemainder;
+function localDateForNow(timezone = "Asia/Shanghai") {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
-function selectedHour(value: string) {
-  const match = /^\d{4}-\d{2}-\d{2}T(\d{2}):/u.exec(value);
-  return match ? Number(match[1]) : new Date().getHours();
+function currentTimezoneHint(): "Asia/Shanghai" | "Asia/Hong_Kong" {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return timezone === "Asia/Hong_Kong" ? timezone : "Asia/Shanghai";
 }
 
-function withSelectedHour(value: string, hour: number) {
-  const base = /^\d{4}-\d{2}-\d{2}T\d{2}:/u.test(value)
-    ? value
-    : currentLocalSelectedAt();
-  return base.replace(/T\d{2}:/u, "T" + String(hour).padStart(2, "0") + ":");
+function formatContextTime(value: string, timezone: string) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: timezone,
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function layerForOverlay(overlay: AnalysisOverlay): MapLayerKind {
+  if (overlay === "LIGHT") return "LIGHT_POLLUTION";
+  if (overlay === "TOTAL_CLOUD") return "CLOUD";
+  if (overlay === "OPPORTUNITY") return "OPPORTUNITY";
+  return "NORMAL";
+}
+
+interface NativeLayerPolygon {
+  points: readonly { latitude: number; longitude: number }[];
+  strokeColor: string;
+  fillColor: string;
+  strokeWidth: number;
+  zIndex: number;
+}
+
+function layerProjectionFingerprint(polygons: readonly NativeLayerPolygon[]) {
+  let fingerprint = 2_166_136_261;
+  const input = polygons
+    .map(
+      (polygon) =>
+        `${polygon.points.map((point) => `${point.latitude},${point.longitude}`).join(";")}:${polygon.strokeColor}:${polygon.fillColor}:${polygon.strokeWidth}:${polygon.zIndex}`,
+    )
+    .join("|");
+  for (let index = 0; index < input.length; index += 1) {
+    fingerprint ^= input.charCodeAt(index);
+    fingerprint = Math.imul(fingerprint, 16_777_619);
+  }
+  return polygons.length ? (fingerprint >>> 0).toString(16) : "empty";
 }
 
 const MAP_MARKER_PALETTE: Record<
@@ -209,19 +254,23 @@ function groupByCity(spots: readonly SpotSummary[]) {
 }
 
 const overlayLabels: Record<AnalysisOverlay, string> = {
-  NONE: "无分析图层",
+  NONE: "无叠加",
   LIGHT: "光害",
   TOTAL_CLOUD: "总云量",
-  OPPORTUNITY: "机会",
+  OPPORTUNITY: "今晚观测条件",
 };
 
 export default function MapPage() {
   const themeClass = useThemeClass();
   const mode = useAppStore((state) => state.mode);
   const committedFilters = useAppStore((state) => state.committedFilters);
+  const draftFilters = useAppStore((state) => state.draftFilters);
+  const filterSnapshot = useAppStore((state) => state.filterSnapshot);
   const filterSheetOpen = useAppStore((state) => state.filterSheetOpen);
   const finderQuery = useAppStore((state) => state.finderQuery);
-  const selectedAt = useAppStore((state) => state.selectedAt);
+  const observationContext = useAppStore(
+    (state) => state.observationContext,
+  );
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
   const preferences = useAppStore((state) => state.preferences);
   const viewport = useAppStore((state) => state.viewport);
@@ -231,7 +280,9 @@ export default function MapPage() {
   const searchHistory = useAppStore((state) => state.searchHistory);
   const sourceLift = useAppStore((state) => state.sourceLift);
   const setFinderQuery = useAppStore((state) => state.setFinderQuery);
-  const setSelectedAt = useAppStore((state) => state.setSelectedAt);
+  const setObservationContext = useAppStore(
+    (state) => state.setObservationContext,
+  );
   const setAnalysisOverlay = useAppStore((state) => state.setAnalysisOverlay);
   const setViewport = useAppStore((state) => state.setViewport);
   const selectSpot = useAppStore((state) => state.selectSpot);
@@ -239,27 +290,100 @@ export default function MapPage() {
   const openSourceLift = useAppStore((state) => state.openSourceLift);
   const closeSourceLift = useAppStore((state) => state.closeSourceLift);
   const openFilters = useAppStore((state) => state.openFilters);
+  const revertFilters = useAppStore((state) => state.revertFilters);
   const cancelFilters = useAppStore((state) => state.cancelFilters);
+  const applyFilters = useAppStore((state) => state.applyFilters);
   const addSearchHistory = useAppStore((state) => state.addSearchHistory);
   const clearSearchHistory = useAppStore((state) => state.clearSearchHistory);
   const notify = useAppStore((state) => state.notify);
   const { toggleFavorite } = useFavoriteMutation();
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [debouncedFinderQuery, setDebouncedFinderQuery] = useState("");
   const [wantedOpen, setWantedOpen] = useState(true);
   const [otherOpen, setOtherOpen] = useState(true);
   const [mapRuntimeError, setMapRuntimeError] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [conditionDraftAt, setConditionDraftAt] = useState("");
-  const [conditionDraftHour, setConditionDraftHour] = useState(0);
+  const [conditionDraftFrameIndex, setConditionDraftFrameIndex] = useState(0);
   const [conditionDraftOverlay, setConditionDraftOverlay] =
     useState<AnalysisOverlay>("NONE");
+  const [conditionsSaving, setConditionsSaving] = useState(false);
+  const [conditionPreviewing, setConditionPreviewing] = useState(false);
+  const [conditionDisclosureOpen, setConditionDisclosureOpen] =
+    useState(false);
   const regionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setDebouncedFinderQuery(finderQuery.trim()),
+      250,
+    );
+    return () => clearTimeout(timer);
+  }, [finderQuery]);
+
+  const bootstrapContext = useResourceQuery({
+    queryKey: [
+      "map-observation-context",
+      observationContext?.contextId,
+      observationContext?.contextFingerprint,
+      observationContext?.revision,
+      Number(viewport.center.latitude.toFixed(5)),
+      Number(viewport.center.longitude.toFixed(5)),
+    ],
+    queryFn: (signal) => {
+      if (observationContext)
+        return restoreObservationContext(observationContext, signal);
+      const point = gcj02ToWgs84({
+        lat: viewport.center.latitude,
+        lon: viewport.center.longitude,
+        system: "GCJ-02",
+      });
+      return resolveObservationContext(
+        {
+          location: {
+            kind: "MAP_POINT",
+            displayName: "当前地图中心",
+            wgs84: {
+              system: "WGS84",
+              latitude: point.lat,
+              longitude: point.lon,
+            },
+            source: "MAP_VIEWPORT",
+            timezoneHint: currentTimezoneHint(),
+          },
+          localDate: localDateForNow(),
+          targetProfile: "DAILY",
+        },
+        signal,
+      );
+    },
+    staleTime: 60_000,
+  });
+  const activeContext = bootstrapContext.data?.data ?? null;
+
+  useEffect(() => {
+    const currentContext = useAppStore.getState().observationContext;
+    if (
+      bootstrapContext.data?.data &&
+      (currentContext?.contextId !== bootstrapContext.data.data.contextId ||
+        currentContext.revision !== bootstrapContext.data.data.revision ||
+        currentContext.contextFingerprint !==
+          bootstrapContext.data.data.contextFingerprint)
+    )
+      setObservationContext(bootstrapContext.data.data);
+  }, [
+    bootstrapContext.data?.data,
+    setObservationContext,
+  ]);
 
   const scene = useResourceQuery({
     queryKey: [
-      "map-scene-v2-1-1",
+      "map-scene",
+      activeContext?.contextId,
+      activeContext?.contextFingerprint,
+      activeContext?.revision,
       committedFilters,
-      finderQuery,
+      debouncedFinderQuery,
       Number(viewport.center.latitude.toFixed(4)),
       Number(viewport.center.longitude.toFixed(4)),
       viewport.zoom,
@@ -269,11 +393,13 @@ export default function MapPage() {
       preferences.requiredFacilities,
       preferences.equipment,
       preferences.capturePreference,
+      analysisOverlay,
     ],
     queryFn: (signal) =>
       getMapScene(
+        activeContext!.contextId,
         committedFilters,
-        finderQuery,
+        debouncedFinderQuery,
         viewport,
         {
           defaultPlace: preferences.defaultPlace,
@@ -283,9 +409,22 @@ export default function MapPage() {
           equipment: preferences.equipment,
           capturePreference: preferences.capturePreference,
         },
+        layerForOverlay(analysisOverlay),
+        activeContext!.weatherView.cloudLayer,
         signal,
       ),
+    enabled: Boolean(activeContext),
     staleTime: 60_000,
+  });
+
+  const placeSearch = useResourceQuery({
+    queryKey: ["place-search", debouncedFinderQuery],
+    queryFn: (signal) => searchPlaces(debouncedFinderQuery, signal),
+    enabled:
+      suggestionsOpen &&
+      !filterSheetOpen &&
+      debouncedFinderQuery.length > 0,
+    staleTime: 5 * 60_000,
   });
 
   useEffect(() => {
@@ -295,12 +434,23 @@ export default function MapPage() {
 
   useEffect(() => {
     if (sourceLift.owner === "CONDITIONS" && sourceLift.phase === "LIFTING") {
-      const next = selectedAt || currentLocalSelectedAt();
-      setConditionDraftAt(next);
-      setConditionDraftHour(selectedHour(next));
+      if (!activeContext) return;
+      const next = activeContext.selectedAtUtc;
+      const frames = scene.data?.data.timeFrames ?? [];
+      const frameIndex = nearestMapTimeFrameIndex(frames, next);
+      setConditionDraftAt(frames[frameIndex]?.atUtc ?? next);
+      setConditionDraftFrameIndex(frameIndex);
       setConditionDraftOverlay(analysisOverlay);
+      setConditionPreviewing(false);
+      setConditionDisclosureOpen(false);
     }
-  }, [analysisOverlay, selectedAt, sourceLift.owner, sourceLift.phase]);
+  }, [
+    activeContext,
+    analysisOverlay,
+    scene.data?.data.timeFrames,
+    sourceLift.owner,
+    sourceLift.phase,
+  ]);
 
   useEffect(
     () => () => {
@@ -311,6 +461,22 @@ export default function MapPage() {
 
   const spots = scene.data?.data.spots ?? [];
   const selected = spots.find((spot) => spot.spotId === selectedSpotId) ?? null;
+  const timeFrames = scene.data?.data.timeFrames ?? [];
+  const projectedAt =
+    sourceLift.owner === "CONDITIONS" && conditionDraftAt
+      ? conditionDraftAt
+      : (activeContext?.selectedAtUtc ?? "");
+  const projectedFrame = timeFrames.length
+    ? (timeFrames[nearestMapTimeFrameIndex(timeFrames, projectedAt)] ?? null)
+    : null;
+  const projectedEvaluations = useMemo(
+    () =>
+      projectMapEvaluations(
+        scene.data?.data.evaluations ?? {},
+        projectedFrame,
+      ),
+    [projectedFrame, scene.data?.data.evaluations],
+  );
   const groupedMarkers = useMemo(
     () => markerGroups(spots, viewport.zoom),
     [spots, viewport.zoom],
@@ -319,16 +485,43 @@ export default function MapPage() {
     () => markerItems(groupedMarkers, selectedSpotId, mode),
     [groupedMarkers, mode, selectedSpotId],
   );
+  const projectedPolygonSource = useMemo(
+    () =>
+      scene.data?.data.layer
+        ? projectedLayerPolygons(scene.data.data.layer, projectedFrame)
+        : [],
+    [projectedFrame, scene.data?.data.layer],
+  );
+  const layerPolygons = useMemo(
+    () =>
+      projectedPolygonSource.map((polygon) => ({
+        points: polygon.points.map((point) => ({ ...point })),
+        strokeColor: polygon.strokeColor,
+        fillColor: polygon.fillColor,
+        strokeWidth: polygon.strokeWidth,
+        zIndex: 1,
+      })),
+    [projectedPolygonSource],
+  );
+  const layerProjectionProbe = useMemo(
+    () => layerProjectionFingerprint(layerPolygons),
+    [layerPolygons],
+  );
   const wanted = spots.filter((spot) => favoriteIds.includes(spot.spotId));
   const other = spots.filter((spot) => !favoriteIds.includes(spot.spotId));
-  const suggestions = spots
-    .filter(
+  const suggestions = (
+    placeSearch.data?.data.formalSpots ??
+    spots.filter(
       (spot) =>
-        finderQuery.length > 0 &&
-        (spot.name + spot.region + spot.address).includes(finderQuery),
+        debouncedFinderQuery.length > 0 &&
+        (spot.name + spot.region + spot.address).includes(debouncedFinderQuery),
     )
-    .slice(0, 5);
-  const pageState = scene.isPending
+  ).slice(0, 5);
+  const candidateSuggestions = placeSearch.data?.data.candidates ?? [];
+  const ordinarySuggestions = placeSearch.data?.data.ordinaryPlaces ?? [];
+  const pageState = bootstrapContext.isError
+    ? "ERROR"
+    : !activeContext || scene.isPending
     ? "LOADING"
     : scene.isError
       ? "ERROR"
@@ -339,6 +532,100 @@ export default function MapPage() {
           : scene.data?.dataState === "PARTIAL"
             ? "PARTIAL"
             : "READY";
+  const finderExpanded = sourceLift.owner === "FINDER";
+  const filterDraftDirty = FILTER_GROUPS.some(({ key }) => {
+    const draft = draftFilters[key];
+    const snapshot = filterSnapshot[key];
+    return (
+      draft.length !== snapshot.length ||
+      draft.some((value, index) => value !== snapshot[index])
+    );
+  });
+  const conditionsExpanded = sourceLift.owner === "CONDITIONS";
+  const sceneEvaluations = Object.values(projectedEvaluations);
+  const representativeSpot = selected ?? spots[0] ?? null;
+  const representativeEvaluation = representativeSpot
+    ? (projectedEvaluations[representativeSpot.spotId] ?? null)
+    : null;
+  const cloudValues = sceneEvaluations
+    .map((evaluation) => evaluation.cloudPercent)
+    .filter((value): value is number => value !== null);
+  const averageCloud = cloudValues.length
+    ? Math.round(
+        cloudValues.reduce((sum, value) => sum + value, 0) /
+          cloudValues.length,
+      )
+    : null;
+  const favorableCount = sceneEvaluations.filter(
+    (evaluation) => evaluation.opportunityEligible,
+  ).length;
+  const moonImpact = representativeEvaluation?.moonImpact ?? "UNKNOWN";
+  const moonImpactLabel = {
+    LOW: "较低",
+    MEDIUM: "中等",
+    HIGH: "较高",
+    UNKNOWN: "暂无数据",
+  }[moonImpact];
+  const moonImpactMeter = {
+    LOW: 28,
+    MEDIUM: 58,
+    HIGH: 86,
+    UNKNOWN: 0,
+  }[moonImpact];
+  const lightBand = representativeSpot?.lightPollution.productBand ?? null;
+  const lightMeter = lightBand
+    ? {
+        VERY_LOW: 92,
+        LOW: 76,
+        MODERATE: 56,
+        HIGH: 34,
+        VERY_HIGH: 16,
+      }[lightBand]
+    : 0;
+  const conditionMetrics = [
+    {
+      label: "光害估算 / 暗度",
+      value:
+        representativeSpot?.lightPollution.state === "ESTIMATED"
+          ? representativeSpot.lightPollution.label
+          : "暂无数据",
+      meter: lightMeter,
+    },
+    {
+      label: "总云",
+      value: averageCloud === null ? "暂无数据" : `${averageCloud}%`,
+      meter: averageCloud ?? 0,
+    },
+    {
+      label: "月亮影响",
+      value: moonImpactLabel,
+      meter: moonImpactMeter,
+    },
+    {
+      label: "今晚观测条件 / 稳定性",
+      value: sceneEvaluations.length
+        ? `可考虑 ${favorableCount}/${sceneEvaluations.length}`
+        : "暂无数据",
+      meter: sceneEvaluations.length
+        ? Math.round((favorableCount / sceneEvaluations.length) * 100)
+        : 0,
+    },
+  ];
+  const conditionKeyMetric =
+    analysisOverlay === "LIGHT"
+      ? representativeSpot?.lightPollution.state === "ESTIMATED"
+        ? representativeSpot.lightPollution.label
+        : "光害暂无数据"
+      : analysisOverlay === "TOTAL_CLOUD"
+        ? averageCloud === null
+          ? "总云暂不可用"
+          : `总云 ${averageCloud}%`
+        : analysisOverlay === "OPPORTUNITY"
+          ? sceneEvaluations.length
+            ? `可考虑 ${favorableCount}/${sceneEvaluations.length}`
+            : "条件暂不可用"
+          : `${spots.length} 个正式点 · 无叠加`;
+  const conditionMaxFrameIndex = Math.max(0, timeFrames.length - 1);
 
   const openFinder = () => {
     if (sourceLift.owner === "FINDER") {
@@ -364,10 +651,106 @@ export default function MapPage() {
     setAnnouncement("已选择 " + spot.name + "；地图已回到同一正式点位。");
   };
 
-  const openDetail = (spot: SpotSummary) => {
-    void Taro.navigateTo({
-      url: "/spot/detail/index?spotId=" + encodeURIComponent(spot.spotId),
+  const resolveMapPoint = async (
+    center: { latitude: number; longitude: number },
+    source: "MAP_VIEWPORT" | "USER_LOCATION",
+    displayName?: string,
+  ) => {
+    const point = gcj02ToWgs84({
+      lat: center.latitude,
+      lon: center.longitude,
+      system: "GCJ-02",
     });
+    const response = await resolveObservationContext({
+      location: {
+        kind: "MAP_POINT",
+        displayName:
+          displayName ??
+          (source === "USER_LOCATION" ? "本次授权位置" : "当前地图中心"),
+        wgs84: {
+          system: "WGS84",
+          latitude: point.lat,
+          longitude: point.lon,
+        },
+        source,
+        timezoneHint: currentTimezoneHint(),
+      },
+      localDate: activeContext?.localDate ?? localDateForNow(),
+      selectedAt: activeContext?.selectedAtUtc ?? null,
+      eventInstanceId: activeContext?.eventInstanceId ?? null,
+      targetProfile: activeContext?.targetProfile ?? "DAILY",
+    });
+    setObservationContext(response.data);
+    return response.data;
+  };
+
+  const selectMapReference = async (
+    result: OrdinaryPlaceRef | DarkSkyCandidateRef,
+  ) => {
+    const center = {
+      latitude: result.location.latitude,
+      longitude: result.location.longitude,
+    };
+    selectSpot(null);
+    setViewport({ center, zoom: Math.max(12, viewport.zoom) });
+    if (finderQuery.trim()) addSearchHistory(finderQuery);
+    setSuggestionsOpen(false);
+    closeSourceLift("FINDER", {
+      restoreMap: false,
+      discardFilterDraft: true,
+    });
+    try {
+      await resolveMapPoint(center, "MAP_VIEWPORT", result.label);
+      setAnnouncement(
+        "地图已移动到 " + result.label + "；正在显示附近正式观星点。",
+      );
+    } catch {
+      notify({
+        owner: "finder",
+        placement: "inline",
+        tone: "warning",
+        title: "地图已移动，动态条件未更新",
+        body: "仍可查看附近正式观星点；当前地点不会被当作正式观星点或生成今晚结论。",
+        dismissible: true,
+        dedupeKey: "finder-map-reference-context-failed",
+      });
+    }
+  };
+
+  const openDetail = async (spot: SpotSummary) => {
+    try {
+      const response = await resolveObservationContext({
+        location: { kind: "FORMAL_SPOT", spotId: spot.spotId },
+        routeOriginContextId:
+          activeContext?.location.kind === "MAP_POINT"
+            ? activeContext.contextId
+            : activeContext?.routeOrigin?.contextId ?? null,
+        localDate: activeContext?.localDate ?? localDateForNow(spot.timezone),
+        selectedAt: activeContext?.selectedAtUtc ?? null,
+        eventInstanceId: activeContext?.eventInstanceId ?? null,
+        targetProfile: activeContext?.targetProfile ?? "DAILY",
+      });
+      setObservationContext(response.data);
+      await Taro.navigateTo({
+        url:
+          "/spot/detail/index?spotId=" +
+          encodeURIComponent(spot.spotId) +
+          "&contextId=" +
+          encodeURIComponent(response.data.contextId),
+      });
+    } catch (error) {
+      notify({
+        owner: "map",
+        placement: "inline",
+        tone: "error",
+        title: "暂时无法打开详情",
+        body:
+          errorMessage(error) +
+          "。地图选点和筛选保持不变，可稍后重试。",
+        dismissible: true,
+        dedupeKey: "map-open-detail:" + spot.spotId,
+      });
+    }
   };
 
   const onMarkerTap = (
@@ -391,7 +774,7 @@ export default function MapPage() {
     const spot = group.spots[0]!;
     selectSpot(spot.spotId);
     setAnnouncement(
-      "已选择 " + spot.name + "；下方紧凑 Callout 提供详情入口。",
+      "已选择 " + spot.name + "；下方地图气泡提供详情入口。",
     );
   };
 
@@ -408,104 +791,186 @@ export default function MapPage() {
         ...(detail.scale ? { zoom: detail.scale } : {}),
         loadedViewport: "viewport:" + String(Date.now()),
       });
+      void resolveMapPoint(detail.centerLocation, "MAP_VIEWPORT").catch(
+        (error) =>
+          notify({
+            owner: "map",
+            placement: "inline",
+            tone: "warning",
+            title: "地图条件未更新",
+            body:
+              errorMessage(error) +
+              "。当前地图仍可浏览，但动态条件保持上一份上下文。",
+            dismissible: true,
+            dedupeKey: "map-context-region-failed",
+          }),
+      );
     }, 250);
   };
 
-  const locateMap = () => {
-    if (isH5Proxy) {
+  const locateMap = async () => {
+    setLocationState("REQUESTING");
+    let location: Awaited<ReturnType<typeof Taro.getLocation>>;
+    try {
+      location = await Taro.getLocation({
+        type: "gcj02",
+        isHighAccuracy: false,
+        highAccuracyExpireTime: 2500,
+      });
+    } catch {
+      setLocationState("DENIED");
       notify({
         owner: "map",
         placement: "inline",
-        tone: "info",
-        title: "浏览器诊断边界",
-        body: "H5 诊断面不请求真实位置；原生小程序可在你点击时使用一次性定位。",
+        tone: "warning",
+        title: "定位未授权",
+        body: "核心地图和正式点位仍可用；你可以搜索城市或继续使用默认试点区域。",
         dismissible: true,
-        dedupeKey: "map-location-h5-boundary",
+        action: { label: "查看权限说明", route: "/pages/auth/index" },
+        dedupeKey: "map-location-denied",
       });
       return;
     }
-    setLocationState("REQUESTING");
-    void Taro.getLocation({
-      type: "gcj02",
-      isHighAccuracy: false,
-      highAccuracyExpireTime: 2500,
-    })
-      .then((location) => {
-        setLocationState("GRANTED");
-        setViewport({
-          center: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-          },
-          zoom: 10,
-        });
-        setAnnouncement("已按本次授权定位并更新地图中心。");
-      })
-      .catch(() => {
-        setLocationState("DENIED");
-        notify({
-          owner: "map",
-          placement: "inline",
-          tone: "warning",
-          title: "定位未授权",
-          body: "核心地图和正式点位仍可用；你可以搜索城市或继续使用深圳试点区域。",
-          dismissible: true,
-          action: { label: "查看权限说明", route: "/pages/auth/index" },
-          dedupeKey: "map-location-denied",
-        });
+    const center = {
+      latitude: location.latitude,
+      longitude: location.longitude,
+    };
+    setLocationState("GRANTED");
+    setViewport({ center, zoom: 10 });
+    try {
+      await resolveMapPoint(center, "USER_LOCATION");
+      setAnnouncement("已按本次授权定位并更新地图中心与观测条件。");
+    } catch (error) {
+      notify({
+        owner: "map",
+        placement: "inline",
+        tone: "warning",
+        title: "位置已更新，动态条件未更新",
+        body:
+          errorMessage(error) +
+          "。地图仍可浏览，但不会把旧时区或旧天气冒充当前位置结果。",
+        dismissible: true,
+        dedupeKey: "map-location-context-failed",
       });
+    }
   };
 
-  const refreshMap = () => {
+  const refreshMap = async () => {
     setAnnouncement("正在刷新当前区域；地图中心、筛选和选点保持不变。");
-    void scene.refetch().then(
-      () => setAnnouncement("当前区域已刷新；地图任务状态保持不变。"),
-      () =>
-        notify({
-          owner: "map",
-          placement: "inline",
-          tone: "warning",
-          title: "刷新未完成",
-          body: "已保留缓存点位、地图中心、筛选和当前选点。",
-          dismissible: true,
-          dedupeKey: "map-refresh-failed",
-        }),
-    );
+    try {
+      const refreshed = activeContext
+        ? await scene.refetch()
+        : await bootstrapContext.refetch();
+      if (!refreshed) throw new Error("map_refresh_unavailable");
+      setAnnouncement("当前区域已刷新；地图任务状态保持不变。");
+    } catch {
+      notify({
+        owner: "map",
+        placement: "inline",
+        tone: "warning",
+        title: "刷新未完成",
+        body: "已保留缓存点位、地图中心、筛选和当前选点。",
+        dismissible: true,
+        dedupeKey: "map-refresh-failed",
+      });
+    }
   };
 
   const openConditions = () => {
     if (sourceLift.owner === "CONDITIONS") {
-      closeSourceLift("CONDITIONS");
+      setConditionPreviewing(false);
+      setConditionDisclosureOpen(false);
+      closeSourceLift("CONDITIONS", {
+        restoreMap: false,
+        discardFilterDraft: false,
+      });
       return;
     }
     if (sourceLift.owner) return;
-    const next = selectedAt || currentLocalSelectedAt();
-    setConditionDraftAt(next);
-    setConditionDraftHour(selectedHour(next));
+    if (!activeContext) {
+      notify({
+        owner: "map",
+        placement: "inline",
+        tone: "warning",
+        title: "观测条件尚未就绪",
+        body: "正在解析地图位置、时区与观测夜，请稍后重试。",
+        dismissible: true,
+        dedupeKey: "map-context-not-ready",
+      });
+      return;
+    }
+    const next = activeContext.selectedAtUtc;
+    const frameIndex = nearestMapTimeFrameIndex(timeFrames, next);
+    setConditionDraftAt(timeFrames[frameIndex]?.atUtc ?? next);
+    setConditionDraftFrameIndex(frameIndex);
     setConditionDraftOverlay(analysisOverlay);
+    setConditionPreviewing(false);
+    setConditionDisclosureOpen(false);
     openSourceLift("CONDITIONS");
   };
 
-  const commitConditions = () => {
-    const nextTime = conditionDraftAt.trim() || currentLocalSelectedAt();
-    setSelectedAt(nextTime);
-    setAnalysisOverlay(conditionDraftOverlay);
+  const commitConditionTime = async (frameIndex: number) => {
+    if (!activeContext || conditionsSaving) return;
+    const nextTime = timeFrames[frameIndex]?.atUtc;
+    if (!nextTime) return;
+    setConditionDraftFrameIndex(frameIndex);
+    setConditionDraftAt(nextTime);
+    setConditionPreviewing(false);
+    setConditionsSaving(true);
+    try {
+      const response = await updateObservationContext(activeContext, {
+        selectedAt: nextTime,
+      });
+      setObservationContext(response.data);
+      const committedFrameIndex = nearestMapTimeFrameIndex(
+        timeFrames,
+        response.data.selectedAtUtc,
+      );
+      setConditionDraftAt(
+        timeFrames[committedFrameIndex]?.atUtc ?? response.data.selectedAtUtc,
+      );
+      setConditionDraftFrameIndex(committedFrameIndex);
+      setAnnouncement(
+        "已提交观测时间 " +
+          formatContextTime(
+            response.data.selectedAtUtc,
+            response.data.timezone,
+          ) +
+          "；动态图层与指标正在使用同一上下文刷新。",
+      );
+    } catch (error) {
+      setConditionDraftAt(activeContext.selectedAtUtc);
+      setConditionDraftFrameIndex(
+        nearestMapTimeFrameIndex(timeFrames, activeContext.selectedAtUtc),
+      );
+      notify({
+        owner: "map",
+        placement: "inline",
+        tone: "error",
+        title: "观测条件未保存",
+        body: errorMessage(error) + "。草稿保持不变，可重试。",
+        dismissible: true,
+        dedupeKey: "map-conditions-update-failed",
+      });
+    } finally {
+      setConditionsSaving(false);
+    }
+  };
+
+  const commitConditionOverlay = (overlay: AnalysisOverlay) => {
+    setConditionDraftOverlay(overlay);
+    setAnalysisOverlay(overlay);
+    setAnnouncement(
+      `已选择${overlayLabels[overlay]}；地图底图和正式点位保持不变。`,
+    );
+  };
+
+  const closeConditions = () => {
+    setConditionPreviewing(false);
+    setConditionDisclosureOpen(false);
     closeSourceLift("CONDITIONS", {
       restoreMap: false,
       discardFilterDraft: false,
-    });
-    notify({
-      owner: "map",
-      placement: "inline",
-      tone: "success",
-      title: "观测条件已更新",
-      body:
-        overlayLabels[conditionDraftOverlay] +
-        " · " +
-        nextTime +
-        "；地图与正式标记保持不变。",
-      dismissible: true,
-      dedupeKey: "map-conditions:" + conditionDraftOverlay + ":" + nextTime,
     });
   };
 
@@ -547,8 +1012,7 @@ export default function MapPage() {
       className={
         themeClass +
         " map-page location-" +
-        locationState.toLowerCase().replace("_", "-") +
-        (isH5Proxy ? " map-page--h5" : "")
+        locationState.toLowerCase().replace("_", "-")
       }
       data-miniapp-production-root
       data-route="map"
@@ -567,15 +1031,18 @@ export default function MapPage() {
             }}
             source={
               <View
-                className="map-finder-trigger"
+                className={`map-finder-trigger${finderExpanded ? " map-finder-trigger--expanded" : ""}`}
                 data-od-id="map-search-summary"
                 role="button"
+                aria-expanded={finderExpanded}
                 aria-label={
-                  "查找观星点" +
-                  (finderQuery ? "，当前输入 " + finderQuery : "") +
-                  "，已应用 " +
-                  String(countAppliedFilters(committedFilters)) +
-                  " 项筛选"
+                  finderExpanded
+                    ? "关闭查找观星点"
+                    : "查找观星点" +
+                      (finderQuery ? "，当前输入 " + finderQuery : "") +
+                      "，已应用 " +
+                      String(countAppliedFilters(committedFilters)) +
+                      " 项筛选"
                 }
                 onClick={openFinder}
               >
@@ -587,132 +1054,272 @@ export default function MapPage() {
                   data-od-id="spot-finder-title-toggle"
                 >
                   <Text className="type-label">
-                    {finderQuery || "查找观星点"}
+                    {finderExpanded
+                      ? "查找观星点"
+                      : finderQuery || "查找观星点"}
                   </Text>
-                  <Text className="type-caption">
-                    {countAppliedFilters(committedFilters)
-                      ? String(countAppliedFilters(committedFilters)) +
-                        " 项筛选"
-                      : "搜索城市、正式点位或普通地点"}
-                  </Text>
+                  {!finderExpanded ? (
+                    <Text className="type-caption">
+                      {countAppliedFilters(committedFilters)
+                        ? String(countAppliedFilters(committedFilters)) +
+                          " 项筛选"
+                        : "搜索城市、正式点位或普通地点"}
+                    </Text>
+                  ) : null}
                 </View>
-                <Text
+                <View
                   className="map-finder-trigger__chevron"
                   data-od-id="spot-finder-title-chevron"
                   aria-hidden="true"
                 >
-                  ›
-                </Text>
+                  <View className="map-finder-trigger__chevron-mark" />
+                </View>
               </View>
             }
           >
             <View className="finder-panel" data-od-id="spot-finder-sheet">
-              <View
-                className="finder-field-row"
-                data-od-id="spot-finder-search-field"
-              >
-                <Text
-                  className="finder-search-icon"
-                  data-od-id="spot-finder-search-icon"
-                  aria-hidden="true"
-                >
-                  ⌕
-                </Text>
-                <Input
-                  className="finder-input"
-                  data-od-id="spot-finder-search-input"
-                  value={finderQuery}
-                  placeholder="搜索正式观星点、城市或普通地点"
-                  confirmType="search"
-                  aria-label="搜索正式观星点、城市或普通地点"
-                  onInput={(event) => {
-                    setFinderQuery(event.detail.value);
-                    setSuggestionsOpen(true);
-                  }}
-                  onFocus={() => setSuggestionsOpen(true)}
-                  onConfirm={() => {
-                    if (finderQuery.trim()) addSearchHistory(finderQuery);
-                    setSuggestionsOpen(false);
-                  }}
-                />
-                <View data-od-id="spot-finder-filter-disclosure">
-                  <SoftButton
-                    variant="ghost"
-                    label={
-                      "打开筛选，当前 " +
-                      String(countAppliedFilters(committedFilters)) +
-                      " 项"
-                    }
+              <View className="finder-tools">
+                <View className="finder-query-wrap">
+                  <View
+                    className="finder-field-row"
+                    data-od-id="spot-finder-search-field"
+                  >
+                    <Text
+                      className="finder-search-icon"
+                      data-od-id="spot-finder-search-icon"
+                      aria-hidden="true"
+                    >
+                      ⌕
+                    </Text>
+                    <Input
+                      className="finder-input"
+                      data-od-id="spot-finder-search-input"
+                      value={finderQuery}
+                      focus={
+                        finderExpanded && sourceLift.phase === "FOCUSED"
+                      }
+                      placeholder="搜索正式观星点、城市或普通地点"
+                      confirmType="search"
+                      aria-label="搜索正式观星点、城市或普通地点"
+                      onInput={(event) => {
+                        setFinderQuery(event.detail.value);
+                        setSuggestionsOpen(true);
+                      }}
+                      onFocus={() => setSuggestionsOpen(true)}
+                      onConfirm={() => {
+                        if (finderQuery.trim()) addSearchHistory(finderQuery);
+                        setSuggestionsOpen(false);
+                      }}
+                    />
+                  </View>
+                  {suggestionsOpen && !filterSheetOpen ? (
+                    <ScrollView
+                      className="finder-query-overlay"
+                      data-od-id="spot-finder-query-overlay"
+                      scrollY
+                      enhanced
+                      showScrollbar={false}
+                      aria-label="搜索历史与地点结果"
+                    >
+                      {suggestions.length ? (
+                        <View className="finder-suggestions">
+                          <Text className="type-caption">匹配正式点位</Text>
+                          {suggestions.map((spot) => (
+                            <Button
+                              key={spot.spotId}
+                              className="finder-suggestion"
+                              onClick={() => selectFinderResult(spot)}
+                            >
+                              <View className="finder-suggestion__copy">
+                                <Text className="finder-suggestion__title">
+                                  {spot.name}
+                                </Text>
+                                <Text className="type-caption">
+                                  {spot.region}
+                                </Text>
+                              </View>
+                              <Text className="finder-suggestion__action">
+                                查看
+                              </Text>
+                            </Button>
+                          ))}
+                        </View>
+                      ) : null}
+                      {candidateSuggestions.length ? (
+                        <View className="finder-suggestions">
+                          <Text className="type-caption">待核验地点</Text>
+                          {candidateSuggestions.map((result) => (
+                            <Button
+                              key={result.candidateId}
+                              className="finder-suggestion"
+                              onClick={() => void selectMapReference(result)}
+                            >
+                              <View className="finder-suggestion__copy">
+                                <Text className="finder-suggestion__title">
+                                  {result.label}
+                                </Text>
+                                <Text className="type-caption">
+                                  {result.region ||
+                                    result.address ||
+                                    "资料待核验"}
+                                </Text>
+                              </View>
+                              <Text className="finder-suggestion__action">
+                                移图
+                              </Text>
+                            </Button>
+                          ))}
+                        </View>
+                      ) : null}
+                      {ordinarySuggestions.length ? (
+                        <View className="finder-suggestions">
+                          <Text className="type-caption">普通地点</Text>
+                          {ordinarySuggestions.map((result) => (
+                            <Button
+                              key={result.placeId}
+                              className="finder-suggestion"
+                              onClick={() => void selectMapReference(result)}
+                            >
+                              <View className="finder-suggestion__copy">
+                                <Text className="finder-suggestion__title">
+                                  {result.label}
+                                </Text>
+                                <Text className="type-caption">
+                                  {result.region ||
+                                    result.address ||
+                                    "地点搜索结果"}
+                                </Text>
+                              </View>
+                              <Text className="finder-suggestion__action">
+                                移图
+                              </Text>
+                            </Button>
+                          ))}
+                        </View>
+                      ) : null}
+                      {!debouncedFinderQuery ? (
+                        <View className="finder-history">
+                          <View className="finder-history__head">
+                            <Text className="type-caption">最近搜索</Text>
+                            {searchHistory.length ? (
+                              <SoftButton
+                                variant="ghost"
+                                label="清除最近搜索"
+                                onClick={clearSearchHistory}
+                              >
+                                清除
+                              </SoftButton>
+                            ) : null}
+                          </View>
+                          {searchHistory.length ? (
+                            searchHistory.map((item) => (
+                              <Button
+                                key={item}
+                                className="finder-history__row"
+                                onClick={() => {
+                                  setFinderQuery(item);
+                                  setSuggestionsOpen(true);
+                                }}
+                              >
+                                <Text>{item}</Text>
+                              </Button>
+                            ))
+                          ) : (
+                            <Text className="type-caption">
+                              暂无本地搜索记录
+                            </Text>
+                          )}
+                        </View>
+                      ) : placeSearch.isPending ? (
+                        <Text className="finder-query-status type-caption">
+                          正在搜索地点…
+                        </Text>
+                      ) : placeSearch.isError ? (
+                        <Text className="finder-query-status type-caption">
+                          普通地点搜索暂不可用；正式点位结果仍可使用。
+                        </Text>
+                      ) : !suggestions.length &&
+                        !candidateSuggestions.length &&
+                        !ordinarySuggestions.length ? (
+                        <Text className="finder-query-status type-caption">
+                          没有匹配结果；可以换一个名称或城市。
+                        </Text>
+                      ) : null}
+                      <View className="finder-ordinary-note">
+                        <Text className="type-label">普通地点</Text>
+                        <Text className="type-caption">
+                          只用于移动地图或查找附近正式观星点，不能直接进入点位详情或今晚观星。
+                        </Text>
+                      </View>
+                    </ScrollView>
+                  ) : null}
+                </View>
+                <View className="finder-filter-row">
+                  <Button
+                    className="finder-filter-toggle focus-ring"
+                    data-od-id="spot-finder-filter-disclosure"
+                    aria-expanded={filterSheetOpen}
+                    aria-label={`筛选条件，${countAppliedFilters(committedFilters) ? `${countAppliedFilters(committedFilters)} 项已应用` : "未筛选"}`}
                     onClick={() => {
                       setSuggestionsOpen(false);
-                      openFilters();
+                      if (filterSheetOpen) cancelFilters();
+                      else openFilters();
                     }}
                   >
-                    筛选 {countAppliedFilters(committedFilters)}
-                  </SoftButton>
-                </View>
-              </View>
-              {suggestionsOpen && !filterSheetOpen ? (
-                <View
-                  className="finder-query-overlay"
-                  data-od-id="spot-finder-query-overlay"
-                >
-                  {suggestions.length ? (
-                    <View className="finder-suggestions">
-                      <Text className="type-caption">匹配正式点位</Text>
-                      {suggestions.map((spot) => (
-                        <Button
-                          key={spot.spotId}
-                          className="finder-suggestion"
-                          onClick={() => selectFinderResult(spot)}
+                    <Text>筛选条件</Text>
+                    <Text className="type-caption">
+                      {countAppliedFilters(committedFilters)
+                        ? `${countAppliedFilters(committedFilters)} 项已应用`
+                        : "未筛选"}
+                    </Text>
+                  </Button>
+                  {filterDraftDirty ? (
+                    <View
+                      className="filter-dirty-actions"
+                      aria-label="筛选草稿操作"
+                    >
+                      <Button
+                        className="dirty-action dirty-action--revert focus-ring"
+                        data-od-id="spot-finder-filter-revert"
+                        aria-label="撤销本次筛选修改"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          revertFilters();
+                        }}
+                      >
+                        <View
+                          className="dirty-action-icon dirty-action-icon--revert"
+                          aria-hidden="true"
                         >
-                          <Text>{spot.name}</Text>
-                          <Text className="type-caption">{spot.region}</Text>
-                        </Button>
-                      ))}
+                          <View className="dirty-action-line dirty-action-line--revert-a" />
+                          <View className="dirty-action-line dirty-action-line--revert-b" />
+                        </View>
+                      </Button>
+                      <Button
+                        className="dirty-action dirty-action--commit focus-ring"
+                        data-od-id="spot-finder-filter-commit"
+                        aria-label="应用筛选修改"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          applyFilters();
+                        }}
+                      >
+                        <View
+                          className="dirty-action-icon dirty-action-icon--commit"
+                          aria-hidden="true"
+                        >
+                          <View className="dirty-action-line dirty-action-line--commit-a" />
+                          <View className="dirty-action-line dirty-action-line--commit-b" />
+                        </View>
+                      </Button>
                     </View>
                   ) : null}
-                  <View className="finder-history">
-                    <View className="finder-history__head">
-                      <Text className="type-caption">最近搜索</Text>
-                      {searchHistory.length ? (
-                        <SoftButton
-                          variant="ghost"
-                          label="清除最近搜索"
-                          onClick={clearSearchHistory}
-                        >
-                          清除
-                        </SoftButton>
-                      ) : null}
-                    </View>
-                    {searchHistory.length ? (
-                      searchHistory.map((item) => (
-                        <Button
-                          key={item}
-                          className="finder-history__row"
-                          onClick={() => {
-                            setFinderQuery(item);
-                            setSuggestionsOpen(true);
-                          }}
-                        >
-                          <Text>{item}</Text>
-                        </Button>
-                      ))
-                    ) : (
-                      <Text className="type-caption">暂无本地搜索记录</Text>
-                    )}
-                  </View>
-                  <View className="finder-ordinary-note">
-                    <Text className="type-label">普通地点</Text>
-                    <Text className="type-caption">
-                      只能移动地图或查找附近正式点位，不创建 spot_id，也不能进入
-                      Night。
-                    </Text>
-                  </View>
                 </View>
-              ) : null}
+              </View>
               {filterSheetOpen ? (
-                <FilterSheet onClose={() => setSuggestionsOpen(false)} />
+                <FilterSheet
+                  capabilities={scene.data?.data.filterCapabilities.byGroup}
+                />
               ) : (
                 <ScrollView
                   className="finder-results"
@@ -724,8 +1331,7 @@ export default function MapPage() {
                 >
                   <View className="finder-result-summary">
                     <Text className="type-caption">
-                      {String(spots.length)} 个正式点位 · 结果选择会回到同一地图
-                      Callout
+                      {String(spots.length)} 个正式点位 · 选择结果会回到同一地图气泡
                     </Text>
                   </View>
                   <View
@@ -737,7 +1343,7 @@ export default function MapPage() {
                       aria-expanded={wantedOpen}
                       onClick={() => setWantedOpen((value) => !value)}
                     >
-                      <Text className="type-section">Wanted</Text>
+                      <Text className="type-section">想去</Text>
                       <Text className="type-caption">
                         {String(wanted.length)}
                       </Text>
@@ -751,7 +1357,7 @@ export default function MapPage() {
                     {wantedOpen
                       ? renderFinderResults(
                           wanted,
-                          "暂无已保存的正式点位；保存关系只在 Finder Wanted 与详情收藏之间共享。",
+                          "暂无已保存的正式点位；想去与详情收藏共享同一保存状态。",
                         )
                       : null}
                   </View>
@@ -764,7 +1370,7 @@ export default function MapPage() {
                       aria-expanded={otherOpen}
                       onClick={() => setOtherOpen((value) => !value)}
                     >
-                      <Text className="type-section">Other</Text>
+                      <Text className="type-section">其他观星点</Text>
                       <Text className="type-caption">
                         {String(other.length)}
                       </Text>
@@ -784,9 +1390,7 @@ export default function MapPage() {
                   </View>
                   <View className="finder-result-boundary">
                     <Text className="type-caption">
-                      只有带稳定 spot_id 的正式点位 Callout 才能进入
-                      Detail；资料不足会在 Detail
-                      内继续失败关闭动态结论，普通地点不能进入。
+                      只有已完成核验并正式发布的观星点才能进入详情；资料不足的地点会明确标注，也不能生成今晚结论。
                     </Text>
                   </View>
                 </ScrollView>
@@ -796,236 +1400,99 @@ export default function MapPage() {
           </SourceLiftFocusLayer>
         </View>
 
-        <View className="map-stage" data-od-id="map-base">
-          {isH5Proxy ? (
+        <SourceLiftFocusLayer
+          variant="mapCoupled"
+          owner="CONDITIONS"
+          ariaLabel="观测条件"
+          className="map-coupled-layer"
+          onClose={() => {
+            setConditionPreviewing(false);
+            setConditionDisclosureOpen(false);
+          }}
+          closeOptions={{
+            restoreMap: false,
+            discardFilterDraft: false,
+          }}
+          source={
             <View
-              className="map-proxy"
-              aria-label="浏览器诊断代理地图；正式点位由 Finder 提供等价内容"
+              className={`map-stage${conditionsExpanded ? " map-stage--analysis-focused" : ""}`}
+              data-od-id="map-base"
             >
-              <View className="map-proxy__water" aria-hidden="true" />
-              <View
-                className="map-proxy__road map-proxy__road--one"
-                aria-hidden="true"
-              />
-              <View
-                className="map-proxy__road map-proxy__road--two"
-                aria-hidden="true"
-              />
-              <View
-                className="map-proxy__road map-proxy__road--three"
-                aria-hidden="true"
-              />
-              <Text className="map-proxy__region" aria-hidden="true">
-                试点区域
-              </Text>
-              <View className="map-proxy__notice">
-                <Text className="map-proxy__eyebrow">H5 诊断代理</Text>
-                <Text className="type-caption">
-                  不连接第三方底图、不请求真实位置
-                </Text>
-                <SoftButton
-                  variant="ghost"
-                  label="打开 Finder 结果"
-                  onClick={openFinder}
-                >
-                  查看正式点位
-                </SoftButton>
-              </View>
-            </View>
-          ) : (
-            <Map
-              id="spot-map"
-              className="native-map"
-              data-od-id="default-formal-markers"
-              latitude={viewport.center.latitude}
-              longitude={viewport.center.longitude}
-              scale={viewport.zoom}
-              markers={markerList}
-              showLocation={locationState === "GRANTED"}
-              enableZoom
-              enableScroll
-              enableRotate={false}
-              enableOverlooking={false}
-              onMarkerTap={onMarkerTap}
-              onRegionChange={onRegionChange}
-              onError={() => {
-                setMapRuntimeError(true);
-                notify({
-                  owner: "map",
-                  placement: "inline",
-                  tone: "error",
-                  title: "地图渲染失败",
-                  body: "原生地图当前无法渲染；Finder、正式点位状态和恢复路径仍保留。",
-                  dismissible: true,
-                  dedupeKey: "map-native-render-error",
-                });
-              }}
-              aria-label="观星点地图；Finder 提供等价可访问结果"
-            />
-          )}
+          <Map
+            id="spot-map"
+            className="native-map"
+            data-od-id="default-formal-markers"
+            latitude={viewport.center.latitude}
+            longitude={viewport.center.longitude}
+            scale={viewport.zoom}
+            markers={markerList}
+            polygons={layerPolygons}
+            showLocation={locationState === "GRANTED"}
+            enableZoom
+            enableScroll
+            enableRotate={false}
+            enableOverlooking={false}
+            onMarkerTap={onMarkerTap}
+            onRegionChange={onRegionChange}
+            onError={() => {
+              setMapRuntimeError(true);
+              notify({
+                owner: "map",
+                placement: "inline",
+                tone: "error",
+                title: "地图渲染失败",
+                body: "原生地图当前无法渲染；Finder、正式点位状态和恢复路径仍保留。",
+                dismissible: true,
+                dedupeKey: "map-native-render-error",
+              });
+            }}
+            aria-label="观星点地图；Finder 提供等价可访问结果"
+          />
 
           <View className="map-conditions-anchor">
-            <View data-od-id="map-analysis-focus-layer">
-              <SourceLiftFocusLayer
-                variant="mapCoupled"
-                owner="CONDITIONS"
-                ariaLabel="观测条件"
-                source={
-                  <View
-                    className="map-conditions-bar"
-                    data-od-id="map-analysis-time-bar"
-                    role="button"
-                    aria-label={
-                      "观测条件，" +
-                      overlayLabels[analysisOverlay] +
-                      "，" +
-                      (selectedAt || "默认时刻")
-                    }
-                    onClick={openConditions}
-                  >
-                    <Text
-                      data-od-id="map-observing-conditions-icon"
-                      aria-hidden="true"
-                    >
-                      ◷
-                    </Text>
-                    <View className="map-conditions-bar__copy">
-                      <Text className="type-label">观测条件</Text>
-                      <Text className="type-caption">
-                        {overlayLabels[analysisOverlay]} ·{" "}
-                        {selectedAt || "默认时刻"}
-                      </Text>
-                    </View>
-                    <Text aria-hidden="true">›</Text>
-                  </View>
-                }
+            <View
+              className="map-conditions-bar"
+              data-od-id="map-analysis-time-bar"
+              role="button"
+              aria-haspopup="dialog"
+              aria-expanded={conditionsExpanded}
+              aria-label={
+                "观测条件，" +
+                overlayLabels[analysisOverlay] +
+                "，" +
+                conditionKeyMetric +
+                "，" +
+                (activeContext
+                  ? formatContextTime(
+                      activeContext.selectedAtUtc,
+                      activeContext.timezone,
+                    )
+                  : "正在解析时刻")
+              }
+              onClick={openConditions}
+            >
+              <Text
+                className="map-conditions-bar__icon"
+                data-od-id="map-observing-conditions-icon"
+                aria-hidden="true"
               >
-                <View
-                  className="conditions-panel"
-                  data-od-id="map-analysis-focus-panel"
-                >
-                  <View className="conditions-panel__head">
-                    <Text className="type-label">观测条件</Text>
-                    <Text className="type-caption">
-                      预览后应用；地图与正式标记始终保留
-                    </Text>
-                  </View>
-                  <View
-                    className="conditions-time"
-                    data-od-id="map-time-control"
-                  >
-                    <Text className="type-caption">调整观测时间</Text>
-                    <View data-od-id="map-analysis-time-scrubber">
-                      <Slider
-                        className="conditions-time__slider"
-                        min={0}
-                        max={23}
-                        step={1}
-                        value={conditionDraftHour}
-                        aria-label="调整观测时间"
-                        onChanging={(event) => {
-                          const hour = Number(event.detail.value);
-                          setConditionDraftHour(hour);
-                          setConditionDraftAt(
-                            withSelectedHour(conditionDraftAt, hour),
-                          );
-                        }}
-                        onChange={(event) => {
-                          const hour = Number(event.detail.value);
-                          setConditionDraftHour(hour);
-                          setConditionDraftAt(
-                            withSelectedHour(conditionDraftAt, hour),
-                          );
-                        }}
-                      />
-                    </View>
-                    <Text
-                      className="conditions-time__value"
-                      data-od-id="map-analysis-time-value"
-                    >
-                      {conditionDraftAt || currentLocalSelectedAt()}
-                    </Text>
-                  </View>
-                  <View
-                    className="conditions-overlays"
-                    data-od-id="map-analysis-layer-control"
-                    role="group"
-                    aria-label="分析图层"
-                  >
-                    <View className="conditions-overlays__choices">
-                      {(
-                        ["NONE", "LIGHT", "TOTAL_CLOUD", "OPPORTUNITY"] as const
-                      ).map((overlay) => (
-                        <Button
-                          key={overlay}
-                          data-od-id="map-analysis-layer-choice"
-                          className={
-                            "conditions-overlay-option focus-ring" +
-                            (conditionDraftOverlay === overlay
-                              ? " conditions-overlay-option--selected"
-                              : "")
-                          }
-                          aria-pressed={conditionDraftOverlay === overlay}
-                          onClick={() => setConditionDraftOverlay(overlay)}
-                        >
-                          {conditionDraftOverlay === overlay ? (
-                            <View
-                              className="conditions-overlay-option__star"
-                              data-od-id="selected-card-star"
-                              aria-hidden="true"
-                            >
-                              <Text>★</Text>
-                            </View>
-                          ) : null}
-                          <Text>{overlayLabels[overlay]}</Text>
-                        </Button>
-                      ))}
-                    </View>
-                  </View>
-                  <Text className="type-caption conditions-disclosure">
-                    {conditionDraftOverlay === "LIGHT"
-                      ? "光害为来源周期内的静态粗粒度估算，不代表现场 Bortle 实测。"
-                      : conditionDraftOverlay === "NONE"
-                        ? "仅显示底图与正式点位标记。"
-                        : "当前实时供应商事实需在原生环境确认；未接入时不显示虚构数值。"}
-                  </Text>
-                  <View className="conditions-panel__actions">
-                    <View data-od-id="map-analysis-close">
-                      <SoftButton
-                        variant="ghost"
-                        label="取消观测条件修改"
-                        onClick={() => closeSourceLift("CONDITIONS")}
-                      >
-                        取消
-                      </SoftButton>
-                    </View>
-                    <SoftButton
-                      variant="primary"
-                      label="应用观测条件"
-                      onClick={commitConditions}
-                    >
-                      应用
-                    </SoftButton>
-                  </View>
-                </View>
-              </SourceLiftFocusLayer>
+                ◔
+              </Text>
+              <View className="map-conditions-bar__copy">
+                <Text className="type-label">观测条件</Text>
+                <Text className="type-caption">{conditionKeyMetric}</Text>
+              </View>
+              <Text className="map-conditions-bar__time type-caption">
+                {activeContext
+                  ? formatContextTime(
+                      activeContext.selectedAtUtc,
+                      activeContext.timezone,
+                    )
+                  : "正在解析"}
+              </Text>
+              <Text aria-hidden="true">›</Text>
             </View>
           </View>
-
-          {analysisOverlay !== "NONE" ? (
-            <View
-              className="map-analysis-ribbon"
-              data-od-id="map-analysis-state"
-              role="status"
-            >
-              <Text className="type-label">
-                {overlayLabels[analysisOverlay]}
-              </Text>
-              <Text className="type-caption">
-                {analysisOverlay === "LIGHT" ? "静态估算" : "需原生供应商确认"}
-              </Text>
-            </View>
-          ) : null}
 
           <View className="map-floating-tools" aria-label="地图工具">
             <View data-od-id="map-permission-state">
@@ -1045,7 +1512,7 @@ export default function MapPage() {
             <SoftButton
               className="map-refresh-control"
               label="刷新当前区域"
-              onClick={refreshMap}
+              onClick={() => void refreshMap()}
             >
               ↻
             </SoftButton>
@@ -1056,13 +1523,163 @@ export default function MapPage() {
               <SpotCard
                 density="callout"
                 spot={selected}
+                evaluation={
+                  projectedEvaluations[selected.spotId] ?? null
+                }
                 favorite={favoriteIds.includes(selected.spotId)}
                 onFavorite={() => void toggleFavorite(selected.spotId)}
                 onOpen={() => openDetail(selected)}
               />
             </View>
           ) : null}
-        </View>
+            </View>
+          }
+        >
+          <View
+            className="conditions-panel"
+            data-od-id="map-analysis-focus-panel"
+          >
+            <View className="conditions-panel__head">
+              <View className="conditions-panel__title">
+                <Text className="conditions-panel__eyebrow">地图分析</Text>
+                <Text className="type-section">观测条件</Text>
+              </View>
+              <Button
+                className="conditions-panel__close focus-ring"
+                data-od-id="map-analysis-close"
+                aria-label="关闭观测条件"
+                onClick={closeConditions}
+              >
+                <Text aria-hidden="true">×</Text>
+              </Button>
+            </View>
+
+            <View
+              className="conditions-overlays"
+              data-od-id="map-analysis-layer-control"
+              role="radiogroup"
+              aria-label="地图分析叠加"
+            >
+              <View className="conditions-overlays__choices">
+                {(
+                  ["NONE", "LIGHT", "TOTAL_CLOUD", "OPPORTUNITY"] as const
+                ).map((overlay) => (
+                  <Button
+                    key={overlay}
+                    data-od-id="map-analysis-layer-choice"
+                    data-layer={overlay}
+                    className={
+                      "conditions-overlay-option focus-ring" +
+                      (conditionDraftOverlay === overlay
+                        ? " conditions-overlay-option--selected"
+                        : "")
+                    }
+                    aria-checked={conditionDraftOverlay === overlay}
+                    aria-pressed={conditionDraftOverlay === overlay}
+                    aria-label={`${overlayLabels[overlay]}，${conditionDraftOverlay === overlay ? "已选择" : "未选择"}`}
+                    onClick={() => commitConditionOverlay(overlay)}
+                  >
+                    {conditionDraftOverlay === overlay ? (
+                      <SelectedCardStar />
+                    ) : null}
+                    <Text>{overlayLabels[overlay]}</Text>
+                  </Button>
+                ))}
+              </View>
+            </View>
+
+            <View
+              className="conditions-time"
+              data-od-id="map-time-control"
+            >
+              <Text
+                id={`map-layer-projection-${layerProjectionProbe}`}
+                className="conditions-time__value"
+                data-od-id="map-analysis-time-value"
+                data-layer-projection={layerProjectionProbe}
+                aria-label="当前本地日期和时间"
+              >
+                {activeContext && conditionDraftAt
+                  ? formatContextTime(
+                      conditionDraftAt,
+                      activeContext.timezone,
+                    )
+                  : "正在解析观测夜"}
+              </Text>
+              <Slider
+                className="conditions-time__slider"
+                data-od-id="map-analysis-time-scrubber"
+                min={0}
+                max={conditionMaxFrameIndex}
+                step={1}
+                value={Math.min(
+                  conditionDraftFrameIndex,
+                  conditionMaxFrameIndex,
+                )}
+                disabled={!activeContext || !timeFrames.length || conditionsSaving}
+                aria-label="观测条件时间"
+                onChanging={(event) => {
+                  const frameIndex = Number(event.detail.value);
+                  setConditionDraftFrameIndex(frameIndex);
+                  setConditionPreviewing(true);
+                  const frame = timeFrames[frameIndex];
+                  if (frame) setConditionDraftAt(frame.atUtc);
+                }}
+                onChange={(event) => {
+                  const frameIndex = Number(event.detail.value);
+                  void commitConditionTime(frameIndex);
+                }}
+              />
+            </View>
+
+            <View className="conditions-metrics" aria-label="当前观测指标">
+              {conditionMetrics.map((metric) => (
+                <View className="conditions-metric" key={metric.label}>
+                  <Text className="conditions-metric__label">
+                    {metric.label}
+                  </Text>
+                  <Text className="conditions-metric__value">
+                    {metric.value}
+                  </Text>
+                  <View className="conditions-metric__track" aria-hidden="true">
+                    <View
+                      className="conditions-metric__meter"
+                      style={{ width: `${metric.meter}%` }}
+                    />
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <Button
+              className="conditions-disclosure-toggle focus-ring"
+              aria-expanded={conditionDisclosureOpen}
+              onClick={() => setConditionDisclosureOpen((value) => !value)}
+            >
+              <Text>
+                {conditionsSaving
+                  ? "正在提交所选时间"
+                  : conditionPreviewing
+                    ? "拖动预览；释放后载入真实动态图层"
+                    : conditionDraftOverlay === "LIGHT"
+                      ? `来源周期 ${representativeSpot?.lightPollution.datasetVersion || "暂不可用"} · 静态`
+                      : conditionDraftOverlay === "NONE"
+                        ? "未启用分析叠加"
+                        : "基于所选时刻更新"}
+              </Text>
+              <Text aria-hidden="true">ⓘ</Text>
+            </Button>
+            {conditionDisclosureOpen ? (
+              <Text className="type-caption conditions-disclosure">
+                {conditionDraftOverlay === "LIGHT"
+                  ? "光害来自有版本的周期性卫星夜光估算，不等同于现场实测，也不会随小时伪变化。"
+                  : conditionDraftOverlay === "NONE"
+                    ? "仅显示原生底图和已正式发布的观星点。"
+                    : "总云量与今晚观测条件只使用当前上下文返回的真实数据；缺失、过期或部分结果会明确标注。"}
+              </Text>
+            ) : null}
+          </View>
+        </SourceLiftFocusLayer>
 
         <View className="map-status compact-inset">
           <NotificationRegion owner="map" placement="inline" />
@@ -1083,12 +1700,19 @@ export default function MapPage() {
             <StatusPanel
               state={pageState}
               detail={
-                (scene.data?.warnings ?? []).join(" ") ||
-                "正在加载正式点位与来源。"
+                (bootstrapContext.isError
+                  ? errorMessage(bootstrapContext.error)
+                  : (scene.data?.warnings ?? []).join(" ")) ||
+                "正在解析地图上下文并加载正式点位与来源。"
               }
               recoveryLabel={pageState === "ERROR" ? "重试" : undefined}
               onRecover={
-                pageState === "ERROR" ? () => void scene.refetch() : undefined
+                pageState === "ERROR"
+                  ? () =>
+                      void (activeContext
+                        ? scene.refetch()
+                        : bootstrapContext.refetch())
+                  : undefined
               }
             />
           ) : null}

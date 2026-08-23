@@ -1,10 +1,15 @@
 import { Button, Image, Text, View } from "@tarojs/components";
-import type { RouteOverview, SpotSummary } from "@starward/miniapp-contracts";
+import type {
+  FacilityType,
+  MapSpotEvaluation,
+  RouteOverview,
+  SpotSummary,
+} from "@starward/miniapp-contracts";
 import { DataStateBadge } from "./data-state-badge";
 import { SoftButton } from "./soft-button";
 import "./spot-card.scss";
 
-const FACILITY_LABELS: Readonly<Record<string, string>> = {
+const FACILITY_LABELS: Readonly<Record<FacilityType, string>> = {
   PARKING: "停车",
   TOILET: "厕所",
   PLATFORM: "平台",
@@ -40,7 +45,7 @@ function facilitySummary(spot: SpotSummary) {
       }`}
       key={item.type}
     >
-      {FACILITY_LABELS[item.type] ?? item.type}{" "}
+      {FACILITY_LABELS[item.type]}{" "}
       {item.status === "AVAILABLE"
         ? "✓"
         : item.status === "UNAVAILABLE"
@@ -57,11 +62,67 @@ function invokeSelection(
   (onSelect ?? onOpen)?.();
 }
 
+function parkingLabel(spot: SpotSummary) {
+  const parking = spot.facilities.find((item) => item.type === "PARKING");
+  if (!parking) return "未登记";
+  if (parking.status === "AVAILABLE") return parking.summary || "可停车";
+  if (parking.status === "UNAVAILABLE") return "无停车位";
+  if (parking.status === "SEASONAL") return "季节性";
+  return "待核验";
+}
+
+function distanceLabel(
+  evaluation: MapSpotEvaluation | null,
+  route: RouteOverview | null,
+) {
+  const distanceKm = route?.distanceKm ?? evaluation?.distanceKm ?? null;
+  const driveMinutes = route?.driveMinutes ?? evaluation?.driveMinutes ?? null;
+  const distanceKind = route
+    ? route.kind === "ROUTE_ESTIMATE"
+      ? "ROUTE"
+      : route.kind === "STRAIGHT_LINE_ONLY"
+        ? "STRAIGHT_LINE"
+        : "UNAVAILABLE"
+    : (evaluation?.distanceKind ?? "UNAVAILABLE");
+
+  if (distanceKind === "ROUTE" && distanceKm !== null) {
+    return driveMinutes === null
+      ? `${distanceKm.toFixed(1)} km`
+      : `${distanceKm.toFixed(1)} km / ${driveMinutes} 分`;
+  }
+  if (distanceKind === "STRAIGHT_LINE" && distanceKm !== null) {
+    return `直线 ${distanceKm.toFixed(1)} km`;
+  }
+  return "不可用";
+}
+
+function selectedTimeLabel(evaluation: MapSpotEvaluation | null) {
+  if (!evaluation || evaluation.state === "UNAVAILABLE") return "动态不可用";
+  if (evaluation.state === "STALE_USABLE") return "数据已过期";
+  return evaluation.opportunityLabel;
+}
+
+function CalloutMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <View className="spot-card__callout-metric">
+      <Text className="spot-card__callout-metric-label">{label}</Text>
+      <Text className="spot-card__callout-metric-value">{value}</Text>
+    </View>
+  );
+}
+
 export function SpotCard({
   spot,
   favorite,
   density = "favorite",
-  route: _route = null,
+  evaluation = null,
+  route = null,
   onOpen,
   onSelect,
   onFavorite,
@@ -71,6 +132,7 @@ export function SpotCard({
   spot: SpotSummary;
   favorite: boolean;
   density?: "map" | "favorite" | "finder" | "callout";
+  evaluation?: MapSpotEvaluation | null;
   route?: RouteOverview | null;
   onOpen?: () => void;
   onSelect?: () => void;
@@ -85,14 +147,45 @@ export function SpotCard({
         className="spot-card spot-card--callout"
         data-od-id="map-selected-spot-callout"
       >
-        <View className="spot-card__callout-copy">
-          <Text className="type-label">{spot.name}</Text>
-          <Text className="type-caption">
-            {spot.region} · {STATUS_LABELS[spot.status]}
-          </Text>
-        </View>
+        <Button
+          className="spot-card__callout-main focus-ring"
+          aria-label={
+            canOpen
+              ? `查看${spot.name}详情`
+              : `${spot.name}详情暂不可用`
+          }
+          {...(!canOpen ? { disabled: true } : {})}
+          onClick={() => onOpen?.()}
+        >
+          <View className="spot-card__callout-head">
+            <Text className="type-label spot-card__callout-name">
+              {spot.name}
+            </Text>
+            <Text className="type-caption spot-card__callout-action">
+              {STATUS_LABELS[spot.status]} · {canOpen ? "查看详情 ›" : "暂不可用"}
+            </Text>
+          </View>
+          <View
+            className="spot-card__callout-metrics"
+            aria-label="当前点位摘要"
+          >
+            <CalloutMetric label="光害" value={spot.lightPollution.label} />
+            <CalloutMetric label="停车" value={parkingLabel(spot)} />
+            <CalloutMetric
+              label="距离 / 车程"
+              value={distanceLabel(evaluation, route)}
+            />
+            <CalloutMetric
+              label="所选时段"
+              value={selectedTimeLabel(evaluation)}
+            />
+          </View>
+        </Button>
         {onFavorite ? (
-          <View data-od-id="map-selected-spot-favorite">
+          <View
+            className="spot-card__callout-favorite"
+            data-od-id="map-selected-spot-favorite"
+          >
             <SoftButton
               variant="ghost"
               className="spot-card__favorite"
@@ -103,23 +196,6 @@ export function SpotCard({
             </SoftButton>
           </View>
         ) : null}
-        {canOpen ? (
-          <SoftButton
-            variant="primary"
-            label={`查看${spot.name}详情`}
-            onClick={() => onOpen?.()}
-          >
-            查看详情
-          </SoftButton>
-        ) : (
-          <SoftButton
-            variant="primary"
-            label={`${spot.name}详情暂不可用`}
-            disabled
-          >
-            暂不可用
-          </SoftButton>
-        )}
       </View>
     );
   }

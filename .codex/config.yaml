@@ -10,60 +10,53 @@ modularity:
   limit: 300
   policy: scoped_waivers
   waivers:
-    - path: apps/wechat-miniapp/src/content/import/index.tsx
-      category: legacy_migration
-      owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: Complete V2 Demo import workflow is intentionally kept stable for this Final Gate; its page orchestration and branch count require a bounded post-baseline extraction.
-      tracking_issue: WECHAT-MINIAPP-MOD-001
-      expiry_condition: Split import parsing, permission and recovery orchestration before the next functional change to this file.
     - path: apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
       category: legacy_migration
       owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: Complete V2 Demo sky and observation lifecycle is stable for this Final Gate; controller and presentation extraction remains bounded debt.
-      tracking_issue: WECHAT-MINIAPP-MOD-001
-      expiry_condition: Extract observation lifecycle and sky presentation before the next functional change to this file.
+      introduced_at: "2026-08-23"
+      reason: The current Spot Night surface keeps route-context validation, time selection, compass lifecycle and the selected presentation together while drift repair is verified; controller and presentation extraction remains explicit bounded debt and does not define another product version.
+      tracking_issue: WECHAT-MINIAPP-MOD-006
+      expiry_condition: Extract route-context and compass lifecycle owners before adding another Spot Night interaction or changing its observation-state model.
     - path: apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx
       category: legacy_migration
       owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: Complete V2 Demo detail states and actions are stable for this Final Gate; section extraction is deferred to preserve current-candidate behavior.
-      tracking_issue: WECHAT-MINIAPP-MOD-001
-      expiry_condition: Extract detail sections and action orchestration before the next functional change to this file.
+      introduced_at: "2026-08-23"
+      reason: The current Spot Detail surface keeps context validation, section states and attributable actions visible in one reviewed owner while drift repair is verified; section extraction remains explicit bounded debt and does not retain a superseded product path.
+      tracking_issue: WECHAT-MINIAPP-MOD-006
+      expiry_condition: Extract Detail section presenters and action orchestration before adding another segment or materially changing context recovery.
     - path: apps/wechat-miniapp/src/pages/map/index.tsx
       category: legacy_migration
       owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: Complete V2 Demo map coordination is stable for this Final Gate; filters, viewport and selection owners need a bounded follow-up split.
-      tracking_issue: WECHAT-MINIAPP-MOD-001
-      expiry_condition: Extract filter, viewport and selection controllers before the next functional change to this file.
+      introduced_at: "2026-08-23"
+      reason: The single current Map owner coordinates observation context, Finder, viewport, selection and source-lift recovery while their repaired cross-control invariants are verified; controller extraction remains explicit bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-006
+      expiry_condition: Extract observation-context, Finder and viewport-selection controllers before adding another Map control family or state transition.
     - path: apps/wechat-miniapp/src/services/api-client.ts
       category: legacy_migration
       owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: BFF transport, timeout and stable fallback semantics are deliberately co-located for the V2 Demo baseline and need post-baseline adapter extraction.
-      tracking_issue: WECHAT-MINIAPP-MOD-001
-      expiry_condition: Extract transport and fallback adapters before adding another endpoint or provider.
+      introduced_at: "2026-08-23"
+      reason: The one current BFF client co-locates request ownership, cancellation, cache policy, identity recovery and generated endpoint projection so failure semantics stay reviewable during drift repair; transport-family extraction remains explicit bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-006
+      expiry_condition: Extract transport, response-cache and identity-recovery adapters before adding another endpoint family or transport policy.
     - path: packages/miniapp-contracts/src/catalog.ts
       category: legacy_migration
       owner: miniapp-contract-maintainers
       introduced_at: "2026-08-06"
-      reason: Frozen Demo catalog and fallback fixtures are co-located to preserve one reviewed semantic baseline; catalog partitions remain bounded debt.
+      reason: Explicit deterministic test fixtures and their attributable source records remain co-located behind test-only builders; production composition cannot import them, and catalog partitioning remains bounded test-support debt.
       tracking_issue: WECHAT-MINIAPP-MOD-001
       expiry_condition: Partition catalog data by domain before adding or materially changing catalog entries.
     - path: packages/miniapp-contracts/src/filters.ts
       category: legacy_migration
       owner: miniapp-contract-maintainers
       introduced_at: "2026-08-06"
-      reason: Filter vocabulary and predicates are co-located for the complete V2 Demo baseline; predicate extraction is deferred until the next filter evolution.
+      reason: The complete current filter vocabulary and predicates remain co-located so the exact 10+8 closure is reviewable; predicate extraction is deferred until a real filter evolution requires another stable owner.
       tracking_issue: WECHAT-MINIAPP-MOD-001
       expiry_condition: Separate filter vocabulary from predicate evaluation before adding or changing a filter dimension.
     - path: packages/miniapp-contracts/src/types.ts
       category: legacy_migration
       owner: miniapp-contract-maintainers
       introduced_at: "2026-08-06"
-      reason: The V2 Demo public contract surface is centralized for baseline review; domain type modules and re-export facade remain bounded debt.
+      reason: The current public contract surface remains centralized for review across the single client and BFF; domain type modules behind a compatibility re-export facade remain bounded debt.
       tracking_issue: WECHAT-MINIAPP-MOD-001
       expiry_condition: Split domain types behind a compatibility re-export facade before adding another public contract family.
     - path: tools/miniapp/verify-miniapp-target.mjs
@@ -77,35 +70,35 @@ modularity:
       category: legacy_migration
       owner: miniapp-api-maintainers
       introduced_at: "2026-08-06"
-      reason: Capability gating, validation and stable fallback branches are co-located to keep failure semantics explicit for the V2 Demo baseline.
+      reason: Capability gating, validation and fail-closed astronomy fallback branches remain co-located so current production failure semantics stay explicit.
       tracking_issue: WECHAT-MINIAPP-MOD-001
       expiry_condition: Extract provider validation and fallback policy before enabling a production astronomy provider.
     - path: workers/miniapp-api/src/miniapp-service.ts
       category: legacy_migration
       owner: miniapp-api-maintainers
       introduced_at: "2026-08-06"
-      reason: Demo BFF use-case orchestration is complete and stable for this Final Gate; domain service extraction remains bounded follow-up work.
+      reason: The current BFF use-case orchestration keeps cross-domain transaction and failure semantics visible behind one facade; domain-service extraction remains bounded follow-up work and does not preserve a superseded product implementation.
       tracking_issue: WECHAT-MINIAPP-MOD-001
       expiry_condition: Split catalog, observation, profile and import services before adding another BFF use case.
     - path: apps/wechat-miniapp/src/content/plan/detail/index.tsx
       category: legacy_migration
       owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: The V2 Demo plan-detail state machine and recovery branches are kept together for the baseline; presenter and command extraction is bounded post-baseline debt.
-      tracking_issue: WECHAT-MINIAPP-MOD-002
-      expiry_condition: Extract plan-detail presentation and command orchestration before the next functional change to this file.
+      introduced_at: "2026-08-23"
+      reason: The current Plan detail state machine keeps editing, import, validation and recovery branches together while their repaired semantics are verified; presenter and command extraction remains explicit bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-006
+      expiry_condition: Extract Plan presentation and command orchestration before adding another Plan action or import state.
     - path: apps/wechat-miniapp/src/state/app-store.ts
       category: legacy_migration
       owner: wechat-miniapp-maintainers
-      introduced_at: "2026-08-06"
-      reason: The V2 Demo application state and persisted hydration compatibility are centralized for baseline review; domain slice extraction remains bounded debt.
-      tracking_issue: WECHAT-MINIAPP-MOD-002
-      expiry_condition: Split persisted preferences, user content and session state behind the existing store facade before adding another state domain.
+      introduced_at: "2026-08-23"
+      reason: The current application store centralizes persisted preferences, identity-scoped content and session-only observation context while repaired hydration/privacy invariants are verified; slice extraction remains explicit bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-006
+      expiry_condition: Split persisted preferences, user content and session-only observation context behind the existing facade before adding another state domain or persistence rule.
     - path: database/miniapp/migrations/001_demo_baseline.sql
       category: legacy_migration
       owner: miniapp-data-maintainers
       introduced_at: "2026-08-06"
-      reason: The immutable initial Demo schema, constraints and policy setup intentionally remain one auditable migration; future schema work must use a new migration.
+      reason: The immutable historical initial schema, constraints and policy setup remain one auditable migration identity; it is not a selectable product implementation and future schema work must use a new focused migration.
       tracking_issue: WECHAT-MINIAPP-MOD-003
       expiry_condition: Never append functional schema changes here after baseline acceptance; create a new focused migration for every subsequent schema change.
     - path: tools/miniapp/run-infrastructure-check.mjs
@@ -133,14 +126,14 @@ modularity:
       category: legacy_migration
       owner: miniapp-api-maintainers
       introduced_at: "2026-08-06"
-      reason: Admin allowlist, validation and explicit denial semantics are co-located for the gated Demo boundary; command extraction remains bounded debt.
+      reason: Admin allowlist, validation and explicit denial semantics are co-located for the current gated operations boundary; command extraction remains bounded debt.
       tracking_issue: WECHAT-MINIAPP-MOD-005
       expiry_condition: Extract allowlist policy and admin commands before adding another privileged operation.
     - path: workers/miniapp-api/src/controller.ts
       category: legacy_migration
       owner: miniapp-api-maintainers
       introduced_at: "2026-08-06"
-      reason: The Demo BFF request router keeps endpoint validation and stable error mapping visible in one baseline owner; route-family extraction remains bounded debt.
+      reason: The current BFF request router keeps endpoint validation and stable error mapping visible in one owner; route-family extraction remains bounded debt.
       tracking_issue: WECHAT-MINIAPP-MOD-005
       expiry_condition: Split route families behind the current controller contract before adding another public endpoint.
     - path: workers/miniapp-api/src/miniapp-infrastructure.test.ts
@@ -161,9 +154,86 @@ modularity:
       category: legacy_migration
       owner: miniapp-api-maintainers
       introduced_at: "2026-08-06"
-      reason: The Demo PostgreSQL repository centralizes transactions, row mapping and stable persistence fallbacks behind one interface; aggregate-specific repository extraction remains bounded debt.
+      reason: The current PostgreSQL repository centralizes transactions, row mapping and fail-closed persistence semantics behind one interface; aggregate-specific repository extraction remains bounded debt.
       tracking_issue: WECHAT-MINIAPP-MOD-005
       expiry_condition: Split aggregate repositories behind the current interface before adding another persisted aggregate or materially changing transaction boundaries.
+    - path: data-pipelines/dark-sky/publish_eog_viirs.py
+      category: legacy_migration
+      owner: miniapp-data-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current operator-run publisher keeps manifest validation, raster sampling, PostGIS publication and transactional rollback in one auditable command while the first real dataset lane is established; internal stage extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-007
+      expiry_condition: Extract manifest/raster and database-publication stages before adding another night-light product, projection or publication mode.
+    - path: packages/miniapp-contracts/src/api-shapes.ts
+      category: legacy_migration
+      owner: miniapp-contract-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current API envelope and endpoint payload shapes remain in one reviewable contract carrier shared by the generated client and BFF; domain-family extraction behind the existing re-export surface remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-008
+      expiry_condition: Split API shapes by stable endpoint family before adding another public endpoint family or changing envelope ownership.
+    - path: workers/miniapp-api/src/astronomy-service.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current astronomy service keeps observation-night projection, attributable event/target calculation and decision input assembly together while numerical and failure invariants are independently tested; computation-stage extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-009
+      expiry_condition: Extract event-target projection and decision-input assembly before adding another astronomy dataset family or calculation stage.
+    - path: workers/miniapp-api/src/meteor-event-catalog.ts
+      category: third_party_reference
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The reviewed IAU and IMO occurrence population plus its attributable historical activity profile are kept together for atomic provenance review; data partitions remain immutable reference content rather than a selectable product version.
+      tracking_issue: WECHAT-MINIAPP-MOD-009
+      expiry_condition: Partition reviewed occurrence data from profile projection before adding another event catalog authority or materially revising the population.
+    - path: workers/miniapp-api/src/observation-context-service.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The one current Observation Context owner co-locates creation, recovery, revision and observation-night validation so cross-surface invariants stay explicit; internal command/query extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-010
+      expiry_condition: Extract context validation and persistence commands before adding another context kind, privacy class or revision transition.
+    - path: workers/miniapp-api/src/route-provider.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current AMap route adapter keeps request normalization, provider failure classification and attributable response mapping together; helper extraction remains bounded debt without creating another route owner.
+      tracking_issue: WECHAT-MINIAPP-MOD-010
+      expiry_condition: Extract provider request and response normalization before adding another travel mode, provider or route response family.
+    - path: workers/miniapp-api/src/runtime-config.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: Startup configuration validation intentionally fails closed across identity, providers, persistence and development-fixture composition in one current owner; domain validator extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-010
+      expiry_condition: Extract provider and persistence configuration validators before adding another startup mode, provider or secret family.
+    - path: workers/miniapp-api/src/sky-opportunity-engine.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current Sky Opportunity engine keeps normalization, scoring, confidence and continuous-window extraction together so one rule set and its invariants remain auditable; stage extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-009
+      expiry_condition: Extract normalization and window segmentation before adding another scoring factor, confidence rule or window policy.
+    - path: workers/miniapp-api/src/spot-completeness-policy.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current publication policy keeps every attributable spot fact and blocker in one fail-closed review surface so no incomplete record can bypass publication; rule-family extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-010
+      expiry_condition: Extract evidence-family validators before adding another publication fact, visibility policy or review transition.
+    - path: workers/miniapp-api/src/trip-decision-engine.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current Trip Decision engine keeps blocker precedence, confidence and explanations together so it cannot be conflated with Sky Opportunity; helper extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-009
+      expiry_condition: Extract blocker evaluation before adding another decision factor, blocker class or explanation family.
+    - path: workers/miniapp-api/src/weather-provider.ts
+      category: legacy_migration
+      owner: miniapp-api-maintainers
+      introduced_at: "2026-08-23"
+      reason: The current weather adapter keeps real-provider request, layered-cloud normalization, attribution and fail-closed error mapping together while provider parity is tested; request/normalization extraction remains bounded debt.
+      tracking_issue: WECHAT-MINIAPP-MOD-010
+      expiry_condition: Extract provider request and forecast normalization before adding another provider, forecast model or weather field family.
 managed_files:
   - path: AGENTS.md
     strategy: merge-block

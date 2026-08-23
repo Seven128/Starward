@@ -19,9 +19,10 @@ const app = await NestFactory.create<NestFastifyApplication>(
 );
 app.enableCors({
   origin: [/^http:\/\/127\.0\.0\.1(?::\d+)?$/u],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: [
     "content-type",
+    "authorization",
     "idempotency-key",
     "if-none-match",
     "x-admin-token",
@@ -34,6 +35,6 @@ app.useGlobalInterceptors(new EtagInterceptor());
 app.enableShutdownHooks();
 await app.listen(port, host);
 Logger.log(
-  `Miniapp modular-monolith BFF listening on http://${host}:${port}/v1`,
+  `Miniapp modular-monolith BFF listening on http://${host}:${port}/v2`,
   "Bootstrap",
 );

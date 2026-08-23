@@ -26,6 +26,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12rpx;
 }
+.settings-choice-grid .chip,
+.facility-choice-grid .chip {
+  white-space: nowrap;
+}
 .facility-choice-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -57,14 +61,22 @@
   border-top: 1rpx solid var(--border);
 }
 .observation-setting .chip {
-  flex: none;
+  width: auto;
+  flex: 0 0 auto;
 }
 @media (max-width: 340px) {
+  .settings-choice-grid--location {
+    grid-template-columns: 1fr;
+  }
   .facility-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .observation-setting {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .observation-setting .chip {
+    width: 100%;
+    align-self: stretch;
   }
 }

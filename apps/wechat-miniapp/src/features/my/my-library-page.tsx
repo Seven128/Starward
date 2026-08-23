@@ -14,20 +14,16 @@ import "./my-library-page.scss";
 /**
  * The My root is intentionally small. Finder owns saved places and Spot Detail
  * owns the quiet favorite toggle; keeping those relations out of this route is
- * part of the V2.1.1 surface contract.
+ * part of the current surface contract.
  */
 export function MyLibraryPage() {
   const themeClass = useThemeClass();
   const mode = useAppStore((state) => state.mode);
-  const profileLinks = useAppStore((state) => state.profileLinks);
   const plans = useAppStore((state) => state.plans);
-  const importDraft = useAppStore((state) => state.importDraft);
   const replacePlans = useAppStore((state) => state.replacePlans);
-  const replaceProfileLinks = useAppStore((state) => state.replaceProfileLinks);
   const applyServerPreferences = useAppStore(
     (state) => state.applyServerPreferences,
   );
-  const setImportDraft = useAppStore((state) => state.setImportDraft);
   const library = useResourceQuery({
     queryKey: ["user-library"],
     queryFn: (signal) => getUserLibrary(signal),
@@ -37,30 +33,18 @@ export function MyLibraryPage() {
   useEffect(() => {
     if (!library.data) return;
     replacePlans(library.data.data.plans);
-    replaceProfileLinks(library.data.data.profileLinks);
     applyServerPreferences(library.data.data.preferences);
-    const remoteDraft = library.data.data.latestImportDraft;
-    if (
-      remoteDraft &&
-      (!importDraft || remoteDraft.revision > importDraft.revision)
-    ) {
-      setImportDraft(remoteDraft);
-    }
   }, [
     applyServerPreferences,
-    importDraft,
     library.data,
     replacePlans,
-    replaceProfileLinks,
-    setImportDraft,
   ]);
 
   const openSettings = () =>
     Taro.navigateTo({ url: "/content/settings/index" });
   const openPlan = () => Taro.navigateTo({ url: "/content/plan/detail/index" });
-  const openLinks = () =>
-    Taro.navigateTo({ url: "/content/profile/links/index" });
-  const openImport = () => Taro.navigateTo({ url: "/content/import/index" });
+  const openContribution = () =>
+    Taro.navigateTo({ url: "/content/contribution/index" });
 
   return (
     <View
@@ -113,16 +97,16 @@ export function MyLibraryPage() {
               />
             </View>
             <View className="profile-summary__copy">
-              <Text className="type-section">访客浏览</Text>
+              <Text className="type-section">我的观星空间</Text>
               <Text className="type-caption">
-                公开地图、点位详情与文章无需登录；本人内容和偏好仍按当前能力门禁处理。
+                计划与偏好按当前微信身份隔离；公开地图与点位详情无需额外授权。
               </Text>
             </View>
           </View>
           {library.isPending ? (
             <StatusPanel
               state="LOADING"
-              detail="正在回读计划、主页链接与可恢复草稿；账户摘要保持可用。"
+              detail="正在回读计划与偏好；账户摘要保持可用。"
             />
           ) : null}
           <View
@@ -135,7 +119,7 @@ export function MyLibraryPage() {
               账户与偏好
             </Text>
             <Button
-              className="account-row focus-ring"
+              className="account-row account-row--plan focus-ring"
               data-od-id="my-plan-entry"
               aria-label={`打开观星计划${plans.length ? `，已有 ${plans.length} 个计划` : ""}`}
               onClick={openPlan}
@@ -153,7 +137,23 @@ export function MyLibraryPage() {
               </Text>
             </Button>
             <Button
-              className="account-row focus-ring"
+              className="account-row account-row--contribution focus-ring"
+              data-od-id="my-contribution-entry"
+              aria-label="打开现场反馈与纠错"
+              onClick={openContribution}
+            >
+              <View className="account-row__copy">
+                <Text className="type-section">现场反馈与纠错</Text>
+                <Text className="type-caption">
+                  提交地点建议，或查看草稿与人工审核状态
+                </Text>
+              </View>
+              <Text className="account-row__chevron" aria-hidden="true">
+                ›
+              </Text>
+            </Button>
+            <Button
+              className="account-row account-row--settings focus-ring"
               aria-label="打开设置"
               onClick={openSettings}
             >
@@ -167,45 +167,11 @@ export function MyLibraryPage() {
                 ›
               </Text>
             </Button>
-            <Button
-              className="account-row focus-ring"
-              aria-label={`管理外部主页链接${profileLinks.length ? `，已有 ${profileLinks.length} 条` : ""}`}
-              onClick={openLinks}
-            >
-              <View className="account-row__copy">
-                <Text className="type-section">外部主页链接</Text>
-                <Text className="type-caption">
-                  {profileLinks.length
-                    ? `${profileLinks.length} 条用户声明链接 · 复制回退可用`
-                    : "中性标识、严格校验与复制回退"}
-                </Text>
-              </View>
-              <Text className="account-row__chevron" aria-hidden="true">
-                ›
-              </Text>
-            </Button>
-            <Button
-              className="account-row focus-ring"
-              aria-label="导入我的观星帖"
-              onClick={openImport}
-            >
-              <View className="account-row__copy">
-                <Text className="type-section">导入我的观星帖</Text>
-                <Text className="type-caption">
-                  {importDraft
-                    ? `草稿：${importDraft.stage} · 来源与审核状态可恢复`
-                    : "来源、权利声明、可编辑草稿与审核预览"}
-                </Text>
-              </View>
-              <Text className="account-row__chevron" aria-hidden="true">
-                ›
-              </Text>
-            </Button>
           </View>
           {library.isError ? (
             <StatusPanel
               state="PARTIAL"
-              detail="本页不会因服务端失败伪造新的计划、链接或导入状态；进入对应子页面可继续使用本机可恢复副本并重试。"
+              detail="本页不会因服务端失败伪造新的计划或偏好；现有本机投影保持只读，联网后可重试。"
             />
           ) : null}
         </View>

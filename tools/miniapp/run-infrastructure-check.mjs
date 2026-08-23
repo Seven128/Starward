@@ -197,6 +197,10 @@ try {
         MINIAPP_QUEUE_NAME: queueName,
         MINIAPP_ADMIN_TOKEN: adminToken,
         MINIAPP_API_PORT: String(apiPort),
+        MINIAPP_AUTH_MODE: "LOCAL_TEST",
+        MINIAPP_RELEASE_PROFILE: "LOCAL",
+        MINIAPP_SESSION_SECRET:
+          "infrastructure-check-session-secret-current",
       },
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
@@ -206,24 +210,38 @@ try {
   api.stderr.on("data", (chunk) => output.push(String(chunk)));
   try {
     const base = `http://127.0.0.1:${apiPort}`;
-    await waitForUrl(`${base}/v1/capabilities`);
+    await waitForUrl(`${base}/v2/capabilities`);
     stage("api-http:start");
-    const capabilityResponse = await fetch(`${base}/v1/capabilities`);
+    const capabilityResponse = await fetch(`${base}/v2/capabilities`);
     const capabilityEtag = capabilityResponse.headers.get("etag");
     if (!capabilityResponse.ok || !capabilityEtag)
       throw new Error("conditional_read_initial_response_invalid");
-    const notModified = await fetch(`${base}/v1/capabilities`, {
+    const notModified = await fetch(`${base}/v2/capabilities`, {
       headers: { "if-none-match": capabilityEtag },
     });
     if (notModified.status !== 304)
       throw new Error(`conditional_read_failed:${notModified.status}`);
-    const libraryResponse = await fetch(`${base}/v1/library`);
+    const loginResponse = await fetch(`${base}/v2/auth/wechat/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code: `local:infrastructure-http-${runId}` }),
+    });
+    const login = await loginResponse.json();
+    if (!loginResponse.ok || !login.data?.accessToken)
+      throw new Error("local_http_identity_failed");
+    const identityHeaders = {
+      authorization: `Bearer ${login.data.accessToken}`,
+    };
+    const libraryResponse = await fetch(`${base}/v2/me/library`, {
+      headers: identityHeaders,
+    });
     const library = await libraryResponse.json();
     if (!libraryResponse.ok || !library.data.preferences)
       throw new Error("library_aggregate_invalid");
-    const preferencesResponse = await fetch(`${base}/v1/preferences`, {
+    const preferencesResponse = await fetch(`${base}/v2/me/preferences`, {
       method: "PUT",
       headers: {
+        ...identityHeaders,
         "content-type": "application/json",
         "idempotency-key": `http-preferences-${runId}`,
       },
@@ -235,9 +253,10 @@ try {
     const savedPreferences = await preferencesResponse.json();
     if (!preferencesResponse.ok || savedPreferences.data.revision < 2)
       throw new Error("preferences_http_save_failed");
-    const conflictResponse = await fetch(`${base}/v1/preferences`, {
+    const conflictResponse = await fetch(`${base}/v2/me/preferences`, {
       method: "PUT",
       headers: {
+        ...identityHeaders,
         "content-type": "application/json",
         "idempotency-key": `http-conflict-${runId}`,
       },
@@ -254,10 +273,11 @@ try {
     )
       throw new Error("preferences_conflict_contract_failed");
     const rejectedFavorite = await fetch(
-      `${base}/v1/favorites/${encodeURIComponent("spot:not-real")}`,
+      `${base}/v2/me/favorites/FORMAL_SPOT/${encodeURIComponent("spot:not-real")}`,
       {
         method: "PUT",
         headers: {
+          ...identityHeaders,
           "content-type": "application/json",
           "idempotency-key": `http-favorite-${runId}`,
         },
@@ -268,7 +288,7 @@ try {
     if (rejectedFavorite.status !== 404 || favoriteError.code !== "NOT_FOUND")
       throw new Error("favorite_error_contract_failed");
     const libraryAfterRejectedFavorite = await (
-      await fetch(`${base}/v1/library`)
+      await fetch(`${base}/v2/me/library`, { headers: identityHeaders })
     ).json();
     if (
       libraryAfterRejectedFavorite.data.favoriteSpots.some(
@@ -277,10 +297,9 @@ try {
     )
       throw new Error("favorite_failure_was_committed");
     const adminShell = await fetch(`${base}/admin`);
-    const adminHtml = await adminShell.text();
-    if (!adminShell.ok || !adminHtml.includes("Demo 运营台"))
-      throw new Error("admin_shell_unavailable");
-    const unauthorized = await fetch(`${base}/v1/admin/dashboard`);
+    if (adminShell.status !== 404)
+      throw new Error(`admin_web_surface_still_exposed:${adminShell.status}`);
+    const unauthorized = await fetch(`${base}/v2/admin/dashboard`);
     if (unauthorized.status !== 403)
       throw new Error(`admin_rbac_fail_open:${unauthorized.status}`);
     const headers = {
@@ -288,16 +307,23 @@ try {
       "x-admin-token": adminToken,
       "x-admin-actor": "admin:infrastructure-check",
     };
-    const dashboardResponse = await fetch(`${base}/v1/admin/dashboard`, {
+    const dashboardResponse = await fetch(`${base}/v2/admin/dashboard`, {
       headers,
     });
     const dashboard = await dashboardResponse.json();
-    if (!dashboardResponse.ok || dashboard.data.spots.length !== 26)
+    if (!dashboardResponse.ok || dashboard.data.spots.length < 1)
       throw new Error("admin_dashboard_population_invalid");
-    const spotId = dashboard.data.spots[0].spot_id;
+    const statusRoundtripSpot = dashboard.data.spots.find(
+      (spot) =>
+        spot.status === "PUBLISHED" &&
+        spot.publication_assessment?.complete === true,
+    );
+    if (!statusRoundtripSpot)
+      throw new Error("admin_status_roundtrip_spot_missing");
+    const spotId = statusRoundtripSpot.spot_id;
     for (const action of ["suspend", "publish"]) {
       const response = await fetch(
-        `${base}/v1/admin/spots/${encodeURIComponent(spotId)}/${action}`,
+        `${base}/v2/admin/spots/${encodeURIComponent(spotId)}/${action}`,
         {
           method: "POST",
           headers,
@@ -306,7 +332,7 @@ try {
       );
       if (!response.ok) throw new Error(`admin_${action}_failed:${response.status}`);
     }
-    const auditsResponse = await fetch(`${base}/v1/admin/audit-logs`, {
+    const auditsResponse = await fetch(`${base}/v2/admin/audit-logs`, {
       headers,
     });
     const audits = await auditsResponse.json();
@@ -314,10 +340,11 @@ try {
       throw new Error("admin_audit_missing");
     apiChecks = {
       conditional_etag_304: "passed",
+      isolated_local_identity: "passed",
       aggregate_library_read: "passed",
       typed_conflict_recovery: "passed",
       failed_favorite_is_not_committed: "passed",
-      admin_shell: "passed",
+      no_admin_web_surface: "passed",
       rbac_denial: "passed",
       population: dashboard.data.spots.length,
       audited_status_roundtrip: "passed",

@@ -14,7 +14,7 @@ export const AUTO_IMPORT_POLICY = Object.freeze({
   dnsIpRecheckRequired: true,
   manualFallbackAlwaysAvailable: true,
   reason:
-    "Demo has no verified third-party parser license or allowlisted server adapter",
+    "The current product has no verified third-party parser license or allowlisted server adapter",
 });
 
 export function parserGate(platform: PlatformKind, rawUrl: string) {

@@ -1,0 +1,10 @@
+.selected-card-star {
+  position: absolute;
+  z-index: 2;
+  top: -24rpx;
+  right: -24rpx;
+  width: 48rpx;
+  height: 48rpx;
+  display: block;
+  pointer-events: none;
+}

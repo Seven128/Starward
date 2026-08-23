@@ -8,21 +8,19 @@ export default defineAppConfig({
         "guides/index",
         "field/index",
         "sky/index",
-        "photos/index",
         "data-source/index",
       ],
     },
     {
       root: "sky",
-      pages: ["detail/index", "map/index", "observe/index", "targets/index"],
+      pages: ["detail/index", "targets/index"],
     },
     {
       root: "content",
       pages: [
         "article/detail/index",
         "plan/detail/index",
-        "profile/links/index",
-        "import/index",
+        "contribution/index",
         "settings/index",
       ],
     },

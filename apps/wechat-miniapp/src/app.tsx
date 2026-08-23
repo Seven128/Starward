@@ -2,7 +2,10 @@ import { useLaunch } from "@tarojs/taro";
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import { miniappQueryClient } from "@/services/query-client";
-import { resetApiClientForAcceptance } from "@/services/api-client";
+import {
+  resetApiClientForAcceptance,
+  resetApiNetworkCacheForAcceptance,
+} from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { resetAppStoreForAcceptance } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
@@ -17,6 +20,17 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
         cancelledRequests: number;
         snapshot: unknown;
       };
+      resetNetwork(): {
+        status: "passed";
+        cancelledRequests: number;
+      };
+      inspectContext(): {
+        contextId: string;
+        contextFingerprint: string;
+        locationKind: string;
+        privacyClass: string;
+        spotId: string;
+      } | null;
     };
   };
   runtime.__STARWARD_MINIAPP_ACCEPTANCE__ = {
@@ -25,6 +39,26 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
       miniappQueryClient.clear();
       const snapshot = resetAppStoreForAcceptance();
       return { status: "passed", cancelledRequests, snapshot };
+    },
+    resetNetwork() {
+      const cancelledRequests = resetApiNetworkCacheForAcceptance();
+      miniappQueryClient.clear();
+      return { status: "passed", cancelledRequests };
+    },
+    inspectContext() {
+      const context = useAppStore.getState().observationContext;
+      return context
+        ? {
+            contextId: context.contextId,
+            contextFingerprint: context.contextFingerprint,
+            locationKind: context.location.kind,
+            privacyClass: context.privacyClass,
+            spotId:
+              context.location.kind === "FORMAL_SPOT"
+                ? context.location.spotId
+                : "",
+          }
+        : null;
     },
   };
 }
@@ -39,7 +73,6 @@ export default function App({ children }: PropsWithChildren) {
   });
   return (
     <QueryClientProvider client={miniappQueryClient}>
-      {/* Taro H5 requires the active taro_page to remain the last router child. */}
       <FloatingNotificationHost />
       {children}
     </QueryClientProvider>

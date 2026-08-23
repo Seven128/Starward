@@ -34,11 +34,11 @@ test("import invalidation maps transport prefixes to structured query roots", ()
 test("response cache isolates URL representations inside one cancellation group", () => {
   const nearby = responseCacheKey(
     "map-scene",
-    "/v1/map/scene?center=22.5431,114.0579&zoom=8",
+    "/v2/map/scene?center=22.5431,114.0579&zoom=8",
   );
   const filtered = responseCacheKey(
     "map-scene",
-    "/v1/map/scene?center=22.5431,114.0579&zoom=8&facility=parking",
+    "/v2/map/scene?center=22.5431,114.0579&zoom=8&facility=parking",
   );
 
   assert.notEqual(nearby, filtered);

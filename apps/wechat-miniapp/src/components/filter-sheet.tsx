@@ -3,29 +3,27 @@ import {
   FILTER_GROUPS,
   FILTER_OPTIONS,
   countAppliedFilters,
+  type MapSceneData,
 } from "@starward/miniapp-contracts";
 import { useAppStore } from "@/state/app-store";
-import { SoftButton } from "./soft-button";
+import { SelectedCardStar } from "./selected-card-star";
 import "./filter-sheet.scss";
 
 /** The Finder-owned editor. It is a bounded surface inside SourceLift. */
 export function FilterSheet({
-  onClose,
+  capabilities,
 }: {
-  avoidSystemTabBar?: boolean;
-  onClose?: () => void;
+  capabilities?: MapSceneData["filterCapabilities"]["byGroup"] | undefined;
 }) {
   const draft = useAppStore((state) => state.draftFilters);
   const toggle = useAppStore((state) => state.toggleDraftFilter);
-  const reset = useAppStore((state) => state.resetDraftFilters);
-  const cancel = useAppStore((state) => state.cancelFilters);
-  const apply = useAppStore((state) => state.applyFilters);
   const count = countAppliedFilters(draft);
-  const close = () => {
-    cancel();
-    onClose?.();
-  };
-
+  const limitedCapabilities = FILTER_GROUPS.flatMap((group) => {
+    const capability = capabilities?.[group.key];
+    return capability && capability.state !== "AVAILABLE"
+      ? [{ label: group.title, ...capability }]
+      : [];
+  });
   return (
     <View
       className="filter-sheet"
@@ -33,94 +31,89 @@ export function FilterSheet({
       role="region"
       aria-label="Finder 筛选条件"
     >
-      <View className="filter-sheet__header">
-        <View>
-          <Text className="type-label">筛选条件</Text>
-          <Text className="type-caption">
-            18 项终端筛选 · 首层 10 · 进阶 8 · 草稿 {count} 项
-          </Text>
-        </View>
-        <View data-od-id="spot-finder-filter-revert">
-          <SoftButton variant="ghost" label="撤销筛选草稿" onClick={close}>
-            撤销
-          </SoftButton>
-        </View>
-      </View>
-      <ScrollView
-        scrollY
-        className="filter-sheet__scroll"
-        enhanced
-        showScrollbar={false}
-        aria-label="18 项筛选条件"
-      >
-        {(["FIRST_LEVEL", "ADVANCED"] as const).map((tier) => {
-          const groups = FILTER_GROUPS.filter(
-            (group) =>
-              FILTER_OPTIONS.find((option) => option.group === group.key)
-                ?.tier === tier,
-          );
-          return (
-            <View
-              className="filter-sheet__tier"
-              key={tier}
-              data-od-id={
-                tier === "FIRST_LEVEL"
-                  ? "spot-finder-filter-first-level"
-                  : "spot-finder-filter-advanced"
-              }
-            >
-              <Text className="type-section">
-                {tier === "FIRST_LEVEL" ? "首层筛选" : "进阶筛选"}
-              </Text>
-              <View className="filter-sheet__grid">
-                {groups.map((group) => {
-                  const option = FILTER_OPTIONS.find(
-                    (item) => item.group === group.key,
-                  );
-                  if (!option) return null;
-                  const selected = draft[group.key].includes(option.id);
-                  return (
-                    <Button
-                      className={`filter-option focus-ring${selected ? " filter-option--selected" : ""}`}
-                      data-od-id="spot-finder-filter-choice"
-                      key={option.id}
-                      aria-pressed={selected}
-                      aria-label={`${option.label}，${selected ? "已选择" : "未选择"}`}
-                      onClick={() => toggle(option.id)}
-                    >
-                      <View className="filter-option__star" aria-hidden="true">
-                        <Text>★</Text>
-                      </View>
-                      <Text>{option.label}</Text>
-                    </Button>
-                  );
-                })}
+      <View className="filter-sheet__scroll-viewport">
+        <ScrollView
+          scrollY
+          className="filter-sheet__scroll"
+          data-od-id="spot-finder-filter-scroll"
+          enhanced={true}
+          showScrollbar={false}
+          aria-label="18 项筛选条件"
+        >
+          <View className="filter-sheet__content">
+          {(["FIRST_LEVEL", "ADVANCED"] as const).map((tier) => {
+            const groups = FILTER_GROUPS.filter(
+              (group) =>
+                FILTER_OPTIONS.find((option) => option.group === group.key)
+                  ?.tier === tier,
+            );
+            return (
+              <View
+                className="filter-sheet__tier"
+                key={tier}
+                data-od-id={
+                  tier === "FIRST_LEVEL"
+                    ? "spot-finder-filter-first-level"
+                    : "spot-finder-filter-advanced"
+                }
+              >
+                <Text className="type-section">
+                  {tier === "FIRST_LEVEL" ? "首层筛选" : "进阶筛选"}
+                </Text>
+                <View className="filter-sheet__grid">
+                  {groups.map((group) => {
+                    const option = FILTER_OPTIONS.find(
+                      (item) => item.group === group.key,
+                    );
+                    if (!option) return null;
+                    const selected = draft[group.key].includes(option.id);
+                    const capability = capabilities?.[group.key];
+                    const unavailable = capability?.state === "UNAVAILABLE";
+                    const disabled = unavailable && !selected;
+                    return (
+                      <Button
+                        className={`filter-option focus-ring${selected ? " filter-option--selected" : ""}${unavailable ? " filter-option--unavailable" : capability?.state === "PARTIAL" ? " filter-option--partial" : ""}`}
+                        data-od-id="spot-finder-filter-choice"
+                        key={option.id}
+                        {...(disabled ? { disabled: true } : {})}
+                        aria-pressed={selected}
+                        aria-label={`${option.label}，${selected ? "已选择" : "未选择"}${capability?.state === "UNAVAILABLE" ? `，当前不可用：${capability.reason}${selected ? "，可点击移除" : ""}` : capability?.state === "PARTIAL" ? `，部分可用：${capability.reason}` : ""}`}
+                        onClick={() => toggle(option.id)}
+                      >
+                        <View className="filter-option__copy">
+                          <Text>{option.label}</Text>
+                        </View>
+                        {selected ? <SelectedCardStar /> : null}
+                      </Button>
+                    );
+                  })}
+                </View>
               </View>
-            </View>
-          );
-        })}
-        <View className="filter-sheet__disclosure">
-          <Text className="type-caption">
-            未接入实时天气、驾车或天象供应商的条件会明确显示为暂无匹配，不会把未知值当成满足。
-          </Text>
-        </View>
-      </ScrollView>
-      <View className="filter-sheet__footer safe-bottom">
-        <SoftButton label="重置筛选草稿" onClick={reset}>
-          重置
-        </SoftButton>
-        <View data-od-id="spot-finder-filter-commit">
-          <SoftButton
-            variant="primary"
-            label={`应用筛选，共 ${count} 项`}
-            onClick={() => {
-              apply();
-              onClose?.();
-            }}
-          >
-            应用筛选 · {count}
-          </SoftButton>
-        </View>
+            );
+          })}
+          <View className="filter-sheet__disclosure">
+            <Text className="type-caption filter-sheet__status">
+              已选 {count} 项；应用后会同时更新想去与其他观星点
+            </Text>
+            {limitedCapabilities.length ? (
+              <>
+                <Text className="type-label">当前能力限制</Text>
+                {limitedCapabilities.map((item) => (
+                  <Text className="type-caption" key={item.label}>
+                    · {item.label}：{item.reason}
+                  </Text>
+                ))}
+              </>
+            ) : (
+              <Text className="type-caption">
+                {capabilities
+                  ? "当前 18 项筛选均已绑定可追溯字段或当前观测条件。"
+                  : "正在确认实时天气、驾车与天象筛选能力；未知值不会当成满足。"}
+              </Text>
+            )}
+          </View>
+          </View>
+        </ScrollView>
       </View>
     </View>
   );

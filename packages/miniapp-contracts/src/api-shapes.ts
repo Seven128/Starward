@@ -1,35 +1,129 @@
 import type { FeatureFlags } from "./feature-flags.ts";
-import type { FilterState } from "./filters.ts";
+import type { FilterGroupKey, FilterState } from "./filters.ts";
 import type { PreferenceRankingDisclosure, SpotRankingPreferences } from "./ranking.ts";
 import type {
+  AccessAndSafetyState,
+  ContributionCandidateLocation,
+  ContributionKind,
+  ContributionMediaUpload,
+  ContributionSubmission,
+  ContributionTopic,
+  FactEvidence,
   FacilityEvidence,
   GuideArticle,
   ImportDraft,
   ImportStage,
   ObservationPlan,
+  ObservationContext,
+  ObservationContextResolveRequest,
+  ObservationContextUpdateRequest,
   PlatformKind,
   ProfileLink,
+  RouteOverview,
   SkyReport,
+  SiteMediaState,
   SpotDetail,
   SpotSummary,
   SourceSummary,
+  AuthSessionData,
+  WechatLoginRequest,
 } from "./types.ts";
 import type { UserPreferences } from "./types.ts";
 import type { UserPreferencesRecord } from "./preferences.ts";
-import { DEMO_POPULATION_DISCLOSURE } from "./catalog.ts";
+
+export type MapLayerKind =
+  | "NORMAL"
+  | "LIGHT_POLLUTION"
+  | "CLOUD"
+  | "OPPORTUNITY";
+
+export type MapProjectionState =
+  | "FRESH"
+  | "STALE_USABLE"
+  | "PARTIAL"
+  | "UNAVAILABLE";
+
+export interface MapLayerPolygon {
+  id: string;
+  points: readonly { latitude: number; longitude: number }[];
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
+  value: number | null;
+  label: string;
+  state: MapProjectionState;
+}
+
+export interface MapLayerData {
+  kind: MapLayerKind;
+  cloudLayer: ObservationContext["weatherView"]["cloudLayer"] | null;
+  polygons: readonly MapLayerPolygon[];
+  legend: readonly { label: string; color: string; range: string }[];
+  validAt: string | null;
+  datasetVersion: string;
+  precision: string;
+  state: MapProjectionState;
+  source: SourceSummary | null;
+}
+
+export interface MapSpotTimeSignal {
+  spotId: SpotSummary["spotId"];
+  cloudPercent: number | null;
+  lowCloudPercent: number | null;
+  midCloudPercent: number | null;
+  highCloudPercent: number | null;
+  moonImpact: "LOW" | "MEDIUM" | "HIGH" | "UNKNOWN";
+  opportunityScore: number | null;
+  opportunityConfidence: number | null;
+  opportunityEligible: boolean;
+  opportunityLabel: string;
+  state: MapProjectionState;
+}
+
+export interface MapSpotEvaluation extends MapSpotTimeSignal {
+  recommendation: SpotDetail["decision"]["recommendation"];
+  bestWindowMinutes: number | null;
+  activeEventIds: readonly string[];
+  distanceKm: number | null;
+  driveMinutes: number | null;
+  distanceKind: "ROUTE" | "STRAIGHT_LINE" | "UNAVAILABLE";
+}
+
+export interface MapSceneTimeFrame {
+  atUtc: string;
+  spotSignals: Readonly<Record<string, MapSpotTimeSignal>>;
+  dynamicLayer: {
+    kind: "CLOUD" | "OPPORTUNITY";
+    polygons: readonly MapLayerPolygon[];
+    state: MapProjectionState;
+  } | null;
+}
+
+export interface FormalSpotPopulation {
+  key: string;
+  eligibleCount: number;
+  excludedCount: number;
+  stableIds: readonly SpotSummary["spotId"][];
+  regionPolicy: string;
+  source: string;
+}
 
 export interface CapabilitiesData {
   flags: FeatureFlags;
   parser: Readonly<Record<string, unknown>>;
   externalOpen: { enabled: boolean; copyFallback: true; reason: string };
   routeProvider: { enabled: boolean; externalMapFallback: true; reason: string };
+  placeSearch: { enabled: boolean; reason: string };
   weatherProvider: { enabled: boolean; cachedFallback: boolean; reason: string };
   mediaUpload: { enabled: boolean; manualTextDraft: true; reason: string };
 }
 
 export interface MapSceneRequest {
+  contextId: string;
   filters: FilterState;
   query: string;
+  layer: MapLayerKind;
+  cloudLayer: ObservationContext["weatherView"]["cloudLayer"];
   viewport?: {
     center: { latitude: number; longitude: number };
     zoom: number;
@@ -37,18 +131,36 @@ export interface MapSceneRequest {
   preferences?: SpotRankingPreferences;
 }
 
+export interface RouteEstimateRequest {
+  contextId: ObservationContext["contextId"];
+  spotId: SpotSummary["spotId"];
+}
+
+export type RouteEstimateData = RouteOverview;
+
 export interface MapSceneData {
+  context: ObservationContext;
   spots: readonly SpotSummary[];
+  evaluations: Readonly<Record<string, MapSpotEvaluation>>;
   favoriteSpotIds: readonly SpotSummary["spotId"][] | null;
   preferenceRanking: PreferenceRankingDisclosure;
   filterCapabilities: {
     driveTime: {
-      state: "UNAVAILABLE";
+      state: "AVAILABLE" | "PARTIAL" | "UNAVAILABLE";
       reason: string;
-      recovery: "REMOVE_DRIVE_TIME_FILTER";
+      recovery: "NONE" | "REMOVE_DRIVE_TIME_FILTER";
     };
+    byGroup: Readonly<
+      Record<
+        FilterGroupKey,
+        {
+          state: "AVAILABLE" | "PARTIAL" | "UNAVAILABLE";
+          reason: string;
+        }
+      >
+    >;
   };
-  population: typeof DEMO_POPULATION_DISCLOSURE;
+  population: FormalSpotPopulation;
   viewportMode: string;
   viewport: {
     coordinateSystem: "GCJ02";
@@ -61,7 +173,8 @@ export interface MapSceneData {
   clusterBelowZoom: number;
   debounceMs: number;
   requestCancellation: string;
-  lightLayer: unknown;
+  layer: MapLayerData;
+  timeFrames: readonly MapSceneTimeFrame[];
 }
 
 export interface FavoritesData {
@@ -70,17 +183,44 @@ export interface FavoritesData {
   canonicalDetailRoute: string;
 }
 
+export interface SearchMapPoint {
+  system: "GCJ02";
+  latitude: number;
+  longitude: number;
+}
+
+export interface OrdinaryPlaceRef {
+  placeId: string;
+  label: string;
+  address: string;
+  region: string;
+  kind: "ORDINARY_PLACE";
+  location: SearchMapPoint;
+  actions: readonly ["MOVE_MAP", "FIND_NEARBY_FORMAL_SPOTS"];
+  spotId: null;
+  nightSkyAllowed: false;
+  dataState: "FRESH" | "PARTIAL";
+  source: SourceSummary;
+}
+
+export interface DarkSkyCandidateRef {
+  candidateId: string;
+  label: string;
+  address: string;
+  region: string;
+  kind: "DARK_SKY_CANDIDATE";
+  location: SearchMapPoint;
+  actions: readonly ["MOVE_MAP", "FIND_NEARBY_FORMAL_SPOTS"];
+  spotId: null;
+  nightSkyAllowed: false;
+  dataState: "PARTIAL";
+  source: SourceSummary;
+}
+
 export interface SearchData {
   formalSpots: readonly SpotSummary[];
-  ordinaryPlaces: readonly {
-    placeId: string;
-    label: string;
-    kind: "ORDINARY_PLACE";
-    actions: readonly string[];
-    spotId: null;
-    nightSkyAllowed: false;
-    dataState: "UNAVAILABLE";
-  }[];
+  candidates: readonly DarkSkyCandidateRef[];
+  ordinaryPlaces: readonly OrdinaryPlaceRef[];
   history: readonly { label: string; clearable: true }[];
 }
 
@@ -92,7 +232,9 @@ export interface SpotGuidesData {
 export interface SpotSiteData {
   spotId: string;
   facilities: readonly FacilityEvidence[];
-  siteSafety: readonly string[];
+  accessAndSafety: AccessAndSafetyState;
+  siteMediaState: SiteMediaState;
+  evidence: readonly FactEvidence[];
   sources: readonly SourceSummary[];
 }
 
@@ -161,6 +303,47 @@ export interface ImportsData {
   imports: readonly ImportDraft[];
 }
 
+export interface ContributionDraftRequest {
+  kind: ContributionKind;
+  spotId: string | null;
+  candidateLocation: ContributionCandidateLocation | null;
+  observedAt: string | null;
+  topics: readonly ContributionTopic[];
+  detail: string;
+  rightsConfirmed: boolean;
+  preciseLocationConsent: boolean;
+}
+
+export interface ContributionUpdateRequest extends ContributionDraftRequest {
+  expectedRevision: number;
+}
+
+export interface ContributionSubmitRequest {
+  expectedRevision: number;
+}
+
+export interface ContributionUploadSessionRequest {
+  originalName: string;
+  mimeType: ContributionMediaUpload["mimeType"];
+  byteSize: number;
+  expectedRevision: number;
+}
+
+export interface ContributionUploadCompleteRequest {
+  dataBase64: string;
+}
+
+export interface ContributionsData {
+  submissions: readonly ContributionSubmission[];
+}
+
 export type SpotDetailData = SpotDetail;
 export type SkyReportData = SkyReport;
+export type ObservationContextData = ObservationContext;
+export type ObservationContextResolveData = ObservationContext;
+export type ObservationContextUpdateData = ObservationContext;
+export type WechatLoginData = AuthSessionData;
+export type WechatLoginBody = WechatLoginRequest;
+export type ObservationContextResolveBody = ObservationContextResolveRequest;
+export type ObservationContextUpdateBody = ObservationContextUpdateRequest;
 export type OperationsData = Readonly<Record<string, unknown>>;

@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { access } from "node:fs/promises";
+import { access, rm } from "node:fs/promises";
 import { createServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,13 @@ const devtoolsCliEntry =
   "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\resources\\app.asar.unpacked\\js\\common\\cli\\index.js";
 const devtoolsCliBootstrap =
   "const e=process.argv[1],a=process.argv.slice(2).filter(function(x){return x!=='--electron'});if(!process.env.cwd)process.env.cwd=process.cwd();process.argv=[process.execPath,'--ms-enable-electron-run-as-node',e,'--electron'].concat(a);require(e)";
+const npmCli = path.join(
+  path.dirname(process.execPath),
+  "node_modules",
+  "npm",
+  "bin",
+  "npm-cli.js",
+);
 
 const args = new Map();
 for (let index = 2; index < process.argv.length; index += 1) {
@@ -49,6 +56,10 @@ async function waitFor(predicate, label, timeoutMs = 90_000) {
     } catch (error) {
       lastError = error;
     }
+    if (stopping)
+      throw new Error(
+        `${label}_aborted${lastError ? `:${String(lastError.message ?? lastError)}` : ""}`,
+      );
     await new Promise((resolve) => setTimeout(resolve, 350));
   }
   throw new Error(
@@ -71,11 +82,12 @@ function stopProcessTree(pid) {
 }
 
 function startNpm(script, env) {
-  return spawn(
-    process.platform === "win32" ? "npm.cmd" : "npm",
-    ["run", script],
-    { cwd: root, env: { ...process.env, ...env }, stdio: "inherit" },
-  );
+  return spawn(process.execPath, [npmCli, "run", script], {
+    cwd: root,
+    env: { ...process.env, ...env },
+    stdio: "inherit",
+    windowsHide: true,
+  });
 }
 
 function openDevtools() {
@@ -127,7 +139,10 @@ if (!useMemory) {
 }
 
 const infrastructureEnv = useMemory
-  ? { MINIAPP_STORAGE_MODE: "memory" }
+  ? {
+      MINIAPP_STORAGE_MODE: "MEMORY_TEST",
+      MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1",
+    }
   : {
       DATABASE_URL:
         "postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/starward_miniapp",
@@ -160,7 +175,7 @@ api.once("exit", (code) => {
 });
 
 await waitFor(async () => {
-  const response = await fetch(`http://127.0.0.1:${apiPort}/v1/capabilities`);
+  const response = await fetch(`http://127.0.0.1:${apiPort}/v2/capabilities`);
   return response.ok;
 }, "miniapp_api_ready");
 
@@ -172,8 +187,13 @@ if (!useMemory) {
   });
 }
 
+// The generated WEAPP directory is disposable. Remove the previous compiler
+// output before starting watch mode so an old app.json can never be mistaken
+// for this session's first successful build or opened concurrently with emit.
+await rm(path.dirname(outputEntry), { recursive: true, force: true });
 const compiler = startNpm("dev:miniapp:weapp", {
-  MINIAPP_API_BASE: `http://127.0.0.1:${apiPort}/v1`,
+  MINIAPP_API_BASE: `http://127.0.0.1:${apiPort}`,
+  ...(useMemory ? { MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1" } : {}),
 });
 children.push(compiler);
 compiler.once("exit", (code) => {
@@ -189,11 +209,13 @@ openDevtools();
 process.stdout.write(
   `${JSON.stringify({
     status: "ready",
-    api: `http://127.0.0.1:${apiPort}/v1`,
+    api: `http://127.0.0.1:${apiPort}/v2`,
     project: projectPath,
     authoring_root: path.join(projectPath, "src"),
     devtools_opened: !args.has("--no-open"),
-    persistence: useMemory ? "memory_explicit_development_fallback" : "postgres_postgis_redis_bullmq",
+    persistence: useMemory
+      ? "explicit_test_fixture_lane"
+      : "postgres_postgis_redis_bullmq",
   })}\n`,
 );
 

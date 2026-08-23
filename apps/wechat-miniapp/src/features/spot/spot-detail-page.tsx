@@ -1,7 +1,10 @@
 import Taro, { useRouter } from "@tarojs/taro";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
-import { useMemo, useState } from "react";
-import type { FacilityStatus } from "@starward/miniapp-contracts";
+import { useEffect, useMemo, useState } from "react";
+import type {
+  FacilityStatus,
+  RouteOverview,
+} from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { NotificationRegion } from "@/components/notification";
@@ -12,11 +15,16 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
+  estimateSpotRoute,
   getSpotGuides,
   getSpotOverview,
   getSpotSite,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
+import {
+  GUIDE_AUTHOR_LABELS,
+  formatDisplayDate,
+} from "@/utils/presentation";
 import "./spot-detail-page.scss";
 
 export type SpotSegment = "OVERVIEW" | "GUIDES" | "SITE";
@@ -41,20 +49,24 @@ const STATUS_LABEL: Record<FacilityStatus, string> = {
   UNKNOWN: "待核验",
   SEASONAL: "季节性",
 };
-
-function today() {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(now);
-  const values = Object.fromEntries(
-    parts.map((part) => [part.type, part.value]),
-  );
-  return `${values.year}-${values.month}-${values.day}`;
-}
+const OPENNESS_LABEL = {
+  OPEN: "开放",
+  CONDITIONAL: "有条件开放",
+  CLOSED: "暂时关闭",
+  UNKNOWN: "开放状态待核验",
+} as const;
+const LEGAL_ACCESS_LABEL = {
+  PERMITTED: "允许进入",
+  CONDITIONAL: "需满足进入条件",
+  PROHIBITED: "禁止进入",
+  UNKNOWN: "进入规则待核验",
+} as const;
+const NIGHT_SAFETY_LABEL = {
+  NO_KNOWN_HAZARD: "未发现明确夜间危险",
+  CAUTION: "夜间需谨慎",
+  DANGER: "存在明确危险",
+  UNKNOWN: "夜间安全待核验",
+} as const;
 
 function safeParam(value: string | undefined) {
   try {
@@ -64,6 +76,25 @@ function safeParam(value: string | undefined) {
   }
 }
 
+function formatObservationTime(value: string, timezone: string) {
+  try {
+    return new Intl.DateTimeFormat("zh-CN", {
+      timeZone: timezone,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(new Date(value));
+  } catch {
+    return "当前时刻";
+  }
+}
+
+function isCancelledAction(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : String(error ?? "");
+  return message.toLowerCase().includes("cancel");
+}
+
 export function SpotDetailPage({
   initialSegment = "OVERVIEW",
 }: {
@@ -71,17 +102,38 @@ export function SpotDetailPage({
 }) {
   const router = useRouter();
   const spotId = safeParam(router.params.spotId);
+  const routeContextId = safeParam(router.params.contextId);
   const themeClass = useThemeClass();
   const [segment, setSegment] = useState<SpotSegment>(initialSegment);
+  const [requestedRoute, setRequestedRoute] = useState<RouteOverview | null>(
+    null,
+  );
+  const [routePending, setRoutePending] = useState(false);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
   const { toggleFavorite } = useFavoriteMutation();
   const selectSpot = useAppStore((state) => state.selectSpot);
-  const selectedAt = useAppStore((state) => state.selectedAt);
-  const setSelectedAt = useAppStore((state) => state.setSelectedAt);
+  const notify = useAppStore((state) => state.notify);
+  const observationContext = useAppStore(
+    (state) => state.observationContext,
+  );
+  const contextComplete = Boolean(
+    routeContextId &&
+      observationContext &&
+      observationContext.contextId === routeContextId &&
+      observationContext.location.kind === "FORMAL_SPOT" &&
+      observationContext.location.spotId === spotId,
+  );
   const overview = useResourceQuery({
-    queryKey: ["spot-overview", spotId],
-    queryFn: (signal) => getSpotOverview(spotId, signal),
-    enabled: spotId.startsWith("spot:"),
+    queryKey: [
+      "spot-overview",
+      spotId,
+      observationContext?.contextId,
+      observationContext?.contextFingerprint,
+      observationContext?.revision,
+    ],
+    queryFn: (signal) =>
+      getSpotOverview(spotId, routeContextId, signal),
+    enabled: spotId.startsWith("spot:") && contextComplete,
   });
   const guides = useResourceQuery({
     queryKey: ["spot-guides", spotId],
@@ -98,6 +150,10 @@ export function SpotDetailPage({
   const media = detail?.spot.media ?? [];
   const facilities =
     site.data?.data.facilities ?? detail?.spot.facilities ?? [];
+  const accessAndSafety =
+    site.data?.data.accessAndSafety ?? detail?.accessAndSafety;
+  const siteMediaState =
+    site.data?.data.siteMediaState ?? detail?.siteMediaState;
   const sources = useMemo(
     () =>
       detail
@@ -109,19 +165,44 @@ export function SpotDetailPage({
         : [],
     [detail],
   );
+  useEffect(() => {
+    setRequestedRoute(null);
+    setRoutePending(false);
+  }, [spotId, routeContextId]);
   const segmentIndex = Math.max(
     0,
     SEGMENTS.findIndex((item) => item.key === segment),
   );
 
-  if (!spotId.startsWith("spot:"))
+  const effectiveRoute = requestedRoute ?? detail?.route;
+  const routeHeadline = effectiveRoute
+    ? effectiveRoute.kind === "ROUTE_ESTIMATE"
+      ? [
+          effectiveRoute.originLabel ? `从${effectiveRoute.originLabel}` : null,
+          effectiveRoute.driveMinutes !== null
+            ? `驾车约 ${effectiveRoute.driveMinutes} 分钟`
+            : null,
+          effectiveRoute.distanceKm !== null
+            ? `路线约 ${effectiveRoute.distanceKm} km`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · ") || "路线结果暂不完整"
+      : effectiveRoute.kind === "STRAIGHT_LINE_ONLY"
+        ? effectiveRoute.distanceKm !== null
+          ? `直线距离约 ${effectiveRoute.distanceKm} km`
+          : "直线距离暂不可用"
+        : "路线服务暂不可用"
+    : "";
+
+  if (!spotId.startsWith("spot:") || !contextComplete || !observationContext)
     return (
       <View className={themeClass}>
         <CustomNav title="观星点详情" back />
         <View className="page-inset">
           <StatusPanel
             state="ERROR"
-            detail="缺少正式 spot_id。普通地点和当前位置不能进入观星点详情或夜空。"
+            detail="缺少由地图正式入口生成的观测上下文，或上下文与当前正式点位不一致。普通地点和当前位置不能进入观星点详情或夜空。"
             recoveryLabel="返回地图"
             onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
           />
@@ -131,27 +212,99 @@ export function SpotDetailPage({
 
   const openNavigation = async () => {
     if (!detail) return;
+    const canCopyExact = detail.spot.visibilityPolicy === "PUBLIC_EXACT";
+    const hasTravelBlocker = Boolean(
+      detail.accessAndSafety.explicitDanger ||
+        detail.accessAndSafety.openness === "CLOSED" ||
+        detail.accessAndSafety.legalAccess === "PROHIBITED" ||
+        detail.accessAndSafety.nightSafety === "DANGER",
+    );
+    if (hasTravelBlocker) {
+      const warning = await Taro.showModal({
+        title: "当前存在出行阻断",
+        content: [
+          ...detail.accessAndSafety.restrictions,
+          ...detail.accessAndSafety.guidance,
+        ].join("；") || "当前开放、进入或夜间安全状态不支持直接前往。",
+        confirmText: "仍要查看",
+        cancelText: "暂不前往",
+      });
+      if (!warning.confirm) return;
+    }
+
+    let tapIndex: number;
     try {
       const choice = await Taro.showActionSheet({
-        itemList: ["在微信地图查看位置", "复制 WGS84 坐标"],
+        itemList: canCopyExact
+          ? ["在微信地图查看位置", "复制坐标"]
+          : ["在微信地图查看位置"],
       });
-      if (choice.tapIndex === 0)
+      tapIndex = choice.tapIndex;
+    } catch (error) {
+      if (isCancelledAction(error)) return;
+      tapIndex = 0;
+    }
+
+    try {
+      if (tapIndex === 0) {
+        if (effectiveRoute?.originLabel) {
+          setRoutePending(true);
+          try {
+            const response = await estimateSpotRoute(
+              observationContext.contextId,
+              detail.spot.spotId,
+            );
+            setRequestedRoute(response.data);
+            if (response.dataState !== "FRESH")
+              notify({
+                owner: "spot-detail",
+                placement: "inline",
+                tone: "warning",
+                title: "路线估算暂不可用",
+                body: "已保留已核验的末段道路与停车信息，并继续使用微信外部地图。",
+                dismissible: true,
+                dedupeKey: "spot-route-unavailable",
+              });
+          } catch {
+            notify({
+              owner: "spot-detail",
+              placement: "inline",
+              tone: "warning",
+              title: "路线估算暂不可用",
+              body: "没有用直线距离冒充驾车路线；将继续使用微信外部地图。",
+              dismissible: true,
+              dedupeKey: "spot-route-request-failed",
+            });
+          } finally {
+            setRoutePending(false);
+          }
+        }
         await Taro.openLocation({
           latitude: detail.spot.gcj02.latitude,
           longitude: detail.spot.gcj02.longitude,
           name: detail.spot.name,
-          address: `${detail.spot.address}（地点/开放/道路需核验）`,
+          address: detail.spot.address,
           scale: 14,
         });
-      else
+      } else if (canCopyExact) {
         await Taro.setClipboardData({
           data: `${detail.spot.wgs84.latitude},${detail.spot.wgs84.longitude}`,
         });
+      }
     } catch (error) {
+      if (isCancelledAction(error)) return;
+      if (!canCopyExact) {
+        await Taro.showModal({
+          title: "无法打开地图",
+          content: "外部地图暂未打开。此点位不公开精确坐标，请稍后重试。",
+          showCancel: false,
+          confirmText: "知道了",
+        });
+        return;
+      }
       const result = await Taro.showModal({
         title: "无法打开地图",
-        content:
-          "没有声称小程序内提供逐向导航。你仍可复制正式点位坐标，或稍后重试外部地图。",
+        content: "外部地图暂未打开。你可以复制该公开点位坐标，或稍后重试。",
         confirmText: "复制坐标",
         cancelText: "取消",
       });
@@ -164,24 +317,13 @@ export function SpotDetailPage({
   };
   const openNight = () => {
     if (!detail) return;
-    const fallbackDate = today();
-    const storedAt = Date.parse(selectedAt);
-    const nightSelectedAt = Number.isFinite(storedAt)
-      ? selectedAt
-      : `${fallbackDate}T20:00:00+08:00`;
-    const localDate = new Intl.DateTimeFormat("en-CA", {
-      timeZone: detail.spot.timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date(Date.parse(nightSelectedAt) - 12 * 60 * 60 * 1000));
-    if (nightSelectedAt !== selectedAt) setSelectedAt(nightSelectedAt);
     selectSpot(detail.spot.spotId);
     const params = [
       ["spotId", detail.spot.spotId],
-      ["date", localDate],
-      ["selectedAt", nightSelectedAt],
-      ["timezone", detail.spot.timezone],
+      ["contextId", observationContext.contextId],
+      ["date", observationContext.localDate],
+      ["selectedAt", observationContext.selectedAtUtc],
+      ["timezone", observationContext.timezone],
       ["dataRevision", detail.decision.inputDigest],
     ]
       .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
@@ -235,19 +377,50 @@ export function SpotDetailPage({
             <Text className="type-caption">
               {detail.spot.region} · {detail.spot.address}
             </Text>
-            <View className="spot-identity__actions">
-              <Text className="type-caption">
-                正式点位 · {detail.spot.timezone} · WGS84
-              </Text>
+            <Text className="type-caption">
+              正式观星点 · {detail.spot.lightPollution.label} · 最近场地核验{" "}{
+                detail.spot.lastVerifiedAt?.slice(0, 10) ?? "暂无"
+              }
+            </Text>
+            <View className="detail-route-row">
+              <View className="detail-route-row__copy">
+                <Text className="type-data">{routeHeadline}</Text>
+                <Text className="type-caption">
+                  {effectiveRoute?.kind === "STRAIGHT_LINE_ONLY"
+                    ? "这是直线距离，不代表实际道路里程。"
+                    : "出发前请再次核验道路与开放状态。"}
+                </Text>
+              </View>
               <Button
-                className="spot-night-entry focus-ring"
-                data-od-id="spot-detail-night-entry"
-                aria-label={`查看${detail.spot.name}此处夜空`}
-                onClick={openNight}
+                className="detail-route-action focus-ring"
+                data-od-id="spot-detail-route-action"
+                aria-label={`去这里，打开${detail.spot.name}外部地图`}
+                {...(routePending ? { disabled: true } : {})}
+                onClick={openNavigation}
               >
-                <Text>查看此处夜空 →</Text>
+                <Text>{routePending ? "正在准备…" : "去这里 →"}</Text>
               </Button>
             </View>
+            <Button
+              className="night-entry focus-ring"
+              data-od-id="spot-detail-night-entry"
+              aria-label={`查看${detail.spot.name}此处夜空`}
+              onClick={openNight}
+            >
+              <View className="night-entry__icon" aria-hidden="true" />
+              <View className="night-entry__copy">
+                <Text className="type-label">查看此处夜空</Text>
+                <Text className="type-caption">
+                  观测条件、天空方向与专业数据
+                </Text>
+              </View>
+              <Text className="night-entry__time">
+                {formatObservationTime(
+                  observationContext.selectedAtUtc,
+                  observationContext.timezone,
+                )} {"→"}
+              </Text>
+            </Button>
           </View>
           <View
             className="segment-nav page-inset"
@@ -272,7 +445,9 @@ export function SpotDetailPage({
               className="segment-indicator"
               data-od-id="spot-detail-tab-indicator"
               aria-hidden="true"
-              style={{ transform: `translateX(${segmentIndex * 100}%)` }}
+              style={{
+                transform: `translateX(calc(${segmentIndex * 100}% + ${segmentIndex * 14}rpx))`,
+              }}
             />
           </View>
           <ScrollView
@@ -292,56 +467,27 @@ export function SpotDetailPage({
                   role="tabpanel"
                   aria-labelledby="spot-segment-tab-overview"
                 >
-                  <View>
-                    <Text className="type-section">代表媒体</Text>
-                    <Text className="type-caption">
-                      真实星空照片优先展示；“非本点位”不会被用来证明现场条件。
-                    </Text>
-                  </View>
-                  <ScrollView
-                    scrollX
-                    className="media-rail"
-                    enhanced
-                    showScrollbar={false}
-                    aria-label="代表媒体图库"
-                  >
-                    {media.map((item) => (
-                      <View className="media-card card" key={item.id}>
-                        <Image
-                          className="media-card__image"
-                          src={item.localPath}
-                          mode="aspectFill"
-                          lazyLoad
-                          aria-label={item.alt}
-                        />
-                        <View className="media-card__caption">
-                          <Text className="type-label">{item.caption}</Text>
-                          <Text className="type-caption">
-                            {item.photographer} · {item.license}
-                          </Text>
-                          <Text className="status-tag status-tag--warning">
-                            {item.isSiteSpecific
-                              ? "本点位现场"
-                              : "非本点位代表媒体"}
-                          </Text>
-                        </View>
-                      </View>
-                    ))}
-                  </ScrollView>
                   <View className="decision-card card">
                     <View className="decision-card__top">
-                      <View>
-                        <Text className="type-section">今晚结论</Text>
-                        <Text className="type-page-title">
-                          {detail.decision.label}
-                        </Text>
-                      </View>
+                      <Text className="type-section">今晚结论</Text>
                       <DataStateBadge state={detail.decision.freshness} />
                     </View>
-                    {detail.decision.bestWindow ? (
+                    <Text className="decision-card__label">
+                      {detail.decision.label}
+                    </Text>
+                    {detail.decision.skyOpportunity.primaryWindow ? (
                       <Text className="type-data">
-                        最佳时段 {detail.decision.bestWindow.start}—
-                        {detail.decision.bestWindow.end}
+                        最佳时段 {formatObservationTime(
+                          detail.decision.skyOpportunity.primaryWindow.start,
+                          detail.spot.timezone,
+                        )}
+                        —
+                        {formatObservationTime(
+                          detail.decision.skyOpportunity.primaryWindow.end,
+                          detail.spot.timezone,
+                        )}
+                        （{detail.decision.skyOpportunity.primaryWindow.durationMinutes}
+                        分钟）
                       </Text>
                     ) : (
                       <Text className="type-data">
@@ -369,31 +515,22 @@ export function SpotDetailPage({
                           {detail.spot.address}
                         </Text>
                       </View>
-                      <DataStateBadge state={detail.route.state} />
+                      <DataStateBadge state={effectiveRoute?.state ?? "UNAVAILABLE"} />
                     </View>
-                    <Text className="type-data">
-                      {detail.route.kind === "STRAIGHT_LINE_ONLY"
-                        ? `直线距离约 ${detail.route.distanceKm ?? "暂无"} km`
-                        : detail.route.driveMinutes
-                          ? `驾车约 ${detail.route.driveMinutes} 分钟`
-                          : "路线暂无数据"}
+                    <Text className="type-data">{routeHeadline}</Text>
+                    <Text className="type-caption">
+                      {effectiveRoute?.kind === "STRAIGHT_LINE_ONLY"
+                        ? "直线距离不会标成路线；仅在你明确请求时计算外部路线。"
+                        : effectiveRoute?.kind === "UNAVAILABLE"
+                          ? "路线供应方暂不可用，你仍可查看已核验的到达信息。"
+                          : `路线数据来自 ${effectiveRoute?.source.provider ?? "当前路线供应方"}。`}
                     </Text>
                     <Text className="type-caption">
-                      {detail.route.kind === "STRAIGHT_LINE_ONLY"
-                        ? "直线距离不会标成路线；驾车时间仅在用户明确请求供应商后计算。"
-                        : detail.route.lastRoad}
+                      末段道路：{detail.route.lastRoad}
                     </Text>
                     <Text className="type-caption">
-                      {detail.route.parkingGuidance}
+                      停车：{detail.route.parkingGuidance}
                     </Text>
-                    <Button
-                      className="quiet-route-action focus-ring"
-                      data-od-id="spot-detail-route-action"
-                      aria-label={`去这里，打开${detail.spot.name}外部地图`}
-                      onClick={openNavigation}
-                    >
-                      <Text>去这里 →</Text>
-                    </Button>
                   </View>
                   <View className="facility-grid">
                     <Text className="type-section facility-grid__title">
@@ -413,12 +550,68 @@ export function SpotDetailPage({
                       </View>
                     ))}
                   </View>
+                  <View className="media-section">
+                    <View className="segment-panel__heading">
+                      <Text className="type-section">代表媒体</Text>
+                      <Text className="type-caption">
+                        {__MINIAPP_DEVELOPMENT_FIXTURE_MODE__
+                          ? "当前图片仅用于检查页面排版，不是这个地点的现场照片。"
+                          : "只有已核验的本点位照片才作为现场证据。"}
+                      </Text>
+                    </View>
+                    {media.length ? (
+                      <View className="media-list" aria-label="代表媒体图库">
+                        {media.map((item) => (
+                          <View className="media-card card" key={item.id}>
+                            <Image
+                              className="media-card__image"
+                              src={item.localPath}
+                              mode="aspectFill"
+                              lazyLoad
+                              aria-label={item.alt}
+                            />
+                            <View className="media-card__caption">
+                              <Text className="type-label">{item.caption}</Text>
+                              <Text className="type-caption">
+                                {item.photographer} · {item.license}
+                              </Text>
+                              <Text
+                                className={`status-tag${
+                                  __MINIAPP_DEVELOPMENT_FIXTURE_MODE__ ||
+                                  !item.isSiteSpecific
+                                    ? " status-tag--warning"
+                                    : ""
+                                }`}
+                              >
+                                {__MINIAPP_DEVELOPMENT_FIXTURE_MODE__
+                                  ? "排版测试图片 · 非现场照片"
+                                  : item.isSiteSpecific
+                                    ? "本点位现场"
+                                    : "非本点位代表媒体"}
+                              </Text>
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <View className="media-empty card">
+                        <Text className="type-label">暂无已核验现场照片</Text>
+                        <Text className="type-caption">
+                          地点、拍摄时间和授权确认后才会展示。
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   <Button
                     className="sources-link card"
                     data-od-id="spot-source-evidence"
                     onClick={() =>
                       Taro.navigateTo({
-                        url: `/spot/data-source/index?spotId=${encodeURIComponent(spotId)}`,
+                        url:
+                          "/spot/data-source/index?spotId=" +
+                          encodeURIComponent(spotId) +
+                          "&contextId=" +
+                          encodeURIComponent(observationContext.contextId),
                       })
                     }
                     aria-label="查看全部数据来源与更新时间"
@@ -426,7 +619,7 @@ export function SpotDetailPage({
                     <View>
                       <Text className="type-section">数据来源与更新时间</Text>
                       <Text className="type-caption">
-                        {sources.length} 个去重来源 · 缺失不显示为 0
+                        {sources.length} 项独立来源 · 缺失项不会显示为 0
                       </Text>
                     </View>
                     <Text aria-hidden="true">→</Text>
@@ -461,10 +654,10 @@ export function SpotDetailPage({
                   role="tabpanel"
                   aria-labelledby="spot-segment-tab-guides"
                 >
-                  <View>
+                  <View className="segment-panel__heading">
                     <Text className="type-section">官方与白名单攻略</Text>
                     <Text className="type-caption">
-                      首次进入本分段才加载；结构化块不会执行任意 HTML。
+                      打开攻略时再加载内容；页面采用安全图文格式，不运行外部网页脚本。
                     </Text>
                   </View>
                   {guides.isPending ? (
@@ -495,15 +688,24 @@ export function SpotDetailPage({
                           <Text className="type-section">{guide.title}</Text>
                           <Text className="type-body">{guide.summary}</Text>
                           <Text className="type-caption">
-                            {guide.authorType} · {guide.authorName} · 更新{" "}
-                            {guide.updatedAt} ·{" "}
-                            {guide.verified ? "已核验" : "通用 Demo 清单"}
+                            {GUIDE_AUTHOR_LABELS[guide.authorType]} ·{" "}
+                            {guide.authorName} · 更新{" "}
+                            {formatDisplayDate(guide.updatedAt)} ·{" "}
+                            {guide.verified ? "已核验" : "来源待核验"}
                           </Text>
                           <SoftButton
                             label={`阅读攻略 ${guide.title}`}
                             onClick={() =>
                               Taro.navigateTo({
-                                url: `/content/article/detail/index?spotId=${encodeURIComponent(spotId)}&articleId=${encodeURIComponent(guide.articleId)}`,
+                                url:
+                                  "/content/article/detail/index?spotId=" +
+                                  encodeURIComponent(spotId) +
+                                  "&contextId=" +
+                                  encodeURIComponent(
+                                    observationContext.contextId,
+                                  ) +
+                                  "&articleId=" +
+                                  encodeURIComponent(guide.articleId),
                               })
                             }
                           >
@@ -524,7 +726,7 @@ export function SpotDetailPage({
                   role="tabpanel"
                   aria-labelledby="spot-segment-tab-site"
                 >
-                  <View>
+                  <View className="segment-panel__heading">
                     <Text className="type-section">按真实出行顺序核验场地</Text>
                     <Text className="type-caption">
                       到达 → 停车与驻留 → 基础设施 → 观测环境 → 安全
@@ -562,16 +764,61 @@ export function SpotDetailPage({
                       ))}
                       <View className="safety-card card">
                         <Text className="type-section">夜间安全与限制</Text>
-                        {(site.data?.data.siteSafety ?? detail.siteSafety).map(
-                          (item) => (
-                            <Text className="type-body" key={item}>
-                              ! {item}
-                            </Text>
-                          ),
-                        )}
+                        {accessAndSafety ? (
+                          <>
+                            <View className="safety-card__status-row">
+                              <Text className="status-tag">
+                                {OPENNESS_LABEL[accessAndSafety.openness]}
+                              </Text>
+                              <Text className="status-tag">
+                                {LEGAL_ACCESS_LABEL[accessAndSafety.legalAccess]}
+                              </Text>
+                              <Text
+                                className={`status-tag${accessAndSafety.nightSafety === "DANGER" || accessAndSafety.explicitDanger ? " status-tag--warning" : ""}`}
+                              >
+                                {NIGHT_SAFETY_LABEL[accessAndSafety.nightSafety]}
+                              </Text>
+                            </View>
+                            {[
+                              ...accessAndSafety.restrictions,
+                              ...accessAndSafety.guidance,
+                            ].map((item) => (
+                              <Text className="type-body" key={item}>
+                                ! {item}
+                              </Text>
+                            ))}
+                          </>
+                        ) : null}
+                        {siteMediaState === "NO_SITE_MEDIA_VERIFIED" ? (
+                          <Text className="type-caption">
+                            当前没有已核验的本点位现场照片，页面媒体不会标作实景证据。
+                          </Text>
+                        ) : null}
                       </View>
                     </>
                   )}
+                  <Button
+                    className="sources-link contribution-link card"
+                    data-od-id="spot-contribution-entry"
+                    onClick={() =>
+                      Taro.navigateTo({
+                        url:
+                          "/content/contribution/index?spotId=" +
+                          encodeURIComponent(spotId) +
+                          "&spotName=" +
+                          encodeURIComponent(detail.spot.name),
+                      })
+                    }
+                    aria-label={`反馈 ${detail.spot.name} 的现场情况或资料错误`}
+                  >
+                    <View>
+                      <Text className="type-section">反馈现场情况</Text>
+                      <Text className="type-caption">
+                        上传道路、停车、开放、安全或地平遮挡等现场依据
+                      </Text>
+                    </View>
+                    <Text aria-hidden="true">→</Text>
+                  </Button>
                 </View>
               ) : null}
             </View>

@@ -142,7 +142,8 @@ export interface OutboxRecord {
   completedAt: string | null;
 }
 
-export class DemoOutbox {
+/** In-process outbox used only by the explicit memory test repository. */
+export class MemoryOutbox {
   #records = new Map<string, OutboxRecord>();
 
   enqueue(
@@ -247,11 +248,11 @@ export function unavailableSource(id: string, title: string): SourceSummary {
   const now = new Date().toISOString();
   return {
     id,
-    kind: "DEMO_FIXTURE",
-    provider: "Capability gate",
+    kind: "PRODUCT_CALCULATION",
+    provider: "今晚去观星能力状态",
     title,
     sourceUrl: "",
-    license: "Not connected",
+    license: "产品运行状态",
     licenseUrl: "",
     publishedAt: null,
     retrievedAt: now,
@@ -259,9 +260,9 @@ export function unavailableSource(id: string, title: string): SourceSummary {
     validTo: null,
     state: "UNAVAILABLE",
     confidence: null,
-    precision: "No runtime provider fact",
+    precision: "仅说明能力不可用，不包含供应商事实",
     limitations: [
-      "Capability is disabled or no licensed provider is configured; manual/stable fallback remains available",
+      "能力未启用或未配置具备许可的供应商；只允许显示明确的手动或稳定回退",
     ],
   };
 }

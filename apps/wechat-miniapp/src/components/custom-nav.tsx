@@ -8,6 +8,7 @@ export function CustomNav({
   subtitle,
   back = false,
   backOdId,
+  backFallbackTab = "/pages/map/index",
   odId,
   right,
 }: {
@@ -15,6 +16,7 @@ export function CustomNav({
   subtitle?: string | undefined;
   back?: boolean | undefined;
   backOdId?: string | undefined;
+  backFallbackTab?: "/pages/map/index" | "/pages/my/index" | undefined;
   odId?: string | undefined;
   right?: React.ReactNode | undefined;
 }) {
@@ -22,8 +24,22 @@ export function CustomNav({
   try {
     statusBarHeight = Taro.getWindowInfo().statusBarHeight ?? 0;
   } catch {
-    // H5 diagnostic builds may not expose the native window metrics API.
+    // Fail closed to the CSS safe-area fallback if native metrics are absent.
   }
+  const goBack = () => {
+    const fallback = () => Taro.switchTab({ url: backFallbackTab });
+    let hasPriorPage = false;
+    try {
+      hasPriorPage = Taro.getCurrentPages().length > 1;
+    } catch {
+      // An unavailable page stack is equivalent to an unprovable back target.
+    }
+    if (!hasPriorPage) {
+      void fallback();
+      return;
+    }
+    void Taro.navigateBack().catch(fallback);
+  };
   return (
     <View
       className="custom-nav safe-top"
@@ -39,11 +55,7 @@ export function CustomNav({
               <SoftButton
                 variant="ghost"
                 label="返回"
-                onClick={() =>
-                  Taro.navigateBack().catch(() =>
-                    Taro.switchTab({ url: "/pages/map/index" }),
-                  )
-                }
+                onClick={goBack}
               >
                 ←
               </SoftButton>
@@ -58,6 +70,16 @@ export function CustomNav({
           {right}
         </View>
       </View>
+      {__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ ? (
+        <View
+          className="development-fixture-banner"
+          data-od-id="development-fixture-banner"
+          role="status"
+          aria-label="开发验收数据，不能用于现实判断"
+        >
+          <Text>开发验收数据 · 不用于现实判断</Text>
+        </View>
+      ) : null}
     </View>
   );
 }

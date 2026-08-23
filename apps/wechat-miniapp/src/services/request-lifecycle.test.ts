@@ -4,8 +4,6 @@ import {
   LatestRequestRegistry,
   MiniappRequestCancelled,
   isMiniappRequestCancelled,
-  selectQueryAbortSignal,
-  usesNativeRequestTaskCancellation,
 } from "./request-lifecycle";
 
 test("a newer request cancels the old owner and survives stale cleanup", () => {
@@ -49,22 +47,4 @@ test("acceptance reset cancels every owned native request", () => {
   assert.deepEqual(cancelled.sort(), ["map:manual", "sky:manual"]);
   assert.equal(registry.has("map-scene"), false);
   assert.equal(registry.has("spot-sky"), false);
-});
-
-test("WeChat uses RequestTask supersession while browser diagnostics consume AbortSignal", () => {
-  assert.equal(usesNativeRequestTaskCancellation("WEAPP"), true);
-  assert.equal(usesNativeRequestTaskCancellation("WEB"), false);
-
-  const browserSignal = new AbortController().signal;
-  let reads = 0;
-  const context = {
-    get signal() {
-      reads += 1;
-      return browserSignal;
-    },
-  };
-  assert.equal(selectQueryAbortSignal("WEAPP", context), undefined);
-  assert.equal(reads, 0, "native selection must not consume TanStack's getter");
-  assert.equal(selectQueryAbortSignal("WEB", context), browserSignal);
-  assert.equal(reads, 1);
 });

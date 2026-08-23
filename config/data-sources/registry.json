@@ -11,7 +11,7 @@
   },
   "integrationManifest": "config/data-sources/production-integration.json",
   "researchStatus": "completed",
-  "implementationStatus": "passed",
+  "implementationStatus": "partial",
   "implementationBlocked": false,
   "externalActivationStatus": "pending",
   "productionTrafficAllowed": false,
@@ -21,10 +21,10 @@
       "capability": "china-weather-warning-air-quality-geocoding",
       "provenance": "official provider documentation; contract not yet executed",
       "licenseStatus": "pending-commercial-confirmation",
-      "targetRegionEvidence": "documentation candidate only; Shenzhen production POC pending",
+      "targetRegionEvidence": "current carrier and normalization tests passed; authenticated Shenzhen provider POC and production contract remain pending",
       "productionEnabled": false,
       "implementationStatus": "passed",
-      "adapter": "apps/api/src/modules/forecast/qweather-http-client.ts",
+      "adapter": "workers/miniapp-api/src/weather-provider.ts",
       "passedGates": ["provenance"],
       "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "quote-pending" }
     },
@@ -33,10 +33,10 @@
       "capability": "layered-cloud-and-model-comparison",
       "provenance": "official provider documentation; commercial use terms pending",
       "licenseStatus": "pending-commercial-confirmation",
-      "targetRegionEvidence": "target-region quality and stability POC pending",
+      "targetRegionEvidence": "owner-only noncommercial Shenzhen live composition POC passed on 2026-08-23; commercial endpoint, rights and stability POC remain pending",
       "productionEnabled": false,
       "implementationStatus": "passed",
-      "adapter": "apps/api/src/modules/forecast/open-meteo-http-client.ts",
+      "adapter": "workers/miniapp-api/src/weather-provider.ts",
       "passedGates": ["provenance"],
       "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "quote-pending" }
     },
@@ -48,9 +48,21 @@
       "targetRegionEvidence": "native SDK device POC pending",
       "productionEnabled": false,
       "implementationStatus": "passed",
-      "adapter": "apps/api/src/modules/map/amap-route-http-adapter.ts",
+      "adapter": "workers/miniapp-api/src/route-provider.ts",
       "passedGates": ["provenance"],
       "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "quote-pending" }
+    },
+    {
+      "id": "eog-viirs-vnl-v2.2",
+      "capability": "annual-satellite-night-light-relative-product-band",
+      "provenance": "official EOG Annual VNL product page and CC BY 4.0 licence; real raster objects not yet operator-acquired",
+      "licenseStatus": "official-cc-by-4.0-attribution-required",
+      "targetRegionEvidence": "synthetic pipeline verification passed; trial-region real raster publication pending",
+      "productionEnabled": false,
+      "implementationStatus": "partial",
+      "adapter": "data-pipelines/dark-sky/publish_eog_viirs.py",
+      "passedGates": ["provenance", "licence", "hash-and-grid-validation", "synthetic-raster-tests"],
+      "tco12Month": { "currency": "CNY", "totalCny": 0, "status": "operator-acquisition-pending" }
     }
   ]
 }

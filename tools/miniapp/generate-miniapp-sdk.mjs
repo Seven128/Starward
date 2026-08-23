@@ -8,7 +8,7 @@ const schemaPath = path.join(
   "packages",
   "miniapp-contracts",
   "api",
-  "miniapp-v1.operations.json",
+  "miniapp.operations.json",
 );
 const outputPath = path.join(
   root,
@@ -19,7 +19,7 @@ const outputPath = path.join(
   "miniapp-api.generated.ts",
 );
 const schema = JSON.parse(await readFile(schemaPath, "utf8"));
-if (schema.schemaVersion !== "starward-miniapp-api-operations-v1")
+if (schema.schemaVersion !== "starward-miniapp-api-operations-current")
   throw new Error("miniapp_sdk_schema_version_invalid");
 if (!Array.isArray(schema.operations) || schema.operations.length === 0)
   throw new Error("miniapp_sdk_operations_missing");
@@ -28,7 +28,7 @@ for (const operation of schema.operations) {
   if (!/^[a-z][A-Za-z0-9]+$/u.test(operation.id) || ids.has(operation.id))
     throw new Error(`miniapp_sdk_operation_id_invalid:${operation.id}`);
   ids.add(operation.id);
-  if (!["GET", "POST", "PUT", "DELETE"].includes(operation.method))
+  if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(operation.method))
     throw new Error(`miniapp_sdk_method_invalid:${operation.id}`);
   if (!/^\/[A-Za-z0-9_/{}/-]*$/u.test(operation.path))
     throw new Error(`miniapp_sdk_path_invalid:${operation.id}`);

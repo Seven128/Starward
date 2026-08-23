@@ -14,7 +14,7 @@ interface OperationManifest {
 const manifest = JSON.parse(
   await readFile(
     new URL(
-      "../../../packages/miniapp-contracts/api/miniapp-v1.operations.json",
+      "../../../packages/miniapp-contracts/api/miniapp.operations.json",
       import.meta.url,
     ),
     "utf8",

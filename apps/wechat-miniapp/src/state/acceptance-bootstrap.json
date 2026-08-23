@@ -21,11 +21,11 @@
     "center": { "latitude": 22.5431, "longitude": 114.0579 },
     "zoom": 8,
     "layer": "NORMAL",
-    "loadedViewport": "shenzhen-trial-region-v1",
+    "loadedViewport": "greater-bay-area-current",
     "cardIndex": 0
   },
   "finderQuery": "",
-  "selectedAt": "",
+  "observationContext": null,
   "analysisOverlay": "NONE",
   "committedFilters": {
     "TONIGHT_RECOMMENDED": [],
@@ -50,8 +50,5 @@
   "selectedSpotId": null,
   "searchHistory": [],
   "favoriteIds": [],
-  "plans": [],
-  "profileLinks": [],
-  "importDraft": null,
-  "skySelection": { "spotId": null, "localDate": "", "timeIndex": 0 }
+  "plans": []
 }

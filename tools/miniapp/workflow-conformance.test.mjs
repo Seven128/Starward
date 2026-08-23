@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -16,63 +16,106 @@ const text = (...segments) => readFile(at(...segments), "utf8");
 const json = async (...segments) => JSON.parse(await text(...segments));
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-test("Mini Program H5 acceptance uses one pinned project-owned Playwright", async () => {
+test("Mini Program UI has no Web implementation or H5 acceptance authority", async () => {
   const rootPackage = await json("package.json");
-  const acceptancePackage = await json("tests", "acceptance", "package.json");
-  const config = await text(
-    "tests",
-    "acceptance",
-    "miniapp",
-    "playwright.config.mjs",
-  );
-  assert.equal(acceptancePackage.devDependencies["@playwright/test"], "1.61.1");
-  assert.equal(
-    rootPackage.scripts["test:miniapp:h5"],
-    "npm --prefix tests/acceptance run test:miniapp",
-  );
-  assert.equal(rootPackage.scripts["test:miniapp:h5"].includes("npx"), false);
-  assert.match(config, /availableLoopbackPort/u);
-  assert.match(config, /start-h5-acceptance\.mjs/u);
-  assert.doesNotMatch(config, /127\.0\.0\.1:8787|127\.0\.0\.1:4399/u);
-});
-
-test("H5 diagnostics bind TanStack Query's Taro-compatible build and fail fast on invalid bundles", async () => {
   const config = await readFile(
     path.join(root, "apps/wechat-miniapp/config/index.ts"),
     "utf8",
   );
-  const playwrightConfig = await readFile(
-    path.join(root, "tests/acceptance/miniapp/playwright.config.mjs"),
-    "utf8",
-  );
-  const acceptanceController = await readFile(
-    path.join(root, "workers/miniapp-api/src/acceptance.controller.ts"),
-    "utf8",
-  );
-  const acceptanceState = await readFile(
-    path.join(root, "tests/acceptance/miniapp/acceptance-state.mjs"),
-    "utf8",
-  );
-  const server = await readFile(
-    path.join(root, "tools/miniapp/start-h5-acceptance.mjs"),
-    "utf8",
-  );
-  assert.match(config, /@tanstack\/query-core\/build\/legacy\/index\.js/u);
-  assert.match(config, /@tanstack\/react-query\/build\/legacy\/index\.js/u);
-  assert.match(config, /target === "h5"/u);
-  assert.match(server, /spawnSync\(process\.execPath, \["--check", file\]/u);
-  assert.match(server, /h5_bundle_syntax_invalid/u);
-  assert.match(server, /miniapp-h5-acceptance/u);
-  assert.match(server, /build:complete/u);
-  assert.match(server, /syntax:complete/u);
-  assert.match(playwrightConfig, /maxFailures/u);
-  assert.match(playwrightConfig, /MINIAPP_ACCEPTANCE_COLLECT_ALL/u);
-  assert.match(playwrightConfig, /globalTimeout/u);
-  assert.match(playwrightConfig, /MINIAPP_ACCEPTANCE_MODE/u);
-  assert.match(playwrightConfig, /randomUUID/u);
-  assert.match(acceptanceController, /x-acceptance-token/u);
-  assert.match(acceptanceController, /acceptance_control_unavailable/u);
-  assert.match(acceptanceState, /__acceptance\/reset/u);
+  const appPackage = await json("apps", "wechat-miniapp", "package.json");
+  const acceptancePackage = await json("tests", "acceptance", "package.json");
+  const [appSource, appStyles, mapSource, mapStyles, requestLifecycle] =
+    await Promise.all([
+      text("apps", "wechat-miniapp", "src", "app.tsx"),
+      text("apps", "wechat-miniapp", "src", "app.scss"),
+      text("apps", "wechat-miniapp", "src", "pages", "map", "index.tsx"),
+      text("apps", "wechat-miniapp", "src", "pages", "map", "index.scss"),
+      text("apps", "wechat-miniapp", "src", "services", "request-lifecycle.ts"),
+    ]);
+  assert.equal(rootPackage.scripts["dev:miniapp:h5"], undefined);
+  assert.equal(rootPackage.scripts["test:miniapp:h5"], undefined);
+  assert.equal(appPackage.scripts["build:h5"], undefined);
+  assert.equal(appPackage.scripts["dev:h5"], undefined);
+  assert.equal(appPackage.dependencies["@tarojs/plugin-platform-h5"], undefined);
+  assert.equal(appPackage.dependencies["react-dom"], undefined);
+  assert.equal(acceptancePackage.scripts["test:miniapp"], undefined);
+  assert.match(config, /wechat_miniapp_web_target_removed/u);
+  assert.doesNotMatch(config, /plugin-platform-h5|\bh5:\s*\{/u);
+  assert.doesNotMatch(appSource, /\bH5\b|taro_page|taro-tabbar/iu);
+  assert.doesNotMatch(appStyles, /\bH5\b|taro_page|taro-tabbar/iu);
+  assert.doesNotMatch(mapSource, /isH5Proxy|map-proxy|TARO_ENV\s*===\s*["']h5/iu);
+  assert.doesNotMatch(mapStyles, /map-proxy|map-page--h5/iu);
+  assert.doesNotMatch(requestLifecycle, /\bH5\b|browser transport/iu);
+  for (const removed of [
+    ["apps", "miniapp-admin", "package.json"],
+    ["apps", "wechat-miniapp", "src", "index.html"],
+    ["workers", "miniapp-api", "src", "admin-web.controller.ts"],
+    ["tools", "miniapp", "start-h5-acceptance.mjs"],
+    ["tests", "acceptance", "miniapp", "playwright.config.mjs"],
+  ]) {
+    await assert.rejects(readFile(at(...removed)), { code: "ENOENT" });
+  }
+});
+
+test("field evidence uses one native intake and an explicit canonical merge boundary", async () => {
+  const [
+    appConfig,
+    myPage,
+    detailPage,
+    contributionFiles,
+    adminController,
+    appModule,
+    adminCliFiles,
+  ] = await Promise.all([
+      text("apps", "wechat-miniapp", "src", "app.config.ts"),
+      text("apps", "wechat-miniapp", "src", "features", "my", "my-library-page.tsx"),
+      text("apps", "wechat-miniapp", "src", "features", "spot", "spot-detail-page.tsx"),
+      Promise.all([
+        text("apps", "wechat-miniapp", "src", "content", "contribution", "index.tsx"),
+        text(
+          "apps",
+          "wechat-miniapp",
+          "src",
+          "content",
+          "contribution",
+          "contribution-form-sections.tsx",
+        ),
+        text(
+          "apps",
+          "wechat-miniapp",
+          "src",
+          "content",
+          "contribution",
+          "contribution-media-history.tsx",
+        ),
+      ]),
+      text("workers", "miniapp-api", "src", "admin.controller.ts"),
+      text("workers", "miniapp-api", "src", "app.module.ts"),
+      Promise.all([
+        text("tools", "miniapp", "admin-operations.mjs"),
+        text("tools", "miniapp", "admin-operations-client.mjs"),
+        text("tools", "miniapp", "admin-operations-commands.mjs"),
+      ]),
+    ]);
+  const contributionPage = contributionFiles.join("\n");
+  const adminCli = adminCliFiles.join("\n");
+  assert.match(appConfig, /"contribution\/index"/u);
+  assert.match(myPage, /data-od-id="my-contribution-entry"/u);
+  assert.match(detailPage, /data-od-id="spot-contribution-entry"/u);
+  for (const required of [
+    "contribution-location-consent",
+    "contribution-topic-control",
+    "contribution-media-upload",
+    "contribution-coordinate-consent",
+    "contribution-media-rights",
+    "contribution-submit",
+    "contribution-status-list",
+  ]) assert.match(contributionPage, new RegExp(required, "u"));
+  assert.doesNotMatch(contributionPage, />WGS84 |WGS84 纬度|WGS84 经度/u);
+  assert.match(adminController, /moderation\/cases\/:caseId\/merge/u);
+  assert.match(adminCli, /\["merge",\s*mergeCase\]/u);
+  assert.match(adminCli, /moderation\/cases\/\$\{encodeURIComponent\(caseId\)\}\/merge/u);
+  assert.doesNotMatch(appModule, /AdminWebController/u);
 });
 
 test("generated mode icons exactly match their checked manifest", async () => {
@@ -162,6 +205,32 @@ test("every frozen selected design resource has a production probe binding", asy
   for (const probe of bindings.production_probes) {
     assert.ok(probe.all_of.length > 0, probe.key);
   }
+});
+
+test("the current implementation has no proposal-version product profile", async () => {
+  const [harnessConfig, miniappConfig, apiRuntimeConfig, nativeRunner, apiFiles] =
+    await Promise.all([
+      text(".codex", "config.yaml"),
+      text("apps", "wechat-miniapp", "config", "index.ts"),
+      text("workers", "miniapp-api", "src", "runtime-config.ts"),
+      text("tools", "miniapp", "run-wechat-devtools-session.mjs"),
+      readdir(at("packages", "miniapp-contracts", "api")),
+    ]);
+
+  assert.doesNotMatch(
+    harnessConfig,
+    /\bV2 Demo\b|\bDemo baseline\b|\bComplete V2\b|\bDemo BFF\b|\bgated Demo\b/iu,
+  );
+  for (const currentOwner of [miniappConfig, apiRuntimeConfig, nativeRunner]) {
+    assert.doesNotMatch(
+      currentOwner,
+      /MINIAPP_(?:PRODUCT_)?VERSION|acceptanceProfile|--profile|complete-demo/iu,
+    );
+  }
+  assert.deepEqual(
+    apiFiles.filter((file) => file.endsWith(".operations.json")).sort(),
+    ["miniapp.operations.json"],
+  );
 });
 
 test("native acceptance owns a clean build, exclusive current session and fail-closed evidence", async () => {
@@ -259,12 +328,29 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "before.sha256 === after.sha256",
     "result.build.bundle.files_sha256 === bundleAfter.files_sha256",
     "unexpectedConsoleErrors.length === 0",
-    '"complete-demo": [\n    "map-cold-start-location-fallback",\n    "formal-spot-detail",\n    "spot-night",\n    "my-home",\n    "profile-links",',
+    '"complete-current": [\n    "map-cold-start-location-fallback",\n    "formal-spot-detail",\n    "spot-night",\n    "my-home",',
+    'entryFlow: "map-to-detail"',
+    'entryFlow: "map-to-night"',
+    'entryFlow: "map-to-my-plan"',
+    'entryFlow: "map-to-my-settings"',
+    'entryFlow: "map-to-my-contribution"',
+    'entryFlow: "map-to-detail-contribution"',
+    "selectFormalSpotThroughFinder",
+    '"[data-od-id=\'spot-finder-result-scroll\']"',
+    '".spot-card__result-main"',
+    'detailPage,\n      ".night-entry"',
+    '".account-entry-list .account-row"',
+    "await currentPageUrl(",
+    "faultJourney.preparedRouteParams",
+    "native_prepared_route_parameter_missing",
     "bff_process_unavailable_then_restarted_matrix",
+    "miniapp_api_exited_before_ready",
+    "captureJourneyViewports",
+    'target: ".media-card"',
+    'target: ".sky-scene"',
     'release_action: "none"',
     'rootClasses: ["map-page", "theme-day", "location-default-region"]',
     'rootClasses: ["sky-page", "theme-night"]',
-    'rootClasses: ["observe-page", "theme-observation"]',
     "missingRootClasses",
     "waitForSelectorSet",
     "teardownNativeSession",
@@ -322,6 +408,10 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   assert.doesNotMatch(runner, /miniProgram\.on\("console"/u);
   assert.doesNotMatch(runner, /native\(\)\.authorizeCancel\(/u);
   assert.doesNotMatch(runner, /JSON\.stringify\(event \?\? null\)/u);
+  assert.doesNotMatch(
+    runner,
+    /acceptanceProfile|--profile|complete-demo|simplified-sky-map|profile-links|own-post-import|key: "favorites"/u,
+  );
   assert.match(
     ignore,
     /^apps\/wechat-miniapp\/project\.private\.config\.json$/mu,
@@ -367,7 +457,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   );
   assert.ok(
     runner.indexOf('runtimePhase = "evidence-reset-before-control"') <
-      runner.indexOf('runtimePhase = "fault-injection"'),
+      runner.indexOf('runtimePhase = `fault-injection:${faultJourney.key}`'),
     "degradation must establish the canonical evidence state before the BFF fault window",
   );
   assert.ok(
@@ -499,6 +589,29 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
     "query-client.ts",
   );
   const app = await text("apps", "wechat-miniapp", "src", "app.tsx");
+  const customNav = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "components",
+    "custom-nav.tsx",
+  );
+  const miniappConfig = await text(
+    "apps",
+    "wechat-miniapp",
+    "config",
+    "index.ts",
+  );
+  const developmentSession = await text(
+    "tools",
+    "miniapp",
+    "start-development-session.mjs",
+  );
+  const nativeRunner = await text(
+    "tools",
+    "miniapp",
+    "run-wechat-devtools-session.mjs",
+  );
   const store = await text(
     "apps",
     "wechat-miniapp",
@@ -541,9 +654,48 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   assert.match(polyfills, /class MiniappAbortController/u);
   assert.match(queryClient, /installAbortControllerPolyfill\(\)/u);
   assert.match(app, /if \(__MINIAPP_ACCEPTANCE_DIAGNOSTICS__\)/u);
+  assert.doesNotMatch(app, /__MINIAPP_DEVELOPMENT_FIXTURE_MODE__/u);
+  assert.match(customNav, /__MINIAPP_DEVELOPMENT_FIXTURE_MODE__/u);
+  assert.match(customNav, /开发验收数据 · 不用于现实判断/u);
+  assert.match(customNav, /data-od-id="development-fixture-banner"/u);
+  assert.match(
+    miniappConfig,
+    /process\.env\.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1"/u,
+  );
+  assert.match(
+    developmentSession,
+    /useMemory \? \{ MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1" \} : \{\}/u,
+  );
+  assert.match(developmentSession, /npm-cli\.js/u);
+  assert.doesNotMatch(developmentSession, /spawn\([^)]*"npm\.cmd"/u);
+  assert.match(
+    developmentSession,
+    /await rm\(path\.dirname\(outputEntry\), \{ recursive: true, force: true \}\)/u,
+  );
+  assert.ok(
+    developmentSession.indexOf("await rm(path.dirname(outputEntry)") <
+      developmentSession.indexOf('startNpm("dev:miniapp:weapp"'),
+  );
+  assert.match(
+    nativeRunner,
+    /const nativeAcceptanceEnvironment = Object\.freeze\(\{[\s\S]*MINIAPP_STORAGE_MODE: "MEMORY_TEST"[\s\S]*MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1"[\s\S]*MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM"/u,
+  );
+  assert.match(nativeRunner, /\.\.\.nativeAcceptanceEnvironment/u);
+  assert.match(nativeRunner, /MINIAPP_MEDIA_STORAGE_ROOT: mediaRoot/u);
+  assert.match(nativeRunner, /media_store_cleanup: mediaStoreCleanup/u);
   assert.match(app, /miniappQueryClient\.clear\(\)/u);
+  assert.match(app, /resetNetwork\(\)/u);
   assert.match(store, /resetAppStoreForAcceptance/u);
   assert.match(api, /resetApiClientForAcceptance/u);
+  assert.match(api, /resetApiNetworkCacheForAcceptance/u);
+  assert.match(
+    nativeRunner,
+    /const appStateStorageKey = "starward\.wechat-miniapp\.state\.current"/u,
+  );
+  assert.match(
+    store,
+    /const STORAGE_KEY = "starward\.wechat-miniapp\.state\.current"/u,
+  );
   assert.match(store, /locationState: "DEFAULT_REGION"/u);
   assert.doesNotMatch(mapPage, /useLoad/u);
   assert.equal(

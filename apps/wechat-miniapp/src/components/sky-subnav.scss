@@ -1,3 +1,0 @@
-.sky-subnav { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--canvas); border-bottom: 1rpx solid var(--border); }
-.sky-subnav__tab { min-height: 88rpx; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); border-bottom: 2rpx solid transparent; font-size: 24rpx; font-weight: 500; }
-.sky-subnav__tab--active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }

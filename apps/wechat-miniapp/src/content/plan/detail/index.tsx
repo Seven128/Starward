@@ -2,9 +2,10 @@ import Taro, { useRouter } from "@tarojs/taro";
 import { Input, Picker, Text, Textarea, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import {
-  DEMO_SPOTS,
+  EMPTY_FILTER_STATE,
   type ObservationPlan,
   type PlanId,
+  type SpotId,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
@@ -15,16 +16,18 @@ import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
   deleteObservationPlan,
+  getMapScene,
   getPlans,
   MiniappApiError,
+  restoreObservationContext,
   saveObservationPlan,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import "./index.scss";
 
-function today() {
+function today(timezone = "Asia/Shanghai") {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
+    timeZone: timezone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -36,6 +39,12 @@ export default function PlanEditorPage() {
   const savePlan = useAppStore((state) => state.savePlan);
   const replacePlans = useAppStore((state) => state.replacePlans);
   const notify = useAppStore((state) => state.notify);
+  const observationContext = useAppStore(
+    (state) => state.observationContext,
+  );
+  const setObservationContext = useAppStore(
+    (state) => state.setObservationContext,
+  );
   const existing = plans.find((plan) => plan.planId === router.params.planId);
   const [activePlanId, setActivePlanId] = useState<PlanId | null>(
     existing?.planId ?? null,
@@ -48,53 +57,107 @@ export default function PlanEditorPage() {
     queryFn: (signal) => getPlans(signal),
     staleTime: 15_000,
   });
-  const [spotIndex, setSpotIndex] = useState(
-    Math.max(
-      0,
-      existing
-        ? DEMO_SPOTS.findIndex((spot) => spot.spotId === existing.spotId)
-        : 0,
-    ),
+  const contextQuery = useResourceQuery({
+    queryKey: [
+      "plan-observation-context",
+      observationContext?.contextId,
+      observationContext?.contextFingerprint,
+      observationContext?.revision,
+    ],
+    queryFn: (signal) =>
+      restoreObservationContext(observationContext!, signal),
+    enabled: Boolean(observationContext),
+    staleTime: 60_000,
+  });
+  const activeContext = contextQuery.data?.data ?? null;
+  useEffect(() => {
+    if (
+      activeContext &&
+      (observationContext?.contextId !== activeContext.contextId ||
+        observationContext.revision !== activeContext.revision ||
+        observationContext.contextFingerprint !== activeContext.contextFingerprint)
+    )
+      setObservationContext(activeContext);
+  }, [activeContext, observationContext, setObservationContext]);
+  const spotsQuery = useResourceQuery({
+    queryKey: [
+      "plan-formal-spots",
+      activeContext?.contextId,
+      activeContext?.contextFingerprint,
+      activeContext?.revision,
+    ],
+    queryFn: (signal) =>
+      getMapScene(
+        activeContext!.contextId,
+        EMPTY_FILTER_STATE,
+        "",
+        undefined,
+        undefined,
+        "NORMAL",
+        activeContext!.weatherView.cloudLayer,
+        signal,
+      ),
+    enabled: Boolean(activeContext),
+    staleTime: 60_000,
+  });
+  const formalSpots = spotsQuery.data?.data.spots ?? [];
+  const [selectedSpotId, setSelectedSpotId] = useState<SpotId | null>(
+    existing?.spotId ??
+      (observationContext?.location.kind === "FORMAL_SPOT"
+        ? observationContext.location.spotId
+        : null),
   );
-  const [localDate, setLocalDate] = useState(existing?.localDate ?? today());
+  const [localDate, setLocalDate] = useState(
+    existing?.localDate ??
+      observationContext?.localDate ??
+      today(observationContext?.timezone),
+  );
   const [localTime, setLocalTime] = useState(existing?.localTime ?? "22:00");
   const [notes, setNotes] = useState(existing?.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const initializedFromRemote = useRef(Boolean(existing));
   const initialDraft = useRef({
-    spotIndex,
+    selectedSpotId,
     localDate,
     localTime,
     notes,
   });
   const themeClass = useThemeClass();
+  const selectedSpotIndex = Math.max(
+    0,
+    formalSpots.findIndex((spot) => spot.spotId === selectedSpotId),
+  );
   const applyPlan = (plan: ObservationPlan) => {
-    const nextSpotIndex = Math.max(
-      0,
-      DEMO_SPOTS.findIndex((spot) => spot.spotId === plan.spotId),
-    );
     setActivePlanId(plan.planId);
-    setSpotIndex(nextSpotIndex);
+    setSelectedSpotId(plan.spotId);
     setLocalDate(plan.localDate);
     setLocalTime(plan.localTime);
     setNotes(plan.notes);
     initialDraft.current = {
-      spotIndex: nextSpotIndex,
+      selectedSpotId: plan.spotId,
       localDate: plan.localDate,
       localTime: plan.localTime,
       notes: plan.notes,
     };
   };
   const startNewPlan = () => {
-    const nextDate = today();
+    const nextDate =
+      observationContext?.localDate ?? today(observationContext?.timezone);
     setActivePlanId(null);
-    setSpotIndex(0);
+    setSelectedSpotId(
+      observationContext?.location.kind === "FORMAL_SPOT"
+        ? observationContext.location.spotId
+        : null,
+    );
     setLocalDate(nextDate);
     setLocalTime("22:00");
     setNotes("");
     initialDraft.current = {
-      spotIndex: 0,
+      selectedSpotId:
+        observationContext?.location.kind === "FORMAL_SPOT"
+          ? observationContext.location.spotId
+          : null,
       localDate: nextDate,
       localTime: "22:00",
       notes: "",
@@ -110,11 +173,11 @@ export default function PlanEditorPage() {
     applyPlan(existing);
   }, [existing]);
   const isDirty = activePlan
-    ? activePlan.spotId !== DEMO_SPOTS[spotIndex]?.spotId ||
+    ? activePlan.spotId !== selectedSpotId ||
       activePlan.localDate !== localDate ||
       activePlan.localTime !== localTime ||
       activePlan.notes !== notes
-    : spotIndex !== initialDraft.current.spotIndex ||
+    : selectedSpotId !== initialDraft.current.selectedSpotId ||
       localDate !== initialDraft.current.localDate ||
       localTime !== initialDraft.current.localTime ||
       notes !== initialDraft.current.notes;
@@ -134,7 +197,7 @@ export default function PlanEditorPage() {
     });
   };
   const save = async () => {
-    const spot = DEMO_SPOTS[spotIndex];
+    const spot = formalSpots.find((item) => item.spotId === selectedSpotId);
     if (!spot) {
       announce(
         "error",
@@ -157,7 +220,10 @@ export default function PlanEditorPage() {
     const planId =
       activePlanId ??
       (`plan:${Date.now()}-${Math.random().toString(16).slice(2)}` as PlanId);
-    const plan: Omit<ObservationPlan, "revision" | "updatedAt"> = {
+    const plan: Omit<
+      ObservationPlan,
+      "revision" | "updatedAt" | "contextSnapshot"
+    > = {
       planId,
       spotId: spot.spotId,
       localDate,
@@ -175,7 +241,7 @@ export default function PlanEditorPage() {
       announce(
         "success",
         "计划已保存",
-        `已持久化并回读修订 ${response.data.revision}；动态事实仍以详情/夜空当前数据为准。`,
+        "计划已安全保存；天气与夜空条件仍以打开页面时的最新数据为准。",
       );
     } catch (error) {
       if (error instanceof MiniappApiError && error.code === "CONFLICT") {
@@ -183,8 +249,8 @@ export default function PlanEditorPage() {
         if (current) replacePlans(current.data.plans);
         announce(
           "warning",
-          "计划有新修订",
-          "服务端版本已刷新，但本页输入完整保留；请核对后再次保存。",
+          "计划已在其他位置更新",
+          "本页输入已完整保留；请核对最新计划后再次保存。",
         );
       } else {
         announce(
@@ -238,6 +304,7 @@ export default function PlanEditorPage() {
         title={activePlan ? "编辑计划" : "新建计划"}
         back
         backOdId="my-plan-back-action"
+        backFallbackTab="/pages/my/index"
       />
       <View className="plan-form page-inset safe-bottom">
         <View data-od-id="my-plan-notification-state">
@@ -252,7 +319,7 @@ export default function PlanEditorPage() {
           </View>
           {plans.length ? (
             plans.map((plan) => {
-              const spot = DEMO_SPOTS.find(
+              const spot = formalSpots.find(
                 (item) => item.spotId === plan.spotId,
               );
               return (
@@ -292,20 +359,73 @@ export default function PlanEditorPage() {
         ) : null}
         <View className="form-group">
           <Text className="type-label">正式观星点</Text>
-          <Picker
-            mode="selector"
-            range={DEMO_SPOTS.map((spot) => `${spot.name} · ${spot.region}`)}
-            value={spotIndex}
-            onChange={(event) => setSpotIndex(Number(event.detail.value))}
-          >
+          {!observationContext ? (
+            <StatusPanel
+              state="ERROR"
+              detail="请先返回地图，让应用建立观测地点、日期与时区，再新建计划。"
+              recoveryLabel="返回地图"
+              onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
+            />
+          ) : contextQuery.isPending ? (
+            <StatusPanel
+              state="LOADING"
+              detail="正在恢复观测地点、日期与时区。"
+            />
+          ) : contextQuery.isError ? (
+            <StatusPanel
+              state="ERROR"
+              detail="观测上下文当前不可用；计划草稿仍保留，也不会改用另一个地点或日期。"
+              recoveryLabel="重试"
+              onRecover={() => void contextQuery.refetch()}
+            />
+          ) : spotsQuery.isPending ? (
+            <StatusPanel state="LOADING" detail="正在加载正式观星点。" />
+          ) : spotsQuery.isError ? (
+            <StatusPanel
+              state="ERROR"
+              detail="正式观星点目录当前不可用；不会显示内置示例点位。"
+              recoveryLabel="重试"
+              onRecover={() => void spotsQuery.refetch()}
+            />
+          ) : formalSpots.length === 0 ? (
+            <StatusPanel
+              state="EMPTY"
+              detail="当前没有已完成核验并发布的正式观星点，因此暂不能新建正式计划。"
+            />
+          ) : null}
+          {formalSpots.length ? (
+            <Picker
+              mode="selector"
+              range={formalSpots.map(
+                (spot) => `${spot.name} · ${spot.region}`,
+              )}
+              value={selectedSpotIndex}
+              onChange={(event) => {
+                const spot = formalSpots[Number(event.detail.value)];
+                if (spot) setSelectedSpotId(spot.spotId);
+              }}
+            >
+              <View
+                className="field focus-ring"
+                role="button"
+                aria-label="选择正式观星点"
+              >
+                <Text>
+                  {formalSpots.find((spot) => spot.spotId === selectedSpotId)
+                    ?.name ?? "请选择正式观星点"}
+                </Text>
+              </View>
+            </Picker>
+          ) : (
             <View
-              className="field focus-ring"
+              className="field field--disabled"
               role="button"
               aria-label="选择正式观星点"
+              aria-disabled="true"
             >
-              <Text>{DEMO_SPOTS[spotIndex]?.name}</Text>
+              <Text>暂无可选正式观星点</Text>
             </View>
-          </Picker>
+          )}
         </View>
         <View className="form-grid">
           <View className="form-group">

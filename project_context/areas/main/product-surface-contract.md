@@ -2,14 +2,16 @@
 
 ## Purpose
 
-This Context owns durable responsibility and main-versus-drilldown placement for the Starward native mobile product, the independently scoped WeChat Mini Program, and owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. The Mini Program surfaces below were adopted from the immutable corrected V2.1.1 product/technical plans under their 0A/disposition precedence and selected-v3 constraint; their exact visual values remain owned only by `DESIGN.md`.
+This Context owns durable responsibility and main-versus-drilldown placement for the Starward native mobile product, the independently scoped WeChat Mini Program, and owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. The Mini Program surfaces below implement the current accepted product/technical Source under its correction/disposition precedence and selected constraint; document version labels remain provenance only, and exact visual values remain owned only by `DESIGN.md`.
 
 ## Current Product Boundary
 
 - The current product target is an owner-only, non-commercial personal trial. Public operation, store release, commercial activation, paid-provider purchase, legal approval, and representative field sign-off are future gates and must not appear as completed states.
 - The mobile product is the primary user surface. Owner operations is a separate authenticated desktop surface; it must not be exposed as ordinary mobile navigation or collapse raw operational detail into the consumer journey.
 - The auxiliary share projection exposes only an authorized, expiring trip/place summary. It is not a thirteenth operations control, a full mobile substitute, or a route to administrative data.
-- The WeChat Mini Program is an independently completable product carrier for the corrected V2.1.1 Demo baseline. It coexists with the native App and does not prove, replace, inherit, or silently shrink that product. Its primary navigation is exactly Map and My; its Night capability is formal-Spot-Detail drilldown only.
+- The WeChat Mini Program is one independently completable current product carrier, evolved in place under the current accepted Source. It coexists with the native App and does not prove, replace, inherit, or silently shrink that product. Its primary navigation is exactly Map and My; its Night capability is formal-Spot-Detail drilldown only.
+- Formal-spot field facts are populated through authenticated user contribution or authenticated owner entry, not fabricated by startup data or inferred from nearby providers. A user submission remains provisional and visible to its contributor until owner review; owner operations alone can merge it into the canonical spot/evidence record, after which the same server publication gate is rerun before any formal-map projection changes.
+- The Mini Program does not ship or retain a Web/H5 counterpart. Its consumer UI is WEAPP-only and follows the selected Mini Program design closure; current owner moderation uses authenticated server APIs plus the project-owned CLI until a separately selected owner-operations design authorizes a real administrative UI.
 - The previous repository posture that limited a future Mini Program to share/light-query/invitation remains native-App provenance only and is superseded for the independent `apps/wechat-miniapp/**` product by `docs/wechat-miniapp-v2-1-1-source.md`. Shared owners must model both product carriers rather than overwriting the App boundary.
 
 ## Mobile Product Surfaces
@@ -150,7 +152,7 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 - Surface: Spot package `spot/detail` shell with Overview/Guides/Site content and an explicit child-route entry to `spot/sky`.
 - Surface Platform: WeChat Mini Program subpackage.
 - Primary User Question: Is this formal spot suitable, reachable, trustworthy and safe tonight?
-- Main Surface Allows: a spaced identity/header region with the spot name and a visually quiet accessible Favorite icon action in its transparent hit region, a distance/route row with one quiet trailing `去这里 →` action rather than a filled block, only user-interpretable decision facts inside their owning content, representative licensed media, hard-blocker-aware conclusion, route/facilities/provenance, animated Overview/Guides/Site segmentation, plan actions and one explicit Night Sky child-page entry.
+- Main Surface Allows: a spaced identity/header region with the spot name and a visually quiet accessible Favorite icon action in its transparent hit region, a distance/route row with one quiet trailing `去这里 →` action rather than a filled block, only user-interpretable decision facts inside their owning content, representative licensed media, hard-blocker-aware conclusion, route/facilities/provenance, animated Overview/Guides/Site segmentation, plan actions, one quiet field-feedback/correction handoff and one explicit Night Sky child-page entry.
 - Main Surface Forbids: unexplained status chips such as generic data-availability or changing-conditions badges in the identity header, hard blockers averaged away, missing facts shown as zero, unlicensed media as truth, a Night Sky entry without `spot_id`, an instantaneous un-signalled segment content swap, or repeating page-level Favorite/Night/navigation actions as a crowded action row inside the facilities card.
 - Drilldown Ownership: professional sky data and observation execution belong to `miniapp-spot-night`; article detail remains content drilldown.
 
@@ -160,17 +162,27 @@ This Context owns durable responsibility and main-versus-drilldown placement for
 - Surface Platform: WeChat Mini Program subpackages and native canvas/sensor adapters.
 - Primary User Question: What is observable from this formal spot, and how can the user orient and observe without losing dark adaptation?
 - Main Surface Allows: summary and aligned professional evidence, structured targets, versioned 2D sky, time scrub, sensor/manual orientation and consumption of the closed warm-red observation presentation configured from `miniapp-my-library` Settings.
-- Main Surface Forbids: a local `进入观测红模式` entry on the Spot Night page, global/current-location sky entry, examples as live facts, Demo AR/full catalogue, sensor-only controls, or white/blue flashes in observation mode.
+- Main Surface Forbids: a local `进入观测红模式` entry on the Spot Night page, global/current-location sky entry, examples as live facts, AR/full deep-sky catalogue outside the current accepted scope, sensor-only controls, or white/blue flashes in observation mode.
 - Drilldown Ownership: source/algorithm detail remains progressive evidence; the formal spot/time context remains shared and immutable across sky routes.
 
 ### `miniapp-my-library`
 
-- Surface: `pages/my/index` account center plus Plan and Settings child routes. Routine favorite browsing remains in `miniapp-map-discovery` Finder `想去`; the favorite relation is also operable from formal Spot Detail.
+- Surface: `pages/my/index` account center plus Plan, Contribution and Settings child routes. Routine favorite browsing remains in `miniapp-map-discovery` Finder `想去`; the favorite relation is also operable from formal Spot Detail.
 - Surface Platform: WeChat Mini Program main/user subpackages.
 - Primary User Question: How can the user understand their account state and reach plans or settings without mixing those tasks into the root page?
-- Main Surface Allows: a title-only account-center header with one conventional Tier-A Settings gear action; a concise login/profile summary; a small grouped list of routine account entries; a quiet Plan row that opens a recoverable Plan child route; an independent Settings child route for objective-fact-preserving preferences and the explicit enter/exit control for the closed warm-red observation presentation.
+- Main Surface Allows: a title-only account-center header with one conventional Tier-A Settings gear action; a concise login/profile summary; a small grouped list of routine account entries; quiet Plan and field-feedback/correction rows that open recoverable child routes; contribution pending/review status; and an independent Settings child route for objective-fact-preserving preferences and the explicit enter/exit control for the closed warm-red observation presentation.
 - Main Surface Forbids: peer My/Favorites/Plan/Settings tabs; a “收藏、计划与显示偏好” explanatory subtitle; any Favorite count, row, list or duplicate favorite-browsing page on the My root; page horizontal scrolling; plan/official sample cards on My home; copied e-commerce orders/coupons/membership/promotion modules or third-party brand styling; duplicate Spot Detail; or provider failure deleting the static favorite relation retained by Finder/Detail.
 - Drilldown Ownership: profile links and imported content belong to `miniapp-profile-content`; Spot cards return to the unified formal detail.
+
+### `miniapp-contribution-intake`
+
+- Surface: `content/contribution/index`, entered from My for general intake or from formal Spot Detail with that `spot_id` preselected.
+- Surface Platform: WeChat Mini Program user/content subpackage.
+- Primary User Question: How can I submit a field report, correction or new-place proposal and know what happens before it affects a formal spot?
+- Main Surface Allows: a guided structured report; explicit observed time and affected fact topics; optional location only for a deliberate new-place proposal; bounded media upload with rights confirmation and metadata sanitization; durable draft/upload/submission status; retry without duplicate writes; and contributor-visible pending/approved/rejected feedback.
+- Main Surface Forbids: instant publication, treating a report as confirmed evidence before owner review, hidden precise-location collection, raw EXIF exposure, upload without MIME/size limits, loss of a draft after transport failure, or a new-place proposal receiving a formal `spot_id` before the canonical completeness gate.
+- Drilldown Ownership: owner review, sensitive evidence inspection, canonical fact merge and publication remain in authenticated `admin-data-operations`; the consumer surface sees only its own redacted submission state.
+- Long Task State Requirement: the submission and every media upload have durable identities, explicit expiry/progress, idempotent retry, restart readback and cleanup of abandoned objects.
 
 Across all Mini Program user scenes, vertical scrolling may remain available where content requires it but its scrollbar chrome is hidden and consumes no layout width. Horizontal scrolling is exceptional and belongs only to an explicitly bounded row or data matrix; when a visible indicator is necessary it overlays the content, consumes no layout height/width and uses a white semi-transparent presentation that remains legible in the active mode.
 
@@ -211,7 +223,7 @@ The stable Mini Program Control inventory, route/package bindings, cross-control
 
 ## Cross-Surface Rules
 
-- Stable Surface Keys are the fourteen native App/owner-operations headings plus the five explicitly named Mini Program surfaces above. Stable Control Keys and screen routing are owned by `screen-contracts.md` and its registered detail nodes; independently scoped system-target interpretation, legacy-target applicability, and token values are owned by `DESIGN.md`.
+- Stable Surface Keys are the fourteen native App/owner-operations headings plus the six explicitly named Mini Program surfaces above. Stable Control Keys and screen routing are owned by `screen-contracts.md` and its registered detail nodes; independently scoped system-target interpretation, legacy-target applicability, and token values are owned by `DESIGN.md`.
 - Mobile primary navigation is exactly Tonight, Map, Trips, Sky, and Me. Forecast, spot detail, shooting, field, contribution, toolbox, and onboarding/preferences are contextual or secondary routes, not extra primary tabs.
 - The five primary destinations are five distinct route/screen roots—Tonight `/tonight`, Map `/map`, Trips `/trips`, Sky `/sky`, and Me `/me`—inside one persistent native tab navigator. A shared `ScrollView`, section-anchor jump, or conditional content block that merely imitates separate pages is forbidden.
 - Each primary destination owns its route-local stack and primary scroll or immersive-canvas position. Switching away and back preserves that local task position; shared place/time/mode/selection changes continue through the versioned decision context rather than through duplicate tab state.
@@ -222,7 +234,7 @@ The stable Mini Program Control inventory, route/package bindings, cross-control
 - Critical or mutating work cannot be represented by a transient success label. Its owning surface exposes operation identity, committed state, applicable external/native boundary result, retry/recovery, and restart readback.
 - Owner operations deny by default, redact ordinary telemetry and audit views, and require impact preview plus explicit confirmation for high-risk actions. Current owner-only access does not waive authentication, authorization, privacy, idempotency, or audit behavior.
 - The CNY 200/month ceiling and paid-default-zero policy are visible at decision points that could consume external cost. Budget state may degrade or block a capability; it never silently purchases, upgrades, or adds a paid source.
-- The Mini Program independently uses a Demo external-services hard ceiling of CNY 300/month excluding application/database IaaS. That budget does not authorize purchase, commercial use, provider promotion or public production traffic; provider/license/cost gates remain explicit.
+- The Mini Program independently uses a current external-services hard ceiling of CNY 300/month excluding application/database IaaS. That budget does not authorize purchase, commercial use, provider promotion or public production traffic; provider/license/cost gates remain explicit.
 
 ## Screen Contract Routing
 

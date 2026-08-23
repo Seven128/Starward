@@ -87,7 +87,7 @@ class MiniappAbortController {
   }
 }
 
-/** Install only Web primitives required by Query Core and absent in WEAPP. */
+/** Install only standard cancellation primitives required by Query Core and absent in WEAPP. */
 export function installAbortControllerPolyfill(
   runtime: AbortRuntime = globalThis,
 ): boolean {

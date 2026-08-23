@@ -1,8 +1,6 @@
 import { onlineManager, useQuery } from "@tanstack/react-query";
-import Taro from "@tarojs/taro";
 import { useEffect } from "react";
 import { recordAcceptanceDiagnostic } from "@/services/acceptance-diagnostics";
-import { selectQueryAbortSignal } from "@/services/request-lifecycle";
 
 interface QueryOptions<T> {
   queryKey: readonly unknown[];
@@ -43,9 +41,11 @@ export function useResourceQuery<T>({
   const diagnosticKey = String(queryKey[0] ?? "resource-query");
   const result = useQuery<T>({
     queryKey,
-    queryFn: (context) => {
+    queryFn: () => {
       recordAcceptanceDiagnostic(diagnosticKey, "query_fn", "begin");
-      return queryFn(selectQueryAbortSignal(Taro.getEnv(), context));
+      // WEAPP cancellation is owned by the RequestTask registry. Reading
+      // TanStack's AbortSignal would introduce a second lifecycle owner.
+      return queryFn(undefined);
     },
     enabled,
     staleTime,

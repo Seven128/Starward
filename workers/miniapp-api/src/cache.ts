@@ -44,7 +44,7 @@ export class RedisCache implements CachePort {
   readonly client: Redis;
   readonly prefix: string;
 
-  constructor(redisUrl: string, prefix = "starward:miniapp:v1:") {
+  constructor(redisUrl: string, prefix = "starward:miniapp:current:") {
     this.prefix = prefix;
     this.client = new Redis(redisUrl, {
       lazyConnect: true,

@@ -217,7 +217,7 @@ const output = {
   manifest_census_passed: manifestCensusPassed,
   limitations: [
     "This result proves complete immutable v3 selected-resource identity and declared production probe bindings.",
-    "It does not replace fresh H5/native journeys, layout/pixel/accessibility/motion observations, real-provider validation, or Final Gate.",
+    "It does not replace fresh native journeys, layout/pixel/accessibility/motion observations, real-provider validation, or current-candidate conformance.",
   ],
   failures,
 };

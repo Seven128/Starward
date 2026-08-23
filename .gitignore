@@ -1,4 +1,8 @@
 node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+tmp/venvs/
 .DS_Store
 Thumbs.db
 apps/mobile/public/.well-known/starward-acceptance-session-*.json

@@ -12,15 +12,28 @@ const engine = require("astronomy-engine") as AstronomyEngine;
 const {
   Body,
   Equator,
+  GeoVector,
   Horizon,
   Illumination,
   Observer,
+  RotateVector,
+  Rotation_EQJ_ECL,
   SearchAltitude,
   SearchRiseSet,
 } = engine;
 
 export const MINIAPP_ASTRONOMY_ALGORITHM =
   "miniapp-astronomy-engine-adapter@1.0.0+astronomy-engine@2.1.19";
+
+export function calculateSolarLongitudeJ2000(at: string): number {
+  const date = new Date(at);
+  if (!Number.isFinite(date.getTime())) throw new Error("valid_iso_time_required");
+  const sunEqj = GeoVector(Body.Sun, date, true);
+  const sunEclipticJ2000 = RotateVector(Rotation_EQJ_ECL(), sunEqj);
+  const longitude =
+    (Math.atan2(sunEclipticJ2000.y, sunEclipticJ2000.x) * 180) / Math.PI;
+  return (longitude + 360) % 360;
+}
 
 export type MiniappAstronomyTarget =
   | "milky-way-core"
@@ -55,6 +68,26 @@ export interface MiniappHorizontalCalculation {
   refraction: "none";
   at: string;
   target: MiniappAstronomyTarget;
+  azimuthDeg: number;
+  altitudeDeg: number;
+}
+
+export interface MiniappEquatorialHorizontalRequest {
+  latitude: number;
+  longitude: number;
+  elevationM: number;
+  at: string;
+  rightAscensionDeg: number;
+  declinationDeg: number;
+}
+
+export interface MiniappEquatorialHorizontalCalculation {
+  algorithmVersion: string;
+  coordinateSystem: "WGS84";
+  refraction: "none";
+  at: string;
+  rightAscensionDeg: number;
+  declinationDeg: number;
   azimuthDeg: number;
   altitudeDeg: number;
 }
@@ -235,6 +268,54 @@ export function calculateTargetHorizontalAt(
     refraction: "none",
     at: at.toISOString(),
     target: input.target,
+    azimuthDeg: round(result.azimuth, 6),
+    altitudeDeg: round(result.altitude, 6),
+  };
+}
+
+/**
+ * Projects an externally catalogued equatorial direction into the same
+ * airless local horizon frame used by the built-in body calculations.
+ * Catalog provenance and epoch/precision remain the caller's responsibility.
+ */
+export function calculateEquatorialHorizontalAt(
+  input: MiniappEquatorialHorizontalRequest,
+): MiniappEquatorialHorizontalCalculation {
+  assertObserver(input);
+  const at = new Date(input.at);
+  if (!Number.isFinite(at.getTime()))
+    throw new TypeError("astronomy_instant_invalid");
+  if (
+    !Number.isFinite(input.rightAscensionDeg) ||
+    input.rightAscensionDeg < 0 ||
+    input.rightAscensionDeg >= 360
+  )
+    throw new RangeError("astronomy_right_ascension_out_of_range");
+  if (
+    !Number.isFinite(input.declinationDeg) ||
+    input.declinationDeg < -90 ||
+    input.declinationDeg > 90
+  )
+    throw new RangeError("astronomy_declination_out_of_range");
+  const observer = new Observer(
+    input.latitude,
+    input.longitude,
+    input.elevationM,
+  );
+  const result = Horizon(
+    at,
+    observer,
+    input.rightAscensionDeg / 15,
+    input.declinationDeg,
+    "",
+  );
+  return {
+    algorithmVersion: MINIAPP_ASTRONOMY_ALGORITHM,
+    coordinateSystem: "WGS84",
+    refraction: "none",
+    at: at.toISOString(),
+    rightAscensionDeg: input.rightAscensionDeg,
+    declinationDeg: input.declinationDeg,
     azimuthDeg: round(result.azimuth, 6),
     altitudeDeg: round(result.altitude, 6),
   };

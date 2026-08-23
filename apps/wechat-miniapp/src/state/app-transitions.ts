@@ -57,6 +57,7 @@ export function beginFilterDraft(committedFilters: FilterState) {
   return {
     filterSheetOpen: true,
     draftFilters: cloneFilterState(committedFilters),
+    filterSnapshot: cloneFilterState(committedFilters),
   };
 }
 
@@ -64,10 +65,18 @@ export function toggleFilterDraft(draftFilters: FilterState, optionId: string) {
   return { draftFilters: toggleFilter(draftFilters, optionId) };
 }
 
+export function revertFilterDraft(filterSnapshot: FilterState) {
+  return {
+    filterSheetOpen: true,
+    draftFilters: cloneFilterState(filterSnapshot),
+  };
+}
+
 export function cancelFilterDraft(committedFilters: FilterState) {
   return {
     filterSheetOpen: false,
     draftFilters: cloneFilterState(committedFilters),
+    filterSnapshot: cloneFilterState(committedFilters),
   };
 }
 
@@ -76,6 +85,7 @@ export function applyFilterDraft(draftFilters: FilterState) {
     filterSheetOpen: false,
     committedFilters: cloneFilterState(draftFilters),
     draftFilters: cloneFilterState(draftFilters),
+    filterSnapshot: cloneFilterState(draftFilters),
   };
 }
 

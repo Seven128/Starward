@@ -27,7 +27,7 @@ export function usePreferencesSync() {
     const before = useAppStore.getState();
     if (!before.preferencesDirty) return true;
     if (before.preferencesRevision < 1) {
-      setStatus("偏好已保存在本机，等待服务端初始版本后同步。");
+      setStatus("偏好已保存在本机，连接服务后会自动同步。");
       return false;
     }
     inFlight.current = true;
@@ -43,13 +43,13 @@ export function usePreferencesSync() {
       if (JSON.stringify(current.preferences) === snapshotText)
         current.markPreferencesSynced(response.data);
       else current.applyServerPreferences(response.data);
-      setStatus(`偏好已同步 · 修订 ${response.data.revision}`);
+      setStatus("偏好已同步");
       return true;
     } catch (error) {
       if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         const latest = await getPreferences().catch(() => null);
         if (latest) useAppStore.getState().applyServerPreferences(latest.data);
-        setStatus("服务端偏好已有新修订；本机编辑保持不变，已刷新版本并等待重试。");
+        setStatus("云端偏好已有更新；本机编辑保持不变，正在重新同步。");
         rerun.current = true;
       } else {
         setStatus(`偏好仅保存在本机：${errorMessage(error)}。可重试同步。`);

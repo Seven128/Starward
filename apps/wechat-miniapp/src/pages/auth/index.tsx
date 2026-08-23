@@ -93,7 +93,7 @@ export default function PermissionPage() {
           <Text className="type-section">高敏感夜间数据</Text>
           <Text className="type-body">
             常去点位、夜间出行、精确轨迹、隐蔽收藏与提醒位置按最小化采集、单独授权、可查看/删除处理。本
-            Demo 不启用持续轨迹、广告画像或公开分享。
+            小程序不启用持续轨迹、广告画像或公开分享。
           </Text>
         </View>
       </View>

@@ -5,6 +5,10 @@ export type ProfileLinkId = Brand<string, "ProfileLinkId">;
 export type PlanId = Brand<string, "PlanId">;
 export type ImportDraftId = Brand<string, "ImportDraftId">;
 export type SpotProposalId = Brand<string, "SpotProposalId">;
+export type ContributionId = Brand<string, "ContributionId">;
+export type ContributionUploadId = Brand<string, "ContributionUploadId">;
+export type UserId = Brand<string, "UserId">;
+export type ObservationContextId = Brand<string, "ObservationContextId">;
 
 export type DataState =
   | "FRESH"
@@ -27,12 +31,15 @@ export type PageState =
 
 export type SourceKind =
   | "THIRD_PARTY_FORECAST"
+  | "THIRD_PARTY_ROUTE"
+  | "THIRD_PARTY_PLACE"
+  | "OFFICIAL_REFERENCE"
   | "PRODUCT_CALCULATION"
   | "OFFICIAL_VERIFICATION"
   | "USER_FIELD_REPORT"
   | "HISTORICAL_RECORD"
   | "OPEN_DATA"
-  | "DEMO_FIXTURE";
+  | "TEST_FIXTURE";
 
 export interface SourceSummary {
   id: string;
@@ -53,13 +60,16 @@ export interface SourceSummary {
 }
 
 export interface ApiEnvelope<T> {
-  apiVersion: "v1";
+  apiVersion: "v2";
   data: T;
   dataState: DataState;
   generatedAt: string;
+  validAt: string | null;
   etag: string;
   sources: readonly SourceSummary[];
   warnings: readonly string[];
+  requestId: string;
+  contextRevision?: number;
 }
 
 export interface ApiError {
@@ -77,6 +87,90 @@ export interface ApiError {
   retryable: boolean;
   recovery: readonly string[];
   requestId: string;
+}
+
+export type ObservationLocation =
+  | {
+      kind: "FORMAL_SPOT";
+      spotId: SpotId;
+      locationVersion: number;
+    }
+  | {
+      kind: "MAP_POINT";
+      displayName: string;
+      wgs84: Wgs84Point;
+      source: "MAP_VIEWPORT" | "USER_LOCATION";
+    };
+
+export interface ObservationContext {
+  schemaVersion: "observation-context-v2";
+  contextId: ObservationContextId;
+  contextFingerprint: string;
+  revision: number;
+  location: ObservationLocation;
+  routeOrigin: {
+    contextId: ObservationContextId;
+    displayName: string;
+    wgs84: Wgs84Point;
+    source: "MAP_VIEWPORT" | "USER_LOCATION";
+  } | null;
+  timezone: string;
+  localDate: string;
+  nightStartUtc: string;
+  nightEndUtc: string;
+  selectedAtUtc: string;
+  eventInstanceId: string | null;
+  targetProfile: "DAILY" | "METEOR" | "MILKY_WAY" | "PLANET" | "CUSTOM";
+  weatherView: {
+    primaryPolicy: string;
+    comparisonModels: readonly string[];
+    selectedModel: string | null;
+    cloudLayer: "TOTAL" | "LOW" | "MID" | "HIGH";
+  };
+  algorithmVersions: {
+    astronomy: string;
+    opportunity: string;
+    tripDecision: string;
+    darkSky: string;
+    eventCatalog: string;
+  };
+  privacyClass: "PUBLIC_REFERENCE" | "SESSION_PRECISE";
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface ObservationContextResolveRequest {
+  location:
+    | { kind: "FORMAL_SPOT"; spotId: string }
+    | {
+        kind: "MAP_POINT";
+        displayName: string;
+        wgs84: Wgs84Point;
+        source: "MAP_VIEWPORT" | "USER_LOCATION";
+        timezoneHint?: "Asia/Shanghai" | "Asia/Hong_Kong";
+      };
+  routeOriginContextId?: string | null;
+  localDate: string;
+  selectedAt?: string | null;
+  eventInstanceId?: string | null;
+  targetProfile?: ObservationContext["targetProfile"];
+}
+
+export interface ObservationContextUpdateRequest {
+  expectedRevision: number;
+  selectedAt?: string;
+  cloudLayer?: ObservationContext["weatherView"]["cloudLayer"];
+  eventInstanceId?: string | null;
+}
+
+export interface WechatLoginRequest {
+  code: string;
+}
+
+export interface AuthSessionData {
+  userId: UserId;
+  accessToken: string;
+  expiresAt: string;
 }
 
 export interface Wgs84Point {
@@ -126,6 +220,42 @@ export interface FacilityEvidence {
   source: SourceSummary;
 }
 
+export type FactEvidenceSubject =
+  | "SPOT"
+  | "FACILITY"
+  | "ACCESS"
+  | "SAFETY"
+  | "HORIZON";
+
+export interface FactEvidence {
+  evidenceId: string;
+  subjectType: FactEvidenceSubject;
+  subjectId: string;
+  claim: string;
+  state: "CONFIRMED" | "REPORTED" | "CONFLICTED" | "EXPIRED";
+  sourceType: "OFFICIAL" | "OPERATOR" | "VERIFIED_USER" | "USER";
+  sourceId: string;
+  mediaIds: readonly string[];
+  observedAt: string | null;
+  verifiedAt: string | null;
+  validTo: string | null;
+  confidence: number | null;
+}
+
+export interface AccessAndSafetyState {
+  openness: "OPEN" | "CONDITIONAL" | "CLOSED" | "UNKNOWN";
+  legalAccess: "PERMITTED" | "CONDITIONAL" | "PROHIBITED" | "UNKNOWN";
+  nightSafety: "NO_KNOWN_HAZARD" | "CAUTION" | "DANGER" | "UNKNOWN";
+  explicitDanger: boolean | null;
+  restrictions: readonly string[];
+  guidance: readonly string[];
+}
+
+export type SiteMediaState =
+  | "SITE_MEDIA_VERIFIED"
+  | "NO_SITE_MEDIA_VERIFIED"
+  | "UNKNOWN";
+
 export interface RepresentativeMedia {
   id: string;
   localPath: string;
@@ -145,6 +275,21 @@ export interface RepresentativeMedia {
 
 export interface LightPollutionEstimate {
   levelAtMost: 2 | 3 | 4 | 5 | 6 | null;
+  productBand:
+    | "VERY_LOW"
+    | "LOW"
+    | "MODERATE"
+    | "HIGH"
+    | "VERY_HIGH"
+    | null;
+  radiance: {
+    median: number;
+    p10: number;
+    p90: number;
+    unit: "nW/cm²/sr";
+  } | null;
+  minimumCloudFreeObservations: number | null;
+  calibratedSkyClass: false;
   label: string;
   method: string;
   datasetVersion: string;
@@ -201,6 +346,7 @@ export interface GuideArticle {
 
 export interface RouteOverview {
   kind: "ROUTE_ESTIMATE" | "STRAIGHT_LINE_ONLY" | "UNAVAILABLE";
+  originLabel: string | null;
   distanceKm: number | null;
   driveMinutes: number | null;
   walkingMinutes: number | null;
@@ -218,14 +364,33 @@ export interface DecisionFactor {
   sourceIds: readonly string[];
 }
 
-export interface TonightDecision {
-  recommendation:
-    | "RECOMMEND"
-    | "CONSIDER"
-    | "NOT_RECOMMENDED"
-    | "DATA_INSUFFICIENT";
+export type SkyOpportunityStatus =
+  | "EXCELLENT"
+  | "GOOD"
+  | "FAIR"
+  | "POOR"
+  | "INSUFFICIENT_DATA";
+
+export interface ObservationWindow {
+  start: string;
+  end: string;
+  durationMinutes: number;
+  averageScore: number;
+  peakScore: number;
+  confidence: number;
+  favorableFactors: readonly DecisionFactor[];
+  adverseFactors: readonly DecisionFactor[];
+  startReason: string;
+  endReason: string;
+  modelBoundarySpreadMinutes: number | null;
+}
+
+export interface SkyOpportunity {
+  status: SkyOpportunityStatus;
   label: string;
-  bestWindow: { start: string; end: string } | null;
+  primaryWindow: ObservationWindow | null;
+  backupWindow: ObservationWindow | null;
+  windows: readonly ObservationWindow[];
   suitableFor: readonly (
     | "NAKED_EYE"
     | "PHONE"
@@ -236,28 +401,73 @@ export interface TonightDecision {
   factors: readonly DecisionFactor[];
   confidence: number | null;
   freshness: DataState;
-  algorithmVersion: string;
+  ruleVersion: string;
+  inputDigest: string;
+}
+
+export interface TripDecision {
+  recommendation:
+    | "RECOMMENDED"
+    | "CONSIDER"
+    | "NOT_RECOMMENDED"
+    | "DATA_INSUFFICIENT";
+  label: string;
+  skyOpportunity: SkyOpportunity;
+  factors: readonly DecisionFactor[];
+  confidence: number | null;
+  freshness: DataState;
+  ruleVersion: string;
   inputDigest: string;
 }
 
 export interface SpotDetail {
   spot: SpotSummary;
   route: RouteOverview;
-  decision: TonightDecision;
+  decision: TripDecision;
   guides: readonly GuideArticle[];
-  siteSafety: readonly string[];
+  accessAndSafety: AccessAndSafetyState;
+  siteMediaState: SiteMediaState;
+  evidence: readonly FactEvidence[];
   dataDisclosure: readonly SourceSummary[];
 }
 
 export interface SpotSkyContext {
+  contextId: ObservationContextId;
+  contextFingerprint: string;
+  contextRevision: number;
   spotId: SpotId;
   localDate: string;
-  at: string | null;
+  at: string;
   timezone: string;
   targetProfile: "BEGINNER" | "PHOTOGRAPHER" | "ADVANCED";
   dataRevision: string;
   algorithmVersion: string;
   catalogVersion: string;
+  eventCatalogVersion: string;
+}
+
+export type MeteorActivityStage =
+  | "WEAK"
+  | "MODERATE"
+  | "STRONG"
+  | "NEAR_PEAK";
+
+export interface MeteorActivityEvidence {
+  profileId: string;
+  profileKind: "HISTORICAL_FIT";
+  profileVersion: string;
+  axis: "SOLAR_LONGITUDE_J2000";
+  unit: "RELATIVE_ACTIVITY";
+  referencePeakSolarLongitudeDeg: number;
+  currentSolarLongitudeDeg: number;
+  relativeActivity: number;
+  stage: MeteorActivityStage;
+  samples: readonly {
+    solarLongitudeDeg: number;
+    relativeActivity: number;
+  }[];
+  source: SourceSummary;
+  limitations: readonly string[];
 }
 
 export interface SkyTarget {
@@ -276,24 +486,95 @@ export interface SkyTarget {
   reason: string;
   source: SourceSummary;
   confidence: number | null;
+  activity?: MeteorActivityEvidence | null;
+}
+
+export interface SkyOpportunitySliceInput {
+  at: string;
+  eventActivity: number | null;
+  targetVisibility: number;
+  darkness: number;
+  moonPenalty: number;
+  weatherTransmission: number | null;
+  modelConsistency: number;
+  lightPollution: number | null;
+  horizonSuitability: number | null;
+  dataConfidence: number;
+  hardBlockers: readonly string[];
 }
 
 export interface HourlySkyRow {
   at: string;
   cloudPercent: number | null;
+  lowCloudPercent: number | null;
+  midCloudPercent: number | null;
+  highCloudPercent: number | null;
+  modelConsistency: number | null;
+  modelConsistencyLabel: "HIGH" | "MEDIUM" | "LOW" | "UNAVAILABLE";
+  modelSpreadPercent: number | null;
   precipitationMm: number | null;
+  precipitationProbabilityPercent: number | null;
   windKph: number | null;
+  windGustKph: number | null;
+  windDirectionDeg: number | null;
   temperatureC: number | null;
+  relativeHumidityPercent: number | null;
+  dewPointC: number | null;
   visibilityKm: number | null;
   moonAltitudeDeg: number | null;
   moonIllumination: number | null;
   darkness: "DAY" | "TWILIGHT" | "ASTRONOMICAL_NIGHT";
+  opportunityScore: number | null;
+  opportunityConfidence: number | null;
+  opportunityEligible: boolean;
+  opportunityBlockers: readonly string[];
+  opportunityInput: SkyOpportunitySliceInput;
   state: DataState;
+}
+
+export interface WeatherAlertEvidence {
+  id: string;
+  headline: string;
+  description: string;
+  instruction: string | null;
+  eventName: string;
+  eventCode: string;
+  severity: string;
+  urgency: string | null;
+  certainty: string | null;
+  issuedAt: string;
+  effectiveAt: string | null;
+  expiresAt: string | null;
+  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "UNKNOWN";
+  material: boolean;
+  sourceId: string;
+}
+
+export interface WeatherModelRunEvidence {
+  provider: string;
+  modelKey: string;
+  modelRunAt: string | null;
+  fetchedAt: string;
+  validFrom: string | null;
+  validTo: string | null;
+  nativeSpatialResolutionKm: number | null;
+  nativeTemporalResolutionMinutes: number | null;
+  outputTemporalResolutionMinutes: number;
+  interpolatedVariables: readonly string[];
+  state: DataState;
+  sourceId: string;
+}
+
+export interface WeatherEvidenceSummary {
+  timelineRole: "PRIMARY" | "PRIMARY_FALLBACK" | "UNAVAILABLE";
+  warningState: DataState;
+  alerts: readonly WeatherAlertEvidence[];
+  modelRuns: readonly WeatherModelRunEvidence[];
 }
 
 export interface SkyReport {
   context: SpotSkyContext;
-  decision: TonightDecision;
+  decision: TripDecision;
   targets: readonly SkyTarget[];
   hourly: readonly HourlySkyRow[];
   milkyWayDirection: string;
@@ -304,10 +585,10 @@ export interface SkyReport {
   };
   precachedHours: number;
   offlineReady: boolean;
+  weatherEvidence: WeatherEvidenceSummary;
   sources: readonly SourceSummary[];
 }
 
-export type MyTab = "MY" | "FAVORITES" | "PLAN" | "SETTINGS";
 export type DisplayMode = "DAY" | "NIGHT" | "OBSERVATION";
 
 export interface UserPreferences {
@@ -330,8 +611,23 @@ export interface ObservationPlan {
   localDate: string;
   localTime: string;
   notes: string;
+  contextSnapshot: ObservationContextSnapshot;
   revision: number;
   updatedAt: string;
+}
+
+export interface ObservationContextSnapshot {
+  schemaVersion: "observation-context-snapshot-v1";
+  contextId: ObservationContextId;
+  contextFingerprint: string;
+  contextRevision: number;
+  spotId: SpotId;
+  timezone: string;
+  localDate: string;
+  selectedAtUtc: string;
+  eventInstanceId: string | null;
+  algorithmVersions: ObservationContext["algorithmVersions"];
+  capturedAt: string;
 }
 
 export type PlatformKind =
@@ -391,4 +687,70 @@ export interface ImportDraft {
     | "APPROVED"
     | "REJECTED";
   revision: number;
+}
+
+export type ContributionKind =
+  | "FIELD_REPORT"
+  | "CORRECTION"
+  | "NEW_SPOT_PROPOSAL";
+
+export type ContributionTopic =
+  | "LAST_ROAD"
+  | "PARKING"
+  | "FACILITIES"
+  | "OPENNESS"
+  | "LEGAL_ACCESS"
+  | "NIGHT_SAFETY"
+  | "HORIZON"
+  | "SITE_MEDIA"
+  | "OTHER";
+
+export type ContributionState =
+  | "DRAFT"
+  | "PENDING_REVIEW"
+  | "APPROVED"
+  | "REJECTED";
+
+export interface ContributionCandidateLocation {
+  displayName: string;
+  region: string;
+  wgs84: Wgs84Point;
+}
+
+export interface ContributionMediaUpload {
+  uploadId: ContributionUploadId;
+  state: "PENDING" | "UPLOADED" | "ATTACHED" | "EXPIRED";
+  originalName: string;
+  mimeType: "image/jpeg" | "image/png";
+  declaredByteSize: number;
+  byteSize: number | null;
+  sha256: string | null;
+  createdAt: string;
+  expiresAt: string;
+  uploadedAt: string | null;
+}
+
+export interface ContributionReview {
+  resolution: "APPROVED" | "REJECTED";
+  reason: string;
+  reviewedAt: string;
+}
+
+export interface ContributionSubmission {
+  submissionId: ContributionId;
+  kind: ContributionKind;
+  spotId: SpotId | null;
+  spotNameSnapshot: string | null;
+  candidateLocation: ContributionCandidateLocation | null;
+  observedAt: string | null;
+  topics: readonly ContributionTopic[];
+  detail: string;
+  rightsConfirmed: boolean;
+  preciseLocationConsent: boolean;
+  media: readonly ContributionMediaUpload[];
+  state: ContributionState;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  review: ContributionReview | null;
 }

@@ -1,28 +1,43 @@
-import { createHash } from "node:crypto";
-import {
-  findDemoSpot,
-  type ApiEnvelope,
-  type DataState,
-  type HourlySkyRow,
-  type SkyReport,
-  type SkyTarget,
-  type SourceSummary,
-  type SpotId,
+import { createHash, randomUUID } from "node:crypto";
+import type {
+  ApiEnvelope,
+  DataState,
+  HourlySkyRow,
+  ObservationContext,
+  SkyReport,
+  SpotSummary,
+  SkyTarget,
+  SourceSummary,
 } from "@starward/miniapp-contracts";
 import {
+  calculateEquatorialHorizontalAt,
   calculateMiniappNightSky,
+  calculateSolarLongitudeJ2000,
   MINIAPP_ASTRONOMY_ALGORITHM,
 } from "./astronomy-engine-adapter.ts";
-import { decideTonight } from "./decision-engine.ts";
-import type { AstronomyApplicationPort } from "./ports.ts";
-import type { WeatherPort } from "./ports.ts";
-import { SampleWeatherAdapter } from "./sample-weather-adapter.ts";
-
-const CATALOG_VERSION = "starward-bright-targets-v1";
+import {
+  activeMeteorEvents,
+  meteorActivityAt,
+  meteorCatalogSource,
+  meteorEventByOccurrenceId,
+} from "./meteor-event-catalog.ts";
+import {
+  SkyOpportunityEngine,
+  type OpportunitySliceInput,
+} from "./sky-opportunity-engine.ts";
+import { TripDecisionEngine } from "./trip-decision-engine.ts";
+import type {
+  AstronomyApplicationPort,
+  CanonicalWeatherHour,
+  MiniappRepositoryPort,
+  WeatherPort,
+} from "./ports.ts";
+import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
 function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
+
 function envelope<T>(
   data: T,
   state: DataState,
@@ -31,36 +46,50 @@ function envelope<T>(
 ): ApiEnvelope<T> {
   const generatedAt = new Date().toISOString();
   return {
-    apiVersion: "v1",
+    apiVersion: "v2",
     data,
     dataState: state,
     generatedAt,
-    etag: `W/\"${digest({ data, state }).slice(0, 24)}\"`,
+    validAt: data instanceof Object && "context" in data
+      ? (data as { context?: { at?: string } }).context?.at ?? generatedAt
+      : generatedAt,
+    etag: `W/"${digest({ data, state }).slice(0, 24)}"`,
     sources,
     warnings,
+    requestId: `sky:${randomUUID()}`,
+    ...(data instanceof Object && "context" in data
+      ? {
+          contextRevision:
+            (data as { context?: { contextRevision?: number } }).context
+              ?.contextRevision ?? 1,
+        }
+      : {}),
   };
 }
 
-function calculationSource(localDate: string): SourceSummary {
+function calculationSource(
+  context: ObservationContext,
+  config: MiniappRuntimeConfig,
+): SourceSummary {
   return {
-    id: `source-astronomy-${MINIAPP_ASTRONOMY_ALGORITHM}-${localDate}`,
+    id: `astronomy:${config.astronomyAlgorithmVersion}:${context.contextFingerprint}`,
     kind: "PRODUCT_CALCULATION",
     provider: "Astronomy Engine",
-    title: "本地点日期的日月与天体几何计算",
+    title: "当前观测夜的日月、行星与银河方向计算",
     sourceUrl: "https://github.com/cosinekitty/astronomy",
     license: "MIT",
     licenseUrl: "https://github.com/cosinekitty/astronomy/blob/master/LICENSE",
     publishedAt: null,
     retrievedAt: new Date().toISOString(),
-    validFrom: `${localDate}T00:00:00`,
-    validTo: `${localDate}T23:59:59`,
+    validFrom: context.nightStartUtc,
+    validTo: context.nightEndUtc,
     state: "FRESH",
     confidence: 0.9,
-    precision: "版本化球面天文计算；不包含局部地平线、天气与肉眼可见性",
+    precision: "版本化球面天文计算；局部遮挡由点位地平线证据另行约束",
     limitations: [
-      "不等同于天气或摄影可见性",
-      "银河核心仅为 Sagittarius A* 附近方向代理",
-      "地点海拔未知时使用 0m",
+      "不等同于天气或肉眼可见性",
+      "银河核心使用 Sagittarius A* 附近方向代理",
+      "点位海拔未知时使用 0m",
     ],
   };
 }
@@ -74,19 +103,108 @@ function localTime(iso: string, timezone: string): string {
   }).format(new Date(iso));
 }
 
-export class AstronomyService implements AstronomyApplicationPort {
-  constructor(readonly weather: WeatherPort = new SampleWeatherAdapter()) {}
+function nearestWeather(
+  rows: readonly CanonicalWeatherHour[],
+  at: string,
+): CanonicalWeatherHour | null {
+  const target = Date.parse(at);
+  const nearest = rows.reduce<CanonicalWeatherHour | null>(
+    (current, row) =>
+      current === null ||
+      Math.abs(Date.parse(row.at) - target) < Math.abs(Date.parse(current.at) - target)
+        ? row
+        : current,
+    null,
+  );
+  return nearest && Math.abs(Date.parse(nearest.at) - target) <= 35 * 60 * 1_000
+    ? nearest
+    : null;
+}
 
-  async compute(input: {
-    spotId: SpotId;
-    localDate: string;
-    at: string | null;
-    targetProfile: "BEGINNER" | "PHOTOGRAPHER" | "ADVANCED";
-  }): Promise<ApiEnvelope<SkyReport>> {
-    const spot = findDemoSpot(input.spotId);
-    if (!spot) throw new Error("formal_spot_not_found");
-    if (!/^\d{4}-\d{2}-\d{2}$/u.test(input.localDate))
-      throw new Error("local_date_invalid");
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function stateConfidence(state: DataState): number {
+  return {
+    FRESH: 1,
+    STALE_USABLE: 0.76,
+    PARTIAL: 0.68,
+    EXPIRED: 0,
+    UNAVAILABLE: 0,
+    ESTIMATED: 0.78,
+    SAMPLE_DATA: 0.45,
+  }[state];
+}
+
+function weatherTransmission(row: CanonicalWeatherHour | null): number | null {
+  if (
+    !row ||
+    row.cloudPercent === null ||
+    row.precipitationMm === null ||
+    row.windKph === null
+  )
+    return null;
+  const cloud = 1 - clamp01(row.cloudPercent / 100);
+  const precipitation = 1 - clamp01(row.precipitationMm / 1.5);
+  const wind =
+    row.windKph <= 12 ? 1 : 1 - clamp01((row.windKph - 12) / 33);
+  if (cloud <= 0 || precipitation <= 0 || wind <= 0) return 0;
+  return Math.exp(
+    0.65 * Math.log(cloud) +
+      0.2 * Math.log(precipitation) +
+      0.15 * Math.log(wind),
+  );
+}
+
+function lightPollutionFactor(
+  band: NonNullable<SpotSummary["lightPollution"]["productBand"]>,
+): number {
+  return {
+    VERY_LOW: 0.95,
+    LOW: 0.8,
+    MODERATE: 0.6,
+    HIGH: 0.35,
+    VERY_HIGH: 0.15,
+  }[band];
+}
+
+function stateFor(
+  weatherState: DataState,
+  spotState: DataState,
+  lightPollutionState: DataState,
+): DataState {
+  if (
+    weatherState === "SAMPLE_DATA" ||
+    spotState === "SAMPLE_DATA" ||
+    lightPollutionState === "SAMPLE_DATA"
+  )
+    return "SAMPLE_DATA";
+  if (weatherState === "UNAVAILABLE" || weatherState === "EXPIRED")
+    return weatherState;
+  if (
+    weatherState !== "FRESH" ||
+    spotState !== "FRESH" ||
+    lightPollutionState !== "FRESH"
+  )
+    return "PARTIAL";
+  return "FRESH";
+}
+
+export class AstronomyService implements AstronomyApplicationPort {
+  constructor(
+    readonly weather: WeatherPort,
+    private readonly repository: MiniappRepositoryPort,
+    private readonly config: MiniappRuntimeConfig,
+  ) {}
+
+  async compute(context: ObservationContext): Promise<ApiEnvelope<SkyReport>> {
+    if (context.location.kind !== "FORMAL_SPOT")
+      throw new Error("formal_spot_context_required");
+    const spot = await this.repository.getSpot(context.location.spotId);
+    const detail = await this.repository.getDetail(context.location.spotId);
+    if (!spot || !detail || spot.status === "DATA_INSUFFICIENT")
+      throw new Error("formal_spot_not_found");
     const requests = ["jupiter", "venus", "milky-way-core"] as const;
     const calculations = requests.map((target) =>
       calculateMiniappNightSky({
@@ -94,164 +212,434 @@ export class AstronomyService implements AstronomyApplicationPort {
         longitude: spot.wgs84.longitude,
         elevationM: spot.altitudeM ?? 0,
         timezone: spot.timezone,
-        nightDate: input.localDate,
+        nightDate: context.localDate,
         target,
         cadenceMinutes: 30,
       }),
     );
-    const source = calculationSource(input.localDate);
+    const selectedEvent = context.eventInstanceId
+      ? meteorEventByOccurrenceId(context.eventInstanceId)
+      : null;
+    if (context.eventInstanceId && !selectedEvent)
+      throw new Error("observation_event_not_found");
+    const activeEvents = activeMeteorEvents(context.localDate);
+    if (
+      selectedEvent &&
+      !activeEvents.some(
+        (event) => event.occurrenceId === selectedEvent.occurrenceId,
+      )
+    )
+      throw new Error("observation_event_not_active");
+    const eventCatalogSource = meteorCatalogSource(context.localDate);
+    const astronomySource = calculationSource(context, this.config);
     const weather = await this.weather.getHourly({
       point: spot.wgs84,
-      localDate: input.localDate,
+      localDate: context.localDate,
       timezone: spot.timezone,
     });
     const weatherRows = weather.value ?? [];
-    const weatherAt = (at: string) => {
-      const target = new Date(at).getTime();
-      const nearest = weatherRows.reduce<
-        (typeof weatherRows)[number] | null
-      >(
-        (current, row) =>
-          current === null ||
-          Math.abs(new Date(row.at).getTime() - target) <
-            Math.abs(new Date(current.at).getTime() - target)
-            ? row
-            : current,
-        null,
-      );
-      return nearest &&
-        Math.abs(new Date(nearest.at).getTime() - target) <= 30 * 60 * 1_000
-        ? nearest
-        : null;
-    };
     const base = calculations[0]!;
-    const hourly: HourlySkyRow[] = base.samples.map((sample) => {
-      const matchingWeather = weatherAt(sample.at);
-      return {
-        at: sample.at,
-        cloudPercent: matchingWeather?.cloudPercent ?? null,
-        precipitationMm: matchingWeather?.precipitationMm ?? null,
-        windKph: matchingWeather?.windKph ?? null,
-        temperatureC: matchingWeather?.temperatureC ?? null,
-        visibilityKm: matchingWeather?.visibilityKm ?? null,
-        moonAltitudeDeg: sample.moonAltitudeDeg,
-        moonIllumination: sample.moonIllumination,
-        darkness:
-          sample.sunAltitudeDeg <= -18
-            ? "ASTRONOMICAL_NIGHT"
-            : sample.sunAltitudeDeg < 0
-              ? "TWILIGHT"
-              : "DAY",
-        state: weather.state,
-      };
-    });
-    const targets: SkyTarget[] = calculations.flatMap((calculation) => {
-      const best = calculation.samples.reduce<
-        (typeof calculation.samples)[number] | null
-      >(
+    type HourlyBaseRow = Omit<
+      HourlySkyRow,
+      | "opportunityScore"
+      | "opportunityConfidence"
+      | "opportunityEligible"
+      | "opportunityBlockers"
+      | "opportunityInput"
+    >;
+    const hourlyBase: HourlyBaseRow[] = base.samples
+      .filter(
+        (sample) =>
+          Date.parse(sample.at) >= Date.parse(context.nightStartUtc) &&
+          Date.parse(sample.at) < Date.parse(context.nightEndUtc),
+      )
+      .map((sample) => {
+        const matchingWeather = nearestWeather(weatherRows, sample.at);
+        return {
+          at: sample.at,
+          cloudPercent: matchingWeather?.cloudPercent ?? null,
+          lowCloudPercent: matchingWeather?.lowCloudPercent ?? null,
+          midCloudPercent: matchingWeather?.midCloudPercent ?? null,
+          highCloudPercent: matchingWeather?.highCloudPercent ?? null,
+          modelConsistency: matchingWeather?.modelConsistency ?? null,
+          modelConsistencyLabel:
+            matchingWeather?.modelConsistencyLabel ?? "UNAVAILABLE",
+          modelSpreadPercent: matchingWeather?.modelSpreadPercent ?? null,
+          precipitationMm: matchingWeather?.precipitationMm ?? null,
+          precipitationProbabilityPercent:
+            matchingWeather?.precipitationProbabilityPercent ?? null,
+          windKph: matchingWeather?.windKph ?? null,
+          windGustKph: matchingWeather?.windGustKph ?? null,
+          windDirectionDeg: matchingWeather?.windDirectionDeg ?? null,
+          temperatureC: matchingWeather?.temperatureC ?? null,
+          relativeHumidityPercent:
+            matchingWeather?.relativeHumidityPercent ?? null,
+          dewPointC: matchingWeather?.dewPointC ?? null,
+          visibilityKm: matchingWeather?.visibilityKm ?? null,
+          moonAltitudeDeg: sample.moonAltitudeDeg,
+          moonIllumination: sample.moonIllumination,
+          darkness:
+            sample.sunAltitudeDeg <= -18
+              ? "ASTRONOMICAL_NIGHT"
+              : sample.sunAltitudeDeg < 0
+                ? "TWILIGHT"
+                : "DAY",
+          state: weather.state,
+        };
+      });
+    const everydayTargets: SkyTarget[] = calculations.flatMap((calculation) => {
+      const samples = calculation.samples.filter(
+        (sample) =>
+          Date.parse(sample.at) >= Date.parse(context.nightStartUtc) &&
+          Date.parse(sample.at) < Date.parse(context.nightEndUtc),
+      );
+      const best = samples.reduce<(typeof samples)[number] | null>(
         (current, sample) =>
-          current === null ||
-          sample.targetAltitudeDeg > current.targetAltitudeDeg
+          current === null || sample.targetAltitudeDeg > current.targetAltitudeDeg
             ? sample
             : current,
         null,
       );
-      if (!best || best.targetAltitudeDeg <= 0) return [];
-      const names = {
+      if (!best || best.targetAltitudeDeg <= 0 || !samples.length) return [];
+      const visible = samples.filter((sample) => sample.targetAltitudeDeg > 0);
+      const current = samples.reduce<(typeof samples)[number] | null>(
+        (nearest, sample) =>
+          nearest === null ||
+          Math.abs(Date.parse(sample.at) - Date.parse(context.selectedAtUtc)) <
+            Math.abs(Date.parse(nearest.at) - Date.parse(context.selectedAtUtc))
+            ? sample
+            : nearest,
+        null,
+      );
+      const names: Partial<Record<typeof calculation.target, string>> = {
         jupiter: "木星",
         venus: "金星",
         "milky-way-core": "银河核心方向",
-      } as const;
-      const types = {
+      };
+      const types: Partial<
+        Record<typeof calculation.target, SkyTarget["type"]>
+      > = {
         jupiter: "PLANET",
         venus: "PLANET",
         "milky-way-core": "MILKY_WAY",
-      } as const;
+      };
+      const name = names[calculation.target];
+      const type = types[calculation.target];
+      if (!name || !type) return [];
       return [
         {
           targetId: `target:${calculation.target}`,
-          displayName: names[calculation.target as keyof typeof names],
-          type: types[calculation.target as keyof typeof types],
-          window: {
-            start: localTime(calculation.samples[0]!.at, spot.timezone),
-            end: localTime(calculation.samples.at(-1)!.at, spot.timezone),
-          },
-          direction: `${Math.round(best.targetAzimuthDeg)}°`,
-          altitudeDeg: Math.round(best.targetAltitudeDeg),
-          reason: `本观测夜几何高度最高约 ${Math.round(best.targetAltitudeDeg)}°；仍需结合天气、遮挡和光害。`,
-          source,
+          displayName: name,
+          type,
+          window: visible.length
+            ? {
+                start: localTime(visible[0]!.at, spot.timezone),
+                end: localTime(visible.at(-1)!.at, spot.timezone),
+              }
+            : null,
+          direction: `${Math.round(current?.targetAzimuthDeg ?? best.targetAzimuthDeg)}°`,
+          altitudeDeg: Math.round(
+            current?.targetAltitudeDeg ?? best.targetAltitudeDeg,
+          ),
+          reason: `当前时间使用同一观测上下文计算；本夜几何高度最高约 ${Math.round(best.targetAltitudeDeg)}°。仍需结合云、月光、局部遮挡和光害。`,
+          source: astronomySource,
           confidence: 0.85,
         },
       ];
     });
-    const darkRows = hourly.filter(
-      (row) =>
-        row.darkness === "ASTRONOMICAL_NIGHT" &&
-        typeof row.cloudPercent === "number",
+    const eventTargets: SkyTarget[] = (
+      selectedEvent
+        ? [selectedEvent]
+        : activeEvents
+            .filter((event) => event.nominalPeakZhr >= 5)
+            .sort(
+              (left, right) => right.nominalPeakZhr - left.nominalPeakZhr,
+            )
+            .slice(0, 3)
+    ).flatMap((event) => {
+      const samples = base.samples.map((sample) =>
+        calculateEquatorialHorizontalAt({
+          latitude: spot.wgs84.latitude,
+          longitude: spot.wgs84.longitude,
+          elevationM: spot.altitudeM ?? 0,
+          at: sample.at,
+          rightAscensionDeg: event.radiantRightAscensionDeg,
+          declinationDeg: event.radiantDeclinationDeg,
+        }),
+      );
+      const visible = samples.filter((sample) => sample.altitudeDeg > 0);
+      if (!visible.length) return [];
+      const best = visible.reduce((highest, sample) =>
+        sample.altitudeDeg > highest.altitudeDeg ? sample : highest,
+      );
+      const current = samples.reduce((nearest, sample) =>
+        Math.abs(Date.parse(sample.at) - Date.parse(context.selectedAtUtc)) <
+        Math.abs(Date.parse(nearest.at) - Date.parse(context.selectedAtUtc))
+          ? sample
+          : nearest,
+      );
+      const currentSolarLongitudeDeg = calculateSolarLongitudeJ2000(
+        context.selectedAtUtc,
+      );
+      const activity = meteorActivityAt(
+        event.occurrenceId,
+        currentSolarLongitudeDeg,
+        context.localDate,
+      );
+      return [
+        {
+          targetId: event.occurrenceId,
+          displayName: event.displayName,
+          type: "METEOR_SHOWER" as const,
+          window: {
+            start: localTime(visible[0]!.at, spot.timezone),
+            end: localTime(visible.at(-1)!.at, spot.timezone),
+          },
+          direction: `${Math.round(current.azimuthDeg)}°`,
+          altitudeDeg: Math.round(current.altitudeDeg),
+          reason:
+            `当前时间的辐射点方向由地点和时间计算；本夜最高约 ${Math.round(best.altitudeDeg)}°。` +
+            `IMO 参考峰值日期为 ${event.peakDate.slice(5)}，参考 ZHR ${event.nominalPeakZhr} 只描述理想条件，不是预计可见数量。` +
+            (activity
+              ? `当前历史拟合相对活动为 ${Math.round(activity.relativeActivity * 100)}%，类型为历史拟合而非实时观测。`
+              : "当前事件没有已审阅的活动曲线，不能推算相对峰值活动。"),
+          source: eventCatalogSource,
+          confidence: activity ? 0.8 : 0.7,
+          activity,
+        },
+      ];
+    });
+    const targets = [...eventTargets, ...everydayTargets];
+    const sourceRevision = `${astronomySource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}`;
+    const scoringEvent =
+      selectedEvent ??
+      (context.targetProfile === "METEOR"
+        ? activeEvents
+            .filter((event) =>
+              meteorActivityAt(
+                event.occurrenceId,
+                calculateSolarLongitudeJ2000(context.selectedAtUtc),
+                context.localDate,
+              ),
+            )
+            .sort((left, right) => right.nominalPeakZhr - left.nominalPeakZhr)[0] ??
+          null
+        : null);
+    const calculationSamples = new Map(
+      calculations.map((calculation) => [
+        calculation.target,
+        new Map(calculation.samples.map((sample) => [sample.at, sample])),
+      ]),
     );
-    const best = darkRows.reduce<HourlySkyRow | null>(
-      (current, row) =>
-        current === null || row.cloudPercent! < current.cloudPercent!
-          ? row
-          : current,
-      null,
+    const baseSamples = new Map(base.samples.map((sample) => [sample.at, sample]));
+    const opportunitySlices: OpportunitySliceInput[] = hourlyBase.map((row) => {
+      const skySample = baseSamples.get(row.at)!;
+      const matchingWeather = nearestWeather(weatherRows, row.at);
+      const profileTargets =
+        context.targetProfile === "MILKY_WAY"
+          ? (["milky-way-core"] as const)
+          : context.targetProfile === "PLANET"
+            ? (["jupiter", "venus"] as const)
+            : (["jupiter", "venus", "milky-way-core"] as const);
+      let eventActivity: number | null = null;
+      let targetVisibility = Math.max(
+        ...profileTargets.map((target) =>
+          clamp01(
+            (calculationSamples.get(target)?.get(row.at)?.targetAltitudeDeg ??
+              -90) / 60,
+          ),
+        ),
+      );
+      let targetEvidenceConfidence = 0.95;
+      if (scoringEvent) {
+        const radiant = calculateEquatorialHorizontalAt({
+          latitude: spot.wgs84.latitude,
+          longitude: spot.wgs84.longitude,
+          elevationM: spot.altitudeM ?? 0,
+          at: row.at,
+          rightAscensionDeg: scoringEvent.radiantRightAscensionDeg,
+          declinationDeg: scoringEvent.radiantDeclinationDeg,
+        });
+        const activity = meteorActivityAt(
+          scoringEvent.occurrenceId,
+          calculateSolarLongitudeJ2000(row.at),
+          context.localDate,
+        );
+        targetVisibility = clamp01(radiant.altitudeDeg / 60);
+        eventActivity = activity?.relativeActivity ?? null;
+        targetEvidenceConfidence = activity ? 0.85 : 0.65;
+      }
+      const hardBlockers = [
+        ...(weather.state === "UNAVAILABLE"
+          ? ["CRITICAL_WEATHER_DATA_UNAVAILABLE"]
+          : weather.state === "EXPIRED"
+            ? ["CRITICAL_WEATHER_DATA_EXPIRED"]
+            : []),
+        ...(!matchingWeather ? ["CRITICAL_WEATHER_DATA_UNAVAILABLE"] : []),
+        ...(matchingWeather?.thunderstorm ? ["THUNDERSTORM"] : []),
+        ...(matchingWeather?.severeRain ? ["SEVERE_RAIN"] : []),
+        ...(matchingWeather?.severeWind ? ["SEVERE_WIND"] : []),
+        ...(matchingWeather?.officialSevereAlert
+          ? ["OFFICIAL_SEVERE_WEATHER_ALERT"]
+          : []),
+      ];
+      return {
+        at: row.at,
+        eventActivity,
+        targetVisibility,
+        darkness: clamp01(-skySample.sunAltitudeDeg / 18),
+        moonPenalty:
+          skySample.moonAltitudeDeg <= 0
+            ? 0
+            : clamp01(skySample.moonIllumination) *
+              clamp01((skySample.moonAltitudeDeg + 5) / 55),
+        weatherTransmission: weatherTransmission(matchingWeather),
+        modelConsistency:
+          matchingWeather?.modelConsistency ??
+          Math.min(0.5, stateConfidence(weather.state) * 0.5),
+        lightPollution:
+          spot.lightPollution.productBand === null
+            ? null
+            : lightPollutionFactor(spot.lightPollution.productBand),
+        horizonSuitability:
+          spot.obstructionPercent === null
+            ? null
+            : 1 - clamp01(spot.obstructionPercent / 100),
+        dataConfidence:
+          0.95 * stateConfidence(weather.state) * targetEvidenceConfidence,
+        hardBlockers: [...new Set(hardBlockers)],
+      };
+    });
+    const opportunityFreshness = stateFor(
+      weather.state,
+      "FRESH",
+      spot.lightPollution.state,
     );
-    const averageCloud =
-      darkRows.length > 0
-        ? darkRows.reduce((sum, row) => sum + row.cloudPercent!, 0) /
-          darkRows.length
-        : null;
-    const decision = decideTonight({
-      localDate: input.localDate,
-      sourceRevision: `${source.id}:${weather.source.id}`,
-      weatherState: weather.state,
-      siteState: "SAMPLE_DATA",
-      astronomyState: "FRESH",
+    const skyOpportunityResult = new SkyOpportunityEngine().compute({
+      localDate: context.localDate,
+      sourceRevision,
+      ruleVersion: this.config.opportunityRuleVersion,
+      freshness: opportunityFreshness,
+      slices: opportunitySlices,
+      suitableFor: targets.some((target) => target.type === "MILKY_WAY")
+        ? ["NAKED_EYE", "PHONE", "MILKY_WAY"]
+        : targets.length
+          ? ["NAKED_EYE", "PHONE"]
+          : [],
+    });
+    const hourly: HourlySkyRow[] = hourlyBase.map((row, index) => {
+      const opportunity = skyOpportunityResult.slices[index]!;
+      return {
+        ...row,
+        opportunityScore:
+          opportunity.score === null
+            ? null
+            : Math.round(opportunity.score * 100),
+        opportunityConfidence: opportunity.confidence,
+        opportunityEligible: opportunity.eligible,
+        opportunityBlockers: opportunity.hardBlockers,
+        opportunityInput: opportunitySlices[index]!,
+      };
+    });
+    const knownFacilities = spot.facilities.filter(
+      (facility) => facility.status !== "UNKNOWN",
+    );
+    const accessAndSafety = detail.accessAndSafety;
+    const criticalEvidenceConflict = detail.evidence.some(
+      (evidence) =>
+        ["ACCESS", "SAFETY"].includes(evidence.subjectType) &&
+        ["CONFLICTED", "EXPIRED"].includes(evidence.state),
+    );
+    const verifiedAt = spot.lastVerifiedAt
+      ? Date.parse(spot.lastVerifiedAt)
+      : Number.NaN;
+    const verificationExpired =
+      !Number.isFinite(verifiedAt) ||
+      Date.now() - verifiedAt > 30 * 24 * 60 * 60 * 1_000;
+    const spotState: DataState =
+      verificationExpired
+        ? "EXPIRED"
+        : (spot.status === "PUBLISHED" ||
+            spot.status === "TEMPORARILY_CLOSED") &&
+      knownFacilities.length === spot.facilities.length &&
+      accessAndSafety.openness !== "UNKNOWN" &&
+      accessAndSafety.legalAccess !== "UNKNOWN" &&
+      accessAndSafety.nightSafety !== "UNKNOWN" &&
+      accessAndSafety.explicitDanger !== null &&
+      spot.lightPollution.state !== "UNAVAILABLE"
+          ? "FRESH"
+          : "PARTIAL";
+    const roadUnavailable =
+      spot.facilities.find((facility) => facility.type === "ROAD")?.status ===
+      "UNAVAILABLE";
+    const roadClosureReported = accessAndSafety.restrictions.some((entry) =>
+      /道路.*(?:封闭|中断)|road\s+closed/i.test(entry),
+    );
+    const decision = new TripDecisionEngine().compute({
+      localDate: context.localDate,
+      sourceRevision,
+      ruleVersion: this.config.tripDecisionRuleVersion,
+      skyOpportunity: skyOpportunityResult.opportunity,
+      siteState: spotState,
+      routeState: detail.route.state,
+      warningState: weather.warningState,
+      officialSevereAlert: weatherRows.some(
+        (row) => row.officialSevereAlert,
+      ),
       thunderstorm: weatherRows.some((row) => row.thunderstorm),
       severeRain: weatherRows.some((row) => row.severeRain),
       severeWind: weatherRows.some((row) => row.severeWind),
-      closed: null,
-      roadClosed: null,
-      explicitDanger: null,
-      illegalAccess: null,
-      criticalConflict: false,
-      scores: {
-        sky: averageCloud === null ? null : 100 - averageCloud,
-        darkness: spot.lightPollution.levelAtMost
-          ? 100 - spot.lightPollution.levelAtMost * 10
-          : null,
-        site: 55,
-        target: targets.length ? 70 : 40,
-        access: 45,
-      },
-      bestWindow: best
-        ? {
-            start: localTime(best.at, spot.timezone),
-            end: localTime(
-              new Date(new Date(best.at).getTime() + 100 * 60 * 1_000).toISOString(),
-              spot.timezone,
-            ),
-          }
-        : null,
-      suitableFor:
-        targets.some((target) => target.type === "MILKY_WAY")
-          ? ["NAKED_EYE", "PHONE", "MILKY_WAY"]
-          : ["NAKED_EYE", "PHONE"],
+      closed:
+        spot.status === "TEMPORARILY_CLOSED" ||
+        accessAndSafety.openness === "CLOSED",
+      roadClosed: roadUnavailable && roadClosureReported,
+      explicitDanger:
+        accessAndSafety.nightSafety === "DANGER"
+          ? true
+          : accessAndSafety.explicitDanger,
+      illegalAccess:
+        accessAndSafety.legalAccess === "PROHIBITED"
+          ? true
+          : accessAndSafety.legalAccess === "UNKNOWN"
+            ? null
+            : false,
+      criticalConflict: criticalEvidenceConflict,
     });
+    const reportState = stateFor(
+      weather.state,
+      spotState,
+      spot.lightPollution.state,
+    );
     const report: SkyReport = {
       context: {
+        contextId: context.contextId,
+        contextFingerprint: context.contextFingerprint,
+        contextRevision: context.revision,
         spotId: spot.spotId,
-        localDate: input.localDate,
-        at: input.at,
+        localDate: context.localDate,
+        at: context.selectedAtUtc,
         timezone: spot.timezone,
-        targetProfile: input.targetProfile,
+        targetProfile:
+          context.targetProfile === "MILKY_WAY"
+            ? "PHOTOGRAPHER"
+            : context.targetProfile === "CUSTOM"
+              ? "ADVANCED"
+              : "BEGINNER",
         dataRevision: digest({
+          context: context.contextFingerprint,
           spot: spot.source.id,
-          date: input.localDate,
-          weather: weather.source.id,
-        }).slice(0, 16),
-        algorithmVersion: MINIAPP_ASTRONOMY_ALGORITHM,
-        catalogVersion: CATALOG_VERSION,
+          weather: weather.sources.map((source) => source.id),
+          astronomy: astronomySource.id,
+          events: eventTargets.map((target) => target.targetId),
+          eventCatalog: eventCatalogSource.id,
+          activityProfiles: eventTargets
+            .map((target) => target.activity?.profileVersion ?? null)
+            .filter(Boolean),
+          light: spot.lightPollution.datasetVersion,
+        }).slice(0, 24),
+        algorithmVersion: this.config.astronomyAlgorithmVersion,
+        catalogVersion: this.config.skyCatalogVersion,
+        eventCatalogVersion: this.config.eventCatalogVersion,
       },
       decision,
       targets,
@@ -265,12 +653,44 @@ export class AstronomyService implements AstronomyApplicationPort {
           : `观测夜中段月面照明约 ${Math.round(base.moonIlluminationAtMidpoint * 100)}%`,
       compass: { state: "UNAVAILABLE", manualOffsetDeg: 0 },
       precachedHours: Math.min(8, Math.ceil(hourly.length / 2)),
-      offlineReady: true,
-      sources: [source, weather.source, spot.lightPollution.source],
+      offlineReady: hourly.length > 0,
+      weatherEvidence: {
+        timelineRole: weather.timelineRole,
+        warningState: weather.warningState,
+        alerts: weather.alerts,
+        modelRuns: weather.modelRuns,
+      },
+      sources: [
+        astronomySource,
+        ...(eventTargets.length ? [eventCatalogSource] : []),
+        ...eventTargets.flatMap((target) =>
+          target.activity ? [target.activity.source] : [],
+        ),
+        ...weather.sources,
+        spot.source,
+        spot.lightPollution.source,
+      ].filter(
+        (item, index, all) =>
+          all.findIndex((candidate) => candidate.id === item.id) === index,
+      ),
     };
-    return envelope(report, "SAMPLE_DATA", report.sources, [
-      "天气为明确标注的确定性 Demo 情景，不是实时预报；天文几何由 Astronomy Engine 实算。",
-      "实际出行前必须接入获许可的实时天气/路线能力并重新判断。",
-    ]);
+    const warnings = [
+      ...weather.warnings,
+      ...(weather.errorCode
+        ? ["天气来源当前不可用；不会用示例天气替代真实预报。"]
+        : []),
+      ...(spotState === "PARTIAL"
+        ? ["点位核验字段不完整，出行结论已降低或阻断。"]
+        : []),
+      ...(spot.lightPollution.state === "UNAVAILABLE"
+        ? ["没有已发布的真实光害数据，不能生成肯定的出行结论。"]
+        : spot.lightPollution.state === "ESTIMATED"
+          ? ["光害为卫星夜光产品估算，不是现场 SQM 或精确 Bortle。"]
+          : []),
+      ...(skyOpportunityResult.opportunity.primaryWindow
+        ? []
+        : ["没有找到满足回滞阈值与最短时长的连续观测窗口。"]),
+    ];
+    return envelope(report, reportState, report.sources, warnings);
   }
 }

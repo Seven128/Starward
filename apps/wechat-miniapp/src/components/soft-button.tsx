@@ -18,7 +18,9 @@ export function SoftButton({
   return (
     <Button
       compileMode
-      className={`soft-button soft-button--${variant} focus-ring ${className}`}
+      className={`soft-button soft-button--${variant} focus-ring${
+        disabled ? " soft-button--disabled" : ""
+      } ${className}`}
       ariaLabel={label}
       {...(disabled ? { disabled: true } : {})}
       onClick={() => onClick?.()}

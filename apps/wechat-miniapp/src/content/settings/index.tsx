@@ -95,7 +95,12 @@ export default function SettingsPage() {
       data-route="my-settings"
       data-od-id="my-settings"
     >
-      <CustomNav title="设置" back backOdId="my-settings-back-action" />
+      <CustomNav
+        title="设置"
+        back
+        backOdId="my-settings-back-action"
+        backFallbackTab="/pages/my/index"
+      />
       <ScrollView
         scrollY
         enhanced
@@ -301,7 +306,7 @@ export default function SettingsPage() {
 
           <View className="settings-card card">
             <Text className="type-section">位置、隐私与数据</Text>
-            <View className="settings-choice-grid">
+            <View className="settings-choice-grid settings-choice-grid--location">
               {(["ASK_ONCE", "MANUAL_ONLY"] as const).map((choice) => (
                 <Button
                   key={choice}

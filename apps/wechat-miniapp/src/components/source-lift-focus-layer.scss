@@ -2,10 +2,23 @@
   position: relative;
   z-index: 22;
   pointer-events: none;
+  // Native inline metrics replace both variables. These flat fallbacks retain
+  // safe-area provenance without the nested max()/calc() form WEAPP rejects.
+  --source-lift-status-bar-height: env(safe-area-inset-top);
+  --source-lift-safe-top: 104rpx;
+}
+.source-lift-focus-layer--mapCoupled.map-coupled-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  --source-lift-analysis-panel-height: clamp(600rpx, 44vh, 630rpx);
 }
 .source-lift-focus-layer--visible {
   z-index: 10020;
   pointer-events: auto;
+}
+.source-lift-focus-layer--mapCoupled.map-coupled-layer.source-lift-focus-layer--visible {
+  z-index: 10020;
 }
 .source-lift-origin-placeholder {
   min-height: 88rpx;
@@ -13,30 +26,51 @@
   pointer-events: none;
   contain: strict;
 }
+.source-lift-focus-layer--mapCoupled > .source-lift-origin-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
 .source-lift-source {
   position: absolute;
   z-index: 2;
   inset: 0;
   pointer-events: auto;
   transition:
+    top 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    right 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    bottom 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    left 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 160ms ease-out,
     opacity 100ms ease-out;
 }
 .source-lift-source--lifted {
   position: fixed;
   z-index: 10023;
-  top: calc(
-    max(
-        env(safe-area-inset-top),
-        var(--source-lift-status-bar-height, 0px)
-      ) + 16rpx
-  );
+  // Native metrics set this value to the capsule-safe navigation edge. Keep
+  // the WXSS fallback intentionally flat: nested max()/calc() is not parsed
+  // consistently by the WeChat stylesheet runtime.
+  top: var(--source-lift-safe-top, 104rpx);
   right: 24rpx;
   bottom: auto;
   left: 24rpx;
   transform: scale(0.985);
 }
-.source-lift-focus-layer--visible[data-phase="FOCUSED"]
+.source-lift-focus-layer--mapCoupled .source-lift-source--lifted {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--source-lift-analysis-panel-height) + 32rpx);
+  right: 24rpx;
+  bottom: 16rpx;
+  left: 24rpx;
+  overflow: hidden;
+  border: 1rpx solid var(--border);
+  border-radius: 28rpx;
+  background: var(--surface-subtle);
+  box-shadow: var(--elevation-card);
+  transform: none;
+}
+.source-lift-focus-layer--visible.source-lift-focus-layer--phase-focused
   .source-lift-source--lifted {
   transform: none;
 }
@@ -48,35 +82,57 @@
   opacity: 0;
   transition: opacity 160ms ease-out;
 }
+.source-lift-focus-layer--mapCoupled .source-lift-scrim {
+  position: absolute;
+  z-index: 1;
+}
 .source-lift-focus-layer--visible .source-lift-scrim {
   opacity: 1;
 }
 .source-lift-composition {
   position: fixed;
   z-index: 10022;
-  inset: calc(
-      max(
-          env(safe-area-inset-top),
-          var(--source-lift-status-bar-height, 0px)
-        ) + 128rpx
-    ) 24rpx calc(124rpx + env(safe-area-inset-bottom));
+  inset: calc(var(--source-lift-safe-top, 104rpx) + 104rpx) 24rpx
+    max(16rpx, env(safe-area-inset-bottom));
   display: flex;
   min-height: 0;
   pointer-events: auto;
+  opacity: 1;
+  transition: opacity 160ms ease-out;
 }
 .source-lift-focus-layer--mapCoupled .source-lift-composition {
-  inset: calc(
-      max(
-          env(safe-area-inset-top),
-          var(--source-lift-status-bar-height, 0px)
-        ) + 128rpx
-    ) 24rpx calc(124rpx + env(safe-area-inset-bottom));
+  position: absolute;
+  z-index: 4;
+  inset: 16rpx 24rpx;
 }
 .source-lift-composition__content {
   min-height: 0;
   flex: 1;
   display: grid;
   width: 100%;
+}
+.source-lift-focus-layer--mapCoupled .source-lift-composition__content {
+  grid-template-rows:
+    var(--source-lift-analysis-panel-height)
+    minmax(360rpx, 1fr);
+  gap: 16rpx;
+}
+.source-lift-map-dock {
+  min-height: 0;
+  border: 1rpx solid transparent;
+  border-radius: 28rpx;
+  pointer-events: none;
+}
+.source-lift-focus-layer--phase-restoring .source-lift-scrim,
+.source-lift-focus-layer--phase-cancelled .source-lift-scrim,
+.source-lift-focus-layer--phase-restoring .source-lift-composition,
+.source-lift-focus-layer--phase-cancelled .source-lift-composition {
+  opacity: 0;
+  pointer-events: none;
+}
+.large-text
+  .source-lift-focus-layer--mapCoupled.map-coupled-layer {
+  --source-lift-analysis-panel-height: clamp(620rpx, 46vh, 646rpx);
 }
 @media (prefers-reduced-motion: reduce) {
   .source-lift-source,

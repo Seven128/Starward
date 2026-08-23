@@ -1,11 +1,19 @@
 import { createHash, randomUUID } from "node:crypto";
 import { Queue, Worker, type Job } from "bullmq";
 import pg, { type PoolClient } from "pg";
-import type { SpotId } from "@starward/miniapp-contracts";
 import { AstronomyService } from "./astronomy-service.ts";
+import { MemoryCache } from "./cache.ts";
+import { ObservationContextService } from "./observation-context-service.ts";
+import type { WeatherPort } from "./ports.ts";
+import { PostgresMiniappRepository } from "./postgres-repository.ts";
+import {
+  loadRuntimeConfig,
+  type MiniappRuntimeConfig,
+} from "./runtime-config.ts";
+import { createWeatherPort } from "./weather-provider.ts";
 
 const { Pool } = pg;
-const DEFAULT_QUEUE_NAME = "starward-miniapp-v1";
+const DEFAULT_QUEUE_NAME = "starward-miniapp-current";
 export const OPERATIONAL_JOB_KINDS = Object.freeze([
   "WEATHER",
   "ASTRONOMY",
@@ -84,15 +92,35 @@ export interface OutboxWorkerOptions {
   databaseUrl: string;
   redisUrl: string;
   queueName?: string;
+  runtimeConfig?: MiniappRuntimeConfig;
+  weather?: WeatherPort;
 }
 
 export class OutboxWorkerRuntime {
   readonly pool: pg.Pool;
   readonly queue: Queue;
   readonly worker: Worker;
-  readonly astronomy = new AstronomyService();
+  readonly config: MiniappRuntimeConfig;
+  readonly repository: PostgresMiniappRepository;
+  readonly cache = new MemoryCache();
+  readonly weather: WeatherPort;
+  readonly observationContexts: ObservationContextService;
+  readonly astronomy: AstronomyService;
 
   constructor(options: OutboxWorkerOptions) {
+    this.config = options.runtimeConfig ?? loadRuntimeConfig();
+    this.repository = new PostgresMiniappRepository(options.databaseUrl);
+    this.weather = options.weather ?? createWeatherPort(this.config);
+    this.observationContexts = new ObservationContextService(
+      this.repository,
+      this.cache,
+      this.config,
+    );
+    this.astronomy = new AstronomyService(
+      this.weather,
+      this.repository,
+      this.config,
+    );
     const connection = connectionFromUrl(options.redisUrl);
     const queueName = options.queueName ?? DEFAULT_QUEUE_NAME;
     this.pool = new Pool({
@@ -292,6 +320,8 @@ export class OutboxWorkerRuntime {
     await this.worker.close();
     await this.queue.close();
     await this.pool.end();
+    await this.repository.close();
+    await this.cache.close();
   }
 
   async #applyEffect(
@@ -303,7 +333,7 @@ export class OutboxWorkerRuntime {
       payload: unknown;
     },
   ): Promise<JobOutcome> {
-    const effectKey = `${input.eventId}:${input.jobKind}:v1`;
+    const effectKey = `${input.eventId}:${input.jobKind}:current`;
     const prior = await client.query<{
       result_state: string;
       result_payload: Readonly<Record<string, unknown>>;
@@ -329,39 +359,153 @@ export class OutboxWorkerRuntime {
     let outcome: JobOutcome;
     switch (input.jobKind) {
       case "WEATHER": {
-        const resultPayload = {
-          provider: "weather:unconfigured",
-          capability: "WEATHER_SUMMARY",
-          reason: "No licensed weather provider is configured for this Demo",
-          stableFallback: "SAMPLE_DATA_WITH_EXPLICIT_NON_REALTIME_LABEL",
-        } as const;
-        await client.query(
-          `INSERT INTO provider_health_checks(
-             provider, state, failure_code, checked_at, payload
-           ) VALUES ($1, 'DISABLED', 'CAPABILITY_NOT_CONFIGURED', now(), $2)
-           ON CONFLICT (provider) DO UPDATE SET
-             state = EXCLUDED.state,
-             failure_code = EXCLUDED.failure_code,
-             checked_at = EXCLUDED.checked_at,
-             payload = EXCLUDED.payload`,
-          [resultPayload.provider, resultPayload],
+        const spots = await client.query<{
+          spot_id: string;
+          timezone: string;
+          latitude: number;
+          longitude: number;
+        }>(
+          `SELECT s.spot_id, s.timezone,
+                  ST_Y(s.geom_wgs84::geometry) AS latitude,
+                  ST_X(s.geom_wgs84::geometry) AS longitude
+             FROM spots s
+             JOIN spot_publication_assessments a USING (spot_id)
+            WHERE s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
+              AND s.visibility_policy = 'PUBLIC_EXACT'
+              AND a.complete = true
+              AND a.spot_revision = s.version
+              AND a.assessed_at >= now() - interval '30 days'
+            ORDER BY s.display_order`,
         );
-        outcome = { resultState: "CAPABILITY_GATED", resultPayload };
+        let availableCount = 0;
+        let unavailableCount = 0;
+        let hourlyCount = 0;
+        for (const spot of spots.rows) {
+          const date = localDate(spot.timezone);
+          const weather = await this.weather.getHourly({
+            point: {
+              system: "WGS84",
+              latitude: Number(spot.latitude),
+              longitude: Number(spot.longitude),
+            },
+            localDate: date,
+            timezone: spot.timezone,
+          });
+          const rows = weather.value ?? [];
+          const validFrom = rows[0]?.at ?? new Date().toISOString();
+          const validTo =
+            rows.at(-1)?.at ??
+            new Date(Date.now() + 60 * 60 * 1_000).toISOString();
+          const runId =
+            "weather:" +
+            digest({
+               spotId: spot.spot_id,
+               provider: this.weather.key,
+               sources: weather.sources.map((source) => source.id),
+               validFrom,
+            }).slice(0, 32);
+          await client.query(
+            `INSERT INTO weather_runs(
+               run_id, spot_id, source_snapshot_id, state, payload,
+               valid_from, valid_to
+             ) VALUES ($1, $2, NULL, $3, $4, $5, $6)
+             ON CONFLICT (run_id) DO UPDATE SET
+               state = EXCLUDED.state,
+               payload = EXCLUDED.payload,
+               valid_from = EXCLUDED.valid_from,
+               valid_to = EXCLUDED.valid_to`,
+            [
+              runId,
+              spot.spot_id,
+              weather.state,
+              {
+                sources: weather.sources,
+                errorCode: weather.errorCode,
+                providerKey: this.weather.key,
+                warningState: weather.warningState,
+                alerts: weather.alerts,
+                timelineRole: weather.timelineRole,
+                modelRuns: weather.modelRuns,
+                warnings: weather.warnings,
+              },
+              validFrom,
+              validTo,
+            ],
+          );
+          await client.query(
+            "DELETE FROM weather_hourly WHERE run_id = $1",
+            [runId],
+          );
+          for (const row of rows) {
+            await client.query(
+              `INSERT INTO weather_hourly(run_id, observed_at, payload)
+               VALUES ($1, $2, $3)`,
+              [runId, row.at, row],
+            );
+            hourlyCount += 1;
+          }
+          if (rows.length) availableCount += 1;
+          else unavailableCount += 1;
+          await client.query(
+            `INSERT INTO provider_health_checks(
+               provider, state, failure_code, checked_at, payload
+             ) VALUES ($1, $2, $3, now(), $4)
+             ON CONFLICT (provider) DO UPDATE SET
+               state = EXCLUDED.state,
+               failure_code = EXCLUDED.failure_code,
+               checked_at = EXCLUDED.checked_at,
+               payload = EXCLUDED.payload`,
+            [
+              this.weather.key,
+              rows.length ? "READY" : "UNAVAILABLE",
+              weather.errorCode,
+              {
+                sourceId: weather.source.id,
+                state: weather.state,
+                rowCount: rows.length,
+              },
+            ],
+          );
+        }
+        outcome = {
+          resultState:
+            availableCount === 0
+              ? "UNAVAILABLE"
+              : unavailableCount > 0
+                ? "PARTIAL"
+                : "PRECOMPUTED",
+          resultPayload: {
+            provider: this.weather.key,
+            spotCount: spots.rows.length,
+            availableCount,
+            unavailableCount,
+            hourlyCount,
+            fixtureFallbackUsed: false,
+          },
+        };
         break;
       }
       case "ASTRONOMY": {
         const spots = await client.query<{ spot_id: string; timezone: string }>(
-          "SELECT spot_id, timezone FROM spots WHERE visibility_policy <> 'HIDDEN' ORDER BY display_order",
+          `SELECT s.spot_id, s.timezone
+             FROM spots s
+             JOIN spot_publication_assessments a USING (spot_id)
+            WHERE s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
+              AND s.visibility_policy = 'PUBLIC_EXACT'
+              AND a.complete = true
+              AND a.spot_revision = s.version
+              AND a.assessed_at >= now() - interval '30 days'
+            ORDER BY s.display_order`,
         );
         let targetCount = 0;
         for (const spot of spots.rows) {
           const date = localDate(spot.timezone);
-          const report = await this.astronomy.compute({
-            spotId: spot.spot_id as SpotId,
+          const context = await this.observationContexts.resolve({
+            location: { kind: "FORMAL_SPOT", spotId: spot.spot_id },
             localDate: date,
-            at: null,
-            targetProfile: "BEGINNER",
+            targetProfile: "DAILY",
           });
+          const report = await this.astronomy.compute(context);
           const algorithm = report.data.context.algorithmVersion;
           const nightId = `night:${digest({ spotId: spot.spot_id, date, algorithm }).slice(0, 32)}`;
           const stored = await client.query<{ night_id: string }>(
@@ -402,38 +546,71 @@ export class OutboxWorkerRuntime {
             spotCount: spots.rowCount ?? spots.rows.length,
             targetCount,
             engine: "Astronomy Engine",
-            weatherBoundary: "SAMPLE_DATA_EXPLICIT",
+            weatherBoundary:
+              "Current configured provider state is preserved per report",
           },
         };
         break;
       }
       case "DECISION": {
-        const ruleVersion = "starward-tonight-decision-v1-hard-blocker-first";
-        await client.query(
-          `INSERT INTO rule_versions(rule_version, state, payload)
-           VALUES ($1, 'ACTIVE', $2)
-           ON CONFLICT (rule_version) DO UPDATE SET payload = EXCLUDED.payload`,
+        const tripRuleVersion = this.config.tripDecisionRuleVersion;
+        const opportunityRuleVersion = this.config.opportunityRuleVersion;
+        for (const [ruleVersion, payload] of [
           [
-            ruleVersion,
+            opportunityRuleVersion,
             {
-              hardBlockersFirst: true,
-              aiMayOverride: false,
-              source: "Technical V2.0 section 12",
+              conclusion: "SKY_OPPORTUNITY",
+              perSliceNormalizedInputs: true,
+              weightedGeometricMean: true,
+              confidenceSeparateFromScore: true,
+              continuousWindow: {
+                hysteresis: true,
+                minimumDurationMinutes: 60,
+                maximumSmoothedGapMinutes: 15,
+              },
             },
           ],
-        );
+          [
+            tripRuleVersion,
+            {
+              conclusion: "TRIP_DECISION",
+              formalSpotOnly: true,
+              hardBlockersFirst: true,
+              skyOpportunityCannotOverrideTripBlocker: true,
+            },
+          ],
+        ] as const)
+          await client.query(
+            `INSERT INTO rule_versions(rule_version, state, payload)
+             VALUES ($1, 'ACTIVE', $2)
+             ON CONFLICT (rule_version) DO UPDATE SET payload = EXCLUDED.payload`,
+            [ruleVersion, payload],
+          );
         const nights = await client.query<{
           night_id: string;
           spot_id: string;
           local_date: string | Date;
           payload: {
-            decision?: { inputDigest?: string };
+            context?: { contextFingerprint?: string };
+            decision?: {
+              inputDigest?: string;
+              skyOpportunity?: {
+                inputDigest?: string;
+                ruleVersion?: string;
+                windows?: unknown;
+                status?: string;
+                factors?: unknown;
+                confidence?: number | null;
+              };
+            };
+            hourly?: Array<{ opportunityInput?: unknown }>;
             sources?: Array<{ id?: string }>;
           };
         }>(
           "SELECT night_id, spot_id, local_date, payload FROM astronomy_nights ORDER BY spot_id, local_date",
         );
         let decisionCount = 0;
+        let opportunityCount = 0;
         for (const night of nights.rows) {
           const decision = night.payload.decision;
           if (!decision?.inputDigest) continue;
@@ -441,10 +618,57 @@ export class OutboxWorkerRuntime {
             night.local_date instanceof Date
               ? night.local_date.toISOString().slice(0, 10)
               : String(night.local_date).slice(0, 10);
-          const snapshotId = `decision:${digest({ night: night.night_id, ruleVersion }).slice(0, 32)}`;
+          const snapshotId = `decision:${digest({ night: night.night_id, ruleVersion: tripRuleVersion }).slice(0, 32)}`;
           const sourceIds = (night.payload.sources ?? [])
             .map((source) => source.id)
             .filter((id): id is string => typeof id === "string");
+          const skyOpportunity = decision.skyOpportunity;
+          const sliceInputs = (night.payload.hourly ?? [])
+            .map((row) => row.opportunityInput)
+            .filter((value) => value !== undefined);
+          if (
+            skyOpportunity?.inputDigest &&
+            skyOpportunity.status &&
+            Array.isArray(skyOpportunity.windows) &&
+            Array.isArray(skyOpportunity.factors) &&
+            sliceInputs.length > 0
+          ) {
+            const opportunitySnapshotId = `opportunity:${digest({ night: night.night_id, ruleVersion: opportunityRuleVersion }).slice(0, 32)}`;
+            await client.query(
+              `INSERT INTO sky_opportunity_snapshots(
+                 snapshot_id, context_fingerprint, location_kind, location_ref,
+                 spot_id, local_date, rule_version, input_digest,
+                 source_snapshot_ids, slice_inputs, windows, status, factors,
+                 confidence, payload
+               ) VALUES ($1, $2, 'FORMAL_SPOT', $3, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+               ON CONFLICT (snapshot_id) DO UPDATE SET
+                 input_digest = EXCLUDED.input_digest,
+                 source_snapshot_ids = EXCLUDED.source_snapshot_ids,
+                 slice_inputs = EXCLUDED.slice_inputs,
+                 windows = EXCLUDED.windows,
+                 status = EXCLUDED.status,
+                 factors = EXCLUDED.factors,
+                 confidence = EXCLUDED.confidence,
+                 payload = EXCLUDED.payload,
+                 generated_at = now()`,
+              [
+                opportunitySnapshotId,
+                night.payload.context?.contextFingerprint ?? night.night_id,
+                night.spot_id,
+                date,
+                skyOpportunity.ruleVersion ?? opportunityRuleVersion,
+                skyOpportunity.inputDigest,
+                JSON.stringify(sourceIds),
+                JSON.stringify(sliceInputs),
+                JSON.stringify(skyOpportunity.windows),
+                skyOpportunity.status,
+                JSON.stringify(skyOpportunity.factors),
+                skyOpportunity.confidence ?? null,
+                skyOpportunity,
+              ],
+            );
+            opportunityCount += 1;
+          }
           await client.query(
             `INSERT INTO tonight_decision_snapshots(
                snapshot_id, spot_id, local_date, rule_version, input_digest,
@@ -459,7 +683,7 @@ export class OutboxWorkerRuntime {
               snapshotId,
               night.spot_id,
               date,
-              ruleVersion,
+              tripRuleVersion,
               decision.inputDigest,
               JSON.stringify(sourceIds),
               decision,
@@ -469,39 +693,57 @@ export class OutboxWorkerRuntime {
         }
         outcome = {
           resultState: decisionCount > 0 ? "RECOMPUTED" : "NO_INPUT",
-          resultPayload: { decisionCount, ruleVersion, hardBlockersFirst: true },
+          resultPayload: {
+            decisionCount,
+            opportunityCount,
+            tripRuleVersion,
+            opportunityRuleVersion,
+            hardBlockersFirst: true,
+          },
         };
         break;
       }
       case "LIGHT": {
-        const sampled = await client.query(
-          `INSERT INTO light_pollution_samples(
-             spot_id, dataset_version, state, payload
-           )
-           SELECT spot_id,
-                  coalesce(
-                    payload -> 'lightPollution' ->> 'datasetVersion',
-                    'demo-radial-fallback-v1'
-                  ),
-                  'ESTIMATED',
-                  jsonb_build_object(
-                    'estimate', payload -> 'lightPollution',
-                    'boundedGeometry', true,
-                    'runtimeClaim', false
-                  )
-             FROM spots
-            WHERE visibility_policy <> 'HIDDEN'
-           ON CONFLICT (spot_id, dataset_version) DO UPDATE SET
-             state = EXCLUDED.state,
-             payload = EXCLUDED.payload`,
-        );
+        const publication =
+          this.config.darkSkyDatasetVersion === "UNAVAILABLE"
+            ? null
+            : (
+                await client.query<{
+                  dataset_version: string;
+                  source_id: string;
+                  cell_count: number;
+                  sample_count: number;
+                }>(
+                  `SELECT p.dataset_version,
+                          p.source_id,
+                          (SELECT count(*)::integer
+                             FROM dark_sky_grid_cells c
+                            WHERE c.dataset_version = p.dataset_version
+                              AND c.state = 'ESTIMATED') AS cell_count,
+                          (SELECT count(*)::integer
+                             FROM light_pollution_samples l
+                            WHERE l.dataset_version = p.dataset_version) AS sample_count
+                     FROM dark_sky_dataset_publications p
+                    WHERE p.dataset_version = $1
+                      AND p.state = 'PUBLISHED'`,
+                  [this.config.darkSkyDatasetVersion],
+                )
+              ).rows[0] ?? null;
         outcome = {
-          resultState: "ESTIMATED",
-          resultPayload: {
-            sampleCount: sampled.rowCount ?? 0,
-            datasetVersion: "FROM_CANONICAL_SPOT_ESTIMATE",
-            precision: "TRIAL_REGION_COARSE_ESTIMATE",
-          },
+          resultState: publication ? "PUBLISHED_DATASET_READY" : "UNAVAILABLE",
+          resultPayload: publication
+            ? {
+                datasetVersion: publication.dataset_version,
+                sourceId: publication.source_id,
+                sampleCount: publication.sample_count,
+                cellCount: publication.cell_count,
+                runtimeMutation: false,
+              }
+            : {
+                datasetVersion: this.config.darkSkyDatasetVersion,
+                reason: "no_matching_published_dark_sky_dataset",
+                runtimeMutation: false,
+              },
         };
         break;
       }
@@ -546,22 +788,50 @@ export class OutboxWorkerRuntime {
         break;
       }
       case "PROVIDER_HEALTH": {
-        const providers = ["weather", "route", "media-upload", "external-parser"];
+        const providers = [
+          {
+            key: this.weather.key,
+            configured: this.config.features.REAL_WEATHER_ENABLED,
+          },
+          {
+            key: "route:" + this.config.routeProvider.toLowerCase(),
+            configured: this.config.routeProvider !== "DISABLED",
+          },
+          { key: "media-upload", configured: false },
+          {
+            key: "external-parser",
+            configured: this.config.features.OWN_POST_IMPORT_ENABLED,
+          },
+        ];
         for (const provider of providers)
           await client.query(
             `INSERT INTO provider_health_checks(
                provider, state, failure_code, checked_at, payload
-             ) VALUES ($1, 'DISABLED', 'CAPABILITY_NOT_CONFIGURED', now(), $2)
+             ) VALUES ($1, $2, $3, now(), $4)
              ON CONFLICT (provider) DO UPDATE SET
                state = EXCLUDED.state,
                failure_code = EXCLUDED.failure_code,
                checked_at = EXCLUDED.checked_at,
                payload = EXCLUDED.payload`,
-            [provider, { provider, runtimeCallsAllowed: false, fallback: true }],
+            [
+              provider.key,
+              provider.configured ? "CONFIGURED" : "DISABLED",
+              provider.configured ? null : "CAPABILITY_NOT_CONFIGURED",
+              {
+                provider: provider.key,
+                configured: provider.configured,
+                runtimeSuccessClaimed: false,
+              },
+            ],
           );
         outcome = {
           resultState: "CHECKED",
-          resultPayload: { providers, allDisabledTruthfully: true },
+          resultPayload: {
+            providers,
+            configuredCount: providers.filter((provider) => provider.configured)
+              .length,
+            runtimeSuccessClaimed: false,
+          },
         };
         break;
       }
@@ -598,8 +868,8 @@ export class OutboxWorkerRuntime {
             enabled,
             deliveryAttempted: false,
             reason: enabled
-              ? "No due Demo notifications in this bounded sweep"
-              : "Notification capability is disabled by the audited Demo flag",
+              ? "No due notifications in this bounded sweep"
+              : "Notification capability is disabled by the current feature flag",
           },
         };
         break;

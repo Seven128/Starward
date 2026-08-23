@@ -19,7 +19,7 @@
       "react/jsx-dev-runtime": ["node_modules/@types/react/jsx-dev-runtime.d.ts"]
     },
     "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
-    "types": ["react", "react-dom", "node"]
+    "types": ["react", "node"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "config/**/*.ts"]
 }

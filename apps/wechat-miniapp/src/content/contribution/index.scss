@@ -1,0 +1,134 @@
+.contribution-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.contribution-page__scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.contribution-content {
+  padding-top: 20rpx;
+  padding-bottom: 64rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.contribution-card,
+.contribution-history {
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  box-shadow: none;
+}
+
+.contribution-context,
+.contribution-media-row {
+  padding: 18rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 18rpx;
+  background: var(--surface-subtle);
+}
+
+.contribution-choice-grid,
+.contribution-topic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.contribution-choice-grid .chip,
+.contribution-topic-grid .chip {
+  width: 100%;
+  min-width: 0;
+  min-height: 88rpx;
+  padding: 12rpx 16rpx;
+  white-space: nowrap;
+}
+
+.contribution-coordinate-grid,
+.contribution-date-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.contribution-switch-row {
+  min-height: 96rpx;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.contribution-switch-row > view:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.contribution-textarea {
+  min-height: 220rpx;
+  width: 100%;
+}
+
+.contribution-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.contribution-actions .soft-button {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.contribution-page.large-text .contribution-actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.contribution-history__heading,
+.contribution-history__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.contribution-history__row {
+  min-height: 100rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border);
+}
+
+.contribution-history__copy {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+@media (max-width: 340px) {
+  .contribution-content {
+    padding-left: 24rpx;
+    padding-right: 24rpx;
+  }
+
+  .contribution-coordinate-grid,
+  .contribution-date-grid,
+  .contribution-choice-grid,
+  .contribution-topic-grid,
+  .contribution-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

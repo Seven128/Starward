@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "datasetVersion": "eog-viirs-vnl-v2.2-2024-median-masked",
+  "productName": "EOG Annual VNL V2.2 median-masked",
+  "dataYear": 2024,
+  "sourceUrl": "https://eogdata.mines.edu/products/vnl/",
+  "licenseUrl": "https://eogdata.mines.edu/files/EOG_products_CC_License.pdf",
+  "acquiredAt": "REPLACE_WITH_UTC_TIMESTAMP",
+  "radiance": {
+    "file": "REPLACE_WITH_RADIANCE_GEOTIFF_OR_GZ",
+    "sha256": "REPLACE_WITH_64_HEX_SHA256",
+    "band": 1
+  },
+  "cloudFreeCoverage": {
+    "file": "REPLACE_WITH_COVERAGE_GEOTIFF_OR_GZ",
+    "sha256": "REPLACE_WITH_64_HEX_SHA256",
+    "band": 1
+  },
+  "aoi": {
+    "west": 112.5,
+    "south": 21.5,
+    "east": 115.5,
+    "north": 24.5
+  },
+  "minimumCloudFreeObservations": 3,
+  "gridStridePixels": 40
+}

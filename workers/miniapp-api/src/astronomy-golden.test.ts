@@ -3,9 +3,33 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   calculateMiniappNightSky,
+  calculateSolarLongitudeJ2000,
   calculateTargetHorizontalAt,
   type MiniappAstronomyTarget,
 } from "./astronomy-engine-adapter.ts";
+
+function angularDistance(left: number, right: number) {
+  return Math.abs(((left - right + 540) % 360) - 180);
+}
+
+test("solar longitude is calculated on the J2000 ecliptic axis", () => {
+  assert.ok(
+    angularDistance(
+      calculateSolarLongitudeJ2000("2026-03-20T14:46:00.000Z"),
+      0,
+    ) < 0.5,
+  );
+  assert.ok(
+    angularDistance(
+      calculateSolarLongitudeJ2000("2026-06-21T08:25:00.000Z"),
+      90,
+    ) < 0.5,
+  );
+  assert.throws(
+    () => calculateSolarLongitudeJ2000("not-a-time"),
+    /valid_iso_time_required/u,
+  );
+});
 
 interface GoldenFixture {
   datasetId: string;

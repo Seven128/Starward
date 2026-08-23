@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "evidenceDate": "2026-07-20",
+  "evidenceDate": "2026-08-23",
   "researchStatus": "completed",
-  "implementationStatus": "passed",
+  "implementationStatus": "partial",
   "externalActivationStatus": "pending",
   "implementationBlocked": false,
   "productionTrafficAllowed": false,
@@ -26,26 +26,28 @@
   "runtime": {
     "shared": "packages/data-source-runtime/src/index.ts",
     "objectStore": "packages/data-source-runtime/src/s3-staged-immutable-raw-sink.ts",
-    "weather": [
-      "apps/api/src/modules/forecast/qweather-http-client.ts",
-      "apps/api/src/modules/forecast/open-meteo-http-client.ts"
+    "weather": "workers/miniapp-api/src/weather-provider.ts",
+    "route": "workers/miniapp-api/src/route-provider.ts",
+    "composition": [
+      "workers/miniapp-api/src/weather-provider.ts",
+      "workers/miniapp-api/src/astronomy-service.ts",
+      "workers/miniapp-api/src/trip-decision-engine.ts"
     ],
-    "route": "apps/api/src/modules/map/amap-route-http-adapter.ts",
-    "composition": "apps/api/src/modules/providers/production-data-source-runtime.ts",
     "satelliteOrbit": "data-pipelines/src/celestrak-omm-client.ts",
     "copernicusDem": "data-pipelines/src/copernicus-dem-ingest.ts",
-    "staticLanding": "data-pipelines/src/static-source-ingest.ts"
+    "staticLanding": "data-pipelines/src/static-source-ingest.ts",
+    "darkSkyPublication": "data-pipelines/dark-sky/publish_eog_viirs.py"
   },
   "sources": [
     {
       "id": "qweather",
       "stage": "mvp-primary-candidate",
       "mode": "server-pull-json",
-      "endpoint": "https://{account-api-host}/v7/weather/168h + /weatheralert/v1/current/{lat}/{lon}",
+      "endpoint": "https://{account-api-host}/v7/grid-weather/72h + /weatheralert/v1/current/{latitude}/{longitude}",
       "authentication": "Ed25519 JWT in Authorization header; 15-minute token; private key server-only",
       "secretRefs": ["qweather-api-host", "qweather-credential-id", "qweather-project-id", "qweather-ed25519-private-key"],
       "scheduleAndCache": "grid/run Single Flight; hourly 30-60m; alerts 5-20m with event invalidation",
-      "normalization": "QWeather payload -> NormalizedWeatherRun; preserve source attribution and null layered-cloud fields",
+      "normalization": "QWeather grid timeline remains primary; official alerts are normalized separately; Open-Meteo may fill missing layered-cloud/model-evidence fields without replacing the primary timeline or selecting the clearest model",
       "degradation": "serve attributable unexpired cache or mark affected factors unknown; never retain expired alert as current",
       "activationEvidence": "commercial rights, actual project quota/QPM/SLA, price, cache/retention and target-region POC"
     },
@@ -53,11 +55,11 @@
       "id": "open-meteo",
       "stage": "optional-layered-cloud-candidate",
       "mode": "server-pull-json",
-      "endpoint": "https://customer-api.open-meteo.com/v1/forecast",
-      "authentication": "commercial apikey query parameter; server-only; free endpoint forbidden for commercial production",
+      "endpoint": "owner-only noncommercial trial: https://api.open-meteo.com/v1/forecast; commercial production: https://customer-api.open-meteo.com/v1/forecast",
+      "authentication": "owner-only noncommercial trial uses the public endpoint under its terms; commercial production requires a server-only customer apikey; the free endpoint is forbidden for commercial production",
       "secretRefs": ["open-meteo-commercial-api-key"],
       "scheduleAndCache": "explicit model/run/variable-set cache; GMT response; weighted-call budget accounting",
-      "normalization": "explicit models and SI units -> NormalizedWeatherRun with CC BY attribution/modification chain",
+      "normalization": "Best Match primary-fallback plus explicit ICON/GFS/ECMWF IFS/AIFS evidence in SI units; retain each model/run identity, calculate consistency/spread, preserve CC BY attribution/modification chain, and never select the clearest model as truth",
       "degradation": "remove optional multi-model/layered-cloud comparison before primary weather or safety fields",
       "activationEvidence": "paid plan, China route POC, model freshness/completeness and proven incremental value"
     },
@@ -88,14 +90,14 @@
     {
       "id": "eog-viirs-vnl-v2.2",
       "stage": "mvp-static-baseline",
-      "mode": "versioned-http-batch",
+      "mode": "operator-acquired-hash-pinned-batch",
       "endpoint": "official EOG Annual VNL v2.2 download object selected from product page",
-      "authentication": "none unless official download flow changes",
+      "authentication": "EOG account/OAuth browser flow for operator acquisition; publication accepts only local hash-pinned objects and never receives the account session",
       "secretRefs": [],
       "scheduleAndCache": "annual version check; download once per selected release; content-addressed immutable raw",
-      "normalization": "allowlisted streaming staged ingest + SHA-256 -> gzip GeoTIFF EPSG:4326 radiance+coverage -> validate -> regional COG/overviews/tiles and point-query index",
+      "normalization": "data-pipelines/dark-sky/publish_eog_viirs.py verifies SHA-256, EPSG:4326 alignment, bounded AOI and cloud-free coverage; publishes relative-radiance grid cells plus 3x3 formal-spot samples atomically",
       "degradation": "show radiance/year/coverage only; no Bortle or visibility claim without calibrated regional evidence",
-      "activationEvidence": "saved readme/licence/citation, actual object URL, size, sha256 and attribution rendering"
+      "activationEvidence": "pending: operator-acquired 2024 median-masked radiance and matching coverage objects, saved readme/licence/citation, actual object identity/size/SHA-256, database publication receipt and attribution rendering"
     },
     {
       "id": "copernicus-dem-glo-30",

@@ -1,4 +1,4 @@
 {
-  "desc": "Demo pages are indexable only in local/experience builds.",
+  "desc": "Current Mini Program pages are indexable only in local or experience builds.",
   "rules": [{ "action": "allow", "page": "*" }]
 }

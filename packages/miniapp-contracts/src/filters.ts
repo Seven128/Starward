@@ -63,7 +63,7 @@ const facility = (spot: SpotSummary, type: string) =>
 const dynamicUnavailable = () => false;
 
 /**
- * V2.1.1 is one flat, ordered 10+8 taxonomy. Options whose current
+ * The current product has one flat, ordered 10+8 taxonomy. Options whose
  * SpotSummary cannot truthfully answer a time/provider-dependent predicate
  * return no match instead of manufacturing a favourable value.
  */
@@ -102,7 +102,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     tier: "FIRST_LEVEL",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
-    test: (spot) => spot.lightPollution.levelAtMost !== null,
+    test: (spot) => spot.lightPollution.productBand !== null,
   },
   {
     id: "lessCloud",

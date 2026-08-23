@@ -28,12 +28,6 @@ scroll-view::-webkit-scrollbar,
   display: none;
 }
 
-/* Taro H5 diagnostics render the system tab bar as a sibling stacking context. */
-taro-tabbar,
-.taro-tabbar__tabbar {
-  z-index: 100 !important;
-}
-
 view,
 text,
 button,
@@ -139,6 +133,7 @@ button::after {
 }
 
 .soft-button {
+  width: auto;
   min-height: 88rpx;
   min-width: 88rpx;
   padding: 18rpx 28rpx;
@@ -151,6 +146,7 @@ button::after {
   justify-content: center;
   gap: 12rpx;
   font-weight: 500;
+  white-space: nowrap;
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
@@ -168,7 +164,7 @@ button::after {
 .soft-button--ghost {
   background: transparent;
 }
-.soft-button[disabled="true"] {
+.soft-button--disabled {
   color: var(--text-tertiary);
   background: var(--surface-subtle);
   border-color: var(--border);
@@ -206,6 +202,7 @@ textarea:focus {
   color: var(--text-secondary);
   background: var(--surface);
   text-align: center;
+  white-space: nowrap;
 }
 .chip--selected {
   border-width: 2rpx;
@@ -227,6 +224,11 @@ textarea:focus {
   background: var(--surface);
   border: 1rpx solid var(--border);
   border-radius: 20rpx;
+}
+.field--disabled {
+  color: var(--text-tertiary);
+  background: var(--surface-subtle);
+  cursor: not-allowed;
 }
 .field-textarea {
   min-height: 220rpx;
@@ -257,6 +259,8 @@ textarea:focus {
   background: var(--surface-subtle);
   font-size: 22rpx;
   line-height: 32rpx;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .status-tag--warning {
   color: var(--warning);
@@ -265,6 +269,26 @@ textarea:focus {
 .status-tag--danger {
   color: var(--danger);
   border-color: var(--danger);
+}
+
+.development-fixture-banner {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 56rpx;
+  margin-bottom: 12rpx;
+  padding: 8rpx 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid var(--warning);
+  border-radius: 18rpx;
+  color: var(--warning);
+  background: var(--surface);
+  font-size: 22rpx;
+  line-height: 32rpx;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .reduced-motion .soft-button,

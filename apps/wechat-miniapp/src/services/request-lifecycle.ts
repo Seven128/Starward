@@ -20,20 +20,6 @@ export function isMiniappRequestCancelled(
   return error instanceof MiniappRequestCancelled;
 }
 
-export function usesNativeRequestTaskCancellation(runtime: string): boolean {
-  return runtime === "WEAPP";
-}
-
-export function selectQueryAbortSignal(
-  runtime: string,
-  context: { readonly signal: AbortSignal },
-): AbortSignal | undefined {
-  // TanStack observes access to this getter. Do not even read it for WEAPP:
-  // native cancellation belongs to RequestTask supersession instead.
-  if (usesNativeRequestTaskCancellation(runtime)) return undefined;
-  return context.signal;
-}
-
 interface ActiveRequest {
   cancel: (reason: RequestCancellationReason) => void;
 }

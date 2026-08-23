@@ -15,54 +15,35 @@ const sharedSourceInclude = [
 
 const createConfig: UserConfigFn = async (_merge, { command }) => {
   const target = process.env.TARO_ENV ?? "weapp";
+  if (target !== "weapp")
+    throw new Error("wechat_miniapp_web_target_removed");
   const config: UserConfigExport = {
     projectName: "tonight-stargazing-wechat-miniapp",
     date: "2026-08-06",
     designWidth: 750,
     deviceRatio: { 320: 2.34375, 375: 2, 430: 1.744186, 750: 1 },
     sourceRoot: "src",
-    outputRoot: `dist/${target}`,
+    outputRoot: "dist/weapp",
     framework: "react",
-    compiler: "webpack5",
+    compiler: {
+      type: "webpack5",
+      // Taro 4.2.1's optional mini-program dependency prebundle can emit an
+      // invalid ConcatSource during watch startup. Production builds already
+      // bypass this optimization. Keep development on the same compiler path
+      // instead of patching generated dependencies or node_modules.
+      prebundle: { enable: false },
+    },
     // Production candidates must recompute the main/subpackage graph. Taro's
     // persistent webpack cache can otherwise retain deleted cross-package
     // module ids while still reporting a successful build.
     cache: { enable: command !== "build" },
     plugins: [
       "@tarojs/plugin-framework-react",
-      target === "h5"
-        ? "@tarojs/plugin-platform-h5"
-        : "@tarojs/plugin-platform-weapp",
+      "@tarojs/plugin-platform-weapp",
     ],
     alias: {
       "@": path.resolve(here, "../src"),
       react: path.resolve(here, "../node_modules/react"),
-      // TanStack Query publishes both modern private-field output and an
-      // equivalent legacy build. Taro 4.2.1's production property quoting can
-      // turn modern `#field` syntax into invalid `#"field"` JavaScript in the
-      // H5 bundle. The WeChat compiler resolves the package's native entry
-      // correctly and must not inherit this browser-only compatibility alias:
-      // doing so leaves native queries permanently paused before queryFn.
-      ...(target === "h5"
-        ? {
-            // Keep the stateful Taro router singleton on one module identity.
-            // npm may otherwise place a second same-version router below
-            // taro-h5; that copy never receives setHistory and navigateTo
-            // fails before a production-derived child route can open.
-            "@tarojs/router": path.resolve(
-              here,
-              "../node_modules/@tarojs/router",
-            ),
-            "@tanstack/query-core": path.resolve(
-              here,
-              "../node_modules/@tanstack/query-core/build/legacy/index.js",
-            ),
-            "@tanstack/react-query": path.resolve(
-              here,
-              "../node_modules/@tanstack/react-query/build/legacy/index.js",
-            ),
-          }
-        : {}),
       "@tarojs/plugin-framework-react": path.resolve(
         here,
         "../node_modules/@tarojs/plugin-framework-react",
@@ -78,7 +59,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     },
     defineConstants: {
       __MINIAPP_API_BASE__: JSON.stringify(
-        process.env.MINIAPP_API_BASE ?? "http://127.0.0.1:8787/v1",
+        process.env.MINIAPP_API_BASE ?? "http://127.0.0.1:8787",
       ),
       __DELIVERY_TARGET__: JSON.stringify(
         "target.system.wechat-miniapp-soft-instruments-2026-08-05",
@@ -86,12 +67,15 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: JSON.stringify(
         process.env.MINIAPP_ACCEPTANCE_DIAGNOSTICS === "1",
       ),
+      __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: JSON.stringify(
+        process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1",
+      ),
     },
     copy: {
       patterns: [
         {
           from: path.resolve(here, "../src/assets"),
-          to: path.resolve(here, `../dist/${target}/assets`),
+          to: path.resolve(here, "../dist/weapp/assets"),
         },
       ],
       options: {},
@@ -111,22 +95,6 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       },
       webpackChain(chain: { resolve: { symlinks(value: boolean): void } }) {
         chain.resolve.symlinks(false);
-      },
-    },
-    h5: {
-      compile: { include: sharedSourceInclude },
-      publicPath: "/",
-      staticDirectory: "static",
-      router: { mode: "hash" },
-      postcss: {
-        autoprefixer: { enable: true, config: {} },
-        cssModules: {
-          enable: false,
-          config: {
-            namingPattern: "module",
-            generateScopedName: "[name]__[local]___[hash:base64:5]",
-          },
-        },
       },
     },
     logger: { quiet: false, stats: true },

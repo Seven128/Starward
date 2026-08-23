@@ -1,7 +1,6 @@
 export * from "./types.ts";
 export * from "./filters.ts";
 export * from "./feature-flags.ts";
-export * from "./catalog.ts";
 export * from "./url-policy.ts";
 export * from "./viewport.ts";
 export * from "./ranking.ts";

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEMO_SPOTS,
   EMPTY_FILTER_STATE,
   cloneFilterState,
 } from "@starward/miniapp-contracts";
+import { TEST_SPOTS } from "@starward/miniapp-contracts/test-fixtures";
 import {
   addBoundedSearchHistory,
   applyFilterDraft,
@@ -14,6 +14,7 @@ import {
   exitObservationMode,
   restorePriorMode,
   restoreStartupMode,
+  revertFilterDraft,
   toggleFavoriteRelation,
   toggleFilterDraft,
 } from "./app-transitions";
@@ -27,8 +28,15 @@ test("filter draft is discarded on cancel and committed only on apply", () => {
   const cancelled = cancelFilterDraft(initial);
   assert.deepEqual(cancelled.draftFilters.LIGHT_POLLUTION, []);
 
+  const reverted = revertFilterDraft(opened.filterSnapshot);
+  assert.equal(reverted.filterSheetOpen, true);
+  assert.deepEqual(reverted.draftFilters.LIGHT_POLLUTION, []);
+
   const applied = applyFilterDraft(toggled.draftFilters);
   assert.deepEqual(applied.committedFilters.LIGHT_POLLUTION, [
+    "lightPollution",
+  ]);
+  assert.deepEqual(applied.filterSnapshot.LIGHT_POLLUTION, [
     "lightPollution",
   ]);
   assert.equal(applied.filterSheetOpen, false);
@@ -72,7 +80,7 @@ test("search history is deduplicated, newest-first and bounded", () => {
 });
 
 test("favorite state is a stable relation to a formal spot id", () => {
-  const spotId = DEMO_SPOTS[0]!.spotId;
+  const spotId = TEST_SPOTS[0]!.spotId;
   const added = toggleFavoriteRelation([], spotId);
   assert.equal(added.favorite, true);
   assert.deepEqual(added.favoriteIds, [spotId]);

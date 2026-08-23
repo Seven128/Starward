@@ -15,7 +15,7 @@ import type {
 } from "./types.ts";
 
 const ACQUIRED_AT = "2026-08-06T20:45:00+08:00";
-const DEMO_DATA_DATE = "2026-08-06";
+const TEST_DATA_DATE = "2026-08-06";
 const SHENZHEN_CENTER = { lat: 22.5431, lon: 114.0579 };
 
 interface OsmSpotSeed {
@@ -51,7 +51,7 @@ function osmSource(seed: OsmSpotSeed): SourceSummary {
     precision: "OpenStreetMap 元素点位或几何中心；不是入口、停车点或安全边界",
     limitations: [
       "OpenStreetMap 是开放协作数据库，名称与坐标仍需出发前复核",
-      "入选为本 Demo 的正式 spot_id 只表示产品内人工整理的候选点，不表示景区许可、开放或安全背书",
+      "测试夹具中的 spot_id 仅用于验证产品流程，不表示景区许可、开放或安全背书",
     ],
   };
 }
@@ -389,8 +389,8 @@ const FACILITY_TYPES: readonly FacilityType[] = [
 function unknownFacilities(seed: OsmSpotSeed): readonly FacilityEvidence[] {
   const source: SourceSummary = {
     id: `source-facility-unverified-${seed.id}`,
-    kind: "DEMO_FIXTURE",
-    provider: "今晚去观星 Demo 人工整理",
+    kind: "TEST_FIXTURE",
+    provider: "今晚去观星测试夹具",
     title: `${seed.name} 场地设施待核验记录`,
     sourceUrl: `https://www.openstreetmap.org/${seed.osmType}/${seed.osmId}`,
     license: "No independent facility evidence bundled",
@@ -431,16 +431,16 @@ function lightEstimate(seed: OsmSpotSeed): LightPollutionEstimate {
   const source: SourceSummary = {
     id: `source-light-demo-radial-${seed.id}`,
     kind: "PRODUCT_CALCULATION",
-    provider: "今晚去观星 Demo 粗粒度估算",
+    provider: "今晚去观星测试夹具估算",
     title: `${seed.name} 光害候选筛选估算`,
     sourceUrl: "",
-    license: "Internal Demo calculation; not a measured dataset",
+    license: "Internal test fixture; not a measured dataset",
     licenseUrl: "",
-    publishedAt: DEMO_DATA_DATE,
+    publishedAt: TEST_DATA_DATE,
     retrievedAt: ACQUIRED_AT,
     validFrom: null,
     validTo: null,
-    state: "ESTIMATED",
+    state: "ESTIMATED" as const,
     confidence: 0.25,
     precision: "仅按与深圳中心的球面距离分桶；不可当作 Bortle 实测",
     limitations: [
@@ -450,10 +450,14 @@ function lightEstimate(seed: OsmSpotSeed): LightPollutionEstimate {
   };
   return {
     levelAtMost,
+    productBand: null,
+    radiance: null,
+    minimumCloudFreeObservations: null,
+    calibratedSkyClass: false,
     label: `约 ${levelAtMost} 级以下候选（粗估）`,
     method: "starward-demo-radial-light-candidate-v1",
     datasetVersion: "no-authoritative-raster-demo-fallback-v1",
-    dataDate: DEMO_DATA_DATE,
+    dataDate: TEST_DATA_DATE,
     precision: source.precision,
     state: "ESTIMATED",
     source,
@@ -492,17 +496,80 @@ function toSpot(seed: OsmSpotSeed, index: number): SpotSummary {
   };
 }
 
-export const DEMO_SPOTS: readonly SpotSummary[] = Object.freeze(
+export const TEST_SPOTS: readonly SpotSummary[] = Object.freeze(
   SEEDS.map(toSpot),
 );
 
-export const DEMO_POPULATION_DISCLOSURE = Object.freeze({
+const publishedFixtureBase = TEST_SPOTS[0]!;
+const publishedFixtureSource: SourceSummary = Object.freeze({
+  ...publishedFixtureBase.source,
+  id: "source-explicit-published-test-fixture",
+  kind: "TEST_FIXTURE",
+  provider: "今晚去观星测试夹具",
+  title: "仅用于自动化测试的完整正式点",
+  state: "SAMPLE_DATA",
+  confidence: null,
+  limitations: [
+    "仅在显式测试仓储中可达",
+    "不得导入生产数据库或用于真实出行判断",
+  ],
+});
+
+/** A synthetic, complete formal spot for exercising the production-shaped
+ * service chain. It is exported only through the test-fixtures subpath. */
+export const TEST_PUBLISHED_SPOT: SpotSummary = Object.freeze({
+  ...publishedFixtureBase,
+  spotId: "spot:test-published" as SpotId,
+  name: "自动化测试正式观星点",
+  address: "仅用于测试，不对应真实地点",
+  status: "PUBLISHED",
+  source: publishedFixtureSource,
+  lastVerifiedAt: "2026-08-06T00:00:00.000Z",
+  obstructionPercent: 20,
+  clearDirections: ["ALL"] as const,
+  accessTags: ["DRIVE_TO", "NO_HIKE"] as const,
+  facilities: publishedFixtureBase.facilities.map((facility) => ({
+    ...facility,
+    status: "AVAILABLE",
+    summary: "排版测试资料；不代表真实场地",
+    detail: "仅证明自动化测试可覆盖完整字段。",
+    verifiedAt: "2026-08-06T00:00:00.000Z",
+    confidence: 1,
+    source: publishedFixtureSource,
+  })),
+  media: publishedFixtureBase.media.map((media) => ({
+    ...media,
+    id: "media:test-published",
+    alt: "自动化测试媒体占位",
+    caption: "仅用于验证本点位媒体门禁",
+    isSiteSpecific: true,
+    state: "SAMPLE_DATA",
+  })),
+  lightPollution: {
+    ...publishedFixtureBase.lightPollution,
+    productBand: "LOW",
+    radiance: {
+      median: 0.8,
+      p10: 0.5,
+      p90: 1.2,
+      unit: "nW/cm²/sr",
+    },
+    minimumCloudFreeObservations: 12,
+    calibratedSkyClass: false,
+    source: publishedFixtureSource,
+    method: "deterministic-test-fixture",
+    datasetVersion: "test-fixture-dark-sky",
+    state: "ESTIMATED" as const,
+  } satisfies LightPollutionEstimate,
+} satisfies SpotSummary);
+
+export const TEST_POPULATION_DISCLOSURE = Object.freeze({
   key: "shenzhen-3h-curated-formal-spots-v1",
-  eligibleCount: DEMO_SPOTS.length,
+  eligibleCount: TEST_SPOTS.length,
   excludedCount: 0,
-  stableIds: Object.freeze(DEMO_SPOTS.map((spot) => spot.spotId)),
+  stableIds: Object.freeze(TEST_SPOTS.map((spot) => spot.spotId)),
   regionPolicy:
-    "深圳及珠三角/粤港周边 Demo 人工候选；不构成长期地域限制或安全/开放背书",
+    "测试夹具中的珠三角点位；不构成真实地域覆盖或安全/开放背书",
   source:
     "OpenStreetMap Nominatim element identity acquired 2026-08-06; ODbL 1.0",
 });
@@ -510,13 +577,13 @@ export const DEMO_POPULATION_DISCLOSURE = Object.freeze({
 function genericGuide(spot: SpotSummary): GuideArticle {
   const source: SourceSummary = {
     id: `source-guide-demo-${spot.spotId}`,
-    kind: "DEMO_FIXTURE",
+    kind: "TEST_FIXTURE",
     provider: "今晚去观星编辑部",
-    title: "Demo 通用出发前核验清单",
+    title: "测试夹具通用出发前核验清单",
     sourceUrl: "",
-    license: "Project-owned Demo content",
+    license: "Project-owned test-fixture content",
     licenseUrl: "",
-    publishedAt: DEMO_DATA_DATE,
+    publishedAt: TEST_DATA_DATE,
     retrievedAt: ACQUIRED_AT,
     validFrom: null,
     validTo: null,
@@ -532,14 +599,14 @@ function genericGuide(spot: SpotSummary): GuideArticle {
     summary: "先核验管理方公告和严重天气，再确认末段道路、停车、同伴与返程。",
     authorName: "今晚去观星编辑部",
     authorType: "OFFICIAL",
-    publishedAt: DEMO_DATA_DATE,
-    updatedAt: DEMO_DATA_DATE,
+    publishedAt: TEST_DATA_DATE,
+    updatedAt: TEST_DATA_DATE,
     verified: false,
     source,
     blocks: [
       {
         type: "paragraph",
-        text: "本攻略为 Demo 通用清单，不证明当前点位开放或安全。出发前请核验管理方公告、天气预警与道路状态。",
+        text: "本内容仅为测试夹具，不证明当前点位开放或安全。出发前请核验管理方公告、天气预警与道路状态。",
       },
       {
         type: "media",
@@ -556,13 +623,15 @@ function genericGuide(spot: SpotSummary): GuideArticle {
   };
 }
 
-export function findDemoSpot(spotId: string): SpotSummary | null {
-  return DEMO_SPOTS.find((spot) => spot.spotId === spotId) ?? null;
+export function findTestSpot(spotId: string): SpotSummary | null {
+  if (spotId === TEST_PUBLISHED_SPOT.spotId) return TEST_PUBLISHED_SPOT;
+  return TEST_SPOTS.find((spot) => spot.spotId === spotId) ?? null;
 }
 
-export function buildDemoSpotDetail(spotId: string): SpotDetail | null {
-  const spot = findDemoSpot(spotId);
+export function buildTestSpotDetail(spotId: string): SpotDetail | null {
+  const spot = findTestSpot(spotId);
   if (!spot) return null;
+  const completeTestSpot = spot.spotId === TEST_PUBLISHED_SPOT.spotId;
   const factors = [
     {
       code: "critical-data-unavailable",
@@ -583,6 +652,7 @@ export function buildDemoSpotDetail(spotId: string): SpotDetail | null {
     spot,
     route: {
       kind: "STRAIGHT_LINE_ONLY",
+      originLabel: "深圳市中心直线参考",
       distanceKm:
         Math.round(
           distanceMeters(SHENZHEN_CENTER, {
@@ -600,20 +670,84 @@ export function buildDemoSpotDetail(spotId: string): SpotDetail | null {
     decision: {
       recommendation: "DATA_INSUFFICIENT",
       label: "数据不足，暂不能判断今晚是否适合",
-      bestWindow: null,
-      suitableFor: [],
+      skyOpportunity: {
+        status: "INSUFFICIENT_DATA",
+        label: "天空关键数据不足，暂不能判断",
+        primaryWindow: null,
+        backupWindow: null,
+        windows: [],
+        suitableFor: [],
+        factors: [factors[0]!],
+        confidence: null,
+        freshness: "SAMPLE_DATA",
+        ruleVersion: "test-opportunity",
+        inputDigest: `test-opportunity-insufficient:${spot.spotId}:${TEST_DATA_DATE}`,
+      },
       factors,
       confidence: null,
-      freshness: "UNAVAILABLE",
-      algorithmVersion: "starward-tonight-decision-v1-hard-blocker-first",
-      inputDigest: `demo-insufficient:${spot.spotId}:${DEMO_DATA_DATE}`,
+      freshness: "SAMPLE_DATA",
+      ruleVersion: "test-trip-decision",
+      inputDigest: `test-insufficient:${spot.spotId}:${TEST_DATA_DATE}`,
     },
     guides: [genericGuide(spot)],
-    siteSafety: [
-      "开放、道路、停车与现场风险均待核验",
-      "雷暴、暴雨、强风、封闭、道路中断或非法进入时不建议前往",
-      "偏远、临水、悬崖与弱信号环境请结伴并准备撤离方案",
-    ],
+    accessAndSafety: completeTestSpot
+      ? {
+          openness: "OPEN",
+          legalAccess: "PERMITTED",
+          nightSafety: "CAUTION",
+          explicitDanger: false,
+          restrictions: ["仅为自动化测试状态，不对应真实地点"],
+          guidance: ["测试夹具只验证正式数据形状，不构成出行建议"],
+        }
+      : {
+          openness: "UNKNOWN",
+          legalAccess: "UNKNOWN",
+          nightSafety: "UNKNOWN",
+          explicitDanger: null,
+          restrictions: ["开放、道路、停车与现场风险均待核验"],
+          guidance: [
+            "雷暴、暴雨、强风、封闭、道路中断或非法进入时不建议前往",
+            "偏远、临水、悬崖与弱信号环境请结伴并准备撤离方案",
+          ],
+        },
+    siteMediaState: completeTestSpot
+      ? "SITE_MEDIA_VERIFIED"
+      : "NO_SITE_MEDIA_VERIFIED",
+    evidence: completeTestSpot
+      ? ([
+          "SPOT_COORDINATE",
+          "ACCESS_LAST_ROAD",
+          "ACCESS_PARKING",
+          "ACCESS_OPENNESS",
+          "ACCESS_LEGAL_ENTRY",
+          "SAFETY_NIGHT",
+          "HORIZON_PROFILE",
+          "SITE_MEDIA_PROVENANCE",
+        ] as const).map((claim, index) => ({
+          evidenceId: `evidence:test-published:${index + 1}`,
+          subjectType:
+            claim === "SPOT_COORDINATE"
+              ? ("SPOT" as const)
+              : claim === "SAFETY_NIGHT"
+                ? ("SAFETY" as const)
+                : claim === "HORIZON_PROFILE"
+                  ? ("HORIZON" as const)
+                  : ("ACCESS" as const),
+          subjectId: spot.spotId,
+          claim,
+          state: "CONFIRMED" as const,
+          sourceType: "OPERATOR" as const,
+          sourceId: spot.source.id,
+          mediaIds:
+            claim === "SITE_MEDIA_PROVENANCE"
+              ? spot.media.map((media) => media.id)
+              : [],
+          observedAt: "2026-08-06T00:00:00.000Z",
+          verifiedAt: "2026-08-06T00:00:00.000Z",
+          validTo: null,
+          confidence: 1,
+        }))
+      : [],
     dataDisclosure: [
       spot.source,
       spot.lightPollution.source,
@@ -623,9 +757,9 @@ export function buildDemoSpotDetail(spotId: string): SpotDetail | null {
 }
 
 if (
-  DEMO_SPOTS.length < 20 ||
-  DEMO_SPOTS.length > 50 ||
-  new Set(DEMO_SPOTS.map((spot) => spot.spotId)).size !== DEMO_SPOTS.length
+  TEST_SPOTS.length < 20 ||
+  TEST_SPOTS.length > 50 ||
+  new Set(TEST_SPOTS.map((spot) => spot.spotId)).size !== TEST_SPOTS.length
 ) {
-  throw new Error("demo_population_must_be_20_to_50_unique_formal_spots");
+  throw new Error("test_population_must_be_20_to_50_unique_formal_spots");
 }
