@@ -37,10 +37,18 @@ This root-owned, on-demand verification Context is the single durable owner for 
 
 ## Four-Layer Environment Topology
 
+### Native-first implementation and feedback invariant
+
+- The first runnable carrier for every Mini Program product surface is the tracked Taro source compiled to WEAPP and observed through the repository-native project in WeChat DevTools. Do not first implement, tune, or approve the surface in Web/H5 and then port it to WEAPP, even as a temporary development shortcut. Web DOM/CSS layout, browser navigation/storage/lifecycle and browser substitutes for map, Canvas, permission, sensor, safe-area, capsule, package and native-component behavior are not predictive enough to authorize Mini Program implementation decisions.
+- Platform-neutral work may still take the cheaper path before the renderer: pure domain functions, state machines, schemas/contracts, BFF services, Provider adapters and serialization may use deterministic unit, contract or process tests when the exercised code is exactly the code consumed by the Mini Program. Those tests establish only their declared portable semantics; they cannot approve WXML/WXSS projection, component behavior or any WeChat platform boundary.
+- Browser tooling remains valid for a separately owned Web product surface or an API/tooling diagnostic that does not render or mirror Mini Program UI. It must not host a Mini Program clone, supply a visual baseline, originate layout fixes, stand in for a WeChat journey, or become an intermediate product implementation.
+- The normal feedback order is: selected-resource and Source mapping -> changed-module deterministic checks -> warm WEAPP compilation and the real route in WeChat DevTools -> clean current-candidate DevTools collection -> representative-device verification for device-owned claims. Later layers do not make earlier platform substitutions valid, and DevTools observations do not inherit representative-device authority.
+- Any change involving WXML/WXSS projection, responsive geometry, native map/Canvas, route or subpackage behavior, permission, location, sensor, storage, lifecycle, safe-area/menu-capsule geometry, accessibility or platform interaction must remain continuously runnable in the warm WEAPP loop while it is developed. A code review, unit test or browser rendering may supplement that loop but cannot replace it.
+
 ### 1. Development
 
 - `npm run dev:miniapp` is the primary interactive Mini Program entry: it health-starts the pinned PostGIS/Redis development services, then starts the modular-monolith API, Outbox/BullMQ worker and Taro weapp watch compiler against one development-only loopback binding, waits for the API and initial bundle, opens the repository-native project in WeChat DevTools, and owns teardown of the API/worker/compiler process trees. Infrastructure containers remain warm for the next inner-loop session. `--no-open` keeps the same source/watch loop without opening the GUI; `--api-port <port>` selects an otherwise free development port; `--memory` is an explicit unit/debug fallback that cannot supply persistence or acceptance evidence and must compile a persistent, user-visible “开发验收数据 · 不用于现实判断” marker. The normal PostGIS development lane and any formal candidate never compile that marker. Product edits remain in tracked source even while DevTools is open.
-- Use the cheapest faithful feedback path first: changed-module checks through `npm run check:miniapp:fast`, then the warm WEAPP compiler/WeChat DevTools loop. A browser imitation or Taro H5 projection of the Mini Program is forbidden and cannot become a visual baseline, test authority or second implementation.
+- Use the cheapest faithful feedback path first: changed-module checks through `npm run check:miniapp:fast`, then the warm WEAPP compiler/WeChat DevTools loop. “Cheapest” means the lowest layer that can actually observe the changed invariant; it never authorizes a browser imitation or Taro H5 projection for platform-owned behavior.
 - For UI work, the feedback loop starts from the selected-resource mapping rather than the current screen. Inspect the complete canonical design closure, then observe the real WEAPP route at declared logical widths/modes/states in WeChat DevTools; current runtime appearance never overrides the selected resource.
 - Edit only tracked Taro source, shared contracts and owned configuration. `dist/weapp/**` and files opened inside WeChat DevTools are generated consumers, never an authoring surface or a second implementation truth; `dev:weapp` watch mode may regenerate them for feedback.
 - Use weapp/WeChat DevTools development feedback for WeChat components and APIs, routing, permissions, storage, lifecycle, package configuration, responsive layout and accessibility. This is still development feedback, not acceptance.
@@ -74,7 +82,7 @@ This root-owned, on-demand verification Context is the single durable owner for 
 
 ## Candidate Promotion, Freshness, And Cost Control
 
-1. Develop and repair with deterministic checks plus the cheapest faithful hot renderer. Coalesce one coherent change batch before promotion.
+1. Develop and repair with deterministic checks plus the warm WEAPP/WeChat DevTools renderer whenever a rendered or platform-owned invariant changes. Coalesce one coherent change batch before promotion; never substitute a cheaper browser renderer that cannot observe that invariant.
 2. Freeze one candidate identity covering all acceptance-relevant Taro source, dependency lock, project/build/base-library configuration, fixture/data contract, selected assets, API contracts, acceptance scenarios, native runner closure and tool environment. Recheck the identity before and after every evidence-producing WeChat session; a changed input invalidates dependent results rather than inheriting a historical pass.
 3. Generate/import weapp once and run the complete applicable WeChat DevTools acceptance pass. A failed tool pass is a collection point for batched repair, not a rebuild trigger per finding.
 4. After DevTools obligations are fresh, generate the dedicated device preview/experience build and run the declared representative-device matrix with the same exact device-lane build.
@@ -136,12 +144,12 @@ An app-level error label does not prove the adapter timed out or recovered; a ru
 - Representative device/OS/WeChat-version population, selection rationale, network and location profiles, performance/capacity workload, metrics, sample count, baseline/budget, comparator/tolerance, and owner of any required human confirmation.
 - CI lane, runner OS/image, tool installation/licensing/login feasibility, parallelism and mutable-resource allocation, artifact/report retention, redaction, failure diagnostics, and promotion policy. There is no current miniapp CI lane.
 
-## Active Bootstrap Admission
+## Capability And Environment Change Admission
 
-The active Long-Task may convert the owned paths into current capability only in this order:
+The current Mini Program owners and command ladder are implemented. Any future workflow that adds or materially changes a workspace, runner, environment lane, command, selected-resource binding or evidence boundary must preserve the following order; no workflow type by itself proves that the capability exists or passed:
 
 1. Define and update the owning product/surface Context for the selected Mini Program responsibilities, consume `target.system.wechat-miniapp-soft-instruments-2026-08-05`, and map every affected production surface to the complete `miniapp-selected-source-2026-08-22-v3` plus selected-v3 handoff closure before implementation; do not borrow App/Admin artifacts, sample only screenshots or invent another visual authority.
-2. Create a real package manifest and intentionally register the workspace, dependency locks, versions, commands, and implementation owner; then update the implementation index from code truth.
+2. Create or change the real package/configuration owner intentionally, pin dependency locks, versions and commands, and then update the implementation index from current code truth.
 3. Install exact ignore rules before generating `dist/**`, `project.private.config.json`, QR/secret material, temporary projects, or reports. Confirm all secret and sensitive-artifact paths resolve outside the repository where required.
 4. Implement the isolated runner, health/fingerprint protocol, deterministic reset, failure/recovery seams, teardown, and scoped cleanup before registering a CI or acceptance lane.
 5. Bind every environment to distinct mutable resources and credentials, then prove the promotion/staleness rules with project-owned checks. Only actual runnable commands may be added to verification Context.
