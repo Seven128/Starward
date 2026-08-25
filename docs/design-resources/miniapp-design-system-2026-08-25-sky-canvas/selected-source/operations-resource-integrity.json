@@ -1,0 +1,223 @@
+{
+  "schema_version": "starward-selected-resource-integrity-v1",
+  "algorithm": "sha256",
+  "target_ref": "target-operations-sky-canvas-current-constraint",
+  "resources": {
+    "README.md": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/README.md",
+      "sha256": "f0fd89ca4df575632b1af41b93534c16825cac637983cb3fc123a2aabe66ed7e"
+    },
+    "artifact-manifest.json": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/artifact-manifest.json",
+      "sha256": "f23cd018f623e1412d55d9f5ecb100441856a76b82d7ce939b925b2f9ae95a8b"
+    },
+    "assets/current-review.css": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/current-review.css",
+      "sha256": "bb05fddf1029d1e3b4d57c6fe0a927408a6c780885cead561520b4df0eb32a26"
+    },
+    "assets/current-review.js": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/current-review.js",
+      "sha256": "3976ecdfe57cb573dad4b2ccccaae5b0e9d9e0885d1c42f5a1c1716ff244a055"
+    },
+    "assets/icons/LICENSE-fontawesome.txt": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/LICENSE-fontawesome.txt",
+      "sha256": "c7d77da75193fef8a395644dba312b6986c54a0095d8d552c694eccbd04c2408"
+    },
+    "assets/icons/LICENSE-lucide.txt": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/LICENSE-lucide.txt",
+      "sha256": "fdcc28746ccdcae999f4c38ac860d1e1e18f52d1a5e85033738918fea12fb6a3"
+    },
+    "assets/icons/book-open-text.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/book-open-text.svg",
+      "sha256": "910d1cb823759a4e3ad39a6aacb6d4608a00e75da3495687aa0959a729da4c9e"
+    },
+    "assets/icons/calendar-days.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/calendar-days.svg",
+      "sha256": "af1618d24687cd7da9d0e4b54080fbf413806329ff470877799fbe72d1f8d06f"
+    },
+    "assets/icons/camera.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/camera.svg",
+      "sha256": "4293f252aecdfe3aa206b8260272785426eb19df2eba07acc32250c595f1ae2d"
+    },
+    "assets/icons/check.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/check.svg",
+      "sha256": "60b2b822a5efe5db2624127b49b40960f71960beabdfb9d82f0c4ca15373a9a1"
+    },
+    "assets/icons/chevron-down.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/chevron-down.svg",
+      "sha256": "ea9643b648b39dd7a65a0e1eac3e6ee66f6291a200e3eeed1b5a02de01edcb7e"
+    },
+    "assets/icons/circle-check-big.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/circle-check-big.svg",
+      "sha256": "a482548150c3ec22933c0371fa188746e78ab76c2d759df2b54613929de1961d"
+    },
+    "assets/icons/circle-x.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/circle-x.svg",
+      "sha256": "7e0976619ca0e7e909f778cc0865a20c5ebfc9d102d7b20960cbdb7344d2e2e0"
+    },
+    "assets/icons/clipboard-check.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/clipboard-check.svg",
+      "sha256": "6785c1561e1588a6e298d587aa8a2107d3d45a1e1351166d99429161c2b66fb6"
+    },
+    "assets/icons/cloud-moon.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/cloud-moon.svg",
+      "sha256": "8731cd4b2be31507403cbb6f9763bde8da768f57cdad6e19c5385a2554053105"
+    },
+    "assets/icons/compass.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/compass.svg",
+      "sha256": "f0bb395e8e97147b015a9e8252aae4c3b94c949fd6c8202e8791c7774fabc6b8"
+    },
+    "assets/icons/download.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/download.svg",
+      "sha256": "2fc3b07537d32ebe9f664bad9a3716e9602cd0118a4d2c6473033d593c70c1a7"
+    },
+    "assets/icons/eye.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/eye.svg",
+      "sha256": "bad479dbb0d4e5aefa88138ba109c1efd45fe54fe0812d44bd1cbba6096d9258"
+    },
+    "assets/icons/file-search.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/file-search.svg",
+      "sha256": "dd006de07e2162bf9a6f10ebb0dff45aa003977273f8223a0dcf8aa8352f47d5"
+    },
+    "assets/icons/file-up.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/file-up.svg",
+      "sha256": "1f872ad77ddf526b10690ae7f5a65b83e52b44fe892a1d2d63b32ca0c27b5a52"
+    },
+    "assets/icons/filter.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/filter.svg",
+      "sha256": "700783a573728db81a7812090f17df8c2425110f93893d2f5d94b13d686046bd"
+    },
+    "assets/icons/git-compare.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/git-compare.svg",
+      "sha256": "cd2a756cc35817586cebf7af7f358f187a5ca47a5b04a7e5a8dc84d2a6f1e0f0"
+    },
+    "assets/icons/history.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/history.svg",
+      "sha256": "a75ac63238800197ecc6ae18566a867352a58692c92eae28f9bab6ed55a73ef5"
+    },
+    "assets/icons/images.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/images.svg",
+      "sha256": "d1342bec5cf6359cf761127401faa41d736fd1e519bc43bbe726e77c4bb756df"
+    },
+    "assets/icons/inbox.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/inbox.svg",
+      "sha256": "1922c725d1ec98d729bf1110da64e85eb31ab3e6177f669c4c90301c78934b95"
+    },
+    "assets/icons/info.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/info.svg",
+      "sha256": "07ed8ed9eb40e18cbda7f9fcf9db84f6f27546b37b91ca3b95ce967a8c4ff2cd"
+    },
+    "assets/icons/layers-3.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/layers-3.svg",
+      "sha256": "36406d6a7b71f15bd60f28fa574d19c8a787c161529c46bb586429f74694d232"
+    },
+    "assets/icons/lock-keyhole.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/lock-keyhole.svg",
+      "sha256": "9ae8c7477deb11636a9e3211789e2ee21f9d60cafbc568af86ae309dd7840467"
+    },
+    "assets/icons/map.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/map.svg",
+      "sha256": "3720a288f0bb59e472655ad22dbab133cf192e0f84470532ff728a38818be2e4"
+    },
+    "assets/icons/messages-square.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/messages-square.svg",
+      "sha256": "b50c53f5c9458cddbb13df07570f2519abc1b49a4891d594d4b30838bc6dfc35"
+    },
+    "assets/icons/moon-star.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/moon-star.svg",
+      "sha256": "d78e10c5c3a025693ea7a97c024ca3399e61da362c364b780634626cd605c37f"
+    },
+    "assets/icons/refresh-cw.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/refresh-cw.svg",
+      "sha256": "358d541000c3e98c2b345b4252c2395f069e5f1995dc3ead311149d1cce1aade"
+    },
+    "assets/icons/repeat-2.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/repeat-2.svg",
+      "sha256": "062e9331e6df05a4a11bb6ff3ba7c32da65213d558a6810313ec3a012881f0d6"
+    },
+    "assets/icons/search.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/search.svg",
+      "sha256": "af7f18b8ae922bcd417eb45f9287eac2be78f8aa5b183919722f5161fa207ae1"
+    },
+    "assets/icons/shield-check.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/shield-check.svg",
+      "sha256": "7fba4b6b794939d5c482aa16f09119cfc4e7498927f30a2004e375232c32998d"
+    },
+    "assets/icons/sliders-horizontal.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/sliders-horizontal.svg",
+      "sha256": "7be0c4e31e3d6527195057d73d0fdb21104f78d4662cce721b85bb2ac10548ba"
+    },
+    "assets/icons/sparkles.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/sparkles.svg",
+      "sha256": "830214d754ba655e15d7b63e56d1c824da84842ffb9044b867472663e72d258d"
+    },
+    "assets/icons/star.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/star.svg",
+      "sha256": "20f45e63f4a8c93531f74ac71e46747b26bc58ea0e24a974ef26752847a99f52"
+    },
+    "assets/icons/sunset.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/sunset.svg",
+      "sha256": "c4f7f7e27e50ecd8d09d4e29f4c5195d453074db183bf6c84d5f57cb6de8ab0e"
+    },
+    "assets/icons/telescope.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/telescope.svg",
+      "sha256": "9892f242c95d995e4194a5b77a1ea45c0cb6cc842409ef07e514520e99ef0fdd"
+    },
+    "assets/icons/tent-tree.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/tent-tree.svg",
+      "sha256": "34245e140868c0f299fe8cf24a41a00e0a2982b75a2d2708bfa1d3cb57462757"
+    },
+    "assets/icons/triangle-alert.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/triangle-alert.svg",
+      "sha256": "b20548d5b7802fa3b71602881898db785735afca3ec3519e4ed03ee657636381"
+    },
+    "assets/icons/user-round.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/user-round.svg",
+      "sha256": "126f42ab153a3cab47826d079557037d6c7c09f2dcc688d8b0f5d2fc24eaecca"
+    },
+    "assets/icons/wifi-off.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/wifi-off.svg",
+      "sha256": "bde8a8457fb3e8fe6816ee82ad099a299d5918cf07ed527a602b6cb9d43877e0"
+    },
+    "assets/icons/wind.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/wind.svg",
+      "sha256": "8eecc481afeb27e08659af3257c3ebeb09d37200d7105b38b7bd9f1aafe18ed2"
+    },
+    "assets/icons/x.svg": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/x.svg",
+      "sha256": "eccb918cdd522143b7e511943df8c6e61b2380e386959669ebbd2cbf61ede1b6"
+    },
+    "design-system-snapshot.md": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/design-system-snapshot.md",
+      "sha256": "03c300a6cfd1b23e0b84b72baaa26081eef0f958de515b75413be771029499b1"
+    },
+    "implementation-handoff-spec.json": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/implementation-handoff-spec.json",
+      "sha256": "7a6a341d700c351b1557af169e88ec931ba91b0a2c0cf4d92683869b63386b11"
+    },
+    "open-design-readme.md": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/open-design-readme.md",
+      "sha256": "273107cebac9ff463c9fa5aff121008f628cb369110c1c9e068eca8ebbdee9ec"
+    },
+    "operations.html": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/operations.html",
+      "sha256": "cf9fc19b247ba4f2434e5aac1ac2b6dd2bddf283cc13ef13e37a09734c015c2d"
+    },
+    "operations.html.artifact.json": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/operations.html.artifact.json",
+      "sha256": "a2bae8a13d38c0b5674dcfb94735edd1eda375b474e359a8d1d196728da2f8cf"
+    },
+    "selection-and-qa.md": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/selection-and-qa.md",
+      "sha256": "3549385bbde21cdd6bef49d609b24cd601426b76cdf6fd9711dbdc8c6fd5ff1a"
+    },
+    "workbench.html": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/workbench.html",
+      "sha256": "70f6d9034d24bf2a102425e707ef458d9b05a4a8e20ce0a6a7d4c2fdea5a10e5"
+    },
+    "workbench.html.artifact.json": {
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/workbench.html.artifact.json",
+      "sha256": "aa8f5a8854df946f8f7a5ddd6f37d765a7696653ea67d1b10dba71d05938abf1"
+    }
+  }
+}

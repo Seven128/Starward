@@ -1,0 +1,1591 @@
+<!doctype html>
+<html lang="zh-CN" data-mode="day" data-motion="standard">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="assets/icons/star.svg" type="image/svg+xml">
+  <title>今晚去观星 · Sky Canvas 探索板</title>
+  <script>
+    (function () {
+      var saved = localStorage.getItem("starward-board-mode");
+      if (saved === "day" || saved === "night" || saved === "observation") {
+        document.documentElement.dataset.mode = saved;
+      }
+      var savedMotion = localStorage.getItem("starward-board-motion");
+      if (savedMotion === "standard" || savedMotion === "reduced") {
+        document.documentElement.dataset.motion = savedMotion;
+      }
+      if (new URLSearchParams(window.location.search).get("capture") === "board") {
+        document.documentElement.dataset.captureBoard = "true";
+      }
+    }());
+  </script>
+  <style>
+    :root {
+      --day-canvas: #F5F7FA;
+      --day-surface: #FFFFFF;
+      --day-text: #111827;
+      --day-action: #536DFE;
+      --day-muted: #667085;
+      --day-border: #DCE2EA;
+      --day-positive: #23866A;
+      --day-warning: #A56A14;
+      --day-blocker: #C53F48;
+      --day-focus: #3455DB;
+      --night-canvas: #050914;
+      --night-surface: #0B1222;
+      --night-text: #EEF2FF;
+      --night-action: #7E8FFF;
+      --night-muted: #94A0B8;
+      --night-border: #1D2A45;
+      --night-positive: #55C7A5;
+      --night-warning: #D8AA58;
+      --night-blocker: #F06A75;
+      --night-focus: #9BA8FF;
+      --obs-canvas: #000000;
+      --obs-surface: #120000;
+      --obs-text: #FF6A58;
+      --obs-action: #FF3B30;
+      --obs-muted: #C54438;
+      --obs-border: #551410;
+      --obs-positive: #FF6A58;
+      --obs-warning: #FF8A72;
+      --obs-blocker: #FF3B30;
+      --obs-focus: #FF8A72;
+      --lunar: #D8AA58;
+      --choice-day-surface: #F3F4FF;
+      --choice-day-border: #AAB4FF;
+      --choice-day-label: #4254C7;
+      --choice-night-surface: #12182B;
+      --choice-night-border: #7682D1;
+      --choice-night-label: #DCE1FF;
+      --choice-observation-surface: #120000;
+      --choice-observation-border: #8A281F;
+      --choice-observation-label: #FF8A72;
+      --choice-star-night: #F1D58A;
+      --favorite-night-outline: #EEF2FF;
+      --day-action-fg: #050914;
+      --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-data: "SFMono-Regular", "Cascadia Mono", Consolas, "Liberation Mono", Menlo, monospace;
+      --canvas: var(--day-canvas);
+      --surface: var(--day-surface);
+      --text: var(--day-text);
+      --action: var(--day-action);
+      --muted: var(--day-muted);
+      --border: var(--day-border);
+      --positive: var(--day-positive);
+      --warning: var(--day-warning);
+      --blocker: var(--day-blocker);
+      --focus: var(--day-focus);
+      --action-fg: var(--day-action-fg);
+      --shadow: 0 10px 30px color-mix(in oklch, var(--day-text) 14%, transparent);
+      --map-water: color-mix(in oklch, var(--day-action) 11%, var(--day-canvas));
+      --map-land: color-mix(in oklch, var(--day-positive) 7%, var(--day-canvas));
+      --map-line: color-mix(in oklch, var(--day-muted) 24%, transparent);
+    }
+    html[data-mode="night"] {
+      --canvas: var(--night-canvas); --surface: var(--night-surface); --text: var(--night-text);
+      --action: var(--night-action); --muted: var(--night-muted); --border: var(--night-border);
+      --positive: var(--night-positive); --warning: var(--night-warning); --blocker: var(--night-blocker);
+      --focus: var(--night-focus); --action-fg: var(--night-canvas);
+      --shadow: 0 10px 30px color-mix(in oklch, var(--night-canvas) 60%, transparent);
+    }
+    html[data-mode="observation"] {
+      --canvas: var(--obs-canvas); --surface: var(--obs-surface); --text: var(--obs-text);
+      --action: var(--obs-action); --muted: var(--obs-muted); --border: var(--obs-border);
+      --positive: var(--obs-positive); --warning: var(--obs-warning); --blocker: var(--obs-blocker);
+      --focus: var(--obs-focus); --lunar: var(--obs-warning); --action-fg: var(--obs-canvas);
+      --shadow: 0 10px 30px color-mix(in oklch, var(--obs-action) 12%, transparent);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--canvas); scroll-behavior: smooth; }
+    html, body { overflow-x: hidden; }
+    body {
+      margin: 0; min-width: 320px; color: var(--text); background: var(--canvas);
+      font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+      transition: background-color 180ms linear, color 180ms linear;
+    }
+    html[data-mode="observation"] body { transition: none; }
+    button, input, select { font: inherit; }
+    button, [role="button"], input[type="range"] { min-height: 44px; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible, summary:focus-visible {
+      outline: 3px solid var(--focus); outline-offset: 3px;
+    }
+    button:active { transform: translateY(1px); }
+    .board-header {
+      position: sticky; top: 0; z-index: 50; padding: 16px max(16px, env(safe-area-inset-right)) 14px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    .board-header-inner {
+      max-width: 1760px; margin: auto; display: grid; grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 16px 24px; align-items: center;
+    }
+    .eyebrow { margin: 0 0 5px; color: var(--muted); font: 600 11px/1.2 var(--font-body); letter-spacing: .06em; }
+    h1 { margin: 0; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.1; letter-spacing: -.02em; }
+    .board-controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .resource-links { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+    .resource-links a {
+      display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border-radius: 9px;
+      color: var(--muted); background: var(--canvas); font-size: 11px; font-weight: 650; text-decoration: none;
+    }
+    .resource-links a:hover, .resource-links a[aria-current="page"] { color: var(--text); background: color-mix(in oklch, var(--action) 13%, var(--surface)); }
+    .resource-links a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .segmented {
+      display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--border);
+      background: var(--canvas); border-radius: 8px;
+    }
+    .segmented button {
+      min-height: 44px; border: 0; border-radius: 8px; padding: 0 14px; background: transparent;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .segmented button:hover:not([aria-pressed="true"]) { background: color-mix(in oklch, var(--surface) 84%, var(--text)); }
+    .segmented button[aria-pressed="true"] { background: var(--action); color: var(--action-fg); box-shadow: inset 0 0 0 1px currentColor; }
+    .frame-jump { max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
+    .frame-jump button { white-space: nowrap; }
+    .review-meta { max-width: 1760px; margin: 14px auto 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; }
+    .board-note { margin: 0; color: var(--muted); font-size: 12px; }
+    .sensor-demo { display: flex; align-items: center; gap: 8px; color: var(--muted); font: 600 10px/1.2 var(--font-body); }
+    .sensor-demo select { min-height: 34px; padding: 0 28px 0 9px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--canvas); }
+    .frame-grid {
+      width: min(1760px, 100%); margin: 0 auto; padding: 28px 16px 64px;
+      display: grid; grid-template-columns: repeat(4, minmax(0, 390px)); justify-content: center; gap: 28px;
+    }
+    .frame-shell { min-width: 0; }
+    .frame-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; margin-bottom: 8px; }
+    .frame-label strong { font: 600 13px/1.2 var(--font-body); }
+    .frame-label span { color: var(--muted); font-size: 12px; }
+    .screen {
+      --canvas: var(--day-canvas); --surface: var(--day-surface); --text: var(--day-text);
+      --action: var(--day-action); --muted: var(--day-muted); --border: var(--day-border);
+      --positive: var(--day-positive); --warning: var(--day-warning); --blocker: var(--day-blocker);
+      --focus: var(--day-focus); --action-fg: var(--day-action-fg);
+      --choice-surface: var(--choice-day-surface); --choice-border: var(--choice-day-border);
+      --choice-label: var(--choice-day-label); --choice-star: var(--choice-star-night);
+      --favorite-outline: var(--favorite-night-outline); --favorite-fill: var(--choice-star-night);
+      position: relative; isolation: isolate; overflow: hidden;
+      width: 100%; height: 844px; color: var(--text); background: var(--canvas); border: 1px solid var(--border);
+    }
+    .screen.theme-night {
+      --canvas: var(--night-canvas); --surface: var(--night-surface); --text: var(--night-text);
+      --action: var(--night-action); --muted: var(--night-muted); --border: var(--night-border);
+      --positive: var(--night-positive); --warning: var(--night-warning); --blocker: var(--night-blocker);
+      --focus: var(--night-focus); --action-fg: var(--night-canvas);
+      --choice-surface: var(--choice-night-surface); --choice-border: var(--choice-night-border);
+      --choice-label: var(--choice-night-label); --choice-star: var(--choice-star-night);
+      --favorite-outline: var(--favorite-night-outline); --favorite-fill: var(--choice-star-night);
+    }
+    html[data-mode="night"] .screen.map-day {
+      --canvas: var(--night-canvas); --surface: var(--night-surface); --text: var(--night-text);
+      --action: var(--night-action); --muted: var(--night-muted); --border: var(--night-border);
+      --positive: var(--night-positive); --warning: var(--night-warning); --blocker: var(--night-blocker);
+      --focus: var(--night-focus); --action-fg: var(--night-canvas); --map-water: color-mix(in oklch, var(--night-action) 12%, var(--night-canvas));
+      --map-land: color-mix(in oklch, var(--night-positive) 8%, var(--night-canvas));
+      --map-line: color-mix(in oklch, var(--night-muted) 28%, transparent);
+      --choice-surface: var(--choice-night-surface); --choice-border: var(--choice-night-border);
+      --choice-label: var(--choice-night-label); --choice-star: var(--choice-star-night);
+    }
+    html[data-mode="observation"] .screen {
+      --canvas: var(--obs-canvas); --surface: var(--obs-surface); --text: var(--obs-text);
+      --action: var(--obs-action); --muted: var(--obs-muted); --border: var(--obs-border);
+      --positive: var(--obs-positive); --warning: var(--obs-warning); --blocker: var(--obs-blocker);
+      --focus: var(--obs-focus); --action-fg: var(--obs-canvas); --lunar: var(--obs-warning); --map-water: var(--obs-surface);
+      --map-land: var(--obs-canvas); --map-line: var(--obs-border);
+      --choice-surface: var(--choice-observation-surface); --choice-border: var(--choice-observation-border);
+      --choice-label: var(--choice-observation-label); --choice-star: var(--choice-observation-label);
+      --favorite-outline: var(--obs-text); --favorite-fill: var(--obs-warning);
+    }
+    .frame-shell.is-highlighted .frame-label strong::after { content: " · 当前检查"; color: var(--action); }
+    .screen button { cursor: pointer; }
+    .icon-button {
+      width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--surface); box-shadow: var(--shadow);
+    }
+    .icon-button svg, .inline-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .search-field {
+      position: absolute; z-index: 8; top: 18px; left: 16px; right: 16px; height: 50px; display: flex;
+      align-items: center; gap: 10px; padding: 0 14px; color: var(--text); background: var(--surface);
+      border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow);
+    }
+    .search-field input { min-width: 0; width: 100%; border: 0; outline: 0; color: inherit; background: transparent; }
+    .search-field input::placeholder { color: var(--muted); opacity: 1; }
+    .search-field svg { width: 18px; flex: 0 0 auto; fill: none; stroke: var(--muted); stroke-width: 2; }
+    .chip-row {
+      position: absolute; z-index: 7; top: 76px; left: 16px; right: 16px; display: flex; gap: 6px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .chip, .analysis-choice {
+      position: relative; min-width: 44px; min-height: 44px; flex: 0 0 auto; padding: 0;
+      display: inline-grid; place-items: center; border: 0; background: transparent;
+      color: var(--text); font: 500 12px/16px var(--font-body);
+    }
+    .choice-capsule {
+      position: relative; min-width: 44px; height: 32px; padding: 0 10px; overflow: hidden;
+      display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--surface); color: var(--text); white-space: nowrap;
+      transition: background-color 140ms linear, border-color 140ms linear, color 140ms linear;
+    }
+    .choice-capsule::after {
+      content: ""; position: absolute; z-index: 1; right: -3px; top: -3px; width: 13px; height: 13px;
+      background: var(--choice-star); opacity: 0; pointer-events: none;
+      clip-path: polygon(50% 0%, 61% 34%, 97% 35%, 68% 56%, 79% 92%, 50% 71%, 21% 92%, 32% 56%, 3% 35%, 39% 34%);
+      transform: scale(.55) rotate(-18deg); transform-origin: center;
+      transition: opacity 140ms linear, transform 140ms cubic-bezier(.2, 0, .2, 1);
+    }
+    .chip[aria-pressed="true"] .choice-capsule, .chip.selected .choice-capsule,
+    .analysis-choice[aria-pressed="true"] .choice-capsule {
+      color: var(--choice-label); background: var(--choice-surface); border-color: var(--choice-border);
+    }
+    .chip[aria-pressed="true"] .choice-capsule::after, .chip.selected .choice-capsule::after,
+    .analysis-choice[aria-pressed="true"] .choice-capsule::after {
+      opacity: 1; transform: scale(1) rotate(0); transition-duration: 180ms;
+    }
+    .chip:hover .choice-capsule, .analysis-choice:hover .choice-capsule {
+      background: color-mix(in oklch, var(--surface) 88%, var(--text));
+    }
+    .chip[aria-pressed="true"]:hover .choice-capsule, .analysis-choice[aria-pressed="true"]:hover .choice-capsule {
+      background: color-mix(in oklch, var(--choice-surface) 92%, var(--choice-label));
+    }
+    .chip:focus-visible, .analysis-choice:focus-visible { outline: 0; }
+    .chip:focus-visible .choice-capsule, .analysis-choice:focus-visible .choice-capsule {
+      box-shadow: 0 0 0 3px color-mix(in oklch, var(--focus) 72%, transparent);
+    }
+    .map-stage { position: absolute; inset: 0; background: var(--canvas); }
+    .map-stage svg { width: 100%; height: 100%; display: block; }
+    .map-analysis-overlay { opacity: 0; pointer-events: none; transition: opacity 200ms linear; }
+    .map-stage[data-analysis-layer="LIGHT"] [data-overlay="LIGHT"],
+    .map-stage[data-analysis-layer="TOTAL_CLOUD"] [data-overlay="TOTAL_CLOUD"],
+    .map-stage[data-analysis-layer="OPPORTUNITY"] [data-overlay="OPPORTUNITY"] { opacity: 1; }
+    [data-overlay="LIGHT"] .overlay-fill { fill: color-mix(in oklch, var(--warning) 24%, transparent); stroke: var(--warning); }
+    [data-overlay="TOTAL_CLOUD"] .overlay-fill { fill: color-mix(in oklch, var(--muted) 34%, transparent); stroke: var(--muted); }
+    [data-overlay="OPPORTUNITY"] .overlay-fill { fill: color-mix(in oklch, var(--positive) 24%, transparent); stroke: var(--positive); }
+    .map-analysis-overlay .overlay-fill { stroke-width: 1.25; }
+    .map-caption {
+      position: absolute; top: 131px; left: 16px; padding: 6px 8px; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--muted); background: var(--surface); font: 600 10px/1 var(--font-body);
+    }
+    .map-control-stack { position: absolute; z-index: 7; right: 16px; top: 139px; display: grid; gap: 8px; }
+    .condition-bar {
+      position: absolute; z-index: 8; left: 16px; right: 76px; top: 189px; min-height: 44px; padding: 5px 12px;
+      display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); text-align: left; transition: opacity 200ms linear, transform 200ms ease;
+    }
+    .condition-bar strong, .condition-bar small { display: block; }
+    .condition-bar strong { font-size: 12px; font-weight: 600; }
+    .condition-bar small { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .condition-bar time { color: var(--muted); font: 500 11px/1 var(--font-data); font-variant-numeric: tabular-nums; }
+    .condition-bar:active { transform: translateY(1px) scale(.995); box-shadow: inset 0 0 0 1px currentColor, var(--shadow); }
+    .analysis-focus-layer {
+      position: absolute; z-index: 12; left: 10px; right: 10px; top: 12px; padding: 10px 12px 12px; overflow: visible;
+      border: 1px solid var(--border); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow);
+      opacity: 0; transform: translateY(-8px); pointer-events: none; visibility: hidden;
+      transition: opacity 200ms linear, transform 220ms ease, visibility 0s linear 220ms;
+    }
+    .map-day.analysis-focused .analysis-focus-layer { opacity: 1; transform: translateY(0); pointer-events: auto; visibility: visible; transition-delay: 0s; }
+    .map-day.analysis-focused .condition-bar { opacity: 0; transform: translateY(-8px); pointer-events: none; visibility: hidden; }
+    .analysis-head { min-height: 44px; display: grid; grid-template-columns: 1fr 44px; align-items: center; gap: 8px; }
+    .analysis-head strong { font-size: 14px; }
+    .analysis-head span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .analysis-close { width: 44px; height: 44px; padding: 0; border: 0; background: transparent; font-size: 22px; line-height: 1; }
+    .analysis-layers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    .analysis-choice { min-width: 0; width: 100%; }
+    .analysis-choice .choice-capsule { width: 100%; }
+    .analysis-detail { min-height: 39px; padding: 7px 0 5px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .analysis-detail strong { font-size: 12px; }
+    .analysis-detail span { color: var(--muted); font-size: 9px; text-align: right; }
+    .analysis-time { min-height: 50px; display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: center; }
+    .analysis-time time { font: 600 15px/1 var(--font-data); font-variant-numeric: tabular-nums; }
+    .analysis-time input { width: 100%; min-width: 0; accent-color: var(--action); }
+    .marker {
+      position: absolute; z-index: 3; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50% 50% 50% 8px;
+      transform: rotate(-45deg); background: var(--text); color: var(--surface); box-shadow: var(--shadow);
+    }
+    .marker span { display: grid; place-items: center; height: 100%; transform: rotate(45deg); font: 700 11px/1 var(--font-data); }
+    .marker.selected { width: 50px; height: 50px; background: var(--action); color: var(--action-fg); border: 3px solid var(--surface); }
+    .marker:active { transform: rotate(-45deg) translateY(1px); }
+    .marker-a { left: 52.5%; top: 278px; } .marker-b { left: 23.5%; top: 386px; } .marker-c { left: 76%; top: 430px; }
+    .map-callout {
+      position: absolute; z-index: 6; left: clamp(68px, 23.5%, 92px); right: 16px; top: 333px; width: auto; max-width: 232px; min-height: 66px; padding: 9px 10px 9px 12px;
+      display: grid; grid-template-columns: minmax(0, 1fr) 20px; gap: 8px; align-items: center; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); background: var(--surface); box-shadow: 0 6px 16px color-mix(in oklch, var(--text) 14%, transparent); text-align: left;
+    }
+    .map-callout:active { transform: translateY(1px) scale(.995); box-shadow: inset 0 0 0 1px currentColor, 0 4px 10px color-mix(in oklch, var(--text) 12%, transparent); }
+    .callout-copy { min-width: 0; }
+    .callout-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .callout-top strong { min-width: 0; font-size: 13px; font-weight: 600; }
+    .callout-top span { flex: 0 0 auto; color: color-mix(in oklch, var(--positive) 80%, var(--text)); border-bottom: 1px solid currentColor; font: 600 11px/1.3 var(--font-body); }
+    #mapCalloutMeta { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .callout-chevron { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .text-action {
+      min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--action); font-size: 12px; font-weight: 700;
+    }
+    .sheet {
+      position: absolute; z-index: 10; left: 0; right: 0; bottom: 0; background: var(--surface);
+      border-top: 1px solid var(--border); border-radius: 24px 24px 0 0; box-shadow: 0 -12px 30px color-mix(in oklch, var(--text) 12%, transparent);
+    }
+    .finder-sheet { height: 286px; transition: height 220ms ease, transform 220ms ease; }
+    .finder-sheet.expanded { height: 606px; }
+    .map-day.analysis-focused .finder-sheet { transform: translateY(calc(100% - 72px)); pointer-events: none; }
+    .sheet-handle { width: 40px; height: 4px; margin: 9px auto 5px; border-radius: 4px; background: var(--border); }
+    .sheet-head { min-height: 54px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); }
+    .sheet-title { min-width: 0; }
+    .sheet-title strong { display: block; font-size: 15px; }
+    .sheet-title span { color: var(--muted); font-size: 11px; }
+    .sheet-toggle { min-width: 76px; border: 1px solid var(--border); border-radius: 8px; background: transparent; font-weight: 700; font-size: 12px; }
+    .finder-content { height: calc(100% - 72px); overflow-y: auto; padding: 12px 16px 22px; }
+    .section-kicker { margin: 0 0 8px; color: var(--muted); font-size: 11px; font-weight: 600; }
+    .quick-grid { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; }
+    .choice-group { display: none; padding: 12px 0; border-top: 1px solid var(--border); }
+    .expanded .choice-group { display: block; }
+    .choice-row { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: start; margin-top: 8px; font-size: 11px; }
+    .choice-row > span { padding-top: 13px; color: var(--muted); }
+    .choice-options { display: flex; flex-wrap: wrap; gap: 6px; }
+    .choice-options .chip { min-height: 44px; }
+    .suggestions { display: none; border-top: 1px solid var(--border); padding-top: 10px; }
+    .expanded .suggestions { display: block; }
+    .result-partition { border-top: 1px solid var(--border); padding-top: 10px; }
+    .result-partition + .result-partition { margin-top: 8px; }
+    .result-row {
+      width: 100%; min-height: 58px; padding: 7px 0; display: grid; grid-template-columns: 34px 1fr auto;
+      gap: 10px; align-items: center; border: 0; border-bottom: 1px solid var(--border); background: transparent; text-align: left;
+    }
+    .result-row.selected { box-shadow: inset 3px 0 var(--action); padding-left: 9px; }
+    .result-index { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 8px; font: 600 10px var(--font-body); }
+    .result-copy strong, .result-copy span { display: block; }
+    .result-copy strong { font-size: 12px; } .result-copy span { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .result-score { color: var(--positive); font: 600 11px var(--font-body); }
+    .media-scene { height: 254px; position: relative; overflow: hidden; background: var(--canvas); }
+    .media-scene > svg { width: 100%; height: 100%; display: block; }
+    .scene-topbar { position: absolute; inset: 16px 16px auto; display: flex; justify-content: space-between; z-index: 3; }
+    .transparent-control { background: var(--surface); color: var(--text); border-color: var(--border); }
+    .favorite-action {
+      position: relative; width: 44px; height: 44px; min-height: 44px; padding: 0; overflow: visible;
+      display: grid; place-items: center; border: 0; background: transparent; color: var(--favorite-outline);
+    }
+    .favorite-effect-stage {
+      position: absolute; left: 50%; top: 50%; width: 96px; height: 96px;
+      transform: translate(-50%, -50%); pointer-events: none;
+    }
+    .favorite-visual {
+      position: absolute; left: 50%; top: 50%; width: 32px; height: 32px;
+      display: grid; place-items: center; border-radius: 8px; transform: translate(-50%, -50%);
+    }
+    .favorite-main {
+      width: 24px; height: 24px; overflow: visible; fill: transparent; stroke: currentColor;
+      stroke-width: 1.7; stroke-linejoin: round; transform-origin: center;
+      transition: transform 200ms cubic-bezier(.2, 0, .2, 1), fill 200ms linear, stroke 200ms linear, opacity 140ms linear;
+    }
+    .favorite-action[aria-pressed="true"] .favorite-main {
+      color: var(--favorite-fill); fill: var(--favorite-fill); stroke: var(--favorite-fill);
+      transform: rotate(72deg) scale(.9); transition-duration: 420ms, 180ms, 180ms, 140ms;
+    }
+    .favorite-action:hover .favorite-main { opacity: .82; }
+    .favorite-action:active { transform: none; }
+    .favorite-action:focus-visible { outline: 0; }
+    .favorite-action:focus-visible .favorite-visual { box-shadow: 0 0 0 3px var(--focus); }
+    .favorite-tail {
+      position: absolute; inset: 0; width: 96px; height: 96px; overflow: visible;
+      fill: none; stroke: var(--favorite-fill); stroke-width: 1.5; stroke-linecap: round;
+      stroke-dasharray: 22; stroke-dashoffset: 22; opacity: 0;
+    }
+    .favorite-satellite {
+      --satellite-size: 16px; position: absolute; left: 0; top: 0; width: var(--satellite-size); height: var(--satellite-size);
+      color: var(--favorite-fill); opacity: 0; offset-distance: 0%; offset-rotate: auto; transform: rotate(-24deg) scale(.62);
+      transition: offset-distance 200ms cubic-bezier(.2, 0, .2, 1), opacity 200ms linear, transform 200ms cubic-bezier(.2, 0, .2, 1);
+    }
+    .favorite-satellite svg { width: 100%; height: 100%; overflow: visible; fill: currentColor; }
+    .favorite-satellite::before {
+      content: ""; position: absolute; right: 56%; top: 54%; width: calc(var(--satellite-size) * 1.25); height: 1.5px;
+      border-radius: 1px; background: currentColor; opacity: 0; transform: rotate(-30deg) scaleX(0); transform-origin: right center;
+    }
+    .satellite-one { --satellite-size: 12px; offset-path: path("M -8 76 C 4 46, 16 30, 30 31"); }
+    .satellite-two { --satellite-size: 16px; offset-path: path("M 104 12 C 78 4, 66 14, 65 29"); }
+    .satellite-three { --satellite-size: 22px; offset-path: path("M 106 91 C 74 103, 68 83, 70 67"); }
+    .favorite-action[aria-pressed="true"] .favorite-satellite {
+      opacity: 1; offset-distance: 100%; transform: rotate(0deg) scale(1);
+      transition-duration: 420ms, 180ms, 420ms;
+    }
+    .favorite-action.is-deactivating .favorite-satellite { opacity: 0; transition: opacity 200ms linear; }
+    .favorite-action.is-activating .favorite-tail { animation: favorite-tail-collapse 420ms cubic-bezier(.2, 0, .2, 1) both; }
+    .favorite-action.is-activating .favorite-satellite::before { animation: satellite-tail-collapse 420ms cubic-bezier(.2, 0, .2, 1) both; }
+    @keyframes favorite-tail-collapse {
+      0% { opacity: 0; stroke-dashoffset: 22; }
+      28% { opacity: 1; stroke-dashoffset: 4; }
+      100% { opacity: 0; stroke-dashoffset: -10; }
+    }
+    @keyframes satellite-tail-collapse {
+      0% { opacity: 0; transform: rotate(-30deg) scaleX(0); }
+      32% { opacity: .9; transform: rotate(-30deg) scaleX(1); }
+      100% { opacity: 0; transform: rotate(-30deg) scaleX(0); }
+    }
+    .place-identity { position: absolute; left: 18px; right: 72px; bottom: 18px; color: var(--text); }
+    .place-identity .eyebrow { color: var(--muted); }
+    .place-identity h2 { margin: 0; font-size: 25px; line-height: 1.08; letter-spacing: -.025em; }
+    .place-identity p { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+    .detail-body { height: 590px; overflow-y: auto; background: var(--surface); }
+    .route-row { min-height: 56px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .route-row span { color: var(--muted); font-size: 11px; }
+    .route-row a { color: var(--action); font-size: 13px; font-weight: 700; text-decoration: none; padding: 14px 0; }
+    .decision-block { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+    .decision-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .decision-line strong { font-size: 21px; color: color-mix(in oklch, var(--positive) 80%, var(--text)); }
+    .freshness { color: var(--muted); font: 500 10px var(--font-body); }
+    .decision-block p { margin: 7px 0; font-size: 12px; line-height: 1.5; }
+    .blocker-note { display: flex; align-items: start; gap: 8px; color: var(--blocker); font-size: 11px; }
+    .spot-night-entry {
+      width: 100%; min-height: 54px; padding: 0 18px; display: grid; grid-template-columns: 26px minmax(0, 1fr) 20px;
+      gap: 10px; align-items: center; border: 0; border-bottom: 1px solid var(--border); background: var(--surface); text-align: left;
+    }
+    .spot-night-entry:hover { background: color-mix(in oklch, var(--surface) 90%, var(--text)); }
+    .spot-night-entry:focus-visible { outline-offset: -3px; }
+    .night-entry-icon, .night-entry-chevron { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+    .night-entry-copy { min-width: 0; }
+    .night-entry-copy strong, .night-entry-copy small { display: block; }
+    .night-entry-copy strong { font: 500 12px/16px var(--font-body); }
+    .night-entry-copy small { margin-top: 2px; color: var(--muted); font: 500 10px/14px var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .night-entry-chevron { width: 18px; height: 18px; justify-self: end; }
+    .segment-tabs { position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border-bottom: 1px solid var(--border); }
+    .segment-tabs button { border: 0; border-bottom: 3px solid transparent; background: transparent; font-size: 12px; font-weight: 700; }
+    .segment-tabs button[aria-selected="true"] { color: var(--action); border-bottom-color: var(--action); }
+    .tab-panel { padding: 12px 18px 20px; }
+    .tab-panel[hidden] { display: none; }
+    .flat-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
+    .flat-list li { min-height: 48px; display: grid; grid-template-columns: 86px 1fr; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); font-size: 11px; }
+    .flat-list li span:first-child { color: var(--muted); }
+    .primary-action {
+      width: 100%; min-height: 48px; margin-top: 14px; border: 1px solid var(--action); border-radius: 8px;
+      background: var(--action); color: var(--action-fg); font-weight: 700;
+    }
+    .primary-action:hover { background: color-mix(in oklch, var(--action) 88%, var(--text)); color: var(--action-fg); }
+    .night-sky { height: 286px; position: relative; overflow: hidden; background: var(--canvas); }
+    .night-sky svg { width: 100%; height: 100%; display: block; }
+    .night-topbar { position: absolute; z-index: 3; top: 14px; left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; }
+    .night-topbar .eyebrow { margin: 0; color: var(--muted); }
+    .time-context {
+      position: absolute; z-index: 3; left: 16px; right: 16px; bottom: 16px; display: flex;
+      align-items: end; justify-content: space-between; gap: 8px;
+    }
+    .time-context strong { display: block; font: 700 22px/1 var(--font-data); }
+    .time-context span { color: var(--muted); font-size: 10px; }
+    .data-flag { padding: 7px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--muted); font-size: 9px; }
+    .evidence-sheet { height: 558px; border-radius: 24px 24px 0 0; overflow-y: auto; }
+    .decision-summary { padding: 8px 16px 12px; border-bottom: 1px solid var(--border); }
+    .summary-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .summary-top strong { color: var(--positive); font-size: 17px; }
+    .summary-top span { color: var(--muted); font-size: 10px; }
+    .window-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 8px; margin-top: 8px; align-items: center; font-size: 10px; }
+    .window-row span:first-child { color: var(--muted); }
+    .window-track { height: 8px; background: var(--border); }
+    .window-track i { display: block; height: 100%; background: var(--action); }
+    .window-row.backup .window-track i { width: 32%; margin-left: 57%; background: var(--muted); }
+    .time-rail-wrap { padding: 10px 16px 4px; }
+    .time-rail { position: relative; height: 56px; }
+    .rail-line { position: absolute; left: 0; right: 0; top: 24px; height: 4px; background: var(--border); }
+    .rail-line .night-window { position: absolute; left: 24%; width: 32%; height: 100%; background: var(--action); }
+    .rail-event { position: absolute; top: 17px; width: 12px; height: 12px; border-radius: 50%; background: var(--lunar); border: 2px solid var(--surface); }
+    .rail-event.moon { left: 68%; } .rail-event.sun { left: 91%; }
+    .rail-cursor { position: absolute; z-index: 2; left: var(--cursor-x, 38%); top: 6px; width: 2px; height: 38px; background: var(--action); pointer-events: none; }
+    .time-rail input { position: absolute; inset: 0; width: 100%; opacity: .01; cursor: ew-resize; }
+    .rail-labels { display: flex; justify-content: space-between; color: var(--muted); font: 500 9px var(--font-data); }
+    .scrub-note { margin: 2px 0 0; color: var(--muted); font-size: 9px; }
+    .conditions { padding: 8px 16px 2px; }
+    .conditions-head { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .conditions-head strong { font-size: 12px; }
+    .conditions-head button { border: 0; background: transparent; color: var(--action); font-size: 11px; font-weight: 700; }
+    .band-row { min-height: 34px; display: grid; grid-template-columns: 76px 1fr 52px; gap: 8px; align-items: center; border-top: 1px solid var(--border); font-size: 9px; }
+    .band-row > span:first-child { color: var(--muted); }
+    .band-row output { text-align: right; font: 600 9px var(--font-data); }
+    .band-track { height: 9px; display: grid; grid-template-columns: repeat(7, 1fr); overflow: hidden; background: var(--border); }
+    .band-track i { display: block; border-right: 1px solid var(--canvas); background: color-mix(in oklch, var(--positive) var(--strength, 45%), var(--surface)); }
+    .band-track i.warn { background: color-mix(in oklch, var(--warning) 58%, var(--surface)); }
+    .band-track i.block { background: color-mix(in oklch, var(--blocker) 58%, var(--surface)); }
+    .band-track i[aria-current="true"] { box-shadow: inset 0 -2px var(--action); }
+    .band-row.extra { display: none; }
+    .conditions.expanded .band-row.extra { display: grid; }
+    .orientation-entry {
+      width: 100%; min-height: 54px; padding: 8px 16px; display: grid; grid-template-columns: 1fr auto; gap: 12px;
+      align-items: center; border: 0; border-bottom: 1px solid var(--border); background: var(--surface); text-align: left;
+    }
+    .orientation-entry strong { color: var(--action); font-size: 12px; }
+    .orientation-entry span { color: var(--muted); font: 500 9px/1.4 var(--font-body); text-align: right; }
+    .provenance { padding: 10px 16px 12px; border-top: 1px solid var(--border); }
+    .provenance-head { min-height: 36px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .provenance-head strong { font-size: 12px; }
+    .provenance-head span { color: var(--muted); font-size: 9px; }
+    .provenance-row { min-height: 34px; display: grid; grid-template-columns: 72px 1fr auto; gap: 8px; align-items: center; border-top: 1px solid var(--border); font-size: 9px; }
+    .provenance-row span { color: var(--muted); }
+    .provenance-row b { font: 600 9px var(--font-body); }
+    .provenance-row b.complete { color: var(--positive); }
+    .provenance-row b.partial, .provenance-row b.stale { color: var(--warning); }
+    .provenance-row b.unavailable { color: var(--blocker); }
+    .target-list { padding: 8px 16px 18px; border-top: 1px solid var(--border); }
+    .target-row { min-height: 44px; display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; border-bottom: 1px solid var(--border); font-size: 10px; }
+    .target-row span { color: var(--muted); }
+    .target-row b { font: 600 10px var(--font-body); }
+    .orientation-sky { height: 510px; position: relative; overflow: hidden; background: var(--canvas); }
+    .orientation-sky svg { width: 100%; height: 100%; }
+    .orientation-sky:not([data-sensor-state="ready"]) svg { opacity: .24; }
+    .orientation-top { position: absolute; z-index: 4; inset: 14px 16px auto; display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+    .orientation-identity { min-width: 0; }
+    .orientation-back { min-height: 44px; margin: -8px 0 2px; padding: 0; border: 0; background: transparent; color: var(--action); font-size: 11px; font-weight: 600; }
+    .orientation-identity .eyebrow { margin-top: 1px; }
+    .accuracy-badge { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 10px; }
+    .accuracy-badge strong { display: block; color: var(--positive); }
+    .accuracy-badge[data-quality="calibrating"] strong { color: var(--warning); }
+    .accuracy-badge[data-quality="denied"], .accuracy-badge[data-quality="unavailable"] { border-color: var(--blocker); }
+    .accuracy-badge[data-quality="denied"] strong, .accuracy-badge[data-quality="unavailable"] strong { color: var(--blocker); }
+    .orientation-readout { position: absolute; z-index: 4; left: 16px; bottom: 16px; }
+    .orientation-readout strong { display: block; font: 700 24px var(--font-data); }
+    .orientation-readout span { color: var(--muted); font-size: 10px; }
+    .orientation-inactive { position: absolute; z-index: 3; left: 50%; top: 56%; transform: translate(-50%, -50%); min-width: 170px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--muted); text-align: center; font-size: 10px; }
+    .orientation-sky[data-sensor-state="ready"] .orientation-inactive { display: none; }
+    .orientation-panel { height: 334px; overflow-y: auto; padding: 10px 16px 24px; background: var(--surface); border-radius: 24px 24px 0 0; border-top: 1px solid var(--border); }
+    .sensor-status { padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
+    .sensor-status-copy { display: grid; gap: 4px; }
+    .sensor-status-copy strong { font-size: 12px; }
+    .sensor-status-copy span { color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .sensor-action { margin-top: 10px; }
+    .orientation-note { margin: 8px 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    details { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .object-list { margin: 0; padding: 0 0 8px; list-style: none; }
+    .object-list li { min-height: 38px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); font-size: 10px; }
+    .obs-preview { margin-top: 12px; padding: 10px 12px; color: var(--obs-text); background: var(--obs-canvas); border: 1px solid var(--obs-border); border-radius: 8px; }
+    .obs-preview strong { color: var(--obs-action); font-size: 11px; }
+    .obs-preview p { margin: 5px 0 0; color: var(--obs-muted); font-size: 9px; }
+
+    /* Current outdoor-vitality resource: one friendly, precise visual grammar. */
+    .semantic-icon {
+      --icon-url: url("assets/icons/sparkles.svg"); display: inline-block; width: 18px; height: 18px; flex: 0 0 auto;
+      background: currentColor; -webkit-mask: var(--icon-url) center / contain no-repeat; mask: var(--icon-url) center / contain no-repeat;
+    }
+    .icon--search { --icon-url: url("assets/icons/search.svg"); }
+    .icon--chevron-right { --icon-url: url("assets/icons/chevron-right.svg"); }
+    .icon--clock { --icon-url: url("assets/icons/clock-3.svg"); }
+    .icon--compass { --icon-url: url("assets/icons/compass.svg"); }
+    .icon--cloud { --icon-url: url("assets/icons/cloud.svg"); }
+    .icon--rain { --icon-url: url("assets/icons/cloud-rain.svg"); }
+    .icon--wind { --icon-url: url("assets/icons/wind.svg"); }
+    .icon--moon { --icon-url: url("assets/icons/moon-star.svg"); }
+    .icon--telescope { --icon-url: url("assets/icons/telescope.svg"); }
+    .icon--route { --icon-url: url("assets/icons/route.svg"); }
+    .icon--navigation { --icon-url: url("assets/icons/navigation.svg"); }
+    .icon--shield { --icon-url: url("assets/icons/shield-check.svg"); }
+    .icon--sunset { --icon-url: url("assets/icons/sunset.svg"); }
+    .icon--pin { --icon-url: url("assets/icons/map-pin.svg"); }
+    .icon--list { --icon-url: url("assets/icons/list.svg"); }
+    .icon--alert { --icon-url: url("assets/icons/circle-alert.svg"); }
+    .icon--locate { --icon-url: url("assets/icons/locate-fixed.svg"); }
+    .icon--walk { --icon-url: url("assets/icons/footprints.svg"); }
+    .icon--car { --icon-url: url("assets/icons/car-front.svg"); }
+    .icon--toilet { --icon-url: url("assets/icons/toilet.svg"); }
+    .icon--store { --icon-url: url("assets/icons/store.svg"); }
+    .icon--tree { --icon-url: url("assets/icons/tree-pine.svg"); }
+    .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .icon-well {
+      width: 30px; height: 30px; display: inline-grid; place-items: center; flex: 0 0 auto; border-radius: 10px;
+      color: var(--action); background: color-mix(in oklch, var(--action) 11%, var(--surface));
+    }
+    .icon-well.warm { color: var(--lunar); background: color-mix(in oklch, var(--lunar) 13%, var(--surface)); }
+    .icon-well.green { color: var(--positive); background: color-mix(in oklch, var(--positive) 12%, var(--surface)); }
+
+    .choice-capsule::after {
+      right: -10px; top: -10px; width: 20px; height: 20px; clip-path: none;
+      background: var(--choice-star); -webkit-mask: url("assets/icons/star-filled.svg") center / contain no-repeat; mask: url("assets/icons/star-filled.svg") center / contain no-repeat;
+    }
+    .chip-row { gap: 4px; }
+    .choice-capsule { min-width: 42px; height: 30px; padding-inline: 9px; border-radius: 9px; font-size: 11px; }
+    .search-field { border-radius: 18px; }
+    .search-field > .semantic-icon { color: var(--muted); }
+    .map-callout { min-height: 70px; border-radius: 16px; padding: 10px 12px 10px 14px; }
+    .callout-chevron.semantic-icon { width: 18px; height: 18px; justify-self: end; }
+    .condition-bar { border-radius: 14px; }
+
+    .finder-sheet {
+      height: 216px; border-radius: 26px 26px 0 0; opacity: 0; visibility: hidden; pointer-events: none;
+      transform: translateY(calc(100% + 4px)); transition: height 220ms cubic-bezier(.2, 0, .2, 1), transform 220ms cubic-bezier(.2, 0, .2, 1), opacity 160ms linear, visibility 0s linear 220ms;
+    }
+    .finder-sheet[data-extent="peek"], .finder-sheet[data-extent="expanded"] {
+      opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); transition-delay: 0s;
+    }
+    .finder-sheet[data-extent="expanded"] { height: 542px; }
+    .map-day.analysis-focused .finder-sheet { opacity: 0; visibility: hidden; transform: translateY(calc(100% + 4px)); pointer-events: none; }
+    .finder-handle {
+      position: relative; width: 100%; height: 36px; padding: 0; border: 0; background: transparent; cursor: ns-resize;
+    }
+    .finder-handle::before {
+      content: ""; position: absolute; left: 50%; top: 10px; width: 24px; height: 4px; transform: translateX(-50%);
+      border-radius: 999px; background: var(--border); transition: width 160ms ease, background-color 160ms linear;
+    }
+    .finder-handle:hover::before { width: 30px; background: color-mix(in oklch, var(--border) 72%, var(--text)); }
+    .finder-handle:focus-visible { outline: 0; }
+    .finder-handle:focus-visible::before { box-shadow: 0 0 0 3px color-mix(in oklch, var(--focus) 70%, transparent); }
+    .finder-content { height: calc(100% - 36px); padding: 0 16px 18px; }
+    .finder-minihead { min-height: 30px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; font-weight: 600; }
+    .finder-minihead .semantic-icon { width: 15px; height: 15px; color: var(--action); }
+    .choice-group { display: block; padding: 0 0 7px; border: 0; }
+    .choice-row { grid-template-columns: 42px 1fr; gap: 6px; margin: 0; }
+    .choice-row > span { padding-top: 13px; font-size: 10px; }
+    .finder-expanded-only { display: none !important; }
+    .finder-sheet[data-extent="expanded"] .finder-expanded-only { display: block !important; }
+    .finder-sheet[data-extent="expanded"] .choice-row.finder-expanded-only { display: grid !important; }
+    .result-partition { border: 0; padding-top: 3px; }
+    .result-partition + .result-partition { margin-top: 7px; }
+    .result-row {
+      min-height: 54px; margin-bottom: 5px; padding: 7px 9px; border: 0; border-radius: 14px;
+      background: color-mix(in oklch, var(--surface) 88%, var(--canvas));
+    }
+    .result-row.selected { padding-left: 9px; box-shadow: none; background: color-mix(in oklch, var(--action) 9%, var(--surface)); }
+    .result-index { border: 0; border-radius: 11px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); }
+    .suggestions { border: 0; padding-top: 3px; }
+
+    .favorite-effect-stage { width: 98px; height: 98px; }
+    .favorite-visual { width: 36px; height: 36px; }
+    .favorite-main {
+      width: 26px; height: 26px; overflow: visible; background: currentColor; fill: none; stroke: none;
+      -webkit-mask: url("assets/icons/star.svg") center / contain no-repeat; mask: url("assets/icons/star.svg") center / contain no-repeat;
+    }
+    .favorite-action[aria-pressed="true"] .favorite-main {
+      -webkit-mask-image: url("assets/icons/star-filled.svg"); mask-image: url("assets/icons/star-filled.svg"); transform: rotate(54deg) scale(.94);
+    }
+    .favorite-tail {
+      position: absolute; left: 25px; top: 44px; width: 35px; height: 18px; color: var(--favorite-fill); background: currentColor;
+      -webkit-mask: url("assets/icons/meteor.svg") center / contain no-repeat; mask: url("assets/icons/meteor.svg") center / contain no-repeat;
+      opacity: 0; transform: rotate(-26deg) scale(.7); transform-origin: right center; transition: opacity 180ms linear, transform 220ms ease;
+    }
+    .favorite-satellite {
+      --satellite-size: 8px; background: currentColor; -webkit-mask: url("assets/icons/meteor.svg") center / contain no-repeat; mask: url("assets/icons/meteor.svg") center / contain no-repeat;
+    }
+    .favorite-satellite::before, .favorite-satellite svg { display: none; }
+    .satellite-one { --satellite-size: 6px; offset-path: path("M -8 76 C 4 46, 16 30, 31 31"); opacity: .62; }
+    .satellite-two { --satellite-size: 8px; offset-path: path("M 104 12 C 78 4, 66 14, 66 28"); opacity: .76; }
+    .satellite-three { --satellite-size: 10px; offset-path: path("M 106 91 C 74 103, 68 83, 70 68"); opacity: .88; }
+    .favorite-action[aria-pressed="true"] .favorite-tail { opacity: .52; transform: rotate(-26deg) scale(1); }
+    .favorite-action[aria-pressed="true"] .favorite-satellite { offset-distance: 100%; transform: rotate(0deg) scale(1); }
+    .favorite-action[aria-pressed="true"] .satellite-one { opacity: .62; }
+    .favorite-action[aria-pressed="true"] .satellite-two { opacity: .76; }
+    .favorite-action[aria-pressed="true"] .satellite-three { opacity: .88; }
+    .favorite-action.is-activating .favorite-tail { animation: favorite-tail-arrive 420ms cubic-bezier(.2, 0, .2, 1) both; }
+    @keyframes favorite-tail-arrive { 0% { opacity: 0; transform: rotate(-26deg) scale(.3); } 48% { opacity: .78; } 100% { opacity: .52; transform: rotate(-26deg) scale(1); } }
+
+    .detail-body { background: var(--canvas); }
+    .route-row { min-height: 50px; margin: 10px 16px 0; padding: 0 12px; border: 0; border-radius: 14px; background: var(--surface); }
+    .route-summary { display: flex; align-items: center; gap: 8px; }
+    .route-summary .semantic-icon { width: 17px; height: 17px; color: var(--positive); }
+    .route-row a, .route-row button { font-weight: 600; }
+    .decision-block { margin: 9px 16px; padding: 14px; border: 0; border-radius: 18px; background: color-mix(in oklch, var(--positive) 9%, var(--surface)); }
+    .decision-block p { margin: 6px 0 9px; }
+    .blocker-note { padding: 8px 10px; border-radius: 11px; background: color-mix(in oklch, var(--blocker) 10%, var(--surface)); }
+    .blocker-note .semantic-icon { width: 15px; height: 15px; margin-top: 1px; }
+    .spot-night-entry {
+      width: calc(100% - 32px); min-height: 58px; margin: 0 16px; padding: 0 12px; grid-template-columns: 34px minmax(0, 1fr) 18px;
+      border: 0; border-radius: 16px; background: var(--surface);
+    }
+    .spot-night-entry .icon-well { width: 32px; height: 32px; }
+    .night-entry-chevron.semantic-icon { width: 17px; height: 17px; justify-self: end; }
+    .segment-tabs { position: sticky; top: 0; margin: 10px 16px 0; padding: 3px; gap: 3px; border: 1px solid var(--border); border-radius: 14px; background: color-mix(in oklch, var(--surface) 86%, var(--canvas)); }
+    .segment-tabs button { min-height: 36px; border: 0; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .segment-tabs button[aria-selected="true"] { border: 0; background: var(--surface); box-shadow: 0 3px 10px color-mix(in oklch, var(--text) 10%, transparent); }
+    .tab-panel { padding: 10px 16px 20px; }
+    .flat-list { display: grid; gap: 6px; border: 0; }
+    .flat-list li { min-height: 52px; padding: 8px 10px; grid-template-columns: 30px 1fr; gap: 10px; border: 0; border-radius: 14px; background: var(--surface); }
+    .fact-copy strong, .fact-copy small { display: block; }
+    .fact-copy strong { font-size: 11px; font-weight: 600; }
+    .fact-copy small { margin-top: 3px; color: var(--muted); font-size: 9px; line-height: 1.35; }
+
+    .decision-summary { margin: 2px 12px 7px; padding: 11px 12px; border: 0; border-radius: 17px; background: color-mix(in oklch, var(--positive) 9%, var(--surface)); }
+    .window-track, .rail-line, .band-track { border-radius: 999px; overflow: hidden; }
+    .orientation-entry { width: calc(100% - 24px); min-height: 56px; margin: 0 12px 7px; padding: 7px 10px; grid-template-columns: 32px 1fr 18px; border: 0; border-radius: 16px; background: color-mix(in oklch, var(--action) 9%, var(--surface)); }
+    .orientation-entry .entry-copy strong, .orientation-entry .entry-copy span { display: block; text-align: left; }
+    .orientation-entry .entry-copy span { margin-top: 2px; }
+    .conditions { margin: 5px 12px 0; padding: 4px 5px 8px; border-radius: 17px; background: color-mix(in oklch, var(--surface) 90%, var(--canvas)); }
+    .conditions-head { padding: 0 6px; }
+    .band-row { min-height: 39px; margin: 4px 0; padding: 4px 6px; grid-template-columns: 104px 1fr 52px; border: 0; border-radius: 12px; background: var(--surface); }
+    .band-label { display: flex; align-items: center; gap: 6px; color: var(--muted); white-space: nowrap; }
+    .band-label .icon-well { width: 26px; height: 26px; border-radius: 9px; }
+    .band-label .semantic-icon { width: 14px; height: 14px; }
+    .provenance { margin: 7px 12px 0; padding: 8px 10px 10px; border: 0; border-radius: 16px; background: color-mix(in oklch, var(--surface) 90%, var(--canvas)); }
+    .provenance-row { min-height: 36px; padding: 0 5px; border: 0; border-radius: 10px; }
+    .provenance-row:nth-child(even) { background: var(--surface); }
+    .target-list { margin: 7px 12px 16px; padding: 8px 10px 10px; border: 0; border-radius: 16px; background: color-mix(in oklch, var(--surface) 90%, var(--canvas)); }
+    .target-row { min-height: 44px; padding: 0 5px; grid-template-columns: 26px 1fr auto; border: 0; border-radius: 10px; }
+    .target-row:nth-of-type(even) { background: var(--surface); }
+    .target-row .semantic-icon { width: 15px; height: 15px; color: var(--lunar); }
+    .target-copy strong, .target-copy span { display: block; }
+    .target-copy span { margin-top: 2px; }
+
+    .orientation-sky { height: 610px; }
+    .orientation-sky:not([data-sensor-state="ready"]) svg { opacity: .42; }
+    .orientation-top { align-items: center; }
+    .orientation-back { font-size: 10px; }
+    .accuracy-badge { min-height: 36px; padding: 7px 9px; display: flex; align-items: center; gap: 6px; border-radius: 13px; }
+    .accuracy-badge strong { font-size: 9px; font-weight: 600; }
+    .accuracy-badge .semantic-icon { width: 14px; height: 14px; }
+    .orientation-inactive { top: 60%; min-width: 0; max-width: 230px; padding: 8px 12px; border: 0; border-radius: 999px; box-shadow: var(--shadow); }
+    .orientation-panel { position: relative; z-index: 6; height: 258px; margin-top: -24px; padding: 12px 16px 22px; border-radius: 26px 26px 0 0; }
+    .sensor-status { padding: 0; display: grid; grid-template-columns: 34px 1fr; gap: 9px; border: 0; }
+    .sensor-status-copy { gap: 3px; }
+    .sensor-status-copy strong { font-size: 12px; font-weight: 600; }
+    .sensor-status-copy span { font-size: 9px; line-height: 1.4; }
+    .sensor-actions { grid-column: 1 / -1; display: flex; gap: 8px; padding-left: 43px; }
+    .sensor-action, .sensor-defer { min-height: 38px; margin: 0; padding: 0 14px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .sensor-action { width: auto; border: 1px solid var(--action); background: var(--action); color: var(--action-fg); }
+    .sensor-defer { border: 1px solid var(--border); background: transparent; color: var(--muted); }
+    .orientation-note { margin: 10px 0 4px 43px; font-size: 9px; }
+    .orientation-panel details { margin-top: 5px; border: 0; border-radius: 13px; background: color-mix(in oklch, var(--surface) 88%, var(--canvas)); }
+    .orientation-panel summary { min-height: 42px; padding: 0 10px; font-size: 10px; font-weight: 600; }
+    .object-list { padding: 0 10px 8px; }
+    .object-list li { border-color: color-mix(in oklch, var(--border) 70%, transparent); }
+    .chip-row, .finder-content, .quick-grid, .detail-body, .evidence-sheet, .orientation-panel {
+      scrollbar-width: none; -ms-overflow-style: none; scrollbar-gutter: auto;
+    }
+    .chip-row::-webkit-scrollbar, .finder-content::-webkit-scrollbar, .quick-grid::-webkit-scrollbar,
+    .detail-body::-webkit-scrollbar, .evidence-sheet::-webkit-scrollbar, .orientation-panel::-webkit-scrollbar {
+      width: 0; height: 0; display: none;
+    }
+    .sky-label { font-family: var(--font-body); font-size: 10px; fill: var(--text); }
+    .sky-data { font-family: var(--font-body); font-size: 9px; fill: var(--muted); }
+    .marker span, .time-context strong, .rail-labels, .band-row output, .orientation-readout strong { font-variant-numeric: tabular-nums; }
+    .star { fill: var(--text); } .target-star { fill: var(--lunar); }
+    @media (max-width: 1720px) { .frame-grid { grid-template-columns: repeat(2, minmax(0, 390px)); } }
+    @media (max-width: 860px) {
+      .board-header-inner { grid-template-columns: 1fr; }
+      .board-controls { justify-content: flex-start; }
+      .frame-grid { grid-template-columns: minmax(0, 390px); padding-inline: 12px; }
+    }
+    @media (max-width: 420px) {
+      .screen { height: min(844px, calc((100vw - 24px) * 2.1641)); min-height: 760px; }
+      .frame-grid { justify-content: stretch; }
+      .board-header { position: relative; }
+    }
+    @media (max-width: 340px) {
+      .analysis-focus-layer { left: 8px; right: 8px; padding-inline: 10px; }
+      .analysis-layers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .choice-row { grid-template-columns: 1fr; }
+      .choice-row > span { padding-top: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+      .choice-capsule::after, .favorite-main { transform: none !important; }
+      .favorite-satellite, .favorite-tail { display: none !important; }
+    }
+    html[data-motion="reduced"] .choice-capsule { transition-duration: 80ms !important; }
+    html[data-motion="reduced"] .choice-capsule::after { transform: none !important; transition: opacity 80ms linear !important; }
+    html[data-motion="reduced"] .favorite-main { transform: none !important; transition: fill 80ms linear, stroke 80ms linear, opacity 80ms linear !important; }
+    html[data-motion="reduced"] .favorite-satellite, html[data-motion="reduced"] .favorite-tail { display: none; }
+    html[data-motion="reduced"] .finder-sheet { transition: opacity 80ms linear, visibility 0s linear 80ms !important; }
+    html[data-motion="reduced"] .finder-sheet[data-extent="peek"], html[data-motion="reduced"] .finder-sheet[data-extent="expanded"] { transition-delay: 0s !important; }
+    html[data-motion="reduced"] .analysis-focus-layer { transition: opacity 80ms linear, visibility 0s linear 80ms !important; }
+    html[data-capture-board="true"] { zoom: .86; background: #F3F6FB; scroll-behavior: auto; }
+    html[data-capture-board="true"] body { min-width: 1776px; overflow: hidden; }
+    html[data-capture-board="true"] .board-header { position: static; }
+    html[data-capture-board="true"] .frame-grid {
+      width: max-content; margin-inline: auto; grid-template-columns: repeat(4, 390px); gap: 24px;
+    }
+  </style>
+</head>
+<body>
+  <header class="board-header" data-od-id="exploration-board-header">
+    <div class="board-header-inner">
+      <div>
+        <p class="eyebrow">STARWARD SKY CANVAS · CURRENT DIRECTION</p>
+        <h1 data-od-id="board-title">《今晚去观星》核心体验探索</h1>
+        <nav class="resource-links" aria-label="当前设计资源页面">
+          <a href="index.html" aria-current="page">核心体验</a>
+          <a href="supporting.html">我的与计划</a>
+          <a href="contribution.html">投稿闭环</a>
+          <a href="operations.html">运营工作台</a>
+          <a href="workbench.html">组件与状态</a>
+        </nav>
+      </div>
+      <div class="board-controls">
+        <div class="segmented" aria-label="画板模式" data-od-id="board-mode-control">
+          <button type="button" data-mode-value="day" aria-pressed="true">日间</button>
+          <button type="button" data-mode-value="night" aria-pressed="false">夜间</button>
+          <button type="button" data-mode-value="observation" aria-pressed="false">观测</button>
+        </div>
+        <div class="segmented frame-jump" aria-label="当前检查画布" data-od-id="frame-highlight-control">
+          <button type="button" data-frame-target="map-finder-day" aria-pressed="true">地图</button>
+          <button type="button" data-frame-target="spot-detail-dusk" aria-pressed="false">地点</button>
+          <button type="button" data-frame-target="spot-night-astronomy" aria-pressed="false">夜空</button>
+          <button type="button" data-frame-target="spot-night-orientation" aria-pressed="false">方位</button>
+        </div>
+        <div class="segmented" aria-label="动效演示" data-od-id="motion-demo-control">
+          <button type="button" data-motion-value="standard" aria-pressed="true">标准动效</button>
+          <button type="button" data-motion-value="reduced" aria-pressed="false">减少动效</button>
+        </div>
+      </div>
+    </div>
+    <div class="review-meta">
+      <p class="board-note">当前设计方向 · Map / Detail 微交互资源 / 内容为交互与视觉 fixture，不代表生产或实时数据；观测模式严格使用黑与暖红角色。</p>
+      <label class="sensor-demo" for="sensorStateDemo" data-od-id="sensor-state-review-control">传感器状态演示
+        <select id="sensorStateDemo" aria-label="评审传感器状态">
+          <option value="permission">等待授权</option>
+          <option value="ready">ready</option>
+          <option value="calibrating">calibrating</option>
+          <option value="denied">denied</option>
+          <option value="unavailable">unavailable</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main class="frame-grid" data-od-id="core-exploration-board">
+    <section class="frame-shell is-highlighted" data-frame="map-finder-day" data-od-id="review-frame-map-finder-day">
+      <div class="frame-label"><strong>map-finder-day</strong><span>地图 · Finder</span></div>
+      <article class="screen map-day" data-od-id="map-finder-day">
+        <div class="map-stage" id="mapStage" data-analysis-layer="NONE" data-map-owner="primary-map" data-od-id="concept-map">
+          <svg viewBox="0 0 390 844" role="img" aria-label="概念底图，包含道路、水域与等高线">
+            <rect width="390" height="844" fill="var(--canvas)"/>
+            <path d="M-20 38 C74 84 62 160 144 192 C227 224 287 176 414 250 L414 390 C328 342 275 363 211 333 C128 294 87 226 -20 236Z" fill="var(--map-land)"/>
+            <path d="M327 -18 C267 72 294 145 239 208 C188 266 185 332 218 405 C253 481 225 553 139 618 C83 661 39 733 14 872" fill="none" stroke="var(--map-water)" stroke-width="42"/>
+            <path d="M-30 516 C74 471 110 390 189 379 C283 366 327 433 424 410" fill="none" stroke="var(--map-line)" stroke-width="7"/>
+            <path d="M28 0 C47 115 112 164 101 266 C89 370 16 429 32 548 C43 639 116 700 120 866" fill="none" stroke="var(--map-line)" stroke-width="4"/>
+            <path d="M102 31 C153 93 184 118 267 122 C315 125 355 157 402 212" fill="none" stroke="var(--map-line)" stroke-width="3"/>
+            <g fill="none" stroke="var(--map-line)" stroke-width="1">
+              <path d="M236 250 C287 220 343 228 382 269 C339 288 289 302 241 290Z"/>
+              <path d="M226 236 C286 190 362 202 405 250"/>
+              <path d="M58 326 C112 291 166 299 193 337 C155 360 101 374 51 360Z"/>
+              <path d="M51 311 C112 270 177 281 207 325"/>
+              <path d="M210 466 C279 426 351 446 405 500"/>
+              <path d="M199 484 C273 443 344 462 394 517"/>
+            </g>
+            <g class="map-analysis-overlay" data-overlay="LIGHT" aria-hidden="true">
+              <path class="overlay-fill" d="M8 272 C86 224 161 236 214 291 C261 339 322 342 384 306 L390 490 C319 528 239 501 192 455 C132 396 73 396 4 438Z"/>
+              <path class="overlay-fill" d="M218 58 C274 33 340 58 386 111 L390 213 C337 184 278 176 230 205Z"/>
+            </g>
+            <g class="map-analysis-overlay" data-overlay="TOTAL_CLOUD" aria-hidden="true">
+              <ellipse class="overlay-fill" cx="106" cy="296" rx="83" ry="54"/>
+              <ellipse class="overlay-fill" cx="286" cy="373" rx="92" ry="68"/>
+              <ellipse class="overlay-fill" cx="207" cy="569" rx="108" ry="74"/>
+            </g>
+            <g class="map-analysis-overlay" data-overlay="OPPORTUNITY" aria-hidden="true">
+              <path class="overlay-fill" d="M43 343 C91 288 146 273 205 305 C260 335 310 321 351 282 C379 330 375 399 342 446 C295 513 204 527 129 485 C75 455 43 406 43 343Z"/>
+            </g>
+            <g fill="var(--muted)" font-family="var(--font-body)" font-size="9">
+              <text x="240" y="327">南澳</text><text x="55" y="414">大鹏半岛</text><text x="248" y="563">近岸</text>
+            </g>
+          </svg>
+          <span class="map-caption">概念底图</span>
+          <button class="marker marker-a" type="button" aria-label="深圳市天文台，已选" data-marker="observatory"><span>01</span></button>
+          <button class="marker marker-b" type="button" aria-label="西涌暗点" data-marker="xichong"><span>02</span></button>
+          <button class="marker marker-c" type="button" aria-label="七娘山候选点" data-marker="qiniang"><span>03</span></button>
+          <button class="map-callout" type="button" id="selectedSpotCallout" aria-label="查看深圳市天文台详情，当前状态值得考虑" data-od-id="selected-spot-callout">
+            <span class="callout-copy"><span class="callout-top"><strong id="mapCalloutName">深圳市天文台</strong><span id="mapCalloutState">值得考虑</span></span><span id="mapCalloutMeta">今晚 21:40 后 · 需留意山路开放</span></span>
+            <span class="semantic-icon icon--chevron-right callout-chevron" aria-hidden="true"></span>
+          </button>
+        </div>
+        <label class="search-field" data-od-id="map-search">
+          <span class="semantic-icon icon--search" aria-hidden="true"></span>
+          <input id="finderSearch" type="search" placeholder="搜地点 / 区域 / 观星点" aria-label="搜地点、区域或观星点">
+        </label>
+        <div class="chip-row" aria-label="已应用筛选" data-od-id="applied-filter-row">
+          <button class="chip" type="button" aria-pressed="false" data-quick-filter="tonight" data-od-id="applied-filter-tonight"><span class="choice-capsule">今晚推荐</span></button>
+          <button class="chip" type="button" aria-pressed="false" data-quick-filter="two-hours" data-od-id="applied-filter-two-hours"><span class="choice-capsule">2 小时内</span></button>
+          <button class="chip" type="button" aria-pressed="false" data-quick-filter="short-walk" data-od-id="applied-filter-short-walk"><span class="choice-capsule">少步行</span></button>
+        </div>
+        <div class="map-control-stack">
+          <button class="icon-button" type="button" aria-label="定位到当前位置" data-od-id="location-control">
+            <span class="semantic-icon icon--locate" aria-hidden="true"></span>
+          </button>
+        </div>
+        <button class="condition-bar" type="button" id="conditionTrigger" aria-expanded="false" aria-controls="analysisFocusLayer" data-od-id="condition-layer-bar"><span><strong>观测条件</strong><small id="conditionCompactMetric">无叠加 · 基础地图</small></span><time id="conditionCompactTime">22:40</time></button>
+        <section class="analysis-focus-layer" id="analysisFocusLayer" aria-label="观测条件分析" aria-hidden="true" data-od-id="map-analysis-focus-layer">
+          <div class="analysis-head"><span><strong>观测条件</strong><span>同一地图 · 单层分析</span></span><button class="analysis-close" type="button" id="analysisClose" aria-label="关闭观测条件">×</button></div>
+          <div class="analysis-layers" role="group" aria-label="分析叠加层" data-od-id="map-layer-selector">
+            <button class="analysis-choice" type="button" data-analysis-choice="NONE" aria-pressed="true" data-od-id="analysis-choice-none"><span class="choice-capsule">无叠加</span></button>
+            <button class="analysis-choice" type="button" data-analysis-choice="LIGHT" aria-pressed="false" data-od-id="analysis-choice-light"><span class="choice-capsule">光环境</span></button>
+            <button class="analysis-choice" type="button" data-analysis-choice="TOTAL_CLOUD" aria-pressed="false" data-od-id="analysis-choice-cloud"><span class="choice-capsule">总云量</span></button>
+            <button class="analysis-choice" type="button" data-analysis-choice="OPPORTUNITY" aria-pressed="false" data-od-id="analysis-choice-opportunity"><span class="choice-capsule">观测机会</span></button>
+          </div>
+          <div class="analysis-detail" aria-live="polite"><strong id="analysisMetric">无分析叠加</strong><span id="analysisSource">基础地图 · 状态完整</span></div>
+          <label class="analysis-time" for="mapTimeControl" data-od-id="map-time-control"><time id="mapSelectedTime">22:40</time><input id="mapTimeControl" type="range" min="0" max="420" value="160" step="10" aria-label="选择观测条件时间" aria-valuetext="22:40"></label>
+        </section>
+        <section class="sheet finder-sheet" id="finderSheet" data-extent="closed" data-open-reason="none" aria-hidden="true" data-od-id="finder-sheet">
+          <button class="finder-handle" type="button" id="finderHandle" aria-label="展开观星点筛选" aria-expanded="false" aria-controls="finderContent"></button>
+          <div class="finder-content">
+            <div class="finder-minihead"><span class="semantic-icon icon--sparkles" aria-hidden="true"></span><span>进阶条件</span></div>
+            <div class="choice-group" data-od-id="advanced-filter-groups">
+              <div class="choice-row"><span>到达</span><div class="choice-options"><button class="chip" type="button" aria-pressed="false"><span class="choice-capsule">公共交通</span></button><button class="chip" type="button" aria-pressed="false"><span class="choice-capsule">可停车</span></button></div></div>
+              <div class="choice-row finder-expanded-only"><span>现场</span><div class="choice-options"><button class="chip" type="button" aria-pressed="false"><span class="choice-capsule">洗手间</span></button><button class="chip" type="button" aria-pressed="false"><span class="choice-capsule">补给</span></button><button class="chip" type="button" aria-pressed="false"><span class="choice-capsule">开放场地</span></button></div></div>
+            </div>
+            <div class="suggestions finder-expanded-only" data-od-id="query-suggestions">
+              <p class="section-kicker">搜索建议 · 南澳</p>
+              <button class="result-row" type="button"><span class="result-index">区</span><span class="result-copy"><strong>南澳街道</strong><span>区域 · 8 个候选观星点</span></span><span class="semantic-icon icon--chevron-right" aria-hidden="true"></span></button>
+            </div>
+            <div class="result-partition" data-od-id="wanted-results">
+              <p class="section-kicker">想去</p>
+              <button class="result-row selected" type="button" data-result="observatory"><span class="result-index">01</span><span class="result-copy"><strong>深圳市天文台</strong><span>开放信息需确认 · 路线清晰</span></span><span class="result-score">考虑</span></button>
+            </div>
+            <div class="result-partition finder-expanded-only" data-od-id="other-results">
+              <p class="section-kicker">其他观星点</p>
+              <button class="result-row" type="button" data-result="xichong"><span class="result-index">02</span><span class="result-copy"><strong>西涌暗点</strong><span>地点证据较少 · 需步行</span></span><span class="result-score">不足</span></button>
+              <button class="result-row" type="button" data-result="qiniang"><span class="result-index">03</span><span class="result-copy"><strong>七娘山候选点</strong><span>夜间通行存在硬性风险</span></span><span class="result-score">暂缓</span></button>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+
+    <section class="frame-shell" data-frame="spot-detail-dusk" data-od-id="review-frame-spot-detail-dusk">
+      <div class="frame-label"><strong>spot-detail-dusk</strong><span>地点 · 傍晚</span></div>
+      <article class="screen theme-night" data-od-id="spot-detail-dusk">
+        <div class="media-scene" data-od-id="abstract-local-media">
+          <svg viewBox="0 0 390 254" role="img" aria-label="深圳海岸、山脊与天文台的抽象本地媒体画面">
+            <rect width="390" height="254" fill="var(--canvas)"/>
+            <rect y="112" width="390" height="142" fill="var(--surface)"/>
+            <path d="M0 166 L62 123 L121 155 L183 96 L249 147 L307 116 L390 165 V254 H0Z" fill="var(--border)"/>
+            <path d="M0 188 L76 151 L153 189 L232 138 L310 177 L390 152 V254 H0Z" fill="var(--surface)" stroke="var(--muted)" stroke-width="1"/>
+            <path d="M262 126 h34 v38 h-34z M269 110 h20 v16 h-20z M279 91 v19" fill="var(--surface)" stroke="var(--text)" stroke-width="2"/>
+            <circle cx="279" cy="87" r="4" fill="var(--lunar)"/>
+            <path d="M0 218 C99 205 176 232 264 215 C311 206 350 207 390 216" fill="none" stroke="var(--action)" stroke-width="2"/>
+          </svg>
+          <div class="scene-topbar">
+            <button class="icon-button transparent-control" type="button" aria-label="返回地图">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+            </button>
+            <button class="favorite-action" type="button" aria-label="收藏深圳市天文台" aria-pressed="false" aria-busy="false" id="favoriteButton" data-od-id="spot-favorite-action">
+              <span class="favorite-effect-stage" aria-hidden="true">
+                <span class="favorite-tail"></span>
+                <span class="favorite-satellite satellite-one"></span>
+                <span class="favorite-satellite satellite-two"></span>
+                <span class="favorite-satellite satellite-three"></span>
+                <span class="favorite-visual"><span class="favorite-main"></span></span>
+              </span>
+            </button>
+          </div>
+          <div class="place-identity">
+            <p class="eyebrow">深圳 · 南澳</p>
+            <h2 data-od-id="spot-detail-title">深圳市天文台</h2>
+            <p>海岸高地 · 示例地点身份 · 正式信息以可追溯证据为准</p>
+          </div>
+        </div>
+        <div class="detail-body">
+          <div class="route-row" data-od-id="route-row"><span class="route-summary"><span class="semantic-icon icon--route" aria-hidden="true"></span><span id="routeSummary">约 1 小时 42 分 · 末段步行</span></span><button class="text-action" type="button" id="routeAction">去这里 →</button></div>
+          <section class="decision-block" data-od-id="tonight-conclusion">
+            <div class="decision-line"><strong>值得考虑</strong><span class="freshness">更新 18:20 · 3 个来源</span></div>
+            <p>21:40 后云层机会改善；月亮在主时窗后段影响增大。</p>
+            <div class="blocker-note"><span class="semantic-icon icon--alert" aria-hidden="true"></span><span>山路关闭或现场限制生效时，将直接改为“暂不建议”。</span></div>
+          </section>
+          <button class="spot-night-entry" type="button" id="openNight" data-od-id="spot-night-entry" aria-label="查看深圳市天文台今晚夜空，当前时间 22:40">
+            <span class="icon-well warm"><span class="semantic-icon icon--telescope" aria-hidden="true"></span></span>
+            <span class="night-entry-copy"><strong>今晚夜空</strong><small><span data-time-context>22:40</span> · 月相、云量与观测时段</small></span>
+            <span class="semantic-icon icon--chevron-right night-entry-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="segment-tabs" role="tablist" aria-label="地点信息分段" data-od-id="detail-segments">
+            <button type="button" role="tab" aria-selected="true" aria-controls="panel-overview" id="tab-overview">概览</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="panel-guides" id="tab-guides">指引</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="panel-site" id="tab-site">现场</button>
+          </div>
+          <div class="tab-panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+            <ul class="flat-list">
+              <li><span class="icon-well green"><span class="semantic-icon icon--shield" aria-hidden="true"></span></span><span class="fact-copy"><strong>出发前复核开放</strong><small>山路与入口状态可能变化</small></span></li>
+              <li><span class="icon-well"><span class="semantic-icon icon--car" aria-hidden="true"></span></span><span class="fact-copy"><strong>停车与洗手间部分可用</strong><small>到达前查看最新设施证据</small></span></li>
+              <li><span class="icon-well warm"><span class="semantic-icon icon--walk" aria-hidden="true"></span></span><span class="fact-copy"><strong>临崖与夜间步道需谨慎</strong><small>携带头灯并保持在开放路线</small></span></li>
+              <li><span class="icon-well"><span class="semantic-icon icon--list" aria-hidden="true"></span></span><span class="fact-copy"><strong>6 条可追溯证据</strong><small>场地 2 · 路线 1 · 天气 3</small></span></li>
+            </ul>
+          </div>
+          <div class="tab-panel" id="panel-guides" role="tabpanel" aria-labelledby="tab-guides" hidden>
+            <ul class="flat-list">
+              <li><span class="icon-well"><span class="semantic-icon icon--navigation" aria-hidden="true"></span></span><span class="fact-copy"><strong>沿已核验道路到达</strong><small>末段按现场指引步行</small></span></li>
+              <li><span class="icon-well warm"><span class="semantic-icon icon--clock" aria-hidden="true"></span></span><span class="fact-copy"><strong>先确认返程时间</strong><small>末班交通与停车离场时间均需核对</small></span></li>
+              <li><span class="icon-well green"><span class="semantic-icon icon--pin" aria-hidden="true"></span></span><span class="fact-copy"><strong>关闭时返回地图换点</strong><small>保留当前筛选与时间</small></span></li>
+            </ul>
+          </div>
+          <div class="tab-panel" id="panel-site" role="tabpanel" aria-labelledby="tab-site" hidden>
+            <ul class="flat-list">
+              <li><span class="icon-well warm"><span class="semantic-icon icon--moon" aria-hidden="true"></span></span><span class="fact-copy"><strong>避免白光</strong><small>使用低亮红光保护暗适应</small></span></li>
+              <li><span class="icon-well"><span class="semantic-icon icon--shield" aria-hidden="true"></span></span><span class="fact-copy"><strong>不跨越围栏</strong><small>不占用工作区域或封闭空间</small></span></li>
+              <li><span class="icon-well green"><span class="semantic-icon icon--tree" aria-hidden="true"></span></span><span class="fact-copy"><strong>未知就保持未知</strong><small>数据不足时不推断开放或安全</small></span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="frame-shell" data-frame="spot-night-astronomy" data-od-id="review-frame-spot-night-astronomy">
+      <div class="frame-label"><strong>spot-night-astronomy</strong><span>夜空 · 共时证据</span></div>
+      <article class="screen theme-night" id="astronomyScreen" style="--cursor-x:38%" data-od-id="spot-night-astronomy">
+        <div class="night-sky" data-od-id="aligned-sky-canvas">
+          <svg viewBox="0 0 390 286" role="img" aria-label="与选中时间对齐的夜空弧线，显示月亮与观测目标">
+            <rect width="390" height="286" fill="var(--canvas)"/>
+            <path d="M18 247 Q195 62 372 247" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+            <path d="M54 247 Q195 105 336 247" fill="none" stroke="var(--border)" stroke-width="1"/>
+            <line x1="18" y1="247" x2="372" y2="247" stroke="var(--muted)" stroke-width="1"/>
+            <g id="astronomyObjects">
+              <circle class="star" cx="92" cy="112" r="1.5"/><circle class="star" cx="133" cy="78" r="1"/>
+              <circle class="star" cx="186" cy="98" r="1.5"/><circle class="star" cx="230" cy="68" r="1"/>
+              <circle class="target-star" cx="155" cy="145" r="3"/><circle class="target-star" cx="282" cy="126" r="3"/>
+              <path d="M121 157 C150 128 177 131 202 151" fill="none" stroke="var(--action)" stroke-width="2"/>
+              <circle cx="316" cy="176" r="9" fill="var(--lunar)"/>
+              <text class="sky-label" x="120" y="174">夏季银河</text><text class="sky-label" x="292" y="118">土星</text>
+              <text class="sky-data" x="300" y="198" id="astronomyMoonLabel">月亮 18°</text>
+            </g>
+            <text class="sky-data" x="18" y="263">东南</text><text class="sky-data" x="346" y="263">西南</text>
+          </svg>
+          <div class="night-topbar">
+            <p class="eyebrow"><span data-shared-place>深圳市天文台</span> · 今晚</p>
+            <span class="data-flag"><span data-time-context>22:40</span> 对齐</span>
+          </div>
+          <div class="time-context">
+            <div><strong data-time-context>22:40</strong><span>拖动时间，整片夜空一起变化</span></div>
+            <span>天空 · 条件 · 目标</span>
+          </div>
+        </div>
+        <section class="sheet evidence-sheet" id="astronomyEvidence" data-od-id="astronomy-evidence-sheet">
+          <div class="sheet-handle" aria-hidden="true"></div>
+          <div class="decision-summary">
+            <div class="summary-top"><strong>值得考虑</strong><span>结论随共享时间更新</span></div>
+            <div class="window-row"><span>主时窗</span><div class="window-track"><i style="width:48%;margin-left:22%"></i></div><b>21:40–23:50</b></div>
+            <div class="window-row backup"><span>备选</span><div class="window-track"><i></i></div><b>00:20–01:10</b></div>
+          </div>
+          <button class="orientation-entry" type="button" id="openOrientation" data-od-id="open-orientation-action">
+            <span class="icon-well"><span class="semantic-icon icon--compass" aria-hidden="true"></span></span>
+            <span class="entry-copy"><strong>举起手机看方位天空</strong><span><span data-shared-place>深圳市天文台</span> · <span data-time-context>22:40</span></span></span>
+            <span class="semantic-icon icon--chevron-right" aria-hidden="true"></span>
+          </button>
+          <div class="time-rail-wrap" data-od-id="shared-time-rail">
+            <div class="time-rail">
+              <div class="rail-line"><i class="night-window"></i></div>
+              <i class="rail-event moon" aria-label="月亮事件"></i><i class="rail-event sun" aria-label="晨光事件"></i>
+              <i class="rail-cursor"></i>
+              <input id="timeScrubber" type="range" min="0" max="420" value="160" step="10" aria-label="选择今晚时间">
+            </div>
+            <div class="rail-labels"><span>20:00</span><span>22:00</span><span>00:00</span><span>02:00</span><span>03:00</span></div>
+            <p class="scrub-note" id="scrubNote">拖动时仅本地预览；松开后统一提交一次。</p>
+          </div>
+          <div class="conditions" id="conditionMatrix" data-od-id="condition-matrix">
+            <div class="conditions-head"><strong>条件随时间变化 · <span data-time-context>22:40</span></strong><button type="button" id="expandConditions" aria-expanded="false">更多</button></div>
+            <div class="band-row"><span class="band-label"><span class="icon-well warm"><span class="semantic-icon icon--sunset" aria-hidden="true"></span></span>天文黑夜</span><div class="band-track"><i style="--strength:20%"></i><i style="--strength:35%"></i><i style="--strength:70%"></i><i style="--strength:90%"></i><i style="--strength:90%"></i><i style="--strength:70%"></i><i style="--strength:35%"></i></div><output>已开始</output></div>
+            <div class="band-row"><span class="band-label"><span class="icon-well"><span class="semantic-icon icon--cloud" aria-hidden="true"></span></span>总云量</span><div class="band-track"><i class="warn"></i><i class="warn"></i><i></i><i></i><i></i><i class="warn"></i><i class="warn"></i></div><output id="cloudValue">34%</output></div>
+            <div class="band-row"><span class="band-label"><span class="icon-well"><span class="semantic-icon icon--cloud" aria-hidden="true"></span></span>分层云</span><div class="band-track"><i></i><i></i><i class="warn"></i><i></i><i></i><i class="warn"></i><i></i></div><output>12/8/20%</output></div>
+            <div class="band-row"><span class="band-label"><span class="icon-well warm"><span class="semantic-icon icon--moon" aria-hidden="true"></span></span>月亮</span><div class="band-track"><i></i><i></i><i class="warn"></i><i class="warn"></i><i class="warn"></i><i class="block"></i><i class="block"></i></div><output id="moonValue">18° / 62%</output></div>
+            <div class="band-row"><span class="band-label"><span class="icon-well"><span class="semantic-icon icon--rain" aria-hidden="true"></span></span>降水</span><div class="band-track"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><output>10%</output></div>
+            <div class="band-row"><span class="band-label"><span class="icon-well green"><span class="semantic-icon icon--wind" aria-hidden="true"></span></span>风</span><div class="band-track"><i></i><i></i><i></i><i class="warn"></i><i class="warn"></i><i></i><i></i></div><output id="windValue">3.2 m/s</output></div>
+            <div class="band-row extra"><span class="band-label"><span class="icon-well"><span class="semantic-icon icon--cloud" aria-hidden="true"></span></span>湿度</span><div class="band-track"><i></i><i></i><i class="warn"></i><i class="warn"></i><i class="warn"></i><i class="block"></i><i class="block"></i></div><output>76% / 20°</output></div>
+            <div class="band-row extra"><span class="band-label"><span class="icon-well green"><span class="semantic-icon icon--telescope" aria-hidden="true"></span></span>可见度</span><div class="band-track"><i></i><i></i><i></i><i></i><i class="warn"></i><i class="warn"></i><i></i></div><output id="visibilityValue">18 km</output></div>
+            <div class="band-row extra"><span class="band-label"><span class="icon-well warm"><span class="semantic-icon" aria-hidden="true"></span></span>机会</span><div class="band-track"><i class="warn"></i><i></i><i></i><i></i><i></i><i class="warn"></i><i class="warn"></i></div><output id="opportunityValue">68 / 100</output></div>
+          </div>
+          <div class="provenance" data-od-id="astronomy-source-status">
+            <div class="provenance-head"><strong>数据从哪来</strong><span>时间 · 可用状态</span></div>
+            <div class="provenance-row"><strong>天文历算</strong><span>有效至 03:00</span><b class="complete">完整</b></div>
+            <div class="provenance-row"><strong>气象条件</strong><span>更新 22:20</span><b class="partial">部分</b></div>
+            <div class="provenance-row"><strong>地点证据</strong><span>更新 18:20</span><b class="stale">陈旧</b></div>
+            <div class="provenance-row"><strong>降水短临</strong><span>当前无可用时段</span><b class="unavailable">不可用</b></div>
+          </div>
+          <div class="target-list" data-od-id="target-list">
+            <p class="section-kicker">此刻可以看 · <span data-time-context>22:40</span></p>
+            <div class="target-row"><span class="semantic-icon icon--telescope" aria-hidden="true"></span><span class="target-copy"><strong>夏季银河</strong><span>东南 → 南</span></span><b>适合广角</b></div>
+            <div class="target-row"><span class="semantic-icon icon--moon" aria-hidden="true"></span><span class="target-copy"><strong>土星</strong><span id="saturnPosition">东南 146°</span></span><b>高度 31°</b></div>
+            <div class="target-row"><span class="semantic-icon" aria-hidden="true"></span><span class="target-copy"><strong>英仙座辐射点</strong><span id="perseidPosition">东北 42°</span></span><b>高度 18°</b></div>
+          </div>
+        </section>
+      </article>
+    </section>
+
+    <section class="frame-shell" data-frame="spot-night-orientation" data-od-id="review-frame-spot-night-orientation">
+      <div class="frame-label"><strong>spot-night-orientation</strong><span>方位 · 手机朝向</span></div>
+      <article class="screen theme-night" id="orientationScreen" data-od-id="spot-night-orientation">
+        <div class="orientation-sky" id="orientationSky" data-sensor-state="permission" aria-label="方位天空等待手机方向授权" data-od-id="orientation-sky-view">
+          <svg viewBox="0 0 390 510" role="img" aria-label="稀疏星空、地平线、方位与目标标记">
+            <rect width="390" height="510" fill="var(--canvas)"/>
+            <g id="orientationPlot">
+              <path d="M22 414 Q195 118 368 414" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+              <path d="M61 414 Q195 196 329 414" fill="none" stroke="var(--border)" stroke-width="1"/>
+              <line x1="22" y1="414" x2="368" y2="414" stroke="var(--muted)"/>
+              <line x1="195" y1="414" x2="195" y2="93" stroke="var(--border)" stroke-dasharray="4 6"/>
+              <circle class="star" cx="82" cy="166" r="1.4"/><circle class="star" cx="121" cy="214" r="1"/>
+              <circle class="star" cx="165" cy="112" r="1.5"/><circle class="star" cx="248" cy="148" r="1"/>
+              <circle class="star" cx="310" cy="226" r="1.3"/><circle class="star" cx="283" cy="92" r="1"/>
+              <circle class="target-star" cx="235" cy="206" r="4"/><circle class="target-star" cx="112" cy="266" r="4"/>
+              <path d="M94 286 C118 244 151 226 183 234" fill="none" stroke="var(--action)" stroke-width="2"/>
+              <text class="sky-label" x="245" y="201">土星</text><text class="sky-label" x="82" y="302">夏季银河</text>
+              <text class="sky-data" x="24" y="433">东</text><text class="sky-data" x="189" y="433">南</text><text class="sky-data" x="352" y="433">西</text>
+              <text class="sky-data" x="202" y="106">高度 60°</text><text class="sky-data" x="202" y="256">30°</text>
+            </g>
+          </svg>
+          <div class="orientation-inactive" id="orientationInactive">允许后，转动手机看天空方向</div>
+          <div class="orientation-top">
+            <div class="orientation-identity">
+              <button class="orientation-back" type="button" id="orientationBack" data-od-id="back-to-astronomy-action">返回天文信息</button>
+              <p class="eyebrow"><span data-shared-place>深圳市天文台</span> · <span data-time-context>22:40</span></p>
+              <span class="data-flag">仅随手机转动</span>
+            </div>
+            <div class="accuracy-badge" id="accuracyBadge" data-quality="permission"><span class="semantic-icon icon--compass" aria-hidden="true"></span><strong id="accuracyState">等待方向授权</strong><span class="sr-only" id="calibrationState">等待授权</span></div>
+          </div>
+          <div class="orientation-readout"><strong id="orientationHeading">—</strong><span>方位 · 高度 <b id="altitudeValue">—</b></span></div>
+        </div>
+        <section class="orientation-panel" data-od-id="orientation-controls">
+          <div class="sensor-status" id="sensorStatus" data-od-id="sensor-follow-status">
+            <span class="icon-well" id="sensorStatusIcon"><span class="semantic-icon icon--compass" aria-hidden="true"></span></span>
+            <div class="sensor-status-copy"><strong id="sensorStatusTitle">让星图跟着手机转</strong><span id="sensorStatusDetail">仅在此页读取设备方向，不上传原始方向数据。</span></div>
+            <div class="sensor-actions"><button class="sensor-action" type="button" id="sensorAction">允许方向</button><button class="sensor-defer" type="button" id="sensorDefer">先看列表</button></div>
+          </div>
+          <p class="orientation-note">方向只改变画面朝向；地点、时间与观测判断保持不变。</p>
+          <details data-od-id="accessible-object-list">
+            <summary><span><span class="semantic-icon icon--list" aria-hidden="true"></span> 对象列表</span><span><span data-time-context>22:40</span> · 文字版</span></summary>
+            <ul class="object-list">
+              <li><strong>土星</strong><span id="orientationSaturnPosition">东南 146° · 高度 31°</span></li>
+              <li><strong>夏季银河</strong><span>南偏东 · 跨越地平线</span></li>
+              <li><strong>英仙座辐射点</strong><span id="orientationPerseidPosition">东北 42° · 高度 18°</span></li>
+            </ul>
+          </details>
+        </section>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var modeButtons = document.querySelectorAll("[data-mode-value]");
+      function setMode(mode) {
+        root.dataset.mode = mode;
+        localStorage.setItem("starward-board-mode", mode);
+        modeButtons.forEach(function (button) {
+          button.setAttribute("aria-pressed", String(button.dataset.modeValue === mode));
+        });
+      }
+      modeButtons.forEach(function (button) {
+        button.addEventListener("click", function () { setMode(button.dataset.modeValue); });
+      });
+      setMode(root.dataset.mode || "day");
+
+      var motionButtons = document.querySelectorAll("[data-motion-value]");
+      function setMotion(motion) {
+        var value = motion === "reduced" ? "reduced" : "standard";
+        root.dataset.motion = value;
+        localStorage.setItem("starward-board-motion", value);
+        motionButtons.forEach(function (button) {
+          button.setAttribute("aria-pressed", String(button.dataset.motionValue === value));
+        });
+        if (favorite) retargetFavorite(favorite.getAttribute("aria-pressed") === "true");
+      }
+      motionButtons.forEach(function (button) {
+        button.addEventListener("click", function () { setMotion(button.dataset.motionValue); });
+      });
+      setMotion(localStorage.getItem("starward-board-motion") || root.dataset.motion);
+
+      var frameButtons = document.querySelectorAll("[data-frame-target]");
+      var frameShells = document.querySelectorAll("[data-frame]");
+      function highlightFrame(name) {
+        frameShells.forEach(function (frame) {
+          var current = frame.dataset.frame === name;
+          frame.classList.toggle("is-highlighted", current);
+          if (current) frame.setAttribute("aria-current", "step");
+          else frame.removeAttribute("aria-current");
+        });
+        frameButtons.forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.frameTarget === name)); });
+        localStorage.setItem("starward-current-frame", name);
+      }
+      frameButtons.forEach(function (button) {
+        button.addEventListener("click", function () { highlightFrame(button.dataset.frameTarget); });
+      });
+      var savedFrame = localStorage.getItem("starward-current-frame");
+      highlightFrame(document.querySelector('[data-frame="' + savedFrame + '"]') ? savedFrame : "map-finder-day");
+      document.getElementById("selectedSpotCallout").addEventListener("click", function () { highlightFrame("spot-detail-dusk"); });
+      document.getElementById("openNight").addEventListener("click", function () { highlightFrame("spot-night-astronomy"); });
+      document.getElementById("routeAction").addEventListener("click", function () {
+        document.getElementById("routeSummary").textContent = "路线预览 · 出发前复核山路开放";
+      });
+
+      var finderSheet = document.getElementById("finderSheet");
+      var finderHandle = document.getElementById("finderHandle");
+      var finderSearch = document.getElementById("finderSearch");
+      var finderExtent = "closed";
+      var finderOpenReason = "none";
+      var finderManuallyChanged = false;
+      var finderPointerStart = null;
+      var suppressFinderHandleClick = false;
+      var mapScreen = document.querySelector(".screen.map-day");
+      var mapStage = document.getElementById("mapStage");
+      var conditionTrigger = document.getElementById("conditionTrigger");
+      var analysisFocusLayer = document.getElementById("analysisFocusLayer");
+      var analysisClose = document.getElementById("analysisClose");
+      var mapTimeControl = document.getElementById("mapTimeControl");
+      var observationContext = { selectedAt: 160 };
+      var activeAnalysisLayer = "NONE";
+      var analysisOpen = false;
+      var analysisFocusCommit = 0;
+      var mapFrames = [
+        { minute: 0, cloud: 52, opportunity: 48, cloudShift: -18, opportunityShift: -10 },
+        { minute: 60, cloud: 44, opportunity: 56, cloudShift: -10, opportunityShift: -6 },
+        { minute: 120, cloud: 36, opportunity: 65, cloudShift: -4, opportunityShift: -2 },
+        { minute: 180, cloud: 31, opportunity: 71, cloudShift: 2, opportunityShift: 3 },
+        { minute: 240, cloud: 39, opportunity: 64, cloudShift: 8, opportunityShift: 7 },
+        { minute: 300, cloud: 47, opportunity: 55, cloudShift: 14, opportunityShift: 11 },
+        { minute: 360, cloud: 58, opportunity: 43, cloudShift: 20, opportunityShift: 14 },
+        { minute: 420, cloud: 66, opportunity: 35, cloudShift: 25, opportunityShift: 17 }
+      ];
+      function selectedMapFrame() {
+        return mapFrames.reduce(function (best, frame) {
+          return Math.abs(frame.minute - observationContext.selectedAt) < Math.abs(best.minute - observationContext.selectedAt) ? frame : best;
+        }, mapFrames[0]);
+      }
+      function updateMapAnalysis() {
+        var frame = selectedMapFrame();
+        var time = formatTime(observationContext.selectedAt);
+        document.getElementById("mapSelectedTime").textContent = time;
+        document.getElementById("conditionCompactTime").textContent = time;
+        mapTimeControl.value = String(observationContext.selectedAt);
+        mapTimeControl.setAttribute("aria-valuetext", time);
+        document.querySelector('[data-overlay="TOTAL_CLOUD"]').setAttribute("transform", "translate(" + frame.cloudShift + " 0)");
+        document.querySelector('[data-overlay="OPPORTUNITY"]').setAttribute("transform", "translate(" + frame.opportunityShift + " 0)");
+        if (activeAnalysisLayer === "LIGHT") {
+          document.getElementById("analysisMetric").textContent = "静态暗度 · Bortle 4";
+          document.getElementById("analysisSource").textContent = "光环境 · 来源日期 2026-08 · 完整";
+          document.getElementById("conditionCompactMetric").textContent = "光环境 · 静态";
+        } else if (activeAnalysisLayer === "TOTAL_CLOUD") {
+          document.getElementById("analysisMetric").textContent = frame.cloud + "% 总云量";
+          document.getElementById("analysisSource").textContent = "气象条件 · 更新 22:20 · 部分";
+          document.getElementById("conditionCompactMetric").textContent = "总云量 " + frame.cloud + "%";
+        } else if (activeAnalysisLayer === "OPPORTUNITY") {
+          document.getElementById("analysisMetric").textContent = "当前时刻机会 " + frame.opportunity + "/100";
+          document.getElementById("analysisSource").textContent = "观测条件 · 更新 22:20 · 部分";
+          document.getElementById("conditionCompactMetric").textContent = "当前机会 " + frame.opportunity + "/100";
+        } else {
+          document.getElementById("analysisMetric").textContent = "无分析叠加";
+          document.getElementById("analysisSource").textContent = "基础地图 · 状态完整";
+          document.getElementById("conditionCompactMetric").textContent = "无叠加 · 基础地图";
+        }
+      }
+      function setAnalysisLayer(layer) {
+        var allowed = ["NONE", "LIGHT", "TOTAL_CLOUD", "OPPORTUNITY"];
+        activeAnalysisLayer = allowed.indexOf(layer) >= 0 ? layer : "NONE";
+        mapStage.dataset.analysisLayer = activeAnalysisLayer;
+        document.querySelectorAll("[data-analysis-choice]").forEach(function (button) {
+          button.setAttribute("aria-pressed", String(button.dataset.analysisChoice === activeAnalysisLayer));
+        });
+        document.querySelectorAll("[data-overlay]").forEach(function (overlay) {
+          overlay.setAttribute("aria-hidden", String(overlay.dataset.overlay !== activeAnalysisLayer));
+        });
+        updateMapAnalysis();
+      }
+      function setAnalysisOpen(open) {
+        analysisOpen = Boolean(open);
+        var focusCommit = ++analysisFocusCommit;
+        var focusTarget = analysisOpen ? analysisClose : conditionTrigger;
+        mapScreen.classList.toggle("analysis-focused", analysisOpen);
+        conditionTrigger.setAttribute("aria-expanded", String(analysisOpen));
+        conditionTrigger.setAttribute("tabindex", analysisOpen ? "-1" : "0");
+        analysisFocusLayer.setAttribute("aria-hidden", String(!analysisOpen));
+        setTimeout(function () {
+          if (focusCommit !== analysisFocusCommit) return;
+          focusTarget.focus({ preventScroll: true });
+        }, 32);
+      }
+      conditionTrigger.addEventListener("click", function () { setAnalysisOpen(true); });
+      analysisClose.addEventListener("click", function () { setAnalysisOpen(false); });
+      document.querySelectorAll("[data-analysis-choice]").forEach(function (button) {
+        button.addEventListener("click", function () { setAnalysisLayer(button.dataset.analysisChoice); });
+      });
+      mapTimeControl.addEventListener("input", function () {
+        observationContext.selectedAt = Number(mapTimeControl.value);
+        previewTime();
+      });
+      function setFinderExtent(extent, reason) {
+        var allowed = ["closed", "peek", "expanded"];
+        finderExtent = allowed.indexOf(extent) >= 0 ? extent : "closed";
+        if (reason) finderOpenReason = reason;
+        if (finderExtent === "closed") finderOpenReason = "none";
+        finderSheet.dataset.extent = finderExtent;
+        finderSheet.dataset.openReason = finderOpenReason;
+        finderSheet.setAttribute("aria-hidden", String(finderExtent === "closed"));
+        finderSheet.inert = finderExtent === "closed";
+        finderHandle.setAttribute("aria-expanded", String(finderExtent === "expanded"));
+        finderHandle.setAttribute("aria-label", finderExtent === "expanded" ? "收起观星点筛选" : "展开观星点筛选");
+      }
+      function changeFinderFromHandle(direction) {
+        finderManuallyChanged = true;
+        if (direction === "up") setFinderExtent("expanded", "manual");
+        else if (direction === "down") setFinderExtent(finderExtent === "expanded" ? "peek" : "closed", finderExtent === "expanded" ? "manual" : "none");
+        else setFinderExtent(finderExtent === "expanded" ? "peek" : "expanded", "manual");
+      }
+      finderHandle.addEventListener("pointerdown", function (event) {
+        finderPointerStart = event.clientY;
+        finderHandle.setPointerCapture(event.pointerId);
+      });
+      finderHandle.addEventListener("pointerup", function (event) {
+        if (finderPointerStart === null) return;
+        var delta = event.clientY - finderPointerStart;
+        finderPointerStart = null;
+        suppressFinderHandleClick = true;
+        changeFinderFromHandle(delta < -18 ? "up" : (delta > 18 ? "down" : "toggle"));
+      });
+      finderHandle.addEventListener("click", function () {
+        if (suppressFinderHandleClick) { suppressFinderHandleClick = false; return; }
+        changeFinderFromHandle("toggle");
+      });
+      finderSearch.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && finderSearch.value.trim()) {
+          event.preventDefault();
+          finderManuallyChanged = false;
+          setFinderExtent("peek", "query");
+        }
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.key !== "Escape") return;
+        if (analysisOpen) { event.preventDefault(); setAnalysisOpen(false); return; }
+        if (finderExtent !== "closed") {
+          event.preventDefault();
+          setFinderExtent(finderExtent === "expanded" ? "peek" : "closed", finderExtent === "expanded" ? "manual" : "none");
+        }
+      });
+      setAnalysisLayer("NONE");
+      document.querySelectorAll(".chip").forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          if (chip.hasAttribute("aria-pressed")) {
+            var next = chip.getAttribute("aria-pressed") !== "true";
+            chip.setAttribute("aria-pressed", String(next));
+            chip.classList.toggle("selected", next);
+            if (chip.hasAttribute("data-quick-filter")) {
+              if (next && finderExtent === "closed") {
+                finderManuallyChanged = false;
+                setFinderExtent("peek", "quick_filter");
+              } else if (!next && !finderManuallyChanged && finderOpenReason === "quick_filter" && !document.querySelector('[data-quick-filter][aria-pressed="true"]')) {
+                setFinderExtent("closed", "none");
+              }
+            }
+          }
+        });
+      });
+      setFinderExtent("closed", "none");
+
+      var spots = {
+        observatory: ["深圳市天文台", "值得考虑", "今晚 21:40 后 · 需留意山路开放"],
+        xichong: ["西涌暗点", "数据不足", "地点证据较少 · 建议先核验通行"],
+        qiniang: ["七娘山候选点", "暂不建议", "夜间通行存在硬性风险"]
+      };
+      function selectSpot(key) {
+        var data = spots[key];
+        var callout = document.getElementById("selectedSpotCallout");
+        mapStage.dataset.selectedSpot = key;
+        analysisFocusLayer.dataset.selectedSpot = key;
+        document.getElementById("mapCalloutName").textContent = data[0];
+        document.getElementById("mapCalloutState").textContent = data[1];
+        document.getElementById("mapCalloutMeta").textContent = data[2];
+        callout.setAttribute("aria-label", "查看" + data[0] + "详情，当前状态" + data[1]);
+        document.querySelectorAll("[data-result]").forEach(function (row) { row.classList.toggle("selected", row.dataset.result === key); });
+        document.querySelectorAll("[data-marker]").forEach(function (marker) { marker.classList.toggle("selected", marker.dataset.marker === key); });
+      }
+      document.querySelectorAll("[data-result], [data-marker]").forEach(function (item) {
+        item.addEventListener("click", function () {
+          selectSpot(item.dataset.result || item.dataset.marker);
+          if (item.dataset.result) {
+            finderManuallyChanged = false;
+            setFinderExtent("closed", "none");
+          }
+          document.getElementById("selectedSpotCallout").focus({ preventScroll: true });
+        });
+      });
+      selectSpot("observatory");
+
+      var favorite = document.getElementById("favoriteButton");
+      var favoriteRevision = 0;
+      var favoriteBusyTimer = 0;
+      var favoriteSatellites = Array.prototype.slice.call(favorite.querySelectorAll(".favorite-satellite"));
+      var motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+      function usesReducedMotion() {
+        return root.dataset.motion === "reduced" || motionMedia.matches;
+      }
+      function resetSatellite(node) {
+        node.style.transition = "none";
+        node.style.opacity = "0";
+        node.style.offsetDistance = "0%";
+        node.style.transform = "rotate(-24deg) scale(.62)";
+        void node.offsetWidth;
+      }
+      function freezeSatellite(node, includeOpacity) {
+        var computed = getComputedStyle(node);
+        node.style.transition = "none";
+        node.style.offsetDistance = computed.offsetDistance || "0%";
+        node.style.transform = computed.transform === "none" ? "rotate(-24deg) scale(.62)" : computed.transform;
+        if (includeOpacity) node.style.opacity = computed.opacity;
+      }
+      function releaseSatellite(node) {
+        node.style.transition = "";
+        node.style.offsetDistance = "";
+        node.style.transform = "";
+        node.style.opacity = "";
+      }
+      function retargetFavorite(selected) {
+        var revision = ++favoriteRevision;
+        var reduced = usesReducedMotion();
+        var duration = reduced ? 80 : (selected ? 420 : 200);
+        clearTimeout(favoriteBusyTimer);
+        favorite.classList.remove("is-activating");
+        favoriteSatellites.forEach(function (node) { freezeSatellite(node, selected); });
+        void favorite.offsetWidth;
+        favorite.classList.toggle("is-deactivating", !selected && !reduced);
+        favorite.setAttribute("aria-pressed", String(selected));
+        favorite.setAttribute("aria-busy", "true");
+        favorite.setAttribute("aria-label", selected ? "取消收藏深圳市天文台" : "收藏深圳市天文台");
+        if (reduced) {
+          favorite.classList.remove("is-deactivating");
+          favoriteSatellites.forEach(resetSatellite);
+        } else if (selected) {
+          favorite.classList.remove("is-deactivating");
+          void favorite.offsetWidth;
+          favoriteSatellites.forEach(releaseSatellite);
+          favorite.classList.add("is-activating");
+        } else {
+          favoriteSatellites.forEach(function (node) {
+            node.style.transition = "";
+            node.style.opacity = "";
+          });
+        }
+        favoriteBusyTimer = window.setTimeout(function () {
+          if (revision !== favoriteRevision) return;
+          favorite.classList.remove("is-activating");
+          if (!selected) {
+            favoriteSatellites.forEach(resetSatellite);
+            favorite.classList.remove("is-deactivating");
+          }
+          favorite.setAttribute("aria-busy", "false");
+        }, duration);
+      }
+      favorite.addEventListener("click", function () {
+        var selected = favorite.getAttribute("aria-pressed") !== "true";
+        retargetFavorite(selected);
+      });
+      if (motionMedia.addEventListener) {
+        motionMedia.addEventListener("change", function () {
+          retargetFavorite(favorite.getAttribute("aria-pressed") === "true");
+        });
+      }
+
+      var tabs = document.querySelectorAll("[role=tab]");
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          tabs.forEach(function (item) {
+            var selected = item === tab;
+            item.setAttribute("aria-selected", String(selected));
+            document.getElementById(item.getAttribute("aria-controls")).hidden = !selected;
+          });
+        });
+      });
+
+      var scrubber = document.getElementById("timeScrubber");
+      var astronomy = document.getElementById("astronomyScreen");
+      var orientationScreen = document.getElementById("orientationScreen");
+      var astronomyEvidence = document.getElementById("astronomyEvidence");
+      var openOrientation = document.getElementById("openOrientation");
+      var orientationBack = document.getElementById("orientationBack");
+      var scrubNote = document.getElementById("scrubNote");
+      var selectedSpotName = "深圳市天文台";
+      var savedAstronomyScrollTop = 0;
+      function formatTime(minutes) {
+        var total = 20 * 60 + Number(minutes);
+        var hour = Math.floor(total / 60) % 24;
+        var minute = total % 60;
+        return String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+      }
+      function previewTime() {
+        var minutes = Number(observationContext.selectedAt);
+        var phase = minutes / 420;
+        var time = formatTime(minutes);
+        var moonHeight = Math.round(10 + phase * 21);
+        var saturnAzimuth = Math.round(134 + phase * 31);
+        var perseidAzimuth = Math.round(36 + phase * 16);
+        astronomy.style.setProperty("--cursor-x", (phase * 100) + "%");
+        scrubber.value = String(minutes);
+        astronomy.dataset.selectedSpot = selectedSpotName;
+        astronomy.dataset.selectedTime = time;
+        orientationScreen.dataset.selectedSpot = selectedSpotName;
+        orientationScreen.dataset.selectedTime = time;
+        document.querySelectorAll("[data-shared-place]").forEach(function (node) { node.textContent = selectedSpotName; });
+        document.querySelectorAll("[data-time-context]").forEach(function (node) { node.textContent = time; });
+        document.getElementById("astronomyObjects").setAttribute("transform", "translate(" + ((phase - .38) * 16).toFixed(1) + " 0)");
+        document.getElementById("astronomyMoonLabel").textContent = "月亮 " + moonHeight + "°";
+        document.getElementById("cloudValue").textContent = Math.round(26 + phase * 22) + "%";
+        document.getElementById("moonValue").textContent = moonHeight + "° / 62%";
+        document.getElementById("windValue").textContent = (2.4 + phase * 2.1).toFixed(1) + " m/s";
+        document.getElementById("visibilityValue").textContent = Math.round(20 - phase * 5) + " km";
+        document.getElementById("opportunityValue").textContent = Math.round(74 - phase * 16) + " / 100";
+        document.getElementById("saturnPosition").textContent = "东南 " + saturnAzimuth + "°";
+        document.getElementById("perseidPosition").textContent = "东北 " + perseidAzimuth + "°";
+        document.getElementById("orientationSaturnPosition").textContent = "东南 " + saturnAzimuth + "° · 高度 31°";
+        document.getElementById("orientationPerseidPosition").textContent = "东北 " + perseidAzimuth + "° · 高度 18°";
+        document.querySelectorAll("#conditionMatrix .band-track").forEach(function (track) {
+          var activeIndex = Math.min(6, Math.floor(phase * 7));
+          track.querySelectorAll("i").forEach(function (segment, index) {
+            if (index === activeIndex) segment.setAttribute("aria-current", "true");
+            else segment.removeAttribute("aria-current");
+          });
+        });
+        document.getElementById("openNight").setAttribute("aria-label", "查看" + selectedSpotName + "今晚夜空，当前时间 " + time);
+        openOrientation.setAttribute("aria-label", "举起手机查看" + selectedSpotName + " " + time + "的方位天空");
+        scrubNote.textContent = "本地预览 " + time + " · 松开后统一提交一次。";
+        updateMapAnalysis();
+      }
+      scrubber.addEventListener("input", function () { observationContext.selectedAt = Number(scrubber.value); previewTime(); });
+      scrubber.addEventListener("change", function () { scrubNote.textContent = "已提交 " + formatTime(scrubber.value) + " · 拖动时仍只做本地预览。"; });
+      previewTime();
+
+      openOrientation.addEventListener("click", function () {
+        savedAstronomyScrollTop = astronomyEvidence.scrollTop;
+        highlightFrame("spot-night-orientation");
+        orientationBack.focus({ preventScroll: true });
+      });
+      orientationBack.addEventListener("click", function () {
+        highlightFrame("spot-night-astronomy");
+        requestAnimationFrame(function () {
+          astronomyEvidence.scrollTop = savedAstronomyScrollTop;
+          openOrientation.focus({ preventScroll: true });
+        });
+      });
+
+      var matrix = document.getElementById("conditionMatrix");
+      var expandConditions = document.getElementById("expandConditions");
+      expandConditions.addEventListener("click", function () {
+        var expanded = matrix.classList.toggle("expanded");
+        expandConditions.setAttribute("aria-expanded", String(expanded));
+        expandConditions.textContent = expanded ? "收起" : "更多";
+      });
+
+      var orientationSky = document.getElementById("orientationSky");
+      var sensorAction = document.getElementById("sensorAction");
+      var sensorDefer = document.getElementById("sensorDefer");
+      var sensorStatusIcon = document.querySelector("#sensorStatusIcon .semantic-icon");
+      var sensorStateDemo = document.getElementById("sensorStateDemo");
+      var sensorTransitionTimer = 0;
+      var sensorCopies = {
+        permission: { quality: "permission", accuracy: "等待方向授权", calibration: "等待授权", title: "让星图跟着手机转", detail: "仅在此页读取设备方向，不上传原始方向数据。", action: "允许方向", inactive: "允许后，转动手机看天空方向", heading: "—", altitude: "—" },
+        ready: { quality: "ready", accuracy: "方向跟随中", calibration: "方向可用", title: "星图正跟着手机转", detail: "手机朝向只改变画面方向，地点与时间保持不变。", action: "重新校准", inactive: "", heading: "182°", altitude: "47°" },
+        calibrating: { quality: "calibrating", accuracy: "轻转手机校准", calibration: "校准中", title: "轻轻转动一下手机", detail: "方向稳定后，星图会自动贴合当前朝向。", action: "再试一次", inactive: "正在找准方向…", heading: "—", altitude: "—" },
+        denied: { quality: "denied", accuracy: "方向权限未开启", calibration: "权限被拒绝", title: "还没拿到方向权限", detail: "可以重试；下方对象列表仍能按当前时间查看。", action: "重试", inactive: "方向权限未开启", heading: "—", altitude: "—" },
+        unavailable: { quality: "unavailable", accuracy: "设备不支持方向", calibration: "传感器不可用", title: "这台设备读不到方向", detail: "仍可使用当前时间的文字对象列表。", action: "重试", inactive: "当前设备没有可用方向", heading: "—", altitude: "—" }
+      };
+      function setSensorState(state) {
+        clearTimeout(sensorTransitionTimer);
+        var copy = sensorCopies[state] || sensorCopies.unavailable;
+        orientationSky.dataset.sensorState = state;
+        document.getElementById("accuracyBadge").dataset.quality = copy.quality;
+        document.getElementById("accuracyState").textContent = copy.accuracy;
+        document.getElementById("calibrationState").textContent = copy.calibration;
+        document.getElementById("sensorStatusTitle").textContent = copy.title;
+        document.getElementById("sensorStatusDetail").textContent = copy.detail;
+        document.getElementById("orientationHeading").textContent = copy.heading;
+        document.getElementById("altitudeValue").textContent = copy.altitude;
+        document.getElementById("orientationInactive").textContent = copy.inactive;
+        sensorAction.textContent = copy.action;
+        sensorStatusIcon.className = "semantic-icon " + ((state === "denied" || state === "unavailable") ? "icon--alert" : "icon--compass");
+        orientationSky.setAttribute("aria-label", state === "ready" ? "方位天空正在跟随手机方向" : copy.inactive);
+        sensorStateDemo.value = state;
+      }
+      sensorAction.addEventListener("click", function () {
+        setSensorState("calibrating");
+        sensorTransitionTimer = window.setTimeout(function () { setSensorState("ready"); }, usesReducedMotion() ? 100 : 900);
+      });
+      sensorDefer.addEventListener("click", function () {
+        var details = document.querySelector('[data-od-id="accessible-object-list"]');
+        details.open = true;
+        details.querySelector("summary").focus({ preventScroll: true });
+      });
+      sensorStateDemo.addEventListener("change", function () { setSensorState(sensorStateDemo.value); });
+      setSensorState("permission");
+    }());
+  </script>
+</body>
+</html>

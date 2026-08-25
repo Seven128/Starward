@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "Sky Canvas 当前组件与状态工作台",
+  "entry": "workbench.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": ["html", "pdf", "zip"],
+  "updatedAt": "2026-08-25T00:00:00.000Z",
+  "metadata": {
+    "currentResource": true,
+    "packageContainedAssets": true,
+    "productionAccepted": false
+  }
+}

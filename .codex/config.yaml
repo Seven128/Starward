@@ -234,6 +234,20 @@ modularity:
       reason: The current weather adapter keeps real-provider request, layered-cloud normalization, attribution and fail-closed error mapping together while provider parity is tested; request/normalization extraction remains bounded debt.
       tracking_issue: WECHAT-MINIAPP-MOD-010
       expiry_condition: Extract provider request and forecast normalization before adding another provider, forecast model or weather field family.
+    - path: docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/generate-current-formal-handoff.mjs
+      category: legacy_migration
+      owner: design-system-maintainers
+      introduced_at: "2026-08-25"
+      reason: This transitional one-resource authoring carrier keeps selected-source copying, complete Fact-universe generation, feasibility binding and two constraint handoffs deterministic while the recovered Open Design project is formalized; it is not production runtime code, and its oversized generateTarget function remains explicit bounded tooling debt.
+      tracking_issue: STARWARD-DRA-MOD-001
+      expiry_condition: Split provider/source packaging, manifest construction, feasibility generation and handoff rendering into focused modules before adding another formal target set, provider or reusable authoring workflow.
+    - path: docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/current-review.js
+      category: fixture_snapshot
+      owner: design-system-maintainers
+      introduced_at: "2026-08-25"
+      reason: This file is an immutable selected-source copy of the reviewed Open Design interaction fixture; rewriting its aggregate event wiring after selection would invalidate the canonical resource identity without improving production modularity, and production code is forbidden from importing it.
+      tracking_issue: STARWARD-DRA-MOD-001
+      expiry_condition: Remove this waiver when a newly selected immutable source replaces the fixture with modular provider output, or split the editable Open Design upstream before any future selection that materially changes this interaction script.
 managed_files:
   - path: AGENTS.md
     strategy: merge-block

@@ -1,0 +1,732 @@
+{
+  "schema_version": "design-resource-implementation-feasibility-v1",
+  "key": "feasibility.operations",
+  "target_ref": "target-operations-sky-canvas-current-constraint",
+  "realization_mode": "mapped_substrate",
+  "source_records": [
+    {
+      "key": "source.operations.platform",
+      "path": "apps/admin-web/index.html",
+      "media_type": "text/html",
+      "sha256": "e6b03df4260f175565a41f3df287e0bc4a2daec3c9e487a753ba479a7d7adbc4",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "technical_platform"
+      ]
+    },
+    {
+      "key": "source.operations.package",
+      "path": "apps/admin-web/package.json",
+      "media_type": "application/json",
+      "sha256": "eb322ad0a17d137cec01d4ad7768c09c7a35f44352caa71a99de9b9e27062696",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "framework_runtime",
+        "ui_system",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.operations.main",
+      "path": "apps/admin-web/src/main.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "61804f3e19296da3c04849a5590cd8c48827851d7d2c3609b8f61b9c59bc59eb",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "route_owner",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.operations.page",
+      "path": "apps/admin-web/src/app/page.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "07b36e994336ba21a3be85de21dfcd97b177571609ea16c4f33241b37a5c613c",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "ui_system",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.operations.styles",
+      "path": "apps/admin-web/src/app/styles.css",
+      "media_type": "text/css",
+      "sha256": "0ad9ba373f7e8d7bfb2ad17f437270574227e21d32fa0a1d878050d6e7c43f45",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "token_theming_adapter",
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    }
+  ],
+  "substrate_observations": [
+    {
+      "kind": "platform",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "browser-web",
+        "version_source_ref": "source.operations.platform"
+      },
+      "source_record_refs": [
+        "source.operations.platform"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "framework_runtime",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "react-vite",
+        "version_source_ref": "source.operations.package"
+      },
+      "source_record_refs": [
+        "source.operations.package"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "ui_system",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "starward-operations-local-react-css",
+        "version_source_ref": "source.operations.page"
+      },
+      "source_record_refs": [
+        "source.operations.package",
+        "source.operations.page"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "token_theming_adapter",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/admin-web/src/app/styles.css"
+        ]
+      },
+      "source_record_refs": [
+        "source.operations.styles"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "component_owner_roots",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/admin-web/src/app"
+        ]
+      },
+      "source_record_refs": [
+        "source.operations.page",
+        "source.operations.styles"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "route_owner_roots",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/admin-web/src"
+        ]
+      },
+      "source_record_refs": [
+        "source.operations.main"
+      ],
+      "reason": null
+    }
+  ],
+  "condition_model": {
+    "kind": "explicit_conditions_v1",
+    "profiles": [
+      {
+        "key": "profile.operations.current",
+        "condition_refs": [
+          "condition-operations-desktop-1440x900-current"
+        ]
+      }
+    ]
+  },
+  "component_family_cells": [
+    {
+      "key": "feasibility-cell.operations.family-operations-shell",
+      "component_family_ref": "subject.operations.family.operations-shell",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-operations-shell.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-operations-shell.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-moderation-queue",
+      "component_family_ref": "subject.operations.family.moderation-queue",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-moderation-queue.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-moderation-queue.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-moderation-case",
+      "component_family_ref": "subject.operations.family.moderation-case",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-moderation-case.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-moderation-case.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-media-review",
+      "component_family_ref": "subject.operations.family.media-review",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-media-review.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-media-review.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-canonical-merge",
+      "component_family_ref": "subject.operations.family.canonical-merge",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-canonical-merge.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-canonical-merge.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-publication-assessment",
+      "component_family_ref": "subject.operations.family.publication-assessment",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-publication-assessment.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-publication-assessment.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-replacement-retirement",
+      "component_family_ref": "subject.operations.family.replacement-retirement",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-replacement-retirement.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-replacement-retirement.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-audit-timeline",
+      "component_family_ref": "subject.operations.family.audit-timeline",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-audit-timeline.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-audit-timeline.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-operations-status-recovery",
+      "component_family_ref": "subject.operations.family.operations-status-recovery",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-operations-status-recovery.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-operations-status-recovery.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.page",
+            "source.operations.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.operations.family-operations-semantic-icon",
+      "component_family_ref": "subject.operations.family.operations-semantic-icon",
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.operations.current",
+      "design_fact_refs": [
+        "fact.subject-operations-family-operations-semantic-icon.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.operations.family-operations-semantic-icon.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "react.component",
+            "html.semantic-elements",
+            "starward.operations-local-css"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/admin-web/src/app/styles.css",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.operations.styles",
+            "source.operations.package",
+            "source.operations.page"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "The current admin owner is broader than the selected moderation workbench and must preserve server authority, audit and error semantics during extension."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    }
+  ],
+  "blockers": []
+}

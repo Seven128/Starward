@@ -144,20 +144,20 @@ components:
 - Starward is a mobile-first decision product, not a generic weather dashboard. It connects tonight's go/no-go conclusion, place choice, departure time, best observing window, route, risk, equipment, and on-site observation into one path.
 - The native App profile uses a blue, professionally skeuomorphic outdoor-instrument system. The independently adopted WeChat Mini Program profile is defined later in this file and does not inherit App values, components, layouts, typography, motion constants, or targets.
 - Information follows progressive disclosure: first the conclusion, then an actionable plan, then the professional evidence.
-- This file is the sole authored visual authority and exact-value token source. Its YAML front matter owns the native App profile; `## WeChat Mini Program — Soft Instruments v1` owns the independent Mini Program profile. `packages/ui-system/src/tokens.ts` consumes only the App profile, and any future Mini Program adapter must consume only the named Mini Program section.
+- This file is the sole authored visual authority and exact-value token source. Its YAML front matter owns the native App profile; `## WeChat Mini Program — Sky Canvas v1` owns the independent Mini Program profile. `packages/ui-system/src/tokens.ts` consumes only the App profile, and the Mini Program adapter may consume only the named Mini Program section.
 - Design Authority status: configured and adopted for two independent owner-selected target profiles: native App and WeChat Mini Program. Surface ownership still belongs to `project_context/**`, and neither profile alone claims production/runtime acceptance.
 
 ### Design Authority Index
 
 - Authored exact-value token source: selected — this file. The YAML front matter is scoped to the native App profile; the exact Mini Program tables and contracts live only in the named Mini Program section below.
-- Generation direction and generated token targets: App profile `DESIGN.md` YAML → `packages/ui-system/src/tokens.ts`; future Mini Program profile `DESIGN.md#wechat-mini-program--soft-instruments-v1` → one framework adapter only after an explicit runtime bootstrap. TypeScript, WXSS, CSS, JSON, HTML, kits, manifests, screenshots, and provider files are consumers or verification inputs, never co-equal token authorities.
+- Generation direction and generated token targets: App profile `DESIGN.md` YAML → `packages/ui-system/src/tokens.ts`; Mini Program profile `DESIGN.md#wechat-mini-program--sky-canvas-v1` → its single framework adapter. TypeScript, WXSS, CSS, JSON, HTML, kits, manifests, screenshots, and provider files are consumers, candidates or verification inputs, never co-equal token authorities.
 - Active target (native App): `target.system.starward-blue-skeuomorphic-2026-07-29`, selected by the owner on 2026-07-29 with the explicit instruction “选定这个候选”. It controls the native App visual language, tokens, three modes, physical-material rendering, component appearance, state posture, accessibility posture, and motion posture. It does not replace product semantics or claim native/runtime conformance.
-- Active target (WeChat Mini Program): `target.system.wechat-miniapp-soft-instruments-2026-08-05`, selected by the owner on 2026-08-05 with the explicit instruction “采用此候选”. It controls the independent Mini Program visual language, exact role-isomorphic day/night/observation tokens, card/icon grammar, layout rhythm, component states, motion, accessibility, and asset posture defined in this file. It does not define a Mini Program Product Surface, Screen Contract, framework, navigation destinations, service boundary, runtime, or acceptance result.
-- Mini Program selected source: `docs/design-resources/miniapp-design-system-2026-08-05/candidate-design-brief.md` SHA-256 `ab1faeb96a3e52125b19fdf8f224caf6cee0db79cf16a9a12f86c5af49991745`; source index `docs/design-resources/miniapp-design-system-2026-08-05/source-index.md` SHA-256 `80cb69b9501b556ca8c186c770e5257ee5136e031e52ce54c42d7298eba3e3f7`. The candidate snapshot's pre-selection status line is historical lifecycle text; this canonical record owns its selected/adopted interpretation without altering the selected candidate bytes.
-- Mini Program provider provenance: Open Design `0.16.1`, design-system ID `user:soft-instruments`, review workspace/project `ds-soft-instruments`, provider body SHA-256 `ab1faeb96a3e52125b19fdf8f224caf6cee0db79cf16a9a12f86c5af49991745`. The earlier generic desktop showcase/UI-kit/token scaffold and rejected revision `01e159b2-6529-4f8b-8916-67a65576a3e1` are not selected resources. After owner selection, the provider body was synchronized exactly and published; the project binding reports the matching design-system ID.
-- Mini Program reference interpretation: all eight user-supplied images are inspiration, not exact targets or constraints. Their card softness, quiet bottom-navigation symbol posture, selective friendly 3D-object grammar, and day/night/red condition themes inform the system; their logos, poster/device composition, sample data, phone frames, branded photography, wording, and exact layouts are not adopted. The App design system and every App/Admin target are explicitly excluded as Mini Program inputs.
-- Mini Program condition coverage: day, night, and strict black/warm-red observation; `750rpx` reference geometry with safe-area/menu-capsule adaptation; responsive one/two-column composition; enlarged text; `88rpx` minimum targets; reduced motion; focus/pressed/disabled/loading/empty/stale/offline/error/success; mode-correct cold start and asset fallback. These are design contracts, not production conformance evidence.
-- Mini Program editable upstream and update route: revise Open Design system `user:soft-instruments` in project `ds-soft-instruments`, create and review a new immutable candidate/digest, obtain explicit selection, then re-adopt its values and record here. Never edit a generated runtime adapter to change the system, overwrite the selected candidate, or import values from the native App profile.
+- Active target (WeChat Mini Program): `target.system.wechat-miniapp-sky-canvas-2026-08-25`, selected by the owner on 2026-08-25 through the explicit choice “天空画布 Sky Canvas”. It controls the independent Mini Program canvas-first visual language, exact day/night/observation roles, density, geometry, component grammar, motion, accessibility, and asset posture defined below. It does not define Product Surface, route, data, service, runtime or acceptance truth.
+- Mini Program selected source: `docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-provider-design-system.md` SHA-256 `03c300a6cfd1b23e0b84b72baaa26081eef0f958de515b75413be771029499b1`; source index `docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/source-index.md` SHA-256 `a602a572b93d3aa1b0e51e320b4c25e14267d43b131109844c7accb4e5efbc2b`. The snapshot’s pre-selection lifecycle text is historical; this record owns its adopted interpretation without altering those bytes.
+- Mini Program provider provenance: Open Design `0.20.1`, published design-system ID `user:starward-sky-canvas-candidate-c`, generation job `ee08bc8c-1014-407c-8ae5-fd0c7473be3d`, bound project `starward-sky-canvas-core-2026-08-25`, provider body SHA-256 `03c300a6cfd1b23e0b84b72baaa26081eef0f958de515b75413be771029499b1`.
+- Mini Program reference interpretation: map, sky, aligned time evidence and the decision are the visual subject. Soft Instruments, its eight references, 3D object grammar and old selected page resource remain historical rollback/traceability only; their visual treatment is not mixed into Sky Canvas. Native App and App/Admin targets are excluded inputs.
+- Mini Program condition coverage: day, night, and separately authored strict black/warm-red observation; 320/375/390/430 CSS-pixel equivalents with `750rpx` implementation mapping, safe-area/menu-capsule adaptation, enlarged text, `88rpx` minimum targets, reduced motion, focus/pressed/disabled/loading/empty/stale/partial/offline/error/success, mode-correct cold start and asset fallback. These are design contracts, not production conformance evidence.
+- Mini Program editable upstream and update route: revise Open Design system `user:starward-sky-canvas-candidate-c`, create and review a new immutable candidate/digest, obtain explicit selection, then re-adopt its values and record here. Never edit a generated runtime adapter to change the system, overwrite the selected source, or import values from the native App profile.
 - Provider: Open Design `0.16.1`; editable design-system ID `user:starward-2026-07-29`; bound workspace/project ID `ds-starward-2026-07-29`; selected provider body SHA-256 `280b1d3726e181591f19b6ddef96ab5d32fb61c5302af07fcee194b32f135f70`. The provider exposed no revision records at selection, so no revision ID could be accepted; the provider design-system metadata is published and this record owns project adoption.
 - Selected package integrity: `validation-manifest.json` SHA-256 `ae9d23d7d2a127b5ea1feb1a86cebd1b5a33dc1294de0ad40c9e4803a8a9be8f`. The package contained 62 required files, 16 HTML entries, role-isomorphic planning/night/observation specimens, 122 audit anchors, six-value observation pixels, and no package audit error or warning. Audit anchors are traceability markers, not a count of product controls.
 - Selection evidence was limited to the explicit owner brief and three supplied visual references: day image SHA-256 `62d286b330ce48cac73e1b1351e6c35502aac46989af971ee502466842d49fe0`, night image SHA-256 `5d5ec492c02e8d67b502ed7f672f1b8976da61d56f2702fbd7a59bbcb1ee3b5d`, and observation image SHA-256 `d8de918d08dab0f8d6f84bb097076671186a61a1494637f1e40b2fc7b97b8150`. Their logo, wording, poster/device composition, sample data, and proprietary imagery are not adopted.
@@ -279,235 +279,200 @@ components:
 - Don't invent a logo, illustration, or image that is not grounded in project evidence.
 - Don't lock input until an animation finishes, animate from an obsolete target, use a gesture-only destructive action without recovery, or let motion mask stale/unknown data.
 
-## WeChat Mini Program — Soft Instruments v1
+## WeChat Mini Program — Sky Canvas v1
 
-This section is the complete canonical visual-system profile for `target.system.wechat-miniapp-soft-instruments-2026-08-05`. It was independently authored from the eight indexed user references, the explicit Mini Program brief, and bounded platform/product research. It does not inherit from or adapt the native App profile above. Where a shared English role name happens to exist in both profiles, identity of the name does not imply identity of its value or implementation.
+This section is the complete canonical visual-system profile for `target.system.wechat-miniapp-sky-canvas-2026-08-25`. It is independent from the native App profile above. Product semantics, route ownership, data truth and failure behavior remain owned by Context and the Mini Program Source; this section owns exact visual roles and their system-level projection.
 
-The concept is **soft instruments under three skies**:
+### Adoption record
 
-- **Instrument clarity** for maps, conditions, time, route, state, and action.
-- **Soft collectible objects** for selected astronomy/outdoor subjects.
-- **Three skies**—day, night, and observation red—using one semantic component grammar.
+- Selection: owner-selected on 2026-08-25 through the explicit choice “天空画布 Sky Canvas”.
+- Immutable selected source: `docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-provider-design-system.md`, SHA-256 `03c300a6cfd1b23e0b84b72baaa26081eef0f958de515b75413be771029499b1`.
+- Source index: `docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/source-index.md`, SHA-256 `a602a572b93d3aa1b0e51e320b4c25e14267d43b131109844c7accb4e5efbc2b`.
+- Provider lineage: Open Design `0.20.1`, published design-system ID `user:starward-sky-canvas-candidate-c`, generation job `ee08bc8c-1014-407c-8ae5-fd0c7473be3d`, bound review project `starward-sky-canvas-core-2026-08-25`.
+- The provider snapshot retains its pre-selection lifecycle text unchanged; this canonical record owns the selected/adopted interpretation.
+- The prior `target.system.wechat-miniapp-soft-instruments-2026-08-05`, its selected source, and `target-miniapp-drift-correction-selected-constraint-v3` remain immutable historical rollback/traceability inputs. Their visual styling, exact geometry and fidelity constraints are inactive for current Mini Program work. Stable product, information and interaction meaning continues through the owning Context.
+- Current selected screen/interaction constraints are `target-miniapp-sky-canvas-current-constraint` and `target-operations-sky-canvas-current-constraint`; their sole canonical adoption records live in `project_context/areas/main/screen-contracts/wechat-miniapp.md` and `operations.md`. They constrain declared composition, component/state grammar and interaction but are not pixel-exact targets, production truth or acceptance evidence; this system record retains only their stable keys and owner anchors.
+- Owner-directed application amendment (2026-08-25): keep the selected Sky Canvas identity and exact mode-role palette, while making its in-scope Mini Program application distinctly outdoor, energetic, lightweight, concise and gently playful. Vitality comes from route/sky continuity, selective trail-green and lunar-gold emphasis, friendly rounded geometry, semantic icons and short causal motion—not from dense administrative panels, decorative type, childish illustration, gradients, glow or ambient particles. This amendment governs the selected current implementation constraints and later implementation without transferring token or Product Surface ownership to them.
+- Editable update route: revise `user:starward-sky-canvas-candidate-c`, create a new immutable source version and digest, obtain explicit owner selection, then update this canonical record. Never overwrite the selected snapshot or change values in a generated WXSS/TypeScript adapter.
+A map-and-sky-first canvas system: minimal chrome, spatial continuity and selective color for time, moon and opportunity.
 
-The Mini Program should feel calm, trustworthy, compact, and gently tactile. Functional information remains precise and planar; 3D character is selective. It must not become a generic weather dashboard, a desktop SaaS surface, or a toy-like all-skeuomorphic interface.
+### 1. Visual Theme & Atmosphere
 
-### Mini Program foundations
+The map and sky are the interface. Product chrome recedes to a few solid floating controls and an edge sheet. Day is cool neutral; night is deep blue-black with restrained indigo and lunar gold. It feels cinematic through scale, continuity and a few bounded semantic micro-interactions, never through ambient gradients, looping particles or glow.
 
-- Author geometry in `rpx` against a `750rpx` reference canvas, then reflow for actual supported phones and runtime safe-area/menu-capsule geometry.
-- Base step: `8rpx`; page inset: `32rpx`; compact inset: `24rpx`; section gap: `40rpx`; card/grid gap: `24rpx`; card padding: `28rpx`; dense-row padding: `20rpx 24rpx`.
-- Default content is one readable column. A two-column feature grid requires at least `304rpx` per tile after gaps and collapses when available width or enlarged text would clip content.
-- Center expanded content within `960rpx`; maps and owned data matrices may use the full safe width. Horizontal page scroll is forbidden; only an explicitly owned data matrix may scroll horizontally with identifiable row labels and units.
-- Minimum interactive region: `88rpx × 88rpx`. A visibly compact `64rpx` chip is allowed only inside an `88rpx` wrapper with safe separation from adjacent controls.
+This is the adopted visual-system profile for a 320–430 CSS-pixel equivalent mobile Mini Program. It must make a user feel that the interface is a trustworthy night-field decision instrument, not a generic weather dashboard, travel marketplace or decorative star poster.
 
-| Spacing role | Value |
-| --- | ---: |
-| `space-0` | `0` |
-| `space-1` | `8rpx` |
-| `space-2` | `16rpx` |
-| `space-3` | `24rpx` |
-| `space-4` | `32rpx` |
-| `space-5` | `40rpx` |
-| `space-6` | `48rpx` |
-| `space-8` | `64rpx` |
+Primary content priority:
+1. map / sky / aligned time evidence;
+2. the decision and next action;
+3. supporting place detail and provenance.
 
-| Radius role | Value |
-| --- | ---: |
-| `radius-xs` | `12rpx` |
-| `radius-sm` | `20rpx` |
-| `radius-md` | `28rpx` |
-| `radius-lg` | `40rpx` |
-| `radius-pill` | `999rpx` |
+Preserve the product topology and state semantics, but do not preserve the current Soft Instruments visual treatment.
 
-| Size/border role | Value | Constraint |
-| --- | ---: | --- |
-| `size-icon-glyph` | `40rpx` | Tier-A visible glyph |
-| `size-icon-box` | `48rpx` | Tier-A optical grid |
-| `size-hit-min` | `88rpx` | minimum interactive region |
-| `size-control` | `88rpx` | standard button and compact field |
-| `size-control-lg` | `96rpx` | primary page action and full field |
-| `size-nav-item` | `112rpx` | bottom-navigation content height before safe area |
-| `border-hairline` | `1rpx` | decorative/group boundary |
-| `border-selected` | `2rpx` | selected/focused structural boundary |
-| `focus-ring` | `4rpx` | `4rpx` offset |
+### 2. Color
 
-Elevation is condition-specific:
+<!-- OPEN-DESIGN-PREVIEW-FOUNDATIONS -->
+- Page Background: #F5F7FA
+- Surface: #FFFFFF
+- Heading Ink: #111827
+- Primary Brand Accent: #536DFE
+- Border Rule: #DCE2EA
+- Muted Text: #667085
+- Night Canvas: #050914
+- Night Surface: #0B1222
+- Night Text: #EEF2FF
+- Night Accent: #7E8FFF
+- Observation Canvas: #000000
+- Observation Primary: #FF3B30
 
-- Day standard card: `0 12rpx 36rpx rgba(25, 61, 102, 0.10), 0 2rpx 8rpx rgba(25, 61, 102, 0.06)` plus a `1rpx` cool border.
-- Day floating control: `0 8rpx 24rpx rgba(21, 55, 94, 0.14)`.
-- Night uses surface luminance and border before any compact dark shadow; blue glow is forbidden.
-- Observation uses no ambient shadow. Depth comes from black/dark-red surface steps and a warm-red border.
-- Do not stack elevated cards. Use whitespace, headings, dividers, grouped rows, or one flat inset surface.
+The first four swatches define the candidate's primary preview.
 
-Disabled controls retain readable text and full geometry through `surface-subtle`, `text-tertiary`, a visible boundary, and no elevation; essential labels are not dimmed with global opacity. Pressed overlays use the local `primary` at `8%` in day, `12%` in night, and `16%` in observation. Loading preserves control width and label position.
+| Role | Day | Night | Observation |
+| --- | --- | --- | --- |
+| canvas | #F5F7FA | #050914 | #000000 |
+| surface | #FFFFFF | #0B1222 | #120000 |
+| text-primary | #111827 | #EEF2FF | #FF6A58 |
+| primary-action | #536DFE | #7E8FFF | #FF3B30 |
+| text-secondary | #667085 | #94A0B8 | #C54438 |
+| border / grid | #DCE2EA | #1D2A45 | #551410 |
+| positive | #23866A | #55C7A5 | #FF6A58 |
+| warning | #A56A14 | #D8AA58 | #FF8A72 |
+| blocker | #C53F48 | #F06A75 | #FF3B30 |
+| focus | #3455DB | #9BA8FF | #FF8A72 |
 
-### Mini Program colors
+Observation mode is a separately authored palette, not a color filter. Every background, placeholder, map control, modal, error and loading state stays inside black and warm-red roles. Selection and status never rely on color alone.
 
-All three modes expose exactly the same eighteen semantic roles. A mode changes values and asset variants, never the role set.
+Solid `primary-action` label colors are exact derived accessibility roles: day `#050914`, night `#050914`, observation `#000000`. Day/night `text-secondary` may carry normal text; observation `text-secondary` is limited to large labels, short metadata or graphical boundaries, while normal-sized explanatory text uses `text-primary`. These restrictions keep normal text at `4.5:1` or better without changing the selected palette.
 
-#### Day
+Indigo identifies selected place/time and primary action. Lunar gold is reserved for moon/sun events plus the narrowly scoped selected-choice and Favorite confirmation stars defined below; those stars cannot become ambient decoration. There is no generic purple gradient and no halo around ordinary controls. Large canvas areas remain quiet.
 
-| Role | Value |
-| --- | --- |
-| `canvas` | `#F5F8FC` |
-| `surface` | `#FFFFFF` |
-| `surface-subtle` | `#EEF4FA` |
-| `surface-elevated` | `#FFFFFF` |
-| `text-primary` | `#10233F` |
-| `text-secondary` | `#526A84` |
-| `text-tertiary` | `#5C7186` |
-| `border` | `#D4E1EE` |
-| `primary` | `#1769D2` |
-| `primary-pressed` | `#0F56AE` |
-| `on-primary` | `#FFFFFF` |
-| `accent-cyan` | `#69C7F5` |
-| `accent-violet` | `#707CF2` |
-| `accent-warm` | `#EED7B1` |
-| `success` | `#238B62` |
-| `warning` | `#B86A12` |
-| `danger` | `#C83F49` |
-| `focus` | `#0B63CE` |
+The outdoor-vitality composition uses the existing role set rather than inventing another palette: periwinkle/indigo carries selection and time, `positive` provides a restrained trail/terrain green, `warning` and the existing lunar-gold roles carry sun/moon warmth, and neutral canvas/surface roles keep the result light. A local region uses at most two chromatic accents in addition to semantic warning/error; every accent has an information or action job.
 
-#### Night
+Compact-choice roles are exact component colors rather than a second palette:
 
-| Role | Value |
-| --- | --- |
-| `canvas` | `#050A14` |
-| `surface` | `#0B1626` |
-| `surface-subtle` | `#102238` |
-| `surface-elevated` | `#162B45` |
-| `text-primary` | `#EEF5FF` |
-| `text-secondary` | `#A9BCD2` |
-| `text-tertiary` | `#7F96AF` |
-| `border` | `#29425F` |
-| `primary` | `#5AA7FF` |
-| `primary-pressed` | `#3389EA` |
-| `on-primary` | `#03101F` |
-| `accent-cyan` | `#67C4E9` |
-| `accent-violet` | `#8A8EF4` |
-| `accent-warm` | `#D8BE94` |
-| `success` | `#5CC99A` |
-| `warning` | `#F0B55B` |
-| `danger` | `#FF7B82` |
-| `focus` | `#82BCFF` |
+| Compact choice role | Day | Night | Observation |
+| --- | --- | --- | --- |
+| selected surface | #F3F4FF | #12182B | #120000 |
+| selected border | #AAB4FF | #7682D1 | #8A281F |
+| selected label | #4254C7 | #DCE1FF | #FF8A72 |
+| clipped star | #F1D58A | #F1D58A | #FF8A72 |
 
-#### Observation red
+Selection remains legible without color: the border, clipped-star geometry, programmatic selected state and label state agree. Observation never imports the day/night yellow; its equivalent star remains inside the closed warm-red palette.
 
-| Role | Value |
-| --- | --- |
-| `canvas` | `#000000` |
-| `surface` | `#0B0101` |
-| `surface-subtle` | `#150303` |
-| `surface-elevated` | `#200505` |
-| `text-primary` | `#F4554E` |
-| `text-secondary` | `#E44A43` |
-| `text-tertiary` | `#D84A43` |
-| `border` | `#4D1716` |
-| `primary` | `#FF514A` |
-| `primary-pressed` | `#D83B36` |
-| `on-primary` | `#000000` |
-| `accent-cyan` | `#B83A35` |
-| `accent-violet` | `#C4403A` |
-| `accent-warm` | `#D94842` |
-| `success` | `#D84A43` |
-| `warning` | `#F05A52` |
-| `danger` | `#FF6A62` |
-| `focus` | `#FF776F` |
+### 3. Typography
 
-Observation is a closed black/warm-red condition for every controllable surface, icon, focus, status, loading/error state, map overlay, transition, and authored image/3D variant. Do not render blue, green, cyan, violet, yellow, neutral gray, or white; do not hide day assets under red opacity or apply a blanket filter. Set the destination canvas before the first visible frame. An unthemeable OS/vendor surface needs a warning and safe cancel/return path before handoff.
+Display/body/control: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif. Data: 'SFMono-Regular', 'Roboto Mono', monospace. The Mini Program uses the native CJK system face rather than a downloaded display font; weight, size, line height and hierarchy—not a novel typeface—carry its character. Tight display tracking is limited to the single place/night identity. Body and controls stay compact; tabular numerics anchor the time layers.
 
-`text-*` owns readable text. Accent and status roles may reinforce an icon, chart mark, short emphasis, or boundary but never replace body text. Success, warning, and danger always include label/icon/shape/position; the observation aliases intentionally stay red and cannot communicate meaning by hue. Charts pair `accent-cyan` with solid/circle, `accent-violet` with dashed/diamond, and `accent-warm` with dotted/triangle; legends repeat label, shape, and line style.
+Avoid the administrative tone created when every heading, action and field label uses the same heavy weight. Body and helper copy use 400–500, ordinary actions use 500–600, section headings use 600, and 650–700 is reserved for the one display identity, a decisive conclusion or a primary time value. The tabular data role extends consistently to local time, angles, percentages, distance and wind speed; it does not spread to ordinary Chinese prose. Outdoor character comes primarily from hierarchy, icons, spatial rhythm and motion, so Chinese text remains familiar and easy to render on both WeChat platforms.
 
-### Mini Program typography and content
+Use at most five roles:
+- display identity: one place/night title only;
+- section heading;
+- body/action;
+- caption/source;
+- tabular data / units.
 
-Use the license-safe native stack `-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif`. No bundled display font is required for core readability.
+At the 750rpx design width, ordinary controls use 24rpx/32rpx at weight 500, body uses 28rpx/42rpx at weight 400, section headings use 30rpx/42rpx at weight 600, and the one display identity uses 44rpx/52rpx at weight 650–700. Do not simulate hierarchy by repeating oversized bold text.
 
-| Role | Size / line | Weight | Use |
-| --- | --- | ---: | --- |
-| `display` | `48rpx / 64rpx` | 700 | one short recommendation or hero value |
-| `page-title` | `36rpx / 48rpx` | 700 | page title |
-| `section-title` | `30rpx / 42rpx` | 600 | section heading |
-| `body` | `28rpx / 42rpx` | 400 | primary reading text |
-| `label` | `24rpx / 34rpx` | 500 | controls, navigation, compact metadata |
-| `caption` | `22rpx / 32rpx` | 400 | explanation and timestamps |
-| `data` | `28rpx / 40rpx` | 500 | time, percentage, angle, distance, aligned values |
+Chinese long labels, large text and numeric alignment must be tested. Units are visually subordinate but never detached from their values.
 
-- Use tabular numerals where supported. Keep values and units as separate semantic spans such as `28 km`, `45 分钟`, `20:30`, and `86%`.
-- Titles wrap before truncation. Decision, warning, uncertainty, source/update time, and recovery text reflow without line clamps or font shrinking.
-- Use calm, concrete uncertainty language such as `预计`, `可能`, and `数据更新于`; never promise perfect visibility.
-- Empty, stale, offline, permission-denied, and partial states name what happened, what remains available, and the next safe action.
+### 4. Spacing, Geometry & Density
 
-### Mini Program icon architecture
+Canvas-first. Radius scale 8/16/24rpx remains the compact base. The outdoor-vitality application adds 32rpx friendly information/permission panels and 48rpx top corners for edge sheets; pills remain reserved for short choices/status. Content inside a sheet stays mostly flat and grouped by spacing rather than a divider after every sentence. Shadows are restricted to the separation of one floating control layer from the map. Spacing 8/16/24/32rpx.
 
-#### Tier A — functional symbols
+- Touch target: minimum 88rpx × 88rpx.
+- Visible geometry may be smaller than its hit region: compact choices use a 60–64rpx visual capsule centered inside the 88rpx minimum hit height, with 18–20rpx horizontal visual padding, 12rpx visual gaps and a 16rpx capsule radius.
+- No elevated card inside another elevated card.
+- One local decision layer has one visually dominant action.
+- Repeated data uses rows, bands, tracks or matrices rather than one card per value.
+- Safe-area and WeChat capsule clearance are structural, not decorative padding.
 
-- Use for navigation, back, close, search, filter, location, layers, share, favorite, refresh, state, and form actions.
-- Base grid `48rpx`; visible glyph `40rpx`; rounded outline stroke `3rpx`; round caps/joins; optically centered simple geometry.
-- Selected navigation may combine one filled focal shape with an outline shell. Inactive stays outline-only. Icon plus text is required, and selection changes weight/fill/indicator as well as color.
-- Functional symbols never use 3D perspective, gloss, cast shadows, or texture.
+### 5. Layout & Composition
 
-#### Tier B — semantic 3D subjects
+Full-bleed map and sky canvases with edge-owned controls. A bottom sheet moves through peek, decision and evidence extents while preserving the visual position of the selected spot. Spot Night keeps the sky/arc visible and lets aligned conditions rise from the bottom.
 
-Allowed subjects are four-point star, five-point star, tent, telescope, binoculars, camera, hiking backpack, and a gender-neutral avatar. They are for category entry, equipment recommendation, empty-state focal art, onboarding, or one hero moment—not back/close/filter/status and not every row.
+### North-star surfaces
 
-The grammar is a large readable silhouette; subtle three-quarter/isometric view; rounded construction; smooth polymer/enamel; localized highlights; soft top-left key light; blue-white body with restrained cyan/deep-blue/beige/blue-violet accents; one compact contact shadow; transparent bounds; no neon halo. One icon has one dominant object. Four/five-point stars remain broad and rounded; tent is a readable A-frame; telescope has a stable three-leg mount; binoculars retain two joined barrels; camera has one dominant lens; backpack retains lid/straps/front pocket; avatar avoids gender-coded hair, makeup, clothing, and biometric realism.
+- Map: full visual work area; top search; a compact row of applied filters; one analysis-layer control; bottom spot callout.
+- Finder: a map-parallel `closed → peek → expanded` bottom sheet. Quick filters live only beneath Search and commit immediately; the Sheet contains grouped advanced filters plus the two result partitions, never a duplicate quick-filter row or explanatory title block.
+- Spot Detail: place identity and tonight decision above route, openness, safety, facilities and evidence.
+- Spot Night: night ribbon, decision summary, shared time rail, aligned condition bands, targets, sky canvas and evidence drawer.
+- Contribution: progressive form, upload state and review history; visually secondary to the main decision chain.
 
-Canonical day master prompt:
+### 6. Component Grammar
 
-> Create one isolated minimalist 3D **[SUBJECT]** icon for a friendly astronomy/outdoor Mini Program. Use a large unmistakable silhouette, rounded construction, subtle three-quarter/isometric perspective, smooth polymer-and-enamel material, soft top-left key light, restrained blue/white body with cyan, deep-blue, beige, or blue-violet accents, one compact contact shadow, transparent background, centered composition, and generous clear space. Warm, handcrafted, modern digital rendering; no text, logo, brand, interface frame, character franchise, or scenery.
+Search is one prominent floating field; applied quick filters form one compact row below it. The Finder Sheet is absent on the clean default map, enters `peek` after the first quick-filter selection or committed query, and reaches `expanded` through direct drag or a tap on its named handle. The visible handle is quiet, while its 88rpx hit region and programmatic expanded state provide the non-gesture path. There is no visible “展开筛选” button and no “找今晚的观星点” heading inside the Sheet. Quick filters never repeat inside it. Marker selection expands one bottom callout, not a popup stack. Primary buttons are solid and compact; quiet rows and icon actions stay borderless when their larger hit region is already clear. Evidence appears in an edge drawer; secondary metadata stays off the primary canvas.
 
-- Night keeps geometry/camera identical, reduces white/highlight luminance, deepens blue, and uses a compact dark contact shadow without glow.
-- Observation rerenders identical geometry only in the observation black/warm-red palette. No inherited cool/white pixels, bloom, or filter.
-- Negative prompt: photorealism, scratches, glare, brand, text, watermark, busy background, multiple dominant objects, fragile details, neon, glow, lens flare, particles, hard shadow, or protected studio/character imitation.
-- Display target `128rpx–176rpx`; verified `2x` master; default budget `≤72KB` per tile and `≤160KB` per hero after visual QA.
+Compact choice chips keep an 88rpx minimum hit region while the visible capsule is only 60–64rpx high. Their 24rpx/32rpx, weight-500 labels, 18–20rpx horizontal padding and 12rpx gaps are shared across Finder and Observing Conditions. Selected day/night choices use the lighter periwinkle roles above. A 36–40rpx solid rounded five-point star is optically half-clipped at the visual capsule's top-right corner: its center stays at the corner, the visible mass occupies roughly one quarter of the capsule without covering the label, and overflow outside the capsule is clipped. It enters once in 180ms from 0 opacity, 0.55 scale and −18deg rotation; deselection reverses in 140ms. It never changes layout or hit geometry. Observation substitutes the warm-red star role. Reduced motion uses a ≤100ms color/opacity state change with no scale or rotation.
 
-### Mini Program component and interaction contracts
+The Spot Favorite is a borderless 88rpx hit target containing a 48–52rpx star. Inactive night mode is a white outline with a transparent center; active is a solid pale-yellow star. A successful activation may run one interruptible, non-looping confirmation ritual within a 192rpx effect stage that does not intercept input: the main star rotates while easing to 0.92 scale and filling, a short arc tail appears, and at most three 12/16/20rpx satellite meteors enter on distinct curved paths and settle around it. The combined visible satellite area stays below roughly 45% of the main star, distance lowers their opacity, and each retains a short tapered static tail after settling so the main star remains dominant. Total activation is about 420ms; no element keeps rotating, glowing or orbiting while active. Deactivation takes 180–220ms, returns the main star to its base scale and fades the fill, tails and satellites. Rapid retargeting starts from the live presentation state and queues nothing. Observation uses only warm-red equivalents; reduced motion removes travel, rotation and meteors and completes fill/opacity in ≤100ms. A failed optimistic Favorite commit visibly retargets to the server state and uses shared notification feedback.
 
-| Component | Required contract |
-| --- | --- |
-| Page shell | safe top/bottom and capsule clearance; mode-correct first frame; loading/offline/permission boundary |
-| Standard card | `radius-md`, `28rpx` padding, `1rpx` border; static or whole-card target; no nested elevation |
-| Feature tile | one Tier-B object, short label, optional two-line explanation; whole tile owns interaction |
-| Button | primary/secondary/quiet/destructive, optional Tier-A icon; default/pressed/focus/disabled/loading/success/error |
-| Icon action | `40rpx` glyph in `88rpx` hit region with accessible name; selected is not color-only |
-| Chip/segment | single/multi select with label and optional count/check; active value stays discoverable |
-| Field/list cell | label, value/input, helper/error, optional one trailing action; state space reserves geometry |
-| Bottom navigation | three to five destinations only after Product Surface approval; icon + label; safe-area reserved |
-| Sheet/dialog | title/content/actions/close route; contained read/focus order; interruptible sheet drag; explicit destructive confirmation |
-| Banner/toast | banner for persistent/actionable state; toast only for non-critical acknowledgement, never sole recovery |
-| Empty/skeleton | final geometry reserved; optional one Tier-B object; no bright shimmer in night/observation |
-| Data matrix | aligned rows/time columns/values/units/legend/source/update time; owned scroll; stale/partial/missing cells |
-| Map | solid controls and Tier-A icons; marker selection uses shape/label; loading/offline/permission are explicit |
-| Equipment tile | Tier-B subject plus name and required/readiness label; optional/required/packed/missing is non-color encoded |
+Spot Detail exposes the astronomy child once as a flat, whole-row `今晚夜空` entry immediately after the Tonight decision and before the segment tabs. The row is 104–112rpx high, has no large primary fill, and contains one Tier-A horizon/constellation icon, label, secondary selected-time summary and trailing chevron. The whole row is the action; the Favorite star is never reused for this route.
 
-One local decision layer has at most one visually dominant primary action. One row has at most one persistent trailing action. A press begins feedback on touch-down, commits once on valid release, and never commits after drag-away/cancel/disable. Cards cannot contain nested pressable actions without explicit event/focus ownership. Critical actions cannot exist only behind a hidden swipe.
+Required shared families:
+- search field and suggestion/result rows;
+- quick chip, grouped filter choice and committed-filter summary;
+- sheet, dialog and persistent banner;
+- map marker, selected marker, callout and layer legend;
+- decision summary, primary/backup window and blocker;
+- night ribbon, time rail, condition band, sun/moon events and evidence drawer;
+- upload item, submission status and moderation feedback;
+- orientation entry, calibration, accuracy, permission/recovery state and accessible celestial-object list. Direction-control semantics remain owned by the Screen Contract; the current Spot Night surface is sensor-follow-only.
 
-Day/night may follow system or an explicit preference. Observation is explicit and never inferred only from sunset. If a field session ended in observation mode, bootstrap black/red until deliberate exit to prevent a cold-start white flash. Route, scroll, selection, input, and pending task state survive mode changes.
+Generic Search, Filter, Chevron, Clock, Compass, Route, Parking, Facility, Cloud, Rain, Wind and Moon symbols use one coherent Tier-A monoline icon source through the Mini Program semantic-icon adapter. Domain-specific moon-phase, horizon, galaxy and meteor-radiant resources may extend that adapter. A heavy second component system, emoji, text-symbol stand-ins, per-screen icon drawing and a second icon/token truth are prohibited. Icons improve scanning only where they name a real object/state/action; they are not sprinkled into prose as decoration.
 
-### Mini Program motion and accessibility
+Every component has default, pressed, selected, disabled, loading, stale/partial/error and permission states where applicable.
 
-| Event | Duration | Property / constraint |
-| --- | ---: | --- |
-| Press-in | `≤100ms` | same-frame surface/tint; optional `scale(0.985)` outside map/destructive controls |
-| Release/cancel | `120ms` | surface/tint/scale return; cancelled press never commits |
-| State/content swap | `160ms` | opacity with stable geometry |
-| Compact sheet/panel | `220ms` | interruptible translate + opacity using `cubic-bezier(0.2, 0.8, 0.2, 1)` |
-| Mode transition | `240ms` | destination-safe color/media crossfade; destination canvas first |
-| Reduced motion | `0–100ms` | immediate or opacity only; no scale/parallax/depth/large translation |
+### 7. Map, Time & Astronomy Visualization
 
-- Avoid bounce, elastic overshoot, idle floating, icon spinning, decorative particles, and motion that must finish before input is accepted.
-- Optional haptics may reinforce a discrete selection, meaningful success, warning, or error only when a future adapter verifies capability and preference. Haptics are never required for understanding.
-- Every control exposes role, concise name, value/state, and disabled/expanded/selected semantics as applicable. Decorative Tier-B art is hidden from assistive reading unless it carries unique content.
-- Reading/focus order follows visible order. Modal layers contain it and return it to the invoking control.
-- Normal text targets at least `4.5:1`; large text and essential graphical boundaries target at least `3:1`. Color, motion, vibration, and sound are never sole state channels.
-- Enlarged text, landscape, safe-area changes, and long Chinese labels cannot hide the primary decision, warning, or recovery action.
-- Night and observation are display modes, not substitutes for contrast, screen reading, magnification, motor access, or color-vision accessibility.
+Use continuous arcs, tracks and narrow rounded color bands over a stable dark field. The active time is a precise indigo cursor; moon/sun events use lunar gold nodes. Sky objects are sparse and labeled only when relevant. Conditions can expand to a matrix without replacing the canvas context. Semantic 32–40rpx icon wells distinguish twilight, clouds, moon, precipitation and wind while aligned bands remain the data owner; do not turn each metric into a card.
 
-### Mini Program assets, performance, and exclusions
+The sensor-permission state keeps the sky as the primary work object. Its lower edge sheet uses one rounded permission panel with one compass/orientation icon, one friendly title, one concise privacy sentence and one compact primary action. “Not now” recovery and the accessible object-list alternative remain reachable without showing an always-expanded policy block, simulation warning or repeated permission explanation. Denied, calibrating and unavailable states reuse the same geometry and change only the necessary icon, copy and action. The top status is a short single-line state, never a two-line administrative badge.
 
-- Functional icons are code-native/vector when the chosen Mini Program stack safely supports them. Tier-B subjects are optimized raster assets with authored day/night/observation variants.
-- Naming direction: `icon3d-[subject]--[day|night|observation]@[density].[webp|png]`; Tier-A uses `icon-[name].svg` or the selected stack's equivalent.
-- All variants share silhouette, camera, crop, transparent bounds, and display size. Export sRGB, strip metadata, inspect edges at `1x`/`2x`, and verify observation assets contain no unintended cool/white pixels.
-- Do not ship the `1254×1254` references as tiles. Lazy-load below-fold Tier-B art with a mode-correct fixed-geometry placeholder. Failure falls back to a Tier-A symbol plus text.
-- Do not create a giant unrelated sprite. A future component-library/framework adapter consumes these semantic roles and cannot originate a competing value.
-- Do not copy the reference posters, logos, sample data, phone frames, branded photography, exact layouts, the native App system, App/Admin targets, or React Native interaction constants.
-- Do not apply skeuomorphism to every card/button/status/data point; use broad glass blur, neon, purple gradients, ambient stars, glossy data bevels, stacked shadows, or a whole-screen red filter; invent full App parity or navigation ownership; or claim production fidelity/accessibility merely from this authority.
+Illustrative comparison content, not product truth:
+- 地点：深圳市天文台
+- 今晚结论：值得考虑
+- 主时窗：21:40–23:50
+- 备选时窗：00:20–01:10
+- 条件带：天文黑夜、总云/低中高云、月亮高度与照明、降水、风、湿度/露点、可见度、机会分
+- Targets：夏季银河、土星、英仙座流星雨辐射点
+- Search copy：搜地点 / 区域 / 观星点
+- Quick filters：今晚推荐、2 小时内、暗度、少步行、设施
+
+A design-resource review canvas may use those fixtures only with an explicit non-live disclosure outside product chrome. Product-view examples still expose the intended source/update/completeness presentation; production must render attributable current data or truthful partial, stale and unavailable states, never a sample-data fallback.
+
+Generated previews and production surfaces must show the product, not a SaaS dashboard, pricing page, marketing hero, CRM table or chat assistant.
+
+### 8. Motion, Feedback & Accessibility
+
+- Touch feedback starts immediately. Selection and time scrubbing stay interruptible.
+- Pointer hover may change surface/opacity but never adds an outline or changes geometry. Keyboard `:focus-visible` remains mandatory and hugs the visible control rather than the larger invisible hit box. Review-canvas current-frame markers label the specimen outside product chrome and never wrap a phone or control in a misleading blue border.
+- Compact sheet transition target: 180–240ms with no bounce; reduced motion uses immediate or ≤100ms opacity.
+- Time scrubbing previews local frames continuously and commits once on release.
+- Map pan/zoom remains direct; controls never steal the gesture field.
+- Product-view scroll owners preserve scrolling while hiding vertical scrollbar chrome and reserving no scrollbar width; scrolling outside the phone on a review canvas is not product chrome.
+- Sensor-following sky motion exposes permission, calibration, accuracy and recovery without fabricating heading. A manual direction fallback appears only where the owning Screen Contract explicitly permits it; the current Spot Night surface does not.
+- Normal text contrast target ≥4.5:1; essential graphical boundaries ≥3:1.
+- Focus/read order follows visible order; modal layers return focus/read position to the trigger.
+- No shimmer or bright flash in night/observation modes.
+
+### 9. Voice
+
+Chinese-first, calm, direct and evidence-aware. Say “值得考虑 / 数据不足 / 暂不建议”, not absolute promises. Put the result before technical explanation. Provenance and limitations are concise but reachable.
+
+### 10. Anti-patterns
+
+- pale-blue and white card soup;
+- oversized headings repeated inside every section;
+- decorative 3D objects replacing functional icons;
+- broad blur/glass, neon outlines, purple gradient fog, star-particle wallpaper, ambient glow or looping decorative meteors; the bounded selected-choice and Favorite feedback above are the only star-flourish exceptions;
+- a card per metric, nested elevated surfaces or repeated pill badges;
+- Tencent default marker/callout/chrome as the product identity;
+- astronomy represented only as paragraphs or a dense table with no visual time alignment;
+- administrative notice stacks, repeated divider rows, legalistic helper paragraphs or oversized permission CTAs that displace the map/sky work object;
+- observation mode implemented by a red overlay on day assets;
+- copied Ctrip/Taobao/perseids visual composition or branding;
+- fabricated certainty, hidden missing data or “choose the clearest provider model”.
+### 11. Adoption and verification boundary
+
+This profile is selected visual authority. It does not claim that the current Mini Program runtime already conforms. A later selected screen-resource handoff must bind back to this target, preserve the Screen Contract, and pass production visual, interaction, accessibility, responsive, native-runtime and real-data checks on the final candidate.

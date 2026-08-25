@@ -1,0 +1,60 @@
+{
+  "schema_version": "starward-design-constraint-values-v1",
+  "target_ref": "target-operations-sky-canvas-current-constraint",
+  "values": {
+    "subject.operations.selected-package": {
+      "declared-state-matrix": "7ad50d02c86f2d5d766196cf84c6eb7fe39899bce2e458f3df1f156417fce800"
+    },
+    "subject.operations.frame.moderation-queue": {
+      "declared-state-matrix": "b0f3c4ba7a680b6e528e1279c9ae95f3f40dee4f50c4a65617bc8c3dbfe65c08"
+    },
+    "subject.operations.frame.moderation-case": {
+      "declared-state-matrix": "af3c64eccd373c0470b65f825e98349fa041ff4b539d143c2fc968cb09468dc1"
+    },
+    "subject.operations.frame.moderation-media-review": {
+      "declared-state-matrix": "18097f09d6bac59ae1a5af1218d942eb6ccfca6b55ba39711625984e1337d52d"
+    },
+    "subject.operations.frame.moderation-canonical-merge": {
+      "declared-state-matrix": "7c6ab7ba762db0ca3281532183bfdc65b15d11fff0fae011ef94db5862c5d34d"
+    },
+    "subject.operations.frame.publication-assessment": {
+      "declared-state-matrix": "f4a7997544f8d396ec922d7b345e09d1cee6cf88212bc3681f85e2a631301dcd"
+    },
+    "subject.operations.frame.spot-replacement-retirement": {
+      "declared-state-matrix": "b799be2b69676ba69603539d689e48c2db1e1fff4d92d729a76382840646cc09"
+    },
+    "subject.operations.frame.operations-audit": {
+      "declared-state-matrix": "bc0fb1a4876bf7482d745fa76492a88dbac1010f01480edc467ecd50c8dfa634"
+    },
+    "subject.operations.family.operations-shell": {
+      "declared-state-matrix": "fb1c45388f531384d6347907855f5ae6adaf7debe82841bf92937f0d20efe9f5"
+    },
+    "subject.operations.family.moderation-queue": {
+      "declared-state-matrix": "3c37670298551ae8c0eca271e03715c3a1ff2779ab1902d164ccde0fb36309fe"
+    },
+    "subject.operations.family.moderation-case": {
+      "declared-state-matrix": "237169ac178fe96c7eeb1c938092a59e4fc3b6215a7002c36fbc43663e920d74"
+    },
+    "subject.operations.family.media-review": {
+      "declared-state-matrix": "a023d930acfaec64f1c542210a09b4c6f2640efedff8134419f73c79c95a0801"
+    },
+    "subject.operations.family.canonical-merge": {
+      "declared-state-matrix": "90db1d7d90dcd9b3bae40555ebfddd89c8c1bfe21ff43d8e465f1c1e1b081b9b"
+    },
+    "subject.operations.family.publication-assessment": {
+      "declared-state-matrix": "56c6b67b5442f8b5c60163f1b64e2658493e003b8202f17b28377ed83320a3ae"
+    },
+    "subject.operations.family.replacement-retirement": {
+      "declared-state-matrix": "1faa9c25b3683c63451cc883471baec19fe374a6a6aa056a7acff9024db31461"
+    },
+    "subject.operations.family.audit-timeline": {
+      "declared-state-matrix": "09c8c83dae8127f1a5b2e36ca2440f9b87df8a2a90f992dd6a215f904490611e"
+    },
+    "subject.operations.family.operations-status-recovery": {
+      "declared-state-matrix": "5de6a12577b787d3dc54220919dbf839382153f7457808ddb71f893a2d591d78"
+    },
+    "subject.operations.family.operations-semantic-icon": {
+      "declared-state-matrix": "29ca5ee641436ca4e989555553dd91309fecc471808a3fd24d1279e26f66848e"
+    }
+  }
+}

@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="assets/icons/star.svg" type="image/svg+xml">
+  <title>Sky Canvas · 投稿闭环</title>
+  <link rel="stylesheet" href="assets/current-review.css">
+</head>
+<body>
+  <main class="review-shell">
+    <header class="review-topbar">
+      <div class="review-brand">
+        <strong>今晚去观星 · Sky Canvas</strong>
+        <span>唯一当前设计资源 · 投稿类型 / 动态表单 / 上传恢复 / 状态历史</span>
+      </div>
+      <nav class="review-nav" aria-label="设计资源页面">
+        <a href="index.html">核心体验</a>
+        <a href="supporting.html">我的与计划</a>
+        <a href="contribution.html" aria-current="page">投稿闭环</a>
+        <a href="operations.html">运营工作台</a>
+        <a href="workbench.html">组件与状态</a>
+      </nav>
+    </header>
+
+    <section class="review-hero" aria-labelledby="page-title">
+      <div class="review-hero-copy">
+        <span class="review-kicker">Contribution lifecycle</span>
+        <h1 id="page-title">让用户贡献真实现场信息，不让一次提交越权变成公开事实。</h1>
+        <p>三类投稿共用一个入口，但只展示当前类型需要的字段。草稿、媒体上传和重试可以恢复；审核、证据合并、公开影响是三个独立状态轴。</p>
+      </div>
+      <aside class="review-legend" aria-label="投稿设计约束">
+        <div class="legend-row"><strong>三种类型</strong><span>现场报告 / 更正信息 / 提议新地点</span></div>
+        <div class="legend-row"><strong>隐私</strong><span>精确位置单独同意；上传前移除原始 EXIF</span></div>
+        <div class="legend-row"><strong>恢复</strong><span>身份范围草稿、续传、幂等提交</span></div>
+        <div class="legend-row"><strong>状态</strong><span>接收 ≠ 合并 ≠ 发布</span></div>
+      </aside>
+    </section>
+
+    <section class="frame-grid" aria-label="投稿页面画面">
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>选择贡献类型</strong><code>contribution-kind-control</code></div>
+        <section class="phone-frame" id="contribution-intake" aria-label="投稿类型与地点上下文 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content without-nav">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <button class="icon-button back-button" type="button" aria-label="返回地点详情"><img class="icon" src="assets/icons/arrow-left.svg" alt=""></button>
+                <div class="appbar-copy" style="flex:1"><h3>反馈现场情况</h3><p>真实观察会让下一位出发的人更安心</p></div>
+                <button class="icon-button" type="button" aria-label="查看我的投稿"><img class="icon" src="assets/icons/history.svg" alt=""></button>
+              </header>
+
+              <section class="spot-context" aria-label="当前地点上下文">
+                <span class="icon-well"><img class="icon" src="assets/icons/map-pinned.svg" alt=""></span>
+                <div><strong>深圳市天文台</strong><span>正式地点 · 仅携带 spot_id 与名称</span></div>
+                <span class="status-pill success">已确认</span>
+              </section>
+
+              <div class="inline-note" style="margin-top:10px">
+                <span class="icon-well violet"><img class="icon" src="assets/icons/lock-keyhole.svg" alt=""></span>
+                <div><strong>不会读取你的当前位置</strong><p>已有地点的现场报告只使用上面的地点上下文。</p></div>
+              </div>
+
+              <section class="section-block" data-kind-group aria-labelledby="kind-heading">
+                <div class="section-heading"><h3 id="kind-heading">这次想告诉我们什么？</h3><span>请选择一种</span></div>
+                <div class="kind-grid">
+                  <button class="kind-option" type="button" data-kind="FIELD_REPORT" aria-pressed="true">
+                    <img src="assets/icons/tent-tree.svg" alt="">
+                    <strong>现场报告</strong>
+                    <span>开放、路线、照明、天气或安全变化</span>
+                  </button>
+                  <button class="kind-option" type="button" data-kind="CORRECTION" aria-pressed="false">
+                    <img src="assets/icons/message-square-warning.svg" alt="">
+                    <strong>更正信息</strong>
+                    <span>指出正式地点资料中的具体错误</span>
+                  </button>
+                  <button class="kind-option" type="button" data-kind="NEW_SPOT_PROPOSAL" aria-pressed="false">
+                    <img src="assets/icons/map-pin-plus.svg" alt="">
+                    <strong>提议新地点</strong>
+                    <span>提交候选位置与证据，不直接创建地点</span>
+                  </button>
+                </div>
+
+                <div class="surface-card" data-kind-copy="FIELD_REPORT" style="padding:14px;margin-top:12px">
+                  <div class="entry-copy"><strong>下一步会询问</strong><span style="white-space:normal">观察时间、受影响的现场主题、简短描述与可选媒体。</span></div>
+                </div>
+                <div class="surface-card" data-kind-copy="CORRECTION" hidden style="padding:14px;margin-top:12px">
+                  <div class="entry-copy"><strong>下一步会询问</strong><span style="white-space:normal">要更正的事实、建议值、核对来源与可选媒体。</span></div>
+                </div>
+                <div class="surface-card" data-kind-copy="NEW_SPOT_PROPOSAL" hidden style="padding:14px;margin-top:12px">
+                  <div class="entry-copy"><strong>下一步会询问</strong><span style="white-space:normal">候选位置、进入方式、可观测证据和精确位置同意。它不会立即成为正式地点。</span></div>
+                </div>
+              </section>
+
+              <section class="section-block">
+                <div class="draft-recovery">
+                  <strong>这里有一份未完成草稿</strong>
+                  <p>现场报告 · 8 月 24 日 23:18 保存 · 已关联深圳市天文台</p>
+                  <div class="button-row">
+                    <button class="control compact leaf" type="button">继续草稿</button>
+                    <button class="control compact ghost" type="button">稍后处理</button>
+                  </div>
+                </div>
+              </section>
+
+              <button class="control leaf" type="button" style="width:100%;margin-top:16px">继续填写</button>
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>动态现场报告</strong><code>contribution-progressive-form</code></div>
+        <section class="phone-frame" id="contribution-form" aria-label="动态投稿表单 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content without-nav">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <button class="icon-button back-button" type="button" aria-label="返回类型选择"><img class="icon" src="assets/icons/arrow-left.svg" alt=""></button>
+                <div class="appbar-copy" style="flex:1"><h3>记录现场</h3><p>现场报告 · 深圳市天文台</p></div>
+                <button class="control ghost compact" data-save-draft type="button"><img class="icon" src="assets/icons/save.svg" alt="">保存</button>
+              </header>
+
+              <div class="step-rail" aria-label="填写进度 2 / 5"><span class="done"></span><span class="current"></span><span></span><span></span><span></span></div>
+
+              <section class="field-stack" aria-labelledby="topics-heading">
+                <div>
+                  <div class="field-label"><span id="topics-heading">现场哪些方面发生了变化？</span><small>可多选</small></div>
+                  <div class="topic-cloud">
+                    <button class="chip" type="button" data-toggle-pressed aria-pressed="true">开放情况</button>
+                    <button class="chip" type="button" data-toggle-pressed aria-pressed="false">路线</button>
+                    <button class="chip" type="button" data-toggle-pressed aria-pressed="true">照明</button>
+                    <button class="chip" type="button" data-toggle-pressed aria-pressed="false">设施</button>
+                    <button class="chip" type="button" data-toggle-pressed aria-pressed="false">安全</button>
+                    <button class="chip" type="button" data-toggle-pressed aria-pressed="false">天气</button>
+                  </div>
+                </div>
+
+                <label>
+                  <span class="field-label"><span>观察时间</span><small>地点当地时间</small></span>
+                  <input class="text-field" value="2026-08-24 22:40" inputmode="numeric">
+                </label>
+
+                <label>
+                  <span class="field-label"><span>简短描述</span><small>还可输入 164 字</small></span>
+                  <textarea class="text-area">停车区开放，但通往观测区的最后一段路灯比上次更亮。23:10 后入口处有人关闭了部分照明。</textarea>
+                </label>
+
+                <div>
+                  <span class="field-label"><span>补充媒体</span><small>最多 6 个 · JPG/PNG/MP4</small></span>
+                  <button class="surface-card" type="button" style="display:grid;place-items:center;width:100%;min-height:92px;border-style:dashed;background:var(--paper);cursor:pointer">
+                    <span class="icon-well violet"><img class="icon" src="assets/icons/image-plus.svg" alt=""></span>
+                    <span style="margin-top:7px;font-size:11px;font-weight:800">选择照片或短视频</span>
+                    <small style="color:var(--ink-faint);font-size:9px">上传前净化定位与设备元数据</small>
+                  </button>
+                </div>
+
+                <label class="consent-card">
+                  <input type="checkbox" checked>
+                  <span><strong>我有权提交所选媒体</strong><span>媒体会先进入人工审核；未经审核不会作为正式地点证据公开。</span></span>
+                </label>
+              </section>
+
+              <div class="inline-note" style="margin-top:14px">
+                <span class="icon-well moon"><img class="icon" src="assets/icons/info.svg" alt=""></span>
+                <div><strong>提交不等于公开</strong><p>运营人员先核验内容，之后才能进入证据合并与发布评估。</p></div>
+              </div>
+
+              <div class="button-row" style="margin-top:16px">
+                <button class="control leaf" type="button">检查并提交</button>
+                <button class="control secondary" type="button" data-save-draft>存为草稿</button>
+              </div>
+
+              <div class="notification success" data-live-feedback hidden style="margin-top:12px" aria-live="polite">
+                <span class="icon-well"><img class="icon" src="assets/icons/check.svg" alt=""></span>
+                <div><strong data-live-feedback-text>草稿已保存</strong><p>下次从同一账户继续，不会重复创建。</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>上传与草稿恢复</strong><code>contribution-upload-recovery</code></div>
+        <section class="phone-frame" id="contribution-upload-recovery" aria-label="上传与草稿恢复 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content without-nav">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <button class="icon-button back-button" type="button" aria-label="返回表单"><img class="icon" src="assets/icons/arrow-left.svg" alt=""></button>
+                <div class="appbar-copy" style="flex:1"><h3>准备提交</h3><p>草稿 rev.4 · 本地与云端已对齐</p></div>
+                <span class="status-pill success">已保存</span>
+              </header>
+
+              <div class="notification warning">
+                <span class="icon-well moon"><img class="icon" src="assets/icons/wifi-off.svg" alt=""></span>
+                <div><strong>网络刚刚中断过</strong><p>已完成的媒体不会重传；失败项可从断点继续。</p></div>
+                <span class="status-pill warning">可恢复</span>
+              </div>
+
+              <section class="section-block" aria-labelledby="uploads-heading">
+                <div class="section-heading"><h3 id="uploads-heading">媒体 2 / 3 就绪</h3><span>上传会话 14 分钟后过期</span></div>
+                <div class="upload-stack">
+                  <article class="upload-item" data-media-state="ready">
+                    <span class="upload-thumb"><img src="assets/icons/images.svg" alt=""></span>
+                    <div class="upload-copy"><strong>entrance-light.jpg</strong><span>1.8 MB · JPEG · 元数据已净化</span><div class="progress-track"><span style="width:100%"></span></div></div>
+                    <span class="status-pill success">已就绪</span>
+                  </article>
+                  <article class="upload-item">
+                    <span class="upload-thumb"><img src="assets/icons/images.svg" alt=""></span>
+                    <div class="upload-copy"><strong>path-lighting.jpg</strong><span data-upload-meta>连接中断 · 已保留 62%</span><div class="progress-track"><span style="width:62%"></span></div></div>
+                    <div><span class="status-pill danger">失败</span><button class="control ghost compact" data-upload-retry type="button" style="margin-top:4px">续传</button></div>
+                  </article>
+                  <article class="upload-item" data-media-state="ready">
+                    <span class="upload-thumb"><img src="assets/icons/camera.svg" alt=""></span>
+                    <div class="upload-copy"><strong>parking-note.mp4</strong><span>8.2 MB · MP4 · 00:11</span><div class="progress-track"><span style="width:100%"></span></div></div>
+                    <span class="status-pill success">已就绪</span>
+                  </article>
+                </div>
+              </section>
+
+              <section class="section-block">
+                <div class="draft-recovery">
+                  <strong>恢复点已建立</strong>
+                  <p>草稿 revision、上传会话与提交幂等键已绑定到当前账户。关闭页面后可继续，冲突时保留两份文本供选择。</p>
+                  <div class="state-axis"><span>草稿</span><strong>rev.4 · 22:58 保存</strong></div>
+                  <div class="state-axis"><span>上传</span><strong>upload_••71 · 2 / 3 完成</strong></div>
+                  <div class="state-axis"><span>提交</span><strong>尚未创建投稿记录</strong></div>
+                </div>
+              </section>
+
+              <section class="section-block">
+                <div class="section-heading"><h3>提交前确认</h3></div>
+                <div class="group-card">
+                  <div class="switch-row"><div class="switch-copy"><strong>类型与地点</strong><span>现场报告 · 深圳市天文台</span></div><span class="status-pill success">完整</span></div>
+                  <div class="switch-row"><div class="switch-copy"><strong>媒体权利</strong><span>已确认；原始 EXIF 不保留</span></div><span class="status-pill success">完整</span></div>
+                  <div class="switch-row"><div class="switch-copy"><strong>媒体上传</strong><span>还有 1 项需要续传</span></div><span class="status-pill warning">待处理</span></div>
+                </div>
+              </section>
+
+              <button class="control" type="button" disabled aria-disabled="true" style="width:100%;margin-top:16px">媒体就绪后提交</button>
+
+              <div class="notification success" data-live-feedback hidden style="margin-top:12px" aria-live="polite">
+                <span class="icon-well"><img class="icon" src="assets/icons/check.svg" alt=""></span>
+                <div><strong data-live-feedback-text>上传已恢复</strong><p>同一媒体记录继续使用，不会重复创建。</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>我的投稿与三轴状态</strong><code>contribution-status-list</code></div>
+        <section class="phone-frame" id="contribution-review-history" aria-label="投稿审核历史与状态 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content without-nav">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <button class="icon-button back-button" type="button" aria-label="返回我的"><img class="icon" src="assets/icons/arrow-left.svg" alt=""></button>
+                <div class="appbar-copy" style="flex:1"><h3>我的投稿</h3><p>只显示当前账户的记录</p></div>
+                <button class="icon-button" type="button" aria-label="筛选投稿"><img class="icon" src="assets/icons/filter.svg" alt=""></button>
+              </header>
+
+              <div class="topic-cloud" aria-label="投稿筛选">
+                <button class="chip" data-toggle-pressed type="button" aria-pressed="true">全部 4</button>
+                <button class="chip" data-toggle-pressed type="button" aria-pressed="false">待审核 2</button>
+                <button class="chip" data-toggle-pressed type="button" aria-pressed="false">需补充 1</button>
+              </div>
+
+              <section class="section-block" aria-label="投稿记录">
+                <article class="state-card">
+                  <div class="state-card-head">
+                    <div><h4>深圳市天文台 · 现场照明</h4><p>现场报告 · 8 月 24 日 23:02 提交</p></div>
+                    <span class="status-pill warning">需补充</span>
+                  </div>
+                  <div class="state-axis" data-axis="submission"><span>投稿审核</span><strong>退回补充 · CHANGES_REQUESTED</strong></div>
+                  <div class="state-axis" data-axis="merge"><span>证据合并</span><strong>尚未开始 · NOT_STARTED</strong></div>
+                  <div class="state-axis" data-axis="publication"><span>公开影响</span><strong>没有 · NONE</strong></div>
+                  <div class="notification warning" style="margin-top:12px">
+                    <span class="icon-well moon"><img class="icon" src="assets/icons/message-square-warning.svg" alt=""></span>
+                    <div><strong>请补一张能看见灯位与入口关系的照片</strong><p>已填写文字与上传成功媒体都会保留。</p></div>
+                    <button class="control ghost compact" type="button">补充</button>
+                  </div>
+                </article>
+
+                <article class="state-card">
+                  <div class="state-card-head">
+                    <div><h4>西涌暗点 · 步行路线</h4><p>更正信息 · 8 月 22 日 21:16 提交</p></div>
+                    <span class="status-pill violet">已接收</span>
+                  </div>
+                  <div class="state-axis" data-axis="submission"><span>投稿审核</span><strong>已接收 · ACCEPTED</strong></div>
+                  <div class="state-axis" data-axis="merge"><span>证据合并</span><strong>准备合并 · READY</strong></div>
+                  <div class="state-axis" data-axis="publication"><span>公开影响</span><strong>尚未影响公开地点 · NONE</strong></div>
+                  <p style="margin-top:12px">运营人员仍需把证据合并进正式地点 revision，并重新通过发布完整性评估。</p>
+                  <button class="control secondary compact" data-status-demo type="button" style="margin-top:10px">模拟读取最新状态</button>
+                </article>
+
+                <article class="state-card">
+                  <div class="state-card-head">
+                    <div><h4>大鹏海岸候选点</h4><p>提议新地点 · 8 月 18 日 20:40 提交</p></div>
+                    <span class="status-pill">审核中</span>
+                  </div>
+                  <div class="state-axis"><span>投稿审核</span><strong>待审核 · PENDING_REVIEW</strong></div>
+                  <div class="state-axis"><span>证据合并</span><strong>尚未开始 · NOT_STARTED</strong></div>
+                  <div class="state-axis"><span>公开影响</span><strong>没有 · 候选点不是正式地点</strong></div>
+                </article>
+              </section>
+
+              <div class="notification success" data-live-feedback hidden style="margin-top:12px" aria-live="polite">
+                <span class="icon-well"><img class="icon" src="assets/icons/check.svg" alt=""></span>
+                <div><strong data-live-feedback-text>状态已更新</strong><p>三个状态轴分别读取，不把“接收”写成“已发布”。</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+  </main>
+  <script src="assets/current-review.js"></script>
+</body>
+</html>

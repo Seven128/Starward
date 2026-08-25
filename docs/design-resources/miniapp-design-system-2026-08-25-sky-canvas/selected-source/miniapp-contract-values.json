@@ -1,0 +1,105 @@
+{
+  "schema_version": "starward-design-constraint-values-v1",
+  "target_ref": "target-miniapp-sky-canvas-current-constraint",
+  "values": {
+    "subject.miniapp.selected-package": {
+      "declared-state-matrix": "454e7df9834e3193520d8c787957ad89647e7277e7d73889c1bc26056a742550"
+    },
+    "subject.miniapp.frame.map-finder-day": {
+      "declared-state-matrix": "ea090c27df11a3fe9ade3b584e7e9c72f71a9f1fc0e3b19f342cfe106cc1be5b"
+    },
+    "subject.miniapp.frame.spot-detail-dusk": {
+      "declared-state-matrix": "a8d54616a2ca9559d5b06c32f2edc45cceaa6d22513745550263910a24a110f4"
+    },
+    "subject.miniapp.frame.spot-night-astronomy": {
+      "declared-state-matrix": "8238d9ac122ee5370b6fbf48aade1fe39e5eeabb8f444fa5124133ce52af9e06"
+    },
+    "subject.miniapp.frame.spot-night-orientation": {
+      "declared-state-matrix": "2ffef040960b1bfe97b1d615e823546eaee5b43ceab48510e62db8de97e752b6"
+    },
+    "subject.miniapp.frame.my-home": {
+      "declared-state-matrix": "2178195abc6f83a063db4141718fd76121c944a7fcc7528e5eaaad83b7fe7b43"
+    },
+    "subject.miniapp.frame.plan-detail": {
+      "declared-state-matrix": "4d532e98b0eac9f609219a58b2f2b27ebacacd9fba256f857c6c9b028bf15b07"
+    },
+    "subject.miniapp.frame.settings": {
+      "declared-state-matrix": "22436e117800c97b9107122e78b57e4a9b57e0a4a01d47c821244f3d5617c97e"
+    },
+    "subject.miniapp.frame.profile-import": {
+      "declared-state-matrix": "49c20b27aed1bad81a5472ee9d395ee729dd95c110d0ac772a2088a6a9fe8954"
+    },
+    "subject.miniapp.frame.contribution-intake": {
+      "declared-state-matrix": "67bd4e1c8581400109d80e4cc100a7b3bc9715763b18ae8f4ca50addb9c477a1"
+    },
+    "subject.miniapp.frame.contribution-form": {
+      "declared-state-matrix": "e2233d6e0a9a8b842348ce24f47dab9e92e92fc7ba682308ed7f9c3762e4039f"
+    },
+    "subject.miniapp.frame.contribution-upload-recovery": {
+      "declared-state-matrix": "a82ad0d63f79a87f46c40260fd1015b7ea1ad30ad4e764b10d3a2e305bb0b571"
+    },
+    "subject.miniapp.frame.contribution-review-history": {
+      "declared-state-matrix": "b12522fff2441e85d18ce93a8dbe80666ade4f6a11885b78c13e09800fa73cae"
+    },
+    "subject.miniapp.family.map-search": {
+      "declared-state-matrix": "7326bec9bee944739787c464fea6fe018ab2db0900e9830a5c04021458ee74b5"
+    },
+    "subject.miniapp.family.quick-filter-chip": {
+      "declared-state-matrix": "5c4cab8e64647b916aa86dfde6c710459785a6294971a4a979d999d94ffb7f74"
+    },
+    "subject.miniapp.family.map-analysis-bar-layer": {
+      "declared-state-matrix": "0100bb55ae92d29e967f4814fe55101845f5586b48ec4a0d3611823000c3e99b"
+    },
+    "subject.miniapp.family.finder-sheet": {
+      "declared-state-matrix": "7776f3c477622be5802eea64e205d42f6bd93c39ba0e45d7573a4a2ca8b68ae0"
+    },
+    "subject.miniapp.family.spot-marker-callout": {
+      "declared-state-matrix": "922f46b2c519ad9443afda26e42c9daca1dc2429f17fa589abc128dc37f99ba0"
+    },
+    "subject.miniapp.family.spot-result-row": {
+      "declared-state-matrix": "65ca33042e1e0edebbd840b28db16ee21a0ed1f643af4c6df5fae2b3004917a0"
+    },
+    "subject.miniapp.family.spot-header-actions": {
+      "declared-state-matrix": "075d7f0dab39be4f8123db928dd2943feabeb1e0f4d0435b96b1c1aa8368f7d7"
+    },
+    "subject.miniapp.family.favorite-star-ritual": {
+      "declared-state-matrix": "8db83702197f093d42271231b74e076c63bd3dba7a87511a1be796622812b3b5"
+    },
+    "subject.miniapp.family.astronomy-summary": {
+      "declared-state-matrix": "ac3a3ae6c9e011380a72f9b16f2f1b7db897c561cc6bc41727d06449697f302f"
+    },
+    "subject.miniapp.family.astronomy-professional-matrix": {
+      "declared-state-matrix": "b5cad2d5a6d4291b37a926154452b30b868704effa2275bbf806100e71ed7efe"
+    },
+    "subject.miniapp.family.sky-time-scrubber": {
+      "declared-state-matrix": "979fa74afc7a108fef58d705120c31f58d9b08ce547b5640a14901025c24aafc"
+    },
+    "subject.miniapp.family.orientation-sky": {
+      "declared-state-matrix": "5d43ca495d96b05421ad19d4295a41983a8e57ca65023986cf4da33eed5a4a7f"
+    },
+    "subject.miniapp.family.status-recovery": {
+      "declared-state-matrix": "a983111cbd5c56907ffc576c602f7190b5d79e8205af9e41f362aeaa7338b0dd"
+    },
+    "subject.miniapp.family.primary-navigation": {
+      "declared-state-matrix": "307d688dfb9992aa584c2e5d46a1db5fc2424d35e4aee7eeeabaaf6ef8635c35"
+    },
+    "subject.miniapp.family.my-plan-settings": {
+      "declared-state-matrix": "7e36d2d3d4c8b5c636acb966b542aaa71556eb4a1efd63a5e593bda7d2847fb5"
+    },
+    "subject.miniapp.family.contribution-intake": {
+      "declared-state-matrix": "69c2a30291898b9184fdac471faf6f2b2abb2389d5b607d5285473fd865d0075"
+    },
+    "subject.miniapp.family.contribution-form": {
+      "declared-state-matrix": "60b59b27c9bbe7822ec07698a0168639756cc38e3dd35de3c56022b214076c88"
+    },
+    "subject.miniapp.family.upload-recovery": {
+      "declared-state-matrix": "7991c48e90497d360a1e3b97c64bf4f316daa1b79ff340989214b34ada5f6e5c"
+    },
+    "subject.miniapp.family.review-history": {
+      "declared-state-matrix": "6c777a0eca8e7eec6ace921a34777049d1fd8cbf699ac55e67add1c5422f6189"
+    },
+    "subject.miniapp.family.semantic-icon": {
+      "declared-state-matrix": "dd5c5d5271abfc37ef25cb2bda1fa4867873339d971bc2d7f0389a2ad3487053"
+    }
+  }
+}

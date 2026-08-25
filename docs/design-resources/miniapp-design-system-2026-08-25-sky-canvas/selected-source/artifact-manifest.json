@@ -1,0 +1,309 @@
+{
+  "title": "今晚去观星 · Starward Sky Canvas 当前设计资源",
+  "language": "zh-CN",
+  "artifactType": "current-design-resource",
+  "designSystemId": "user:starward-sky-canvas",
+  "reviewNotice": "当前 Sky Canvas 方向已被用户选定为开发 implementation constraint；它不是 pixel-exact target 或生产验收。",
+  "candidateStatus": {
+    "value": "selected-formal-implementation-constraint",
+    "selected": true,
+    "directionConfirmed": true,
+    "productionAccepted": false,
+    "exactTargetHandoff": false,
+    "formalPreflight": false
+  },
+  "formalHandoff": {
+    "classification": "selected-implementation-constraint",
+    "miniProgramTarget": "target-miniapp-sky-canvas-current-constraint",
+    "operationsTarget": "target-operations-sky-canvas-current-constraint",
+    "repositoryRoot": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas",
+    "humanHandoff": "implementation-handoff.md",
+    "machineHandoff": "selected-source/implementation-handoff-spec.json",
+    "publishedHandoffs": [
+      "selected-handoff/miniapp-sky-canvas-current.md",
+      "selected-handoff/operations-sky-canvas-current.md"
+    ],
+    "preflight": "valid",
+    "productionConformance": "not-evaluated"
+  },
+  "entryFiles": [
+    {
+      "path": "index.html",
+      "label": "核心体验",
+      "packageContained": true
+    },
+    {
+      "path": "supporting.html",
+      "label": "我的与辅助页面",
+      "packageContained": true
+    },
+    {
+      "path": "contribution.html",
+      "label": "投稿闭环",
+      "packageContained": true
+    },
+    {
+      "path": "operations.html",
+      "label": "运营审核与发布治理",
+      "packageContained": true
+    },
+    {
+      "path": "workbench.html",
+      "label": "共享组件与状态工作台",
+      "packageContained": true
+    }
+  ],
+  "namedFrames": [
+    {
+      "id": "map-finder-day",
+      "entry": "index.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844",
+      "mode": "day"
+    },
+    {
+      "id": "spot-detail-dusk",
+      "entry": "index.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844",
+      "mode": "night"
+    },
+    {
+      "id": "spot-night-astronomy",
+      "entry": "index.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844",
+      "mode": "night"
+    },
+    {
+      "id": "spot-night-orientation",
+      "entry": "index.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844",
+      "mode": "night"
+    },
+    {
+      "id": "my-home",
+      "entry": "supporting.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "plan-detail",
+      "entry": "supporting.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "settings",
+      "entry": "supporting.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "profile-import",
+      "entry": "supporting.html",
+      "surface": "mobile-mini-program-feature-gated",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "contribution-intake",
+      "entry": "contribution.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "contribution-form",
+      "entry": "contribution.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "contribution-upload-recovery",
+      "entry": "contribution.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "contribution-review-history",
+      "entry": "contribution.html",
+      "surface": "mobile-mini-program",
+      "referenceSize": "390x844"
+    },
+    {
+      "id": "moderation-queue",
+      "entry": "operations.html#queue",
+      "surface": "desktop-operations",
+      "referenceSize": "responsive-1440-900"
+    },
+    {
+      "id": "moderation-case",
+      "entry": "operations.html#case",
+      "surface": "desktop-operations",
+      "referenceSize": "responsive-1440-900"
+    },
+    {
+      "id": "moderation-media-review",
+      "entry": "operations.html#media",
+      "surface": "desktop-operations",
+      "referenceSize": "responsive-1440-900"
+    },
+    {
+      "id": "moderation-canonical-merge",
+      "entry": "operations.html#merge",
+      "surface": "desktop-operations",
+      "referenceSize": "responsive-1440-900"
+    },
+    {
+      "id": "publication-assessment",
+      "entry": "operations.html#publication",
+      "surface": "desktop-operations",
+      "referenceSize": "responsive-1440-900"
+    },
+    {
+      "id": "spot-replacement-retirement",
+      "entry": "operations.html#replacement",
+      "surface": "desktop-operations",
+      "referenceSize": "responsive-1440-900"
+    },
+    {
+      "id": "operations-audit",
+      "entry": "operations.html#audit",
+      "surface": "desktop-operations",
+      "referenceSize": "responsive-1440-900"
+    }
+  ],
+  "materialStates": {
+    "mapFinder": [
+      "closed",
+      "peek",
+      "expanded"
+    ],
+    "favorite": [
+      "inactive",
+      "activating",
+      "active",
+      "deactivating",
+      "reduced-motion"
+    ],
+    "astronomy": [
+      "summary",
+      "matrix-expanded",
+      "time-preview",
+      "time-committed"
+    ],
+    "orientation": [
+      "permission",
+      "calibrating",
+      "ready",
+      "denied",
+      "unavailable"
+    ],
+    "pageRecovery": [
+      "initial",
+      "loading",
+      "ready",
+      "empty",
+      "partial",
+      "stale",
+      "error",
+      "permission-denied"
+    ],
+    "contributionKind": [
+      "FIELD_REPORT",
+      "CORRECTION",
+      "NEW_SPOT_PROPOSAL"
+    ],
+    "submissionState": [
+      "DRAFT",
+      "PENDING_REVIEW",
+      "CHANGES_REQUESTED",
+      "ACCEPTED",
+      "REJECTED",
+      "WITHDRAWN"
+    ],
+    "mergeState": [
+      "NOT_STARTED",
+      "READY",
+      "MERGED",
+      "SUPERSEDED"
+    ],
+    "publicationImpact": [
+      "NONE",
+      "CANDIDATE_UPDATED",
+      "ACTIVE_REVISION_UPDATED",
+      "SPOT_PUBLISHED"
+    ],
+    "operations": [
+      "queue",
+      "case",
+      "media-review",
+      "merge-preview",
+      "merge-commit",
+      "publication-assessment",
+      "publish",
+      "suspend",
+      "unpublish",
+      "replace",
+      "retire",
+      "audit"
+    ]
+  },
+  "contractLabels": [
+    "single-current-resource",
+    "no-parallel-old-version",
+    "outdoor-vitality-lightweight-cute",
+    "finder-closed-peek-expanded",
+    "sensor-follow-only",
+    "no-user-phone-scrollbar",
+    "same-map-analysis-focus",
+    "single-analysis-layer",
+    "whole-callout-activation",
+    "shared-spot-time-context",
+    "map-my-only-primary-navigation",
+    "progressive-contribution-fields",
+    "durable-draft-upload-recovery",
+    "submission-merge-publication-separated",
+    "authenticated-operations-only",
+    "explicit-publication-gate",
+    "replacement-retirement-audited",
+    "reduced-motion"
+  ],
+  "implementationConsumption": {
+    "miniProgramTokens": "apps/wechat-miniapp/src/styles/tokens.scss",
+    "miniProgramComponents": "apps/wechat-miniapp/src/components/**",
+    "semanticAssets": "apps/wechat-miniapp/src/components/**/semantic-asset",
+    "miniProgramRoutes": "apps/wechat-miniapp/src/pages, src/spot, src/sky, src/content/contribution",
+    "operationsOwner": "apps/admin-web/src/app",
+    "humanHandoff": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/implementation-handoff.md",
+    "machineHandoff": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/implementation-handoff-spec.json",
+    "rule": "reuse owning adapters and stores; do not copy DRA fixture data or create a second token/state truth"
+  },
+  "assetSources": [
+    {
+      "name": "Lucide Static",
+      "version": "1.33.0",
+      "license": "ISC",
+      "licenseFile": "assets/icons/LICENSE-lucide.txt"
+    },
+    {
+      "name": "Font Awesome Free",
+      "version": "7.3.1",
+      "asset": "meteor",
+      "licenseFile": "assets/icons/LICENSE-fontawesome.txt"
+    }
+  ],
+  "exclusions": [
+    "production implementation",
+    "pixel-exact target handoff and production conformance",
+    "live astronomy, weather, map, moderation or publication data",
+    "Tencent Map runtime proof",
+    "real sensor, permission or device accuracy proof",
+    "manual direction controls",
+    "authenticated operations API proof",
+    "publication side-effect or readback proof",
+    "production accessibility, performance or security acceptance",
+    "pixel-exact target claims",
+    "production conformance or release readiness"
+  ]
+}

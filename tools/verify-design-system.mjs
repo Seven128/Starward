@@ -252,7 +252,7 @@ process.stdout.write(
     active_target: "target.system.starward-blue-skeuomorphic-2026-07-29",
     active_targets: {
       native_app: "target.system.starward-blue-skeuomorphic-2026-07-29",
-      wechat_miniapp: "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+      wechat_miniapp: "target.system.wechat-miniapp-sky-canvas-2026-08-25",
     },
     modes: Object.keys(colors),
     color_roles_per_mode: roleKeys.length,

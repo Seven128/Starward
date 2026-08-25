@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="assets/icons/star.svg" type="image/svg+xml">
+  <title>Sky Canvas · 我的与辅助页面</title>
+  <link rel="stylesheet" href="assets/current-review.css">
+</head>
+<body>
+  <main class="review-shell">
+    <header class="review-topbar">
+      <div class="review-brand">
+        <strong>今晚去观星 · Sky Canvas</strong>
+        <span>唯一当前设计资源 · 我的 / 计划 / 设置 / 条件启用内容导入</span>
+      </div>
+      <nav class="review-nav" aria-label="设计资源页面">
+        <a href="index.html">核心体验</a>
+        <a href="supporting.html" aria-current="page">我的与计划</a>
+        <a href="contribution.html">投稿闭环</a>
+        <a href="operations.html">运营工作台</a>
+        <a href="workbench.html">组件与状态</a>
+      </nav>
+    </header>
+
+    <section class="review-hero" aria-labelledby="page-title">
+      <div class="review-hero-copy">
+        <span class="review-kicker">Supporting product surfaces</span>
+        <h1 id="page-title">户外感不靠堆装饰，靠更轻的节奏和更明确的行动。</h1>
+        <p>“我的”只承担账户与少量日常入口；计划、设置和内容导入各自进入可恢复的子页面。没有收藏列表、订单式模块、二级 Tab 或重复地点详情。</p>
+      </div>
+      <aside class="review-legend" aria-label="设计约束">
+        <div class="legend-row"><strong>主导航</strong><span>仅地图 / 我的</span></div>
+        <div class="legend-row"><strong>活力来源</strong><span>月光金、路径绿、轻微错位与短促反馈</span></div>
+        <div class="legend-row"><strong>信息密度</strong><span>一屏一个主判断，专业说明按需展开</span></div>
+        <div class="legend-row"><strong>条件页面</strong><span>内容导入仅在功能启用后进入当前路由树</span></div>
+      </aside>
+    </section>
+
+    <section class="frame-grid" aria-label="辅助页面画面">
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>我的</strong><code>miniapp-my-library</code></div>
+        <section class="phone-frame" id="my-home" aria-label="我的首页 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <h2>我的</h2>
+                <button class="icon-button" type="button" aria-label="打开设置">
+                  <img class="icon" src="assets/icons/settings.svg" alt="">
+                </button>
+              </header>
+
+              <section class="profile-summary" aria-label="账户概况">
+                <div class="avatar"><img src="assets/icons/user-round.svg" alt=""></div>
+                <div class="profile-copy">
+                  <strong>林野</strong>
+                  <span>已登录 · 深圳 · 贡献者</span>
+                </div>
+                <span class="mini-badge">户外中</span>
+              </section>
+
+              <section class="section-block" aria-labelledby="tonight-plan-heading">
+                <div class="section-heading">
+                  <h3 id="tonight-plan-heading">今晚</h3>
+                  <span>8 月 25 日</span>
+                </div>
+                <a class="plan-hero" href="#plan-detail" style="display:block;text-decoration:none" aria-label="打开今晚计划：深圳市天文台">
+                  <span class="eyebrow">21:30 出发 · 约 58 分钟</span>
+                  <h3>去深圳市天文台</h3>
+                  <p>主时窗 22:40–23:50 · 路况与开放信息需出发前复核</p>
+                  <div class="plan-facts" aria-hidden="true">
+                    <div class="plan-fact"><strong>34%</strong><span>总云量</span></div>
+                    <div class="plan-fact"><strong>18°</strong><span>月亮高度</span></div>
+                    <div class="plan-fact"><strong>3/5</strong><span>准备完成</span></div>
+                  </div>
+                </a>
+              </section>
+
+              <section class="section-block" aria-labelledby="routine-heading">
+                <div class="section-heading"><h3 id="routine-heading">日常</h3></div>
+                <div class="group-card">
+                  <a class="entry-row" href="#plan-detail">
+                    <span class="icon-well violet"><img class="icon" src="assets/icons/calendar-days.svg" alt=""></span>
+                    <span class="entry-copy"><strong>观星计划</strong><span>1 个今晚计划 · 2 个准备项待完成</span></span>
+                    <span class="entry-meta">打开 <img src="assets/icons/chevron-right.svg" alt=""></span>
+                  </a>
+                  <a class="entry-row" href="contribution.html">
+                    <span class="icon-well moon"><img class="icon" src="assets/icons/notebook-tabs.svg" alt=""></span>
+                    <span class="entry-copy"><strong>现场反馈与更正</strong><span>2 条待审核 · 1 条需要补充</span></span>
+                    <span class="entry-meta"><span class="status-pill warning">3</span><img src="assets/icons/chevron-right.svg" alt=""></span>
+                  </a>
+                  <button class="entry-row" type="button">
+                    <span class="icon-well"><img class="icon" src="assets/icons/bell.svg" alt=""></span>
+                    <span class="entry-copy"><strong>消息</strong><span>投稿状态、计划提醒与恢复通知</span></span>
+                    <span class="entry-meta">1 条 <img src="assets/icons/chevron-right.svg" alt=""></span>
+                  </button>
+                </div>
+              </section>
+
+              <div class="notification warning" style="margin-top:18px">
+                <span class="icon-well moon"><img class="icon" src="assets/icons/wifi-off.svg" alt=""></span>
+                <div><strong>天气数据使用上次成功结果</strong><p>静态计划仍保留；恢复联网后只刷新动态条件。</p></div>
+                <button class="control ghost compact" type="button">重试</button>
+              </div>
+            </div>
+          </div>
+          <nav class="phone-nav" aria-label="主导航">
+            <a href="index.html"><img src="assets/icons/map.svg" alt="">地图</a>
+            <a class="active" href="#my-home" aria-current="page"><img src="assets/icons/user-round.svg" alt="">我的</a>
+          </nav>
+        </section>
+      </article>
+
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>今晚计划</strong><code>plan-editor</code></div>
+        <section class="phone-frame" id="plan-detail" aria-label="今晚计划详情 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content without-nav">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <button class="icon-button back-button" type="button" aria-label="返回我的">
+                  <img class="icon" src="assets/icons/arrow-left.svg" alt="">
+                </button>
+                <div class="appbar-copy" style="flex:1"><h3>今晚计划</h3><p>出发前再复核动态条件</p></div>
+                <button class="icon-button" type="button" aria-label="更多计划操作"><img class="icon" src="assets/icons/ellipsis.svg" alt=""></button>
+              </header>
+
+              <section class="plan-hero">
+                <span class="eyebrow">值得考虑 · 主时窗 22:40–23:50</span>
+                <h3>深圳市天文台</h3>
+                <p>海岸南地 · 路线约 42 km · 预计 58 分钟</p>
+                <div class="plan-facts">
+                  <div class="plan-fact"><strong>21:30</strong><span>建议出发</span></div>
+                  <div class="plan-fact"><strong>22:28</strong><span>预计到达</span></div>
+                  <div class="plan-fact"><strong>01:10</strong><span>备选结束</span></div>
+                </div>
+              </section>
+
+              <section class="section-block">
+                <div class="section-heading"><h3>出发前复核</h3><span>3 / 5</span></div>
+                <div class="group-card">
+                  <div class="check-row">
+                    <button class="check-toggle done" data-check-toggle type="button" aria-label="路线已复核" aria-pressed="true"><img src="assets/icons/check.svg" alt=""></button>
+                    <div class="entry-copy"><strong>路线与开放信息</strong><span>入口需沿山路步行约 12 分钟</span></div>
+                    <span class="status-pill success">已复核</span>
+                  </div>
+                  <div class="check-row">
+                    <button class="check-toggle done" data-check-toggle type="button" aria-label="照明装备已准备" aria-pressed="true"><img src="assets/icons/check.svg" alt=""></button>
+                    <div class="entry-copy"><strong>红光灯与备用电池</strong><span>避免白光影响暗适应</span></div>
+                    <span class="status-pill success">已准备</span>
+                  </div>
+                  <div class="check-row">
+                    <button class="check-toggle done" data-check-toggle type="button" aria-label="同行人已确认" aria-pressed="true"><img src="assets/icons/check.svg" alt=""></button>
+                    <div class="entry-copy"><strong>同行与返程联系人</strong><span>已同步预计返程时间</span></div>
+                    <span class="status-pill success">已确认</span>
+                  </div>
+                  <div class="check-row">
+                    <button class="check-toggle" data-check-toggle type="button" aria-label="天气仍需复核" aria-pressed="false"><img src="assets/icons/check.svg" alt=""></button>
+                    <div class="entry-copy"><strong>天气与官方预警</strong><span>建议出发前 30 分钟再看一次</span></div>
+                    <span class="status-pill warning">待复核</span>
+                  </div>
+                  <div class="check-row">
+                    <button class="check-toggle" data-check-toggle type="button" aria-label="饮水仍需准备" aria-pressed="false"><img src="assets/icons/check.svg" alt=""></button>
+                    <div class="entry-copy"><strong>饮水与薄外套</strong><span>海风 3.2 m/s，体感可能偏凉</span></div>
+                    <span class="status-pill">未完成</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="section-block">
+                <div class="section-heading"><h3>路线节点</h3><span>地图与计划共用地点</span></div>
+                <div class="surface-card" style="padding:14px">
+                  <div class="timeline">
+                    <div class="timeline-row">
+                      <span class="timeline-dot"></span>
+                      <div><strong>21:30 · 从南山出发</strong><span>预计驾车 46 分钟</span></div>
+                      <time>START</time>
+                    </div>
+                    <div class="timeline-row">
+                      <span class="timeline-dot"></span>
+                      <div><strong>22:16 · 停车区</strong><span>设施信息部分可用，留意现场指引</span></div>
+                      <time>42 km</time>
+                    </div>
+                    <div class="timeline-row">
+                      <span class="timeline-dot"></span>
+                      <div><strong>22:28 · 观测区</strong><span>步行约 12 分钟，带好红光灯</span></div>
+                      <time>ARRIVE</time>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="button-row" style="margin-top:18px">
+                <button class="control leaf" type="button"><img class="icon" src="assets/icons/navigation.svg" alt="">出发前复核路线</button>
+                <button class="control secondary" type="button"><img class="icon" src="assets/icons/send.svg" alt="">分享摘要</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>设置</strong><code>settings-form</code></div>
+        <section class="phone-frame" id="settings" aria-label="设置页面 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content without-nav">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <button class="icon-button back-button" type="button" aria-label="返回我的"><img class="icon" src="assets/icons/arrow-left.svg" alt=""></button>
+                <div class="appbar-copy" style="flex:1"><h3>设置</h3><p>显示、权限与数据</p></div>
+              </header>
+
+              <section aria-labelledby="display-heading">
+                <div class="section-heading"><h3 id="display-heading">显示模式</h3><span data-mode-output>跟随系统</span></div>
+                <div class="surface-card" style="padding:12px">
+                  <div class="mode-strip" data-mode-strip aria-label="显示模式">
+                    <button class="active" type="button" data-mode="system" data-mode-label="跟随系统" aria-pressed="true">跟随系统</button>
+                    <button type="button" data-mode="night" data-mode-label="夜间" aria-pressed="false">夜间</button>
+                    <button type="button" data-mode="observation" data-mode-label="观测红光" aria-pressed="false">观测红光</button>
+                  </div>
+                  <p style="margin:10px 4px 2px;color:var(--ink-soft);font-size:10px">观测红光是封闭显示模式；退出后回到进入前的模式与页面位置。</p>
+                </div>
+              </section>
+
+              <section class="section-block" aria-labelledby="permission-heading">
+                <div class="section-heading"><h3 id="permission-heading">权限与隐私</h3></div>
+                <div class="group-card">
+                  <div class="switch-row">
+                    <div class="switch-copy"><strong>附近地点</strong><span>仅在地图定位时读取，可手动选择城市</span></div>
+                    <button class="switch" role="switch" type="button" aria-checked="true" aria-label="附近地点已开启" data-on-label="附近地点已开启" data-off-label="附近地点已关闭"></button>
+                  </div>
+                  <div class="switch-row">
+                    <div class="switch-copy"><strong>方位天空</strong><span>只在页面前台跟随设备方向，不上传传感器流</span></div>
+                    <button class="switch" role="switch" type="button" aria-checked="false" aria-label="方位天空已关闭" data-on-label="方位天空已开启" data-off-label="方位天空已关闭"></button>
+                  </div>
+                  <div class="switch-row">
+                    <div class="switch-copy"><strong>精确位置投稿</strong><span>每次新地点投稿单独确认，不与地图定位共用许可</span></div>
+                    <button class="switch" role="switch" type="button" aria-checked="false" aria-label="精确位置投稿已关闭" data-on-label="精确位置投稿已开启" data-off-label="精确位置投稿已关闭"></button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="section-block" aria-labelledby="reminders-heading">
+                <div class="section-heading"><h3 id="reminders-heading">提醒</h3></div>
+                <div class="group-card">
+                  <div class="switch-row">
+                    <div class="switch-copy"><strong>出发前条件复核</strong><span>仅针对已创建的今晚计划</span></div>
+                    <button class="switch" role="switch" type="button" aria-checked="true" aria-label="出发前条件复核已开启"></button>
+                  </div>
+                  <div class="switch-row">
+                    <div class="switch-copy"><strong>投稿状态变化</strong><span>退回补充、接收与拒绝</span></div>
+                    <button class="switch" role="switch" type="button" aria-checked="true" aria-label="投稿状态变化已开启"></button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="section-block" aria-labelledby="data-heading">
+                <div class="section-heading"><h3 id="data-heading">数据</h3></div>
+                <div class="group-card">
+                  <button class="entry-row" type="button">
+                    <span class="icon-well violet"><img class="icon" src="assets/icons/download.svg" alt=""></span>
+                    <span class="entry-copy"><strong>下载我的数据</strong><span>计划、投稿与账户设置</span></span>
+                    <span class="entry-meta"><img src="assets/icons/chevron-right.svg" alt=""></span>
+                  </button>
+                  <button class="entry-row" type="button">
+                    <span class="icon-well coral"><img class="icon" src="assets/icons/trash-2.svg" alt=""></span>
+                    <span class="entry-copy"><strong>删除账户</strong><span>先说明影响，再进行身份确认</span></span>
+                    <span class="entry-meta"><img src="assets/icons/chevron-right.svg" alt=""></span>
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <article class="frame-cell">
+        <div class="frame-caption"><strong>内容导入 · 条件启用</strong><code>miniapp-profile-content</code></div>
+        <section class="phone-frame" id="profile-import" aria-label="条件启用的内容导入页面 390×844">
+          <div class="phone-scroll">
+            <div class="phone-content without-nav">
+              <div class="phone-safe-top"></div>
+              <header class="appbar">
+                <button class="icon-button back-button" type="button" aria-label="返回"><img class="icon" src="assets/icons/arrow-left.svg" alt=""></button>
+                <div class="appbar-copy" style="flex:1"><h3>导入观星记录</h3><p>功能启用后的独立流程，不在当前“我的”入口展示</p></div>
+              </header>
+
+              <div class="step-rail" aria-label="导入步骤 2 / 5">
+                <span class="done"></span><span class="current"></span><span></span><span></span><span></span>
+              </div>
+
+              <section class="field-stack" aria-labelledby="source-heading">
+                <div>
+                  <div class="field-label"><span id="source-heading">来源</span><small>1 / 5</small></div>
+                  <div class="import-source">
+                    <span class="icon-well violet"><img class="icon" src="assets/icons/link.svg" alt=""></span>
+                    <div><strong>https://example.com/my-night-note</strong><span>允许的 HTTPS 地址 · 未声称与来源平台合作</span></div>
+                  </div>
+                </div>
+                <div class="inline-note">
+                  <span class="icon-well violet"><img class="icon" src="assets/icons/shield-check.svg" alt=""></span>
+                  <div><strong>解析不会覆盖你的编辑</strong><p>若解析失败，可继续手动整理；“复制链接”始终可用。</p></div>
+                  <button class="control ghost compact" type="button">复制</button>
+                </div>
+              </section>
+
+              <section class="section-block field-stack" aria-labelledby="draft-heading">
+                <div class="section-heading"><h3 id="draft-heading">整理草稿</h3><span>2 / 5</span></div>
+                <label>
+                  <span class="field-label"><span>标题</span><small>已从来源提取，可编辑</small></span>
+                  <input class="text-field" value="海岸边第一次看见夏季银河">
+                </label>
+                <label>
+                  <span class="field-label"><span>正文摘要</span><small>不会公开原始定位元数据</small></span>
+                  <textarea class="text-area">22:40 左右云层短暂散开，南侧视野较开阔。现场入口照明偏亮，步行路段需要留意。</textarea>
+                </label>
+              </section>
+
+              <section class="section-block" aria-labelledby="association-heading">
+                <div class="section-heading"><h3 id="association-heading">关联地点</h3><span>3 / 5</span></div>
+                <div class="group-card">
+                  <label class="entry-row">
+                    <span class="icon-well"><img class="icon" src="assets/icons/map-pinned.svg" alt=""></span>
+                    <span class="entry-copy"><strong>已有正式地点</strong><span>深圳市天文台 · spot_0182</span></span>
+                    <input type="radio" name="association" checked aria-label="关联已有正式地点">
+                  </label>
+                  <label class="entry-row">
+                    <span class="icon-well moon"><img class="icon" src="assets/icons/map-pin-plus.svg" alt=""></span>
+                    <span class="entry-copy"><strong>独立地点提议</strong><span>只创建待审核提议，不创建正式地点</span></span>
+                    <input type="radio" name="association" aria-label="创建独立地点提议">
+                  </label>
+                </div>
+              </section>
+
+              <section class="section-block">
+                <label class="consent-card">
+                  <input type="checkbox">
+                  <span><strong>我有权提交这些文字和媒体</strong><span>提交后仍需内容审核、位置净化与地点身份核对；不会直接公开。</span></span>
+                </label>
+              </section>
+
+              <div class="button-row" style="margin-top:16px">
+                <button class="control leaf" type="button">预览后提交</button>
+                <button class="control secondary" type="button" data-save-draft>保存草稿</button>
+              </div>
+
+              <div class="notification success" data-live-feedback hidden style="margin-top:12px" aria-live="polite">
+                <span class="icon-well"><img class="icon" src="assets/icons/check.svg" alt=""></span>
+                <div><strong data-live-feedback-text>草稿已保存</strong><p>编辑内容不会被后续解析覆盖。</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+  </main>
+  <script src="assets/current-review.js"></script>
+</body>
+</html>

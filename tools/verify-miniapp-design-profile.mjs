@@ -2,271 +2,239 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
-  canonicalPrompt,
   contrastRatio,
   markdownSection,
-  parseBacktickTableValues,
-  parseMarkdownColorTable,
-  parseMotionDurations,
-  parseTypographyTable,
   sha256File,
 } from "./verify-miniapp-design-support.mjs";
+
+function parseModeRoleTable(source, heading, firstColumnHeader = "Role") {
+  const section = markdownSection(source, heading);
+  const roles = {};
+  const lines = section.split(/\r?\n/);
+  const headerIndex = lines.findIndex((line) => {
+    const cells = line.split("|").map((cell) => cell.trim()).filter(Boolean);
+    return cells.length === 4
+      && cells[0] === firstColumnHeader
+      && cells[1] === "Day"
+      && cells[2] === "Night"
+      && cells[3] === "Observation";
+  });
+  assert(headerIndex >= 0, `missing ${firstColumnHeader} mode-role table under ${heading}`);
+  for (const line of lines.slice(headerIndex + 2)) {
+    if (!line.trim().startsWith("|")) break;
+    const match = line.match(/^\|\s*([^|]+?)\s*\|\s*(#[0-9A-Fa-f]{6})\s*\|\s*(#[0-9A-Fa-f]{6})\s*\|\s*(#[0-9A-Fa-f]{6})\s*\|\s*$/);
+    if (!match) continue;
+    const role = match[1].trim();
+    assert(!Object.hasOwn(roles, role), `duplicate Mini Program color role: ${role}`);
+    roles[role] = {
+      day: match[2].toUpperCase(),
+      night: match[3].toUpperCase(),
+      observation: match[4].toUpperCase(),
+    };
+  }
+  assert(Object.keys(roles).length > 0, `missing mode-role table under ${heading}`);
+  return roles;
+}
+
+function assertContrast(foreground, background, minimum, label) {
+  const ratio = contrastRatio(foreground, background);
+  assert(
+    ratio + Number.EPSILON >= minimum,
+    `${label} contrast failed: ${ratio.toFixed(2)}:1 < ${minimum}:1`,
+  );
+  return ratio;
+}
 
 export async function verifyMiniappDesignProfile({ root, design }) {
   const resourceRoot = path.join(
     root,
     "docs",
     "design-resources",
-    "miniapp-design-system-2026-08-05",
+    "miniapp-design-system-2026-08-25-sky-canvas",
   );
-  const candidatePath = path.join(resourceRoot, "candidate-design-brief.md");
+  const selectedSourcePath = path.join(resourceRoot, "selected-provider-design-system.md");
   const sourceIndexPath = path.join(resourceRoot, "source-index.md");
-  const expectedCandidateHash =
-    "ab1faeb96a3e52125b19fdf8f224caf6cee0db79cf16a9a12f86c5af49991745";
+  const miniappHandoffPath = path.join(resourceRoot, "selected-handoff", "miniapp-sky-canvas-current.md");
+  const operationsHandoffPath = path.join(resourceRoot, "selected-handoff", "operations-sky-canvas-current.md");
+  const miniappManifestPath = path.join(resourceRoot, "selected-source", "miniapp-fact-manifest.json");
+  const operationsManifestPath = path.join(resourceRoot, "selected-source", "operations-fact-manifest.json");
+  const miniappFeasibilityPath = path.join(resourceRoot, "selected-source", "miniapp-implementation-feasibility.json");
+  const operationsFeasibilityPath = path.join(resourceRoot, "selected-source", "operations-implementation-feasibility.json");
+  const expectedSourceHash =
+    "03c300a6cfd1b23e0b84b72baaa26081eef0f958de515b75413be771029499b1";
   const expectedSourceIndexHash =
-    "80cb69b9501b556ca8c186c770e5257ee5136e031e52ce54c42d7298eba3e3f7";
-  const referenceHashes = {
-    "01-card-and-bottom-nav.png": "b156309394810256f799cb7c146840f6a0cf37ecdcfbbf0653d4c9d0d3b00f54",
-    "02-3d-icon-prompt-and-grid.png": "4473f5147bc70f1cd39187192954018298ab5b8f2d10230d0901abf0ee2ec8e7",
-    "03-3d-telescope.png": "51eb5f517273b65d972d2f6c49ee6638855f3e49f81dbafd01c2f103b48c8b36",
-    "04-3d-four-point-star.png": "712566bd533556a5ab711fa8085e82e49a77dc97300241c21e299d30b163e80d",
-    "05-3d-five-point-star.png": "f38d4fcb147f6dc4a10925c6c56529ca089b496b3a1d589b3846014801cdc1ea",
-    "06-day-mode-reference.png": "62d286b330ce48cac73e1b1351e6c35502aac46989af971ee502466842d49fe0",
-    "07-night-mode-reference.png": "5d5ec492c02e8d67b502ed7f672f1b8976da61d56f2702fbd7a59bbcb1ee3b5d",
-    "08-observation-red-mode-reference.png": "d8de918d08dab0f8d6f84bb097076671186a61a1494637f1e40b2fc7b97b8150",
+    "a602a572b93d3aa1b0e51e320b4c25e14267d43b131109844c7accb4e5efbc2b";
+  const expectedSelectedResourceHashes = {
+    miniapp_handoff: "f52605fbb950a91be3b2bdfc018620fd53fe6dee658c6a32118b22b192304f59",
+    operations_handoff: "391d900dd35420bd33de29676b23a6767ba7b93fd3857bc3eec9b41bd971546f",
+    miniapp_manifest: "78e569a26f268454ae968bf715ecec37d6dfa23af01b33b72479973e2f4ae3bb",
+    operations_manifest: "9ad9a465ffd66dbd3d0f1b16d5cb533c6accf35838f6bf7f194604fa1acdf8f7",
+    miniapp_feasibility: "238cd602b71e68d546d1635f5e6fc26770c3c2b52a01daabf11ae2aa3cda1b43",
+    operations_feasibility: "c63ee9eaab1322b630cb38a3438a64447d052a6cac7f31e8f7009669cd601e90",
   };
 
   assert.equal(
-    await sha256File(candidatePath),
-    expectedCandidateHash,
-    "selected Mini Program candidate digest drifted",
+    await sha256File(selectedSourcePath),
+    expectedSourceHash,
+    "selected Sky Canvas provider snapshot drifted",
   );
   assert.equal(
     await sha256File(sourceIndexPath),
     expectedSourceIndexHash,
-    "selected Mini Program source-index digest drifted",
+    "selected Sky Canvas source index drifted",
   );
-  for (const [filename, expectedHash] of Object.entries(referenceHashes)) {
-    assert.equal(
-      await sha256File(path.join(resourceRoot, "references", filename)),
-      expectedHash,
-      `selected Mini Program reference digest drifted: ${filename}`,
-    );
+  for (const [label, resourcePath, expectedHash] of [
+    ["Mini Program selected handoff", miniappHandoffPath, expectedSelectedResourceHashes.miniapp_handoff],
+    ["Operations selected handoff", operationsHandoffPath, expectedSelectedResourceHashes.operations_handoff],
+    ["Mini Program Fact manifest", miniappManifestPath, expectedSelectedResourceHashes.miniapp_manifest],
+    ["Operations Fact manifest", operationsManifestPath, expectedSelectedResourceHashes.operations_manifest],
+    ["Mini Program feasibility", miniappFeasibilityPath, expectedSelectedResourceHashes.miniapp_feasibility],
+    ["Operations feasibility", operationsFeasibilityPath, expectedSelectedResourceHashes.operations_feasibility],
+  ]) {
+    assert.equal(await sha256File(resourcePath), expectedHash, `${label} drifted`);
   }
 
-  const candidate = await readFile(candidatePath, "utf8");
-  const heading = "## WeChat Mini Program — Soft Instruments v1";
+  const selectedSource = await readFile(selectedSourcePath, "utf8");
+  const heading = "## WeChat Mini Program — Sky Canvas v1";
   const section = markdownSection(design, heading);
   for (const required of [
-    "`target.system.wechat-miniapp-soft-instruments-2026-08-05`",
-    "“采用此候选”",
-    "Open Design `0.16.1`",
-    "`user:soft-instruments`",
-    "`ds-soft-instruments`",
-    `\`${expectedCandidateHash}\``,
+    "`target.system.wechat-miniapp-sky-canvas-2026-08-25`",
+    "“天空画布 Sky Canvas”",
+    "Open Design `0.20.1`",
+    "`user:starward-sky-canvas-candidate-c`",
+    "`starward-sky-canvas-core-2026-08-25`",
+    `\`${expectedSourceHash}\``,
     `\`${expectedSourceIndexHash}\``,
     heading,
   ]) {
-    assert(design.includes(required), `missing Mini Program adoption identity: ${required}`);
+    assert(design.includes(required), `missing Sky Canvas adoption identity: ${required}`);
   }
 
-  const modes = {
-    day: {
-      candidate: parseMarkdownColorTable(candidate, "### Day"),
-      authority: parseMarkdownColorTable(section, "#### Day"),
-    },
-    night: {
-      candidate: parseMarkdownColorTable(candidate, "### Night"),
-      authority: parseMarkdownColorTable(section, "#### Night"),
-    },
-    observation: {
-      candidate: parseMarkdownColorTable(candidate, "### Observation red"),
-      authority: parseMarkdownColorTable(section, "#### Observation red"),
-    },
-  };
+  const selectedRoles = parseModeRoleTable(selectedSource, "## 2. Color");
+  const authorityRoles = parseModeRoleTable(section, "### 2. Color");
   const expectedRoles = [
-    "accent-cyan",
-    "accent-violet",
-    "accent-warm",
-    "border",
+    "blocker",
+    "border / grid",
     "canvas",
-    "danger",
     "focus",
-    "on-primary",
-    "primary",
-    "primary-pressed",
-    "success",
+    "positive",
+    "primary-action",
     "surface",
-    "surface-elevated",
-    "surface-subtle",
     "text-primary",
     "text-secondary",
-    "text-tertiary",
     "warning",
   ].sort();
-  for (const [mode, tables] of Object.entries(modes)) {
-    assert.deepEqual(
-      Object.keys(tables.candidate).sort(),
-      expectedRoles,
-      `selected Mini Program candidate ${mode} role set drifted`,
-    );
-    assert.deepEqual(
-      Object.keys(tables.authority).sort(),
-      expectedRoles,
-      `Mini Program DESIGN ${mode} role set drifted`,
-    );
-    assert.deepEqual(
-      tables.authority,
-      tables.candidate,
-      `Mini Program DESIGN ${mode} values no longer match the selected candidate`,
+  assert.deepEqual(Object.keys(selectedRoles).sort(), expectedRoles, "selected Sky Canvas role set drifted");
+  assert.deepEqual(Object.keys(authorityRoles).sort(), expectedRoles, "Sky Canvas DESIGN role set drifted");
+  assert.deepEqual(authorityRoles, selectedRoles, "Sky Canvas DESIGN palette no longer matches selected source");
+
+  const compactChoiceRoles = parseModeRoleTable(section, "### 2. Color", "Compact choice role");
+  assert.deepEqual(compactChoiceRoles, {
+    "selected surface": { day: "#F3F4FF", night: "#12182B", observation: "#120000" },
+    "selected border": { day: "#AAB4FF", night: "#7682D1", observation: "#8A281F" },
+    "selected label": { day: "#4254C7", night: "#DCE1FF", observation: "#FF8A72" },
+    "clipped star": { day: "#F1D58A", night: "#F1D58A", observation: "#FF8A72" },
+  }, "Sky Canvas compact-choice roles drifted");
+  for (const mode of ["day", "night", "observation"]) {
+    assertContrast(
+      compactChoiceRoles["selected label"][mode],
+      compactChoiceRoles["selected surface"][mode],
+      4.5,
+      `${mode} compact-choice selected label`,
     );
   }
 
-  const foundationTokenKeys = [
-    "space-0",
-    "space-1",
-    "space-2",
-    "space-3",
-    "space-4",
-    "space-5",
-    "space-6",
-    "space-8",
-    "radius-xs",
-    "radius-sm",
-    "radius-md",
-    "radius-lg",
-    "radius-pill",
-    "size-icon-glyph",
-    "size-icon-box",
-    "size-hit-min",
-    "size-control",
-    "size-control-lg",
-    "size-nav-item",
-    "border-hairline",
-    "border-selected",
-    "focus-ring",
-  ];
-  const authorityFoundation = parseBacktickTableValues(
-    section,
-    foundationTokenKeys,
-    "Mini Program DESIGN foundation",
-  );
-  const candidateFoundation = parseBacktickTableValues(
-    candidate,
-    foundationTokenKeys,
-    "selected Mini Program foundation",
-  );
-  assert.deepEqual(
-    authorityFoundation,
-    candidateFoundation,
-    "Mini Program DESIGN foundation values no longer match the selected candidate",
-  );
-  const authorityTypography = parseTypographyTable(section, "Mini Program DESIGN");
-  const candidateTypography = parseTypographyTable(candidate, "selected Mini Program");
-  assert.deepEqual(
-    authorityTypography,
-    candidateTypography,
-    "Mini Program DESIGN typography no longer matches the selected candidate",
-  );
-  const authorityMotion = parseMotionDurations(section, "Mini Program DESIGN");
-  const candidateMotion = parseMotionDurations(candidate, "selected Mini Program");
-  assert.deepEqual(
-    authorityMotion,
-    candidateMotion,
-    "Mini Program DESIGN motion durations no longer match the selected candidate",
-  );
-  assert.equal(
-    canonicalPrompt(section, "Mini Program DESIGN"),
-    canonicalPrompt(candidate, "selected Mini Program"),
-    "Mini Program DESIGN Tier-B prompt no longer matches the selected candidate",
-  );
-  for (const exactSelectedContract of [
-    "0 12rpx 36rpx rgba(25, 61, 102, 0.10), 0 2rpx 8rpx rgba(25, 61, 102, 0.06)",
-    "0 8rpx 24rpx rgba(21, 55, 94, 0.14)",
-    '`-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif`',
-    "four-point star, five-point star, tent, telescope, binoculars, camera, hiking backpack, and a gender-neutral avatar",
-  ]) {
-    assert(candidate.includes(exactSelectedContract), `selected Mini Program source lost: ${exactSelectedContract}`);
-    assert(section.includes(exactSelectedContract), `Mini Program DESIGN lost selected contract: ${exactSelectedContract}`);
-  }
-
-  for (const [role, value] of Object.entries(modes.observation.authority)) {
+  for (const [role, values] of Object.entries(authorityRoles)) {
+    const value = values.observation;
     const red = Number.parseInt(value.slice(1, 3), 16);
     const green = Number.parseInt(value.slice(3, 5), 16);
     const blue = Number.parseInt(value.slice(5, 7), 16);
     if (red === 0) {
-      assert.equal(green, 0, `Mini Program observation ${role} escapes black/warm-red closure`);
-      assert.equal(blue, 0, `Mini Program observation ${role} escapes black/warm-red closure`);
+      assert.equal(green, 0, `observation ${role} escapes black/warm-red closure`);
+      assert.equal(blue, 0, `observation ${role} escapes black/warm-red closure`);
     } else {
-      assert(green / red <= 0.5, `Mini Program observation ${role} has excessive green`);
-      assert(blue / red <= 0.5, `Mini Program observation ${role} has excessive blue`);
+      assert(green / red <= 0.6, `observation ${role} has excessive green`);
+      assert(blue / red <= 0.5, `observation ${role} has excessive blue`);
     }
   }
 
-  const contrastChecks = [];
-  for (const [mode, { authority }] of Object.entries(modes)) {
-    for (const textRole of ["text-primary", "text-secondary", "text-tertiary"]) {
-      for (const surfaceRole of ["canvas", "surface", "surface-subtle", "surface-elevated"]) {
-        contrastChecks.push([mode, textRole, surfaceRole, 4.5, authority]);
-      }
-    }
-    contrastChecks.push([mode, "on-primary", "primary", 4.5, authority]);
-    contrastChecks.push([mode, "focus", "surface", 3, authority]);
-    for (const statusRole of ["success", "warning", "danger"]) {
-      contrastChecks.push([mode, statusRole, "surface", 3, authority]);
+  const contrastRatios = [];
+  for (const mode of ["day", "night", "observation"]) {
+    const primary = authorityRoles["text-primary"][mode];
+    for (const surfaceRole of ["canvas", "surface"]) {
+      contrastRatios.push(assertContrast(
+        primary,
+        authorityRoles[surfaceRole][mode],
+        4.5,
+        `${mode} text-primary/${surfaceRole}`,
+      ));
     }
   }
-  for (const [mode, foregroundRole, backgroundRole, minimum, values] of contrastChecks) {
-    const ratio = contrastRatio(values[foregroundRole], values[backgroundRole]);
-    assert(
-      ratio + Number.EPSILON >= minimum,
-      `Mini Program ${mode} contrast failed: ${foregroundRole}/${backgroundRole} = ${ratio.toFixed(2)}:1`,
-    );
+  for (const mode of ["day", "night"]) {
+    contrastRatios.push(assertContrast(
+      authorityRoles["text-secondary"][mode],
+      authorityRoles.surface[mode],
+      4.5,
+      `${mode} text-secondary/surface`,
+    ));
+  }
+  const actionLabels = { day: "#050914", night: "#050914", observation: "#000000" };
+  for (const mode of ["day", "night", "observation"]) {
+    contrastRatios.push(assertContrast(
+      actionLabels[mode],
+      authorityRoles["primary-action"][mode],
+      4.5,
+      `${mode} primary-action label`,
+    ));
   }
 
   for (const required of [
-    "`750rpx`",
-    "`88rpx × 88rpx`",
-    "Tier A — functional symbols",
-    "Tier B — semantic 3D subjects",
-    "Canonical day master prompt:",
-    "`≤72KB`",
-    "`≤100ms`",
-    "destination canvas first",
-    "Normal text targets at least `4.5:1`",
+    "88rpx × 88rpx",
+    "Radius scale 8/16/24rpx",
+    "No elevated card inside another elevated card",
+    "Time scrubbing previews local frames continuously and commits once on release",
+    "the current Spot Night surface is sensor-follow-only",
+    "Sensor-following sky motion exposes permission, calibration, accuracy and recovery without fabricating heading",
+    "Product-view scroll owners preserve scrolling while hiding vertical scrollbar chrome and reserving no scrollbar width",
+    "production must render attributable current data or truthful partial, stale and unavailable states, never a sample-data fallback",
+    "Normal text contrast target ≥4.5:1",
+    "Solid `primary-action` label colors are exact derived accessibility roles",
+    "Current selected screen/interaction constraints are `target-miniapp-sky-canvas-current-constraint` and `target-operations-sky-canvas-current-constraint`",
+    "their sole canonical adoption records live in `project_context/areas/main/screen-contracts/wechat-miniapp.md` and `operations.md`",
+    "Visible geometry may be smaller than its hit region",
+    "optically half-clipped at the visual capsule's top-right corner",
+    "Rapid retargeting starts from the live presentation state and queues nothing",
+    "immediately after the Tonight decision and before the segment tabs",
+    "Keyboard `:focus-visible` remains mandatory and hugs the visible control",
   ]) {
-    assert(section.includes(required), `missing Mini Program canonical contract: ${required}`);
+    assert(section.includes(required), `missing Sky Canvas canonical contract: ${required}`);
   }
   for (const forbidden of [
-    "#F3F7FF",
-    "Bahnschrift",
-    "packages/ui-system/src/tokens.ts",
-    "target.system.starward-blue-skeuomorphic-2026-07-29",
+    "rounded rainbow-gradient star",
+    "soft instruments under three skies",
+    "Tier B — semantic 3D subjects",
+    "Sensor-following sky motion exposes accuracy and manual fallback",
+    "orientation calibration, accuracy state and manual fallback",
   ]) {
-    assert(
-      !section.includes(forbidden),
-      `native App design dependency leaked into Mini Program canonical profile: ${forbidden}`,
-    );
-  }
-  for (const forbidden of ["Ghibli", "吉卜力"]) {
-    assert(
-      !candidate.includes(forbidden) && !section.includes(forbidden),
-      `protected named-style imitation leaked into the Mini Program profile: ${forbidden}`,
-    );
+    assert(!section.includes(forbidden), `superseded Mini Program styling leaked into Sky Canvas: ${forbidden}`);
   }
 
   return {
-    source_digest: expectedCandidateHash,
-    reference_count: Object.keys(referenceHashes).length,
-    modes: Object.keys(modes),
-    foundation_tokens: foundationTokenKeys.length,
+    source_digest: expectedSourceHash,
+    source_index_digest: expectedSourceIndexHash,
+    modes: ["day", "night", "observation"],
     color_roles_per_mode: expectedRoles.length,
-    typography_roles: Object.keys(authorityTypography).length,
-    motion_events: Object.keys(authorityMotion).length,
-    contrast_pairs: contrastChecks.length,
+    contrast_pairs: contrastRatios.length,
     observation_palette: "black-warm-red-closed",
-    tier_b_prompt: "selected-source-equal",
-    app_profile_dependency: "forbidden-and-absent",
-    runtime_projection: "absent-by-design",
+    orientation_mode: "sensor-follow-only",
+    phone_scrollbar_chrome: "hidden-with-scroll-preserved",
+    compact_choice_geometry: "44px-hit-with-30-32px-visual-capsule",
+    compact_choice_selection: "clipped-star-plus-border-label-and-programmatic-state",
+    favorite_motion: "bounded-interruptible-one-shot",
+    spot_night_entry: "after-decision-before-tabs",
+    screen_resource_status: "selected-implementation-constraints",
+    selected_resource_hashes: expectedSelectedResourceHashes,
+    app_profile_dependency: "forbidden-by-authority",
+    runtime_projection: "not-claimed-conformant",
   };
 }

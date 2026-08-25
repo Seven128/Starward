@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/icons/star.svg" type="image/svg+xml">
+  <title>Sky Canvas · 组件与状态工作台</title>
+  <link rel="stylesheet" href="assets/current-review.css">
+</head>
+<body>
+  <main class="review-shell">
+    <header class="review-topbar">
+      <div class="review-brand">
+        <strong>今晚去观星 · Sky Canvas</strong>
+        <span>唯一当前设计资源 · 共享视觉语法 / 控件状态 / 开发消费说明</span>
+      </div>
+      <nav class="review-nav" aria-label="设计资源页面">
+        <a href="index.html">核心体验</a>
+        <a href="supporting.html">我的与计划</a>
+        <a href="contribution.html">投稿闭环</a>
+        <a href="operations.html">运营工作台</a>
+        <a href="workbench.html" aria-current="page">组件与状态</a>
+      </nav>
+    </header>
+
+    <section class="review-hero" aria-labelledby="page-title">
+      <div class="review-hero-copy">
+        <span class="review-kicker">Shared design grammar</span>
+        <h1 id="page-title">一套轻快的户外语法，服务地图、天文、投稿与运营。</h1>
+        <p>这里不是第二个页面版本，而是当前页面实际复用的 token、字体角色、图标、选择态、通知、Bottom Sheet、状态语义和高影响操作模式。它用于开发映射，不代表生产组件库已选型。</p>
+      </div>
+      <aside class="review-legend" aria-label="工作台边界">
+        <div class="legend-row"><strong>生产接点</strong><span>tokens.scss + semantic-asset adapter + 现有组件目录</span></div>
+        <div class="legend-row"><strong>允许来源</strong><span>Lucide 通用图标；品牌天文图形走项目资产</span></div>
+        <div class="legend-row"><strong>禁止</strong><span>每屏手绘图标、第二套 token、重型不可主题化 UI 系统</span></div>
+        <div class="legend-row"><strong>验证</strong><span>WEAPP / Admin / 真机与真实数据仍需生产候选证明</span></div>
+      </aside>
+    </section>
+
+    <section class="workbench-grid" aria-label="组件与状态标本">
+      <article class="specimen wide">
+        <h3>语义色，不按页面命名</h3>
+        <p>同一个语义角色可投影到日间、夜间和封闭观测红光；下面是当前日间评审载体。</p>
+        <div class="token-strip">
+          <div class="token-swatch" style="--swatch:#fffdf8">Paper<br>#FFFDF8</div>
+          <div class="token-swatch" style="--swatch:#182338;color:#fff">Ink<br>#182338</div>
+          <div class="token-swatch" style="--swatch:#dff2e8">Path green<br>#DFF2E8</div>
+          <div class="token-swatch" style="--swatch:#edf0ff">Time violet<br>#EDF0FF</div>
+          <div class="token-swatch" style="--swatch:#f3d878">Moon gold<br>#F3D878</div>
+          <div class="token-swatch" style="--swatch:#ffebe6">Risk coral<br>#FFEBE6</div>
+        </div>
+      </article>
+
+      <article class="specimen">
+        <h3>字体角色</h3>
+        <p>平台中文字体保持自然；只让时间、角度、距离和风速进入 instrument face。</p>
+        <div class="type-ramp">
+          <span><code>Display 26/1.1</code><b class="display">今晚去看星星</b></span>
+          <span><code>Body 13/1.5</code><b class="body">海风会让夜里体感更凉</b></span>
+          <span><code>Instrument 15</code><b class="instrument">22:40 · 18° · 3.2 m/s</b></span>
+        </div>
+      </article>
+
+      <article class="specimen">
+        <h3>圆角与密度</h3>
+        <p>圆角表达友好，不用卡片套卡片。视觉胶囊可小，点击区域仍保持 44px。</p>
+        <div class="state-strip">
+          <span class="status-pill">10 · 微型</span>
+          <span class="status-pill violet">13 · 选择</span>
+          <span class="status-pill success">18 · 分组</span>
+          <span class="status-pill warning">24 · 面板</span>
+        </div>
+        <div class="button-row" style="margin-top:14px"><button class="control compact" type="button">主动作</button><button class="control secondary compact" type="button">次动作</button><button class="control ghost compact" type="button">安静动作</button></div>
+      </article>
+
+      <article class="specimen wide">
+        <h3>紧凑选择态</h3>
+        <p>字体与胶囊保持轻巧；选中时大号月光星从右上角被圆角裁掉一部分。hover 不生成额外外框，键盘 focus 紧贴可见胶囊。</p>
+        <div class="topic-cloud">
+          <button class="chip" data-toggle-pressed type="button" aria-pressed="true">今晚推荐</button>
+          <button class="chip" data-toggle-pressed type="button" aria-pressed="false">2 小时内</button>
+          <button class="chip" data-toggle-pressed type="button" aria-pressed="false">少步行</button>
+          <button class="chip" data-toggle-pressed type="button" aria-pressed="false">设施可用</button>
+          <button class="chip" data-toggle-pressed type="button" aria-pressed="false">暗度优先</button>
+        </div>
+        <div class="inline-note" style="margin-top:14px">
+          <span class="icon-well violet"><img class="icon" src="assets/icons/sparkles.svg" alt=""></span>
+          <div><strong>选中反馈是多通道的</strong><p>星角、边线、文字与 aria-pressed 同步，不只依赖颜色。</p></div>
+        </div>
+      </article>
+
+      <article class="specimen">
+        <h3>Finder Sheet extent</h3>
+        <p>点击安静把手依次演示 closed → peek → expanded；没有“展开筛选”文字按钮或重复标题。</p>
+        <div class="sheet-demo" data-sheet-demo data-extent="peek">
+          <div class="sheet-demo-panel">
+            <button class="sheet-handle" data-sheet-handle type="button" aria-expanded="true" aria-label="Finder 筛选面板：半展开，点击切换"></button>
+            <strong>进阶筛选</strong>
+            <p><span data-sheet-state>半展开</span> · 快速条件只在搜索框下方出现一次</p>
+            <div class="topic-cloud" style="margin-top:10px"><span class="status-pill violet">公共交通</span><span class="status-pill">可停车</span><span class="status-pill">洗手间</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="specimen">
+        <h3>通知与恢复</h3>
+        <p>tone 与 placement 分离；一个 owner 同时只展示一条完整通知。</p>
+        <div class="notification success">
+          <span class="icon-well"><img class="icon" src="assets/icons/check.svg" alt=""></span>
+          <div><strong>草稿已保存</strong><p>下次从相同账户继续。</p></div>
+        </div>
+        <div class="notification warning" style="margin-top:8px">
+          <span class="icon-well moon"><img class="icon" src="assets/icons/wifi-off.svg" alt=""></span>
+          <div><strong>使用上次成功结果</strong><p>保留静态内容与恢复动作。</p></div>
+          <button class="control ghost compact" type="button">重试</button>
+        </div>
+      </article>
+
+      <article class="specimen night-specimen wide">
+        <h3>天文信息：图标辅助 + 对齐轨道</h3>
+        <p>图标让条件可扫读，轨道和矩阵仍然拥有数值；不会拆成一墙独立指标卡。</p>
+        <div class="night-band"><img src="assets/icons/sunset.svg" alt=""><span>天文黑夜</span><div class="night-track"></div><strong>22:04–04:52</strong></div>
+        <div class="night-band"><img src="assets/icons/cloud-moon.svg" alt=""><span>总云量</span><div class="night-track" style="background:linear-gradient(90deg,#35455f 0 35%,#638e8b 35% 66%,#35455f 66%)"></div><strong>34%</strong></div>
+        <div class="night-band"><img src="assets/icons/moon-star.svg" alt=""><span>月亮</span><div class="night-track" style="background:linear-gradient(90deg,#35455f 0 54%,#d2b95f 54% 64%,#35455f 64%)"></div><strong>18° / 62%</strong></div>
+        <div class="night-band"><img src="assets/icons/wind.svg" alt=""><span>风</span><div class="night-track" style="background:linear-gradient(90deg,#35455f 0 18%,#638e8b 18% 46%,#35455f 46%)"></div><strong>3.2 m/s</strong></div>
+      </article>
+
+      <article class="specimen">
+        <h3>三条投稿状态轴</h3>
+        <p>永远不用一个“已发布”覆盖三类不同状态。</p>
+        <div class="state-axis"><span>投稿审核</span><strong>已接收 · ACCEPTED</strong></div>
+        <div class="state-axis"><span>证据合并</span><strong>准备合并 · READY</strong></div>
+        <div class="state-axis"><span>公开影响</span><strong>没有 · NONE</strong></div>
+      </article>
+
+      <article class="specimen">
+        <h3>高影响操作</h3>
+        <p>影响说明先于动作；破坏性按钮不和普通主动作共用颜色。</p>
+        <div class="impact-box"><strong>下架会从地图与搜索切断公开读取</strong><p>想去关系、计划和历史不会被删除；用户会看到明确的替换或不可用说明。</p></div>
+        <div class="button-row" style="margin-top:10px"><button class="control secondary compact" type="button">预览影响</button><button class="control danger compact" type="button">确认下架</button></div>
+      </article>
+
+      <article class="specimen">
+        <h3>开关与模式</h3>
+        <p>状态、名称和结果反馈都可被辅助技术读取。</p>
+        <div class="group-card">
+          <div class="switch-row"><div class="switch-copy"><strong>方位天空</strong><span>只在前台读取设备方向</span></div><button class="switch" role="switch" type="button" aria-checked="false" aria-label="方位天空已关闭"></button></div>
+          <div class="switch-row"><div class="switch-copy"><strong>投稿状态变化</strong><span>退回、接收与拒绝</span></div><button class="switch" role="switch" type="button" aria-checked="true" aria-label="投稿状态变化已开启"></button></div>
+        </div>
+      </article>
+
+      <article class="specimen wide">
+        <h3>真实图标资产</h3>
+        <p>通用图标来自本地 Lucide Static 1.33.0；DRA 文件内没有每屏手工绘制的 SVG。生产仍通过 semantic-asset adapter，不直接让页面依赖文件名。</p>
+        <div class="state-strip" aria-label="图标样例">
+          <span class="icon-well"><img class="icon" src="assets/icons/search.svg" alt="搜索"></span>
+          <span class="icon-well violet"><img class="icon" src="assets/icons/filter.svg" alt="筛选"></span>
+          <span class="icon-well moon"><img class="icon" src="assets/icons/moon-star.svg" alt="月亮"></span>
+          <span class="icon-well"><img class="icon" src="assets/icons/wind.svg" alt="风"></span>
+          <span class="icon-well violet"><img class="icon" src="assets/icons/compass.svg" alt="方位"></span>
+          <span class="icon-well moon"><img class="icon" src="assets/icons/tent-tree.svg" alt="户外"></span>
+          <span class="icon-well"><img class="icon" src="assets/icons/file-up.svg" alt="投稿"></span>
+          <span class="icon-well violet"><img class="icon" src="assets/icons/git-compare.svg" alt="合并"></span>
+          <span class="icon-well moon"><img class="icon" src="assets/icons/clipboard-check.svg" alt="评估"></span>
+        </div>
+      </article>
+
+      <article class="specimen">
+        <h3>目标尺寸与输入</h3>
+        <p>可见图形可以紧凑，完整点击目标至少 44px。pointer hover 不扩张几何；keyboard focus 使用贴合可见图形的双环。</p>
+        <div class="button-row"><button class="icon-button" type="button" aria-label="搜索"><img class="icon" src="assets/icons/search.svg" alt=""></button><button class="icon-button" type="button" aria-label="筛选"><img class="icon" src="assets/icons/sliders-horizontal.svg" alt=""></button><button class="icon-button" type="button" aria-label="关闭"><img class="icon" src="assets/icons/x.svg" alt=""></button></div>
+      </article>
+
+      <article class="specimen wide">
+        <h3>开发消费映射</h3>
+        <p>这是实现入口提示，不把 DRA 静态页面伪装成生产契约或验收。</p>
+        <div class="group-card">
+          <div class="entry-row"><span class="icon-well violet"><img class="icon" src="assets/icons/layers-3.svg" alt=""></span><span class="entry-copy"><strong>视觉 token</strong><span>投影到 apps/wechat-miniapp/src/styles/tokens.scss；不要保留旧 .card / .soft-button 视觉真值</span></span><span class="status-pill">mapping</span></div>
+          <div class="entry-row"><span class="icon-well"><img class="icon" src="assets/icons/sparkles.svg" alt=""></span><span class="entry-copy"><strong>通用与天文图标</strong><span>统一进入 semantic-asset adapter；通用库与项目资产共用一个语义入口</span></span><span class="status-pill">adapter</span></div>
+          <div class="entry-row"><span class="icon-well moon"><img class="icon" src="assets/icons/book-open-text.svg" alt=""></span><span class="entry-copy"><strong>表单、通知、Sheet 与状态</strong><span>从 apps/wechat-miniapp/src/components/** 的现有 owner 扩展，不复制页面私有 reducer</span></span><span class="status-pill">owner</span></div>
+          <div class="entry-row"><span class="icon-well coral"><img class="icon" src="assets/icons/shield-check.svg" alt=""></span><span class="entry-copy"><strong>审核与发布</strong><span>apps/admin-web 只消费真实服务状态；DRA fixture 不能作为 API 或发布证据</span></span><span class="status-pill warning">runtime proof</span></div>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="assets/current-review.js"></script>
+</body>
+</html>

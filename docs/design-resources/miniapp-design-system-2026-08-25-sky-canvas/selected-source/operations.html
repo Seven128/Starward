@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/icons/star.svg" type="image/svg+xml">
+  <title>Sky Canvas · 运营审核工作台</title>
+  <link rel="stylesheet" href="assets/current-review.css">
+</head>
+<body>
+  <main class="review-shell">
+    <header class="review-topbar">
+      <div class="review-brand">
+        <strong>今晚去观星 · Sky Canvas</strong>
+        <span>唯一当前设计资源 · Authenticated owner operations</span>
+      </div>
+      <nav class="review-nav" aria-label="设计资源页面">
+        <a href="index.html">核心体验</a>
+        <a href="supporting.html">我的与计划</a>
+        <a href="contribution.html">投稿闭环</a>
+        <a href="operations.html" aria-current="page">运营工作台</a>
+        <a href="workbench.html">组件与状态</a>
+      </nav>
+    </header>
+
+    <section class="review-hero" aria-labelledby="page-title">
+      <div class="review-hero-copy">
+        <span class="review-kicker">Moderate → merge → assess → publish</span>
+        <h1 id="page-title">审核是判断投稿，合并是改事实，上架是单独的完整性决定。</h1>
+        <p>这套桌面工作台把 Queue、Case、媒体核验、Merge Preview/Commit、Publication Assessment、暂停/下架/替换/退役和不可变审计串在同一条可恢复链路中。</p>
+      </div>
+      <aside class="review-legend" aria-label="运营设计约束">
+        <div class="legend-row"><strong>身份边界</strong><span>独立认证的 owner operations Web，不进入小程序</span></div>
+        <div class="legend-row"><strong>写入边界</strong><span>revision + 幂等键 + 后端回执 + audit id</span></div>
+        <div class="legend-row"><strong>发布边界</strong><span>审核接受不能绕过 merge 与完整性评估</span></div>
+        <div class="legend-row"><strong>响应式</strong><span>1440 优先；&lt;900 转顶部导航与单列</span></div>
+      </aside>
+    </section>
+
+    <section class="ops-shell" aria-label="运营审核工作台交互资源">
+      <aside class="ops-sidebar">
+        <div class="ops-brand">
+          <span class="icon-well moon"><img class="icon" src="assets/icons/telescope.svg" alt=""></span>
+          <div><strong>Starward Ops</strong><span>数据与发布治理</span></div>
+        </div>
+
+        <span class="ops-nav-label">投稿处理</span>
+        <nav class="ops-nav" role="tablist" aria-label="运营工作区">
+          <button class="ops-nav-button" type="button" role="tab" aria-selected="true" data-ops-target="queue">
+            <img src="assets/icons/inbox.svg" alt=""><span>审核队列</span><span class="nav-count">12</span>
+          </button>
+          <button class="ops-nav-button" type="button" role="tab" aria-selected="false" tabindex="-1" data-ops-target="case">
+            <img src="assets/icons/file-search.svg" alt=""><span>Case</span><span></span>
+          </button>
+          <button class="ops-nav-button" type="button" role="tab" aria-selected="false" tabindex="-1" data-ops-target="media">
+            <img src="assets/icons/images.svg" alt=""><span>媒体核验</span><span class="nav-count">3</span>
+          </button>
+          <button class="ops-nav-button" type="button" role="tab" aria-selected="false" tabindex="-1" data-ops-target="merge">
+            <img src="assets/icons/git-compare.svg" alt=""><span>证据合并</span><span></span>
+          </button>
+
+          <span class="ops-nav-label">正式地点</span>
+          <button class="ops-nav-button" type="button" role="tab" aria-selected="false" tabindex="-1" data-ops-target="publication">
+            <img src="assets/icons/clipboard-check.svg" alt=""><span>发布评估</span><span></span>
+          </button>
+          <button class="ops-nav-button" type="button" role="tab" aria-selected="false" tabindex="-1" data-ops-target="replacement">
+            <img src="assets/icons/repeat-2.svg" alt=""><span>替换与退役</span><span></span>
+          </button>
+          <button class="ops-nav-button" type="button" role="tab" aria-selected="false" tabindex="-1" data-ops-target="audit">
+            <img src="assets/icons/history.svg" alt=""><span>审计</span><span></span>
+          </button>
+        </nav>
+
+        <div class="ops-user">
+          <span class="avatar"><img src="assets/icons/user-round.svg" alt=""></span>
+          <div><strong>林野 · 内容运营</strong><span>owner.moderation · 已认证</span></div>
+        </div>
+      </aside>
+
+      <div class="ops-main">
+        <section class="ops-view" data-ops-view="queue" role="tabpanel">
+          <header class="ops-header">
+            <div><h2 tabindex="-1">审核队列</h2><p>投稿只进入审核；不会从这个列表直接更改正式地点或公开状态。</p></div>
+            <button class="control secondary compact" type="button"><img class="icon" src="assets/icons/refresh-cw.svg" alt="">刷新队列</button>
+          </header>
+
+          <div class="ops-toolbar">
+            <div class="ops-filter-group" aria-label="队列筛选">
+              <button class="ops-filter active" type="button">全部 12</button>
+              <button class="ops-filter" type="button">现场报告 5</button>
+              <button class="ops-filter" type="button">更正 4</button>
+              <button class="ops-filter" type="button">新地点 3</button>
+              <button class="ops-filter" type="button">媒体待处理 6</button>
+            </div>
+            <label class="sr-only" for="queue-search">搜索队列</label>
+            <input id="queue-search" class="text-field" style="width:min(260px,100%);min-height:38px" placeholder="搜索地点、投稿 ID">
+          </div>
+
+          <div class="ops-card">
+            <table class="queue-table">
+              <thead><tr><th style="width:30%">投稿</th><th style="width:15%">类型</th><th style="width:16%">风险 / 完整度</th><th style="width:15%">提交时间</th><th style="width:13%">分配</th><th style="width:11%">操作</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td class="queue-title"><strong>深圳市天文台 · 现场照明变化</strong><span>sub_••8A · spot_••82 · 3 个媒体</span></td>
+                  <td><span class="status-pill violet">现场报告</span></td>
+                  <td><span class="status-pill warning">中 · 需核验</span></td>
+                  <td><time>08-24 23:02</time></td>
+                  <td>林野</td>
+                  <td><button class="control ghost compact" type="button" data-open-ops-view="case">打开</button></td>
+                </tr>
+                <tr>
+                  <td class="queue-title"><strong>西涌暗点 · 步行路线更正</strong><span>sub_••51 · spot_••07 · 1 个来源</span></td>
+                  <td><span class="status-pill">更正信息</span></td>
+                  <td><span class="status-pill success">低 · 完整</span></td>
+                  <td><time>08-22 21:16</time></td>
+                  <td>未分配</td>
+                  <td><button class="control ghost compact" type="button" data-open-ops-view="case">打开</button></td>
+                </tr>
+                <tr>
+                  <td class="queue-title"><strong>大鹏海岸候选点</strong><span>sub_••2C · proposal_••19 · 精确坐标</span></td>
+                  <td><span class="status-pill warning">新地点</span></td>
+                  <td><span class="status-pill danger">高 · 隐私</span></td>
+                  <td><time>08-18 20:40</time></td>
+                  <td>季风</td>
+                  <td><button class="control ghost compact" type="button" data-open-ops-view="case">打开</button></td>
+                </tr>
+                <tr>
+                  <td class="queue-title"><strong>七娘山候选点 · 通行风险</strong><span>sub_••EF · proposal_••33 · 无媒体</span></td>
+                  <td><span class="status-pill violet">现场报告</span></td>
+                  <td><span class="status-pill danger">高 · 安全</span></td>
+                  <td><time>08-17 00:12</time></td>
+                  <td>林野</td>
+                  <td><button class="control ghost compact" type="button" data-open-ops-view="case">打开</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="ops-view" data-ops-view="case" role="tabpanel" hidden>
+          <header class="ops-header">
+            <div><h2 tabindex="-1">深圳市天文台 · 现场照明变化</h2><p>sub_••8A · revision 4 · 投稿者身份已隔离 · 2026-08-24 23:02</p></div>
+            <div class="button-row"><span class="status-pill warning">PENDING_REVIEW</span><button class="control secondary compact" type="button">领取 Case</button></div>
+          </header>
+
+          <div class="ops-grid-2">
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>投稿事实</h3><p>审核此投稿本身，不直接编辑正式地点</p></div><span class="status-pill success">身份一致</span></div>
+              <div class="ops-card-body">
+                <div class="case-facts">
+                  <div class="case-fact"><span>投稿类型</span><strong>现场报告</strong></div>
+                  <div class="case-fact"><span>地点上下文</span><strong>spot_••82</strong></div>
+                  <div class="case-fact"><span>观察时间</span><strong>08-24 22:40</strong></div>
+                </div>
+                <div style="margin-top:14px">
+                  <div class="field-label"><span>涉及主题</span></div>
+                  <div class="topic-cloud"><span class="status-pill violet">开放情况</span><span class="status-pill violet">照明</span></div>
+                </div>
+                <div style="margin-top:14px">
+                  <div class="field-label"><span>贡献者描述</span></div>
+                  <p style="margin:0;color:var(--ink-soft);font-size:11px">停车区开放，但通往观测区的最后一段路灯比上次更亮。23:10 后入口处有人关闭了部分照明。</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>安全与隐私检查</h3><p>每一项都由服务端结果与人工判断共同决定</p></div><span class="status-pill warning">1 项待定</span></div>
+              <div class="ops-card-body">
+                <div class="evidence-row"><img src="assets/icons/shield-check.svg" alt=""><div><strong>身份与权限</strong><span>当前用户只能查看自己的原始投稿</span></div><span class="status-pill success">通过</span></div>
+                <div class="evidence-row"><img src="assets/icons/images.svg" alt=""><div><strong>媒体格式与大小</strong><span>3 项均在支持范围内</span></div><span class="status-pill success">通过</span></div>
+                <div class="evidence-row"><img src="assets/icons/lock-keyhole.svg" alt=""><div><strong>EXIF 与位置元数据</strong><span>原始值已净化；公开预览仅保留地点关联</span></div><span class="status-pill success">通过</span></div>
+                <div class="evidence-row"><img src="assets/icons/triangle-alert.svg" alt=""><div><strong>现场照明关系</strong><span>需要一张能看清灯位与入口关系的图</span></div><span class="status-pill warning">待补充</span></div>
+              </div>
+            </article>
+          </div>
+
+          <article class="ops-card" style="margin-top:12px">
+            <div class="ops-card-head"><div><h3>审核决定</h3><p>请求补充会保留用户已经提交的文本与媒体；接收只进入后续合并队列。</p></div></div>
+            <div class="ops-card-body">
+              <label><span class="field-label"><span>给贡献者的说明</span><small>不得包含内部 ID 或其他用户信息</small></span><textarea class="text-area">请补一张能看见灯位与入口关系的照片。已有文字和三项媒体会继续保留。</textarea></label>
+              <div class="button-row" style="margin-top:12px">
+                <button class="control" type="button"><img class="icon" src="assets/icons/messages-square.svg" alt="">请求补充</button>
+                <button class="control leaf" type="button"><img class="icon" src="assets/icons/check.svg" alt="">接收投稿</button>
+                <button class="control secondary" type="button"><img class="icon" src="assets/icons/circle-x.svg" alt="">拒绝</button>
+                <button class="control ghost" type="button" data-open-ops-view="media">先审媒体</button>
+              </div>
+              <div class="inline-note" style="margin-top:12px">
+                <span class="icon-well violet"><img class="icon" src="assets/icons/info.svg" alt=""></span>
+                <div><strong>接收后 publicationImpact 仍是 NONE</strong><p>必须完成明确的证据合并与新的发布完整性评估，才能改变公开输出。</p></div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="ops-view" data-ops-view="media" role="tabpanel" hidden>
+          <header class="ops-header">
+            <div><h2 tabindex="-1">媒体核验</h2><p>逐项检查内容、权利、格式与净化结果；不安全媒体不会进入 canonical evidence。</p></div>
+            <span class="status-pill warning" data-media-gate>仍有媒体待处理</span>
+          </header>
+
+          <div class="media-grid">
+            <article class="media-card">
+              <div class="media-preview"><img src="assets/icons/images.svg" alt=""></div>
+              <strong>entrance-light.jpg</strong><span>JPEG · 1.8 MB · 4032×3024</span><span>EXIF removed · malware scan clean</span>
+              <div class="media-state"><button class="control secondary compact" data-media-decision="accept" type="button" aria-pressed="false">采用</button><button class="control secondary compact" data-media-decision="reject" type="button" aria-pressed="false">不采用</button></div>
+              <span class="status-pill" data-media-state style="margin-top:8px">待判断</span>
+            </article>
+            <article class="media-card">
+              <div class="media-preview" style="background:var(--moon-soft)"><img src="assets/icons/images.svg" alt=""></div>
+              <strong>path-lighting.jpg</strong><span>JPEG · 2.4 MB · 4032×3024</span><span>EXIF removed · rights attested</span>
+              <div class="media-state"><button class="control secondary compact" data-media-decision="accept" type="button" aria-pressed="false">采用</button><button class="control secondary compact" data-media-decision="reject" type="button" aria-pressed="false">不采用</button></div>
+              <span class="status-pill" data-media-state style="margin-top:8px">待判断</span>
+            </article>
+            <article class="media-card">
+              <div class="media-preview" style="background:var(--violet-soft)"><img src="assets/icons/camera.svg" alt=""></div>
+              <strong>parking-note.mp4</strong><span>MP4 · 8.2 MB · 00:11</span><span>audio redacted · malware scan clean</span>
+              <div class="media-state"><button class="control secondary compact" data-media-decision="accept" type="button" aria-pressed="false">采用</button><button class="control secondary compact" data-media-decision="reject" type="button" aria-pressed="false">不采用</button></div>
+              <span class="status-pill" data-media-state style="margin-top:8px">待判断</span>
+            </article>
+          </div>
+
+          <div class="ops-grid-2" style="margin-top:12px">
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>权利与净化</h3><p>所有输出使用净化后的媒体对象</p></div></div>
+              <div class="ops-card-body">
+                <div class="gate-list">
+                  <div class="gate-row"><img src="assets/icons/check.svg" alt=""><div><strong>提交者权利确认</strong><span>attestation rev.2 · 2026-08-24</span></div><span class="status-pill success">通过</span></div>
+                  <div class="gate-row"><img src="assets/icons/check.svg" alt=""><div><strong>原始 EXIF 已隔离</strong><span>公开对象不包含 GPS / 设备序列信息</span></div><span class="status-pill success">通过</span></div>
+                  <div class="gate-row"><img src="assets/icons/check.svg" alt=""><div><strong>内容安全扫描</strong><span>provider valid at 23:04</span></div><span class="status-pill success">通过</span></div>
+                </div>
+              </div>
+            </article>
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>后续动作</h3><p>只有“采用”的媒体能进入合并预览</p></div></div>
+              <div class="ops-card-body">
+                <p style="margin:0 0 12px;color:var(--ink-soft);font-size:10px">拒绝某个媒体不会自动拒绝整条投稿；原因会写入 Case 审计并向用户使用安全文案反馈。</p>
+                <button class="control leaf" type="button" data-open-ops-view="merge">进入证据合并</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ops-view" data-ops-view="merge" role="tabpanel" hidden>
+          <header class="ops-header">
+            <div><h2 tabindex="-1">证据合并预览</h2><p>目标 spot_••82 · active revision 17 · 投稿 sub_••8A 已接收 · optimistic revision check required</p></div>
+            <span class="status-pill violet">READY</span>
+          </header>
+
+          <div class="notification warning" style="margin-bottom:12px">
+            <span class="icon-well moon"><img class="icon" src="assets/icons/git-compare.svg" alt=""></span>
+            <div><strong>先选择每个事实的 canonical 值</strong><p>合并只生成新的候选 revision；不会自动把地点上架或替换 active revision。</p></div>
+          </div>
+
+          <article class="ops-card" data-merge-field>
+            <div class="ops-card-head"><div><h3>入口照明</h3><p>选择要写入候选 revision 的值</p></div><span class="status-pill warning">待选择</span></div>
+            <div class="ops-card-body">
+              <div class="merge-compare">
+                <button class="merge-column" data-merge-choice type="button" aria-pressed="false"><small>当前正式值 · rev.17</small><strong>入口处有固定照明</strong><span>来源：运营巡查 · 2026-06-04</span></button>
+                <span class="merge-arrow"><img src="assets/icons/chevron-down.svg" alt=""></span>
+                <button class="merge-column" data-merge-choice type="button" aria-pressed="false"><small>投稿建议值 · sub_••8A</small><strong>入口照明可由现场人员部分关闭</strong><span>来源：现场报告 + 采用媒体 · 2026-08-24</span></button>
+              </div>
+            </div>
+          </article>
+
+          <article class="ops-card" data-merge-field>
+            <div class="ops-card-head"><div><h3>路线提示</h3><p>事实值与面向用户的安全说明分开归属</p></div><span class="status-pill warning">待选择</span></div>
+            <div class="ops-card-body">
+              <div class="merge-compare">
+                <button class="merge-column" data-merge-choice type="button" aria-pressed="false"><small>当前正式值 · rev.17</small><strong>最后一段步行约 12 分钟</strong><span>路线清晰，入口有灯</span></button>
+                <span class="merge-arrow"><img src="assets/icons/chevron-down.svg" alt=""></span>
+                <button class="merge-column" data-merge-choice type="button" aria-pressed="false"><small>组合建议值</small><strong>最后一段步行约 12 分钟</strong><span>建议携带红光灯；现场照明可能关闭</span></button>
+              </div>
+            </div>
+          </article>
+
+          <div class="ops-grid-2" style="margin-top:12px">
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>合并事务</h3><p>失败时保留选择和说明</p></div></div>
+              <div class="ops-card-body">
+                <div class="gate-list">
+                  <div class="gate-row"><img src="assets/icons/check.svg" alt=""><div><strong>投稿 revision</strong><span>sub rev.4 仍是当前版本</span></div><span class="status-pill success">一致</span></div>
+                  <div class="gate-row"><img src="assets/icons/check.svg" alt=""><div><strong>正式地点 revision</strong><span>spot rev.17 未被其他人修改</span></div><span class="status-pill success">一致</span></div>
+                  <div class="gate-row"><img src="assets/icons/lock-keyhole.svg" alt=""><div><strong>幂等与审计</strong><span>commit key 将由服务端绑定</span></div><span class="status-pill success">就绪</span></div>
+                </div>
+              </div>
+            </article>
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>提交</h3><p>生成候选 revision 并把 mergeState 设为 MERGED</p></div></div>
+              <div class="ops-card-body">
+                <button class="control leaf" data-merge-commit type="button" disabled aria-disabled="true">确认全部字段后合并</button>
+                <div class="notification success" data-merge-feedback hidden style="margin-top:10px">
+                  <span class="icon-well"><img class="icon" src="assets/icons/check.svg" alt=""></span>
+                  <div><strong>候选 revision 已生成</strong><p>publicationImpact 仍为 NONE；下一步重新评估完整性。</p></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ops-view" data-ops-view="publication" role="tabpanel" hidden>
+          <header class="ops-header">
+            <div><h2 tabindex="-1">发布完整性评估</h2><p>深圳市天文台 · candidate revision 18 · assessment digest 9f2…c7 · 绑定当前规则与来源有效期</p></div>
+            <span class="status-pill success" data-publication-state>可上架</span>
+          </header>
+
+          <div class="ops-grid-2">
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>正式地点门槛</h3><p>任何必需项缺失都会让“上架”不可用</p></div><span class="status-pill success">7 / 7</span></div>
+              <div class="ops-card-body">
+                <div class="gate-list">
+                  <div class="gate-row"><img src="assets/icons/circle-check-big.svg" alt=""><div><strong>地点身份与坐标</strong><span>canonical identity · 精度策略通过</span></div><span class="status-pill success">完整</span></div>
+                  <div class="gate-row"><img src="assets/icons/circle-check-big.svg" alt=""><div><strong>合法进入与开放信息</strong><span>source valid until 2026-09-02</span></div><span class="status-pill success">完整</span></div>
+                  <div class="gate-row"><img src="assets/icons/circle-check-big.svg" alt=""><div><strong>路线与安全</strong><span>无适用 hard blocker</span></div><span class="status-pill success">完整</span></div>
+                  <div class="gate-row"><img src="assets/icons/circle-check-big.svg" alt=""><div><strong>代表性媒体</strong><span>来源、权利、现场状态均可追溯</span></div><span class="status-pill success">完整</span></div>
+                  <div class="gate-row"><img src="assets/icons/circle-check-big.svg" alt=""><div><strong>来源与更新策略</strong><span>每项事实拥有 provenance / validity</span></div><span class="status-pill success">完整</span></div>
+                  <div class="gate-row"><img src="assets/icons/circle-check-big.svg" alt=""><div><strong>revision 并发检查</strong><span>active rev.17 → candidate rev.18</span></div><span class="status-pill success">一致</span></div>
+                  <div class="gate-row"><img src="assets/icons/circle-check-big.svg" alt=""><div><strong>公开读模型预览</strong><span>地图 / 搜索 / 详情 projection 可生成</span></div><span class="status-pill success">通过</span></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>影响与操作</h3><p>写操作需要影响说明、精确确认、回执与恢复点</p></div></div>
+              <div class="ops-card-body">
+                <div class="case-facts">
+                  <div class="case-fact"><span>地图 / 搜索</span><strong>更新摘要</strong></div>
+                  <div class="case-fact"><span>想去关系</span><strong>18 条保留</strong></div>
+                  <div class="case-fact"><span>计划</span><strong>2 个刷新提示</strong></div>
+                </div>
+                <div class="inline-note" style="margin-top:12px">
+                  <span class="icon-well violet"><img class="icon" src="assets/icons/lock-keyhole.svg" alt=""></span>
+                  <div><strong>上架切换 active revision</strong><p>后端回执与读模型 readback 成功后才显示完成。</p></div>
+                </div>
+                <div class="button-row" style="margin-top:12px">
+                  <button class="control leaf" data-publication-action="publish" type="button">上架 rev.18</button>
+                  <button class="control secondary" data-publication-action="suspend" type="button">暂停展示</button>
+                  <button class="control danger" data-publication-action="unpublish" type="button">下架</button>
+                </div>
+                <div class="notification success" data-publication-feedback hidden style="margin-top:12px" aria-live="polite">
+                  <span class="icon-well"><img class="icon" src="assets/icons/check.svg" alt=""></span>
+                  <div><strong>操作已进入可读回执状态</strong><p data-publication-feedback-text></p></div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="impact-box" style="margin-top:12px">
+            <strong>没有“审核通过后自动上架”的路径</strong>
+            <p>投稿接受、合并提交和发布评估分别绑定不同权限、revision、服务端回执和审计事件。</p>
+          </div>
+        </section>
+
+        <section class="ops-view" data-ops-view="replacement" role="tabpanel" hidden>
+          <header class="ops-header">
+            <div><h2 tabindex="-1">替换与退役</h2><p>为正式地点建立明确的 successor 关系；先预览影响，再排队双人复核。</p></div>
+            <span class="status-pill warning">高影响操作</span>
+          </header>
+
+          <div class="ops-grid-2">
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>当前正式地点</h3><p>spot_••07 · 西涌暗点</p></div><span class="status-pill success">ACTIVE</span></div>
+              <div class="ops-card-body">
+                <div class="case-facts">
+                  <div class="case-fact"><span>Active revision</span><strong>rev.12</strong></div>
+                  <div class="case-fact"><span>想去关系</span><strong>18</strong></div>
+                  <div class="case-fact"><span>未来计划</span><strong>2</strong></div>
+                </div>
+                <p style="margin:12px 0 0;color:var(--ink-soft);font-size:10px">旧入口永久封闭；原地点历史和证据仍需保留，不能硬删除。</p>
+              </div>
+            </article>
+            <article class="ops-card">
+              <div class="ops-card-head"><div><h3>替代地点</h3><p>spot_••19 · 西涌东侧观测区</p></div><span class="status-pill violet">CANDIDATE</span></div>
+              <div class="ops-card-body">
+                <div class="case-facts">
+                  <div class="case-fact"><span>Candidate revision</span><strong>rev.5</strong></div>
+                  <div class="case-fact"><span>完整性评估</span><strong>PASS</strong></div>
+                  <div class="case-fact"><span>距离旧点</span><strong>1.4 km</strong></div>
+                </div>
+                <p style="margin:12px 0 0;color:var(--ink-soft);font-size:10px">successor 不能回指当前地点，也不能形成替换环。</p>
+              </div>
+            </article>
+          </div>
+
+          <article class="ops-card" style="margin-top:12px">
+            <div class="ops-card-head"><div><h3>影响预览</h3><p>预览不会写入；执行绑定 current revision、successor revision 和 recovery point。</p></div></div>
+            <div class="ops-card-body">
+              <div class="gate-list">
+                <div class="gate-row"><img src="assets/icons/star.svg" alt=""><div><strong>想去关系</strong><span>保留原关系；首次打开时解释地点已替换</span></div><span class="status-pill success">18</span></div>
+                <div class="gate-row"><img src="assets/icons/calendar-days.svg" alt=""><div><strong>未来计划</strong><span>不静默迁移；要求用户确认新路线与开放条件</span></div><span class="status-pill warning">2</span></div>
+                <div class="gate-row"><img src="assets/icons/map.svg" alt=""><div><strong>地图与搜索</strong><span>旧地点退出普通结果；保留可达的替换说明</span></div><span class="status-pill violet">切换</span></div>
+                <div class="gate-row"><img src="assets/icons/history.svg" alt=""><div><strong>历史与审计</strong><span>原 revision、证据与发布事件保持不可变</span></div><span class="status-pill success">保留</span></div>
+              </div>
+              <div class="button-row" style="margin-top:12px">
+                <button class="control secondary" data-replacement-action="preview" type="button"><img class="icon" src="assets/icons/eye.svg" alt="">生成最新影响预览</button>
+                <button class="control danger" data-replacement-action="queue" type="button"><img class="icon" src="assets/icons/repeat-2.svg" alt="">排队替换与退役</button>
+              </div>
+              <p data-replacement-state style="margin:10px 0 0;color:var(--ink-soft);font-size:10px" aria-live="polite">尚未生成本次会话的影响预览。</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="ops-view" data-ops-view="audit" role="tabpanel" hidden>
+          <header class="ops-header">
+            <div><h2 tabindex="-1">不可变审计</h2><p>仅展示经过脱敏的操作上下文；原始隐私字段、凭证和完整标识不进入界面。</p></div>
+            <button class="control secondary compact" type="button"><img class="icon" src="assets/icons/download.svg" alt="">导出当前范围</button>
+          </header>
+
+          <div class="ops-toolbar">
+            <div class="ops-filter-group"><button class="ops-filter active" type="button">全部事件</button><button class="ops-filter" type="button">审核</button><button class="ops-filter" type="button">合并</button><button class="ops-filter" type="button">发布治理</button></div>
+            <span class="status-pill success">最后成功读取 23:18:42</span>
+          </div>
+
+          <article class="ops-card">
+            <div class="ops-card-head"><div><h3>Case sub_••8A / spot_••82</h3><p>事件按服务端顺序只追加；筛选不会改变原始顺序。</p></div><span class="status-pill">6 个事件</span></div>
+            <div class="ops-card-body">
+              <div class="audit-list">
+                <div class="audit-row"><time>2026-08-25 23:18:42</time><div><strong>PUBLICATION_READBACK_SUCCEEDED</strong><span>candidate rev.18 became active; projection digest matched</span></div><div><strong>owner.release</strong><span>audit_••F3</span></div></div>
+                <div class="audit-row"><time>2026-08-25 23:18:39</time><div><strong>PUBLICATION_COMMIT_ACCEPTED</strong><span>idempotency replay: false · recovery point created</span></div><div><strong>owner.release</strong><span>audit_••EC</span></div></div>
+                <div class="audit-row"><time>2026-08-25 23:14:07</time><div><strong>ASSESSMENT_PASSED</strong><span>7 required families complete · digest 9f2…c7</span></div><div><strong>system</strong><span>audit_••D0</span></div></div>
+                <div class="audit-row"><time>2026-08-25 23:11:16</time><div><strong>CANONICAL_MERGE_COMMITTED</strong><span>spot rev.17 → candidate rev.18; sub mergeState MERGED</span></div><div><strong>owner.moderation</strong><span>audit_••B7</span></div></div>
+                <div class="audit-row"><time>2026-08-25 23:06:52</time><div><strong>SUBMISSION_ACCEPTED</strong><span>publicationImpact remained NONE</span></div><div><strong>owner.moderation</strong><span>audit_••9A</span></div></div>
+                <div class="audit-row"><time>2026-08-24 23:02:10</time><div><strong>SUBMISSION_RECEIVED</strong><span>identity-scoped record; media sanitation queued</span></div><div><strong>contributor</strong><span>audit_••64</span></div></div>
+              </div>
+            </div>
+          </article>
+
+          <div class="notification warning" style="margin-top:12px">
+            <span class="icon-well moon"><img class="icon" src="assets/icons/lock-keyhole.svg" alt=""></span>
+            <div><strong>审计不是恢复按钮</strong><p>恢复必须由对应操作的 recovery point 与服务端 readback 驱动，不能修改历史事件。</p></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script src="assets/current-review.js"></script>
+</body>
+</html>

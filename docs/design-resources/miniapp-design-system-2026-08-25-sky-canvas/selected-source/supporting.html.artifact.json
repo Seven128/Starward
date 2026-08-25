@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "Sky Canvas 当前我的与辅助页面",
+  "entry": "supporting.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": ["html", "pdf", "zip"],
+  "updatedAt": "2026-08-25T00:00:00.000Z",
+  "metadata": {
+    "currentResource": true,
+    "packageContainedAssets": true,
+    "productionAccepted": false
+  }
+}

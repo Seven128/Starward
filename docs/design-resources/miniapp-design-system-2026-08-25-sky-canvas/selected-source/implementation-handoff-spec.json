@@ -1,0 +1,562 @@
+{
+  "schema_version": "starward-sky-canvas-implementation-handoff-spec-v1",
+  "status": "selected-implementation-constraint",
+  "authority": {
+    "design_system_target": "target.system.wechat-miniapp-sky-canvas-2026-08-25",
+    "design_system_owner": "DESIGN.md#wechat-mini-program--sky-canvas-v1",
+    "product_surface_owners": [
+      "project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "project_context/areas/main/screen-contracts/operations.md"
+    ],
+    "rule": "The canonical HTML and this handoff constrain implementation; DESIGN.md remains the sole exact token authority and product/technical Source remains the sole business-data-permission authority."
+  },
+  "global_rules": [
+    "Keep exactly one current active resource; immutable formal Source is an isolated protocol exception, not a parallel visual version.",
+    "Use real domain/BFF state in production. Fixture astronomy, weather, map, contribution, moderation and publication content is never production truth.",
+    "Hide scrollbar chrome on user phone surfaces without disabling owned scroll, keyboard access or position restoration.",
+    "Use icon-assisted scanning, restrained outdoor motion and reduced-motion alternatives; never make color or motion the sole state cue.",
+    "Map and My remain the only primary Mini Program destinations; all other pages are drilldowns in the current route tree."
+  ],
+  "targets": {
+    "miniapp": {
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "platform": "WeChat Mini Program through the current Taro/React production owner",
+      "canonical_entry": "miniapp-entry.html",
+      "entries": [
+        "index.html",
+        "supporting.html",
+        "contribution.html",
+        "workbench.html"
+      ],
+      "frames": [
+        {
+          "key": "map-finder-day",
+          "duty": "Map discovery and map-parallel Finder closed/peek/expanded loop",
+          "entry": "index.html",
+          "route_owner": "pages/map/index"
+        },
+        {
+          "key": "spot-detail-dusk",
+          "duty": "Formal spot identity, decision, route, evidence and page-level actions",
+          "entry": "index.html",
+          "route_owner": "spot/detail/index"
+        },
+        {
+          "key": "spot-night-astronomy",
+          "duty": "Selected-place/time astronomy summary, aligned evidence, targets and time control",
+          "entry": "index.html",
+          "route_owner": "spot/sky/index"
+        },
+        {
+          "key": "spot-night-orientation",
+          "duty": "Sensor-follow-only direction sky with permission, calibration and truthful degradation",
+          "entry": "index.html",
+          "route_owner": "sky/detail/index"
+        },
+        {
+          "key": "my-home",
+          "duty": "Account center and route hub without duplicating Finder favorites",
+          "entry": "supporting.html",
+          "route_owner": "pages/my/index"
+        },
+        {
+          "key": "plan-detail",
+          "duty": "Current plan summary and executable preparation details",
+          "entry": "supporting.html",
+          "route_owner": "content/plan/detail/index"
+        },
+        {
+          "key": "settings",
+          "duty": "Preference and observation-mode ownership",
+          "entry": "supporting.html",
+          "route_owner": "content/settings/index"
+        },
+        {
+          "key": "profile-import",
+          "duty": "Feature-gated import surface; absent from the route tree when disabled",
+          "entry": "supporting.html",
+          "route_owner": "feature-gated"
+        },
+        {
+          "key": "contribution-intake",
+          "duty": "Choose field report, correction or new-spot proposal",
+          "entry": "contribution.html",
+          "route_owner": "content/contribution/index"
+        },
+        {
+          "key": "contribution-form",
+          "duty": "Progressive fields and explicit provisional-data meaning",
+          "entry": "contribution.html",
+          "route_owner": "content/contribution/index"
+        },
+        {
+          "key": "contribution-upload-recovery",
+          "duty": "Durable draft, upload retry and cleanup feedback",
+          "entry": "contribution.html",
+          "route_owner": "content/contribution/index"
+        },
+        {
+          "key": "contribution-review-history",
+          "duty": "Separate submission, merge and publication impact axes",
+          "entry": "contribution.html",
+          "route_owner": "content/contribution/index"
+        }
+      ],
+      "component_families": [
+        {
+          "key": "family.map-search",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "idle",
+            "focused",
+            "suggestions",
+            "query-committed",
+            "no-results",
+            "error"
+          ],
+          "data": "formal spot search/suggestion port",
+          "behavior": "Search overlay remains anchored to the field and closes on true focus departure."
+        },
+        {
+          "key": "family.quick-filter-chip",
+          "owner": "apps/wechat-miniapp/src/components/filter-sheet.tsx",
+          "states": [
+            "unselected",
+            "selected",
+            "pressed",
+            "disabled"
+          ],
+          "data": "one shared filter truth",
+          "behavior": "Quick conditions commit immediately and the first selection may open Finder peek."
+        },
+        {
+          "key": "family.map-analysis-bar-layer",
+          "owner": "apps/wechat-miniapp/src/components/source-lift-focus-layer.tsx",
+          "states": [
+            "none",
+            "light",
+            "total-cloud",
+            "tonight-condition",
+            "partial",
+            "stale",
+            "error"
+          ],
+          "data": "map-coupled observation analysis projection",
+          "behavior": "Open on the same physical map with one optional analysis overlay and one selected local time."
+        },
+        {
+          "key": "family.finder-sheet",
+          "owner": "apps/wechat-miniapp/src/components/filter-sheet.tsx",
+          "states": [
+            "closed",
+            "peek",
+            "expanded",
+            "advanced-draft",
+            "discarded",
+            "committed"
+          ],
+          "data": "query/filter/result/favorite selection store",
+          "behavior": "Handle owns drag, tap and accessibility toggle; no visible expand button, repeated heading or repeated quick filters."
+        },
+        {
+          "key": "family.spot-marker-callout",
+          "owner": "apps/wechat-miniapp/src/components/spot-card.tsx",
+          "states": [
+            "hidden",
+            "selected",
+            "stale-summary",
+            "unavailable"
+          ],
+          "data": "formal spot marker and shared selected spot",
+          "behavior": "The whole compact card opens detail; no textual view-judgment row."
+        },
+        {
+          "key": "family.spot-result-row",
+          "owner": "apps/wechat-miniapp/src/components/spot-card.tsx",
+          "states": [
+            "default",
+            "selected",
+            "favorited",
+            "partial",
+            "stale",
+            "error"
+          ],
+          "data": "Finder formal-spot projection",
+          "behavior": "Rows first select the map marker/callout; partition scroll remains operable with hidden scrollbar chrome."
+        },
+        {
+          "key": "family.spot-header-actions",
+          "owner": "apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx",
+          "states": [
+            "default",
+            "route-checking",
+            "route-blocked",
+            "route-handoff"
+          ],
+          "data": "formal spot identity and route safety",
+          "behavior": "Keep the night entry once in the upper hierarchy and navigation as quiet trailing text."
+        },
+        {
+          "key": "family.favorite-star-ritual",
+          "owner": "apps/wechat-miniapp/src/components/selected-card-star.tsx",
+          "states": [
+            "inactive",
+            "activating",
+            "active",
+            "deactivating",
+            "commit-failed",
+            "reduced-motion"
+          ],
+          "data": "authenticated favorite relation",
+          "behavior": "Main star remains dominant; active satellites and short tails stay subordinate and static after settling."
+        },
+        {
+          "key": "family.astronomy-summary",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "loading",
+            "ready",
+            "partial",
+            "stale",
+            "unavailable"
+          ],
+          "data": "versioned astronomy projection for the committed spot/time",
+          "behavior": "Conclusion, usable window, source and completeness precede professional evidence."
+        },
+        {
+          "key": "family.astronomy-professional-matrix",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "collapsed",
+            "expanded",
+            "partial",
+            "stale"
+          ],
+          "data": "aligned astronomical and observing-condition bands",
+          "behavior": "Icons assist scanning while aligned tracks and matrices remain the value owner."
+        },
+        {
+          "key": "family.sky-time-scrubber",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "idle",
+            "previewing",
+            "committed",
+            "restored"
+          ],
+          "data": "single Observation Context time",
+          "behavior": "Preview is continuous; commit occurs once and all astronomy sections update from the same context."
+        },
+        {
+          "key": "family.orientation-sky",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "permission",
+            "calibrating",
+            "ready",
+            "denied",
+            "unavailable",
+            "stale-sensor"
+          ],
+          "data": "platform orientation stream plus inherited spot/time sky scene",
+          "behavior": "Sensor follows phone direction only; there is no manual heading, direction stepper or drag fallback."
+        },
+        {
+          "key": "family.status-recovery",
+          "owner": "apps/wechat-miniapp/src/components/status-panel.tsx",
+          "states": [
+            "initial",
+            "loading",
+            "ready",
+            "empty",
+            "partial",
+            "stale",
+            "error",
+            "permission-denied"
+          ],
+          "data": "resource query status and attributable recovery",
+          "behavior": "Keep geometry stable, copy concise and retry/cancel effects explicit."
+        },
+        {
+          "key": "family.primary-navigation",
+          "owner": "apps/wechat-miniapp/src/components/custom-nav.tsx",
+          "states": [
+            "map-active",
+            "my-active",
+            "pressed"
+          ],
+          "data": "current route tree",
+          "behavior": "Only Map and My are primary destinations."
+        },
+        {
+          "key": "family.my-plan-settings",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "loading",
+            "ready",
+            "empty",
+            "partial",
+            "error"
+          ],
+          "data": "identity-scoped plans/settings/account summary",
+          "behavior": "My is a route hub and Settings is the sole observation-mode entry."
+        },
+        {
+          "key": "family.contribution-intake",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "field-report",
+            "correction",
+            "new-spot-proposal"
+          ],
+          "data": "authenticated contribution kind",
+          "behavior": "Spot Detail may prebind only a formal spot id; My opens general intake."
+        },
+        {
+          "key": "family.contribution-form",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "draft",
+            "validating",
+            "invalid",
+            "saving",
+            "saved",
+            "submitting"
+          ],
+          "data": "identity-scoped durable draft and form schema",
+          "behavior": "Fields reveal progressively by contribution kind; draft and submit are distinct commits."
+        },
+        {
+          "key": "family.upload-recovery",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "queued",
+            "uploading",
+            "paused",
+            "failed",
+            "retrying",
+            "complete",
+            "expired"
+          ],
+          "data": "upload session and sanitized derivative receipt",
+          "behavior": "Retry is idempotent and abandoned media cleanup remains visible and attributable."
+        },
+        {
+          "key": "family.review-history",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "draft",
+            "pending-review",
+            "changes-requested",
+            "accepted",
+            "rejected",
+            "withdrawn",
+            "merged",
+            "superseded",
+            "published-impact"
+          ],
+          "data": "submission, merge and publication-impact axes",
+          "behavior": "Acceptance never implies canonical merge or formal publication."
+        },
+        {
+          "key": "family.semantic-icon",
+          "owner": "apps/wechat-miniapp/src/components/semantic-asset.tsx",
+          "states": [
+            "day",
+            "night",
+            "observation",
+            "missing-asset"
+          ],
+          "data": "semantic subject and display mode",
+          "behavior": "All icons pass through one mode-aware adapter with accessible labels."
+        }
+      ]
+    },
+    "operations": {
+      "target_ref": "target-operations-sky-canvas-current-constraint",
+      "platform": "Authenticated owner Operations Web through the current React/Vite production owner",
+      "canonical_entry": "operations.html",
+      "entries": [
+        "operations.html",
+        "workbench.html"
+      ],
+      "frames": [
+        {
+          "key": "moderation-queue",
+          "duty": "Prioritized authenticated review queue",
+          "entry": "operations.html#queue",
+          "route_owner": "apps/admin-web/src/app"
+        },
+        {
+          "key": "moderation-case",
+          "duty": "Submission evidence, decision and history without overwriting original evidence",
+          "entry": "operations.html#case",
+          "route_owner": "apps/admin-web/src/app"
+        },
+        {
+          "key": "moderation-media-review",
+          "duty": "Sanitized media review and provenance",
+          "entry": "operations.html#media",
+          "route_owner": "apps/admin-web/src/app"
+        },
+        {
+          "key": "moderation-canonical-merge",
+          "duty": "Explicit preview then commit into the canonical evidence owner",
+          "entry": "operations.html#merge",
+          "route_owner": "apps/admin-web/src/app"
+        },
+        {
+          "key": "publication-assessment",
+          "duty": "Fresh fail-closed publication gate and exact missing evidence",
+          "entry": "operations.html#publication",
+          "route_owner": "apps/admin-web/src/app"
+        },
+        {
+          "key": "spot-replacement-retirement",
+          "duty": "Audited suspend, unpublish, replace and retire transitions",
+          "entry": "operations.html#replacement",
+          "route_owner": "apps/admin-web/src/app"
+        },
+        {
+          "key": "operations-audit",
+          "duty": "Immutable actor/action/object/result timeline",
+          "entry": "operations.html#audit",
+          "route_owner": "apps/admin-web/src/app"
+        }
+      ],
+      "component_families": [
+        {
+          "key": "family.operations-shell",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "loading",
+            "ready",
+            "saving",
+            "error"
+          ],
+          "data": "authenticated operator identity and API status",
+          "behavior": "Queue, case and governance work share one authenticated shell without implying server authority."
+        },
+        {
+          "key": "family.moderation-queue",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "loading",
+            "ready",
+            "empty",
+            "filtered",
+            "error"
+          ],
+          "data": "moderation queue projection",
+          "behavior": "Priority, age, kind, location and risk remain scannable; opening a row preserves queue context."
+        },
+        {
+          "key": "family.moderation-case",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "reviewing",
+            "changes-requested",
+            "accepted",
+            "rejected",
+            "withdrawn"
+          ],
+          "data": "submission evidence and review decision",
+          "behavior": "Decision reason and history are separate from immutable original evidence."
+        },
+        {
+          "key": "family.media-review",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "loading",
+            "ready",
+            "unsafe",
+            "unavailable"
+          ],
+          "data": "sanitized derivatives and media provenance",
+          "behavior": "Raw path, EXIF and precise contributor coordinates are absent from ordinary reads."
+        },
+        {
+          "key": "family.canonical-merge",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "not-started",
+            "preview",
+            "ready",
+            "committing",
+            "merged",
+            "superseded",
+            "failed"
+          ],
+          "data": "canonical evidence merge command",
+          "behavior": "Preview and commit are separate audited steps; retry remains idempotent."
+        },
+        {
+          "key": "family.publication-assessment",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "checking",
+            "blocked",
+            "eligible",
+            "publishing",
+            "published",
+            "failed"
+          ],
+          "data": "server-owned formal-spot completeness assessment",
+          "behavior": "Publish remains unavailable while any required evidence is missing or invalid."
+        },
+        {
+          "key": "family.replacement-retirement",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "active",
+            "suspended",
+            "unpublished",
+            "replaced",
+            "retired",
+            "failed"
+          ],
+          "data": "formal spot publication lifecycle",
+          "behavior": "Every transition requires reason, actor, result and readback."
+        },
+        {
+          "key": "family.audit-timeline",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "loading",
+            "ready",
+            "empty",
+            "filtered",
+            "error"
+          ],
+          "data": "immutable audit projection",
+          "behavior": "Actor, action, object, reason, timestamp and result remain attributable."
+        },
+        {
+          "key": "family.operations-status-recovery",
+          "owner": "apps/admin-web/src/app/page.tsx",
+          "states": [
+            "loading",
+            "ready",
+            "empty",
+            "partial",
+            "stale",
+            "error"
+          ],
+          "data": "operations request lifecycle",
+          "behavior": "A client success state never substitutes for server receipt and readback."
+        },
+        {
+          "key": "family.operations-semantic-icon",
+          "owner": "apps/admin-web/src/app/styles.css",
+          "states": [
+            "default",
+            "active",
+            "disabled"
+          ],
+          "data": "semantic icon role",
+          "behavior": "Icons reinforce labels and never carry the only action or state meaning."
+        }
+      ]
+    }
+  }
+}
