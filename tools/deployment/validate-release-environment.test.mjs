@@ -25,6 +25,73 @@ test("a release environment closes identity, credentials and least-privilege lan
   });
 });
 
+test("staging selects non-commercial Open-Meteo evidence without a commercial key", async () => {
+  await withFixture(
+    { api: { MINIAPP_OPEN_METEO_EVIDENCE_MODE: "OPEN_METEO_COMMERCIAL" } },
+    async (deployPath) => {
+      await assert.rejects(
+        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
+        /release_environment_mismatch:api:MINIAPP_OPEN_METEO_EVIDENCE_MODE/u,
+      );
+    },
+  );
+  await withFixture(
+    { api: { OPEN_METEO_API_KEY: "commercial-key-not-for-staging" } },
+    async (deployPath) => {
+      await assert.rejects(
+        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
+        /release_environment_forbidden:api:OPEN_METEO_API_KEY/u,
+      );
+    },
+  );
+});
+
+test("remote release keeps QWeather as the selected primary provider", async () => {
+  await withFixture(
+    {
+      api: {
+        MINIAPP_WEATHER_PROVIDER: "OPEN_METEO_COMMERCIAL",
+        OPEN_METEO_API_KEY: "commercial-open-meteo-key",
+      },
+    },
+    async (deployPath) => {
+      await assert.rejects(
+        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
+        /release_environment_mismatch:api:MINIAPP_WEATHER_PROVIDER/u,
+      );
+    },
+  );
+});
+
+test("production requires commercial Open-Meteo evidence and its own key", async () => {
+  await withFixture({ environment: "production" }, async (deployPath) => {
+    const result = await validateReleaseEnvironment({ deployEnvPath: deployPath });
+    assert.equal(result.status, "valid");
+    assert.equal(result.environment, "production");
+  });
+  await withFixture(
+    {
+      environment: "production",
+      api: { MINIAPP_OPEN_METEO_EVIDENCE_MODE: "OPEN_METEO_NONCOMMERCIAL" },
+    },
+    async (deployPath) => {
+      await assert.rejects(
+        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
+        /release_environment_mismatch:api:MINIAPP_OPEN_METEO_EVIDENCE_MODE/u,
+      );
+    },
+  );
+  await withFixture(
+    { environment: "production", api: { OPEN_METEO_API_KEY: "" } },
+    async (deployPath) => {
+      await assert.rejects(
+        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
+        /release_environment_required:OPEN_METEO_API_KEY/u,
+      );
+    },
+  );
+});
+
 test("unresolved secret references fail closed without exposing the value", async () => {
   await withFixture({ api: { WECHAT_MINIAPP_APP_SECRET: "secret-ref:wechat" } }, async (deployPath) => {
     await assert.rejects(() => validateReleaseEnvironment({ deployEnvPath: deployPath }), /release_environment_unresolved:WECHAT_MINIAPP_APP_SECRET/u);

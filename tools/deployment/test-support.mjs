@@ -51,6 +51,13 @@ export async function createReleaseEnvironmentFixture(overrides = {}) {
     MINIAPP_SESSION_SECRET: "session-secret-at-least-thirty-two-characters",
     MINIAPP_ADMIN_TOKEN: "admin-token-at-least-thirty-two-characters",
     MINIAPP_WEATHER_PROVIDER: "QWEATHER",
+    MINIAPP_OPEN_METEO_EVIDENCE_MODE:
+      environment === "production"
+        ? "OPEN_METEO_COMMERCIAL"
+        : "OPEN_METEO_NONCOMMERCIAL",
+    ...(environment === "production"
+      ? { OPEN_METEO_API_KEY: "open-meteo-commercial-key" }
+      : {}),
     QWEATHER_API_HOST: "example.qweatherapi.com",
     QWEATHER_CREDENTIAL_ID: "qweather-credential",
     QWEATHER_PROJECT_ID: "qweather-project",
