@@ -1,0 +1,137 @@
+name: Backend production promotion
+
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Exact 40-character source revision already qualified in staging
+        required: true
+        type: string
+      image_digest:
+        description: Exact staging-qualified sha256 image digest
+        required: true
+        type: string
+      confirm_image_digest:
+        description: Retype the exact image digest to authorize production
+        required: true
+        type: string
+      staging_receipt_path:
+        description: Absolute path to the copied staging success receipt on the production host
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-production
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: ${{ vars.STARWARD_PRODUCTION_CD_ENABLED == 'true' }}
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      REVISION: ${{ inputs.revision }}
+      IMAGE_DIGEST: ${{ inputs.image_digest }}
+      CONFIRM_IMAGE_DIGEST: ${{ inputs.confirm_image_digest }}
+      STAGING_RECEIPT_PATH: ${{ inputs.staging_receipt_path }}
+      SSH_HOST: ${{ vars.STARWARD_SSH_HOST }}
+      SSH_PORT: ${{ vars.STARWARD_SSH_PORT }}
+      SSH_USER: ${{ vars.STARWARD_SSH_USER }}
+      REMOTE_INBOX: ${{ vars.STARWARD_REMOTE_INBOX }}
+      REMOTE_RELEASE_ROOT: ${{ vars.STARWARD_REMOTE_RELEASE_ROOT }}
+      REMOTE_BASE_DEPLOY_ENV: ${{ vars.STARWARD_REMOTE_BASE_DEPLOY_ENV }}
+      REMOTE_CANDIDATE_ROOT: ${{ vars.STARWARD_REMOTE_CANDIDATE_ROOT }}
+    steps:
+      - name: Validate manual promotion inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          [[ "$CONFIRM_IMAGE_DIGEST" == "$IMAGE_DIGEST" ]]
+          [[ "$STAGING_RECEIPT_PATH" =~ ^/[A-Za-z0-9._/-]+$ ]]
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 ))
+          [[ "$SSH_USER" =~ ^[A-Za-z0-9._-]+$ ]]
+          for selected in "$REMOTE_INBOX" "$REMOTE_RELEASE_ROOT" "$REMOTE_BASE_DEPLOY_ENV" "$REMOTE_CANDIDATE_ROOT"; do
+            [[ "$selected" =~ ^/[A-Za-z0-9._/-]+$ ]]
+          done
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.revision }}
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Recheck production promotion owners
+        run: |
+          npm ci
+          npm run test:deployment
+          sh -n infrastructure/deployment/run-remote-promotion.sh
+      - name: Prepare production control package and request
+        id: control
+        shell: bash
+        run: |
+          set -euo pipefail
+          owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          image_ref="ghcr.io/$owner/starward-miniapp-api@$IMAGE_DIGEST"
+          released_at=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
+          archive="$RUNNER_TEMP/starward-control-$REVISION.tar.gz"
+          request="$RUNNER_TEMP/starward-production-$REVISION.request.json"
+          tar -czf "$archive" package.json tools/deployment infrastructure/deployment
+          archive_sha256=$(sha256sum "$archive" | cut -d' ' -f1)
+          npm run deployment:create-request -- \
+            --output "$request" \
+            --base-deploy-env "$REMOTE_BASE_DEPLOY_ENV" \
+            --candidate-output "$REMOTE_CANDIDATE_ROOT/$REVISION/deploy.env" \
+            --image-ref "$image_ref" \
+            --revision "$REVISION" \
+            --released-at "$released_at" \
+            --operator "github:$GITHUB_ACTOR" \
+            --staging-receipt "$STAGING_RECEIPT_PATH" \
+            --confirm-production-digest "$CONFIRM_IMAGE_DIGEST"
+          printf 'archive=%s\n' "$archive" >> "$GITHUB_OUTPUT"
+          printf 'request=%s\n' "$request" >> "$GITHUB_OUTPUT"
+          printf 'archive_sha256=%s\n' "$archive_sha256" >> "$GITHUB_OUTPUT"
+      - name: Configure pinned SSH trust
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STARWARD_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STARWARD_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/starward_ssh_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/starward_known_hosts"
+      - name: Preflight production host without mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh_options=(-i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -p "$SSH_PORT")
+          target="$SSH_USER@$SSH_HOST"
+          ssh "${ssh_options[@]}" "$target" \
+            "sh -s -- '$REMOTE_INBOX' '$REMOTE_RELEASE_ROOT' '$REMOTE_CANDIDATE_ROOT' '$REMOTE_BASE_DEPLOY_ENV'" \
+            < infrastructure/deployment/host-preflight.sh
+      - name: Promote qualified digest to production
+        shell: bash
+        env:
+          ARCHIVE: ${{ steps.control.outputs.archive }}
+          REQUEST: ${{ steps.control.outputs.request }}
+          ARCHIVE_SHA256: ${{ steps.control.outputs.archive_sha256 }}
+        run: |
+          set -euo pipefail
+          ssh_options=(-i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -p "$SSH_PORT")
+          target="$SSH_USER@$SSH_HOST"
+          remote_archive="$REMOTE_INBOX/production-$REVISION.control.tar.gz"
+          remote_request="$REMOTE_INBOX/production-$REVISION.request.json"
+          ssh "${ssh_options[@]}" "$target" "install -d -m 0700 '$REMOTE_INBOX'"
+          scp -i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -P "$SSH_PORT" "$ARCHIVE" "$target:$remote_archive"
+          scp -i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -P "$SSH_PORT" "$REQUEST" "$target:$remote_request"
+          ssh "${ssh_options[@]}" "$target" \
+            "sh -s -- '$remote_archive' '$remote_request' '$REMOTE_RELEASE_ROOT' '$REVISION' '$ARCHIVE_SHA256'" \
+            < infrastructure/deployment/run-remote-promotion.sh

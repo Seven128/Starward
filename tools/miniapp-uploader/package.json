@@ -1,0 +1,11 @@
+{
+  "name": "@starward/wechat-uploader-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Isolated official WeChat Mini Program upload runtime.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "miniprogram-ci": "2.1.31"
+  }
+}

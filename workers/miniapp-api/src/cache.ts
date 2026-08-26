@@ -20,6 +20,10 @@ export class MemoryCache implements CachePort {
     return structuredClone(record.value) as T;
   }
 
+  async readinessSnapshot() {
+    return { ready: true, cache: this.kind };
+  }
+
   async set<T>(key: string, value: T, ttlSeconds: number) {
     this.#records.set(key, {
       value: structuredClone(value),
@@ -64,6 +68,11 @@ export class RedisCache implements CachePort {
   async get<T>(key: string): Promise<T | null> {
     const value = await this.client.get(`${this.prefix}${key}`);
     return value === null ? null : (JSON.parse(value) as T);
+  }
+
+  async readinessSnapshot() {
+    const ready = this.client.status === "ready" && (await this.client.ping()) === "PONG";
+    return { ready, cache: this.kind };
   }
 
   async set<T>(key: string, value: T, ttlSeconds: number) {

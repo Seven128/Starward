@@ -1,0 +1,129 @@
+name: WeChat platform candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: Environment-bound Mini Program lane
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      operation:
+        description: Preview creates a QR; upload creates a development version
+        required: true
+        type: choice
+        options:
+          - preview
+          - upload
+      version:
+        description: Platform version, for example 1.2.3
+        required: true
+        type: string
+      description:
+        description: Short attributable version description
+        required: true
+        type: string
+      robot:
+        description: WeChat CI robot number from 1 through 30
+        required: true
+        default: "1"
+        type: string
+      production_confirmation:
+        description: For production, operation:production:version:bundle-sha256 from a prior verified preview
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wechat-platform-${{ inputs.lane }}-${{ inputs.operation }}
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    if: ${{ github.ref == 'refs/heads/main' && vars.STARWARD_WECHAT_PLATFORM_ENABLED == 'true' }}
+    environment:
+      name: wechat-${{ inputs.lane }}
+    runs-on:
+      - self-hosted
+      - linux
+      - starward-wechat-uploader
+    timeout-minutes: 45
+    env:
+      WECHAT_LANE: ${{ inputs.lane }}
+      WECHAT_OPERATION: ${{ inputs.operation }}
+      WECHAT_VERSION: ${{ inputs.version }}
+      WECHAT_DESCRIPTION: ${{ inputs.description }}
+      WECHAT_ROBOT: ${{ inputs.robot }}
+      WECHAT_PRODUCTION_CONFIRMATION: ${{ inputs.production_confirmation }}
+      WECHAT_APP_ID: ${{ vars.STARWARD_WECHAT_APP_ID }}
+      WECHAT_API_ORIGIN: ${{ vars.STARWARD_WECHAT_API_ORIGIN }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Validate protected environment inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$WECHAT_APP_ID" =~ ^wx[0-9a-f]{16}$ ]]
+          [[ "$WECHAT_API_ORIGIN" =~ ^https://[A-Za-z0-9.-]+$ ]]
+          [[ "$WECHAT_VERSION" =~ ^[0-9A-Za-z][0-9A-Za-z._-]{0,63}$ ]]
+          [[ "$WECHAT_ROBOT" =~ ^[0-9]{1,2}$ ]] && (( WECHAT_ROBOT >= 1 && WECHAT_ROBOT <= 30 ))
+      - name: Install locked product and isolated uploader dependencies
+        run: |
+          npm ci
+          npm ci --ignore-scripts --prefix tools/miniapp-uploader
+      - name: Verify upload owners and build the exact environment bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run test:miniapp:release
+          npm run test:miniapp:platform
+          npm run check:miniapp:release-code
+          npm run miniapp:bundle -- \
+            --lane "$WECHAT_LANE" \
+            --api-origin "$WECHAT_API_ORIGIN" \
+            --app-id "$WECHAT_APP_ID" \
+            --source-revision "$GITHUB_SHA"
+      - name: Preview or upload verified bundle
+        shell: bash
+        env:
+          WECHAT_UPLOAD_PRIVATE_KEY: ${{ secrets.STARWARD_WECHAT_UPLOAD_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key_path="$RUNNER_TEMP/starward-wechat-upload.key"
+          printf '%s\n' "$WECHAT_UPLOAD_PRIVATE_KEY" > "$key_path"
+          trap 'rm -f -- "$key_path"' EXIT HUP INT TERM
+          args=(
+            --operation "$WECHAT_OPERATION"
+            --lane "$WECHAT_LANE"
+            --manifest "$GITHUB_WORKSPACE/artifacts/miniapp/release/$WECHAT_LANE.manifest.json"
+            --app-id "$WECHAT_APP_ID"
+            --private-key-path "$key_path"
+            --version "$WECHAT_VERSION"
+            --description "$WECHAT_DESCRIPTION"
+            --robot "$WECHAT_ROBOT"
+          )
+          if [[ "$WECHAT_LANE" == production && "$WECHAT_OPERATION" == upload ]]; then
+            args+=(--confirm "$WECHAT_PRODUCTION_CONFIRMATION")
+          fi
+          npm run miniapp:platform -- "${args[@]}"
+      - name: Retain short-lived QR, receipt or reconciliation intent
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wechat-${{ inputs.lane }}-${{ inputs.operation }}-${{ inputs.version }}-${{ github.run_id }}
+          path: artifacts/miniapp/platform/${{ inputs.lane }}/${{ inputs.operation }}-${{ inputs.version }}.*
+          if-no-files-found: ignore
+          retention-days: 3

@@ -1,5 +1,4 @@
 import { createHash, randomUUID } from "node:crypto";
-import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -35,6 +34,10 @@ import {
   evaluateSpotCompleteness,
   SpotPublicationBlockedError,
 } from "./spot-completeness-policy.ts";
+import {
+  listMigrationVersions,
+  runPostgresMigrations,
+} from "./migration-runner.ts";
 
 const { Pool } = pg;
 const root = path.resolve(
@@ -49,6 +52,10 @@ const migrationDir = path.join(
   "miniapp",
   "migrations",
 );
+
+async function migrationVersions() {
+  return listMigrationVersions(migrationDir);
+}
 
 export interface AdminSpotPatch {
   name?: string;
@@ -193,21 +200,33 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
   }
 
   async initialize({ migrate = false }: { migrate?: boolean } = {}) {
-    if (migrate) {
-      const migrations = (await readdir(migrationDir))
-        .filter((name) => /^\d+_[a-z0-9_-]+\.sql$/u.test(name))
-        .sort();
-      for (const migration of migrations)
-        await this.pool.query(
-          await readFile(path.join(migrationDir, migration), "utf8"),
-        );
-    }
+    if (migrate)
+      await runPostgresMigrations({ pool: this.pool, migrationDirectory: migrationDir });
     const migration = await this.pool.query<{ exists: boolean }>(
       "SELECT to_regclass('public.schema_migrations') IS NOT NULL AS exists",
     );
     if (!migration.rows[0]?.exists)
       throw new Error("postgres_schema_missing_run_migrations");
     return this;
+  }
+
+  async readinessSnapshot() {
+    const versions = await migrationVersions();
+    const expectedMigration = versions.at(-1) ?? null;
+    const result = await this.pool.query<{ current_migration: string | null }>(
+      `SELECT CASE
+         WHEN to_regclass('public.schema_migrations') IS NULL THEN NULL
+         ELSE (SELECT max(version) FROM schema_migrations)
+       END AS current_migration`,
+    );
+    const currentMigration = result.rows[0]?.current_migration ?? null;
+    return {
+      ready:
+        expectedMigration !== null && currentMigration === expectedMigration,
+      repository: this.kind,
+      currentMigration,
+      expectedMigration,
+    };
   }
 
   async listSpots(): Promise<readonly SpotSummary[]> {

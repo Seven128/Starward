@@ -25,6 +25,14 @@ import { InMemoryLibraryStore } from "./in-memory-library-store.ts";
  * this class outside NODE_ENV=test or MINIAPP_ACCEPTANCE_MODE=1. */
 export class InMemoryTestRepository implements MiniappRepositoryPort {
   readonly kind = "memory" as const;
+
+  async readinessSnapshot() {
+    return {
+      ready: true,
+      repository: this.kind,
+      schema: "explicit-test-memory",
+    };
+  }
   #spots: readonly SpotSummary[];
   #users = new Set<UserId>();
   #wechatUsers = new Map<string, UserId>();

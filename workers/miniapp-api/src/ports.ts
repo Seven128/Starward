@@ -182,6 +182,7 @@ export interface MediaObjectStorePort {
 
 export interface MiniappRepositoryPort {
   readonly kind: "memory" | "postgres";
+  readinessSnapshot(): Promise<Readonly<Record<string, unknown>>>;
   listSpots(): Promise<readonly SpotSummary[]>;
   listSpotsInRadius(
     center: Wgs84Point,
@@ -299,6 +300,7 @@ export interface TelemetryPort {
 
 export interface CachePort {
   readonly kind: "memory" | "redis";
+  readinessSnapshot(): Promise<Readonly<Record<string, unknown>>>;
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, value: T, ttlSeconds: number): Promise<void>;
   deleteByPrefix(prefix: string): Promise<void>;

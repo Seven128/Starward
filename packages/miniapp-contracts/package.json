@@ -4,13 +4,20 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./test-fixtures": "./src/catalog.ts"
+    ".": {
+      "production": "./dist/index.js",
+      "default": "./src/index.ts"
+    },
+    "./test-fixtures": {
+      "production": "./dist/catalog.js",
+      "default": "./src/catalog.ts"
+    }
   },
   "dependencies": {
     "@starward/coordinate-system": "*"
   },
   "scripts": {
+    "build:release": "node ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
     "generate:sdk": "node ../../tools/miniapp/generate-miniapp-sdk.mjs",
     "check:sdk": "node ../../tools/miniapp/generate-miniapp-sdk.mjs --check",
     "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
