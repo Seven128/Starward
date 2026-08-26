@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const source = await readFile("infrastructure/deployment/miniapp-api.Dockerfile", "utf8");
+const source = (await readFile("infrastructure/deployment/miniapp-api.Dockerfile", "utf8")).replace(
+  /\r\n?/gu,
+  "\n",
+);
 
 function stage(name) {
   const marker = ` AS ${name}\n`;
