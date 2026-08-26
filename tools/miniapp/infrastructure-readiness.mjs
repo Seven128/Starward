@@ -4,13 +4,25 @@ const transientConnectionCodes = new Set([
   "ECONNRESET",
   "EPIPE",
   "ETIMEDOUT",
+  "PG_CONNECTION_TERMINATED",
 ]);
 
 const defaultWait = (milliseconds) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 function safeErrorCode(error) {
-  const code = typeof error?.code === "string" ? error.code : "UNKNOWN";
+  const nestedCode =
+    typeof error?.code === "string"
+      ? error.code
+      : typeof error?.cause?.code === "string"
+        ? error.cause.code
+        : null;
+  const code =
+    nestedCode ??
+    (error?.message === "Connection terminated unexpectedly" ||
+    error?.message === "Connection terminated"
+      ? "PG_CONNECTION_TERMINATED"
+      : "UNKNOWN");
   return /^[A-Z0-9_]+$/u.test(code) ? code : "UNKNOWN";
 }
 

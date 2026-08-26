@@ -31,6 +31,23 @@ test("connection readiness retries a transient reset and closes the failed clien
   assert.equal(closed, 1);
 });
 
+test("connection readiness retries node-postgres startup termination without broad unknown retries", async () => {
+  let attempts = 0;
+  const resource = await connectResourceWithRetry({
+    label: "postgres",
+    create: () => ({ attempt: ++attempts }),
+    connect: async (client) => {
+      if (client.attempt === 1)
+        throw new Error("Connection terminated unexpectedly");
+    },
+    close: async () => {},
+    wait: async () => {},
+  });
+
+  assert.equal(attempts, 2);
+  assert.equal(resource.attempt, 2);
+});
+
 test("connection readiness fails immediately on a non-transient configuration error", async () => {
   let attempts = 0;
   let closed = 0;
