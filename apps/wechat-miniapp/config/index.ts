@@ -13,6 +13,13 @@ const sharedSourceInclude = [
   path.resolve(repoRoot, "packages/coordinate-system/src"),
 ];
 
+function operatorPreviewToken() {
+  const selected = process.env.MINIAPP_OPERATOR_PREVIEW_TOKEN?.trim() ?? "";
+  if (selected && !/^[A-Za-z0-9_-]{43,128}$/u.test(selected))
+    throw new Error("miniapp_operator_preview_token_invalid");
+  return selected;
+}
+
 const createConfig: UserConfigFn = async (_merge, { command }) => {
   const target = process.env.TARO_ENV ?? "weapp";
   if (target !== "weapp")
@@ -60,6 +67,9 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     defineConstants: {
       __MINIAPP_API_BASE__: JSON.stringify(
         process.env.MINIAPP_API_BASE ?? "http://127.0.0.1:8787",
+      ),
+      __MINIAPP_OPERATOR_PREVIEW_TOKEN__: JSON.stringify(
+        operatorPreviewToken(),
       ),
       __DELIVERY_TARGET__: JSON.stringify(
         "target.system.wechat-miniapp-soft-instruments-2026-08-05",

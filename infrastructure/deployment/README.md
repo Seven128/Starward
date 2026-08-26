@@ -40,6 +40,86 @@ and provide a complete staging success receipt for the same revision/digest.
 
 The production host and production paths must be different from staging.
 
+## Owner-only preview before domain and ICP are ready
+
+An operator may exercise the real remote stack before the filed HTTPS origin
+exists, but this is a development preview and never a release substitution.
+Use an exact source revision and image identity, a repository-external descriptor
+and secrets, the staging PostgreSQL/Redis/queue/cache namespaces, real authorized
+trial providers, `MINIAPP_AUTH_MODE=LOCAL_TEST`,
+`MINIAPP_ACCEPTANCE_MODE=1`, and
+`MINIAPP_DEVELOPMENT_FIXTURE_MODE=0`. Refuse the bootstrap if the Compose project,
+containers, or volumes already exist.
+
+Render the normal Compose file, then start the data services, migration, API and
+worker without adding a host `ports` mapping:
+
+```sh
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml config --quiet
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml up -d --wait postgres redis
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml --profile operations \
+  run --rm --pull never migrate
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml \
+  up -d --wait --no-deps --pull never api worker
+```
+
+Reach the API from the developer workstation only through the authenticated SSH
+connection and bind the local side to loopback:
+
+```sh
+ssh -N -T -o ExitOnForwardFailure=yes \
+  -L 127.0.0.1:8787:172.30.10.3:8787 <staging-deploy-host>
+```
+
+Compile the ordinary development WEAPP lane with
+`MINIAPP_API_BASE=http://127.0.0.1:8787`; the tracked development project keeps
+URL checking disabled. The tunnel must stay open while DevTools is running.
+
+For owner-phone debugging, generate one run-random base64url token of 43–128
+characters outside Git. Put it in the external preview descriptor as
+`STARWARD_OPERATOR_PREVIEW_TOKEN`, set `STARWARD_API_DOMAIN` to the host's literal
+public IP, and render/start Caddy through both Compose files:
+
+```sh
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml \
+  -f infrastructure/deployment/compose.operator-preview.yml \
+  config --quiet
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml \
+  -f infrastructure/deployment/compose.operator-preview.yml \
+  up -d --wait --no-deps caddy
+```
+
+The overlay publishes only 443, uses Caddy's internal development certificate,
+and returns 404 unless `X-Starward-Operator-Preview` exactly matches the token.
+The edge removes that header before proxying and filters it from access logs.
+Compile the phone development build with
+`MINIAPP_API_BASE=https://<public-ip>` and the same token in
+`MINIAPP_OPERATOR_PREVIEW_TOKEN`. Formal release-bundle construction explicitly
+clears this variable so the preview credential cannot enter staging or
+production output. On the phone, scan the DevTools preview QR and enable WeChat
+debugging before exercising requests; this bypass is development-only and must
+not be described as trusted TLS or ordinary experience-build support.
+
+Never use public `http://<IP>`, run an unguarded public test API, expose
+session-bearing plaintext traffic, generate a normal staging release receipt,
+or relax the formal environment validator for this lane. Record it only as an
+operator-preview receipt with public certificate trust, domain/ICP, platform
+release and promotion qualification explicitly unevaluated or false.
+
+Once the filed HTTPS staging origin exists, remove the temporary descriptor,
+local-test and preview-token secrets, the IP overlay and its Caddy volumes; close
+the tunnel, and run the normal immutable-image,
+verified-backup, migration, Caddy/public-readiness and receipt sequence. Before
+this physical host becomes production, destroy every staging container, volume,
+credential, queue, cache, backup and receipt and reprovision it from a clean base
+as required by the selected environment topology.
+
 ## Bootstrap a genuinely fresh host
 
 For a newly purchased, otherwise unused x86-64 Ubuntu 24.04 instance, the

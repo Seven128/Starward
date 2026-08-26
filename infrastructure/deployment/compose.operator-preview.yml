@@ -1,0 +1,10 @@
+services:
+  caddy:
+    environment:
+      STARWARD_OPERATOR_PREVIEW_TOKEN: ${STARWARD_OPERATOR_PREVIEW_TOKEN:?STARWARD_OPERATOR_PREVIEW_TOKEN is required}
+    ports: !override
+      - "443:443"
+    volumes: !override
+      - ./Caddyfile.operator-preview:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config

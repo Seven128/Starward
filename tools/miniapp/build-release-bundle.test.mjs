@@ -8,12 +8,26 @@ import {
   acquireBuildLock,
   bindBundleProjectIdentity,
   fingerprintBundle,
+  releaseBuildEnvironment,
   resolveNpmCli,
   validateBuildRequest,
 } from "./build-release-bundle.mjs";
 
 const revision = "a".repeat(40);
 const stagingAppId = `wx${"1".repeat(16)}`;
+
+test("formal release builds clear an inherited operator-preview access token", () => {
+  const environment = releaseBuildEnvironment(
+    { apiOrigin: "https://api.starward-ci.invalid" },
+    {
+      MINIAPP_OPERATOR_PREVIEW_TOKEN: "inherited-preview-token",
+      UNRELATED: "preserved",
+    },
+  );
+  assert.equal(environment.MINIAPP_OPERATOR_PREVIEW_TOKEN, "");
+  assert.equal(environment.MINIAPP_API_BASE, "https://api.starward-ci.invalid");
+  assert.equal(environment.UNRELATED, "preserved");
+});
 
 test("release build uses npm's explicit CLI entry instead of guessing the Node layout", () => {
   const npmCli = path.resolve("node_modules", "npm", "bin", "npm-cli.js");

@@ -3,6 +3,14 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const source = await readFile("infrastructure/deployment/compose.yml", "utf8");
+const operatorPreviewCompose = await readFile(
+  "infrastructure/deployment/compose.operator-preview.yml",
+  "utf8",
+);
+const operatorPreviewCaddy = await readFile(
+  "infrastructure/deployment/Caddyfile.operator-preview",
+  "utf8",
+);
 
 function service(name) {
   const marker = `\n  ${name}:\n`;
@@ -47,4 +55,30 @@ test("the API trusts only the fixed Caddy address on the explicit edge subnet", 
   assert.match(service("caddy"), /ipv4_address: 172\.30\.10\.2/u);
   assert.match(service("api"), /ipv4_address: 172\.30\.10\.3/u);
   assert.match(source, /edge:[\s\S]*subnet: 172\.30\.10\.0\/29/u);
+});
+
+test("operator phone preview exposes only guarded HTTPS on the existing edge", () => {
+  assert.match(operatorPreviewCompose, /ports: !override\s*\n\s*- "443:443"/u);
+  assert.doesNotMatch(operatorPreviewCompose, /80:80|8787:8787|5432:5432|6379:6379/u);
+  assert.match(
+    operatorPreviewCompose,
+    /STARWARD_OPERATOR_PREVIEW_TOKEN: \$\{STARWARD_OPERATOR_PREVIEW_TOKEN:\?[^}]+\}/u,
+  );
+  assert.match(operatorPreviewCompose, /Caddyfile\.operator-preview/u);
+  assert.match(operatorPreviewCaddy, /https:\/\/\{\$STARWARD_API_DOMAIN\}/u);
+  assert.match(operatorPreviewCaddy, /tls internal/u);
+  assert.match(
+    operatorPreviewCaddy,
+    /@operator header X-Starward-Operator-Preview \{\$STARWARD_OPERATOR_PREVIEW_TOKEN\}/u,
+  );
+  assert.match(operatorPreviewCaddy, /handle @operator[\s\S]*reverse_proxy api:8787/u);
+  assert.match(
+    operatorPreviewCaddy,
+    /header_up -X-Starward-Operator-Preview/u,
+  );
+  assert.match(
+    operatorPreviewCaddy,
+    /request>headers>X-Starward-Operator-Preview delete/u,
+  );
+  assert.match(operatorPreviewCaddy, /respond 404/u);
 });
