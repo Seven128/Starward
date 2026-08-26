@@ -40,7 +40,7 @@
     "miniapp:restore": "node tools/miniapp/backup-restore.mjs restore",
     "miniapp:bundle": "node tools/miniapp/build-release-bundle.mjs",
     "miniapp:platform": "node tools/miniapp/upload-release-bundle.mjs",
-    "test:miniapp:release": "node --test tools/miniapp/build-release-bundle.test.mjs",
+    "test:miniapp:release": "node --test tools/miniapp/build-release-bundle.test.mjs tools/miniapp/infrastructure-readiness.test.mjs",
     "test:miniapp:platform": "node --test tools/miniapp/upload-release-bundle.test.mjs",
     "check:miniapp:release-code": "npm run check:miniapp:sdk && npm run typecheck --workspace @starward/miniapp-contracts && npm run typecheck --workspace @starward/miniapp-api && npm run typecheck --workspace @starward/wechat-miniapp && npm run test --workspace @starward/miniapp-contracts && npm run test --workspace @starward/miniapp-api && npm run test --workspace @starward/wechat-miniapp",
     "build:miniapp:release": "npm run build:release --workspace @starward/coordinate-system && npm run build:release --workspace @starward/miniapp-contracts && npm run build:release --workspace @starward/miniapp-api",
