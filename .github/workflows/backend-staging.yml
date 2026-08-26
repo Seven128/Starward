@@ -1,0 +1,160 @@
+name: Backend staging release
+
+on:
+  workflow_run:
+    workflows:
+      - Product CI
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-staging
+  cancel-in-progress: false
+
+jobs:
+  publish-and-deploy:
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository &&
+        vars.STARWARD_STAGING_CD_ENABLED == 'true'
+      }}
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      REVISION: ${{ github.event.workflow_run.head_sha }}
+      SSH_HOST: ${{ vars.STARWARD_SSH_HOST }}
+      SSH_PORT: ${{ vars.STARWARD_SSH_PORT }}
+      SSH_USER: ${{ vars.STARWARD_SSH_USER }}
+      REMOTE_INBOX: ${{ vars.STARWARD_REMOTE_INBOX }}
+      REMOTE_RELEASE_ROOT: ${{ vars.STARWARD_REMOTE_RELEASE_ROOT }}
+      REMOTE_BASE_DEPLOY_ENV: ${{ vars.STARWARD_REMOTE_BASE_DEPLOY_ENV }}
+      REMOTE_CANDIDATE_ROOT: ${{ vars.STARWARD_REMOTE_CANDIDATE_ROOT }}
+      REGISTRY_HOST: ${{ vars.STARWARD_REGISTRY_HOST }}
+      REGISTRY_USERNAME: ${{ vars.STARWARD_REGISTRY_USERNAME }}
+      IMAGE_REPOSITORY: ${{ vars.STARWARD_IMAGE_REPOSITORY }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Validate deployment configuration inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 ))
+          [[ "$SSH_USER" =~ ^[A-Za-z0-9._-]+$ ]]
+          [[ "$REGISTRY_HOST" =~ ^[a-z0-9.-]+(:[0-9]{1,5})?$ ]]
+          [[ "$REGISTRY_USERNAME" =~ ^[A-Za-z0-9._@-]+$ ]]
+          [[ "$IMAGE_REPOSITORY" =~ ^[a-z0-9.-]+(:[0-9]{1,5})?/[a-z0-9._/-]+$ ]]
+          [[ "$IMAGE_REPOSITORY" == "$REGISTRY_HOST/"* ]]
+          [[ "$IMAGE_REPOSITORY" != */ && "$IMAGE_REPOSITORY" != *..* ]]
+          for selected in "$REMOTE_INBOX" "$REMOTE_RELEASE_ROOT" "$REMOTE_BASE_DEPLOY_ENV" "$REMOTE_CANDIDATE_ROOT"; do
+            [[ "$selected" =~ ^/[A-Za-z0-9._/-]+$ ]]
+          done
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Recheck release owners at the promoted revision
+        run: |
+          npm run test:deployment
+          npm run check:miniapp:release-code
+          npm run build:miniapp:release
+          sh -n infrastructure/deployment/run-remote-promotion.sh
+      - name: Build and publish the immutable release image
+        id: image
+        shell: bash
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.STARWARD_REGISTRY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [[ -n "$REGISTRY_PASSWORD" ]]
+          image_tag="$IMAGE_REPOSITORY:$REVISION"
+          printf '%s' "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" --username "$REGISTRY_USERNAME" --password-stdin
+          docker build \
+            --file infrastructure/deployment/miniapp-api.Dockerfile \
+            --build-arg "STARWARD_RELEASE_REVISION=$REVISION" \
+            --tag "$image_tag" \
+            .
+          docker push "$image_tag"
+          image_ref=$(docker image inspect "$image_tag" --format '{{range .RepoDigests}}{{println .}}{{end}}' | awk -v prefix="$IMAGE_REPOSITORY@sha256:" 'index($0, prefix) == 1 { print; exit }')
+          [[ "$image_ref" == "$IMAGE_REPOSITORY@sha256:"* ]]
+          [[ "$image_ref" =~ @sha256:[0-9a-f]{64}$ ]]
+          printf 'image_ref=%s\n' "$image_ref" >> "$GITHUB_OUTPUT"
+          printf 'image_digest=%s\n' "${image_ref##*@}" >> "$GITHUB_OUTPUT"
+      - name: Remove registry credentials from the runner
+        if: ${{ always() }}
+        shell: bash
+        run: docker logout "$REGISTRY_HOST" || true
+      - name: Prepare non-secret control package and request
+        id: control
+        shell: bash
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.image_ref }}
+        run: |
+          set -euo pipefail
+          released_at=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
+          archive="$RUNNER_TEMP/starward-control-$REVISION.tar.gz"
+          request="$RUNNER_TEMP/starward-staging-$REVISION.request.json"
+          tar -czf "$archive" package.json tools/deployment infrastructure/deployment
+          archive_sha256=$(sha256sum "$archive" | cut -d' ' -f1)
+          npm run deployment:create-request -- \
+            --output "$request" \
+            --base-deploy-env "$REMOTE_BASE_DEPLOY_ENV" \
+            --candidate-output "$REMOTE_CANDIDATE_ROOT/$REVISION/deploy.env" \
+            --image-ref "$IMAGE_REF" \
+            --revision "$REVISION" \
+            --released-at "$released_at" \
+            --operator "github:$GITHUB_ACTOR"
+          printf 'archive=%s\n' "$archive" >> "$GITHUB_OUTPUT"
+          printf 'request=%s\n' "$request" >> "$GITHUB_OUTPUT"
+          printf 'archive_sha256=%s\n' "$archive_sha256" >> "$GITHUB_OUTPUT"
+          printf 'released_at=%s\n' "$released_at" >> "$GITHUB_OUTPUT"
+      - name: Configure pinned SSH trust
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STARWARD_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STARWARD_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/starward_ssh_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/starward_known_hosts"
+      - name: Preflight staging host without mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh_options=(-i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -p "$SSH_PORT")
+          target="$SSH_USER@$SSH_HOST"
+          ssh "${ssh_options[@]}" "$target" \
+            "sh -s -- '$REMOTE_INBOX' '$REMOTE_RELEASE_ROOT' '$REMOTE_CANDIDATE_ROOT' '$REMOTE_BASE_DEPLOY_ENV'" \
+            < infrastructure/deployment/host-preflight.sh
+      - name: Promote exact image to staging
+        shell: bash
+        env:
+          ARCHIVE: ${{ steps.control.outputs.archive }}
+          REQUEST: ${{ steps.control.outputs.request }}
+          ARCHIVE_SHA256: ${{ steps.control.outputs.archive_sha256 }}
+        run: |
+          set -euo pipefail
+          ssh_options=(-i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -p "$SSH_PORT")
+          target="$SSH_USER@$SSH_HOST"
+          remote_archive="$REMOTE_INBOX/staging-$REVISION.control.tar.gz"
+          remote_request="$REMOTE_INBOX/staging-$REVISION.request.json"
+          ssh "${ssh_options[@]}" "$target" "install -d -m 0700 '$REMOTE_INBOX'"
+          scp -i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -P "$SSH_PORT" "$ARCHIVE" "$target:$remote_archive"
+          scp -i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -P "$SSH_PORT" "$REQUEST" "$target:$remote_request"
+          ssh "${ssh_options[@]}" "$target" \
+            "sh -s -- '$remote_archive' '$remote_request' '$REMOTE_RELEASE_ROOT' '$REVISION' '$ARCHIVE_SHA256'" \
+            < infrastructure/deployment/run-remote-promotion.sh

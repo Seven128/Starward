@@ -780,6 +780,32 @@ export class MiniappService {
     await this.contributions.mediaStore.close();
   }
 
+  async readinessSnapshot() {
+    const dependency = async (
+      name: "database" | "cache",
+      operation: () => Promise<Readonly<Record<string, unknown>>>,
+    ) => {
+      try {
+        const detail = await operation();
+        return {
+          name,
+          ready: detail.ready === true,
+          ...detail,
+        };
+      } catch {
+        return { name, ready: false, state: "unavailable" };
+      }
+    };
+    const dependencies = await Promise.all([
+      dependency("database", () => this.repository.readinessSnapshot()),
+      dependency("cache", () => this.cache.readinessSnapshot()),
+    ]);
+    return {
+      ready: dependencies.every((item) => item.ready),
+      dependencies,
+    };
+  }
+
   async resetAcceptanceState() {
     if (
       process.env.MINIAPP_ACCEPTANCE_MODE !== "1" ||

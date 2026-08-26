@@ -8,6 +8,7 @@ import Redis from "ioredis";
 import pg from "pg";
 import { createBackup, restoreBackup } from "./backup-restore.mjs";
 import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
+import { connectResourceWithRetry } from "./infrastructure-readiness.mjs";
 
 const { Client } = pg;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -130,14 +131,41 @@ const composeUp = dockerComposeInvocation([
 ]);
 run(composeUp.command, composeUp.args);
 stage("compose:ready");
-const admin = new Client({ connectionString: adminUrl });
-await admin.connect();
-const redis = new Redis(redisUrl, {
-  lazyConnect: true,
-  maxRetriesPerRequest: 1,
-  connectionName: `starward-${runId}-cleanup`,
+const admin = await connectResourceWithRetry({
+  label: "infrastructure_postgres",
+  create: () => new Client({ connectionString: adminUrl, connectionTimeoutMillis: 2_000 }),
+  connect: async (client) => {
+    await client.connect();
+    await client.query("SELECT 1");
+  },
+  close: async (client) => client.end(),
 });
-await redis.connect();
+let redis;
+try {
+  redis = await connectResourceWithRetry({
+    label: "infrastructure_redis",
+    create: () => {
+      const client = new Redis(redisUrl, {
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        connectTimeout: 2_000,
+        connectionName: `starward-${runId}-cleanup`,
+      });
+      client.on("error", () => {});
+      return client;
+    },
+    connect: async (client) => {
+      await client.connect();
+      await client.ping();
+    },
+    close: async (client) => {
+      client.disconnect();
+    },
+  });
+} catch (error) {
+  await admin.end().catch(() => {});
+  throw error;
+}
 try {
   await admin.query(`CREATE DATABASE "${databaseName}"`);
   stage("integration:start");

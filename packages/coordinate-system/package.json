@@ -4,6 +4,15 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "production": "./dist/index.js",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build:release": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
   }
 }

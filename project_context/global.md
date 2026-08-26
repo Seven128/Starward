@@ -45,6 +45,7 @@
 ## Current Release Profile
 
 - Current operating entity: individual.
+- Target public-release operator: an individual industrial and commercial household using the selected trade-name candidate `茂文菲蛋`. The exact registered legal name, address, business scope, unified social credit code and approval are pending external registration; until they are confirmed and the Mini Program subject is changed or migrated through the supported platform route, the current individual profile remains controlling.
 - Current distribution: owner-only, non-commercial personal trial/internal install; no public operation or production app-store claim.
 - External-service ceiling: CNY 200 per month / CNY 2,400 per year. Prefer zero-cost sources only when their personal non-commercial terms, provenance, target-region behavior, and safe degradation are all acceptable.
 - Budget fit never authorizes a purchase, plan upgrade, second paid source, production traffic, or public redistribution.
@@ -83,7 +84,8 @@
 
 ## Context Index
 
-- [future WeChat miniapp development/test/acceptance environment](development-workflow.md)
+- [WeChat miniapp development/test/acceptance environment](development-workflow.md)
+- [cloud deployment, release, domain and production environment](deployment.md)
 - [main](areas/main.md)
 - [main implementation index](areas/main/implementation-index.md)
 - [Starward Product Surface Contract](areas/main/product-surface-contract.md)

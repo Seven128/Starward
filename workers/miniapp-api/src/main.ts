@@ -8,17 +8,32 @@ import {
 import { AppModule } from "./app.module.ts";
 import { ApiExceptionFilter } from "./api-exception.filter.ts";
 import { EtagInterceptor } from "./etag.interceptor.ts";
+import {
+  loadPublicRateLimitConfig,
+  registerPublicRateLimit,
+} from "./rate-limit.ts";
+import {
+  fastifyDeploymentOptions,
+  loadHttpDeploymentConfig,
+  loadReleaseMetadata,
+} from "./release-metadata.ts";
 
 const host = process.env.MINIAPP_API_HOST ?? "127.0.0.1";
 const port = Number(process.env.MINIAPP_API_PORT ?? 8787);
+const release = loadReleaseMetadata();
+const http = loadHttpDeploymentConfig(release);
+const publicRateLimit = loadPublicRateLimitConfig(release);
 
 const app = await NestFactory.create<NestFastifyApplication>(
   AppModule,
-  new FastifyAdapter({ bodyLimit: 2_000_000 }),
+  new FastifyAdapter(fastifyDeploymentOptions(http)),
   { logger: ["error", "warn", "log"] },
 );
 app.enableCors({
-  origin: [/^http:\/\/127\.0\.0\.1(?::\d+)?$/u],
+  origin:
+    release.environment === "local"
+      ? [/^http:\/\/127\.0\.0\.1(?::\d+)?$/u]
+      : http.origins,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: [
     "content-type",
@@ -33,8 +48,18 @@ app.enableCors({
 app.useGlobalFilters(new ApiExceptionFilter());
 app.useGlobalInterceptors(new EtagInterceptor());
 app.enableShutdownHooks();
-await app.listen(port, host);
+try {
+  await registerPublicRateLimit(app.getHttpAdapter().getInstance(), publicRateLimit);
+  await app.listen(port, host);
+} catch (error) {
+  await app.close();
+  throw error;
+}
 Logger.log(
-  `Miniapp modular-monolith BFF listening on http://${host}:${port}/v2`,
+  JSON.stringify({
+    event: "miniapp_api_ready",
+    address: `http://${host}:${port}`,
+    release,
+  }),
   "Bootstrap",
 );

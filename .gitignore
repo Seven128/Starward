@@ -1,4 +1,7 @@
 node_modules/
+packages/coordinate-system/dist/
+packages/miniapp-contracts/dist/
+workers/miniapp-api/dist/
 __pycache__/
 *.py[cod]
 .venv/

@@ -1,6 +1,6 @@
-import { randomUUID } from "node:crypto";
 import type { ArgumentsHost, ExceptionFilter } from "@nestjs/common";
 import { Catch, HttpException } from "@nestjs/common";
+import { requestIdFromHeaders } from "./request-id.ts";
 import { SpotPublicationBlockedError } from "./spot-completeness-policy.ts";
 
 export function classifyExceptionMessage(message: string) {
@@ -30,11 +30,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const response = context.getResponse();
     const request = context.getRequest<{ headers?: Record<string, unknown> }>();
     const message = exception instanceof Error ? exception.message : "unknown";
-    const requestId =
-      typeof request.headers?.["x-request-id"] === "string" &&
-      /^[a-zA-Z0-9._:-]{8,128}$/u.test(request.headers["x-request-id"] as string)
-        ? (request.headers["x-request-id"] as string)
-        : randomUUID();
+    const requestId = requestIdFromHeaders(request.headers);
     if (exception instanceof SpotPublicationBlockedError) {
       response.status(422).send({
         code: "INVALID_INPUT",

@@ -4,27 +4,35 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "production": "./dist/index.js",
+      "default": "./src/index.ts"
+    }
   },
   "scripts": {
+    "build:release": "node ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
     "dev": "tsx watch src/main.ts",
     "dev:worker": "tsx watch src/worker.ts",
     "start": "tsx src/main.ts",
     "worker": "tsx src/worker.ts",
     "worker:once": "tsx src/worker.ts --once",
+    "start:release": "node --conditions=production dist/main.js",
+    "worker:release": "node --conditions=production dist/worker.js",
+    "migrate:release": "node --conditions=production dist/migrate.js",
     "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
     "test": "node --import tsx --test src/**/*.test.ts",
     "test:integration": "node --import tsx --test src/miniapp-infrastructure.test.ts"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.28",
-    "@nestjs/core": "11.1.28",
-    "@nestjs/platform-fastify": "11.1.28",
+    "@fastify/rate-limit": "11.2.0",
+    "@nestjs/common": "11.2.3",
+    "@nestjs/core": "11.2.3",
+    "@nestjs/platform-fastify": "11.2.3",
     "@starward/coordinate-system": "^0.1.0",
     "@starward/miniapp-contracts": "*",
     "astronomy-engine": "2.1.19",
     "bullmq": "^6.0.8",
-    "fastify": "5.11.2",
+    "fastify": "5.11.3",
     "ioredis": "^6.0.0",
     "pg": "^8.22.0",
     "reflect-metadata": "0.2.2",

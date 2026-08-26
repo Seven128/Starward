@@ -146,7 +146,7 @@ test("QWeather composition keeps the grid timeline primary, adds layered cloud a
             severity: "severe",
             certainty: "likely",
             effectiveTime: "2026-08-23T12:30:00Z",
-            expireTime: "2026-08-23T18:00:00Z",
+            expireTime: new Date(Date.now() + 60 * 60_000).toISOString(),
             headline: "雷暴预警",
             description: "可能出现强雷暴。",
             instruction: "停止户外活动。",

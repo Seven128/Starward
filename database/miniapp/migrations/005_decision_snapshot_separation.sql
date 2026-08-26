@@ -23,3 +23,6 @@ CREATE TABLE IF NOT EXISTS sky_opportunity_snapshots (
 
 CREATE INDEX IF NOT EXISTS sky_opportunity_snapshots_location_date_idx
   ON sky_opportunity_snapshots(location_kind, location_ref, local_date, generated_at DESC);
+
+INSERT INTO schema_migrations(version) VALUES ('005_decision_snapshot_separation')
+ON CONFLICT (version) DO NOTHING;

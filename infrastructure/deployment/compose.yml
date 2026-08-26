@@ -1,0 +1,201 @@
+name: ${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME is required}
+
+x-bounded-logging: &bounded-logging
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-release-image: &release-image
+  image: ${STARWARD_IMAGE_REF:?STARWARD_IMAGE_REF must be an immutable digest reference}
+  init: true
+  restart: unless-stopped
+  mem_limit: 512m
+  mem_reservation: 128m
+  pids_limit: 128
+  stop_grace_period: 30s
+  logging: *bounded-logging
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  caddy:
+    image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    restart: unless-stopped
+    mem_limit: 128m
+    mem_reservation: 32m
+    pids_limit: 64
+    stop_grace_period: 15s
+    logging: *bounded-logging
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      STARWARD_API_DOMAIN: ${STARWARD_API_DOMAIN:?STARWARD_API_DOMAIN is required}
+      CADDY_EMAIL: ${CADDY_EMAIL:?CADDY_EMAIL is required}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      edge:
+        ipv4_address: 172.30.10.2
+
+  api:
+    <<: *release-image
+    env_file:
+      - ${STARWARD_API_ENV_FILE:?STARWARD_API_ENV_FILE is required}
+    environment: &release-identity
+      STARWARD_ENVIRONMENT: ${STARWARD_ENVIRONMENT:?STARWARD_ENVIRONMENT is required}
+      STARWARD_RELEASE_REVISION: ${STARWARD_RELEASE_REVISION:?STARWARD_RELEASE_REVISION is required}
+      STARWARD_IMAGE_DIGEST: ${STARWARD_IMAGE_DIGEST:?STARWARD_IMAGE_DIGEST is required}
+      STARWARD_RELEASED_AT: ${STARWARD_RELEASED_AT:?STARWARD_RELEASED_AT is required}
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    expose:
+      - "8787"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - --conditions=production
+        - -e
+        - "fetch('http://127.0.0.1:8787/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      edge:
+        ipv4_address: 172.30.10.3
+      backend:
+
+  worker:
+    <<: *release-image
+    command:
+      - node
+      - --conditions=production
+      - workers/miniapp-api/dist/worker.js
+    env_file:
+      - ${STARWARD_WORKER_ENV_FILE:?STARWARD_WORKER_ENV_FILE is required}
+    environment: *release-identity
+    read_only: true
+    tmpfs:
+      - /run/starward:size=16m,mode=0700,uid=1000,gid=1000
+      - /tmp:size=32m,mode=1777
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - --conditions=production
+        - workers/miniapp-api/dist/worker-healthcheck.js
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  migrate:
+    <<: *release-image
+    profiles:
+      - operations
+    restart: "no"
+    command:
+      - node
+      - --conditions=production
+      - workers/miniapp-api/dist/migrate.js
+    env_file:
+      - ${STARWARD_MIGRATE_ENV_FILE:?STARWARD_MIGRATE_ENV_FILE is required}
+    environment: *release-identity
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+
+  postgres:
+    image: postgis/postgis:17-3.5-alpine@sha256:14827e5c7d4c10f3672130882718dfc6926823175e00baa16fa0a05b87c6e660
+    restart: unless-stopped
+    mem_limit: 1g
+    mem_reservation: 256m
+    pids_limit: 256
+    stop_grace_period: 60s
+    logging: *bounded-logging
+    env_file:
+      - ${STARWARD_POSTGRES_ENV_FILE:?STARWARD_POSTGRES_ENV_FILE is required}
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  redis:
+    image: redis:7.4-alpine@sha256:9702d01c1f10c3ea9f48211b4362e44f154ff02d063e6f7268eba804059f53bf
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 64m
+    pids_limit: 128
+    stop_grace_period: 30s
+    logging: *bounded-logging
+    env_file:
+      - ${STARWARD_REDIS_ENV_FILE:?STARWARD_REDIS_ENV_FILE is required}
+    command:
+      - /bin/sh
+      - -ec
+      - exec redis-server --appendonly yes --maxmemory 192mb --maxmemory-policy noeviction --requirepass "$$REDIS_PASSWORD"
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.30.10.0/29
+  backend:
+
+volumes:
+  caddy-data:
+  caddy-config:
+  postgres-data:
+  redis-data:
