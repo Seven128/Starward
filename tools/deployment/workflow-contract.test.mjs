@@ -27,8 +27,13 @@ test("staging privilege follows only a successful trusted main push", async () =
   assert.match(source, /workflow_run\.conclusion == 'success'/u);
   assert.match(source, /STARWARD_STAGING_CD_ENABLED == 'true'/u);
   assert.match(source, /environment: staging/u);
-  assert.match(source, /packages: write/u);
-  assert.match(source, /image_ref=.*RepoDigests/u);
+  assert.doesNotMatch(source, /packages: write|ghcr\.io|GITHUB_TOKEN/u);
+  assert.match(source, /STARWARD_REGISTRY_HOST/u);
+  assert.match(source, /STARWARD_REGISTRY_USERNAME/u);
+  assert.match(source, /STARWARD_IMAGE_REPOSITORY/u);
+  assert.match(source, /STARWARD_REGISTRY_PASSWORD/u);
+  assert.match(source, /RepoDigests/u);
+  assert.match(source, /docker logout/u);
   assert.match(source, /host-preflight\.sh/u);
 });
 
@@ -40,6 +45,9 @@ test("production is a manual exact-digest promotion and never rebuilds", async (
   assert.match(source, /staging_receipt_path:/u);
   assert.match(source, /STARWARD_PRODUCTION_CD_ENABLED == 'true'/u);
   assert.doesNotMatch(source, /docker build|docker push/iu);
+  assert.match(source, /STARWARD_IMAGE_REPOSITORY/u);
+  assert.match(source, /image_ref="\$IMAGE_REPOSITORY@\$IMAGE_DIGEST"/u);
+  assert.doesNotMatch(source, /ghcr\.io/u);
   assert.match(source, /host-preflight\.sh/u);
 });
 

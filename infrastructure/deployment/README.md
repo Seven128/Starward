@@ -123,9 +123,12 @@ and binds the approved image repository, but must not contain
 `STARWARD_RELEASED_AT`. Those non-secret values belong to a generated candidate
 descriptor so a release never rewrites secret-bearing lane files.
 
-The current Actions implementation publishes to
-`ghcr.io/<lowercase-github-owner>/starward-miniapp-api`; set
-`STARWARD_IMAGE_REPOSITORY` in both base descriptors to that exact repository.
+The initial Actions implementation publishes to one Tencent Container Registry
+Personal Edition repository, for example
+`ccr.ccs.tencentyun.com/<namespace>/starward-miniapp-api`. Set
+`STARWARD_IMAGE_REPOSITORY` in both base descriptors and both protected GitHub
+environments to that exact repository. Do not copy the registry password into a
+descriptor or the repository.
 
 Generate the backup key without printing it:
 
@@ -146,7 +149,7 @@ Generate a candidate descriptor, then validate it before Docker is touched:
 npm run deployment:prepare -- \
   --base-deploy-env /etc/starward/staging/deploy.base.env \
   --output /var/lib/starward/staging/candidates/<revision>/deploy.env \
-  --image-ref ghcr.io/<owner>/starward-miniapp-api@sha256:<digest> \
+  --image-ref ccr.ccs.tencentyun.com/<namespace>/starward-miniapp-api@sha256:<digest> \
   --revision <40-hex-git-revision> \
   --released-at <utc-iso-timestamp>
 
@@ -226,7 +229,7 @@ dispatching promotion; the command verifies every required staging step.
 npm run deployment:promote -- \
   --base-deploy-env /etc/starward/production/deploy.base.env \
   --candidate-output /var/lib/starward/production/candidates/<revision>/deploy.env \
-  --image-ref ghcr.io/<owner>/starward-miniapp-api@sha256:<digest> \
+  --image-ref ccr.ccs.tencentyun.com/<namespace>/starward-miniapp-api@sha256:<digest> \
   --revision <40-hex-git-revision> \
   --released-at <utc-iso-timestamp> \
   --operator operator-name \
@@ -299,9 +302,9 @@ final launch setting, and a 429 response is not capacity evidence.
 ## GitHub Actions activation
 
 Both remote workflows are tracked but default to disabled. Do not enable them
-until the two hosts, external descriptors, DNS/TLS prerequisites, GHCR pull
-credentials, first-environment initialization and SSH host-key verification are
-complete.
+until the required hosts, external descriptors, DNS/TLS prerequisites, TCR
+Personal Edition repository and credentials, first-environment initialization
+and SSH host-key verification are complete.
 
 Each host must be an x86-64 Ubuntu 24.04 instance with at least 4 online CPUs,
 3584 MiB reported memory, 10 GiB free beneath the release root, Node.js 24,
@@ -317,8 +320,13 @@ Configure the GitHub `staging` and `production` environments independently:
 - Variables: `STARWARD_SSH_HOST`, `STARWARD_SSH_PORT`,
   `STARWARD_SSH_USER`, `STARWARD_REMOTE_INBOX`,
   `STARWARD_REMOTE_RELEASE_ROOT`, `STARWARD_REMOTE_BASE_DEPLOY_ENV`, and
-  `STARWARD_REMOTE_CANDIDATE_ROOT`.
-- Secrets: `STARWARD_SSH_PRIVATE_KEY` and `STARWARD_SSH_KNOWN_HOSTS`.
+  `STARWARD_REMOTE_CANDIDATE_ROOT`. Both environments also set the same exact
+  `STARWARD_IMAGE_REPOSITORY`; staging additionally sets
+  `STARWARD_REGISTRY_HOST` and `STARWARD_REGISTRY_USERNAME`.
+- Secrets: `STARWARD_SSH_PRIVATE_KEY` and `STARWARD_SSH_KNOWN_HOSTS`. Staging
+  additionally stores `STARWARD_REGISTRY_PASSWORD` for publication. Log in to
+  TCR separately as the deployment user on each host so an exact-digest pull
+  does not receive registry credentials through the release control package.
 - Enable flags: `STARWARD_STAGING_CD_ENABLED=true` only in staging and
   `STARWARD_PRODUCTION_CD_ENABLED=true` only in production.
 - Configure required reviewers on the GitHub `production` environment before
@@ -326,8 +334,9 @@ Configure the GitHub `staging` and `production` environments independently:
 
 `backend-staging.yml` runs only after a successful Product CI run caused by a
 trusted `main` push in this repository. It rebuilds the exact revision once as
-the release image, publishes it to GHCR, transfers a SHA-256-bound non-secret
-control package and automatically promotes the resulting immutable digest.
+the release image, publishes it to the configured TCR repository, removes the
+runner login, transfers a SHA-256-bound non-secret control package and
+automatically promotes the resulting immutable digest.
 `backend-production.yml` is manual only; the operator supplies the exact
 revision, digest, matching confirmation and production-host staging receipt
 path. It never builds or pushes an image.

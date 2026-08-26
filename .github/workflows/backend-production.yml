@@ -45,6 +45,7 @@ jobs:
       REMOTE_RELEASE_ROOT: ${{ vars.STARWARD_REMOTE_RELEASE_ROOT }}
       REMOTE_BASE_DEPLOY_ENV: ${{ vars.STARWARD_REMOTE_BASE_DEPLOY_ENV }}
       REMOTE_CANDIDATE_ROOT: ${{ vars.STARWARD_REMOTE_CANDIDATE_ROOT }}
+      IMAGE_REPOSITORY: ${{ vars.STARWARD_IMAGE_REPOSITORY }}
     steps:
       - name: Validate manual promotion inputs
         shell: bash
@@ -57,6 +58,8 @@ jobs:
           [[ "$SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
           [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 ))
           [[ "$SSH_USER" =~ ^[A-Za-z0-9._-]+$ ]]
+          [[ "$IMAGE_REPOSITORY" =~ ^[a-z0-9.-]+(:[0-9]{1,5})?/[a-z0-9._/-]+$ ]]
+          [[ "$IMAGE_REPOSITORY" != */ && "$IMAGE_REPOSITORY" != *..* ]]
           for selected in "$REMOTE_INBOX" "$REMOTE_RELEASE_ROOT" "$REMOTE_BASE_DEPLOY_ENV" "$REMOTE_CANDIDATE_ROOT"; do
             [[ "$selected" =~ ^/[A-Za-z0-9._/-]+$ ]]
           done
@@ -78,8 +81,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
-          image_ref="ghcr.io/$owner/starward-miniapp-api@$IMAGE_DIGEST"
+          image_ref="$IMAGE_REPOSITORY@$IMAGE_DIGEST"
           released_at=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
           archive="$RUNNER_TEMP/starward-control-$REVISION.tar.gz"
           request="$RUNNER_TEMP/starward-production-$REVISION.request.json"
