@@ -130,18 +130,33 @@ Personal Edition repository, for example
 environments to that exact repository. Do not copy the registry password into a
 descriptor or the repository.
 
-Generate the backup key without printing it:
+After the tracked fresh-host bootstrap, provision environment-local generated
+material once through an attributable root channel. The script creates the
+PostgreSQL, Redis, migration, worker, backup-key and QWeather Ed25519 files; it
+refuses to overwrite any existing or symlink target and never prints a private
+value:
 
 ```sh
-install -d -m 0700 /etc/starward/staging
-umask 077
-openssl rand -hex 32 > /etc/starward/staging/backup.key
-chmod 0600 /etc/starward/staging/backup.key
+sh infrastructure/deployment/provision-internal-secrets.sh \
+  confirm-starward-internal-secret-provisioning \
+  staging \
+  starward-deploy
 ```
 
-Provision a separate key for production. Losing this key makes encrypted
-backups unrecoverable; copying it into the backup directory defeats the
-separation boundary.
+The bootstrapped `/etc/starward/<environment>` directory remains
+`root:starward-deploy` mode `0750`. Private generated files are root-owned,
+deploy-group-readable mode `0640`; the QWeather public key is mode `0644` so it
+can be uploaded to the provider console. The output contains only status and
+the public-key SHA-256 fingerprint. Provision a separate set for production.
+Losing the backup key makes encrypted backups unrecoverable; copying it into
+the backup directory defeats the separation boundary. The script does not
+rotate credentials, render `api.env`, collect provider IDs or run from CI/CD.
+
+Upload `qweather-public.pem` to a JWT credential in the matching QWeather
+project. Keep `qweather-private.pem` on the host and materialize its PEM bytes
+into the environment-owned API lane only when the API Host, project ID and
+credential ID are available; never paste the private key into the provider
+console, repository or workflow logs.
 
 The tracked API example is the owner-only `TRIAL` staging profile: QWeather is
 the primary/official-alert provider and Open-Meteo non-commercial access is
