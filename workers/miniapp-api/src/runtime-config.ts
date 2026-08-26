@@ -188,9 +188,11 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   if (
     (weatherProvider === "OPEN_METEO_NONCOMMERCIAL" ||
       openMeteoEvidenceMode === "OPEN_METEO_NONCOMMERCIAL") &&
-    releaseProfile !== "LOCAL"
+    releaseProfile === "COMMERCIAL"
   )
-    throw new Error("runtime_config_invalid:free_weather_noncommercial_only");
+    throw new Error(
+      "runtime_config_invalid:noncommercial_weather_commercial_forbidden",
+    );
   if (
     (weatherProvider === "OPEN_METEO_COMMERCIAL" ||
       openMeteoEvidenceMode === "OPEN_METEO_COMMERCIAL") &&

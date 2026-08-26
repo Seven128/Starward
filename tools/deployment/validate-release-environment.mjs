@@ -144,14 +144,25 @@ function validateApi(api, expected, postgres, redis) {
   secret(api, "MINIAPP_SESSION_SECRET", 32);
   secret(api, "MINIAPP_ADMIN_TOKEN", 32);
   const weatherProvider = checkedValue(api, "MINIAPP_WEATHER_PROVIDER");
-  if (weatherProvider === "QWEATHER") {
-    checkedValue(api, "QWEATHER_API_HOST");
-    secret(api, "QWEATHER_CREDENTIAL_ID", 8);
-    secret(api, "QWEATHER_PROJECT_ID", 8);
-    secret(api, "QWEATHER_PRIVATE_KEY_PEM", 40);
-  } else if (weatherProvider === "OPEN_METEO_COMMERCIAL") {
+  equal(weatherProvider, "QWEATHER", "api:MINIAPP_WEATHER_PROVIDER");
+  checkedValue(api, "QWEATHER_API_HOST");
+  secret(api, "QWEATHER_CREDENTIAL_ID", 8);
+  secret(api, "QWEATHER_PROJECT_ID", 8);
+  secret(api, "QWEATHER_PRIVATE_KEY_PEM", 40);
+  const expectedEvidenceMode =
+    expected.environment === "production"
+      ? "OPEN_METEO_COMMERCIAL"
+      : "OPEN_METEO_NONCOMMERCIAL";
+  equal(
+    checkedValue(api, "MINIAPP_OPEN_METEO_EVIDENCE_MODE"),
+    expectedEvidenceMode,
+    "api:MINIAPP_OPEN_METEO_EVIDENCE_MODE",
+  );
+  if (expectedEvidenceMode === "OPEN_METEO_COMMERCIAL") {
     secret(api, "OPEN_METEO_API_KEY", 16);
-  } else fail("release_environment_invalid", "api:MINIAPP_WEATHER_PROVIDER");
+  } else if ("OPEN_METEO_API_KEY" in api) {
+    fail("release_environment_forbidden", "api:OPEN_METEO_API_KEY");
+  }
   for (const provider of ["MINIAPP_ROUTE_PROVIDER", "MINIAPP_PLACE_SEARCH_PROVIDER"]) {
     const mode = checkedValue(api, provider);
     if (mode !== "AMAP" && mode !== "DISABLED")
