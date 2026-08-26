@@ -17,8 +17,16 @@ import {
 
 export { acquireBuildLock, bindBundleProjectIdentity, fingerprintBundle, validateBuildRequest };
 
-const npmCli = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
 const textExtensions = new Set([".css", ".html", ".js", ".json", ".map", ".txt", ".wxml", ".wxss"]);
+
+export function resolveNpmCli(environment = process.env) {
+  const configured = environment.npm_execpath;
+  if (!configured) fail("release_bundle_npm_execpath_missing");
+  if (!path.isAbsolute(configured)) fail("release_bundle_npm_execpath_not_absolute");
+  if (path.basename(configured).toLowerCase() !== "npm-cli.js")
+    fail("release_bundle_npm_execpath_invalid");
+  return path.normalize(configured);
+}
 
 function parseArguments(argv) {
   const values = new Map();
@@ -36,6 +44,7 @@ function parseArguments(argv) {
 }
 
 async function runWeappBuild(request) {
+  const npmCli = resolveNpmCli();
   await new Promise((resolve, reject) => {
     const child = spawn(
       process.execPath,

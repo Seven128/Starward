@@ -8,11 +8,26 @@ import {
   acquireBuildLock,
   bindBundleProjectIdentity,
   fingerprintBundle,
+  resolveNpmCli,
   validateBuildRequest,
 } from "./build-release-bundle.mjs";
 
 const revision = "a".repeat(40);
 const stagingAppId = `wx${"1".repeat(16)}`;
+
+test("release build uses npm's explicit CLI entry instead of guessing the Node layout", () => {
+  const npmCli = path.resolve("node_modules", "npm", "bin", "npm-cli.js");
+  assert.equal(resolveNpmCli({ npm_execpath: npmCli }), path.normalize(npmCli));
+  assert.throws(() => resolveNpmCli({}), /release_bundle_npm_execpath_missing/u);
+  assert.throws(
+    () => resolveNpmCli({ npm_execpath: "node_modules/npm/bin/npm-cli.js" }),
+    /release_bundle_npm_execpath_not_absolute/u,
+  );
+  assert.throws(
+    () => resolveNpmCli({ npm_execpath: path.resolve("node_modules", "npm", "bin", "npm.js") }),
+    /release_bundle_npm_execpath_invalid/u,
+  );
+});
 
 function request(overrides = {}) {
   return validateBuildRequest({
