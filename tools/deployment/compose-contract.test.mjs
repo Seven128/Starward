@@ -69,6 +69,12 @@ test("operator phone preview exposes only guarded HTTPS on the existing edge", (
   assert.match(operatorPreviewCaddy, /tls internal/u);
   assert.match(
     operatorPreviewCaddy,
+    /default_sni \{\$STARWARD_API_DOMAIN\}/u,
+  );
+  assert.match(operatorPreviewCaddy, /skip_install_trust/u);
+  assert.match(operatorPreviewCaddy, /servers \{\s*protocols h1 h2\s*\}/u);
+  assert.match(
+    operatorPreviewCaddy,
     /@operator header X-Starward-Operator-Preview \{\$STARWARD_OPERATOR_PREVIEW_TOKEN\}/u,
   );
   assert.match(operatorPreviewCaddy, /handle @operator[\s\S]*reverse_proxy api:8787/u);

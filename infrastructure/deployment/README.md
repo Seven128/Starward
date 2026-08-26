@@ -97,7 +97,9 @@ docker compose --env-file <operator-preview-deploy.env> \
 
 The overlay publishes only 443, uses Caddy's internal development certificate,
 and returns 404 unless `X-Starward-Operator-Preview` exactly matches the token.
-The edge removes that header before proxying and filters it from access logs.
+It selects the IP certificate even for clients that omit SNI, serves only HTTP/1.1
+and HTTP/2 over TCP, removes the preview header before proxying, and filters it
+from access logs.
 Compile the phone development build with
 `MINIAPP_API_BASE=https://<public-ip>` and the same token in
 `MINIAPP_OPERATOR_PREVIEW_TOKEN`. Formal release-bundle construction explicitly
