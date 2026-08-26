@@ -5,6 +5,7 @@ import { createTestRuntimeConfig } from "./runtime-config.ts";
 import {
   OpenMeteoWeatherAdapter,
   QWeatherCompositeAdapter,
+  QWeatherForecastAdapter,
 } from "./weather-provider.ts";
 
 const privateKeyPem = generateKeyPairSync("ed25519")
@@ -94,7 +95,7 @@ test("Open-Meteo adapter requests explicit model evidence and never selects the 
   assert.equal(result.warningState, "UNAVAILABLE");
 });
 
-test("QWeather composition keeps the grid timeline primary, adds layered cloud and applies official alerts", async () => {
+test("QWeather composition keeps the Weather API v1 timeline primary, adds layered cloud and applies official alerts", async () => {
   const requested: URL[] = [];
   const config = createTestRuntimeConfig({
     weatherProvider: "QWEATHER",
@@ -103,31 +104,41 @@ test("QWeather composition keeps the grid timeline primary, adds layered cloud a
       credentialId: "test-credential",
       projectId: "test-project",
       privateKeyPem,
+      forecastHours: 24,
     },
   });
   const adapter = new QWeatherCompositeAdapter(config, async (input) => {
     const url = new URL(input.toString());
     requested.push(url);
-    if (url.pathname === "/v7/grid-weather/72h")
+    if (url.pathname.startsWith("/weather/v1/hourly/"))
       return response({
-        code: "200",
-        updateTime: "2026-08-23T12:00:00Z",
-        fxLink: "https://www.qweather.com/",
-        hourly: [
+        metadata: {
+          tag: "forecast-tag",
+          attributions: ["https://developer.qweather.com/attribution.html"],
+        },
+        hours: [
           {
-            fxTime: "2026-08-23T13:00:00Z",
-            temp: "27",
-            icon: "101",
-            wind360: "90",
-            windSpeed: "10",
-            humidity: "72",
-            precip: "0",
-            pressure: "1002",
-            cloud: "70",
-            dew: "21",
+            forecastTime: "2026-08-23T13:00:00Z",
+            condition: { text: "多云", code: "101" },
+            temperature: { value: 27, unit: "°C" },
+            humidity: 0.72,
+            wind: {
+              direction: { degree: 90, compass: "e" },
+              speed: { value: 2.78, unit: "m/s" },
+              scale: 2,
+            },
+            windGust: { value: 5, unit: "m/s" },
+            precipitation: {
+              amount: { value: 0, unit: "mm" },
+              intensity: { value: 0, unit: "mm/h" },
+              probability: 0.05,
+              type: "none",
+            },
+            visibility: { value: 18_000, unit: "m" },
+            dewPoint: { value: 21, unit: "°C" },
+            cloudCover: 0.7,
           },
         ],
-        refer: { sources: ["QWeather"], license: ["QWeather License"] },
       });
     if (url.pathname.startsWith("/weatheralert/v1/current/"))
       return response({
@@ -162,6 +173,10 @@ test("QWeather composition keeps the grid timeline primary, adds layered cloud a
   assert.equal(result.warningState, "FRESH");
   assert.equal(result.state, "FRESH");
   assert.equal(row?.cloudPercent, 70, "QWeather total cloud remains primary");
+  assert.equal(row?.relativeHumidityPercent, 72);
+  assert.equal(row?.precipitationProbabilityPercent, 5);
+  assert.equal(row?.visibilityKm, 18);
+  assert.ok(Math.abs((row?.windKph ?? 0) - 10.008) < 0.001);
   assert.deepEqual(
     [row?.lowCloudPercent, row?.midCloudPercent, row?.highCloudPercent],
     [4, 3, 3],
@@ -172,7 +187,20 @@ test("QWeather composition keeps the grid timeline primary, adds layered cloud a
   assert.deepEqual(row?.officialAlertIds, ["alert-1"]);
   assert.ok(result.sources.some((source) => source.kind === "OFFICIAL_REFERENCE"));
   assert.ok(
-    requested.some((url) => url.pathname === "/v7/grid-weather/72h"),
+    requested.some((url) => url.pathname.startsWith("/weather/v1/hourly/")),
+  );
+  const forecastRequest = requested.find((url) =>
+    url.pathname.startsWith("/weather/v1/hourly/"),
+  );
+  assert.equal(forecastRequest?.searchParams.get("hours"), "24");
+  assert.equal(forecastRequest?.searchParams.get("localTime"), "false");
+  assert.equal(
+    result.modelRuns[0]?.modelKey,
+    "qweather-weather-v1-hourly-24h",
+  );
+  assert.equal(result.modelRuns[0]?.nativeSpatialResolutionKm, 1);
+  assert.ok(
+    result.sources.some((source) => source.title.includes("24 小时")),
   );
   const alertRequest = requested.find((url) =>
     url.pathname.startsWith("/weatheralert/v1/current/"),
@@ -185,6 +213,43 @@ test("QWeather composition keeps the grid timeline primary, adds layered cloud a
   );
 });
 
+test("QWeather v1 rejects an unexpected provider unit instead of mislabelling it", async () => {
+  const config = createTestRuntimeConfig({
+    qweather: {
+      apiHost: "test.qweatherapi.com",
+      credentialId: "test-credential",
+      projectId: "test-project",
+      privateKeyPem,
+      forecastHours: 24,
+    },
+  });
+  const adapter = new QWeatherForecastAdapter(config, async () =>
+    response({
+      metadata: { tag: "unit-test", attributions: [] },
+      hours: [
+        {
+          forecastTime: "2026-08-23T13:00:00Z",
+          condition: { code: "101" },
+          temperature: { value: 27, unit: "°C" },
+          humidity: 0.72,
+          wind: { speed: { value: 10, unit: "km/h" } },
+          precipitation: {
+            amount: { value: 0, unit: "mm" },
+            probability: 0.05,
+          },
+          visibility: { value: 18_000, unit: "m" },
+          dewPoint: { value: 21, unit: "°C" },
+          cloudCover: 0.7,
+        },
+      ],
+    }),
+  );
+
+  const result = await adapter.getHourly(weatherInput);
+  assert.equal(result.state, "PARTIAL");
+  assert.equal(result.value?.[0]?.windKph, null);
+});
+
 test("QWeather primary failure uses an explicit Open-Meteo fallback", async () => {
   const config = createTestRuntimeConfig({
     weatherProvider: "QWEATHER",
@@ -193,11 +258,15 @@ test("QWeather primary failure uses an explicit Open-Meteo fallback", async () =
       credentialId: "test-credential",
       projectId: "test-project",
       privateKeyPem,
+      forecastHours: 72,
     },
   });
   const adapter = new QWeatherCompositeAdapter(config, async (input) => {
     const url = new URL(input.toString());
-    if (url.pathname === "/v7/grid-weather/72h")
+    if (
+      url.pathname.startsWith("/weather/v1/hourly/") &&
+      url.searchParams.get("hours") === "72"
+    )
       return response({ error: "unavailable" }, 503);
     if (url.pathname.startsWith("/weatheralert/v1/current/"))
       return response({

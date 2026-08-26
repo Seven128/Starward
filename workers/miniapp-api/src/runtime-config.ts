@@ -15,6 +15,7 @@ export type WeatherProviderMode =
 export type OpenMeteoEvidenceMode =
   | "OPEN_METEO_NONCOMMERCIAL"
   | "OPEN_METEO_COMMERCIAL";
+export type QWeatherForecastHours = 24 | 72;
 export type RouteProviderMode = "AMAP" | "DISABLED";
 export type PlaceSearchProviderMode = "AMAP" | "DISABLED";
 export type MediaStorageMode = "LOCAL_FILESYSTEM" | "DISABLED";
@@ -42,6 +43,7 @@ export interface MiniappRuntimeConfig {
     credentialId: string | null;
     projectId: string | null;
     privateKeyPem: string | null;
+    forecastHours: QWeatherForecastHours;
   };
   amapWebServiceKey: string | null;
   wechat: {
@@ -74,6 +76,19 @@ function oneOf<T extends string>(
   if (!allowed.includes(selected as T))
     throw new Error(`runtime_config_invalid:${name}:${selected}`);
   return selected as T;
+}
+
+function qweatherForecastHours(
+  releaseProfile: ReleaseProfile,
+): QWeatherForecastHours {
+  const selected =
+    value("QWEATHER_FORECAST_HOURS") ??
+    (releaseProfile === "TRIAL" ? "24" : "72");
+  if (selected !== "24" && selected !== "72")
+    throw new Error(
+      `runtime_config_invalid:QWEATHER_FORECAST_HOURS:${selected}`,
+    );
+  return Number(selected) as QWeatherForecastHours;
 }
 
 function selectedFlags(input: {
@@ -157,6 +172,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     credentialId: value("QWEATHER_CREDENTIAL_ID"),
     projectId: value("QWEATHER_PROJECT_ID"),
     privateKeyPem: value("QWEATHER_PRIVATE_KEY_PEM")?.replace(/\\n/gu, "\n") ?? null,
+    forecastHours: qweatherForecastHours(releaseProfile),
   };
   const amapWebServiceKey = value("AMAP_WEB_SERVICE_KEY");
   const wechat = {
@@ -293,6 +309,7 @@ export function createTestRuntimeConfig(
       credentialId: null,
       projectId: null,
       privateKeyPem: null,
+      forecastHours: 72,
     },
     amapWebServiceKey: null,
     wechat: { appId: null, appSecret: null, sessionSecret: "test-only-session-secret-not-for-release" },

@@ -159,13 +159,16 @@ credential ID are available; never paste the private key into the provider
 console, repository or workflow logs.
 
 The tracked API example is the owner-only `TRIAL` staging profile: QWeather is
-the primary/official-alert provider and Open-Meteo non-commercial access is
-explicitly limited to layered-cloud/model evidence. Do not add an Open-Meteo
-commercial key to staging. A production descriptor instead selects
+the primary/official-alert provider, its Weather API v1 hourly forecast is
+explicitly limited to the free-entitlement-compatible 24-hour window, and
+Open-Meteo non-commercial access is limited to layered-cloud/model evidence. Do
+not add a paid QWeather assumption or an Open-Meteo commercial key to staging. A
+production descriptor instead requires `QWEATHER_FORECAST_HOURS=72`, selects
 `MINIAPP_OPEN_METEO_EVIDENCE_MODE=OPEN_METEO_COMMERCIAL` and supplies its own
-`OPEN_METEO_API_KEY`; the validator rejects either licence profile in the wrong
-environment. Provider failure remains an attributable degraded/unavailable
-state and never enables fixtures.
+`OPEN_METEO_API_KEY`; the validator rejects either horizon or licence profile
+in the wrong environment. Provider failure remains an attributable
+degraded/unavailable state and never enables fixtures or a hidden horizon
+downgrade.
 
 Generate a candidate descriptor, then validate it before Docker is touched:
 

@@ -605,11 +605,33 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
 }
 
 interface QWeatherForecastPayload {
-  code?: string;
-  updateTime?: string;
-  fxLink?: string;
-  hourly?: Array<JsonRecord & { fxTime?: string }>;
-  refer?: { sources?: string[]; license?: string[] };
+  metadata?: {
+    tag?: string;
+    attributions?: string[];
+  };
+  hours?: Array<
+    JsonRecord & {
+      forecastTime?: string;
+      condition?: { text?: string; code?: string };
+      temperature?: { value?: number; unit?: string };
+      humidity?: number;
+      wind?: {
+        direction?: { degree?: number; compass?: string };
+        speed?: { value?: number; unit?: string };
+        scale?: number;
+      };
+      windGust?: { value?: number; unit?: string };
+      precipitation?: {
+        amount?: { value?: number; unit?: string };
+        intensity?: { value?: number; unit?: string };
+        probability?: number;
+        type?: string;
+      };
+      visibility?: { value?: number; unit?: string };
+      dewPoint?: { value?: number; unit?: string };
+      cloudCover?: number;
+    }
+  >;
 }
 
 interface QWeatherAlertPayload {
@@ -666,18 +688,32 @@ function qweatherRequestPoint(input: Parameters<WeatherPort["getHourly"]>[0]) {
   return { latitude: converted.lat, longitude: converted.lon };
 }
 
+function qweatherMetricValue(
+  measure: { value?: number; unit?: string } | undefined,
+  unit: string,
+): number | null {
+  return measure?.unit === unit ? numberOrNull(measure.value) : null;
+}
+
+function qweatherFractionPercent(value: unknown): number | null {
+  const parsed = numberOrNull(value);
+  return parsed === null || parsed < 0 || parsed > 1 ? null : parsed * 100;
+}
+
 interface QWeatherForecastResult
   extends ProviderResult<readonly CanonicalWeatherHour[]> {
   modelRun: WeatherModelRunSummary | null;
 }
 
 export class QWeatherForecastAdapter {
-  readonly key = "qweather-grid-72h";
+  readonly key: string;
 
   constructor(
     private readonly config: MiniappRuntimeConfig,
     private readonly transport: typeof fetch = fetch,
-  ) {}
+  ) {
+    this.key = `qweather-weather-v1-hourly-${config.qweather.forecastHours}h`;
+  }
 
   async getHourly(
     input: Parameters<WeatherPort["getHourly"]>[0],
@@ -686,7 +722,7 @@ export class QWeatherForecastAdapter {
     if (!host) {
       const source = unavailableSource({
         provider: "和风天气",
-        title: "格点逐时天气暂不可用",
+        title: "逐小时天气暂不可用",
         errorCode: "qweather_host_missing",
       });
       return {
@@ -698,11 +734,13 @@ export class QWeatherForecastAdapter {
       };
     }
     const point = qweatherRequestPoint(input);
+    const forecastHours = this.config.qweather.forecastHours;
     const url = new URL(
-      `https://${host.replace(/^https?:\/\//u, "").replace(/\/$/u, "")}/v7/grid-weather/72h`,
+      `https://${host.replace(/^https?:\/\//u, "").replace(/\/$/u, "")}/weather/v1/hourly/${point.latitude.toFixed(2)}/${point.longitude.toFixed(2)}`,
     );
     url.search = new URLSearchParams({
-      location: `${point.longitude.toFixed(2)},${point.latitude.toFixed(2)}`,
+      hours: String(forecastHours),
+      localTime: "false",
       lang: "zh",
     }).toString();
     try {
@@ -717,22 +755,29 @@ export class QWeatherForecastAdapter {
         },
         this.transport,
       );
-      if (payload.code !== "200" || !payload.hourly?.length)
-        throw new Error(`qweather_rejected:${payload.code ?? "empty"}`);
+      if (!payload.hours?.length)
+        throw new Error("qweather_rejected:empty");
       const fetchedAt = new Date().toISOString();
-      const sourceId = `weather:qweather-grid:${digest({
+      const sourceId = `weather:qweather-weather-v1-hourly:${digest({
         point,
-        updateTime: payload.updateTime,
-        hourly: payload.hourly,
+        forecastHours,
+        metadataTag: payload.metadata?.tag,
+        hours: payload.hours,
       })}`;
-      const rows: CanonicalWeatherHour[] = payload.hourly.map((hour) => {
-        const precipitationMm = numberOrNull(hour.precip);
-        const windKph = numberOrNull(hour.windSpeed);
-        const windGustKph = numberOrNull(hour.windGust);
-        const weatherCode = numberOrNull(hour.icon);
+      const rows: CanonicalWeatherHour[] = payload.hours.map((hour) => {
+        const precipitationMm = qweatherMetricValue(
+          hour.precipitation?.amount,
+          "mm",
+        );
+        const windMs = qweatherMetricValue(hour.wind?.speed, "m/s");
+        const windGustMs = qweatherMetricValue(hour.windGust, "m/s");
+        const windKph = windMs === null ? null : windMs * 3.6;
+        const windGustKph = windGustMs === null ? null : windGustMs * 3.6;
+        const visibilityM = qweatherMetricValue(hour.visibility, "m");
+        const weatherCode = numberOrNull(hour.condition?.code);
         return {
-          at: normalizedAt(String(hour.fxTime)),
-          cloudPercent: percent(hour.cloud),
+          at: normalizedAt(String(hour.forecastTime)),
+          cloudPercent: qweatherFractionPercent(hour.cloudCover),
           lowCloudPercent: null,
           midCloudPercent: null,
           highCloudPercent: null,
@@ -740,14 +785,16 @@ export class QWeatherForecastAdapter {
           modelConsistencyLabel: "UNAVAILABLE",
           modelSpreadPercent: null,
           precipitationMm,
-          precipitationProbabilityPercent: percent(hour.pop),
+          precipitationProbabilityPercent: qweatherFractionPercent(
+            hour.precipitation?.probability,
+          ),
           windKph,
           windGustKph,
-          windDirectionDeg: numberOrNull(hour.wind360),
-          temperatureC: numberOrNull(hour.temp),
-          relativeHumidityPercent: percent(hour.humidity),
-          dewPointC: numberOrNull(hour.dew),
-          visibilityKm: numberOrNull(hour.vis),
+          windDirectionDeg: numberOrNull(hour.wind?.direction?.degree),
+          temperatureC: qweatherMetricValue(hour.temperature, "°C"),
+          relativeHumidityPercent: qweatherFractionPercent(hour.humidity),
+          dewPointC: qweatherMetricValue(hour.dewPoint, "°C"),
+          visibilityKm: visibilityM === null ? null : visibilityM / 1_000,
           thunderstorm:
             weatherCode !== null && weatherCode >= 302 && weatherCode <= 304,
           severeRain: precipitationMm !== null && precipitationMm >= 10,
@@ -766,26 +813,25 @@ export class QWeatherForecastAdapter {
           row.windKph === null ||
           row.temperatureC === null,
       );
-      const updateTime = instantOrNull(payload.updateTime);
       const dataSource = forecastSource({
         id: sourceId,
         provider: "和风天气",
-        title: "指定坐标 72 小时格点天气主时间线",
-        sourceUrl: payload.fxLink ?? "https://www.qweather.com/",
-        license:
-          payload.refer?.license?.filter(Boolean).join("；") ||
-          "和风天气开发者许可",
+        title: `指定坐标 ${forecastHours} 小时逐小时天气主时间线`,
+        sourceUrl:
+          "https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/",
+        license: "和风天气开发者许可；按响应 metadata.attributions 展示归因",
         licenseUrl: "https://dev.qweather.com/docs/terms/",
         retrievedAt: fetchedAt,
         validFrom: rows[0]!.at,
         validTo: rows.at(-1)!.at,
         state: partial ? "PARTIAL" : "FRESH",
         precision:
-          "中国大陆查询前由 WGS84 转为 GCJ-02，并按供应商要求保留到 0.01°；格点分辨率约 3–5 km",
+          "中国大陆查询前由 WGS84 转为 GCJ-02，并按供应商要求保留到 0.01°；Weather API v1 空间分辨率约 1 km",
         limitations: [
-          "格点接口只承担主时间线；低/中/高云与模型差异来自独立 Open-Meteo 证据",
+          `当前环境明确请求 ${forecastHours} 小时预报；超出该窗口的主时间线保持不可用`,
+          "Weather API v1 只承担主时间线；低/中/高云与模型差异来自独立 Open-Meteo 证据",
           "官方预警来自独立预警接口，主预报不能证明无预警",
-          ...(payload.refer?.sources?.filter(Boolean) ?? []),
+          ...(payload.metadata?.attributions?.filter(Boolean) ?? []),
         ],
       });
       return {
@@ -795,12 +841,12 @@ export class QWeatherForecastAdapter {
         errorCode: null,
         modelRun: {
           provider: "和风天气",
-          modelKey: "qweather-grid-72h",
-          modelRunAt: updateTime,
+          modelKey: this.key,
+          modelRunAt: null,
           fetchedAt,
           validFrom: rows[0]!.at,
           validTo: rows.at(-1)!.at,
-          nativeSpatialResolutionKm: 4,
+          nativeSpatialResolutionKm: 1,
           nativeTemporalResolutionMinutes: 60,
           outputTemporalResolutionMinutes: 60,
           interpolatedVariables: [],
@@ -814,7 +860,7 @@ export class QWeatherForecastAdapter {
         error instanceof Error ? error.message : "qweather_unknown_failure";
       const source = unavailableSource({
         provider: "和风天气",
-        title: "格点逐时天气暂不可用",
+        title: "逐小时天气暂不可用",
         errorCode,
       });
       return {
@@ -1044,7 +1090,7 @@ function combineStates(input: {
 }
 
 export class QWeatherCompositeAdapter implements WeatherPort {
-  readonly key = "qweather-grid-alert-open-meteo-evidence";
+  readonly key = "qweather-weather-v1-alert-open-meteo-evidence";
   private readonly forecast: QWeatherForecastAdapter;
   private readonly alerts: QWeatherAlertAdapter;
   private readonly evidence: OpenMeteoWeatherAdapter;

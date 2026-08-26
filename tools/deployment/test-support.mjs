@@ -51,6 +51,8 @@ export async function createReleaseEnvironmentFixture(overrides = {}) {
     MINIAPP_SESSION_SECRET: "session-secret-at-least-thirty-two-characters",
     MINIAPP_ADMIN_TOKEN: "admin-token-at-least-thirty-two-characters",
     MINIAPP_WEATHER_PROVIDER: "QWEATHER",
+    QWEATHER_FORECAST_HOURS:
+      environment === "production" ? "72" : "24",
     MINIAPP_OPEN_METEO_EVIDENCE_MODE:
       environment === "production"
         ? "OPEN_METEO_COMMERCIAL"

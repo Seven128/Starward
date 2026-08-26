@@ -62,6 +62,7 @@ test("TRIAL accepts explicitly selected non-commercial Open-Meteo evidence", () 
   assert.equal(config.weatherProvider, "QWEATHER");
   assert.equal(config.openMeteoEvidenceMode, "OPEN_METEO_NONCOMMERCIAL");
   assert.equal(config.openMeteoApiKey, null);
+  assert.equal(config.qweather.forecastHours, 24);
 });
 
 test("COMMERCIAL rejects non-commercial Open-Meteo evidence", () => {
@@ -94,4 +95,19 @@ test("COMMERCIAL requires a commercial Open-Meteo key", () => {
   );
   assert.equal(config.openMeteoEvidenceMode, "OPEN_METEO_COMMERCIAL");
   assert.equal(config.openMeteoApiKey, "commercial-open-meteo-key");
+  assert.equal(config.qweather.forecastHours, 72);
+});
+
+test("QWeather forecast horizon rejects unsupported values", () => {
+  assert.throws(
+    () =>
+      withEnvironment(
+        {
+          ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"),
+          QWEATHER_FORECAST_HOURS: "48",
+        },
+        () => loadRuntimeConfig(),
+      ),
+    /runtime_config_invalid:QWEATHER_FORECAST_HOURS:48/u,
+  );
 });

@@ -145,6 +145,11 @@ function validateApi(api, expected, postgres, redis) {
   secret(api, "MINIAPP_ADMIN_TOKEN", 32);
   const weatherProvider = checkedValue(api, "MINIAPP_WEATHER_PROVIDER");
   equal(weatherProvider, "QWEATHER", "api:MINIAPP_WEATHER_PROVIDER");
+  equal(
+    checkedValue(api, "QWEATHER_FORECAST_HOURS"),
+    expected.environment === "production" ? "72" : "24",
+    "api:QWEATHER_FORECAST_HOURS",
+  );
   checkedValue(api, "QWEATHER_API_HOST");
   secret(api, "QWEATHER_CREDENTIAL_ID", 8);
   secret(api, "QWEATHER_PROJECT_ID", 8);
