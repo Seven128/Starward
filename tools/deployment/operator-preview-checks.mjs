@@ -110,6 +110,19 @@ function responseJson(result, code) {
   }
 }
 
+function requireHttpStatus(result, expected, code) {
+  if (result.status === expected) return;
+  let stableCode = "UNCLASSIFIED";
+  try {
+    const selected = JSON.parse(result.body)?.code;
+    if (/^[A-Z][A-Z_]{1,63}$/u.test(selected ?? "")) stableCode = selected;
+  } catch {
+    // Response bodies remain private; only an API-owned stable code is admitted.
+  }
+  const status = Number.isInteger(result.status) ? result.status : 0;
+  throw new Error(`operator_preview_${code}_http_${status}_${stableCode.toLowerCase()}`);
+}
+
 function shanghaiLocalDate(now = new Date()) {
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat("en", {
@@ -148,7 +161,7 @@ async function checkProviderSmoke({ validation, deploy, ca, request }) {
       localDate: shanghaiLocalDate(),
     },
   });
-  requireCondition(contextResult.status === 201, "provider_context_http_failed");
+  requireHttpStatus(contextResult, 201, "provider_context");
   const contextEnvelope = responseJson(contextResult, "provider_context");
   const context = contextEnvelope?.data;
   requireCondition(
@@ -164,7 +177,7 @@ async function checkProviderSmoke({ validation, deploy, ca, request }) {
       "/v2/map/scene?layer=CLOUD&cloudLayer=TOTAL&contextId=" +
       encodeURIComponent(context.contextId),
   });
-  requireCondition(sceneResult.status === 200, "provider_scene_http_failed");
+  requireHttpStatus(sceneResult, 200, "provider_scene");
   const scene = responseJson(sceneResult, "provider_scene");
   const sources = Array.isArray(scene?.sources) ? scene.sources : [];
   const weather = sources.find(

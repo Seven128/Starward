@@ -230,6 +230,32 @@ test("readiness checks denial and exact release using only the private CA", asyn
     }),
     /qweather_evidence_missing/u,
   );
+  await assert.rejects(
+    checkPreviewReadiness({
+      ...input,
+      request: async (args) => {
+        if (!args.token) return { status: 404 };
+        if (args.path === "/v2/observation-contexts/resolve")
+          return {
+            status: 500,
+            body: JSON.stringify({
+              code: "PROVIDER_UNAVAILABLE",
+              message: "must-not-be-projected",
+              requestId: "must-not-be-projected",
+            }),
+          };
+        return request(args);
+      },
+    }),
+    (error) => {
+      assert.equal(
+        error.message,
+        "operator_preview_provider_context_http_500_provider_unavailable",
+      );
+      assert.doesNotMatch(error.message, /must-not-be-projected/u);
+      return true;
+    },
+  );
 });
 
 test("preview request is typed and cannot carry production qualification", async (t) => {
