@@ -57,12 +57,17 @@ async function migrationFixture(files: Record<string, string>) {
   const directory = path.join(root, "migrations");
   await mkdir(directory);
   await Promise.all(
-    Object.entries(files).map(([name, sql]) => writeFile(path.join(directory, name), sql)),
+    Object.entries(files).map(([name, sql]) =>
+      writeFile(path.join(directory, name), sql),
+    ),
   );
   return { root, directory };
 }
 
-async function withMigrations(files: Record<string, string>, assertion: (directory: string) => Promise<void>) {
+async function withMigrations(
+  files: Record<string, string>,
+  assertion: (directory: string) => Promise<void>,
+) {
   const fixture = await migrationFixture(files);
   try {
     await assertion(fixture.directory);
@@ -96,79 +101,199 @@ test("every repository migration self-registers its exact version", async () => 
 });
 
 test("migration plan is ordered and ignores non-migration files", async () => {
-  await withMigrations({
-    "010_last.sql": registered("010_last"),
-    "002_first.sql": registered("002_first"),
-    "README.md": "not executable",
-  }, async (directory) => {
-    assert.deepEqual(await listMigrationVersions(directory), ["002_first", "010_last"]);
-  });
+  await withMigrations(
+    {
+      "010_last.sql": registered("010_last"),
+      "002_first.sql": registered("002_first"),
+      "README.md": "not executable",
+    },
+    async (directory) => {
+      assert.deepEqual(await listMigrationVersions(directory), [
+        "002_first",
+        "010_last",
+      ]);
+    },
+  );
+});
+
+test("PL/pgSQL bodies and quoted text do not become migration transaction owners", async () => {
+  await withMigrations(
+    {
+      "001_function.sql": registered(
+        "001_function",
+        `-- COMMIT is documentation, not a command.
+DO $guard$
+BEGIN
+  PERFORM 'ROLLBACK is data';
+END
+$guard$;
+CREATE FUNCTION fixture_guard() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION 'BEGIN and COMMIT remain inside the function body';
+END;
+$$;`,
+      ),
+    },
+    async (directory) => {
+      const client = new FakeMigrationClient();
+      const result = await runPostgresMigrations({
+        pool: fakePool(client),
+        migrationDirectory: directory,
+      });
+      assert.deepEqual(result.executed, ["001_function"]);
+    },
+  );
+});
+
+test("top-level transaction commands remain forbidden", async () => {
+  for (const statement of [
+    "BEGIN;",
+    "START TRANSACTION;",
+    "COMMIT;",
+    "ROLLBACK;",
+    "SAVEPOINT fixture;",
+    "RELEASE SAVEPOINT fixture;",
+  ]) {
+    await withMigrations(
+      {
+        "001_forbidden.sql": registered("001_forbidden", statement),
+      },
+      async (directory) => {
+        await assert.rejects(
+          () =>
+            runPostgresMigrations({
+              pool: fakePool(new FakeMigrationClient()),
+              migrationDirectory: directory,
+            }),
+          /postgres_migration_transaction_control_forbidden:001_forbidden/u,
+          statement,
+        );
+      },
+    );
+  }
 });
 
 test("runner locks once, skips applied versions and commits each pending file", async () => {
-  await withMigrations({
-    "001_initial.sql": registered("001_initial", "SELECT 'initial';"),
-    "002_next.sql": registered("002_next", "SELECT 'next';"),
-  }, async (directory) => {
-    const client = new FakeMigrationClient();
-    client.applied = ["001_initial"];
-    const result = await runPostgresMigrations({ pool: fakePool(client), migrationDirectory: directory });
-    assert.deepEqual(result.alreadyApplied, ["001_initial"]);
-    assert.deepEqual(result.executed, ["002_next"]);
-    assert.equal(client.queries.some((entry) => entry.text.includes("SELECT 'initial'")), false);
-    assert.equal(client.queries.some((entry) => entry.text.includes("SELECT 'next'")), true);
-    assert.equal(client.queries.filter((entry) => entry.text === "BEGIN").length, 1);
-    assert.equal(client.queries.filter((entry) => entry.text === "COMMIT").length, 1);
-    assert.equal(client.released, true);
-  });
+  await withMigrations(
+    {
+      "001_initial.sql": registered("001_initial", "SELECT 'initial';"),
+      "002_next.sql": registered("002_next", "SELECT 'next';"),
+    },
+    async (directory) => {
+      const client = new FakeMigrationClient();
+      client.applied = ["001_initial"];
+      const result = await runPostgresMigrations({
+        pool: fakePool(client),
+        migrationDirectory: directory,
+      });
+      assert.deepEqual(result.alreadyApplied, ["001_initial"]);
+      assert.deepEqual(result.executed, ["002_next"]);
+      assert.equal(
+        client.queries.some((entry) => entry.text.includes("SELECT 'initial'")),
+        false,
+      );
+      assert.equal(
+        client.queries.some((entry) => entry.text.includes("SELECT 'next'")),
+        true,
+      );
+      assert.equal(
+        client.queries.filter((entry) => entry.text === "BEGIN").length,
+        1,
+      );
+      assert.equal(
+        client.queries.filter((entry) => entry.text === "COMMIT").length,
+        1,
+      );
+      assert.equal(client.released, true);
+    },
+  );
 });
 
 test("runner fails closed when another migration owner holds the lock", async () => {
-  await withMigrations({ "001_initial.sql": registered("001_initial") }, async (directory) => {
-    const client = new FakeMigrationClient();
-    client.acquired = false;
-    await assert.rejects(
-      () => runPostgresMigrations({ pool: fakePool(client), migrationDirectory: directory }),
-      /postgres_migration_lock_busy/u,
-    );
-    assert.equal(client.queries.some((entry) => entry.text.includes("to_regclass")), false);
-    assert.equal(client.released, true);
-  });
+  await withMigrations(
+    { "001_initial.sql": registered("001_initial") },
+    async (directory) => {
+      const client = new FakeMigrationClient();
+      client.acquired = false;
+      await assert.rejects(
+        () =>
+          runPostgresMigrations({
+            pool: fakePool(client),
+            migrationDirectory: directory,
+          }),
+        /postgres_migration_lock_busy/u,
+      );
+      assert.equal(
+        client.queries.some((entry) => entry.text.includes("to_regclass")),
+        false,
+      );
+      assert.equal(client.released, true);
+    },
+  );
 });
 
 test("SQL failure rolls back the pending file and releases the advisory lock", async () => {
-  await withMigrations({
-    "001_initial.sql": registered("001_initial", "SELECT fixture_failure;"),
-  }, async (directory) => {
-    const client = new FakeMigrationClient();
-    client.relationExists = false;
-    client.failSql = "fixture_failure";
-    await assert.rejects(
-      () => runPostgresMigrations({ pool: fakePool(client), migrationDirectory: directory }),
-      /fixture_sql_failure/u,
-    );
-    assert.equal(client.queries.some((entry) => entry.text === "ROLLBACK"), true);
-    assert.equal(client.queries.some((entry) => entry.text.includes("pg_advisory_unlock")), true);
-    assert.equal(client.released, true);
-  });
+  await withMigrations(
+    {
+      "001_initial.sql": registered("001_initial", "SELECT fixture_failure;"),
+    },
+    async (directory) => {
+      const client = new FakeMigrationClient();
+      client.relationExists = false;
+      client.failSql = "fixture_failure";
+      await assert.rejects(
+        () =>
+          runPostgresMigrations({
+            pool: fakePool(client),
+            migrationDirectory: directory,
+          }),
+        /fixture_sql_failure/u,
+      );
+      assert.equal(
+        client.queries.some((entry) => entry.text === "ROLLBACK"),
+        true,
+      );
+      assert.equal(
+        client.queries.some((entry) =>
+          entry.text.includes("pg_advisory_unlock"),
+        ),
+        true,
+      );
+      assert.equal(client.released, true);
+    },
+  );
 });
 
 test("unknown applied versions and missing self-registration both fail closed", async () => {
-  await withMigrations({ "001_initial.sql": registered("001_initial") }, async (directory) => {
-    const unknown = new FakeMigrationClient();
-    unknown.applied = ["000_unknown"];
-    await assert.rejects(
-      () => runPostgresMigrations({ pool: fakePool(unknown), migrationDirectory: directory }),
-      /postgres_migration_unknown_applied_version:000_unknown/u,
-    );
+  await withMigrations(
+    { "001_initial.sql": registered("001_initial") },
+    async (directory) => {
+      const unknown = new FakeMigrationClient();
+      unknown.applied = ["000_unknown"];
+      await assert.rejects(
+        () =>
+          runPostgresMigrations({
+            pool: fakePool(unknown),
+            migrationDirectory: directory,
+          }),
+        /postgres_migration_unknown_applied_version:000_unknown/u,
+      );
 
-    const missing = new FakeMigrationClient();
-    missing.relationExists = false;
-    missing.registrationCount = 0;
-    await assert.rejects(
-      () => runPostgresMigrations({ pool: fakePool(missing), migrationDirectory: directory }),
-      /postgres_migration_registration_missing:001_initial/u,
-    );
-    assert.equal(missing.queries.some((entry) => entry.text === "ROLLBACK"), true);
-  });
+      const missing = new FakeMigrationClient();
+      missing.relationExists = false;
+      missing.registrationCount = 0;
+      await assert.rejects(
+        () =>
+          runPostgresMigrations({
+            pool: fakePool(missing),
+            migrationDirectory: directory,
+          }),
+        /postgres_migration_registration_missing:001_initial/u,
+      );
+      assert.equal(
+        missing.queries.some((entry) => entry.text === "ROLLBACK"),
+        true,
+      );
+    },
+  );
 });

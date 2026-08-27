@@ -36,6 +36,7 @@ for (let index = 2; index < process.argv.length; index += 2) {
 }
 const acceptanceScope = cliArgs.get("--scope") ?? "complete-current";
 const acceptanceMode = cliArgs.get("--mode") ?? "success";
+const platformSimulation = acceptanceScope === "platform-simulation";
 const acceptanceDevice = cliArgs.get("--device") ?? null;
 const acceptanceTextSize = cliArgs.has("--text-size")
   ? Number(cliArgs.get("--text-size"))
@@ -51,12 +52,15 @@ if (
     "my-library",
     "upload-recovery",
     "platform-operations",
+    "platform-simulation",
     "complete-current",
   ].includes(acceptanceScope)
 )
   throw new Error(`unknown_native_acceptance_scope:${acceptanceScope}`);
 if (!["success", "degradation"].includes(acceptanceMode))
   throw new Error(`unknown_native_acceptance_mode:${acceptanceMode}`);
+if (platformSimulation && acceptanceMode !== "success")
+  throw new Error("platform_simulation_requires_success_mode");
 if (
   acceptanceTextSize !== null &&
   ![15, 16, 17, 19, 23, 26].includes(acceptanceTextSize)
@@ -70,8 +74,7 @@ const devtoolsCliEntry =
 const devtoolsCliBootstrap =
   "const e=process.argv[1],a=process.argv.slice(2).filter(function(x){return x!=='--electron'});if(!process.env.cwd)process.env.cwd=process.cwd();process.argv=[process.execPath,'--ms-enable-electron-run-as-node',e,'--electron'].concat(a);require(e)";
 const sourceProjectPath = path.join(root, "apps", "wechat-miniapp");
-const installationStorageKey =
-  "starward.wechat-miniapp.installation.current";
+const installationStorageKey = "starward.wechat-miniapp.installation.current";
 const canonicalWorkspaceRoot = path.resolve("E:\\Dev\\Starward");
 const wechatFinalGateTempRoot = path.resolve("E:\\Dev\\.starward-tmp");
 const wechatProcessTemp = process.env.LOCALAPPDATA
@@ -263,7 +266,9 @@ async function applyWechatSimulatorPreferences(deviceName, textSize) {
           next.deviceInfo = structuredClone(selectedDevice.info);
         }
         if (textSize !== null) {
-          const allowedTextSizes = next?.textSize?.list?.map((item) => item.size);
+          const allowedTextSizes = next?.textSize?.list?.map(
+            (item) => item.size,
+          );
           if (!allowedTextSizes?.includes(textSize))
             throw new Error(
               `wechat_simulator_text_size_not_supported:${textSize}`,
@@ -321,8 +326,7 @@ async function applyWechatSimulatorPreferences(deviceName, textSize) {
 }
 
 async function restoreWechatSimulatorPreferences(session) {
-  if (!session || session.files.length === 0)
-    return { status: "not_required" };
+  if (!session || session.files.length === 0) return { status: "not_required" };
   const restored = [];
   for (const entry of session.files) {
     await writeFile(entry.file, entry.bytes, "utf8");
@@ -1014,8 +1018,7 @@ async function prepareNativeInfrastructure(runId) {
     connectionName: `starward-native-${suffix}`,
   });
   await redis.connect();
-  const databaseUrl =
-    `postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/${databaseName}`;
+  const databaseUrl = `postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/${databaseName}`;
   const cachePrefix = `starward:miniapp:native:${suffix}:`;
   const adminToken = randomUUID();
   const environment = Object.freeze({
@@ -1028,8 +1031,7 @@ async function prepareNativeInfrastructure(runId) {
     MINIAPP_ADMIN_RBAC: JSON.stringify({
       "admin:native-acceptance": ["OWNER"],
     }),
-    MINIAPP_SESSION_SECRET:
-      `native-acceptance-${suffix}-session-secret-current`,
+    MINIAPP_SESSION_SECRET: `native-acceptance-${suffix}-session-secret-current`,
   });
   return {
     databaseName,
@@ -1201,9 +1203,7 @@ async function prepareNativePendingUpload({
       }),
     },
   );
-  const pendingMedia = pending?.media?.find(
-    (item) => item.state === "PENDING",
-  );
+  const pendingMedia = pending?.media?.find((item) => item.state === "PENDING");
   if (!pendingMedia?.uploadId)
     throw new Error("native_upload_recovery_pending_state_missing");
 
@@ -2152,20 +2152,47 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='plan-route-nodes']", ".plan-route"],
   ["[data-od-id='spot-contribution-entry']", ".contribution-link"],
   ["[data-od-id='contribution-spot-context']", ".contribution-context"],
-  ["[data-od-id='contribution-location-consent']", ".contribution-location-card"],
+  [
+    "[data-od-id='contribution-location-consent']",
+    ".contribution-location-card",
+  ],
   [
     "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
     ".contribution-kind-choice",
   ],
-  ["[data-od-id='contribution-topic-control'] .chip", ".contribution-topic-grid .chip"],
-  ["[data-od-id='contribution-submit'] .soft-button", ".contribution-actions .soft-button"],
-  ["[data-od-id='contribution-submit'] .soft-button--primary", ".contribution-actions .soft-button--primary"],
+  [
+    "[data-od-id='contribution-topic-control'] .chip",
+    ".contribution-topic-grid .chip",
+  ],
+  [
+    "[data-od-id='contribution-submit'] .soft-button",
+    ".contribution-actions .soft-button",
+  ],
+  [
+    "[data-od-id='contribution-submit'] .soft-button--primary",
+    ".contribution-actions .soft-button--primary",
+  ],
   ["[data-od-id='contribution-status-list']", ".contribution-history"],
-  ["[data-od-id='contribution-candidate-name']", ".contribution-candidate-name"],
-  ["[data-od-id='contribution-candidate-region']", ".contribution-candidate-region"],
-  ["[data-od-id='contribution-candidate-latitude']", ".contribution-candidate-latitude"],
-  ["[data-od-id='contribution-candidate-longitude']", ".contribution-candidate-longitude"],
-  ["[data-od-id='contribution-coordinate-consent']", ".contribution-coordinate-consent"],
+  [
+    "[data-od-id='contribution-candidate-name']",
+    ".contribution-candidate-name",
+  ],
+  [
+    "[data-od-id='contribution-candidate-region']",
+    ".contribution-candidate-region",
+  ],
+  [
+    "[data-od-id='contribution-candidate-latitude']",
+    ".contribution-candidate-latitude",
+  ],
+  [
+    "[data-od-id='contribution-candidate-longitude']",
+    ".contribution-candidate-longitude",
+  ],
+  [
+    "[data-od-id='contribution-coordinate-consent']",
+    ".contribution-coordinate-consent",
+  ],
   ["[data-od-id='contribution-detail']", ".contribution-textarea"],
   ["[data-od-id='contribution-media-upload']", ".contribution-media-card"],
   ["[data-od-id='contribution-media-rights']", ".contribution-media-rights"],
@@ -2304,7 +2331,10 @@ async function resetThroughAcceptanceControl(miniProgram) {
     () => miniProgram.reLaunch("/pages/auth/index"),
   );
   if (!requestedNeutralPage) throw new Error("native_reset_route_unavailable");
-  const neutralPage = await waitForCurrentPagePath(miniProgram, "pages/auth/index");
+  const neutralPage = await waitForCurrentPagePath(
+    miniProgram,
+    "pages/auth/index",
+  );
   await waitForSelector(neutralPage, ".permission-page", 1);
   const reset = await miniProgram.evaluate(function () {
     const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
@@ -2420,7 +2450,10 @@ async function resetNetworkCacheForPreparedFault(miniProgram, preparedUrl) {
   );
   if (!requestedNeutralPage)
     throw new Error("native_network_reset_route_unavailable");
-  const neutralPage = await waitForCurrentPagePath(miniProgram, "pages/auth/index");
+  const neutralPage = await waitForCurrentPagePath(
+    miniProgram,
+    "pages/auth/index",
+  );
   await waitForSelector(neutralPage, ".permission-page", 1);
   const reset = await miniProgram.evaluate(function () {
     const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
@@ -2455,7 +2488,9 @@ async function inspectSelector(page, definition) {
       styles[property] = await element.style(property).catch(() => null);
     const attributes = {};
     for (const attribute of definition.attributes ?? [])
-      attributes[attribute] = await element.attribute(attribute).catch(() => null);
+      attributes[attribute] = await element
+        .attribute(attribute)
+        .catch(() => null);
     observations.push({
       text_sha256: sha256(text),
       text_length: text.length,
@@ -2538,18 +2573,22 @@ async function captureJourneyInteractions(
       );
     }
     if (step.scroll) {
-      const scroller = (await waitForSelector(
-        page,
-        step.scroll.container,
-        1,
-        step.timeoutMs ?? 20_000,
-      ))[0];
-      const target = (await waitForSelector(
-        page,
-        step.scroll.target,
-        1,
-        step.timeoutMs ?? 20_000,
-      ))[step.scroll.index ?? 0];
+      const scroller = (
+        await waitForSelector(
+          page,
+          step.scroll.container,
+          1,
+          step.timeoutMs ?? 20_000,
+        )
+      )[0];
+      const target = (
+        await waitForSelector(
+          page,
+          step.scroll.target,
+          1,
+          step.timeoutMs ?? 20_000,
+        )
+      )[step.scroll.index ?? 0];
       if (!scroller || typeof scroller.scrollTo !== "function" || !target)
         throw new Error(
           `native_interaction_scroll_unsupported:${definition.key}:${step.key}`,
@@ -2567,7 +2606,10 @@ async function captureJourneyInteractions(
         );
       const scrollTop = Math.max(
         0,
-        currentScrollTop + targetTop - scrollerTop - (step.scroll.topInset ?? 24),
+        currentScrollTop +
+          targetTop -
+          scrollerTop -
+          (step.scroll.topInset ?? 24),
       );
       await scroller.scrollTo(0, scrollTop);
       await new Promise((resolve) =>
@@ -2720,6 +2762,26 @@ async function captureJourneyInteractions(
           );
       }
     }
+    for (const expectation of step.expectText ?? []) {
+      const elements = await waitForSelector(
+        page,
+        expectation.selector,
+        expectation.minimum ?? 1,
+        step.timeoutMs ?? 20_000,
+      );
+      const element = elements[expectation.index ?? 0];
+      const observedText = String(await element?.text().catch(() => ""));
+      if (!observedText.includes(expectation.fragment))
+        throw new Error(
+          `native_interaction_expected_text_missing:${definition.key}:${step.key}:${expectation.selector}:${sha256(expectation.fragment)}:${sha256(observedText)}`,
+        );
+      stepObservations.push({
+        selector: expectation.selector,
+        observed_text_sha256: sha256(observedText),
+        expected_fragment_sha256: sha256(expectation.fragment),
+        expected_text_observed: true,
+      });
+    }
     for (const selector of step.inspect ?? []) {
       const observation = await inspectSelector(page, selector);
       stepObservations.push(observation);
@@ -2836,11 +2898,17 @@ async function currentPageUrl(miniProgram, page, requiredQueryKeys = []) {
     ...(liveRoute?.query ?? {}),
   };
   for (const key of requiredQueryKeys)
-    if (routeQuery[key] === undefined || routeQuery[key] === null || routeQuery[key] === "")
-      throw new Error(`native_prepared_route_parameter_missing:${page.path}:${key}`);
+    if (
+      routeQuery[key] === undefined ||
+      routeQuery[key] === null ||
+      routeQuery[key] === ""
+    )
+      throw new Error(
+        `native_prepared_route_parameter_missing:${page.path}:${key}`,
+      );
   const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(routeQuery).sort(([left], [right]) =>
-    left.localeCompare(right),
+  for (const [key, value] of Object.entries(routeQuery).sort(
+    ([left], [right]) => left.localeCompare(right),
   )) {
     if (value !== undefined && value !== null) {
       const serializedValue = String(value);
@@ -2857,7 +2925,11 @@ async function currentPageUrl(miniProgram, page, requiredQueryKeys = []) {
   return `/${routePath}${serialized ? `?${serialized}` : ""}`;
 }
 
-async function waitForCurrentPagePath(miniProgram, expectedPath, timeoutMs = 20_000) {
+async function waitForCurrentPagePath(
+  miniProgram,
+  expectedPath,
+  timeoutMs = 20_000,
+) {
   const normalized = expectedPath.replace(/^\//u, "");
   const deadline = Date.now() + timeoutMs;
   let stableMatches = 0;
@@ -2928,7 +3000,11 @@ async function tapIntoPage(miniProgram, page, selector, expectedPath) {
     // page after the destination had already started becoming topmost.
     return await waitForCurrentPagePath(miniProgram, expectedPath, 20_000);
   } catch (error) {
-    if (!String(error?.message ?? error).startsWith("native_formal_entry_timeout:")) {
+    if (
+      !String(error?.message ?? error).startsWith(
+        "native_formal_entry_timeout:",
+      )
+    ) {
       throw error;
     }
     // Some WeChat DevTools builds acknowledge the physical Element.tap call
@@ -3033,7 +3109,9 @@ async function setDisplayModeThroughProductionUi(miniProgram, mode) {
     2,
   );
   const target = choices[mode === "NIGHT" ? 1 : 0];
-  const pressed = String(await target.attribute("aria-pressed").catch(() => "false"));
+  const pressed = String(
+    await target.attribute("aria-pressed").catch(() => "false"),
+  );
   if (pressed !== "true") {
     await target.tap();
     await new Promise((resolve) => setTimeout(resolve, 750));
@@ -3058,11 +3136,7 @@ async function selectFormalSpotThroughFinder(mapPage) {
     1,
   );
   await nativeDiagnosticStage("finder-open", () => finderTriggers[0].tap());
-  await waitForSelector(
-    mapPage,
-    "[data-od-id='spot-finder-result-scroll']",
-    1,
-  );
+  await waitForSelector(mapPage, "[data-od-id='spot-finder-result-scroll']", 1);
   const formalResults = await waitForSelector(
     mapPage,
     ".spot-card__result-main",
@@ -3074,12 +3148,17 @@ async function selectFormalSpotThroughFinder(mapPage) {
   await waitForSelector(mapPage, ".spot-card__callout-main", 1);
 }
 
-async function waitForFormalObservationContext(miniProgram, timeoutMs = 10_000) {
+async function waitForFormalObservationContext(
+  miniProgram,
+  timeoutMs = 10_000,
+) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const context = await miniProgram
       .evaluate(function () {
-        return globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectContext?.() ?? null;
+        return (
+          globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectContext?.() ?? null
+        );
       })
       .catch(() => null);
     if (
@@ -3098,7 +3177,9 @@ async function waitForMapPointObservationContext(miniProgram) {
   while (Date.now() < deadline) {
     const context = await miniProgram
       .evaluate(function () {
-        return globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectContext?.() ?? null;
+        return (
+          globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectContext?.() ?? null
+        );
       })
       .catch(() => null);
     if (context?.locationKind === "MAP_POINT") return context;
@@ -3268,12 +3349,7 @@ async function enterCurrentJourney(miniProgram, definition) {
   throw new Error(`unknown_native_formal_entry_flow:${flow}`);
 }
 
-async function captureJourneyViewports(
-  page,
-  miniProgram,
-  runRoot,
-  definition,
-) {
+async function captureJourneyViewports(page, miniProgram, runRoot, definition) {
   const captures = [];
   for (const capture of definition.viewportCaptures ?? []) {
     const scroller = (await waitForSelector(page, capture.scroll, 1))[0];
@@ -3324,13 +3400,13 @@ async function captureJourneyViewports(
       target: capture.target,
       scroll_top: scrollTop,
       selectors: captureSelectors,
-      screenshot: path
-        .relative(root, screenshotAbsolute)
-        .replaceAll("\\", "/"),
+      screenshot: path.relative(root, screenshotAbsolute).replaceAll("\\", "/"),
     });
   }
   for (const scrollSelector of [
-    ...new Set((definition.viewportCaptures ?? []).map((entry) => entry.scroll)),
+    ...new Set(
+      (definition.viewportCaptures ?? []).map((entry) => entry.scroll),
+    ),
   ]) {
     const scroller = await queryElement(page, scrollSelector);
     if (typeof scroller?.scrollTo === "function") await scroller.scrollTo(0, 0);
@@ -3384,7 +3460,11 @@ async function captureJourney(miniProgram, runRoot, definition) {
   );
   await waitForSelectorSet(page, definition.selectors);
   if (definition.key === "plan-editor") {
-    const checklistRows = await waitForSelector(page, ".plan-checklist__row", 5);
+    const checklistRows = await waitForSelector(
+      page,
+      ".plan-checklist__row",
+      5,
+    );
     for (const row of checklistRows.slice(0, 3)) {
       const rowClass = String(await row.attribute("class").catch(() => ""));
       if (!rowClass.includes("plan-checklist__row--done")) await row.tap();
@@ -3634,9 +3714,7 @@ const journeys = [
         key: "finder-result-select",
         screenshot: true,
         tap: ".spot-card__result-main",
-        waitFor: [
-          { selector: ".spot-card__callout-main", minimum: 1 },
-        ],
+        waitFor: [{ selector: ".spot-card__callout-main", minimum: 1 }],
         waitForAbsent: ["[data-od-id='spot-finder-sheet']"],
       },
       {
@@ -3789,7 +3867,11 @@ const journeys = [
       },
       { selector: ".time-card", minimum: 1, styles: ["border-radius"] },
       { selector: ".sky-scene", minimum: 1, styles: ["width", "height"] },
-      { selector: "[data-od-id='sky-target-list']", minimum: 1, styles: ["display"] },
+      {
+        selector: "[data-od-id='sky-target-list']",
+        minimum: 1,
+        styles: ["display"],
+      },
       {
         selector: ".sky-actions .soft-button",
         minimum: 3,
@@ -3820,7 +3902,10 @@ const journeys = [
         waitFor: [
           { selector: "[data-od-id='sky-orientation-scene']", minimum: 1 },
           { selector: "[data-od-id='sky-orientation-control']", minimum: 1 },
-          { selector: "[data-od-id='sky-orientation-object-list']", minimum: 1 },
+          {
+            selector: "[data-od-id='sky-orientation-object-list']",
+            minimum: 1,
+          },
           { selector: ".orientation-actions", minimum: 1 },
         ],
       },
@@ -3911,8 +3996,14 @@ const journeys = [
         tap: ".contribution-card .soft-button--primary",
         waitFor: [
           { selector: ".contribution-progress", minimum: 1 },
-          { selector: "[data-od-id='contribution-location-consent']", minimum: 1 },
-          { selector: "[data-od-id='contribution-topic-control'] .chip", minimum: 9 },
+          {
+            selector: "[data-od-id='contribution-location-consent']",
+            minimum: 1,
+          },
+          {
+            selector: "[data-od-id='contribution-topic-control'] .chip",
+            minimum: 9,
+          },
           { selector: ".contribution-actions--flow .soft-button", minimum: 3 },
         ],
       },
@@ -3939,7 +4030,8 @@ const journeys = [
       {
         key: "candidate-detail",
         input: "[data-od-id='contribution-detail']",
-        value: "这是原生验收建立的新增地点建议，只验证草稿、提交和身份回读，不作为真实地点事实。",
+        value:
+          "这是原生验收建立的新增地点建议，只验证草稿、提交和身份回读，不作为真实地点事实。",
       },
       {
         key: "candidate-coordinate-consent",
@@ -3951,7 +4043,10 @@ const journeys = [
         tap: ".contribution-actions--flow .soft-button--primary",
         waitFor: [
           { selector: ".contribution-upload-recovery", minimum: 1 },
-          { selector: ".contribution-actions--submit .soft-button", minimum: 1 },
+          {
+            selector: ".contribution-actions--submit .soft-button",
+            minimum: 1,
+          },
         ],
       },
       {
@@ -3962,9 +4057,7 @@ const journeys = [
           { selector: ".contribution-history__row", minimum: 1 },
           { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
         ],
-        inspect: [
-          { selector: ".contribution-history__row", minimum: 1 },
-        ],
+        inspect: [{ selector: ".contribution-history__row", minimum: 1 }],
       },
     ],
   },
@@ -3993,7 +4086,10 @@ const journeys = [
         tap: ".contribution-card .soft-button--primary",
         waitFor: [
           { selector: ".contribution-progress", minimum: 1 },
-          { selector: "[data-od-id='contribution-topic-control'] .chip", minimum: 9 },
+          {
+            selector: "[data-od-id='contribution-topic-control'] .chip",
+            minimum: 9,
+          },
           { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
           { selector: ".contribution-actions--flow .soft-button", minimum: 3 },
         ],
@@ -4001,7 +4097,8 @@ const journeys = [
       {
         key: "field-report-detail",
         input: "[data-od-id='contribution-detail']",
-        value: "这是原生验收建立的正式点现场反馈，只验证人工审核链路，不直接改变地图或今晚结论。",
+        value:
+          "这是原生验收建立的正式点现场反馈，只验证人工审核链路，不直接改变地图或今晚结论。",
       },
       {
         key: "field-report-upload-open",
@@ -4009,7 +4106,10 @@ const journeys = [
         tap: ".contribution-actions--flow .soft-button--primary",
         waitFor: [
           { selector: ".contribution-upload-recovery", minimum: 1 },
-          { selector: ".contribution-actions--submit .soft-button", minimum: 1 },
+          {
+            selector: ".contribution-actions--submit .soft-button",
+            minimum: 1,
+          },
         ],
       },
       {
@@ -4020,9 +4120,7 @@ const journeys = [
           { selector: ".contribution-history__row", minimum: 1 },
           { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
         ],
-        inspect: [
-          { selector: ".contribution-history__row", minimum: 1 },
-        ],
+        inspect: [{ selector: ".contribution-history__row", minimum: 1 }],
       },
     ],
   },
@@ -4080,9 +4178,7 @@ const journeys = [
         target: "#settings-data-actions",
         topInset: 16,
         fallbackScrollTop: 920,
-        selectors: [
-          { selector: "#settings-data-actions", minimum: 1 },
-        ],
+        selectors: [{ selector: "#settings-data-actions", minimum: 1 }],
       },
       {
         key: "preferences",
@@ -4158,12 +4254,65 @@ const journeys = [
             minimum: 1,
           },
           { selector: ".contribution-media-row .soft-button", minimum: 1 },
-          { selector: ".contribution-actions--submit .soft-button--disabled", minimum: 1 },
+          {
+            selector: ".contribution-actions--submit .soft-button--disabled",
+            minimum: 1,
+          },
         ],
       },
     ],
   },
 ];
+
+if (platformSimulation) {
+  const mapJourney = journeys.find(
+    (journey) => journey.key === "map-cold-start-location-fallback",
+  );
+  const skyJourney = journeys.find((journey) => journey.key === "spot-night");
+  if (!mapJourney || !skyJourney)
+    throw new Error("platform_simulation_journey_owner_missing");
+  mapJourney.interactions = [
+    {
+      key: "platform-simulated-location",
+      screenshot: true,
+      tap: ".map-floating-tools .soft-button",
+      index: 0,
+      settleMs: 1_500,
+      waitFor: [{ selector: ".map-page.location-granted", minimum: 1 }],
+      inspect: [
+        { selector: ".map-page.location-granted", minimum: 1 },
+        { selector: ".sr-live", minimum: 1 },
+      ],
+    },
+  ];
+  const orientationIndex = skyJourney.interactions.findIndex(
+    (step) => step.key === "orientation-open",
+  );
+  if (orientationIndex < 0)
+    throw new Error("platform_simulation_orientation_owner_missing");
+  const orientationOpen = skyJourney.interactions[orientationIndex];
+  skyJourney.interactions = [
+    orientationOpen,
+    {
+      key: "platform-simulated-orientation-follow",
+      screenshot: true,
+      tap: ".orientation-actions__primary",
+      settleMs: 900,
+      waitFor: [{ selector: ".orientation-control__status", minimum: 1 }],
+      waitForAbsent: [".orientation-recovery"],
+      expectText: [
+        {
+          selector: ".orientation-control__status",
+          fragment: "当前 137°",
+        },
+      ],
+      inspect: [
+        { selector: ".orientation-control__status", minimum: 1 },
+        { selector: ".sky-scene__canvas", minimum: 1 },
+      ],
+    },
+  ];
+}
 
 const journeyKeysByScope = {
   "global-conformance": ["map-cold-start-location-fallback"],
@@ -4182,6 +4331,7 @@ const journeyKeysByScope = {
     "settings",
   ],
   "platform-operations": ["map-cold-start-location-fallback", "settings"],
+  "platform-simulation": ["map-cold-start-location-fallback", "spot-night"],
   "complete-current": journeys.map((journey) => journey.key),
 };
 
@@ -4229,6 +4379,146 @@ const faultProbeByJourney = {
     recoveryText: "重试同步",
   },
 };
+
+async function installPlatformSimulationMocks(miniProgram) {
+  const methods = ["getLocation"];
+  const installed = [];
+  try {
+    await miniProgram.mockWxMethod("getLocation", function (options) {
+      const result = {
+        errMsg: "getLocation:ok",
+        latitude: 31.2304,
+        longitude: 121.4737,
+        accuracy: 12,
+        horizontalAccuracy: 12,
+        verticalAccuracy: 12,
+      };
+      if (options && typeof options.success === "function")
+        options.success(result);
+      if (options && typeof options.complete === "function")
+        options.complete(result);
+      return result;
+    });
+    installed.push("getLocation");
+    const compassPatch = await miniProgram.evaluate(function () {
+      const platform = globalThis.wx;
+      if (!platform) return { status: "unavailable", reason: "wx_missing" };
+      const key = "__STARWARD_PLATFORM_SIMULATION_COMPASS__";
+      if (globalThis[key])
+        return { status: "unavailable", reason: "owner_already_present" };
+      const state = {
+        originals: {
+          onCompassChange: platform.onCompassChange,
+          offCompassChange: platform.offCompassChange,
+          startCompass: platform.startCompass,
+          stopCompass: platform.stopCompass,
+        },
+        listener: null,
+        timers: [],
+      };
+      const onCompassChange = function (listener) {
+        state.listener = listener;
+        state.timers.push(
+          setTimeout(function () {
+            if (state.listener === listener && typeof listener === "function")
+              listener({ direction: 42, accuracy: "high" });
+          }, 100),
+        );
+        state.timers.push(
+          setTimeout(function () {
+            if (state.listener === listener && typeof listener === "function")
+              listener({ direction: 137, accuracy: "high" });
+          }, 500),
+        );
+      };
+      const offCompassChange = function (listener) {
+        if (!listener || state.listener === listener) state.listener = null;
+        state.timers.forEach(clearTimeout);
+        state.timers = [];
+      };
+      const settle = function (name, options) {
+        const result = { errMsg: name + ":ok" };
+        if (options && typeof options.success === "function")
+          options.success(result);
+        if (options && typeof options.complete === "function")
+          options.complete(result);
+        return result;
+      };
+      const startCompass = function (options) {
+        return settle("startCompass", options);
+      };
+      const stopCompass = function (options) {
+        state.listener = null;
+        state.timers.forEach(clearTimeout);
+        state.timers = [];
+        return settle("stopCompass", options);
+      };
+      globalThis[key] = state;
+      platform.onCompassChange = onCompassChange;
+      platform.offCompassChange = offCompassChange;
+      platform.startCompass = startCompass;
+      platform.stopCompass = stopCompass;
+      const installed =
+        platform.onCompassChange === onCompassChange &&
+        platform.offCompassChange === offCompassChange &&
+        platform.startCompass === startCompass &&
+        platform.stopCompass === stopCompass;
+      if (!installed) {
+        platform.onCompassChange = state.originals.onCompassChange;
+        platform.offCompassChange = state.originals.offCompassChange;
+        platform.startCompass = state.originals.startCompass;
+        platform.stopCompass = state.originals.stopCompass;
+        delete globalThis[key];
+      }
+      return {
+        status: installed ? "installed" : "unavailable",
+        reason: installed ? null : "wx_methods_not_replaceable",
+      };
+    });
+    if (compassPatch?.status !== "installed")
+      throw new Error(
+        `platform_simulation_compass_patch_unavailable:${compassPatch?.reason ?? "unknown"}`,
+      );
+  } catch (error) {
+    for (const method of installed.reverse())
+      await miniProgram.restoreWxMethod(method).catch(() => undefined);
+    throw error;
+  }
+  return {
+    status: "installed",
+    kind: "test-only fixed WeChat API simulation",
+    location_fixture: "GCJ02:shanghai-public-test-coordinate",
+    compass_sequence_degrees: [42, 137],
+    methods: ["mockWxMethod:getLocation", "appThreadPatch:compassLifecycle"],
+  };
+}
+
+async function restorePlatformSimulationMocks(miniProgram) {
+  const compassRestoration = await miniProgram.evaluate(function () {
+    const platform = globalThis.wx;
+    const key = "__STARWARD_PLATFORM_SIMULATION_COMPASS__";
+    const state = globalThis[key];
+    if (!platform || !state) return false;
+    state.listener = null;
+    state.timers.forEach(clearTimeout);
+    platform.onCompassChange = state.originals.onCompassChange;
+    platform.offCompassChange = state.originals.offCompassChange;
+    platform.startCompass = state.originals.startCompass;
+    platform.stopCompass = state.originals.stopCompass;
+    delete globalThis[key];
+    return true;
+  });
+  await miniProgram.restoreWxMethod("getLocation");
+  if (!compassRestoration)
+    throw new Error("platform_simulation_compass_restore_missing");
+  return {
+    status: "passed",
+    restored_methods: [
+      "appThreadPatch:compassLifecycle",
+      "mockWxMethod:getLocation",
+    ],
+  };
+}
 
 async function captureFaultAndRecovery({
   miniProgram,
@@ -4436,6 +4726,13 @@ async function main() {
     cleanup: null,
     journeys: [],
     fault_injection: null,
+    platform_simulation: platformSimulation
+      ? {
+          status: "pending",
+          evidence_class: "supplemental test-only diagnostic",
+          establishes_real_platform_behavior: false,
+        }
+      : null,
     request_diagnostics: [],
     runtime_events: runtimeEvents,
     runner_faults: runnerFaults,
@@ -4712,10 +5009,7 @@ async function main() {
       orientation: info.deviceOrientation,
       font_size_setting: info.fontSizeSetting ?? null,
     }));
-    if (
-      acceptanceDevice &&
-      result.runtime.model !== acceptanceDevice
-    )
+    if (acceptanceDevice && result.runtime.model !== acceptanceDevice)
       throw new Error(
         `wechat_simulator_device_mismatch:${sha256(
           canonical({
@@ -4739,7 +5033,21 @@ async function main() {
     const selectedJourneyKeys = journeyKeysByScope[acceptanceScope];
     const selectedJourneys = journeys
       .filter((journey) => selectedJourneyKeys.includes(journey.key))
-      .sort((left, right) => left.order - right.order);
+      .sort((left, right) =>
+        platformSimulation
+          ? right.order - left.order
+          : left.order - right.order,
+      );
+    if (platformSimulation) {
+      runtimePhase = "platform-simulation-install";
+      result.platform_simulation = {
+        ...result.platform_simulation,
+        ...(await installPlatformSimulationMocks(miniProgram)),
+      };
+      result.limitations.push(
+        "The platform-simulation scope uses fixed test-only location and compass API mocks; it does not establish real user location, permission, map tiles, provider traffic, physical sensor behavior, or device orientation behavior.",
+      );
+    }
     if (acceptanceMode === "degradation") {
       // Establish the evidence session and its canonical neutral state while
       // the BFF is healthy. Only then open the named fault window, so a cold
@@ -4855,6 +5163,14 @@ async function main() {
           await captureJourney(miniProgram, runRoot, journey),
         );
       }
+    }
+    if (platformSimulation) {
+      runtimePhase = "platform-simulation-restore";
+      result.platform_simulation = {
+        ...result.platform_simulation,
+        restoration: await restorePlatformSimulationMocks(miniProgram),
+        status: "passed",
+      };
     }
     runtimePhase = "evidence-final-drain";
     const evidenceRuntimeQuiescence =
@@ -4989,13 +5305,12 @@ async function main() {
     failure_count: 1,
     failures_sha256: sha256(String(error?.message ?? error)),
   }));
-  const simulatorPreferenceRestore =
-    await restoreWechatSimulatorPreferences(simulatorPreferenceSession).catch(
-      (error) => ({
-        status: "failed",
-        diagnostic_sha256: sha256(String(error?.message ?? error)),
-      }),
-    );
+  const simulatorPreferenceRestore = await restoreWechatSimulatorPreferences(
+    simulatorPreferenceSession,
+  ).catch((error) => ({
+    status: "failed",
+    diagnostic_sha256: sha256(String(error?.message ?? error)),
+  }));
   result.cleanup = {
     ...nativeCleanup,
     project_identity_restore: projectIdentityRestore,
