@@ -1,0 +1,79 @@
+- main [ref=f6e3]:
+  - generic [ref=f6e4]:
+    - complementary [ref=f6e5]:
+      - generic [ref=f6e13]:
+        - strong [ref=f6e14]: Starward Ops
+        - generic [ref=f6e15]: 数据与发布治理
+      - generic [ref=f6e16]:
+        - generic [ref=f6e17]: 投稿处理
+        - button "审核队列：按优先级、风险和新鲜度查看待处理 Case" [ref=f6e18] [cursor=pointer]:
+          - generic [ref=f6e23]: 审核队列
+          - generic [ref=f6e78]: "4"
+        - button "Case：原始证据与审核决定分开记录" [ref=f6e24] [cursor=pointer]:
+          - generic [ref=f6e29]: Case
+        - button "媒体核验：只查看净化后的媒体派生物" [ref=f6e30] [cursor=pointer]:
+          - generic [ref=f6e36]: 媒体核验
+        - button "证据合并：预览与提交 canonical merge" [ref=f6e37] [cursor=pointer]:
+          - generic [ref=f6e44]: 证据合并
+      - generic [ref=f6e45]:
+        - generic [ref=f6e46]: 正式地点
+        - button "发布评估：服务端完整性门禁与发布动作" [active] [ref=f6e47] [cursor=pointer]:
+          - generic [ref=f6e52]: 发布评估
+        - button "替换与退役：预览关系影响，再提交高影响转换" [ref=f6e53] [cursor=pointer]:
+          - generic [ref=f6e59]: 替换与退役
+        - button "审计：追加式、脱敏、可归因的操作历史" [ref=f6e60] [cursor=pointer]:
+          - generic [ref=f6e65]: 审计
+      - generic [ref=f6e66]:
+        - generic [ref=f6e67]: O
+        - generic [ref=f6e68]:
+          - strong [ref=f6e69]: admin:operations-acceptance
+          - generic [ref=f6e70]: owner.moderation · 已认证
+    - main [ref=f6e71]:
+      - generic [ref=f6e334]:
+        - generic [ref=f6e335]:
+          - generic [ref=f6e336]:
+            - text: PUBLISH / ASSESSMENT
+            - heading "发布完整性评估" [level=1] [ref=f6e337]
+            - paragraph [ref=f6e338]: 集成测试待核验点 · spot:••039 · assessment digest 63a82••fc1
+          - combobox "选择正式地点" [ref=f6e340]:
+            - option "集成测试待核验点 · DATA_INSUFFICIENT" [selected]
+            - option "自动化测试正式观星点 · PUBLISHED"
+        - generic [ref=f6e341]:
+          - generic [ref=f6e342]: BLOCKED / 未完成
+          - generic [ref=f6e343]: active status DATA_INSUFFICIENT · revision 1
+          - button "重新评估" [disabled] [ref=f6e344]
+        - generic [ref=f6e345]:
+          - article [ref=f6e346]:
+            - generic [ref=f6e347]:
+              - generic [ref=f6e348]:
+                - heading "正式地点门槛" [level=2] [ref=f6e349]
+                - paragraph [ref=f6e350]: 任何必需项缺失或无效都会保持 fail-closed
+              - generic [ref=f6e351]: 服务端未返回
+            - generic [ref=f6e352]: 评估结果只接受真实 API 返回；未返回的检查不会默认为通过。
+          - article [ref=f6e353]:
+            - generic [ref=f6e355]:
+              - heading "影响与操作" [level=2] [ref=f6e356]
+              - paragraph [ref=f6e357]: 先说明对象、影响、理由和恢复点，再提交高影响动作
+            - generic [ref=f6e358]:
+              - generic [ref=f6e359]:
+                - generic [ref=f6e360]: 地图 / 搜索
+                - strong [ref=f6e361]: —
+              - generic [ref=f6e362]:
+                - generic [ref=f6e363]: assessment digest
+                - strong [ref=f6e364]: 63a82••fc1
+              - generic [ref=f6e365]:
+                - generic [ref=f6e366]: recovery point
+                - strong [ref=f6e367]: —
+            - generic [ref=f6e368]:
+              - generic [ref=f6e369]: i
+              - generic [ref=f6e370]:
+                - strong [ref=f6e371]: 审核接受不会自动上架
+                - paragraph [ref=f6e372]: publication 只能绑定当前 spot、active revision 和 assessment digest；读模型读回匹配前不会显示完成。
+            - generic [ref=f6e373]:
+              - generic [ref=f6e374]: 动作理由
+              - textbox "动作理由" [ref=f6e375]:
+                - /placeholder: 说明本次发布治理动作及影响
+            - generic [ref=f6e376]:
+              - button "上架当前 revision" [disabled] [ref=f6e377]
+              - button "暂停展示" [disabled] [ref=f6e378]
+              - button "下架" [disabled] [ref=f6e379]

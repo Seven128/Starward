@@ -19,6 +19,8 @@
     { "id": "libraryGet", "method": "GET", "path": "/me/library", "requestType": "void", "responseType": "UserLibraryData" },
     { "id": "preferencesGet", "method": "GET", "path": "/me/preferences", "requestType": "void", "responseType": "UserPreferencesRecord" },
     { "id": "preferencesPut", "method": "PUT", "path": "/me/preferences", "requestType": "PreferencesSaveRequest", "responseType": "UserPreferencesRecord" },
+    { "id": "accountDataExportGet", "method": "GET", "path": "/me/data-export", "requestType": "void", "responseType": "AccountDataExportData" },
+    { "id": "accountDelete", "method": "DELETE", "path": "/me/account", "requestType": "AccountDeletionRequest", "responseType": "AccountDeletionReceipt" },
     { "id": "plansGet", "method": "GET", "path": "/me/observation-plans", "requestType": "void", "responseType": "PlansData" },
     { "id": "planPut", "method": "PUT", "path": "/me/observation-plans/{planId}", "requestType": "PlanSaveRequest", "responseType": "ObservationPlan" },
     { "id": "planDelete", "method": "DELETE", "path": "/me/observation-plans/{planId}", "requestType": "void", "responseType": "PlansData" },

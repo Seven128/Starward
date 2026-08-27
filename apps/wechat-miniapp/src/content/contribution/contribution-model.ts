@@ -2,7 +2,11 @@ import Taro from "@tarojs/taro";
 import type {
   ContributionDraftRequest,
   ContributionKind,
+  ContributionMergeState,
+  ContributionPublicationImpact,
   ContributionSubmission,
+  ContributionSubmissionState,
+  ContributionStatusHistoryEntry,
   ContributionTopic,
 } from "@starward/miniapp-contracts";
 
@@ -27,12 +31,116 @@ export const KIND_LABEL: Record<ContributionKind, string> = {
   NEW_SPOT_PROPOSAL: "新增地点建议",
 };
 
-export const STATE_LABEL: Record<ContributionSubmission["state"], string> = {
+export const STATE_LABEL: Record<ContributionSubmissionState, string> = {
   DRAFT: "草稿",
   PENDING_REVIEW: "待审核",
-  APPROVED: "已采纳",
+  CHANGES_REQUESTED: "需补充",
+  ACCEPTED: "已接收",
   REJECTED: "未采纳",
+  WITHDRAWN: "已撤回",
 };
+
+export const MERGE_STATE_LABEL: Record<ContributionMergeState, string> = {
+  NOT_STARTED: "尚未开始",
+  READY: "准备合并",
+  MERGED: "已合并",
+  SUPERSEDED: "已被替代",
+};
+
+export const PUBLICATION_IMPACT_LABEL: Record<
+  ContributionPublicationImpact,
+  string
+> = {
+  NONE: "没有",
+  CANDIDATE_UPDATED: "候选地点已更新",
+  ACTIVE_REVISION_UPDATED: "正式地点 revision 已更新",
+  SPOT_PUBLISHED: "正式地点已发布",
+};
+
+export type ContributionAxis = "SUBMISSION" | "MERGE" | "PUBLICATION";
+
+export interface ContributionAxisPresentation {
+  axis: ContributionAxis;
+  label: string;
+  code: string;
+  value: string;
+}
+
+/**
+ * The first API version only exposed `state`. Keep this fallback at the
+ * presentation boundary so old cached records cannot be mistaken for a
+ * second client-side status truth once the three axes are available.
+ */
+export function contributionSubmissionState(
+  submission: ContributionSubmission,
+): ContributionSubmissionState {
+  const current = submission.submissionState;
+  if (current) return current;
+  switch (submission.state) {
+    case "DRAFT":
+      return "DRAFT";
+    case "PENDING_REVIEW":
+      return "PENDING_REVIEW";
+    case "APPROVED":
+      return "ACCEPTED";
+    case "ACCEPTED":
+      return "ACCEPTED";
+    case "CHANGES_REQUESTED":
+      return "CHANGES_REQUESTED";
+    case "WITHDRAWN":
+      return "WITHDRAWN";
+    case "REJECTED":
+      return "REJECTED";
+    default:
+      return "DRAFT";
+  }
+}
+
+export function contributionAxisPresentation(
+  submission: ContributionSubmission,
+): readonly ContributionAxisPresentation[] {
+  const submissionState = contributionSubmissionState(submission);
+  const mergeState = submission.mergeState ?? "NOT_STARTED";
+  const publicationImpact = submission.publicationImpact ?? "NONE";
+  return [
+    {
+      axis: "SUBMISSION",
+      label: "投稿审核",
+      code: submissionState,
+      value: STATE_LABEL[submissionState],
+    },
+    {
+      axis: "MERGE",
+      label: "证据合并",
+      code: mergeState,
+      value: MERGE_STATE_LABEL[mergeState],
+    },
+    {
+      axis: "PUBLICATION",
+      label: "公开影响",
+      code: publicationImpact,
+      value: PUBLICATION_IMPACT_LABEL[publicationImpact],
+    },
+  ];
+}
+
+export function contributionStatusHistory(
+  submission: ContributionSubmission,
+): readonly ContributionStatusHistoryEntry[] {
+  return Array.isArray(submission.statusHistory)
+    ? submission.statusHistory
+    : [];
+}
+
+export function contributionNeedsMediaRecovery(
+  submission: ContributionSubmission | null,
+) {
+  return Boolean(
+    submission?.media.some(
+      (media) => media.state === "PENDING" || media.state === "EXPIRED",
+    ),
+  );
+}
 
 export type ContributionAnnouncement = (
   tone: "error" | "warning" | "info" | "success",
@@ -151,7 +259,7 @@ export function mediaFileName(filePath: string) {
 }
 
 export function mediaMimeType(filePath: string) {
-  return /\.png(?:$|\?)/iu.test(filePath)
-    ? ("image/png" as const)
-    : ("image/jpeg" as const);
+  if (/\.png(?:$|\?)/iu.test(filePath)) return "image/png" as const;
+  if (/\.(?:jpe?g)(?:$|\?)/iu.test(filePath)) return "image/jpeg" as const;
+  throw new Error("仅支持 JPEG 或 PNG 图片");
 }

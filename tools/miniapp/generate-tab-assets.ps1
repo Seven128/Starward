@@ -101,7 +101,7 @@ function New-TabIcon {
 }
 
 # Geometry is projected directly from frozen APP-08 symbols i-nav-map/i-nav-my.
-New-TabIcon -Kind map -Color "#5C7186" -FileName "tab-map.png"
-New-TabIcon -Kind map -Color "#1769D2" -FileName "tab-map-selected.png"
-New-TabIcon -Kind my -Color "#5C7186" -FileName "tab-my.png"
-New-TabIcon -Kind my -Color "#1769D2" -FileName "tab-my-selected.png"
+New-TabIcon -Kind map -Color "#667085" -FileName "tab-map.png"
+New-TabIcon -Kind map -Color "#536DFE" -FileName "tab-map-selected.png"
+New-TabIcon -Kind my -Color "#667085" -FileName "tab-my.png"
+New-TabIcon -Kind my -Color "#536DFE" -FileName "tab-my-selected.png"

@@ -1,0 +1,92 @@
+- main [ref=f6e3]:
+  - generic [ref=f6e4]:
+    - complementary [ref=f6e5]:
+      - generic [ref=f6e13]:
+        - strong [ref=f6e14]: Starward Ops
+        - generic [ref=f6e15]: 数据与发布治理
+      - generic [ref=f6e16]:
+        - generic [ref=f6e17]: 投稿处理
+        - button "审核队列：按优先级、风险和新鲜度查看待处理 Case" [ref=f6e18] [cursor=pointer]:
+          - generic [ref=f6e23]: 审核队列
+          - generic [ref=f6e78]: "4"
+        - button "Case：原始证据与审核决定分开记录" [ref=f6e24] [cursor=pointer]:
+          - generic [ref=f6e29]: Case
+        - button "媒体核验：只查看净化后的媒体派生物" [ref=f6e30] [cursor=pointer]:
+          - generic [ref=f6e36]: 媒体核验
+        - button "证据合并：预览与提交 canonical merge" [ref=f6e37] [cursor=pointer]:
+          - generic [ref=f6e44]: 证据合并
+      - generic [ref=f6e45]:
+        - generic [ref=f6e46]: 正式地点
+        - button "发布评估：服务端完整性门禁与发布动作" [ref=f6e47] [cursor=pointer]:
+          - generic [ref=f6e52]: 发布评估
+        - button "替换与退役：预览关系影响，再提交高影响转换" [active] [ref=f6e53] [cursor=pointer]:
+          - generic [ref=f6e59]: 替换与退役
+        - button "审计：追加式、脱敏、可归因的操作历史" [ref=f6e60] [cursor=pointer]:
+          - generic [ref=f6e65]: 审计
+      - generic [ref=f6e66]:
+        - generic [ref=f6e67]: O
+        - generic [ref=f6e68]:
+          - strong [ref=f6e69]: admin:operations-acceptance
+          - generic [ref=f6e70]: owner.moderation · 已认证
+    - main [ref=f6e71]:
+      - generic [ref=f6e380]:
+        - generic [ref=f6e381]:
+          - generic [ref=f6e382]:
+            - text: LIFECYCLE / HIGH IMPACT
+            - heading "替换与退役" [level=1] [ref=f6e383]
+            - paragraph [ref=f6e384]: 先预览 successor 关系和用户影响，再提交带 current revision、理由、幂等键和恢复点的高影响转换。
+          - generic [ref=f6e385]: 高影响操作
+        - generic [ref=f6e387]:
+          - generic [ref=f6e388]: ·
+          - generic [ref=f6e389]:
+            - strong [ref=f6e390]: 历史与关系不可硬删除
+            - paragraph [ref=f6e391]: 原始 revision、证据、favorite/plan 关系和审计必须保留；successor 不能自指，也不能形成替换环。
+        - generic [ref=f6e392]:
+          - article [ref=f6e393]:
+            - generic [ref=f6e394]:
+              - generic [ref=f6e395]:
+                - heading "当前正式地点" [level=2] [ref=f6e396]
+                - paragraph [ref=f6e397]: 替换或退役的 source object
+              - generic [ref=f6e398]: DATA_INSUFFICIENT
+            - generic [ref=f6e399]:
+              - generic [ref=f6e400]: Current spot
+              - combobox "Current spot" [ref=f6e401]:
+                - option "选择服务端地点"
+                - option "集成测试待核验点 · spot:••039" [selected]
+                - option "自动化测试正式观星点 · spot:••hed"
+            - generic [ref=f6e402]:
+              - generic [ref=f6e403]:
+                - generic [ref=f6e404]: active revision
+                - strong [ref=f6e405]: "1"
+              - generic [ref=f6e406]:
+                - generic [ref=f6e407]: status
+                - strong [ref=f6e408]: DATA_INSUFFICIENT
+              - generic [ref=f6e409]:
+                - generic [ref=f6e410]: 公开关系
+                - strong [ref=f6e411]: 服务端未返回
+          - article [ref=f6e412]:
+            - generic [ref=f6e413]:
+              - generic [ref=f6e414]:
+                - heading "替代地点" [level=2] [ref=f6e415]
+                - paragraph [ref=f6e416]: 可选 successor；不允许回指 current
+              - generic [ref=f6e417]: 未选择
+            - generic [ref=f6e418]:
+              - generic [ref=f6e419]: Successor spot
+              - combobox "Successor spot" [ref=f6e420]:
+                - option "选择服务端地点" [selected]
+                - option "自动化测试正式观星点 · spot:••hed"
+        - article [ref=f6e421]:
+          - generic [ref=f6e422]:
+            - generic [ref=f6e423]:
+              - heading "影响预览" [level=2] [ref=f6e424]
+              - paragraph [ref=f6e425]: 预览不会写入；执行绑定 current revision、successor revision 与 recovery point
+            - generic [ref=f6e426]: 尚未读取
+          - generic [ref=f6e427]: 没有预览就不能推断收藏、计划、地图或历史影响。
+          - generic [ref=f6e428]:
+            - generic [ref=f6e429]: 影响与动作理由
+            - textbox "影响与动作理由" [ref=f6e430]:
+              - /placeholder: 说明替换/退役原因，以及无 successor 时的恢复边界
+          - generic [ref=f6e431]:
+            - button "生成最新影响预览" [disabled] [ref=f6e432]
+            - button "确认替换" [disabled] [ref=f6e433]
+            - button "确认退役" [disabled] [ref=f6e434]

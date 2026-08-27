@@ -137,6 +137,7 @@ interface AppState extends PersistedState {
   replacePlans(plans: readonly ObservationPlan[]): void;
   deletePlan(planId: string): void;
   clearLocalCache(): void;
+  resetAfterAccountDeletion(): void;
 }
 
 const DEFAULT_VIEWPORT: MapViewportState = {
@@ -526,6 +527,42 @@ export const useAppStore = create<AppState>((set, get) => {
         } catch {
           /* cache clear already completed in memory */
         }
+      });
+    },
+    resetAfterAccountDeletion() {
+      try {
+        Taro.removeStorageSync(STORAGE_KEY);
+      } catch {
+        // The server receipt remains authoritative; in-memory state is still reset.
+      }
+      set({
+        mode: "DAY",
+        priorMode: "DAY",
+        preferences: { ...DEFAULT_USER_PREFERENCES },
+        preferencesRevision: 0,
+        preferencesDirty: false,
+        preferencesUpdatedAt: null,
+        viewport: { ...DEFAULT_VIEWPORT },
+        finderQuery: "",
+        observationContext: null,
+        analysisOverlay: "NONE",
+        committedFilters: cloneFilterState(EMPTY_FILTER_STATE),
+        draftFilters: cloneFilterState(EMPTY_FILTER_STATE),
+        filterSnapshot: cloneFilterState(EMPTY_FILTER_STATE),
+        selectedSpotId: null,
+        searchHistory: [],
+        favoriteIds: [],
+        plans: [],
+        filterSheetOpen: false,
+        locationState: "DEFAULT_REGION",
+        notifications: [],
+        sourceLift: {
+          owner: null,
+          phase: "IDLE",
+          variant: null,
+          origin: null,
+          finishOptions: { restoreMap: true, discardFilterDraft: true },
+        },
       });
     },
   };

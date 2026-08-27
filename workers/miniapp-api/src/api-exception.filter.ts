@@ -8,7 +8,7 @@ export function classifyExceptionMessage(message: string) {
     return { status: 404, code: "NOT_FOUND", retryable: false } as const;
   if (/conflict|revision|not_editable|already_resolved/u.test(message))
     return { status: 409, code: "CONFLICT", retryable: true } as const;
-  if (/admin_auth|permission|identity_scope|auth_(?:header_invalid|required|session)/u.test(message))
+  if (/admin_auth|admin_rbac|permission|identity_scope|auth_(?:header_invalid|required|session)/u.test(message))
     return { status: 403, code: "PERMISSION_DENIED", retryable: false } as const;
   if (/expired/u.test(message))
     return { status: 410, code: "STALE_REJECTED", retryable: false } as const;

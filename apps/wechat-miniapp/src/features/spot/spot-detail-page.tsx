@@ -9,6 +9,8 @@ import { CustomNav } from "@/components/custom-nav";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { NotificationRegion } from "@/components/notification";
 import { Provenance } from "@/components/provenance";
+import { FavoriteStar } from "@/components/selected-card-star";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
@@ -148,6 +150,7 @@ export function SpotDetailPage({
   const detail = overview.data?.data;
   const favorite = favoriteIds.includes(spotId as (typeof favoriteIds)[number]);
   const media = detail?.spot.media ?? [];
+  const heroMedia = media.find((item) => item.isSiteSpecific);
   const facilities =
     site.data?.data.facilities ?? detail?.spot.facilities ?? [];
   const accessAndSafety =
@@ -339,7 +342,23 @@ export function SpotDetailPage({
       data-route="spot-detail"
       data-spot-id={spotId}
     >
-      <CustomNav title="观星点详情" back />
+      <CustomNav
+        title={detail ? "" : "观星点详情"}
+        back
+        right={
+          detail ? (
+            <Button
+              compileMode
+              className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : ""}`}
+              data-od-id="spot-detail-favorite"
+              ariaLabel={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
+              onClick={() => void toggleFavorite(detail.spot.spotId)}
+            >
+              <FavoriteStar active={favorite} />
+            </Button>
+          ) : undefined
+        }
+      />
       <View className="page-inset">
         <NotificationRegion owner="spot-detail" />
       </View>
@@ -362,26 +381,28 @@ export function SpotDetailPage({
       ) : (
         <>
           <View className="spot-identity page-inset" data-od-id="spot-detail">
-            <View className="spot-identity__name-row">
+            {heroMedia ? (
+              <Image
+                className="spot-identity__media"
+                src={heroMedia.localPath}
+                mode="aspectFill"
+                aria-label={heroMedia.alt}
+              />
+            ) : null}
+            <View className="spot-identity__shade" aria-hidden="true" />
+            <View className="spot-identity__copy">
+              <Text className="spot-identity__eyebrow type-caption">
+                {detail.spot.region}
+              </Text>
               <Text className="type-page-title">{detail.spot.name}</Text>
-              <Button
-                compileMode
-                className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : ""}`}
-                data-od-id="spot-detail-favorite"
-                ariaLabel={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
-                onClick={() => void toggleFavorite(detail.spot.spotId)}
-              >
-                <Text aria-hidden="true">{favorite ? "★" : "☆"}</Text>
-              </Button>
+              <Text className="type-caption">{detail.spot.address}</Text>
+              <Text className="type-caption">
+                正式观星点 · {detail.spot.lightPollution.label} · 最近核验{" "}
+                {detail.spot.lastVerifiedAt?.slice(0, 10) ?? "暂无"}
+              </Text>
             </View>
-            <Text className="type-caption">
-              {detail.spot.region} · {detail.spot.address}
-            </Text>
-            <Text className="type-caption">
-              正式观星点 · {detail.spot.lightPollution.label} · 最近场地核验{" "}{
-                detail.spot.lastVerifiedAt?.slice(0, 10) ?? "暂无"
-              }
-            </Text>
+          </View>
+          <View className="spot-detail-lead page-inset">
             <View className="detail-route-row">
               <View className="detail-route-row__copy">
                 <Text className="type-data">{routeHeadline}</Text>
@@ -401,25 +422,55 @@ export function SpotDetailPage({
                 <Text>{routePending ? "正在准备…" : "去这里 →"}</Text>
               </Button>
             </View>
+            <View className="decision-card card spot-detail-lead__decision">
+              <View className="decision-card__top">
+                <Text className="decision-card__label">{detail.decision.label}</Text>
+                <DataStateBadge state={detail.decision.freshness} />
+              </View>
+              {detail.decision.skyOpportunity.primaryWindow ? (
+                <Text className="type-data">
+                  {formatObservationTime(
+                    detail.decision.skyOpportunity.primaryWindow.start,
+                    detail.spot.timezone,
+                  )}
+                  —
+                  {formatObservationTime(
+                    detail.decision.skyOpportunity.primaryWindow.end,
+                    detail.spot.timezone,
+                  )}
+                  （{detail.decision.skyOpportunity.primaryWindow.durationMinutes} 分钟）
+                </Text>
+              ) : (
+                <Text className="type-data">当前没有可核验的观测窗口</Text>
+              )}
+              {detail.decision.factors.slice(0, 1).map((factor) => (
+                <View
+                  className={`factor factor--${factor.severity.toLowerCase()}`}
+                  key={factor.code}
+                >
+                  <Text className="type-caption">{factor.detail}</Text>
+                </View>
+              ))}
+            </View>
             <Button
               className="night-entry focus-ring"
               data-od-id="spot-detail-night-entry"
-              aria-label={`查看${detail.spot.name}此处夜空`}
+              aria-label={`查看${detail.spot.name}今晚夜空`}
               onClick={openNight}
             >
-              <View className="night-entry__icon" aria-hidden="true" />
+              <SemanticIcon name="horizon" className="night-entry__icon" />
               <View className="night-entry__copy">
-                <Text className="type-label">查看此处夜空</Text>
+                <Text className="type-label">今晚夜空</Text>
                 <Text className="type-caption">
                   观测条件、天空方向与专业数据
                 </Text>
               </View>
-              <Text className="night-entry__time">
+              <View className="night-entry__time">
                 {formatObservationTime(
                   observationContext.selectedAtUtc,
                   observationContext.timezone,
-                )} {"→"}
-              </Text>
+                )} <SemanticIcon name="chevron-right" />
+              </View>
             </Button>
           </View>
           <View
@@ -446,7 +497,7 @@ export function SpotDetailPage({
               data-od-id="spot-detail-tab-indicator"
               aria-hidden="true"
               style={{
-                transform: `translateX(calc(${segmentIndex * 100}% + ${segmentIndex * 14}rpx))`,
+                transform: `translateX(${segmentIndex * 100}%)`,
               }}
             />
           </View>
@@ -467,46 +518,6 @@ export function SpotDetailPage({
                   role="tabpanel"
                   aria-labelledby="spot-segment-tab-overview"
                 >
-                  <View className="decision-card card">
-                    <View className="decision-card__top">
-                      <Text className="type-section">今晚结论</Text>
-                      <DataStateBadge state={detail.decision.freshness} />
-                    </View>
-                    <Text className="decision-card__label">
-                      {detail.decision.label}
-                    </Text>
-                    {detail.decision.skyOpportunity.primaryWindow ? (
-                      <Text className="type-data">
-                        最佳时段 {formatObservationTime(
-                          detail.decision.skyOpportunity.primaryWindow.start,
-                          detail.spot.timezone,
-                        )}
-                        —
-                        {formatObservationTime(
-                          detail.decision.skyOpportunity.primaryWindow.end,
-                          detail.spot.timezone,
-                        )}
-                        （{detail.decision.skyOpportunity.primaryWindow.durationMinutes}
-                        分钟）
-                      </Text>
-                    ) : (
-                      <Text className="type-data">
-                        最佳时段：暂无当前有效数据
-                      </Text>
-                    )}
-                    {detail.decision.factors.map((factor) => (
-                      <View
-                        className={`factor factor--${factor.severity.toLowerCase()}`}
-                        key={factor.code}
-                      >
-                        <Text className="type-label">
-                          {factor.severity === "BLOCKER" ? "! " : ""}
-                          {factor.label}
-                        </Text>
-                        <Text className="type-caption">{factor.detail}</Text>
-                      </View>
-                    ))}
-                  </View>
                   <View className="route-card card">
                     <View className="route-card__top">
                       <View>
@@ -622,7 +633,7 @@ export function SpotDetailPage({
                         {sources.length} 项独立来源 · 缺失项不会显示为 0
                       </Text>
                     </View>
-                    <Text aria-hidden="true">→</Text>
+                    <SemanticIcon name="chevron-right" />
                   </Button>
                   {overview.data.warnings.length ? (
                     <StatusPanel
@@ -817,7 +828,7 @@ export function SpotDetailPage({
                         上传道路、停车、开放、安全或地平遮挡等现场依据
                       </Text>
                     </View>
-                    <Text aria-hidden="true">→</Text>
+                    <SemanticIcon name="chevron-right" />
                   </Button>
                 </View>
               ) : null}

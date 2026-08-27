@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
+  type AccountDataExportData,
+  type AccountDeletionRequest,
   EMPTY_FILTER_STATE,
   FILTER_GROUPS,
   viewportRadiusKm,
@@ -246,6 +248,8 @@ function assertUserPreferences(
     value.capturePreference.length > 120 ||
     !["DAY", "NIGHT", "OBSERVATION"].includes(value.displayMode) ||
     typeof value.notificationEnabled !== "boolean" ||
+    typeof value.departureConditionReminder !== "boolean" ||
+    typeof value.contributionStatusReminder !== "boolean" ||
     typeof value.largeText !== "boolean" ||
     typeof value.reducedMotion !== "boolean"
   )
@@ -1667,6 +1671,63 @@ export class MiniappService {
     );
   }
 
+  async exportAccountData(userId: UserId) {
+    const [
+      preferences,
+      favoriteSpotIds,
+      plans,
+      profileLinks,
+      imports,
+      contributions,
+    ] = await Promise.all([
+      this.repository.getPreferences(userId),
+      this.repository.listFavoriteIds(userId),
+      this.repository.listPlans(userId),
+      this.repository.listProfileLinks(userId),
+      this.repository.listImportDrafts(userId),
+      this.repository.listContributions(userId),
+    ]);
+    const generatedAt = new Date().toISOString();
+    const data: AccountDataExportData = {
+      schemaVersion: "starward-account-data-export-v1",
+      generatedAt,
+      account: { userId },
+      preferences,
+      favoriteSpotIds,
+      plans,
+      profileLinks,
+      imports,
+      contributions,
+      excluded: [
+        "SESSION_CREDENTIALS",
+        "WECHAT_IDENTITY_DIGEST",
+        "INTERNAL_MEDIA_OBJECT_KEYS",
+        "RAW_MEDIA_BYTES",
+      ],
+    };
+    return envelope(data, "FRESH", [], [
+      "导出包含当前账户的结构化记录，不包含会话凭证、内部对象键或原始媒体字节。",
+    ]);
+  }
+
+  async deleteAccount(
+    userId: UserId,
+    input: AccountDeletionRequest,
+    idempotencyKey: string,
+  ) {
+    assertIdempotencyKey(idempotencyKey);
+    if (input.confirmation !== "DELETE_ACCOUNT")
+      throw new Error("account_deletion_confirmation_invalid");
+    return envelope(
+      await this.repository.deleteAccount(userId, idempotencyKey),
+      "FRESH",
+      [],
+      [
+        "微信身份映射和会话已撤销；去身份化审核、合并、发布与审计证据按完整性要求保留。",
+      ],
+    );
+  }
+
   async setFavorite(
     userId: UserId,
     spotId: string,
@@ -1713,6 +1774,7 @@ export class MiniappService {
       "revision" | "updatedAt" | "contextSnapshot"
     > & {
       expectedRevision: number | null;
+      observationContextId: ObservationContext["contextId"];
     },
     idempotencyKey: string,
   ) {
@@ -1730,21 +1792,33 @@ export class MiniappService {
       localTime: input.localTime,
       timezone: spot.timezone,
     });
+    const sourceContext = await this.observationContexts.get(
+      input.observationContextId,
+    );
+    const routeOriginContextId =
+      sourceContext.location.kind === "MAP_POINT"
+        ? sourceContext.contextId
+        : sourceContext.routeOrigin?.contextId ?? null;
     const context = await this.observationContexts.resolve({
       location: { kind: "FORMAL_SPOT", spotId: input.spotId },
+      routeOriginContextId,
       localDate: input.localDate,
       selectedAt,
       targetProfile: "DAILY",
     });
     if (context.location.kind !== "FORMAL_SPOT")
       throw new Error("formal_spot_context_required");
-    const { expectedRevision, ...planInput } = input;
+    const {
+      expectedRevision,
+      observationContextId: _observationContextId,
+      ...planInput
+    } = input;
     const plan = await this.repository.savePlan(
       userId,
       {
         ...planInput,
         contextSnapshot: {
-          schemaVersion: "observation-context-snapshot-v1",
+          schemaVersion: "observation-context-snapshot-v2",
           contextId: context.contextId,
           contextFingerprint: context.contextFingerprint,
           contextRevision: context.revision,
@@ -1753,6 +1827,13 @@ export class MiniappService {
           localDate: context.localDate,
           selectedAtUtc: context.selectedAtUtc,
           eventInstanceId: context.eventInstanceId,
+          routeOrigin: context.routeOrigin
+            ? {
+                displayName: context.routeOrigin.displayName,
+                wgs84: { ...context.routeOrigin.wgs84 },
+                source: context.routeOrigin.source,
+              }
+            : null,
           algorithmVersions: context.algorithmVersions,
           capturedAt: new Date().toISOString(),
         },

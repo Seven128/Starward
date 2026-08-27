@@ -1,0 +1,116 @@
+{
+  "core": {
+    "document": {
+      "scrollHeight": 2086,
+      "scrollWidth": 1425
+    },
+    "rects": {
+      "01-map-finder-day.png": {
+        "height": 844,
+        "width": 390,
+        "x": 308.3999938964844,
+        "y": 254
+      },
+      "02-spot-detail-dusk.png": {
+        "height": 844,
+        "width": 390,
+        "x": 726.4000244140625,
+        "y": 254
+      },
+      "03-spot-night-astronomy.png": {
+        "height": 844,
+        "width": 390,
+        "x": 308.3999938964844,
+        "y": 1178
+      },
+      "04-spot-night-orientation.png": {
+        "height": 844,
+        "width": 390,
+        "x": 726.4000244140625,
+        "y": 1178
+      }
+    },
+    "viewport": {
+      "innerHeight": 1100,
+      "innerWidth": 1440
+    },
+    "file": "core-board-full.png",
+    "byteLength": 142700
+  },
+  "supporting": {
+    "document": {
+      "scrollHeight": 2248,
+      "scrollWidth": 1425
+    },
+    "rects": {
+      "05-my-home.png": {
+        "height": 844,
+        "width": 390,
+        "x": 45.79999923706055,
+        "y": 430.5249938964844
+      },
+      "06-plan-detail.png": {
+        "height": 844,
+        "width": 390,
+        "x": 517.4000244140625,
+        "y": 430.5249938964844
+      },
+      "07-settings.png": {
+        "height": 844,
+        "width": 390,
+        "x": 989,
+        "y": 430.5249938964844
+      },
+      "08-profile-import.png": {
+        "height": 844,
+        "width": 390,
+        "x": 45.79999923706055,
+        "y": 1332.0250244140625
+      }
+    },
+    "viewport": {
+      "innerHeight": 1100,
+      "innerWidth": 1440
+    },
+    "file": "supporting-board-full.png",
+    "byteLength": 190408
+  },
+  "contribution": {
+    "document": {
+      "scrollHeight": 2248,
+      "scrollWidth": 1425
+    },
+    "rects": {
+      "09-contribution-intake.png": {
+        "height": 844,
+        "width": 390,
+        "x": 45.79999923706055,
+        "y": 430.5249938964844
+      },
+      "10-contribution-form.png": {
+        "height": 844,
+        "width": 390,
+        "x": 517.4000244140625,
+        "y": 430.5249938964844
+      },
+      "11-contribution-upload-recovery.png": {
+        "height": 844,
+        "width": 390,
+        "x": 989,
+        "y": 430.5249938964844
+      },
+      "12-contribution-review-history.png": {
+        "height": 844,
+        "width": 390,
+        "x": 45.79999923706055,
+        "y": 1332.0250244140625
+      }
+    },
+    "viewport": {
+      "innerHeight": 1100,
+      "innerWidth": 1440
+    },
+    "file": "contribution-board-full.png",
+    "byteLength": 197607
+  }
+}

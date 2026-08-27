@@ -404,11 +404,26 @@ test("identity-bound data cannot leak between users", async () => {
         .defaultPlace,
       DEFAULT_USER_PREFERENCES.defaultPlace,
     );
-    await service.savePlan(
+    const planOrigin = await service.resolveObservationContext({
+      location: {
+        kind: "MAP_POINT",
+        displayName: "深圳地图中心",
+        wgs84: {
+          latitude: 22.5431,
+          longitude: 114.0579,
+          system: "WGS84",
+        },
+        source: "MAP_VIEWPORT",
+        timezoneHint: "Asia/Shanghai",
+      },
+      localDate: "2026-08-06",
+    });
+    const savedPlan = await service.savePlan(
       first.userId,
       {
         planId: "plan:first" as never,
         spotId,
+        observationContextId: planOrigin.data.contextId,
         localDate: "2026-08-06",
         localTime: "23:00",
         notes: "仅第一个用户可见",
@@ -416,8 +431,78 @@ test("identity-bound data cannot leak between users", async () => {
       },
       "plan:first:create:01",
     );
+    assert.equal(
+      savedPlan.data.contextSnapshot.schemaVersion,
+      "observation-context-snapshot-v2",
+    );
+    assert.equal(
+      savedPlan.data.contextSnapshot.schemaVersion ===
+        "observation-context-snapshot-v2"
+        ? savedPlan.data.contextSnapshot.routeOrigin?.displayName
+        : null,
+      "深圳地图中心",
+    );
     assert.equal((await service.getPlans(first.userId)).data.plans.length, 1);
     assert.equal((await service.getPlans(second.userId)).data.plans.length, 0);
+  } finally {
+    await service.onModuleDestroy();
+  }
+});
+
+test("account export is server-owned and deletion revokes identity state", async () => {
+  const service = testService();
+  try {
+    const account = await user(service, "account-data");
+    await service.setFavorite(
+      account.userId,
+      TEST_PUBLISHED_SPOT.spotId,
+      true,
+      "account-data:favorite:0001",
+    );
+    const preferences = await service.getPreferences(account.userId);
+    await service.savePreferences(
+      account.userId,
+      {
+        preferences: {
+          ...preferences.data.preferences,
+          defaultPlace: "河源",
+        },
+        expectedRevision: preferences.data.revision,
+      },
+      "account-data:preferences:0001",
+    );
+
+    const exported = await service.exportAccountData(account.userId);
+    assert.equal(exported.data.schemaVersion, "starward-account-data-export-v1");
+    assert.equal(exported.data.account.userId, account.userId);
+    assert.deepEqual(exported.data.favoriteSpotIds, [TEST_PUBLISHED_SPOT.spotId]);
+    assert.equal(exported.data.preferences.preferences.defaultPlace, "河源");
+    assert.deepEqual(exported.data.excluded, [
+      "SESSION_CREDENTIALS",
+      "WECHAT_IDENTITY_DIGEST",
+      "INTERNAL_MEDIA_OBJECT_KEYS",
+      "RAW_MEDIA_BYTES",
+    ]);
+
+    await assert.rejects(
+      service.deleteAccount(
+        account.userId,
+        { confirmation: "WRONG" as never },
+        "account-data:delete:invalid",
+      ),
+      /account_deletion_confirmation_invalid/u,
+    );
+    const deleted = await service.deleteAccount(
+      account.userId,
+      { confirmation: "DELETE_ACCOUNT" },
+      "account-data:delete:0001",
+    );
+    assert.equal(deleted.data.accountState, "DELETED");
+    assert.equal(deleted.data.sessionsRevoked, true);
+    await assert.rejects(
+      service.auth.requirePrincipal(`Bearer ${account.accessToken}`),
+      /auth_required/u,
+    );
   } finally {
     await service.onModuleDestroy();
   }

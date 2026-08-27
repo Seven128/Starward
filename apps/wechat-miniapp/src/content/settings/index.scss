@@ -12,7 +12,12 @@
   padding-bottom: 96rpx;
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 28rpx;
+}
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
 }
 .settings-card {
   padding: 24rpx;
@@ -21,10 +26,123 @@
   gap: 20rpx;
   box-shadow: none;
 }
-.settings-choice-grid {
+.settings-card--group {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.settings-card--group .setting-row {
+  min-height: 112rpx;
+  padding: 16rpx 24rpx;
+}
+.settings-card--group .setting-row + .setting-row {
+  border-top: 1rpx solid var(--border);
+}
+.settings-card--group .soft-button {
+  width: auto;
+  min-width: 128rpx;
+  flex: 0 0 auto;
+}
+.settings-state-pill {
+  flex: 0 0 auto;
+  padding: 8rpx 14rpx;
+  border: 1rpx solid var(--positive);
+  border-radius: 999rpx;
+  color: var(--positive);
+  background: var(--surface-subtle);
+  font-size: 22rpx;
+  font-weight: 700;
+}
+.settings-capability-note {
+  margin: 0 8rpx;
+}
+.settings-entry-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76rpx minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24rpx;
+  width: 100%;
+  min-height: 140rpx;
+  margin: 0;
+  padding: 20rpx 28rpx;
+  border: 0;
+  border-radius: 0;
+  color: var(--text-primary);
+  background: transparent;
+  font: inherit;
+  line-height: normal;
+  text-align: left;
+}
+.settings-entry-row::after {
+  border: 0;
+}
+.settings-entry-row + .settings-entry-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 28rpx;
+  left: 136rpx;
+  height: 1rpx;
+  background: var(--border);
+}
+.settings-entry-row[disabled] {
+  opacity: 0.62;
+}
+.settings-icon-well {
+  display: grid;
+  place-items: center;
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 26rpx;
+}
+.settings-icon-well--violet {
+  color: var(--accent-violet);
+  background: var(--icon-violet-soft);
+}
+.settings-icon-well--coral {
+  color: var(--danger);
+  background: var(--icon-coral-soft);
+}
+.settings-icon-well .semantic-icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+.settings-entry-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.settings-entry-copy .type-caption {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-entry-meta {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 22rpx;
+  font-weight: 700;
+}
+.settings-entry-meta .semantic-icon {
+  width: 34rpx;
+  height: 34rpx;
+}
+.settings-card--actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12rpx;
+}
+.settings-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+.form-group .settings-choice-grid,
+.settings-choice-grid--location {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .settings-choice-grid .chip,
 .facility-choice-grid .chip {
@@ -78,5 +196,8 @@
   .observation-setting .chip {
     width: 100%;
     align-self: stretch;
+  }
+  .settings-card--actions {
+    grid-template-columns: 1fr;
   }
 }

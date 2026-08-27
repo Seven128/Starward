@@ -1,13 +1,17 @@
 import Taro from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { SemanticAsset } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
-import { errorMessage, getUserLibrary } from "@/services/api-client";
+import {
+  errorMessage,
+  getContributions,
+  getUserLibrary,
+} from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import "./my-library-page.scss";
 
@@ -29,6 +33,32 @@ export function MyLibraryPage() {
     queryFn: (signal) => getUserLibrary(signal),
     staleTime: 30_000,
   });
+  const contributions = useResourceQuery({
+    queryKey: ["contributions"],
+    queryFn: (signal) => getContributions(signal),
+    staleTime: 15_000,
+  });
+
+  const tonightPlan = useMemo(
+    () =>
+      [...plans].sort((left, right) =>
+        `${left.localDate}T${left.localTime}`.localeCompare(
+          `${right.localDate}T${right.localTime}`,
+        ),
+      )[0] ?? null,
+    [plans],
+  );
+  const contributionItems = contributions.data?.data.submissions ?? [];
+  const pendingContributionCount = contributionItems.filter(
+    (item) =>
+      item.submissionState === "PENDING_REVIEW" ||
+      item.submissionState === "CHANGES_REQUESTED" ||
+      item.state === "PENDING_REVIEW" ||
+      item.state === "CHANGES_REQUESTED",
+  ).length;
+  const draftContributionCount = contributionItems.filter(
+    (item) => item.submissionState === "DRAFT" || item.state === "DRAFT",
+  ).length;
 
   useEffect(() => {
     if (!library.data) return;
@@ -109,64 +139,122 @@ export function MyLibraryPage() {
               detail="正在回读计划与偏好；账户摘要保持可用。"
             />
           ) : null}
-          <View
-            className="account-entry-list"
-            data-od-id="my-grouped-entry-list"
-            role="group"
-            aria-label="账户与偏好"
-          >
-            <Text className="type-label account-entry-list__label">
-              账户与偏好
-            </Text>
+          <View className="my-section" data-od-id="my-tonight-plan">
+            <View className="my-section__heading">
+              <Text className="type-section">今晚</Text>
+              <Text className="type-caption">
+                {tonightPlan?.localDate ?? "还没有已保存计划"}
+              </Text>
+            </View>
             <Button
-              className="account-row account-row--plan focus-ring"
-              data-od-id="my-plan-entry"
-              aria-label={`打开观星计划${plans.length ? `，已有 ${plans.length} 个计划` : ""}`}
+              className="tonight-plan card focus-ring"
+              aria-label={
+                tonightPlan
+                  ? `打开今晚计划，${tonightPlan.localDate} ${tonightPlan.localTime}`
+                  : "创建今晚观测计划"
+              }
               onClick={openPlan}
             >
-              <View className="account-row__copy">
-                <Text className="type-section">观星计划</Text>
-                <Text className="type-caption">
-                  {plans.length
-                    ? `${plans.length} 个计划 · 正式点位与当地时间`
-                    : "新建、编辑或恢复正式点位观测计划"}
-                </Text>
-              </View>
-              <Text className="account-row__chevron" aria-hidden="true">
-                ›
+              <Text className="tonight-plan__eyebrow">
+                {tonightPlan
+                  ? `${tonightPlan.localTime} · 正式点位计划`
+                  : "还没有今晚计划"}
               </Text>
-            </Button>
-            <Button
-              className="account-row account-row--contribution focus-ring"
-              data-od-id="my-contribution-entry"
-              aria-label="打开现场反馈与纠错"
-              onClick={openContribution}
-            >
-              <View className="account-row__copy">
-                <Text className="type-section">现场反馈与纠错</Text>
-                <Text className="type-caption">
-                  提交地点建议，或查看草稿与人工审核状态
-                </Text>
-              </View>
-              <Text className="account-row__chevron" aria-hidden="true">
-                ›
+              <Text className="tonight-plan__title">
+                {tonightPlan ? "打开今晚计划" : "创建一个观测计划"}
               </Text>
-            </Button>
-            <Button
-              className="account-row account-row--settings focus-ring"
-              aria-label="打开设置"
-              onClick={openSettings}
-            >
-              <View className="account-row__copy">
-                <Text className="type-section">设置</Text>
-                <Text className="type-caption">
-                  地点、显示模式、隐私、缓存与账户能力
-                </Text>
-              </View>
-              <Text className="account-row__chevron" aria-hidden="true">
-                ›
+              <Text className="type-caption">
+                出发前复核路线、准备事项和最新动态条件；地点事实仍由地图与详情负责。
               </Text>
+              <View className="tonight-plan__facts" aria-hidden="true">
+                <View>
+                  <Text className="type-data">
+                    {tonightPlan?.localDate ?? "—"}
+                  </Text>
+                  <Text className="type-caption">观测日期</Text>
+                </View>
+                <View>
+                  <Text className="type-data">
+                    {tonightPlan ? `rev.${tonightPlan.revision}` : "—"}
+                  </Text>
+                  <Text className="type-caption">计划版本</Text>
+                </View>
+              </View>
             </Button>
+          </View>
+
+          <View
+            className="my-section"
+            data-od-id="my-routine-entries"
+            role="group"
+            aria-label="日常入口"
+          >
+            <View className="my-section__heading">
+              <Text className="type-section">日常</Text>
+            </View>
+            <View className="routine-entry-list">
+              <Button
+                className="routine-entry routine-entry--plan focus-ring"
+                data-od-id="my-plan-entry"
+                aria-label="打开观星计划"
+                onClick={openPlan}
+              >
+                <View className="routine-entry__icon" aria-hidden="true">
+                  ◷
+                </View>
+                <View className="account-row__copy">
+                  <Text className="type-section">观星计划</Text>
+                  <Text className="type-caption">
+                    {plans.length
+                      ? `${plans.length} 个已保存计划 · 可恢复检查项`
+                      : "新建、编辑或恢复正式点位观测计划"}
+                  </Text>
+                </View>
+                <Text className="account-row__chevron" aria-hidden="true">
+                  ›
+                </Text>
+              </Button>
+              <Button
+                className="routine-entry routine-entry--contribution focus-ring"
+                data-od-id="my-contribution-entry"
+                aria-label="打开现场反馈与纠错"
+                onClick={openContribution}
+              >
+                <View className="routine-entry__icon routine-entry__icon--moon" aria-hidden="true">
+                  ◌
+                </View>
+                <View className="account-row__copy">
+                  <Text className="type-section">现场反馈与纠错</Text>
+                  <Text className="type-caption">
+                    {contributions.isError
+                      ? "查看草稿与审核状态"
+                      : `${draftContributionCount ? `${draftContributionCount} 条草稿` : "无草稿"} · ${pendingContributionCount ? `${pendingContributionCount} 条待处理` : "暂无待处理"}`}
+                  </Text>
+                </View>
+                <Text className="account-row__chevron" aria-hidden="true">
+                  ›
+                </Text>
+              </Button>
+              <Button
+                className="routine-entry routine-entry--settings focus-ring"
+                data-od-id="my-settings-entry"
+                aria-label="打开设置"
+                onClick={openSettings}
+              >
+                <View className="routine-entry__icon" aria-hidden="true">
+                  ⚙
+                </View>
+                <View className="account-row__copy">
+                  <Text className="type-section">设置</Text>
+                  <Text className="type-caption">
+                    显示模式、权限、提醒与本地数据动作
+                  </Text>
+                </View>
+                <Text className="account-row__chevron" aria-hidden="true">
+                  ›
+                </Text>
+              </Button>
+            </View>
           </View>
           {library.isError ? (
             <StatusPanel

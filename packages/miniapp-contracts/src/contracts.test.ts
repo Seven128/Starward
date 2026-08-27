@@ -112,6 +112,17 @@ test("user preference snapshots remain independent", () => {
   );
 });
 
+test("legacy preference payloads receive current reminder intent defaults", () => {
+  const legacy = {
+    ...DEFAULT_USER_PREFERENCES,
+  } as Record<string, unknown>;
+  delete legacy.departureConditionReminder;
+  delete legacy.contributionStatusReminder;
+  const snapshot = cloneUserPreferences(legacy as typeof DEFAULT_USER_PREFERENCES);
+  assert.equal(snapshot.departureConditionReminder, false);
+  assert.equal(snapshot.contributionStatusReminder, false);
+});
+
 test("test fixtures fail closed before scoring", () => {
   const detail = buildTestSpotDetail(TEST_SPOTS[0]!.spotId)!;
   assert.equal(detail.decision.recommendation, "DATA_INSUFFICIENT");

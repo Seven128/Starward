@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type {
   ContributionId,
   ContributionMediaUpload,
@@ -21,6 +22,15 @@ export class InMemoryContributionStore {
     this.#records.clear();
     this.#objects.clear();
     this.#idempotency.clear();
+  }
+
+  deleteUser(userId: UserId) {
+    const records = this.#records.get(userId);
+    for (const submission of records?.values() ?? [])
+      for (const upload of submission.media) this.#objects.delete(upload.uploadId);
+    this.#records.delete(userId);
+    for (const key of this.#idempotency.keys())
+      if (key.startsWith(`${userId}|`)) this.#idempotency.delete(key);
   }
 
   ensureUser(userId: UserId) {
@@ -154,6 +164,21 @@ export class InMemoryContributionStore {
     const next = {
       ...structuredClone(current),
       state: "PENDING_REVIEW" as const,
+      submissionState: "PENDING_REVIEW" as const,
+      mergeState: "NOT_STARTED" as const,
+      publicationImpact: "NONE" as const,
+      statusHistory: [
+        ...current.statusHistory,
+        {
+          eventId: `contribution-event:${randomUUID()}`,
+          axis: "SUBMISSION" as const,
+          from: current.submissionState,
+          to: "PENDING_REVIEW",
+          reason: null,
+          actorType: "USER" as const,
+          occurredAt: now,
+        },
+      ],
       media: current.media.map((item) => ({
         ...structuredClone(item),
         state: "ATTACHED" as const,

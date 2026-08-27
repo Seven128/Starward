@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type {
+  AccountDeletionReceipt,
   ContributionId,
   ContributionMediaUpload,
   ContributionSubmission,
@@ -119,6 +120,38 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     return session && Date.parse(session.expiresAt) > Date.now()
       ? session.userId
       : null;
+  }
+
+  async deleteAccount(userId: UserId, _idempotencyKey: string) {
+    const deletedAt = new Date().toISOString();
+    this.#library.deleteUser(userId);
+    this.#contributions.deleteUser(userId);
+    this.#users.delete(userId);
+    for (const [identity, value] of this.#wechatUsers)
+      if (value === userId) this.#wechatUsers.delete(identity);
+    for (const [token, session] of this.#sessions)
+      if (session.userId === userId) this.#sessions.delete(token);
+    return {
+      schemaVersion: "starward-account-deletion-receipt-v1",
+      userId,
+      accountState: "DELETED",
+      deletedAt,
+      sessionsRevoked: true,
+      externalIdentityUnlinked: true,
+      mediaCleanupState: "NOT_REQUIRED",
+      mutableDataDeleted: [
+        "preferences",
+        "favorites",
+        "plans",
+        "profile-links",
+        "imports",
+        "media",
+      ],
+      retainedDeidentifiedEvidence: [
+        "moderation-history",
+        "merge-publication-audit",
+      ],
+    } satisfies AccountDeletionReceipt;
   }
 
   async getPreferences(userId: UserId) {

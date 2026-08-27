@@ -31,6 +31,12 @@ const backupPath = path.join(
   "miniapp-backups",
   `${runId}.dump`,
 );
+const mediaStorageRoot = path.join(
+  root,
+  "tmp",
+  "miniapp-infrastructure-media",
+  runId,
+);
 const adminUrl =
   "postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/starward_miniapp";
 const databaseUrl = `postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/${databaseName}`;
@@ -190,6 +196,8 @@ try {
         MINIAPP_CACHE_PREFIX: cachePrefix,
         MINIAPP_QUEUE_NAME: queueName,
         MINIAPP_INTEGRATION_RUN_ID: runId,
+        MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM",
+        MINIAPP_MEDIA_STORAGE_ROOT: mediaStorageRoot,
       },
     },
   );
@@ -227,6 +235,8 @@ try {
         MINIAPP_API_PORT: String(apiPort),
         MINIAPP_AUTH_MODE: "LOCAL_TEST",
         MINIAPP_RELEASE_PROFILE: "LOCAL",
+        MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM",
+        MINIAPP_MEDIA_STORAGE_ROOT: mediaStorageRoot,
         MINIAPP_SESSION_SECRET:
           "infrastructure-check-session-secret-current",
       },
@@ -349,17 +359,71 @@ try {
     if (!statusRoundtripSpot)
       throw new Error("admin_status_roundtrip_spot_missing");
     const spotId = statusRoundtripSpot.spot_id;
-    for (const action of ["suspend", "publish"]) {
-      const response = await fetch(
-        `${base}/v2/admin/spots/${encodeURIComponent(spotId)}/${action}`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ reason: `infrastructure ${action} check` }),
-        },
+    const currentRevision = Number(statusRoundtripSpot.version);
+    if (!Number.isInteger(currentRevision) || currentRevision < 1)
+      throw new Error("admin_status_roundtrip_revision_invalid");
+    const lifecycleHeaders = (operation) => ({
+      ...headers,
+      "idempotency-key": `infrastructure-${operation}-${runId}`,
+    });
+    const suspendResponse = await fetch(
+      `${base}/v2/admin/spots/${encodeURIComponent(spotId)}/suspend`,
+      {
+        method: "POST",
+        headers: lifecycleHeaders("suspend"),
+        body: JSON.stringify({
+          reason: "infrastructure suspend check",
+          expectedRevision: currentRevision,
+        }),
+      },
+    );
+    if (!suspendResponse.ok)
+      throw new Error(
+        `admin_suspend_failed:${suspendResponse.status}:${await suspendResponse.text()}`,
       );
-      if (!response.ok) throw new Error(`admin_${action}_failed:${response.status}`);
-    }
+    const suspendedDashboard = await (
+      await fetch(`${base}/v2/admin/dashboard`, { headers })
+    ).json();
+    const suspendedSpot = suspendedDashboard.data.spots.find(
+      (spot) => spot.spot_id === spotId,
+    );
+    if (!suspendedSpot || suspendedSpot.status !== "TEMPORARILY_CLOSED")
+      throw new Error("admin_suspend_readback_failed");
+    const assessmentResponse = await fetch(
+      `${base}/v2/admin/spots/${encodeURIComponent(spotId)}/publication-assessments`,
+      {
+        method: "POST",
+        headers: lifecycleHeaders("assessment"),
+        body: JSON.stringify({
+          reason: "infrastructure republish assessment check",
+          expectedRevision: suspendedSpot.version,
+        }),
+      },
+    );
+    const assessmentEnvelope = await assessmentResponse.json();
+    if (!assessmentResponse.ok)
+      throw new Error(
+        `admin_assessment_failed:${assessmentResponse.status}:${JSON.stringify(assessmentEnvelope)}`,
+      );
+    const assessmentDigest =
+      assessmentEnvelope.data?.assessmentDigest ??
+      assessmentEnvelope.data?.readback?.assessmentDigest ??
+      assessmentEnvelope.data?.result?.assessmentDigest;
+    if (!assessmentDigest) throw new Error("admin_assessment_digest_missing");
+    const publishResponse = await fetch(
+      `${base}/v2/admin/spots/${encodeURIComponent(spotId)}/publish`,
+      {
+        method: "POST",
+        headers: lifecycleHeaders("publish"),
+        body: JSON.stringify({
+          reason: "infrastructure publish check",
+          expectedRevision: suspendedSpot.version,
+          assessmentDigest,
+        }),
+      },
+    );
+    if (!publishResponse.ok)
+      throw new Error(`admin_publish_failed:${publishResponse.status}`);
     const auditsResponse = await fetch(`${base}/v2/admin/audit-logs`, {
       headers,
     });
@@ -408,6 +472,7 @@ try {
   await admin.end();
   await rm(backupPath, { force: true });
   await rm(`${backupPath}.manifest.json`, { force: true });
+  await rm(mediaStorageRoot, { recursive: true, force: true });
 }
 
 const result = {

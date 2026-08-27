@@ -14,19 +14,38 @@ import {
   localToday,
   safeParam,
 } from "./contribution-model";
+import {
+  contributionNeedsRecovery,
+  countPendingContributions,
+  currentContributionMedia,
+  filterContributionHistory,
+  findMatchingContributionDraft,
+  initialContributionSelection,
+  previousContributionPhase,
+} from "./contribution-form-derived";
+
+export type ContributionPhase = "TYPE" | "FORM" | "UPLOAD" | "HISTORY";
+export type ContributionHistoryFilter =
+  | "ALL"
+  | "PENDING"
+  | "CHANGES_REQUESTED";
 
 export function useContributionForm() {
   const router = useRouter();
-  const routeSpotId = safeParam(router.params.spotId);
-  const routeSpotName = safeParam(router.params.spotName);
-  const hasFormalSpot = routeSpotId.startsWith("spot:");
+  const initialSpotId = safeParam(router.params.spotId);
+  const initialSpotName = safeParam(router.params.spotName);
+  const [boundSpotId, setBoundSpotId] = useState(initialSpotId);
+  const [boundSpotName, setBoundSpotName] = useState(initialSpotName);
+  const hasFormalSpot = boundSpotId.startsWith("spot:");
+  const initialSelection = initialContributionSelection(hasFormalSpot);
   const notify = useAppStore((state) => state.notify);
   const [draft, setDraft] = useState<ContributionSubmission | null>(null);
-  const [kind, setKind] = useState<ContributionKind>(
-    hasFormalSpot ? "FIELD_REPORT" : "NEW_SPOT_PROPOSAL",
-  );
+  const [phase, setPhase] = useState<ContributionPhase>("TYPE");
+  const [historyFilter, setHistoryFilter] =
+    useState<ContributionHistoryFilter>("ALL");
+  const [kind, setKind] = useState<ContributionKind>(initialSelection.kind);
   const [topics, setTopics] = useState<ContributionTopic[]>(
-    hasFormalSpot ? ["NIGHT_SAFETY"] : ["OTHER"],
+    initialSelection.topics,
   );
   const [date, setDate] = useState(localToday());
   const [time, setTime] = useState(localTime());
@@ -54,13 +73,13 @@ export function useContributionForm() {
   const submissions = history.data?.data.submissions ?? [];
   const matchingDraft = useMemo(
     () =>
-      submissions.find(
-        (item) =>
-          item.state === "DRAFT" &&
-          item.spotId === (hasFormalSpot ? routeSpotId : null) &&
-          item.kind === kind,
-      ) ?? null,
-    [hasFormalSpot, kind, routeSpotId, submissions],
+      findMatchingContributionDraft(
+        submissions,
+        hasFormalSpot,
+        boundSpotId,
+        kind,
+      ),
+    [boundSpotId, hasFormalSpot, kind, submissions],
   );
 
   const announce = (
@@ -82,7 +101,7 @@ export function useContributionForm() {
     buildDraftInput(
       {
         kind,
-        routeSpotId,
+        routeSpotId: boundSpotId,
         hasFormalSpot,
         candidateName,
         candidateRegion,
@@ -98,8 +117,13 @@ export function useContributionForm() {
       announce,
     );
 
-  const applyDraft = (submission: ContributionSubmission) => {
+  const applyDraft = (
+    submission: ContributionSubmission,
+    nextPhase: ContributionPhase = "FORM",
+  ) => {
     setDraft(submission);
+    setBoundSpotId(submission.spotId ?? "");
+    setBoundSpotName(submission.spotNameSnapshot ?? "");
     setKind(submission.kind);
     setTopics([...submission.topics]);
     setDetail(submission.detail);
@@ -130,6 +154,7 @@ export function useContributionForm() {
       setLatitude(String(submission.candidateLocation.wgs84.latitude));
       setLongitude(String(submission.candidateLocation.wgs84.longitude));
     }
+    setPhase(nextPhase);
   };
 
   const selectKind = (nextKind: ContributionKind) => {
@@ -143,11 +168,23 @@ export function useContributionForm() {
         : [...current, topic],
     );
 
+  const currentMedia = currentContributionMedia(draft, matchingDraft);
+  const visibleSubmissions = filterContributionHistory(
+    submissions,
+    historyFilter,
+  );
+  const goToForm = () => setPhase("FORM");
+  const goToUpload = () => setPhase("UPLOAD");
+  const goToHistory = () => setPhase("HISTORY");
+  const goBackPhase = () => setPhase(previousContributionPhase);
+
   return {
-    routeSpotId,
-    routeSpotName,
+    routeSpotId: boundSpotId,
+    routeSpotName: boundSpotName || initialSpotName,
     hasFormalSpot,
     draft,
+    phase,
+    historyFilter,
     kind,
     topics,
     date,
@@ -165,9 +202,12 @@ export function useContributionForm() {
     history,
     capabilities,
     submissions,
+    visibleSubmissions,
     matchingDraft,
-    pendingCount: submissions.filter((item) => item.state === "PENDING_REVIEW").length,
+    pendingCount: countPendingContributions(submissions),
     mediaEnabled: capabilities.data?.data.mediaUpload.enabled ?? false,
+    currentMedia,
+    mediaNeedsRecovery: contributionNeedsRecovery(draft, matchingDraft),
     announce,
     formInput,
     applyDraft,
@@ -185,6 +225,12 @@ export function useContributionForm() {
     setSaving,
     setUploading,
     setSubmitting,
+    setPhase,
+    setHistoryFilter,
+    goToForm,
+    goToUpload,
+    goToHistory,
+    goBackPhase,
   };
 }
 

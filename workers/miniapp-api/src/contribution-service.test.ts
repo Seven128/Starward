@@ -161,3 +161,39 @@ test("media cannot be uploaded before rights confirmation", async () => {
     await service.onModuleDestroy();
   }
 });
+
+test("declared MIME cannot bypass server-side magic and pixel validation", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "magic");
+    const created = await service.createContributionDraft(
+      userId,
+      reportInput(true),
+      "contribution:create:magic",
+    );
+    const jpegSignature = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
+    const session = await service.createContributionUpload(
+      userId,
+      created.data.submissionId,
+      {
+        originalName: "现场.png",
+        mimeType: "image/png",
+        byteSize: jpegSignature.length,
+        expectedRevision: created.data.revision,
+      },
+      "contribution:upload:magic",
+    );
+    await assert.rejects(
+      service.completeContributionUpload(
+        userId,
+        created.data.submissionId,
+        session.data.media[0]!.uploadId,
+        { dataBase64: jpegSignature.toString("base64") },
+        "contribution:upload:magic-complete",
+      ),
+      /contribution_media_(?:signature|png|dimensions)/u,
+    );
+  } finally {
+    await service.onModuleDestroy();
+  }
+});

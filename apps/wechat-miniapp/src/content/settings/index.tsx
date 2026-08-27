@@ -2,6 +2,7 @@ import Taro from "@tarojs/taro";
 import {
   Button,
   Input,
+  Label,
   ScrollView,
   Slider,
   Switch,
@@ -9,12 +10,19 @@ import {
   View,
 } from "@tarojs/components";
 import type { DisplayMode, FacilityType } from "@starward/miniapp-contracts";
+import { useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import { useThemeClass } from "@/hooks/use-theme";
+import {
+  deleteAccount as deleteAccountThroughApi,
+  errorMessage,
+  exportAccountData,
+} from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import "./index.scss";
 
@@ -34,6 +42,18 @@ const FACILITY_PREFERENCES: ReadonlyArray<{
   { key: "SIGNAL", label: "信号" },
 ];
 
+function writeJsonFile(filePath: string, data: string) {
+  return new Promise<void>((resolve, reject) => {
+    Taro.getFileSystemManager().writeFile({
+      filePath,
+      data,
+      encoding: "utf8",
+      success: () => resolve(),
+      fail: (result) => reject(new Error(result.errMsg)),
+    });
+  });
+}
+
 export default function SettingsPage() {
   const themeClass = useThemeClass();
   const preferences = useAppStore((state) => state.preferences);
@@ -42,7 +62,11 @@ export default function SettingsPage() {
   const enterObservation = useAppStore((state) => state.enterObservation);
   const exitObservation = useAppStore((state) => state.exitObservation);
   const clearLocalCache = useAppStore((state) => state.clearLocalCache);
+  const resetAfterAccountDeletion = useAppStore(
+    (state) => state.resetAfterAccountDeletion,
+  );
   const notify = useAppStore((state) => state.notify);
+  const [dataAction, setDataAction] = useState<"EXPORT" | "DELETE" | null>(null);
   const {
     updatePreference,
     syncNow,
@@ -89,6 +113,91 @@ export default function SettingsPage() {
     });
   };
 
+  const downloadAccountData = async () => {
+    if (dataAction) return;
+    setDataAction("EXPORT");
+    let filePath: string | null = null;
+    try {
+      const response = await exportAccountData();
+      const root = Taro.env.USER_DATA_PATH;
+      if (!root) throw new Error("user_data_path_unavailable");
+      const fileName = `starward-account-${response.data.generatedAt
+        .replace(/[:.]/gu, "-")}.json`;
+      filePath = `${root}/${fileName}`;
+      await writeJsonFile(filePath, JSON.stringify(response.data, null, 2));
+      await Taro.shareFileMessage({ filePath, fileName });
+      notify({
+        owner: "settings",
+        placement: "floating",
+        tone: "success",
+        title: "账户数据已生成",
+        body: "已通过微信文件分享交付当前服务端数据快照。",
+        dismissible: true,
+        dedupeKey: "settings-account-exported",
+      });
+    } catch (error) {
+      notify({
+        owner: "settings",
+        placement: "inline",
+        tone: filePath ? "warning" : "error",
+        title: filePath ? "文件已生成，尚未分享" : "账户数据导出失败",
+        body: filePath
+          ? "微信文件分享未完成；可再次点击下载并重试。"
+          : `${errorMessage(error)}；没有用本地缓存拼接替代导出。`,
+        dismissible: true,
+        dedupeKey: "settings-account-export-failed",
+      });
+    } finally {
+      setDataAction(null);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (dataAction) return;
+    const first = await Taro.showModal({
+      title: "删除账户？",
+      content:
+        "将撤销微信身份关联和全部会话，并删除偏好、收藏、计划、主页链接、导入草稿与投稿媒体。去身份化审核、合并、发布和审计证据会按完整性要求保留。",
+      confirmText: "继续",
+      confirmColor: "#B53A3A",
+    });
+    if (!first.confirm) return;
+    const final = await Taro.showModal({
+      title: "最后确认",
+      content: "此操作不可撤销。删除后再次使用会创建一个全新账户。",
+      confirmText: "删除账户",
+      confirmColor: "#B53A3A",
+    });
+    if (!final.confirm) return;
+    setDataAction("DELETE");
+    try {
+      const response = await deleteAccountThroughApi();
+      await Taro.showModal({
+        title: "账户已删除",
+        content:
+          response.data.mediaCleanupState === "QUEUED"
+            ? "身份和会话已撤销；投稿媒体清理已进入可靠队列。"
+            : "身份、会话和可删除账户数据已移除。",
+        showCancel: false,
+        confirmText: "完成",
+      });
+      resetAfterAccountDeletion();
+      await Taro.reLaunch({ url: "/pages/auth/index?accountDeleted=1" });
+    } catch (error) {
+      notify({
+        owner: "settings",
+        placement: "inline",
+        tone: "error",
+        title: "账户未删除",
+        body: `${errorMessage(error)}；本机状态和登录会话保持不变，可重试。`,
+        dismissible: true,
+        dedupeKey: "settings-account-delete-failed",
+      });
+    } finally {
+      setDataAction(null);
+    }
+  };
+
   return (
     <View
       className={`${themeClass} settings-page`}
@@ -97,6 +206,7 @@ export default function SettingsPage() {
     >
       <CustomNav
         title="设置"
+        subtitle="显示、权限与数据"
         back
         backOdId="my-settings-back-action"
         backFallbackTab="/pages/my/index"
@@ -134,46 +244,214 @@ export default function SettingsPage() {
           ) : null}
 
           <View
-            className="settings-card card"
+            className="settings-section"
             data-od-id="display-mode-switcher"
           >
             <Text className="type-section">显示模式</Text>
-            <View className="settings-choice-grid">
-              {DISPLAY_MODES.map((item) => (
+            <View className="settings-card card">
+              <View className="settings-choice-grid">
+                {DISPLAY_MODES.map((item) => (
+                  <Button
+                    key={item}
+                    className={`chip focus-ring${mode === item ? " chip--selected" : ""}`}
+                    aria-pressed={mode === item}
+                    onClick={() => chooseDisplayMode(item)}
+                  >
+                    <Text>{DISPLAY_MODE_LABEL[item]}</Text>
+                  </Button>
+                ))}
                 <Button
-                  key={item}
-                  className={`chip focus-ring${mode === item ? " chip--selected" : ""}`}
-                  aria-pressed={mode === item}
-                  onClick={() => chooseDisplayMode(item)}
+                  className={`chip observation-mode-entry focus-ring${mode === "OBSERVATION" ? " chip--selected" : ""}`}
+                  data-od-id="observation-mode-entry"
+                  aria-pressed={mode === "OBSERVATION"}
+                  aria-label={
+                    mode === "OBSERVATION" ? "退出观测红模式" : "进入观测红模式"
+                  }
+                  onClick={toggleObservation}
                 >
-                  <Text>{DISPLAY_MODE_LABEL[item]}</Text>
+                  <Text>{mode === "OBSERVATION" ? "退出红光" : "观测红光"}</Text>
                 </Button>
-              ))}
-            </View>
-            <View
-              className="observation-setting"
-              data-od-id="observation-mode-entry"
-            >
-              <View>
-                <Text className="type-label">观测红模式</Text>
-                <Text className="type-caption">
-                  唯一显式入口；退出精确恢复此前日间/夜间与任务上下文
-                </Text>
               </View>
-              <Button
-                className={`chip focus-ring${mode === "OBSERVATION" ? " chip--selected" : ""}`}
-                aria-pressed={mode === "OBSERVATION"}
-                aria-label={
-                  mode === "OBSERVATION" ? "退出观测红模式" : "进入观测红模式"
-                }
-                onClick={toggleObservation}
+              <Text className="type-caption">
+                观测红光是封闭显示模式；退出后精确恢复此前日间/夜间与任务上下文。
+              </Text>
+            </View>
+          </View>
+
+          <View
+            id="settings-permissions"
+            className="settings-section"
+            data-od-id="settings-permissions"
+          >
+            <Text className="type-section">权限与隐私</Text>
+            <View className="settings-card settings-card--group card">
+              <Label
+                id="nearby-location-preference"
+                className="setting-row"
+                data-od-id="nearby-location-preference"
               >
-                <Text>{mode === "OBSERVATION" ? "退出观测" : "进入观测"}</Text>
+                <View>
+                  <Text className="type-label">附近地点</Text>
+                  <Text className="type-caption">
+                    仅在地图需要定位时询问，可随时改为手动位置
+                  </Text>
+                </View>
+                <Switch
+                  checked={preferences.locationPreference === "ASK_ONCE"}
+                  color="var(--positive)"
+                  aria-label="允许地图在需要时询问一次位置"
+                  onChange={(event) =>
+                    updatePreference(
+                      "locationPreference",
+                      event.detail.value ? "ASK_ONCE" : "MANUAL_ONLY",
+                    )
+                  }
+                />
+              </Label>
+              <View className="setting-row">
+                <View>
+                  <Text className="type-label">方位天空</Text>
+                  <Text className="type-caption">
+                    只在方位页前台读取方向，不上传传感器流
+                  </Text>
+                </View>
+                <SoftButton
+                  label="查看方位与定位权限说明"
+                  onClick={() => Taro.navigateTo({ url: "/pages/auth/index" })}
+                >
+                  按页使用
+                </SoftButton>
+              </View>
+              <View className="setting-row">
+                <View>
+                  <Text className="type-label">精确位置投稿</Text>
+                  <Text className="type-caption">
+                    仅新增地点逐次确认，不与地图定位共用许可
+                  </Text>
+                </View>
+                <Text className="settings-state-pill">每次确认</Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            id="settings-reminders"
+            className="settings-section"
+            data-od-id="settings-reminders"
+          >
+            <Text className="type-section">提醒</Text>
+            <View className="settings-card settings-card--group card">
+              <Label
+                id="departure-condition-reminder"
+                className="setting-row"
+                data-od-id="departure-condition-reminder"
+              >
+                <View>
+                  <Text className="type-label">出发前条件复核</Text>
+                  <Text className="type-caption">
+                    保存提醒意愿；仅针对已创建的今晚计划
+                  </Text>
+                </View>
+                <Switch
+                  checked={preferences.departureConditionReminder}
+                  color="var(--positive)"
+                  aria-label="出发前条件复核提醒"
+                  onChange={(event) =>
+                    updatePreference(
+                      "departureConditionReminder",
+                      event.detail.value,
+                    )
+                  }
+                />
+              </Label>
+              <Label
+                id="contribution-status-reminder"
+                className="setting-row"
+                data-od-id="contribution-status-reminder"
+              >
+                <View>
+                  <Text className="type-label">投稿状态变化</Text>
+                  <Text className="type-caption">
+                    保存退回补充、接收与拒绝的提醒意愿
+                  </Text>
+                </View>
+                <Switch
+                  checked={preferences.contributionStatusReminder}
+                  color="var(--positive)"
+                  aria-label="投稿状态变化提醒"
+                  onChange={(event) =>
+                    updatePreference(
+                      "contributionStatusReminder",
+                      event.detail.value,
+                    )
+                  }
+                />
+              </Label>
+            </View>
+            <Text className="type-caption settings-capability-note">
+              保存意愿不等于微信订阅成功；平台能力接入后仍以授权回执为准。
+            </Text>
+          </View>
+
+          <View
+            id="settings-data-actions"
+            className="settings-section"
+            data-od-id="settings-data-actions"
+          >
+            <Text className="type-section">数据</Text>
+            <View className="settings-card settings-card--group card">
+              <Button
+                className="settings-entry-row focus-ring"
+                aria-label="下载我的数据；计划、投稿与账户设置"
+                disabled={dataAction !== null}
+                onClick={() => void downloadAccountData()}
+              >
+                <View className="settings-icon-well settings-icon-well--violet">
+                  <SemanticIcon name="download" />
+                </View>
+                <View className="settings-entry-copy">
+                  <Text className="type-label">下载我的数据</Text>
+                  <Text className="type-caption">计划、投稿与账户设置</Text>
+                </View>
+                <View className="settings-entry-meta">
+                  {dataAction === "EXPORT" ? (
+                    <Text>生成中…</Text>
+                  ) : (
+                    <SemanticIcon name="chevron-right" />
+                  )}
+                </View>
+              </Button>
+              <Button
+                className="settings-entry-row focus-ring"
+                aria-label="删除账户；先说明影响，再进行身份确认"
+                disabled={dataAction !== null}
+                onClick={() => void deleteAccount()}
+              >
+                <View className="settings-icon-well settings-icon-well--coral">
+                  <SemanticIcon name="trash" />
+                </View>
+                <View className="settings-entry-copy">
+                  <Text className="type-label">删除账户</Text>
+                  <Text className="type-caption">
+                    先说明影响，再进行身份确认
+                  </Text>
+                </View>
+                <View className="settings-entry-meta">
+                  {dataAction === "DELETE" ? (
+                    <Text>删除中…</Text>
+                  ) : (
+                    <SemanticIcon name="chevron-right" />
+                  )}
+                </View>
               </Button>
             </View>
           </View>
 
-          <View className="settings-card card" data-od-id="settings-form">
+          <View
+            id="settings-form"
+            className="settings-card card"
+            data-od-id="settings-form"
+          >
             <Text className="type-section">选点偏好</Text>
             <View className="form-group">
               <Text className="type-label">默认城市或地点</Text>
@@ -291,56 +569,32 @@ export default function SettingsPage() {
                 }
               />
             </View>
-            <View className="setting-row">
-              <View>
-                <Text className="type-label">通知与订阅</Text>
-                <Text className="type-caption">能力未接入，不伪装已订阅</Text>
-              </View>
-              <Switch
-                checked={false}
-                disabled
-                aria-label="通知能力当前不可用"
-              />
-            </View>
           </View>
 
-          <View className="settings-card card">
-            <Text className="type-section">位置、隐私与数据</Text>
-            <View className="settings-choice-grid settings-choice-grid--location">
-              {(["ASK_ONCE", "MANUAL_ONLY"] as const).map((choice) => (
-                <Button
-                  key={choice}
-                  className={`chip focus-ring${preferences.locationPreference === choice ? " chip--selected" : ""}`}
-                  aria-pressed={preferences.locationPreference === choice}
-                  onClick={() => updatePreference("locationPreference", choice)}
-                >
-                  <Text>
-                    {choice === "ASK_ONCE" ? "需要时询问一次" : "仅手动位置"}
-                  </Text>
-                </Button>
-              ))}
+          <View className="settings-card settings-maintenance card">
+            <Text className="type-section">本机维护</Text>
+            <View className="settings-card--actions">
+              <SoftButton
+                label="立即同步当前账户偏好"
+                onClick={() => void syncNow()}
+              >
+                同步账户偏好
+              </SoftButton>
+              <SoftButton
+                label="清除本地地图、筛选、搜索和夜空缓存"
+                onClick={() =>
+                  void Taro.showModal({
+                    title: "清除本地数据？",
+                    content:
+                      "将清除本机地图视口、筛选、搜索记录与夜空临时缓存；收藏、计划、主页链接和导入草稿不会被删除。",
+                    confirmText: "清除",
+                    confirmColor: "#B53A3A",
+                  }).then((result) => result.confirm && clearLocalCache())
+                }
+              >
+                清除临时缓存
+              </SoftButton>
             </View>
-            <SoftButton
-              label="打开定位权限说明"
-              onClick={() => Taro.navigateTo({ url: "/pages/auth/index" })}
-            >
-              定位与手动回退
-            </SoftButton>
-            <SoftButton
-              variant="danger"
-              label="清除本地地图、筛选、搜索和夜空缓存"
-              onClick={() =>
-                void Taro.showModal({
-                  title: "清除本地数据？",
-                  content:
-                    "将清除本机地图视口、筛选、搜索记录与夜空临时缓存；收藏、计划、主页链接和导入草稿不会被删除。",
-                  confirmText: "清除",
-                  confirmColor: "#B53A3A",
-                }).then((result) => result.confirm && clearLocalCache())
-              }
-            >
-              清除临时缓存
-            </SoftButton>
           </View>
         </View>
       </ScrollView>

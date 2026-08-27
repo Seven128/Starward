@@ -27,6 +27,7 @@ import {
   type ObservationContextResolveRequest,
   type ObservationContextUpdateRequest,
   type ObservationPlan,
+  type PlanSaveRequest,
   type PlatformKind,
   type RouteEstimateRequest,
   type SpotRankingPreferences,
@@ -319,6 +320,26 @@ export class MiniappController {
     );
   }
 
+  @Get("me/data-export")
+  async accountDataExport(@Headers("authorization") authorization?: string) {
+    return this.service.exportAccountData(
+      await this.service.auth.requirePrincipal(authorization),
+    );
+  }
+
+  @Delete("me/account")
+  async deleteAccount(
+    @Body() body: { confirmation: "DELETE_ACCOUNT" },
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.deleteAccount(
+      await this.service.auth.requirePrincipal(authorization),
+      body,
+      idempotencyKey,
+    );
+  }
+
   @Get("me/observation-plans")
   async plans(@Headers("authorization") authorization?: string) {
     return this.service.getPlans(
@@ -330,12 +351,7 @@ export class MiniappController {
   async plan(
     @Param("planId") planId: string,
     @Body()
-    body: Omit<
-      ObservationPlan,
-      "planId" | "revision" | "updatedAt" | "contextSnapshot"
-    > & {
-      expectedRevision: number | null;
-    },
+    body: PlanSaveRequest,
     @Headers("authorization") authorization?: string,
     @Headers("idempotency-key") idempotencyKey = "",
   ) {

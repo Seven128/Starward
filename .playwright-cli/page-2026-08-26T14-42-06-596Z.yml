@@ -1,0 +1,35 @@
+- main [ref=f3e3]:
+  - generic [ref=f3e4]:
+    - complementary [ref=f3e5]:
+      - generic [ref=f3e13]:
+        - strong [ref=f3e14]: Starward Ops
+        - generic [ref=f3e15]: 数据与发布治理
+      - generic [ref=f3e16]:
+        - generic [ref=f3e17]: 投稿处理
+        - button "审核队列：按优先级、风险和新鲜度查看待处理 Case" [ref=f3e18] [cursor=pointer]:
+          - generic [ref=f3e23]: 审核队列
+        - button "Case：原始证据与审核决定分开记录" [ref=f3e24] [cursor=pointer]:
+          - generic [ref=f3e29]: Case
+        - button "媒体核验：只查看净化后的媒体派生物" [ref=f3e30] [cursor=pointer]:
+          - generic [ref=f3e36]: 媒体核验
+        - button "证据合并：预览与提交 canonical merge" [ref=f3e37] [cursor=pointer]:
+          - generic [ref=f3e44]: 证据合并
+      - generic [ref=f3e45]:
+        - generic [ref=f3e46]: 正式地点
+        - button "发布评估：服务端完整性门禁与发布动作" [ref=f3e47] [cursor=pointer]:
+          - generic [ref=f3e52]: 发布评估
+        - button "替换与退役：预览关系影响，再提交高影响转换" [ref=f3e53] [cursor=pointer]:
+          - generic [ref=f3e59]: 替换与退役
+        - button "审计：追加式、脱敏、可归因的操作历史" [ref=f3e60] [cursor=pointer]:
+          - generic [ref=f3e65]: 审计
+      - generic [ref=f3e66]:
+        - generic [ref=f3e67]: O
+        - generic [ref=f3e68]:
+          - strong [ref=f3e69]: admin:operations-acceptance
+          - generic [ref=f3e70]: owner.moderation · 已认证
+    - main [ref=f3e71]:
+      - alert [ref=f3e73]:
+        - generic [ref=f3e74]: "!"
+        - generic [ref=f3e75]:
+          - strong [ref=f3e76]: 真实 dashboard 尚未读取
+          - paragraph [ref=f3e77]: 没有 API 数据时不渲染工作台 fixture。请刷新或重新认证。

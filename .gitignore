@@ -14,4 +14,5 @@ apps/wechat-miniapp/dist/
 apps/wechat-miniapp/project.private.config.json
 apps/wechat-miniapp/.swc/
 artifacts/miniapp/
+workers/miniapp-api/tmp/
 tmp/ty-context/long-task-runs/

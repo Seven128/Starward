@@ -7,4 +7,122 @@
   height: 48rpx;
   display: block;
   pointer-events: none;
+  color: var(--choice-clipped-star);
+}
+
+.favorite-star {
+  --favorite-stroke: var(--favorite-outline, var(--text-secondary));
+  --favorite-fill: var(--favorite-active, var(--accent-warm));
+  position: relative;
+  display: inline-block;
+  flex: 0 0 52rpx;
+  width: 52rpx;
+  height: 52rpx;
+  color: var(--favorite-stroke);
+  pointer-events: none;
+}
+
+.favorite-star__shape,
+.favorite-star__shape::after {
+  position: absolute;
+  display: block;
+  content: "";
+  clip-path: polygon(
+    50% 3%,
+    61% 37%,
+    97% 37%,
+    68% 58%,
+    79% 94%,
+    50% 72%,
+    21% 94%,
+    32% 58%,
+    3% 37%,
+    39% 37%
+  );
+}
+
+.favorite-star__shape {
+  inset: 0;
+  background: currentColor;
+  transition:
+    color 180ms ease,
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.favorite-star:not(.favorite-star--active) .favorite-star__shape::after {
+  inset: 5rpx;
+  background: var(--surface);
+}
+
+.favorite-star--active {
+  color: var(--favorite-fill);
+}
+
+.favorite-star--active .favorite-star__shape {
+  transform: scale(0.92) rotate(7deg);
+}
+
+.favorite-star__effect {
+  position: absolute;
+  inset: -48rpx;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.favorite-star__meteor {
+  position: absolute;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--favorite-fill);
+  opacity: 0;
+  box-shadow: -16rpx 4rpx 0 -4rpx currentColor;
+  animation: favorite-meteor-in 420ms ease-out forwards;
+}
+
+.favorite-star__meteor--one {
+  top: 22rpx;
+  left: 30rpx;
+  animation-delay: 60ms;
+}
+.favorite-star__meteor--two {
+  top: 70rpx;
+  left: 86rpx;
+  width: 16rpx;
+  height: 16rpx;
+  animation-delay: 100ms;
+}
+.favorite-star__meteor--three {
+  top: 92rpx;
+  left: 26rpx;
+  width: 20rpx;
+  height: 20rpx;
+  animation-delay: 140ms;
+}
+
+@keyframes favorite-meteor-in {
+  0% { opacity: 0; transform: translate(-24rpx, -18rpx) scale(0.55); }
+  58% { opacity: 0.9; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0.46; transform: translate(8rpx, 8rpx) scale(0.82); }
+}
+
+.reduced-motion .favorite-star__shape,
+.reduced-motion .favorite-star__meteor {
+  animation: none;
+  transition-duration: 80ms;
+}
+.reduced-motion .favorite-star--active .favorite-star__shape {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .favorite-star__shape,
+  .favorite-star__meteor {
+    animation: none;
+    transition-duration: 80ms;
+  }
+  .favorite-star--active .favorite-star__shape {
+    transform: none;
+  }
 }

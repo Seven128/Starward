@@ -1,0 +1,80 @@
+- main [ref=f6e3]:
+  - generic [ref=f6e4]:
+    - complementary [ref=f6e5]:
+      - generic [ref=f6e13]:
+        - strong [ref=f6e14]: Starward Ops
+        - generic [ref=f6e15]: 数据与发布治理
+      - generic [ref=f6e16]:
+        - generic [ref=f6e17]: 投稿处理
+        - button "审核队列：按优先级、风险和新鲜度查看待处理 Case" [ref=f6e18] [cursor=pointer]:
+          - generic [ref=f6e23]: 审核队列
+          - generic [ref=f6e78]: "4"
+        - button "Case：原始证据与审核决定分开记录" [ref=f6e24] [cursor=pointer]:
+          - generic [ref=f6e29]: Case
+        - button "媒体核验：只查看净化后的媒体派生物" [ref=f6e30] [cursor=pointer]:
+          - generic [ref=f6e36]: 媒体核验
+        - button "证据合并：预览与提交 canonical merge" [ref=f6e37] [cursor=pointer]:
+          - generic [ref=f6e44]: 证据合并
+      - generic [ref=f6e45]:
+        - generic [ref=f6e46]: 正式地点
+        - button "发布评估：服务端完整性门禁与发布动作" [ref=f6e47] [cursor=pointer]:
+          - generic [ref=f6e52]: 发布评估
+        - button "替换与退役：预览关系影响，再提交高影响转换" [ref=f6e53] [cursor=pointer]:
+          - generic [ref=f6e59]: 替换与退役
+        - button "审计：追加式、脱敏、可归因的操作历史" [ref=f6e60] [cursor=pointer]:
+          - generic [ref=f6e65]: 审计
+      - generic [ref=f6e66]:
+        - generic [ref=f6e67]: O
+        - generic [ref=f6e68]:
+          - strong [ref=f6e69]: admin:operations-acceptance
+          - generic [ref=f6e70]: owner.moderation · 已认证
+    - main [ref=f6e71]:
+      - generic [ref=f6e241]:
+        - generic [ref=f6e242]:
+          - generic [ref=f6e243]:
+            - text: MODERATE / MEDIA
+            - heading "媒体核验" [level=1] [ref=f6e244]
+            - paragraph [ref=f6e245]: 逐项查看服务端净化派生物、权利状态与安全扫描；原始路径、EXIF 和精确 contributor coordinate 不进入普通读模型。
+          - generic [ref=f6e246]: 1 项 · 1 已附着
+        - button "milky-way-night-sky.jpg image/jpeg · 195664 bytes ATTACHED · upload uploa••c2f ATTACHED" [pressed] [ref=f6e249] [cursor=pointer]:
+          - strong [ref=f6e250]: milky-way-night-sky.jpg
+          - generic [ref=f6e251]: image/jpeg · 195664 bytes
+          - generic [ref=f6e252]: ATTACHED · upload uploa••c2f
+          - generic [ref=f6e253]: ATTACHED
+        - generic [ref=f6e254]:
+          - article [ref=f6e255]:
+            - generic [ref=f6e256]:
+              - generic [ref=f6e257]:
+                - heading "净化派生物" [level=2] [ref=f6e258]
+                - paragraph [ref=f6e259]: 媒体对象由 authenticated API 返回；读取失败时不保留旧预览。
+              - generic [ref=f6e260]: 已读取
+            - img "服务端返回的净化媒体派生物" [ref=f6e261]
+            - generic [ref=f6e262]: 普通读模型不展示原始 object key、EXIF、GPS 或 contributor 精确坐标。
+          - article [ref=f6e263]:
+            - generic [ref=f6e265]:
+              - heading "媒体决定" [level=2] [ref=f6e266]
+              - paragraph [ref=f6e267]: 拒绝某个媒体不会自动拒绝整条投稿；决定会写入 Case 审计。
+            - generic [ref=f6e268]:
+              - generic [ref=f6e269]:
+                - generic [ref=f6e271]:
+                  - strong [ref=f6e272]: 权利确认
+                  - generic [ref=f6e273]: 已确认
+                - generic [ref=f6e274]: 通过
+              - generic [ref=f6e275]:
+                - generic [ref=f6e277]:
+                  - strong [ref=f6e278]: 净化与扫描
+                  - generic [ref=f6e279]: 已从服务端读取派生对象
+                - generic [ref=f6e280]: 通过
+              - generic [ref=f6e281]:
+                - generic [ref=f6e283]:
+                  - strong [ref=f6e284]: 当前媒体状态
+                  - generic [ref=f6e285]: ATTACHED
+                - generic [ref=f6e286]: 读取
+            - generic [ref=f6e287]:
+              - generic [ref=f6e288]: 决定理由
+              - textbox "决定理由" [ref=f6e289]:
+                - /placeholder: 采用或不采用的可审计理由
+            - generic [ref=f6e290]:
+              - button "采用" [disabled] [ref=f6e291]
+              - button "不采用" [disabled] [ref=f6e292]
+              - button "进入证据合并" [ref=f6e293] [cursor=pointer]

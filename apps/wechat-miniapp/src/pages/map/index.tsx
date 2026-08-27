@@ -1,4 +1,4 @@
-import Taro from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import {
   Button,
   Input,
@@ -13,17 +13,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import {
   FILTER_GROUPS,
+  FILTER_OPTIONS,
   countAppliedFilters,
   type DarkSkyCandidateRef,
   type DisplayMode,
+  type FilterOptionId,
   type MapLayerKind,
   type OrdinaryPlaceRef,
   type SpotSummary,
 } from "@starward/miniapp-contracts";
-import { CustomNav } from "@/components/custom-nav";
-import { FilterSheet } from "@/components/filter-sheet";
 import { NotificationRegion } from "@/components/notification";
 import { SelectedCardStar } from "@/components/selected-card-star";
+import { FilterSheet, QuickFilterChip } from "@/components/filter-sheet";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { SourceLiftFocusLayer } from "@/components/source-lift-focus-layer";
 import { SpotCard } from "@/components/spot-card";
@@ -106,22 +108,22 @@ const MAP_MARKER_PALETTE: Record<
   { selected: string; text: string; surface: string; border: string }
 > = {
   DAY: {
-    selected: "#1769D2",
-    text: "#10233F",
-    surface: "#EEF4FA",
-    border: "#1769D2",
+    selected: "#536DFE",
+    text: "#111827",
+    surface: "#FFFFFF",
+    border: "#536DFE",
   },
   NIGHT: {
-    selected: "#5AA7FF",
-    text: "#EEF5FF",
-    surface: "#102238",
-    border: "#5AA7FF",
+    selected: "#7E8FFF",
+    text: "#EEF2FF",
+    surface: "#0B1222",
+    border: "#7E8FFF",
   },
   OBSERVATION: {
-    selected: "#FF514A",
-    text: "#F4554E",
-    surface: "#150303",
-    border: "#4D1716",
+    selected: "#FF3B30",
+    text: "#FF6A58",
+    surface: "#120000",
+    border: "#FF3B30",
   },
 };
 
@@ -206,9 +208,7 @@ function markerItems(
       label: {
         content: clustered
           ? String(group.spots.length)
-          : selected
-            ? "★ " + spot.name
-            : "✦",
+          : String(group.id).padStart(2, "0"),
         color: selected ? palette.selected : palette.text,
         fontSize: selected || clustered ? 13 : 18,
         bgColor: palette.surface,
@@ -220,22 +220,24 @@ function markerItems(
         anchorY: selected ? -48 : -40,
         textAlign: "center" as const,
       },
-      callout: {
-        content: clustered
-          ? String(group.spots.length) + " 个正式观星点，点击放大"
-          : spot.name,
-        color: palette.text,
-        fontSize: 12,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: palette.border,
-        bgColor: palette.surface,
-        padding: 6,
-        anchorX: 0,
-        anchorY: 0,
-        display: selected ? ("ALWAYS" as const) : ("BYCLICK" as const),
-        textAlign: "center" as const,
-      },
+      ...(clustered
+        ? {
+            callout: {
+              content: String(group.spots.length) + " 个正式观星点，点击放大",
+              color: palette.text,
+              fontSize: 12,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: palette.border,
+              bgColor: palette.surface,
+              padding: 6,
+              anchorX: 0,
+              anchorY: 0,
+              display: "BYCLICK" as const,
+              textAlign: "center" as const,
+            },
+          }
+        : {}),
       ariaLabel: clustered
         ? String(group.spots.length) + " 个正式观星点的聚合标记，点击放大"
         : spot.name + "，" + (selected ? "已选择" : "未选择") + "，正式观星点",
@@ -258,6 +260,18 @@ const overlayLabels: Record<AnalysisOverlay, string> = {
   LIGHT: "光害",
   TOTAL_CLOUD: "总云量",
   OPPORTUNITY: "今晚观测条件",
+};
+
+const QUICK_FILTER_IDS: readonly FilterOptionId[] = [
+  "tonightRecommended",
+  "distanceDriveTime",
+  "hikingDifficulty",
+];
+
+const QUICK_FILTER_LABELS: Readonly<Partial<Record<FilterOptionId, string>>> = {
+  tonightRecommended: "今晚推荐",
+  distanceDriveTime: "2 小时内",
+  hikingDifficulty: "少步行",
 };
 
 export default function MapPage() {
@@ -292,12 +306,16 @@ export default function MapPage() {
   const openFilters = useAppStore((state) => state.openFilters);
   const revertFilters = useAppStore((state) => state.revertFilters);
   const cancelFilters = useAppStore((state) => state.cancelFilters);
+  const toggleDraftFilter = useAppStore((state) => state.toggleDraftFilter);
   const applyFilters = useAppStore((state) => state.applyFilters);
   const addSearchHistory = useAppStore((state) => state.addSearchHistory);
   const clearSearchHistory = useAppStore((state) => state.clearSearchHistory);
   const notify = useAppStore((state) => state.notify);
   const { toggleFavorite } = useFavoriteMutation();
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [finderExtent, setFinderExtent] = useState<
+    "closed" | "peek" | "expanded"
+  >("closed");
   const [debouncedFinderQuery, setDebouncedFinderQuery] = useState("");
   const [wantedOpen, setWantedOpen] = useState(true);
   const [otherOpen, setOtherOpen] = useState(true);
@@ -311,7 +329,11 @@ export default function MapPage() {
   const [conditionPreviewing, setConditionPreviewing] = useState(false);
   const [conditionDisclosureOpen, setConditionDisclosureOpen] =
     useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
   const regionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useDidShow(() => setPageVisible(true));
+  useDidHide(() => setPageVisible(false));
 
   useEffect(() => {
     const timer = setTimeout(
@@ -357,6 +379,7 @@ export default function MapPage() {
         signal,
       );
     },
+    enabled: pageVisible,
     staleTime: 60_000,
   });
   const activeContext = bootstrapContext.data?.data ?? null;
@@ -364,6 +387,7 @@ export default function MapPage() {
   useEffect(() => {
     const currentContext = useAppStore.getState().observationContext;
     if (
+      pageVisible &&
       bootstrapContext.data?.data &&
       (currentContext?.contextId !== bootstrapContext.data.data.contextId ||
         currentContext.revision !== bootstrapContext.data.data.revision ||
@@ -373,6 +397,7 @@ export default function MapPage() {
       setObservationContext(bootstrapContext.data.data);
   }, [
     bootstrapContext.data?.data,
+    pageVisible,
     setObservationContext,
   ]);
 
@@ -413,7 +438,7 @@ export default function MapPage() {
         activeContext!.weatherView.cloudLayer,
         signal,
       ),
-    enabled: Boolean(activeContext),
+    enabled: pageVisible && Boolean(activeContext),
     staleTime: 60_000,
   });
 
@@ -421,6 +446,7 @@ export default function MapPage() {
     queryKey: ["place-search", debouncedFinderQuery],
     queryFn: (signal) => searchPlaces(debouncedFinderQuery, signal),
     enabled:
+      pageVisible &&
       suggestionsOpen &&
       !filterSheetOpen &&
       debouncedFinderQuery.length > 0,
@@ -532,7 +558,8 @@ export default function MapPage() {
           : scene.data?.dataState === "PARTIAL"
             ? "PARTIAL"
             : "READY";
-  const finderExpanded = sourceLift.owner === "FINDER";
+  const finderActive = sourceLift.owner === "FINDER";
+  const finderExpanded = finderActive && finderExtent === "expanded";
   const filterDraftDirty = FILTER_GROUPS.some(({ key }) => {
     const draft = draftFilters[key];
     const snapshot = filterSnapshot[key];
@@ -628,22 +655,50 @@ export default function MapPage() {
   const conditionMaxFrameIndex = Math.max(0, timeFrames.length - 1);
 
   const openFinder = () => {
-    if (sourceLift.owner === "FINDER") {
-      cancelFilters();
-      setSuggestionsOpen(false);
-      closeSourceLift("FINDER");
+    if (finderActive) {
+      if (finderExtent === "peek") {
+        setFinderExtent("expanded");
+        setSuggestionsOpen(false);
+      }
       return;
     }
     if (sourceLift.owner) return;
+    setFinderExtent("peek");
     openSourceLift("FINDER");
-    setSuggestionsOpen(true);
+    setSuggestionsOpen(false);
+  };
+
+  const toggleFinderExtent = () => {
+    if (!finderActive) return;
+    if (finderExtent === "expanded") {
+      setSuggestionsOpen(false);
+      setFinderExtent("peek");
+    } else {
+      setFinderExtent("expanded");
+    }
+  };
+
+  const applyQuickFilter = (optionId: FilterOptionId) => {
+    const option = FILTER_OPTIONS.find((item) => item.id === optionId);
+    if (!option || (sourceLift.owner && sourceLift.owner !== "FINDER")) return;
+    if (!finderActive) {
+      setFinderExtent("peek");
+      openSourceLift("FINDER");
+    }
+    cancelFilters();
+    openFilters();
+    toggleDraftFilter(option.id);
+    applyFilters();
+    setSuggestionsOpen(false);
+    setAnnouncement(`${option.label}已提交；Finder 保持在 peek。`);
   };
 
   const selectFinderResult = (spot: SpotSummary) => {
     selectSpot(spot.spotId);
-    setViewport({ center: spot.gcj02, zoom: Math.max(10, viewport.zoom) });
+    setViewport({ center: spot.gcj02, zoom: Math.max(12, viewport.zoom) });
     if (finderQuery.trim()) addSearchHistory(finderQuery);
     setSuggestionsOpen(false);
+    setFinderExtent("closed");
     closeSourceLift("FINDER", {
       restoreMap: false,
       discardFilterDraft: true,
@@ -695,6 +750,7 @@ export default function MapPage() {
     setViewport({ center, zoom: Math.max(12, viewport.zoom) });
     if (finderQuery.trim()) addSearchHistory(finderQuery);
     setSuggestionsOpen(false);
+    setFinderExtent("closed");
     closeSourceLift("FINDER", {
       restoreMap: false,
       discardFilterDraft: true,
@@ -916,6 +972,7 @@ export default function MapPage() {
     setConditionDraftFrameIndex(frameIndex);
     setConditionDraftAt(nextTime);
     setConditionPreviewing(false);
+    if (Date.parse(nextTime) === Date.parse(activeContext.selectedAtUtc)) return;
     setConditionsSaving(true);
     try {
       const response = await updateObservationContext(activeContext, {
@@ -1018,100 +1075,82 @@ export default function MapPage() {
       data-route="map"
       data-delivery-target={__DELIVERY_TARGET__}
     >
-      <CustomNav title="今晚去观星" subtitle="地图 · 正式观星点" />
       <View className="map-workspace">
         <View className="map-finder-anchor" data-od-id="map-search-trigger">
           <SourceLiftFocusLayer
             variant="panelOnly"
             owner="FINDER"
             ariaLabel="查找观星点"
+            className={`finder-layer finder-layer--${finderExtent}`}
             onClose={() => {
               setSuggestionsOpen(false);
               cancelFilters();
+              setFinderExtent("closed");
             }}
             source={
               <View
                 className={`map-finder-trigger${finderExpanded ? " map-finder-trigger--expanded" : ""}`}
                 data-od-id="map-search-summary"
-                role="button"
+                role="group"
                 aria-expanded={finderExpanded}
                 aria-label={
-                  finderExpanded
-                    ? "关闭查找观星点"
-                    : "查找观星点" +
-                      (finderQuery ? "，当前输入 " + finderQuery : "") +
-                      "，已应用 " +
-                      String(countAppliedFilters(committedFilters)) +
-                      " 项筛选"
+                  "查找观星点" +
+                  (finderQuery ? "，当前输入 " + finderQuery : "") +
+                  "，已应用 " +
+                  String(countAppliedFilters(committedFilters)) +
+                  " 项筛选"
                 }
-                onClick={openFinder}
+                onClick={() => {
+                  if (!finderActive) openFinder();
+                }}
               >
-                <Text className="map-finder-trigger__icon" aria-hidden="true">
-                  ⌕
-                </Text>
-                <View
-                  className="map-finder-trigger__copy"
-                  data-od-id="spot-finder-title-toggle"
-                >
-                  <Text className="type-label">
-                    {finderExpanded
-                      ? "查找观星点"
-                      : finderQuery || "查找观星点"}
-                  </Text>
-                  {!finderExpanded ? (
-                    <Text className="type-caption">
-                      {countAppliedFilters(committedFilters)
-                        ? String(countAppliedFilters(committedFilters)) +
-                          " 项筛选"
-                        : "搜索城市、正式点位或普通地点"}
-                    </Text>
-                  ) : null}
-                </View>
-                <View
+                <SemanticIcon name="search" className="map-finder-trigger__icon" />
+                <Input
+                  className="map-finder-trigger__input"
+                  data-od-id="spot-finder-search-input"
+                  value={finderQuery}
+                  focus={finderActive && sourceLift.phase === "FOCUSED"}
+                  placeholder="搜地点 / 区域 / 观星点"
+                  confirmType="search"
+                  aria-label="搜索正式观星点、城市或普通地点"
+                  onInput={(event) => {
+                    setFinderQuery(event.detail.value);
+                    setSuggestionsOpen(true);
+                    if (!finderActive) openFinder();
+                    else setFinderExtent("expanded");
+                  }}
+                  onFocus={() => {
+                    if (!finderActive) openFinder();
+                    setSuggestionsOpen(true);
+                  }}
+                  onConfirm={() => {
+                    if (finderQuery.trim()) addSearchHistory(finderQuery);
+                    setSuggestionsOpen(false);
+                    setFinderExtent("peek");
+                  }}
+                />
+                <SemanticIcon
+                  name={finderExpanded ? "chevron-up" : "chevron-down"}
                   className="map-finder-trigger__chevron"
-                  data-od-id="spot-finder-title-chevron"
-                  aria-hidden="true"
-                >
-                  <View className="map-finder-trigger__chevron-mark" />
-                </View>
+                />
               </View>
             }
           >
             <View className="finder-panel" data-od-id="spot-finder-sheet">
+              <Button
+                className="finder-sheet-handle focus-ring"
+                data-od-id="spot-finder-sheet-handle"
+                aria-label={
+                  finderExtent === "expanded"
+                    ? "收起查找面板"
+                    : "展开查找面板"
+                }
+                onClick={toggleFinderExtent}
+              >
+                <View className="finder-sheet-handle__bar" aria-hidden="true" />
+              </Button>
               <View className="finder-tools">
                 <View className="finder-query-wrap">
-                  <View
-                    className="finder-field-row"
-                    data-od-id="spot-finder-search-field"
-                  >
-                    <Text
-                      className="finder-search-icon"
-                      data-od-id="spot-finder-search-icon"
-                      aria-hidden="true"
-                    >
-                      ⌕
-                    </Text>
-                    <Input
-                      className="finder-input"
-                      data-od-id="spot-finder-search-input"
-                      value={finderQuery}
-                      focus={
-                        finderExpanded && sourceLift.phase === "FOCUSED"
-                      }
-                      placeholder="搜索正式观星点、城市或普通地点"
-                      confirmType="search"
-                      aria-label="搜索正式观星点、城市或普通地点"
-                      onInput={(event) => {
-                        setFinderQuery(event.detail.value);
-                        setSuggestionsOpen(true);
-                      }}
-                      onFocus={() => setSuggestionsOpen(true)}
-                      onConfirm={() => {
-                        if (finderQuery.trim()) addSearchHistory(finderQuery);
-                        setSuggestionsOpen(false);
-                      }}
-                    />
-                  </View>
                   {suggestionsOpen && !filterSheetOpen ? (
                     <ScrollView
                       className="finder-query-overlay"
@@ -1347,12 +1386,9 @@ export default function MapPage() {
                       <Text className="type-caption">
                         {String(wanted.length)}
                       </Text>
-                      <Text
-                        data-od-id="spot-finder-section-chevron"
-                        aria-hidden="true"
-                      >
-                        {wantedOpen ? "⌃" : "⌄"}
-                      </Text>
+                      <SemanticIcon
+                        name={wantedOpen ? "chevron-up" : "chevron-down"}
+                      />
                     </Button>
                     {wantedOpen
                       ? renderFinderResults(
@@ -1374,12 +1410,9 @@ export default function MapPage() {
                       <Text className="type-caption">
                         {String(other.length)}
                       </Text>
-                      <Text
-                        data-od-id="spot-finder-section-chevron"
-                        aria-hidden="true"
-                      >
-                        {otherOpen ? "⌃" : "⌄"}
-                      </Text>
+                      <SemanticIcon
+                        name={otherOpen ? "chevron-up" : "chevron-down"}
+                      />
                     </Button>
                     {otherOpen
                       ? renderFinderResults(
@@ -1398,6 +1431,27 @@ export default function MapPage() {
               <NotificationRegion owner="finder" placement="inline" />
             </View>
           </SourceLiftFocusLayer>
+          {!finderActive ? (
+            <View className="map-finder-quick-filters" aria-label="快速筛选">
+              {QUICK_FILTER_IDS.map((optionId) => {
+                const option = FILTER_OPTIONS.find(
+                  (item) => item.id === optionId,
+                );
+                if (!option) return null;
+                return (
+                  <QuickFilterChip
+                    key={option.id}
+                    option={{
+                      id: option.id,
+                      label: QUICK_FILTER_LABELS[option.id] ?? option.label,
+                    }}
+                    selected={committedFilters[option.group].includes(option.id)}
+                    onClick={() => applyQuickFilter(option.id)}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
         </View>
 
         <SourceLiftFocusLayer
@@ -1471,13 +1525,12 @@ export default function MapPage() {
               }
               onClick={openConditions}
             >
-              <Text
+              <View
                 className="map-conditions-bar__icon"
                 data-od-id="map-observing-conditions-icon"
-                aria-hidden="true"
               >
-                ◔
-              </Text>
+                <SemanticIcon name="conditions" />
+              </View>
               <View className="map-conditions-bar__copy">
                 <Text className="type-label">观测条件</Text>
                 <Text className="type-caption">{conditionKeyMetric}</Text>
@@ -1490,7 +1543,7 @@ export default function MapPage() {
                     )
                   : "正在解析"}
               </Text>
-              <Text aria-hidden="true">›</Text>
+              <SemanticIcon name="chevron-right" />
             </View>
           </View>
 
@@ -1506,7 +1559,7 @@ export default function MapPage() {
                 }
                 onClick={locateMap}
               >
-                ◎
+                <SemanticIcon name="location" />
               </SoftButton>
             </View>
             <SoftButton
@@ -1514,7 +1567,7 @@ export default function MapPage() {
               label="刷新当前区域"
               onClick={() => void refreshMap()}
             >
-              ↻
+              <SemanticIcon name="refresh" />
             </SoftButton>
           </View>
 
@@ -1550,7 +1603,7 @@ export default function MapPage() {
                 aria-label="关闭观测条件"
                 onClick={closeConditions}
               >
-                <Text aria-hidden="true">×</Text>
+                <SemanticIcon name="close" />
               </Button>
             </View>
 
@@ -1569,7 +1622,7 @@ export default function MapPage() {
                     data-od-id="map-analysis-layer-choice"
                     data-layer={overlay}
                     className={
-                      "conditions-overlay-option focus-ring" +
+                      `conditions-overlay-option conditions-overlay-option--${overlay.toLowerCase()} focus-ring` +
                       (conditionDraftOverlay === overlay
                         ? " conditions-overlay-option--selected"
                         : "")
@@ -1667,7 +1720,7 @@ export default function MapPage() {
                         ? "未启用分析叠加"
                         : "基于所选时刻更新"}
               </Text>
-              <Text aria-hidden="true">ⓘ</Text>
+              <SemanticIcon name="info" />
             </Button>
             {conditionDisclosureOpen ? (
               <Text className="type-caption conditions-disclosure">

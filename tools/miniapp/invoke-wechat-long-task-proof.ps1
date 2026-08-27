@@ -20,7 +20,7 @@ $compatibilityScript = Join-Path $repositoryRoot 'tools\miniapp\apply-ty-context
 if ($LASTEXITCODE -ne 0) {
     throw "wechat_long_task_harness_compatibility_failed:$LASTEXITCODE"
 }
-$runtimeBase = 'C:\Dev\.starward-tmp'
+$runtimeBase = 'E:\Dev\.starward-tmp'
 $runtimeBaseItem = Get-Item -LiteralPath $runtimeBase -ErrorAction SilentlyContinue
 if ($null -eq $runtimeBaseItem) {
     $runtimeBaseItem = New-Item -ItemType Directory -Path $runtimeBase

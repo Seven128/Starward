@@ -1,12 +1,16 @@
 export type Brand<T, Name extends string> = T & { readonly __brand: Name };
 
 export type SpotId = Brand<string, "SpotId">;
+export type SpotRevisionId = Brand<string, "SpotRevisionId">;
 export type ProfileLinkId = Brand<string, "ProfileLinkId">;
 export type PlanId = Brand<string, "PlanId">;
 export type ImportDraftId = Brand<string, "ImportDraftId">;
 export type SpotProposalId = Brand<string, "SpotProposalId">;
 export type ContributionId = Brand<string, "ContributionId">;
+export type ContributionRevisionId = Brand<string, "ContributionRevisionId">;
 export type ContributionUploadId = Brand<string, "ContributionUploadId">;
+export type ModerationCaseId = Brand<string, "ModerationCaseId">;
+export type OperationReceiptId = Brand<string, "OperationReceiptId">;
 export type UserId = Brand<string, "UserId">;
 export type ObservationContextId = Brand<string, "ObservationContextId">;
 
@@ -308,7 +312,12 @@ export interface SpotSummary {
   wgs84: Wgs84Point;
   gcj02: Gcj02Point;
   altitudeM: number | null;
-  status: "PUBLISHED" | "TEMPORARILY_CLOSED" | "DATA_INSUFFICIENT";
+  status:
+    | "PUBLISHED"
+    | "TEMPORARILY_CLOSED"
+    | "DATA_INSUFFICIENT"
+    | "UNPUBLISHED"
+    | "RETIRED";
   visibilityPolicy: VisibilityPolicy;
   source: SourceSummary;
   lastVerifiedAt: string | null;
@@ -601,6 +610,8 @@ export interface UserPreferences {
   capturePreference: string;
   displayMode: DisplayMode;
   notificationEnabled: boolean;
+  departureConditionReminder: boolean;
+  contributionStatusReminder: boolean;
   largeText: boolean;
   reducedMotion: boolean;
 }
@@ -616,7 +627,7 @@ export interface ObservationPlan {
   updatedAt: string;
 }
 
-export interface ObservationContextSnapshot {
+export interface ObservationContextSnapshotV1 {
   schemaVersion: "observation-context-snapshot-v1";
   contextId: ObservationContextId;
   contextFingerprint: string;
@@ -629,6 +640,19 @@ export interface ObservationContextSnapshot {
   algorithmVersions: ObservationContext["algorithmVersions"];
   capturedAt: string;
 }
+
+export interface ObservationContextSnapshotV2
+  extends Omit<ObservationContextSnapshotV1, "schemaVersion"> {
+  schemaVersion: "observation-context-snapshot-v2";
+  routeOrigin: Pick<
+    NonNullable<ObservationContext["routeOrigin"]>,
+    "displayName" | "wgs84" | "source"
+  > | null;
+}
+
+export type ObservationContextSnapshot =
+  | ObservationContextSnapshotV1
+  | ObservationContextSnapshotV2;
 
 export type PlatformKind =
   | "XIAOHONGSHU"
@@ -708,8 +732,32 @@ export type ContributionTopic =
 export type ContributionState =
   | "DRAFT"
   | "PENDING_REVIEW"
+  | "CHANGES_REQUESTED"
+  | "ACCEPTED"
+  | "WITHDRAWN"
+  // Kept as a wire-compatible alias for the first persisted API version.
   | "APPROVED"
   | "REJECTED";
+
+export type ContributionSubmissionState =
+  | "DRAFT"
+  | "PENDING_REVIEW"
+  | "CHANGES_REQUESTED"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "WITHDRAWN";
+
+export type ContributionMergeState =
+  | "NOT_STARTED"
+  | "READY"
+  | "MERGED"
+  | "SUPERSEDED";
+
+export type ContributionPublicationImpact =
+  | "NONE"
+  | "CANDIDATE_UPDATED"
+  | "ACTIVE_REVISION_UPDATED"
+  | "SPOT_PUBLISHED";
 
 export interface ContributionCandidateLocation {
   displayName: string;
@@ -731,9 +779,19 @@ export interface ContributionMediaUpload {
 }
 
 export interface ContributionReview {
-  resolution: "APPROVED" | "REJECTED";
+  resolution: "ACCEPTED" | "APPROVED" | "REJECTED" | "CHANGES_REQUESTED";
   reason: string;
   reviewedAt: string;
+}
+
+export interface ContributionStatusHistoryEntry {
+  eventId: string;
+  axis: "SUBMISSION" | "MERGE" | "PUBLICATION";
+  from: string | null;
+  to: string;
+  reason: string | null;
+  actorType: "USER" | "OPERATOR" | "SYSTEM";
+  occurredAt: string;
 }
 
 export interface ContributionSubmission {
@@ -749,8 +807,154 @@ export interface ContributionSubmission {
   preciseLocationConsent: boolean;
   media: readonly ContributionMediaUpload[];
   state: ContributionState;
+  submissionState: ContributionSubmissionState;
+  mergeState: ContributionMergeState;
+  publicationImpact: ContributionPublicationImpact;
+  statusHistory: readonly ContributionStatusHistoryEntry[];
   revision: number;
   createdAt: string;
   updatedAt: string;
   review: ContributionReview | null;
+}
+
+export type AdminRole =
+  | "OWNER"
+  | "MODERATOR"
+  | "MEDIA_REVIEWER"
+  | "PUBLISHER"
+  | "AUDITOR";
+
+export type AdminOperation =
+  | "QUEUE_READ"
+  | "CASE_READ"
+  | "CASE_REVIEW"
+  | "MEDIA_READ"
+  | "MEDIA_REVIEW"
+  | "MERGE_PREVIEW"
+  | "MERGE_COMMIT"
+  | "PUBLICATION_ASSESS"
+  | "PUBLISH"
+  | "SUSPEND"
+  | "UNPUBLISH"
+  | "REPLACE"
+  | "RETIRE"
+  | "AUDIT_READ";
+
+export interface OperationReceipt<T = unknown> {
+  receiptId: OperationReceiptId;
+  operation: string;
+  status: "COMMITTED" | "REPLAYED" | "REJECTED";
+  actorId: string;
+  idempotencyKey: string;
+  requestId: string;
+  committedAt: string;
+  resultingRevision: number | null;
+  assessmentDigest: string | null;
+  readback: T | null;
+}
+
+export interface AdminMutationResult<T> {
+  result: T;
+  receipt: OperationReceipt<T>;
+  readback: T;
+}
+
+export interface ModerationQueueItem {
+  caseId: ModerationCaseId;
+  subjectType: "USER_CONTRIBUTION" | "IMPORT";
+  subjectId: string;
+  state: "PENDING" | "APPROVED" | "REJECTED" | "CHANGES_REQUESTED";
+  kind: ContributionKind | null;
+  priority: "HIGH" | "NORMAL" | "LOW";
+  riskFlags: readonly string[];
+  ageSeconds: number;
+  createdAt: string;
+  spotId: SpotId | null;
+}
+
+export interface ModerationCaseView {
+  caseId: ModerationCaseId;
+  subjectType: "USER_CONTRIBUTION" | "IMPORT";
+  subjectId: string;
+  state: ModerationQueueItem["state"];
+  submission: ContributionSubmission | null;
+  events: readonly ContributionStatusHistoryEntry[];
+  immutableEvidence: {
+    detail: string | null;
+    candidateLocation: ContributionCandidateLocation | null;
+    media: readonly ContributionMediaUpload[];
+  };
+  canonicalMergeRequired: boolean;
+  publicationGateRequired: boolean;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface MediaReviewView {
+  uploadId: ContributionUploadId;
+  submissionId: ContributionId;
+  state: ContributionMediaUpload["state"] | "ACCEPTED" | "REJECTED";
+  mimeType: ContributionMediaUpload["mimeType"];
+  byteSize: number | null;
+  sha256: string | null;
+  sanitized: true;
+  exifRemoved: true;
+  rightsConfirmed: boolean;
+  decision: "ACCEPTED" | "REJECTED" | null;
+  decisionReason: string | null;
+}
+
+export interface MergeClaimPreview {
+  /** Stable key returned to Operations so the commit binds the selected claim. */
+  claimId: string;
+  claim: string;
+  currentValue: unknown;
+  candidateValue: unknown;
+  sourceIds: readonly string[];
+  conflict: boolean;
+  disposition: "ALLOW" | "REQUIRES_CONFIRMATION" | "REJECT";
+}
+
+export interface MergePreview {
+  caseId: ModerationCaseId;
+  submissionId: ContributionId;
+  spotId: SpotId;
+  submissionRevision: number;
+  spotRevision: number;
+  claims: readonly MergeClaimPreview[];
+  candidateRevision: number;
+  publicationAssessment: string;
+  readOnly: true;
+}
+
+export interface PublicationAssessment {
+  spotId: SpotId;
+  spotRevision: number;
+  assessmentDigest: string;
+  complete: boolean;
+  blockers: readonly string[];
+  checkedAt: string;
+  checkedBy: string;
+  projectionDigest: string;
+}
+
+export interface SpotRevisionSummary {
+  revisionId: SpotRevisionId;
+  spotId: SpotId;
+  revisionNo: number;
+  payloadDigest: string;
+  sourceIds: readonly string[];
+  createdBy: string;
+  reason: string;
+  createdAt: string;
+  active: boolean;
+}
+
+export interface ReplacementImpact {
+  spotId: SpotId;
+  successorSpotId: SpotId | null;
+  favoriteCount: number;
+  planCount: number;
+  relationState: "PREVIEW" | "COMMITTED" | "NO_SUCCESSOR";
+  warnings: readonly string[];
 }

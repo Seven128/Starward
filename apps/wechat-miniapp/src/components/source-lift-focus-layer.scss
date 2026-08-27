@@ -65,9 +65,9 @@
   left: 24rpx;
   overflow: hidden;
   border: 1rpx solid var(--border);
-  border-radius: 28rpx;
+  border-radius: 24rpx;
   background: var(--surface-subtle);
-  box-shadow: var(--elevation-card);
+  box-shadow: var(--elevation-floating);
   transform: none;
 }
 .source-lift-focus-layer--visible.source-lift-focus-layer--phase-focused
@@ -120,7 +120,7 @@
 .source-lift-map-dock {
   min-height: 0;
   border: 1rpx solid transparent;
-  border-radius: 28rpx;
+  border-radius: 24rpx;
   pointer-events: none;
 }
 .source-lift-focus-layer--phase-restoring .source-lift-scrim,

@@ -1,0 +1,29 @@
+- main [ref=f2e3]:
+  - generic [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - generic [ref=f2e6]: ✦
+      - generic [ref=f2e7]:
+        - strong [ref=f2e8]: STARWARD / SKY CANVAS
+        - generic [ref=f2e9]: Authenticated owner operations
+    - generic [ref=f2e10]: 未认证
+  - region [ref=f2e12]:
+    - generic [ref=f2e13]:
+      - text: AUTHENTICATED OWNER OPERATIONS
+      - heading "先建立管理员会话" [level=1] [ref=f2e14]
+      - paragraph [ref=f2e15]: "此工作台只读取带 owner capability 的真实 `/v2/admin` 服务。没有服务端认证时不会展示投稿、地点或审计数据。"
+    - generic [ref=f2e16]:
+      - generic [ref=f2e17]:
+        - generic [ref=f2e18]: 管理员 token
+        - textbox "管理员 token" [ref=f2e19]:
+          - /placeholder: 仅在本次浏览会话使用
+      - generic [ref=f2e20]:
+        - generic [ref=f2e21]: actor identity
+        - textbox "actor identity" [ref=f2e22]:
+          - /placeholder: admin:your-name
+          - text: admin:local
+      - button "连接真实工作台" [ref=f2e23] [cursor=pointer]
+      - paragraph [ref=f2e24]: token 不写入 URL、日志或永久存储；权限、脱敏和审计由服务端决定。
+  - generic [ref=f2e25]:
+    - generic [ref=f2e26]: Sky Canvas current Operations constraint
+    - generic [ref=f2e27]: receipt → readback required
+    - generic [ref=f2e28]: no fixture success

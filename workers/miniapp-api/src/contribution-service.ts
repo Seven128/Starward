@@ -55,6 +55,10 @@ export class ContributionService {
       spotNameSnapshot: spot?.name ?? null,
       media: [],
       state: "DRAFT",
+      submissionState: "DRAFT",
+      mergeState: "NOT_STARTED",
+      publicationImpact: "NONE",
+      statusHistory: [],
       revision: 1,
       createdAt: now,
       updatedAt: now,
@@ -174,7 +178,10 @@ export class ContributionService {
       throw new Error("contribution_upload_not_pending");
     const extension = upload.mimeType === "image/jpeg" ? "jpg" : "png";
     const scope = createHash("sha256").update(userId).digest("hex").slice(0, 24);
-    const objectKey = `contributions/${scope}/${upload.uploadId}.${extension}`;
+    const uploadObjectId = String(upload.uploadId).replace(/^upload:/u, "");
+    if (!/^[a-zA-Z0-9_-]{10,160}$/u.test(uploadObjectId))
+      throw new Error("contribution_upload_object_id_invalid");
+    const objectKey = `contributions/${scope}/${uploadObjectId}.${extension}`;
     await this.mediaStore.put({
       objectKey,
       bytes: sanitized,

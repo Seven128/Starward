@@ -1,4 +1,6 @@
 import type {
+  AccountDeletionReceipt,
+  AdminMutationResult,
   ApiEnvelope,
   ContributionId,
   ContributionMediaUpload,
@@ -6,6 +8,13 @@ import type {
   ContributionUploadId,
   DataState,
   ImportDraft,
+  MergePreview,
+  MediaReviewView,
+  ModerationCaseView,
+  ModerationQueueItem,
+  OperationReceipt,
+  PublicationAssessment,
+  ReplacementImpact,
   OrdinaryPlaceRef,
   ObservationPlan,
   ObservationContext,
@@ -204,6 +213,10 @@ export interface MiniappRepositoryPort {
     expiresAt: string;
   }): Promise<void>;
   resolveSession(tokenDigest: string): Promise<UserId | null>;
+  deleteAccount(
+    userId: UserId,
+    idempotencyKey: string,
+  ): Promise<AccountDeletionReceipt>;
   getPreferences(userId: UserId): Promise<UserPreferencesRecord>;
   savePreferences(
     userId: UserId,
@@ -286,6 +299,84 @@ export interface MiniappRepositoryPort {
   } | null>;
   operationsSnapshot(): Promise<Readonly<Record<string, unknown>>>;
   close(): Promise<void>;
+}
+
+/** Server-side Operations boundary with explicit RBAC/revision/receipt rules. */
+export interface AdminOperationsPort {
+  adminListModerationQueue(): Promise<readonly ModerationQueueItem[]>;
+  adminGetModerationCase(caseId: string): Promise<ModerationCaseView | null>;
+  adminRequestContributionChanges(input: {
+    caseId: string;
+    reason: string;
+    expectedRevision: number;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<ModerationCaseView>>;
+  adminGetMediaReview(uploadId: ContributionUploadId): Promise<MediaReviewView | null>;
+  adminReviewContributionMedia(input: {
+    uploadId: ContributionUploadId;
+    caseId?: string;
+    decision: "ACCEPTED" | "REJECTED";
+    reason: string;
+    expectedRevision: number | null;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<MediaReviewView>>;
+  adminCreateMergePreview(input: {
+    caseId: string;
+    spotId: SpotId;
+    confirmedClaims: readonly string[];
+    expectedSubmissionRevision: number;
+    expectedSpotRevision: number;
+  }): Promise<MergePreview>;
+  adminCommitMerge(input: {
+    caseId: string;
+    spotId: SpotId;
+    confirmedClaims: readonly string[];
+    expectedSubmissionRevision: number;
+    expectedSpotRevision: number;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<ModerationCaseView>>;
+  adminAssessPublication(input: {
+    spotId: SpotId;
+    expectedSpotRevision: number | null;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<PublicationAssessment>>;
+  adminChangeSpotLifecycle(input: {
+    spotId: SpotId;
+    action: "PUBLISH" | "SUSPEND" | "UNPUBLISH" | "RETIRE";
+    expectedSpotRevision: number;
+    assessmentDigest?: string;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<SpotSummary>>;
+  adminListSpotRevisions(spotId: SpotId): Promise<readonly Record<string, unknown>[]>;
+  adminPreviewReplacement(input: {
+    spotId: SpotId;
+    successorSpotId: SpotId | null;
+    expectedSpotRevision: number;
+  }): Promise<ReplacementImpact>;
+  adminCommitReplacement(input: {
+    spotId: SpotId;
+    successorSpotId: SpotId | null;
+    expectedSpotRevision: number;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<ReplacementImpact>>;
+  adminAuditLog(input?: { subjectId?: string; limit?: number }): Promise<readonly Record<string, unknown>[]>;
+  adminReadReceipt(receiptId: string): Promise<OperationReceipt | null>;
 }
 
 export interface AstronomyApplicationPort {

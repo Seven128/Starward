@@ -1,4 +1,9 @@
 import Taro from "@tarojs/taro";
+import type {
+  ContributionMediaUpload,
+  ContributionSubmission,
+  ContributionUploadId,
+} from "@starward/miniapp-contracts";
 import {
   completeContributionUpload,
   createContributionDraft,
@@ -9,11 +14,19 @@ import {
   updateContributionDraft,
 } from "@/services/api-client";
 import {
+  contributionSubmissionState,
   mediaFileName,
   mediaMimeType,
   readBase64,
 } from "./contribution-model";
 import type { ContributionForm } from "./use-contribution-form";
+
+function activeDraft(form: ContributionForm) {
+  const current = form.draft;
+  if (current && contributionSubmissionState(current) === "DRAFT")
+    return current;
+  return form.matchingDraft;
+}
 
 function createSaveDraft(form: ContributionForm) {
   return async (quiet = false) => {
@@ -21,14 +34,14 @@ function createSaveDraft(form: ContributionForm) {
     if (!input) return null;
     form.setSaving(true);
     try {
-      const active = form.draft?.state === "DRAFT" ? form.draft : form.matchingDraft;
+      const active = activeDraft(form);
       const response = active
         ? await updateContributionDraft(active.submissionId, {
             ...input,
             expectedRevision: active.revision,
           })
         : await createContributionDraft(input);
-      form.applyDraft(response.data);
+      form.applyDraft(response.data, form.phase);
       await form.history.refetch().catch(() => undefined);
       if (!quiet)
         form.announce(
@@ -50,6 +63,59 @@ function createSaveDraft(form: ContributionForm) {
       form.setSaving(false);
     }
   };
+}
+
+async function chooseImage(count: number) {
+  try {
+    return await Taro.chooseImage({
+      count,
+      sizeType: ["compressed"],
+      sourceType: ["album", "camera"],
+    });
+  } catch (error) {
+    if (/cancel/iu.test(error instanceof Error ? error.message : String(error)))
+      return null;
+    throw error;
+  }
+}
+
+function validateMediaFile(file: { path: string; size?: number }) {
+  if (!file.size || file.size > 1_200_000)
+    throw new Error("单张图片必须小于 1.2 MB");
+  return {
+    originalName: mediaFileName(file.path),
+    mimeType: mediaMimeType(file.path),
+    byteSize: file.size,
+  };
+}
+
+async function uploadSelectedFile(
+  form: ContributionForm,
+  working: ContributionSubmission,
+  file: { path: string; size?: number },
+  existingUpload?: ContributionMediaUpload,
+) {
+  const input = validateMediaFile(file);
+  let current = working;
+  let upload = existingUpload;
+  if (!upload || upload.state === "EXPIRED") {
+    const created = await createContributionUpload(current.submissionId, {
+      ...input,
+      expectedRevision: current.revision,
+    });
+    current = created.data;
+    const knownIds = new Set(working.media.map((item) => item.uploadId));
+    upload = current.media.find((item) => !knownIds.has(item.uploadId));
+    if (!upload) throw new Error("上传会话未建立");
+    form.applyDraft(current, form.phase);
+  }
+  const completed = await completeContributionUpload(
+    current.submissionId,
+    upload.uploadId,
+    { dataBase64: await readBase64(file.path) },
+  );
+  form.applyDraft(completed.data, form.phase);
+  return completed.data;
 }
 
 function createUseCurrentLocation(form: ContributionForm) {
@@ -93,42 +159,25 @@ function createAddMedia(
       );
       return;
     }
-    const availableSlots =
-      3 - (form.draft?.media.length ?? form.matchingDraft?.media.length ?? 0);
+    const availableSlots = 3 - form.currentMedia.length;
     if (availableSlots <= 0) {
       form.announce("warning", "图片已达上限", "每条反馈最多上传 3 张图片。");
       return;
     }
+    let choice;
+    try {
+      choice = await chooseImage(availableSlots);
+    } catch (error) {
+      form.announce("error", "无法选择图片", errorMessage(error));
+      return;
+    }
+    if (!choice?.tempFiles.length) return;
     form.setUploading(true);
     try {
       let working = await saveDraft(true);
       if (!working) return;
-      const choice = await Taro.chooseImage({
-        count: availableSlots,
-        sizeType: ["compressed"],
-        sourceType: ["album", "camera"],
-      });
       for (const file of choice.tempFiles) {
-        if (!file.size || file.size > 1_200_000)
-          throw new Error("单张图片必须小于 1.2 MB");
-        const created = await createContributionUpload(working.submissionId, {
-          originalName: mediaFileName(file.path),
-          mimeType: mediaMimeType(file.path),
-          byteSize: file.size,
-          expectedRevision: working.revision,
-        });
-        const existing = new Set(working.media.map((item) => item.uploadId));
-        const upload = created.data.media.find(
-          (item) => !existing.has(item.uploadId),
-        );
-        if (!upload) throw new Error("上传会话未建立");
-        const completed = await completeContributionUpload(
-          created.data.submissionId,
-          upload.uploadId,
-          { dataBase64: await readBase64(file.path) },
-        );
-        working = completed.data;
-        form.applyDraft(working);
+        working = await uploadSelectedFile(form, working, file);
       }
       await form.history.refetch().catch(() => undefined);
       form.announce(
@@ -137,13 +186,49 @@ function createAddMedia(
         "服务端已校验图片并移除可识别的 EXIF、文本与时间元数据。",
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (!/cancel/iu.test(message))
-        form.announce(
-          "error",
-          "图片上传失败",
-          `${errorMessage(error)}；草稿和已完成图片保持不变。`,
-        );
+      form.announce(
+        "error",
+        "图片上传失败",
+        `${errorMessage(error)}；已完成图片和草稿仍保留，可从上传阶段重试。`,
+      );
+    } finally {
+      form.setUploading(false);
+    }
+  };
+}
+
+function createRetryMedia(
+  form: ContributionForm,
+  saveDraft: ReturnType<typeof createSaveDraft>,
+) {
+  return async (uploadId: ContributionUploadId) => {
+    const choice = await chooseImage(1).catch((error) => {
+      form.announce("error", "无法选择图片", errorMessage(error));
+      return null;
+    });
+    if (!choice?.tempFiles.length) return;
+    form.setUploading(true);
+    try {
+      const working = await saveDraft(true);
+      if (!working) return;
+      const target = working.media.find((item) => item.uploadId === uploadId);
+      if (!target) {
+        form.announce("warning", "上传记录已更新", "请先重新回读当前草稿状态。 ");
+        return;
+      }
+      await uploadSelectedFile(form, working, choice.tempFiles[0]!, target);
+      await form.history.refetch().catch(() => undefined);
+      form.announce(
+        "success",
+        "上传已恢复",
+        "继续使用同一条媒体记录；成功对象不会重复创建。",
+      );
+    } catch (error) {
+      form.announce(
+        "error",
+        "上传恢复失败",
+        `${errorMessage(error)}；已保留当前草稿和服务端上传状态。`,
+      );
     } finally {
       form.setUploading(false);
     }
@@ -155,6 +240,15 @@ function createSubmit(
   saveDraft: ReturnType<typeof createSaveDraft>,
 ) {
   return async () => {
+    if (form.submitting) return;
+    if (form.mediaNeedsRecovery) {
+      form.announce(
+        "warning",
+        "请先处理媒体上传",
+        "仍有上传中或已过期的媒体；可续传或重新选择后再提交。",
+      );
+      return;
+    }
     if (form.detail.trim().length < 20 || form.topics.length === 0) {
       form.announce(
         "error",
@@ -175,8 +269,11 @@ function createSubmit(
     try {
       const saved = await saveDraft(true);
       if (!saved) return;
-      const response = await submitContribution(saved.submissionId, saved.revision);
-      form.applyDraft(response.data);
+      const response = await submitContribution(
+        saved.submissionId,
+        saved.revision,
+      );
+      form.applyDraft(response.data, "HISTORY");
       await form.history.refetch().catch(() => undefined);
       form.announce(
         "success",
@@ -201,6 +298,7 @@ export function useContributionCommands(form: ContributionForm) {
     saveDraft,
     useCurrentLocation: createUseCurrentLocation(form),
     addMedia: createAddMedia(form, saveDraft),
+    retryMedia: createRetryMedia(form, saveDraft),
     submit: createSubmit(form, saveDraft),
   };
 }

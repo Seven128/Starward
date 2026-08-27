@@ -1,0 +1,72 @@
+- main [ref=f6e3]:
+  - generic [ref=f6e4]:
+    - complementary [ref=f6e5]:
+      - generic [ref=f6e13]:
+        - strong [ref=f6e14]: Starward Ops
+        - generic [ref=f6e15]: 数据与发布治理
+      - generic [ref=f6e16]:
+        - generic [ref=f6e17]: 投稿处理
+        - button "审核队列：按优先级、风险和新鲜度查看待处理 Case" [ref=f6e18] [cursor=pointer]:
+          - generic [ref=f6e23]: 审核队列
+          - generic [ref=f6e78]: "4"
+        - button "Case：原始证据与审核决定分开记录" [ref=f6e24] [cursor=pointer]:
+          - generic [ref=f6e29]: Case
+        - button "媒体核验：只查看净化后的媒体派生物" [ref=f6e30] [cursor=pointer]:
+          - generic [ref=f6e36]: 媒体核验
+        - button "证据合并：预览与提交 canonical merge" [ref=f6e37] [cursor=pointer]:
+          - generic [ref=f6e44]: 证据合并
+      - generic [ref=f6e45]:
+        - generic [ref=f6e46]: 正式地点
+        - button "发布评估：服务端完整性门禁与发布动作" [ref=f6e47] [cursor=pointer]:
+          - generic [ref=f6e52]: 发布评估
+        - button "替换与退役：预览关系影响，再提交高影响转换" [ref=f6e53] [cursor=pointer]:
+          - generic [ref=f6e59]: 替换与退役
+        - button "审计：追加式、脱敏、可归因的操作历史" [ref=f6e60] [cursor=pointer]:
+          - generic [ref=f6e65]: 审计
+      - generic [ref=f6e66]:
+        - generic [ref=f6e67]: O
+        - generic [ref=f6e68]:
+          - strong [ref=f6e69]: admin:operations-acceptance
+          - generic [ref=f6e70]: owner.moderation · 已认证
+    - main [ref=f6e71]:
+      - generic [ref=f6e294]:
+        - generic [ref=f6e295]:
+          - generic [ref=f6e296]:
+            - text: MERGE / CANONICAL EVIDENCE
+            - heading "证据合并预览" [level=1] [ref=f6e297]
+            - paragraph [ref=f6e298]: 目标 — · submission revision 4 · 预览与提交是两个独立的 audited step。
+          - generic [ref=f6e299]: 未生成预览
+        - generic [ref=f6e301]:
+          - generic [ref=f6e302]: ·
+          - generic [ref=f6e303]:
+            - strong [ref=f6e304]: 合并只生成候选 revision
+            - paragraph [ref=f6e305]: 它不会自动上架或替换 active revision。每个事实必须选择 canonical value，服务端仍会重新检查 revision、权限、幂等与证据有效期。
+        - generic [ref=f6e306]:
+          - generic [ref=f6e307]: i
+          - generic [ref=f6e308]:
+            - strong [ref=f6e309]: 新地点投稿尚无 formal spot
+            - paragraph [ref=f6e310]: 当前投稿必须先完成审核，并由服务端建立正式地点候选与初始 revision；在获得真实 spotId 前不允许生成或提交 canonical merge。
+        - generic [ref=f6e311]:
+          - button "获取最新预览" [disabled] [ref=f6e312]
+          - generic [ref=f6e313]: case moder••dac · spot —
+        - article [ref=f6e314]:
+          - generic [ref=f6e315]:
+            - generic [ref=f6e316]:
+              - heading "提交 canonical merge" [level=2] [ref=f6e317]
+              - paragraph [ref=f6e318]: 失败时保留本地选择与理由；成功仍必须有服务端 receipt 和 readback。
+            - generic [ref=f6e319]: 等待选择
+          - generic [ref=f6e320]:
+            - generic [ref=f6e321]:
+              - generic [ref=f6e322]: submission revision
+              - strong [ref=f6e323]: "4"
+            - generic [ref=f6e324]:
+              - generic [ref=f6e325]: formal spot revision
+              - strong [ref=f6e326]: 服务端未返回
+            - generic [ref=f6e327]:
+              - generic [ref=f6e328]: publication impact
+              - strong [ref=f6e329]: NONE / 服务端未返回
+          - generic [ref=f6e330]:
+            - generic [ref=f6e331]: 合并理由
+            - textbox "合并理由" [ref=f6e332]:
+              - /placeholder: 说明为什么这些 claim 可以进入 canonical record
+          - button "确认全部字段后合并" [disabled] [ref=f6e333]

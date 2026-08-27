@@ -321,6 +321,7 @@ async function request<T>(
     idempotencyKey?: string;
     signal?: AbortSignal;
     session?: AuthSessionData | null;
+    cache?: boolean;
   } = {},
 ): Promise<ApiEnvelope<T>> {
   loadResponseCache();
@@ -350,7 +351,9 @@ async function request<T>(
     const exactCacheKey =
       responseCacheKey(key, path) + ":" + String(scope);
     const cached =
-      method === "GET" ? responseCache.get(exactCacheKey) : undefined;
+      method === "GET" && options.cache !== false
+        ? responseCache.get(exactCacheKey)
+        : undefined;
     const header: Record<string, string> = { Accept: "application/json" };
     if (__MINIAPP_OPERATOR_PREVIEW_TOKEN__)
       header["X-Starward-Operator-Preview"] =
@@ -402,7 +405,7 @@ async function request<T>(
                 return;
               }
               const envelope = response.data as ApiEnvelope<T>;
-              if (method === "GET")
+              if (method === "GET" && options.cache !== false)
                 cacheResponse(exactCacheKey, envelope as AnyEnvelope);
               recordAcceptanceDiagnostic(
                 key,
@@ -523,6 +526,7 @@ async function requestOperation<K extends MiniappApiOperationId>(
     idempotencyKey?: string;
     signal?: AbortSignal;
     auth?: AuthPolicy;
+    cache?: boolean;
   } = {},
   retried = false,
 ): Promise<MiniappApiResponse<K>> {
@@ -540,6 +544,7 @@ async function requestOperation<K extends MiniappApiOperationId>(
           : {}),
         ...(options.signal ? { signal: options.signal } : {}),
         ...(session ? { session } : {}),
+        ...(options.cache === undefined ? {} : { cache: options.cache }),
       },
     )) as MiniappApiResponse<K>;
   } catch (error) {
@@ -847,6 +852,33 @@ export async function savePreferences(
   return result;
 }
 
+export function exportAccountData(signal?: AbortSignal) {
+  return requestOperation("account-data-export", "accountDataExportGet", {
+    auth: "REQUIRED",
+    cache: false,
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export async function deleteAccount() {
+  const result = await requestOperation("account-delete", "accountDelete", {
+    auth: "REQUIRED",
+    body: { confirmation: "DELETE_ACCOUNT" },
+    idempotencyKey: idempotencyKey("account-delete"),
+  });
+  clearStoredSession();
+  responseCache.clear();
+  responseCacheLoaded = true;
+  try {
+    Taro.removeStorageSync(RESPONSE_CACHE_STORAGE_KEY);
+    Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
+  } catch {
+    // Server deletion and session revocation remain authoritative.
+  }
+  miniappQueryClient.clear();
+  return result;
+}
+
 export async function setFavoriteRelation(
   spotId: string,
   favorite: boolean,
@@ -877,6 +909,7 @@ export async function saveObservationPlan(
     ObservationPlan,
     "revision" | "updatedAt" | "contextSnapshot"
   >,
+  observationContextId: ObservationContext["contextId"],
   expectedRevision: number | null,
 ) {
   const result = await requestOperation(
@@ -887,6 +920,7 @@ export async function saveObservationPlan(
       pathParams: { planId: plan.planId },
       body: {
         spotId: plan.spotId,
+        observationContextId,
         localDate: plan.localDate,
         localTime: plan.localTime,
         notes: plan.notes,

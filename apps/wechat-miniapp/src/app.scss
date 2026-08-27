@@ -5,7 +5,7 @@ page {
   min-height: 100%;
   background: var(--canvas);
   color: var(--text-primary);
-  font-family: tokens.$font-native;
+  font-family: tokens.$font-native, system-ui, sans-serif;
   font-size: 28rpx;
   line-height: 1.5;
   overflow-x: hidden;
@@ -82,15 +82,15 @@ button::after {
 }
 
 .type-display {
-  font-size: 48rpx;
-  line-height: 64rpx;
+  font-size: 44rpx;
+  line-height: 52rpx;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 .type-page-title {
-  font-size: 36rpx;
-  line-height: 48rpx;
-  font-weight: 700;
+  font-size: 32rpx;
+  line-height: 42rpx;
+  font-weight: 600;
 }
 .type-section {
   font-size: 30rpx;
@@ -103,7 +103,7 @@ button::after {
 }
 .type-label {
   font-size: 24rpx;
-  line-height: 34rpx;
+  line-height: 32rpx;
   font-weight: 500;
 }
 .type-caption {
@@ -128,8 +128,8 @@ button::after {
 .card {
   background: var(--surface);
   border: 1rpx solid var(--border);
-  border-radius: 28rpx;
-  box-shadow: var(--elevation-card);
+  border-radius: 24rpx;
+  box-shadow: none;
 }
 
 .soft-button {
@@ -171,9 +171,7 @@ button::after {
   box-shadow: none;
 }
 .soft-button:active {
-  background:
-    linear-gradient(var(--pressed-overlay), var(--pressed-overlay)),
-    var(--surface);
+  background: var(--pressed-overlay);
 }
 .soft-button--primary:active {
   background: var(--primary-pressed);
@@ -211,11 +209,6 @@ textarea:focus {
   font-weight: 600;
   background: var(--surface-subtle);
 }
-.chip--selected::before {
-  content: "\2713";
-  margin-right: 8rpx;
-}
-
 .field {
   min-height: 88rpx;
   width: 100%;

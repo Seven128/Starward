@@ -9,8 +9,16 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import type { ContributionUploadId, SpotId } from "@starward/miniapp-contracts";
-import { assertAdminToken, normalizeAdminActor } from "./admin-auth.ts";
+import type {
+  AdminOperation,
+  ContributionUploadId,
+  SpotId,
+} from "@starward/miniapp-contracts";
+import {
+  assertAdminOperation,
+  assertAdminToken,
+  normalizeAdminActor,
+} from "./admin-auth.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import {
   PostgresMiniappRepository,
@@ -36,7 +44,17 @@ function requireText(value: unknown, field: string, maximum: number) {
   return value.trim();
 }
 
-function envelope<T>(data: T) {
+function requireRevision(value: unknown, field = "revision") {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1)
+    throw new Error(`admin_${field}_invalid`);
+  return value;
+}
+
+function requireIdempotency(value: string | undefined) {
+  return requireText(value, "idempotency_key", 200);
+}
+
+export function envelope<T>(data: T) {
   const generatedAt = new Date().toISOString();
   return {
     apiVersion: "v2" as const,
@@ -57,13 +75,19 @@ export class AdminController {
     @Inject(MiniappService) private readonly service: MiniappService,
   ) {}
 
-  #context(token: string | undefined, actor: string | undefined) {
+  #context(
+    token: string | undefined,
+    actor: string | undefined,
+    operation: AdminOperation = "CASE_READ",
+  ) {
     assertAdminToken(token);
     if (!(this.service.repository instanceof PostgresMiniappRepository))
       throw new Error("admin_requires_postgres");
+    const actorId = normalizeAdminActor(actor);
+    assertAdminOperation(actorId, operation);
     return {
       repository: this.service.repository,
-      actorId: normalizeAdminActor(actor),
+      actorId,
       requestId: randomUUID(),
     };
   }
@@ -228,6 +252,29 @@ export class AdminController {
       throw new Error("admin_media_count_invalid");
     if (body.guides && body.guides.length > 20)
       throw new Error("admin_guide_count_invalid");
+    if (body.route) {
+      if (
+        !["ROUTE_ESTIMATE", "STRAIGHT_LINE_ONLY", "UNAVAILABLE"].includes(
+          body.route.kind,
+        ) ||
+        !["FRESH", "STALE", "PARTIAL", "UNAVAILABLE"].includes(
+          body.route.state,
+        ) ||
+        typeof body.route.lastRoad !== "string" ||
+        !body.route.lastRoad.trim() ||
+        typeof body.route.parkingGuidance !== "string" ||
+        !body.route.parkingGuidance.trim() ||
+        !body.route.source?.id
+      )
+        throw new Error("admin_route_evidence_invalid");
+      for (const value of [
+        body.route.distanceKm,
+        body.route.driveMinutes,
+        body.route.walkingMinutes,
+      ])
+        if (value !== null && (!Number.isFinite(value) || value < 0))
+          throw new Error("admin_route_evidence_invalid");
+    }
     if (
       body.lastVerifiedAt !== undefined &&
       body.lastVerifiedAt !== null &&
@@ -285,6 +332,7 @@ export class AdminController {
       ...(body.facilities ? { facilities: body.facilities } : {}),
       ...(body.media ? { media: body.media } : {}),
       ...(body.guides ? { guides: body.guides } : {}),
+      ...(body.route ? { route: body.route } : {}),
       ...(body.accessAndSafety
         ? { accessAndSafety: body.accessAndSafety }
         : {}),
@@ -311,36 +359,65 @@ export class AdminController {
   }
 
   @Post("spots/:spotId/publish")
-  publish(
+  async publish(
     @Param("spotId") spotId: string,
-    @Body() body: { reason?: string },
+    @Body()
+    body: {
+      reason?: string;
+      expectedRevision?: number;
+      assessmentDigest?: string;
+    },
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    return this.patchSpot(
-      spotId,
-      { status: "PUBLISHED", reason: body.reason ?? "管理员发布" },
-      token,
-      actor,
-    );
+    const context = this.#context(token, actor, "PUBLISH");
+    const result = await context.repository.adminChangeSpotLifecycle({
+      spotId: decodeURIComponent(spotId) as SpotId,
+      action: "PUBLISH",
+      expectedSpotRevision: requireRevision(body.expectedRevision),
+      ...(body.assessmentDigest
+        ? { assessmentDigest: body.assessmentDigest }
+        : {}),
+      reason: requireText(body.reason, "publication_reason", 500),
+      actorId: context.actorId,
+      requestId: context.requestId,
+      idempotencyKey: requireIdempotency(idempotencyKey),
+    });
+    await this.service.cache.deleteByPrefix("map:");
+    await this.service.cache.deleteByPrefix(`spot-overview:${spotId}`);
+    return envelope(result);
   }
 
   @Post("spots/:spotId/suspend")
-  suspend(
+  async suspend(
     @Param("spotId") spotId: string,
-    @Body() body: { reason?: string },
+    @Body()
+    body: {
+      reason?: string;
+      expectedRevision?: number;
+      assessmentDigest?: string;
+    },
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    return this.patchSpot(
-      spotId,
-      {
-        status: "TEMPORARILY_CLOSED",
-        reason: body.reason ?? "管理员暂停推荐",
-      },
-      token,
-      actor,
-    );
+    const context = this.#context(token, actor, "SUSPEND");
+    const result = await context.repository.adminChangeSpotLifecycle({
+      spotId: decodeURIComponent(spotId) as SpotId,
+      action: "SUSPEND",
+      expectedSpotRevision: requireRevision(body.expectedRevision),
+      ...(body.assessmentDigest
+        ? { assessmentDigest: body.assessmentDigest }
+        : {}),
+      reason: requireText(body.reason, "publication_reason", 500),
+      actorId: context.actorId,
+      requestId: context.requestId,
+      idempotencyKey: requireIdempotency(idempotencyKey),
+    });
+    await this.service.cache.deleteByPrefix("map:");
+    await this.service.cache.deleteByPrefix(`spot-overview:${spotId}`);
+    return envelope(result);
   }
 
   @Get("articles")
@@ -367,7 +444,7 @@ export class AdminController {
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    this.#context(token, actor);
+    this.#context(token, actor, "MEDIA_READ");
     if (!uploadId.startsWith("upload:"))
       throw new Error("contribution_upload_not_found");
     return envelope(
@@ -380,21 +457,48 @@ export class AdminController {
   @Post("moderation/cases/:caseId/resolve")
   async resolveModeration(
     @Param("caseId") caseId: string,
-    @Body() body: { resolution?: string; reason?: string },
+    @Body()
+    body: {
+      resolution?: string;
+      reason?: string;
+      expectedRevision?: number;
+    },
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "CASE_REVIEW");
     if (!caseId) throw new Error("moderation_case_not_found");
-    if (body.resolution !== "APPROVED" && body.resolution !== "REJECTED")
+    if (
+      body.resolution !== "APPROVED" &&
+      body.resolution !== "ACCEPTED" &&
+      body.resolution !== "REJECTED" &&
+      body.resolution !== "CHANGES_REQUESTED"
+    )
       throw new Error("moderation_resolution_invalid");
+    const key = requireIdempotency(idempotencyKey);
+    const reason = requireText(body.reason, "moderation_reason", 500);
+    const expectedRevision = requireRevision(body.expectedRevision);
+    if (body.resolution === "CHANGES_REQUESTED")
+      return envelope(
+        await context.repository.adminRequestContributionChanges({
+          caseId,
+          reason,
+          expectedRevision,
+          actorId: context.actorId,
+          requestId: context.requestId,
+          idempotencyKey: key,
+        }),
+      );
     return envelope(
       await context.repository.adminResolveModeration({
         caseId,
         resolution: body.resolution,
-        reason: requireText(body.reason, "moderation_reason", 500),
+        reason,
         actorId: context.actorId,
         requestId: context.requestId,
+        expectedRevision,
+        idempotencyKey: key,
       }),
     );
   }
@@ -407,11 +511,14 @@ export class AdminController {
       spotId?: string;
       confirmedClaims?: readonly string[];
       reason?: string;
+      expectedSubmissionRevision?: number;
+      expectedSpotRevision?: number;
     },
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Headers("x-admin-token") token?: string,
     @Headers("x-admin-actor") actor?: string,
   ) {
-    const context = this.#context(token, actor);
+    const context = this.#context(token, actor, "MERGE_COMMIT");
     if (!caseId) throw new Error("moderation_case_not_found");
     if (!body.spotId?.startsWith("spot:"))
       throw new Error("formal_spot_not_found");
@@ -429,14 +536,23 @@ export class AdminController {
       new Set(body.confirmedClaims).size !== body.confirmedClaims.length
     )
       throw new Error("contribution_merge_claims_invalid");
-    const result = await context.repository.adminMergeContributionEvidence({
+    const result = await context.repository.adminCommitMerge({
       caseId: decodeURIComponent(caseId),
       spotId: decodeURIComponent(body.spotId) as SpotId,
       confirmedClaims:
-        body.confirmedClaims as readonly AdminContributionEvidenceClaim[],
+        body.confirmedClaims as readonly string[],
+      expectedSubmissionRevision: requireRevision(
+        body.expectedSubmissionRevision,
+        "submission_revision",
+      ),
+      expectedSpotRevision: requireRevision(
+        body.expectedSpotRevision,
+        "spot_revision",
+      ),
       reason: requireText(body.reason, "merge_reason", 500),
       actorId: context.actorId,
       requestId: context.requestId,
+      idempotencyKey: requireIdempotency(idempotencyKey),
     });
     await Promise.all([
       this.service.cache.deleteByPrefix("map:"),

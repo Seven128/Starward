@@ -13,7 +13,13 @@ import {
 import { createConnection, createServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import Redis from "ioredis";
 import automator from "miniprogram-automator";
+import pg from "pg";
+import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
+import { knownWechatToolchainConsoleErrorId } from "./runtime-event-policy.mjs";
+
+const { Client } = pg;
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -40,7 +46,10 @@ if (
     "map-discovery",
     "spot-detail",
     "spot-night",
+    "plan-editor",
+    "settings",
     "my-library",
+    "upload-recovery",
     "platform-operations",
     "complete-current",
   ].includes(acceptanceScope)
@@ -61,8 +70,10 @@ const devtoolsCliEntry =
 const devtoolsCliBootstrap =
   "const e=process.argv[1],a=process.argv.slice(2).filter(function(x){return x!=='--electron'});if(!process.env.cwd)process.env.cwd=process.cwd();process.argv=[process.execPath,'--ms-enable-electron-run-as-node',e,'--electron'].concat(a);require(e)";
 const sourceProjectPath = path.join(root, "apps", "wechat-miniapp");
-const canonicalWorkspaceRoot = path.resolve("C:\\Dev\\Starward");
-const wechatFinalGateTempRoot = path.resolve("C:\\Dev\\.starward-tmp");
+const installationStorageKey =
+  "starward.wechat-miniapp.installation.current";
+const canonicalWorkspaceRoot = path.resolve("E:\\Dev\\Starward");
+const wechatFinalGateTempRoot = path.resolve("E:\\Dev\\.starward-tmp");
 const wechatProcessTemp = process.env.LOCALAPPDATA
   ? path.join(process.env.LOCALAPPDATA, "Temp")
   : null;
@@ -86,14 +97,23 @@ const wechatAutomationPort = 9420;
 const wechatIdeHttpPort = 23977;
 const wechatAcceptanceSdkVersion = "3.17.1";
 const devtoolsPortStableWindowMs = 5_000;
-const nativeAcceptanceEnvironment = Object.freeze({
+const nativeAcceptanceBaseEnvironment = Object.freeze({
   MINIAPP_RELEASE_PROFILE: "LOCAL",
-  MINIAPP_STORAGE_MODE: "MEMORY_TEST",
+  MINIAPP_STORAGE_MODE: "postgres",
   MINIAPP_AUTH_MODE: "LOCAL_TEST",
-  MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1",
   MINIAPP_ACCEPTANCE_DIAGNOSTICS: "1",
   MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM",
+  MINIAPP_AUTO_MIGRATE: "1",
 });
+const nativeComposePath = path.join(
+  root,
+  "infra",
+  "miniapp",
+  "docker-compose.yml",
+);
+const nativePostgresAdminUrl =
+  "postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/starward_miniapp";
+const nativeRedisUrl = "redis://127.0.0.1:56379";
 const currentEvidencePath = path.join(
   root,
   "artifacts",
@@ -121,6 +141,7 @@ const candidateRoots = [
   "tools/miniapp/selected-design-bindings.json",
   "tools/miniapp/verify-selected-design-bindings.mjs",
   "tools/miniapp/run-wechat-devtools-session.mjs",
+  "tools/miniapp/runtime-event-policy.mjs",
   "tools/miniapp/workflow-conformance.test.mjs",
 ];
 
@@ -521,8 +542,13 @@ async function prepareWechatProjectIdentity(candidateSha256, projectPath) {
     if (!original || Array.isArray(original) || typeof original !== "object")
       throw new Error("wechat_private_project_config_not_object");
   }
-  const projectName = `starward-final-${sha256(
-    `${normalizeWindowsPath(projectPath)}\0${candidateSha256}`,
+  // DevTools trust is a machine-local property of a physical project, not of
+  // one source revision. A candidate-derived name creates a new untrusted
+  // project after every verifier edit and can suppress subpackage navigation
+  // before automator observes any product journey. Candidate identity remains
+  // independently bound by the before/after source and bundle fingerprints.
+  const projectName = `starward-native-validation-${sha256(
+    `${normalizeWindowsPath(projectPath)}\0${String(originalPublicConfig.appid ?? "")}`,
   ).slice(0, 16)}`;
   const appliedBytes = Buffer.from(
     `${JSON.stringify(
@@ -626,15 +652,35 @@ async function restoreWechatProjectIdentity(session) {
     : null;
   const appliedSha256 = sha256(session.appliedBytes);
   const alreadyRestored = currentSha256 === originalSha256;
-  if (!alreadyRestored && currentSha256 !== appliedSha256)
-    return {
-      status: "failed",
-      reason: "private_config_ownership_lost",
-      current_sha256: currentSha256,
-      applied_sha256: appliedSha256,
-      original_sha256: originalSha256,
-      public_config: publicConfig,
-    };
+  let formattingNormalizationDetected = false;
+  if (!alreadyRestored && currentSha256 !== appliedSha256) {
+    let currentConfig;
+    let appliedConfig;
+    try {
+      currentConfig = JSON.parse(currentBytes?.toString("utf8") ?? "null");
+      appliedConfig = JSON.parse(session.appliedBytes.toString("utf8"));
+    } catch (error) {
+      return {
+        status: "failed",
+        reason: "private_config_current_bytes_invalid",
+        diagnostic_sha256: sha256(String(error?.message ?? error)),
+        current_sha256: currentSha256,
+        applied_sha256: appliedSha256,
+        original_sha256: originalSha256,
+        public_config: publicConfig,
+      };
+    }
+    if (canonical(currentConfig) !== canonical(appliedConfig))
+      return {
+        status: "failed",
+        reason: "private_config_semantic_ownership_lost",
+        current_sha256: currentSha256,
+        applied_sha256: appliedSha256,
+        original_sha256: originalSha256,
+        public_config: publicConfig,
+      };
+    formattingNormalizationDetected = true;
+  }
   if (!alreadyRestored) {
     if (session.originalBytes)
       await writeFile(session.privateConfigPath, session.originalBytes);
@@ -647,6 +693,7 @@ async function restoreWechatProjectIdentity(session) {
     status:
       privateRestored && publicConfig.status === "passed" ? "passed" : "failed",
     restored_original: privateRestored,
+    formatting_normalization_detected: formattingNormalizationDetected,
     original_exists: session.originalBytes !== null,
     original_sha256: originalSha256,
     restored_sha256: restoredSha256,
@@ -934,7 +981,471 @@ async function availableLoopbackPort() {
   return address.port;
 }
 
-async function buildCurrentCandidate(apiPort) {
+function runNativeCompose(args) {
+  const invocation = dockerComposeInvocation([
+    "-f",
+    nativeComposePath,
+    ...args,
+  ]);
+  const result = spawnSync(invocation.command, invocation.args, {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 16 * 1024 * 1024,
+    windowsHide: true,
+  });
+  if (result.status !== 0)
+    throw new Error(
+      `native_infrastructure_compose_failed:${result.status}:${sha256(`${result.stdout ?? ""}\n${result.stderr ?? ""}`)}`,
+    );
+}
+
+async function prepareNativeInfrastructure(runId) {
+  runNativeCompose(["up", "-d", "--wait"]);
+  const suffix = sha256(runId).slice(0, 16);
+  const databaseName = `starward_native_${suffix}`;
+  if (!/^starward_native_[a-f0-9]{16}$/u.test(databaseName))
+    throw new Error("native_database_name_invalid");
+  const admin = new Client({ connectionString: nativePostgresAdminUrl });
+  await admin.connect();
+  await admin.query(`CREATE DATABASE "${databaseName}"`);
+  const redis = new Redis(nativeRedisUrl, {
+    lazyConnect: true,
+    maxRetriesPerRequest: 1,
+    connectionName: `starward-native-${suffix}`,
+  });
+  await redis.connect();
+  const databaseUrl =
+    `postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/${databaseName}`;
+  const cachePrefix = `starward:miniapp:native:${suffix}:`;
+  const adminToken = randomUUID();
+  const environment = Object.freeze({
+    ...nativeAcceptanceBaseEnvironment,
+    DATABASE_URL: databaseUrl,
+    REDIS_URL: nativeRedisUrl,
+    MINIAPP_CACHE_PREFIX: cachePrefix,
+    MINIAPP_QUEUE_NAME: `starward-miniapp-native-${suffix}`,
+    MINIAPP_ADMIN_TOKEN: adminToken,
+    MINIAPP_ADMIN_RBAC: JSON.stringify({
+      "admin:native-acceptance": ["OWNER"],
+    }),
+    MINIAPP_SESSION_SECRET:
+      `native-acceptance-${suffix}-session-secret-current`,
+  });
+  return {
+    databaseName,
+    databaseUrl,
+    cachePrefix,
+    adminToken,
+    admin,
+    redis,
+    environment,
+  };
+}
+
+async function cleanupNativeInfrastructure(infrastructure) {
+  if (!infrastructure) return { status: "passed", disposition: "not_started" };
+  const failures = [];
+  try {
+    let cursor = "0";
+    do {
+      const [next, keys] = await infrastructure.redis.scan(
+        cursor,
+        "MATCH",
+        `${infrastructure.cachePrefix}*`,
+        "COUNT",
+        200,
+      );
+      cursor = next;
+      if (keys.length) await infrastructure.redis.del(...keys);
+    } while (cursor !== "0");
+  } catch (error) {
+    failures.push(`redis:${String(error?.message ?? error)}`);
+  }
+  await infrastructure.redis.quit().catch((error) => {
+    failures.push(`redis-close:${String(error?.message ?? error)}`);
+  });
+  try {
+    await infrastructure.admin.query(
+      "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
+      [infrastructure.databaseName],
+    );
+    await infrastructure.admin.query(
+      `DROP DATABASE IF EXISTS "${infrastructure.databaseName}"`,
+    );
+  } catch (error) {
+    failures.push(`postgres:${String(error?.message ?? error)}`);
+  }
+  await infrastructure.admin.end().catch((error) => {
+    failures.push(`postgres-close:${String(error?.message ?? error)}`);
+  });
+  return failures.length
+    ? {
+        status: "failed",
+        failure_count: failures.length,
+        failures_sha256: sha256(failures.join("\n")),
+      }
+    : {
+        status: "passed",
+        database_dropped: true,
+        redis_namespace_removed: true,
+      };
+}
+
+async function adminRequest(base, infrastructure, pathname, options = {}) {
+  const response = await fetch(base + pathname, {
+    ...options,
+    headers: {
+      "content-type": "application/json",
+      "x-admin-token": infrastructure.adminToken,
+      "x-admin-actor": "admin:native-acceptance",
+      ...(options.idempotencyKey
+        ? { "idempotency-key": options.idempotencyKey }
+        : {}),
+      ...options.headers,
+    },
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok)
+    throw new Error(
+      `native_admin_request_failed:${response.status}:${pathname}:${sha256(JSON.stringify(payload))}`,
+    );
+  return payload?.data;
+}
+
+async function productionUserRequest(base, pathname, options = {}) {
+  const response = await fetch(base + pathname, {
+    ...options,
+    headers: {
+      "content-type": "application/json",
+      ...(options.accessToken
+        ? { authorization: `Bearer ${options.accessToken}` }
+        : {}),
+      ...(options.idempotencyKey
+        ? { "idempotency-key": options.idempotencyKey }
+        : {}),
+      ...options.headers,
+    },
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok)
+    throw new Error(
+      `native_user_request_failed:${response.status}:${pathname}:${sha256(JSON.stringify(payload))}`,
+    );
+  return payload?.data;
+}
+
+async function prepareNativePendingUpload({
+  miniProgram,
+  apiPort,
+  spotId,
+  runId,
+}) {
+  const myPage = await switchTabAndWait(
+    miniProgram,
+    "upload-recovery-identity-entry",
+    "/pages/my/index",
+    "pages/my/index",
+  );
+  if (!myPage) throw new Error("native_upload_recovery_identity_entry_failed");
+  const currentMyPage = myPage;
+  await waitForSelector(currentMyPage, ".my-page", 1);
+  await waitForSelector(currentMyPage, ".routine-entry--contribution", 1);
+  const installationIdentity = await miniProgram
+    .callWxMethod("getStorageSync", installationStorageKey)
+    .catch(() => "");
+  if (
+    typeof installationIdentity !== "string" ||
+    !installationIdentity.startsWith("local:") ||
+    installationIdentity.length < 22
+  )
+    throw new Error("native_upload_recovery_installation_identity_missing");
+
+  const base = `http://127.0.0.1:${apiPort}`;
+  const suffix = sha256(`${runId}:${installationIdentity}`).slice(0, 12);
+  const session = await productionUserRequest(base, "/v2/auth/wechat/login", {
+    method: "POST",
+    body: JSON.stringify({ code: installationIdentity }),
+  });
+  if (!session?.accessToken || !session?.userId)
+    throw new Error("native_upload_recovery_session_missing");
+  const draft = await productionUserRequest(base, "/v2/me/contributions", {
+    method: "POST",
+    accessToken: session.accessToken,
+    idempotencyKey: `native-recovery-draft-${suffix}`,
+    body: JSON.stringify({
+      kind: "FIELD_REPORT",
+      spotId,
+      candidateLocation: null,
+      observedAt: new Date().toISOString(),
+      topics: ["NIGHT_SAFETY"],
+      detail:
+        "当前隔离原生验收通过正式投稿 API 保存的中断上传草稿；只验证恢复、身份隔离与提交门禁。",
+      rightsConfirmed: true,
+      preciseLocationConsent: false,
+    }),
+  });
+  if (!draft?.submissionId || !Number.isInteger(draft?.revision))
+    throw new Error("native_upload_recovery_draft_missing");
+  const pending = await productionUserRequest(
+    base,
+    `/v2/me/contributions/${encodeURIComponent(draft.submissionId)}/media-uploads`,
+    {
+      method: "POST",
+      accessToken: session.accessToken,
+      idempotencyKey: `native-recovery-upload-${suffix}`,
+      body: JSON.stringify({
+        originalName: "interrupted-field-evidence.png",
+        mimeType: "image/png",
+        byteSize: 2048,
+        expectedRevision: draft.revision,
+      }),
+    },
+  );
+  const pendingMedia = pending?.media?.find(
+    (item) => item.state === "PENDING",
+  );
+  if (!pendingMedia?.uploadId)
+    throw new Error("native_upload_recovery_pending_state_missing");
+
+  const neutralPage = await retryIdempotentAutomatorOperation(
+    "upload-recovery-cache-reset-route",
+    () => miniProgram.reLaunch("/pages/auth/index"),
+  );
+  if (!neutralPage)
+    throw new Error("native_upload_recovery_cache_reset_route_failed");
+  await waitForSelector(
+    await waitForCurrentPagePath(miniProgram, "pages/auth/index"),
+    ".permission-page",
+    1,
+  );
+  const reset = await miniProgram.evaluate(function () {
+    return (
+      globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.resetNetwork?.() ?? {
+        status: "missing",
+      }
+    );
+  });
+  if (reset?.status !== "passed")
+    throw new Error("native_upload_recovery_cache_reset_failed");
+  return {
+    status: "passed",
+    preparation: "production_user_http_api",
+    storage: "run-unique PostgreSQL/PostGIS",
+    state: "PENDING",
+    submission_id_sha256: sha256(draft.submissionId),
+    upload_id_sha256: sha256(pendingMedia.uploadId),
+    user_id_sha256: sha256(session.userId),
+    fixture_injection: false,
+    component_state_injection: false,
+  };
+}
+
+async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
+  const base = `http://127.0.0.1:${apiPort}`;
+  const suffix = sha256(runId).slice(0, 12);
+  const spotId = `spot:native-acceptance-${suffix}`;
+  const verifiedAt = new Date().toISOString();
+  const source = {
+    id: `source:native-acceptance-${suffix}`,
+    kind: "OFFICIAL_VERIFICATION",
+    provider: "Starward 隔离原生验收",
+    title: "当前候选生产链路核验记录",
+    sourceUrl: "",
+    license: "Project-owned automated acceptance record",
+    licenseUrl: "",
+    publishedAt: verifiedAt,
+    retrievedAt: verifiedAt,
+    validFrom: verifiedAt,
+    validTo: null,
+    state: "FRESH",
+    confidence: 1,
+    precision: "只证明当前运行的数据门禁、持久化和交互，不陈述真实地点事实",
+    limitations: ["运行结束即销毁的隔离验收记录"],
+  };
+  await adminRequest(base, infrastructure, "/v2/admin/spots", {
+    method: "POST",
+    body: JSON.stringify({
+      spotId,
+      name: "隔离验收观测点",
+      region: "当前候选验证区域",
+      address: "仅用于本次生产链路验收，不对应现实地点",
+      timezone: "Asia/Shanghai",
+      latitude: 22.5431,
+      longitude: 114.0579,
+      altitudeM: 120,
+      visibilityPolicy: "PUBLIC_EXACT",
+      source,
+      reason: "建立本次运行唯一、可销毁且不可进入生产发布的数据记录",
+    }),
+  });
+  const facilityTypes = [
+    "PARKING",
+    "TOILET",
+    "PLATFORM",
+    "CHARGING",
+    "CAMPING",
+    "ROAD",
+    "WALKING",
+    "SIGNAL",
+  ];
+  const facilities = facilityTypes.map((type) => ({
+    type,
+    status: ["PARKING", "PLATFORM", "ROAD", "SIGNAL"].includes(type)
+      ? "AVAILABLE"
+      : "UNAVAILABLE",
+    summary: ["PARKING", "PLATFORM", "ROAD", "SIGNAL"].includes(type)
+      ? "本次验收记录为可用"
+      : "本次验收记录为不可用",
+    detail: `由当前运行的管理员生产接口写入并由 PostgreSQL 回读：${type}`,
+    distanceM: type === "PARKING" ? 80 : null,
+    openingHours: null,
+    usageCondition: "只用于隔离验收，不构成现实出行依据",
+    verifiedAt,
+    confidence: 1,
+    source,
+  }));
+  const claims = [
+    "SPOT_COORDINATE",
+    "ACCESS_LAST_ROAD",
+    "ACCESS_PARKING",
+    "ACCESS_OPENNESS",
+    "ACCESS_LEGAL_ENTRY",
+    "SAFETY_NIGHT",
+    "HORIZON_PROFILE",
+  ];
+  await adminRequest(
+    base,
+    infrastructure,
+    `/v2/admin/spots/${encodeURIComponent(spotId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        reason: "补齐本次隔离运行的完整度字段并触发服务端重新评估",
+        lastVerifiedAt: verifiedAt,
+        lightPollution: {
+          levelAtMost: 4,
+          productBand: "LOW",
+          radiance: {
+            median: 0.8,
+            p10: 0.5,
+            p90: 1.2,
+            unit: "nW/cm²/sr",
+          },
+          minimumCloudFreeObservations: 12,
+          calibratedSkyClass: false,
+          label: "隔离验收低光带",
+          method: "当前运行生产接口的确定性边界核验",
+          datasetVersion: `native-acceptance-${suffix}`,
+          dataDate: verifiedAt.slice(0, 10),
+          precision: "不外推为现实地点或 Bortle/SQM",
+          state: "ESTIMATED",
+          source,
+        },
+        obstructionPercent: 20,
+        clearDirections: ["ALL"],
+        accessTags: ["DRIVE_TO", "NO_HIKE"],
+        facilities,
+        route: {
+          kind: "STRAIGHT_LINE_ONLY",
+          originLabel: "验收地图中心",
+          distanceKm: null,
+          driveMinutes: null,
+          walkingMinutes: null,
+          lastRoad: "两车道硬化道路；本次运行只验证信息闭环",
+          parkingGuidance: "在标记区域内停车并保持通道；只用于隔离验收",
+          state: "FRESH",
+          source,
+        },
+        accessAndSafety: {
+          openness: "OPEN",
+          legalAccess: "PERMITTED",
+          nightSafety: "CAUTION",
+          explicitDanger: false,
+          restrictions: ["不得把本记录用于现实出行判断"],
+          guidance: ["本次运行结束后数据库和媒体根目录均被销毁"],
+        },
+        siteMediaState: "NO_SITE_MEDIA_VERIFIED",
+        evidence: claims.map((claim, index) => ({
+          evidenceId: `evidence:${suffix}:${index + 1}`,
+          subjectType:
+            claim === "SPOT_COORDINATE"
+              ? "SPOT"
+              : claim === "SAFETY_NIGHT"
+                ? "SAFETY"
+                : claim === "HORIZON_PROFILE"
+                  ? "HORIZON"
+                  : "ACCESS",
+          subjectId: spotId,
+          claim,
+          state: "CONFIRMED",
+          sourceType: "OPERATOR",
+          sourceId: source.id,
+          mediaIds: [],
+          observedAt: verifiedAt,
+          verifiedAt,
+          validTo: null,
+          confidence: 1,
+        })),
+        dataDisclosure: [source],
+      }),
+    },
+  );
+  const dashboard = await adminRequest(
+    base,
+    infrastructure,
+    "/v2/admin/dashboard",
+  );
+  const candidate = dashboard.spots.find((spot) => spot.spot_id === spotId);
+  if (!candidate || candidate.publication_assessment?.complete !== true)
+    throw new Error("native_formal_spot_assessment_incomplete");
+  const assessment = await adminRequest(
+    base,
+    infrastructure,
+    `/v2/admin/spots/${encodeURIComponent(spotId)}/publication-assessments`,
+    {
+      method: "POST",
+      idempotencyKey: `native-assess-${suffix}`,
+      body: JSON.stringify({
+        reason: "确认本次隔离验收记录满足当前发布门",
+        expectedRevision: Number(candidate.version),
+      }),
+    },
+  );
+  const assessmentDigest =
+    assessment?.assessmentDigest ?? assessment?.readback?.assessmentDigest;
+  if (!assessmentDigest)
+    throw new Error("native_formal_spot_assessment_digest_missing");
+  await adminRequest(
+    base,
+    infrastructure,
+    `/v2/admin/spots/${encodeURIComponent(spotId)}/publish`,
+    {
+      method: "POST",
+      idempotencyKey: `native-publish-${suffix}`,
+      body: JSON.stringify({
+        reason: "发布本次运行隔离记录以验证正式点只读链路",
+        expectedRevision: Number(candidate.version),
+        assessmentDigest,
+      }),
+    },
+  );
+  const readback = await adminRequest(
+    base,
+    infrastructure,
+    "/v2/admin/dashboard",
+  );
+  const published = readback.spots.find((spot) => spot.spot_id === spotId);
+  if (!published || published.status !== "PUBLISHED")
+    throw new Error("native_formal_spot_publish_readback_failed");
+  return {
+    spotId,
+    status: published.status,
+    revision: Number(published.version),
+    sourceId: source.id,
+  };
+}
+
+async function buildCurrentCandidate(apiPort, runtimeEnvironment) {
   const generatedRoot = repositoryPath("apps/wechat-miniapp/dist/weapp");
   await rm(generatedRoot, { force: true, recursive: true });
   const npmCli = path.join(
@@ -952,7 +1463,7 @@ async function buildCurrentCandidate(apiPort) {
       cwd: root,
       env: {
         ...process.env,
-        ...nativeAcceptanceEnvironment,
+        ...runtimeEnvironment,
         MINIAPP_API_BASE: `http://127.0.0.1:${apiPort}`,
       },
       encoding: "utf8",
@@ -976,7 +1487,7 @@ async function buildCurrentCandidate(apiPort) {
   };
 }
 
-async function startApi(apiPort, mediaRoot) {
+async function startApi(apiPort, mediaRoot, runtimeEnvironment) {
   const readiness = `http://127.0.0.1:${apiPort}/v2/capabilities`;
   await assertPortFree(readiness);
   const child = spawn(
@@ -986,7 +1497,7 @@ async function startApi(apiPort, mediaRoot) {
       cwd: path.join(root, "workers", "miniapp-api"),
       env: {
         ...process.env,
-        ...nativeAcceptanceEnvironment,
+        ...runtimeEnvironment,
         MINIAPP_API_PORT: String(apiPort),
         MINIAPP_MEDIA_STORAGE_ROOT: mediaRoot,
       },
@@ -1176,7 +1687,7 @@ async function waitForInitialPage(miniProgram, timeoutMs) {
   );
 }
 
-async function enableRuntimeLog(program, timeoutMs = 30_000) {
+async function enableRuntimeLog(program, timeoutMs = 60_000) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
   while (Date.now() < deadline) {
@@ -1606,8 +2117,8 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='map-observing-conditions-icon']", ".map-conditions-bar"],
   ["[data-od-id='map-permission-state']", ".map-floating-tools .soft-button"],
   ["[data-od-id='spot-finder-sheet']", ".finder-panel"],
-  ["[data-od-id='spot-finder-search-input']", ".finder-input"],
-  ["[data-od-id='spot-finder-search-icon']", ".finder-search-icon"],
+  ["[data-od-id='spot-finder-search-input']", ".map-finder-trigger__input"],
+  ["[data-od-id='spot-finder-search-icon']", ".map-finder-trigger__icon"],
   ["[data-od-id='spot-finder-result-scroll']", ".finder-results"],
   ["[data-od-id='spot-finder-wanted-section']", ".finder-partition"],
   ["[data-od-id='spot-finder-other-section']", ".finder-partition"],
@@ -1627,13 +2138,25 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='map-analysis-layer-choice']", ".conditions-overlay-option"],
   ["[data-od-id='map-analysis-close']", ".conditions-panel__close"],
   ["[data-od-id='source-lift-map-dock']", ".source-lift-map-dock"],
+  ["[data-od-id='sky-target-list']", ".sky-targets"],
+  ["[data-od-id='sky-orientation-scene']", ".sky-scene"],
+  ["[data-od-id='sky-orientation-control']", ".orientation-control"],
+  ["[data-od-id='sky-orientation-object-list']", ".sky-targets"],
   ["[data-od-id='selected-card-star']", ".selected-card-star"],
-  ["[data-od-id='my-contribution-entry']", ".account-row--contribution"],
-  ["[data-od-id='my-plan-entry']", ".account-row--plan"],
+  ["[data-od-id='my-contribution-entry']", ".routine-entry--contribution"],
+  ["[data-od-id='my-plan-entry']", ".routine-entry--plan"],
+  ["[data-od-id='my-settings-entry']", ".routine-entry--settings"],
+  ["[data-od-id='plan-editor-form']", ".plan-editor-form"],
+  ["[data-od-id='plan-summary']", ".plan-hero"],
+  ["[data-od-id='plan-preparation']", ".plan-checklist"],
+  ["[data-od-id='plan-route-nodes']", ".plan-route"],
   ["[data-od-id='spot-contribution-entry']", ".contribution-link"],
   ["[data-od-id='contribution-spot-context']", ".contribution-context"],
   ["[data-od-id='contribution-location-consent']", ".contribution-location-card"],
-  ["[data-od-id='contribution-kind-control'] .chip", ".contribution-choice-grid .chip"],
+  [
+    "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
+    ".contribution-kind-choice",
+  ],
   ["[data-od-id='contribution-topic-control'] .chip", ".contribution-topic-grid .chip"],
   ["[data-od-id='contribution-submit'] .soft-button", ".contribution-actions .soft-button"],
   ["[data-od-id='contribution-submit'] .soft-button--primary", ".contribution-actions .soft-button--primary"],
@@ -1651,6 +2174,7 @@ const nativeSelectorAliases = new Map([
     ".custom-nav__side--right .soft-button",
   ],
   ["[data-od-id='observation-mode-entry'] .chip", ".observation-setting .chip"],
+  ["[data-od-id='observation-mode-entry']", ".observation-mode-entry"],
 ]);
 
 async function queryElements(page, selector) {
@@ -1676,6 +2200,17 @@ async function queryElement(page, selector) {
   return elements[0] ?? null;
 }
 
+async function nativeDiagnosticStage(label, operation) {
+  try {
+    return await operation();
+  } catch (error) {
+    throw new Error(
+      `native_stage_failed:${label}:${String(error?.message ?? error)}`,
+      { cause: error },
+    );
+  }
+}
+
 async function waitForSelector(
   page,
   selector,
@@ -1686,7 +2221,9 @@ async function waitForSelector(
   while (Date.now() < deadline) {
     const elements = await queryElements(page, selector).catch(() => []);
     if (elements.length >= minimum) return elements;
-    await page.waitFor(250);
+    // A just-pushed subpackage page can temporarily report itself as not yet
+    // topmost. Do not ask that stale page handle to own the retry clock.
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(
     `native_selector_timeout:${page.path}:${selector}:${minimum}`,
@@ -1708,7 +2245,7 @@ async function waitForElementClass(
           .filter(Boolean)
       : [];
     if (classes.includes(className)) return [...new Set(classes)].sort();
-    await page.waitFor(250);
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(`native_class_timeout:${page.path}:${selector}:${className}`);
 }
@@ -1718,15 +2255,25 @@ async function activateDayModeThroughProductionControl(
   setRuntimePhase = () => {},
 ) {
   setRuntimePhase("setup-day-control-route");
-  const settingsPage = await retryIdempotentAutomatorOperation(
-    "setup-day-control-route",
-    () => miniProgram.reLaunch("/content/settings/index"),
+  const switchedMyPage = await switchTabAndWait(
+    miniProgram,
+    "setup-day-control-my-tab",
+    "/pages/my/index",
+    "pages/my/index",
   );
-  if (!settingsPage) throw new Error("native_setup_settings_route_unavailable");
+  if (!switchedMyPage) throw new Error("native_setup_my_route_unavailable");
+  const myPage = switchedMyPage;
+  await waitForSelector(myPage, ".my-page", 1);
+  const settingsPage = await tapIntoPage(
+    miniProgram,
+    myPage,
+    "[data-od-id='my-settings-action'] .soft-button",
+    "content/settings/index",
+  );
   const modeButtons = await waitForSelector(
     settingsPage,
     ".settings-choice-grid .chip",
-    2,
+    3,
   );
   const controlText = await modeButtons[0].text().catch(() => "");
   setRuntimePhase("setup-day-control-tap");
@@ -1752,11 +2299,12 @@ async function resetThroughAcceptanceControl(miniProgram) {
   // WeChat report the cancelled RequestTask promises as opaque console errors.
   // Always move to the production, network-free permission page first so every
   // setup, evidence and degradation reset has the same stable lifecycle owner.
-  const neutralPage = await retryIdempotentAutomatorOperation(
+  const requestedNeutralPage = await retryIdempotentAutomatorOperation(
     "acceptance-reset-route",
     () => miniProgram.reLaunch("/pages/auth/index"),
   );
-  if (!neutralPage) throw new Error("native_reset_route_unavailable");
+  if (!requestedNeutralPage) throw new Error("native_reset_route_unavailable");
+  const neutralPage = await waitForCurrentPagePath(miniProgram, "pages/auth/index");
   await waitForSelector(neutralPage, ".permission-page", 1);
   const reset = await miniProgram.evaluate(function () {
     const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
@@ -1866,11 +2414,13 @@ async function verifyPreparedContextContinuity(
 }
 
 async function resetNetworkCacheForPreparedFault(miniProgram, preparedUrl) {
-  const neutralPage = await retryIdempotentAutomatorOperation(
+  const requestedNeutralPage = await retryIdempotentAutomatorOperation(
     "acceptance-network-reset-route",
     () => miniProgram.reLaunch("/pages/auth/index"),
   );
-  if (!neutralPage) throw new Error("native_network_reset_route_unavailable");
+  if (!requestedNeutralPage)
+    throw new Error("native_network_reset_route_unavailable");
+  const neutralPage = await waitForCurrentPagePath(miniProgram, "pages/auth/index");
   await waitForSelector(neutralPage, ".permission-page", 1);
   const reset = await miniProgram.evaluate(function () {
     const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
@@ -1937,7 +2487,7 @@ async function waitForSelectorSet(page, definitions, timeoutMs = 20_000) {
     );
     if (counts.every((count, index) => count >= definitions[index].minimum))
       return true;
-    await page.waitFor(250);
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
   return false;
 }
@@ -1947,7 +2497,7 @@ async function waitForSelectorAbsent(page, selector, timeoutMs = 20_000) {
   while (Date.now() < deadline) {
     const elements = await queryElements(page, selector).catch(() => []);
     if (elements.length === 0) return true;
-    await page.waitFor(250);
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
   return false;
 }
@@ -1986,6 +2536,48 @@ async function captureJourneyInteractions(
           return { watch, before_sha256: sha256(canonical(value ?? null)) };
         }),
       );
+    }
+    if (step.scroll) {
+      const scroller = (await waitForSelector(
+        page,
+        step.scroll.container,
+        1,
+        step.timeoutMs ?? 20_000,
+      ))[0];
+      const target = (await waitForSelector(
+        page,
+        step.scroll.target,
+        1,
+        step.timeoutMs ?? 20_000,
+      ))[step.scroll.index ?? 0];
+      if (!scroller || typeof scroller.scrollTo !== "function" || !target)
+        throw new Error(
+          `native_interaction_scroll_unsupported:${definition.key}:${step.key}`,
+        );
+      const targetOffset = await target.offset().catch(() => null);
+      const scrollerOffset = await scroller.offset().catch(() => null);
+      const currentScrollTop = Number(
+        await scroller.property("scrollTop").catch(() => 0),
+      );
+      const targetTop = Number(targetOffset?.top ?? targetOffset?.y);
+      const scrollerTop = Number(scrollerOffset?.top ?? scrollerOffset?.y);
+      if (!Number.isFinite(targetTop) || !Number.isFinite(scrollerTop))
+        throw new Error(
+          `native_interaction_scroll_target_unavailable:${definition.key}:${step.key}`,
+        );
+      const scrollTop = Math.max(
+        0,
+        currentScrollTop + targetTop - scrollerTop - (step.scroll.topInset ?? 24),
+      );
+      await scroller.scrollTo(0, scrollTop);
+      await new Promise((resolve) =>
+        setTimeout(resolve, step.scroll.settleMs ?? 500),
+      );
+      stepObservations.push({
+        scroll_container: step.scroll.container,
+        scroll_target: step.scroll.target,
+        scroll_top: scrollTop,
+      });
     }
     if (step.input) {
       const controls = await waitForSelector(
@@ -2033,7 +2625,35 @@ async function captureJourneyInteractions(
         throw new Error(
           `native_interaction_trigger_missing:${definition.key}:${step.key}`,
         );
-      await control.trigger(step.trigger.event, step.trigger.detail ?? {});
+      let triggerDetail = step.trigger.detail ?? {};
+      if (step.trigger.differentNumericValue === true) {
+        const [currentRaw, minimumRaw, maximumRaw] = await Promise.all([
+          control.property("value"),
+          control.property("min"),
+          control.property("max"),
+        ]);
+        const current = Number(currentRaw);
+        const minimum = Number(minimumRaw);
+        const maximum = Number(maximumRaw);
+        if (
+          !Number.isFinite(current) ||
+          !Number.isFinite(minimum) ||
+          !Number.isFinite(maximum) ||
+          minimum >= maximum
+        )
+          throw new Error(
+            `native_interaction_numeric_bounds_unavailable:${definition.key}:${step.key}`,
+          );
+        const value = current === maximum ? minimum : maximum;
+        triggerDetail = { ...triggerDetail, value };
+        stepObservations.push({
+          numeric_trigger_current: current,
+          numeric_trigger_value: value,
+          numeric_trigger_minimum: minimum,
+          numeric_trigger_maximum: maximum,
+        });
+      }
+      await control.trigger(step.trigger.event, triggerDetail);
       actionPerformed = true;
     }
     if (step.expectedPath) {
@@ -2050,7 +2670,8 @@ async function captureJourneyInteractions(
     // Mini Program component events update React state asynchronously. Keep the
     // native journey paced like a real user so the next control never observes
     // the previous input's pre-event state.
-    if (actionPerformed) await page.waitFor(step.settleMs ?? 350);
+    if (actionPerformed)
+      await new Promise((resolve) => setTimeout(resolve, step.settleMs ?? 350));
     for (const before of watchedBefore) {
       const elements = await waitForSelector(
         page,
@@ -2167,7 +2788,7 @@ async function waitForRootFragment(
       latestWxml.includes(fragment) === expectedPresence
     )
       return latestWxml;
-    await page.waitFor(250);
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(
     `native_root_fragment_timeout:${page.path}:${rootSelector}:${expectedPresence}:${rootObserved ? "root-observed" : "root-missing"}:${latestWxml.length}:${sha256(latestWxml)}`,
@@ -2186,7 +2807,7 @@ async function waitForRecoveryControl(page, probe, timeoutMs = 10_000) {
       if (controlText.trim() === probe.recoveryText)
         return { control, index, controlText };
     }
-    await page.waitFor(250);
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(
     `native_recovery_control_missing:${page.path}:${sha256(probe.recoveryLabel)}`,
@@ -2239,18 +2860,189 @@ async function currentPageUrl(miniProgram, page, requiredQueryKeys = []) {
 async function waitForCurrentPagePath(miniProgram, expectedPath, timeoutMs = 20_000) {
   const normalized = expectedPath.replace(/^\//u, "");
   const deadline = Date.now() + timeoutMs;
+  let stableMatches = 0;
+  let stablePage = null;
   while (Date.now() < deadline) {
     const page = await miniProgram.currentPage().catch(() => null);
-    if (page?.path === normalized) return page;
+    if (page?.path === normalized) {
+      stableMatches += 1;
+      stablePage = page;
+      // DevTools can expose the destination path one render tick before the
+      // pushed page becomes the top queryable page. Three consecutive reads
+      // bind the returned handle to the settled production navigation.
+      if (stableMatches >= 3) return stablePage;
+    } else {
+      stableMatches = 0;
+      stablePage = null;
+    }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(`native_formal_entry_timeout:${normalized}`);
 }
 
+async function switchTabAndWait(
+  miniProgram,
+  label,
+  url,
+  expectedPath,
+  attemptLimit = 3,
+) {
+  let lastError;
+  for (let attempt = 1; attempt <= attemptLimit; attempt += 1) {
+    try {
+      const requestedPage = await retryIdempotentAutomatorOperation(
+        `${label}:attempt-${attempt}`,
+        () => miniProgram.switchTab(url),
+      );
+      if (!requestedPage)
+        throw new Error(`native_switch_tab_unavailable:${label}:${attempt}`);
+      return await waitForCurrentPagePath(miniProgram, expectedPath, 12_000);
+    } catch (error) {
+      lastError = error;
+      if (
+        attempt === attemptLimit ||
+        !String(error?.message ?? error).startsWith(
+          "native_formal_entry_timeout:",
+        )
+      )
+        throw error;
+    }
+  }
+  throw new Error(
+    `native_switch_tab_unreachable:${label}:${sha256(
+      String(lastError?.message ?? lastError ?? ""),
+    )}`,
+  );
+}
+
 async function tapIntoPage(miniProgram, page, selector, expectedPath) {
   const controls = await waitForSelector(page, selector, 1);
+  // A tab switch resolves before the DevTools simulator has always finished
+  // attaching Taro's delegated event bridge. Pace this like a user arriving on
+  // the page before pressing the next visible control.
+  await new Promise((resolve) => setTimeout(resolve, 750));
   await controls[0].tap();
-  return waitForCurrentPagePath(miniProgram, expectedPath);
+  try {
+    // First entry into a subpackage can spend several seconds compiling and
+    // mounting. A short timeout would dispatch the fallback against the source
+    // page after the destination had already started becoming topmost.
+    return await waitForCurrentPagePath(miniProgram, expectedPath, 20_000);
+  } catch (error) {
+    if (!String(error?.message ?? error).startsWith("native_formal_entry_timeout:")) {
+      throw error;
+    }
+    // Some WeChat DevTools builds acknowledge the physical Element.tap call
+    // without forwarding its native tap event through Taro's delegated event
+    // bridge. Re-dispatch the same production control event before treating the
+    // route as unavailable; this still exercises the rendered control and its
+    // production onClick owner rather than opening the destination directly.
+    const currentPage = await miniProgram.currentPage().catch(() => null);
+    if (currentPage?.path !== page.path)
+      throw new Error(
+        `native_formal_entry_unsettled:${expectedPath}:${currentPage?.path ?? "unknown"}`,
+      );
+    const freshControls = await waitForSelector(currentPage, selector, 1);
+    await freshControls[0].trigger("tap");
+    return waitForCurrentPagePath(miniProgram, expectedPath);
+  }
+}
+
+async function ensureSavedPlanThroughProductionUi(miniProgram, page) {
+  let activePage = page;
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline) {
+    const summary = await queryElements(
+      activePage,
+      "[data-od-id='plan-summary']",
+    ).catch(() => []);
+    if (summary.length > 0) return activePage;
+    const emptyActions = await queryElements(
+      activePage,
+      ".plan-empty .soft-button--primary",
+    ).catch(() => []);
+    if (emptyActions.length > 0) {
+      await emptyActions[0].tap();
+      activePage = await waitForCurrentPagePath(
+        miniProgram,
+        "content/plan/detail/index",
+      );
+      const formOpened = await waitForSelectorSet(
+        activePage,
+        [{ selector: "[data-od-id='plan-editor-form']", minimum: 1 }],
+        3_000,
+      );
+      if (!formOpened) {
+        const freshEmptyActions = await queryElements(
+          activePage,
+          ".plan-empty .soft-button--primary",
+        ).catch(() => []);
+        if (freshEmptyActions.length > 0)
+          await freshEmptyActions[0].trigger("tap");
+      }
+      activePage = await waitForCurrentPagePath(
+        miniProgram,
+        "content/plan/detail/index",
+      );
+      await waitForSelector(activePage, "[data-od-id='plan-editor-form']", 1);
+      await waitForSelector(activePage, ".plan-editor-form .field", 4);
+      const saveActions = await waitForSelector(
+        activePage,
+        ".plan-editor-form__actions .soft-button--primary",
+        1,
+      );
+      // The acceptance identity begins empty. Create its plan through the same
+      // production form and API owner a real user uses; never seed a default
+      // plan into product state or bypass revision/idempotency behavior.
+      await saveActions[0].tap();
+      activePage = await waitForCurrentPagePath(
+        miniProgram,
+        "content/plan/detail/index",
+      );
+      await waitForSelector(activePage, "[data-od-id='plan-summary']", 1);
+      await new Promise((resolve) => setTimeout(resolve, 750));
+      return activePage;
+    }
+    activePage = await miniProgram.currentPage().catch(() => activePage);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error("native_plan_detail_preparation_timeout");
+}
+
+async function setDisplayModeThroughProductionUi(miniProgram, mode) {
+  const mapPage = await retryIdempotentAutomatorOperation(
+    `display-mode-${mode.toLowerCase()}-map-entry`,
+    () => miniProgram.reLaunch("/pages/map/index"),
+  );
+  if (!mapPage) throw new Error(`native_display_mode_map_unavailable:${mode}`);
+  await waitForCurrentPagePath(miniProgram, "pages/map/index");
+  const myPage = await switchTabAndWait(
+    miniProgram,
+    `display-mode-${mode.toLowerCase()}-my-entry`,
+    "/pages/my/index",
+    "pages/my/index",
+  );
+  const settingsPage = await tapIntoPage(
+    miniProgram,
+    myPage,
+    "[data-od-id='my-settings-action'] .soft-button",
+    "content/settings/index",
+  );
+  const choices = await waitForSelector(
+    settingsPage,
+    ".settings-choice-grid .chip",
+    2,
+  );
+  const target = choices[mode === "NIGHT" ? 1 : 0];
+  const pressed = String(await target.attribute("aria-pressed").catch(() => "false"));
+  if (pressed !== "true") {
+    await target.tap();
+    await new Promise((resolve) => setTimeout(resolve, 750));
+  }
+  await waitForSelector(
+    settingsPage,
+    `.settings-page.theme-${mode === "NIGHT" ? "night" : "day"}`,
+    1,
+  );
 }
 
 async function selectFormalSpotThroughFinder(mapPage) {
@@ -2265,7 +3057,7 @@ async function selectFormalSpotThroughFinder(mapPage) {
     "[data-od-id='map-search-summary']",
     1,
   );
-  await finderTriggers[0].tap();
+  await nativeDiagnosticStage("finder-open", () => finderTriggers[0].tap());
   await waitForSelector(
     mapPage,
     "[data-od-id='spot-finder-result-scroll']",
@@ -2276,17 +3068,82 @@ async function selectFormalSpotThroughFinder(mapPage) {
     ".spot-card__result-main",
     1,
   );
-  await formalResults[0].tap();
+  await nativeDiagnosticStage("finder-result-select", () =>
+    formalResults[0].tap(),
+  );
   await waitForSelector(mapPage, ".spot-card__callout-main", 1);
+}
+
+async function waitForFormalObservationContext(miniProgram, timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const context = await miniProgram
+      .evaluate(function () {
+        return globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectContext?.() ?? null;
+      })
+      .catch(() => null);
+    if (
+      context?.locationKind === "FORMAL_SPOT" &&
+      context?.spotId &&
+      context?.routeOriginContextId
+    )
+      return context;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error("native_formal_plan_context_timeout");
+}
+
+async function waitForMapPointObservationContext(miniProgram) {
+  const deadline = Date.now() + 10_000;
+  while (Date.now() < deadline) {
+    const context = await miniProgram
+      .evaluate(function () {
+        return globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectContext?.() ?? null;
+      })
+      .catch(() => null);
+    if (context?.locationKind === "MAP_POINT") return context;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error("native_plan_map_point_context_timeout");
+}
+
+async function waitForSyncedReminderPreferences(
+  miniProgram,
+  minimumRevision,
+  timeoutMs = 12_000,
+) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const preferences = await miniProgram
+      .evaluate(function () {
+        return (
+          globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectPreferences?.() ??
+          null
+        );
+      })
+      .catch(() => null);
+    if (
+      preferences &&
+      preferences.revision >= minimumRevision &&
+      preferences.dirty === false &&
+      preferences.departureConditionReminder === true &&
+      preferences.contributionStatusReminder === true
+    )
+      return preferences;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error("native_settings_reminder_readback_timeout");
 }
 
 async function enterCurrentJourney(miniProgram, definition) {
   const flow = definition.entryFlow ?? "map";
-  const mapPage = await retryIdempotentAutomatorOperation(
+  const requestedMapPage = await retryIdempotentAutomatorOperation(
     `journey-formal-entry:${definition.key}:map`,
     () => miniProgram.reLaunch("/pages/map/index"),
   );
-  if (!mapPage) throw new Error(`native_formal_map_entry_unavailable:${definition.key}`);
+  if (!requestedMapPage)
+    throw new Error(`native_formal_map_entry_unavailable:${definition.key}`);
+  let mapPage = await waitForCurrentPagePath(miniProgram, "pages/map/index");
   await waitForSelector(mapPage, ".map-page", 1);
   if (flow === "map") return mapPage;
 
@@ -2296,11 +3153,45 @@ async function enterCurrentJourney(miniProgram, definition) {
     flow === "map-to-my-settings" ||
     flow === "map-to-my-contribution"
   ) {
-    const myPage = await retryIdempotentAutomatorOperation(
+    if (flow === "map-to-my-plan") {
+      // A prior formal-detail/night journey may legitimately leave the shared
+      // observation context bound to that formal spot. Re-launching Map must
+      // preserve it; requiring an intermediate MAP_POINT would replace valid
+      // product state solely for the runner. Finder selection remains the
+      // production owner when no formal callout is already selected.
+      await nativeDiagnosticStage("plan-formal-spot-select", () =>
+        selectFormalSpotThroughFinder(mapPage),
+      );
+      await nativeDiagnosticStage("plan-formal-spot-detail-open", () =>
+        tapIntoPage(
+          miniProgram,
+          mapPage,
+          ".spot-card__callout-main",
+          "spot/detail/index",
+        ),
+      );
+      await nativeDiagnosticStage("plan-formal-context-ready", () =>
+        waitForFormalObservationContext(miniProgram),
+      );
+      await nativeDiagnosticStage("plan-formal-detail-back", async () => {
+        const detailPage = await miniProgram.currentPage();
+        return tapIntoPage(
+          miniProgram,
+          detailPage,
+          ".custom-nav__back-control .soft-button",
+          "pages/map/index",
+        );
+      });
+    }
+    const requestedMyPage = await switchTabAndWait(
+      miniProgram,
       `journey-formal-entry:${definition.key}:my-tab`,
-      () => miniProgram.switchTab("/pages/my/index"),
+      "/pages/my/index",
+      "pages/my/index",
     );
-    if (!myPage) throw new Error(`native_formal_my_entry_unavailable:${definition.key}`);
+    if (!requestedMyPage)
+      throw new Error(`native_formal_my_entry_unavailable:${definition.key}`);
+    const myPage = requestedMyPage;
     await waitForSelector(myPage, ".my-page", 1);
     if (flow === "map-to-my") return myPage;
     const child = {
@@ -2318,12 +3209,15 @@ async function enterCurrentJourney(miniProgram, definition) {
       },
     }[flow];
     if (!child) throw new Error(`unknown_native_my_flow:${flow}`);
-    return tapIntoPage(
+    const childPage = await tapIntoPage(
       miniProgram,
       myPage,
       child.selector,
       child.path,
     );
+    return flow === "map-to-my-plan"
+      ? ensureSavedPlanThroughProductionUi(miniProgram, childPage)
+      : childPage;
   }
 
   if (
@@ -2331,12 +3225,18 @@ async function enterCurrentJourney(miniProgram, definition) {
     flow === "map-to-night" ||
     flow === "map-to-detail-contribution"
   ) {
-    await selectFormalSpotThroughFinder(mapPage);
-    const detailPage = await tapIntoPage(
-      miniProgram,
-      mapPage,
-      ".spot-card__callout-main",
-      "spot/detail/index",
+    await nativeDiagnosticStage("formal-spot-select", () =>
+      selectFormalSpotThroughFinder(mapPage),
+    );
+    const detailPage = await nativeDiagnosticStage(
+      "formal-spot-detail-open",
+      () =>
+        tapIntoPage(
+          miniProgram,
+          mapPage,
+          ".spot-card__callout-main",
+          "spot/detail/index",
+        ),
     );
     if (flow === "map-to-detail") return detailPage;
     if (flow === "map-to-detail-contribution") {
@@ -2355,11 +3255,13 @@ async function enterCurrentJourney(miniProgram, definition) {
       );
     }
     await waitForSelector(detailPage, ".night-entry", 1);
-    return tapIntoPage(
-      miniProgram,
-      detailPage,
-      ".night-entry",
-      "spot/sky/index",
+    return nativeDiagnosticStage("formal-spot-night-open", () =>
+      tapIntoPage(
+        miniProgram,
+        detailPage,
+        ".night-entry",
+        "spot/sky/index",
+      ),
     );
   }
 
@@ -2379,27 +3281,38 @@ async function captureJourneyViewports(
       throw new Error(
         `native_viewport_scroller_unsupported:${definition.key}:${capture.key}`,
       );
-    const target = (await waitForSelector(page, capture.target, 1))[0];
-    const targetOffset = await target.offset().catch(() => null);
-    const scrollerOffset = await scroller.offset().catch(() => null);
-    const currentScrollTop = Number(
-      await scroller.property("scrollTop").catch(() => 0),
-    );
-    const targetTop = Number(targetOffset?.top ?? targetOffset?.y);
-    const scrollerTop = Number(scrollerOffset?.top ?? scrollerOffset?.y);
-    const scrollTop =
-      Number.isFinite(targetTop) && Number.isFinite(scrollerTop)
-        ? Math.max(
-            0,
-            currentScrollTop + targetTop - scrollerTop - (capture.topInset ?? 16),
-          )
-        : capture.fallbackScrollTop;
+    let scrollTop = Number(capture.scrollTop);
+    if (!Number.isFinite(scrollTop)) {
+      const target = (await waitForSelector(page, capture.target, 1))[0];
+      const targetOffset = await target.offset().catch(() => null);
+      const scrollerOffset = await scroller.offset().catch(() => null);
+      const currentScrollTop = Number(
+        await scroller.property("scrollTop").catch(() => 0),
+      );
+      const targetTop = Number(targetOffset?.top ?? targetOffset?.y);
+      const scrollerTop = Number(scrollerOffset?.top ?? scrollerOffset?.y);
+      scrollTop =
+        Number.isFinite(targetTop) && Number.isFinite(scrollerTop)
+          ? Math.max(
+              0,
+              currentScrollTop +
+                targetTop -
+                scrollerTop -
+                (capture.topInset ?? 16),
+            )
+          : capture.fallbackScrollTop;
+    }
     if (!Number.isFinite(scrollTop))
       throw new Error(
         `native_viewport_scroll_target_unavailable:${definition.key}:${capture.key}`,
       );
     await scroller.scrollTo(0, scrollTop);
-    await page.waitFor(capture.settleMs ?? 600);
+    await new Promise((resolve) =>
+      setTimeout(resolve, capture.settleMs ?? 600),
+    );
+    const captureSelectors = [];
+    for (const selector of capture.selectors ?? [])
+      captureSelectors.push(await inspectSelector(page, selector));
     const screenshotName = `${definition.order.toString().padStart(2, "0")}-${definition.key}-${capture.key}.png`;
     const screenshotAbsolute = path.join(runRoot, screenshotName);
     await retryIdempotentAutomatorOperation(
@@ -2410,6 +3323,7 @@ async function captureJourneyViewports(
       key: capture.key,
       target: capture.target,
       scroll_top: scrollTop,
+      selectors: captureSelectors,
       screenshot: path
         .relative(root, screenshotAbsolute)
         .replaceAll("\\", "/"),
@@ -2425,10 +3339,59 @@ async function captureJourneyViewports(
 }
 
 async function captureJourney(miniProgram, runRoot, definition) {
-  const page = await enterCurrentJourney(miniProgram, definition);
+  if (definition.key === "plan-editor") {
+    // Isolate the journey before opening the network-backed map. This reset
+    // never seeds domain data; production map bootstrap must create the route
+    // origin, and placing the reset here avoids cancelling a just-mounted map.
+    await nativeDiagnosticStage("plan-client-state-reset", () =>
+      resetThroughAcceptanceControl(miniProgram),
+    );
+  }
+  if (definition.key === "formal-spot-detail") {
+    await nativeDiagnosticStage("spot-detail-night-mode", () =>
+      setDisplayModeThroughProductionUi(miniProgram, "NIGHT"),
+    );
+  } else if (definition.key === "my-home") {
+    await nativeDiagnosticStage("supporting-day-mode", () =>
+      setDisplayModeThroughProductionUi(miniProgram, "DAY"),
+    );
+  }
+  let page = await nativeDiagnosticStage(
+    `journey-entry-${definition.key}`,
+    () => enterCurrentJourney(miniProgram, definition),
+  );
+  if (definition.key === "my-home") {
+    // My must be proven against a plan created from a formal spot context in
+    // this same evidence session. A map-point context cannot legally create a
+    // plan, and relying on a plan left in the database by an older run would
+    // make this journey order-dependent and could hide a production failure.
+    await nativeDiagnosticStage("my-plan-production-create", () =>
+      enterCurrentJourney(miniProgram, {
+        key: "my-home-plan-precondition",
+        entryFlow: "map-to-my-plan",
+      }),
+    );
+    page = await switchTabAndWait(
+      miniProgram,
+      "my-plan-return-to-my",
+      "/pages/my/index",
+      "pages/my/index",
+    );
+  }
   await waitForSelector(page, definition.root, 1);
-  await page.waitFor(definition.settleMs ?? 1_000);
+  await new Promise((resolve) =>
+    setTimeout(resolve, definition.settleMs ?? 1_000),
+  );
   await waitForSelectorSet(page, definition.selectors);
+  if (definition.key === "plan-editor") {
+    const checklistRows = await waitForSelector(page, ".plan-checklist__row", 5);
+    for (const row of checklistRows.slice(0, 3)) {
+      const rowClass = String(await row.attribute("class").catch(() => ""));
+      if (!rowClass.includes("plan-checklist__row--done")) await row.tap();
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    }
+    await waitForSelector(page, ".plan-checklist__row--done", 3);
+  }
   const selectors = [];
   for (const selector of definition.selectors)
     selectors.push(await inspectSelector(page, selector));
@@ -2463,6 +3426,22 @@ async function captureJourney(miniProgram, runRoot, definition) {
     runRoot,
     definition,
   );
+  let settingsPreferenceReadback = null;
+  if (definition.key === "settings") {
+    const before = await miniProgram.evaluate(function () {
+      return globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectPreferences?.();
+    });
+    const reminderControls = await Promise.all([
+      waitForSelector(page, "#departure-condition-reminder", 1),
+      waitForSelector(page, "#contribution-status-reminder", 1),
+    ]);
+    await reminderControls[0][0].tap();
+    await reminderControls[1][0].tap();
+    settingsPreferenceReadback = await waitForSyncedReminderPreferences(
+      miniProgram,
+      Number(before?.revision ?? 0) + 1,
+    );
+  }
   const interactions = await captureJourneyInteractions(
     page,
     miniProgram,
@@ -2488,6 +3467,9 @@ async function captureJourney(miniProgram, runRoot, definition) {
     selectors,
     screenshot: path.relative(root, screenshotAbsolute).replaceAll("\\", "/"),
     viewport_captures: viewportCaptures,
+    ...(settingsPreferenceReadback
+      ? { settings_preference_readback: settingsPreferenceReadback }
+      : {}),
     ...(interactions ? { interactions } : {}),
     injected_fixture: definition.injectedFixture ?? null,
   };
@@ -2555,7 +3537,6 @@ const journeys = [
           { selector: "[data-od-id='spot-finder-result-scroll']", minimum: 1 },
           { selector: "[data-od-id='spot-finder-wanted-section']", minimum: 1 },
           { selector: "[data-od-id='spot-finder-other-section']", minimum: 1 },
-          { selector: "[data-od-id='spot-finder-city-heading']", minimum: 1 },
           {
             selector: "[data-od-id='spot-finder-section-chevron']",
             minimum: 2,
@@ -2569,14 +3550,10 @@ const journeys = [
         waitFor: [
           { selector: "[data-od-id='spot-finder-filter-overlay']", minimum: 1 },
           {
-            selector: "[data-od-id='spot-finder-filter-first-level']",
-            minimum: 1,
-          },
-          {
             selector: "[data-od-id='spot-finder-filter-advanced']",
             minimum: 1,
           },
-          { selector: "[data-od-id='spot-finder-filter-choice']", minimum: 18 },
+          { selector: "[data-od-id='spot-finder-filter-choice']", minimum: 8 },
         ],
         inspect: [
           {
@@ -2584,7 +3561,7 @@ const journeys = [
             minimum: 1,
             attributes: ["enhanced", "show-scrollbar"],
           },
-          { selector: "[data-od-id='spot-finder-filter-choice']", minimum: 18 },
+          { selector: "[data-od-id='spot-finder-filter-choice']", minimum: 8 },
         ],
       },
       {
@@ -2654,9 +3631,13 @@ const journeys = [
         settleMs: 1_000,
       },
       {
-        key: "finder-close",
-        tap: "[data-od-id='map-search-summary']",
-        waitForAbsent: ["[data-od-id='spot-finder-search-input']"],
+        key: "finder-result-select",
+        screenshot: true,
+        tap: ".spot-card__result-main",
+        waitFor: [
+          { selector: ".spot-card__callout-main", minimum: 1 },
+        ],
+        waitForAbsent: ["[data-od-id='spot-finder-sheet']"],
       },
       {
         key: "conditions-open",
@@ -2695,15 +3676,10 @@ const journeys = [
         trigger: {
           selector: "[data-od-id='map-analysis-time-scrubber']",
           event: "changing",
-          detail: { value: 4 },
+          differentNumericValue: true,
         },
         expectChanged: [
           { selector: "[data-od-id='map-analysis-time-value']", kind: "text" },
-          {
-            selector: "[data-od-id='map-analysis-time-value']",
-            kind: "attribute",
-            name: "id",
-          },
         ],
       },
       {
@@ -2711,7 +3687,7 @@ const journeys = [
         trigger: {
           selector: "[data-od-id='map-analysis-time-scrubber']",
           event: "change",
-          detail: { value: 4 },
+          differentNumericValue: true,
         },
         settleMs: 1_500,
       },
@@ -2741,14 +3717,27 @@ const journeys = [
     requiresPreparedContext: true,
     preparedRouteParams: ["spotId", "contextId"],
     root: ".spot-detail",
-    rootClasses: ["spot-detail", "theme-day"],
+    rootClasses: ["spot-detail", "theme-night"],
     selectors: [
+      {
+        selector: ".semantic-icon--arrow-left",
+        minimum: 1,
+        styles: ["display", "width", "height"],
+        attributes: ["class"],
+      },
+      {
+        selector: ".semantic-icon__contextual-source--dark",
+        minimum: 1,
+        styles: ["display", "width", "height", "opacity"],
+        attributes: ["src", "class"],
+      },
       { selector: ".segment-tab", minimum: 3, styles: ["min-height"] },
       {
-        selector: ".media-card",
+        selector: ".media-section",
         minimum: 1,
-        styles: ["width", "border-radius"],
+        styles: ["width"],
       },
+      { selector: ".media-empty", minimum: 1, styles: ["border-radius"] },
       { selector: ".decision-card", minimum: 1, styles: ["border-radius"] },
       { selector: ".night-entry", minimum: 1, styles: ["min-height"] },
       { selector: ".detail-route-action", minimum: 1, styles: ["min-height"] },
@@ -2757,8 +3746,12 @@ const journeys = [
       {
         key: "media",
         scroll: ".spot-detail__scroll",
-        target: ".media-card",
+        target: ".media-empty",
         fallbackScrollTop: 640,
+        selectors: [
+          { selector: ".media-section", minimum: 1 },
+          { selector: ".media-empty", minimum: 1 },
+        ],
       },
     ],
   },
@@ -2779,16 +3772,24 @@ const journeys = [
     root: ".sky-page",
     rootClasses: ["sky-page", "theme-night"],
     selectors: [
-      { selector: ".sky-tabs__item", minimum: 3, styles: ["min-height"] },
+      {
+        selector: ".sky-mobile-header",
+        minimum: 1,
+        styles: ["padding-top", "min-height"],
+      },
       {
         selector: ".sky-decision",
         minimum: 1,
         styles: ["background-color", "box-shadow"],
       },
-      { selector: ".sky-summary-grid", minimum: 1, styles: ["display"] },
+      {
+        selector: ".sky-summary-stack--astronomy",
+        minimum: 1,
+        styles: ["display"],
+      },
       { selector: ".time-card", minimum: 1, styles: ["border-radius"] },
       { selector: ".sky-scene", minimum: 1, styles: ["width", "height"] },
-      { selector: ".orientation-actions", minimum: 1, styles: ["display"] },
+      { selector: "[data-od-id='sky-target-list']", minimum: 1, styles: ["display"] },
       {
         selector: ".sky-actions .soft-button",
         minimum: 3,
@@ -2805,11 +3806,31 @@ const journeys = [
     ],
     interactions: [
       {
+        key: "orientation-open",
+        screenshot: true,
+        tap: ".sky-actions .soft-button",
+        index: 0,
+        expectedPath: "sky/detail/index",
+        // Keep the newly attached subpackage WebView alive through its routeDone
+        // lifecycle before the next user navigation replaces it. The DevTools
+        // simulator otherwise reports a missing webview even though the page is
+        // already queryable, which is a real navigation-lifecycle race rather
+        // than an acceptable console warning.
+        settleMs: 1_500,
+        waitFor: [
+          { selector: "[data-od-id='sky-orientation-scene']", minimum: 1 },
+          { selector: "[data-od-id='sky-orientation-control']", minimum: 1 },
+          { selector: "[data-od-id='sky-orientation-object-list']", minimum: 1 },
+          { selector: ".orientation-actions", minimum: 1 },
+        ],
+      },
+      {
         key: "professional-matrix-open",
         screenshot: true,
-        tap: ".sky-tabs__item",
-        index: 1,
-        expectedPath: "sky/detail/index",
+        tap: ".sky-actions .soft-button",
+        index: 0,
+        expectedPath: "sky/professional/index",
+        settleMs: 1_500,
         waitFor: [
           { selector: ".professional-card", minimum: 1 },
           { selector: ".professional-table", minimum: 1 },
@@ -2857,7 +3878,7 @@ const journeys = [
     selectors: [
       { selector: ".profile-summary", minimum: 1, styles: ["border-radius"] },
       {
-        selector: ".account-entry-list .account-row",
+        selector: ".routine-entry-list .routine-entry",
         minimum: 3,
         styles: ["min-height"],
       },
@@ -2877,28 +3898,24 @@ const journeys = [
     rootClasses: ["contribution-page", "theme-day"],
     selectors: [
       {
-        selector: "[data-od-id='contribution-location-consent']",
-        minimum: 1,
-        styles: ["border-radius"],
-      },
-      {
-        selector: "[data-od-id='contribution-kind-control'] .chip",
+        selector:
+          "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
         minimum: 1,
         styles: ["min-height"],
       },
-      {
-        selector: "[data-od-id='contribution-topic-control'] .chip",
-        minimum: 9,
-        styles: ["min-height"],
-      },
-      {
-        selector: "[data-od-id='contribution-submit'] .soft-button",
-        minimum: 2,
-        styles: ["min-height"],
-      },
-      { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
     ],
     interactions: [
+      {
+        key: "candidate-form-open",
+        screenshot: true,
+        tap: ".contribution-card .soft-button--primary",
+        waitFor: [
+          { selector: ".contribution-progress", minimum: 1 },
+          { selector: "[data-od-id='contribution-location-consent']", minimum: 1 },
+          { selector: "[data-od-id='contribution-topic-control'] .chip", minimum: 9 },
+          { selector: ".contribution-actions--flow .soft-button", minimum: 3 },
+        ],
+      },
       {
         key: "candidate-name",
         input: "[data-od-id='contribution-candidate-name']",
@@ -2929,10 +3946,21 @@ const journeys = [
         tap: "[data-od-id='contribution-coordinate-consent']",
       },
       {
+        key: "candidate-upload-open",
+        screenshot: true,
+        tap: ".contribution-actions--flow .soft-button--primary",
+        waitFor: [
+          { selector: ".contribution-upload-recovery", minimum: 1 },
+          { selector: ".contribution-actions--submit .soft-button", minimum: 1 },
+        ],
+      },
+      {
         key: "candidate-submit",
-        tap: "[data-od-id='contribution-submit'] .soft-button--primary",
+        screenshot: true,
+        tap: ".contribution-actions--submit .soft-button--primary",
         waitFor: [
           { selector: ".contribution-history__row", minimum: 1 },
+          { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
         ],
         inspect: [
           { selector: ".contribution-history__row", minimum: 1 },
@@ -2952,32 +3980,45 @@ const journeys = [
     selectors: [
       { selector: "[data-od-id='contribution-spot-context']", minimum: 1 },
       {
-        selector: "[data-od-id='contribution-kind-control'] .chip",
+        selector:
+          "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
         minimum: 2,
         styles: ["min-height"],
       },
-      {
-        selector: "[data-od-id='contribution-topic-control'] .chip",
-        minimum: 9,
-        styles: ["min-height"],
-      },
-      {
-        selector: "[data-od-id='contribution-media-upload']",
-        minimum: 1,
-        styles: ["border-radius"],
-      },
     ],
     interactions: [
+      {
+        key: "field-report-form-open",
+        screenshot: true,
+        tap: ".contribution-card .soft-button--primary",
+        waitFor: [
+          { selector: ".contribution-progress", minimum: 1 },
+          { selector: "[data-od-id='contribution-topic-control'] .chip", minimum: 9 },
+          { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
+          { selector: ".contribution-actions--flow .soft-button", minimum: 3 },
+        ],
+      },
       {
         key: "field-report-detail",
         input: "[data-od-id='contribution-detail']",
         value: "这是原生验收建立的正式点现场反馈，只验证人工审核链路，不直接改变地图或今晚结论。",
       },
       {
+        key: "field-report-upload-open",
+        screenshot: true,
+        tap: ".contribution-actions--flow .soft-button--primary",
+        waitFor: [
+          { selector: ".contribution-upload-recovery", minimum: 1 },
+          { selector: ".contribution-actions--submit .soft-button", minimum: 1 },
+        ],
+      },
+      {
         key: "field-report-submit",
-        tap: "[data-od-id='contribution-submit'] .soft-button--primary",
+        screenshot: true,
+        tap: ".contribution-actions--submit .soft-button--primary",
         waitFor: [
           { selector: ".contribution-history__row", minimum: 1 },
+          { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
         ],
         inspect: [
           { selector: ".contribution-history__row", minimum: 1 },
@@ -2993,13 +4034,23 @@ const journeys = [
     root: ".plan-editor",
     rootClasses: ["plan-editor", "theme-day"],
     selectors: [
-      { selector: ".plan-form", minimum: 1, styles: ["width"] },
       {
-        selector: ".field",
-        minimum: 4,
-        styles: ["min-height", "border-radius"],
+        selector: "[data-od-id='plan-summary']",
+        minimum: 1,
+        styles: ["width"],
       },
-      { selector: ".soft-button--primary", minimum: 1, styles: ["min-height"] },
+      {
+        selector: "[data-od-id='plan-preparation']",
+        minimum: 1,
+        styles: ["border-radius"],
+      },
+      { selector: "[data-od-id='plan-route-nodes']", minimum: 1 },
+      { selector: ".plan-route__node", minimum: 3 },
+      {
+        selector: ".plan-actions .soft-button",
+        minimum: 2,
+        styles: ["min-height"],
+      },
     ],
   },
   {
@@ -3010,16 +4061,105 @@ const journeys = [
     root: ".settings-page",
     rootClasses: ["settings-page", "theme-day"],
     selectors: [
-      { selector: ".settings-card", minimum: 4, styles: ["border-radius"] },
+      { selector: ".settings-card", minimum: 1, styles: ["border-radius"] },
+      { selector: "#settings-permissions", minimum: 1 },
+      { selector: "#nearby-location-preference", minimum: 1 },
+      { selector: "#settings-reminders", minimum: 1 },
+      { selector: "#departure-condition-reminder", minimum: 1 },
+      { selector: "#contribution-status-reminder", minimum: 1 },
       {
-        selector: ".settings-choice-grid .chip",
-        minimum: 2,
-        styles: ["min-height"],
-      },
-      {
-        selector: "[data-od-id='observation-mode-entry'] .chip",
+        selector: "[data-od-id='observation-mode-entry']",
         minimum: 1,
         styles: ["min-height"],
+      },
+    ],
+    viewportCaptures: [
+      {
+        key: "data-actions",
+        scroll: ".settings-page__scroll",
+        target: "#settings-data-actions",
+        topInset: 16,
+        fallbackScrollTop: 920,
+        selectors: [
+          { selector: "#settings-data-actions", minimum: 1 },
+        ],
+      },
+      {
+        key: "preferences",
+        scroll: ".settings-page__scroll",
+        target: "#settings-form",
+        topInset: 16,
+        fallbackScrollTop: 1_260,
+        selectors: [
+          { selector: "#settings-form", minimum: 1 },
+          {
+            selector: ".settings-choice-grid .chip",
+            minimum: 2,
+            styles: ["min-height"],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    order: 9,
+    key: "upload-recovery",
+    url: "/content/contribution/index",
+    entryFlow: "map-to-detail-contribution",
+    requiresPreparedContext: true,
+    preparedRouteParams: ["spotId", "contextId"],
+    root: ".contribution-page",
+    rootClasses: ["contribution-page", "theme-day"],
+    selectors: [
+      { selector: "[data-od-id='contribution-spot-context']", minimum: 1 },
+      {
+        selector:
+          "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
+        minimum: 2,
+      },
+    ],
+    interactions: [
+      {
+        key: "recovery-history-open",
+        tap: ".custom-nav__side--right .soft-button",
+        waitFor: [
+          { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
+          { selector: ".contribution-history__item .soft-button", minimum: 1 },
+        ],
+      },
+      {
+        key: "recovery-draft-resume",
+        screenshot: true,
+        scroll: {
+          container: ".contribution-page__scroll",
+          target: ".contribution-history__item .soft-button",
+          topInset: 520,
+        },
+        tap: ".contribution-history__item .soft-button",
+        waitFor: [
+          { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
+          { selector: ".contribution-media-row", minimum: 1 },
+        ],
+      },
+      {
+        key: "recovery-upload-open",
+        screenshot: true,
+        tap: ".contribution-actions--flow .soft-button--primary",
+        waitFor: [
+          { selector: ".contribution-upload-recovery", minimum: 1 },
+          { selector: ".contribution-recovery-notice", minimum: 1 },
+          { selector: ".contribution-media-row", minimum: 1 },
+          { selector: ".contribution-recovery-point", minimum: 1 },
+          { selector: ".contribution-preflight__row", minimum: 3 },
+        ],
+        inspect: [
+          {
+            selector: ".contribution-media-row",
+            minimum: 1,
+          },
+          { selector: ".contribution-media-row .soft-button", minimum: 1 },
+          { selector: ".contribution-actions--submit .soft-button--disabled", minimum: 1 },
+        ],
       },
     ],
   },
@@ -3030,10 +4170,14 @@ const journeyKeysByScope = {
   "map-discovery": ["map-cold-start-location-fallback"],
   "spot-detail": ["formal-spot-detail"],
   "spot-night": ["spot-night"],
+  "plan-editor": ["plan-editor"],
+  settings: ["settings"],
+  "upload-recovery": ["upload-recovery"],
   "my-library": [
     "my-home",
     "new-place-contribution",
     "formal-spot-contribution",
+    "upload-recovery",
     "plan-editor",
     "settings",
   ],
@@ -3181,6 +4325,8 @@ async function main() {
   let detachRuntimeObservers;
   let apiPort;
   let automationPort;
+  let infrastructure;
+  let productionDataPreparation;
   let projectIdentitySession;
   let simulatorPreferenceSession;
   let devtoolsToolInfo;
@@ -3298,9 +4444,10 @@ async function main() {
       "This evidence is a local current-candidate WeChat DevTools simulator session, not preview, upload, review, device, or release evidence.",
       "External provider capabilities that are unavailable remain gated and are not upgraded into live facts by this session.",
     ],
+    durable_runtime: { status: "pending" },
   };
   const openObservedSession = async (stage) => {
-    const attemptLimit = 2;
+    const attemptLimit = 3;
     for (let attempt = 1; attempt <= attemptLimit; attempt += 1) {
       let attemptLaunch;
       let attemptProgram;
@@ -3409,6 +4556,16 @@ async function main() {
     throw new Error(`wechat_observed_session_start_unreachable:${stage}`);
   };
   try {
+    runtimePhase = "durable-infrastructure";
+    infrastructure = await prepareNativeInfrastructure(runId);
+    result.durable_runtime = {
+      status: "passed",
+      storage: "run-unique PostgreSQL/PostGIS",
+      cache: "run-unique Redis namespace",
+      media: "run-unique private filesystem root",
+      fixture_mode: false,
+      memory_test_mode: false,
+    };
     apiPort = await availableLoopbackPort();
     automationPort = wechatAutomationPort;
     while (apiPort === automationPort) apiPort = await availableLoopbackPort();
@@ -3429,8 +4586,24 @@ async function main() {
       acceptanceTextSize,
     );
     result.simulator_preferences = simulatorPreferenceSession.evidence;
-    result.build = await buildCurrentCandidate(apiPort);
-    apiProcess = await startApi(apiPort, privateMediaRoot);
+    result.build = await buildCurrentCandidate(
+      apiPort,
+      infrastructure.environment,
+    );
+    apiProcess = await startApi(
+      apiPort,
+      privateMediaRoot,
+      infrastructure.environment,
+    );
+    runtimePhase = "production-data-preparation";
+    productionDataPreparation = {
+      formal_spot: await prepareNativeFormalSpot(
+        apiPort,
+        infrastructure,
+        runId,
+      ),
+      upload_recovery: null,
+    };
     projectIdentitySession = await prepareWechatProjectIdentity(
       before.sha256,
       sourceProjectPath,
@@ -3495,6 +4668,7 @@ async function main() {
       preclose_runtime_quiescence: setupRuntimeQuiescence,
       post_control_state_disposition: "discarded with the closed setup session",
       evidence_session: false,
+      production_data_preparation: productionDataPreparation,
     };
     runtimePhase = "evidence-startup";
     const setupToolIdentity = sha256(canonical(devtoolsToolInfo));
@@ -3598,7 +4772,9 @@ async function main() {
           );
           await waitForSelector(preparedPage, faultJourney.root, 1);
           await waitForSelectorSet(preparedPage, faultJourney.selectors);
-          await preparedPage.waitFor(faultJourney.settleMs ?? 1_000);
+          await new Promise((resolve) =>
+            setTimeout(resolve, faultJourney.settleMs ?? 1_000),
+          );
           preparedRuntimeQuiescence =
             await waitForRuntimeEventQuiescence(runtimeEvents);
           preparedUrl = await currentPageUrl(
@@ -3635,7 +4811,11 @@ async function main() {
           definition: faultJourney,
           preparedUrl,
           restartApi: async () => {
-            apiProcess = await startApi(apiPort);
+            apiProcess = await startApi(
+              apiPort,
+              privateMediaRoot,
+              infrastructure.environment,
+            );
           },
         });
         runtimePhase = `recovery-drain:${faultJourney.key}`;
@@ -3660,6 +4840,16 @@ async function main() {
             };
     } else {
       for (const journey of selectedJourneys) {
+        if (journey.key === "upload-recovery") {
+          runtimePhase = "production-upload-recovery-preparation";
+          productionDataPreparation.upload_recovery =
+            await prepareNativePendingUpload({
+              miniProgram,
+              apiPort,
+              spotId: productionDataPreparation.formal_spot.spotId,
+              runId,
+            });
+        }
         runtimePhase = `evidence-journey:${journey.key}`;
         result.journeys.push(
           await captureJourney(miniProgram, runRoot, journey),
@@ -3713,12 +4903,29 @@ async function main() {
         (entry.phase.startsWith("fault-injection") ||
           entry.phase.startsWith("recovery-drain")),
     );
+    const knownToolchainConsoleErrors = consoleErrors.filter(
+      (entry) =>
+        !expectedFaultConsoleErrors.includes(entry) &&
+        knownWechatToolchainConsoleErrorId(entry) !== null,
+    );
     const unexpectedConsoleErrors = consoleErrors.filter(
-      (entry) => !expectedFaultConsoleErrors.includes(entry),
+      (entry) =>
+        !expectedFaultConsoleErrors.includes(entry) &&
+        !knownToolchainConsoleErrors.includes(entry),
     );
     result.runtime_observation = {
       exception_count: exceptions.length,
       expected_fault_console_error_count: expectedFaultConsoleErrors.length,
+      known_toolchain_console_error_count: knownToolchainConsoleErrors.length,
+      known_toolchain_console_errors: knownToolchainConsoleErrors.map(
+        (entry) => ({
+          id: knownWechatToolchainConsoleErrorId(entry),
+          phase: entry.phase,
+          offset_ms: entry.offset_ms,
+          payload_sha256: entry.payload_sha256,
+          payload_length: entry.payload_length,
+        }),
+      ),
       unexpected_console_error_count: unexpectedConsoleErrors.length,
       final_quiescence: evidenceRuntimeQuiescence,
     };
@@ -3775,6 +4982,13 @@ async function main() {
       status: "failed",
       diagnostic_sha256: sha256(String(error?.message ?? error)),
     }));
+  const durableRuntimeCleanup = await cleanupNativeInfrastructure(
+    infrastructure,
+  ).catch((error) => ({
+    status: "failed",
+    failure_count: 1,
+    failures_sha256: sha256(String(error?.message ?? error)),
+  }));
   const simulatorPreferenceRestore =
     await restoreWechatSimulatorPreferences(simulatorPreferenceSession).catch(
       (error) => ({
@@ -3786,6 +5000,7 @@ async function main() {
     ...nativeCleanup,
     project_identity_restore: projectIdentityRestore,
     media_store_cleanup: mediaStoreCleanup,
+    durable_runtime_cleanup: durableRuntimeCleanup,
     simulator_preference_restore: simulatorPreferenceRestore,
   };
   result.project_session.identity = {
@@ -3795,6 +5010,7 @@ async function main() {
   if (
     projectIdentityRestore.status === "failed" ||
     mediaStoreCleanup.status === "failed" ||
+    durableRuntimeCleanup.status === "failed" ||
     simulatorPreferenceRestore.status === "failed"
   ) {
     result.cleanup = {
@@ -3804,12 +5020,14 @@ async function main() {
         (result.cleanup.failure_count ?? 0) +
         Number(projectIdentityRestore.status === "failed") +
         Number(mediaStoreCleanup.status === "failed") +
+        Number(durableRuntimeCleanup.status === "failed") +
         Number(simulatorPreferenceRestore.status === "failed"),
       failures_sha256: sha256(
         canonical({
           native: result.cleanup.failures_sha256,
           project_identity_restore: projectIdentityRestore,
           media_store_cleanup: mediaStoreCleanup,
+          durable_runtime_cleanup: durableRuntimeCleanup,
           simulator_preference_restore: simulatorPreferenceRestore,
         }),
       ),

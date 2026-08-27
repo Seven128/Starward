@@ -25,7 +25,11 @@ export function SoftButton({
       {...(disabled ? { disabled: true } : {})}
       onClick={() => onClick?.()}
     >
-      <Text>{children}</Text>
+      {typeof children === "string" || typeof children === "number" ? (
+        <Text>{children}</Text>
+      ) : (
+        children
+      )}
     </Button>
   );
 }

@@ -157,7 +157,9 @@ test("QWeather composition keeps the Weather API v1 timeline primary, adds layer
             severity: "severe",
             certainty: "likely",
             effectiveTime: "2026-08-23T12:30:00Z",
-            expireTime: new Date(Date.now() + 60 * 60_000).toISOString(),
+            // This composition fixture tests an active current alert. Keep the
+            // expiry open so the assertion does not depend on wall-clock date.
+            expireTime: null,
             headline: "雷暴预警",
             description: "可能出现强雷暴。",
             instruction: "停止户外活动。",

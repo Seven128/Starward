@@ -10,6 +10,8 @@ export const DEFAULT_USER_PREFERENCES: Readonly<UserPreferences> = Object.freeze
   capturePreference: "目视与手机",
   displayMode: "DAY",
   notificationEnabled: false,
+  departureConditionReminder: false,
+  contributionStatusReminder: false,
   largeText: false,
   reducedMotion: false,
 });
@@ -18,6 +20,7 @@ export function cloneUserPreferences(
   preferences: Readonly<UserPreferences>,
 ): UserPreferences {
   return {
+    ...DEFAULT_USER_PREFERENCES,
     ...preferences,
     requiredFacilities: [...preferences.requiredFacilities],
   };

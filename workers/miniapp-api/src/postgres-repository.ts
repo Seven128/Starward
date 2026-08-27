@@ -2,9 +2,12 @@ import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  cloneUserPreferences,
   DEFAULT_USER_PREFERENCES,
+  type AccountDeletionReceipt,
   type ContributionId,
   type ContributionMediaUpload,
+  type ContributionStatusHistoryEntry,
   type ContributionSubmission,
   type ContributionTopic,
   type ContributionUploadId,
@@ -20,6 +23,15 @@ import {
   type SpotDetail,
   type SpotId,
   type SpotSummary,
+  type AdminMutationResult,
+  type MergeClaimPreview,
+  type MergePreview,
+  type MediaReviewView,
+  type ModerationCaseView,
+  type ModerationQueueItem,
+  type OperationReceipt,
+  type PublicationAssessment,
+  type ReplacementImpact,
   type UserPreferences,
   type UserPreferencesRecord,
   type UserId,
@@ -28,6 +40,7 @@ import { createMapCoordinateView } from "@starward/coordinate-system";
 import pg, { type PoolClient } from "pg";
 import type {
   DarkSkyGridCellRecord,
+  AdminOperationsPort,
   MiniappRepositoryPort,
 } from "./ports.ts";
 import {
@@ -74,6 +87,7 @@ export interface AdminSpotPatch {
   facilities?: readonly FacilityEvidence[];
   media?: readonly RepresentativeMedia[];
   guides?: readonly GuideArticle[];
+  route?: SpotDetail["route"];
   accessAndSafety?: SpotDetail["accessAndSafety"];
   siteMediaState?: SpotDetail["siteMediaState"];
   evidence?: SpotDetail["evidence"];
@@ -141,6 +155,138 @@ function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
+function normalizeContributionSubmission(
+  value: ContributionSubmission,
+): ContributionSubmission {
+  const submissionState =
+    value.submissionState ??
+    (value.state === "APPROVED" ? "ACCEPTED" : value.state);
+  return {
+    ...clone(value),
+    submissionState,
+    mergeState: value.mergeState ?? "NOT_STARTED",
+    publicationImpact: value.publicationImpact ?? "NONE",
+    statusHistory: value.statusHistory ?? [],
+  };
+}
+
+function contributionEvent(
+  axis: ContributionStatusHistoryEntry["axis"],
+  from: string | null,
+  to: string,
+  reason: string | null,
+  actorType: ContributionStatusHistoryEntry["actorType"],
+): ContributionStatusHistoryEntry {
+  return {
+    eventId: `contribution-event:${randomUUID()}`,
+    axis,
+    from,
+    to,
+    reason,
+    actorType,
+    occurredAt: new Date().toISOString(),
+  };
+}
+
+function toModerationCaseView(
+  row: {
+    case_id: string;
+    subject_type: string;
+    subject_id: string;
+    state: string;
+    payload: Record<string, unknown>;
+    created_at: string | Date;
+    resolved_at: string | Date | null;
+  },
+  events: readonly ContributionStatusHistoryEntry[],
+): ModerationCaseView {
+  const rawSubmission = row.payload.submission as ContributionSubmission | undefined;
+  const submission = rawSubmission
+    ? normalizeContributionSubmission(rawSubmission)
+    : null;
+  return {
+    caseId: row.case_id as ModerationCaseView["caseId"],
+    subjectType: row.subject_type as ModerationCaseView["subjectType"],
+    subjectId: row.subject_id,
+    state: row.state as ModerationCaseView["state"],
+    submission,
+    events,
+    immutableEvidence: {
+      detail: submission?.detail ?? null,
+      candidateLocation: submission?.candidateLocation ?? null,
+      media: submission?.media ?? [],
+    },
+    canonicalMergeRequired: row.payload.canonicalMergeRequired === true,
+    publicationGateRequired: row.payload.publicationGateRequired !== false,
+    createdAt: new Date(row.created_at).toISOString(),
+    resolvedAt: row.resolved_at ? new Date(row.resolved_at).toISOString() : null,
+  };
+}
+
+function toMediaReviewView(row: {
+  upload_id: ContributionUploadId;
+  submission_id: ContributionId;
+  state: ContributionMediaUpload["state"];
+  mime_type: ContributionMediaUpload["mimeType"];
+  byte_size: number | null;
+  sha256: string | null;
+  review_state: string;
+  review_reason: string | null;
+  rights_confirmed: boolean;
+}): MediaReviewView {
+  return {
+    uploadId: row.upload_id,
+    submissionId: row.submission_id,
+    state: row.state,
+    mimeType: row.mime_type,
+    byteSize: row.byte_size,
+    sha256: row.sha256,
+    sanitized: true,
+    exifRemoved: true,
+    rightsConfirmed: row.rights_confirmed,
+    decision:
+      row.review_state === "ACCEPTED" || row.review_state === "REJECTED"
+        ? row.review_state
+        : null,
+    decisionReason: row.review_reason,
+  };
+}
+
+function mergeClaimCurrentValue(detail: SpotDetail, claim: string): unknown {
+  switch (claim) {
+    case "ACCESS_LAST_ROAD":
+      return detail.route.lastRoad;
+    case "ACCESS_PARKING":
+      return detail.route.parkingGuidance;
+    case "FACILITY_STATUS":
+      return detail.spot.facilities.map((facility) => ({ type: facility.type, status: facility.status }));
+    case "ACCESS_OPENNESS":
+      return detail.accessAndSafety.openness;
+    case "ACCESS_LEGAL_ENTRY":
+      return detail.accessAndSafety.legalAccess;
+    case "SAFETY_NIGHT":
+      return detail.accessAndSafety.nightSafety;
+    case "HORIZON_PROFILE":
+      return { obstructionPercent: detail.spot.obstructionPercent, clearDirections: detail.spot.clearDirections };
+    case "SITE_MEDIA_PROVENANCE":
+      return detail.spot.media.map((media) => media.id);
+    default:
+      return null;
+  }
+}
+
+function mergeClaimCandidateValue(
+  submission: ContributionSubmission,
+  claim: string,
+): unknown {
+  return {
+    claim,
+    detail: submission.detail,
+    mediaIds: submission.media.map((media) => media.uploadId),
+    observedAt: submission.observedAt,
+  };
+}
+
 function contributionEvidenceSubject(
   claim: AdminContributionEvidenceClaim,
 ): FactEvidence["subjectType"] {
@@ -185,7 +331,9 @@ function unavailableCandidateSource(
   };
 }
 
-export class PostgresMiniappRepository implements MiniappRepositoryPort {
+export class PostgresMiniappRepository
+  implements MiniappRepositoryPort, AdminOperationsPort
+{
   readonly kind = "postgres" as const;
   readonly pool: pg.Pool;
 
@@ -348,7 +496,9 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           AND a.assessed_at >= now() - interval '30 days'`,
       [spotId],
     );
-    return result.rows[0] ? clone(result.rows[0].payload) : null;
+    return result.rows[0]
+      ? clone(result.rows[0].payload)
+      : null;
   }
 
   async getDetail(spotId: SpotId): Promise<SpotDetail | null> {
@@ -425,11 +575,135 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
 
   async resolveSession(tokenDigest: string): Promise<UserId | null> {
     const result = await this.pool.query<{ user_id: UserId }>(
-      `SELECT user_id FROM user_sessions
-        WHERE token_digest = $1 AND revoked_at IS NULL AND expires_at > now()`,
+      `SELECT s.user_id
+         FROM user_sessions s
+         JOIN users u ON u.user_id = s.user_id
+        WHERE s.token_digest = $1
+          AND s.revoked_at IS NULL
+          AND s.expires_at > now()
+          AND u.state = 'ACTIVE'`,
       [tokenDigest],
     );
     return result.rows[0]?.user_id ?? null;
+  }
+
+  async deleteAccount(
+    userId: UserId,
+    idempotencyKey: string,
+  ): Promise<AccountDeletionReceipt> {
+    return this.#transaction(async (client) => {
+      const replay = await this.#replay<AccountDeletionReceipt>(
+        client,
+        userId,
+        idempotencyKey,
+      );
+      if (replay) return replay;
+      const user = await client.query<{ state: string }>(
+        "SELECT state FROM users WHERE user_id = $1 FOR UPDATE",
+        [userId],
+      );
+      if (!user.rows[0]) throw new Error("account_not_found");
+      if (user.rows[0].state !== "ACTIVE")
+        throw new Error("account_not_active");
+
+      const media = await client.query<{ object_key: string | null }>(
+        `SELECT object_key
+           FROM contribution_media_uploads
+          WHERE user_id = $1 AND object_key IS NOT NULL
+          FOR UPDATE`,
+        [userId],
+      );
+      const objectKeys = [
+        ...new Set(
+          media.rows
+            .map((row) => row.object_key)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ];
+      const deletionBatchId = objectKeys.length ? randomUUID() : null;
+      for (const objectKey of objectKeys)
+        await client.query(
+          `INSERT INTO account_deletion_media_queue(deletion_batch_id, object_key)
+           VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [deletionBatchId, objectKey],
+        );
+
+      await client.query(
+        "DELETE FROM contribution_media_uploads WHERE user_id = $1",
+        [userId],
+      );
+      await client.query(
+        `UPDATE user_submissions
+            SET payload = payload || jsonb_build_object(
+              'media', '[]'::jsonb,
+              'preciseLocationConsent', false
+            ),
+                updated_at = now()
+          WHERE user_id = $1`,
+        [userId],
+      );
+      for (const table of [
+        "favorites",
+        "observation_plans",
+        "user_profile_links",
+        "external_post_imports",
+        "spot_proposals",
+        "field_reports",
+        "corrections",
+        "user_preferences",
+      ])
+        await client.query(`DELETE FROM ${table} WHERE user_id = $1`, [userId]);
+      await client.query("DELETE FROM wechat_identities WHERE user_id = $1", [
+        userId,
+      ]);
+      await client.query("DELETE FROM user_sessions WHERE user_id = $1", [
+        userId,
+      ]);
+      await client.query(
+        "DELETE FROM idempotency_records WHERE scope_id = $1",
+        [userId],
+      );
+      const deletedAt = new Date().toISOString();
+      await client.query(
+        "UPDATE users SET state = 'DELETED' WHERE user_id = $1",
+        [userId],
+      );
+      const receipt: AccountDeletionReceipt = {
+        schemaVersion: "starward-account-deletion-receipt-v1",
+        userId,
+        accountState: "DELETED",
+        deletedAt,
+        sessionsRevoked: true,
+        externalIdentityUnlinked: true,
+        mediaCleanupState: deletionBatchId ? "QUEUED" : "NOT_REQUIRED",
+        mutableDataDeleted: [
+          "preferences",
+          "favorites",
+          "plans",
+          "profile-links",
+          "imports",
+          "media",
+        ],
+        retainedDeidentifiedEvidence: [
+          "moderation-history",
+          "merge-publication-audit",
+        ],
+      };
+      await this.#recordMutation(client, {
+        idempotencyKey,
+        operation: "account.delete",
+        response: receipt,
+        eventType: "AccountDeleted",
+        scopeId: userId,
+        payload: {
+          userId,
+          deletionBatchId,
+          action: "DELETE_ACCOUNT_MEDIA",
+          jobKind: "MEDIA",
+        },
+      });
+      return receipt;
+    });
   }
 
   async getPreferences(userId: UserId): Promise<UserPreferencesRecord> {
@@ -444,7 +718,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
     const row = result.rows[0];
     if (!row) throw new Error("user_preferences_not_found");
     return {
-      preferences: clone(row.payload),
+      preferences: cloneUserPreferences(row.payload),
       revision: row.revision,
       updatedAt: row.updated_at.toISOString(),
     };
@@ -475,7 +749,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       if (currentRevision !== expectedRevision)
         throw new Error("preferences_revision_conflict");
       const record: UserPreferencesRecord = {
-        preferences: clone(preferences),
+        preferences: cloneUserPreferences(preferences),
         revision: currentRevision + 1,
         updatedAt: new Date().toISOString(),
       };
@@ -932,6 +1206,24 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       );
       if (!persisted.rowCount)
         throw new Error("contribution_identity_scope_conflict");
+      await client.query(
+        `INSERT INTO contribution_revisions(
+           revision_id, submission_id, revision_no, submission_state,
+           merge_state, publication_impact, payload, payload_digest, actor_id
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (submission_id, revision_no) DO NOTHING`,
+        [
+          `contribution-revision:${submission.submissionId}:${submission.revision}`,
+          submission.submissionId,
+          submission.revision,
+          submission.submissionState,
+          submission.mergeState,
+          submission.publicationImpact,
+          submission,
+          digest(submission),
+          userId,
+        ],
+      );
       await this.#recordMutation(client, {
         idempotencyKey,
         operation: "contribution-draft.save",
@@ -983,7 +1275,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         throw new Error("contribution_revision_conflict");
       const now = new Date().toISOString();
       const next: ContributionSubmission = {
-        ...clone(current.payload),
+        ...normalizeContributionSubmission(current.payload),
         media: [...current.payload.media.map(clone), clone(upload)],
         revision: current.revision + 1,
         updatedAt: now,
@@ -1010,6 +1302,24 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
             SET payload = $3, revision = $4, updated_at = $5
           WHERE submission_id = $1 AND user_id = $2`,
         [submissionId, userId, next, next.revision, next.updatedAt],
+      );
+      await client.query(
+        `INSERT INTO contribution_revisions(
+           revision_id, submission_id, revision_no, submission_state,
+           merge_state, publication_impact, payload, payload_digest, actor_id
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (submission_id, revision_no) DO NOTHING`,
+        [
+          `contribution-revision:${submissionId}:${next.revision}`,
+          submissionId,
+          next.revision,
+          next.submissionState,
+          next.mergeState,
+          next.publicationImpact,
+          next,
+          digest(next),
+          userId,
+        ],
       );
       await this.#recordMutation(client, {
         idempotencyKey,
@@ -1070,7 +1380,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         throw new Error("contribution_upload_not_found");
       if (uploadResult.rows[0].state !== "PENDING")
         throw new Error("contribution_upload_not_pending");
-      const media = current.payload.media.map((item) =>
+      const media = normalizeContributionSubmission(current.payload).media.map((item) =>
         item.uploadId === uploadId
           ? {
               ...clone(item),
@@ -1084,18 +1394,18 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       if (!media.some((item) => item.uploadId === uploadId))
         throw new Error("contribution_upload_not_found");
       const next: ContributionSubmission = {
-        ...clone(current.payload),
+        ...normalizeContributionSubmission(current.payload),
         media,
         revision: current.revision + 1,
         updatedAt: completion.uploadedAt,
       };
       await client.query(
         `UPDATE contribution_media_uploads
-            SET state = 'UPLOADED', byte_size = $2, sha256 = $3,
+            SET state = 'UPLOADED', byte_size = $2::bigint, sha256 = $3,
                 object_key = $4, uploaded_at = $5,
                 payload = payload || jsonb_build_object(
-                  'state', 'UPLOADED', 'byteSize', $2::integer,
-                  'sha256', $3::text, 'uploadedAt', $5::text
+                  'state', 'UPLOADED', 'byteSize', $2::bigint,
+                  'sha256', $3::text, 'uploadedAt', $5::timestamptz
                 )
           WHERE upload_id = $1`,
         [
@@ -1111,6 +1421,24 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
             SET payload = $3, revision = $4, updated_at = $5
           WHERE submission_id = $1 AND user_id = $2`,
         [submissionId, userId, next, next.revision, next.updatedAt],
+      );
+      await client.query(
+        `INSERT INTO contribution_revisions(
+           revision_id, submission_id, revision_no, submission_state,
+           merge_state, publication_impact, payload, payload_digest, actor_id
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (submission_id, revision_no) DO NOTHING`,
+        [
+          `contribution-revision:${submissionId}:${next.revision}`,
+          submissionId,
+          next.revision,
+          next.submissionState,
+          next.mergeState,
+          next.publicationImpact,
+          next,
+          digest(next),
+          userId,
+        ],
       );
       await this.#recordMutation(client, {
         idempotencyKey,
@@ -1169,8 +1497,19 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         throw new Error("contribution_media_upload_incomplete");
       const now = new Date().toISOString();
       const next: ContributionSubmission = {
-        ...clone(current.payload),
+        ...normalizeContributionSubmission(current.payload),
         state: "PENDING_REVIEW",
+        submissionState: "PENDING_REVIEW",
+        statusHistory: [
+          ...normalizeContributionSubmission(current.payload).statusHistory,
+          contributionEvent(
+            "SUBMISSION",
+            normalizeContributionSubmission(current.payload).submissionState,
+            "PENDING_REVIEW",
+            null,
+            "USER",
+          ),
+        ],
         media: current.payload.media.map((item) => ({
           ...clone(item),
           state: "ATTACHED",
@@ -1191,6 +1530,24 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
                 updated_at = $5
           WHERE submission_id = $1 AND user_id = $2`,
         [submissionId, userId, next, next.revision, next.updatedAt],
+      );
+      await client.query(
+        `INSERT INTO contribution_revisions(
+           revision_id, submission_id, revision_no, submission_state,
+           merge_state, publication_impact, payload, payload_digest, actor_id
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (submission_id, revision_no) DO NOTHING`,
+        [
+          `contribution-revision:${submissionId}:${next.revision}`,
+          submissionId,
+          next.revision,
+          next.submissionState,
+          next.mergeState,
+          next.publicationImpact,
+          next,
+          digest(next),
+          userId,
+        ],
       );
       await client.query(
         `INSERT INTO moderation_cases(
@@ -1250,7 +1607,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         );
         if (!row.rows[0]) continue;
         const next: ContributionSubmission = {
-          ...clone(row.rows[0].payload),
+          ...normalizeContributionSubmission(row.rows[0].payload),
           media: row.rows[0].payload.media.map((item) =>
             uploadIds.has(item.uploadId)
               ? { ...clone(item), state: "EXPIRED" }
@@ -1264,6 +1621,23 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
               SET payload = $2, revision = $3, updated_at = $4
             WHERE submission_id = $1`,
           [submissionId, next, next.revision, now],
+        );
+        await client.query(
+          `INSERT INTO contribution_revisions(
+             revision_id, submission_id, revision_no, submission_state,
+             merge_state, publication_impact, payload, payload_digest, actor_id
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'system:upload-cleanup')
+           ON CONFLICT (submission_id, revision_no) DO NOTHING`,
+          [
+            `contribution-revision:${submissionId}:${next.revision}`,
+            submissionId,
+            next.revision,
+            next.submissionState,
+            next.mergeState,
+            next.publicationImpact,
+            next,
+            digest(next),
+          ],
         );
       }
       if (expired.rowCount)
@@ -1531,6 +1905,27 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
          VALUES ($1, $2, $3)`,
         [spotId, detail, digest(detail)],
       );
+      const candidateRevisionId = `spot-revision:${spotId}:1`;
+      await client.query(
+        `INSERT INTO spot_revisions(
+           revision_id, spot_id, revision_no, spot_payload, detail_payload,
+           payload_digest, source_ids, created_by, reason
+         ) VALUES ($1, $2, 1, $3, $4, $5, $6, $7, $8)`,
+        [
+          candidateRevisionId,
+          spotId,
+          spot,
+          detail,
+          digest({ spot, detail }),
+          JSON.stringify(detail.dataDisclosure.map((source) => source.id)),
+          input.actorId,
+          candidate.reason,
+        ],
+      );
+      await client.query(
+        "UPDATE spots SET active_revision_id = $2 WHERE spot_id = $1",
+        [spotId, candidateRevisionId],
+      );
       for (const table of ["map_spot_summaries", "favorite_spot_summaries"])
         await client.query(
           `INSERT INTO ${table}(spot_id, payload) VALUES ($1, $2)`,
@@ -1555,6 +1950,12 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           candidate.reason,
           assessment.checkedAt,
         ],
+      );
+      await client.query(
+        `INSERT INTO spot_publication_assessment_events(
+           assessment_event_id, spot_id, spot_revision, assessment_digest, complete, payload, actor_id, reason
+         ) VALUES ($1, $2, 1, $3, false, $4, $5, $6)`,
+        [randomUUID(), spotId, assessment.assessmentDigest, assessment, input.actorId, candidate.reason],
       );
       await client.query(
         `INSERT INTO spot_status_history(
@@ -1595,6 +1996,11 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       );
       const current = selected.rows[0];
       if (!current) throw new Error("formal_spot_not_found");
+      if (
+        input.patch.status === "PUBLISHED" &&
+        current.status !== "PUBLISHED"
+      )
+        throw new Error("spot_publication_requires_lifecycle_command");
       const nextSpot = clone(current.payload);
       if (input.patch.name !== undefined) nextSpot.name = input.patch.name;
       if (input.patch.region !== undefined) nextSpot.region = input.patch.region;
@@ -1668,6 +2074,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         ...(input.patch.guides
           ? { guides: input.patch.guides.map(clone) }
           : {}),
+        ...(input.patch.route ? { route: clone(input.patch.route) } : {}),
         ...(input.patch.accessAndSafety
           ? { accessAndSafety: clone(input.patch.accessAndSafety) }
           : {}),
@@ -1681,6 +2088,23 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           ? { dataDisclosure: input.patch.dataDisclosure.map(clone) }
           : {}),
       };
+      const referencedSources = new Map(
+        [
+          nextSpot.source,
+          nextSpot.lightPollution.source,
+          nextDetail.route.source,
+          ...nextSpot.facilities.map((facility) => facility.source),
+          ...nextDetail.guides.map((guide) => guide.source),
+          ...nextDetail.dataDisclosure,
+        ].map((source) => [source.id, source]),
+      );
+      for (const source of referencedSources.values())
+        await client.query(
+          `INSERT INTO data_source_registry(source_id, provider, license, license_url, payload)
+           VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (source_id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = now()`,
+          [source.id, source.provider, source.license, source.licenseUrl, source],
+        );
       const assessment = evaluateSpotCompleteness({
         detail: nextDetail,
         review: { actorId: input.actorId, reason: input.patch.reason },
@@ -1722,6 +2146,28 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       );
       const nextRevision = updated.rows[0]?.version;
       if (!nextRevision) throw new Error("spot_update_failed");
+      const revisionId = `spot-revision:${input.spotId}:${nextRevision}`;
+      await client.query(
+        `INSERT INTO spot_revisions(
+           revision_id, spot_id, revision_no, spot_payload, detail_payload,
+           payload_digest, source_ids, created_by, reason
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          revisionId,
+          input.spotId,
+          nextRevision,
+          nextSpot,
+          nextDetail,
+          digest({ spot: nextSpot, detail: nextDetail }),
+          JSON.stringify(nextDetail.dataDisclosure.map((source) => source.id)),
+          input.actorId,
+          input.patch.reason,
+        ],
+      );
+      await client.query(
+        "UPDATE spots SET active_revision_id = $2 WHERE spot_id = $1",
+        [input.spotId, revisionId],
+      );
       await client.query(
         `INSERT INTO spot_publication_assessments(
            spot_id, spot_revision, assessment_digest, complete, payload,
@@ -1744,6 +2190,21 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           input.actorId,
           input.patch.reason,
           assessment.checkedAt,
+        ],
+      );
+      await client.query(
+        `INSERT INTO spot_publication_assessment_events(
+           assessment_event_id, spot_id, spot_revision, assessment_digest, complete, payload, actor_id, reason
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          randomUUID(),
+          input.spotId,
+          nextRevision,
+          assessment.assessmentDigest,
+          assessment.complete,
+          assessment,
+          input.actorId,
+          input.patch.reason,
         ],
       );
       await client.query(
@@ -1874,8 +2335,29 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
     reason: string;
     actorId: string;
     requestId: string;
+    expectedSubmissionRevision?: number;
+    expectedSpotRevision?: number;
+    idempotencyKey?: string;
+    receiptResult?: "MODERATION_CASE";
   }) {
     return this.#transaction(async (client) => {
+      const operationKey = input.idempotencyKey ?? `legacy:${input.requestId}`;
+      const requestDigest = digest({
+        operation: "moderation.merge",
+        caseId: input.caseId,
+        spotId: input.spotId,
+        confirmedClaims: input.confirmedClaims,
+        expectedSubmissionRevision: input.expectedSubmissionRevision ?? null,
+        expectedSpotRevision: input.expectedSpotRevision ?? null,
+        reason: input.reason,
+      });
+      const replay = await this.#adminReceiptReplay<{
+        contribution: ContributionSubmission;
+        canonicalMerge: Record<string, unknown>;
+        detail: SpotDetail;
+        assessment: ReturnType<typeof evaluateSpotCompleteness>;
+      }>(client, input.actorId, operationKey, "moderation.merge", requestDigest);
+      if (replay) return replay.result;
       const moderation = await client.query<{
         case_id: string;
         subject_type: string;
@@ -1889,7 +2371,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       const review = moderation.rows[0];
       if (!review || review.subject_type !== "USER_CONTRIBUTION")
         throw new Error("contribution_moderation_case_not_found");
-      if (review.state !== "APPROVED")
+      if (review.state !== "APPROVED" && review.state !== "ACCEPTED")
         throw new Error("contribution_moderation_not_approved");
       if (
         review.payload.canonicalMergeRequired === false ||
@@ -1904,8 +2386,14 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         [review.subject_id],
       );
       const submission = contributionResult.rows[0]?.payload;
-      if (!submission || submission.state !== "APPROVED")
+      if (!submission || (submission.state !== "APPROVED" && submission.submissionState !== "ACCEPTED"))
         throw new Error("contribution_review_state_conflict");
+      const normalizedSubmission = normalizeContributionSubmission(submission);
+      if (
+        input.expectedSubmissionRevision !== undefined &&
+        normalizedSubmission.revision !== input.expectedSubmissionRevision
+      )
+        throw new Error("contribution_revision_conflict");
       const claims = [...new Set(input.confirmedClaims)];
       if (!claims.length || claims.length !== input.confirmedClaims.length)
         throw new Error("contribution_merge_claims_invalid");
@@ -1953,6 +2441,11 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       );
       const current = selected.rows[0];
       if (!current) throw new Error("formal_spot_not_found");
+      if (
+        input.expectedSpotRevision !== undefined &&
+        current.version !== input.expectedSpotRevision
+      )
+        throw new Error("spot_revision_conflict");
       if (submission.spotId && submission.spotId !== input.spotId)
         throw new Error("contribution_merge_spot_mismatch");
 
@@ -2023,6 +2516,28 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         review: { actorId: input.actorId, reason: input.reason },
         now,
       });
+      const mergedSubmission: ContributionSubmission = {
+        ...normalizedSubmission,
+        state: normalizedSubmission.state,
+        submissionState: normalizedSubmission.submissionState,
+        mergeState: "MERGED",
+        publicationImpact: assessment.complete
+          ? "ACTIVE_REVISION_UPDATED"
+          : "CANDIDATE_UPDATED",
+        revision: normalizedSubmission.revision + 1,
+        updatedAt: nowIso,
+        statusHistory: [
+          ...normalizedSubmission.statusHistory,
+          contributionEvent("MERGE", normalizedSubmission.mergeState, "MERGED", input.reason, "OPERATOR"),
+          contributionEvent(
+            "PUBLICATION",
+            normalizedSubmission.publicationImpact,
+            assessment.complete ? "ACTIVE_REVISION_UPDATED" : "CANDIDATE_UPDATED",
+            input.reason,
+            "OPERATOR",
+          ),
+        ],
+      };
 
       await client.query(
         `INSERT INTO data_source_registry(source_id, provider, license, license_url, payload)
@@ -2045,6 +2560,27 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       );
       const nextRevision = updated.rows[0]?.version;
       if (!nextRevision) throw new Error("spot_update_failed");
+      await client.query(
+        `INSERT INTO spot_revisions(
+           revision_id, spot_id, revision_no, spot_payload, detail_payload,
+           payload_digest, source_ids, created_by, reason
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          `spot-revision:${input.spotId}:${nextRevision}`,
+          input.spotId,
+          nextRevision,
+          nextSpot,
+          nextDetail,
+          digest({ spot: nextSpot, detail: nextDetail }),
+           JSON.stringify(nextDetail.dataDisclosure.map((item) => item.id)),
+          input.actorId,
+          input.reason,
+        ],
+      );
+      await client.query(
+        `UPDATE spots SET active_revision_id = $2 WHERE spot_id = $1`,
+        [input.spotId, `spot-revision:${input.spotId}:${nextRevision}`],
+      );
       await client.query(
         `UPDATE spot_overview_read_models
             SET payload = $2, dependency_digest = $3, generated_at = now()
@@ -2101,11 +2637,47 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
             SET payload = payload || jsonb_build_object(
               'canonicalMergeRequired', false,
               'publicationGateRequired', true,
-              'canonicalMerge', $2::jsonb
+              'canonicalMerge', $2::jsonb,
+              'submission', $3::jsonb
             )
           WHERE case_id = $1
           RETURNING *`,
-        [input.caseId, JSON.stringify(canonicalMerge)],
+        [input.caseId, JSON.stringify(canonicalMerge), JSON.stringify(mergedSubmission)],
+      );
+      await client.query(
+        `UPDATE user_submissions
+            SET payload = $2, revision = $3, merge_state = 'MERGED',
+                publication_impact = $4, updated_at = $5
+          WHERE submission_id = $1`,
+        [review.subject_id, mergedSubmission, mergedSubmission.revision, mergedSubmission.publicationImpact, nowIso],
+      );
+      await this.#insertContributionRevision(client, mergedSubmission, input.actorId);
+      await client.query(
+        `INSERT INTO contribution_merge_events(
+           merge_event_id, case_id, submission_id, spot_id, submission_revision,
+           prior_spot_revision, resulting_spot_revision, confirmed_claims,
+           source_ids, actor_id, reason, idempotency_scope, idempotency_key
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [
+          randomUUID(),
+          input.caseId,
+          review.subject_id,
+          input.spotId,
+          normalizedSubmission.revision,
+          current.version,
+          nextRevision,
+          JSON.stringify(claims),
+          JSON.stringify([source.id]),
+          input.actorId,
+          input.reason,
+          input.actorId,
+          operationKey,
+        ],
+      );
+      await client.query(
+        `INSERT INTO moderation_case_events(event_id, case_id, event_type, actor_id, reason, redacted_payload)
+         VALUES ($1, $2, 'MERGE_COMMITTED', $3, $4, $5)`,
+        [randomUUID(), input.caseId, input.actorId, input.reason, { spotRevision: nextRevision, claims }],
       );
       await client.query(
         `INSERT INTO audit_logs(
@@ -2121,12 +2693,33 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           { moderation: mergedCase.rows[0], spot: nextDetail, assessment },
         ],
       );
-      return {
-        contribution: submission,
+      const response = {
+        contribution: mergedSubmission,
         canonicalMerge,
         detail: nextDetail,
         assessment,
       };
+      const receiptView =
+        input.receiptResult === "MODERATION_CASE"
+          ? await this.#readModerationCase(client, input.caseId)
+          : null;
+      if (input.receiptResult === "MODERATION_CASE" && !receiptView)
+        throw new Error("moderation_case_readback_missing");
+      await this.#commitAdminResult(client, {
+        operation: "moderation.merge",
+        scopeId: input.actorId,
+        idempotencyKey: operationKey,
+        requestId: input.requestId,
+        actorId: input.actorId,
+        result: receiptView ?? response,
+        readback: receiptView ?? response,
+        resultingRevision: nextRevision,
+        assessmentDigest: assessment.assessmentDigest,
+        eventType: "ContributionCanonicalMerge",
+        eventPayload: { caseId: input.caseId, spotId: input.spotId, revision: nextRevision },
+        requestDigest,
+      });
+      return response;
     });
   }
 
@@ -2148,12 +2741,30 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
 
   async adminResolveModeration(input: {
     caseId: string;
-    resolution: "APPROVED" | "REJECTED";
+    resolution: "ACCEPTED" | "APPROVED" | "REJECTED";
     reason: string;
     actorId: string;
     requestId: string;
+    expectedRevision?: number;
+    idempotencyKey?: string;
   }) {
     return this.#transaction(async (client) => {
+      const operationKey = input.idempotencyKey ?? `legacy:${input.requestId}`;
+      const requestDigest = digest({
+        operation: "moderation.resolve",
+        caseId: input.caseId,
+        resolution: input.resolution,
+        reason: input.reason,
+        expectedRevision: input.expectedRevision ?? null,
+      });
+      const replay = await this.#adminReceiptReplay<ModerationCaseView>(
+        client,
+        input.actorId,
+        operationKey,
+        "moderation.resolve",
+        requestDigest,
+      );
+      if (replay) return replay;
       const before = await client.query<{
         case_id: string;
         subject_type: string;
@@ -2165,7 +2776,7 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         [input.caseId],
       );
       if (!before.rows[0]) throw new Error("moderation_case_not_found");
-      if (before.rows[0].state !== "PENDING")
+      if (before.rows[0].state !== "PENDING" && before.rows[0].state !== "CHANGES_REQUESTED")
         throw new Error("moderation_case_already_resolved");
       let contribution: ContributionSubmission | null = null;
       if (before.rows[0].subject_type === "USER_CONTRIBUTION") {
@@ -2178,12 +2789,24 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           [before.rows[0].subject_id],
         );
         if (!result.rows[0]) throw new Error("contribution_not_found");
-        if (result.rows[0].payload.state !== "PENDING_REVIEW")
+        if (
+          input.expectedRevision !== undefined &&
+          result.rows[0].revision !== input.expectedRevision
+        )
+          throw new Error("contribution_revision_conflict");
+        if (
+          result.rows[0].payload.state !== "PENDING_REVIEW" &&
+          result.rows[0].payload.state !== "CHANGES_REQUESTED"
+        )
           throw new Error("contribution_review_state_conflict");
         const reviewedAt = new Date().toISOString();
+        const base = normalizeContributionSubmission(result.rows[0].payload);
+        const submissionState =
+          input.resolution === "APPROVED" ? "ACCEPTED" : input.resolution;
         contribution = {
-          ...clone(result.rows[0].payload),
+          ...base,
           state: input.resolution,
+          submissionState,
           revision: result.rows[0].revision + 1,
           updatedAt: reviewedAt,
           review: {
@@ -2191,20 +2814,32 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
             reason: input.reason,
             reviewedAt,
           },
+          statusHistory: [
+            ...base.statusHistory,
+            contributionEvent(
+              "SUBMISSION",
+              base.submissionState,
+              submissionState,
+              input.reason,
+              "OPERATOR",
+            ),
+          ],
         };
         await client.query(
           `UPDATE user_submissions
-              SET state = $2, payload = $3, revision = $4,
-                  updated_at = $5, reviewed_at = $5
+              SET state = $2, submission_state = $5, payload = $3, revision = $4,
+                  updated_at = $6, reviewed_at = $6
             WHERE submission_id = $1`,
           [
             before.rows[0].subject_id,
             input.resolution,
             contribution,
             contribution.revision,
+            submissionState,
             reviewedAt,
           ],
         );
+        await this.#insertContributionRevision(client, contribution, input.actorId);
       }
       const after = await client.query(
         `UPDATE moderation_cases
@@ -2212,7 +2847,8 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
                 payload = payload || jsonb_build_object(
                   'resolutionReason', $3::text,
                   'canonicalMergeRequired', $4::boolean,
-                  'publicationGateRequired', $4::boolean
+                  'publicationGateRequired', $4::boolean,
+                  'submission', $5::jsonb
                 )
           WHERE case_id = $1
           RETURNING *`,
@@ -2221,8 +2857,14 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           input.resolution,
           input.reason,
           before.rows[0].subject_type === "USER_CONTRIBUTION" &&
-            input.resolution === "APPROVED",
+            (input.resolution === "APPROVED" || input.resolution === "ACCEPTED"),
+          contribution,
         ],
+      );
+      await client.query(
+        `INSERT INTO moderation_case_events(event_id, case_id, event_type, actor_id, reason, redacted_payload)
+         VALUES ($1, $2, 'REVIEW_RESOLVED', $3, $4, $5)`,
+        [randomUUID(), input.caseId, input.actorId, input.reason, { resolution: input.resolution }],
       );
       await client.query(
         `INSERT INTO audit_logs(
@@ -2238,7 +2880,26 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
           after.rows[0],
         ],
       );
-      return { case: after.rows[0], contribution };
+      const readback = await this.#readModerationCase(client, input.caseId);
+      if (!readback) throw new Error("moderation_case_readback_missing");
+      return this.#commitAdminResult(client, {
+        operation: "moderation.resolve",
+        scopeId: input.actorId,
+        idempotencyKey: operationKey,
+        requestId: input.requestId,
+        actorId: input.actorId,
+        result: readback,
+        readback,
+        resultingRevision: contribution?.revision ?? null,
+        assessmentDigest: null,
+        eventType: "ModerationResolved",
+        eventPayload: {
+          caseId: input.caseId,
+          resolution: input.resolution,
+          submissionRevision: contribution?.revision ?? null,
+        },
+        requestDigest,
+      });
     });
   }
 
@@ -2331,12 +2992,20 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
       eventType: string;
       scopeId: string;
       payload: unknown;
+      requestDigest?: string;
     },
   ) {
     await client.query(
-      `INSERT INTO idempotency_records(scope_id, idempotency_key, operation, response)
-       VALUES ($1, $2, $3, $4)`,
-      [input.scopeId, input.idempotencyKey, input.operation, input.response],
+      `INSERT INTO idempotency_records(
+         scope_id, idempotency_key, operation, request_digest, response
+       ) VALUES ($1, $2, $3, $4, $5)`,
+      [
+        input.scopeId,
+        input.idempotencyKey,
+        input.operation,
+        input.requestDigest ?? digest({ operation: input.operation, payload: input.payload }),
+        input.response,
+      ],
     );
     await client.query(
       `INSERT INTO outbox_events(event_id, event_type, idempotency_key, payload)
@@ -2348,5 +3017,1088 @@ export class PostgresMiniappRepository implements MiniappRepositoryPort {
         input.payload,
       ],
     );
+  }
+
+  async adminListModerationQueue(): Promise<readonly ModerationQueueItem[]> {
+    const result = await this.pool.query<{
+      case_id: string;
+      subject_type: string;
+      subject_id: string;
+      state: string;
+      payload: Record<string, unknown>;
+      created_at: string | Date;
+    }>(
+      `SELECT case_id, subject_type, subject_id, state, payload, created_at
+         FROM moderation_cases
+        WHERE state IN ('PENDING', 'CHANGES_REQUESTED')
+        ORDER BY created_at ASC`,
+    );
+    const now = Date.now();
+    return result.rows.map((row) => {
+      const submission = row.payload.submission as ContributionSubmission | undefined;
+      const normalized = submission
+        ? normalizeContributionSubmission(submission)
+        : null;
+      const riskFlags = [
+        ...(normalized?.kind === "NEW_SPOT_PROPOSAL" ? ["NEW_SPOT"] : []),
+        ...(normalized?.candidateLocation ? ["PRECISE_LOCATION"] : []),
+        ...(normalized?.media.length ? ["MEDIA_REVIEW"] : []),
+      ];
+      const ageSeconds = Math.max(
+        0,
+        Math.floor((now - Date.parse(new Date(row.created_at).toISOString())) / 1_000),
+      );
+      return {
+        caseId: row.case_id as ModerationQueueItem["caseId"],
+        subjectType: row.subject_type as ModerationQueueItem["subjectType"],
+        subjectId: row.subject_id,
+        state: row.state as ModerationQueueItem["state"],
+        kind: normalized?.kind ?? null,
+        priority: riskFlags.length > 1 ? "HIGH" : ageSeconds > 86_400 ? "HIGH" : "NORMAL",
+        riskFlags,
+        ageSeconds,
+        createdAt: new Date(row.created_at).toISOString(),
+        spotId: normalized?.spotId ?? null,
+      };
+    });
+  }
+
+  async adminGetModerationCase(caseId: string): Promise<ModerationCaseView | null> {
+    return this.#readModerationCase(this.pool, caseId);
+  }
+
+  async adminGetMediaReview(uploadId: ContributionUploadId): Promise<MediaReviewView | null> {
+    const result = await this.pool.query<{
+      upload_id: ContributionUploadId;
+      submission_id: ContributionId;
+      state: ContributionMediaUpload["state"];
+      mime_type: ContributionMediaUpload["mimeType"];
+      byte_size: number | null;
+      sha256: string | null;
+      review_state: string;
+      review_reason: string | null;
+      rights_confirmed: boolean;
+    }>(
+      `SELECT m.upload_id, m.submission_id, m.state, m.mime_type, m.byte_size,
+              m.sha256, m.review_state, m.review_reason, s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed
+         FROM contribution_media_uploads m
+         JOIN user_submissions s USING (submission_id)
+        WHERE m.upload_id = $1`,
+      [uploadId],
+    );
+    return result.rows[0] ? toMediaReviewView(result.rows[0]) : null;
+  }
+
+  async adminRequestContributionChanges(input: {
+    caseId: string;
+    reason: string;
+    expectedRevision: number;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<ModerationCaseView>> {
+    return this.#transaction(async (client) => {
+      const requestDigest = digest({
+        operation: "moderation.request-changes",
+        caseId: input.caseId,
+        reason: input.reason,
+        expectedRevision: input.expectedRevision,
+      });
+      const replay = await this.#adminReceiptReplay<ModerationCaseView>(
+        client,
+        input.actorId,
+        input.idempotencyKey,
+        "moderation.request-changes",
+        requestDigest,
+      );
+      if (replay) return replay;
+      const caseRow = await client.query<{
+        case_id: string;
+        subject_type: string;
+        subject_id: string;
+        state: string;
+        payload: Record<string, unknown>;
+        created_at: string | Date;
+        resolved_at: string | Date | null;
+      }>("SELECT * FROM moderation_cases WHERE case_id = $1 FOR UPDATE", [input.caseId]);
+      const currentCase = caseRow.rows[0];
+      if (!currentCase) throw new Error("moderation_case_not_found");
+      if (currentCase.state !== "PENDING" && currentCase.state !== "CHANGES_REQUESTED")
+        throw new Error("moderation_case_already_resolved");
+      if (currentCase.subject_type !== "USER_CONTRIBUTION")
+        throw new Error("moderation_subject_unsupported");
+      const submissionRow = await client.query<{
+        payload: ContributionSubmission;
+        revision: number;
+      }>(
+        `SELECT payload, revision FROM user_submissions
+          WHERE submission_id = $1 FOR UPDATE`,
+        [currentCase.subject_id],
+      );
+      const current = submissionRow.rows[0];
+      if (!current) throw new Error("contribution_not_found");
+      if (current.revision !== input.expectedRevision)
+        throw new Error("contribution_revision_conflict");
+      const base = normalizeContributionSubmission(current.payload);
+      const now = new Date().toISOString();
+      const next: ContributionSubmission = {
+        ...base,
+        state: "CHANGES_REQUESTED",
+        submissionState: "CHANGES_REQUESTED",
+        review: { resolution: "CHANGES_REQUESTED", reason: input.reason, reviewedAt: now },
+        revision: current.revision + 1,
+        updatedAt: now,
+        statusHistory: [
+          ...base.statusHistory,
+          contributionEvent("SUBMISSION", base.submissionState, "CHANGES_REQUESTED", input.reason, "OPERATOR"),
+        ],
+      };
+      await client.query(
+        `UPDATE user_submissions
+            SET state = 'CHANGES_REQUESTED', submission_state = 'CHANGES_REQUESTED',
+                payload = $2, revision = $3, updated_at = $4, reviewed_at = $4
+          WHERE submission_id = $1`,
+        [currentCase.subject_id, next, next.revision, now],
+      );
+      await this.#insertContributionRevision(client, next, input.actorId);
+      const nextPayload = {
+        ...currentCase.payload,
+        submission: next,
+        canonicalMergeRequired: false,
+        publicationGateRequired: true,
+      };
+      const updatedCase = await client.query(
+        `UPDATE moderation_cases
+            SET state = 'CHANGES_REQUESTED', payload = $2, resolved_at = NULL
+          WHERE case_id = $1
+          RETURNING *`,
+        [input.caseId, nextPayload],
+      );
+      await client.query(
+        `INSERT INTO moderation_case_events(event_id, case_id, event_type, actor_id, reason, redacted_payload)
+         VALUES ($1, $2, 'REQUEST_CHANGES', $3, $4, $5)`,
+        [randomUUID(), input.caseId, input.actorId, input.reason, { submissionRevision: next.revision }],
+      );
+      await client.query(
+        `INSERT INTO audit_logs(audit_id, actor_id, action, subject_type, subject_id, request_id, before_payload, after_payload)
+         VALUES ($1, $2, 'CONTRIBUTION_REQUEST_CHANGES', 'MODERATION_CASE', $3, $4, $5, $6)`,
+        [randomUUID(), input.actorId, input.caseId, input.requestId, currentCase.payload, nextPayload],
+      );
+      const readback = await this.#readModerationCase(client, input.caseId);
+      if (!readback) throw new Error("moderation_case_readback_missing");
+      return this.#commitAdminResult(client, {
+        operation: "moderation.request-changes",
+        scopeId: input.actorId,
+        idempotencyKey: input.idempotencyKey,
+        requestId: input.requestId,
+        actorId: input.actorId,
+        result: readback,
+        readback,
+        resultingRevision: next.revision,
+        assessmentDigest: null,
+        eventType: "ModerationChangesRequested",
+        eventPayload: { caseId: input.caseId, submissionRevision: next.revision },
+        requestDigest,
+      });
+    });
+  }
+
+  async adminReviewContributionMedia(input: {
+    uploadId: ContributionUploadId;
+    caseId?: string;
+    decision: "ACCEPTED" | "REJECTED";
+    reason: string;
+    expectedRevision: number | null;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<MediaReviewView>> {
+    return this.#transaction(async (client) => {
+      const requestDigest = digest({
+        operation: "media.review",
+        uploadId: input.uploadId,
+        caseId: input.caseId ?? null,
+        decision: input.decision,
+        reason: input.reason,
+        expectedRevision: input.expectedRevision,
+      });
+      const replay = await this.#adminReceiptReplay<MediaReviewView>(
+        client,
+        input.actorId,
+        input.idempotencyKey,
+        "media.review",
+        requestDigest,
+      );
+      if (replay) return replay;
+      const result = await client.query<{
+        upload_id: ContributionUploadId;
+        submission_id: ContributionId;
+        state: ContributionMediaUpload["state"];
+        mime_type: ContributionMediaUpload["mimeType"];
+        byte_size: number | null;
+        sha256: string | null;
+        review_state: string;
+        review_reason: string | null;
+        rights_confirmed: boolean;
+        payload: ContributionSubmission;
+        revision: number;
+      }>(
+        `SELECT m.upload_id, m.submission_id, m.state, m.mime_type, m.byte_size,
+                m.sha256, m.review_state, m.review_reason,
+                s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed,
+                s.payload, s.revision
+           FROM contribution_media_uploads m
+           JOIN user_submissions s USING (submission_id)
+          WHERE m.upload_id = $1
+          FOR UPDATE OF m, s`,
+        [input.uploadId],
+      );
+      const current = result.rows[0];
+      if (!current) throw new Error("contribution_upload_not_found");
+      if (input.caseId) {
+        const caseResult = await client.query(
+          `SELECT 1 FROM moderation_cases
+            WHERE case_id = $1 AND subject_type = 'USER_CONTRIBUTION' AND subject_id = $2
+            FOR UPDATE`,
+          [input.caseId, current.submission_id],
+        );
+        if (!caseResult.rowCount) throw new Error("moderation_case_media_mismatch");
+      }
+      if (input.expectedRevision !== null && current.revision !== input.expectedRevision)
+        throw new Error("contribution_revision_conflict");
+      if (!current.payload.media.some((media) => media.uploadId === input.uploadId))
+        throw new Error("contribution_upload_not_found");
+      const now = new Date().toISOString();
+      const nextPayload = normalizeContributionSubmission(current.payload);
+      const media = nextPayload.media.map((item) =>
+        item.uploadId === input.uploadId
+          ? { ...item, state: item.state === "ATTACHED" ? "ATTACHED" as const : item.state }
+          : item,
+      );
+      const nextSubmission: ContributionSubmission = {
+        ...nextPayload,
+        media,
+        revision: current.revision + 1,
+        updatedAt: now,
+        statusHistory: [
+          ...nextPayload.statusHistory,
+          contributionEvent("PUBLICATION", null, `MEDIA_${input.decision}`, input.reason, "OPERATOR"),
+        ],
+      };
+      await client.query(
+        `UPDATE contribution_media_uploads
+            SET review_state = $2, review_reason = $3, reviewed_by = $4, reviewed_at = $5,
+                payload = payload || jsonb_build_object(
+                  'reviewState', $2::text, 'reviewReason', $3::text,
+                  'reviewedBy', $4::text, 'reviewedAt', $5::text
+                )
+          WHERE upload_id = $1`,
+        [input.uploadId, input.decision, input.reason, input.actorId, now],
+      );
+      await client.query(
+        `UPDATE user_submissions SET payload = $2, revision = $3, updated_at = $4
+          WHERE submission_id = $1`,
+        [current.submission_id, nextSubmission, nextSubmission.revision, now],
+      );
+      await this.#insertContributionRevision(client, nextSubmission, input.actorId);
+      await client.query(
+        `INSERT INTO moderation_case_events(event_id, case_id, event_type, actor_id, reason, redacted_payload)
+         SELECT $2, case_id, 'MEDIA_REVIEW', $3, $4, $5
+           FROM moderation_cases
+          WHERE subject_id = $1`,
+        [current.submission_id, randomUUID(), input.actorId, input.reason, { uploadId: input.uploadId, decision: input.decision }],
+      );
+      await client.query(
+        `INSERT INTO audit_logs(audit_id, actor_id, action, subject_type, subject_id, request_id, before_payload, after_payload)
+         VALUES ($1, $2, 'MEDIA_REVIEW', 'CONTRIBUTION_MEDIA', $3, $4, $5, $6)`,
+        [randomUUID(), input.actorId, input.uploadId, input.requestId, { reviewState: current.review_state }, { reviewState: input.decision }],
+      );
+      const readbackRow = await client.query<{
+        upload_id: ContributionUploadId;
+        submission_id: ContributionId;
+        state: ContributionMediaUpload["state"];
+        mime_type: ContributionMediaUpload["mimeType"];
+        byte_size: number | null;
+        sha256: string | null;
+        review_state: string;
+        review_reason: string | null;
+        rights_confirmed: boolean;
+      }>(
+        `SELECT m.upload_id, m.submission_id, m.state, m.mime_type, m.byte_size,
+                m.sha256, m.review_state, m.review_reason,
+                s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed
+           FROM contribution_media_uploads m
+           JOIN user_submissions s USING (submission_id)
+          WHERE m.upload_id = $1`,
+        [input.uploadId],
+      );
+      const readback = readbackRow.rows[0] ? toMediaReviewView(readbackRow.rows[0]) : null;
+      if (!readback) throw new Error("contribution_media_readback_missing");
+      return this.#commitAdminResult(client, {
+        operation: "media.review",
+        scopeId: input.actorId,
+        idempotencyKey: input.idempotencyKey,
+        requestId: input.requestId,
+        actorId: input.actorId,
+        result: readback,
+        readback,
+        resultingRevision: nextSubmission.revision,
+        assessmentDigest: null,
+        eventType: "ContributionMediaReviewed",
+        eventPayload: { uploadId: input.uploadId, decision: input.decision },
+        requestDigest,
+      });
+    });
+  }
+
+  async adminCreateMergePreview(input: {
+    caseId: string;
+    spotId: SpotId;
+    confirmedClaims: readonly string[];
+    expectedSubmissionRevision: number;
+    expectedSpotRevision: number;
+  }): Promise<MergePreview> {
+    const caseRow = await this.pool.query<{
+      state: string;
+      subject_id: string;
+      payload: Record<string, unknown>;
+    }>("SELECT state, subject_id, payload FROM moderation_cases WHERE case_id = $1", [input.caseId]);
+    const currentCase = caseRow.rows[0];
+    if (!currentCase) throw new Error("moderation_case_not_found");
+    if (currentCase.state !== "APPROVED" && currentCase.state !== "ACCEPTED")
+      throw new Error("contribution_moderation_not_approved");
+    if (currentCase.subject_id !== input.caseId.replace(/^moderation:/u, "") && !currentCase.payload.submission)
+      throw new Error("contribution_moderation_subject_invalid");
+    const submission = normalizeContributionSubmission(
+      currentCase.payload.submission as ContributionSubmission,
+    );
+    if (submission.revision !== input.expectedSubmissionRevision)
+      throw new Error("contribution_revision_conflict");
+    const selected = await this.pool.query<{ detail: SpotDetail; status: SpotSummary["status"]; version: number }>(
+      `SELECT r.payload AS detail, s.status, s.version
+         FROM spots s JOIN spot_overview_read_models r USING (spot_id)
+        WHERE s.spot_id = $1`,
+      [input.spotId],
+    );
+    const currentSpot = selected.rows[0];
+    if (!currentSpot) throw new Error("formal_spot_not_found");
+    const detail = currentSpot.detail;
+    if (currentSpot.status === "RETIRED") throw new Error("formal_spot_retired");
+    if (currentSpot.version !== input.expectedSpotRevision)
+      throw new Error("spot_revision_conflict");
+    const requestedClaims = input.confirmedClaims.length
+      ? input.confirmedClaims
+      : submission.topics.flatMap((topic) => CONTRIBUTION_TOPIC_CLAIMS[topic]);
+    const claims = [...new Set(requestedClaims)];
+    if (!claims.length || claims.length !== requestedClaims.length)
+      throw new Error("contribution_merge_claims_invalid");
+    const allowedClaims = new Set<string>(
+      submission.topics.flatMap((topic) => CONTRIBUTION_TOPIC_CLAIMS[topic]),
+    );
+    if (claims.some((claim) => !allowedClaims.has(claim)))
+      throw new Error("contribution_merge_claim_not_reported");
+    const sourceIds = [`contribution-source:${submission.submissionId}`];
+    const previews: MergeClaimPreview[] = claims.map((claim) => ({
+      claimId: claim,
+      claim,
+      currentValue: mergeClaimCurrentValue(detail, claim),
+      candidateValue: mergeClaimCandidateValue(submission, claim),
+      sourceIds,
+      conflict: false,
+      disposition: "ALLOW",
+    }));
+    return {
+      caseId: input.caseId as MergePreview["caseId"],
+      submissionId: submission.submissionId,
+      spotId: input.spotId,
+      submissionRevision: submission.revision,
+      spotRevision: input.expectedSpotRevision,
+      claims: previews,
+      candidateRevision: input.expectedSpotRevision + 1,
+      publicationAssessment: "RECOMPUTE_AFTER_MERGE",
+      readOnly: true,
+    };
+  }
+
+  async adminCommitMerge(input: {
+    caseId: string;
+    spotId: SpotId;
+    confirmedClaims: readonly string[];
+    expectedSubmissionRevision: number;
+    expectedSpotRevision: number;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<ModerationCaseView>> {
+    await this.adminCreateMergePreview({
+      caseId: input.caseId,
+      spotId: input.spotId,
+      confirmedClaims: input.confirmedClaims,
+      expectedSubmissionRevision: input.expectedSubmissionRevision,
+      expectedSpotRevision: input.expectedSpotRevision,
+    });
+    await this.adminMergeContributionEvidence({
+      caseId: input.caseId,
+      spotId: input.spotId,
+      confirmedClaims: input.confirmedClaims as readonly AdminContributionEvidenceClaim[],
+      reason: input.reason,
+      actorId: input.actorId,
+      requestId: input.requestId,
+      expectedSubmissionRevision: input.expectedSubmissionRevision,
+      expectedSpotRevision: input.expectedSpotRevision,
+      idempotencyKey: input.idempotencyKey,
+      receiptResult: "MODERATION_CASE",
+    });
+    const readback = await this.adminGetModerationCase(input.caseId);
+    if (!readback) throw new Error("moderation_case_readback_missing");
+    const receipt = await this.adminReadReceiptByIdentity(input.actorId, input.idempotencyKey);
+    if (!receipt) throw new Error("operation_receipt_missing");
+    return { result: readback, readback, receipt: receipt as OperationReceipt<ModerationCaseView> };
+  }
+
+  async adminAssessPublication(input: {
+    spotId: SpotId;
+    expectedSpotRevision: number | null;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<PublicationAssessment>> {
+    return this.#transaction(async (client) => {
+      const requestDigest = digest({
+        operation: "publication.assess",
+        spotId: input.spotId,
+        expectedSpotRevision: input.expectedSpotRevision,
+        reason: input.reason,
+      });
+      const replay = await this.#adminReceiptReplay<PublicationAssessment>(
+        client,
+        input.actorId,
+        input.idempotencyKey,
+        "publication.assess",
+        requestDigest,
+      );
+      if (replay) return replay;
+      const selected = await client.query<{
+        payload: SpotSummary;
+        detail: SpotDetail;
+        version: number;
+      }>(
+        `SELECT s.payload, r.payload AS detail, s.version
+           FROM spots s JOIN spot_overview_read_models r USING (spot_id)
+          WHERE s.spot_id = $1 FOR UPDATE`,
+        [input.spotId],
+      );
+      const current = selected.rows[0];
+      if (!current) throw new Error("formal_spot_not_found");
+      if (input.expectedSpotRevision !== null && current.version !== input.expectedSpotRevision)
+        throw new Error("spot_revision_conflict");
+      const assessment = evaluateSpotCompleteness({
+        detail: current.detail,
+        review: { actorId: input.actorId, reason: input.reason },
+      });
+      const publication: PublicationAssessment = {
+        spotId: input.spotId,
+        spotRevision: current.version,
+        assessmentDigest: assessment.assessmentDigest,
+        complete: assessment.complete,
+        blockers: assessment.issues.map((issue) => issue.code),
+        checkedAt: assessment.checkedAt,
+        checkedBy: input.actorId,
+        projectionDigest: digest(current.detail),
+      };
+      await client.query(
+        `INSERT INTO spot_publication_assessments(
+           spot_id, spot_revision, assessment_digest, complete, payload,
+           reviewed_by, review_reason, assessed_at
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (spot_id) DO UPDATE SET
+           spot_revision = EXCLUDED.spot_revision,
+           assessment_digest = EXCLUDED.assessment_digest,
+           complete = EXCLUDED.complete,
+           payload = EXCLUDED.payload,
+           reviewed_by = EXCLUDED.reviewed_by,
+           review_reason = EXCLUDED.review_reason,
+           assessed_at = EXCLUDED.assessed_at`,
+        [input.spotId, current.version, publication.assessmentDigest, publication.complete, publication, input.actorId, input.reason, publication.checkedAt],
+      );
+      await client.query(
+        `INSERT INTO spot_publication_assessment_events(
+           assessment_event_id, spot_id, spot_revision, assessment_digest, complete, payload, actor_id, reason
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [randomUUID(), input.spotId, current.version, publication.assessmentDigest, publication.complete, publication, input.actorId, input.reason],
+      );
+      await client.query(
+        `INSERT INTO audit_logs(audit_id, actor_id, action, subject_type, subject_id, request_id, before_payload, after_payload)
+         VALUES ($1, $2, 'PUBLICATION_ASSESSMENT', 'SPOT', $3, $4, NULL, $5)`,
+        [randomUUID(), input.actorId, input.spotId, input.requestId, publication],
+      );
+      return this.#commitAdminResult(client, {
+        operation: "publication.assess",
+        scopeId: input.actorId,
+        idempotencyKey: input.idempotencyKey,
+        requestId: input.requestId,
+        actorId: input.actorId,
+        result: publication,
+        readback: publication,
+        resultingRevision: current.version,
+        assessmentDigest: publication.assessmentDigest,
+        eventType: "PublicationAssessed",
+        eventPayload: { spotId: input.spotId, revision: current.version, complete: publication.complete },
+        requestDigest,
+      });
+    });
+  }
+
+  async adminChangeSpotLifecycle(input: {
+    spotId: SpotId;
+    action: "PUBLISH" | "SUSPEND" | "UNPUBLISH" | "RETIRE";
+    expectedSpotRevision: number;
+    assessmentDigest?: string;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<SpotSummary>> {
+    return this.#transaction(async (client) => {
+      const requestDigest = digest({
+        operation: `spot.${input.action.toLowerCase()}`,
+        spotId: input.spotId,
+        action: input.action,
+        expectedSpotRevision: input.expectedSpotRevision,
+        assessmentDigest: input.assessmentDigest ?? null,
+        reason: input.reason,
+      });
+      const replay = await this.#adminReceiptReplay<SpotSummary>(
+        client,
+        input.actorId,
+        input.idempotencyKey,
+        `spot.${input.action.toLowerCase()}`,
+        requestDigest,
+      );
+      if (replay) return replay;
+      const selected = await client.query<{
+        payload: SpotSummary;
+        detail: SpotDetail;
+        status: SpotSummary["status"];
+        version: number;
+      }>(
+        `SELECT s.payload, r.payload AS detail, s.status, s.version
+           FROM spots s JOIN spot_overview_read_models r USING (spot_id)
+          WHERE s.spot_id = $1 FOR UPDATE`,
+        [input.spotId],
+      );
+      const current = selected.rows[0];
+      if (!current) throw new Error("formal_spot_not_found");
+      if (current.version !== input.expectedSpotRevision)
+        throw new Error("spot_revision_conflict");
+      if (input.action === "PUBLISH") {
+        const assessment = await client.query<{ complete: boolean; spot_revision: number; assessment_digest: string }>(
+          `SELECT complete, spot_revision, assessment_digest
+             FROM spot_publication_assessments
+            WHERE spot_id = $1`,
+          [input.spotId],
+        );
+        const gate = assessment.rows[0];
+        if (
+          !gate ||
+          gate.spot_revision !== current.version ||
+          !gate.complete ||
+          (input.assessmentDigest !== undefined &&
+            gate.assessment_digest !== input.assessmentDigest)
+        )
+          throw new SpotPublicationBlockedError(
+            evaluateSpotCompleteness({
+              detail: current.detail,
+              review: { actorId: input.actorId, reason: input.reason },
+            }),
+          );
+      }
+      if (input.action === "RETIRE" && current.status === "RETIRED")
+        throw new Error("formal_spot_already_retired");
+      const nextStatus = ({
+        PUBLISH: "PUBLISHED",
+        SUSPEND: "TEMPORARILY_CLOSED",
+        UNPUBLISH: "UNPUBLISHED",
+        RETIRE: "RETIRED",
+      } as const)[input.action];
+      const nextSpot: SpotSummary = { ...clone(current.payload), status: nextStatus };
+      const updated = await client.query<{ version: number }>(
+        `UPDATE spots
+            SET status = $2, payload = $3, version = version + 1, updated_at = now()
+          WHERE spot_id = $1
+          RETURNING version`,
+        [input.spotId, nextStatus, nextSpot],
+      );
+      const nextRevision = updated.rows[0]?.version;
+      if (!nextRevision) throw new Error("spot_update_failed");
+      const nextDetail = { ...clone(current.detail), spot: nextSpot };
+      let lifecycleAssessment: PublicationAssessment | null = null;
+      if (input.action === "PUBLISH" || input.action === "SUSPEND") {
+        const evaluated = evaluateSpotCompleteness({
+          detail: nextDetail,
+          review: { actorId: input.actorId, reason: input.reason },
+        });
+        if (!evaluated.complete)
+          throw new SpotPublicationBlockedError(evaluated);
+        lifecycleAssessment = {
+          spotId: input.spotId,
+          spotRevision: nextRevision,
+          assessmentDigest: evaluated.assessmentDigest,
+          complete: true,
+          blockers: [],
+          checkedAt: evaluated.checkedAt,
+          checkedBy: input.actorId,
+          projectionDigest: digest(nextDetail),
+        };
+        await client.query(
+          `INSERT INTO spot_publication_assessments(
+             spot_id, spot_revision, assessment_digest, complete, payload,
+             reviewed_by, review_reason, assessed_at
+           ) VALUES ($1, $2, $3, true, $4, $5, $6, $7)
+           ON CONFLICT (spot_id) DO UPDATE SET
+             spot_revision = EXCLUDED.spot_revision,
+             assessment_digest = EXCLUDED.assessment_digest,
+             complete = true,
+             payload = EXCLUDED.payload,
+             reviewed_by = EXCLUDED.reviewed_by,
+             review_reason = EXCLUDED.review_reason,
+             assessed_at = EXCLUDED.assessed_at`,
+          [
+            input.spotId,
+            nextRevision,
+            lifecycleAssessment.assessmentDigest,
+            lifecycleAssessment,
+            input.actorId,
+            input.reason,
+            lifecycleAssessment.checkedAt,
+          ],
+        );
+        await client.query(
+          `INSERT INTO spot_publication_assessment_events(
+             assessment_event_id, spot_id, spot_revision, assessment_digest,
+             complete, payload, actor_id, reason
+           ) VALUES ($1, $2, $3, $4, true, $5, $6, $7)`,
+          [
+            randomUUID(),
+            input.spotId,
+            nextRevision,
+            lifecycleAssessment.assessmentDigest,
+            lifecycleAssessment,
+            input.actorId,
+            input.reason,
+          ],
+        );
+      }
+      const revisionId = `spot-revision:${input.spotId}:${nextRevision}`;
+      await client.query(
+        `INSERT INTO spot_revisions(
+           revision_id, spot_id, revision_no, spot_payload, detail_payload,
+           payload_digest, source_ids, created_by, reason
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          revisionId,
+          input.spotId,
+          nextRevision,
+          nextSpot,
+          nextDetail,
+          digest({ spot: nextSpot, detail: nextDetail }),
+          JSON.stringify(nextDetail.dataDisclosure.map((source) => source.id)),
+          input.actorId,
+          input.reason,
+        ],
+      );
+      await client.query("UPDATE spots SET active_revision_id = $2 WHERE spot_id = $1", [input.spotId, revisionId]);
+      await client.query(
+        `UPDATE spot_overview_read_models
+            SET payload = $2, dependency_digest = $3, generated_at = now()
+          WHERE spot_id = $1`,
+        [input.spotId, nextDetail, digest(nextDetail)],
+      );
+      for (const table of ["map_spot_summaries", "favorite_spot_summaries"])
+        await client.query(`UPDATE ${table} SET payload = $2, generated_at = now() WHERE spot_id = $1`, [input.spotId, nextSpot]);
+      await client.query(
+        `INSERT INTO spot_status_history(history_id, spot_id, prior_status, next_status, reason, actor_id)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [randomUUID(), input.spotId, current.status, nextStatus, input.reason, input.actorId],
+      );
+      await client.query(
+        `INSERT INTO audit_logs(audit_id, actor_id, action, subject_type, subject_id, request_id, before_payload, after_payload)
+         VALUES ($1, $2, $3, 'SPOT', $4, $5, $6, $7)`,
+        [randomUUID(), input.actorId, `SPOT_${input.action}`, input.spotId, input.requestId, current.payload, nextSpot],
+      );
+      return this.#commitAdminResult(client, {
+        operation: `spot.${input.action.toLowerCase()}`,
+        scopeId: input.actorId,
+        idempotencyKey: input.idempotencyKey,
+        requestId: input.requestId,
+        actorId: input.actorId,
+        result: nextSpot,
+        readback: nextSpot,
+        resultingRevision: nextRevision,
+        assessmentDigest: lifecycleAssessment?.assessmentDigest ?? null,
+        eventType: `Spot${input.action[0]}${input.action.slice(1).toLowerCase()}`,
+        eventPayload: { spotId: input.spotId, revision: nextRevision, status: nextStatus },
+        requestDigest,
+      });
+    });
+  }
+
+  async adminListSpotRevisions(spotId: SpotId): Promise<readonly Record<string, unknown>[]> {
+    const result = await this.pool.query(
+      `SELECT revision_id, spot_id, revision_no, payload_digest, source_ids,
+              created_by, reason, created_at,
+              revision_id = (SELECT active_revision_id FROM spots WHERE spot_id = $1) AS active
+         FROM spot_revisions
+        WHERE spot_id = $1
+        ORDER BY revision_no DESC`,
+      [spotId],
+    );
+    return result.rows.map((row) => ({
+      revisionId: row.revision_id,
+      spotId: row.spot_id,
+      revisionNo: row.revision_no,
+      payloadDigest: row.payload_digest,
+      sourceIds: row.source_ids,
+      createdBy: row.created_by,
+      reason: row.reason,
+      createdAt: new Date(row.created_at).toISOString(),
+      active: row.active === true,
+    }));
+  }
+
+  async adminPreviewReplacement(input: {
+    spotId: SpotId;
+    successorSpotId: SpotId | null;
+    expectedSpotRevision: number;
+  }): Promise<ReplacementImpact> {
+    if (input.successorSpotId === input.spotId)
+      throw new Error("replacement_successor_self_reference");
+    if (input.successorSpotId) {
+      const successor = await this.pool.query("SELECT 1 FROM spots WHERE spot_id = $1", [input.successorSpotId]);
+      if (!successor.rowCount) throw new Error("replacement_successor_not_found");
+      const cycle = await this.pool.query(
+        `WITH RECURSIVE chain(spot_id) AS (
+           SELECT successor_spot_id FROM spot_replacement_relations
+            WHERE predecessor_spot_id = $1 AND state = 'COMMITTED'
+           UNION ALL
+           SELECT r.successor_spot_id
+             FROM spot_replacement_relations r JOIN chain c ON r.predecessor_spot_id = c.spot_id
+            WHERE r.state = 'COMMITTED' AND r.successor_spot_id IS NOT NULL
+         ) SELECT 1 FROM chain WHERE spot_id = $2 LIMIT 1`,
+        [input.successorSpotId, input.spotId],
+      );
+      if (cycle.rowCount) throw new Error("replacement_successor_cycle");
+    }
+    const current = await this.pool.query<{ version: number }>(
+      "SELECT version FROM spots WHERE spot_id = $1",
+      [input.spotId],
+    );
+    if (!current.rows[0]) throw new Error("formal_spot_not_found");
+    if (current.rows[0].version !== input.expectedSpotRevision)
+      throw new Error("spot_revision_conflict");
+    const counts = await this.pool.query<{ favorites: string; plans: string }>(
+      `SELECT
+         (SELECT count(*) FROM favorites WHERE spot_id = $1)::text AS favorites,
+         (SELECT count(*) FROM observation_plans WHERE spot_id = $1)::text AS plans`,
+      [input.spotId],
+    );
+    const row = counts.rows[0]!;
+    return {
+      spotId: input.spotId,
+      successorSpotId: input.successorSpotId,
+      favoriteCount: Number(row.favorites),
+      planCount: Number(row.plans),
+      relationState: input.successorSpotId ? "PREVIEW" : "NO_SUCCESSOR",
+      warnings: [
+        "收藏和计划保留原 spotId，不会静默迁移；客户端只显示迁移建议。",
+        ...(input.successorSpotId ? [] : ["退役后没有 successor，公开读取将停止。"]),
+      ],
+    };
+  }
+
+  async adminCommitReplacement(input: {
+    spotId: SpotId;
+    successorSpotId: SpotId | null;
+    expectedSpotRevision: number;
+    reason: string;
+    actorId: string;
+    requestId: string;
+    idempotencyKey: string;
+  }): Promise<AdminMutationResult<ReplacementImpact>> {
+    return this.#transaction(async (client) => {
+      const requestDigest = digest({
+        operation: "spot.replace",
+        spotId: input.spotId,
+        successorSpotId: input.successorSpotId,
+        expectedSpotRevision: input.expectedSpotRevision,
+        reason: input.reason,
+      });
+      const replay = await this.#adminReceiptReplay<ReplacementImpact>(
+        client,
+        input.actorId,
+        input.idempotencyKey,
+        "spot.replace",
+        requestDigest,
+      );
+      if (replay) return replay;
+      const current = await client.query<{ version: number; status: SpotSummary["status"] }>(
+        "SELECT version, status FROM spots WHERE spot_id = $1 FOR UPDATE",
+        [input.spotId],
+      );
+      const spot = current.rows[0];
+      if (!spot) throw new Error("formal_spot_not_found");
+      if (spot.version !== input.expectedSpotRevision) throw new Error("spot_revision_conflict");
+      if (input.successorSpotId === input.spotId) throw new Error("replacement_successor_self_reference");
+      if (input.successorSpotId) {
+        const successor = await client.query("SELECT 1 FROM spots WHERE spot_id = $1", [input.successorSpotId]);
+        if (!successor.rowCount) throw new Error("replacement_successor_not_found");
+        const cycle = await client.query(
+          `WITH RECURSIVE chain(spot_id) AS (
+             SELECT successor_spot_id FROM spot_replacement_relations
+              WHERE predecessor_spot_id = $1 AND state = 'COMMITTED'
+             UNION ALL
+             SELECT r.successor_spot_id
+               FROM spot_replacement_relations r JOIN chain c ON r.predecessor_spot_id = c.spot_id
+              WHERE r.state = 'COMMITTED' AND r.successor_spot_id IS NOT NULL
+           ) SELECT 1 FROM chain WHERE spot_id = $2 LIMIT 1`,
+          [input.successorSpotId, input.spotId],
+        );
+        if (cycle.rowCount) throw new Error("replacement_successor_cycle");
+      }
+      const counts = await client.query<{ favorites: string; plans: string }>(
+        `SELECT
+           (SELECT count(*) FROM favorites WHERE spot_id = $1)::text AS favorites,
+           (SELECT count(*) FROM observation_plans WHERE spot_id = $1)::text AS plans`,
+        [input.spotId],
+      );
+      const row = counts.rows[0]!;
+      const existingRelation = await client.query(
+        `SELECT 1 FROM spot_replacement_relations
+          WHERE predecessor_spot_id = $1 AND state = 'COMMITTED'
+          FOR UPDATE`,
+        [input.spotId],
+      );
+      if (existingRelation.rowCount)
+        throw new Error("replacement_already_committed");
+      await client.query(
+        `INSERT INTO spot_replacement_relations(
+           relation_id, predecessor_spot_id, successor_spot_id, state, actor_id, reason, committed_at
+          ) VALUES ($1, $2, $3, 'COMMITTED', $4, $5, now())
+          `,
+        [randomUUID(), input.spotId, input.successorSpotId, input.actorId, input.reason],
+      );
+      const relation: ReplacementImpact = {
+        spotId: input.spotId,
+        successorSpotId: input.successorSpotId,
+        favoriteCount: Number(row.favorites),
+        planCount: Number(row.plans),
+        relationState: input.successorSpotId ? "COMMITTED" : "NO_SUCCESSOR",
+        warnings: ["收藏和计划保留原 spotId，不会静默迁移。"],
+      };
+      await client.query(
+        `INSERT INTO audit_logs(audit_id, actor_id, action, subject_type, subject_id, request_id, before_payload, after_payload)
+         VALUES ($1, $2, 'SPOT_REPLACE', 'SPOT', $3, $4, $5, $6)`,
+        [randomUUID(), input.actorId, input.spotId, input.requestId, { status: spot.status }, relation],
+      );
+      return this.#commitAdminResult(client, {
+        operation: "spot.replace",
+        scopeId: input.actorId,
+        idempotencyKey: input.idempotencyKey,
+        requestId: input.requestId,
+        actorId: input.actorId,
+        result: relation,
+        readback: relation,
+        resultingRevision: spot.version,
+        assessmentDigest: null,
+        eventType: "SpotReplacementCommitted",
+        eventPayload: relation,
+        requestDigest,
+      });
+    });
+  }
+
+  async adminAuditLog(input: { subjectId?: string; limit?: number } = {}) {
+    const limit = Math.min(Math.max(input.limit ?? 200, 1), 500);
+    const result = await this.pool.query(
+      `SELECT audit_id, actor_id, action, subject_type, subject_id, request_id, occurred_at
+         FROM audit_logs
+        WHERE ($1::text IS NULL OR subject_id = $1)
+        ORDER BY occurred_at DESC
+        LIMIT $2`,
+      [input.subjectId ?? null, limit],
+    );
+    return result.rows;
+  }
+
+  async adminReadReceipt(receiptId: string): Promise<OperationReceipt | null> {
+    const result = await this.pool.query("SELECT * FROM operation_receipts WHERE receipt_id = $1", [receiptId]);
+    const row = result.rows[0];
+    if (!row) return null;
+    return this.#operationReceipt(row);
+  }
+
+  private async adminReadReceiptByIdentity(scopeId: string, idempotencyKey: string) {
+    const result = await this.pool.query("SELECT * FROM operation_receipts WHERE scope_id = $1 AND idempotency_key = $2", [scopeId, idempotencyKey]);
+    return result.rows[0] ? this.#operationReceipt(result.rows[0]) : null;
+  }
+
+  async #readModerationCase(client: Pick<pg.Pool, "query"> | PoolClient, caseId: string) {
+    const caseResult = await client.query<{
+      case_id: string;
+      subject_type: string;
+      subject_id: string;
+      state: string;
+      payload: Record<string, unknown>;
+      created_at: string | Date;
+      resolved_at: string | Date | null;
+    }>("SELECT * FROM moderation_cases WHERE case_id = $1", [caseId]);
+    const row = caseResult.rows[0];
+    if (!row) return null;
+    const events = await client.query<{
+      event_id: string;
+      event_type: string;
+      actor_id: string;
+      reason: string | null;
+      occurred_at: string | Date;
+    }>(
+      `SELECT event_id, event_type, actor_id, reason, occurred_at
+         FROM moderation_case_events WHERE case_id = $1 ORDER BY occurred_at ASC`,
+      [caseId],
+    );
+    return toModerationCaseView(
+      row,
+      events.rows.map((event) => ({
+        eventId: event.event_id,
+        axis: event.event_type.includes("MERGE") ? "MERGE" : "SUBMISSION",
+        from: null,
+        to: event.event_type,
+        reason: event.reason,
+        actorType: event.actor_id.startsWith("admin:") ? "OPERATOR" : "SYSTEM",
+        occurredAt: new Date(event.occurred_at).toISOString(),
+      })),
+    );
+  }
+
+  async #insertContributionRevision(client: PoolClient, submission: ContributionSubmission, actorId: string) {
+    await client.query(
+      `INSERT INTO contribution_revisions(
+         revision_id, submission_id, revision_no, submission_state,
+         merge_state, publication_impact, payload, payload_digest, actor_id
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (submission_id, revision_no) DO NOTHING`,
+      [
+        `contribution-revision:${submission.submissionId}:${submission.revision}`,
+        submission.submissionId,
+        submission.revision,
+        submission.submissionState,
+        submission.mergeState,
+        submission.publicationImpact,
+        submission,
+        digest(submission),
+        actorId,
+      ],
+    );
+  }
+
+  async #adminReceiptReplay<T>(
+    client: PoolClient,
+    scopeId: string,
+    idempotencyKey: string,
+    operation: string,
+    requestDigest?: string,
+  ): Promise<AdminMutationResult<T> | null> {
+    const result = await client.query("SELECT * FROM operation_receipts WHERE scope_id = $1 AND idempotency_key = $2 FOR UPDATE", [scopeId, idempotencyKey]);
+    const row = result.rows[0];
+    if (!row) return null;
+    if (row.operation !== operation) throw new Error("idempotency_operation_conflict");
+    if (requestDigest !== undefined && row.request_digest !== requestDigest)
+      throw new Error("idempotency_request_conflict");
+    const readback = row.readback_payload as T;
+    return {
+      result: row.result_payload as T,
+      readback,
+      receipt: { ...this.#operationReceipt(row), status: "REPLAYED", readback },
+    };
+  }
+
+  async #commitAdminResult<T>(client: PoolClient, input: {
+    operation: string;
+    scopeId: string;
+    idempotencyKey: string;
+    requestId: string;
+    actorId: string;
+    result: T;
+    readback: T;
+    resultingRevision: number | null;
+    assessmentDigest: string | null;
+    eventType: string;
+    eventPayload: unknown;
+    requestDigest?: string;
+  }): Promise<AdminMutationResult<T>> {
+    const committedAt = new Date().toISOString();
+    const receiptId = `receipt:${randomUUID()}`;
+    await this.#recordMutation(client, {
+      idempotencyKey: input.idempotencyKey,
+      operation: input.operation,
+      response: input.result,
+      eventType: input.eventType,
+      scopeId: input.scopeId,
+      payload: input.eventPayload,
+      ...(input.requestDigest
+        ? { requestDigest: input.requestDigest }
+        : {}),
+    });
+    await client.query(
+      `INSERT INTO operation_receipts(
+         receipt_id, operation, scope_id, idempotency_key, request_id, actor_id,
+         request_digest, status, resulting_revision, assessment_digest,
+         result_payload, readback_payload, created_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'COMMITTED', $8, $9, $10, $11, $12)`,
+      [
+        receiptId,
+        input.operation,
+        input.scopeId,
+        input.idempotencyKey,
+        input.requestId,
+        input.actorId,
+         input.requestDigest ??
+           digest({ operation: input.operation, payload: input.eventPayload }),
+        input.resultingRevision,
+        input.assessmentDigest,
+        input.result,
+        input.readback,
+        committedAt,
+      ],
+    );
+    const receipt: OperationReceipt<T> = {
+      receiptId: receiptId as OperationReceipt["receiptId"],
+      operation: input.operation,
+      status: "COMMITTED",
+      actorId: input.actorId,
+      idempotencyKey: input.idempotencyKey,
+      requestId: input.requestId,
+      committedAt,
+      resultingRevision: input.resultingRevision,
+      assessmentDigest: input.assessmentDigest,
+      readback: input.readback,
+    };
+    return { result: input.result, readback: input.readback, receipt };
+  }
+
+  #operationReceipt<T>(row: Record<string, unknown>): OperationReceipt<T> {
+    return {
+      receiptId: row.receipt_id as OperationReceipt["receiptId"],
+      operation: String(row.operation),
+      status: row.status as OperationReceipt["status"],
+      actorId: String(row.actor_id),
+      idempotencyKey: String(row.idempotency_key),
+      requestId: String(row.request_id),
+      committedAt: new Date(String(row.created_at)).toISOString(),
+      resultingRevision: row.resulting_revision === null ? null : Number(row.resulting_revision),
+      assessmentDigest: row.assessment_digest === null ? null : String(row.assessment_digest),
+      readback: row.readback_payload as T,
+    };
   }
 }

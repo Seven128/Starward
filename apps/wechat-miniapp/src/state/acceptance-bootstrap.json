@@ -11,6 +11,8 @@
     "capturePreference": "目视与手机",
     "displayMode": "DAY",
     "notificationEnabled": false,
+    "departureConditionReminder": false,
+    "contributionStatusReminder": false,
     "largeText": false,
     "reducedMotion": false
   },

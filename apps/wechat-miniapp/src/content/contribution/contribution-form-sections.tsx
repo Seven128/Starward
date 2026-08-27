@@ -12,13 +12,19 @@ import { KIND_LABEL, TOPICS } from "./contribution-model";
 import type { ContributionCommands } from "./use-contribution-commands";
 import type { ContributionForm } from "./use-contribution-form";
 
+const KIND_COPY = {
+  FIELD_REPORT: "开放、路线、照明、天气或安全变化",
+  CORRECTION: "指出正式地点资料中的具体错误",
+  NEW_SPOT_PROPOSAL: "提交候选位置与证据，不直接创建地点",
+} as const;
+
 export function ContributionContextSection({
   form,
 }: {
   form: ContributionForm;
 }) {
   const kinds = form.hasFormalSpot
-    ? (["FIELD_REPORT", "CORRECTION"] as const)
+    ? (["FIELD_REPORT", "CORRECTION", "NEW_SPOT_PROPOSAL"] as const)
     : (["NEW_SPOT_PROPOSAL"] as const);
   return (
     <View className="contribution-card card">
@@ -32,7 +38,9 @@ export function ContributionContextSection({
             {form.routeSpotName || "当前正式观星点"}
           </Text>
           <Text className="type-caption">
-            已从详情继承点位，不会改报到其他地点
+            {form.kind === "NEW_SPOT_PROPOSAL"
+              ? "新增地点将使用独立候选位置，不会改写当前正式观星点"
+              : "已从详情继承点位，不会改报到其他地点"}
           </Text>
         </View>
       ) : (
@@ -47,14 +55,41 @@ export function ContributionContextSection({
         {kinds.map((item) => (
           <Button
             key={item}
-            className={`chip focus-ring${form.kind === item ? " chip--selected" : ""}`}
+            className={`contribution-kind-choice focus-ring${form.kind === item ? " contribution-kind-choice--selected" : ""}`}
             aria-pressed={form.kind === item}
             onClick={() => form.selectKind(item)}
           >
-            <Text>{KIND_LABEL[item]}</Text>
+            <Text className="type-label">{KIND_LABEL[item]}</Text>
+            <Text className="type-caption">{KIND_COPY[item]}</Text>
           </Button>
         ))}
       </View>
+      {form.matchingDraft ? (
+        <View
+          className="contribution-draft-recovery"
+          data-od-id="contribution-draft-recovery"
+        >
+          <Text className="type-label">这里有一份未完成草稿</Text>
+          <Text className="type-caption">
+            rev.{form.matchingDraft.revision} · 已绑定当前微信身份
+          </Text>
+          <View className="contribution-draft-recovery__actions">
+            <SoftButton label="继续草稿" onClick={() => form.applyDraft(form.matchingDraft!)}>
+              继续草稿
+            </SoftButton>
+            <SoftButton label="稍后处理" onClick={form.goBackPhase}>
+              稍后
+            </SoftButton>
+          </View>
+        </View>
+      ) : null}
+      <SoftButton
+        variant="primary"
+        label="继续填写现场反馈"
+        onClick={form.goToForm}
+      >
+        继续填写
+      </SoftButton>
     </View>
   );
 }

@@ -165,6 +165,11 @@ test(
       storageMode: "POSTGRES",
       databaseUrl,
       redisUrl,
+      mediaStorage: {
+        mode: "LOCAL_FILESYSTEM",
+        root: process.env.MINIAPP_MEDIA_STORAGE_ROOT ?? null,
+        maxUploadBytes: 1_200_000,
+      },
       cachePrefix: "starward:miniapp:integration:" + runId + ":",
       autoMigrate: true,
     });
@@ -212,15 +217,19 @@ test(
       await firstRepository.getSpot(candidate.detail.spot.spotId),
       null,
     );
+    const candidateRow = (await firstRepository.adminListSpots()).find(
+      (row) => row.spot_id === candidate.detail.spot.spotId,
+    );
+    assert.ok(candidateRow);
     await assert.rejects(
-      firstRepository.adminPatchSpot({
+      firstRepository.adminChangeSpotLifecycle({
         spotId: candidate.detail.spot.spotId,
-        patch: {
-          status: "PUBLISHED",
-          reason: "验证资料不足时发布失败",
-        },
+        action: "PUBLISH",
+        expectedSpotRevision: candidateRow.version,
+        reason: "验证资料不足时正式发布命令失败",
         actorId: "admin:integration",
         requestId: `candidate-publish:${runId}`,
+        idempotencyKey: `candidate-publish:${runId}`,
       }),
       /spot_publication_completeness_invalid/u,
     );
@@ -255,11 +264,26 @@ test(
           },
           "infra:preferences:" + runId,
         );
+        const planOrigin = await first.resolveObservationContext({
+          location: {
+            kind: "MAP_POINT",
+            displayName: "集成验收地图中心",
+            wgs84: {
+              latitude: 22.5431,
+              longitude: 114.0579,
+              system: "WGS84",
+            },
+            source: "MAP_VIEWPORT",
+            timezoneHint: "Asia/Shanghai",
+          },
+          localDate: "2026-08-06",
+        });
         await first.savePlan(
           firstIdentity.userId,
           {
             planId: ("plan:" + runId) as never,
             spotId: spot.spotId,
+            observationContextId: planOrigin.data.contextId,
             localDate: "2026-08-06",
             localTime: "23:40",
             notes: "restart readback",
@@ -277,15 +301,40 @@ test(
             topics: ["NIGHT_SAFETY"],
             detail:
               "隔离数据库现场反馈：夜间入口照明不足，管理员需要复核并更新安全指引。",
-            rightsConfirmed: false,
+            rightsConfirmed: true,
             preciseLocationConsent: false,
           },
           "infra:contribution-draft:" + runId,
         );
+        const uploadSession = await first.createContributionUpload(
+          firstIdentity.userId,
+          draft.data.submissionId,
+          {
+            originalName: "integration-field.png",
+            mimeType: "image/png",
+            byteSize: 32,
+            expectedRevision: draft.data.revision,
+          },
+          "infra:contribution-upload:" + runId,
+        );
+        const upload = uploadSession.data.media[0]!;
+        assert.ok(first.repository instanceof PostgresMiniappRepository);
+        const completed = await first.repository.completeContributionUpload(
+          firstIdentity.userId,
+          draft.data.submissionId,
+          upload.uploadId,
+          {
+            byteSize: 32,
+            sha256: "a".repeat(64),
+            objectKey: `contributions/${"b".repeat(24)}/${String(upload.uploadId).replace(/^upload:/u, "")}.png`,
+            uploadedAt: new Date().toISOString(),
+          },
+          "infra:contribution-upload-complete:" + runId,
+        );
         const submitted = await first.submitContribution(
           firstIdentity.userId,
           draft.data.submissionId,
-          draft.data.revision,
+          completed.revision,
           "infra:contribution-submit:" + runId,
         );
         assert.equal(submitted.data.state, "PENDING_REVIEW");
@@ -294,7 +343,6 @@ test(
             .submissions,
           [],
         );
-        assert.ok(first.repository instanceof PostgresMiniappRepository);
         const beforeReview = await first.repository.getSpot(spot.spotId);
         assert.equal(beforeReview?.status, "PUBLISHED");
         const caseId = `moderation:${submitted.data.submissionId}`;
@@ -343,16 +391,30 @@ test(
           }),
           /contribution_already_merged/u,
         );
-        const republished = await first.repository.adminPatchSpot({
+        const mergedRow = (await first.repository.adminListSpots()).find(
+          (row) => row.spot_id === spot.spotId,
+        );
+        assert.ok(mergedRow);
+        const reassessment = await first.repository.adminAssessPublication({
           spotId: spot.spotId,
-          patch: {
-            status: "PUBLISHED",
-            reason: "集成测试显式发布；证明合并审核没有自动替代发布动作",
-          },
+          expectedSpotRevision: mergedRow.version,
+          reason: "合并后由正式发布门重新评估规范记录",
+          actorId: "admin:integration",
+          requestId: `contribution-reassess:${runId}`,
+          idempotencyKey: `contribution-reassess:${runId}`,
+        });
+        assert.equal(reassessment.result.complete, true);
+        const republished = await first.repository.adminChangeSpotLifecycle({
+          spotId: spot.spotId,
+          action: "PUBLISH",
+          expectedSpotRevision: mergedRow.version,
+          assessmentDigest: reassessment.result.assessmentDigest,
+          reason: "集成测试显式发布；证明合并审核没有自动替代发布动作",
           actorId: "admin:integration",
           requestId: `contribution-republish:${runId}`,
+          idempotencyKey: `contribution-republish:${runId}`,
         });
-        assert.equal(republished.spot.status, "PUBLISHED");
+        assert.equal(republished.result.status, "PUBLISHED");
         return {
           firstIdentity,
           secondIdentity,
@@ -390,6 +452,28 @@ test(
       );
       assert.equal(contributions.data.submissions[0]?.submissionId, contributionId);
       assert.equal(contributions.data.submissions[0]?.state, "APPROVED");
+      const exported = await restarted.exportAccountData(firstIdentity.userId);
+      assert.equal(
+        exported.data.schemaVersion,
+        "starward-account-data-export-v1",
+      );
+      assert.equal(exported.data.account.userId, firstIdentity.userId);
+      assert.equal(exported.data.contributions[0]?.submissionId, contributionId);
+      const deletion = await restarted.deleteAccount(
+        firstIdentity.userId,
+        { confirmation: "DELETE_ACCOUNT" },
+        "infra:account-delete:" + runId,
+      );
+      assert.equal(deletion.data.accountState, "DELETED");
+      assert.equal(deletion.data.sessionsRevoked, true);
+      await assert.rejects(
+        restarted.auth.requirePrincipal(`Bearer ${firstIdentity.accessToken}`),
+        /auth_required/u,
+      );
+      assert.deepEqual(
+        (await restarted.getFavorites(secondIdentity.userId)).data.favorites,
+        [],
+      );
       assert.ok(restarted.repository instanceof PostgresMiniappRepository);
       const postgis = await restarted.repository.pool.query<{
         version: string;
@@ -434,6 +518,10 @@ test(
           AS incomplete_results`);
       assert.ok(Number(effects.rows[0]!.weather_runs) >= 1);
       assert.ok(Number(effects.rows[0]!.astronomy_nights) >= 1);
+      const deletionQueue = await runtime.pool.query<{ count: string }>(
+        "SELECT count(*)::text AS count FROM account_deletion_media_queue",
+      );
+      assert.equal(Number(deletionQueue.rows[0]!.count), 0);
       assert.ok(Number(effects.rows[0]!.opportunities) >= 1);
       assert.ok(Number(effects.rows[0]!.decisions) >= 1);
       assert.equal(Number(effects.rows[0]!.incomplete_results), 0);

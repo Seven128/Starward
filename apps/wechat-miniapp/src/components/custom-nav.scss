@@ -3,4 +3,7 @@
 .custom-nav__title { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
 .custom-nav__side { display: flex; justify-content: flex-start; }
 .custom-nav__side--right { justify-content: flex-end; }
+.custom-nav__back-control { position: relative; width: 88rpx; height: 88rpx; }
 .custom-nav__side .soft-button { padding: 0; width: 88rpx; }
+.custom-nav__side .semantic-icon { color: var(--text-primary); }
+.custom-nav__back-icon { position: absolute; top: 24rpx; left: 24rpx; z-index: 1; pointer-events: none; }

@@ -1,5 +1,7 @@
 import Taro from "@tarojs/taro";
 import { View, Text } from "@tarojs/components";
+import { nativeStatusBarHeightPx } from "@/theme/native-metrics";
+import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
 import "./custom-nav.scss";
 
@@ -20,12 +22,7 @@ export function CustomNav({
   odId?: string | undefined;
   right?: React.ReactNode | undefined;
 }) {
-  let statusBarHeight = 0;
-  try {
-    statusBarHeight = Taro.getWindowInfo().statusBarHeight ?? 0;
-  } catch {
-    // Fail closed to the CSS safe-area fallback if native metrics are absent.
-  }
+  const statusBarHeight = nativeStatusBarHeightPx();
   const goBack = () => {
     const fallback = () => Taro.switchTab({ url: backFallbackTab });
     let hasPriorPage = false;
@@ -52,13 +49,16 @@ export function CustomNav({
         <View className="custom-nav__side">
           {back ? (
             <View {...(backOdId ? { "data-od-id": backOdId } : {})}>
-              <SoftButton
-                variant="ghost"
-                label="返回"
-                onClick={goBack}
-              >
-                ←
-              </SoftButton>
+              <View className="custom-nav__back-control">
+                <SoftButton variant="ghost" label="返回" onClick={goBack}>
+                  {""}
+                </SoftButton>
+                <SemanticIcon
+                  name="arrow-left"
+                  label="返回"
+                  className="custom-nav__back-icon"
+                />
+              </View>
             </View>
           ) : null}
         </View>

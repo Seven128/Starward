@@ -31,7 +31,7 @@ function Write-SpotMarker {
   $shape.AddBezier(56, 29, 56, 15, 48, 4, 32, 4)
   $shape.CloseFigure()
 
-  $primary = [System.Drawing.ColorTranslator]::FromHtml("#1769D2")
+  $primary = [System.Drawing.ColorTranslator]::FromHtml("#536DFE")
   $surface = [System.Drawing.ColorTranslator]::FromHtml("#FFFFFF")
   $fill = [System.Drawing.SolidBrush]::new($(if ($Selected) { $primary } else { $surface }))
   $outline = [System.Drawing.Pen]::new($primary, $(if ($Selected) { 5 } else { 4 }))

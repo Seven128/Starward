@@ -7,6 +7,14 @@ import type {
   ContributionKind,
   ContributionMediaUpload,
   ContributionSubmission,
+  AdminMutationResult,
+  MergePreview,
+  ModerationCaseView,
+  ModerationQueueItem,
+  MediaReviewView,
+  PublicationAssessment,
+  ReplacementImpact,
+  SpotRevisionSummary,
   ContributionTopic,
   FactEvidence,
   FacilityEvidence,
@@ -23,10 +31,12 @@ import type {
   SkyReport,
   SiteMediaState,
   SpotDetail,
+  SpotId,
   SpotSummary,
   SourceSummary,
   AuthSessionData,
   WechatLoginRequest,
+  UserId,
 } from "./types.ts";
 import type { UserPreferences } from "./types.ts";
 import type { UserPreferencesRecord } from "./preferences.ts";
@@ -262,6 +272,7 @@ export interface FavoriteMutationRequest {
 
 export interface PlanSaveRequest {
   spotId: ObservationPlan["spotId"];
+  observationContextId: ObservationContext["contextId"];
   localDate: string;
   localTime: string;
   notes: string;
@@ -271,6 +282,40 @@ export interface PlanSaveRequest {
 export interface PreferencesSaveRequest {
   preferences: UserPreferences;
   expectedRevision: number;
+}
+
+export interface AccountDataExportData {
+  schemaVersion: "starward-account-data-export-v1";
+  generatedAt: string;
+  account: { userId: UserId };
+  preferences: UserPreferencesRecord;
+  favoriteSpotIds: readonly SpotId[];
+  plans: readonly ObservationPlan[];
+  profileLinks: readonly ProfileLink[];
+  imports: readonly ImportDraft[];
+  contributions: readonly ContributionSubmission[];
+  excluded: readonly (
+    | "SESSION_CREDENTIALS"
+    | "WECHAT_IDENTITY_DIGEST"
+    | "INTERNAL_MEDIA_OBJECT_KEYS"
+    | "RAW_MEDIA_BYTES"
+  )[];
+}
+
+export interface AccountDeletionRequest {
+  confirmation: "DELETE_ACCOUNT";
+}
+
+export interface AccountDeletionReceipt {
+  schemaVersion: "starward-account-deletion-receipt-v1";
+  userId: UserId;
+  accountState: "DELETED";
+  deletedAt: string;
+  sessionsRevoked: true;
+  externalIdentityUnlinked: true;
+  mediaCleanupState: "QUEUED" | "NOT_REQUIRED";
+  mutableDataDeleted: readonly string[];
+  retainedDeidentifiedEvidence: readonly string[];
 }
 
 export interface ProfileLinkSaveRequest {
@@ -322,6 +367,52 @@ export interface ContributionSubmitRequest {
   expectedRevision: number;
 }
 
+export interface AdminCaseDecisionRequest {
+  resolution: "ACCEPTED" | "APPROVED" | "REJECTED" | "CHANGES_REQUESTED";
+  reason: string;
+  expectedRevision?: number;
+}
+
+export interface AdminRequestChangesRequest {
+  reason: string;
+  expectedRevision: number;
+}
+
+export interface AdminMediaReviewRequest {
+  decision: "ACCEPTED" | "REJECTED";
+  reason: string;
+  expectedRevision?: number;
+}
+
+export interface AdminMergePreviewRequest {
+  spotId: string;
+  confirmedClaims: readonly string[];
+  expectedSubmissionRevision: number;
+  expectedSpotRevision: number;
+}
+
+export interface AdminMergeCommitRequest extends AdminMergePreviewRequest {
+  reason: string;
+}
+
+export interface AdminPublicationAssessmentRequest {
+  expectedSpotRevision?: number;
+  reason: string;
+}
+
+export interface AdminLifecycleRequest {
+  reason: string;
+  expectedSpotRevision: number;
+}
+
+export interface AdminReplaceRequest extends AdminLifecycleRequest {
+  successorSpotId: string;
+}
+
+export interface AdminRetireRequest extends AdminLifecycleRequest {
+  successorSpotId?: string | null;
+}
+
 export interface ContributionUploadSessionRequest {
   originalName: string;
   mimeType: ContributionMediaUpload["mimeType"];
@@ -335,6 +426,38 @@ export interface ContributionUploadCompleteRequest {
 
 export interface ContributionsData {
   submissions: readonly ContributionSubmission[];
+}
+
+export interface OperationsQueueData {
+  items: readonly ModerationQueueItem[];
+}
+
+export interface OperationsCaseData {
+  case: ModerationCaseView;
+}
+
+export interface OperationsMediaData {
+  media: MediaReviewView;
+}
+
+export interface OperationsMergePreviewData {
+  preview: MergePreview;
+}
+
+export interface OperationsPublicationData {
+  assessment: PublicationAssessment;
+}
+
+export interface OperationsRevisionData {
+  revisions: readonly SpotRevisionSummary[];
+}
+
+export interface OperationsImpactData {
+  impact: ReplacementImpact;
+}
+
+export interface OperationsAuditData {
+  entries: readonly Record<string, unknown>[];
 }
 
 export type SpotDetailData = SpotDetail;

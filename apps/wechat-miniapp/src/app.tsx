@@ -30,7 +30,16 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
         locationKind: string;
         privacyClass: string;
         spotId: string;
+        routeOriginContextId: string;
+        routeOriginSource: string;
       } | null;
+      inspectPreferences(): {
+        revision: number;
+        dirty: boolean;
+        departureConditionReminder: boolean;
+        contributionStatusReminder: boolean;
+        locationPreference: string;
+      };
     };
   };
   runtime.__STARWARD_MINIAPP_ACCEPTANCE__ = {
@@ -57,8 +66,22 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
               context.location.kind === "FORMAL_SPOT"
                 ? context.location.spotId
                 : "",
+            routeOriginContextId: context.routeOrigin?.contextId ?? "",
+            routeOriginSource: context.routeOrigin?.source ?? "",
           }
         : null;
+    },
+    inspectPreferences() {
+      const state = useAppStore.getState();
+      return {
+        revision: state.preferencesRevision,
+        dirty: state.preferencesDirty,
+        departureConditionReminder:
+          state.preferences.departureConditionReminder,
+        contributionStatusReminder:
+          state.preferences.contributionStatusReminder,
+        locationPreference: state.preferences.locationPreference,
+      };
     },
   };
 }

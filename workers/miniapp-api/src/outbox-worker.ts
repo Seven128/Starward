@@ -4,8 +4,9 @@ import pg, { type PoolClient } from "pg";
 import { AstronomyService } from "./astronomy-service.ts";
 import { MemoryCache } from "./cache.ts";
 import { ObservationContextService } from "./observation-context-service.ts";
-import type { WeatherPort } from "./ports.ts";
+import type { MediaObjectStorePort, WeatherPort } from "./ports.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
+import { createMediaObjectStore } from "./media-object-store.ts";
 import {
   loadRuntimeConfig,
   type MiniappRuntimeConfig,
@@ -104,6 +105,7 @@ export class OutboxWorkerRuntime {
   readonly repository: PostgresMiniappRepository;
   readonly cache = new MemoryCache();
   readonly weather: WeatherPort;
+  readonly mediaStore: MediaObjectStorePort;
   readonly observationContexts: ObservationContextService;
   readonly astronomy: AstronomyService;
 
@@ -111,6 +113,7 @@ export class OutboxWorkerRuntime {
     this.config = options.runtimeConfig ?? loadRuntimeConfig();
     this.repository = new PostgresMiniappRepository(options.databaseUrl);
     this.weather = options.weather ?? createWeatherPort(this.config);
+    this.mediaStore = createMediaObjectStore(this.config);
     this.observationContexts = new ObservationContextService(
       this.repository,
       this.cache,
@@ -322,6 +325,7 @@ export class OutboxWorkerRuntime {
     await this.pool.end();
     await this.repository.close();
     await this.cache.close();
+    await this.mediaStore.close();
   }
 
   async #applyEffect(
@@ -748,6 +752,38 @@ export class OutboxWorkerRuntime {
         break;
       }
       case "MEDIA": {
+        if (
+          typeof input.payload === "object" &&
+          input.payload !== null &&
+          "action" in input.payload &&
+          input.payload.action === "DELETE_ACCOUNT_MEDIA" &&
+          "deletionBatchId" in input.payload &&
+          typeof input.payload.deletionBatchId === "string"
+        ) {
+          const deletionBatchId = input.payload.deletionBatchId;
+          const queued = await client.query<{ object_key: string }>(
+            `SELECT object_key
+               FROM account_deletion_media_queue
+              WHERE deletion_batch_id = $1
+              ORDER BY object_key
+              FOR UPDATE`,
+            [deletionBatchId],
+          );
+          for (const row of queued.rows)
+            await this.mediaStore.delete(row.object_key);
+          await client.query(
+            "DELETE FROM account_deletion_media_queue WHERE deletion_batch_id = $1",
+            [deletionBatchId],
+          );
+          outcome = {
+            resultState: "ACCOUNT_MEDIA_DELETED",
+            resultPayload: {
+              deletionBatchId,
+              deletedObjectCount: queued.rows.length,
+            },
+          };
+          break;
+        }
         const counts = await client.query<{
           pending_imports: string;
           uploaded_media: string;

@@ -6,6 +6,8 @@ import type {
   SpotSummary,
 } from "@starward/miniapp-contracts";
 import { DataStateBadge } from "./data-state-badge";
+import { FavoriteStar } from "./selected-card-star";
+import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
 import "./spot-card.scss";
 
@@ -24,6 +26,8 @@ const STATUS_LABELS: Record<SpotSummary["status"], string> = {
   PUBLISHED: "正式点位",
   TEMPORARILY_CLOSED: "暂时关闭",
   DATA_INSUFFICIENT: "资料不完整",
+  UNPUBLISHED: "尚未发布",
+  RETIRED: "已撤下",
 };
 
 const PRECISION_LABELS: Record<SpotSummary["visibilityPolicy"], string> = {
@@ -47,10 +51,10 @@ function facilitySummary(spot: SpotSummary) {
     >
       {FACILITY_LABELS[item.type]}{" "}
       {item.status === "AVAILABLE"
-        ? "✓"
+        ? "可用"
         : item.status === "UNAVAILABLE"
-          ? "×"
-          : "?"}
+          ? "不可用"
+          : "待核验"}
     </Text>
   ));
 }
@@ -102,21 +106,6 @@ function selectedTimeLabel(evaluation: MapSpotEvaluation | null) {
   return evaluation.opportunityLabel;
 }
 
-function CalloutMetric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <View className="spot-card__callout-metric">
-      <Text className="spot-card__callout-metric-label">{label}</Text>
-      <Text className="spot-card__callout-metric-value">{value}</Text>
-    </View>
-  );
-}
-
 export function SpotCard({
   spot,
   favorite,
@@ -161,25 +150,14 @@ export function SpotCard({
             <Text className="type-label spot-card__callout-name">
               {spot.name}
             </Text>
-            <Text className="type-caption spot-card__callout-action">
-              {STATUS_LABELS[spot.status]} · {canOpen ? "查看详情 ›" : "暂不可用"}
-            </Text>
+            <View className="spot-card__callout-action">
+              <Text className="type-caption">{selectedTimeLabel(evaluation)}</Text>
+              <SemanticIcon name="chevron-right" />
+            </View>
           </View>
-          <View
-            className="spot-card__callout-metrics"
-            aria-label="当前点位摘要"
-          >
-            <CalloutMetric label="光害" value={spot.lightPollution.label} />
-            <CalloutMetric label="停车" value={parkingLabel(spot)} />
-            <CalloutMetric
-              label="距离 / 车程"
-              value={distanceLabel(evaluation, route)}
-            />
-            <CalloutMetric
-              label="所选时段"
-              value={selectedTimeLabel(evaluation)}
-            />
-          </View>
+          <Text className="spot-card__callout-summary type-caption">
+            {distanceLabel(evaluation, route)} · {parkingLabel(spot)} · 光害{spot.lightPollution.label}
+          </Text>
         </Button>
         {onFavorite ? (
           <View
@@ -192,7 +170,7 @@ export function SpotCard({
               label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
               onClick={onFavorite}
             >
-              {favorite ? "★" : "☆"}
+              <FavoriteStar active={favorite} />
             </SoftButton>
           </View>
         ) : null}
@@ -230,9 +208,10 @@ export function SpotCard({
               {facilitySummary(spot)}
             </View>
           </View>
-          <Text className="spot-card__result-arrow" aria-hidden="true">
-            →
-          </Text>
+          <SemanticIcon
+            name="chevron-right"
+            className="spot-card__result-arrow"
+          />
         </Button>
         {onFavorite ? (
           <SoftButton
@@ -241,7 +220,7 @@ export function SpotCard({
             label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
             onClick={onFavorite}
           >
-            {favorite ? "★" : "☆"}
+            <FavoriteStar active={favorite} />
           </SoftButton>
         ) : null}
       </View>
@@ -280,7 +259,7 @@ export function SpotCard({
               label={`${favorite ? "取消收藏" : "收藏"}${spot.name}`}
               onClick={onFavorite}
             >
-              {favorite ? "★" : "☆"}
+              <FavoriteStar active={favorite} />
             </SoftButton>
           ) : null}
         </View>

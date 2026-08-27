@@ -13,7 +13,7 @@ export default defineAppConfig({
     },
     {
       root: "sky",
-      pages: ["detail/index", "targets/index"],
+      pages: ["detail/index", "professional/index", "targets/index"],
     },
     {
       root: "content",
@@ -28,14 +28,14 @@ export default defineAppConfig({
   window: {
     navigationStyle: "custom",
     navigationBarTitleText: "今晚去观星",
-    navigationBarBackgroundColor: "#F5F8FC",
+    navigationBarBackgroundColor: "#F5F7FA",
     navigationBarTextStyle: "black",
-    backgroundColor: "#F5F8FC",
+    backgroundColor: "#F5F7FA",
     backgroundTextStyle: "dark",
   },
   tabBar: {
-    color: "#5C7186",
-    selectedColor: "#1769D2",
+    color: "#667085",
+    selectedColor: "#536DFE",
     backgroundColor: "#FFFFFF",
     borderStyle: "white",
     list: [

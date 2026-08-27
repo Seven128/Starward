@@ -5,6 +5,10 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
+import {
+  knownWechatToolchainConsoleErrorId,
+  WECHAT_AUTOMATOR_OPAQUE_ERROR_ENVELOPE_V1,
+} from "./runtime-event-policy.mjs";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -12,9 +16,69 @@ const root = path.resolve(
   "..",
 );
 const at = (...segments) => path.join(root, ...segments);
-const text = (...segments) => readFile(at(...segments), "utf8");
+const text = async (...segments) =>
+  (await readFile(at(...segments), "utf8")).replace(/\r\n?/gu, "\n");
 const json = async (...segments) => JSON.parse(await text(...segments));
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+test("native runtime policy recognizes only the exact opaque DevTools envelope", () => {
+  const known = WECHAT_AUTOMATOR_OPAQUE_ERROR_ENVELOPE_V1;
+  const event = {
+    kind: "console",
+    level: "error",
+    phase: "evidence-journey:plan-editor",
+    payload_sha256: known.payload_sha256,
+    payload_length: known.payload_length,
+    safe_excerpt: known.safe_excerpt,
+  };
+  assert.equal(knownWechatToolchainConsoleErrorId(event), known.id);
+  for (const [field, value] of [
+    ["kind", "exception"],
+    ["level", "assert"],
+    ["payload_sha256", "0".repeat(64)],
+    ["payload_length", known.payload_length + 1],
+    ["safe_excerpt", '{"type":"error","args":[{"message":"real"}]}'],
+  ]) {
+    assert.equal(
+      knownWechatToolchainConsoleErrorId({ ...event, [field]: value }),
+      null,
+      field,
+    );
+  }
+});
+
+test("native child-page back controls use source-rendered visible PNG assets", async () => {
+  const adapter = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "components",
+    "semantic-asset.tsx",
+  );
+  const day = await readFile(
+    at("apps", "wechat-miniapp", "src", "assets", "icons", "arrow-left.png"),
+  );
+  const night = await readFile(
+    at(
+      "apps",
+      "wechat-miniapp",
+      "src",
+      "assets",
+      "icons",
+      "arrow-left-light.png",
+    ),
+  );
+  assert.match(adapter, /"arrow-left": "\/assets\/icons\/arrow-left\.png"/u);
+  assert.match(adapter, /"\/assets\/icons\/arrow-left-light\.png"/u);
+  assert.equal(
+    sha256(day),
+    "32841a49733d2825d30c692bbcd904699a56c7aeaa37f2ec0cd7887e62800ba1",
+  );
+  assert.equal(
+    sha256(night),
+    "c289496554fef2610bc80a2c8034d8d54b9b8caa73653c80260727e842136d4e",
+  );
+});
 
 test("Mini Program UI has no Web implementation or H5 acceptance authority", async () => {
   const rootPackage = await json("package.json");
@@ -46,6 +110,9 @@ test("Mini Program UI has no Web implementation or H5 acceptance authority", asy
   assert.doesNotMatch(mapSource, /isH5Proxy|map-proxy|TARO_ENV\s*===\s*["']h5/iu);
   assert.doesNotMatch(mapStyles, /map-proxy|map-page--h5/iu);
   assert.doesNotMatch(requestLifecycle, /\bH5\b|browser transport/iu);
+  assert.match(mapSource, /useDidShow\(\(\) => setPageVisible\(true\)\)/u);
+  assert.match(mapSource, /useDidHide\(\(\) => setPageVisible\(false\)\)/u);
+  assert.match(mapSource, /enabled: pageVisible && Boolean\(activeContext\)/u);
   for (const removed of [
     ["apps", "miniapp-admin", "package.json"],
     ["apps", "wechat-miniapp", "src", "index.html"],
@@ -131,7 +198,7 @@ test("generated mode icons exactly match their checked manifest", async () => {
   assert.equal(manifest.schemaVersion, 2);
   assert.equal(
     manifest.authorityTarget,
-    "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+    "target.system.wechat-miniapp-sky-canvas-2026-08-25",
   );
   assert.equal(manifest.assets.length, 18);
   for (const asset of manifest.assets) {
@@ -163,7 +230,7 @@ test("selected semantic assets retain the complete 8 by 3 source-derived closure
   }
 });
 
-test("every frozen selected design resource has a production probe binding", async () => {
+test("the current Sky Canvas Mini Program and Operations handoffs are bound to production probes", async () => {
   const bindings = await json(
     "tools",
     "miniapp",
@@ -171,39 +238,36 @@ test("every frozen selected design resource has a production probe binding", asy
   );
   assert.equal(
     bindings.schema_version,
-    "starward-miniapp-selected-design-bindings-v2",
+    "starward-sky-canvas-selected-design-bindings-v1",
   );
   assert.deepEqual(
-    bindings.resources.map((resource) => resource.key),
+    bindings.handoffs.map(({ key, target }) => ({ key, target })),
     [
-      "resource.prototype",
-      "resource.requirements",
-      "resource.design-system",
-      "resource.qa",
-      "resource.reconciliation",
-      "resource.selected-readme",
-      "resource.provider-readme",
-      "resource.provider-manifest",
-      "resource.provider-brand",
-      "resource.provider-sidecar",
-      "resource.integrity",
-      "resource.proof-parameters",
-      "resource.environment",
-      "resource.inspector",
-      "resource.oracle",
-      "resource.manifest",
+      {
+        key: "miniapp",
+        target: "target-miniapp-sky-canvas-current-constraint",
+      },
+      {
+        key: "operations",
+        target: "target-operations-sky-canvas-current-constraint",
+      },
     ],
   );
-  for (const resource of bindings.resources) {
+  for (const handoff of bindings.handoffs) {
     assert.match(
-      resource.path,
-      /^docs\/design-resources\/miniapp-selected-source-2026-08-22-v3\//u,
+      handoff.path,
+      /^docs\/design-resources\/miniapp-design-system-2026-08-25-sky-canvas\/selected-handoff\//u,
     );
-    assert.match(resource.sha256, /^[a-f0-9]{64}$/u);
+    assert.match(handoff.sha256, /^[a-f0-9]{64}$/u);
+    assert.equal(handoff.expected_census.acceptance_blockers, 0);
   }
-  assert.ok(bindings.production_probes.length >= 10);
+  assert.equal(bindings.authorities.length, 4);
+  assert.ok(bindings.production_probes.length >= 5);
   for (const probe of bindings.production_probes) {
-    assert.ok(probe.all_of.length > 0, probe.key);
+    assert.ok(
+      (probe.all_of?.length ?? 0) + (probe.none_of?.length ?? 0) > 0,
+      probe.key,
+    );
   }
 });
 
@@ -302,12 +366,20 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "wxfilewatcher_x64.exe",
     "wechat_devtools_project_binding_mismatch",
     "wechat_base_library_mismatch",
-    "private_config_ownership_lost",
+    "private_config_current_bytes_invalid",
+    "private_config_semantic_ownership_lost",
     "project_identity_restore",
     "evidence_shutdown",
     "public_config_restoration",
     "deterministic default-state cold start",
-    'miniProgram.reLaunch("/content/settings/index")',
+    "miniProgram.switchTab(url)",
+    "switchTabAndWait",
+    "native_switch_tab_unavailable",
+    "attemptLimit = 3",
+    "differentNumericValue",
+    "native_interaction_numeric_bounds_unavailable",
+    "numeric_trigger_current",
+    '"[data-od-id=\'my-settings-action\'] .soft-button"',
     "activateDayModeThroughProductionControl",
     "getElementsByXpath",
     "async function queryElements(page, selector)",
@@ -336,17 +408,20 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'entryFlow: "map-to-my-contribution"',
     'entryFlow: "map-to-detail-contribution"',
     "selectFormalSpotThroughFinder",
+    "plan-formal-detail-back",
+    '".custom-nav__back-control .soft-button"',
     '"[data-od-id=\'spot-finder-result-scroll\']"',
     '".spot-card__result-main"',
-    'detailPage,\n      ".night-entry"',
-    '".account-entry-list .account-row"',
+    'await waitForSelector(detailPage, ".night-entry", 1)',
+    'detailPage,\n        ".night-entry"',
+    '".routine-entry-list .routine-entry"',
     "await currentPageUrl(",
     "faultJourney.preparedRouteParams",
     "native_prepared_route_parameter_missing",
     "bff_process_unavailable_then_restarted_matrix",
     "miniapp_api_exited_before_ready",
     "captureJourneyViewports",
-    'target: ".media-card"',
+    'target: ".media-empty"',
     'target: ".sky-scene"',
     'release_action: "none"',
     'rootClasses: ["map-page", "theme-day", "location-default-region"]',
@@ -360,6 +435,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "enableRuntimeLog",
     "timeout waiting for automator response",
     "wechat_runtime_log_enable_timeout",
+    "timeoutMs = 60_000",
     "retryIdempotentAutomatorOperation",
     "isAutomatorResponseTimeout",
     "phase: runtimePhase",
@@ -370,7 +446,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'EventEmitter.prototype.removeListener.call(program, "console"',
     'process.on("unhandledRejection", captureUnhandledRejection)',
     "runnerFaults.length > 0",
-    "const attemptLimit = 2",
+    "const attemptLimit = 3",
     'openObservedSession("setup")',
     'openObservedSession("evidence")',
     "wechat_observed_session_start_failed",
@@ -379,6 +455,9 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'runtimePhase = "setup-reset-before-control"',
     'runtimePhase = "evidence-reset-before-control"',
     "expectedFaultConsoleErrors",
+    "knownToolchainConsoleErrors",
+    "known_toolchain_console_error_count",
+    "knownWechatToolchainConsoleErrorId",
     "degradation_probe_resets",
     "waitForRuntimeEventQuiescence",
     "preclose_runtime_quiescence",
@@ -486,7 +565,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "the final candidate fingerprint must be collected after exact public-config restoration",
   );
   for (const required of [
-    "C:\\Dev\\.starward-tmp",
+    "E:\\Dev\\.starward-tmp",
     "$env:TEMP = $invocationRoot",
     "$env:TMP = $invocationRoot",
     "ty-context-*",
@@ -532,7 +611,7 @@ test("project Harness compatibility patch is version-pinned and only strengthens
     rootPackage.scripts["check:miniapp:harness-compatibility"],
     "node tools/miniapp/apply-ty-context-harness-compatibility.mjs --check",
   );
-  assert.match(patcher, /const expectedVersion = "0\.8\.16"/u);
+  assert.match(patcher, /const expectedVersion = "0\.8\.17"/u);
   assert.match(patcher, /ty_context_harness_compatibility_version_mismatch/u);
   assert.match(
     patcher,
@@ -678,11 +757,19 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   );
   assert.match(
     nativeRunner,
-    /const nativeAcceptanceEnvironment = Object\.freeze\(\{[\s\S]*MINIAPP_STORAGE_MODE: "MEMORY_TEST"[\s\S]*MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1"[\s\S]*MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM"/u,
+    /const nativeAcceptanceBaseEnvironment = Object\.freeze\(\{[\s\S]*MINIAPP_STORAGE_MODE: "postgres"[\s\S]*MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM"[\s\S]*MINIAPP_AUTO_MIGRATE: "1"/u,
   );
-  assert.match(nativeRunner, /\.\.\.nativeAcceptanceEnvironment/u);
+  assert.doesNotMatch(
+    nativeRunner,
+    /nativeAcceptanceBaseEnvironment[\s\S]{0,500}MINIAPP_DEVELOPMENT_FIXTURE_MODE/u,
+  );
+  assert.match(nativeRunner, /\.\.\.nativeAcceptanceBaseEnvironment/u);
+  assert.match(nativeRunner, /DATABASE_URL: databaseUrl/u);
+  assert.match(nativeRunner, /REDIS_URL: nativeRedisUrl/u);
+  assert.match(nativeRunner, /prepareNativeFormalSpot/u);
   assert.match(nativeRunner, /MINIAPP_MEDIA_STORAGE_ROOT: mediaRoot/u);
   assert.match(nativeRunner, /media_store_cleanup: mediaStoreCleanup/u);
+  assert.match(nativeRunner, /durable_runtime_cleanup: durableRuntimeCleanup/u);
   assert.match(app, /miniappQueryClient\.clear\(\)/u);
   assert.match(app, /resetNetwork\(\)/u);
   assert.match(store, /resetAppStoreForAcceptance/u);
@@ -746,6 +833,21 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
     "components",
     "custom-nav.tsx",
   );
+  const nativeMetrics = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "theme",
+    "native-metrics.ts",
+  );
+  const sky = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "features",
+    "sky",
+    "spot-sky-page.tsx",
+  );
   const sourceLift = await text(
     "apps",
     "wechat-miniapp",
@@ -768,15 +870,19 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
     "app-store.ts",
   );
   for (const role of [
-    "#F5F8FC",
-    "#1769D2",
-    "#050A14",
-    "#5AA7FF",
+    "#F5F7FA",
+    "#536DFE",
+    "#050914",
+    "#7E8FFF",
     "#000000",
-    "#FF514A",
+    "#FF3B30",
   ])
     assert.ok(chrome.includes(role), role);
-  assert.match(navigation, /getWindowInfo\(\)\.statusBarHeight/u);
+  assert.match(nativeMetrics, /getWindowInfo\(\)\.statusBarHeight/u);
+  assert.match(nativeMetrics, /Number\.isFinite\(height\)/u);
+  assert.match(navigation, /nativeStatusBarHeightPx\(\)/u);
+  assert.match(sky, /nativeStatusBarHeightPx\(\)/u);
+  assert.match(sky, /data-od-id="spot-night-header"/u);
   assert.match(sourceLift, /getWindowInfo\(\)\.statusBarHeight/u);
   assert.match(sourceLift, /Number\.isFinite\(nativeStatusBarHeight\)/u);
   assert.match(sourceLift, /--source-lift-status-bar-height/u);

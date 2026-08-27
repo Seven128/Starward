@@ -17,14 +17,14 @@ const iconRoot = path.join(
 );
 
 const TAB_MODES = {
-  night: { regular: "#A9BCD2", selected: "#5AA7FF" },
-  observation: { regular: "#E44A43", selected: "#FF514A" },
+  night: { regular: "#94A0B8", selected: "#7E8FFF" },
+  observation: { regular: "#C54438", selected: "#FF3B30" },
 };
 const MARKER_MODES = {
-  night: { primary: "#5AA7FF", surface: "#102238" },
-  observation: { primary: "#FF514A", surface: "#150303" },
+  night: { primary: "#7E8FFF", surface: "#0B1222" },
+  observation: { primary: "#FF3B30", surface: "#120000" },
 };
-const DAY_PRIMARY = [23, 105, 210];
+const DAY_PRIMARY = [83, 109, 254];
 const DAY_SURFACE = [255, 255, 255];
 
 function rgb(value) {
@@ -106,12 +106,12 @@ const manifestBytes = Buffer.from(
   `${JSON.stringify(
     {
       schemaVersion: 2,
-      authorityTarget: "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+      authorityTarget: "target.system.wechat-miniapp-sky-canvas-2026-08-25",
       designSource:
-        "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/map-03-component-control-atlas.html#atlas-markers",
+        "DESIGN.md#wechat-mini-program--sky-canvas-v1",
       interpretation:
-        "30x34 normal pin and 38x42 selected pin; selected state uses size, fill, outline, check and label rather than color alone. Marker and native TabBar night/observation variants preserve geometry while resolving every opaque pixel to their exact mode roles.",
-      generatedAt: "2026-08-06",
+        "The existing bounded marker and native TabBar geometry is projected through the exact Sky Canvas day, night and observation roles. Selected state uses size, fill, outline, check and label rather than color alone.",
+      generatedAt: "2026-08-25",
       assets,
     },
     null,

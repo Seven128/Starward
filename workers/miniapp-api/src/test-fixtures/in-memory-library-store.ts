@@ -28,6 +28,16 @@ export class InMemoryLibraryStore {
     this.#idempotency.clear();
   }
 
+  deleteUser(userId: UserId) {
+    this.#favorites.delete(userId);
+    this.#plans.delete(userId);
+    this.#links.delete(userId);
+    this.#imports.delete(userId);
+    this.#preferences.delete(userId);
+    for (const key of this.#idempotency.keys())
+      if (key.startsWith(`${userId}|`)) this.#idempotency.delete(key);
+  }
+
   ensureUser(userId: UserId) {
     if (this.#favorites.has(userId)) return;
     this.#favorites.set(userId, new Set());

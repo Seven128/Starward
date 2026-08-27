@@ -1,0 +1,98 @@
+- main [ref=f6e3]:
+  - generic [ref=f6e4]:
+    - complementary [ref=f6e5]:
+      - generic [ref=f6e13]:
+        - strong [ref=f6e14]: Starward Ops
+        - generic [ref=f6e15]: 数据与发布治理
+      - generic [ref=f6e16]:
+        - generic [ref=f6e17]: 投稿处理
+        - button "审核队列：按优先级、风险和新鲜度查看待处理 Case" [ref=f6e18] [cursor=pointer]:
+          - generic [ref=f6e23]: 审核队列
+          - generic [ref=f6e78]: "4"
+        - button "Case：原始证据与审核决定分开记录" [ref=f6e24] [cursor=pointer]:
+          - generic [ref=f6e29]: Case
+        - button "媒体核验：只查看净化后的媒体派生物" [ref=f6e30] [cursor=pointer]:
+          - generic [ref=f6e36]: 媒体核验
+        - button "证据合并：预览与提交 canonical merge" [ref=f6e37] [cursor=pointer]:
+          - generic [ref=f6e44]: 证据合并
+      - generic [ref=f6e45]:
+        - generic [ref=f6e46]: 正式地点
+        - button "发布评估：服务端完整性门禁与发布动作" [ref=f6e47] [cursor=pointer]:
+          - generic [ref=f6e52]: 发布评估
+        - button "替换与退役：预览关系影响，再提交高影响转换" [ref=f6e53] [cursor=pointer]:
+          - generic [ref=f6e59]: 替换与退役
+        - button "审计：追加式、脱敏、可归因的操作历史" [active] [ref=f6e60] [cursor=pointer]:
+          - generic [ref=f6e65]: 审计
+      - generic [ref=f6e66]:
+        - generic [ref=f6e67]: O
+        - generic [ref=f6e68]:
+          - strong [ref=f6e69]: admin:operations-acceptance
+          - generic [ref=f6e70]: owner.moderation · 已认证
+    - main [ref=f6e71]:
+      - generic [ref=f6e435]:
+        - generic [ref=f6e436]:
+          - generic [ref=f6e437]:
+            - text: AUDIT / APPEND ONLY
+            - heading "不可变审计" [level=1] [ref=f6e438]
+            - paragraph [ref=f6e439]: 仅展示服务端返回的脱敏操作上下文；筛选不改变事件顺序，导出只包含当前已读字段。
+          - generic [ref=f6e441]:
+            - button "刷新审计" [ref=f6e442] [cursor=pointer]
+            - button "导出当前范围" [ref=f6e443] [cursor=pointer]
+        - generic [ref=f6e444]:
+          - generic [ref=f6e445]:
+            - button "全部事件" [ref=f6e446] [cursor=pointer]
+            - button "审核" [ref=f6e447] [cursor=pointer]
+            - button "合并" [ref=f6e448] [cursor=pointer]
+            - button "发布治理" [ref=f6e449] [cursor=pointer]
+          - generic [ref=f6e450]:
+            - generic [ref=f6e451]: 搜索审计
+            - textbox "搜索审计" [ref=f6e452]:
+              - /placeholder: 搜索 action、actor、对象
+            - generic: ⌕
+        - article [ref=f6e453]:
+          - generic [ref=f6e454]:
+            - generic [ref=f6e455]:
+              - heading "服务端事件序列" [level=2] [ref=f6e456]
+              - paragraph [ref=f6e457]: 事件只追加；恢复必须使用对应 recovery point，不修改历史。
+            - generic [ref=f6e458]: 5 个已读事件
+          - generic [ref=f6e459]:
+            - generic [ref=f6e460]:
+              - time [ref=f6e461]: 2026-08-26T14:44:42.557Z
+              - generic [ref=f6e462]:
+                - strong [ref=f6e463]: SPOT_PUBLISH
+                - generic [ref=f6e464]: SPOT · spot:••hed · request contr••039
+              - generic [ref=f6e465]:
+                - strong [ref=f6e466]: admin:integration
+                - generic [ref=f6e467]: audit d09c5••01a
+            - generic [ref=f6e468]:
+              - time [ref=f6e469]: 2026-08-26T14:44:42.544Z
+              - generic [ref=f6e470]:
+                - strong [ref=f6e471]: PUBLICATION_ASSESSMENT
+                - generic [ref=f6e472]: SPOT · spot:••hed · request contr••039
+              - generic [ref=f6e473]:
+                - strong [ref=f6e474]: admin:integration
+                - generic [ref=f6e475]: audit ad5e4••e08
+            - generic [ref=f6e476]:
+              - time [ref=f6e477]: 2026-08-26T14:44:42.495Z
+              - generic [ref=f6e478]:
+                - strong [ref=f6e479]: CONTRIBUTION_CANONICAL_MERGE
+                - generic [ref=f6e480]: SPOT · spot:••hed · request contr••039
+              - generic [ref=f6e481]:
+                - strong [ref=f6e482]: admin:integration
+                - generic [ref=f6e483]: audit 7c7e2••8c5
+            - generic [ref=f6e484]:
+              - time [ref=f6e485]: 2026-08-26T14:44:42.475Z
+              - generic [ref=f6e486]:
+                - strong [ref=f6e487]: MODERATION_RESOLVE
+                - generic [ref=f6e488]: MODERATION_CASE · moder••638 · request contr••039
+              - generic [ref=f6e489]:
+                - strong [ref=f6e490]: admin:integration
+                - generic [ref=f6e491]: audit 2a44f••952
+            - generic [ref=f6e492]:
+              - time [ref=f6e493]: 2026-08-26T14:44:42.170Z
+              - generic [ref=f6e494]:
+                - strong [ref=f6e495]: SPOT_CANDIDATE_CREATE
+                - generic [ref=f6e496]: SPOT · spot:••039 · request candi••039
+              - generic [ref=f6e497]:
+                - strong [ref=f6e498]: admin:integration
+                - generic [ref=f6e499]: audit a89c8••283

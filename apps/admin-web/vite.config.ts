@@ -34,7 +34,7 @@ export default defineConfig(() => ({
   },
   server: {
     proxy: process.env.STARWARD_API_BASE_URL
-      ? { "/v1": { target: process.env.STARWARD_API_BASE_URL, changeOrigin: false } }
+      ? { "/v2": { target: process.env.STARWARD_API_BASE_URL, changeOrigin: false } }
       : undefined,
   },
 }));

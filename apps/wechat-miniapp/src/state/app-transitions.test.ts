@@ -56,6 +56,8 @@ test("observation mode restores the exact prior day or night mode", () => {
     capturePreference: "目视",
     displayMode: "DAY",
     notificationEnabled: false,
+    departureConditionReminder: false,
+    contributionStatusReminder: false,
     largeText: false,
     reducedMotion: false,
   });

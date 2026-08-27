@@ -186,7 +186,7 @@ export function sanitizeContributionImage(
 }
 
 function assertObjectKey(value: string) {
-  if (!/^contributions\/[a-f0-9]{24}\/[a-zA-Z0-9:_-]{10,160}\.(?:jpg|png)$/u.test(value))
+  if (!/^contributions\/[a-f0-9]{24}\/[a-zA-Z0-9_-]{10,160}\.(?:jpg|png)$/u.test(value))
     throw new Error("media_object_key_invalid");
 }
 

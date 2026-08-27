@@ -79,9 +79,9 @@
   white-space: normal;
 }
 .filter-option--selected {
-  border: 2rpx solid var(--primary);
-  color: var(--text-primary);
-  background: var(--surface-subtle);
+  border: 2rpx solid var(--choice-selected-border);
+  color: var(--choice-selected-label);
+  background: var(--choice-selected-surface);
   font-weight: 700;
 }
 .filter-option__copy {
@@ -109,6 +109,50 @@
 }
 .filter-sheet__status {
   color: var(--text-secondary);
+}
+.quick-filter-chip {
+  position: relative;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 88rpx;
+  height: 88rpx;
+  margin: 0;
+  padding: 0 18rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16rpx;
+  color: var(--text-secondary);
+  background: transparent;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  white-space: nowrap;
+}
+.quick-filter-chip::before {
+  position: absolute;
+  z-index: 0;
+  inset: 12rpx 0;
+  content: "";
+  border: 1rpx solid var(--border);
+  border-radius: 16rpx;
+  background: var(--surface);
+}
+.quick-filter-chip > text {
+  position: relative;
+  z-index: 1;
+}
+.quick-filter-chip--selected {
+  color: var(--choice-selected-label);
+  font-weight: 700;
+}
+.quick-filter-chip--selected::before {
+  border-color: var(--choice-selected-border);
+  background: var(--choice-selected-surface);
+}
+.quick-filter-chip:active::before {
+  background: var(--pressed-overlay);
 }
 @media (min-width: 430px) {
   .filter-sheet__grid {
