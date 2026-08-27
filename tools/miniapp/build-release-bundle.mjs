@@ -6,6 +6,7 @@ import {
   acquireBuildLock,
   bindBundleProjectIdentity,
   fingerprintBundle,
+  validateSourceProjectIdentity,
 } from "./release-bundle-artifact.mjs";
 import {
   bundleRoot,
@@ -15,7 +16,7 @@ import {
   validateBuildRequest,
 } from "./release-bundle-request.mjs";
 
-export { acquireBuildLock, bindBundleProjectIdentity, fingerprintBundle, validateBuildRequest };
+export { acquireBuildLock, bindBundleProjectIdentity, fingerprintBundle, validateBuildRequest, validateSourceProjectIdentity };
 
 const textExtensions = new Set([".css", ".html", ".js", ".json", ".map", ".txt", ".wxml", ".wxss"]);
 
@@ -98,6 +99,7 @@ async function verifyCompiledOrigin(request, fingerprint) {
 async function buildReleaseBundle(request) {
   const releaseLock = await acquireBuildLock();
   try {
+    const sourceProjectConfigSha256 = await validateSourceProjectIdentity(request);
     const expectedBundleRoot = path.resolve(repositoryRoot, "apps", "wechat-miniapp", "dist", "weapp");
     if (path.resolve(bundleRoot) !== expectedBundleRoot) fail("release_bundle_output_root_invalid");
     await rm(bundleRoot, { recursive: true, force: true });
@@ -107,7 +109,6 @@ async function buildReleaseBundle(request) {
     const bundleProjectConfigSha256 = await bindBundleProjectIdentity(request);
     const fingerprint = await fingerprintBundle(bundleRoot);
     await verifyCompiledOrigin(request, fingerprint);
-    const projectConfig = await readFile(path.join(repositoryRoot, "apps", "wechat-miniapp", "project.config.json"));
     const manifest = {
       schemaVersion: "starward-weapp-release-bundle-v1",
       status: "built",
@@ -116,7 +117,7 @@ async function buildReleaseBundle(request) {
       sourceRevision: request.sourceRevision,
       apiOrigin: request.apiOrigin,
       appIdSha256: request.appIdSha256,
-      sourceProjectConfigSha256: sha256(projectConfig),
+      sourceProjectConfigSha256,
       bundleProjectConfigSha256,
       generatedAt: new Date().toISOString(),
       bundle: fingerprint,

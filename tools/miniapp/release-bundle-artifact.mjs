@@ -1,7 +1,37 @@
 import { createHash } from "node:crypto";
 import { mkdir, open, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { bundleRoot, fail, releaseArtifactRoot, sha256 } from "./release-bundle-request.mjs";
+import { bundleRoot, fail, releaseArtifactRoot, repositoryRoot, sha256 } from "./release-bundle-request.mjs";
+
+export async function validateSourceProjectIdentity(
+  request,
+  configPath = path.join(
+    repositoryRoot,
+    "apps",
+    "wechat-miniapp",
+    "project.config.json",
+  ),
+) {
+  let bytes;
+  let config;
+  try {
+    bytes = await readFile(configPath);
+    config = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    fail("release_bundle_source_project_config_invalid");
+  }
+  if (
+    !config ||
+    typeof config !== "object" ||
+    Array.isArray(config) ||
+    config.compileType !== "miniprogram" ||
+    !/^wx[a-f0-9]{16}$/u.test(config.appid ?? "")
+  )
+    fail("release_bundle_source_project_identity_invalid");
+  if (request.lane !== "ci" && config.appid !== request.appId)
+    fail("release_bundle_source_project_app_id_mismatch");
+  return sha256(bytes);
+}
 
 export async function bindBundleProjectIdentity(request, root = bundleRoot) {
   const configPath = path.join(root, "project.config.json");

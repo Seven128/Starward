@@ -11,6 +11,7 @@ import {
   releaseBuildEnvironment,
   resolveNpmCli,
   validateBuildRequest,
+  validateSourceProjectIdentity,
 } from "./build-release-bundle.mjs";
 
 const revision = "a".repeat(40);
@@ -128,6 +129,40 @@ test("release bundle project identity is bound to its lane", async () => {
     const stagingConfig = JSON.parse(await readFile(configPath, "utf8"));
     assert.equal(stagingConfig.appid, stagingAppId);
     assert.equal(stagingConfig.setting.urlCheck, true);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("deployable bundle identity must equal the tracked source AppID", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "starward-weapp-source-identity-"));
+  try {
+    const configPath = path.join(root, "project.config.json");
+    await writeFile(
+      configPath,
+      `${JSON.stringify({ appid: stagingAppId, compileType: "miniprogram" })}\n`,
+    );
+    const staging = request({
+      "--lane": "staging",
+      "--api-origin": "https://api-staging.starward.cn",
+      "--app-id": stagingAppId,
+    });
+    assert.match(
+      await validateSourceProjectIdentity(staging, configPath),
+      /^[a-f0-9]{64}$/u,
+    );
+    const anotherAppId = `wx${"2".repeat(16)}`;
+    await assert.rejects(
+      validateSourceProjectIdentity(
+        request({
+          "--lane": "production",
+          "--api-origin": "https://api.starward.cn",
+          "--app-id": anotherAppId,
+        }),
+        configPath,
+      ),
+      /release_bundle_source_project_app_id_mismatch/u,
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }
