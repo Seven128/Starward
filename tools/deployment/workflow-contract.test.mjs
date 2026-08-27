@@ -51,6 +51,20 @@ test("production is a manual exact-digest promotion and never rebuilds", async (
   assert.match(source, /host-preflight\.sh/u);
 });
 
+test("manual staging rechecks product CI and selects an explicit protected lane", async () => {
+  const source = await workflow("backend-staging.yml");
+  assert.match(source, /workflow_dispatch:/u);
+  assert.match(source, /github\.event_name == 'workflow_dispatch' && github\.ref == 'refs\/heads\/main'/u);
+  assert.match(source, /STARWARD_STAGING_LANE \|\| 'domain'/u);
+  assert.match(source, /--lane "\$DEPLOYMENT_LANE"/u);
+  assert.match(source, /npm run test:miniapp:infrastructure/u);
+  assert.match(source, /npm run miniapp:bundle -- --lane ci/u);
+  assert.match(source, /cancel-in-progress: false/u);
+  assert.match(source, /--sort=name --mtime=@0/u);
+  assert.match(source, /\$GITHUB_RUN_ID-\$GITHUB_RUN_ATTEMPT\/deploy\.env/u);
+  assert.doesNotMatch(source, /STARWARD_OPERATOR_PREVIEW_TOKEN|rejectUnauthorized|down -v/u);
+});
+
 test("WeChat platform operations use a protected dedicated runner and never publish from product CI", async () => {
   const product = await workflow("product-ci.yml");
   const source = await workflow("wechat-platform.yml");

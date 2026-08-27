@@ -1,6 +1,7 @@
 name: Backend staging release
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows:
       - Product CI
@@ -18,17 +19,19 @@ jobs:
   publish-and-deploy:
     if: >-
       ${{
-        github.event.workflow_run.conclusion == 'success' &&
+        ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'push' &&
         github.event.workflow_run.head_branch == 'main' &&
-        github.event.workflow_run.head_repository.full_name == github.repository &&
+        github.event.workflow_run.head_repository.full_name == github.repository)) &&
         vars.STARWARD_STAGING_CD_ENABLED == 'true'
       }}
     environment: staging
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      REVISION: ${{ github.event.workflow_run.head_sha }}
+      REVISION: ${{ github.event.workflow_run.head_sha || github.sha }}
+      DEPLOYMENT_LANE: ${{ vars.STARWARD_STAGING_LANE || 'domain' }}
       SSH_HOST: ${{ vars.STARWARD_SSH_HOST }}
       SSH_PORT: ${{ vars.STARWARD_SSH_PORT }}
       SSH_USER: ${{ vars.STARWARD_SSH_USER }}
@@ -42,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
@@ -53,6 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$DEPLOYMENT_LANE" == 'domain' || "$DEPLOYMENT_LANE" == 'operator-preview' ]]
           [[ "$SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
           [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 ))
           [[ "$SSH_USER" =~ ^[A-Za-z0-9._-]+$ ]]
@@ -72,6 +76,14 @@ jobs:
           npm run check:miniapp:release-code
           npm run build:miniapp:release
           sh -n infrastructure/deployment/run-remote-promotion.sh
+      - name: Run remaining Product CI checks for manual dispatch
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          npm audit --omit=dev --workspace @starward/miniapp-api --audit-level=high
+          npm run test:miniapp:release
+          npm run test:miniapp:platform
+          npm run miniapp:bundle -- --lane ci --api-origin https://api.starward-ci.invalid --source-revision "$REVISION"
+          npm run test:miniapp:infrastructure
       - name: Build and publish the immutable release image
         id: image
         shell: bash
@@ -107,12 +119,13 @@ jobs:
           released_at=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
           archive="$RUNNER_TEMP/starward-control-$REVISION.tar.gz"
           request="$RUNNER_TEMP/starward-staging-$REVISION.request.json"
-          tar -czf "$archive" package.json tools/deployment infrastructure/deployment
+          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -czf "$archive" package.json tools/deployment infrastructure/deployment
           archive_sha256=$(sha256sum "$archive" | cut -d' ' -f1)
           npm run deployment:create-request -- \
+            --lane "$DEPLOYMENT_LANE" \
             --output "$request" \
             --base-deploy-env "$REMOTE_BASE_DEPLOY_ENV" \
-            --candidate-output "$REMOTE_CANDIDATE_ROOT/$REVISION/deploy.env" \
+            --candidate-output "$REMOTE_CANDIDATE_ROOT/$REVISION/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/deploy.env" \
             --image-ref "$IMAGE_REF" \
             --revision "$REVISION" \
             --released-at "$released_at" \
@@ -151,7 +164,7 @@ jobs:
           ssh_options=(-i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -p "$SSH_PORT")
           target="$SSH_USER@$SSH_HOST"
           remote_archive="$REMOTE_INBOX/staging-$REVISION.control.tar.gz"
-          remote_request="$REMOTE_INBOX/staging-$REVISION.request.json"
+          remote_request="$REMOTE_INBOX/staging-$REVISION-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.request.json"
           ssh "${ssh_options[@]}" "$target" "install -d -m 0700 '$REMOTE_INBOX'"
           scp -i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -P "$SSH_PORT" "$ARCHIVE" "$target:$remote_archive"
           scp -i "$RUNNER_TEMP/starward_ssh_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$RUNNER_TEMP/starward_known_hosts" -P "$SSH_PORT" "$REQUEST" "$target:$remote_request"

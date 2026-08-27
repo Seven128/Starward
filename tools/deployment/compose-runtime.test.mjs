@@ -27,4 +27,5 @@ test("Compose executor does not invoke a shell or interpolate caller arguments",
   assert.equal(calls[0].command, "docker");
   assert.deepEqual(calls[0].args.slice(-1), ["pull"]);
   assert.equal("shell" in calls[0], false);
+  assert.ok(!Object.keys(calls[0].env).some((key) => /^(?:STARWARD_|COMPOSE_)/u.test(key) || key === "CADDY_EMAIL"));
 });
