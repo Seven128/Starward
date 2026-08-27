@@ -12,6 +12,12 @@ Compose（运行环境）。不安装 Jenkins/Kubernetes/发布面板，不增�
 这个交付只验收发布部署，不把手机权限、全功能真机测试或正式上线作为完成条件。
 IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名、证书、备案和产品验收条件没有取消。
 
+当前已启用 `main` → Product CI → TCR → IP 内测服务器的自动链路，并完成一次真实
+发布及独立健康/镜像身份复核。部署会短暂停止入口、API 和 worker，不是零停机发布。
+实际运行版本以 GitHub 对应任务及服务器 `operator-preview-current.json` 为准，不以
+本文或本地 HEAD 推断。下面的手动 GitHub 入口已实现，但尚未单独演练；服务器侧
+`check`、`backup`、`deploy` 及失败后修正配置重发已实际运行。
+
 - **改代码**：在开发分支提交，PR 的 Product CI 检查发布产物；设计资源和
   Context/Harness 是独立治理流程，不被打包为运行服务。
 - **发布**：合并到 `main` 后，Product CI 成功才触发 `Backend staging release`。
@@ -633,13 +639,16 @@ Configure the GitHub `staging` and `production` environments independently:
   additionally stores `STARWARD_REGISTRY_PASSWORD` for publication. Log in to
   TCR separately as the deployment user on each host so an exact-digest pull
   does not receive registry credentials through the release control package.
-- Enable flags: `STARWARD_STAGING_CD_ENABLED=true` only in staging and
-  `STARWARD_PRODUCTION_CD_ENABLED=true` only in production.
+- Repository-level scheduling flags: `STARWARD_STAGING_CD_ENABLED=true` enables
+  staging and `STARWARD_PRODUCTION_CD_ENABLED=true` enables production. Do not
+  define these job-condition flags at environment level. Production stays disabled
+  for IP-only testing. Restrict the staging environment to the `main` branch.
 - Configure required reviewers on the GitHub `production` environment before
   enabling it.
 
-`backend-staging.yml` runs only after a successful Product CI run caused by a
-trusted `main` push in this repository. It rebuilds the exact revision once as
+`backend-staging.yml` runs automatically after a successful Product CI run caused
+by a trusted `main` push in this repository, or manually on `main` with the same
+release-product checks. It rebuilds the exact revision once as
 the release image, publishes it to the configured TCR repository, removes the
 runner login, transfers a SHA-256-bound non-secret control package and
 automatically promotes the resulting immutable digest.
