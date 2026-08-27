@@ -78,3 +78,56 @@ test("unknown request fields fail closed before promotion", async () => {
     assert.equal(called, false);
   });
 });
+
+test("operator preview failure exposes only receipt-owned diagnostic identifiers", async () => {
+  await withFixture(async (fixture) => {
+    const created = await createPromotionRequest({
+      ...requestInput(fixture),
+      lane: "operator-preview",
+    });
+    await assert.rejects(
+      () =>
+        runPromotionRequest({
+          requestPath: created.outputPath,
+          preview: async () => ({
+            receipt: {
+              status: "failed",
+              failedStep: "guarded-ip-readiness",
+              errorCode: "operator_preview_qweather_evidence_missing",
+            },
+          }),
+        }),
+      /operator_preview_deployment_failed:guarded-ip-readiness:operator_preview_qweather_evidence_missing/u,
+    );
+  });
+});
+
+test("operator preview failure redacts non-identifier receipt diagnostics", async () => {
+  await withFixture(async (fixture) => {
+    const created = await createPromotionRequest({
+      ...requestInput(fixture),
+      lane: "operator-preview",
+    });
+    await assert.rejects(
+      () =>
+        runPromotionRequest({
+          requestPath: created.outputPath,
+          preview: async () => ({
+            receipt: {
+              status: "failed",
+              failedStep: "token=do-not-emit",
+              errorCode: "credential=do-not-emit",
+            },
+          }),
+        }),
+      (error) => {
+        assert.equal(
+          error.message,
+          "operator_preview_deployment_failed:unknown-step:operator_preview_unexpected_failure",
+        );
+        assert.doesNotMatch(error.message, /do-not-emit/u);
+        return true;
+      },
+    );
+  });
+});

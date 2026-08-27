@@ -80,7 +80,11 @@ export async function createPromotionRequest({ outputPath, lane = "domain", ...i
   return Object.freeze({ status: "prepared", disposition, outputPath: selectedOutput, request });
 }
 
-export async function runPromotionRequest({ requestPath, promote = promoteReleaseCandidate }) {
+export async function runPromotionRequest({
+  requestPath,
+  promote = promoteReleaseCandidate,
+  preview = operatePreview,
+}) {
   const selectedPath = absolutePath(requestPath, "requestPath");
   const request = validateRequest(JSON.parse(await readFile(selectedPath, "utf8")));
   if (request.schemaVersion === "starward-operator-preview-request-v1") {
@@ -88,8 +92,20 @@ export async function runPromotionRequest({ requestPath, promote = promoteReleas
       baseDeployEnvPath: request.baseDeployEnvPath, outputPath: request.candidateOutputPath,
       imageReference: request.imageReference, revision: request.revision, releasedAt: request.releasedAt,
     });
-    const result = await operatePreview({ deployEnvPath: candidate.outputPath, operation: "deploy", operator: request.operator });
-    if (result.receipt.status !== "succeeded") fail("operator_preview_deployment_failed");
+    const result = await preview({
+      deployEnvPath: candidate.outputPath,
+      operation: "deploy",
+      operator: request.operator,
+    });
+    if (result.receipt.status !== "succeeded") {
+      const failedStep = /^[a-z][a-z0-9-]*$/u.test(result.receipt.failedStep ?? "")
+        ? result.receipt.failedStep
+        : "unknown-step";
+      const errorCode = /^[a-z][a-z0-9_-]*$/u.test(result.receipt.errorCode ?? "")
+        ? result.receipt.errorCode
+        : "operator_preview_unexpected_failure";
+      fail("operator_preview_deployment_failed", `${failedStep}:${errorCode}`);
+    }
     return { ...result, status: result.receipt.status, environment: "operator-preview", imageDigest: result.receipt.imageDigest };
   }
   return promote({
