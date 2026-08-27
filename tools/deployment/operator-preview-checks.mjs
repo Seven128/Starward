@@ -149,11 +149,11 @@ async function checkProviderSmoke({ validation, deploy, ca, request }) {
     body: {
       location: {
         kind: "MAP_POINT",
-        displayName: "operator-preview-provider-smoke",
+        displayName: "operator-preview-provider-smoke-guangzhou",
         wgs84: {
           system: "WGS84",
-          latitude: 31.2304,
-          longitude: 121.4737,
+          latitude: 23.1291,
+          longitude: 113.2644,
         },
         source: "MAP_VIEWPORT",
         timezoneHint: "Asia/Shanghai",
@@ -207,7 +207,7 @@ async function checkProviderSmoke({ validation, deploy, ca, request }) {
   requireCondition(Boolean(astronomy), "astronomy_evidence_missing");
   return {
     status: "passed",
-    scenario: "fixed-public-shanghai-reference",
+    scenario: "fixed-public-guangzhou-reference",
     formalSpotCount: scene.data.spots.length,
     dataState: scene.dataState,
     weather: { provider: weather.provider, state: weather.state },
