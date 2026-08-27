@@ -192,6 +192,7 @@ test("readiness checks denial and exact release using only the private CA", asyn
   };
   const result = await checkPreviewReadiness({ ...input, request });
   assert.equal(result.publicTrustVerified, false);
+  assert.equal(result.providerSmoke.evidenceScope, "PRODUCT_MAP_SCENE");
   assert.equal(result.providerSmoke.weather.provider, "和风天气");
   assert.equal(result.providerSmoke.astronomy.provider, "Astronomy Engine");
   assert.equal(calls[0].token, undefined);
@@ -256,6 +257,79 @@ test("readiness checks denial and exact release using only the private CA", asyn
       return true;
     },
   );
+});
+
+test("empty formal population uses an isolated, explicit provider simulation", async () => {
+  const runtimeCalls = [];
+  const run = (call) => {
+    runtimeCalls.push(call);
+    if (call.step === "preview-local-ca")
+      return { stdout: Buffer.from("local-ca") };
+    if (call.step === "preview-provider-simulation")
+      return {
+        stdout: Buffer.from(JSON.stringify({
+          status: "passed",
+          evidenceScope: "ISOLATED_TEST_SIMULATION",
+          productPopulation: "FORMAL_POPULATION_MISSING",
+          hourlyCount: 24,
+          weather: { provider: "和风天气", state: "FRESH" },
+          astronomy: { provider: "Astronomy Engine", state: "FRESH" },
+        })),
+      };
+    throw new Error("unexpected_runtime_call");
+  };
+  const request = async (args) => {
+    if (!args.token) return { status: 404 };
+    if (args.path === "/v2/observation-contexts/resolve")
+      return {
+        status: 201,
+        body: JSON.stringify({
+          data: {
+            contextId: "ctx:00000000-0000-4000-8000-000000000001",
+            weatherView: { primaryPolicy: "QWEATHER" },
+          },
+        }),
+      };
+    if (args.path?.startsWith("/v2/map/scene?"))
+      return {
+        status: 200,
+        body: JSON.stringify({
+          dataState: "PARTIAL",
+          data: { spots: [] },
+          sources: [],
+        }),
+      };
+    return {
+      status: 200,
+      body: JSON.stringify({
+        ready: true,
+        release: {
+          environment: "staging",
+          revision: releaseRevision,
+          imageDigest: releaseImageDigest,
+        },
+      }),
+    };
+  };
+  const result = await checkPreviewReadiness({
+    run,
+    validation: {
+      domain: "192.0.2.8",
+      revision: releaseRevision,
+      imageDigest: releaseImageDigest,
+    },
+    deploy: { STARWARD_OPERATOR_PREVIEW_TOKEN: token },
+    request,
+  });
+  assert.equal(result.providerSmoke.evidenceScope, "ISOLATED_TEST_SIMULATION");
+  assert.equal(result.providerSmoke.productPopulation, "FORMAL_POPULATION_MISSING");
+  assert.equal(result.providerSmoke.fixtureEvidence, true);
+  const simulation = runtimeCalls.find(
+    (call) => call.step === "preview-provider-simulation",
+  );
+  assert.ok(simulation.args.includes("--input-type=module"));
+  assert.match(simulation.input.toString("utf8"), /TEST_PUBLISHED_SPOT/u);
+  assert.doesNotMatch(simulation.input.toString("utf8"), /DATABASE_URL|INSERT INTO/iu);
 });
 
 test("preview request is typed and cannot carry production qualification", async (t) => {
