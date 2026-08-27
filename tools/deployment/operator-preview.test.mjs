@@ -157,14 +157,79 @@ test("readiness checks denial and exact release using only the private CA", asyn
   const input = { run: () => ({ stdout: Buffer.from("local-ca") }), validation: { domain: "192.0.2.8", revision: releaseRevision, imageDigest: releaseImageDigest }, deploy: { STARWARD_OPERATOR_PREVIEW_TOKEN: token } };
   const request = async (args) => {
     calls.push(args);
-    return args.token ? { status: 200, body: JSON.stringify({ ready: true, release: { environment: "staging", revision: releaseRevision, imageDigest: releaseImageDigest } }) } : { status: 404 };
+    if (!args.token) return { status: 404 };
+    if (args.path === "/v2/observation-contexts/resolve")
+      return {
+        status: 201,
+        body: JSON.stringify({
+          data: {
+            contextId: "ctx:00000000-0000-4000-8000-000000000001",
+            weatherView: { primaryPolicy: "QWEATHER" },
+          },
+        }),
+      };
+    if (args.path?.startsWith("/v2/map/scene?"))
+      return {
+        status: 200,
+        body: JSON.stringify({
+          dataState: "FRESH",
+          data: { spots: [{ spotId: "spot:provider-smoke" }] },
+          sources: [
+            {
+              kind: "THIRD_PARTY_FORECAST",
+              provider: "和风天气",
+              state: "FRESH",
+            },
+            {
+              kind: "PRODUCT_CALCULATION",
+              provider: "Astronomy Engine",
+              state: "FRESH",
+            },
+          ],
+        }),
+      };
+    return { status: 200, body: JSON.stringify({ ready: true, release: { environment: "staging", revision: releaseRevision, imageDigest: releaseImageDigest } }) };
   };
   const result = await checkPreviewReadiness({ ...input, request });
   assert.equal(result.publicTrustVerified, false);
+  assert.equal(result.providerSmoke.weather.provider, "和风天气");
+  assert.equal(result.providerSmoke.astronomy.provider, "Astronomy Engine");
   assert.equal(calls[0].token, undefined);
   assert.equal(calls[1].ca.toString(), "local-ca");
+  assert.equal(calls[2].method, "POST");
+  assert.match(calls[3].path, /^\/v2\/map\/scene\?/u);
   await assert.rejects(checkPreviewReadiness({ ...input, request: async () => ({ status: 200 }) }), /not_denied/u);
   await assert.rejects(checkPreviewReadiness({ ...input, request: async (args) => args.token ? { status: 200, body: '{"ready":true}' } : { status: 404 } }), /identity_mismatch/u);
+  await assert.rejects(
+    checkPreviewReadiness({
+      ...input,
+      request: async (args) => {
+        const response = await request(args);
+        if (args.path?.startsWith("/v2/map/scene?"))
+          return {
+            ...response,
+            body: JSON.stringify({
+              dataState: "PARTIAL",
+              data: { spots: [{ spotId: "spot:provider-smoke" }] },
+              sources: [
+                {
+                  kind: "THIRD_PARTY_FORECAST",
+                  provider: "Open-Meteo",
+                  state: "FRESH",
+                },
+                {
+                  kind: "PRODUCT_CALCULATION",
+                  provider: "Astronomy Engine",
+                  state: "FRESH",
+                },
+              ],
+            }),
+          };
+        return response;
+      },
+    }),
+    /qweather_evidence_missing/u,
+  );
 });
 
 test("preview request is typed and cannot carry production qualification", async (t) => {

@@ -50,12 +50,31 @@ export function checkPreviewContainers(rows, { dataOnly = false } = {}) {
   }
 }
 
-async function requestOnce({ ip, ca, token }) {
+async function requestOnce({
+  ip,
+  ca,
+  token,
+  path = "/health/ready",
+  method = "GET",
+  body,
+}) {
   return new Promise((resolve, reject) => {
+    const payload = body === undefined ? null : JSON.stringify(body);
     const request = https.request({
-      hostname: ip, port: 443, path: "/health/ready", method: "GET",
+      hostname: ip,
+      port: 443,
+      path,
+      method,
       ca, rejectUnauthorized: true, minVersion: "TLSv1.2", servername: "",
-      headers: token ? { "X-Starward-Operator-Preview": token } : {},
+      headers: {
+        ...(token ? { "X-Starward-Operator-Preview": token } : {}),
+        ...(payload === null
+          ? {}
+          : {
+              "Content-Type": "application/json",
+              "Content-Length": Buffer.byteLength(payload),
+            }),
+      },
     }, (response) => {
       let body = "";
       response.setEncoding("utf8");
@@ -68,6 +87,7 @@ async function requestOnce({ ip, ca, token }) {
     });
     request.setTimeout(10000, () => request.destroy(new Error("operator_preview_request_timeout")));
     request.on("error", () => reject(new Error("operator_preview_tls_or_request_failed")));
+    if (payload !== null) request.write(payload);
     request.end();
   });
 }
@@ -82,15 +102,127 @@ export async function requestPreview(input) {
   }
 }
 
+function responseJson(result, code) {
+  try {
+    return JSON.parse(result.body);
+  } catch {
+    throw new Error(`operator_preview_${code}_json_invalid`);
+  }
+}
+
+function shanghaiLocalDate(now = new Date()) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+      .formatToParts(now)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+async function checkProviderSmoke({ validation, deploy, ca, request }) {
+  const token = deploy.STARWARD_OPERATOR_PREVIEW_TOKEN;
+  const contextResult = await request({
+    ip: validation.domain,
+    ca,
+    token,
+    path: "/v2/observation-contexts/resolve",
+    method: "POST",
+    body: {
+      location: {
+        kind: "MAP_POINT",
+        displayName: "operator-preview-provider-smoke",
+        wgs84: {
+          system: "WGS84",
+          latitude: 31.2304,
+          longitude: 121.4737,
+        },
+        source: "MAP_VIEWPORT",
+        timezoneHint: "Asia/Shanghai",
+      },
+      localDate: shanghaiLocalDate(),
+    },
+  });
+  requireCondition(contextResult.status === 201, "provider_context_http_failed");
+  const contextEnvelope = responseJson(contextResult, "provider_context");
+  const context = contextEnvelope?.data;
+  requireCondition(
+    /^ctx:[0-9a-f-]{36}$/iu.test(context?.contextId ?? "") &&
+      context?.weatherView?.primaryPolicy === "QWEATHER",
+    "provider_context_policy_mismatch",
+  );
+  const sceneResult = await request({
+    ip: validation.domain,
+    ca,
+    token,
+    path:
+      "/v2/map/scene?layer=CLOUD&cloudLayer=TOTAL&contextId=" +
+      encodeURIComponent(context.contextId),
+  });
+  requireCondition(sceneResult.status === 200, "provider_scene_http_failed");
+  const scene = responseJson(sceneResult, "provider_scene");
+  const sources = Array.isArray(scene?.sources) ? scene.sources : [];
+  const weather = sources.find(
+    (source) =>
+      source?.kind === "THIRD_PARTY_FORECAST" &&
+      source?.provider === "和风天气" &&
+      source?.state !== "UNAVAILABLE",
+  );
+  const astronomy = sources.find(
+    (source) =>
+      source?.kind === "PRODUCT_CALCULATION" &&
+      source?.provider === "Astronomy Engine" &&
+      source?.state === "FRESH",
+  );
+  requireCondition(
+    Array.isArray(scene?.data?.spots) && scene.data.spots.length > 0,
+    "provider_formal_population_missing",
+  );
+  requireCondition(
+    !sources.some(
+      (source) =>
+        source?.kind === "TEST_FIXTURE" || source?.state === "SAMPLE_DATA",
+    ),
+    "provider_fixture_evidence_forbidden",
+  );
+  requireCondition(Boolean(weather), "qweather_evidence_missing");
+  requireCondition(Boolean(astronomy), "astronomy_evidence_missing");
+  return {
+    status: "passed",
+    scenario: "fixed-public-shanghai-reference",
+    formalSpotCount: scene.data.spots.length,
+    dataState: scene.dataState,
+    weather: { provider: weather.provider, state: weather.state },
+    astronomy: { provider: astronomy.provider, state: astronomy.state },
+    fixtureEvidence: false,
+  };
+}
+
 export async function checkPreviewReadiness({ run, validation, deploy, request = requestPreview }) {
   const ca = run({ args: ["exec", "-T", "caddy", "cat", "/data/caddy/pki/authorities/local/root.crt"], step: "preview-local-ca" }).stdout;
   const denied = await request({ ip: validation.domain, ca });
   requireCondition(denied.status === 404, "unauthorized_request_not_denied");
   const result = await request({ ip: validation.domain, ca, token: deploy.STARWARD_OPERATOR_PREVIEW_TOKEN });
   requireCondition(result.status === 200, "readiness_http_failed");
-  let body;
-  try { body = JSON.parse(result.body); } catch { throw new Error("operator_preview_readiness_json_invalid"); }
+  const body = responseJson(result, "readiness");
   requireCondition(body.ready === true && body.release?.environment === "staging"
     && body.release.revision === validation.revision && body.release.imageDigest === validation.imageDigest, "readiness_identity_mismatch");
-  return { ready: true, unauthorizedStatus: 404, tls: "ip-verified-with-scoped-caddy-ca", publicTrustVerified: false };
+  const providerSmoke = await checkProviderSmoke({
+    validation,
+    deploy,
+    ca,
+    request,
+  });
+  return {
+    ready: true,
+    unauthorizedStatus: 404,
+    tls: "ip-verified-with-scoped-caddy-ca",
+    publicTrustVerified: false,
+    providerSmoke,
+  };
 }
