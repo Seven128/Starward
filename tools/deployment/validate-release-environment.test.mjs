@@ -63,6 +63,30 @@ test("remote release keeps QWeather as the selected primary provider", async () 
   );
 });
 
+test("staging and production pin distinct QWeather forecast horizons", async () => {
+  await withFixture(
+    { api: { QWEATHER_FORECAST_HOURS: "72" } },
+    async (deployPath) => {
+      await assert.rejects(
+        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
+        /release_environment_mismatch:api:QWEATHER_FORECAST_HOURS/u,
+      );
+    },
+  );
+  await withFixture(
+    {
+      environment: "production",
+      api: { QWEATHER_FORECAST_HOURS: "24" },
+    },
+    async (deployPath) => {
+      await assert.rejects(
+        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
+        /release_environment_mismatch:api:QWEATHER_FORECAST_HOURS/u,
+      );
+    },
+  );
+});
+
 test("production requires commercial Open-Meteo evidence and its own key", async () => {
   await withFixture({ environment: "production" }, async (deployPath) => {
     const result = await validateReleaseEnvironment({ deployEnvPath: deployPath });

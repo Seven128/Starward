@@ -28,6 +28,18 @@ export function resolveNpmCli(environment = process.env) {
   return path.normalize(configured);
 }
 
+export function releaseBuildEnvironment(request, environment = process.env) {
+  return {
+    ...environment,
+    NODE_ENV: "production",
+    TARO_ENV: "weapp",
+    MINIAPP_API_BASE: request.apiOrigin,
+    MINIAPP_OPERATOR_PREVIEW_TOKEN: "",
+    MINIAPP_ACCEPTANCE_DIAGNOSTICS: "0",
+    MINIAPP_DEVELOPMENT_FIXTURE_MODE: "0",
+  };
+}
+
 function parseArguments(argv) {
   const values = new Map();
   const supported = new Set(["--lane", "--api-origin", "--source-revision", "--app-id", "--output-manifest"]);
@@ -51,14 +63,7 @@ async function runWeappBuild(request) {
       [npmCli, "run", "build:weapp", "--workspace", "@starward/wechat-miniapp"],
       {
         cwd: repositoryRoot,
-        env: {
-          ...process.env,
-          NODE_ENV: "production",
-          TARO_ENV: "weapp",
-          MINIAPP_API_BASE: request.apiOrigin,
-          MINIAPP_ACCEPTANCE_DIAGNOSTICS: "0",
-          MINIAPP_DEVELOPMENT_FIXTURE_MODE: "0",
-        },
+        env: releaseBuildEnvironment(request),
         stdio: "inherit",
         windowsHide: true,
       },

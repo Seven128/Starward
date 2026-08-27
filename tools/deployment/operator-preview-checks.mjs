@@ -1,0 +1,96 @@
+import https from "node:https";
+import { setTimeout as delay } from "node:timers/promises";
+
+function requireCondition(condition, code) {
+  if (!condition) throw new Error(`operator_preview_${code}`);
+}
+
+export function checkPreviewCompose(config, validation, deploy) {
+  requireCondition(config.name === "starward-staging", "project_mismatch");
+  const services = config.services ?? {};
+  requireCondition(Object.keys(services).sort().join() === "api,caddy,migrate,postgres,redis,worker", "services_mismatch");
+  for (const [name, service] of Object.entries(services)) {
+    requireCondition(!service.privileged && !service.network_mode, "unsafe_network_or_privilege");
+    const ports = service.ports ?? [];
+    requireCondition(name === "caddy"
+      ? ports.length === 1 && Number(ports[0].published) === 443 && ports[0].target === 443 && ports[0].protocol === "tcp"
+      : ports.length === 0, "port_exposure");
+  }
+  for (const name of ["api", "worker", "migrate"]) {
+    const service = services[name];
+    requireCondition(service.image === `${validation.imageRepository}@${validation.imageDigest}`, "image_mismatch");
+    for (const key of ["STARWARD_ENVIRONMENT", "STARWARD_RELEASE_REVISION", "STARWARD_IMAGE_DIGEST", "STARWARD_RELEASED_AT"])
+      requireCondition(service.environment?.[key] === deploy[key], "rendered_identity_mismatch");
+  }
+  requireCondition(services.caddy.environment?.STARWARD_OPERATOR_PREVIEW_TOKEN === deploy.STARWARD_OPERATOR_PREVIEW_TOKEN, "rendered_token_mismatch");
+  requireCondition(services.caddy.environment?.STARWARD_API_DOMAIN === validation.domain, "rendered_ip_mismatch");
+  requireCondition(services.caddy.volumes?.some((volume) => volume.target === "/etc/caddy/Caddyfile" && volume.read_only && /[/\\]Caddyfile\.operator-preview$/u.test(volume.source)), "overlay_missing");
+  for (const [name, target, volumeName] of [["postgres", "/var/lib/postgresql/data", "postgres-data"], ["redis", "/data", "redis-data"]]) {
+    requireCondition(services[name].volumes?.some((volume) => volume.type === "volume" && volume.target === target && volume.source === volumeName), "data_volume_mismatch");
+    requireCondition(config.volumes?.[volumeName]?.name === `starward-staging_${volumeName}`, "data_volume_mismatch");
+  }
+}
+
+export function parseComposeRows(text) {
+  const selected = text.trim();
+  if (!selected) return [];
+  return selected.startsWith("[") ? JSON.parse(selected) : selected.split(/\r?\n/u).map((line) => JSON.parse(line));
+}
+
+export function checkPreviewContainers(rows, { dataOnly = false } = {}) {
+  const expected = dataOnly ? ["postgres", "redis"] : ["postgres", "redis", "api", "worker", "caddy"];
+  for (const service of expected) {
+    const matches = rows.filter((row) => row.Service === service);
+    requireCondition(matches.length === 1 && matches[0].State === "running", "service_not_running");
+    requireCondition(service === "caddy" || matches[0].Health === "healthy", "service_not_healthy");
+    const ports = (matches[0].Publishers ?? []).filter((port) => port.PublishedPort > 0);
+    requireCondition(service === "caddy"
+      ? ports.length > 0 && ports.every((port) => port.PublishedPort === 443 && port.TargetPort === 443 && port.Protocol === "tcp")
+      : ports.length === 0, "live_port_exposure");
+  }
+}
+
+async function requestOnce({ ip, ca, token }) {
+  return new Promise((resolve, reject) => {
+    const request = https.request({
+      hostname: ip, port: 443, path: "/health/ready", method: "GET",
+      ca, rejectUnauthorized: true, minVersion: "TLSv1.2", servername: "",
+      headers: token ? { "X-Starward-Operator-Preview": token } : {},
+    }, (response) => {
+      let body = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => {
+        body += chunk;
+        if (body.length > 65536) request.destroy(new Error("operator_preview_response_too_large"));
+      });
+      response.on("error", () => reject(new Error("operator_preview_response_failed")));
+      response.on("end", () => resolve({ status: response.statusCode, body }));
+    });
+    request.setTimeout(10000, () => request.destroy(new Error("operator_preview_request_timeout")));
+    request.on("error", () => reject(new Error("operator_preview_tls_or_request_failed")));
+    request.end();
+  });
+}
+
+export async function requestPreview(input) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try { return await requestOnce(input); }
+    catch (error) {
+      if (error.message !== "operator_preview_tls_or_request_failed" || attempt === 2) throw error;
+      await delay(500 * (attempt + 1));
+    }
+  }
+}
+
+export async function checkPreviewReadiness({ run, validation, deploy, request = requestPreview }) {
+  const ca = run({ args: ["exec", "-T", "caddy", "cat", "/data/caddy/pki/authorities/local/root.crt"], step: "preview-local-ca" }).stdout;
+  const denied = await request({ ip: validation.domain, ca });
+  requireCondition(denied.status === 404, "unauthorized_request_not_denied");
+  const result = await request({ ip: validation.domain, ca, token: deploy.STARWARD_OPERATOR_PREVIEW_TOKEN });
+  requireCondition(result.status === 200, "readiness_http_failed");
+  let body;
+  try { body = JSON.parse(result.body); } catch { throw new Error("operator_preview_readiness_json_invalid"); }
+  requireCondition(body.ready === true && body.release?.environment === "staging"
+    && body.release.revision === validation.revision && body.release.imageDigest === validation.imageDigest, "readiness_identity_mismatch");
+  return { ready: true, unauthorizedStatus: 404, tls: "ip-verified-with-scoped-caddy-ca", publicTrustVerified: false };
+}

@@ -50,6 +50,7 @@
     "deployment:recover": "node tools/deployment/recover-database.mjs",
     "deployment:release": "node tools/deployment/release.mjs",
     "deployment:promote": "node tools/deployment/promote-release-candidate.mjs",
+    "deployment:preview": "node tools/deployment/operator-preview-cli.mjs",
     "deployment:create-request": "node tools/deployment/promotion-request.mjs create",
     "deployment:run-request": "node tools/deployment/promotion-request.mjs run",
     "test:deployment": "node --test tools/deployment/*.test.mjs",

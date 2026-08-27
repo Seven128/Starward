@@ -352,6 +352,9 @@ async function request<T>(
     const cached =
       method === "GET" ? responseCache.get(exactCacheKey) : undefined;
     const header: Record<string, string> = { Accept: "application/json" };
+    if (__MINIAPP_OPERATOR_PREVIEW_TOKEN__)
+      header["X-Starward-Operator-Preview"] =
+        __MINIAPP_OPERATOR_PREVIEW_TOKEN__;
     if (cached) header["If-None-Match"] = cached.envelope.etag;
     if (options.idempotencyKey)
       header["Idempotency-Key"] = options.idempotencyKey;

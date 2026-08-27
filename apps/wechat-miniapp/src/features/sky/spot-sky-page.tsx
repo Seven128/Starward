@@ -86,7 +86,8 @@ const WEATHER_TIMELINE_ROLE_LABEL: Readonly<
 };
 
 const WEATHER_MODEL_LABEL: Readonly<Record<string, string>> = {
-  "qweather-grid-72h": "和风天气格点预报",
+  "qweather-weather-v1-hourly-24h": "和风天气 24 小时逐小时预报",
+  "qweather-weather-v1-hourly-72h": "和风天气 72 小时逐小时预报",
   best_match: "Open-Meteo 推荐预报",
   icon_seamless: "ICON 全球模型",
   gfs_seamless: "GFS 全球模型",

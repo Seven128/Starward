@@ -55,7 +55,7 @@ export default defineAppConfig({
   },
   permission: {
     "scope.userLocation": {
-      desc: "仅在你主动请求附近观星点时获取一次位置；拒绝后仍可使用默认试点区域。",
+      desc: "仅主动查找附近观星点时定位一次；拒绝后仍可浏览默认区域。",
     },
   },
   requiredPrivateInfos: ["getLocation"],

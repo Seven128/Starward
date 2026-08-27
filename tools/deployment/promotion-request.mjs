@@ -2,6 +2,8 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { promoteReleaseCandidate } from "./promote-release-candidate.mjs";
+import { prepareReleaseCandidate } from "./prepare-release-candidate.mjs";
+import { operatePreview } from "./operator-preview.mjs";
 
 const REQUEST_KEYS = Object.freeze([
   "schemaVersion",
@@ -38,8 +40,10 @@ function validateRequest(request) {
   const keys = Object.keys(request).sort();
   if (keys.join("\0") !== [...REQUEST_KEYS].sort().join("\0"))
     fail("release_request_fields_invalid");
-  if (request.schemaVersion !== "starward-release-request-v1")
+  if (!["starward-release-request-v1", "starward-operator-preview-request-v1"].includes(request.schemaVersion))
     fail("release_request_schema_invalid");
+  if (request.schemaVersion === "starward-operator-preview-request-v1" && (request.stagingReceiptPath !== null || request.confirmProductionDigest !== null))
+    fail("operator_preview_production_qualification_forbidden");
   return Object.freeze({
     schemaVersion: request.schemaVersion,
     baseDeployEnvPath: absolutePath(request.baseDeployEnvPath, "baseDeployEnvPath"),
@@ -67,9 +71,10 @@ async function writeIdempotent(outputPath, text) {
   }
 }
 
-export async function createPromotionRequest({ outputPath, ...input }) {
+export async function createPromotionRequest({ outputPath, lane = "domain", ...input }) {
+  if (!["domain", "operator-preview"].includes(lane)) fail("release_request_lane_invalid");
   const selectedOutput = absolutePath(outputPath, "outputPath");
-  const request = validateRequest({ schemaVersion: "starward-release-request-v1", ...input });
+  const request = validateRequest({ schemaVersion: lane === "domain" ? "starward-release-request-v1" : "starward-operator-preview-request-v1", ...input });
   const text = `${JSON.stringify(request, null, 2)}\n`;
   const disposition = await writeIdempotent(selectedOutput, text);
   return Object.freeze({ status: "prepared", disposition, outputPath: selectedOutput, request });
@@ -78,6 +83,15 @@ export async function createPromotionRequest({ outputPath, ...input }) {
 export async function runPromotionRequest({ requestPath, promote = promoteReleaseCandidate }) {
   const selectedPath = absolutePath(requestPath, "requestPath");
   const request = validateRequest(JSON.parse(await readFile(selectedPath, "utf8")));
+  if (request.schemaVersion === "starward-operator-preview-request-v1") {
+    const candidate = await prepareReleaseCandidate({
+      baseDeployEnvPath: request.baseDeployEnvPath, outputPath: request.candidateOutputPath,
+      imageReference: request.imageReference, revision: request.revision, releasedAt: request.releasedAt,
+    });
+    const result = await operatePreview({ deployEnvPath: candidate.outputPath, operation: "deploy", operator: request.operator });
+    if (result.receipt.status !== "succeeded") fail("operator_preview_deployment_failed");
+    return { ...result, status: result.receipt.status, environment: "operator-preview", imageDigest: result.receipt.imageDigest };
+  }
   return promote({
     baseDeployEnvPath: request.baseDeployEnvPath,
     candidateOutputPath: request.candidateOutputPath,
@@ -101,6 +115,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
     const result = command === "create"
       ? await createPromotionRequest({
           outputPath: option("--output"),
+          lane: option("--lane") ?? "domain",
           baseDeployEnvPath: option("--base-deploy-env"),
           candidateOutputPath: option("--candidate-output"),
           imageReference: option("--image-ref"),

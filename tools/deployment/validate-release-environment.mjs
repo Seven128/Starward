@@ -1,4 +1,5 @@
 import path from "node:path";
+import { isIPv4 } from "node:net";
 import { pathToFileURL } from "node:url";
 import { readEnvironmentFile } from "./env-file.mjs";
 
@@ -122,29 +123,39 @@ function validateApi(api, expected, postgres, redis) {
   boundedInteger(api, "MINIAPP_RATE_LIMIT_WINDOW_MS", 1_000, 3_600_000);
   equal(checkedValue(api, "MINIAPP_RELEASE_PROFILE"), expected.environment === "production" ? "COMMERCIAL" : "TRIAL", "api:MINIAPP_RELEASE_PROFILE");
   equal(checkedValue(api, "MINIAPP_STORAGE_MODE"), "POSTGRES", "api:MINIAPP_STORAGE_MODE");
-  equal(checkedValue(api, "MINIAPP_AUTH_MODE"), "WECHAT", "api:MINIAPP_AUTH_MODE");
+  equal(checkedValue(api, "MINIAPP_AUTH_MODE"), expected.preview ? "LOCAL_TEST" : "WECHAT", "api:MINIAPP_AUTH_MODE");
   equal(checkedValue(api, "MINIAPP_MEDIA_STORAGE_MODE"), "DISABLED", "api:MINIAPP_MEDIA_STORAGE_MODE");
   equal(checkedValue(api, "MINIAPP_AUTO_MIGRATE"), "0", "api:MINIAPP_AUTO_MIGRATE");
-  equal(checkedValue(api, "MINIAPP_ACCEPTANCE_MODE"), "0", "api:MINIAPP_ACCEPTANCE_MODE");
+  equal(checkedValue(api, "MINIAPP_ACCEPTANCE_MODE"), expected.preview ? "1" : "0", "api:MINIAPP_ACCEPTANCE_MODE");
   equal(checkedValue(api, "MINIAPP_DEVELOPMENT_FIXTURE_MODE"), "0", "api:MINIAPP_DEVELOPMENT_FIXTURE_MODE");
   const corsOrigins = checkedValue(api, "MINIAPP_CORS_ORIGINS").split(",").map((entry) => entry.trim()).filter(Boolean);
   if (!corsOrigins.includes(`https://${expected.domain}`))
     fail("release_environment_mismatch", "api:MINIAPP_CORS_ORIGINS");
   for (const origin of corsOrigins) {
     const parsed = new URL(origin);
-    if (parsed.protocol !== "https:" || parsed.origin !== origin)
+    const allowed = expected.preview
+      ? origin === `https://${expected.domain}`
+      : parsed.protocol === "https:";
+    if (!allowed || parsed.origin !== origin)
       fail("release_environment_invalid", "api:MINIAPP_CORS_ORIGINS");
   }
   validateDatabase(api, postgres);
   validateRedis(api, redis);
   equal(checkedValue(api, "MINIAPP_CACHE_PREFIX"), `starward:${expected.environment}:`, "api:MINIAPP_CACHE_PREFIX");
   equal(checkedValue(api, "MINIAPP_QUEUE_NAME"), `starward-${expected.environment}-outbox`, "api:MINIAPP_QUEUE_NAME");
-  secret(api, "WECHAT_MINIAPP_APP_ID", 10);
-  secret(api, "WECHAT_MINIAPP_APP_SECRET", 24);
+  if (!expected.preview) {
+    secret(api, "WECHAT_MINIAPP_APP_ID", 10);
+    secret(api, "WECHAT_MINIAPP_APP_SECRET", 24);
+  }
   secret(api, "MINIAPP_SESSION_SECRET", 32);
   secret(api, "MINIAPP_ADMIN_TOKEN", 32);
   const weatherProvider = checkedValue(api, "MINIAPP_WEATHER_PROVIDER");
   equal(weatherProvider, "QWEATHER", "api:MINIAPP_WEATHER_PROVIDER");
+  equal(
+    checkedValue(api, "QWEATHER_FORECAST_HOURS"),
+    expected.environment === "production" ? "72" : "24",
+    "api:QWEATHER_FORECAST_HOURS",
+  );
   checkedValue(api, "QWEATHER_API_HOST");
   secret(api, "QWEATHER_CREDENTIAL_ID", 8);
   secret(api, "QWEATHER_PROJECT_ID", 8);
@@ -224,15 +235,31 @@ async function readLaneFiles(deploy) {
 }
 
 export async function validateReleaseEnvironment({ deployEnvPath }) {
+  return validateEnvironment(deployEnvPath, false);
+}
+
+export async function validateOperatorPreviewEnvironment({ deployEnvPath }) {
+  return validateEnvironment(deployEnvPath, true);
+}
+
+async function validateEnvironment(deployEnvPath, preview) {
   if (!deployEnvPath || !path.isAbsolute(deployEnvPath))
     fail("release_environment_path_not_absolute", "deployEnvPath");
   const deploy = await readEnvironmentFile(deployEnvPath);
   const environment = checkedValue(deploy, "STARWARD_ENVIRONMENT");
   if (environment !== "staging" && environment !== "production")
     fail("release_environment_invalid", "STARWARD_ENVIRONMENT");
+  if (preview && environment !== "staging") fail("operator_preview_staging_required");
   equal(checkedValue(deploy, "COMPOSE_PROJECT_NAME"), `starward-${environment}`, "COMPOSE_PROJECT_NAME");
   const domain = checkedValue(deploy, "STARWARD_API_DOMAIN");
-  validateDomain(environment, domain);
+  if (preview) {
+    if (!isIPv4(domain)) fail("operator_preview_ip_required");
+    if (!/^[A-Za-z0-9_-]{43,128}$/u.test(checkedValue(deploy, "STARWARD_OPERATOR_PREVIEW_TOKEN")))
+      fail("operator_preview_token_invalid");
+  } else {
+    if ("STARWARD_OPERATOR_PREVIEW_TOKEN" in deploy) fail("release_preview_token_forbidden");
+    validateDomain(environment, domain);
+  }
   const email = checkedValue(deploy, "CADDY_EMAIL");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/u.test(email) || /@example\./iu.test(email))
     fail("release_environment_invalid", "CADDY_EMAIL");
@@ -268,12 +295,12 @@ export async function validateReleaseEnvironment({ deployEnvPath }) {
     fail("release_environment_file_reused", "STARWARD_BACKUP_ENCRYPTION_KEY_FILE");
   secret(files.postgres.environment, "POSTGRES_PASSWORD");
   secret(files.redis.environment, "REDIS_PASSWORD");
-  const expected = { environment, domain };
+  const expected = { environment, domain, preview };
   validateApi(files.api.environment, expected, files.postgres.environment, files.redis.environment);
   validateWorker(files.worker.environment, expected, files.api.environment);
   validateMigrate(files.migrate.environment, expected, files.api.environment);
   return Object.freeze({
-    schemaVersion: "starward-release-environment-validation-v1",
+    schemaVersion: preview ? "starward-operator-preview-validation-v1" : "starward-release-environment-validation-v1",
     status: "valid",
     environment,
     domain,

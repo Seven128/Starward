@@ -5,6 +5,55 @@ Mini Program API and worker. It does not purchase infrastructure, create DNS,
 submit filings, publish the Mini Program, or prove that a remote environment is
 running.
 
+## 日常使用：当前 IP 内测发布
+
+当前采用 GitHub Actions（流水线与日志）+ TCR（镜像）+ 单机 Docker
+Compose（运行环境）。不安装 Jenkins/Kubernetes/发布面板，不增加付费服务。
+这个交付只验收发布部署，不把手机权限、全功能真机测试或正式上线作为完成条件。
+IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名、证书、备案和产品验收条件没有取消。
+
+- **改代码**：在开发分支提交，PR 的 Product CI 检查发布产物；设计资源和
+  Context/Harness 是独立治理流程，不被打包为运行服务。
+- **发布**：合并到 `main` 后，Product CI 成功才触发 `Backend staging release`。
+  它构建发布镜像、推送 TCR、解析不可变摘要，经 SSH 部署指定的环境。
+- **手动重发当前 main**：在 GitHub Actions 选择 `Backend staging release` →
+  `Run workflow` → `main`，或执行 `gh workflow run backend-staging.yml --ref main`。
+  手动路径同样执行产品检查，不绕过 CI。
+- **看结果**：`gh run list --workflow backend-staging.yml`，再用
+  `gh run view <run-id> --log-failed` 查看失败节点。不要把 skipped/queued 当作部署成功。
+- **当前开关**：GitHub 仓库级变量 `STARWARD_STAGING_CD_ENABLED=true` 才允许部署；
+  `STARWARD_STAGING_LANE=operator-preview` 选择 IP 内测，`domain` 选择正式域名
+  staging。`STARWARD_REMOTE_BASE_DEPLOY_ENV` 必须指向该模式的服务器私有基础配置。
+  开关必须在仓库级（job 条件执行时还读不到环境变量）；其余目标配置和凭证仍放在
+  GitHub `staging` Environment，不在源码仓库，也不复制一份环境级同名开关。
+
+服务器上的统一入口（从对应版本的控制代码目录执行；路径来自服务器私有配置）：
+
+```sh
+npm run deployment:preview -- --deploy-env /absolute/private/candidate/deploy.env --operation check --operator owner
+npm run deployment:preview -- --deploy-env /absolute/private/candidate/deploy.env --operation backup --operator owner
+npm run deployment:preview -- --deploy-env /absolute/private/candidate/deploy.env --operation deploy --operator owner
+npm run deployment:preview -- --deploy-env /absolute/private/candidate/deploy.env --operation stop --operator owner
+```
+
+四行是四种独立操作，不要整段依次执行。`stop` 只停入口/API/worker，保留运行中的
+数据库和 Redis；`deploy` 可重新部署同一候选，用于修复故障后前向恢复。
+更新新版本先通过 `deployment:prepare` 从稳定基础配置生成新的不可变候选配置。
+流程始终加载两份 Compose 配置；保留已有数据卷，停止写入后加密备份并隔离恢复校验，
+然后迁移、启动、检查服务和 IP TLS/令牌。TLS 检查只对这次请求信任 Caddy 本地 CA，
+不关闭证书校验、不向系统或手机安装根证书。
+
+`STARWARD_RECEIPT_DIRECTORY` 中的 `operator-preview-current.json` 指向最近一次成功
+部署的配置、代码目录和记录。失败不会覆盖这个指针；也不能只凭指针判断服务器现在健康，
+需要重新执行 `check`。每次操作都留下独立的脱敏结果，失败记录标注失败步骤及停写状态。
+服务器和 GitHub 两层都限制并发发布；进程被强制终止后可能留下
+`operator-preview.lock`，确认其中 PID 对应的发布进程已经退出后才可删除这个单一锁文件。
+
+恢复顺序：定位失败节点 → 修复配置/网络/应用 → 对同一候选重新 `deploy`。
+不要自动退回旧镜像或恢复旧数据库；迁移兼容性和新写入未明确时，这样可能损失数据。
+本机加密备份不等于异机容灾；异机备份、正式生产回滚演练与正式上线继续暂缓。
+手机预览是独立的开发交付步骤，后端更新不代表小程序自动上传、审核或公开发布。
+
 ## Safety boundary
 
 - Run from a clean checkout of the exact source revision being promoted.
@@ -39,6 +88,236 @@ and provide a complete staging success receipt for the same revision/digest.
   `/var/lib/starward/staging`, owned by the release operator and mode `0700`.
 
 The production host and production paths must be different from staging.
+
+## Owner-only preview before domain and ICP are ready
+
+An operator may exercise the real remote stack before the filed HTTPS origin
+exists, but this is a development preview and never a release substitution.
+Use an exact source revision and image identity, a repository-external descriptor
+and secrets, the staging PostgreSQL/Redis/queue/cache namespaces, real authorized
+trial providers, `MINIAPP_AUTH_MODE=LOCAL_TEST`,
+`MINIAPP_ACCEPTANCE_MODE=1`, and
+`MINIAPP_DEVELOPMENT_FIXTURE_MODE=0`. Refuse the bootstrap if the Compose project,
+containers, or volumes already exist.
+
+Render the normal Compose file, then start the data services, migration, API and
+worker without adding a host `ports` mapping:
+
+```sh
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml config --quiet
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml up -d --wait postgres redis
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml --profile operations \
+  run --rm --pull never migrate
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml \
+  up -d --wait --no-deps --pull never api worker
+```
+
+Reach the API from the developer workstation only through the authenticated SSH
+connection and bind the local side to loopback:
+
+```sh
+ssh -N -T -o ExitOnForwardFailure=yes \
+  -L 127.0.0.1:8787:172.30.10.3:8787 <staging-deploy-host>
+```
+
+Compile the ordinary development WEAPP lane with
+`MINIAPP_API_BASE=http://127.0.0.1:8787`; the tracked development project keeps
+URL checking disabled. The tunnel must stay open while DevTools is running.
+
+For owner-phone debugging, generate one run-random base64url token of 43–128
+characters outside Git. Put it in the external preview descriptor as
+`STARWARD_OPERATOR_PREVIEW_TOKEN`, set `STARWARD_API_DOMAIN` to the host's literal
+public IP, and render/start Caddy through both Compose files:
+
+```sh
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml \
+  -f infrastructure/deployment/compose.operator-preview.yml \
+  config --quiet
+docker compose --env-file <operator-preview-deploy.env> \
+  -f infrastructure/deployment/compose.yml \
+  -f infrastructure/deployment/compose.operator-preview.yml \
+  up -d --wait --no-deps caddy
+```
+
+The overlay publishes only 443, uses Caddy's internal development certificate,
+and returns 404 unless `X-Starward-Operator-Preview` exactly matches the token.
+It selects the IP certificate even for clients that omit SNI, serves only HTTP/1.1
+and HTTP/2 over TCP, removes the preview header before proxying, and filters it
+from access logs.
+Compile the phone development build with
+`MINIAPP_API_BASE=https://<public-ip>` and the same token in
+`MINIAPP_OPERATOR_PREVIEW_TOKEN`. Formal release-bundle construction explicitly
+clears this variable so the preview credential cannot enter staging or
+production output. On the phone, scan the DevTools preview QR and enable WeChat
+debugging before exercising requests; this bypass is development-only and must
+not be described as trusted TLS or ordinary experience-build support.
+
+Never use public `http://<IP>`, run an unguarded public test API, expose
+session-bearing plaintext traffic, generate a normal staging release receipt,
+or relax the formal environment validator for this lane. Record it only as an
+operator-preview receipt with public certificate trust, domain/ICP, platform
+release and promotion qualification explicitly unevaluated or false.
+
+Once the filed HTTPS staging origin exists, remove the temporary descriptor,
+local-test and preview-token secrets, the IP overlay and its Caddy volumes; close
+the tunnel, and run the normal immutable-image,
+verified-backup, migration, Caddy/public-readiness and receipt sequence. Before
+this physical host becomes production, destroy every staging container, volume,
+credential, queue, cache, backup and receipt and reprovision it from a clean base
+as required by the selected environment topology.
+
+### Resume, stop, inspect, and update the IP preview
+
+Run on the Linux host from the exact release checkout recorded in the external
+preview manifest. Set `PREVIEW_ENV` to that candidate's absolute, private
+descriptor path; do not print the descriptor or run `config` without `--quiet`.
+All commands that include Caddy must use the overlay. Using the base file alone
+would restore the public-domain 80/TCP and 443/UDP mappings.
+
+```sh
+PREVIEW_ENV=/absolute/private/operator-preview/deploy.env
+test -f "$PREVIEW_ENV" || exit 1
+test -f infrastructure/deployment/compose.operator-preview.yml || exit 1
+preview_compose() {
+  docker compose --env-file "$PREVIEW_ENV" \
+    -f infrastructure/deployment/compose.yml \
+    -f infrastructure/deployment/compose.operator-preview.yml "$@"
+}
+preview_compose config --quiet
+```
+
+Resume this existing candidate; do not bootstrap, migrate, or delete volumes:
+
+```sh
+preview_compose up -d --wait --pull never postgres redis
+preview_compose up -d --wait --no-deps --pull never api worker
+preview_compose up -d --wait --no-deps --pull never caddy
+```
+
+Bounded diagnostics, without printing secret-bearing configuration:
+
+```sh
+preview_compose ps
+preview_compose logs --since 10m --tail 100 api worker caddy
+preview_compose stats --no-stream
+ss -ltn
+df -h /
+```
+
+Pause ingress/writers before data services; preserve data and certificates:
+
+```sh
+preview_compose stop caddy api worker
+preview_compose stop postgres redis
+```
+
+These blocks are separate operator actions, not one script to paste end-to-end.
+Keep diagnostic output local and redact it before sharing. An internal image
+`EXPOSE` entry such as `8787/tcp` is not a host mapping: verify that only Caddy has
+a `host:443 -> 443/tcp` mapping, with no host listener on 80, 8787, 5432 or 6379.
+SSH remains the management entry. Idle resource samples establish only that
+sample, not concurrent-user capacity or a service-level guarantee.
+
+For an update, first settle and verify one source commit and approved immutable
+image digest. Prepare a new external preview descriptor bound to those exact
+identities without overwriting the current descriptor. Verify a current encrypted
+backup through the existing backup owner before any schema-changing migration;
+do not manufacture a formal staging receipt for this local-test lane. Pull the
+exact digest, stop ingress/writers when the migration requires it, apply the
+existing one-shot migration owner, then converge API/worker and Caddy with both
+Compose files. Reuse the existing data volumes. Recheck release identity,
+readiness, unauthorized 404, authenticated access, private ports and persisted
+state. Regenerate the environment-bound phone bundle and QR only at this new
+candidate boundary. A failed update stops; selecting an old image or restoring
+data requires a separate compatibility/recovery decision.
+
+### Official DevTools handoff and phone checks
+
+Use the installed official WeChat DevTools CLI. The user must finish WeChat
+login and, if disabled, enable **Settings -> Security Settings -> Service Port**.
+Do not automate that setting or answer the CLI's enabling prompt. If a CLI token
+is configured, provide it through the external `WECHAT_DEVTOOLS_CLI_TOKEN`
+environment binding, never a committed file or command argument. The CLI may
+exit with code zero while printing an initialization error: inspect the result
+and do not infer login success from that exit code or an IDE window title.
+
+After the phone build is settled, run from PowerShell 7 at the repository root:
+
+```powershell
+$devtoolsCli = 'C:\Program Files (x86)\Tencent\微信web开发者工具\cli.bat'
+$previewProject = (Resolve-Path -LiteralPath 'apps\wechat-miniapp\dist\weapp').Path
+& $devtoolsCli islogin --lang zh
+```
+
+Stop on a disabled-port or login error. Only after a successful login result:
+
+```powershell
+& $devtoolsCli open --project $previewProject --lang zh
+```
+
+After initialization succeeds and the IDE shows the intended project:
+
+```powershell
+$qrDirectory = Join-Path $env:TEMP ('starward-miniapp-device-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $qrDirectory | Out-Null
+& $devtoolsCli preview --project $previewProject --qr-format image `
+  --qr-output (Join-Path $qrDirectory 'preview.png') --lang zh
+```
+
+Preview transmits the development bundle to WeChat and must remain an explicitly
+authorized owner-only operation. Do not use the formal release uploader or
+change its validator to accept this development build. Keep the QR private and
+repository-external. Use the existing `fingerprintBundle` export from
+`tools/miniapp/release-bundle-artifact.mjs` before and after preview and compare it
+with the bound external preview manifest. Preserve exact source revision, API
+origin, backend image digest, AppID/token hashes and bundle fingerprint; never
+record plaintext credentials. A changed bundle requires investigation and a new
+attributable build, not editing the previous manifest to report a match.
+
+Do not run a watch compiler, release build or second preview build against
+`dist/weapp` while this candidate is waiting for its phone check. The loopback
+workstation build and HTTPS-IP phone build are separate sequential development
+outputs, not interchangeable artifacts.
+
+On the phone, the owner scans the preview QR, enables the small program's
+development/debug mode and reopens it. If the installed WeChat version still
+rejects the IP/internal certificate, record the exact error and stop that path;
+never fall back to public HTTP or claim a normal experience build is supported.
+The owner must then confirm the actual cold start, login/session and API access,
+truthful empty map when no formal spot is published, preference save/readback
+after relaunch, and available real weather with its source/time/degradation
+state. For the controlled server-restart check, retain the same phone session
+and confirm its saved state after services recover. `LOCAL_TEST` proves only the
+guarded trial session, not WeChat OpenID authentication. Backend probes and an
+adapter's real-weather response do not prove the phone rendered those results.
+
+### IP-preview troubleshooting and cleanup
+
+| Symptom | Check at the owning boundary |
+| --- | --- |
+| CLI reports service port disabled | User enables the DevTools service port; then query login again. No repeated reinstall or automatic setting change. |
+| CLI login missing or QR refused | User logs in with an authorized project developer account; verify exact project/AppID. Do not switch to tourist mode as proof. |
+| Loopback request fails | Check the known SSH tunnel process and free local port, then remote API readiness. The phone cannot use the workstation's loopback address. |
+| TLS fails before HTTP | Verify both Compose files and Caddy's IP/default-SNI configuration; phone debug compatibility remains an external check. Do not expose HTTP or install a root certificate on the phone as an implicit fix. |
+| HTTPS returns 404 | No/wrong preview token is expected to fail. Compare token hashes privately; do not log the token or remove the guard. |
+| API unavailable or 429 | Inspect bounded API/worker logs, health, Redis, provider quotas and retry timing; do not disable the limiter or substitute fixtures. |
+| Map has no spots | Distinguish a successful empty response from a network error. Do not publish invented spots to make the map look populated. |
+
+For ordinary pauses, use `stop`, close only the owned SSH session, and retain the
+current token/bundle/data for the next authorized session. To revoke phone
+access immediately, stop Caddy; to rotate access, generate a new private token,
+recreate only the guarded edge with the updated descriptor, and rebuild/reissue
+the phone preview. Never keep an old token as an alternate accepted credential.
+After successful replacement or session retirement, resolve and remove only
+the exact obsolete QR directories, generated token-bearing bundles and private
+candidate files. Preserve active descriptors, database/Redis volumes and
+required backups; `docker compose down -v`, broad Docker pruning and recursive
+workspace deletion are not cleanup commands for an ordinary preview session.
 
 ## Bootstrap a genuinely fresh host
 
@@ -159,13 +438,16 @@ credential ID are available; never paste the private key into the provider
 console, repository or workflow logs.
 
 The tracked API example is the owner-only `TRIAL` staging profile: QWeather is
-the primary/official-alert provider and Open-Meteo non-commercial access is
-explicitly limited to layered-cloud/model evidence. Do not add an Open-Meteo
-commercial key to staging. A production descriptor instead selects
+the primary/official-alert provider, its Weather API v1 hourly forecast is
+explicitly limited to the free-entitlement-compatible 24-hour window, and
+Open-Meteo non-commercial access is limited to layered-cloud/model evidence. Do
+not add a paid QWeather assumption or an Open-Meteo commercial key to staging. A
+production descriptor instead requires `QWEATHER_FORECAST_HOURS=72`, selects
 `MINIAPP_OPEN_METEO_EVIDENCE_MODE=OPEN_METEO_COMMERCIAL` and supplies its own
-`OPEN_METEO_API_KEY`; the validator rejects either licence profile in the wrong
-environment. Provider failure remains an attributable degraded/unavailable
-state and never enables fixtures.
+`OPEN_METEO_API_KEY`; the validator rejects either horizon or licence profile
+in the wrong environment. Provider failure remains an attributable
+degraded/unavailable state and never enables fixtures or a hidden horizon
+downgrade.
 
 Generate a candidate descriptor, then validate it before Docker is touched:
 
