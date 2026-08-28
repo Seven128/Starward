@@ -498,6 +498,11 @@ test(
           revision.payload as unknown as ContributionSubmission, String(revision.payload.privacyErasedAt))));
       }
       const caseId = `moderation:${contributionId}`;
+      await assert.rejects(pool.query(
+        "UPDATE contribution_revisions SET payload_digest = 'forbidden' WHERE submission_id = $1", [contributionId]),
+        /append_only_record_immutable/u);
+      await assert.rejects(pool.query(
+        "DELETE FROM contribution_revisions WHERE submission_id = $1", [contributionId]), /append_only_record_immutable/u);
       const erasedCase = await pool.query<{ payload: Record<string, unknown> }>(
         "SELECT payload FROM moderation_cases WHERE case_id = $1", [caseId]);
       assert.equal(erasedCase.rows[0]!.payload.canonicalMergeRequired, false);

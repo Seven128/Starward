@@ -2,6 +2,7 @@
 
 ## System Boundary
 
+- Account-erasure rewrites of normally append-only contribution revisions, moderation/merge events, operation receipts and audit snapshots use transaction-local erasure context and a database guard that preserves structural columns. Normal updates and all deletes remain forbidden by the append-only guard; public spot revision/publication history never receives this exception. The erasure context is an internal transaction invariant, not a client authorization mechanism. Loading table definitions without the existing triggers is not evidence that this path works in PostgreSQL.
 - This repository owns the Starward product contract, visual design system, React Native application, modular API/workers/admin implementation, data-processing code, and verification harness for 《今晚去观星》.
 - Weather, astronomy ephemerides, light-pollution data, maps, routing, location, push channels, and object storage remain replaceable boundaries. The current personal-trial profile may use qualifying free/non-commercial sources or isolated adapters; it must not imply purchased rights, production traffic, or external validation.
 - Existing files under docs/design-system/ are retained static Open Design rollback/reference exports. They are not current visual inputs, runtime architecture, or a competing authority.

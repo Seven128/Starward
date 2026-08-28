@@ -6,6 +6,7 @@ import test from "node:test";
 import { decodeBackupKey, decryptBackup, encryptBackup, executeVerifiedBackup } from "./verified-backup.mjs";
 import { maintainTrialBackups } from "./backup-maintenance.mjs";
 import { dispatchBackupMaintenance } from "./backup-maintenance-cli.mjs";
+import { managedCrontab } from "./install-backup-schedule.mjs";
 
 const revision = "a".repeat(40);
 const imageDigest = `sha256:${"b".repeat(64)}`;
@@ -210,4 +211,19 @@ test("scheduled dispatch follows only a successful preview pointer and surfaces 
   await assert.rejects(dispatchBackupMaintenance({ pointerPath, execute: () => ({ status: 0, stdout: JSON.stringify({ receipt: { ...receipt, operation: "maintain-backups", retention: { unclassified: 1 } } }) }) }), /unclassified_backups_require_inventory/u);
   await writeFile(receiptPath, JSON.stringify({ ...receipt, revision: "c".repeat(40) }));
   await assert.rejects(dispatchBackupMaintenance({ pointerPath, execute: () => assert.fail("must not dispatch") }), /successful_preview_required/u);
+});
+
+test("cron installation preserves unrelated tasks and replaces only its own block", () => {
+  const options = { nodePath: "/usr/local/bin/node", dispatcherPath: "/private/dispatcher.mjs", pointerPath: "/private/current.json", statusPath: "/private/latest.json", minute: 17 };
+  const existing = "MAILTO=\"\"\n0 3 * * * /usr/bin/true\n";
+  const first = managedCrontab(existing, options);
+  assert.ok(first.startsWith(existing));
+  assert.equal(first, managedCrontab(first, options));
+  const changed = managedCrontab(first, { ...options, minute: 23 });
+  assert.ok(changed.startsWith(existing));
+  assert.ok(changed.includes("23 * * * * /usr/local/bin/node"));
+  assert.equal(changed.split("# BEGIN STARWARD").length, 2);
+  assert.throws(() => managedCrontab(first.replace("# END STARWARD", "# BAD STARWARD"), options), /ambiguous_managed_block/u);
+  assert.throws(() => managedCrontab(existing, { ...options, statusPath: "/tmp/a;sh" }), /unsafe_path/u);
+  assert.throws(() => managedCrontab(existing, { ...options, minute: 60 }), /minute_invalid/u);
 });

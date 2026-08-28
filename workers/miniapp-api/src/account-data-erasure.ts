@@ -51,6 +51,7 @@ export function assertReceiptNotErased(value: unknown) {
 export async function eraseAccountContributionEvidence(client: PoolClient, userId: string) {
   const erasedAt = new Date().toISOString();
   const marker = { privacyErasedAt: erasedAt };
+  await client.query("SELECT set_config('starward.account_erasure_at', $1, true)", [erasedAt]);
   // Lock cases before submissions, matching the administrator review order.
   const cases = await client.query<{ case_id: string }>(
     `SELECT case_id FROM moderation_cases
@@ -131,4 +132,5 @@ export async function eraseAccountContributionEvidence(client: PoolClient, userI
   await client.query(
     `UPDATE outbox_events SET payload = payload - 'userId', idempotency_key = 'erased:' || event_id::text
       WHERE payload->>'userId' = $1`, [userId]);
+  await client.query("SELECT set_config('starward.account_erasure_at', '', true)");
 }

@@ -538,24 +538,29 @@ backup failure cannot silently postpone the attempted expiry cleanup. It never
 deletes keys, other environments, retained-original recovery databases or
 unclassified legacy files. Unknown files are reported for operator inventory.
 
-For the selected staging host, install `backup-maintenance-cli.mjs` root-owned
-at `/var/lib/starward/staging/operations/backup-maintenance-cli.mjs`, and install
-the tracked `starward-backup-maintenance.service` and `.timer` in
-`/etc/systemd/system/`. The dispatcher follows only a successful preview
-deployment pointer and calls that candidate's maintenance implementation; do
-not overwrite a previously deployed immutable control archive to add tooling.
-Run inspection, reconcile legacy files, verify the units with `systemd-analyze
-verify`, then exercise the service before enabling the timer. Enabling this
-timer authorizes recurring deletion of eligible expired trial backups.
+The selected staging deploy user uses the existing user cron daemon, without
+sudo or a permanent SSH process. After the successful deployment pointer names
+this candidate, run the candidate's installer:
 
-The timer checks hourly with `Persistent=true`; this is a seven-day expiry
-target with up to an hourly scheduling delay during healthy operation, not an
-exact deletion deadline during outages. Check `systemctl status
-starward-backup-maintenance.service` and the corresponding journal plus
-operation receipt. The dispatcher exits unsuccessfully if legacy inventory is
-unresolved. Host status/journal visibility is not proof of delivered external
-alerts: connect and exercise the operator's alert channel before unattended
-operation. Timer semantics follow the [systemd upstream documentation](https://github.com/systemd/systemd/blob/main/man/systemd.timer.xml).
+```sh
+node tools/deployment/install-backup-schedule.mjs --pointer /var/lib/starward/staging/receipts/operator-preview-current.json
+```
+
+The installer preserves unrelated crontab entries, installs a private dispatcher
+under the environment receipt directory and reads back its managed cron block.
+The first scheduled run is in approximately two minutes, then hourly. The
+stable dispatcher follows only a successful preview deployment pointer and
+calls that candidate's maintenance owner. Never overwrite an immutable control
+archive. Reconcile legacy inventory and exercise maintenance before enabling
+this recurring deletion schedule. Unknown legacy files cause a visible failed
+scheduled result; they are not deleted by guessing their age.
+
+The seven-day expiry target has up to an hourly scheduling delay in healthy
+operation and no exact deletion guarantee during outages. Read the private
+`backup-maintenance/latest.json` status and referenced operation receipt; check
+that its timestamp advances and that cron is running. Status-file visibility
+is not proof of delivered external alerts: connect and exercise an operator
+alert channel before claiming unattended incident response.
 
 Restore-after-account-erasure reconciliation remains required before restoring
 older personal data. These commands never authorize an unreconciled restore or

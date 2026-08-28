@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 
 const fail = (code) => { throw new Error(`backup_dispatch_${code}`); };
 
-// The root-installed timer follows the successful deployment pointer, not a stale candidate.
+// The scheduled dispatcher follows the successful deployment pointer, not a stale candidate.
 export async function dispatchBackupMaintenance({ pointerPath, execute = spawnSync }) {
   if (!path.isAbsolute(pointerPath ?? "")) fail("pointer_not_absolute");
   const pointer = JSON.parse(await readFile(pointerPath, "utf8"));
@@ -42,10 +42,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   try {
     const index = process.argv.indexOf("--pointer");
     const result = await dispatchBackupMaintenance({ pointerPath: index >= 0 ? process.argv[index + 1] : null });
-    process.stdout.write(`${JSON.stringify(result)}\n`);
+    process.stdout.write(`${JSON.stringify({ ...result, finishedAt: new Date().toISOString() })}\n`);
   } catch (error) {
     const code = /^backup_dispatch_[a-z_]+$/u.test(error.message ?? "") ? error.message : "backup_dispatch_failed_check_receipts";
-    process.stderr.write(`${JSON.stringify({ status: "failed", code })}\n`);
+    process.stderr.write(`${JSON.stringify({ status: "failed", code, finishedAt: new Date().toISOString() })}\n`);
     process.exitCode = 1;
   }
 }
