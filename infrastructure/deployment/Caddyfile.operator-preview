@@ -8,7 +8,11 @@
 	}
 	log {
 		output stdout
-		format json
+		format filter {
+			request delete
+			resp_headers delete
+			wrap json
+		}
 	}
 }
 
@@ -40,7 +44,8 @@ https://{$STARWARD_API_DOMAIN} {
 	log {
 		output stdout
 		format filter {
-			request>headers>X-Starward-Operator-Preview delete
+			request delete
+			resp_headers delete
 			wrap json
 		}
 	}

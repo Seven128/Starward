@@ -3,7 +3,11 @@
 	admin off
 	log {
 		output stdout
-		format json
+		format filter {
+			request delete
+			resp_headers delete
+			wrap json
+		}
 	}
 }
 {$STARWARD_API_DOMAIN} {
@@ -27,6 +31,10 @@
 
 	log {
 		output stdout
-		format json
+		format filter {
+			request delete
+			resp_headers delete
+			wrap json
+		}
 	}
 }

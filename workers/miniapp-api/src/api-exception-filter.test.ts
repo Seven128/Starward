@@ -22,3 +22,9 @@ test("ordinary malformed product input remains an input error", () => {
     retryable: false,
   });
 });
+
+test("erased evidence and deleted accounts cannot enter a retry loop", () => {
+  for (const message of ["contribution_account_deleted", "operation_receipt_privacy_erased"])
+    assert.deepEqual(classifyExceptionMessage(message), { status: 410, code: "STALE_REJECTED", retryable: false });
+  assert.deepEqual(classifyExceptionMessage("account_not_active"), { status: 403, code: "PERMISSION_DENIED", retryable: false });
+});

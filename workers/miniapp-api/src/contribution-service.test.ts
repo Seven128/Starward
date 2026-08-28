@@ -7,6 +7,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
+import { assertReceiptNotErased, eraseContributionContent } from "./account-data-erasure.ts";
 
 function pngChunk(type: string, data: Buffer) {
   const name = Buffer.from(type, "ascii");
@@ -52,6 +53,40 @@ async function identity(service: ReturnType<typeof createTestMiniappService>, su
     await service.login({ code: `local:contribution-${suffix.padEnd(12, "x")}` })
   ).data.userId;
 }
+
+test("account erasure keeps structural evidence but excludes private and future fields", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "erase");
+    const draft = (await service.createContributionDraft(userId, reportInput(true), "erase:contribution-draft")).data;
+    const original = {
+      ...draft,
+      detail: "PRIVATE_REPORT_TEXT",
+      candidateLocation: { name: "PRIVATE_NAME", latitude: 22.123456, longitude: 113.654321 } as never,
+      media: [{ originalName: "PRIVATE_PHOTO", objectKey: "PRIVATE_KEY" }] as never,
+      futurePrivateField: "PRIVATE_FUTURE_FIELD",
+      review: { resolution: "APPROVED" as const, reason: "PRIVATE_REASON", reviewedAt: draft.createdAt },
+      statusHistory: [{
+        eventId: "event:review", axis: "SUBMISSION" as const, from: "DRAFT", to: "PENDING_REVIEW",
+        reason: "PRIVATE_HISTORY", actorType: "USER" as const, occurredAt: draft.createdAt,
+        extra: "PRIVATE_NESTED_FUTURE_FIELD",
+      }],
+    };
+    const snapshot = structuredClone(original);
+    const erased = eraseContributionContent(original, "2026-08-28T12:00:00.000Z");
+    assert.doesNotMatch(JSON.stringify(erased), /PRIVATE_|22\.123456|113\.654321/u);
+    assert.equal(erased.candidateLocation, null);
+    assert.equal(erased.observedAt, null);
+    assert.equal(erased.statusHistory[0]?.to, "PENDING_REVIEW");
+    assert.equal(erased.submissionId, draft.submissionId);
+    assert.equal(erased.revision, draft.revision);
+    assert.deepEqual(original, snapshot, "erasure must not mutate the input snapshot");
+    assert.throws(() => assertReceiptNotErased(erased), /operation_receipt_privacy_erased/u);
+    assert.doesNotThrow(() => assertReceiptNotErased({ submissionId: draft.submissionId }));
+  } finally {
+    await service.onModuleDestroy();
+  }
+});
 
 test("field reports remain identity-scoped and pending review cannot change a formal spot", async () => {
   const service = createTestMiniappService();

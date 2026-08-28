@@ -9,6 +9,8 @@ import { validateReleaseEnvironment } from "./validate-release-environment.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const composePath = path.join(root, "infrastructure", "deployment", "compose.yml");
 const envelopeMagic = Buffer.from("STARWARD-ENCRYPTED-PGDUMP-V1\n", "utf8");
+export const PERSONAL_TRIAL_BACKUP_DAYS = 7;
+export const PERSONAL_TRIAL_BACKUP_POLICY = "personal-trial-7d";
 const schemaQuery = "SELECT CASE WHEN to_regclass('public.schema_migrations') IS NULL THEN 'EMPTY_UNINITIALIZED' ELSE COALESCE((SELECT MAX(version) FROM schema_migrations), 'EMPTY_UNINITIALIZED') END";
 
 function sha256(bytes) {
@@ -110,6 +112,16 @@ export async function executeVerifiedBackup({
   const postgresUser = postgresIdentifier(postgres.POSTGRES_USER, "backup_database_user_invalid");
   const maxBuffer = validation.operations.maxBackupBytes;
   const createdAt = now().toISOString();
+  const personalTrial = validation.schemaVersion === "starward-operator-preview-validation-v1";
+  if (personalTrial && validation.environment !== "staging")
+    throw new Error("backup_personal_trial_requires_staging");
+  // This records the retention target; backup creation never prunes existing files.
+  const retention = personalTrial ? Object.freeze({
+    policyId: PERSONAL_TRIAL_BACKUP_POLICY,
+    days: PERSONAL_TRIAL_BACKUP_DAYS,
+    expiresAt: new Date(Date.parse(createdAt) + PERSONAL_TRIAL_BACKUP_DAYS * 86400000).toISOString(),
+    cleanupPerformed: false,
+  }) : null;
   const sourceSchema = schemaVersion(run, databaseName, postgresUser, 1024 * 1024, "backup-source-schema");
   const dump = run({
     args: postgresCommand("pg_dump", [
@@ -190,6 +202,7 @@ export async function executeVerifiedBackup({
     schemaMigration: sourceSchema,
     createdAt,
     verifiedAt: now().toISOString(),
+    ...(retention ? { retention } : {}),
     encrypted: Object.freeze({
       algorithm: "aes-256-gcm",
       fileName,

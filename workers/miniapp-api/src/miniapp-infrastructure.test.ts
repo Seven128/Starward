@@ -5,7 +5,8 @@ import {
   TEST_PUBLISHED_SPOT,
   buildTestSpotDetail,
 } from "@starward/miniapp-contracts/test-fixtures";
-import type { SourceSummary } from "@starward/miniapp-contracts";
+import type { ContributionSubmission, SourceSummary } from "@starward/miniapp-contracts";
+import { eraseContributionContent } from "./account-data-erasure.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import {
   OPERATIONAL_JOB_KINDS,
@@ -475,6 +476,49 @@ test(
         [],
       );
       assert.ok(restarted.repository instanceof PostgresMiniappRepository);
+      const pool = restarted.repository.pool;
+      const retained = await pool.query<{ user_id: string; payload: Record<string, unknown> }>(
+        "SELECT user_id, payload FROM user_submissions WHERE submission_id = $1", [contributionId]);
+      assert.equal(retained.rowCount, 1, "audit relationships must survive erasure");
+      assert.match(retained.rows[0]!.user_id, /^erased:/u);
+      assert.notEqual(retained.rows[0]!.user_id, firstIdentity.userId);
+      assert.equal(retained.rows[0]!.payload.detail, "");
+      assert.equal(retained.rows[0]!.payload.candidateLocation, null);
+      assert.equal(retained.rows[0]!.payload.observedAt, null);
+      assert.deepEqual(retained.rows[0]!.payload.media, []);
+      const revisionRows = await pool.query<{ payload: Record<string, unknown>; payload_digest: string }>(
+        "SELECT payload, payload_digest FROM contribution_revisions WHERE submission_id = $1", [contributionId]);
+      assert.ok(revisionRows.rows.length > 0);
+      for (const revision of revisionRows.rows) {
+        assert.equal(revision.payload.detail, "");
+        assert.equal(revision.payload.candidateLocation, null);
+        // PostgreSQL jsonb key ordering differs from JS serialization: compare
+        // against the same explicit deletion projection, not database text.
+        assert.equal(revision.payload_digest, digest(eraseContributionContent(
+          revision.payload as unknown as ContributionSubmission, String(revision.payload.privacyErasedAt))));
+      }
+      const caseId = `moderation:${contributionId}`;
+      const erasedCase = await pool.query<{ payload: Record<string, unknown> }>(
+        "SELECT payload FROM moderation_cases WHERE case_id = $1", [caseId]);
+      assert.equal(erasedCase.rows[0]!.payload.canonicalMergeRequired, false);
+      assert.doesNotMatch(JSON.stringify(erasedCase.rows), /隔离数据库现场反馈|contributorDigest|integration-field\.png/u);
+      const audits = await pool.query(
+        "SELECT before_payload, after_payload FROM audit_logs WHERE subject_id = $1", [caseId]);
+      assert.ok(audits.rows.length > 0);
+      assert.doesNotMatch(JSON.stringify(audits.rows), /隔离数据库现场反馈|integration-field\.png/u);
+      const receipts = await pool.query<{ receipt_id: string }>(
+        "SELECT receipt_id FROM operation_receipts WHERE readback_payload ? 'privacyErasedAt'");
+      assert.ok(receipts.rows.length > 0);
+      await assert.rejects(restarted.repository.adminReadReceipt(receipts.rows[0]!.receipt_id), /operation_receipt_privacy_erased/u);
+      await assert.rejects(pool.query(
+        "UPDATE user_submissions SET payload = payload || '{\"detail\":\"resurrected\"}'::jsonb WHERE submission_id = $1", [contributionId]),
+        /contribution_account_deleted/u);
+      await assert.rejects(pool.query(
+        "UPDATE moderation_cases SET state = 'PENDING' WHERE case_id = $1", [caseId]), /contribution_account_deleted/u);
+      assert.deepEqual((await restarted.repository.getSpot(spot.spotId))?.status, "PUBLISHED");
+      const replay = await restarted.deleteAccount(firstIdentity.userId,
+        { confirmation: "DELETE_ACCOUNT" }, "infra:account-delete:" + runId);
+      assert.deepEqual(replay.data, deletion.data);
       const postgis = await restarted.repository.pool.query<{
         version: string;
       }>("SELECT postgis_version() AS version");

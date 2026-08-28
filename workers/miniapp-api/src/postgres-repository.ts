@@ -38,6 +38,7 @@ import {
 } from "@starward/miniapp-contracts";
 import { createMapCoordinateView } from "@starward/coordinate-system";
 import pg, { type PoolClient } from "pg";
+import { assertReceiptNotErased, eraseAccountContributionEvidence } from "./account-data-erasure.ts";
 import type {
   DarkSkyGridCellRecord,
   AdminOperationsPort,
@@ -632,16 +633,7 @@ export class PostgresMiniappRepository
         "DELETE FROM contribution_media_uploads WHERE user_id = $1",
         [userId],
       );
-      await client.query(
-        `UPDATE user_submissions
-            SET payload = payload || jsonb_build_object(
-              'media', '[]'::jsonb,
-              'preciseLocationConsent', false
-            ),
-                updated_at = now()
-          WHERE user_id = $1`,
-        [userId],
-      );
+      await eraseAccountContributionEvidence(client, userId);
       for (const table of [
         "favorites",
         "observation_plans",
@@ -2980,7 +2972,9 @@ export class PostgresMiniappRepository
         WHERE scope_id = $1 AND idempotency_key = $2`,
       [scopeId, key],
     );
-    return result.rows[0]?.response ?? null;
+    const response = result.rows[0]?.response ?? null;
+    assertReceiptNotErased(response);
+    return response;
   }
 
   async #recordMutation(
@@ -4012,6 +4006,8 @@ export class PostgresMiniappRepository
     const result = await client.query("SELECT * FROM operation_receipts WHERE scope_id = $1 AND idempotency_key = $2 FOR UPDATE", [scopeId, idempotencyKey]);
     const row = result.rows[0];
     if (!row) return null;
+    assertReceiptNotErased(row.result_payload);
+    assertReceiptNotErased(row.readback_payload);
     if (row.operation !== operation) throw new Error("idempotency_operation_conflict");
     if (requestDigest !== undefined && row.request_digest !== requestDigest)
       throw new Error("idempotency_request_conflict");
@@ -4088,6 +4084,8 @@ export class PostgresMiniappRepository
   }
 
   #operationReceipt<T>(row: Record<string, unknown>): OperationReceipt<T> {
+    assertReceiptNotErased(row.result_payload);
+    assertReceiptNotErased(row.readback_payload);
     return {
       receiptId: row.receipt_id as OperationReceipt["receiptId"],
       operation: String(row.operation),

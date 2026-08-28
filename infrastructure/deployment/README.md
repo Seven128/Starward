@@ -514,6 +514,53 @@ It fails above `STARWARD_BACKUP_MAX_BYTES`. Copying the result off-host and
 applying retention are still provider-owned operations and must be verified
 before public launch.
 
+For the current personal trial, use the separately validated operator-preview
+backup operation (`npm run deployment:preview -- --operation backup
+--deploy-env <preview-deploy.env> --operator <operator-id>`), not the formal release command
+above. Its new manifests record `retention.policyId=personal-trial-7d`, seven
+days from dump start, an absolute UTC `expiresAt`, and `cleanupPerformed=false`.
+This is expiry metadata only: no existing backup is removed, and a manifest is
+not proof of cleanup. Formal staging/production backups retain their existing
+manifest shape and do not inherit this trial policy.
+
+The current tooling also supports these explicitly selected operations:
+
+```sh
+npm run deployment:preview -- --operation inspect-backups --deploy-env <preview-deploy.env> --operator <operator-id>
+npm run deployment:preview -- --operation maintain-backups --deploy-env <preview-deploy.env> --operator <operator-id>
+```
+
+Inspection never deletes or creates a backup. Maintenance shares the preview
+deployment lock, validates every eligible file before deletion, cleans expired
+trial backups, then creates a verified backup if the latest remaining backup is
+at least 24 hours old or absent. Cleanup runs before database health checks;
+backup failure cannot silently postpone the attempted expiry cleanup. It never
+deletes keys, other environments, retained-original recovery databases or
+unclassified legacy files. Unknown files are reported for operator inventory.
+
+For the selected staging host, install `backup-maintenance-cli.mjs` root-owned
+at `/var/lib/starward/staging/operations/backup-maintenance-cli.mjs`, and install
+the tracked `starward-backup-maintenance.service` and `.timer` in
+`/etc/systemd/system/`. The dispatcher follows only a successful preview
+deployment pointer and calls that candidate's maintenance implementation; do
+not overwrite a previously deployed immutable control archive to add tooling.
+Run inspection, reconcile legacy files, verify the units with `systemd-analyze
+verify`, then exercise the service before enabling the timer. Enabling this
+timer authorizes recurring deletion of eligible expired trial backups.
+
+The timer checks hourly with `Persistent=true`; this is a seven-day expiry
+target with up to an hourly scheduling delay during healthy operation, not an
+exact deletion deadline during outages. Check `systemctl status
+starward-backup-maintenance.service` and the corresponding journal plus
+operation receipt. The dispatcher exits unsuccessfully if legacy inventory is
+unresolved. Host status/journal visibility is not proof of delivered external
+alerts: connect and exercise the operator's alert channel before unattended
+operation. Timer semantics follow the [systemd upstream documentation](https://github.com/systemd/systemd/blob/main/man/systemd.timer.xml).
+
+Restore-after-account-erasure reconciliation remains required before restoring
+older personal data. These commands never authorize an unreconciled restore or
+prove that existing backups or a host timer have been cleaned/configured.
+
 Capture the absolute `manifestPath` printed by the command. A release accepts a
 manifest only for the same environment, Compose project, source revision and
 image digest, within six hours, with matching encrypted size and SHA-256.

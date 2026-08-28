@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
-import { createReleaseEnvironmentFixture, releaseRevision, releaseImageDigest } from "./test-support.mjs";
+import { releaseRevision, releaseImageDigest } from "./test-support.mjs";
 import { validateOperatorPreviewEnvironment, validateReleaseEnvironment } from "./validate-release-environment.mjs";
 import { validateStagingQualification } from "./promote-release-candidate.mjs";
 import { operatePreview } from "./operator-preview.mjs";
@@ -11,56 +11,7 @@ import { readEnvironmentFile } from "./env-file.mjs";
 import { composeInvocation } from "./compose-runtime.mjs";
 import { createPromotionRequest } from "./promotion-request.mjs";
 
-const token = "p".repeat(43);
-async function fixture(t, overrides = {}) {
-  const result = await createReleaseEnvironmentFixture({
-    api: { MINIAPP_AUTH_MODE: "LOCAL_TEST", MINIAPP_ACCEPTANCE_MODE: "1", MINIAPP_CORS_ORIGINS: "https://192.0.2.8" },
-    deploy: { STARWARD_API_DOMAIN: "192.0.2.8", STARWARD_OPERATOR_PREVIEW_TOKEN: token },
-    ...overrides,
-  });
-  await chmod(path.join(result.root, "backup.key"), 0o600);
-  t.after(() => rm(result.root, { recursive: true, force: true }));
-  return result;
-}
-
-function configuration(deploy) {
-  const identity = Object.fromEntries(["STARWARD_ENVIRONMENT", "STARWARD_RELEASE_REVISION", "STARWARD_IMAGE_DIGEST", "STARWARD_RELEASED_AT"].map((key) => [key, deploy[key]]));
-  return {
-    name: "starward-staging",
-    services: {
-      ...Object.fromEntries(["api", "worker", "migrate"].map((name) => [name, { image: deploy.STARWARD_IMAGE_REF, environment: identity }])),
-      caddy: {
-        ports: [{ published: "443", target: 443, protocol: "tcp" }],
-        environment: { STARWARD_OPERATOR_PREVIEW_TOKEN: token, STARWARD_API_DOMAIN: "192.0.2.8" },
-        volumes: [{ source: "/release/Caddyfile.operator-preview", target: "/etc/caddy/Caddyfile", read_only: true }],
-      },
-      postgres: { volumes: [{ type: "volume", source: "postgres-data", target: "/var/lib/postgresql/data" }] },
-      redis: { volumes: [{ type: "volume", source: "redis-data", target: "/data" }] },
-    },
-    volumes: Object.fromEntries(["postgres-data", "redis-data"].map((name) => [name, { name: `starward-staging_${name}` }])),
-  };
-}
-const rows = ["api", "worker", "caddy", "postgres", "redis"].map((Service) => ({
-  Service, State: "running", Health: "healthy",
-  Publishers: Service === "caddy" ? [{ PublishedPort: 443, TargetPort: 443, Protocol: "tcp" }] : [],
-}));
-
-async function dependencies(t) {
-  const f = await fixture(t);
-  const deploy = await readEnvironmentFile(f.deployPath);
-  const calls = [];
-  const execute = ({ step, args }) => {
-    calls.push({ step, args });
-    let value = "";
-    if (step === "preview-compose-config") value = JSON.stringify(configuration(deploy));
-    if (step === "preview-container-state") value = JSON.stringify(rows);
-    if (step === "preview-image-revision") value = releaseRevision;
-    return { stdout: Buffer.from(value), stderr: Buffer.alloc(0) };
-  };
-  const backup = async () => { calls.push({ step: "backup" }); return { manifestPath: "/private/backup.json" }; };
-  const readiness = async () => { calls.push({ step: "readiness" }); return { ready: true }; };
-  return { f, deploy, calls, execute, backup, readiness };
-}
+import { token, fixture, configuration, rows, dependencies } from "./operator-preview-test-support.mjs";
 
 test("IP local-test validation is separate from formal release validation", async (t) => {
   const f = await fixture(t);
@@ -68,6 +19,35 @@ test("IP local-test validation is separate from formal release validation", asyn
   await assert.rejects(validateReleaseEnvironment({ deployEnvPath: f.deployPath }), /release_preview_token_forbidden/u);
   const production = await fixture(t, { environment: "production" });
   await assert.rejects(validateOperatorPreviewEnvironment({ deployEnvPath: production.deployPath }), /staging_required/u);
+});
+
+test("backup maintenance shares the preview lock and prunes before backup health failures", async (t) => {
+  const d = await dependencies(t);
+  const result = await operatePreview({ ...d, deployEnvPath: d.f.deployPath, operation: "maintain-backups", operator: "test",
+    maintenance: async ({ apply }) => { assert.equal(apply, true); d.calls.push({ step: "prune" }); return { removed: 1, backupDue: true }; },
+    execute: (call) => {
+      if (call.step === "preview-container-state") throw new Error("database_unavailable");
+      return d.execute(call);
+    },
+  });
+  assert.equal(result.receipt.status, "failed");
+  assert.equal(result.receipt.retention.removed, 1);
+  assert.equal(result.receipt.failedStep, "existing-data-services");
+  assert.ok(d.calls.some((call) => call.step === "prune"));
+  assert.ok(!d.calls.some((call) => call.step === "backup"));
+  await writeFile(path.join(d.f.receiptDirectory, "operator-preview.lock"), "occupied");
+  await assert.rejects(operatePreview({ ...d, deployEnvPath: d.f.deployPath, operation: "maintain-backups", operator: "test" }), /locked/u);
+});
+
+test("inspection never creates a backup; maintenance skips fresh backups", async (t) => {
+  for (const operation of ["inspect-backups", "maintain-backups"]) {
+    const d = await dependencies(t);
+    const result = await operatePreview({ ...d, deployEnvPath: d.f.deployPath, operation, operator: "test",
+      maintenance: async ({ apply }) => { assert.equal(apply, operation === "maintain-backups"); return { backupDue: false }; },
+    });
+    assert.equal(result.receipt.status, "succeeded");
+    assert.ok(!d.calls.some((call) => ["backup", "preview-container-state", "preview-stop-writers"].includes(call.step)));
+  }
 });
 
 test("preview retains fixture, session, provider and database protections", async (t) => {

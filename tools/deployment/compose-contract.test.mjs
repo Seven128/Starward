@@ -84,7 +84,21 @@ test("operator phone preview exposes only guarded HTTPS on the existing edge", (
   );
   assert.match(
     operatorPreviewCaddy,
-    /request>headers>X-Starward-Operator-Preview delete/u,
+    /request delete/u,
   );
   assert.match(operatorPreviewCaddy, /respond 404/u);
+});
+
+test("both edge profiles omit request data in default and access log encoders", async () => {
+  for (const profile of ["Caddyfile", "Caddyfile.operator-preview"]) {
+    const config = await readFile(`infrastructure/deployment/${profile}`, "utf8");
+    const encoders = [...config.matchAll(/format filter \{([^}]+)\}/gu)];
+    assert.equal(encoders.length, 2, `${profile}: default/error and access encoders`);
+    for (const [, encoder] of encoders) {
+      assert.match(encoder, /\brequest delete\b/u);
+      assert.match(encoder, /\bresp_headers delete\b/u);
+      assert.match(encoder, /\bwrap json\b/u);
+    }
+    assert.doesNotMatch(config, /format json|log_credentials/u);
+  }
 });

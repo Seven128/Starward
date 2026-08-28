@@ -6,12 +6,13 @@ import { composeExecutor, runProcess } from "./compose-runtime.mjs";
 import { readEnvironmentFile } from "./env-file.mjs";
 import { validateOperatorPreviewEnvironment } from "./validate-release-environment.mjs";
 import { executeVerifiedBackup, readBackupKeyFile } from "./verified-backup.mjs";
+import { maintainTrialBackups } from "./backup-maintenance.mjs";
 import { checkPreviewCompose, checkPreviewContainers, checkPreviewReadiness, parseComposeRows } from "./operator-preview-checks.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-export async function operatePreview({ deployEnvPath, operation = "check", operator, execute = runProcess, backup = executeVerifiedBackup, readiness = checkPreviewReadiness }) {
-  if (!["deploy", "check", "stop", "backup"].includes(operation)) throw new Error("operator_preview_operation_invalid");
+export async function operatePreview({ deployEnvPath, operation = "check", operator, execute = runProcess, backup = executeVerifiedBackup, readiness = checkPreviewReadiness, maintenance = maintainTrialBackups }) {
+  if (!["deploy", "check", "stop", "backup", "inspect-backups", "maintain-backups"].includes(operation)) throw new Error("operator_preview_operation_invalid");
   if (!/^[A-Za-z0-9._:@/-]{2,120}$/u.test(operator ?? "")) throw new Error("operator_preview_operator_invalid");
   const validation = await validateOperatorPreviewEnvironment({ deployEnvPath });
   const deploy = await readEnvironmentFile(deployEnvPath);
@@ -54,7 +55,16 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
       const config = JSON.parse(run({ args: ["--profile", "operations", "config", "--format", "json"], step: "preview-compose-config" }).stdout.toString("utf8"));
       checkPreviewCompose(config, validation, deploy);
     });
-    await perform("existing-data-services", () => containers(true));
+    if (["inspect-backups", "maintain-backups"].includes(operation)) {
+      receipt.retention = await perform("backup-retention", async () => maintenance({
+        validation, deploy, postgres: await readEnvironmentFile(validation.lanes.postgres),
+        apply: operation === "maintain-backups",
+      }));
+    }
+    const needsBackup = ["deploy", "backup"].includes(operation) ||
+      (operation === "maintain-backups" && receipt.retention.backupDue);
+    if (operation !== "inspect-backups" && (operation !== "maintain-backups" || needsBackup))
+      await perform("existing-data-services", () => containers(true));
     if (operation === "deploy") {
       await perform("immutable-image-pull", () => run({ args: ["pull", "api", "worker"], step: "preview-image-pull" }));
       await perform("image-source-identity", () => {
@@ -66,7 +76,7 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
       receipt.writersStopped = true;
       await perform("stop-edge-and-writers", () => run({ args: ["stop", "caddy", "api", "worker"], step: "preview-stop-writers" }));
     }
-    if (["deploy", "backup"].includes(operation)) {
+    if (needsBackup) {
       const result = await perform("verified-backup", async () => backup({
         validation, deploy, postgres: await readEnvironmentFile(validation.lanes.postgres),
         key: await readBackupKeyFile(validation.operations.backupKeyFile), run,

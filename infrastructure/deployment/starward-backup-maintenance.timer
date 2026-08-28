@@ -1,0 +1,11 @@
+[Unit]
+Description=Check Starward personal-trial backups hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+AccuracySec=1s
+Unit=starward-backup-maintenance.service
+
+[Install]
+WantedBy=timers.target

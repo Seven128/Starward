@@ -4,6 +4,10 @@ import { requestIdFromHeaders } from "./request-id.ts";
 import { SpotPublicationBlockedError } from "./spot-completeness-policy.ts";
 
 export function classifyExceptionMessage(message: string) {
+  if (/^(?:contribution_account_deleted|operation_receipt_privacy_erased)$/u.test(message))
+    return { status: 410, code: "STALE_REJECTED", retryable: false } as const;
+  if (message === "account_not_active")
+    return { status: 403, code: "PERMISSION_DENIED", retryable: false } as const;
   if (/not_found/u.test(message))
     return { status: 404, code: "NOT_FOUND", retryable: false } as const;
   if (/conflict|revision|not_editable|already_resolved/u.test(message))
