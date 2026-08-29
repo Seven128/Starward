@@ -66,7 +66,10 @@ test("operator phone preview exposes only guarded HTTPS on the existing edge", (
   );
   assert.match(operatorPreviewCompose, /Caddyfile\.operator-preview/u);
   assert.match(operatorPreviewCaddy, /https:\/\/\{\$STARWARD_API_DOMAIN\}/u);
-  assert.match(operatorPreviewCaddy, /tls internal/u);
+  assert.match(operatorPreviewCaddy, /issuer acme https:\/\/acme-v02\.api\.letsencrypt\.org\/directory/u);
+  assert.match(operatorPreviewCaddy, /profile shortlived/u);
+  assert.match(operatorPreviewCaddy, /disable_http_challenge/u);
+  assert.doesNotMatch(operatorPreviewCaddy, /tls internal|issuer internal|trusted_roots|disable_tlsalpn_challenge/u);
   assert.match(
     operatorPreviewCaddy,
     /default_sni \{\$STARWARD_API_DOMAIN\}/u,

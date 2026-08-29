@@ -22,10 +22,12 @@ test("formal release builds clear an inherited operator-preview access token", (
     { apiOrigin: "https://api.starward-ci.invalid" },
     {
       MINIAPP_OPERATOR_PREVIEW_TOKEN: "inherited-preview-token",
+      MINIAPP_DEVICE_REQUEST_DIAGNOSTICS: "1",
       UNRELATED: "preserved",
     },
   );
   assert.equal(environment.MINIAPP_OPERATOR_PREVIEW_TOKEN, "");
+  assert.equal(environment.MINIAPP_DEVICE_REQUEST_DIAGNOSTICS, "0");
   assert.equal(environment.MINIAPP_API_BASE, "https://api.starward-ci.invalid");
   assert.equal(environment.UNRELATED, "preserved");
 });

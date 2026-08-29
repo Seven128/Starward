@@ -31,7 +31,7 @@ default = true
 path = "project_context/development-workflow.md"
 role = "verification"
 read_policy = "on-demand"
-triggers = ["wechat miniapp", "miniapp design system", "miniapp environment", "miniapp development", "miniapp test", "miniapp acceptance", "wechat devtools", "representative-device acceptance", "微信小程序", "小程序设计系统", "小程序设计风格", "小程序环境路径", "微信开发环境", "小程序开发", "小程序测试", "小程序验收", "微信开发者工具", "小程序真机验收"]
+triggers = ["wechat miniapp", "miniapp design system", "miniapp environment", "miniapp development", "miniapp test", "miniapp acceptance", "wechat devtools", "device development feedback", "settled candidate", "representative-device acceptance", "微信小程序", "小程序设计系统", "小程序设计风格", "小程序环境路径", "微信开发环境", "小程序开发", "小程序测试", "小程序验收", "微信开发者工具", "真机开发反馈", "固定候选", "小程序真机验收"]
 
 [[context]]
 path = "project_context/deployment.md"
@@ -62,6 +62,12 @@ path = "project_context/areas/main/verification/android-native.md"
 role = "verification"
 read_policy = "on-demand"
 triggers = ["android", "native", "apk", "gradle", "java_home", "jbr", "avd", "emulator", "adb", "abi", "cmake", "shard", "parallel", "resume", "checkpoint", "安卓", "原生", "构建", "分片", "并行", "断点恢复"]
+
+[[context]]
+path = "project_context/areas/main/verification/wechat-device.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["miniapp device", "device feedback", "development feedback", "settled candidate", "auto preview", "ordinary preview", "wechat remote debug", "wechatide", "Mini Program MCP", "USB debugging", "scrcpy", "小程序真机", "真机开发反馈", "定向真机反馈", "固定候选真机验收", "自动预览", "普通预览", "小程序 MCP", "手机调试", "真机调试", "数据线", "USB调试"]
 
 [[context]]
 path = "project_context/areas/main/implementation-index.md"

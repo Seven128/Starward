@@ -35,15 +35,11 @@ import {
   type PlanChecklistState,
 } from "./plan-checklist";
 import { resolvePlanSaveSpotId } from "./plan-save-spot";
+import { calendarDateInTimezone } from "@/utils/zoned-date";
 import "./index.scss";
 
 function today(timezone = "Asia/Shanghai") {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return calendarDateInTimezone(new Date(), timezone);
 }
 
 function localTimeFor(value: string, timezone: string) {
@@ -218,7 +214,7 @@ export default function PlanEditorPage() {
   const [selectedSpotId, setSelectedSpotId] = useState<SpotId | null>(
     existing?.spotId ??
       plans[0]?.spotId ??
-      (observationContext?.location.kind === "FORMAL_SPOT"
+      (observationContext?.location?.kind === "FORMAL_SPOT"
         ? observationContext.location.spotId
         : null),
   );
@@ -297,7 +293,7 @@ export default function PlanEditorPage() {
       observationContext?.localDate ?? today(observationContext?.timezone);
     setActivePlanId(null);
     setSelectedSpotId(
-      observationContext?.location.kind === "FORMAL_SPOT"
+      observationContext?.location?.kind === "FORMAL_SPOT"
         ? observationContext.location.spotId
         : null,
     );
@@ -306,7 +302,7 @@ export default function PlanEditorPage() {
     setNotes("");
     initialDraft.current = {
       selectedSpotId:
-        observationContext?.location.kind === "FORMAL_SPOT"
+        observationContext?.location?.kind === "FORMAL_SPOT"
           ? observationContext.location.spotId
           : null,
       localDate: nextDate,

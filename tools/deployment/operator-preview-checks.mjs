@@ -1,6 +1,7 @@
 import https from "node:https";
 import { setTimeout as delay } from "node:timers/promises";
 import { operatorPreviewProviderSimulationProgram } from "./operator-preview-provider-simulation.mjs";
+import { publicIpTlsOptions, certificateLifetime } from "./operator-preview-tls.mjs";
 
 function requireCondition(condition, code) {
   if (!condition) throw new Error(`operator_preview_${code}`);
@@ -53,7 +54,6 @@ export function checkPreviewContainers(rows, { dataOnly = false } = {}) {
 
 async function requestOnce({
   ip,
-  ca,
   token,
   path = "/health/ready",
   method = "GET",
@@ -66,7 +66,7 @@ async function requestOnce({
       port: 443,
       path,
       method,
-      ca, rejectUnauthorized: true, minVersion: "TLSv1.2", servername: "",
+      ...publicIpTlsOptions(ip),
       headers: {
         ...(token ? { "X-Starward-Operator-Preview": token } : {}),
         ...(payload === null
@@ -77,6 +77,8 @@ async function requestOnce({
             }),
       },
     }, (response) => {
+      try { certificateLifetime(response.socket.getPeerCertificate()); }
+      catch (error) { response.destroy(); request.destroy(); reject(error); return; }
       let body = "";
       response.setEncoding("utf8");
       response.on("data", (chunk) => {
@@ -185,12 +187,11 @@ function runIsolatedProviderSimulation({ run, localDate }) {
   };
 }
 
-async function checkProviderSmoke({ run, validation, deploy, ca, request }) {
+async function checkProviderSmoke({ run, validation, deploy, request }) {
   const token = deploy.STARWARD_OPERATOR_PREVIEW_TOKEN;
   const localDate = shanghaiLocalDate();
   const contextResult = await request({
     ip: validation.domain,
-    ca,
     token,
     path: "/v2/observation-contexts/resolve",
     method: "POST",
@@ -219,7 +220,6 @@ async function checkProviderSmoke({ run, validation, deploy, ca, request }) {
   );
   const sceneResult = await request({
     ip: validation.domain,
-    ca,
     token,
     path:
       "/v2/map/scene?layer=CLOUD&cloudLayer=TOTAL&contextId=" +
@@ -268,10 +268,9 @@ async function checkProviderSmoke({ run, validation, deploy, ca, request }) {
 }
 
 export async function checkPreviewReadiness({ run, validation, deploy, request = requestPreview }) {
-  const ca = run({ args: ["exec", "-T", "caddy", "cat", "/data/caddy/pki/authorities/local/root.crt"], step: "preview-local-ca" }).stdout;
-  const denied = await request({ ip: validation.domain, ca });
+  const denied = await request({ ip: validation.domain });
   requireCondition(denied.status === 404, "unauthorized_request_not_denied");
-  const result = await request({ ip: validation.domain, ca, token: deploy.STARWARD_OPERATOR_PREVIEW_TOKEN });
+  const result = await request({ ip: validation.domain, token: deploy.STARWARD_OPERATOR_PREVIEW_TOKEN });
   requireCondition(result.status === 200, "readiness_http_failed");
   const body = responseJson(result, "readiness");
   requireCondition(body.ready === true && body.release?.environment === "staging"
@@ -280,14 +279,13 @@ export async function checkPreviewReadiness({ run, validation, deploy, request =
     run,
     validation,
     deploy,
-    ca,
     request,
   });
   return {
     ready: true,
     unauthorizedStatus: 404,
-    tls: "ip-verified-with-scoped-caddy-ca",
-    publicTrustVerified: false,
+    tls: "ip-verified-with-public-roots",
+    publicTrustVerified: true,
     providerSmoke,
   };
 }

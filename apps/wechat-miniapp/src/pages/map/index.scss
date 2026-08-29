@@ -13,7 +13,7 @@
 .map-finder-anchor {
   position: absolute;
   z-index: 30;
-  top: 16rpx;
+  top: var(--map-finder-top, calc(env(safe-area-inset-top) + 112rpx));
   left: 24rpx;
   right: 24rpx;
   min-height: 88rpx;
@@ -73,6 +73,7 @@
   width: 100%;
   margin-top: 8rpx;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12rpx;
   overflow: visible;
@@ -99,7 +100,7 @@
 .map-conditions-anchor {
   position: absolute;
   z-index: 26;
-  top: 300rpx;
+  top: var(--map-conditions-top, calc(env(safe-area-inset-top) + 320rpx));
   left: 24rpx;
   right: 24rpx;
   min-height: 88rpx;
@@ -155,7 +156,7 @@
 .map-floating-tools {
   position: absolute;
   right: 24rpx;
-  top: 240rpx;
+  top: var(--map-chrome-bottom, calc(env(safe-area-inset-top) + 424rpx));
   z-index: 18;
   display: flex;
   flex-direction: column;
@@ -169,28 +170,50 @@
   box-shadow: var(--elevation-floating);
   font-size: 34rpx;
 }
+.map-floating-tool {
+  position: relative;
+  width: 88rpx;
+  height: 88rpx;
+  color: var(--text-primary);
+}
+.map-floating-tool__icon {
+  position: absolute;
+  top: 24rpx;
+  left: 24rpx;
+  z-index: 1;
+  pointer-events: none;
+}
+.map-floating-tool--disabled {
+  color: var(--text-tertiary);
+}
 .map-stage--analysis-focused .map-floating-tools {
   top: auto;
   bottom: 16rpx;
 }
 .selected-callout-wrap {
-  position: absolute;
-  z-index: 20;
-  top: 520rpx;
-  left: 50%;
-  width: calc(100% - 48rpx);
+  position: relative;
+  width: 100%;
   max-width: 600rpx;
-  transform: translateX(-50%);
+  pointer-events: auto;
 }
-.map-status {
+.map-feedback-column {
   position: absolute;
-  z-index: 21;
+  z-index: 28;
   left: 24rpx;
   // Keep feedback local to the conditions controls without covering the
   // location/refresh action rail on the right.
   right: 136rpx;
-  top: 402rpx;
+  top: var(--map-chrome-bottom, calc(env(safe-area-inset-top) + 424rpx));
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
   pointer-events: none;
+}
+.map-stage--analysis-focused .map-feedback-column {
+  top: 16rpx;
+}
+.map-status:empty {
+  display: none;
 }
 .map-status .notification,
 .map-status .status-panel,

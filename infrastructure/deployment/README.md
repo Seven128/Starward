@@ -46,8 +46,8 @@ npm run deployment:preview -- --deploy-env /absolute/private/candidate/deploy.en
 数据库和 Redis；`deploy` 可重新部署同一候选，用于修复故障后前向恢复。
 更新新版本先通过 `deployment:prepare` 从稳定基础配置生成新的不可变候选配置。
 流程始终加载两份 Compose 配置；保留已有数据卷，停止写入后加密备份并隔离恢复校验，
-然后迁移、启动、检查服务和 IP TLS/令牌。TLS 检查只对这次请求信任 Caddy 本地 CA，
-不关闭证书校验、不向系统或手机安装根证书。
+然后迁移、启动、检查服务和 IP TLS/令牌。TLS 检查使用 Node 自带公共根证书并验证 IP SAN 与有效期，
+不接受私有 CA、不关闭证书校验、不向系统或手机安装根证书。
 
 `STARWARD_RECEIPT_DIRECTORY` 中的 `operator-preview-current.json` 指向最近一次成功
 部署的配置、代码目录和记录。失败不会覆盖这个指针；也不能只凭指针判断服务器现在健康，
@@ -150,7 +150,7 @@ docker compose --env-file <operator-preview-deploy.env> \
   up -d --wait --no-deps caddy
 ```
 
-The overlay publishes only 443, uses Caddy's internal development certificate,
+The overlay publishes only 443, uses a public Let's Encrypt shortlived IP certificate,
 and returns 404 unless `X-Starward-Operator-Preview` exactly matches the token.
 It selects the IP certificate even for clients that omit SNI, serves only HTTP/1.1
 and HTTP/2 over TCP, removes the preview header before proxying, and filters it
@@ -160,14 +160,29 @@ Compile the phone development build with
 `MINIAPP_OPERATOR_PREVIEW_TOKEN`. Formal release-bundle construction explicitly
 clears this variable so the preview credential cannot enter staging or
 production output. On the phone, scan the DevTools preview QR and enable WeChat
-debugging before exercising requests; this bypass is development-only and must
-not be described as trusted TLS or ordinary experience-build support.
+debugging before exercising requests for the domain-list exception only. Public
+TLS trust must pass independently; this is not ordinary experience-build support.
 
 Never use public `http://<IP>`, run an unguarded public test API, expose
 session-bearing plaintext traffic, generate a normal staging release receipt,
 or relax the formal environment validator for this lane. Record it only as an
-operator-preview receipt with public certificate trust, domain/ICP, platform
-release and promotion qualification explicitly unevaluated or false.
+operator-preview receipt with measured public certificate trust; domain/ICP,
+platform release and promotion qualification remain explicitly unevaluated or false.
+
+Caddy uses the production ACME issuer with `profile shortlived`, TLS-ALPN on TCP
+443 and HTTP challenges disabled. The optional ACME contact email is omitted,
+so the internal-preview placeholder is never sent; certificate health relies on
+renewal and expiry checks, not email. The operator has authorized the free CA account,
+subscriber agreement and public certificate-transparency record of the IP. Keep
+`caddy-data` and `caddy-config` persistent: Caddy owns renewal, retries and atomic
+certificate replacement; do not add a second renewal timer or delete its account
+state to force renewal. Inactive internal-CA migration residue is not trusted.
+Deploy waits up to 180 seconds (plus one bounded probe) for public trust; checks
+reject an invalid IP SAN or a certificate with less than 24 hours remaining.
+A successful issuance and restart proves persistence, not a later natural renewal.
+If issuance/renewal fails, repair and rerun the same guarded operation; never
+fall back to private roots or skip verification. Run `operator-preview check`
+regularly and inspect its protected receipt for certificate expiry failures.
 
 Once the filed HTTPS staging origin exists, remove the temporary descriptor,
 local-test and preview-token secrets, the IP overlay and its Caddy volumes; close
@@ -292,7 +307,7 @@ outputs, not interchangeable artifacts.
 
 On the phone, the owner scans the preview QR, enables the small program's
 development/debug mode and reopens it. If the installed WeChat version still
-rejects the IP/internal certificate, record the exact error and stop that path;
+rejects the IP or TLS connection, record the bounded diagnostic category and stop that path;
 never fall back to public HTTP or claim a normal experience build is supported.
 The owner must then confirm the actual cold start, login/session and API access,
 truthful empty map when no formal spot is published, preference save/readback

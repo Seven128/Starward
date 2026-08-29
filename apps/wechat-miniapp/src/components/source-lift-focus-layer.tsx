@@ -1,4 +1,3 @@
-import Taro from "@tarojs/taro";
 import { View } from "@tarojs/components";
 import type { CSSProperties, PropsWithChildren, ReactNode } from "react";
 import { useEffect, useRef } from "react";
@@ -7,6 +6,7 @@ import {
   type SourceLiftOwner,
   type SourceLiftPhase,
 } from "@/state/app-store";
+import { nativeNavigationInsets } from "@/theme/native-metrics";
 import "./source-lift-focus-layer.scss";
 
 export type SourceLiftVariant = "panelOnly" | "mapCoupled";
@@ -49,34 +49,12 @@ export function SourceLiftFocusLayer({
   const phase: SourceLiftPhase = active ? runtime.phase : "IDLE";
   const sourceLifted =
     active && phase !== "RESTORING" && phase !== "CANCELLED";
-  let statusBarHeight = 0;
-  let safeTop = 0;
-  try {
-    const windowInfo = Taro.getWindowInfo();
-    const nativeStatusBarHeight = Taro.getWindowInfo().statusBarHeight;
-    if (
-      typeof nativeStatusBarHeight === "number" &&
-      Number.isFinite(nativeStatusBarHeight) &&
-      nativeStatusBarHeight >= 0
-    ) {
-      statusBarHeight = nativeStatusBarHeight;
-    }
-    const navBarHeight = (windowInfo.windowWidth * 96) / 750;
-    safeTop = statusBarHeight + navBarHeight;
-  } catch {
-    // Fail closed to the CSS safe-area fallback if native metrics are absent.
-  }
-  try {
-    const menuButton = Taro.getMenuButtonBoundingClientRect();
-    if (Number.isFinite(menuButton.bottom)) {
-      safeTop = Math.max(safeTop, menuButton.bottom + 4);
-    }
-  } catch {
-    // Simulator and older runtimes may not expose capsule geometry.
-  }
+  const { statusBarHeight, safeTop } = nativeNavigationInsets();
   const nativeSafeTopStyle = {
-    "--source-lift-status-bar-height": `${statusBarHeight}px`,
-    "--source-lift-safe-top": `${safeTop}px`,
+    ...(statusBarHeight === undefined ? {} : {
+      "--source-lift-status-bar-height": `${statusBarHeight}px`,
+    }),
+    ...(safeTop === undefined ? {} : { "--source-lift-safe-top": `${safeTop}px` }),
   } as CSSProperties;
 
   useEffect(() => {

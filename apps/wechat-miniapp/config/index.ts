@@ -77,6 +77,9 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: JSON.stringify(
         process.env.MINIAPP_ACCEPTANCE_DIAGNOSTICS === "1",
       ),
+      __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__: JSON.stringify(
+        process.env.MINIAPP_DEVICE_REQUEST_DIAGNOSTICS === "1",
+      ),
       __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: JSON.stringify(
         process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1",
       ),

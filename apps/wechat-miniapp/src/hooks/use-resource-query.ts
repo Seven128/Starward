@@ -41,11 +41,10 @@ export function useResourceQuery<T>({
   const diagnosticKey = String(queryKey[0] ?? "resource-query");
   const result = useQuery<T>({
     queryKey,
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       recordAcceptanceDiagnostic(diagnosticKey, "query_fn", "begin");
-      // WEAPP cancellation is owned by the RequestTask registry. Reading
-      // TanStack's AbortSignal would introduce a second lifecycle owner.
-      return queryFn(undefined);
+      // Query owns subscription lifetime; the transport owns native cleanup.
+      return queryFn(signal);
     },
     enabled,
     staleTime,

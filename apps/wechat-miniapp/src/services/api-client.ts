@@ -35,6 +35,7 @@ import {
   type MiniappMutationKind,
 } from "./cache-policy";
 import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
+import { createDeviceFailureReporter } from "./device-request-diagnostic";
 import { miniappQueryClient } from "./query-client";
 import {
   LatestRequestRegistry,
@@ -53,6 +54,11 @@ const MAX_STALE_AGE_MS = 30 * 60 * 1_000;
 const SESSION_EXPIRY_SKEW_MS = 60_000;
 
 const requests = new LatestRequestRegistry();
+const reportDeviceFailure = __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__
+  ? createDeviceFailureReporter((content) => Taro.showModal({
+      title: "仅测试：请求诊断", content, showCancel: false,
+    }))
+  : undefined;
 
 type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 type AuthPolicy = "NONE" | "OPTIONAL" | "REQUIRED";
@@ -324,24 +330,37 @@ async function request<T>(
     cache?: boolean;
   } = {},
 ): Promise<ApiEnvelope<T>> {
+  if (options.signal?.aborted)
+    throw new MiniappRequestCancelled("query_signal");
   loadResponseCache();
   return new Promise((resolve, reject) => {
     let settled = false;
     let task: unknown;
     let watchdog: ReturnType<typeof setTimeout> | undefined;
     let release = () => {};
-    const finish = (callback: () => void) => {
+    const finish = (callback: () => void, abort = false) => {
       if (settled) return;
       settled = true;
       if (watchdog) clearTimeout(watchdog);
+      options.signal?.removeEventListener("abort", onAbort);
       release();
+      // Native abort may synchronously re-enter fail. Own the result first.
+      if (abort) {
+        try {
+          abortTask(task);
+        } catch {
+          recordAcceptanceDiagnostic(key, "failure", "transport_abort_failed");
+        }
+      }
       callback();
     };
     const cancel = (reason: RequestCancellationReason) => {
-      recordAcceptanceDiagnostic(key, "cancel", reason);
-      abortTask(task);
-      finish(() => reject(new MiniappRequestCancelled(reason)));
+      finish(() => {
+        recordAcceptanceDiagnostic(key, "cancel", reason);
+        reject(new MiniappRequestCancelled(reason));
+      }, true);
     };
+    const onAbort = () => cancel("query_signal");
 
     release = requests.register(key, cancel);
     recordAcceptanceDiagnostic(key, "start", Taro.getEnv());
@@ -375,17 +394,22 @@ async function request<T>(
     };
 
     watchdog = setTimeout(() => {
-      recordAcceptanceDiagnostic(key, "timeout", "watchdog");
-      abortTask(task);
-      finish(() =>
+      finish(() => {
+        if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("watchdog");
+        recordAcceptanceDiagnostic(key, "timeout", "watchdog");
         transportFallback(
           "请求超时，请联网后刷新。",
           new Error("bff_request_timeout"),
-        ),
-      );
+        );
+      }, true);
     }, 12_000);
 
     try {
+      options.signal?.addEventListener("abort", onAbort, { once: true });
+      if (options.signal?.aborted) {
+        onAbort();
+        return;
+      }
       task = Taro.request<ApiEnvelope<T> | ApiError>({
         url: __MINIAPP_API_BASE__.replace(/\/+$/u, "") + path,
         method,
@@ -401,6 +425,7 @@ async function request<T>(
             }
             if (response.statusCode >= 200 && response.statusCode < 300) {
               if (!isEnvelope(response.data)) {
+                if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("contract", undefined, response.statusCode);
                 reject(new Error("bff_response_contract_invalid"));
                 return;
               }
@@ -415,6 +440,7 @@ async function request<T>(
               resolve(envelope);
               return;
             }
+            if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("http", undefined, response.statusCode);
             if (isApiError(response.data)) {
               reject(new MiniappApiError(response.data, response.statusCode));
               return;
@@ -425,29 +451,31 @@ async function request<T>(
         fail(error) {
           const message = error.errMsg || "bff_request_failed";
           if (/abort/iu.test(message)) {
-            recordAcceptanceDiagnostic(key, "failure", "transport_abort");
-            finish(() =>
-              reject(new MiniappRequestCancelled("transport_abort")),
-            );
+            finish(() => {
+              recordAcceptanceDiagnostic(key, "failure", "transport_abort");
+              reject(new MiniappRequestCancelled("transport_abort"));
+            });
             return;
           }
-          recordAcceptanceDiagnostic(key, "failure", "transport_failure");
-          finish(() =>
+          finish(() => {
+            recordAcceptanceDiagnostic(key, "failure", "transport_failure");
+            if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("transport", error);
             transportFallback(
               "连接失败，请联网后刷新。",
               new Error(message),
-            ),
-          );
+            );
+          });
         },
       });
       if (settled) abortTask(task);
     } catch (error) {
-      finish(() =>
+      finish(() => {
+        if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("dispatch", error);
         transportFallback(
           "请求未能发出，请联网后刷新。",
           error instanceof Error ? error : new Error(String(error)),
-        ),
-      );
+        );
+      });
     }
   });
 }

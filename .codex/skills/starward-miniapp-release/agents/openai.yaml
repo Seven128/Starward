@@ -1,0 +1,4 @@
+interface:
+  display_name: "Starward Mini Program Release"
+  short_description: "Route safe Starward Mini Program release operations"
+  default_prompt: "Use $starward-miniapp-release to inspect and route this Starward Mini Program preview, upload, deployment, or release request through existing owners."

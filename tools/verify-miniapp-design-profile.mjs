@@ -54,22 +54,22 @@ export async function verifyMiniappDesignProfile({ root, design }) {
   );
   const selectedSourcePath = path.join(resourceRoot, "selected-provider-design-system.md");
   const sourceIndexPath = path.join(resourceRoot, "source-index.md");
-  const miniappHandoffPath = path.join(resourceRoot, "selected-handoff", "miniapp-sky-canvas-current.md");
+  const miniappHandoffPath = path.join(resourceRoot, "technical-binding-2026-08-29-compass", "handoff", "miniapp-sky-canvas-current.md");
   const operationsHandoffPath = path.join(resourceRoot, "selected-handoff", "operations-sky-canvas-current.md");
   const miniappManifestPath = path.join(resourceRoot, "selected-source", "miniapp-fact-manifest.json");
   const operationsManifestPath = path.join(resourceRoot, "selected-source", "operations-fact-manifest.json");
-  const miniappFeasibilityPath = path.join(resourceRoot, "selected-source", "miniapp-implementation-feasibility.json");
+  const miniappFeasibilityPath = path.join(resourceRoot, "technical-binding-2026-08-29-compass", "miniapp-implementation-feasibility.json");
   const operationsFeasibilityPath = path.join(resourceRoot, "selected-source", "operations-implementation-feasibility.json");
   const expectedSourceHash =
     "03c300a6cfd1b23e0b84b72baaa26081eef0f958de515b75413be771029499b1";
   const expectedSourceIndexHash =
     "a602a572b93d3aa1b0e51e320b4c25e14267d43b131109844c7accb4e5efbc2b";
   const expectedSelectedResourceHashes = {
-    miniapp_handoff: "f52605fbb950a91be3b2bdfc018620fd53fe6dee658c6a32118b22b192304f59",
+    miniapp_handoff: "17288e6ccc7092a5be6b1ea3bfc0ad73d0b7bea893b0e0bf1ffdc7c172426834",
     operations_handoff: "391d900dd35420bd33de29676b23a6767ba7b93fd3857bc3eec9b41bd971546f",
     miniapp_manifest: "78e569a26f268454ae968bf715ecec37d6dfa23af01b33b72479973e2f4ae3bb",
     operations_manifest: "9ad9a465ffd66dbd3d0f1b16d5cb533c6accf35838f6bf7f194604fa1acdf8f7",
-    miniapp_feasibility: "238cd602b71e68d546d1635f5e6fc26770c3c2b52a01daabf11ae2aa3cda1b43",
+    miniapp_feasibility: "48468b55e0f95fd50941761b4a7fb5dc0e39de244da6055281617bb671ff9875",
     operations_feasibility: "c63ee9eaab1322b630cb38a3438a64447d052a6cac7f31e8f7009669cd601e90",
   };
 

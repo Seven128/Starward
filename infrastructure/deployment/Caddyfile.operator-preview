@@ -17,7 +17,13 @@
 }
 
 https://{$STARWARD_API_DOMAIN} {
-	tls internal
+	tls {
+		issuer acme https://acme-v02.api.letsencrypt.org/directory {
+			profile shortlived
+			disable_http_challenge
+			timeout 120s
+		}
+	}
 	encode zstd gzip
 
 	@operator header X-Starward-Operator-Preview {$STARWARD_OPERATOR_PREVIEW_TOKEN}

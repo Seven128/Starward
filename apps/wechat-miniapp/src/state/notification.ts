@@ -14,7 +14,8 @@ export interface NotificationIntent {
   placement: NotificationPlacement;
   title: string;
   body: string;
-  action?: NotificationAction;
+  // Explicit undefined clears a prior recovery action when a deduped state resolves.
+  action?: NotificationAction | undefined;
   dismissible?: boolean;
   dedupeKey?: string;
 }

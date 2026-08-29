@@ -5,7 +5,7 @@
   // Native inline metrics replace both variables. These flat fallbacks retain
   // safe-area provenance without the nested max()/calc() form WEAPP rejects.
   --source-lift-status-bar-height: env(safe-area-inset-top);
-  --source-lift-safe-top: 104rpx;
+  --source-lift-safe-top: calc(env(safe-area-inset-top) + 96rpx);
 }
 .source-lift-focus-layer--mapCoupled.map-coupled-layer {
   position: absolute;

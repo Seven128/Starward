@@ -29,6 +29,7 @@ import {
   updateObservationContext,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
+import { createCompassLifecycle } from "./compass-lifecycle";
 import "./spot-sky-page.scss";
 
 const CANVAS_ID = "spot-night-sky-scene";
@@ -910,10 +911,7 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
     useState<LocalCompassState>("PERMISSION_REQUIRED");
   const [compassReason, setCompassReason] =
     useState("允许后仅在本页前台读取设备方向，不记录连续姿态轨迹");
-  const compassListenerRef = useRef<
-    Parameters<typeof Taro.onCompassChange>[0] | null
-  >(null);
-  const compassRunningRef = useRef(false);
+  const compassLifecycle = useMemo(() => createCompassLifecycle(Taro), []);
   const lastCompassHeadingRef = useRef<number | null>(null);
   const compassStaleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -953,28 +951,15 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
       clearTimeout(compassStaleTimerRef.current);
       compassStaleTimerRef.current = null;
     }
-    const listener = compassListenerRef.current;
-    if (listener) {
-      try {
-        Taro.offCompassChange(listener);
-      } catch {
-        // Listener ownership is already released locally below.
-      }
-      compassListenerRef.current = null;
-    }
-    if (compassRunningRef.current) {
-      compassRunningRef.current = false;
-      try {
-        void Promise.resolve(Taro.stopCompass()).catch(() => undefined);
-      } catch {
-        // Some DevTools builds throw synchronously while a page is hiding.
-      }
-    }
+    void compassLifecycle.stop();
     lastCompassHeadingRef.current = null;
-  }, []);
+    setCompassHeading(null);
+    setCompassState("PERMISSION_REQUIRED");
+    setCompassReason("允许后仅在本页前台读取设备方向，不记录连续姿态轨迹");
+  }, [compassLifecycle]);
 
   const startCompass = useCallback(async () => {
-    if (view !== "DETAIL" || compassRunningRef.current) return;
+    if (view !== "DETAIL" || compassLifecycle.active) return;
     setCompassState("CALIBRATING");
     setCompassReason("正在校准设备方向");
     const listener: Parameters<typeof Taro.onCompassChange>[0] = (event) => {
@@ -1018,6 +1003,7 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
         clearTimeout(compassStaleTimerRef.current);
       }
       compassStaleTimerRef.current = setTimeout(() => {
+        if (!compassLifecycle.isCurrent(listener)) return;
         compassStaleTimerRef.current = null;
         setCompassHeading(null);
         setCompassState("STALE");
@@ -1025,19 +1011,12 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
       }, 1500);
     };
 
-    try {
-      compassRunningRef.current = true;
-      compassListenerRef.current = listener;
-      Taro.onCompassChange(listener);
-      await Taro.startCompass();
-    } catch (error) {
-      try {
-        Taro.offCompassChange(listener);
-      } catch {
-        // The listener may already have been removed by a hide lifecycle.
+    await compassLifecycle.start(listener, (error) => {
+      if (compassStaleTimerRef.current) {
+        clearTimeout(compassStaleTimerRef.current);
+        compassStaleTimerRef.current = null;
       }
-      compassListenerRef.current = null;
-      compassRunningRef.current = false;
+      lastCompassHeadingRef.current = null;
       setCompassHeading(null);
       const message = error instanceof Error ? error.message.toLowerCase() : "";
       const permissionDenied =
@@ -1051,8 +1030,8 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
           ? "未获得设备方向权限，天空图不会伪造 heading"
           : "设备没有可用的方向传感器，目标列表仍可用",
       );
-    }
-  }, [view]);
+    });
+  }, [compassLifecycle, view]);
 
   useDidHide(stopCompass);
 

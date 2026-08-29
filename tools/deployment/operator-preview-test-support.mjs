@@ -51,5 +51,6 @@ export async function dependencies(t) {
   };
   const backup = async () => { calls.push({ step: "backup" }); return { manifestPath: "/private/backup.json" }; };
   const readiness = async () => { calls.push({ step: "readiness" }); return { ready: true }; };
-  return { f, deploy, calls, execute, backup, readiness };
+  const certificate = async () => { calls.push({ step: "certificate" }); return { expiresAt: "2030-01-01T00:00:00.000Z" }; };
+  return { f, deploy, calls, execute, backup, readiness, certificate };
 }

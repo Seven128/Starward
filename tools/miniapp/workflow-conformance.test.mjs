@@ -254,10 +254,18 @@ test("the current Sky Canvas Mini Program and Operations handoffs are bound to p
     ],
   );
   for (const handoff of bindings.handoffs) {
-    assert.match(
-      handoff.path,
-      /^docs\/design-resources\/miniapp-design-system-2026-08-25-sky-canvas\/selected-handoff\//u,
+    const owner = await text(
+      "project_context", "areas", "main", "screen-contracts",
+      `${handoff.key === "miniapp" ? "wechat-miniapp" : "operations"}.md`,
     );
+    const adoption = owner.split(/\r?\n/u).find((line) =>
+      /^- Current (?:page|screen)\/interaction resource:/u.test(line)
+      && line.includes(`\`${handoff.target}\``),
+    );
+    assert.ok(adoption?.includes(`\`${handoff.path}\``),
+      "handoff path must match its canonical adoption record");
+    assert.ok(adoption?.includes(`\`${handoff.sha256}\``),
+      "handoff digest must match its canonical adoption record");
     assert.match(handoff.sha256, /^[a-f0-9]{64}$/u);
     assert.equal(handoff.expected_census.acceptance_blockers, 0);
   }
@@ -786,16 +794,34 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   assert.match(store, /locationState: "DEFAULT_REGION"/u);
   assert.doesNotMatch(mapPage, /useLoad/u);
   assert.equal(
-    [...mapPage.matchAll(/Taro\.getLocation\(/gu)].length,
+    [...mapPage.matchAll(/requestOneShotLocation\(Taro\)/gu)].length,
     1,
     "location must only be requested by the explicit map control",
   );
+  assert.doesNotMatch(mapPage, /Taro\.getLocation\(/u);
+  assert.match(
+    mapPage.slice(mapPage.indexOf("const locateMap ="), mapPage.indexOf("const refreshMap =")),
+    /await requestOneShotLocation\(Taro\)/u,
+  );
+  assert.match(mapPage, /onClick=\{locateMap\}/u);
+  const locationAdapter = await text("apps", "wechat-miniapp", "src", "services", "one-shot-location.ts");
+  assert.equal([...locationAdapter.matchAll(/platform\.getLocation\(/gu)].length, 1);
   assert.match(mapPage, /仅在你点击定位时请求一次位置权限/u);
   assert.match(
     mapPage,
     /" map-page location-"\s*\+\s*locationState\.toLowerCase\(\)/u,
   );
   assert.match(mapPage, /className="map-refresh-control"/u);
+  assert.match(
+    mapPage,
+    /onClick=\{locateMap\}[\s\S]*?>\s*\{""\}\s*<\/SoftButton>\s*<SemanticIcon\s+name="location"\s+className="map-floating-tool__icon"/u,
+    "the map location glyph must remain outside SoftButton compileMode",
+  );
+  assert.match(
+    mapPage,
+    /className="map-refresh-control"[\s\S]*?>\s*\{""\}\s*<\/SoftButton>\s*<SemanticIcon\s+name="refresh"\s+className="map-floating-tool__icon"/u,
+    "the map refresh glyph must remain outside SoftButton compileMode",
+  );
   assert.deepEqual(seed.committedFilters, {
     TONIGHT_RECOMMENDED: [],
     BEST_WINDOW_DURATION: [],
@@ -883,13 +909,44 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(navigation, /nativeStatusBarHeightPx\(\)/u);
   assert.match(sky, /nativeStatusBarHeightPx\(\)/u);
   assert.match(sky, /data-od-id="spot-night-header"/u);
-  assert.match(sourceLift, /getWindowInfo\(\)\.statusBarHeight/u);
-  assert.match(sourceLift, /Number\.isFinite\(nativeStatusBarHeight\)/u);
+  assert.match(sourceLift, /nativeNavigationInsets\(\)/u);
+  assert.match(nativeMetrics, /getMenuButtonBoundingClientRect\(\)/u);
   assert.match(sourceLift, /--source-lift-status-bar-height/u);
   assert.match(sourceLiftStyles, /--source-lift-status-bar-height/u);
   assert.match(sourceLiftStyles, /env\(safe-area-inset-top\)/u);
+  const map = await text("apps", "wechat-miniapp", "src", "pages", "map", "index.tsx");
+  const mapStyles = await text("apps", "wechat-miniapp", "src", "pages", "map", "index.scss");
+  const mapChrome = await text("apps", "wechat-miniapp", "src", "pages", "map", "use-map-chrome.ts");
+  assert.match(map, /style=\{mapChromeStyle\}/u);
+  assert.match(mapChrome, /nativeNavigationInsets\(\)/u);
+  assert.match(mapChrome, /useResize\(/u);
+  assert.match(mapChrome, /if \(!current\) return/u);
+  for (const selector of ["map-finder-anchor", "map-conditions-anchor"])
+    assert.ok(mapChrome.includes(`select(".${selector}").boundingClientRect()`));
+  assert.match(mapStyles, /top: var\(--map-finder-top, calc\(env\(safe-area-inset-top\) \+ 112rpx\)\)/u);
+  assert.match(mapStyles, /\.map-finder-quick-filters\s*\{[^}]*flex-wrap: wrap/su);
+  assert.match(mapStyles, /\.map-floating-tools\s*\{[^}]*top: var\(--map-chrome-bottom,/su);
+  assert.match(mapStyles, /\.map-floating-tool__icon\s*\{[^}]*pointer-events: none;/su);
+  assert.match(mapStyles, /\.map-feedback-column\s*\{[^}]*z-index: 28;[^}]*top: var\(--map-chrome-bottom,/su);
   assert.match(store, /restoreStartupMode\(state\.mode, state\.priorMode\)/u);
   assert.match(store, /mode: BOOTSTRAP_MODE/u);
+});
+
+test("Settings keeps orientation permission per-use without fabricating a global sky entry", async () => {
+  const settings = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "content",
+    "settings",
+    "settings-sections.tsx",
+  );
+  const orientationStart = settings.indexOf("方位天空");
+  const orientationEnd = settings.indexOf("精确位置投稿", orientationStart);
+  assert.ok(orientationStart >= 0 && orientationEnd > orientationStart);
+  const orientationRow = settings.slice(orientationStart, orientationEnd);
+  assert.match(orientationRow, /settings-state-pill">按页使用/u);
+  assert.doesNotMatch(orientationRow, /navigateTo|pages\/auth|SoftButton/u);
 });
 
 test("Final-Gate verifier derives actuals from the current candidate and fails closed", async () => {

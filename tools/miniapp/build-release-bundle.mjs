@@ -37,6 +37,7 @@ export function releaseBuildEnvironment(request, environment = process.env) {
     MINIAPP_API_BASE: request.apiOrigin,
     MINIAPP_OPERATOR_PREVIEW_TOKEN: "",
     MINIAPP_ACCEPTANCE_DIAGNOSTICS: "0",
+    MINIAPP_DEVICE_REQUEST_DIAGNOSTICS: "0",
     MINIAPP_DEVELOPMENT_FIXTURE_MODE: "0",
   };
 }

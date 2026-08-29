@@ -1,19 +1,9 @@
 import Taro from "@tarojs/taro";
-import {
-  Button,
-  Input,
-  Label,
-  ScrollView,
-  Slider,
-  Switch,
-  Text,
-  View,
-} from "@tarojs/components";
-import type { DisplayMode, FacilityType } from "@starward/miniapp-contracts";
+import { ScrollView, Text, View } from "@tarojs/components";
+import type { DisplayMode } from "@starward/miniapp-contracts";
 import { useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
-import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { usePreferencesSync } from "@/hooks/use-preferences-sync";
@@ -24,23 +14,13 @@ import {
   exportAccountData,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
+import {
+  DISPLAY_MODE_LABEL,
+  SettingsControls,
+  SettingsAccountActions,
+} from "./settings-sections";
+import { PreferenceFields } from "./preference-fields";
 import "./index.scss";
-
-const DISPLAY_MODES: readonly Exclude<DisplayMode, "OBSERVATION">[] = [
-  "DAY",
-  "NIGHT",
-];
-const DISPLAY_MODE_LABEL = { DAY: "日间", NIGHT: "夜间" } as const;
-const FACILITY_PREFERENCES: ReadonlyArray<{
-  key: FacilityType;
-  label: string;
-}> = [
-  { key: "PARKING", label: "停车" },
-  { key: "TOILET", label: "厕所" },
-  { key: "PLATFORM", label: "平台" },
-  { key: "CHARGING", label: "充电" },
-  { key: "SIGNAL", label: "信号" },
-];
 
 function writeJsonFile(filePath: string, data: string) {
   return new Promise<void>((resolve, reject) => {
@@ -76,6 +56,14 @@ export default function SettingsPage() {
   const chooseDisplayMode = (next: Exclude<DisplayMode, "OBSERVATION">) => {
     updatePreference("displayMode", next);
     setMode(next);
+    const currentState = useAppStore.getState();
+    for (const notification of currentState.notifications) {
+      if (
+        notification.owner === "settings" &&
+        notification.dedupeKey === "settings-observation-mode"
+      )
+        currentState.dismissNotification(notification.id);
+    }
     notify({
       owner: "settings",
       placement: "floating",
@@ -97,7 +85,7 @@ export default function SettingsPage() {
         title: "已退出观测红模式",
         body: "已恢复进入前的日间或夜间模式，设置页与待处理上下文保持原位。",
         dismissible: true,
-        dedupeKey: "settings-observation-exit",
+        dedupeKey: "settings-observation-mode",
       });
       return;
     }
@@ -109,7 +97,7 @@ export default function SettingsPage() {
       title: "观测红模式已开启",
       body: "界面保持纯黑与暖红；媒体默认不自动点亮，退出会恢复此前显示模式。",
       dismissible: true,
-      dedupeKey: "settings-observation-enter",
+      dedupeKey: "settings-observation-mode",
     });
   };
 
@@ -243,333 +231,24 @@ export default function SettingsPage() {
             />
           ) : null}
 
-          <View
-            className="settings-section"
-            data-od-id="display-mode-switcher"
-          >
-            <Text className="type-section">显示模式</Text>
-            <View className="settings-card card">
-              <View className="settings-choice-grid">
-                {DISPLAY_MODES.map((item) => (
-                  <Button
-                    key={item}
-                    className={`chip focus-ring${mode === item ? " chip--selected" : ""}`}
-                    aria-pressed={mode === item}
-                    onClick={() => chooseDisplayMode(item)}
-                  >
-                    <Text>{DISPLAY_MODE_LABEL[item]}</Text>
-                  </Button>
-                ))}
-                <Button
-                  className={`chip observation-mode-entry focus-ring${mode === "OBSERVATION" ? " chip--selected" : ""}`}
-                  data-od-id="observation-mode-entry"
-                  aria-pressed={mode === "OBSERVATION"}
-                  aria-label={
-                    mode === "OBSERVATION" ? "退出观测红模式" : "进入观测红模式"
-                  }
-                  onClick={toggleObservation}
-                >
-                  <Text>{mode === "OBSERVATION" ? "退出红光" : "观测红光"}</Text>
-                </Button>
-              </View>
-              <Text className="type-caption">
-                观测红光是封闭显示模式；退出后精确恢复此前日间/夜间与任务上下文。
-              </Text>
-            </View>
-          </View>
+          <SettingsControls
+            preferences={preferences}
+            mode={mode}
+            updatePreference={updatePreference}
+            chooseDisplayMode={chooseDisplayMode}
+            toggleObservation={toggleObservation}
+          />
 
-          <View
-            id="settings-permissions"
-            className="settings-section"
-            data-od-id="settings-permissions"
-          >
-            <Text className="type-section">权限与隐私</Text>
-            <View className="settings-card settings-card--group card">
-              <Label
-                id="nearby-location-preference"
-                className="setting-row"
-                data-od-id="nearby-location-preference"
-              >
-                <View>
-                  <Text className="type-label">附近地点</Text>
-                  <Text className="type-caption">
-                    仅在地图需要定位时询问，可随时改为手动位置
-                  </Text>
-                </View>
-                <Switch
-                  checked={preferences.locationPreference === "ASK_ONCE"}
-                  color="var(--positive)"
-                  aria-label="允许地图在需要时询问一次位置"
-                  onChange={(event) =>
-                    updatePreference(
-                      "locationPreference",
-                      event.detail.value ? "ASK_ONCE" : "MANUAL_ONLY",
-                    )
-                  }
-                />
-              </Label>
-              <View className="setting-row">
-                <View>
-                  <Text className="type-label">方位天空</Text>
-                  <Text className="type-caption">
-                    只在方位页前台读取方向，不上传传感器流
-                  </Text>
-                </View>
-                <SoftButton
-                  label="查看方位与定位权限说明"
-                  onClick={() => Taro.navigateTo({ url: "/pages/auth/index" })}
-                >
-                  按页使用
-                </SoftButton>
-              </View>
-              <View className="setting-row">
-                <View>
-                  <Text className="type-label">精确位置投稿</Text>
-                  <Text className="type-caption">
-                    仅新增地点逐次确认，不与地图定位共用许可
-                  </Text>
-                </View>
-                <Text className="settings-state-pill">每次确认</Text>
-              </View>
-            </View>
-          </View>
+          <SettingsAccountActions
+            dataAction={dataAction}
+            downloadAccountData={downloadAccountData}
+            deleteAccount={deleteAccount}
+          />
 
-          <View
-            id="settings-reminders"
-            className="settings-section"
-            data-od-id="settings-reminders"
-          >
-            <Text className="type-section">提醒</Text>
-            <View className="settings-card settings-card--group card">
-              <Label
-                id="departure-condition-reminder"
-                className="setting-row"
-                data-od-id="departure-condition-reminder"
-              >
-                <View>
-                  <Text className="type-label">出发前条件复核</Text>
-                  <Text className="type-caption">
-                    保存提醒意愿；仅针对已创建的今晚计划
-                  </Text>
-                </View>
-                <Switch
-                  checked={preferences.departureConditionReminder}
-                  color="var(--positive)"
-                  aria-label="出发前条件复核提醒"
-                  onChange={(event) =>
-                    updatePreference(
-                      "departureConditionReminder",
-                      event.detail.value,
-                    )
-                  }
-                />
-              </Label>
-              <Label
-                id="contribution-status-reminder"
-                className="setting-row"
-                data-od-id="contribution-status-reminder"
-              >
-                <View>
-                  <Text className="type-label">投稿状态变化</Text>
-                  <Text className="type-caption">
-                    保存退回补充、接收与拒绝的提醒意愿
-                  </Text>
-                </View>
-                <Switch
-                  checked={preferences.contributionStatusReminder}
-                  color="var(--positive)"
-                  aria-label="投稿状态变化提醒"
-                  onChange={(event) =>
-                    updatePreference(
-                      "contributionStatusReminder",
-                      event.detail.value,
-                    )
-                  }
-                />
-              </Label>
-            </View>
-            <Text className="type-caption settings-capability-note">
-              保存意愿不等于微信订阅成功；平台能力接入后仍以授权回执为准。
-            </Text>
-          </View>
-
-          <View
-            id="settings-data-actions"
-            className="settings-section"
-            data-od-id="settings-data-actions"
-          >
-            <Text className="type-section">数据</Text>
-            <View className="settings-card settings-card--group card">
-              <Button
-                className="settings-entry-row focus-ring"
-                aria-label="下载我的数据；计划、投稿与账户设置"
-                disabled={dataAction !== null}
-                onClick={() => void downloadAccountData()}
-              >
-                <View className="settings-icon-well settings-icon-well--violet">
-                  <SemanticIcon name="download" />
-                </View>
-                <View className="settings-entry-copy">
-                  <Text className="type-label">下载我的数据</Text>
-                  <Text className="type-caption">计划、投稿与账户设置</Text>
-                </View>
-                <View className="settings-entry-meta">
-                  {dataAction === "EXPORT" ? (
-                    <Text>生成中…</Text>
-                  ) : (
-                    <SemanticIcon name="chevron-right" />
-                  )}
-                </View>
-              </Button>
-              <Button
-                className="settings-entry-row focus-ring"
-                aria-label="删除账户；先说明影响，再进行身份确认"
-                disabled={dataAction !== null}
-                onClick={() => void deleteAccount()}
-              >
-                <View className="settings-icon-well settings-icon-well--coral">
-                  <SemanticIcon name="trash" />
-                </View>
-                <View className="settings-entry-copy">
-                  <Text className="type-label">删除账户</Text>
-                  <Text className="type-caption">
-                    先说明影响，再进行身份确认
-                  </Text>
-                </View>
-                <View className="settings-entry-meta">
-                  {dataAction === "DELETE" ? (
-                    <Text>删除中…</Text>
-                  ) : (
-                    <SemanticIcon name="chevron-right" />
-                  )}
-                </View>
-              </Button>
-            </View>
-          </View>
-
-          <View
-            id="settings-form"
-            className="settings-card card"
-            data-od-id="settings-form"
-          >
-            <Text className="type-section">选点偏好</Text>
-            <View className="form-group">
-              <Text className="type-label">默认城市或地点</Text>
-              <Input
-                className="field"
-                value={preferences.defaultPlace}
-                maxlength={80}
-                aria-label="默认城市或地点"
-                placeholder="例如：深圳"
-                onInput={(event) =>
-                  updatePreference("defaultPlace", event.detail.value)
-                }
-              />
-            </View>
-            <View className="form-group">
-              <Text className="type-label">经验水平</Text>
-              <View className="settings-choice-grid">
-                {(["BEGINNER", "ADVANCED"] as const).map((level) => (
-                  <Button
-                    key={level}
-                    className={`chip focus-ring${preferences.experience === level ? " chip--selected" : ""}`}
-                    aria-pressed={preferences.experience === level}
-                    onClick={() => updatePreference("experience", level)}
-                  >
-                    <Text>{level === "BEGINNER" ? "入门" : "进阶"}</Text>
-                  </Button>
-                ))}
-              </View>
-            </View>
-            <View className="form-group">
-              <View className="settings-summary-row">
-                <Text className="type-label">最长驾车时间</Text>
-                <Text className="type-data">
-                  {preferences.maxDriveMinutes} 分钟
-                </Text>
-              </View>
-              <Slider
-                min={30}
-                max={360}
-                step={30}
-                value={preferences.maxDriveMinutes}
-                activeColor="var(--primary)"
-                backgroundColor="var(--border)"
-                blockColor="var(--primary)"
-                blockSize={24}
-                aria-label="最长驾车时间"
-                onChange={(event) =>
-                  updatePreference("maxDriveMinutes", event.detail.value)
-                }
-              />
-              <Text className="type-caption">
-                无许可路线供应商时只保留偏好，不把直线距离冒充驾车时间。
-              </Text>
-            </View>
-            <View className="form-group">
-              <Text className="type-label">必须设施</Text>
-              <View className="facility-choice-grid">
-                {FACILITY_PREFERENCES.map(({ key, label }) => {
-                  const selected = preferences.requiredFacilities.includes(key);
-                  return (
-                    <Button
-                      key={key}
-                      className={`chip focus-ring${selected ? " chip--selected" : ""}`}
-                      aria-pressed={selected}
-                      onClick={() =>
-                        updatePreference(
-                          "requiredFacilities",
-                          selected
-                            ? preferences.requiredFacilities.filter(
-                                (facility) => facility !== key,
-                              )
-                            : [...preferences.requiredFacilities, key],
-                        )
-                      }
-                    >
-                      <Text>{label}</Text>
-                    </Button>
-                  );
-                })}
-              </View>
-            </View>
-          </View>
-
-          <View className="settings-card card">
-            <Text className="type-section">可访问性</Text>
-            <View className="setting-row">
-              <View>
-                <Text className="type-label">大字模式</Text>
-                <Text className="type-caption">
-                  内容重排，不产生页面横向滚动
-                </Text>
-              </View>
-              <Switch
-                checked={preferences.largeText}
-                color="var(--primary)"
-                aria-label="大字模式"
-                onChange={(event) =>
-                  updatePreference("largeText", event.detail.value)
-                }
-              />
-            </View>
-            <View className="setting-row">
-              <View>
-                <Text className="type-label">减少动态</Text>
-                <Text className="type-caption">
-                  即时或不超过 100ms 的等价反馈
-                </Text>
-              </View>
-              <Switch
-                checked={preferences.reducedMotion}
-                color="var(--primary)"
-                aria-label="减少动态"
-                onChange={(event) =>
-                  updatePreference("reducedMotion", event.detail.value)
-                }
-              />
-            </View>
-          </View>
+          <PreferenceFields
+            preferences={preferences}
+            updatePreference={updatePreference}
+          />
 
           <View className="settings-card settings-maintenance card">
             <Text className="type-section">本机维护</Text>

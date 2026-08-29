@@ -12,6 +12,47 @@ import { composeInvocation } from "./compose-runtime.mjs";
 import { createPromotionRequest } from "./promotion-request.mjs";
 
 import { token, fixture, configuration, rows, dependencies } from "./operator-preview-test-support.mjs";
+import { certificateLifetime, publicIpTlsOptions, waitForPublicIpCertificate } from "./operator-preview-tls.mjs";
+
+test("public IP certificate checks preserve trust, IP identity and renewal headroom", () => {
+  const options = publicIpTlsOptions("192.0.2.8");
+  assert.equal(options.rejectUnauthorized, true);
+  assert.equal(options.servername, "");
+  assert.ok(options.ca.length > 1);
+  assert.ok(options.checkServerIdentity("ignored", { subjectaltname: "IP Address:192.0.2.9" }));
+  assert.equal(options.checkServerIdentity("ignored", { subjectaltname: "IP Address:192.0.2.8" }), undefined);
+  const now = Date.parse("2026-08-29T00:00:00Z");
+  const valid = { valid_from: "2026-08-28T00:00:00Z", valid_to: "2026-09-03T00:00:00Z" };
+  assert.equal(certificateLifetime(valid, now).expiresAt, "2026-09-03T00:00:00.000Z");
+  for (const certificate of [{}, { ...valid, valid_to: "2026-08-29T23:00:00Z" }, { ...valid, valid_from: "2026-08-30T00:00:00Z" }])
+    assert.throws(() => certificateLifetime(certificate, now), /invalid_or_expiring/u);
+});
+
+test("certificate acquisition has bounded retry and never accepts an expiring certificate", async () => {
+  let time = 0;
+  let attempts = 0;
+  const options = { ip: "192.0.2.8", now: () => time, sleep: async (ms) => { time += ms; }, timeoutMs: 4_000 };
+  assert.equal(await waitForPublicIpCertificate({ ...options, probe: async () => {
+    if (++attempts < 2) throw new Error("operator_preview_public_certificate_unavailable");
+    return "verified";
+  } }), "verified");
+  await assert.rejects(waitForPublicIpCertificate({ ...options, probe: async () => { throw new Error("operator_preview_public_certificate_unavailable"); } }), /unavailable/u);
+  const before = time;
+  await assert.rejects(waitForPublicIpCertificate({ ...options, probe: async () => { throw new Error("operator_preview_certificate_invalid_or_expiring"); } }), /expiring/u);
+  assert.equal(time, before);
+});
+
+test("certificate failure cannot publish a ready pointer or downgrade trust", async (t) => {
+  const d = await dependencies(t);
+  const result = await operatePreview({ ...d, deployEnvPath: d.f.deployPath, operation: "deploy", operator: "test",
+    certificate: async () => { throw new Error("operator_preview_certificate_invalid_or_expiring"); },
+  });
+  assert.equal(result.receipt.status, "failed");
+  assert.equal(result.receipt.failedStep, "public-ip-certificate");
+  assert.ok(d.calls.some((call) => call.step === "preview-failure-stop"));
+  assert.ok(!d.calls.some((call) => call.step === "readiness"));
+  await assert.rejects(readFile(path.join(d.f.receiptDirectory, "operator-preview-current.json")));
+});
 
 test("IP local-test validation is separate from formal release validation", async (t) => {
   const f = await fixture(t);
@@ -132,7 +173,7 @@ test("pointer publication failure is explicit and keeps the completed receipt", 
   await assert.rejects(readFile(path.join(d.f.receiptDirectory, "operator-preview.lock")));
 });
 
-test("readiness checks denial and exact release using only the private CA", async () => {
+test("readiness checks denial and exact release without a private CA", async () => {
   const calls = [];
   const input = { run: () => ({ stdout: Buffer.from("local-ca") }), validation: { domain: "192.0.2.8", revision: releaseRevision, imageDigest: releaseImageDigest }, deploy: { STARWARD_OPERATOR_PREVIEW_TOKEN: token } };
   const request = async (args) => {
@@ -171,12 +212,12 @@ test("readiness checks denial and exact release using only the private CA", asyn
     return { status: 200, body: JSON.stringify({ ready: true, release: { environment: "staging", revision: releaseRevision, imageDigest: releaseImageDigest } }) };
   };
   const result = await checkPreviewReadiness({ ...input, request });
-  assert.equal(result.publicTrustVerified, false);
+  assert.equal(result.publicTrustVerified, true);
   assert.equal(result.providerSmoke.evidenceScope, "PRODUCT_MAP_SCENE");
   assert.equal(result.providerSmoke.weather.provider, "和风天气");
   assert.equal(result.providerSmoke.astronomy.provider, "Astronomy Engine");
   assert.equal(calls[0].token, undefined);
-  assert.equal(calls[1].ca.toString(), "local-ca");
+  assert.ok(calls.every((call) => call.ca === undefined));
   assert.equal(calls[2].method, "POST");
   assert.match(calls[3].path, /^\/v2\/map\/scene\?/u);
   await assert.rejects(checkPreviewReadiness({ ...input, request: async () => ({ status: 200 }) }), /not_denied/u);

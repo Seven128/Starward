@@ -93,6 +93,7 @@ interface AppState extends PersistedState {
   filterSnapshot: FilterState;
   filterSheetOpen: boolean;
   locationState: LocationState;
+  mapResetVersion: number;
   notifications: NotificationRecord[];
   sourceLift: SourceLiftRuntimeState;
   hydrate(): void;
@@ -109,6 +110,7 @@ interface AppState extends PersistedState {
   applyServerPreferences(record: UserPreferencesRecord): void;
   markPreferencesSynced(record: UserPreferencesRecord): void;
   setViewport(patch: Partial<MapViewportState>): void;
+  resetMapToDefaultRegion(): void;
   setFinderQuery(query: string): void;
   setObservationContext(context: ObservationContext | null): void;
   setAnalysisOverlay(overlay: AnalysisOverlay): void;
@@ -148,13 +150,15 @@ const DEFAULT_VIEWPORT: MapViewportState = {
   cardIndex: 0,
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function loadPersisted(): Partial<PersistedState> {
   try {
-    const value = Taro.getStorageSync(STORAGE_KEY) as
-      Partial<PersistedState> | string;
-    return typeof value === "string"
-      ? (JSON.parse(value) as Partial<PersistedState>)
-      : value || {};
+    const stored = Taro.getStorageSync(STORAGE_KEY) as unknown;
+    const value = typeof stored === "string" ? JSON.parse(stored) : stored;
+    return isRecord(value) ? (value as Partial<PersistedState>) : {};
   } catch {
     return {};
   }
@@ -185,14 +189,95 @@ function persisted(state: AppState): PersistedState {
   };
 }
 
-function usableObservationContext(
-  value: ObservationContext | null | undefined,
-) {
-  return value?.schemaVersion === "observation-context-v2" &&
-    Number.isFinite(Date.parse(value.expiresAt)) &&
-    Date.parse(value.expiresAt) > Date.now()
-    ? value
-    : null;
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
+function isTimestamp(value: unknown): value is string {
+  return isNonEmptyString(value) && Number.isFinite(Date.parse(value));
+}
+
+function isWgs84Point(value: unknown) {
+  if (!isRecord(value)) return false;
+  const latitude = value.latitude;
+  const longitude = value.longitude;
+  return (
+    value.system === "WGS84" &&
+    typeof latitude === "number" &&
+    Number.isFinite(latitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    typeof longitude === "number" &&
+    Number.isFinite(longitude) &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+}
+
+function isObservationLocation(value: unknown) {
+  if (!isRecord(value)) return false;
+  if (value.kind === "FORMAL_SPOT")
+    return (
+      isNonEmptyString(value.spotId) &&
+      Number.isInteger(value.locationVersion) &&
+      (value.locationVersion as number) >= 0
+    );
+  return (
+    value.kind === "MAP_POINT" &&
+    isNonEmptyString(value.displayName) &&
+    isWgs84Point(value.wgs84) &&
+    (value.source === "MAP_VIEWPORT" || value.source === "USER_LOCATION")
+  );
+}
+
+function isRouteOrigin(value: unknown) {
+  return (
+    value === null ||
+    (isRecord(value) &&
+      isNonEmptyString(value.contextId) &&
+      isNonEmptyString(value.displayName) &&
+      isWgs84Point(value.wgs84) &&
+      (value.source === "MAP_VIEWPORT" || value.source === "USER_LOCATION"))
+  );
+}
+
+function usableObservationContext(value: unknown): ObservationContext | null {
+  if (!isRecord(value) || value.schemaVersion !== "observation-context-v2")
+    return null;
+  const weatherView = value.weatherView;
+  const algorithmVersions = value.algorithmVersions;
+  if (!isRecord(weatherView) || !isRecord(algorithmVersions)) return null;
+  const valid =
+    isNonEmptyString(value.contextId) &&
+    isNonEmptyString(value.contextFingerprint) &&
+    Number.isInteger(value.revision) &&
+    (value.revision as number) >= 0 &&
+    isObservationLocation(value.location) &&
+    isRouteOrigin(value.routeOrigin) &&
+    isNonEmptyString(value.timezone) &&
+    typeof value.localDate === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/u.test(value.localDate) &&
+    isTimestamp(value.nightStartUtc) &&
+    isTimestamp(value.nightEndUtc) &&
+    isTimestamp(value.selectedAtUtc) &&
+    (value.eventInstanceId === null || isNonEmptyString(value.eventInstanceId)) &&
+    ["DAILY", "METEOR", "MILKY_WAY", "PLANET", "CUSTOM"].includes(
+      String(value.targetProfile),
+    ) &&
+    isNonEmptyString(weatherView.primaryPolicy) &&
+    Array.isArray(weatherView.comparisonModels) &&
+    weatherView.comparisonModels.every(isNonEmptyString) &&
+    (weatherView.selectedModel === null ||
+      isNonEmptyString(weatherView.selectedModel)) &&
+    ["TOTAL", "LOW", "MID", "HIGH"].includes(String(weatherView.cloudLayer)) &&
+    ["astronomy", "opportunity", "tripDecision", "darkSky", "eventCatalog"].every(
+      (key) => isNonEmptyString(algorithmVersions[key]),
+    ) &&
+    value.privacyClass === "PUBLIC_REFERENCE" &&
+    isTimestamp(value.createdAt) &&
+    isTimestamp(value.expiresAt) &&
+    Date.parse(value.expiresAt) > Date.now();
+  return valid ? (value as unknown as ObservationContext) : null;
 }
 
 const BOOTSTRAP_STATE = loadPersisted();
@@ -244,9 +329,10 @@ export const useAppStore = create<AppState>((set, get) => {
     selectedSpotId: BOOTSTRAP_STATE.selectedSpotId ?? null,
     searchHistory: BOOTSTRAP_STATE.searchHistory ?? [],
     favoriteIds: BOOTSTRAP_STATE.favoriteIds ?? [],
-    plans: BOOTSTRAP_STATE.plans ?? [],
+    plans: Array.isArray(BOOTSTRAP_STATE.plans) ? BOOTSTRAP_STATE.plans : [],
     filterSheetOpen: false,
     locationState: "DEFAULT_REGION",
+    mapResetVersion: 0,
     notifications: [],
     sourceLift: {
       owner: null,
@@ -287,6 +373,7 @@ export const useAppStore = create<AppState>((set, get) => {
           saved.committedFilters ?? EMPTY_FILTER_STATE,
         ),
         priorMode: restorePriorMode(saved.mode, saved.priorMode),
+        plans: Array.isArray(saved.plans) ? saved.plans : [],
       });
     },
     notify(intent) {
@@ -351,6 +438,25 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     setViewport(patch) {
       commit((state) => ({ viewport: { ...state.viewport, ...patch } }));
+    },
+    resetMapToDefaultRegion() {
+      commit((state) => ({
+        viewport: { ...DEFAULT_VIEWPORT, center: { ...DEFAULT_VIEWPORT.center } },
+        finderQuery: "",
+        observationContext: null,
+        analysisOverlay: "NONE",
+        selectedSpotId: null,
+        locationState: "DEFAULT_REGION",
+        mapResetVersion: state.mapResetVersion + 1,
+        filterSheetOpen: false,
+        draftFilters: cloneFilterState(state.committedFilters),
+        filterSnapshot: cloneFilterState(state.committedFilters),
+        notifications: state.notifications.filter((item) => item.owner !== "map"),
+        sourceLift: {
+          owner: null, phase: "IDLE", variant: null, origin: null,
+          finishOptions: { restoreMap: true, discardFilterDraft: true },
+        },
+      }));
     },
     setFinderQuery(finderQuery) {
       commit({ finderQuery });

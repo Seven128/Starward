@@ -8,10 +8,11 @@ import { validateOperatorPreviewEnvironment } from "./validate-release-environme
 import { executeVerifiedBackup, readBackupKeyFile } from "./verified-backup.mjs";
 import { maintainTrialBackups } from "./backup-maintenance.mjs";
 import { checkPreviewCompose, checkPreviewContainers, checkPreviewReadiness, parseComposeRows } from "./operator-preview-checks.mjs";
+import { inspectPublicIpCertificate, waitForPublicIpCertificate } from "./operator-preview-tls.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-export async function operatePreview({ deployEnvPath, operation = "check", operator, execute = runProcess, backup = executeVerifiedBackup, readiness = checkPreviewReadiness, maintenance = maintainTrialBackups }) {
+export async function operatePreview({ deployEnvPath, operation = "check", operator, execute = runProcess, backup = executeVerifiedBackup, readiness = checkPreviewReadiness, maintenance = maintainTrialBackups, certificate = inspectPublicIpCertificate }) {
   if (!["deploy", "check", "stop", "backup", "inspect-backups", "maintain-backups"].includes(operation)) throw new Error("operator_preview_operation_invalid");
   if (!/^[A-Za-z0-9._:@/-]{2,120}$/u.test(operator ?? "")) throw new Error("operator_preview_operator_invalid");
   const validation = await validateOperatorPreviewEnvironment({ deployEnvPath });
@@ -90,6 +91,9 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
     }
     if (["deploy", "check"].includes(operation)) {
       await perform("healthy-services-private-ports", () => containers());
+      receipt.certificate = await perform("public-ip-certificate", () => operation === "deploy"
+        ? waitForPublicIpCertificate({ ip: validation.domain, probe: certificate })
+        : certificate(validation.domain));
       receipt.health = await perform("guarded-ip-readiness", () => readiness({ run, validation, deploy }));
       receipt.writersStopped = false;
     }

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Starward WeChat Device Verification"
+  short_description: "Orchestrate Starward physical-device Mini Program checks"
+  default_prompt: "Use $starward-wechat-device-verification to select and run the appropriate Starward Mini Program device feedback or fixed-candidate verification path."

@@ -11,6 +11,9 @@
 *.yaml text eol=lf
 *.yml text eol=lf
 apps/wechat-miniapp/src/assets/semantic/*.svg text eol=lf
+apps/wechat-miniapp/src/**/*.ts text eol=lf
+apps/wechat-miniapp/src/**/*.tsx text eol=lf
+apps/wechat-miniapp/src/**/*.scss text eol=lf
 Makefile text eol=lf
 *.png binary
 *.woff2 binary

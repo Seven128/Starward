@@ -1,0 +1,1449 @@
+{
+  "schema_version": "design-resource-implementation-feasibility-v1",
+  "key": "feasibility.miniapp",
+  "target_ref": "target-miniapp-sky-canvas-current-constraint",
+  "realization_mode": "mapped_substrate",
+  "source_records": [
+    {
+      "key": "source.miniapp.platform",
+      "path": "apps/wechat-miniapp/project.config.json",
+      "media_type": "application/json",
+      "sha256": "84b865788c923934d97684252da9a346df29c98643fdda2399eff42745cd8e2c",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "technical_platform"
+      ]
+    },
+    {
+      "key": "source.miniapp.package",
+      "path": "apps/wechat-miniapp/package.json",
+      "media_type": "application/json",
+      "sha256": "9304ffaee7b02ab46f1a983ba7e07a8a92882f6e9551731b32ef47dca4f97829",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "framework_runtime",
+        "ui_system",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.tokens",
+      "path": "apps/wechat-miniapp/src/styles/tokens.scss",
+      "media_type": "text/x-scss",
+      "sha256": "337096210e1a6cfa3a68e8db14893c350a344c85eba4724c0e70517f5e85e286",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "token_theming_adapter",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.routes",
+      "path": "apps/wechat-miniapp/src/app.config.ts",
+      "media_type": "text/typescript",
+      "sha256": "49d6fd82b224b2043b8ad6e12e519132214ea1bee6374fc340efc3f2fc742a16",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "route_owner",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.filter",
+      "path": "apps/wechat-miniapp/src/components/filter-sheet.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "adb229757a01308e25d3515bacf4ab76477341fe92189f67702707738839812a",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.card",
+      "path": "apps/wechat-miniapp/src/components/spot-card.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "9b003393d9a21a7bdf255324d1f2fa0e5bac9b707e2d2420d8c6e5ca57702507",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.favorite",
+      "path": "apps/wechat-miniapp/src/components/selected-card-star.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "d148808ce3f21867ad0e0287e482ff59f999ffa71c73625a97d974b9c859bb36",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.status",
+      "path": "apps/wechat-miniapp/src/components/status-panel.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "5ca8160af3ba48cb178193ebdaf2e988dbdf080d503a15ed4de6a9f2f8d93ee3",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.asset",
+      "path": "apps/wechat-miniapp/src/components/semantic-asset.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "029fe0c4e6a51b5bb63d802d8dd9a86fa560c762e3f0d592ca60d4b8e042d713",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "ui_system",
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.sky",
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "e0fa682818145082b156d71b200e5178fc683b4570e917fcbc6fcf91cb9a3412",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.spot",
+      "path": "apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "1a774478d74c9dcae165fd0b3c907107f090d1c90ee70a47d6220cb210b33a58",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.my",
+      "path": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "24f6deb86b4cd34911af05a1c00489da6428b6c2f53291a5ca1de5257c73ad68",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.contribution",
+      "path": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "5f702f07040b7818acc8f80a6f1f45b294b1c77336790869b0d9aa0969b4f81b",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.nav",
+      "path": "apps/wechat-miniapp/src/components/custom-nav.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "1f3c5b4d35018e3040963bb162213d85a1be343c36f557517d511e9e86e001c8",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    }
+  ],
+  "substrate_observations": [
+    {
+      "kind": "platform",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "wechat-mini-program",
+        "version_source_ref": "source.miniapp.platform"
+      },
+      "source_record_refs": [
+        "source.miniapp.platform"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "framework_runtime",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "taro-react",
+        "version_source_ref": "source.miniapp.package"
+      },
+      "source_record_refs": [
+        "source.miniapp.package"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "ui_system",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "starward-sky-canvas-local-primitives",
+        "version_source_ref": "source.miniapp.package"
+      },
+      "source_record_refs": [
+        "source.miniapp.package",
+        "source.miniapp.asset"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "token_theming_adapter",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/wechat-miniapp/src/styles/tokens.scss"
+        ]
+      },
+      "source_record_refs": [
+        "source.miniapp.tokens"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "component_owner_roots",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/wechat-miniapp/src/components",
+          "apps/wechat-miniapp/src/features",
+          "apps/wechat-miniapp/src/pages",
+          "apps/wechat-miniapp/src/spot",
+          "apps/wechat-miniapp/src/sky",
+          "apps/wechat-miniapp/src/content"
+        ]
+      },
+      "source_record_refs": [
+        "source.miniapp.filter",
+        "source.miniapp.card",
+        "source.miniapp.favorite",
+        "source.miniapp.status",
+        "source.miniapp.asset",
+        "source.miniapp.sky",
+        "source.miniapp.spot",
+        "source.miniapp.my",
+        "source.miniapp.contribution",
+        "source.miniapp.nav"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "route_owner_roots",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/wechat-miniapp/src/pages",
+          "apps/wechat-miniapp/src/spot",
+          "apps/wechat-miniapp/src/sky",
+          "apps/wechat-miniapp/src/content"
+        ]
+      },
+      "source_record_refs": [
+        "source.miniapp.routes"
+      ],
+      "reason": null
+    }
+  ],
+  "condition_model": {
+    "kind": "explicit_conditions_v1",
+    "profiles": [
+      {
+        "key": "profile.miniapp.current",
+        "condition_refs": [
+          "condition-miniapp-phone-390x844-current"
+        ]
+      }
+    ]
+  },
+  "component_family_cells": [
+    {
+      "key": "feasibility-cell.miniapp.family-map-search",
+      "component_family_ref": "subject.miniapp.family.map-search",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-map-search.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-map-search.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-quick-filter-chip",
+      "component_family_ref": "subject.miniapp.family.quick-filter-chip",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-quick-filter-chip.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-quick-filter-chip.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/filter-sheet.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.filter",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-map-analysis-bar-layer",
+      "component_family_ref": "subject.miniapp.family.map-analysis-bar-layer",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-map-analysis-bar-layer.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-map-analysis-bar-layer.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/source-lift-focus-layer.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-finder-sheet",
+      "component_family_ref": "subject.miniapp.family.finder-sheet",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-finder-sheet.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-finder-sheet.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/filter-sheet.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.filter",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-spot-marker-callout",
+      "component_family_ref": "subject.miniapp.family.spot-marker-callout",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-spot-marker-callout.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-spot-marker-callout.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/spot-card.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.card",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-spot-result-row",
+      "component_family_ref": "subject.miniapp.family.spot-result-row",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-spot-result-row.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-spot-result-row.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/spot-card.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.card",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-spot-header-actions",
+      "component_family_ref": "subject.miniapp.family.spot-header-actions",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-spot-header-actions.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-spot-header-actions.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.spot",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-favorite-star-ritual",
+      "component_family_ref": "subject.miniapp.family.favorite-star-ritual",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-favorite-star-ritual.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-favorite-star-ritual.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/selected-card-star.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.favorite",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-astronomy-summary",
+      "component_family_ref": "subject.miniapp.family.astronomy-summary",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-astronomy-summary.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-astronomy-summary.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-astronomy-professional-matrix",
+      "component_family_ref": "subject.miniapp.family.astronomy-professional-matrix",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-astronomy-professional-matrix.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-astronomy-professional-matrix.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-sky-time-scrubber",
+      "component_family_ref": "subject.miniapp.family.sky-time-scrubber",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-sky-time-scrubber.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-sky-time-scrubber.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-orientation-sky",
+      "component_family_ref": "subject.miniapp.family.orientation-sky",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-orientation-sky.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-orientation-sky.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-status-recovery",
+      "component_family_ref": "subject.miniapp.family.status-recovery",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-status-recovery.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-status-recovery.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/status-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.status",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-primary-navigation",
+      "component_family_ref": "subject.miniapp.family.primary-navigation",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-primary-navigation.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-primary-navigation.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/custom-nav.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.nav",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-my-plan-settings",
+      "component_family_ref": "subject.miniapp.family.my-plan-settings",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-my-plan-settings.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-my-plan-settings.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-contribution-intake",
+      "component_family_ref": "subject.miniapp.family.contribution-intake",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-contribution-intake.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-contribution-intake.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-contribution-form",
+      "component_family_ref": "subject.miniapp.family.contribution-form",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-contribution-form.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-contribution-form.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-upload-recovery",
+      "component_family_ref": "subject.miniapp.family.upload-recovery",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-upload-recovery.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-upload-recovery.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-review-history",
+      "component_family_ref": "subject.miniapp.family.review-history",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-review-history.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-review-history.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.family-semantic-icon",
+      "component_family_ref": "subject.miniapp.family.semantic-icon",
+      "target_ref": "target-miniapp-sky-canvas-current-constraint",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-family-semantic-icon.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.family-semantic-icon.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-asset-adapter"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/semantic-asset.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.asset",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires mapping the design-state vocabulary to the existing domain stores, request lifecycle and route ownership."
+          ],
+          "observed_risks": [
+            "Browser prototype behavior can diverge from the WeChat event and native component model unless verified in WeChat DevTools."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    }
+  ],
+  "blockers": []
+}

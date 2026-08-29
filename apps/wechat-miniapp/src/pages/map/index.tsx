@@ -48,14 +48,14 @@ import {
   projectMapEvaluations,
 } from "./map-time-frame";
 import "./index.scss";
+import { useMapChrome } from "./use-map-chrome";
+import { calendarDateInTimezone } from "@/utils/zoned-date";
+import { requestOneShotLocation } from "@/services/one-shot-location";
+import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
+import { userMapRegionEnd } from "./map-region-event";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return calendarDateInTimezone(new Date(), timezone);
 }
 
 function currentTimezoneHint(): "Asia/Shanghai" | "Asia/Hong_Kong" {
@@ -299,6 +299,7 @@ export default function MapPage() {
   );
   const setAnalysisOverlay = useAppStore((state) => state.setAnalysisOverlay);
   const setViewport = useAppStore((state) => state.setViewport);
+  const mapResetVersion = useAppStore((state) => state.mapResetVersion);
   const selectSpot = useAppStore((state) => state.selectSpot);
   const setLocationState = useAppStore((state) => state.setLocationState);
   const openSourceLift = useAppStore((state) => state.openSourceLift);
@@ -330,6 +331,8 @@ export default function MapPage() {
   const [conditionDisclosureOpen, setConditionDisclosureOpen] =
     useState(false);
   const [pageVisible, setPageVisible] = useState(true);
+  const [locationBusy, setLocationBusy] = useState(false);
+  const locationRequestBusy = useRef(false);
   const regionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useDidShow(() => setPageVisible(true));
@@ -346,6 +349,7 @@ export default function MapPage() {
   const bootstrapContext = useResourceQuery({
     queryKey: [
       "map-observation-context",
+      mapResetVersion,
       observationContext?.contextId,
       observationContext?.contextFingerprint,
       observationContext?.revision,
@@ -569,6 +573,10 @@ export default function MapPage() {
     );
   });
   const conditionsExpanded = sourceLift.owner === "CONDITIONS";
+  const mapChromeStyle = useMapChrome(`${themeClass}:${sourceLift.phase}:${finderActive}:${conditionsExpanded}:${pageState}`);
+  const contextTimeLabel = activeContext
+    ? formatContextTime(activeContext.selectedAtUtc, activeContext.timezone)
+    : bootstrapContext.isError ? "解析失败" : "正在解析";
   const sceneEvaluations = Object.values(projectedEvaluations);
   const representativeSpot = selected ?? spots[0] ?? null;
   const representativeEvaluation = representativeSpot
@@ -711,6 +719,7 @@ export default function MapPage() {
     source: "MAP_VIEWPORT" | "USER_LOCATION",
     displayName?: string,
   ) => {
+    const resetVersion = useAppStore.getState().mapResetVersion;
     const point = gcj02ToWgs84({
       lat: center.latitude,
       lon: center.longitude,
@@ -734,7 +743,11 @@ export default function MapPage() {
       selectedAt: activeContext?.selectedAtUtc ?? null,
       eventInstanceId: activeContext?.eventInstanceId ?? null,
       targetProfile: activeContext?.targetProfile ?? "DAILY",
+    }).catch((error: unknown) => {
+      if (useAppStore.getState().mapResetVersion !== resetVersion || isMiniappRequestCancelled(error)) return null;
+      throw error;
     });
+    if (!response || useAppStore.getState().mapResetVersion !== resetVersion) return null;
     setObservationContext(response.data);
     return response.data;
   };
@@ -756,7 +769,7 @@ export default function MapPage() {
       discardFilterDraft: true,
     });
     try {
-      await resolveMapPoint(center, "MAP_VIEWPORT", result.label);
+      if (!await resolveMapPoint(center, "MAP_VIEWPORT", result.label)) return;
       setAnnouncement(
         "地图已移动到 " + result.label + "；正在显示附近正式观星点。",
       );
@@ -837,17 +850,18 @@ export default function MapPage() {
   const onRegionChange = (
     event: BaseEventOrig<MapProps.onRegionEventDetail>,
   ) => {
-    if (event.detail.type !== "end") return;
+    const region = userMapRegionEnd(event);
+    if (!region) return;
     if (regionTimer.current) clearTimeout(regionTimer.current);
+    const resetVersion = useAppStore.getState().mapResetVersion;
     regionTimer.current = setTimeout(() => {
-      const detail = event.detail.detail;
-      if (!detail?.centerLocation) return;
+      if (useAppStore.getState().mapResetVersion !== resetVersion) return;
       setViewport({
-        center: detail.centerLocation,
-        ...(detail.scale ? { zoom: detail.scale } : {}),
+        center: region.center,
+        ...(region.zoom === undefined ? {} : { zoom: region.zoom }),
         loadedViewport: "viewport:" + String(Date.now()),
       });
-      void resolveMapPoint(detail.centerLocation, "MAP_VIEWPORT").catch(
+      void resolveMapPoint(region.center, "MAP_VIEWPORT").catch(
         (error) =>
           notify({
             owner: "map",
@@ -865,49 +879,48 @@ export default function MapPage() {
   };
 
   const locateMap = async () => {
+    if (locationRequestBusy.current) return;
+    locationRequestBusy.current = true;
+    const resetVersion = useAppStore.getState().mapResetVersion;
+    setLocationBusy(true);
     setLocationState("REQUESTING");
-    let location: Awaited<ReturnType<typeof Taro.getLocation>>;
+    const locationNotice = (title: string, body: string, tone: "info" | "success" | "warning") =>
+      notify({ owner: "map", placement: "inline", tone, title, body,
+        action: undefined, dismissible: true, dedupeKey: "map-location-request" });
+    locationNotice("正在获取一次位置", "只请求本次位置；地图仍可手动浏览。", "info");
     try {
-      location = await Taro.getLocation({
-        type: "gcj02",
-        isHighAccuracy: false,
-        highAccuracyExpireTime: 2500,
-      });
-    } catch {
-      setLocationState("DENIED");
-      notify({
-        owner: "map",
-        placement: "inline",
-        tone: "warning",
-        title: "定位未授权",
-        body: "核心地图和正式点位仍可用；你可以搜索城市或继续使用默认试点区域。",
-        dismissible: true,
-        action: { label: "查看权限说明", route: "/pages/auth/index" },
-        dedupeKey: "map-location-denied",
-      });
-      return;
-    }
-    const center = {
-      latitude: location.latitude,
-      longitude: location.longitude,
-    };
-    setLocationState("GRANTED");
-    setViewport({ center, zoom: 10 });
-    try {
-      await resolveMapPoint(center, "USER_LOCATION");
-      setAnnouncement("已按本次授权定位并更新地图中心与观测条件。");
-    } catch (error) {
-      notify({
-        owner: "map",
-        placement: "inline",
-        tone: "warning",
-        title: "位置已更新，动态条件未更新",
-        body:
-          errorMessage(error) +
-          "。地图仍可浏览，但不会把旧时区或旧天气冒充当前位置结果。",
-        dismissible: true,
-        dedupeKey: "map-location-context-failed",
-      });
+      const result = await requestOneShotLocation(Taro);
+      if (useAppStore.getState().mapResetVersion !== resetVersion) return;
+      setLocationState(result.state);
+      if (result.state !== "GRANTED") {
+        notify({ owner: "map", placement: "inline", tone: "warning",
+          title: result.state === "DENIED" ? "定位未授权" : "暂时无法获取位置",
+          body: result.state === "DENIED"
+            ? "地图位置未改动；你可以查看权限说明，或继续手动搜索。"
+            : "地图位置未改动；请检查系统定位服务后重试，也可继续手动搜索。",
+          action: { label: "查看权限说明", route: "/pages/auth/index" },
+          dismissible: true, dedupeKey: "map-location-request" });
+        return;
+      }
+      setViewport({ center: result.center, zoom: 10 });
+      locationNotice("已获取位置，正在更新观测上下文", "地图已移动到本次位置；天气和天文结果尚未确认。", "info");
+      try {
+        const context = await resolveMapPoint(result.center, "USER_LOCATION");
+        if (useAppStore.getState().mapResetVersion !== resetVersion) return;
+        if (context === null) {
+          locationNotice("位置已获取，本次上下文更新已停止", "不再等待本次更新；请以当前地图地点和各项加载状态为准。", "info");
+          return;
+        }
+        locationNotice("位置与观测上下文已更新", "已更新地图位置和观测地点；天气、天文以各自加载状态为准。", "success");
+        setAnnouncement("已获取本次位置并更新观测上下文，天气和天文以各自加载状态为准。");
+      } catch (error) {
+        if (useAppStore.getState().mapResetVersion !== resetVersion) return;
+        locationNotice("位置已获取，动态条件未更新",
+          errorMessage(error) + "。地图仍可浏览，但旧观测上下文不能作为当前位置结果。", "warning");
+      }
+    } finally {
+      locationRequestBusy.current = false;
+      setLocationBusy(false);
     }
   };
 
@@ -1075,7 +1088,7 @@ export default function MapPage() {
       data-route="map"
       data-delivery-target={__DELIVERY_TARGET__}
     >
-      <View className="map-workspace">
+      <View className="map-workspace" style={mapChromeStyle}>
         <View className="map-finder-anchor" data-od-id="map-search-trigger">
           <SourceLiftFocusLayer
             variant="panelOnly"
@@ -1516,12 +1529,7 @@ export default function MapPage() {
                 "，" +
                 conditionKeyMetric +
                 "，" +
-                (activeContext
-                  ? formatContextTime(
-                      activeContext.selectedAtUtc,
-                      activeContext.timezone,
-                    )
-                  : "正在解析时刻")
+                contextTimeLabel
               }
               onClick={openConditions}
             >
@@ -1536,22 +1544,21 @@ export default function MapPage() {
                 <Text className="type-caption">{conditionKeyMetric}</Text>
               </View>
               <Text className="map-conditions-bar__time type-caption">
-                {activeContext
-                  ? formatContextTime(
-                      activeContext.selectedAtUtc,
-                      activeContext.timezone,
-                    )
-                  : "正在解析"}
+                {contextTimeLabel}
               </Text>
               <SemanticIcon name="chevron-right" />
             </View>
           </View>
 
           <View className="map-floating-tools" aria-label="地图工具">
-            <View data-od-id="map-permission-state">
+            <View
+              className={`map-floating-tool${locationBusy ? " map-floating-tool--disabled" : ""}`}
+              data-od-id="map-permission-state"
+            >
               <SoftButton
+                disabled={locationBusy}
                 label={
-                  locationState === "DEFAULT_REGION"
+                  locationBusy ? "正在更新一次性定位" : locationState === "DEFAULT_REGION"
                     ? "请求一次性定位（仅在你点击定位时请求一次位置权限）"
                     : locationState === "DENIED"
                       ? "重新请求一次性定位"
@@ -1559,32 +1566,83 @@ export default function MapPage() {
                 }
                 onClick={locateMap}
               >
-                <SemanticIcon name="location" />
+                {""}
               </SoftButton>
-            </View>
-            <SoftButton
-              className="map-refresh-control"
-              label="刷新当前区域"
-              onClick={() => void refreshMap()}
-            >
-              <SemanticIcon name="refresh" />
-            </SoftButton>
-          </View>
-
-          {selected ? (
-            <View className="selected-callout-wrap safe-bottom">
-              <SpotCard
-                density="callout"
-                spot={selected}
-                evaluation={
-                  projectedEvaluations[selected.spotId] ?? null
-                }
-                favorite={favoriteIds.includes(selected.spotId)}
-                onFavorite={() => void toggleFavorite(selected.spotId)}
-                onOpen={() => openDetail(selected)}
+              <SemanticIcon
+                name="location"
+                className="map-floating-tool__icon"
               />
             </View>
-          ) : null}
+            <View className="map-floating-tool">
+              <SoftButton
+                className="map-refresh-control"
+                label="刷新当前区域"
+                onClick={() => void refreshMap()}
+              >
+                {""}
+              </SoftButton>
+              <SemanticIcon
+                name="refresh"
+                className="map-floating-tool__icon"
+              />
+            </View>
+          </View>
+
+          <View className="map-feedback-column">
+            <View className="map-status compact-inset">
+              <NotificationRegion owner="map" placement="inline" />
+              {mapRuntimeError ? (
+                <View
+                  className="map-status__provider-failure"
+                  data-od-id="map-provider-failure"
+                >
+                  <StatusPanel
+                    state="ERROR"
+                    detail="原生地图当前无法渲染；Finder 和正式点位状态仍可使用。"
+                    recoveryLabel="重试地图"
+                    onRecover={() => setMapRuntimeError(false)}
+                  />
+                </View>
+              ) : null}
+              {pageState !== "READY" ? (
+                <StatusPanel
+                  state={pageState}
+                  detail={
+                    (bootstrapContext.isError
+                      ? errorMessage(bootstrapContext.error)
+                      : scene.isError ? errorMessage(scene.error)
+                      : (scene.data?.warnings ?? []).join(" ")) ||
+                    (pageState === "EMPTY"
+                      ? "当前区域暂无正式观星点。可以移动地图或使用搜索查找其他区域。"
+                      : "正在解析地图上下文并加载正式点位与来源。")
+                  }
+                  recoveryLabel={pageState === "ERROR" ? "重试" : undefined}
+                  onRecover={
+                    pageState === "ERROR"
+                      ? () =>
+                          void (activeContext
+                            ? scene.refetch()
+                            : bootstrapContext.refetch())
+                      : undefined
+                  }
+                />
+              ) : null}
+            </View>
+            {selected ? (
+              <View className="selected-callout-wrap safe-bottom">
+                <SpotCard
+                  density="callout"
+                  spot={selected}
+                  evaluation={
+                    projectedEvaluations[selected.spotId] ?? null
+                  }
+                  favorite={favoriteIds.includes(selected.spotId)}
+                  onFavorite={() => void toggleFavorite(selected.spotId)}
+                  onOpen={() => openDetail(selected)}
+                />
+              </View>
+            ) : null}
+          </View>
             </View>
           }
         >
@@ -1734,42 +1792,7 @@ export default function MapPage() {
           </View>
         </SourceLiftFocusLayer>
 
-        <View className="map-status compact-inset">
-          <NotificationRegion owner="map" placement="inline" />
-          {mapRuntimeError ? (
-            <View
-              className="map-status__provider-failure"
-              data-od-id="map-provider-failure"
-            >
-              <StatusPanel
-                state="ERROR"
-                detail="原生地图当前无法渲染；Finder 和正式点位状态仍可使用。"
-                recoveryLabel="重试地图"
-                onRecover={() => setMapRuntimeError(false)}
-              />
-            </View>
-          ) : null}
-          {pageState !== "READY" ? (
-            <StatusPanel
-              state={pageState}
-              detail={
-                (bootstrapContext.isError
-                  ? errorMessage(bootstrapContext.error)
-                  : (scene.data?.warnings ?? []).join(" ")) ||
-                "正在解析地图上下文并加载正式点位与来源。"
-              }
-              recoveryLabel={pageState === "ERROR" ? "重试" : undefined}
-              onRecover={
-                pageState === "ERROR"
-                  ? () =>
-                      void (activeContext
-                        ? scene.refetch()
-                        : bootstrapContext.refetch())
-                  : undefined
-              }
-            />
-          ) : null}
-        </View>
+
       </View>
       <View className="sr-live" role="status" aria-live="polite">
         <Text>{announcement}</Text>
