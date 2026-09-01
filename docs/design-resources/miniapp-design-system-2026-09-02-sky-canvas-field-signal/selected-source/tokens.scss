@@ -1,0 +1,108 @@
+// Starward WeChat Mini Program — Sky Canvas Field Signal candidate
+// Unselected candidate. Values are expressed in rpx for Taro/SCSS projection.
+
+$sw-themes: (
+  day: (
+    canvas: #FBFAF7, surface: #FFFFFF, surface-raised: #FFFFFF, surface-subtle: #F5F5EF,
+    text-primary: #282B29, text-secondary: #5E655F, text-tertiary: #6D746D,
+    border: #E2E5DD, border-strong: #8A9088, overlay: #282B29C7,
+    icon: #414641, disabled-bg: #EFEEE8, disabled-fg: #777E77, focus: #6174D8,
+    sky: #8799F6, sky-soft: #EFF1FF, sky-strong: #4859B8,
+    trail: #62C88B, trail-soft: #E9F8EE, trail-strong: #1F6B45,
+    meteor: #F2C94C, meteor-soft: #FFF7D6, meteor-strong: #6F5500,
+    risk: #E66F66, risk-soft: #FFF0ED, risk-strong: #973D37,
+    on-sky: #202332, on-meteor: #3A2E00, on-trail: #153B2A, on-accent: #3A2E00
+  ),
+  night: (
+    canvas: #11120F, surface: #181A17, surface-raised: #1F211D, surface-subtle: #242720,
+    text-primary: #F5F3EC, text-secondary: #BEC2B8, text-tertiary: #989E94,
+    border: #343830, border-strong: #666D62, overlay: #050603DB,
+    icon: #D9DCD3, disabled-bg: #252821, disabled-fg: #7E857A, focus: #B4BEFF,
+    sky: #A9B6FF, sky-soft: #292D45, sky-strong: #D1D7FF,
+    trail: #7ED7A1, trail-soft: #1B3426, trail-strong: #B7EACB,
+    meteor: #F6D56F, meteor-soft: #3A3118, meteor-strong: #FFE5A0,
+    risk: #FF8F87, risk-soft: #452724, risk-strong: #FFC0BA,
+    on-sky: #161A2B, on-meteor: #322600, on-trail: #102C1E, on-accent: #322600
+  ),
+  observation: (
+    canvas: #000000, surface: #110000, surface-raised: #190000, surface-subtle: #240000,
+    text-primary: #FF6B58, text-secondary: #D84A3C, text-tertiary: #C23D32,
+    border: #7A1E18, border-strong: #A83229, overlay: #000000E6,
+    icon: #FF6B58, disabled-bg: #5B1712, disabled-fg: #A83229, focus: #FF6B58,
+    sky: #FF6B58, sky-soft: #3A0A07, sky-strong: #FF6B58,
+    trail: #D84A3C, trail-soft: #240000, trail-strong: #FF6B58,
+    meteor: #D84A3C, meteor-soft: #240000, meteor-strong: #FF6B58,
+    risk: #FF6B58, risk-soft: #3A0A07, risk-strong: #FF6B58,
+    on-sky: #000000, on-meteor: #000000, on-trail: #000000, on-accent: #000000
+  )
+);
+
+$sw-font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+$sw-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+$sw-font-size: (status: 22rpx, compact-choice: 24rpx, ordinary-action: 26rpx, body: 28rpx, body-lg: 30rpx, section: 36rpx, title: 48rpx, conclusion: 52rpx);
+$sw-type-line-height: (status: 32rpx, compact-choice: 36rpx, ordinary-action: 38rpx, final-commit: 42rpx, snackbar: 38rpx, body: 44rpx, body-lg: 48rpx);
+$sw-font-weight: (read: 400, emphasize: 500, announce: 600);
+$sw-letter-spacing-cjk: 0;
+$sw-line-height: (tight-cjk: 1.4, ui: 1.45, body-cjk: 1.57, caption: 1.5);
+
+$sw-space: (0: 0, 1: 4rpx, 2: 8rpx, 3: 12rpx, 4: 16rpx, 6: 24rpx, 8: 32rpx, 10: 40rpx, 12: 48rpx, 16: 64rpx, 20: 80rpx, 24: 96rpx);
+$sw-radius: (none: 0, data: 4rpx, band: 8rpx, control: 12rpx, control-lg: 16rpx, panel: 20rpx, panel-lg: 24rpx, friendly: 32rpx, pill: 999rpx);
+$sw-radius-sheet: 48rpx 48rpx 0 0;
+$sw-border-width: 1rpx;
+$sw-border-width-selected: 2rpx;
+$sw-focus-width: 4rpx;
+$sw-input-active-width: 2rpx;
+$sw-target-min: 88rpx;
+$sw-control-visible: (compact: 60rpx, default: 72rpx, commit: 96rpx);
+$sw-control-type: (compact-size: 24rpx, compact-line: 36rpx, default-size: 26rpx, default-line: 38rpx, commit-size: 30rpx, commit-line: 42rpx);
+$sw-density: (gap-related: 8rpx, gap-default: 16rpx, gap-relaxed: 24rpx, padding-compact: 20rpx, padding-default: 28rpx, padding-card-compact: 16rpx, padding-card-normal: 24rpx);
+$sw-whitespace-layers: (screen-gutter: 32rpx, group-related: 8rpx, group-distinct: 24rpx, internal-compact: 20rpx, internal-default: 28rpx, visual-weight: balanced);
+$sw-switch: (track-width: 92rpx, track-height: 48rpx, thumb: 40rpx, inset: 4rpx, travel: 44rpx);
+$sw-icon-size: (sm: 24rpx, md: 32rpx, lg: 40rpx);
+$sw-icon-stroke: 3rpx;
+$sw-icon-stroke-strong: 4rpx;
+
+$sw-duration: (press: 80ms, short: 120ms, medium: 160ms, long: 200ms, sheet: 320ms);
+$sw-ease-standard: cubic-bezier(.2, 0, 0, 1);
+$sw-ease-exit: cubic-bezier(.4, 0, 1, 1);
+$sw-spring: (mass: 1, stiffness: 420, damping: 34, rest-delta: .5);
+
+$sw-elevation-day: (0: none, 1: 0 4rpx 16rpx #282B2912, 2: 0 16rpx 48rpx #282B2920);
+$sw-elevation-night: (0: none, 1: 0 4rpx 16rpx #00000052, 2: 0 16rpx 48rpx #00000080);
+$sw-elevation-observation: (0: none, 1: none, 2: none);
+
+$sw-breakpoints-css-px: (compact: 320px, standard: 375px, reference: 390px, wide: 430px);
+$sw-page-gutter-rpx: (compact: 32rpx, standard: 32rpx, reference: 32rpx, wide: 40rpx);
+$sw-safe-top: max(32rpx, env(safe-area-inset-top));
+$sw-safe-bottom: max(32rpx, env(safe-area-inset-bottom));
+$sw-menu-capsule-gap: 16rpx;
+$sw-content-max: 820rpx;
+
+@mixin sw-theme-vars($name) {
+  $theme: map-get($sw-themes, $name);
+  @each $role, $value in $theme { --sw-#{$role}: #{$value}; }
+}
+
+@mixin sw-focus-ring {
+  outline: 0;
+  box-shadow: inset 0 -4rpx 0 var(--sw-focus);
+}
+
+@mixin sw-hit-target { min-width: $sw-target-min; min-height: $sw-target-min; }
+
+:root, [data-theme='day'] { @include sw-theme-vars(day); }
+[data-theme='night'] { @include sw-theme-vars(night); }
+[data-theme='observation'] { @include sw-theme-vars(observation); }
+
+// Data visualization roles keep semantic ownership stable across modes.
+$sw-data-roles: (
+  selection-time: sky,
+  route-opportunity: trail,
+  celestial-window: meteor,
+  risk-blocker: risk,
+  neutral-series: text-tertiary,
+  missing: border-strong
+);
+
+// Observation is a constrained alias set; do not consume raw day/night roles
+// during a mode transition. Bind the complete theme before painting.

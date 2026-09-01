@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Starward 微信小程序 Sky Canvas Field Signal 未选择候选设计系统手册" />
+  <title>Starward 微信小程序设计系统手册 · 未选择候选</title>
+  <link rel="stylesheet" href="preview/shared.css" />
+</head>
+<body class="review handbook">
+  <a class="skip-link" href="#handbook-main" data-od-id="skip-to-content">跳到手册正文</a>
+
+  <header class="handbook-masthead" data-od-id="handbook-masthead">
+    <div class="handbook-masthead__inner">
+      <a class="review-brand" href="index.html" data-od-id="brand-home-link">今晚去观星</a>
+      <span class="handbook-product">Starward 微信小程序设计系统手册</span>
+      <span class="candidate-label">未选择候选 · 非生产实现</span>
+    </div>
+  </header>
+
+  <div class="handbook-frame">
+    <aside class="handbook-sidebar" data-od-id="handbook-navigation-region">
+      <button class="handbook-nav-toggle" type="button" aria-expanded="false" aria-controls="handbook-nav-list" data-handbook-nav-toggle data-od-id="handbook-nav-toggle">
+        <span>手册章节</span><span aria-hidden="true">＋</span>
+      </button>
+      <nav class="handbook-nav" aria-label="手册章节" data-open="false">
+        <p class="handbook-nav__label">标准目录</p>
+        <ol id="handbook-nav-list">
+          <li><a href="#handbook-overview" aria-current="location">总览</a></li>
+          <li><a href="#principles">设计原则</a></li>
+          <li><a href="#color-modes">颜色与模式</a></li>
+          <li><a href="#type-icons">字体与图标</a></li>
+          <li><a href="#spacing-layout">间距与布局</a></li>
+          <li><a href="#mobile-baseline">移动基线</a></li>
+          <li><a href="#radius-elevation">圆角、边框与高程</a></li>
+          <li><a href="#components">组件</a></li>
+          <li><a href="#motion">动效</a></li>
+          <li><a href="#dense-states">高密度信息与状态</a></li>
+          <li><a href="#accessibility">无障碍与适配</a></li>
+          <li><a href="#integration">开发接入</a></li>
+          <li><a href="#application-validation">应用验证</a></li>
+        </ol>
+      </nav>
+    </aside>
+
+    <main id="handbook-main" class="handbook-main" data-od-id="handbook-main">
+      <section id="handbook-overview" class="handbook-overview handbook-section" data-handbook-section data-od-id="handbook-overview">
+        <p class="review-kicker">候选手册 · 移动端非地图界面</p>
+        <h1 data-od-id="handbook-title">Starward 微信小程序设计系统手册</h1>
+        <p class="handbook-summary">面向《今晚去观星》非地图界面的有界视觉系统候选。标准、令牌和组件合同是本手册主体；产品页面只用于末尾的组合验证。</p>
+
+        <dl class="candidate-facts" data-od-id="candidate-facts">
+          <div><dt>候选 ID</dt><dd><code>user:starward-mini-program-sky-canvas-field-signal-revision</code></dd></div>
+          <div><dt>状态</dt><dd>未选择 · 未采用 · 非生产实现</dd></div>
+          <div><dt>适用范围</dt><dd>微信小程序 · 非地图界面</dd></div>
+          <div><dt>目标</dt><dd><code>target.system.wechat-miniapp-sky-canvas-2026-08-25</code></dd></div>
+          <div class="candidate-facts__wide"><dt>基线 authority closure</dt><dd><code>sha256:eb3d6c5cb2b498195e61b410727e9c93b28c52c502b331e08ec02ada9766b5b2</code></dd></div>
+        </dl>
+
+        <div class="boundary-strip" data-od-id="candidate-boundary">
+          <strong>边界保持不变</strong>
+          <p>排除全部地图关注点、原生 App、owner-operations/运营端、生产实现与 authority adoption；不重定义产品责任、算法或业务流程。</p>
+        </div>
+
+        <nav class="source-links" aria-label="候选规范文件" data-od-id="source-links">
+          <a href="DESIGN.md" data-od-id="open-design-spec"><span>规则源</span><strong>DESIGN.md</strong></a>
+          <a href="tokens.scss" data-od-id="open-token-contract"><span>SCSS 合同</span><strong>tokens.scss</strong></a>
+          <a href="colors_and_type.css" data-od-id="open-css-mirror"><span>浏览器镜像</span><strong>colors_and_type.css</strong></a>
+          <a href="context/provenance.md" data-od-id="open-provenance"><span>来源边界</span><strong>provenance</strong></a>
+        </nav>
+      </section>
+
+      <section id="principles" class="handbook-section" data-handbook-section data-od-id="principles">
+        <header class="section-heading"><p>01</p><div><h2>设计原则</h2><p>像轻量、可信、有户外生命力的决策仪器；用秩序承载密度，不靠装饰制造情绪。</p></div></header>
+        <ol class="principle-list">
+          <li data-od-id="principle-conclusion"><span>01</span><div><h3>结论 → 行动 → 证据</h3><p>先回答今晚是否值得出发，再组织地点、窗口与安全行动，最后按需展开专业依据。</p></div></li>
+          <li data-od-id="principle-outdoor"><span>02</span><div><h3>日光中性，户外信号</h3><p>大面积保持轻中性；活力只来自路线、时间、天象和风险的可读信号，不来自深蓝容器或装饰星空。</p></div></li>
+          <li data-od-id="principle-density"><span>03</span><div><h3>共享轴承载高密度</h3><p>云量、透明度、视宁度和事件共享时间列；使用行、带、轨与矩阵，不把指标拆成卡片。</p></div></li>
+          <li data-od-id="principle-accent"><span>04</span><div><h3>局部两种强调色</h3><p>一个局部最多两种非中性色，警告/错误按需加入；颜色始终有唯一语义所有权。</p></div></li>
+        </ol>
+        <div class="do-dont-grid" data-od-id="principle-anti-patterns">
+          <div><h3>应当</h3><ul><li>平静、具体、可执行</li><li>状态同时有文字、形状或线型</li><li>示例数值明确标记为演示数据</li></ul></div>
+          <div><h3>禁止</h3><ul><li>卡片套卡片、每指标一卡</li><li>渐变光晕、玻璃拟态、循环装饰</li><li>绝对晴朗、保证可见等无依据承诺</li></ul></div>
+        </div>
+      </section>
+
+      <section id="color-modes" class="handbook-section" data-handbook-section data-od-id="color-modes">
+        <header class="section-heading"><p>02</p><div><h2>颜色与模式</h2><p>天空、流星与山径是三个一等语义家族。夜间不是观测模式；观测模式只允许纯黑与暖红家族。</p></div></header>
+
+        <article class="mode-block" data-theme="day" data-od-id="mode-day">
+          <div class="mode-block__header"><div><p>日间</p><h3>空气感日光模式</h3></div><span>暖中性画布 · 炭黑文字 · 明亮语义信号</span></div>
+          <div class="table-scroll"><table class="token-table"><thead><tr><th>标本</th><th>令牌</th><th>精确值</th><th>职责 / 使用</th><th>对比说明</th></tr></thead><tbody>
+            <tr><td><i class="token-dot token-canvas"></i></td><td><code>--sw-canvas</code></td><td><code>#FBFAF7</code></td><td>暖日光页面背景</td><td>承载主要中性层</td></tr>
+            <tr><td><i class="token-dot token-surface"></i></td><td><code>--sw-surface</code></td><td><code>#FFFFFF</code></td><td>控件与内容面</td><td>不用于大面积强调</td></tr>
+            <tr><td><i class="token-dot token-surface-subtle"></i></td><td><code>--sw-surface-subtle</code></td><td><code>#F5F5EF</code></td><td>技术带、轨道、隐式分组</td><td>不作为卡片墙</td></tr>
+            <tr><td><i class="token-dot token-text-primary"></i></td><td><code>--sw-text-primary</code></td><td><code>#282B29</code></td><td>炭黑主要文字</td><td>对 canvas 13.71:1</td></tr>
+            <tr><td><i class="token-dot token-text-secondary"></i></td><td><code>--sw-text-secondary</code></td><td><code>#5E655F</code></td><td>说明与元数据</td><td>对 canvas 5.74:1</td></tr>
+            <tr><td><i class="token-dot token-text-tertiary"></i></td><td><code>--sw-text-tertiary</code></td><td><code>#6D746D</code></td><td>辅助说明</td><td>对 canvas 4.60:1</td></tr>
+            <tr><td><i class="token-dot token-border"></i></td><td><code>--sw-border</code></td><td><code>#E2E5DD</code></td><td>安静分隔线</td><td>不单独承担状态</td></tr>
+            <tr><td><i class="token-dot token-border-strong"></i></td><td><code>--sw-border-strong</code></td><td><code>#8A9088</code></td><td>关键图形边界</td><td>对白 3.27:1</td></tr>
+            <tr><td><i class="token-dot token-sky"></i></td><td><code>--sw-sky / -soft / -strong</code></td><td><code>#8799F6 / #EFF1FF / #4859B8</code></td><td>时间、选择、信息焦点</td><td>strong 对 soft 5.50:1；on-sky <code>#202332</code> 对 common 5.87:1</td></tr>
+            <tr><td><i class="token-dot token-meteor"></i></td><td><code>--sw-meteor / -soft / -strong</code></td><td><code>#F2C94C / #FFF7D6 / #6F5500</code></td><td>最终提交、天象、稀缺窗口</td><td>strong 对 soft 6.56:1；on-meteor <code>#3A2E00</code> 对 common 8.43:1</td></tr>
+            <tr><td><i class="token-dot token-trail"></i></td><td><code>--sw-trail / -soft / -strong</code></td><td><code>#62C88B / #E9F8EE / #1F6B45</code></td><td>路线、地形、可行机会</td><td>strong 对 soft 5.89:1；on-trail <code>#153B2A</code> 对 common 6.00:1</td></tr>
+            <tr><td><i class="token-dot token-risk"></i></td><td><code>--sw-risk / -soft / -strong</code></td><td><code>#E66F66 / #FFF0ED / #973D37</code></td><td>风险、失败</td><td>strong 对 soft 6.23:1</td></tr>
+            <tr><td><i class="token-dot token-sky"></i></td><td><code>--sw-focus</code></td><td><code>#6174D8</code></td><td>键盘焦点可见边界</td><td>对白 4.20:1；只在组件边缘内侧绘制</td></tr>
+          </tbody></table></div>
+        </article>
+
+        <article class="mode-block" data-theme="night" data-od-id="mode-night">
+          <div class="mode-block__header"><div><p>夜间</p><h3>低色度夜间模式</h3></div><span>中性近黑 · 局部语义色 · 非企业深蓝</span></div>
+          <div class="table-scroll"><table class="token-table"><thead><tr><th>标本</th><th>令牌</th><th>精确值</th><th>职责 / 使用</th><th>对比说明</th></tr></thead><tbody>
+            <tr><td><i class="token-dot token-canvas"></i></td><td><code>--sw-canvas</code></td><td><code>#11120F</code></td><td>中性近黑背景</td><td>不是严格观测黑</td></tr>
+            <tr><td><i class="token-dot token-surface"></i></td><td><code>--sw-surface</code></td><td><code>#181A17</code></td><td>主要内容面</td><td>低色度分层</td></tr>
+            <tr><td><i class="token-dot token-surface-subtle"></i></td><td><code>--sw-surface-subtle</code></td><td><code>#242720</code></td><td>技术带与隐式分组</td><td>避免蓝黑仪表盘感</td></tr>
+            <tr><td><i class="token-dot token-text-primary"></i></td><td><code>--sw-text-primary</code></td><td><code>#F5F3EC</code></td><td>主要文字</td><td>对 canvas 16.93:1</td></tr>
+            <tr><td><i class="token-dot token-text-secondary"></i></td><td><code>--sw-text-secondary</code></td><td><code>#BEC2B8</code></td><td>说明与元数据</td><td>对 canvas 10.38:1</td></tr>
+            <tr><td><i class="token-dot token-border"></i></td><td><code>--sw-border</code></td><td><code>#343830</code></td><td>普通分隔线</td><td>高程以边界为主</td></tr>
+            <tr><td><i class="token-dot token-border-strong"></i></td><td><code>--sw-border-strong</code></td><td><code>#666D62</code></td><td>关键图形边界</td><td>对 canvas 3.52:1</td></tr>
+            <tr><td><i class="token-dot token-sky"></i></td><td><code>--sw-sky / -soft / -strong</code></td><td><code>#A9B6FF / #292D45 / #D1D7FF</code></td><td>选择、时间</td><td>strong 对 soft 9.56:1</td></tr>
+            <tr><td><i class="token-dot token-meteor"></i></td><td><code>--sw-meteor / -soft / -strong</code></td><td><code>#F6D56F / #3A3118 / #FFE5A0</code></td><td>最终提交、天象、窗口</td><td>strong 对 soft 10.39:1</td></tr>
+            <tr><td><i class="token-dot token-trail"></i></td><td><code>--sw-trail / -soft / -strong</code></td><td><code>#7ED7A1 / #1B3426 / #B7EACB</code></td><td>路线、机会</td><td>strong 对 soft 9.99:1</td></tr>
+            <tr><td><i class="token-dot token-risk"></i></td><td><code>--sw-risk / -soft / -strong</code></td><td><code>#FF8F87 / #452724 / #FFC0BA</code></td><td>风险、失败</td><td>strong 对 soft 8.61:1</td></tr>
+            <tr><td><i class="token-dot token-sky"></i></td><td><code>--sw-focus</code></td><td><code>#B4BEFF</code></td><td>键盘焦点可见边界</td><td>对 surface 9.80:1；组件边缘内侧</td></tr>
+          </tbody></table></div>
+        </article>
+
+        <article class="mode-block" data-theme="observation" data-od-id="mode-observation">
+          <div class="mode-block__header"><div><p>严格观测</p><h3>黑与暖红独立模式</h3></div><span>先绑定完整主题，再绘制界面</span></div>
+          <div class="observation-rule">禁止蓝、白、黄、绿与中性灰闪现，包括加载、焦点、占位和模式切换中间帧。</div>
+          <div class="table-scroll"><table id="observation-token-table" class="token-table"><thead><tr><th>标本</th><th>令牌</th><th>精确值</th><th>职责 / 使用</th><th>对比说明</th></tr></thead><tbody>
+            <tr><td><i class="token-dot token-canvas"></i></td><td><code>--sw-canvas</code></td><td><code>#000000</code></td><td>唯一页面底色</td><td>不做跨色淡化</td></tr>
+            <tr><td><i class="token-dot token-surface"></i></td><td><code>--sw-surface</code></td><td><code>#110000</code></td><td>主要内容面</td><td>无阴影光晕</td></tr>
+            <tr><td><i class="token-dot token-surface-raised"></i></td><td><code>--sw-surface-raised</code></td><td><code>#190000</code></td><td>抬起内容面</td><td>仅依赖暖红边界</td></tr>
+            <tr><td><i class="token-dot token-surface-subtle"></i></td><td><code>--sw-surface-subtle</code></td><td><code>#240000</code></td><td>数据带与轨道</td><td>低亮层级</td></tr>
+            <tr><td><i class="token-dot token-text-primary"></i></td><td><code>--sw-text-primary</code></td><td><code>#FF6B58</code></td><td>主要文字与焦点</td><td>对黑 7.50:1</td></tr>
+            <tr><td><i class="token-dot token-text-secondary"></i></td><td><code>--sw-text-secondary</code></td><td><code>#D84A3C</code></td><td>次级文字</td><td>对黑 4.96:1</td></tr>
+            <tr><td><i class="token-dot token-text-tertiary"></i></td><td><code>--sw-text-tertiary</code></td><td><code>#C23D32</code></td><td>大文字或图形</td><td>不用于普通正文</td></tr>
+            <tr><td><i class="token-dot token-border"></i></td><td><code>--sw-border</code></td><td><code>#7A1E18</code></td><td>普通边界</td><td>配合文字状态</td></tr>
+            <tr><td><i class="token-dot token-border-strong"></i></td><td><code>--sw-border-strong</code></td><td><code>#A83229</code></td><td>关键边界</td><td>对黑 3.15:1</td></tr>
+            <tr><td><i class="token-dot token-disabled"></i></td><td><code>--sw-disabled-bg</code></td><td><code>#5B1712</code></td><td>禁用底色</td><td>必须附禁用说明</td></tr>
+          </tbody></table></div>
+        </article>
+      </section>
+
+      <section id="type-icons" class="handbook-section" data-handbook-section data-od-id="type-icons">
+        <header class="section-heading"><p>03</p><div><h2>字体与图标</h2><p>原生中文系统栈、Regular/Medium 为主、等宽数字只做数据对齐；图标只辅助含义。</p></div></header>
+        <div class="type-specimens">
+          <div><span>中文 / 界面</span><p class="type-sans">“今晚建议出发，最佳观测窗口 21:40–23:10。”</p><code>"Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif</code></div>
+          <div><span>数字 / 时间</span><p class="type-mono">20:18　21:40　23:10　78/100</p><code>"SFMono-Regular", Consolas, "Liberation Mono", monospace</code></div>
+        </div>
+        <div class="table-scroll"><table><thead><tr><th>角色</th><th>CSS px / rpx</th><th>行高</th><th>字重</th><th>使用</th></tr></thead><tbody>
+          <tr><td>conclusion</td><td>25–27 / 50–54</td><td>1.38–1.42</td><td>600</td><td>一句结论，最多两行</td></tr>
+          <tr><td>page-title</td><td>22–24 / 44–48</td><td>1.4</td><td>600</td><td>页面标题</td></tr>
+          <tr><td>section-title</td><td>17–18 / 34–36</td><td>1.45</td><td>550–600</td><td>模块标题</td></tr>
+          <tr><td>body</td><td>14–15 / 28–30</td><td>22–24px</td><td>400</td><td>中文正文与说明</td></tr>
+          <tr><td>ordinary-action</td><td>13 / 26</td><td>19px</td><td>500</td><td>普通按钮与行内动作</td></tr>
+          <tr><td>compact-choice</td><td>12 / 24</td><td>17–18px</td><td>500</td><td>紧凑选择与 Choice Bar</td></tr>
+          <tr><td>final-commit</td><td>15 / 30</td><td>21px</td><td>500</td><td>唯一最终提交 CTA</td></tr>
+          <tr><td>snackbar / action</td><td>13 / 12</td><td>19 / 18px</td><td>400 / 500</td><td>短消息与单一动作</td></tr>
+          <tr><td>status-tag</td><td>10–11 / 20–22</td><td>15–16px</td><td>500</td><td>短状态词</td></tr>
+        </tbody></table></div>
+        <div class="icon-contract" data-od-id="icon-contract">
+          <div><span class="icon-size icon-size--sm" aria-hidden="true"></span><strong>24rpx</strong><small>紧凑辅助</small></div>
+          <div><span class="icon-size icon-size--md" aria-hidden="true"></span><strong>32rpx</strong><small>常规界面</small></div>
+          <div><span class="icon-size icon-size--lg" aria-hidden="true"></span><strong>40rpx</strong><small>关键动作</small></div>
+          <p>默认 3rpx 描边，关键图标 4rpx；圆端点、圆连接。无可见标签的图标操作必须有可访问名称。</p>
+        </div>
+      </section>
+
+      <section id="spacing-layout" class="handbook-section" data-handbook-section data-od-id="spacing-layout">
+        <header class="section-heading"><p>04</p><div><h2>间距与布局</h2><p>750rpx 设计宽度映射到 375 CSS px；不同宽度重排，不缩放整页。</p></div></header>
+        <div class="spacing-scale" aria-label="4 到 96rpx 间距比例尺">
+          <div><code>4rpx</code><i style="--space-size:2px"></i></div><div><code>8rpx</code><i style="--space-size:4px"></i></div>
+          <div><code>12rpx</code><i style="--space-size:6px"></i></div><div><code>16rpx</code><i style="--space-size:8px"></i></div>
+          <div><code>24rpx</code><i style="--space-size:12px"></i></div><div><code>32rpx</code><i style="--space-size:16px"></i></div>
+          <div><code>40rpx</code><i style="--space-size:20px"></i></div><div><code>48rpx</code><i style="--space-size:24px"></i></div>
+          <div><code>64rpx</code><i style="--space-size:32px"></i></div><div><code>80rpx</code><i style="--space-size:40px"></i></div>
+          <div><code>96rpx</code><i style="--space-size:48px"></i></div>
+        </div>
+        <div class="layout-rules">
+          <div><strong>320px</strong><p>32rpx / 16px 页边距；压缩列间距。时间列可局部横向手势，整页不得横滚。</p></div>
+          <div><strong>375 / 390px</strong><p>32rpx 页边距；标准单列。技术矩阵固定标签列并滚动时间列。</p></div>
+          <div><strong>430px</strong><p>40rpx 页边距；内容最大阅读宽度 820rpx，不无限拉宽单元。</p></div>
+          <div><strong>安全区</strong><p>顶部避让微信菜单胶囊；底部操作叠加 <code>env(safe-area-inset-bottom)</code>。</p></div>
+        </div>
+        <div class="shared-axis-demo" data-od-id="shared-axis-rule">
+          <span>共享轴</span><div><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <span>云量</span><div><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          <span>透明度</span><div><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          <p>标签列固定；所有行共享列宽、选择列和事件位置。</p>
+        </div>
+      </section>
+
+      <section id="mobile-baseline" class="handbook-section" data-handbook-section data-od-id="mobile-baseline">
+        <header class="section-heading"><p>05</p><div><h2>移动基线 → Starward 应用</h2><p>44px 是命中合同，不是所有可见表面的统一高度；场景决定视觉层级。</p></div></header>
+        <div class="table-scroll baseline-table"><table><thead><tr><th>场景</th><th>Starward 应用</th><th>可见几何</th><th>命中 / 组合</th></tr></thead><tbody>
+          <tr><td>最终承诺</td><td>提交、确认加入计划；每个页面决策层只保留一个流星黄主动作</td><td>46–48px / 92–96rpx，15/21 标签</td><td>本体即 ≥44px；不与同级实心按钮并列</td></tr>
+          <tr><td>普通动作</td><td>查看证据、重试、保存调整、导航</td><td>34–36px / 68–72rpx，13/19 标签，按内容收缩</td><td>外层目标 ≥44px；不伪装成最终 CTA</td></tr>
+          <tr><td>重复选择</td><td>Checkbox/Radio 紧凑外观、Choice Bar 值</td><td>28–30px / 56–60rpx，12/17–18 标签</td><td>44px 行/单元命中；相邻扩展区不重叠</td></tr>
+          <tr><td>图标 / 安静动作</td><td>更多、关闭、稍后、展开</td><td>28–30px 表面或无填充，18–20px 图标</td><td>44px 命中；必须有名称，安静于选中状态</td></tr>
+          <tr><td>内容分组</td><td>普通内容靠留白、字级和分隔线；恢复/权限才用友好面板</td><td>4/8px 节奏，16px 移动边距</td><td>矩阵、轨与带共享轴，不把每项包成卡片</td></tr>
+          <tr><td>决策与不确定性</td><td>结论 → 影响/行动 → 证据；新鲜度贴近受影响证据</td><td>短因果动效与明亮语义边缘</td><td>活力来自色彩与轨迹，不来自大字、深蓝板、渐变或装饰流星</td></tr>
+        </tbody></table></div>
+        <p class="section-intro">原则来源包括 Apple HIG、Android 官方移动布局与可访问性、WeUI / TDesign 小程序工程约束；这里只翻译命中、层级、节奏与组件语义，不复制品牌视觉、页面结构或专有数值。</p>
+        <h3>八轴实践矩阵</h3>
+        <p class="section-intro">同一条原则必须同时通过跨平台基线、Starward 场景翻译和反模式三列审查。</p>
+        <div class="table-scroll" data-od-id="practice-axis-matrix"><table><thead><tr><th>轴</th><th>跨平台基线</th><th>Starward 应用</th><th>Do not</th></tr></thead><tbody>
+          <tr><td>Layout</td><td>320/375/390/430px 与 200% 文本按优先级重排</td><td>结论 → 影响/行动 → 证据连续；共享轴仅数据区局部滚动</td><td>不等比缩放整页，不制造页面横滚</td></tr>
+          <tr><td>Whitespace / density</td><td>屏幕、组间、组件内部、视觉重量四层分别控制</td><td>16px 边距；相关 4–8px、异组 8–12px；文字/图标/thumb 不贴边</td><td>不放大外间距，也不把内容塞满制造紧凑</td></tr>
+          <tr><td>Type hierarchy</td><td>尺寸、字重、行高、间距与少量语义色共同分层</td><td>正文 14–15/22–24；ordinary 13/19；compact 12/17–18；400/500/600</td><td>不做粗黑墙、中文 tracking 或全局机械缩放</td></tr>
+          <tr><td>Color</td><td>中性承担大面积，强调色按角色使用</td><td>sky=时间/选择；meteor=最终承诺/天象；trail=路线/机会；risk=风险</td><td>不做深蓝容器墙或彩虹指标墙</td></tr>
+          <tr><td>Cards / containment</td><td>默认用留白、字级和分隔线；卡只包独立对象</td><td>重复事实用行/带/矩阵；长卡只容纳一个观星点信息对象</td><td>不嵌套、不每指标一卡、不放竞争 CTA</td></tr>
+          <tr><td>Buttons / actions</td><td>≥44px 命中；可见面可更小；一个局部主动作</td><td>28–30px compact、34–36px ordinary、46–48px final</td><td>不把普通重试/导航做成大实心提交</td></tr>
+          <tr><td>Visual focus</td><td>触摸、文本编辑与键盘 focus-visible 分流</td><td>touch 按下即恢复；input 光标+1px 浅变化；keyboard 仅内侧下边缘</td><td>不把焦点当移动常态，不用完整深蓝框、外环或光晕</td></tr>
+          <tr><td>Mobile adaptation</td><td>触控、键盘、读屏、长标签、安全区一起验证</td><td>inline search 紧邻集合；clear、建议与选择行均 ≥44px</td><td>不靠隐藏、裁切或压缩表格通过窄屏</td></tr>
+        </tbody></table></div>
+        <div class="whitespace-layers" data-od-id="whitespace-occupancy-principle">
+          <article><span>01</span><strong>屏幕 / 布局</strong><p>16px 边距和安全区阻止贴边，不造空白列。</p></article>
+          <article><span>02</span><strong>组间节奏</strong><p>相关 4–8px，异组 8–12px，章节再拉开。</p></article>
+          <article><span>03</span><strong>组件内部</strong><p>字体、图标、thumb 与可见边缘保留呼吸。</p></article>
+          <article><span>04</span><strong>视觉重量</strong><p>400/500/600、浅边界与有限填色控制占用率。</p></article>
+        </div>
+        <div class="hit-geometry" aria-label="可见表面与命中几何对照" data-od-id="visible-hit-geometry">
+          <div class="hit-geometry__row"><span>重复选择</span><div class="hit-box"><span class="visible-control visible-control--compact">低云</span></div><small>30px visible / 44px hit</small></div>
+          <div class="hit-geometry__row"><span>普通动作</span><div class="hit-box"><span class="visible-control visible-control--default">查看证据</span></div><small>36px visible / 44px hit</small></div>
+          <div class="hit-geometry__row"><span>最终承诺</span><div class="hit-box"><span class="visible-control visible-control--commit">确认加入计划</span></div><small>48px visible / 48px hit</small></div>
+        </div>
+      </section>
+
+      <section id="radius-elevation" class="handbook-section" data-handbook-section data-od-id="radius-elevation">
+        <header class="section-heading"><p>06</p><div><h2>圆角、边框与高程</h2><p>几何表达职责，不追求统一软圆。先用间距，再用表面差与边界，最后才是阴影。</p></div></header>
+        <div class="radius-list">
+          <div><span class="radius-shape radius-none"></span><code>0</code><p><strong>none</strong> 表格、矩阵、长分隔线</p></div>
+          <div><span class="radius-shape radius-data"></span><code>4rpx</code><p><strong>data</strong> 数据单元、轨道</p></div>
+          <div><span class="radius-shape radius-band"></span><code>8rpx</code><p><strong>band</strong> 条带、矩阵外框</p></div>
+          <div><span class="radius-shape radius-control"></span><code>12rpx</code><p><strong>control</strong> 输入、普通按钮</p></div>
+          <div><span class="radius-shape radius-control-lg"></span><code>16rpx</code><p><strong>control-lg</strong> 分段控件、图标操作</p></div>
+          <div><span class="radius-shape radius-panel"></span><code>20rpx</code><p><strong>panel</strong> 紧凑内容面板</p></div>
+          <div><span class="radius-shape radius-panel-lg"></span><code>24rpx</code><p><strong>panel-lg</strong> 主内容面板</p></div>
+          <div><span class="radius-shape radius-friendly"></span><code>32rpx</code><p><strong>friendly</strong> 权限、帮助、温和提示</p></div>
+          <div><span class="radius-shape radius-sheet"></span><code>48rpx 48rpx 0 0</code><p><strong>sheet</strong> 仅边缘 sheet 顶部两角</p></div>
+          <div><span class="radius-shape radius-pill"></span><code>999rpx</code><p><strong>pill</strong> 仅状态、筛选、紧凑值</p></div>
+        </div>
+        <div class="geometry-contract">
+          <div class="border-sample border-normal"><strong>1rpx</strong><span>普通边界</span></div>
+          <div class="border-sample border-selected"><strong>2rpx</strong><span>选择 / 关键</span></div>
+          <div class="border-sample focus-sample" tabindex="0"><strong>keyboard</strong><span>外接键盘兜底 · 内侧下边缘</span></div>
+          <div class="elevation-sample elevation-0"><strong>elevation-0</strong><span>默认，无阴影</span></div>
+          <div class="elevation-sample elevation-1"><strong>elevation-1</strong><span>仅 sticky 控件</span></div>
+          <div class="elevation-sample elevation-2"><strong>elevation-2</strong><span>仅 sheet / dialog</span></div>
+        </div>
+      </section>
+
+      <section id="components" class="handbook-section" data-handbook-section data-od-id="components">
+        <header class="section-heading"><p>07</p><div><h2>组件</h2><p>14 个语义家族独立可发现；按状态模型与职责归类，不因 chip、pill 或下划线形状重复建族。领域仪器随后保留。</p></div></header>
+        <nav class="component-index" aria-label="基础组件家族目录" data-od-id="component-family-index">
+          <a href="#component-buttons">01 按钮</a><a href="#component-search">02 搜索</a><a href="#component-text-input">03 文本输入</a><a href="#component-checkbox">04 多选</a><a href="#component-radio">05 单选</a><a href="#component-switch">06 开关</a><a href="#component-choice-bar">07 选择栏</a><a href="#component-list-cell">08 列表行</a><a href="#component-badge">09 状态标签</a><a href="#component-cards">10 卡片</a><a href="#component-loading">11 加载</a><a href="#component-recovery">12 恢复</a><a href="#component-toast">13 轻反馈</a><a href="#component-overlays">14 浮层</a>
+        </nav>
+
+        <article id="component-buttons" class="specimen-family" data-component-family="buttons" data-od-id="component-buttons">
+          <header><p>基础组件</p><h3>按钮 / Button</h3></header>
+          <div class="specimen-family__body">
+            <div class="specimen-stage specimen-stage--flat" data-od-id="button-specimen">
+              <div class="button-scene-list" aria-label="按钮场景层级">
+                <div class="button-scene"><span><strong>重复选择 / 筛选</strong><small>12px / 18px · visible 30px · hit 44px</small></span><div><button class="tonal-button button-compact" type="button">主窗口</button><button class="secondary-button button-compact" type="button">低云</button></div></div>
+                <div class="button-scene"><span><strong>普通内联动作</strong><small>13px / 19px · visible 36px · 按内容收缩</small></span><div><button class="primary-button" type="button"><span class="icon-plus" aria-hidden="true"></span>保存为备选</button><button class="secondary-button" type="button">查看证据</button></div></div>
+                <div class="button-scene"><span><strong>最终承诺</strong><small>15px / 21px · visible 48px · 局部唯一主动作</small></span><div><button class="primary-button final-commit-button" type="button" data-od-id="button-final-commit">确认加入今晚计划</button></div></div>
+                <div class="button-scene"><span><strong>安静 / 图标动作</strong><small>小表面、44px 命中；图标必须有名称</small></span><div><button class="quiet-button button-compact" type="button">稍后</button><button class="icon-button" type="button" aria-label="更多操作"><span class="icon-more"><i></i><i></i><i></i></span></button></div></div>
+                <div class="button-scene"><span><strong>破坏性动作</strong><small>只在后果需要时出现</small></span><div><button class="destructive-button" type="button">移除计划</button></div></div>
+              </div>
+              <div class="button-state-strip" aria-label="按钮尺寸与状态">
+                <button class="primary-button is-pressed" type="button" aria-pressed="true">按下 / active</button>
+                <button class="secondary-button" type="button" aria-pressed="true">已选择 / selected</button>
+                <button class="tonal-button" type="button" aria-busy="true"><span class="button-spinner" aria-hidden="true"></span>正在保存</button>
+                <button class="secondary-button" type="button" disabled>条件不足</button>
+              </div>
+              <p class="specimen-note">中文标签字距 0；视觉内边距 compact 10–12px、ordinary 14px、final 20px，图标与标签间距 6px。可见高度 60 / 72 / 96rpx；命中包装至少 88rpx且互不重叠，文字与边缘之间保留呼吸。</p>
+            </div>
+            <dl class="specimen-meta"><div><dt>结构</dt><dd>动作标签、可选前置图标、加载反馈；图标按钮必须有名称。</dd></div><div><dt>场景</dt><dd>compact choice / ordinary inline / final commit / quiet-icon / destructive；大小由承诺层级决定。</dd></div><div><dt>状态</dt><dd>pressed 使用 80ms tonal/border + scale .985 并在抬起后恢复；selected 与 disabled 分开。键盘 focus-visible 只作为外部输入兜底，不作为移动状态陈列。</dd></div><div><dt>令牌</dt><dd>visible 60/72/96rpx；target ≥88rpx；sky 用于普通选择，meteor 只用于最终承诺。</dd></div><div><dt>边界</dt><dd>普通按钮按内容收缩；不并排多个主按钮；hover 比 selected 更安静。</dd></div></dl>
+          </div>
+        </article>
+
+
+        <article id="component-search" class="specimen-family" data-component-family="search-field" data-od-id="component-search-field">
+          <header><p>基础 02</p><h3>搜索 / Search Field</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat search-workbench" data-search-demo data-od-id="search-field-specimen">
+            <div class="field-block"><label for="spot-search">在观测点集合中搜索</label><div class="input-shell input-shell--search"><input id="spot-search" data-search-input type="search" value="示例观测点" placeholder="地点名、区域或标签" aria-describedby="spot-search-help search-result-status" /><button type="button" aria-label="清除地点搜索" data-clear-target="#spot-search">清除</button></div><p id="spot-search-help">范围：已收录观测点 · 结果按相关性优先。</p></div>
+            <div class="suggestion-list" role="listbox" aria-label="地点建议"><button type="button" role="option" aria-selected="true">示例观测点 · 预计 42 分钟</button><button type="button" role="option" aria-selected="false">备选观测点 · 预计 58 分钟</button></div>
+            <div class="search-result-row" id="search-result-status" role="status"><span>结果</span><strong>找到 2 个演示地点</strong><small>query 与筛选条件保持可见</small></div>
+            <div class="search-state-grid" aria-label="搜索状态目录"><div class="search-state"><span>idle</span><strong>有用 placeholder</strong></div><div class="search-state search-state--editing"><span>editing</span><strong>光标 + 1px 浅变化</strong></div><div class="search-state"><span>query</span><strong>示例观测点</strong></div><div class="search-state"><span>clear</span><strong>44px clear target</strong></div><div class="search-state" aria-busy="true"><span>loading</span><strong>正在匹配来源</strong></div><div class="search-state"><span>suggestions</span><strong>44px 建议行</strong></div><div class="search-state"><span>result</span><strong>相关优先</strong></div><div class="search-state"><span>empty</span><strong>没有匹配地点</strong></div><div class="search-state search-state--error"><span>error</span><strong>搜索暂不可用</strong></div></div>
+          </div><dl class="specimen-meta"><div><dt>结构</dt><dd>范围、14px query、16–18px icon、clear、helper、建议与结果。</dd></div><div><dt>状态</dt><dd>idle / editing / query / clear / loading / suggestions / result / empty / error / scoped。</dd></div><div><dt>几何</dt><dd>text/search input 本体 ≥88rpx；clear 与 suggestion row 均 ≥88rpx。</dd></div><div><dt>无障碍</dt><dd>范围永久可见；listbox/option；结果数礼貌播报，键盘完整操作。</dd></div><div><dt>Do not</dt><dd>不暗示无边界全局搜索；不把搜索隐藏进 generic Input；不把焦点框当移动常态。</dd></div></dl></div>
+        </article>
+
+        <article id="component-text-input" class="specimen-family" data-component-family="text-input" data-od-id="component-text-input">
+          <header><p>基础 03</p><h3>文本输入 / Text Input & Textarea</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat field-grid" data-od-id="text-input-specimen"><div class="field-block"><label for="plan-note">行程备注</label><textarea id="plan-note" rows="3" placeholder="例如：携带防滑鞋与头灯"></textarea><p>最多 80 个中文字符；长内容自然换行。</p></div><div class="field-block field-block--error"><label for="arrival-time">预计到达</label><input id="arrival-time" value="20:9" aria-invalid="true" aria-describedby="arrival-error" /><p id="arrival-error">请输入完整时间，例如 20:09。</p></div><div class="field-block"><label for="disabled-field">自动定位</label><input id="disabled-field" value="位置权限关闭" disabled /><p>可继续查看天气证据。</p></div><div class="field-block field-block--loading" aria-busy="true"><label for="loading-field">来源匹配</label><input id="loading-field" value="正在匹配可用来源" readonly /><p>完成后礼貌播报结果。</p></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>永久 label、field、helper/error、可选计数。</dd></div><div><dt>状态</dt><dd>text / time / textarea；normal / focus / error / disabled / readonly / loading。</dd></div><div><dt>几何</dt><dd>单行 input 本体 ≥88rpx；textarea 自然更高。</dd></div><div><dt>无障碍</dt><dd>describedby 关联；200% 文本与长中文 label 重排。</dd></div><div><dt>Do not</dt><dd>placeholder 不替代 label；不伪造更小输入的命中区。</dd></div></dl></div>
+        </article>
+
+        <article id="component-checkbox" class="specimen-family" data-component-family="checkbox-group" data-od-id="component-checkbox-group">
+          <header><p>基础 04</p><h3>多选 / Checkbox Group</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat selection-example"><fieldset class="choice-fieldset"><legend>需要提醒的条件（最多 2 项）</legend><label class="choice-row"><input type="checkbox" data-indeterminate /><span><strong>全选条件</strong><small>mixed：已选择 2 / 3</small></span></label><label class="choice-row"><input type="checkbox" checked /><span><strong>云量变化</strong><small>独立多选 · 已选择</small></span></label><label class="choice-row"><input type="checkbox" checked /><span><strong>路线风险</strong><small>独立多选 · 已选择</small></span></label><label class="choice-row"><input type="checkbox" disabled /><span><strong>月光提醒</strong><small>已达上限；取消一项后可选</small></span></label><p class="selection-feedback" role="status">已达最多 2 项；当前选择仍保持。</p></fieldset><div class="mapped-choice-strip" role="group" aria-label="多选外观映射"><span>Check-chip 外观映射</span><label><input type="checkbox" checked /><b>低云</b></label><label><input type="checkbox" /><b>阵风</b></label><label><input type="checkbox" checked /><b>路线可行</b></label></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>group label、18–20px box、标签/说明、计数与 select-all 关系。</dd></div><div><dt>状态</dt><dd>unchecked / checked / indeterminate / disabled / max-selection / select-all。</dd></div><div><dt>几何</dt><dd>visible 36–40rpx；整行 target ≥88rpx；chip 只是紧凑外观。</dd></div><div><dt>无障碍</dt><dd>用于独立多选；fieldset/legend；mixed 与上限原因可读；chip 外观仍是 checkbox。</dd></div><div><dt>Do not</dt><dd>不拿 radio/switch 替代多选；不因 pill 形状另建家族。</dd></div></dl></div>
+        </article>
+
+        <article id="component-radio" class="specimen-family" data-component-family="radio-group" data-od-id="component-radio-group">
+          <header><p>基础 05</p><h3>单选 / Radio Group</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat selection-example"><fieldset class="choice-fieldset"><legend>选择观测窗口</legend><label class="choice-row"><input type="radio" name="window-choice" checked /><span><strong>主窗口 21:40–23:10</strong><small>当前建议 · one of many</small></span></label><label class="choice-row"><input type="radio" name="window-choice" /><span><strong>备选窗口 23:30–00:20</strong><small>条件变化时使用</small></span></label><label class="choice-row"><input type="radio" name="window-choice" disabled /><span><strong>清晨窗口</strong><small>当前条件不可用</small></span></label></fieldset><div class="mapped-choice-strip" role="radiogroup" aria-label="单选外观映射"><span>Single-choice chip 外观映射</span><label><input type="radio" name="sky-scope" checked /><b>今晚</b></label><label><input type="radio" name="sky-scope" /><b>明晚</b></label><label><input type="radio" name="sky-scope" /><b>周末</b></label></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>group label、radio、标签与说明。</dd></div><div><dt>状态</dt><dd>unselected / selected / disabled / unavailable。</dd></div><div><dt>几何</dt><dd>visible 36–40rpx；整行 target ≥88rpx；chip 只是紧凑外观。</dd></div><div><dt>无障碍</dt><dd>只用于 one-of-many；同组语义、方向键与位置提示；chip 外观仍是 radio。</dd></div><div><dt>Do not</dt><dd>不用于可同时选择条件；不因 pill 形状另建家族。</dd></div></dl></div>
+        </article>
+
+        <article id="component-switch" class="specimen-family" data-component-family="switch" data-od-id="component-switch">
+          <header><p>基础 06</p><h3>开关 / Switch</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat switch-stack"><div class="switch-row"><span><strong>风险变化提醒</strong><small>立即启用；路线或天气风险明显变化时提醒</small></span><button class="toggle" type="button" role="switch" aria-checked="true" aria-label="风险变化提醒"><i></i></button></div><div class="switch-row"><span><strong>自动缓存证据</strong><small>当前关闭</small></span><button class="toggle" type="button" role="switch" aria-checked="false" aria-label="自动缓存证据"><i></i></button></div><div class="switch-row" aria-disabled="true"><span><strong>现场红光提醒</strong><small>此处仅展示 disabled 语义</small></span><button class="toggle" type="button" role="switch" aria-checked="false" disabled aria-label="现场红光提醒"><i></i></button></div><div class="switch-geometry" aria-hidden="true"><span>46×24px track</span><span>20px thumb</span><span>2px inset</span><span>22px travel</span><span>44px hit row</span></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>setting label、结果说明、track/thumb、on/off。</dd></div><div><dt>状态</dt><dd>on / off / disabled；键盘 focus-visible 仅为外部输入 fallback。</dd></div><div><dt>几何</dt><dd>track 92×48rpx，thumb 40rpx，inset 4rpx，travel 44rpx；整行 target ≥88rpx。</dd></div><div><dt>语义</dt><dd>只用于设置列表中立即生效的二元值；开启用 Trail Green，关闭中性，disabled 降对比。</dd></div><div><dt>Do not</dt><dd>不替代 radio；不触发需要提交确认或危险动作；不恢复粗短 thumb。</dd></div></dl></div>
+        </article>
+
+        <article id="component-choice-bar" class="specimen-family" data-component-family="choice-bar" data-od-id="component-choice-bar">
+          <header><p>基础 07</p><h3>选择栏 / Choice Bar & View Switcher</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat choice-bar-workbench">
+            <div><span class="specimen-kicker">Tabs · 组织相关内容 / 视图</span><div class="choice-bar choice-bar--tabs" role="tablist" aria-label="证据分类" data-choice-bar style="--choice-count:3;--choice-index:0"><span class="choice-bar__indicator" aria-hidden="true"></span><button type="button" role="tab" aria-selected="true" tabindex="0" aria-controls="choice-panel-core">核心条件</button><button type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="choice-panel-event">天象事件</button><button type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="choice-panel-source">来源</button></div><div class="choice-panel" id="choice-panel-core" role="tabpanel">核心条件 · 演示分类</div><div class="choice-panel" id="choice-panel-event" role="tabpanel" hidden>天象事件 · 演示分类</div><div class="choice-panel" id="choice-panel-source" role="tabpanel" hidden>来源与新鲜度 · 演示分类</div></div>
+            <div><span class="specimen-kicker">Segmented · 局部值 / 紧密子视图</span><div class="choice-bar choice-bar--segmented" role="tablist" aria-label="预报范围" data-choice-bar style="--choice-count:3;--choice-index:0"><span class="choice-bar__indicator" aria-hidden="true"></span><button type="button" role="tab" aria-selected="true" tabindex="0">今晚</button><button type="button" role="tab" aria-selected="false" tabindex="-1">明晚</button><button type="button" role="tab" aria-selected="false" tabindex="-1">周末</button></div></div>
+            <p class="specimen-note">单一 indicator 以 transform 在选项间移动，160ms standard、可中断；点击和方向键同步 aria-selected，reduced motion 立即切换。每项不各自闪边。</p>
+          </div><dl class="specimen-meta"><div><dt>结构</dt><dd>短 label、共享轨道、单一移动 indicator、对应 value 或 panel。</dd></div><div><dt>子型</dt><dd>Tabs 组织内容/视图；Segmented 选择局部值或紧密子视图；共享 primitive，不混同职责。</dd></div><div><dt>几何</dt><dd>visible 56–60rpx、12/17–18；每项 target ≥88rpx。</dd></div><div><dt>无障碍</dt><dd>方向键/Home/End 与点击更新 aria-selected、tabindex 与 panel。</dd></div><div><dt>Do not</dt><dd>不容纳长句、不每项各画边框、不把 chip 或路由导航混入。</dd></div></dl></div>
+        </article>
+
+        <article id="component-list-cell" class="specimen-family" data-component-family="list-cell" data-od-id="component-list-cell">
+          <header><p>基础 08</p><h3>列表 / List, Cell & Action Row</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat row-list"><div class="information-row"><span><strong>数据更新时间</strong><small>演示 19:40</small></span><b>数据较旧</b></div><button class="action-row" type="button"><span><strong>查看今晚天空</strong><small>云量、透明度与月亮事件</small></span><i class="entry-arrow" aria-hidden="true"></i></button><section class="disclosure" data-open="false"><button type="button" aria-expanded="false" aria-controls="component-disclosure-content" data-disclosure-button><span>展开完整证据</span><span class="chevron" aria-hidden="true"></span></button><div class="disclosure-content" id="component-disclosure-content"><p>核心行原位展开，不生成第二层卡片。</p></div></section></div><dl class="specimen-meta"><div><dt>结构</dt><dd>title、meta/value、leading status、trailing affordance。</dd></div><div><dt>变体</dt><dd>informational / navigation / action / disclosure row。</dd></div><div><dt>几何</dt><dd>row target ≥88rpx；baseline + divider。</dd></div><div><dt>无障碍</dt><dd>整行可点时不嵌套第二主动作；expanded/controls 同步。</dd></div><div><dt>Do not</dt><dd>重复事实不拆卡；行与尾部不执行不同主动作。</dd></div></dl></div>
+        </article>
+
+        <article id="component-badge" class="specimen-family" data-component-family="badge-status" data-od-id="component-badge-status">
+          <header><p>基础 09</p><h3>状态 / Badge & Status Tag</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat feedback-catalog"><div class="status-line-catalog"><span class="status-badge" data-state="live">实时</span><span class="status-badge" data-state="partial">部分数据</span><span class="status-badge" data-state="stale">数据较旧</span><span class="status-badge" data-state="offline">离线缓存</span></div><div class="inline-banner" role="status"><strong>主窗口将在 40 分钟后开始</strong><span>演示提醒 · 出发前请再次确认路线风险。</span></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>短状态词、可选 shape/icon，紧邻受影响对象。</dd></div><div><dt>变体</dt><dd>live / partial / stale / offline / success / risk。</dd></div><div><dt>几何</dt><dd>只包短词；非交互 badge 不伪装命中区。</dd></div><div><dt>无障碍</dt><dd>色彩 + 文字/边型；status/alert 按严重度。</dd></div><div><dt>Do not</dt><dd>不只显示色点；不承载段落；不把普通标签都做 pill。</dd></div></dl></div>
+        </article>
+
+        <article id="component-cards" class="specimen-family" data-component-family="cards-containment" data-od-id="component-cards-containment">
+          <header><p>基础 10</p><h3>卡片 / Card & Containment</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat containment-compare"><div class="implicit-group"><strong>隐式分组优先</strong><div class="information-row"><span>云量</span><b>演示 18%</b></div><div class="information-row"><span>透明度</span><b>演示 良好</b></div><small>重复事实：留白 + baseline + divider。</small></div><div class="explicit-card-grid"><article class="specimen-card specimen-card--event"><span>内容 / 事件</span><strong>天文暮光结束</strong><small>演示 20:48 · 完整事件对象</small></article><article class="specimen-card specimen-card--plan"><span>已保存计划 / 动作</span><strong>今晚计划</strong><small>主窗口 21:40–23:10</small><button class="quiet-button button-compact" type="button">查看</button></article><article class="specimen-card specimen-card--evidence"><span>证据 / 新鲜度</span><strong>部分数据</strong><small>透明度后两小时缺失</small></article><article class="specimen-card specimen-card--metric"><span>决策 metric tile</span><strong>78 / 100</strong><small>评分退居判断之后</small></article></div><article class="spot-object-card" aria-labelledby="spot-card-title" data-od-id="card-full-width-spot-object"><header><div><span>full-width 长对象卡 · 演示数据</span><h4 id="spot-card-title">观星点信息</h4></div><span class="status-badge" data-state="live">可行</span></header><div class="spot-object-card__row"><span>地点 / 距离</span><strong>示例观测点 · 42 分钟</strong></div><div class="spot-object-card__row"><span>条件摘要</span><strong>低云较少 · 透明度良</strong></div><div class="spot-object-card__row"><span>状态 / 元数据</span><strong>演示 19:40 更新 · 部分数据</strong></div><button class="action-row" type="button"><span><strong>查看此对象的证据</strong><small>一个尾部披露，不新增业务路线</small></span><i class="entry-arrow" aria-hidden="true"></i></button></article></div><dl class="specimen-meta"><div><dt>结构</dt><dd>一个 coherent object；heading、content、meta、最多一个局部动作。</dd></div><div><dt>变体</dt><dd>event / saved-plan / evidence-freshness / metric / full-width 长对象卡；对照 implicit grouping。</dd></div><div><dt>几何</dt><dd>compact 8px；normal 12–16px；长卡用行与分隔线组织，不加卡中卡。</dd></div><div><dt>无障碍</dt><dd>heading 建立区域名；长卡尾部披露有明确动作名称。</dd></div><div><dt>Do not</dt><dd>不嵌套、不每指标/状态一卡、不放竞争 CTA；标本不是业务页面。</dd></div></dl></div>
+        </article>
+
+        <article id="component-loading" class="specimen-family" data-component-family="progress-loading" data-od-id="component-progress-loading">
+          <header><p>基础 11</p><h3>加载 / Progress, Loading & Skeleton</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat loading-catalog"><div class="progress-specimen" role="progressbar" aria-label="条件更新进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="68"><span style="--progress:68%"></span><small>正在更新条件 · 68%</small></div><button class="tonal-button" type="button" aria-busy="true"><span class="button-spinner" aria-hidden="true"></span>正在保存</button><div class="skeleton-rows" aria-busy="true" aria-label="正在加载条件行"><i></i><i></i><i></i></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>状态文字、determinate value / indeterminate、结构骨架。</dd></div><div><dt>变体</dt><dd>progressbar / inline / button / skeleton / data-arrival。</dd></div><div><dt>几何</dt><dd>保留最终布局；skeleton 对应真实行。</dd></div><div><dt>无障碍</dt><dd>aria-busy/progressbar；长等待有文字；到达礼貌播报。</dd></div><div><dt>Do not</dt><dd>不做循环装饰、发光或旋转天体；观测只黑/暖红。</dd></div></dl></div>
+        </article>
+
+        <article id="component-recovery" class="specimen-family" data-component-family="recovery-states" data-od-id="component-recovery-states">
+          <header><p>基础 12</p><h3>恢复 / Empty, Error & Permission</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat recovery-catalog"><div class="local-state"><span>空状态</span><strong>暂无保存的计划</strong><p>先在地点详情中加入；不虚构推荐内容。</p></div><div class="local-state local-state--error"><span>局部错误</span><strong>透明度更新失败</strong><p>云量与路线证据仍可查看。</p><button class="secondary-button" type="button">重新获取</button></div><div class="permission-panel"><div><span>权限恢复</span><strong>位置权限已关闭</strong><p>仍可查看天气证据；预计到达不再自动更新。</p></div><div class="permission-actions"><button class="quiet-button" type="button">稍后</button><button class="secondary-button" type="button">前往系统设置</button></div></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>原因、影响范围、仍可用内容、真实恢复动作。</dd></div><div><dt>变体</dt><dd>empty / local error / offline / permission denied/recovery。</dd></div><div><dt>几何</dt><dd>局部用行/带；仅权限或全页恢复用 friendly 32rpx。</dd></div><div><dt>无障碍</dt><dd>错误关联区域；恢复播报；拒绝后核心浏览继续。</dd></div><div><dt>Do not</dt><dd>不清空可信内容；不每状态一卡；不冒充 final CTA。</dd></div></dl></div>
+        </article>
+
+        <article id="component-toast" class="specimen-family" data-component-family="toast-snackbar" data-od-id="component-toast-snackbar">
+          <header><p>基础 13</p><h3>轻反馈 / Toast & Snackbar</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat toast-stack"><div class="snackbar" role="status"><span>计划已保存到本机</span><button class="quiet-button button-compact" type="button">撤销</button></div><div class="snackbar snackbar--risk" role="alert"><span>刷新失败，继续显示缓存</span><button class="quiet-button button-compact" type="button">知道了</button></div><p class="specimen-note">消息 13px/19px，动作 12px/18px；单行优先但长中文可换行。自动消失可暂停；重复事件合并。</p></div><dl class="specimen-meta"><div><dt>结构</dt><dd>短结果、可选一个 undo/action、关闭/超时策略。</dd></div><div><dt>变体</dt><dd>success / error / offline / undo。</dd></div><div><dt>几何</dt><dd>消息 13/19、动作 12/18；动作 target ≥88rpx；避让 safe area 与 sticky action。</dd></div><div><dt>无障碍</dt><dd>status/alert 按严重度；自动消失可暂停。</dd></div><div><dt>Do not</dt><dd>重要错误不只靠 toast；不放多个动作或堆叠多条。</dd></div></dl></div>
+        </article>
+
+        <article id="component-overlays" class="specimen-family" data-component-family="dialog-bottom-sheet" data-od-id="component-dialog-bottom-sheet">
+          <header><p>基础 14</p><h3>浮层 / Dialog & Bottom Sheet</h3></header>
+          <div class="specimen-family__body"><div class="specimen-stage specimen-stage--flat overlay-catalog"><div class="dialog-anatomy"><strong>放弃未保存的调整？</strong><p>这是阻断确认，明确说明后果。</p><div><button class="quiet-button" type="button">继续编辑</button><button class="destructive-button" type="button">放弃调整</button></div></div><div class="mini-sheet"><span class="sheet-handle" aria-hidden="true"></span><strong>调整今晚计划</strong><p>标题、内容、动作与安全区处于同一任务层。</p><div class="sheet-actions"><button class="quiet-button" type="button">稍后</button><button class="secondary-button" type="button">保存调整</button></div></div></div><dl class="specimen-meta"><div><dt>结构</dt><dd>title、body、actions；sheet 另有 handle、停靠边与安全区。</dd></div><div><dt>状态</dt><dd>dialog confirm / sheet task；open / dragging / loading / error。</dd></div><div><dt>几何</dt><dd>dialog 24rpx；sheet 顶角 48rpx；真实浮层才用 elevation-2。</dd></div><div><dt>无障碍</dt><dd>focus trap、Escape/返回关闭、返回触发点。</dd></div><div><dt>Do not</dt><dd>不把常规分组画成浮层；不新增产品路线或堆卡。</dd></div></dl></div>
+        </article>
+
+        <article class="specimen-family" data-component-family="decision-summary" data-od-id="component-decision-summary">
+          <header><p>DOMAIN 01</p><h3>Decision Summary</h3></header>
+          <div class="specimen-family__body">
+            <div class="specimen-stage"><div class="decision"><div class="status-line"><span class="status-dot"></span><span>今晚建议出发</span><span class="decision-truth">演示 · 实时</span></div><h4>21:40 后云隙扩大，适合短时观测</h4><p class="decision-impact"><strong>22:30</strong> 前后条件最稳定；演示数据，不代表当前实况。</p><div class="decision-evidence" aria-label="紧凑演示证据"><div class="evidence-metric evidence-metric--score"><span>演示评分</span><strong>78 / 100</strong></div><div class="evidence-metric evidence-metric--window"><span>机会窗口</span><strong>90 分钟</strong></div><div class="evidence-metric evidence-metric--time"><span>稳定时刻</span><strong>22:30</strong></div><div class="evidence-metric evidence-metric--risk"><span>路线风险</span><strong>湿滑慢行</strong></div></div></div></div>
+            <dl class="specimen-meta"><div><dt>Anatomy</dt><dd>建议/状态 → 简短结论 → 影响与时间 → 8–10px 紧凑证据带。</dd></div><div><dt>Variants</dt><dd>建议 / 谨慎 / 不建议；可组合 live / partial / stale / offline。</dd></div><div><dt>Tokens</dt><dd>结论中性；recommendation 用 trail，time 用 sky，window 用 meteor，wet-road risk 才用 risk；评分退居证据带。</dd></div><div><dt>A11y</dt><dd>读屏顺序：判断 → 影响/时间 → 证据与状态；不只读分数。</dd></div><div><dt>Do not</dt><dd>评分先于判断、孤立圆形分数、松散空列、全黑信息或嵌套评分卡。</dd></div></dl>
+          </div>
+        </article>
+
+        <article class="specimen-family" data-component-family="observing-window-risk" data-od-id="component-window-risk">
+          <header><p>DOMAIN 02</p><h3>Observing Window / Risk Strip</h3></header>
+          <div class="specimen-family__body">
+            <div class="specimen-stage"><div class="window-stack" aria-label="演示主窗口与备选窗口"><div class="window-row"><span class="window-label">主窗口</span><div class="window-track"><div class="window-fill" style="--start:18%;--length:42%">21:40–23:10</div></div></div><div class="window-row backup"><span class="window-label">备选</span><div class="window-track"><div class="window-fill" style="--start:68%;--length:22%">23:30–00:20</div></div></div></div><div class="risk-strip specimen-risk" role="status"><div><strong>末段道路湿滑</strong><p>最后 1.2 公里请减速，备好防滑鞋与头灯。</p></div></div></div>
+            <dl class="specimen-meta"><div><dt>Anatomy</dt><dd>主/备标签、开始结束、时长、依据；风险标题、影响与缓解动作。</dd></div><div><dt>Variants</dt><dd>primary / backup / unavailable / partial；notice / warning / blocker / resolved。</dd></div><div><dt>Tokens</dt><dd>窗口 sky + band 8rpx；阻断 risk，背景保持 soft role。</dd></div><div><dt>A11y</dt><dd>完整读出时间与时长；阻断用 alert，普通风险用 status。</dd></div><div><dt>Do not</dt><dd>拆成两张窗口卡、只显示叹号、把风险放在主行动之后。</dd></div></dl>
+          </div>
+        </article>
+
+        <article class="specimen-family" data-component-family="time-data" data-od-id="component-time-data">
+          <header><p>DOMAIN 03</p><h3>Time Rail / Condition Band / Event Node</h3></header>
+          <div class="specimen-family__body">
+            <div class="specimen-stage"><div class="time-matrix" role="table" aria-label="演示条件时间矩阵"><div class="matrix-row head" role="row"><span class="metric" role="columnheader">时间</span><span role="columnheader">21</span><span role="columnheader">22</span><span role="columnheader">23</span><span role="columnheader">00</span><span role="columnheader">01</span><span role="columnheader">02</span></div><div class="matrix-row" role="row"><span class="metric" role="rowheader">云量</span><span role="cell">35%</span><span class="matrix-cell selected" role="cell">22%</span><span class="matrix-cell selected" role="cell">18%</span><span role="cell">30%</span><span role="cell">46%</span><span role="cell">58%</span></div><div class="matrix-row" role="row"><span class="metric" role="rowheader">视宁</span><span role="cell">一般</span><span class="matrix-cell good" role="cell">稳定</span><span class="matrix-cell good" role="cell">稳定</span><span role="cell">一般</span><span role="cell">波动</span><span role="cell">波动</span></div></div><div class="event-rail" role="img" aria-label="21点32分月落，0点12分天文暮光结束"><div class="event" style="--x:15%"><span>21:32<br />月落</span></div><div class="event" style="--x:62%"><span>00:12<br />暮光结束</span></div></div></div>
+            <dl class="specimen-meta"><div><dt>Anatomy</dt><dd>固定标签列、等宽时刻、游标、条件序列、缺失标记与事件节点。</dd></div><div><dt>Variants</dt><dd>6 / 8 / 12 列；只读 / 可拖动；live / partial / stale / offline。</dd></div><div><dt>Tokens</dt><dd>选择 sky；事件 meteor；异常 risk；技术容器 0–8rpx。</dd></div><div><dt>A11y</dt><dd>表头与单元格关联；图形之后提供按时间排序的文字等价。</dd></div><div><dt>Do not</dt><dd>每指标一卡、手写不对齐列、用装饰天体替代真实时间。</dd></div></dl>
+          </div>
+        </article>
+
+        <article class="specimen-family" data-component-family="freshness-disclosure" data-od-id="component-freshness-disclosure">
+          <header><p>证据组件</p><h3>来源、新鲜度与证据展开</h3></header>
+          <div class="specimen-family__body">
+            <div class="specimen-stage specimen-stage--flat"><div class="freshness-line" data-state="stale" role="status"><span class="status-badge" data-state="stale">数据较旧</span><span>演示更新 19:40</span><span>透明度可能变化</span><button class="quiet-button button-compact" type="button">刷新</button></div><div class="provenance-line"><span>来源覆盖</span><strong>演示 4 / 4</strong><span>模型入口保持可追溯</span></div><section class="disclosure" data-open="false"><button type="button" aria-expanded="false" aria-controls="handbook-evidence" data-disclosure-button><span>展开完整证据与来源</span><span class="chevron" aria-hidden="true"></span></button><div class="disclosure-content" id="handbook-evidence"><div class="evidence-row"><span>覆盖范围</span><strong>演示 4 / 4</strong></div><div class="evidence-row"><span>更新时间</span><strong>演示 19:40</strong></div><div class="evidence-row"><span>状态影响</span><strong>透明度可能变化</strong></div></div></section></div>
+            <dl class="specimen-meta"><div><dt>结构</dt><dd>状态词、更新时间、来源入口、覆盖范围、影响与展开证据。</dd></div><div><dt>变体</dt><dd>live / partial / stale / offline-cache；collapsed / expanded / loading。</dd></div><div><dt>令牌</dt><dd>默认中性扁平行；stale 仅状态词使用 meteor；offline 使用 risk；0–8rpx 技术容器。</dd></div><div><dt>无障碍</dt><dd>相对时间附绝对时间；aria-expanded 与 aria-controls 同步；更新礼貌播报。</dd></div><div><dt>边界</dt><dd>不使用整块深色/黄色面板；旧数据必须同时说明影响范围。</dd></div></dl>
+          </div>
+        </article>
+
+        <article class="specimen-family" data-component-family="system-states" data-od-id="component-system-states">
+          <header><p>恢复组件</p><h3>加载、空、错误与权限</h3></header>
+          <div class="specimen-family__body">
+            <div class="specimen-stage specimen-stage--flat state-specimens"><div class="state-example state-example--loading" aria-busy="true"><span class="state-marker" aria-hidden="true"></span><div><strong>正在更新条件</strong><p>保留时间矩阵结构；超过短等待显示文字。</p></div></div><div class="state-example"><span class="state-marker" aria-hidden="true"></span><div><strong>暂无保存的计划</strong><p>先在地点详情中加入今晚计划；不虚构推荐内容。</p></div></div><div class="state-example state-example--error" role="alert"><span class="state-marker" aria-hidden="true"></span><div><strong>透明度更新失败</strong><p>其他条件仍可查看；只重新获取受影响数据。</p></div><button class="secondary-button button-compact" type="button">重新获取</button></div><div class="state-example state-example--permission"><div><strong>位置权限已关闭</strong><p>仍可查看天气证据；预计到达时间不再自动更新。</p></div><div class="permission-actions"><button class="quiet-button" type="button">稍后</button><button class="tonal-button" type="button">前往系统设置</button></div></div></div>
+            <dl class="specimen-meta"><div><dt>结构</dt><dd>状态词、影响范围、仍可用内容、下一步恢复动作。</dd></div><div><dt>变体</dt><dd>loading / empty / local error / permission recovery。</dd></div><div><dt>令牌</dt><dd>loading/empty 中性扁平行；error 只小面积 risk；permission 可用 friendly 32rpx。</dd></div><div><dt>无障碍</dt><dd>aria-busy、status/alert 按严重度；错误和恢复按钮明确关联。</dd></div><div><dt>边界</dt><dd>不清空仍可信内容、不做循环装饰加载、不强迫授权、不每状态一卡。</dd></div></dl>
+          </div>
+        </article>
+      </section>
+
+      <section id="motion" class="handbook-section" data-handbook-section data-od-id="motion">
+        <header class="section-heading"><p>08</p><div><h2>动效</h2><p>所有运动由操作或数据因果触发，可中断、可反向；观测模式不经过第三主题。</p></div></header>
+        <div class="motion-tokens"><div><span>press</span><strong>80ms</strong></div><div><span>short</span><strong>120ms</strong></div><div><span>medium</span><strong>160ms</strong></div><div><span>long</span><strong>200ms</strong></div><div><span>sheet cap</span><strong>320ms</strong></div><div><span>standard</span><code>cubic-bezier(.2,0,0,1)</code></div><div><span>exit</span><code>cubic-bezier(.4,0,1,1)</code></div><div><span>bounded spring</span><code>mass 1 · stiffness 420 · damping 34 · rest delta .5</code></div></div>
+        <div class="table-scroll motion-contract-table" data-od-id="motion-contract-table"><table><thead><tr><th>配方</th><th>触发</th><th>开始 → 目标</th><th>中断 / 反向</th><th>减少动态</th><th>观测模式</th></tr></thead><tbody><tr><td>Press</td><td>pointer / key down</td><td>scale 1 → .985 → 1</td><td>从当前值反向，不排队</td><td>即时边界 / 底色</td><td>只改暖红明度与边界</td></tr><tr><td>Selection</td><td>选择值变化</td><td>旧指示 → 新指示</td><td>新选择接管当前状态</td><td>直接切换 + 内侧焦点边界</td><td>暖红指示器</td></tr><tr><td>Disclosure</td><td>展开 / 收起</td><td>旧高度 → 实际高度</td><td>从当前高度反转</td><td>即时显隐</td><td>不淡入白色内容</td></tr><tr><td>Sheet / reveal</td><td>打开临时任务</td><td>底边 → 停靠位</td><td>拖拽接管并可反向</td><td>即时出现 + 边界</td><td>黑底暖红边界先绑定</td></tr><tr><td>Data arrival</td><td>请求完成</td><td>skeleton → 真实行</td><td>新请求取消旧 transition</td><td>直接替换并播报</td><td>只在黑与暖红间切换</td></tr><tr><td>Time sync</td><td>拖动时间</td><td>游标 → 指针位置</td><td>新手势立即接管</td><td>直接跟手，无 settle</td><td>暖红游标</td></tr><tr><td>Mode change</td><td>用户切换</td><td>完整主题 A → B</td><td>新模式直接接管</td><td>即时替换</td><td>切入 / 离开均即时</td></tr></tbody></table></div>
+        <div class="motion-workbench">
+          <article data-motion-recipe="press"><header><span>Press</span><code>80 / 120ms</code></header><button class="primary-button specimen-button" type="button">按住查看反馈</button><p>pointer/key down：scale 1 → .985；抬起反向。减少动态改为即时边界/底色。</p></article>
+          <article data-motion-recipe="selection"><header><span>Selection</span><code>160ms</code></header><div class="choice-bar choice-bar--segmented" role="tablist" aria-label="动效选择演示" data-choice-bar style="--choice-count:2;--choice-index:0"><span class="choice-bar__indicator" aria-hidden="true"></span><button type="button" role="tab" aria-selected="true" tabindex="0">主窗口</button><button type="button" role="tab" aria-selected="false" tabindex="-1">备选</button></div><p>新选择接管 indicator 当前 transform；减少动态直接切换。</p></article>
+          <article data-motion-recipe="disclosure"><header><span>Disclosure</span><code>200 / 160ms</code></header><section class="disclosure" data-open="false"><button type="button" aria-expanded="false" aria-controls="motion-disclosure-content" data-disclosure-button><span>展开依据</span><span class="chevron" aria-hidden="true"></span></button><div class="disclosure-content" id="motion-disclosure-content"><p>内容原位展开；新操作从当前状态反向。</p></div></section><p>减少动态即时显隐，不淡入白色内容。</p></article>
+          <article data-motion-recipe="sheet-reveal"><header><span>Sheet / reveal</span><code>≤320ms</code></header><div class="sheet-motion-demo" id="sheet-motion-demo" data-open="false"><button class="secondary-button" type="button" aria-expanded="false" data-sheet-toggle="#sheet-motion-demo">打开浮层</button><div class="sheet-motion-surface"><span class="sheet-handle" aria-hidden="true"></span><strong>调整今晚计划</strong><span>可中断并反向关闭</span><button class="quiet-button button-compact" type="button" aria-expanded="true" data-sheet-toggle="#sheet-motion-demo">关闭浮层</button></div></div><p>减少动态取消 travel/scale，以即时出现和边界替代。</p></article>
+          <article data-motion-recipe="data-arrival"><header><span>Data arrival</span><code>120–160ms</code></header><div class="arrival-demo" id="arrival-demo" data-loaded="false" aria-live="polite"><div class="arrival-lines" aria-hidden="true"><i></i><i></i><i></i></div><p class="arrival-value">云量 22% · 透明度良 · 演示数据</p></div><button class="secondary-button" type="button" data-arrival-toggle="#arrival-demo">模拟数据到达</button><p>新请求取消旧 transition；减少动态直接替换。</p></article>
+          <article data-motion-recipe="time-sync"><header><span>Time sync</span><code>direct + 120ms settle</code></header><div class="time-sync-demo"><label for="time-sync-range">演示时间 <output for="time-sync-range" data-time-sync-output>22:00</output></label><input id="time-sync-range" type="range" min="0" max="5" value="1" step="1" data-time-sync /></div><p>拖动时所有带共享位置；新手势立即接管。减少动态保留直接跟手、取消 settle。</p></article>
+          <article data-motion-recipe="mode-change"><header><span>Mode change</span><code>同帧绑定</code></header><div class="theme-control compact-theme-control" role="group" aria-label="模式变化演示"><button type="button" aria-pressed="true" data-theme-target="#mode-transition-demo" data-theme-value="day">日间</button><button type="button" aria-pressed="false" data-theme-target="#mode-transition-demo" data-theme-value="night">夜间</button><button type="button" aria-pressed="false" data-theme-target="#mode-transition-demo" data-theme-value="observation">观测</button></div><div class="mode-transition-demo" id="mode-transition-demo" data-theme="day"><strong data-current-theme>日间</strong><span>完整目标主题</span></div><p>day↔night 背景 160ms；切入或离开观测均即时。</p></article>
+          <article data-motion-recipe="reduced-motion"><header><span>Reduced motion</span><code>系统 / 本地</code></header><div class="motion-demo" id="handbook-motion-demo" data-active="false" data-reduced="false"><div class="motion-track" aria-hidden="true"><span class="motion-dot"></span></div><button class="secondary-button" type="button" data-motion-toggle="#handbook-motion-demo">触发</button></div><div class="reduced-row"><span>减少动态</span><button class="toggle" type="button" role="switch" aria-checked="false" aria-label="减少动态" data-reduced-toggle="#handbook-motion-demo"><i></i></button></div><p>关闭位移/缩放，保留即时语义状态；Choice Bar indicator 立即切换。</p></article>
+        </div>
+      </section>
+
+      <section id="dense-states" class="handbook-section" data-handbook-section data-od-id="dense-states">
+        <header class="section-heading"><p>09</p><div><h2>高密度信息与状态</h2><p>状态保留仍可信的信息。文字、形状和影响范围共同编码，不用颜色替代说明。</p></div></header>
+        <div class="dense-workbench" data-state-scope>
+          <div class="state-tabs" role="tablist" aria-label="数据状态演示" data-state-controller data-state-target="#handbook-data-status"><button type="button" role="tab" id="handbook-state-live" aria-selected="true" aria-controls="handbook-data-status" tabindex="0" data-state-value="live">实时</button><button type="button" role="tab" id="handbook-state-partial" aria-selected="false" aria-controls="handbook-data-status" tabindex="-1" data-state-value="partial">部分</button><button type="button" role="tab" id="handbook-state-stale" aria-selected="false" aria-controls="handbook-data-status" tabindex="-1" data-state-value="stale">较旧</button><button type="button" role="tab" id="handbook-state-offline" aria-selected="false" aria-controls="handbook-data-status" tabindex="-1" data-state-value="offline">离线</button></div>
+          <div class="status-banner" id="handbook-data-status" data-state="live" role="tabpanel" aria-live="polite" aria-labelledby="handbook-state-live"><strong>实时</strong><p>核心数据已更新 · 演示时间 20:18</p></div>
+          <div class="table-scroll"><div class="time-matrix dense-matrix" role="table" aria-label="演示高密度状态矩阵"><div class="matrix-row head" role="row"><span class="metric" role="columnheader">时间</span><span role="columnheader">21</span><span role="columnheader">22</span><span role="columnheader">23</span><span role="columnheader">00</span><span role="columnheader">01</span><span role="columnheader">02</span></div><div class="matrix-row" role="row"><span class="metric" role="rowheader">云量</span><span role="cell">35%</span><span class="matrix-cell selected" role="cell">22%</span><span class="matrix-cell selected" role="cell">18%</span><span role="cell">30%</span><span role="cell">46%</span><span role="cell">58%</span></div><div class="matrix-row" role="row"><span class="metric" role="rowheader">透明</span><span role="cell">中</span><span class="matrix-cell good" role="cell">良</span><span class="matrix-cell good" role="cell">良</span><span role="cell">中</span><span role="cell" data-conditional-cell data-value="中">中</span><span role="cell" data-conditional-cell data-value="中">中</span></div><div class="matrix-row" role="row"><span class="metric" role="rowheader">视宁</span><span role="cell">一般</span><span class="matrix-cell selected" role="cell">稳定</span><span class="matrix-cell selected" role="cell">稳定</span><span role="cell">一般</span><span role="cell">一般</span><span role="cell">波动</span></div><div class="matrix-row" role="row"><span class="metric" role="rowheader">阵风</span><span role="cell">2.1</span><span role="cell">1.8</span><span role="cell">1.9</span><span role="cell">2.4</span><span class="matrix-cell risk" role="cell">4.8</span><span class="matrix-cell risk" role="cell">5.2</span></div></div></div>
+          <dl class="state-legend"><div><dt>实时</dt><dd>核心数据完整并刚更新。</dd></div><div><dt>部分数据</dt><dd>显示缺口、受影响范围与仍可用内容。</dd></div><div><dt>数据较旧</dt><dd>显示更新时间并要求出发前刷新。</dd></div><div><dt>离线缓存</dt><dd>保留上次内容与恢复动作。</dd></div></dl>
+        </div>
+      </section>
+
+      <section id="accessibility" class="handbook-section" data-handbook-section data-od-id="accessibility">
+        <header class="section-heading"><p>10</p><div><h2>无障碍与适配</h2><p>可访问性是组件合同的一部分，不是交付后的补丁。</p></div></header>
+        <div class="access-grid">
+          <article><strong>88rpx / 44px</strong><h3>触控目标</h3><p>可见控件可为 56–60/68–72rpx，最终承诺为 92–96rpx；实际命中区仍至少 44×44 CSS px，且相邻扩展区不重叠。</p></article>
+          <article><strong>Tab / Arrow / Esc</strong><h3>键盘</h3><p>所有交互可到达；分段控件支持方向键；Escape 关闭 sheet/dialog。</p></article>
+          <article><strong>touch / keyboard split</strong><h3>视觉焦点</h3><p>触摸按下后不保留焦点框；文本编辑用光标与 1px 浅变化。仅外接键盘/桌面/辅助键盘用内侧下边缘 focus-visible；pointer: coarse 不持久显示。</p></article>
+          <article><strong>200%</strong><h3>放大文字</h3><p>长中文按钮与字段标签允许换行；数据值可保持一行，但标签列加宽或上下重排。</p></article>
+        </div>
+        <div class="table-scroll"><table><thead><tr><th>检查</th><th>320</th><th>375</th><th>390</th><th>430</th><th>实现约束</th></tr></thead><tbody><tr><td>整页横向滚动</td><td>禁止</td><td>禁止</td><td>禁止</td><td>禁止</td><td>仅技术时间列局部滚动</td></tr><tr><td>页面边距</td><td>32rpx</td><td>32rpx</td><td>32rpx</td><td>40rpx</td><td>内容最大 820rpx</td></tr><tr><td>安全区</td><td colspan="4">顶部菜单胶囊 + 底部系统安全区</td><td>固定操作不得遮挡内容</td></tr><tr><td>状态编码</td><td colspan="4">文字 + 图标/形状/线型</td><td>不得只靠颜色</td></tr></tbody></table></div>
+        <ul class="access-checklist"><li>矩阵提供表头、单元格关系和文字摘要。</li><li>状态变化使用适度 <code>aria-live="polite"</code>。</li><li>错误通过 <code>aria-describedby</code> 与字段关联。</li><li><code>prefers-reduced-motion</code> 禁用位移/缩放，保留即时反馈。</li></ul>
+      </section>
+
+      <section id="integration" class="handbook-section" data-handbook-section data-od-id="integration">
+        <header class="section-heading"><p>11</p><div><h2>开发接入</h2><p><code>DESIGN.md</code> 是规则源，<code>tokens.scss</code> 是项目化合同，CSS 仅为浏览器镜像；不要建立第二套值。</p></div></header>
+        <ol class="integration-steps"><li><span>1</span><div><strong>读取规则源</strong><p>先确认组件 anatomy、状态、组合与边界，再选择令牌。</p></div></li><li><span>2</span><div><strong>消费语义角色</strong><p>使用 <code>--sw-canvas</code>、<code>--sw-text-primary</code>、<code>--sw-sky</code>、<code>--sw-meteor</code>、<code>--sw-trail</code> 等角色名，不复制原始色值。</p></div></li><li><span>3</span><div><strong>根节点绑定模式</strong><p>在绘制前一次绑定完整 <code>data-theme</code>；观测模式不得经过夜间中间态。</p></div></li><li><span>4</span><div><strong>按 authority 流程审查</strong><p>候选接入外部仓库前仍需正式选择与 closure 更新。</p></div></li></ol>
+        <div class="code-grid">
+          <figure><figcaption>Taro / JSX</figcaption><pre><code>&lt;View data-theme={mode} className="page"&gt;
+  &lt;DecisionSummary state={state} /&gt;
+&lt;/View&gt;</code></pre></figure>
+          <figure><figcaption>SCSS / semantic roles</figcaption><pre><code>@use "./tokens";
+
+.page {
+  background: var(--sw-canvas);
+  color: var(--sw-text-primary);
+}</code></pre></figure>
+        </div>
+        <nav class="integration-files" aria-label="开发接入文件"><a href="DESIGN.md"><strong>DESIGN.md</strong><span>规则、组件、动效与边界</span></a><a href="tokens.scss"><strong>tokens.scss</strong><span>Taro / React / SCSS 候选合同</span></a><a href="colors_and_type.css"><strong>colors_and_type.css</strong><span>浏览器预览镜像</span></a><a href="context/provenance.md"><strong>provenance</strong><span>基线、来源与未采用状态</span></a></nav>
+      </section>
+
+      <section id="application-validation" class="handbook-section" data-handbook-section data-od-id="application-validation">
+        <header class="section-heading"><p>12</p><div><h2>应用验证</h2><p>以下页面仅验证令牌、组件与组合规则在真实流程中的表现，不是设计系统本体，也不代表当前实况。</p></div></header>
+        <nav class="validation-list" aria-label="组合验证示例">
+          <a href="preview/spot-detail.html" data-od-id="validation-spot-detail"><span>01</span><div><strong>Spot Detail · 地点详情</strong><p>结论、主/备窗口、路线风险与证据层级。</p></div><i aria-hidden="true">→</i></a>
+          <a href="preview/spot-night.html" data-od-id="validation-spot-night"><span>02</span><div><strong>Spot Night · 地点夜况</strong><p>共享时间轴、条件矩阵与数据状态。</p></div><i aria-hidden="true">→</i></a>
+          <a href="preview/contribution.html" data-od-id="validation-contribution"><span>03</span><div><strong>Contribution · 贡献流程</strong><p>上传、处理、审核与可恢复错误。</p></div><i aria-hidden="true">→</i></a>
+          <a href="preview/my-plan-settings.html" data-od-id="validation-account"><span>04</span><div><strong>My / Plan / Settings</strong><p>保存计划、权限、通知与离线恢复。</p></div><i aria-hidden="true">→</i></a>
+        </nav>
+        <footer class="handbook-footer"><strong>候选只供审查</strong><p>未选择、未采用、非生产实现；外部 Starward 仓库与当前项目权威均未修改。</p></footer>
+      </section>
+    </main>
+  </div>
+
+  <script src="preview/shared.js"></script>
+</body>
+</html>

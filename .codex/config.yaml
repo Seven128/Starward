@@ -248,6 +248,20 @@ modularity:
       reason: This file is an immutable selected-source copy of the reviewed Open Design interaction fixture; rewriting its aggregate event wiring after selection would invalidate the canonical resource identity without improving production modularity, and production code is forbidden from importing it.
       tracking_issue: STARWARD-DRA-MOD-001
       expiry_condition: Remove this waiver when a newly selected immutable source replaces the fixture with modular provider output, or split the editable Open Design upstream before any future selection that materially changes this interaction script.
+    - path: docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/preview/shared.js
+      category: fixture_snapshot
+      owner: design-system-maintainers
+      introduced_at: "2026-09-02"
+      reason: This file is an immutable selected-source copy of the reviewed Open Design preview runtime; splitting it after selection would invalidate the manifest-bound source identity, it is not production runtime code, and production packages are forbidden from importing it.
+      tracking_issue: STARWARD-DRA-MOD-001
+      expiry_condition: Remove this waiver when a newly selected immutable source replaces this preview with modular provider output, or split the editable Open Design upstream before selecting a future revision that materially changes the shared preview runtime.
+    - path: docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/verify.mjs
+      category: fixture_snapshot
+      owner: design-system-maintainers
+      introduced_at: "2026-09-02"
+      reason: This file is the immutable reviewed source package's own integrity and design-contract checker; splitting it after selection would invalidate the manifest-bound source identity, and repository verification wraps rather than imports it as production code.
+      tracking_issue: STARWARD-DRA-MOD-001
+      expiry_condition: Remove this waiver when a newly selected immutable source ships a modular checker, or split the editable Open Design upstream before selecting a future revision that materially expands this checker.
 managed_files:
   - path: AGENTS.md
     strategy: merge-block

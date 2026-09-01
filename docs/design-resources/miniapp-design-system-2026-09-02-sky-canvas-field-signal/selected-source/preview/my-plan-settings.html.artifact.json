@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "preview/my-plan-settings.html",
+  "entry": "preview/my-plan-settings.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-09-01T13:22:47.445Z",
+  "updatedAt": "2026-09-01T13:22:47.445Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

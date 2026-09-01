@@ -1,0 +1,39 @@
+{
+  "product": "《今晚去观星》微信小程序",
+  "candidate": "Sky Canvas Field Signal revision",
+  "status": "unselected-candidate",
+  "productionConformanceClaimed": false,
+  "designAuthorityClosure": "sha256:eb3d6c5cb2b498195e61b410727e9c93b28c52c502b331e08ec02ada9766b5b2",
+  "target": "target.system.wechat-miniapp-sky-canvas-2026-08-25",
+  "workspaceOnly": true,
+  "externalRepositoryModified": false,
+  "localCodeReferences": [
+    "E:\\Dev\\Starward\\DESIGN.md",
+    "E:\\Dev\\Starward\\project_context\\global.md",
+    "E:\\Dev\\Starward\\project_context\\architecture.md",
+    "E:\\Dev\\Starward\\project_context\\areas\\main.md",
+    "E:\\Dev\\Starward\\project_context\\areas\\main\\product-surfaces\\wechat-miniapp.md",
+    "E:\\Dev\\Starward\\project_context\\areas\\main\\screen-contracts\\wechat-miniapp.md",
+    "E:\\Dev\\Starward\\project_context\\development-workflow\\authority-and-scope.md",
+    "E:\\Dev\\Starward\\docs\\design-resources\\miniapp-design-system-2026-08-25-sky-canvas\\selected-provider-design-system.md",
+    "E:\\Dev\\Starward\\apps\\wechat-miniapp\\src\\styles\\tokens.scss"
+  ],
+  "included": [
+    "non-map WeChat Mini Program visual system",
+    "semantic color",
+    "semantic geometry",
+    "dense information components",
+    "causal interruptible motion",
+    "day night observation themes",
+    "responsive and accessibility rules"
+  ],
+  "excluded": [
+    "all map concerns",
+    "native App",
+    "owner-operations surfaces",
+    "information architecture changes",
+    "business behavior changes",
+    "production adoption"
+  ],
+  "demoDataIsLive": false
+}

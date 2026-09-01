@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>基础、组件、运动与状态 · Sky Canvas 候选预览</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body class="review">
+  <main class="review-shell scene-layout" data-od-id="foundations-preview">
+    <section class="scene-intro" data-od-id="scene-introduction">
+      <p class="review-kicker">Representative scene 05</p>
+      <h1 data-od-id="scene-title">基础 / 组件 / 运动 / 状态</h1>
+      <p>把三模式令牌、语义几何、触控尺寸和可中断运动放回移动界面语境中审查。</p>
+      <div class="theme-control" role="group" aria-label="预览主题" data-od-id="theme-switcher">
+        <button type="button" aria-pressed="true" data-theme-target="#foundation-phone" data-theme-value="day" data-od-id="theme-day">日间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#foundation-phone" data-theme-value="night" data-od-id="theme-night">夜间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#foundation-phone" data-theme-value="observation" data-od-id="theme-observation">观测</button>
+      </div>
+      <div class="review-links" style="margin-top:20px"><a class="review-link" href="../index.html" data-od-id="back-to-hub">返回候选入口</a></div>
+    </section>
+
+    <article class="phone" id="foundation-phone" data-theme="day" data-od-id="foundation-phone">
+      <div class="phone-status"><span>20:18</span><span class="capsule" aria-label="微信菜单区域"></span></div>
+      <header class="app-header"><a class="icon-button" href="../index.html" aria-label="返回候选入口" data-od-id="back-button"><span class="icon-arrow"></span></a><h2>系统基础</h2><span></span></header>
+      <div class="app-content">
+        <p class="demo-label">当前模式：<span data-current-theme>日间</span> · 候选系统预览</p>
+
+        <section class="section" data-od-id="semantic-colors">
+          <div class="section-header"><h3>语义色</h3><span>局部最多两种强调色</span></div>
+          <div class="token-strip">
+            <div class="swatch" style="--color:var(--sw-sky);--label:var(--sw-on-sky)">时间</div>
+            <div class="swatch" style="--color:var(--sw-trail);--label:var(--sw-on-trail)">路线</div>
+            <div class="swatch" style="--color:var(--sw-meteor);--label:var(--sw-on-meteor)">天象</div>
+            <div class="swatch" style="--color:var(--sw-risk-soft);--label:var(--sw-risk-strong)">风险</div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="geometry-grammar">
+          <div class="section-header"><h3>语义几何</h3><span>不是统一软圆</span></div>
+          <div class="panel" style="border-radius:var(--sw-radius-panel-lg)">
+            <div class="evidence-row"><span>数据轨道</span><strong style="padding:4px 8px;border:1px solid var(--sw-border);border-radius:var(--sw-radius-band)">0–8rpx</strong></div>
+            <div class="evidence-row"><span>普通控件</span><strong style="padding:4px 8px;border:1px solid var(--sw-border);border-radius:var(--sw-radius-control-lg)">12–16rpx</strong></div>
+            <div class="evidence-row"><span>内容面板</span><strong style="padding:4px 8px;border:1px solid var(--sw-border);border-radius:var(--sw-radius-panel-lg)">20–24rpx</strong></div>
+            <div class="evidence-row"><span>权限面板</span><strong style="padding:4px 8px;border:1px solid var(--sw-border);border-radius:var(--sw-radius-friendly)">32rpx</strong></div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="control-states">
+          <div class="section-header"><h3>控件与状态</h3><span>最小 88rpx 目标</span></div>
+          <div style="display:grid;gap:8px"><button class="primary-button" type="button">主操作</button><button class="secondary-button" type="button">次操作</button></div>
+          <div class="risk-strip" style="margin-top:10px" role="status"><div><strong>阻断状态</strong><p>同时提供词、边界和恢复说明。</p></div></div>
+        </section>
+
+        <section class="section" data-od-id="motion-recipes">
+          <div class="section-header"><h3>因果运动</h3><span>可中断 / 可反向</span></div>
+          <div class="panel">
+            <div class="motion-demo" id="motion-demo" data-active="false" data-reduced="false">
+              <div class="motion-track" aria-hidden="true"><span class="motion-dot"></span></div>
+              <button class="secondary-button" type="button" data-motion-toggle="#motion-demo" data-od-id="run-motion">触发</button>
+            </div>
+            <div class="plan-row" style="margin-top:12px"><div class="plan-row-head"><div><strong>减少动态</strong><p>关闭位移/缩放，保留即时状态变化。</p></div><button class="toggle" type="button" aria-pressed="false" aria-label="减少动态" data-reduced-toggle="#motion-demo"><i></i></button></div></div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="data-states">
+          <div class="section-header"><h3>数据状态词</h3><span>不可只靠颜色</span></div>
+          <div class="facility-list"><span class="chip">实时</span><span class="chip">部分数据</span><span class="chip">数据较旧</span><span class="chip">离线缓存</span><span class="chip">暂无数据</span></div>
+        </section>
+      </div>
+    </article>
+
+    <aside class="scene-notes" data-od-id="design-annotations">
+      <div class="annotation"><strong>观测模式独立作者</strong><p>切换后所有语义色映射为黑与暖红，不出现跨色中间帧。</p></div>
+      <div class="annotation"><strong>运动由操作触发</strong><p>没有循环粒子、流星、呼吸光或无法打断的等待动画。</p></div>
+      <div class="annotation"><strong>几何表达职责</strong><p>技术带更方，内容面板适度圆，友好权限面板才使用 32rpx。</p></div>
+    </aside>
+  </main>
+  <script src="shared.js"></script>
+</body>
+</html>

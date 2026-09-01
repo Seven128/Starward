@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>我的、计划与设置 · Sky Canvas 候选预览</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body class="review">
+  <main class="review-shell scene-layout" data-od-id="my-plan-settings-preview">
+    <section class="scene-intro" data-od-id="scene-introduction">
+      <p class="review-kicker">Representative scene 04</p>
+      <h1 data-od-id="scene-title">我的 / 计划 / 设置</h1>
+      <p>已保存计划保持行动优先；权限解释用途和后果；通知、离线与恢复状态都给出下一步。</p>
+      <div class="theme-control" role="group" aria-label="预览主题" data-od-id="theme-switcher">
+        <button type="button" aria-pressed="true" data-theme-target="#account-phone" data-theme-value="day" data-od-id="theme-day">日间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#account-phone" data-theme-value="night" data-od-id="theme-night">夜间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#account-phone" data-theme-value="observation" data-od-id="theme-observation">观测</button>
+      </div>
+      <div class="review-links" style="margin-top:20px"><a class="review-link" href="../index.html" data-od-id="back-to-hub">返回候选入口</a></div>
+    </section>
+
+    <article class="phone" id="account-phone" data-theme="day" data-od-id="account-phone">
+      <div class="phone-status"><span>20:18</span><span class="capsule" aria-label="微信菜单区域"></span></div>
+      <header class="app-header"><span></span><h2>今晚计划</h2><button class="icon-button" type="button" aria-label="更多操作"><span class="icon-more"><i></i><i></i><i></i></span></button></header>
+      <div class="app-content">
+        <p class="demo-label">演示数据 · 未连接真实计划或权限</p>
+        <section class="section" data-od-id="saved-plan">
+          <div class="panel">
+            <div class="section-header"><h3>已保存计划</h3><span class="chip">今晚</span></div>
+            <div class="plan-row"><div class="plan-row-head"><strong>示例观测点</strong><span>21:40–23:10</span></div><p>预计 20:58 出发 · 末段道路湿滑</p></div>
+            <div class="plan-row"><div class="plan-row-head"><span>备选窗口</span><strong>23:30–00:20</strong></div><p>主窗口变化时保留连续行动路径。</p></div>
+            <button class="primary-button" type="button" style="margin-top:14px" data-od-id="open-plan">查看行程详情</button>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="permission-recovery">
+          <div class="section-header"><h3>权限与恢复</h3><span>位置权限关闭</span></div>
+          <div class="panel friendly">
+            <strong>允许位置权限，可计算预计到达时间</strong>
+            <p style="margin:5px 0 14px;color:var(--sw-text-secondary);font-size:13px">关闭权限不会阻止查看天气证据；到达时间将不再自动更新。</p>
+            <button class="secondary-button" type="button" data-od-id="open-permission-settings">前往系统设置</button>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="notification-settings">
+          <div class="section-header"><h3>通知</h3><span>可随时更改</span></div>
+          <div class="panel">
+            <div class="plan-row"><div class="plan-row-head"><div><strong>窗口开始前提醒</strong><p>在最佳窗口开始前发送一次提醒。</p></div><button class="toggle" type="button" aria-pressed="true" aria-label="窗口开始前提醒"><i></i></button></div></div>
+            <div class="plan-row"><div class="plan-row-head"><div><strong>风险变化提醒</strong><p>路线或天气风险明显变化时提醒。</p></div><button class="toggle" type="button" aria-pressed="false" aria-label="风险变化提醒"><i></i></button></div></div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="notification-examples">
+          <div class="section-header"><h3>通知示例</h3><span>非实时</span></div>
+          <div class="notification"><strong>主窗口将在 40 分钟后开始</strong><p>演示通知 · 出发前请再次确认路线风险。</p></div>
+          <div class="notification" style="border-color:var(--sw-risk)"><strong style="color:var(--sw-risk-strong)">路线风险已变化</strong><p>演示通知 · 末段道路湿滑，请减速或改用备选地点。</p></div>
+        </section>
+
+        <section class="section" data-od-id="offline-recovery">
+          <div class="status-banner" data-state="offline"><strong>离线缓存</strong><p>显示上次保存的计划；重新联网后可刷新证据。</p></div>
+          <button class="secondary-button" type="button" data-od-id="retry-connection">重新连接</button>
+        </section>
+      </div>
+    </article>
+
+    <aside class="scene-notes" data-od-id="design-annotations">
+      <div class="annotation"><strong>权限不阻断核心浏览</strong><p>说明允许后的收益，也说明拒绝后的真实影响。</p></div>
+      <div class="annotation"><strong>通知有明确因果</strong><p>只提醒窗口与风险变化，不制造无意义参与。</p></div>
+      <div class="annotation"><strong>离线保留可用内容</strong><p>状态词、上次内容和恢复操作同时出现。</p></div>
+    </aside>
+  </main>
+  <script src="shared.js"></script>
+</body>
+</html>

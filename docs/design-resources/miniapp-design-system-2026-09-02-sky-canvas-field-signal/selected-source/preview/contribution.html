@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>贡献流程 · Sky Canvas 候选预览</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body class="review">
+  <main class="review-shell scene-layout" data-od-id="contribution-preview">
+    <section class="scene-intro" data-od-id="scene-introduction">
+      <p class="review-kicker">Representative scene 03</p>
+      <h1 data-od-id="scene-title">贡献流程</h1>
+      <p>上传、提交、处理、通过与驳回共用一条可读状态链。审核结果解释影响和恢复动作，不用颜色替代文字。</p>
+      <div class="theme-control" role="group" aria-label="预览主题" data-od-id="theme-switcher">
+        <button type="button" aria-pressed="true" data-theme-target="#contribution-phone" data-theme-value="day" data-od-id="theme-day">日间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#contribution-phone" data-theme-value="night" data-od-id="theme-night">夜间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#contribution-phone" data-theme-value="observation" data-od-id="theme-observation">观测</button>
+      </div>
+      <div class="review-links" style="margin-top:20px"><a class="review-link" href="../index.html" data-od-id="back-to-hub">返回候选入口</a></div>
+    </section>
+
+    <article class="phone" id="contribution-phone" data-theme="day" data-od-id="contribution-phone">
+      <div class="phone-status"><span>20:18</span><span class="capsule" aria-label="微信菜单区域"></span></div>
+      <header class="app-header"><a class="icon-button" href="../index.html" aria-label="返回候选入口" data-od-id="back-button"><span class="icon-arrow"></span></a><h2>补充地点信息</h2><span></span></header>
+      <div class="app-content">
+        <p class="demo-label">候选系统预览 · 演示提交，不会上传文件</p>
+        <section class="section" data-od-id="upload-section">
+          <div class="section-header"><h3>现场照片</h3><span>0 / 6</span></div>
+          <button class="upload-zone" type="button" data-od-id="upload-control"><span><strong>选择清晰的现场照片</strong><span>请避开人脸、车牌与无关个人信息</span></span></button>
+        </section>
+
+        <section class="section" data-od-id="submission-fields">
+          <div class="section-header"><h3>补充说明</h3><span>可选</span></div>
+          <label style="display:grid;gap:6px"><span style="font-size:13px;color:var(--sw-text-secondary)">设施或路线变化</span><textarea style="min-height:96px;padding:12px;border:1px solid var(--sw-border);border-radius:var(--sw-radius-control);background:var(--sw-surface);color:var(--sw-text-primary);resize:vertical" placeholder="例如：停车点入口临时关闭"></textarea></label>
+        </section>
+
+        <section class="section" data-od-id="submission-status">
+          <div class="section-header"><h3>处理状态</h3><span>完整状态合同</span></div>
+          <div class="panel">
+            <div class="stepper">
+              <div class="step done" data-od-id="state-uploaded"><div class="step-marker"></div><div><h4>已上传</h4><p>文件已在本地检查格式与大小。</p></div></div>
+              <div class="step done" data-od-id="state-submitted"><div class="step-marker"></div><div><h4>已提交</h4><p>系统已收到这次贡献。</p></div></div>
+              <div class="step active" data-od-id="state-processing"><div class="step-marker"></div><div><h4>处理中</h4><p>正在检查内容完整性；可离开此页。</p></div></div>
+              <div class="step" data-od-id="state-accepted"><div class="step-marker"></div><div><h4>通过</h4><p>审核通过后说明哪些信息已更新。</p></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="moderation-example">
+          <div class="risk-strip" role="status"><div><strong>驳回示例 · 需要补充证据</strong><p>照片无法确认入口变化。请补充一张包含完整路口环境的照片后再次提交。</p></div></div>
+          <button class="secondary-button" type="button" style="margin-top:10px" data-od-id="revise-submission">修改后重新提交</button>
+        </section>
+
+        <div class="fixed-action"><button class="primary-button final-commit-button" type="button" data-od-id="submit-contribution">提交审核</button></div>
+      </div>
+    </article>
+
+    <aside class="scene-notes" data-od-id="design-annotations">
+      <div class="annotation"><strong>状态是一条连续链</strong><p>上传、提交、处理和审核结果共享同一位置，减少状态漂移。</p></div>
+      <div class="annotation"><strong>驳回说明可恢复</strong><p>明确缺什么证据、为什么影响审核、下一步怎么做。</p></div>
+      <div class="annotation"><strong>隐私在上传前出现</strong><p>提示放在选择文件的动作旁，不埋在提交后的错误里。</p></div>
+    </aside>
+  </main>
+  <script src="shared.js"></script>
+</body>
+</html>

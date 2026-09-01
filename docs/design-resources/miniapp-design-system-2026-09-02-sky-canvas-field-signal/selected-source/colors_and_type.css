@@ -1,0 +1,213 @@
+/* Browser mirror of tokens.scss. Candidate only; not adopted authority. */
+:root,
+[data-theme="day"] {
+  color-scheme: light;
+  --sw-canvas: #FBFAF7;
+  --sw-surface: #FFFFFF;
+  --sw-surface-raised: #FFFFFF;
+  --sw-surface-subtle: #F5F5EF;
+  --sw-text-primary: #282B29;
+  --sw-text-secondary: #5E655F;
+  --sw-text-tertiary: #6D746D;
+  --sw-border: #E2E5DD;
+  --sw-border-strong: #8A9088;
+  --sw-overlay: #282B29C7;
+  --sw-icon: #414641;
+  --sw-disabled-bg: #EFEEE8;
+  --sw-disabled-fg: #777E77;
+  --sw-focus: #6174D8;
+  --sw-sky: #8799F6;
+  --sw-sky-soft: #EFF1FF;
+  --sw-sky-strong: #4859B8;
+  --sw-trail: #62C88B;
+  --sw-trail-soft: #E9F8EE;
+  --sw-trail-strong: #1F6B45;
+  --sw-meteor: #F2C94C;
+  --sw-meteor-soft: #FFF7D6;
+  --sw-meteor-strong: #6F5500;
+  --sw-risk: #E66F66;
+  --sw-risk-soft: #FFF0ED;
+  --sw-risk-strong: #973D37;
+  --sw-on-sky: #202332;
+  --sw-on-meteor: #3A2E00;
+  --sw-on-trail: #153B2A;
+  --sw-on-accent: #3A2E00;
+  --sw-shadow-1: 0 2px 8px #282B2912;
+  --sw-shadow-2: 0 8px 24px #282B2920;
+}
+
+[data-theme="night"] {
+  color-scheme: dark;
+  --sw-canvas: #11120F;
+  --sw-surface: #181A17;
+  --sw-surface-raised: #1F211D;
+  --sw-surface-subtle: #242720;
+  --sw-text-primary: #F5F3EC;
+  --sw-text-secondary: #BEC2B8;
+  --sw-text-tertiary: #989E94;
+  --sw-border: #343830;
+  --sw-border-strong: #666D62;
+  --sw-overlay: #050603DB;
+  --sw-icon: #D9DCD3;
+  --sw-disabled-bg: #252821;
+  --sw-disabled-fg: #7E857A;
+  --sw-focus: #B4BEFF;
+  --sw-sky: #A9B6FF;
+  --sw-sky-soft: #292D45;
+  --sw-sky-strong: #D1D7FF;
+  --sw-trail: #7ED7A1;
+  --sw-trail-soft: #1B3426;
+  --sw-trail-strong: #B7EACB;
+  --sw-meteor: #F6D56F;
+  --sw-meteor-soft: #3A3118;
+  --sw-meteor-strong: #FFE5A0;
+  --sw-risk: #FF8F87;
+  --sw-risk-soft: #452724;
+  --sw-risk-strong: #FFC0BA;
+  --sw-on-sky: #161A2B;
+  --sw-on-meteor: #322600;
+  --sw-on-trail: #102C1E;
+  --sw-on-accent: #322600;
+  --sw-shadow-1: 0 2px 8px #00000052;
+  --sw-shadow-2: 0 8px 24px #00000080;
+}
+
+[data-theme="observation"] {
+  color-scheme: dark;
+  --sw-canvas: #000000;
+  --sw-surface: #110000;
+  --sw-surface-raised: #190000;
+  --sw-surface-subtle: #240000;
+  --sw-text-primary: #FF6B58;
+  --sw-text-secondary: #D84A3C;
+  --sw-text-tertiary: #C23D32;
+  --sw-border: #7A1E18;
+  --sw-border-strong: #A83229;
+  --sw-overlay: #000000E6;
+  --sw-icon: #FF6B58;
+  --sw-disabled-bg: #5B1712;
+  --sw-disabled-fg: #A83229;
+  --sw-focus: #FF6B58;
+  --sw-sky: #FF6B58;
+  --sw-sky-soft: #3A0A07;
+  --sw-sky-strong: #FF6B58;
+  --sw-trail: #D84A3C;
+  --sw-trail-soft: #240000;
+  --sw-trail-strong: #FF6B58;
+  --sw-meteor: #D84A3C;
+  --sw-meteor-soft: #240000;
+  --sw-meteor-strong: #FF6B58;
+  --sw-risk: #FF6B58;
+  --sw-risk-soft: #3A0A07;
+  --sw-risk-strong: #FF6B58;
+  --sw-on-sky: #000000;
+  --sw-on-meteor: #000000;
+  --sw-on-trail: #000000;
+  --sw-on-accent: #000000;
+  --sw-shadow-1: none;
+  --sw-shadow-2: none;
+}
+
+:root {
+  --sw-font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+  --sw-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --sw-space-0: 0;
+  --sw-space-1: 2px;
+  --sw-space-2: 4px;
+  --sw-space-3: 6px;
+  --sw-space-4: 8px;
+  --sw-space-6: 12px;
+  --sw-space-8: 16px;
+  --sw-space-10: 20px;
+  --sw-space-12: 24px;
+  --sw-space-16: 32px;
+  --sw-space-20: 40px;
+  --sw-space-24: 48px;
+  --sw-radius-none: 0;
+  --sw-radius-data: 2px;
+  --sw-radius-band: 4px;
+  --sw-radius-control: 6px;
+  --sw-radius-control-lg: 8px;
+  --sw-radius-panel: 10px;
+  --sw-radius-panel-lg: 12px;
+  --sw-radius-friendly: 16px;
+  --sw-radius-sheet: 24px 24px 0 0;
+  --sw-radius-pill: 999px;
+  --sw-border-width: 1px;
+  --sw-border-width-selected: 2px;
+  --sw-focus-width: 2px;
+  --sw-input-active-width: 1px;
+  --sw-target-min: 44px;
+  --sw-control-compact: 30px;
+  --sw-control-default: 36px;
+  --sw-control-commit: 48px;
+  --sw-type-status-size: 11px;
+  --sw-type-status-line: 16px;
+  --sw-type-compact-size: 12px;
+  --sw-type-compact-line: 18px;
+  --sw-type-action-size: 13px;
+  --sw-type-action-line: 19px;
+  --sw-type-commit-size: 15px;
+  --sw-type-commit-line: 21px;
+  --sw-type-snackbar-size: 13px;
+  --sw-type-snackbar-line: 19px;
+  --sw-type-snackbar-action-size: 12px;
+  --sw-type-snackbar-action-line: 18px;
+  --sw-type-body-size: 14px;
+  --sw-type-body-line: 22px;
+  --sw-type-section-size: 18px;
+  --sw-type-title-size: 24px;
+  --sw-type-conclusion-size: 26px;
+  --sw-gap-related: 4px;
+  --sw-gap-default: 8px;
+  --sw-gap-relaxed: 12px;
+  --sw-padding-compact: 10px;
+  --sw-padding-default: 14px;
+  --sw-padding-card-compact: 8px;
+  --sw-padding-card-normal: 12px;
+  --sw-switch-width: 46px;
+  --sw-switch-height: 24px;
+  --sw-switch-thumb: 20px;
+  --sw-switch-inset: 2px;
+  --sw-switch-travel: 22px;
+  --sw-icon-sm: 12px;
+  --sw-icon-md: 16px;
+  --sw-icon-lg: 20px;
+  --sw-icon-stroke: 1.5px;
+  --sw-duration-press: 80ms;
+  --sw-duration-short: 120ms;
+  --sw-duration-medium: 160ms;
+  --sw-duration-long: 200ms;
+  --sw-duration-sheet: 320ms;
+  --sw-ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --sw-ease-exit: cubic-bezier(.4, 0, 1, 1);
+  --sw-safe-top: max(16px, env(safe-area-inset-top));
+  --sw-safe-bottom: max(16px, env(safe-area-inset-bottom));
+  --sw-page-gutter: clamp(16px, 4vw, 20px);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--sw-canvas); }
+body {
+  margin: 0;
+  background: var(--sw-canvas);
+  color: var(--sw-text-primary);
+  font-family: var(--sw-font-sans);
+  font-size: var(--sw-type-body-size);
+  line-height: var(--sw-type-body-line);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; }
+button, a, input, select, textarea, [tabindex] { outline: none; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 0;
+  box-shadow: inset 0 calc(-1 * var(--sw-focus-width)) 0 var(--sw-focus);
+}
+@media (pointer: coarse) {
+  button:focus-visible, a:focus-visible, [role="button"]:focus-visible, [role="tab"]:focus-visible, [role="radio"]:focus-visible {
+    box-shadow: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}

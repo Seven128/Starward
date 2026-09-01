@@ -1,0 +1,41 @@
+{
+  "schema_version": "starward-selected-design-system-source-v1",
+  "selected_at": "2026-09-02",
+  "active_target": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+  "source": {
+    "provider": "Open Design 0.21.1",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "project_id": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "conversation_id": "0bcc669b-29b2-476b-b93d-f502d7b09917",
+    "review_revision_id": "bccaa010-a3ef-4895-9fb0-4c874239fdac",
+    "review_revision_status": "pending-noncanonical",
+    "selected_source_kind": "reviewed-project-snapshot"
+  },
+  "package_digest_algorithm": "sha256(path + NUL + file_sha256 + NUL + byte_count + LF), paths sorted by lowercase Unicode code point with original-path tie-break",
+  "package_digest": "253fbcbfaa083aa897eca2faf5e4eb6f3b99e69da7f485d485f89881adcc8276",
+  "files": [
+    { "path": "colors_and_type.css", "sha256": "6f16789ee5cfbc501583b2a1c6c21ef298261b5234a4d55d70156dc84b33b4c8", "bytes": 6294 },
+    { "path": "context/provenance.json", "sha256": "a2f7be4ed46cd8d98cdb5db2e76d08a7f4413fedc9f45be39394f085424dd083", "bytes": 1616 },
+    { "path": "context/provenance.md", "sha256": "795835aae888035c14d8e4e89880fefc85045db8c028f3f42f644b076e945ae1", "bytes": 2024 },
+    { "path": "DESIGN.md", "sha256": "a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e", "bytes": 41787 },
+    { "path": "index.html", "sha256": "783963905bc9e016818e3f0ce26ca02abe3ef5f8af81a0dd67de220862e81e1e", "bytes": 85246 },
+    { "path": "index.html.artifact.json", "sha256": "048049360ed74118092fb8f204a3524b82b4e3aaf5836b991a6648faedc1a45c", "bytes": 337 },
+    { "path": "package.json", "sha256": "ea62249fa8c8ef9214fbf05a761e0a752ffc0c85f2b30c672ccb9cfbd3f81655", "bytes": 149 },
+    { "path": "preview/contribution.html", "sha256": "74bb93f04a881bf48f0b34eeceb3dcb4cf28cede59fa3fd4875e4600755d536f", "bytes": 5220 },
+    { "path": "preview/contribution.html.artifact.json", "sha256": "d1cab7075dc792f980c440f2dc57b240d344e3947f5be4cdebd6fb00f89a4d96", "bytes": 367 },
+    { "path": "preview/foundations.html", "sha256": "1907f41be521599a8d7e676e4ccd688ff4b6176e4d5282ee52089f0b4bf26f64", "bytes": 6221 },
+    { "path": "preview/foundations.html.artifact.json", "sha256": "385e5ada65c5bd8eabe4466e5b32dfef0b9a8011c9ac90c8b273131a04b54f06", "bytes": 365 },
+    { "path": "preview/my-plan-settings.html", "sha256": "fabcdbdb9209a1f039ce02522756dbe3ff8a314252a753d630bb5795760513a3", "bytes": 5626 },
+    { "path": "preview/my-plan-settings.html.artifact.json", "sha256": "ef31eab85da6c3799f7c0a1f049236bca448a16095ddd5c2051cefc2307351d2", "bytes": 375 },
+    { "path": "preview/shared.css", "sha256": "0040815cb00396400cd027af3305c11544fa10989a55af971f30b1ed5698743a", "bytes": 76144 },
+    { "path": "preview/shared.js", "sha256": "755ad7c31ab4527084471ed29b8aabf86d169acbbc0460d678cd04224b50f6d3", "bytes": 11352 },
+    { "path": "preview/spot-detail.html", "sha256": "b55298c9fe5b091980fa4a5ba42fe1c876011053d830600f1501b2f974ecf04a", "bytes": 6065 },
+    { "path": "preview/spot-detail.html.artifact.json", "sha256": "067b5ca591b1f5767d0631ba2d969236f99829d79c2092dff37cdf56f75c570d", "bytes": 365 },
+    { "path": "preview/spot-night.html", "sha256": "a2f87500deb9d7f0c04d4a0dcf2a26f7935c6507be524c0fc524d60d99b5fba2", "bytes": 7660 },
+    { "path": "preview/spot-night.html.artifact.json", "sha256": "247a9965a5b75002e49f0dc053f794b0d58a77e3c20b4e56743f18a183b2f3a5", "bytes": 363 },
+    { "path": "README.md", "sha256": "816212411240da4cfd4920418a1bfbba6c98dc6ff198138b4318488bd8371600", "bytes": 5246 },
+    { "path": "SKILL.md", "sha256": "8a3c9b589d0c0c8fdc02978b53c44337f2a61efe1ff7cb8a9c7102aacbc328d7", "bytes": 2439 },
+    { "path": "tokens.scss", "sha256": "30a2ccdfe1c9747f1830d4881d668cc4fcd5cf70a93425e702d9494a9942ddce", "bytes": 5694 },
+    { "path": "verify.mjs", "sha256": "f8dc76714239f19924d19f2515b0b68729b8fb24922cf9010b5fab6df03164cc", "bytes": 25493 }
+  ]
+}

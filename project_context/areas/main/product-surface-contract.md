@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This Context owns durable responsibility and main-versus-drilldown placement for the Starward native mobile product, the independently scoped WeChat Mini Program, and owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. The Mini Program surfaces below implement the current accepted product/technical Source under its correction/disposition precedence and the adopted Sky Canvas system target; document version labels remain provenance only, exact visual values remain owned only by `DESIGN.md`, and the selected page-resource constraints `target-miniapp-sky-canvas-current-constraint` / `target-operations-sky-canvas-current-constraint` remain ordinary Source whose canonical records live in the owning Screen Contracts and prove no production conformance.
+This Context owns durable responsibility and main-versus-drilldown placement for the Starward native mobile product, the independently scoped WeChat Mini Program, and owner operations surfaces. It does not own visual token values, authored target pixels, delivery scope, implementation status, or one-off evidence. The Mini Program surfaces below implement the current accepted product/technical Source under its correction/disposition precedence and the adopted Field Signal system target; document version labels remain provenance only, exact visual values remain owned only by `DESIGN.md`, and the selected page-resource constraints `target-miniapp-sky-canvas-current-constraint` / `target-operations-sky-canvas-current-constraint` remain ordinary Source whose canonical records live in the owning Screen Contracts and prove no production conformance.
 
 ## Current Product Boundary
 

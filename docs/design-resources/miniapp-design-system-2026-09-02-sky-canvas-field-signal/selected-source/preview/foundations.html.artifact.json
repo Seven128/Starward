@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "preview/foundations.html",
+  "entry": "preview/foundations.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-09-01T13:22:47.447Z",
+  "updatedAt": "2026-09-01T13:22:47.447Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

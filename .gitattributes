@@ -18,3 +18,4 @@ Makefile text eol=lf
 *.png binary
 *.woff2 binary
 docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/** -text
+docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/** -text whitespace=-trailing-space

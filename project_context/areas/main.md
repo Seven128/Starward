@@ -48,7 +48,7 @@
 ## Code Entry Points
 
 - Visual authority: DESIGN.md, with independently scoped native App and WeChat Mini Program profiles.
-- Native App runtime visual-token projection: packages/ui-system/src/tokens.ts; it consumes only the App profile in DESIGN.md and is not a second authority. The Mini Program runtime projection must consume only `DESIGN.md#wechat-mini-program--sky-canvas-v1`, cannot import this App module and may currently drift until the later implementation phase updates and verifies it.
+- Native App runtime visual-token projection: packages/ui-system/src/tokens.ts; it consumes only the App profile in DESIGN.md and is not a second authority. The Mini Program runtime projection must consume only `DESIGN.md#wechat-mini-program--sky-canvas-field-signal`, cannot import this App module and may currently drift until a later implementation phase updates and verifies it.
 - Product context: project_context/global.md and this file.
 - Cross-surface responsibility: project_context/areas/main/product-surface-contract.md.
 - Screen/route/control ownership: project_context/areas/main/screen-contracts.md, with mobile and owner-operations detail in its registered on-demand detail Context.

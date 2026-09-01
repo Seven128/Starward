@@ -1,307 +1,17 @@
----
-version: "2.0"
-name: "今晚去观星"
-description: "A blue, materially skeuomorphic mobile stargazing decision system with planning, night, and strict black-and-warm-red observation modes."
-colors:
-  canvas: "#F3F7FF"
-  surface: "#FFFFFF"
-  surface-muted: "#E8F1FF"
-  surface-elevated: "#FFFFFF"
-  text: "#0B1B35"
-  text-muted: "#435A78"
-  border: "#6F89AA"
-  primary: "#1677FF"
-  primary-hover: "#4096FF"
-  primary-active: "#0958D9"
-  on-primary: "#FFFFFF"
-  success: "#52C41A"
-  warning: "#FAAD14"
-  error: "#FF4D4F"
-  material-highlight: "#FFFFFF"
-  material-body: "#6F89AA"
-  material-seam: "#435A78"
-  lens-core: "#0B1B35"
-  lens-reflection: "#4096FF"
-  rubber: "#0B1B35"
-  equipment-paint: "#0958D9"
-  fabric: "#E8F1FF"
-  fabric-stitch: "#6F89AA"
-  contact-shadow: "#0B1B35"
-  night-canvas: "#020817"
-  night-surface: "#07152B"
-  night-surface-muted: "#0E2444"
-  night-surface-elevated: "#122E52"
-  night-text: "#EDF5FF"
-  night-text-muted: "#A7BDD9"
-  night-border: "#56779E"
-  night-primary: "#1677FF"
-  night-primary-hover: "#4096FF"
-  night-primary-active: "#0958D9"
-  red-canvas: "#050000"
-  red-surface: "#170000"
-  red-text: "#FF9B9B"
-  red-text-muted: "#E77474"
-  red-border: "#A63F3F"
-  red-primary: "#FF5454"
-typography:
-  display:
-    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "2.375rem"
-    fontWeight: 700
-    lineHeight: 1.25
-  title:
-    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.375rem"
-    fontWeight: 700
-    lineHeight: 1.25
-  section:
-    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 700
-    lineHeight: 1.3125
-  body:
-    fontFamily: "Aptos, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 400
-    lineHeight: 1.57
-  label:
-    fontFamily: "Aptos, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "0.75rem"
-    fontWeight: 700
-    lineHeight: 1.3
-  data:
-    fontFamily: "Cascadia Mono, SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace"
-    fontSize: "0.875rem"
-    fontWeight: 400
-    lineHeight: 1.57
-  caption:
-    fontFamily: "Aptos, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "0.6875rem"
-    fontWeight: 400
-    lineHeight: 1.5
-  opsDisplay:
-    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.5rem"
-    fontWeight: 700
-    lineHeight: 1.25
-  opsTitle:
-    fontFamily: "Bahnschrift, DIN Alternate, Aptos Display, PingFang SC, Microsoft YaHei UI, Microsoft YaHei, system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 700
-    lineHeight: 1.3125
-  opsData:
-    fontFamily: "Cascadia Mono, SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace"
-    fontSize: "0.75rem"
-    fontWeight: 400
-    lineHeight: 1.58
-rounded:
-  sm: 5px
-  md: 8px
-  lg: 16px
-  sheet: 24px
-  pill: 999px
-spacing:
-  xxs: 4px
-  xs: 8px
-  sm: 12px
-  md: 16px
-  lg: 24px
-  xl: 32px
-  xxl: 48px
-components:
-  app-canvas:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.text}"
-  surface-panel:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.md}"
-    padding: 16px
-  primary-action:
-    backgroundColor: "{colors.primary-active}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.label}"
-    rounded: "{rounded.md}"
-    padding: 12px
-  map-sheet:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.lg}"
-    padding: 16px
-  data-matrix:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.text}"
-    typography: "{typography.data}"
-    rounded: "{rounded.md}"
-    padding: 8px
----
+# Starward 微信小程序 · Sky Canvas Field Signal 候选系统
 
-# 今晚去观星 Design System
+> 状态：**未选择候选**  
+> 适用面：Starward《今晚去观星》微信小程序（非地图界面）  
+> 基线：Design Authority closure `sha256:eb3d6c5cb2b498195e61b410727e9c93b28c52c502b331e08ec02ada9766b5b2`  
+> 目标：`target.system.wechat-miniapp-sky-canvas-2026-08-25`
 
-## Overview
+本文件描述一个有边界的 Sky Canvas 演进候选。它不修改当前项目权威，不代表已选择、已采用、已实现或生产合规；进入代码库前仍需按项目的 authority/adoption 流程审查。
 
-- Product promise: 从黄昏走入星夜。
-- Starward is a mobile-first decision product, not a generic weather dashboard. It connects tonight's go/no-go conclusion, place choice, departure time, best observing window, route, risk, equipment, and on-site observation into one path.
-- The native App profile uses a blue, professionally skeuomorphic outdoor-instrument system. The independently adopted WeChat Mini Program profile is defined later in this file and does not inherit App values, components, layouts, typography, motion constants, or targets.
-- Information follows progressive disclosure: first the conclusion, then an actionable plan, then the professional evidence.
-- This file is the sole authored visual authority and exact-value token source. Its YAML front matter owns the native App profile; `## WeChat Mini Program — Sky Canvas Field Signal` owns the independent Mini Program profile. `packages/ui-system/src/tokens.ts` consumes only the App profile, and the Mini Program adapter may consume only the named Mini Program section.
-- Design Authority status: configured and adopted for two independent owner-selected target profiles: native App and WeChat Mini Program. Surface ownership still belongs to `project_context/**`, and neither profile alone claims production/runtime acceptance.
-
-### Design Authority Index
-
-- Authored exact-value token source: selected — this file. The YAML front matter is scoped to the native App profile; the exact Mini Program tables and contracts live only in the named Mini Program section below.
-- Generation direction and generated token targets: App profile `DESIGN.md` YAML → `packages/ui-system/src/tokens.ts`; Mini Program profile `DESIGN.md#wechat-mini-program--sky-canvas-field-signal` → its single framework adapter. TypeScript, WXSS, CSS, JSON, HTML, kits, manifests, screenshots, and provider files are consumers, candidates or verification inputs, never co-equal token authorities.
-- Active target (native App): `target.system.starward-blue-skeuomorphic-2026-07-29`, selected by the owner on 2026-07-29 with the explicit instruction “选定这个候选”. It controls the native App visual language, tokens, three modes, physical-material rendering, component appearance, state posture, accessibility posture, and motion posture. It does not replace product semantics or claim native/runtime conformance.
-- Active target (WeChat Mini Program): `target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02`, selected by the owner on 2026-09-02 through the explicit instruction “现在这套设计系统差不多了，就选中他吧”. It replaces the prior Sky Canvas target and controls the independent Mini Program non-map visual language, exact day/night/observation roles, four-layer whitespace logic, typography, semantic geometry, common/domain component grammar, motion and accessibility posture defined below. It does not define Product Surface, route, data, service, map styling, runtime or acceptance truth.
-- Mini Program selected source: `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/DESIGN.md` SHA-256 `a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e`; complete manifest SHA-256 `d719dd753422112c4759cd77d0d9da3b7d40d5dd87b38fd3d327835f739f8bde`; package digest `253fbcbfaa083aa897eca2faf5e4eb6f3b99e69da7f485d485f89881adcc8276`; source index SHA-256 `727114ee2f72f6a68a8bd0d25c4d20470ae8b0d6a0ff2bcff6d0067e367543c1`. The snapshot’s pre-selection lifecycle text is historical; this record owns its adopted interpretation without altering those bytes.
-- Mini Program provider provenance: Open Design `0.21.1`, design-system ID `user:starward-mini-program-sky-canvas-field-signal-revision`, reviewed project `ds-starward-mini-program-sky-canvas-field-signal-revision`, conversation `0bcc669b-29b2-476b-b93d-f502d7b09917`. Revision `bccaa010-a3ef-4895-9fb0-4c874239fdac` is recorded as noncanonical and pending because its proposed body predates the final reviewed project bytes.
-- Mini Program reference interpretation: warm-light neutral canvas and restrained near-black night surfaces carry the information; sky/periwinkle owns time and selection, meteor yellow owns final commitment and celestial events, trail green owns route/opportunity, and risk coral stays semantic. Vitality comes from semantic color, aligned bands, compact proportion and causal motion—not deep-blue slabs, oversized type, decorative meteors or excessive padding. Native App, App/Admin targets and all map-specific styling are excluded inputs.
-- Mini Program condition coverage: day, night, and separately authored strict black/warm-red observation; 320/375/390/430 CSS-pixel equivalents with `750rpx` mapping, safe-area/menu-capsule adaptation, 200% text, non-overlapping `88rpx` targets with smaller visible controls, reduced motion, touch/keyboard focus separation, pressed/selected/disabled/loading/empty/stale/partial/offline/error/success/permission states, mode-correct cold start and asset fallback. These are design contracts and selected-resource QA, not production conformance evidence.
-- Mini Program editable upstream and update route: revise Open Design project `ds-starward-mini-program-sky-canvas-field-signal-revision`, create and review a new immutable package/digest, obtain explicit selection, then replace the active target pointer and canonical section here. Never edit a generated runtime adapter to change the system, overwrite a selected source, or import values from the native App profile.
-- Provider: Open Design `0.16.1`; editable design-system ID `user:starward-2026-07-29`; bound workspace/project ID `ds-starward-2026-07-29`; selected provider body SHA-256 `280b1d3726e181591f19b6ddef96ab5d32fb61c5302af07fcee194b32f135f70`. The provider exposed no revision records at selection, so no revision ID could be accepted; the provider design-system metadata is published and this record owns project adoption.
-- Selected package integrity: `validation-manifest.json` SHA-256 `ae9d23d7d2a127b5ea1feb1a86cebd1b5a33dc1294de0ad40c9e4803a8a9be8f`. The package contained 62 required files, 16 HTML entries, role-isomorphic planning/night/observation specimens, 122 audit anchors, six-value observation pixels, and no package audit error or warning. Audit anchors are traceability markers, not a count of product controls.
-- Selection evidence was limited to the explicit owner brief and three supplied visual references: day image SHA-256 `62d286b330ce48cac73e1b1351e6c35502aac46989af971ee502466842d49fe0`, night image SHA-256 `5d5ec492c02e8d67b502ed7f672f1b8976da61d56f2702fbd7a59bbcb1ee3b5d`, and observation image SHA-256 `d8de918d08dab0f8d6f84bb097076671186a61a1494637f1e40b2fc7b97b8150`. Their logo, wording, poster/device composition, sample data, and proprietary imagery are not adopted.
-- Condition coverage: planning/day, night, and strict black-and-warm-red observation/red-light; 390×844 primary, 360/430 responsive checks, 200% text, 44×44 minimum targets, reduced motion, focus/pressed/disabled/loading/empty/no-results/stale/partial/degraded/unknown/offline/saving/error/success specimens, and decision → action → evidence hierarchy.
-- Editable upstream and update route: revise Open Design system `user:starward-2026-07-29` in project `ds-starward-2026-07-29`, review and validate the complete new package, record the new provider revision or immutable digest, and re-adopt it here. Never silently edit this authority from a generated export and never overwrite a previously selected source identity.
-- Legacy rollback baseline `target.mobile-product-pages-v2`: files remain immutable at `docs/design-targets/mobile-product-pages-v2/index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271` and `coverage-manifest.json` SHA-256 `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`. Its historical composition is inactive as a current visual constraint and will be regenerated separately.
-- Legacy rollback baseline `target.ops-product-pages-v1`: files remain immutable at `docs/design-targets/ops-product-pages-v1/index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5` and `coverage-manifest.json` SHA-256 `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`. Its historical composition is inactive as a current visual constraint and will be regenerated separately.
-- Legacy rollback baseline `target.mobile-controls-v3`: files remain immutable at `docs/design-targets/mobile-controls-v3/implementation-contract.json` SHA-256 `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4` and `index.html` SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`. Its 83 stable Control Keys, scenarios, and behavior semantics remain historical traceability data, but its visual values, geometry, and styling are inactive and were not used to author this system.
-- Legacy rollback baseline `target.ops-controls-v2`: files remain immutable at `docs/design-targets/ops-controls-v2/implementation-contract.json` SHA-256 `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388` and `index.html` SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`. Its behavior semantics remain historical traceability data, while its visual values, geometry, and styling are inactive.
-- Legacy exports under `docs/design-system/**` are retained unchanged as rollback/reference material. They are not a source for current colors, typography, component styling, geometry, imagery, or fidelity checks.
-- Target precedence is closed: Source/Context owns product, safety, privacy, information, interaction, route, and stable Control meaning; this file owns each explicitly scoped visual profile; a runtime token module may consume only its target profile. Legacy page/control resources may support rollback and semantic traceability only. Any conflict fails closed in favor of the upper owner and requires a new explicit adoption.
-- This document is complete and normative on its own for the adopted visual profiles. `.codex/skills/uiux_design/SKILL.md` remains only the React Native App implementation companion; it is not a Mini Program source or dependency. A future Mini Program implementation companion may be created only after its runtime exists and must consume, never redefine, the Mini Program profile below.
-
-## Colors
-
-- Planning/day mode uses a cool `#F3F7FF` canvas, white reading surfaces, `#E8F1FF` route-field surfaces, ink-blue `#0B1B35` text, `#435A78` secondary text, `#6F89AA` borders, and 航迹蓝 for the primary action, route, selected map node, and best observing window.
-- 航迹蓝 is a high-signal color. Prefer one primary action and one key selected state per screen; do not use it as a large decorative background.
-- Text-bearing primary controls use the darker primary-active token when normal-size white labels need WCAG AA contrast; the brighter primary remains available for routes, nodes, and non-text emphasis.
-- Semantic green, yellow, and red communicate data meaning or operational state. They do not replace the brand roles.
-- Night mode uses near-black navy `#020817`, ink-blue `#07152B`, deep-navy `#0E2444`, and elevated `#122E52` surfaces with `#EDF5FF`/`#A7BDD9` text and `#56779E` borders. Limited route blue is allowed; neutral-charcoal fallback, blanket blue haze, neon outlines, and broad glow are forbidden.
-- Observation/red-light mode is a strict six-value closed palette: `#050000`, `#170000`, `#FF9B9B`, `#E77474`, `#A63F3F`, and `#FF5454`. Every controllable surface, icon, map, route, selection, focus, status, loading state, transition, generated asset, and image treatment must resolve to those black/warm-red values.
-- Observation mode must not introduce blue, white, green, yellow, neutral gray, bright flashes, whole-screen CSS filters, or unannounced OS/vendor handoffs. Meaning remains available through label, icon, shape, border, and position rather than hue alone.
-- Text and controls must retain readable contrast in every mode; selection cannot rely on color alone.
-
-### Physical material roles
-
-- Skeuomorphism belongs to professional physical entities: telescope tubes and metal mounts, coated glass/lenses, rubber focus rings and grips, camera bodies and dials, binoculars, stitched camping backpacks, tent fabric and poles, and vehicle paint.
-- `material-highlight`, `material-body`, and `material-seam` describe compact metal reflections and joints. Highlights remain localized and attributable; they never wash an entire card.
-- `lens-core` and `lens-reflection` describe coated optical glass. Reflection is a small curved or angled cue, never a luminous halo.
-- `rubber` describes eyecups, grip panels, focus rings, and protected edges through low-reflectance contrast and restrained texture.
-- `equipment-paint` is reserved for controlled blue vehicle/tool surfaces; it does not turn the application canvas into product paint.
-- `fabric` and `fabric-stitch` describe backpack panels, straps, tent cloth, seams, and edge reinforcement. Stitching must follow a plausible construction line.
-- `contact-shadow` is compact and attributable to the object/control casting it. It cannot replace a missing border, create floating card stacks, or become blanket ambient blur.
-- Use at most one decisive material moment per screen. Data surfaces remain planar, aligned, and legible.
-
-## Typography
-
-- Display, title, and section roles use Bahnschrift → DIN Alternate → Aptos Display → PingFang SC → Microsoft YaHei UI → Microsoft YaHei → system fallbacks.
-- Body, label, caption, and control roles use Aptos → PingFang SC → Microsoft YaHei UI → Microsoft YaHei → system fallbacks.
-- Coordinates, time, azimuth, units, and dense professional data use Cascadia Mono → SFMono-Regular → Consolas → Liberation Mono → Menlo → Courier → monospace.
-- These are unbundled, platform-dependent, fallback-safe stacks. No font file, license, or guaranteed platform availability is implied.
-- Titles, place names, conclusions, and key numbers use strong weight. Labels, units, and explanations remain secondary but legible.
-- Dense forecasts gain scanability from column alignment, row labels, and hierarchy; do not shrink text until it becomes difficult to read.
-- Display is 38/47.5 at 700; title 22/27.5 at 700; section 16/21 at 700; body 14/22 at 400; label 12/15.6 at 700; caption 11/16.5 at 400; data 14/22 at 400 with tabular numbers.
-- At 200% text, the conclusion, next action, units, safety state, and sheet controls reflow without clipping or horizontal page scrolling.
-- Voice is calm, concrete, and actionable. State uncertainty and alternatives instead of promising perfect visibility or guaranteed conditions.
-
-## Layout
-
-- Design mobile-first for a primary 390 × 844 viewport and account for safe areas.
-- Use an 8px baseline grid. Page margins, module spacing, and internal spacing use deliberate grid multiples.
-- Every primary touch target is at least 44px.
-- First layer: tonight's recommendation, score, and best observing window.
-- Second layer: main and alternate places, distance, drive time, arrival, route, facilities, and risk.
-- Third layer: cloud layers, transparency, seeing, light pollution, moon phase, solar/lunar events, model comparison, and photography parameters.
-- Maps, real place imagery, sky, and key decisions are the visual subject. Interface surfaces recede and avoid nested-card accumulation.
-- Professional forecasts use continuous matrices, time bands, and aligned columns instead of turning every cell into an independent card.
-- Fixed primary actions and five-item bottom navigation remain inside the safe area and never cover route, checklist, or hourly data.
-- Reserve stable space for sheets, loading states, and scrolling so navigation and key actions do not jump.
-
-## Elevation & Depth
-
-- Establish hierarchy with whitespace, 1px borders, and surface contrast before shadows.
-- Map markers, floating controls, Bottom Sheets, and physical-object specimens may use restrained elevation or compact contact shadows; avoid broad blurry shadows, blanket glow, and glassmorphism.
-- Depth order is surface contrast → 1px border → localized material highlight → compact attributable contact shadow.
-- Do not bevel every edge or make every container a raised object. The physical object may feel tactile; surrounding evidence remains planar.
-- Image overlays sit in one safe corner on a solid surface. If no safe corner exists, place the information below the image.
-- In night mode, depth comes from controlled navy luminance steps and localized reflection, not glow. In observation mode, depth must remain inside the six-value black/warm-red palette.
-
-## Shapes
-
-- Base controls use an 8px radius and 1px border.
-- Large content layers and map Bottom Sheets may use 16px or another 8px multiple; high sheets expose a clear drag handle when dragging is supported.
-- Pills are reserved for compact filters, segmented choices, and short statuses.
-- Horizon arcs, orbital paths, map routes, round time nodes, and continuous observing windows share one graphic language.
-- Map node size, border, fill, and label treatment distinguish selection without depending only on hue.
-
-## Components
-
-- Core decision components: tonight recommendation, observing score, best-time band, and weather/astronomy summary.
-- Place and map components: real-place card, main/alternate place card, marker, score bubble, current location, route, Bottom Sheet, layer selector, and legend.
-- Professional components: hourly forecast matrix, sun/moon event timeline, celestial position card, sky polar plot, and photography parameter card.
-- Action components: fixed primary action, five-item bottom navigation, trip timeline, equipment grid, pre-trip checklist, and night field toolbar.
-- Physical-object components: professional telescope, camera, binoculars, camping backpack, tent, and vehicle specimens use the registered material roles for metal, coated glass, rubber, fabric/stitching, paint, and compact contact shadow. They must be real generated/local project assets or honest vector constructions with recorded provenance, never emoji or a borrowed product image.
-- Equipment tiles pair one materially credible object with its name, readiness/requirement state, and action. The object provides tactile character; the data surface stays quiet and planar.
-- A selected map node, place card, route segment, and detail screen must refer to the same place state. Route changes update distance, drive time, arrival, and risk together.
-- Inputs, filters, and selectors provide loading, empty, no-results, validation, disabled, saving, success, and error feedback where applicable.
-- Every applicable component distinguishes pressed, focus, disabled, loading, empty, no-results, stale, partial, degraded, unknown, offline, saving, error, and success. Space is reserved so a state change does not unexpectedly move the primary action.
-- Motion is fast, restrained, and continuous. Map and card selection synchronize; time changes continuously update sky and data; Bottom Sheets settle physically. Motion explains input, state, hierarchy, or continuity and never exists as ambient decoration.
-
-## Interaction, Motion & Feedback
-
-- Controls respond visually on press-in and commit only on a valid press-out or equivalent keyboard/accessibility activation. Cancelling, dragging away, disabling, or losing the gesture must not fire the action.
-- Directly manipulated sheets, map overlays, time scrubbers, sky views, sliders, and reorderable items track the user's grab offset continuously. They remain interruptible and reversible while moving, beginning any retarget from the live presentation value.
-- A release may hand its measured velocity into bounded settling and choose among valid snap points using position, direction, and velocity. Momentum never bypasses a safety boundary, confirmation, permission, or valid domain range.
-- Gesture competition is designed explicitly. Sheet drag, nested scroll, map pan/pinch, iOS navigation gestures, Android system/predictive back, and assistive gestures must not silently steal one another's input.
-- Entry and exit preserve spatial continuity and logical focus. A layer closes toward its source when appropriate, returns focus to the trigger, and never traps the user.
-- Default UI settling is controlled and non-bouncy. Restrained overshoot is reserved for a momentum-driven physical gesture and stays inside safe visual bounds. Exact spring, threshold, projection, and timing values are centralized implementation tokens and require representative-device tuning; web or Apple sample constants are not production facts.
-- Bottom Sheets define valid snap points, modal versus parallel ownership, handle/scroll regions, keyboard and safe-area behavior, loading/empty/error states, dismissal/back behavior, focus, interruption, and reduced-motion alternatives. Sheet state cannot diverge from the selected place, route, itinerary, or time state it represents.
-- Haptics are short, optional, causal, and semantic: selection/snap, meaningful success, warning, error, or a clear physical boundary. They are never continuous decoration, never the only feedback channel, and must tolerate user disablement, unsupported hardware, low power, and camera/sensor conflicts.
-- iOS and Android share task and state invariants while retaining platform-native navigation, back, touch feedback, accessibility, and haptic behavior. Android is not styled or animated as an iOS imitation.
-- Honor system reduced motion by replacing large translation, parallax, depth, repeated motion, and elastic overshoot with an immediate state change or short fade; merely speeding up the same motion is insufficient. Honor reduced transparency with opaque surfaces and clear borders.
-- Screen-reader feedback exposes role, name, state/value, selected-place/time/route changes, asynchronous completion/failure, stale or degraded data, and safety warnings without announcing every animation frame. Text scaling and reflow must not clip key decisions, units, actions, or sheet controls.
-- Planning, night, and red-light modes keep the same interaction grammar and task state. Red-light transitions, pressed/loading/error states, keyboards, native overlays, and map/legal chrome must not introduce blue or bright-white flashes. If an OS- or vendor-owned surface cannot be themed, do not open it silently in field use: warn before the handoff and provide a safe cancel/return or non-field alternative.
-- Interaction quality requires state/snap tests plus representative iPhone and Android real-device review for interruption, velocity seams, system-gesture competition, accessibility, haptics, frame pacing, and dark-environment luminance. Static screenshots, simulator-only review, or a nominal FPS number are not completion evidence.
-
-## Do's and Don'ts
-
-- Do lead with whether to go tonight, then the next action, then the supporting evidence.
-- Do use real place imagery, maps, sky data, and materially credible professional equipment when they help a decision.
-- Do concentrate skeuomorphism in physical objects and decisive controls; keep data surfaces planar and aligned.
-- Do preserve the same task order across planning, night, and red-light modes.
-- Do keep professional information available without allowing it to dominate the first screen.
-- Do expose uncertainty, risk, and alternate options in user language.
-- Don't copy a source application's logo, proprietary imagery, brand color, or exact screen layout.
-- Don't use generic purple gradients, cyberpunk neon, meaningless particles, continuous flashing, large glass panels, decorative glow, leather/wood nostalgia, or universal toy-like bevels.
-- Don't use old page/control target visuals as a style source. Their files are rollback artifacts and their stable keys retain semantic traceability only.
-- Don't use stacked nested cards, a first screen full of professional tables, or unsupported claims such as 完美观星, 绝对晴朗, or 保证可见.
-- Don't invent a logo, illustration, or image that is not grounded in project evidence.
-- Don't lock input until an animation finishes, animate from an obsolete target, use a gesture-only destructive action without recovery, or let motion mask stale/unknown data.
-
-## WeChat Mini Program — Sky Canvas Field Signal
-
-This section is the complete canonical visual-system profile for `target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02`. It replaces the previous Sky Canvas system for all current Mini Program visual-system work and remains independent from the native App profile above. Product semantics, route ownership, data truth and failure behavior remain owned by Context and the Mini Program Source; this section owns exact visual roles and their system-level projection.
-
-### Adoption record
-
-- Selection: owner-selected on 2026-09-02 through the explicit instruction “现在这套设计系统差不多了，就选中他吧”.
-- Display name: `Starward 微信小程序设计系统` / `Sky Canvas Field Signal`. Do not append version, date or revision labels in the handbook title, navigation, component specimens or ordinary product UI; the stable target key and source digests below remain internal traceability metadata only.
-- Immutable selected source: `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/DESIGN.md`, SHA-256 `a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e`.
-- Complete selected package: `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/artifact-manifest.json`, SHA-256 `d719dd753422112c4759cd77d0d9da3b7d40d5dd87b38fd3d327835f739f8bde`; package content digest `253fbcbfaa083aa897eca2faf5e4eb6f3b99e69da7f485d485f89881adcc8276`.
-- Source index: `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/source-index.md`, SHA-256 `727114ee2f72f6a68a8bd0d25c4d20470ae8b0d6a0ff2bcff6d0067e367543c1`.
-- Provider lineage: Open Design `0.21.1`, design-system ID `user:starward-mini-program-sky-canvas-field-signal-revision`, reviewed project `ds-starward-mini-program-sky-canvas-field-signal-revision`, conversation `0bcc669b-29b2-476b-b93d-f502d7b09917`.
-- Provider revision `bccaa010-a3ef-4895-9fb0-4c874239fdac` remains a noncanonical pending lifecycle record because its proposed body predates the final reviewed project bytes. The immutable reviewed project snapshot above—not that stale revision body—is the selected source.
-- The frozen source retains “未选择候选” and candidate-boundary wording as historical lifecycle text. This canonical record owns the selected/adopted interpretation without altering those bytes.
-- The superseded `target.system.wechat-miniapp-sky-canvas-2026-08-25` and its immutable provider source remain inactive rollback/reference material; they no longer control current Mini Program styling.
-- Current page/interaction constraints remain `target-miniapp-sky-canvas-current-constraint` and `target-operations-sky-canvas-current-constraint`, canonically owned by their Screen Contracts. The Mini Program constraint keeps product composition and interaction responsibility while conflicting visual treatment yields to this system; the owner-operations constraint remains independently scoped outside this Mini Program system. Neither constraint proves pixel-exact or production conformance.
-- Map provider/basemap/native map styling, map markers/callouts/legend/Finder, native App and owner-operations surfaces are excluded. Future production projection must independently verify real WeChat controls, devices, safe areas, accessibility, motion and data-state behavior.
-
-### 1. 设计意图
+## 1. 设计意图
 
 《今晚去观星》先帮助用户判断“今晚值不值得去”，再回答“去哪里、何时、如何安全到达”，最后按需展开天气和天文证据。界面应像轻量、可信、有户外生命力的决策仪器：安静画布承载高密度信息，活力来自语义色、连续轴、空间节奏和因果动效，不来自装饰。
 
-#### 1.1 不变的产品层级
+### 1.1 不变的产品层级
 
 1. **结论**：建议出发、谨慎出发或不建议出发，并明确不确定性。
 2. **行动**：主地点、备选地点、最佳窗口、预计到达、路线风险与装备提示。
@@ -309,19 +19,19 @@ This section is the complete canonical visual-system profile for `target.system.
 
 设计系统只改变视觉与组件表达，不新增路线、状态责任或业务行为。示例内容均标注为“演示数据”，不得当作实时观测结论。
 
-#### 1.2 明确排除
+### 1.2 明确排除
 
 - 地图提供商、底图/瓦片、原生地图外观、地图标记/气泡/图例/Finder、地图专属动效。
 - 原生 App 与 owner-operations/运营端设计档案。
 - 新的信息架构、业务流程、评分算法或未经权威定义的产品能力。
 
-### 2. 色彩系统
+## 2. 色彩系统
 
 语义所有权：sky/periwinkle 负责时间、选择与信息焦点；meteor yellow 负责唯一最终承诺、天象事件和稀缺好窗口；trail green 负责路线、地形、可行机会和良好户外条件；risk coral 负责风险、阻断和失败。单一局部区域最多使用两种非中性色，另可加入必要风险色。日间大面积只使用暖日光中性表面，深色只承担可读文字；不得用任何强调色反复染标题、边界和普通容器。
 
 完整值位于 `tokens.scss` 与 `colors_and_type.css`。所有普通文本组合需达到 4.5:1；大文本和关键图形边界需达到 3:1。状态必须同时有文字、图标、形状或线型，不得只靠颜色。
 
-#### 2.1 日间模式
+### 2.1 日间模式
 
 | 角色 | 值 | 使用 |
 |---|---:|---|
@@ -340,7 +50,7 @@ This section is the complete canonical visual-system profile for `target.system.
 | focus | `#6174D8` | 可见组件边缘的 4rpx 内侧键盘焦点，对白 4.20:1 |
 | on-sky / on-meteor / on-trail | `#202332` / `#3A2E00` / `#153B2A` | 亮 common 填色上的深色文字，分别为 5.87:1 / 8.43:1 / 6.00:1；禁止白字 |
 
-#### 2.2 夜间模式
+### 2.2 夜间模式
 
 | 角色 | 值 | 使用 |
 |---|---:|---|
@@ -360,7 +70,7 @@ This section is the complete canonical visual-system profile for `target.system.
 
 夜间不是观测模式。夜间仍可用四种语义色，但局部区域遵守“两种强调色上限”。
 
-#### 2.3 观测模式
+### 2.3 观测模式
 
 观测模式是独立作者模式，不是夜间主题覆层。它只允许纯黑与暖红家族：`#000000`、`#110000`、`#190000`、`#240000`、`#5B1712`、`#7A1E18`、`#A83229`、`#C23D32`、`#D84A3C`、`#FF6B58`。禁止蓝、白、黄、绿与中性灰闪现，包括加载、系统回退、图片占位、焦点环和切换过渡。
 
@@ -371,7 +81,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - 错误仍用暖红，但必须附“阻断/失败”文字和图标；不新增其他色相。
 - 切入前先准备观测模式令牌，再在同一帧替换整棵界面，避免过渡中出现白闪。
 
-#### 2.4 组件映射
+### 2.4 组件映射
 
 - Decision Summary：结论文字保持中性；建议用 trail、时间用 sky、稀缺窗口用 meteor，湿滑风险才用 risk；证据带分成局部子区遵守两强调色上限。
 - Observing Window：轨道选中段用 sky；稀缺天象窗口可加入 meteor；不同时再加入 trail。
@@ -380,7 +90,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - Provenance/Freshness：默认中性色；stale 用 meteor 图标+“数据较旧”；offline 用 risk+“离线缓存”。
 - 数据矩阵：中性底；只给当前选择列和真正异常单元着色，不把每一行染成不同颜色。
 
-### 3. 字体与图标
+## 3. 字体与图标
 
 字体不依赖网络资源，也不声称打包字体。中文和界面统一使用：`"Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif`。Windows 优先使用可用的 Noto Sans SC，微信平台自然回退到 PingFang SC。数字/时间可使用 `"SFMono-Regular", Consolas, "Liberation Mono", monospace`，只用于对齐数据，不用于导航、分类标题或长文。
 
@@ -404,9 +114,9 @@ This section is the complete canonical visual-system profile for `target.system.
 - 图标使用单一线性家族：24/32/40rpx 三档，默认 3rpx 描边，关键图标 4rpx；圆端点、圆连接，不混用填充图标集。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
 
-### 4. 间距、密度、占用率与几何
+## 4. 间距、密度、占用率与几何
 
-#### 4.1 间距
+### 4.1 间距
 
 以 8rpx 为主基线、4rpx 为微对齐：`0, 4, 8, 12, 16, 24, 32, 40, 48, 64, 80, 96rpx`。320/375/390px 等效视口统一优先 32rpx（16 CSS px）页边距，430px 为 40rpx。紧凑不是把内容塞满，也不是机械放大外间距；它由以下四层留白共同控制：
 
@@ -417,7 +127,7 @@ This section is the complete canonical visual-system profile for `target.system.
 
 可见几何与命中几何分离：紧凑选择/外观 chip 可见 56–60rpx，普通动作 68–72rpx，最终承诺 92–96rpx；交互包装始终至少 88rpx，扩展区不得与相邻目标重叠。不要为了命中合同把背景、描边和文字一起撑到 88rpx。text/search input 本体直接至少 88rpx，不以伪扩展命中区掩盖较小输入；textarea 自然更高。
 
-#### 4.2 语义圆角
+### 4.2 语义圆角
 
 | 令牌 | 值 | 使用 |
 |---|---:|---|
@@ -434,7 +144,7 @@ This section is the complete canonical visual-system profile for `target.system.
 
 分组优先顺序：先用间距，再用表面明度差，再用 1rpx 边界；只有浮层、临时拖起面和需与滚动内容脱离的元素使用阴影。禁止“每组一个卡片”。
 
-#### 4.3 边界与高程
+### 4.3 边界与高程
 
 - 普通边界 1rpx；选中/关键边界 2rpx。触摸点击不留下持续焦点框；文本输入以光标与 1rpx 浅色调变化表示正在编辑。只有外接键盘、桌面小程序或辅助键盘触发 `:focus-visible` 时，才在可见表面内侧使用单一 4rpx 等效下边缘/局部边缘，禁止完整深蓝框、外偏移、双框、光晕、命中盒描边或几何变化；`pointer: coarse` 下不持久显示。
 - elevation-0：无阴影，默认。
@@ -442,7 +152,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - elevation-2：`0 16rpx 48rpx #282B2920`，仅 sheet/dialog。
 - 夜间阴影降低可见度并依赖边界；观测模式禁止阴影光晕，以暖红边界区分层级。
 
-#### 4.4 移动基线 → Starward 应用
+### 4.4 移动基线 → Starward 应用
 
 | 场景 | Starward 应用 | 可见表面 | 命中与组合 |
 |---|---|---:|---|
@@ -455,9 +165,9 @@ This section is the complete canonical visual-system profile for `target.system.
 
 基线依据只用于原则与结构翻译，不复制品牌视觉、页面编排或把任何单一平台数值当作 Starward 的普遍答案：WeUI/TDesign 的紧凑小程序动作层级用于校准文字与表面占比；Apple/Android 的命中意图用于分离 visible/hit geometry；WCAG 2.4.13 用于校验键盘指示可见性；Android 4/8dp 与 16dp 边距用于移动节奏；WMO/NOAA 的影响优先与不确定性表达用于“判断→影响/行动→证据/新鲜度”；NASA/AMS 的流星黄/绿来源只建立户外身份，不编码科学测量。来源：<https://github.com/Tencent/weui/blob/master/src/style/widget/weui-button/weui-button.less>、<https://tdesign.tencent.com/qq-miniprogram/components/button>、<https://developer.apple.com/design/human-interface-guidelines/buttons>、<https://developer.android.com/guide/topics/ui/accessibility/views/apps-views>、<https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html>、<https://developer.android.com/design/ui/mobile/guides/layout-and-content/content-structure>、<https://developer.android.com/design/ui/mobile/guides/layout-and-content/grids-and-units>、<https://wmo.int/media/news/impact-based-forecasting-informs-anticipatory-action>、<https://repository.library.noaa.gov/view/noaa/69977>、<https://www.nasa.gov/blogs/watch-the-skies/2023/12/05/gorgeously-green-geminids-peak-next-week/>、<https://www.amsmeteors.org/fireballs/faqf/>。
 
-#### 4.5 八轴实践矩阵
+### 4.5 八轴实践矩阵
 
-这张矩阵是本系统的耐久设计上下文。跨平台基线只定义可迁移原则；Starward 列把原则翻译为户外观星决策界面；Do not 列用于评审时 fail closed。
+这张矩阵是候选的耐久设计上下文。跨平台基线只定义可迁移原则；Starward 列把原则翻译为户外观星决策界面；Do not 列用于评审时 fail closed。
 
 | 轴 | 跨平台基线 | Starward 户外 / 天文决策应用 | Do not |
 |---|---|---|---|
@@ -470,7 +180,7 @@ This section is the complete canonical visual-system profile for `target.system.
 | Visual focus 视觉焦点 | 触摸反馈、编辑态与键盘焦点分流；pressed/selected/disabled 各自有语义 | touch=80ms press 后恢复；input=光标+1px 浅变化；keyboard=`:focus-visible` 内侧下边缘 | 不把焦点当普通移动状态展出；不用完整深蓝框、offset 外环、双框、光晕或命中盒描边 |
 | Mobile adaptation 移动适配 | 触控、键盘、读屏、长标签、安全区和 200% 文本一起验证 | inline search 紧邻被筛选集合；建议行/clear/choice row 均 ≥44px；sheet 动作避让底部安全区 | 不以隐藏、裁切或压缩表格通过窄屏；不把桌面栏位仅缩小后塞进 320px |
 
-### 5. 布局、平台与可访问性
+## 5. 布局、平台与可访问性
 
 - 以 750rpx 设计宽度映射：375 CSS px = 750rpx；320/390/430px 等效视口必须重排而非缩放整页。
 - 320px：32rpx 页边距；压缩列间距，时间轨允许横向手势但整页不得横滚；优先显示结论、主窗口和主要行动。
@@ -485,11 +195,11 @@ This section is the complete canonical visual-system profile for `target.system.
 - 不以色彩单独表达 live/partial/stale/offline；状态词必须可见。
 - `prefers-reduced-motion` 下禁用位移/缩放，保留即时状态切换和焦点反馈。
 
-### 6. 领域组件合同
+## 6. 领域组件合同
 
 以下组件不重排既有信息架构，只规范现有信息的表达。
 
-#### 6.1 Decision Summary
+### 6.1 Decision Summary
 
 - **Anatomy**：状态眉题、结论、置信/数据状态、关键理由、下一步主行动。
 - **Hierarchy**：结论先于评分；行动先于证据链接。
@@ -499,7 +209,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：读屏顺序为判断→影响/时间→证据→数据状态；不只读分数。
 - **Composition**：最多一个主 CTA；Evidence Disclosure 紧随其后但为次级。
 
-#### 6.2 Primary / Backup Observing Window
+### 6.2 Primary / Backup Observing Window
 
 - **Anatomy**：主/备标签、开始结束时间、持续时长、窗口依据、状态。
 - **Variants**：primary、backup、unavailable、partial。
@@ -508,7 +218,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：文本完整读出“主窗口 21:40–23:10，持续 1 小时 30 分”；图形标 `aria-hidden`。
 - **Composition**：不得拆成两张独立卡；备选必须紧邻主窗口。
 
-#### 6.3 Risk Strip
+### 6.3 Risk Strip
 
 - **Anatomy**：风险图标、明确标题、影响、可执行缓解动作。
 - **Variants**：notice、warning、blocker、resolved。
@@ -517,7 +227,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：`role="status"` 或阻断时 `role="alert"`；不得只显示叹号。
 - **Composition**：位于主行动前，阻断时主按钮同步 disabled 并说明原因。
 
-#### 6.4 Time Rail
+### 6.4 Time Rail
 
 - **Anatomy**：固定指标标签列、等宽时间刻度、当前游标、选中窗口、事件节点。
 - **Variants**：6/8/12 列、可拖动、只读、partial。
@@ -526,7 +236,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：拖动器为 slider，暴露当前时间与范围；提供文字摘要替代横向扫描。
 - **Composition**：一个页面只有一个主时间轴；所有数据行对齐它。
 
-#### 6.5 Condition Band
+### 6.5 Condition Band
 
 - **Anatomy**：指标名、单位、时间序列、异常/缺失标记、趋势摘要。
 - **Variants**：云量、透明度、视宁度、风、降水等既有指标；live/partial/stale/offline。
@@ -535,7 +245,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：表头与单元格关联；颜色带同时显示数值/符号。
 - **Composition**：3–5 条核心行默认展开，其余进入 Evidence Disclosure。
 
-#### 6.6 Sun / Moon Event Node
+### 6.6 Sun / Moon Event Node
 
 - **Anatomy**：节点、事件名、时间、方向/高度（若已有数据）。
 - **Variants**：日落、月升、月落、天文暮光等既有事件。
@@ -544,7 +254,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：事件列表作为图形后的文字等价；焦点顺序按时间。
 - **Composition**：不以装饰天体图替代真实时间信息。
 
-#### 6.7 Route / Elevation Summary
+### 6.7 Route / Elevation Summary
 
 - **Anatomy**：预计到达、路程/海拔信息、路况/步行段、风险、设施。
 - **Variants**：primary route、backup、partial、unavailable。
@@ -553,7 +263,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：图表有起终点、最高点和文本摘要；不依赖线色。
 - **Composition**：不展示或评价任何地图视觉；可链接到既有路线责任但不重定义。
 
-#### 6.8 Provenance / Freshness
+### 6.8 Provenance / Freshness
 
 - **Anatomy**：数据状态词、更新时间、来源/模型入口、覆盖范围。
 - **Variants**：live、partial、stale、offline-cache。
@@ -562,7 +272,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：相对时间附可访问绝对时间；状态变化礼貌播报。
 - **Composition**：任何缺失/旧数据必须和其影响范围同屏。
 
-#### 6.9 Partial / Stale / Offline State
+### 6.9 Partial / Stale / Offline State
 
 - **Anatomy**：状态词、受影响范围、最后更新时间、仍可用内容、恢复动作。
 - **Variants**：partial“部分数据”、stale“数据较旧”、offline“离线缓存”、unavailable“暂无数据”。
@@ -571,7 +281,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：图标+词+解释三重编码；恢复按钮有进度与结果播报。
 - **Composition**：保留仍可信的信息，不把全页替换为错误屏。
 
-#### 6.10 Evidence Disclosure
+### 6.10 Evidence Disclosure
 
 - **Anatomy**：摘要按钮、展开状态、证据区、来源/新鲜度。
 - **Variants**：collapsed、expanded、loading、partial。
@@ -580,13 +290,13 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y**：按钮同步 `aria-expanded`/`aria-controls`；焦点不跳转。
 - **Composition**：结论首屏最多一个证据入口；展开后先核心行再扩展行。
 
-### 7. 通用组件合同
+## 7. 通用组件合同
 
 基础目录固定为 **14 个语义家族**。每族必须独立命名、可直接定位，并分别说明 anatomy、variants/states、可见几何、命中几何、无障碍、组合方式与 Do not。领域组件不得替代这些基础家族。
 
 **谱系判定树**：先问“它管理什么状态与职责”，再看形状。提交命令属于 Button；查询拥有 query/suggestion/result 生命周期，属于 Search；独立多选属于 Checkbox，单选属于 Radio，即使两者画成 chip；立即生效的布尔设置才属于 Switch；相关内容/视图的互斥切换属于 Choice Bar，Tabs 与 Segmented 只是其语义子型；重复事实属于 List/Cell，能独立成立的单一对象才属于 Card。不得因圆角、pill 或下划线形状另建家族。
 
-#### 7.1 Button / Icon Button
+### 7.1 Button / Icon Button
 
 - **Anatomy**：label、可选 leading icon、loading feedback；icon button 只有一个线性图标与可访问名称。
 - **Variants / states**：compact choice、ordinary inline、final commit、tonal、outlined、quiet、destructive；default/pressed/selected/loading/disabled；键盘 focus-visible 仅为输入设备 fallback，不作为移动标本常态。
@@ -594,7 +304,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：扩展命中区不得重叠；每个局部决策层只保留一个 dominant action，普通动作按内容收缩。
 - **Do not**：不把所有动作做成大实心或全宽；不以 white-on-common 作为默认；不把 icon 当唯一关键含义。
 
-#### 7.2 Search Field
+### 7.2 Search Field
 
 - **Anatomy**：范围标签、14px query input、16–18px 搜索图标、44px clear target、helper、loading、suggestion/result region。
 - **Variants / states**：idle、editing、query、clear、loading、suggestions、result、empty、error，以及 inline scoped/filter search；editing 用光标与 1rpx 浅色调变化，不展示持续“焦点框”状态。
@@ -602,7 +312,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：永久说明搜索范围；有用 placeholder 不替代 label；listbox/option 或等价列表语义；输入、清除、建议均可键盘操作并播报结果数。
 - **Do not**：不做无范围的全局搜索暗示；不把 search 藏进 generic Input；不以空白屏替代 empty/error 说明。
 
-#### 7.3 Text Input / Textarea
+### 7.3 Text Input / Textarea
 
 - **Anatomy**：永久 label、field、value、helper/error、可选字符计数。
 - **Variants / states**：text、time、multiline；normal/focus/error/disabled/readonly/loading。
@@ -610,7 +320,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：helper/error 通过 aria-describedby 关联，input mode 匹配；200% 文本与长中文 label 可重排。
 - **Do not**：不靠 placeholder 充当 label；不通过更小可见输入伪造 44px 命中；不把局部错误升级成整页警告。
 
-#### 7.4 Checkbox Group
+### 7.4 Checkbox Group
 
 - **Anatomy**：group label、18–20px box、item label/description、可选计数与 select-all relation。
 - **Variants / states**：unchecked、checked、indeterminate、disabled、max-selection feedback、select-all / partial relation；短筛选可使用 check-chip 外观，但状态与 `checkbox` 角色不变。
@@ -618,7 +328,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：用于彼此独立的多选；fieldset/legend 或 group label；mixed 使用原生 indeterminate 或 aria-checked=mixed；达到上限时说明为何不可继续。
 - **Do not**：不拿 radio/switch 替代独立多选；不因 chip 外观另建状态家族；不只给勾选框本身命中；不在选择上限后静默失效。
 
-#### 7.5 Radio Group
+### 7.5 Radio Group
 
 - **Anatomy**：group label、radio、item label/description。
 - **Variants / states**：unselected、selected、disabled、unavailable explanation；短值可使用 single-choice chip 外观，但状态与 `radio` 角色不变。
@@ -626,7 +336,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：只用于 one-of-many；同组 name/role、方向键与读屏位置提示。
 - **Do not**：不用于可同时选择的条件；不用分段控件承载长说明；不让默认项只靠颜色可见。
 
-#### 7.6 Switch
+### 7.6 Switch
 
 - **Anatomy**：setting label、结果说明、track/thumb、当前 on/off 状态。
 - **Variants / states**：on、off、disabled、pending confirmation 仅在需要时；键盘 focus-visible 只作为外部输入 fallback。
@@ -634,7 +344,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：用于立即生效的二元设置；清楚说明切换结果并同步 aria-checked。
 - **Do not**：不把需要提交确认的多步动作做成 switch；不拿它代替 radio；不在危险操作上即时切换。
 
-#### 7.7 Choice Bar / View Switcher
+### 7.7 Choice Bar / View Switcher
 
 - **Anatomy**：2–4 个短 label、共享轨道、单一可移动 selected indicator、对应 value 或 panel。
 - **Semantic subtypes**：Tabs 组织相关内容/视图并使用 `tablist/tab/tabpanel`；Segmented 选择局部值或紧密相关子视图并使用 radio 等价语义。二者共享布局与移动指示器 primitive，不共享业务职责。
@@ -642,7 +352,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：点击与方向键/Home/End 同步 `aria-selected` 或等价 checked 状态、tabindex 与 panel；状态不只靠颜色。
 - **Do not**：不容纳长句或过多项；不让每项各自闪现边框；不把 filter chip、导航路由或多选混入 Choice Bar。
 
-#### 7.8 List / Cell / Action Row
+### 7.8 List / Cell / Action Row
 
 - **Anatomy**：title、meta/value、leading status、trailing affordance；整行或尾部动作二选一。
 - **Variants / states**：informational cell、navigation row、action row、disclosure row；default/selected/expanded/disabled。
@@ -650,7 +360,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：整行可点时不得嵌套第二个主动作；disclosure 同步 expanded/controls；列表使用语义列表。
 - **Do not**：不把重复事实拆成卡片；不同时让行和尾部按钮执行不同主要动作；不靠箭头猜用途。
 
-#### 7.9 Badge / Status Tag
+### 7.9 Badge / Status Tag
 
 - **Anatomy**：短状态词、可选 shape/icon；必要时紧邻受影响对象。
 - **Variants / states**：live、partial、stale、offline、success、risk；badge 与 inline status line。
@@ -658,7 +368,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：色彩 + 文字/边型共同编码；动态状态按严重度使用 status/alert。
 - **Do not**：不只显示色点；不让 badge 承载说明段落；不把每个普通标签做成 pill。
 
-#### 7.10 Card / Containment
+### 7.10 Card / Containment
 
 - **Anatomy**：一个 coherent object 的 heading、content、meta、最多一个局部 action。
 - **Variants / states**：content/event card、saved-plan/action card、evidence/freshness card、compact metric/decision tile、full-width 长对象卡；implicit grouping 对照。
@@ -666,7 +376,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：heading 建立区域名；重复密集事实优先 rows/dividers/shared-axis；full-width 长卡只容纳一个“观星点信息”对象，以标题、地点/距离、条件摘要、状态/元数据、一个尾部披露或局部动作组成；卡片可从周围内容独立识别才成立。
 - **Do not**：不嵌套卡、不每指标/状态一卡、不放多个竞争 CTA、不用阴影代替信息层级。
 
-#### 7.11 Progress / Loading / Skeleton
+### 7.11 Progress / Loading / Skeleton
 
 - **Anatomy**：状态文字、determinate value 或 indeterminate 状态、结构骨架。
 - **Variants / states**：progressbar、inline loading、button loading、skeleton、data-arrival。
@@ -674,7 +384,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：aria-busy/progressbar；超过短等待显示文字；数据到达礼貌播报并可被新请求中断。
 - **Do not**：不做环境循环装饰、发光或旋转天体；不让 skeleton 改变布局；观测模式只黑/暖红。
 
-#### 7.12 Empty / Error / Permission Recovery
+### 7.12 Empty / Error / Permission Recovery
 
 - **Anatomy**：发生原因、影响范围、仍可用内容、真实恢复动作。
 - **Variants / states**：empty、local error、offline、permission denied/recovery；局部扁平状态与全页 friendly panel。
@@ -682,7 +392,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：错误关联受影响区域；恢复结果播报；拒绝权限后核心浏览仍可继续。
 - **Do not**：不清空仍可信内容；不把每个状态做卡；不提供不存在的恢复按钮或用强迫式主 CTA。
 
-#### 7.13 Toast / Snackbar
+### 7.13 Toast / Snackbar
 
 - **Anatomy**：短结果、可选单一 undo/action、关闭/超时策略。
 - **Variants / states**：success、error、offline、undo；单行优先。
@@ -690,7 +400,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **A11y / composition**：status/alert 按严重度；自动消失可暂停；重复事件合并而不堆叠。
 - **Do not**：重要错误不只靠 toast；不放多个动作；不遮挡主导航或最终承诺。
 
-#### 7.14 Dialog / Bottom Sheet
+### 7.14 Dialog / Bottom Sheet
 
 - **Anatomy**：title、body、actions；sheet 另有 handle、停靠边与安全区。
 - **Variants / states**：dialog confirm、sheet task、open/dragging/loading/error。
@@ -699,7 +409,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **Do not**：不把常规分组画成 sheet/dialog；不新增产品路线；不在浮层中堆卡或并列多个主动作。
 
 
-### 8. 运动系统
+## 8. 运动系统
 
 所有运动均由明确操作或数据因果触发，可中断、可反向、无环境循环。基础缓动：standard `cubic-bezier(.2,0,0,1)`，exit `cubic-bezier(.4,0,1,1)`；press 80ms、short 120ms、medium 160ms、long 200ms，只有 sheet 使用 320ms 上限。bounded spring：mass 1、stiffness 420、damping 34、rest delta 0.5；禁止持续弹跳。
 
@@ -714,7 +424,7 @@ This section is the complete canonical visual-system profile for `target.system.
 | Loading/data arrival | 请求；skeleton → 真实行 | 最小 120ms crossfade，逐行最大错峰 16ms/总 160ms | 新请求取消旧 transition | 直接替换并播报 | 无 | 只在黑/暖红间切换 |
 | Mode change | 用户切换；完整主题 A → B | 先绑定目标 tokens，同帧替换；背景 160ms 仅 day↔night | 新模式接管；不经过第三主题 | 即时替换 | 可选 medium | 切入/离开观测均即时，不做跨色淡化 |
 
-### 9. 语音与内容
+## 9. 语音与内容
 
 语气平静、具体、可执行。先结论，再下一步，证据按需展开；天气与天象有不确定性时直接说明。
 
@@ -724,7 +434,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - 演示预览必须写“演示数据”，不得呈现为当前实况。
 - 错误说明结构：发生了什么 → 影响什么 → 用户可以做什么。
 
-### 10. 反模式
+## 10. 反模式
 
 - 通用渐变、大面积光晕、玻璃拟态、环境粒子、循环流星、装饰 3D 天体。
 - 卡片套卡片、每指标一张卡、把所有选项做成 pill。
@@ -736,7 +446,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - 复制 fixture 为“实时”事实，或在本系统内重新定义业务流程。
 - 任何地图视觉、地图组件或地图动效评审。
 
-### 11. 相对上一版 Sky Canvas 的精确增量
+## 11. 与当前 Sky Canvas 语义的精确增量
 
 | 分类 | 变化 |
 |---|---|
@@ -746,11 +456,11 @@ This section is the complete canonical visual-system profile for `target.system.
 | Deprecated 弃用 | 企业深蓝/全局靛蓝化；所有动作统一 80rpx、普通按钮默认全宽；偏移外焦点环/双框；孤立圆形评分与 Decision Summary 空列；粗重行政标题与 tracked uppercase/mono 导航；24–32px 常规内边距；厚暗边框、淡蓝卡片墙、任意软圆；每指标或每状态一卡；循环 loading 装饰；模式跨色淡化 |
 | Unchanged 明确不变 | 产品路线/状态责任、评分算法、数据来源权威、地图相关全部权威、原生 App、运营端、正式采用流程 |
 
-### 12. 投射与审查
+## 12. 投射与审查
 
-- `tokens.scss`：冻结来源中的 Taro/React/SCSS 投射；模式由根节点 `data-theme` 或等价状态切换。
+- `tokens.scss`：Taro/React/SCSS 候选合同；模式由根节点 `data-theme` 或等价状态切换。
 - `colors_and_type.css`：浏览器预览镜像，不是第二权威；值须与 SCSS 同步。
-- `index.html`：冻结来源的审查入口；`preview/`：非地图代表场景。
+- `index.html`：候选入口；`preview/`：非地图代表场景。
 - 任何进入生产的实现都必须重新验证真实字体、微信系统控件、设备安全区、屏幕阅读器、放大文字、低性能设备运动和真实数据边界。
 
-本节已于 2026-09-02 由 owner 明确选中并成为当前 Mini Program 设计系统；选择只建立设计权威，不证明生产实现、页面像素一致或运行时合规。
+此候选只供审查。除非后续存在明确的选择与 authority closure 更新，否则不得把本文描述为“当前设计系统”或“已符合生产”。

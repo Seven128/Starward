@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>地点夜况 · Sky Canvas 候选预览</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body class="review">
+  <main class="review-shell scene-layout" data-od-id="spot-night-preview">
+    <section class="scene-intro" data-od-id="scene-introduction">
+      <p class="review-kicker">Representative scene 02</p>
+      <h1 data-od-id="scene-title">地点夜况</h1>
+      <p>一个时间轴统领全部条件带。切换状态可检查实时、部分、较旧和离线时如何保留仍可信的信息。</p>
+      <div class="theme-control" role="group" aria-label="预览主题" data-od-id="theme-switcher">
+        <button type="button" aria-pressed="false" data-theme-target="#spot-night-phone" data-theme-value="day" data-od-id="theme-day">日间</button>
+        <button type="button" aria-pressed="true" data-theme-target="#spot-night-phone" data-theme-value="night" data-od-id="theme-night">夜间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#spot-night-phone" data-theme-value="observation" data-od-id="theme-observation">观测</button>
+      </div>
+      <div class="review-links" style="margin-top:20px"><a class="review-link" href="../index.html" data-od-id="back-to-hub">返回候选入口</a></div>
+    </section>
+
+    <article class="phone" id="spot-night-phone" data-theme="night" data-od-id="spot-night-phone">
+      <div class="phone-status"><span>20:18</span><span class="capsule" aria-label="微信菜单区域"></span></div>
+      <header class="app-header"><a class="icon-button" href="spot-detail.html" aria-label="返回地点详情" data-od-id="back-to-spot-detail"><span class="icon-arrow"></span></a><h2>今晚天空</h2><button class="icon-button" type="button" aria-label="更多操作"><span class="icon-more"><i></i><i></i><i></i></span></button></header>
+      <div class="app-content">
+        <p class="demo-label">演示数据 · 当前预览模式：<span data-current-theme>夜间</span></p>
+        <div class="state-tabs" role="tablist" aria-label="数据状态" data-state-controller data-state-target="#data-status" data-od-id="data-state-tabs">
+          <button type="button" role="tab" id="state-live" aria-selected="true" aria-controls="data-status" tabindex="0" data-state-value="live" data-od-id="state-live-tab">实时</button>
+          <button type="button" role="tab" id="state-partial" aria-selected="false" aria-controls="data-status" tabindex="-1" data-state-value="partial" data-od-id="state-partial-tab">部分</button>
+          <button type="button" role="tab" id="state-stale" aria-selected="false" aria-controls="data-status" tabindex="-1" data-state-value="stale" data-od-id="state-stale-tab">较旧</button>
+          <button type="button" role="tab" id="state-offline" aria-selected="false" aria-controls="data-status" tabindex="-1" data-state-value="offline" data-od-id="state-offline-tab">离线</button>
+        </div>
+        <div class="status-banner" id="data-status" data-state="live" role="tabpanel" aria-live="polite" aria-labelledby="state-live" data-od-id="freshness-status"><strong>实时</strong><p>核心数据已更新 · 演示时间 20:18</p></div>
+
+        <section class="section" data-od-id="shared-time-matrix">
+          <div class="section-header"><h3>条件时间带</h3><span>21:00–02:00</span></div>
+          <div class="time-matrix" role="table" aria-label="演示天气条件时间矩阵">
+            <div class="matrix-row head" role="row"><span class="metric" role="columnheader">时间</span><span role="columnheader">21</span><span role="columnheader">22</span><span role="columnheader">23</span><span role="columnheader">00</span><span role="columnheader">01</span><span role="columnheader">02</span></div>
+            <div class="matrix-row" role="row"><span class="metric" role="rowheader">云量</span><span class="matrix-cell" role="cell">35%</span><span class="matrix-cell selected" role="cell">22%</span><span class="matrix-cell selected" role="cell">18%</span><span class="matrix-cell" role="cell">30%</span><span class="matrix-cell" role="cell">46%</span><span class="matrix-cell" role="cell">58%</span></div>
+            <div class="matrix-row" role="row"><span class="metric" role="rowheader">透明</span><span class="matrix-cell" role="cell">中</span><span class="matrix-cell good" role="cell">良</span><span class="matrix-cell good" role="cell">良</span><span class="matrix-cell" role="cell">中</span><span class="matrix-cell" role="cell" data-conditional-cell data-value="中">中</span><span class="matrix-cell" role="cell" data-conditional-cell data-value="中">中</span></div>
+            <div class="matrix-row" role="row"><span class="metric" role="rowheader">视宁</span><span class="matrix-cell" role="cell">一般</span><span class="matrix-cell selected" role="cell">稳定</span><span class="matrix-cell selected" role="cell">稳定</span><span class="matrix-cell" role="cell">一般</span><span class="matrix-cell" role="cell">一般</span><span class="matrix-cell" role="cell">波动</span></div>
+            <div class="matrix-row" role="row"><span class="metric" role="rowheader">阵风</span><span class="matrix-cell" role="cell">2.1</span><span class="matrix-cell" role="cell">1.8</span><span class="matrix-cell" role="cell">1.9</span><span class="matrix-cell" role="cell">2.4</span><span class="matrix-cell risk" role="cell">4.8</span><span class="matrix-cell risk" role="cell">5.2</span></div>
+          </div>
+          <div class="event-rail" role="img" aria-label="天象事件：21点32分月落，0点12分天文暮光结束">
+            <div class="event" style="--x:15%"><span>21:32<br>月落</span></div>
+            <div class="event" style="--x:62%"><span>00:12<br>暮光结束</span></div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="observing-window-summary">
+          <div class="window-stack"><div class="window-row"><span class="window-label">主窗口</span><div class="window-track"><div class="window-fill" style="--start:18%;--length:42%">21:40–23:10</div></div></div></div>
+        </section>
+
+        <section class="disclosure" data-open="false" data-od-id="evidence-disclosure">
+          <button type="button" aria-expanded="false" aria-controls="more-evidence" data-disclosure-button data-od-id="evidence-toggle"><span>展开完整证据与来源</span><span class="chevron"></span></button>
+          <div class="disclosure-content" id="more-evidence">
+            <div class="evidence-row"><span>模型覆盖</span><strong>4 / 4</strong></div>
+            <div class="evidence-row"><span>更新时间</span><strong>演示 20:18</strong></div>
+            <div class="evidence-row"><span>数据状态</span><strong data-status-copy>实时</strong></div>
+          </div>
+        </section>
+      </div>
+    </article>
+
+    <aside class="scene-notes" data-od-id="design-annotations">
+      <div class="annotation"><strong>共享轴，不拆卡</strong><p>时间、云量、透明度、视宁度、阵风和天象事件使用同一列系统。</p></div>
+      <div class="annotation"><strong>缺失是可读状态</strong><p>切换“部分/离线”会显示“缺”，而不是只改变单元格颜色。</p></div>
+      <div class="annotation"><strong>观测模式零跨色</strong><p>切换到观测后，蓝、绿、黄全部映射为暖红家族。</p></div>
+    </aside>
+  </main>
+  <script src="shared.js"></script>
+</body>
+</html>

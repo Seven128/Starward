@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>地点详情 · Sky Canvas 候选预览</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body class="review">
+  <main class="review-shell scene-layout" data-od-id="spot-detail-preview">
+    <section class="scene-intro" data-od-id="scene-introduction">
+      <p class="review-kicker">Representative scene 01</p>
+      <h1 data-od-id="scene-title">地点详情</h1>
+      <p>先给今晚是否建议出发，再给主/备窗口与安全行动，最后展开路线、设施和天空证据。内容均为演示数据。</p>
+      <div class="theme-control" role="group" aria-label="预览主题" data-od-id="theme-switcher">
+        <button type="button" aria-pressed="true" data-theme-target="#spot-detail-phone" data-theme-value="day" data-od-id="theme-day">日间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#spot-detail-phone" data-theme-value="night" data-od-id="theme-night">夜间</button>
+        <button type="button" aria-pressed="false" data-theme-target="#spot-detail-phone" data-theme-value="observation" data-od-id="theme-observation">观测</button>
+      </div>
+      <div class="review-links" style="margin-top:20px"><a class="review-link" href="../index.html" data-od-id="back-to-hub">返回候选入口</a></div>
+    </section>
+
+    <article class="phone" id="spot-detail-phone" data-theme="day" data-od-id="spot-detail-phone">
+      <div class="phone-status"><span>20:18</span><span class="capsule" aria-label="微信菜单区域"></span></div>
+      <header class="app-header" data-od-id="app-header">
+        <button class="icon-button" type="button" aria-label="返回" data-od-id="back-button"><span class="icon-arrow"></span></button>
+        <h2 data-od-id="spot-name">示例观测点</h2>
+        <button class="icon-button" type="button" aria-label="更多操作" data-od-id="more-button"><span class="icon-more"><i></i><i></i><i></i></span></button>
+      </header>
+      <div class="app-content">
+        <p class="demo-label">候选系统预览 · 演示数据，不代表当前实况</p>
+        <section class="decision" data-od-id="decision-summary">
+          <div class="status-line"><span class="status-dot"></span><span>今晚建议出发</span><span class="decision-truth">演示 · 实时</span></div>
+          <h1 data-od-id="decision-conclusion">21:40 后云隙扩大，适合短时观测</h1>
+          <p class="decision-impact"><strong>22:30</strong> 前后条件最稳定；23:10 起低云风险增加。</p>
+          <div class="decision-evidence" aria-label="紧凑演示证据"><div class="evidence-metric evidence-metric--score"><span>演示评分</span><strong>78 / 100</strong></div><div class="evidence-metric evidence-metric--window"><span>机会窗口</span><strong>90 分钟</strong></div><div class="evidence-metric evidence-metric--time"><span>稳定时刻</span><strong>22:30</strong></div><div class="evidence-metric evidence-metric--risk"><span>路线风险</span><strong>湿滑慢行</strong></div></div>
+        </section>
+
+        <section class="section" data-od-id="observing-windows">
+          <div class="section-header"><h3>最佳观测窗口</h3><span>20:00–01:00</span></div>
+          <div class="window-stack" aria-label="主窗口与备选窗口">
+            <div class="window-row"><span class="window-label">主窗口</span><div class="window-track"><div class="window-fill" style="--start:28%;--length:38%">21:40–23:10</div></div></div>
+            <div class="window-row backup"><span class="window-label">备选</span><div class="window-track"><div class="window-fill" style="--start:70%;--length:22%">23:30–00:20</div></div></div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="route-risk">
+          <div class="section-header"><h3>到达与风险</h3><span>预计 42 分钟</span></div>
+          <div class="risk-strip" role="status" data-od-id="risk-strip"><div><strong>末段道路湿滑</strong><p>最后 1.2 公里请减速，备好防滑鞋与头灯。</p></div></div>
+          <div class="panel" style="margin-top:10px" data-od-id="route-evidence">
+            <div class="evidence-row"><span>路线可行性</span><strong class="good">可达 · 谨慎</strong></div>
+            <div class="evidence-row"><span>累计爬升</span><strong>演示 186 m</strong></div>
+            <div class="evidence-row"><span>最高海拔</span><strong>演示 742 m</strong></div>
+          </div>
+        </section>
+
+        <section class="section" data-od-id="facility-evidence">
+          <div class="section-header"><h3>现场条件</h3><span>已核对 3 项</span></div>
+          <div class="facility-list"><span class="chip">停车点</span><span class="chip">洗手间</span><span class="chip">手机信号弱</span></div>
+        </section>
+
+        <section class="section" data-od-id="tonight-sky-entry">
+          <a class="entry-row" href="spot-night.html" data-od-id="open-tonight-sky"><div><strong>查看今晚天空</strong><p>按共享时间轴检查云量、透明度与月亮事件</p></div><span class="entry-arrow" aria-hidden="true"></span></a>
+        </section>
+
+        <div class="fixed-action"><button class="primary-button final-commit-button" type="button" data-od-id="save-plan-cta">加入今晚计划</button></div>
+      </div>
+    </article>
+
+    <aside class="scene-notes" data-od-id="design-annotations">
+      <div class="annotation"><strong>结论占据首个阅读落点</strong><p>评分退居理由层，避免“数字先于判断”。</p></div>
+      <div class="annotation"><strong>主/备窗口共享轨道</strong><p>不是两张卡；时间关系可以直接比较。</p></div>
+      <div class="annotation"><strong>风险在行动之前</strong><p>珊瑚色只编码真实阻断与缓解动作。</p></div>
+    </aside>
+  </main>
+  <script src="shared.js"></script>
+</body>
+</html>
