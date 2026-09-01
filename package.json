@@ -81,7 +81,7 @@
   "devDependencies": {
     "miniprogram-automator": "^0.12.1",
     "pngjs": "^7.0.0",
-    "project-tiny-context-harness": "^0.8.17",
+    "project-tiny-context-harness": "0.11.0",
     "zod": "4.4.3"
   },
   "tyContext": {

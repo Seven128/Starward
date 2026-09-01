@@ -1,0 +1,57 @@
+# WeChat Mini Program Surfaces And Controls
+
+This on-demand subdomain node normatively continues the Mini Program Screen Contract and owns its stable Surface responsibility list and complete material Control inventory.
+
+## Stable Product Surfaces
+
+### `miniapp-map-discovery`
+
+- Primary question: Which formal stargazing spots should I filter or compare from simplified information on this map, and which one should I inspect next?
+- Main surface owns: one-time location request with manual fallback; viewport restoration; one conventional floating Search field; one compact, wrap-safe row of immediately committed quick filters beneath Search; and one non-modal, map-parallel `map-spot-finder-sheet` with exactly three extents `closed`, `peek` and `expanded`. The clean default map is `closed`. The first unselected→selected quick-filter transition or committed query may auto-open `peek`; subsequent changes update the same projection in place. The Sheet's named handle is both the drag region and the explicit 88rpx tap/accessibility toggle, while its visible bar remains quiet. `peek` exposes a compact first group of advanced-filter choices and the first useful result;
+  `expanded` exposes the complete advanced draft editor, search suggestion/result context and the two collapsible `想去`/`其他观星点` result partitions with city headings. Quick filters live only beneath Search and never repeat inside the Sheet. The Source-defined 18 terminal choices remain one filter truth: quick choices commit immediately, while advanced choices retain one opening snapshot, draft, conditional revert/commit actions and discard-on-close semantics. An ordinary base map consumes the remaining viewport and shows formal-spot markers by default.
+  One compact in-map `观测条件` status bar shows only the active analysis/key metric/local time and opens `SourceLiftFocusLayer.mapCoupled` with one optional analysis overlay at a time (`NONE`, `LIGHT`, `TOTAL_CLOUD`, or user-facing `今晚观测条件` backed by SkyOpportunity), exactly one visible selected local time in its non-scrolling compact control surface, and the same physical map. Compact marker callouts, one shared Finder-result/marker/callout selection and explicit Spot Detail or external-navigation handoff remain unchanged.
+- It forbids: a standalone visible Finder launcher, a visible “展开筛选/收起筛选” button, a redundant “找今晚的观星点” heading/explanation block inside the Sheet, a default-open Sheet, duplicated quick filters inside the Sheet, gesture-only access to an essential extent, or a full-screen/focus-lift Finder that removes the map from the comparison task; separate peer point-list or Favorites triggers; nested Finder child Modals or simultaneously open suggestion/filter disclosures; suggestions displaced from the Search field or remaining visible after true focus departure from the field-plus-overlay group; a permanently expanded analysis dashboard above the map; a scrollable or visibly scroll-barred observing-condition control surface; a Favorite/star metaphor for observing conditions;
+  a second/remounted map, duplicate selected-time store or duplicate visible selected-time text in the analysis focus state; exposing the ordinary base map or default formal markers as peer layer tabs; duplicating light/time as another bar or peer tab; hiding scrollbar chrome by disabling or clipping the owned scroll needed to reach long filters/results; permanent pan-arrow or zoom-stepper chrome where native drag/pinch applies; full Observation Context, detailed formal-spot cards, complete route/facility/safety evidence or other drilldown content on the map; Finder-result activation entering Detail before the map callout; ordinary POIs masquerading as formal spots; stale draft restoration; straight-line distance described as a route; filters split across competing stores;
+  or product-design rationale, routine map-gesture instruction, route/debug/reviewer metadata and sample-disclosure chrome inside the user phone surface. User-relevant source, freshness, uncertainty and recovery copy remain product content and are not removed with review metadata.
+
+### `miniapp-spot-detail`
+
+- Primary question: Is this named formal spot suitable, reachable, trustworthy and safe tonight?
+- Main surface owns: a fixed identity/header action hierarchy with the spot name, a visually borderless Favorite icon state inside its full accessible hit region, and a distance/route row with one quiet trailing `去这里 →` text action rather than a filled block; Overview/Guides/Site content with an animated segment indicator/content handoff; representative media first with source/license/site status; hard-blocker-aware Tonight conclusion; route/facility/provenance evidence; plan actions; one quiet `反馈现场情况` handoff carrying the formal `spot_id`; and one explicit child-page entry to `spot/sky`.
+- It forbids: generic or unexplained availability/change chips in the identity header, safety blockers averaged into a positive recommendation, missing facts rendered as zero, unlicensed or non-site media presented as site truth, duplicated static requests when only dynamic date context changes, an instantaneous un-signalled segment swap, and a repeated Favorite/Night/navigation button row inside the arrival/facilities content.
+
+### `miniapp-spot-night`
+
+- Primary question: What can be observed from this formal spot and how can the user orient and execute without losing dark adaptation?
+- Main surface owns: an astronomy-information parent page with understandable summary, attributable selected-time data, source/freshness/completeness feedback, icon-assisted professional aligned bands and matrices, structured target recommendations, a versioned 2D sky map and one shared time scrubber; one explicit `方位天空` child entry carrying that same formal spot/time context; sensor-following orientation with permission, calibration, accuracy, retry and unavailable states; one concise rounded permission/recovery panel that keeps the sky dominant; a non-canvas celestial-object list for accessibility and degraded use; and the closed warm-red observation presentation with offline freshness after it is explicitly entered from My Settings.
+- It forbids: a local observation-mode entry control; a global/current-location or independently seeded sky route; example targets or prototype fixtures presented as live facts; a manual orientation mode, direction `+`/`−` buttons, drag-to-heading control or fabricated heading when the sensor is unavailable; AR/full deep-sky catalogue outside the current accepted scope; white flashes in observation mode; and making the astronomy information, target details or recovery actions sensor-only.
+
+### `miniapp-my-library`
+
+- Primary question: What is my account state, and how do I reach my plan or settings without turning the root into a second content browser?
+- Main surface owns: a conventional account-center root with a title-only header, one Tier-A Settings gear action, concise login/profile summary and a small grouped routine-entry list; quiet Plan and field-feedback/correction entries with standalone recoverable child routes; contributor-visible pending/review counts; and a standalone Settings child route with objective-fact-preserving preferences and the explicit enter/exit control for the closed warm-red observation presentation.
+- It forbids: peer My/Favorites/Plan/Settings tabs; the subtitle “收藏、计划与显示偏好”; any Favorite count, row, list or duplicate favorite-browsing route on My; copied e-commerce orders/coupons/membership/promotion modules or third-party brand assets; page horizontal scrolling; plan/official sample article cards on My home; a duplicate spot detail; and dynamic-provider failure deleting the static favorite relation retained by Finder/Detail.
+
+### `miniapp-profile-content`
+
+- Primary question: How can the user manage external profile links and import their own stargazing post while preserving rights, lineage, moderation and point identity?
+- Main surface owns: neutral external link records, URL validation and copy-first fallback; `SOURCE → EDIT_DRAFT → ASSOCIATE_SPOT → PREVIEW → SUBMIT`; rights attestation; manual import; parser/license gates; editable draft protection; formal `spot_id` association or independent `spot_proposal_id`; moderation and EXIF/location sanitization.
+- It forbids: platform affiliation claims, dangerous schemes, automatic parsing without allowlist/license/SSRF controls, parser retry overwriting edited fields, a proposal creating a formal `spot_id`, and unreviewed public UGC.
+
+### `miniapp-contribution-intake`
+
+- Primary question: How can an authenticated user submit a field report, correction or proposed place without publishing an unreviewed fact or leaking private location/media metadata?
+- Main surface owns: an existing formal-spot context when supplied by Detail; deliberate report kind and affected fact topics; observation time; concise evidence narrative; explicit rights and precise-location consent; bounded media selection/upload; durable draft and upload state; idempotent submit/retry; and the current user's pending/approved/rejected history.
+- It forbids: automatically confirming a submitted claim, collecting current location for an existing-spot report, retaining raw EXIF, accepting unsupported MIME or oversized files, submitting without explicit rights for media, disclosing another contributor's data, and creating a formal spot or changing its published facts before owner review plus canonical completeness reassessment.
+
+## Stable Control Inventory
+
+The following keys are the complete material Control inventory for the current accepted scope. Repeated list rows/markers reuse the owning family key rather than creating hidden semantics.
+
+- Shell/shared: `mini-primary-navigation`, `display-mode-switcher`, `data-source-disclosure`, `notification-feedback`, `page-state-recovery`.
+- Map: `source-lift-focus-layer`, `map-spot-finder-trigger`, `map-spot-finder-sheet`, `map-finder-search-field`, `map-finder-query-overlay`, `map-finder-quick-filters`, `map-finder-sheet-handle`, `map-finder-advanced-filters`, `map-finder-result-list`, `map-location-control`, `map-analysis-time-bar`, `map-analysis-focus-layer`, `map-layer-selector`, `map-time-control`, `map-marker-card-coordinator`, `map-selected-spot-callout`.
+- Spot detail: `spot-header-actions`, `spot-favorite-action`, `spot-navigation-action`, `spot-segment-tabs`, `spot-night-entry`, `spot-contribution-entry`, `spot-media-gallery`, `spot-tonight-decision`, `spot-route-summary`, `spot-facility-evidence`, `guide-article-viewer`.
+- Spot Night: `sky-summary-tabs`, `sky-professional-matrix`, `sky-target-list`, `sky-time-scrubber`, `sky-map-canvas`, `sky-orientation-entry`, `sky-orientation-sensor`, `sky-orientation-recovery`, `sky-orientation-object-list`.
+- My/library: `my-account-header`, `my-settings-action`, `my-profile-summary`, `my-grouped-entry-list`, `my-plan-entry`, `my-contribution-entry`, `plan-editor`, `settings-form`, `observation-mode-control`.
+- Profile/content: `profile-link-editor`, `profile-link-open-copy`, `import-source-rights`, `import-draft-editor`, `import-spot-association`, `import-preview-submit`.
+- Contribution: `contribution-kind-control`, `contribution-spot-context`, `contribution-topic-control`, `contribution-observed-at`, `contribution-location-consent`, `contribution-media-upload`, `contribution-submit`, `contribution-status-list`.

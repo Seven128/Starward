@@ -20,7 +20,7 @@
   ],
   "authorities": [
     { "key": "design", "path": "DESIGN.md", "sha256": "7170c3eab81f0f44f5d461acd85d11c4804161ee18cc76a2d22f42c638914a84" },
-    { "key": "miniapp-surface", "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md", "sha256": "7181c7b3a9a62fa5174be83a800ec80b03376b0673761bcfc5cbbe50a42b9925" },
+    { "key": "miniapp-surface", "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md", "sha256": "5621b03b69463f70d6c7284170eee0dc7c5c5dd9ab1e3199f4f99a1f93232911" },
     { "key": "operations-surface", "path": "project_context/areas/main/screen-contracts/operations.md", "sha256": "7061c41d28ff228d676c752bfbb2a1b5907869dd18e17a1b5bd2e5d1d226e15f" },
     { "key": "implementation-spec", "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/implementation-handoff-spec.json", "sha256": "7a6a341d700c351b1557af169e88ec931ba91b0a2c0cf4d92683869b63386b11" }
   ],

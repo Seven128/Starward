@@ -10,7 +10,7 @@ const packageRoot = path.join(
   "project-tiny-context-harness",
 );
 const checkOnly = process.argv.slice(2).includes("--check");
-const expectedVersion = "0.8.17";
+const expectedVersion = "0.11.0";
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
