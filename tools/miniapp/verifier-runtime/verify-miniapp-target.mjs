@@ -407,6 +407,14 @@ async function inspectCandidate() {
     repositoryPath("packages/miniapp-contracts/src/feature-flags.ts"),
     "utf8",
   );
+  const oneShotLocation = await readFile(
+    repositoryPath("apps/wechat-miniapp/src/services/one-shot-location.ts"),
+    "utf8",
+  );
+  const appStore = await readFile(
+    repositoryPath("apps/wechat-miniapp/src/state/app-store.ts"),
+    "utf8",
+  );
   const buildConfig = await readFile(
     repositoryPath("apps/wechat-miniapp/config/index.ts"),
     "utf8",
@@ -460,13 +468,20 @@ async function inspectCandidate() {
     (match) => match[1],
   );
   const expectedFlags = [
-    "TRIAL_REGION",
-    "ENABLED_PROVIDERS",
-    "UGC_MODE",
-    "LIGHT_LAYER_MODE",
-    "SKY_CATALOG_LEVEL",
-    "NOTIFICATION_ENABLED",
-    "COMMERCIAL_LICENSE_MODE",
+    "GLOBAL_NIGHT_TAB_ENABLED",
+    "ORDINARY_PLACE_SKY_ENABLED",
+    "DARK_SKY_CANDIDATES_ENABLED",
+    "SKY_EVENT_ENABLED",
+    "REAL_WEATHER_ENABLED",
+    "LAYERED_CLOUD_ENABLED",
+    "WEATHER_MODEL_COMPARISON_ENABLED",
+    "LIGHT_POLLUTION_LAYER_ENABLED",
+    "SKY_OPPORTUNITY_LAYER_ENABLED",
+    "DYNAMIC_SKY_MAP_ENABLED",
+    "WECHAT_AUTH_ENABLED",
+    "EVENT_SUBSCRIPTION_ENABLED",
+    "PROFILE_LINKS_ENABLED",
+    "OWN_POST_IMPORT_ENABLED",
   ];
   const checks = {
     native_project:
@@ -480,7 +495,9 @@ async function inspectCandidate() {
       catalogProjectionBound &&
       spotIds.length === 26 &&
       new Set(spotIds).size === spotIds.length,
-    capability_flags: expectedFlags.every((flag) => flags.includes(flag)),
+    capability_flags:
+      expectedFlags.every((flag) => flags.includes(`"${flag}"`)) &&
+      flags.includes("assertFeatureFlagClosure"),
     no_direct_provider: !/fetch\(\s*["'`]https?:\/\//u.test(appText),
     no_html_delivery:
       project.compileType === "miniprogram" &&
@@ -498,8 +515,10 @@ async function inspectCandidate() {
     ].every((state) => appText.includes(state)),
     explicit_location_only:
       !mapPage.includes("useLoad") &&
-      (mapPage.match(/Taro\.getLocation\(/gu) ?? []).length === 1 &&
-      mapPage.includes('locationState === "DEFAULT_REGION"'),
+      mapPage.includes('from "@/services/one-shot-location"') &&
+      mapPage.includes("requestOneShotLocation(Taro)") &&
+      (oneShotLocation.match(/platform\.getLocation\(/gu) ?? []).length === 1 &&
+      appStore.includes('locationState: "DEFAULT_REGION"'),
     response_cache_entity_identity:
       cachePolicy.includes("responseCacheKey") && cachePolicy.includes("path"),
     package_budget: totalBytes > 0 && totalBytes < 2 * 1024 * 1024,
@@ -865,10 +884,11 @@ async function buildSemanticArtifact(
     spec.semantic_templates.length === 0 &&
     sourceAuthority.items.size > 0 &&
     evidence.source_closure_passed === true &&
-    spec.checks.every(
-      (check) =>
-        (check.assertions?.length ?? 0) === 0 &&
-        (check.observations?.length ?? 0) === 0,
+    spec.checks.every((check) =>
+      (check.assertions ?? []).every(
+        (assertion) =>
+          !(assertion.evidence_capabilities ?? []).includes("semantic_fact"),
+      ),
     );
   const environment = observedEnvironment(spec, evidence);
   const facts = templates.map((template, index) => {
@@ -922,7 +942,6 @@ async function buildSemanticArtifact(
 }
 
 async function buildDesignArtifacts(spec, evidence) {
-  const integrity = await readJson(RESOURCE_INTEGRITY);
   const actualEnvironment = await readJson(DESIGN_ENVIRONMENT);
   const actualParameters = await readJson(DESIGN_PARAMETERS);
   const environmentValue = actualEnvironment.identity ?? null;
@@ -931,16 +950,34 @@ async function buildDesignArtifacts(spec, evidence) {
   const parameterValue = actualParameters.asset_integrity ?? null;
   const parameterSha = parameterValue === null ? null : sha256(parameterValue);
   const binding = await readJson(DESIGN_BINDING_CURRENT).catch(() => null);
+  const selectedHandoff = binding?.handoffs?.find(
+    (handoff) => handoff.target === spec.design_evidence.design_target_ref,
+  );
   const factResults = [];
   for (const expectation of spec.design_evidence.fact_expectations) {
-    const resourceKey = expectation.fact_ref
-      .replace(/^fact\./u, "")
-      .replace(/\.digest$/u, "");
-    const resource = integrity.resources?.[resourceKey];
-    const actual = resource?.path
+    const locator = expectation.expected.locator;
+    const resource = selectedHandoff?.resources?.find(
+      (item) => item.key === locator.resource_ref,
+    );
+    const resourceSha = resource?.path
       ? await fileSha(resource.path).catch(() => null)
       : null;
-    const actualSha = actual ? sha256(actual) : null;
+    let actual = null;
+    if (
+      resource?.path &&
+      locator.kind === "json_pointer" &&
+      typeof locator.value === "string" &&
+      locator.value.startsWith("/")
+    ) {
+      let value = await readJson(resource.path).catch(() => null);
+      for (const part of locator.value
+        .slice(1)
+        .split("/")
+        .map((item) => item.replaceAll("~1", "/").replaceAll("~0", "~")))
+        value = value?.[part];
+      if (value !== undefined && value !== null) actual = String(value);
+    }
+    const actualSha = actual === null ? null : sha256(actual);
     factResults.push({
       fact_ref: expectation.fact_ref,
       subject_ref: expectation.subject_ref,
@@ -956,7 +993,8 @@ async function buildDesignArtifacts(spec, evidence) {
       expected_sha256: expectation.expected.sha256,
       passed:
         actual !== null &&
-        actual === resource?.sha256 &&
+        resource?.passed === true &&
+        resourceSha === resource?.sha256 &&
         actualSha === expectation.expected.sha256 &&
         environmentSha === expectation.environment.definition.sha256 &&
         parameterSha === expectation.comparison.parameters.sha256,

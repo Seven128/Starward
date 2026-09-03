@@ -2,7 +2,7 @@ schema_version: long-task-delivery-v2
 semantic_fact_manifest:
   key: wechat-miniapp-field-signal-i21.semantic-facts
   source_path: .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-  sha256: 79982667470ccfd45209e97a18745ecd06406e9416df973af7620186f5c81689
+  sha256: 1ee8cc888f10461cba5f8cb698523b18d6b1a951532713f94f973525bdacca8f
 task:
   id: wechat-miniapp-field-signal-i21
   title: WeChat Mini Program Field Signal I21 production implementation

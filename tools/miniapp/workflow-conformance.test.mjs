@@ -1256,10 +1256,13 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     /const actual = sourceAuthority\.items\.get\(template\.source_item_key\)/u,
   );
   assert.match(verifier, /\[HANDOFF_SOURCE, handoff\]/u);
-  assert.match(
-    verifier,
-    /const actual = resource\?\.path\s*\?\s*await fileSha\(resource\.path\)/u,
-  );
+  assert.match(verifier, /handoff\.target === spec\.design_evidence\.design_target_ref/u);
+  assert.match(verifier, /item\.key === locator\.resource_ref/u);
+  assert.match(verifier, /locator\.kind === "json_pointer"/u);
+  assert.match(verifier, /resourceSha === resource\?\.sha256/u);
+  assert.match(verifier, /requestOneShotLocation\(Taro\)/u);
+  assert.match(verifier, /platform\\\.getLocation/u);
+  assert.match(verifier, /evidence_capabilities/u);
   assert.match(verifier, /counterfactualProjectionFiles/u);
   assert.match(verifier, /projection\.required_exact_paths/u);
   assert.match(verifier, /projection\.required_tree_roots/u);
