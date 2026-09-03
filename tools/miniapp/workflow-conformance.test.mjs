@@ -1304,6 +1304,12 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     /path\.dirname\(fileURLToPath\(import\.meta\.url\)\),\s*"\.\.",\s*"\.\.",\s*"\.\."/u,
     "the frozen verifier runtime must resolve paths from the repository root",
   );
+  assert.match(verifier, /function extractFencedBlock\(content, header\)/u);
+  assert.match(
+    verifier,
+    /const manifestText = extractFencedBlock\(\s*source,\s*"yaml semantic-fact-compact-carrier-v1"/u,
+    "large Source carriers must be sliced by bounded markers instead of a recursive whole-text regexp",
+  );
   assert.match(verifier, /if \(!failureObserved\) return null;/u);
   assert.match(verifier, /if \(record\) records\.push\(record\);/u);
   assert.match(verifier, /const current = await snapshotManifest\(spec\)/u);

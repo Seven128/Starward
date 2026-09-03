@@ -266,6 +266,24 @@ function runNode(relative, args = [], cwd = root, timeoutMs = 900_000) {
   );
 }
 
+function extractFencedBlock(content, header) {
+  const opening = `\`\`\`${header}`;
+  const openingIndex = content.indexOf(opening);
+  if (openingIndex < 0) return null;
+  const afterOpening = openingIndex + opening.length;
+  const bodyStart = content.startsWith("\r\n", afterOpening)
+    ? afterOpening + 2
+    : content.startsWith("\n", afterOpening)
+      ? afterOpening + 1
+      : -1;
+  if (bodyStart < 0) return null;
+  const closingIndex = content.indexOf("\n```", bodyStart);
+  if (closingIndex < 0) return null;
+  const bodyEnd =
+    content[closingIndex - 1] === "\r" ? closingIndex - 1 : closingIndex;
+  return content.slice(bodyStart, bodyEnd);
+}
+
 async function parseSourceAuthority() {
   const source = await readFile(repositoryPath(SOURCE_PATH), "utf8");
   const handoff = await readFile(repositoryPath(HANDOFF_SOURCE), "utf8");
@@ -285,10 +303,10 @@ async function parseSourceAuthority() {
       itemSources.set(key, sourceRef);
     }
   }
-  const manifestText =
-    /```yaml semantic-fact-compact-carrier-v1\s*\r?\n([\s\S]*?)\r?\n```/u.exec(
-      source,
-    )?.[1];
+  const manifestText = extractFencedBlock(
+    source,
+    "yaml semantic-fact-compact-carrier-v1",
+  );
   if (!manifestText) throw new Error("semantic_manifest_block_missing");
   const manifest = parseYaml(manifestText);
   return {

@@ -44,7 +44,7 @@
     "semantic_manifest": {
       "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "key": "wechat-miniapp-field-signal-i21.semantic-facts",
-      "sha256": "eaeb029a425e70c98c60c4cf2dbe6d0b65f4d8e9623133d677bcb94bfe37e678"
+      "sha256": "8b32b6a8dd60692ddc0c1fbb94a29826cf3c5c8779d28a4c12a1ded2bfd05297"
     }
   },
   "counterfactual_controls": [],
