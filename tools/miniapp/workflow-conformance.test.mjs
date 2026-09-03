@@ -408,6 +408,18 @@ test("the current Field Signal Mini Program and Operations handoffs are bound to
     i21Handoff.sha256,
   );
   assert.equal(i21Spec.design_evidence.fact_refs.length, 72);
+  assert.equal(
+    i21Spec.design_evidence.resource_integrity_path,
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json",
+  );
+  assert.equal(
+    i21Spec.design_evidence.environment_path,
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json",
+  );
+  assert.equal(
+    i21Spec.design_evidence.parameters_path,
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json",
+  );
   assert.equal(bindings.authorities.length, 4);
   assert.ok(bindings.production_probes.length >= 5);
   for (const probe of bindings.production_probes) {
@@ -1305,6 +1317,8 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "the frozen verifier runtime must resolve paths from the repository root",
   );
   assert.match(verifier, /function extractFencedBlock\(content, header\)/u);
+  assert.match(verifier, /RESOURCE_INTEGRITY = designEvidence\.resource_integrity_path/u);
+  assert.match(verifier, /DESIGN_ACTUAL = designEvidence\.actual_artifact_path/u);
   assert.match(
     verifier,
     /const manifestText = extractFencedBlock\(\s*source,\s*"yaml semantic-fact-compact-carrier-v1"/u,

@@ -26,10 +26,10 @@ const DESIGN_BINDING_CURRENT =
 let RESOURCE_INTEGRITY = `${SELECTED_RESOURCE_ROOT}/resource-integrity.json`;
 let DESIGN_ENVIRONMENT = `${SELECTED_RESOURCE_ROOT}/render-environment.json`;
 let DESIGN_PARAMETERS = `${SELECTED_RESOURCE_ROOT}/proof-parameters.json`;
-const DESIGN_ACTUAL = "artifacts/miniapp/design/production-actual.json";
-const DESIGN_COMPARISON = "artifacts/miniapp/design/constraint-comparison.json";
-const DESIGN_METHOD = "artifacts/miniapp/design/asset-integrity.json";
-const DESIGN_OBSERVATIONS =
+let DESIGN_ACTUAL = "artifacts/miniapp/design/production-actual.json";
+let DESIGN_COMPARISON = "artifacts/miniapp/design/constraint-comparison.json";
+let DESIGN_METHOD = "artifacts/miniapp/design/asset-integrity.json";
+let DESIGN_OBSERVATIONS =
   "artifacts/miniapp/design/asset-integrity-observations.json";
 const GLOBAL_CONFORMANCE_CURRENT =
   "artifacts/miniapp/global/current-conformance.json";
@@ -123,9 +123,26 @@ function bindAuthorityPaths(spec) {
   SOURCE_PATH = semanticSource;
   HANDOFF_SOURCE = handoffSource;
   SELECTED_RESOURCE_ROOT = normalizedResourceManifest.slice(0, separator);
-  RESOURCE_INTEGRITY = `${SELECTED_RESOURCE_ROOT}/resource-integrity.json`;
-  DESIGN_ENVIRONMENT = `${SELECTED_RESOURCE_ROOT}/render-environment.json`;
-  DESIGN_PARAMETERS = `${SELECTED_RESOURCE_ROOT}/proof-parameters.json`;
+  const designEvidence = spec?.design_evidence;
+  for (const key of [
+    "resource_integrity_path",
+    "environment_path",
+    "parameters_path",
+    "actual_artifact_path",
+    "comparison_artifact_path",
+    "method_artifact_path",
+    "observation_artifact_path",
+  ]) {
+    if (typeof designEvidence?.[key] !== "string" || !designEvidence[key])
+      throw new Error(`verification_spec_design_path_missing:${key}`);
+  }
+  RESOURCE_INTEGRITY = designEvidence.resource_integrity_path;
+  DESIGN_ENVIRONMENT = designEvidence.environment_path;
+  DESIGN_PARAMETERS = designEvidence.parameters_path;
+  DESIGN_ACTUAL = designEvidence.actual_artifact_path;
+  DESIGN_COMPARISON = designEvidence.comparison_artifact_path;
+  DESIGN_METHOD = designEvidence.method_artifact_path;
+  DESIGN_OBSERVATIONS = designEvidence.observation_artifact_path;
 }
 
 function canonical(value) {

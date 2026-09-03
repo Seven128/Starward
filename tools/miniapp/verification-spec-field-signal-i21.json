@@ -44,7 +44,7 @@
     "semantic_manifest": {
       "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "key": "wechat-miniapp-field-signal-i21.semantic-facts",
-      "sha256": "8b32b6a8dd60692ddc0c1fbb94a29826cf3c5c8779d28a4c12a1ded2bfd05297"
+      "sha256": "79982667470ccfd45209e97a18745ecd06406e9416df973af7620186f5c81689"
     }
   },
   "counterfactual_controls": [],
@@ -56,6 +56,9 @@
     "condition_keys": [
       "condition-miniapp-field-signal-phone-source-matrix"
     ],
+    "resource_integrity_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json",
+    "environment_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json",
+    "parameters_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json",
     "actual_artifact_path": "artifacts/miniapp/i21/production-actual.json",
     "comparison_artifact_path": "artifacts/miniapp/i21/constraint-comparison.json",
     "method": "asset_integrity",

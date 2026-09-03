@@ -40,6 +40,8 @@ const FEASIBILITY_PATH = `${SELECTED_ROOT}/miniapp-implementation-feasibility.js
 const IMPLEMENTATION_SPEC = `${SELECTED_ROOT}/implementation-handoff-spec.json`;
 const AUTHORITY_DELTA = `${SELECTED_ROOT}/authority-delta.json`;
 const RESOURCE_INTEGRITY = `${SELECTED_ROOT}/miniapp-resource-integrity.json`;
+const DESIGN_ENVIRONMENT = `${SELECTED_ROOT}/miniapp-render-environment.json`;
+const DESIGN_PARAMETERS = `${SELECTED_ROOT}/miniapp-proof-parameters.json`;
 const VERIFIER_RUNTIME_ROOT = "tools/miniapp/verifier-runtime";
 const NATIVE_RUNNER = `${VERIFIER_RUNTIME_ROOT}/verify-miniapp-target.exe`;
 const NATIVE_LAUNCHER_SOURCE = `${VERIFIER_RUNTIME_ROOT}/verify-miniapp-target-launcher.c`;
@@ -1238,7 +1240,7 @@ async function main() {
     counterfactual_controls: [],
     population_requirements: [],
     semantic_templates: [],
-    design_evidence: { design_target_ref: designTarget.key, target_ref: NATIVE_TARGET, condition_keys: [...designTarget.condition_refs], actual_artifact_path: "artifacts/miniapp/i21/production-actual.json", comparison_artifact_path: "artifacts/miniapp/i21/constraint-comparison.json", method: "asset_integrity", method_artifact_path: "artifacts/miniapp/i21/design-asset-integrity.json", observation_artifact_path: "artifacts/miniapp/i21/design-asset-integrity-observations.json", fact_refs: designFacts.map((fact) => fact.key), fact_expectations: designProofs.map((proof) => designExpectation(handoff, designFacts, proof)) },
+    design_evidence: { design_target_ref: designTarget.key, target_ref: NATIVE_TARGET, condition_keys: [...designTarget.condition_refs], resource_integrity_path: RESOURCE_INTEGRITY, environment_path: DESIGN_ENVIRONMENT, parameters_path: DESIGN_PARAMETERS, actual_artifact_path: "artifacts/miniapp/i21/production-actual.json", comparison_artifact_path: "artifacts/miniapp/i21/constraint-comparison.json", method: "asset_integrity", method_artifact_path: "artifacts/miniapp/i21/design-asset-integrity.json", observation_artifact_path: "artifacts/miniapp/i21/design-asset-integrity-observations.json", fact_refs: designFacts.map((fact) => fact.key), fact_expectations: designProofs.map((proof) => designExpectation(handoff, designFacts, proof)) },
     checks: checkRows,
   };
 
