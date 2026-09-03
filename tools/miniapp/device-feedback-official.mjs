@@ -9,6 +9,8 @@ import {
 
 const defaultCli =
   "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\cli.bat";
+const electronCliBootstrap =
+  "const e=process.argv[1],a=process.argv.slice(2).filter(function(x){return x!=='--electron'});if(!process.env.cwd)process.env.cwd=process.cwd();process.argv=[process.execPath,'--ms-enable-electron-run-as-node',e,'--electron'].concat(a);require(e)";
 
 async function physicalFile(value) {
   if (!value || !path.isAbsolute(value)) fail("official_cli_absolute_path_required");
@@ -39,9 +41,35 @@ export async function resolveOfficialCli(explicit, environment = process.env) {
       const cli = await physicalFile(path.resolve(candidate));
       if (path.extname(cli).toLowerCase() === ".bat") {
         const directory = path.dirname(cli);
+        try {
+          return {
+            file: await physicalFile(path.join(directory, "node.exe")),
+            prefix: [await physicalFile(path.join(directory, "cli.js"))],
+          };
+        } catch {}
         return {
-          file: await physicalFile(path.join(directory, "node.exe")),
-          prefix: [await physicalFile(path.join(directory, "cli.js"))],
+          file: await physicalFile(path.join(directory, "微信开发者工具.exe")),
+          prefix: [
+            "-e",
+            electronCliBootstrap,
+            await physicalFile(
+              path.join(
+                directory,
+                "resources",
+                "app.asar.unpacked",
+                "js",
+                "common",
+                "cli",
+                "index.js",
+              ),
+            ),
+          ],
+          cwd: directory,
+          env: {
+            cwd: process.cwd(),
+            ELECTRON: "",
+            ELECTRON_RUN_AS_NODE: "1",
+          },
         };
       }
       if (path.extname(cli).toLowerCase() === ".js")
@@ -57,13 +85,20 @@ export async function resolveOfficialCli(explicit, environment = process.env) {
 export function runOfficialProcess(
   file,
   args,
-  { timeout = 120_000, maxBytes = 64 * 1024 } = {},
+  {
+    timeout = 120_000,
+    maxBytes = 64 * 1024,
+    cwd,
+    env,
+  } = {},
 ) {
   return new Promise((resolve, reject) => {
     const child = spawn(file, args, {
       shell: false,
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
+      ...(cwd ? { cwd } : {}),
+      ...(env ? { env: { ...process.env, ...env } } : {}),
     });
     const chunks = [];
     let bytes = 0;
@@ -111,13 +146,21 @@ export class OfficialWechatDevtools {
     return [...this.invocation.prefix, ...values];
   }
 
+  options(overrides = {}) {
+    return {
+      ...overrides,
+      ...(this.invocation.cwd ? { cwd: this.invocation.cwd } : {}),
+      ...(this.invocation.env ? { env: this.invocation.env } : {}),
+    };
+  }
+
   async doctor() {
     const probe = async (command) => {
       try {
         await this.run(
           this.invocation.file,
           this.args([command, "--help", "--lang", "zh"]),
-          { timeout: 15_000, maxBytes: 32 * 1024 },
+          this.options({ timeout: 15_000, maxBytes: 32 * 1024 }),
         );
         return "available";
       } catch {
@@ -133,7 +176,7 @@ export class OfficialWechatDevtools {
       const output = await this.run(
         this.invocation.file,
         this.args(["islogin", "--lang", "zh"]),
-        { timeout: 15_000, maxBytes: 4 * 1024 },
+        this.options({ timeout: 15_000, maxBytes: 4 * 1024 }),
       );
       const lines = output.toString("utf8").trim().split(/\r?\n/u);
       login = JSON.parse(lines.at(-1) ?? "{}")?.login === true ? "ready" : "required";
@@ -147,7 +190,7 @@ export class OfficialWechatDevtools {
     ];
     if (port !== undefined) args.push("--port", String(port));
     try {
-      await this.run(this.invocation.file, this.args(args));
+      await this.run(this.invocation.file, this.args(args), this.options());
     } finally {
       await rm(infoOutput, { force: true });
     }
@@ -160,7 +203,7 @@ export class OfficialWechatDevtools {
     ];
     if (port !== undefined) args.push("--port", String(port));
     try {
-      await this.run(this.invocation.file, this.args(args));
+      await this.run(this.invocation.file, this.args(args), this.options());
     } finally {
       await rm(infoOutput, { force: true });
     }

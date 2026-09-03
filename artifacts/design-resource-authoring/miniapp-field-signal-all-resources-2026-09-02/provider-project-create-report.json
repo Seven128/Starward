@@ -1,0 +1,31 @@
+{
+  "schema_version": "starward-open-design-project-create-v1",
+  "verified_on": "2026-09-02",
+  "result": "verified",
+  "removed_rejected_empty_shell": {
+    "file_count": 0,
+    "run_count": 0,
+    "reason": "automatic desktop example scenario was outside the selected resource set"
+  },
+  "project": {
+    "id": "starward-miniapp-field-signal-all-resources",
+    "name": "Starward 微信小程序全量交互原型",
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "kind": "prototype",
+    "intent": "design-resource-authoring",
+    "entry_file": "index.html",
+    "skip_discovery_brief": true,
+    "scenario_binding_present": false,
+    "automatic_plugin_snapshot_present": false,
+    "workspace_binding_present": true
+  },
+  "commission": {
+    "project_file": "COMMISSION.md",
+    "chars": 14698,
+    "bytes": 19616,
+    "sha256": "52279d72cd814c8651a5b73d9827eca536104ac05cda8c4ab2ae6bd26ed2494e"
+  },
+  "conversation_id_present": true,
+  "sensitive_data_persisted": false
+}

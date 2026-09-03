@@ -332,7 +332,7 @@ export function SpotDetailPage({
       .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
       .join("&");
     void Taro.navigateTo({
-      url: `/spot/sky/index?${params.toString()}`,
+      url: `/sky/detail/index?${params.toString()}`,
     });
   };
 

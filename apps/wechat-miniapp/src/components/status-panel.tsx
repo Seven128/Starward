@@ -30,6 +30,7 @@ export function StatusPanel({
   return (
     <View
       className={`status-panel status-panel--${state.toLowerCase()}`}
+      data-control="notification-feedback page-state-recovery"
       role={state === "ERROR" ? "alert" : "status"}
       aria-live={live ? "polite" : undefined}
     >

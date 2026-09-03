@@ -242,6 +242,7 @@ function createSubmit(
   return async () => {
     if (form.submitting) return;
     if (form.mediaNeedsRecovery) {
+      form.setValidationField("contribution-media-upload");
       form.announce(
         "warning",
         "请先处理媒体上传",
@@ -250,6 +251,11 @@ function createSubmit(
       return;
     }
     if (form.detail.trim().length < 20 || form.topics.length === 0) {
+      form.setValidationField(
+        form.topics.length === 0
+          ? "contribution-topic-control"
+          : "contribution-detail",
+      );
       form.announce(
         "error",
         "还不能提交",
@@ -258,6 +264,7 @@ function createSubmit(
       return;
     }
     if (form.kind === "NEW_SPOT_PROPOSAL" && !form.preciseLocationConsent) {
+      form.setValidationField("contribution-location-consent");
       form.announce(
         "error",
         "还不能提交",

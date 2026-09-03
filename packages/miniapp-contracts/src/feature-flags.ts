@@ -33,8 +33,8 @@ export const SELECTED_FEATURE_FLAGS: FeatureFlags = Object.freeze({
   DYNAMIC_SKY_MAP_ENABLED: true,
   WECHAT_AUTH_ENABLED: true,
   EVENT_SUBSCRIPTION_ENABLED: false,
-  PROFILE_LINKS_ENABLED: false,
-  OWN_POST_IMPORT_ENABLED: false,
+  PROFILE_LINKS_ENABLED: true,
+  OWN_POST_IMPORT_ENABLED: true,
 });
 
 export function assertFeatureFlagClosure(

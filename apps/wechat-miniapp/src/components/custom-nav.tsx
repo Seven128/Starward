@@ -40,6 +40,7 @@ export function CustomNav({
   return (
     <View
       className="custom-nav safe-top"
+      data-control="mini-primary-navigation"
       {...(odId ? { "data-od-id": odId } : {})}
       {...(statusBarHeight > 0
         ? { style: { paddingTop: `${statusBarHeight}px` } }

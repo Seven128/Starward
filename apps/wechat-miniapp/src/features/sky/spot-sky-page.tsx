@@ -1,9 +1,10 @@
 import Taro, {
   useDidHide,
+  useDidShow,
   useReady,
   useRouter,
 } from "@tarojs/taro";
-import { Canvas, ScrollView, Slider, Text, View } from "@tarojs/components";
+import { Button, Canvas, ScrollView, Text, View } from "@tarojs/components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type DisplayMode,
@@ -12,15 +13,12 @@ import {
   type SkyReport,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
-import { DataStateBadge } from "@/components/data-state-badge";
 import { NotificationRegion } from "@/components/notification";
-import { Provenance } from "@/components/provenance";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
-import { nativeStatusBarHeightPx } from "@/theme/native-metrics";
 import {
   errorMessage,
   getObservationContext,
@@ -29,12 +27,13 @@ import {
   updateObservationContext,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
-import { createCompassLifecycle } from "./compass-lifecycle";
+import {
+  type DeviceMotionEvent,
+  createCompassLifecycle,
+} from "./compass-lifecycle";
 import "./spot-sky-page.scss";
 
 const CANVAS_ID = "spot-night-sky-scene";
-
-export type SkyView = "MAIN" | "DETAIL" | "PROFESSIONAL" | "TARGETS";
 
 const TARGET_TYPE_LABEL: Readonly<Record<SkyReport["targets"][number]["type"], string>> = {
   STAR: "恒星",
@@ -44,103 +43,6 @@ const TARGET_TYPE_LABEL: Readonly<Record<SkyReport["targets"][number]["type"], s
   METEOR_SHOWER: "流星雨",
   CONJUNCTION: "天体相合",
 };
-
-const SUITABLE_FOR_LABEL: Readonly<
-  Record<SkyReport["decision"]["skyOpportunity"]["suitableFor"][number], string>
-> = {
-  NAKED_EYE: "肉眼观测",
-  PHONE: "手机拍摄",
-  MILKY_WAY: "银河拍摄",
-  STAR_TRAIL: "星轨拍摄",
-  DEEP_SKY: "深空摄影",
-};
-
-const DATA_STATE_LABEL: Readonly<Record<HourlySkyRow["state"], string>> = {
-  FRESH: "当前",
-  STALE_USABLE: "可用但已旧",
-  PARTIAL: "部分数据",
-  EXPIRED: "已过期",
-  UNAVAILABLE: "不可用",
-  ESTIMATED: "估算",
-  SAMPLE_DATA: "资料不足",
-};
-
-const DARKNESS_LABEL: Readonly<Record<HourlySkyRow["darkness"], string>> = {
-  DAY: "日间",
-  TWILIGHT: "暮光",
-  ASTRONOMICAL_NIGHT: "天文黑夜",
-};
-
-const MODEL_CONSISTENCY_LABEL: Readonly<
-  Record<HourlySkyRow["modelConsistencyLabel"], string>
-> = {
-  HIGH: "高",
-  MEDIUM: "中",
-  LOW: "低",
-  UNAVAILABLE: "未提供",
-};
-
-const WEATHER_TIMELINE_ROLE_LABEL: Readonly<
-  Record<SkyReport["weatherEvidence"]["timelineRole"], string>
-> = {
-  PRIMARY: "业务主时间线",
-  PRIMARY_FALLBACK: "已启用明确备源",
-  UNAVAILABLE: "时间线不可用",
-};
-
-const WEATHER_MODEL_LABEL: Readonly<Record<string, string>> = {
-  "qweather-weather-v1-hourly-24h": "和风天气 24 小时逐小时预报",
-  "qweather-weather-v1-hourly-72h": "和风天气 72 小时逐小时预报",
-  best_match: "Open-Meteo 推荐预报",
-  icon_seamless: "ICON 全球模型",
-  gfs_seamless: "GFS 全球模型",
-  ecmwf_ifs025: "ECMWF IFS",
-  ecmwf_aifs025_single: "ECMWF AIFS",
-  "deterministic-test-fixture": "开发验收天气",
-};
-
-function metricValue(
-  value: number | null | undefined,
-  suffix = "",
-  digits = 0,
-) {
-  return value === null || value === undefined
-    ? "未提供"
-    : `${value.toFixed(digits)}${suffix}`;
-}
-
-function ProfessionalMatrixRow({
-  label,
-  rows,
-  value,
-  header = false,
-}: {
-  label: string;
-  rows: readonly HourlySkyRow[];
-  value: (row: HourlySkyRow) => string;
-  header?: boolean;
-}) {
-  return (
-    <View
-      className={`professional-matrix-row${header ? " professional-matrix-row--head" : ""}`}
-      data-od-id="sky-professional-matrix-row"
-    >
-      <Text className="professional-matrix-row__label">{label}</Text>
-      {rows.map((row) => (
-        <Text className="professional-matrix-row__cell" key={`${label}:${row.at}`}>
-          {value(row)}
-        </Text>
-      ))}
-    </View>
-  );
-}
-
-const ACTIVITY_STAGE_LABEL = {
-  WEAK: "较弱",
-  MODERATE: "中等",
-  STRONG: "较强",
-  NEAR_PEAK: "接近峰值",
-} as const;
 
 interface SpotNightRouteContext {
   spotId: string;
@@ -210,321 +112,6 @@ function formatTime(value: string | null | undefined, timezone: string) {
   } catch {
     return "时间不可用";
   }
-}
-
-function formatDateTime(value: string | null | undefined, timezone: string) {
-  if (!value) return "—";
-  try {
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: timezone,
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(value));
-  } catch {
-    return "时间不可用";
-  }
-}
-
-function MeteorActivityProfile({
-  activity,
-}: {
-  activity: NonNullable<SkyReport["targets"][number]["activity"]>;
-}) {
-  const currentSample = activity.samples.reduce(
-    (nearest, sample) =>
-      Math.abs(sample.solarLongitudeDeg - activity.currentSolarLongitudeDeg) <
-      Math.abs(nearest.solarLongitudeDeg - activity.currentSolarLongitudeDeg)
-        ? sample
-        : nearest,
-    activity.samples[0]!,
-  );
-  return (
-    <View className="meteor-activity">
-      <View className="meteor-activity__header">
-        <View>
-          <Text className="type-label">相对活动曲线</Text>
-          <Text className="type-caption">
-            历史拟合 · 太阳黄经 J2000 · 不是实时观测
-          </Text>
-        </View>
-        <Text className="status-tag meteor-activity__stage">
-          {ACTIVITY_STAGE_LABEL[activity.stage]} · 约 {Math.round(activity.relativeActivity * 100)}%
-        </Text>
-      </View>
-      <View
-        className="meteor-activity__chart"
-        aria-label={`历史拟合相对活动约 ${Math.round(activity.relativeActivity * 100)}%，${ACTIVITY_STAGE_LABEL[activity.stage]}`}
-      >
-        {activity.samples.map((sample) => (
-          <View
-            key={sample.solarLongitudeDeg}
-            className={`meteor-activity__bar${sample.solarLongitudeDeg === currentSample.solarLongitudeDeg ? " meteor-activity__bar--current" : ""}`}
-            style={{ height: `${Math.max(4, sample.relativeActivity * 100)}%` }}
-            aria-hidden
-          />
-        ))}
-      </View>
-      <View className="meteor-activity__axis">
-        <Text className="type-caption">
-          λ☉ {activity.samples[0]?.solarLongitudeDeg.toFixed(0)}°
-        </Text>
-        <Text className="type-caption">
-          峰值 {activity.referencePeakSolarLongitudeDeg.toFixed(2)}°
-        </Text>
-        <Text className="type-caption">
-          {activity.samples.at(-1)?.solarLongitudeDeg.toFixed(0)}°
-        </Text>
-      </View>
-      <Provenance source={activity.source} compact />
-    </View>
-  );
-}
-
-function SkyTargetCard({
-  target,
-}: {
-  target: SkyReport["targets"][number];
-}) {
-  return (
-    <View
-      className="sky-target"
-      role="listitem"
-      aria-label={`${target.displayName}，${TARGET_TYPE_LABEL[target.type]}，${target.direction}，高度 ${target.altitudeDeg === null ? "未提供" : `${target.altitudeDeg}°`}`}
-    >
-      <View className="sky-target__top">
-        <View>
-          <Text className="type-section">{target.displayName}</Text>
-          <Text className="type-caption">{TARGET_TYPE_LABEL[target.type]}</Text>
-        </View>
-        <Text className="status-tag sky-target__confidence">
-          {target.confidence === null
-            ? "信心未知"
-            : `信心 ${Math.round(target.confidence * 100)}%`}
-        </Text>
-      </View>
-      <Text className="type-data sky-target__geometry">
-        {target.window
-          ? `${target.window.start}—${target.window.end}`
-          : "窗口不足"}{" "}
-        · {target.direction} · 高度 {target.altitudeDeg ?? "未知"}°
-      </Text>
-      <Text className="type-body">{target.reason}</Text>
-      {target.activity ? (
-        <MeteorActivityProfile activity={target.activity} />
-      ) : null}
-      <Provenance source={target.source} compact />
-    </View>
-  );
-}
-
-type ConditionBandKind =
-  | "darkness"
-  | "cloud"
-  | "low-cloud"
-  | "mid-cloud"
-  | "high-cloud"
-  | "moon"
-  | "precipitation"
-  | "wind"
-  | "humidity"
-  | "visibility"
-  | "opportunity";
-
-const CONDITION_BANDS: ReadonlyArray<{
-  key: ConditionBandKind;
-  label: string;
-  icon: "horizon" | "conditions" | "compass";
-}> = [
-  { key: "darkness", label: "天文黑夜", icon: "horizon" },
-  { key: "cloud", label: "总云量", icon: "conditions" },
-  { key: "low-cloud", label: "低云", icon: "conditions" },
-  { key: "mid-cloud", label: "中云", icon: "conditions" },
-  { key: "high-cloud", label: "高云", icon: "conditions" },
-  { key: "moon", label: "月亮", icon: "compass" },
-  { key: "precipitation", label: "降水", icon: "conditions" },
-  { key: "wind", label: "风", icon: "conditions" },
-  { key: "humidity", label: "湿度 / 露点", icon: "conditions" },
-  { key: "visibility", label: "能见度", icon: "conditions" },
-  { key: "opportunity", label: "机会分", icon: "horizon" },
-];
-
-function conditionBandValue(
-  row: HourlySkyRow,
-  kind: ConditionBandKind,
-): number | null {
-  switch (kind) {
-    case "darkness":
-      return row.darkness === "ASTRONOMICAL_NIGHT"
-        ? 100
-        : row.darkness === "TWILIGHT"
-          ? 50
-          : 0;
-    case "cloud":
-      return row.cloudPercent;
-    case "low-cloud":
-      return row.lowCloudPercent;
-    case "mid-cloud":
-      return row.midCloudPercent;
-    case "high-cloud":
-      return row.highCloudPercent;
-    case "moon":
-      return row.moonAltitudeDeg === null
-        ? null
-        : Math.max(0, Math.min(100, (row.moonAltitudeDeg / 90) * 100));
-    case "precipitation":
-      return row.precipitationProbabilityPercent;
-    case "wind":
-      return row.windKph;
-    case "humidity":
-      return row.relativeHumidityPercent;
-    case "visibility":
-      return row.visibilityKm;
-    case "opportunity":
-      return row.opportunityScore;
-  }
-}
-
-function conditionBandTone(
-  row: HourlySkyRow,
-  kind: ConditionBandKind,
-): "positive" | "neutral" | "warning" | "danger" | "unknown" | "night" {
-  const value = conditionBandValue(row, kind);
-  if (value === null || value === undefined || row.state === "UNAVAILABLE") {
-    return "unknown";
-  }
-  if (kind === "darkness") {
-    return row.darkness === "ASTRONOMICAL_NIGHT"
-      ? "night"
-      : row.darkness === "TWILIGHT"
-        ? "warning"
-        : "neutral";
-  }
-  if (kind === "opportunity") {
-    return value >= 70 ? "positive" : value >= 40 ? "warning" : "danger";
-  }
-  if (kind === "moon") {
-    return row.moonIllumination !== null && row.moonIllumination >= 0.65
-      ? "warning"
-      : "neutral";
-  }
-  if (kind === "wind") {
-    return value <= 15 ? "positive" : value <= 30 ? "warning" : "danger";
-  }
-  if (kind === "visibility") {
-    return value >= 10 ? "positive" : value >= 5 ? "warning" : "danger";
-  }
-  if (kind === "humidity") {
-    return value <= 75 ? "positive" : value <= 90 ? "warning" : "danger";
-  }
-  if (kind === "precipitation") {
-    return value <= 20 ? "positive" : value <= 50 ? "warning" : "danger";
-  }
-  return value <= 25 ? "positive" : value <= 60 ? "warning" : "danger";
-}
-
-function conditionBandText(row: HourlySkyRow, kind: ConditionBandKind) {
-  if (kind === "darkness") return DARKNESS_LABEL[row.darkness];
-  if (kind === "moon") {
-    const altitude = metricValue(row.moonAltitudeDeg, "°");
-    const illumination =
-      row.moonIllumination === null || row.moonIllumination === undefined
-        ? "未提供"
-        : `${Math.round(row.moonIllumination * 100)}%`;
-    return `${altitude} / ${illumination}`;
-  }
-  if (kind === "wind") {
-    return row.windKph === null
-      ? "未提供"
-      : `${metricValue(row.windKph, " km/h")} / ${metricValue(row.windGustKph, " km/h")}`;
-  }
-  if (kind === "humidity") {
-    return `${metricValue(row.relativeHumidityPercent, "%")} / ${metricValue(row.dewPointC, "℃", 1)}`;
-  }
-  if (kind === "visibility") return metricValue(row.visibilityKm, " km", 1);
-  if (kind === "opportunity") return metricValue(row.opportunityScore, "%");
-  if (kind === "precipitation") {
-    return metricValue(row.precipitationProbabilityPercent, "%");
-  }
-  return metricValue(conditionBandValue(row, kind), "%");
-}
-
-function conditionBandOpacity(row: HourlySkyRow, kind: ConditionBandKind) {
-  const value = conditionBandValue(row, kind);
-  if (value === null || value === undefined || row.state === "UNAVAILABLE") {
-    return 0.34;
-  }
-  if (kind === "darkness") return value === 100 ? 1 : value === 50 ? 0.7 : 0.42;
-  if (kind === "opportunity") return 0.45 + Math.min(0.55, value / 160);
-  if (kind === "visibility") return Math.min(1, 0.4 + value / 16);
-  if (kind === "wind") return Math.min(1, 0.42 + value / 50);
-  return 0.48 + Math.min(0.52, value / 150);
-}
-
-function SkyConditionBands({
-  rows,
-  activeIndex,
-  timezone,
-}: {
-  rows: readonly HourlySkyRow[];
-  activeIndex: number;
-  timezone: string;
-}) {
-  const safeActiveIndex = clampIndex(activeIndex, rows.length);
-  const activeRow = rows[safeActiveIndex];
-  const tickIndexes = Array.from(
-    new Set([0, Math.floor(Math.max(0, rows.length - 1) / 2), rows.length - 1]),
-  ).filter((index) => index >= 0 && index < rows.length);
-  if (!rows.length || !activeRow) {
-    return <StatusPanel state="EMPTY" detail="当前没有逐小时条件带；缺失不会显示为 0。" />;
-  }
-  const markerPosition =
-    rows.length > 1 ? (safeActiveIndex / (rows.length - 1)) * 100 : 0;
-  return (
-    <View
-      className="sky-bands"
-      role="list"
-      aria-label={`观测条件带，当前 ${formatTime(activeRow.at, timezone)}`}
-    >
-      <View className="sky-bands__axis" aria-hidden>
-        {tickIndexes.map((index) => (
-          <Text key={index} className="sky-bands__axis-label">
-            {formatTime(rows[index]?.at, timezone)}
-          </Text>
-        ))}
-      </View>
-      {CONDITION_BANDS.map((band) => (
-        <View
-          className="sky-band"
-          role="listitem"
-          key={band.key}
-          aria-label={`${band.label}，当前 ${conditionBandText(activeRow, band.key)}`}
-        >
-          <View className="sky-band__label">
-            <SemanticIcon name={band.icon} decorative />
-            <Text className="sky-band__name">{band.label}</Text>
-          </View>
-          <View className="sky-band__track" aria-hidden>
-            {rows.map((row, index) => (
-              <View
-                key={`${band.key}:${row.at}`}
-                className={`sky-band__segment sky-band__segment--${conditionBandTone(row, band.key)}${index === safeActiveIndex ? " sky-band__segment--active" : ""}`}
-                style={{ opacity: conditionBandOpacity(row, band.key) }}
-              />
-            ))}
-            <View
-              className="sky-band__cursor"
-              style={{ left: `${markerPosition}%` }}
-            />
-          </View>
-          <Text className="sky-band__value type-data">
-            {conditionBandText(activeRow, band.key)}
-          </Text>
-        </View>
-      ))}
-    </View>
-  );
 }
 
 function SkyTargetRow({
@@ -613,19 +200,303 @@ function compassAccuracyState(
   return "UNAVAILABLE";
 }
 
+type CompassAccuracy = number | string | null;
+
+interface CompassTelemetry {
+  accuracy: CompassAccuracy;
+  sampledAt: number | null;
+}
+
+interface DevicePose {
+  alphaDeg: number;
+  betaDeg: number;
+  gammaDeg: number;
+  sampledAt: number;
+}
+
+function compassAccuracyLabel(accuracy: CompassAccuracy) {
+  if (accuracy === null || accuracy === undefined || accuracy === "") {
+    return "未提供";
+  }
+  if (typeof accuracy === "number") {
+    return Number.isFinite(accuracy) && accuracy >= 0
+      ? `${Math.round(accuracy)}°`
+      : "未提供";
+  }
+  const normalized = accuracy.toLowerCase();
+  if (normalized === "high") return "高";
+  if (normalized === "medium") return "中";
+  if (normalized === "low") return "低";
+  return "未提供";
+}
+
+function compassAgeLabel(sampledAt: number | null, now: number) {
+  if (sampledAt === null || !Number.isFinite(sampledAt)) return "未收到";
+  const ageMs = Math.max(0, now - sampledAt);
+  if (ageMs < 1000) return `${ageMs} ms`;
+  return `${(ageMs / 1000).toFixed(ageMs < 10_000 ? 1 : 0)} s`;
+}
+
+// Keep every directly selectable time slice within the platform's 88rpx
+// semantic target while the marker itself remains visually compact.
+const ORIENTATION_RULER_STEP_RPX = 88;
+
+function orientationRulerStepPx() {
+  try {
+    const windowWidth = Number(Taro.getSystemInfoSync().windowWidth);
+    if (Number.isFinite(windowWidth) && windowWidth > 0) {
+      return (windowWidth * ORIENTATION_RULER_STEP_RPX) / 750;
+    }
+  } catch {
+    // A conservative CSS-pixel fallback keeps the ruler usable in tests and
+    // before the native system metrics are ready.
+  }
+  return 44;
+}
+
+function orientationRulerLabel(
+  row: HourlySkyRow | undefined,
+  timezone: string,
+  index: number,
+) {
+  return row
+    ? `${formatTime(row.at, timezone)}，第 ${index + 1} 个真实观测时刻`
+    : `第 ${index + 1} 个真实观测时刻`;
+}
+
+function orientationRulerDistance(index: number, visualIndex: number) {
+  const distance = Math.abs(index - visualIndex);
+  return Math.min(1, distance / 7);
+}
+
+function OrientationTimeRuler({
+  rows,
+  activeIndex,
+  committedIndex,
+  timezone,
+  isPreviewing,
+  saving,
+  reducedMotion,
+  onPreview,
+  onCommit,
+  onCancel,
+}: {
+  rows: readonly HourlySkyRow[];
+  activeIndex: number;
+  committedIndex: number;
+  timezone: string;
+  isPreviewing: boolean;
+  saving: boolean;
+  reducedMotion: boolean;
+  onPreview: (index: number) => void;
+  onCommit: (index: number) => void;
+  onCancel: () => void;
+}) {
+  const safeActiveIndex = clampIndex(activeIndex, rows.length);
+  const safeCommittedIndex = clampIndex(committedIndex, rows.length);
+  const [visualIndex, setVisualIndex] = useState(safeActiveIndex);
+  const [scrollLeft, setScrollLeft] = useState(
+    safeActiveIndex * orientationRulerStepPx(),
+  );
+  const interactingRef = useRef(false);
+
+  useEffect(() => {
+    if (interactingRef.current) return;
+    const nextIndex = clampIndex(activeIndex, rows.length);
+    setVisualIndex(nextIndex);
+    setScrollLeft(nextIndex * orientationRulerStepPx());
+  }, [activeIndex, rows.length]);
+
+  const step = orientationRulerStepPx();
+  const maxIndex = Math.max(0, rows.length - 1);
+  const activeRow = rows[safeActiveIndex];
+  const setPreviewFromScroll = useCallback(
+    (nextScrollLeft: number) => {
+      const maxScroll = Math.max(0, rows.length - 1) * step;
+      const boundedScroll = Math.max(0, Math.min(nextScrollLeft, maxScroll));
+      const nextFloat = rows.length ? boundedScroll / step : 0;
+      const nextIndex = clampIndex(Math.round(nextFloat), rows.length);
+      setScrollLeft(boundedScroll);
+      setVisualIndex(nextFloat);
+      onPreview(nextIndex);
+      return nextIndex;
+    },
+    [onPreview, rows.length, step],
+  );
+  const settle = useCallback(
+    (nextScrollLeft: number) => {
+      const nextIndex = setPreviewFromScroll(nextScrollLeft);
+      setVisualIndex(nextIndex);
+      setScrollLeft(nextIndex * step);
+      interactingRef.current = false;
+      onCommit(nextIndex);
+    },
+    [onCommit, setPreviewFromScroll, step],
+  );
+  const selectTick = useCallback(
+    (nextIndex: number) => {
+      const safeIndex = clampIndex(nextIndex, rows.length);
+      interactingRef.current = false;
+      setVisualIndex(safeIndex);
+      setScrollLeft(safeIndex * step);
+      onPreview(safeIndex);
+      onCommit(safeIndex);
+    },
+    [onCommit, onPreview, rows.length, step],
+  );
+  const stepTime = useCallback(
+    (delta: number) => {
+      selectTick(safeActiveIndex + delta);
+    },
+    [safeActiveIndex, selectTick],
+  );
+  const previewValue = rows.length ? clampIndex(Math.round(visualIndex), rows.length) : 0;
+  const currentLabel = activeRow
+    ? formatTime(activeRow.at, timezone)
+    : "暂无可用时刻";
+
+  if (!rows.length) {
+    return (
+      <View
+        className="sky-orientation-time-ruler"
+        data-control="sky-orientation-time-ruler"
+        data-od-id="sky-orientation-time-ruler"
+        role="group"
+        aria-label="观测时间尺，当前没有可用的真实时刻"
+      >
+        <Text className="sky-orientation-time-ruler__empty">暂无可用观测时刻</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View
+      className={`sky-orientation-time-ruler${isPreviewing ? " sky-orientation-time-ruler--preview" : ""}`}
+      data-control="sky-orientation-time-ruler"
+      data-od-id="sky-orientation-time-ruler"
+      role="group"
+      aria-label="方位天空观测时间尺"
+    >
+      <View className="sky-orientation-time-ruler__current" aria-hidden="true">
+        <Text className="sky-orientation-time-ruler__current-value">
+          {currentLabel}
+        </Text>
+        <Text className="sky-orientation-time-ruler__current-state">
+          {saving ? "保存中" : isPreviewing ? "预览" : "已提交"}
+        </Text>
+      </View>
+      <View className="sky-orientation-time-ruler__axis" aria-hidden="true" />
+      <ScrollView
+        scrollX
+        enhanced
+        fastDeceleration
+        showScrollbar={false}
+        scrollLeft={scrollLeft}
+        scrollWithAnimation={!reducedMotion}
+        className="sky-orientation-time-ruler__viewport"
+        data-od-id="sky-orientation-time-ruler-scroll"
+        aria-label="拖动选择真实观测时刻"
+        aria-valuemin={0}
+        aria-valuemax={maxIndex}
+        aria-valuenow={previewValue}
+        aria-valuetext={orientationRulerLabel(rows[previewValue], timezone, previewValue)}
+        onScroll={(event) => {
+          if (saving) return;
+          const nextScrollLeft = Number(event.detail.scrollLeft);
+          if (Number.isFinite(nextScrollLeft)) {
+            interactingRef.current = true;
+            setPreviewFromScroll(nextScrollLeft);
+          }
+        }}
+        onScrollEnd={(event) => {
+          if (saving) return;
+          const nextScrollLeft = Number(event.detail.scrollLeft);
+          settle(Number.isFinite(nextScrollLeft) ? nextScrollLeft : scrollLeft);
+        }}
+      >
+        <View className="sky-orientation-time-ruler__track">
+          {rows.map((row, index) => {
+            const distance = orientationRulerDistance(index, visualIndex);
+            const isSelected = index === previewValue;
+            const isEvent = Boolean(
+              row.opportunityBlockers.length === 0 && row.opportunityEligible,
+            );
+            return (
+              <Button
+                key={`${row.at}:${index}`}
+                compileMode
+                className={`sky-orientation-time-ruler__tick${isSelected ? " sky-orientation-time-ruler__tick--selected" : ""}${isEvent ? " sky-orientation-time-ruler__tick--event" : ""}`}
+                style={{
+                  opacity: 1 - distance * 0.68,
+                  transform: `translateY(${Math.round(distance * distance * 18)}rpx) scale(${(1 - distance * 0.34).toFixed(3)})`,
+                }}
+                ariaLabel={orientationRulerLabel(row, timezone, index)}
+                aria-pressed={isSelected ? "true" : "false"}
+                disabled={saving}
+                onClick={() => selectTick(index)}
+              >
+                <View className="sky-orientation-time-ruler__tick-mark" aria-hidden="true" />
+                {(index % 4 === 0 || isSelected) ? (
+                  <Text className="sky-orientation-time-ruler__tick-label">
+                    {formatTime(row.at, timezone)}
+                  </Text>
+                ) : null}
+              </Button>
+            );
+          })}
+        </View>
+      </ScrollView>
+      <View className="sky-orientation-time-ruler__assistive" role="group" aria-label="观测时刻辅助操作">
+        <Button
+          compileMode
+          className="sky-orientation-time-ruler__step"
+          ariaLabel="更早一个真实观测时刻"
+          disabled={saving || safeActiveIndex <= 0}
+          onClick={() => stepTime(-1)}
+        >
+          更早一个时刻
+        </Button>
+        <Button
+          compileMode
+          className="sky-orientation-time-ruler__step"
+          ariaLabel="更晚一个真实观测时刻"
+          disabled={saving || safeActiveIndex >= maxIndex}
+          onClick={() => stepTime(1)}
+        >
+          更晚一个时刻
+        </Button>
+      </View>
+      {isPreviewing ? (
+        <SoftButton
+          variant="ghost"
+          className="sky-orientation-time-ruler__cancel"
+          label="取消观测时刻预览"
+          disabled={saving}
+          onClick={() => {
+            interactingRef.current = false;
+            setVisualIndex(safeCommittedIndex);
+            setScrollLeft(safeCommittedIndex * step);
+            onCancel();
+          }}
+        >
+          取消预览
+        </SoftButton>
+      ) : null}
+    </View>
+  );
+}
+
 function drawSkyScene(
   context: ReturnType<typeof Taro.createCanvasContext>,
   data: SkyReport | undefined,
   heading: number | null,
+  pose: DevicePose | null,
   width: number,
   height: number,
   mode: DisplayMode,
-  selectedTimeLabel: string,
-  orientation: boolean,
 ) {
   const observation = mode === "OBSERVATION";
   const canvas = observation ? "#000000" : "#050914";
-  const surface = observation ? "#120000" : "#0B1222";
   const grid = observation ? "#551410" : "#1D2A45";
   const gridSoft = observation ? "#32100D" : "#15213A";
   const text = observation ? "#FF6A58" : "#EEF2FF";
@@ -634,34 +505,13 @@ function drawSkyScene(
   const object = observation ? "#FF8A72" : "#F1D58A";
   const green = observation ? "#FF6A58" : "#55C7A5";
   const centerX = width / 2;
-  const horizonY = orientation ? height - 48 : height - 46;
+  const horizonY = height - 48;
   const radius = Math.max(
     64,
-    Math.min(width / 2 - 18, orientation ? height - 90 : height - 70),
+    Math.min(width / 2 - 18, height - 90),
   );
   context.setFillStyle(canvas);
   context.fillRect(0, 0, width, height);
-
-  const stars = [
-    [0.12, 0.15, 1],
-    [0.24, 0.26, 1.5],
-    [0.37, 0.11, 1],
-    [0.49, 0.24, 1.25],
-    [0.64, 0.14, 1],
-    [0.78, 0.27, 1.35],
-    [0.9, 0.12, 1],
-    [0.16, 0.44, 0.9],
-    [0.33, 0.52, 1],
-    [0.58, 0.4, 0.9],
-    [0.82, 0.49, 1.1],
-    [0.93, 0.38, 0.8],
-  ] as const;
-  context.setFillStyle(muted);
-  stars.forEach(([xRatio, yRatio, size]) => {
-    context.beginPath();
-    context.arc(width * xRatio, Math.min(horizonY - 12, height * yRatio), size, 0, Math.PI * 2);
-    context.fill();
-  });
 
   context.setStrokeStyle(grid);
   context.setLineWidth(1);
@@ -717,22 +567,7 @@ function drawSkyScene(
   );
   context.stroke();
 
-  context.setFillStyle(surface);
-  context.fillRect(12, 10, Math.min(width - 24, 164), 22);
-  context.setFillStyle(accent);
-  context.setFontSize(10);
-  context.fillText(
-    orientation
-      ? heading === null
-        ? "允许方向，先看北向目标"
-        : "手机方向跟随"
-      : "北向静态天空投影",
-    20,
-    25,
-  );
   if (!data) {
-    context.setFillStyle(text);
-    context.fillText("等待天空数据", 18, horizonY - 18);
     context.draw(false);
     return;
   }
@@ -745,8 +580,19 @@ function drawSkyScene(
     const altitude = Math.max(0, Math.min(90, target.altitudeDeg));
     const distance = radius * (1 - altitude / 90);
     const radians = ((degrees - projectionHeading - 90) * Math.PI) / 180;
-    const x = centerX + Math.cos(radians) * distance;
-    const y = horizonY + Math.sin(radians) * distance;
+    // Device motion supplies pitch/roll only after the compass has provided
+    // an absolute heading. No synthetic tilt is introduced when either
+    // stream is missing or stale.
+    const pitchOffset =
+      heading !== null && pose
+        ? (Math.max(-90, Math.min(90, pose.betaDeg)) / 90) * radius * 0.18
+        : 0;
+    const rollOffset =
+      heading !== null && pose
+        ? (Math.max(-90, Math.min(90, pose.gammaDeg)) / 90) * radius * 0.18
+        : 0;
+    const x = centerX + Math.cos(radians) * distance + rollOffset;
+    const y = horizonY + Math.sin(radians) * distance + pitchOffset;
     context.setGlobalAlpha(heading === null ? 0.68 : 1);
     context.setFillStyle(index % 2 === 0 ? object : green);
     context.beginPath();
@@ -758,15 +604,6 @@ function drawSkyScene(
     const labelX = Math.min(width - 112, Math.max(12, x + 8));
     context.fillText(target.displayName.slice(0, 10), labelX, y + 4);
   });
-  context.setFillStyle(muted);
-  context.setFontSize(10);
-  context.fillText(
-    heading === null && orientation
-      ? "北向预览 · 允许方向后随手机朝向"
-      : `${selectedTimeLabel} · ${orientation ? "方向呈现" : "当前计算"}`,
-    16,
-    orientation ? height - 12 : horizonY - 10,
-  );
   context.draw(false);
 }
 
@@ -797,24 +634,33 @@ function ContextError({ onBack }: { onBack: () => void }) {
   );
 }
 
-export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
+export function SpotSkyPage() {
   const router = useRouter();
   const routeContext = useMemo<SpotNightRouteContext>(
     () => ({
-      spotId: safeParam(router.params.spotId),
-      contextId: safeParam(router.params.contextId),
-      localDate: safeParam(router.params.date || router.params.localDate),
-      selectedAt: safeParam(router.params.selectedAt),
+      spotId: safeParam(router.params.spotId || router.params.spot_id),
+      contextId: safeParam(router.params.contextId || router.params.context_id),
+      localDate: safeParam(
+        router.params.date || router.params.localDate || router.params.local_date,
+      ),
+      selectedAt: safeParam(router.params.selectedAt || router.params.selected_at),
       timezone: safeParam(router.params.timezone),
-      dataRevision: safeParam(router.params.dataRevision),
+      dataRevision: safeParam(
+        router.params.dataRevision || router.params.data_revision,
+      ),
     }),
     [
       router.params.contextId,
+      router.params.context_id,
       router.params.dataRevision,
+      router.params.data_revision,
       router.params.date,
       router.params.localDate,
+      router.params.local_date,
       router.params.selectedAt,
+      router.params.selected_at,
       router.params.spotId,
+      router.params.spot_id,
       router.params.timezone,
     ],
   );
@@ -824,8 +670,10 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
   );
   const notify = useAppStore((state) => state.notify);
   const mode = useAppStore((state) => state.mode);
+  const reducedMotion = useAppStore(
+    (state) => state.preferences.reducedMotion,
+  );
   const themeClass = useThemeClass();
-  const statusBarHeight = nativeStatusBarHeightPx();
   const presentationClass =
     mode === "OBSERVATION"
       ? themeClass
@@ -909,15 +757,49 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
   const [compassHeading, setCompassHeading] = useState<number | null>(null);
   const [compassState, setCompassState] =
     useState<LocalCompassState>("PERMISSION_REQUIRED");
-  const [compassReason, setCompassReason] =
+  const [compassReason, setCompassReasonState] =
     useState("允许后仅在本页前台读取设备方向，不记录连续姿态轨迹");
-  const compassLifecycle = useMemo(() => createCompassLifecycle(Taro), []);
+  const [compassTelemetry, setCompassTelemetry] = useState<CompassTelemetry>({
+    accuracy: null,
+    sampledAt: null,
+  });
+  const [compassNow, setCompassNow] = useState(() => Date.now());
+  // Keep the reason setter as the single presentation boundary used by the
+  // extracted compass callbacks. The optional telemetry payload lets the
+  // route expose accuracy and sample age without creating a second sensor
+  // owner; old callback tests can continue to provide a one-argument stub.
+  const setCompassReason = useCallback(
+    (reason: string, telemetry?: CompassTelemetry | null) => {
+      setCompassReasonState(reason);
+      if (telemetry === null) {
+        setCompassTelemetry({ accuracy: null, sampledAt: null });
+      } else if (telemetry) {
+        setCompassTelemetry(telemetry);
+      }
+    },
+    [],
+  );
+  const compassLifecycle = useMemo(
+    () => createCompassLifecycle(Taro, { requireDeviceMotion: true }),
+    [],
+  );
   const lastCompassHeadingRef = useRef<number | null>(null);
+  const compassHeadingRef = useRef<number | null>(null);
+  const compassQualityRef = useRef<LocalCompassState | null>(null);
+  const [devicePose, setDevicePose] = useState<DevicePose | null>(null);
+  const devicePoseRef = useRef<DevicePose | null>(null);
+  const motionOffsetRef = useRef<number | null>(null);
   const compassStaleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const motionStaleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const compassResumeRef = useRef(false);
   const [canvasError, setCanvasError] = useState<string | null>(null);
   const [timeSaving, setTimeSaving] = useState(false);
+  const [orientationObjectListOpen, setOrientationObjectListOpen] =
+    useState(false);
 
   const data = report.data?.data;
   const contextMatches = Boolean(
@@ -944,24 +826,120 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
   const isPreviewing = previewIndex !== null && previewIndex !== committedIndex;
   const rowTime = formatTime(row?.at ?? committedAt, routeContext.timezone);
   const sensorHeadingForScene =
-    compassState === "READY" ? compassHeading : null;
+    compassState === "READY" &&
+    compassHeading !== null &&
+    devicePose !== null &&
+    motionOffsetRef.current !== null
+      ? normalizeDegrees(devicePose.alphaDeg + motionOffsetRef.current)
+      : null;
 
   const stopCompass = useCallback(() => {
     if (compassStaleTimerRef.current) {
       clearTimeout(compassStaleTimerRef.current);
       compassStaleTimerRef.current = null;
     }
+    if (motionStaleTimerRef.current) {
+      clearTimeout(motionStaleTimerRef.current);
+      motionStaleTimerRef.current = null;
+    }
     void compassLifecycle.stop();
     lastCompassHeadingRef.current = null;
+    compassHeadingRef.current = null;
+    compassQualityRef.current = "PERMISSION_REQUIRED";
+    devicePoseRef.current = null;
+    motionOffsetRef.current = null;
+    setDevicePose(null);
     setCompassHeading(null);
     setCompassState("PERMISSION_REQUIRED");
-    setCompassReason("允许后仅在本页前台读取设备方向，不记录连续姿态轨迹");
+    setCompassReason(
+      "允许后仅在本页前台读取设备方向，不记录连续姿态轨迹",
+      null,
+    );
   }, [compassLifecycle]);
 
   const startCompass = useCallback(async () => {
-    if (view !== "DETAIL" || compassLifecycle.active) return;
+    if (compassLifecycle.active) return;
     setCompassState("CALIBRATING");
+    compassQualityRef.current = "CALIBRATING";
     setCompassReason("正在校准设备方向");
+    const motionListener = (event: DeviceMotionEvent) => {
+      const alpha = Number(event.alpha);
+      const beta = Number(event.beta);
+      const gamma = Number(event.gamma);
+      if (
+        !Number.isFinite(alpha) ||
+        !Number.isFinite(beta) ||
+        !Number.isFinite(gamma) ||
+        Math.abs(beta) > Math.PI ||
+        Math.abs(gamma) > Math.PI / 2
+      ) {
+        if (motionStaleTimerRef.current) {
+          clearTimeout(motionStaleTimerRef.current);
+          motionStaleTimerRef.current = null;
+        }
+        compassQualityRef.current = "UNAVAILABLE";
+        devicePoseRef.current = null;
+        motionOffsetRef.current = null;
+        setDevicePose(null);
+        setCompassHeading(null);
+        setCompassState("UNAVAILABLE");
+        setCompassReason(
+          "设备没有提供可信姿态，天空图不会伪造当前方向",
+          null,
+        );
+        return;
+      }
+
+      const pose: DevicePose = {
+        alphaDeg: normalizeDegrees((alpha * 180) / Math.PI),
+        betaDeg: (beta * 180) / Math.PI,
+        gammaDeg: (gamma * 180) / Math.PI,
+        sampledAt: Date.now(),
+      };
+      devicePoseRef.current = pose;
+      setDevicePose(pose);
+      if (
+        compassHeadingRef.current !== null &&
+        motionOffsetRef.current === null
+      ) {
+        // Calibrate the device-motion alpha stream against the absolute
+        // compass once per foreground session; subsequent alpha changes are
+        // the continuous orientation signal.
+        motionOffsetRef.current = normalizeDegrees(
+          compassHeadingRef.current - pose.alphaDeg,
+        );
+      }
+      if (compassQualityRef.current === "LOW_ACCURACY") {
+        setCompassState("LOW_ACCURACY");
+      } else if (compassQualityRef.current === "READY") {
+        setCompassState("READY");
+      } else if (
+        compassQualityRef.current === null ||
+        compassQualityRef.current === "PERMISSION_REQUIRED" ||
+        compassQualityRef.current === "CALIBRATING"
+      ) {
+        setCompassState("CALIBRATING");
+      }
+      if (motionStaleTimerRef.current) {
+        clearTimeout(motionStaleTimerRef.current);
+      }
+      motionStaleTimerRef.current = setTimeout(() => {
+        if (!compassLifecycle.isCurrentMotion(motionListener)) return;
+        motionStaleTimerRef.current = null;
+        devicePoseRef.current = null;
+        motionOffsetRef.current = null;
+        setDevicePose(null);
+        setCompassHeading(null);
+        if (
+          compassQualityRef.current === "UNAVAILABLE" ||
+          compassQualityRef.current === "DENIED"
+        ) return;
+        compassQualityRef.current = "STALE";
+        setCompassState("STALE");
+        setCompassReason("设备姿态数据已暂时中断，请保持方向传感器可用");
+      }, 1500);
+    };
+
     const listener: Parameters<typeof Taro.onCompassChange>[0] = (event) => {
       const nextState = compassAccuracyState(event.accuracy);
       const direction = Number(event.direction);
@@ -971,16 +949,39 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
         direction < 0 ||
         direction > 360
       ) {
+        compassQualityRef.current = "UNAVAILABLE";
+        compassHeadingRef.current = null;
+        lastCompassHeadingRef.current = null;
+        devicePoseRef.current = null;
+        motionOffsetRef.current = null;
+        setDevicePose(null);
         setCompassState("UNAVAILABLE");
-        setCompassReason("设备没有提供可信方向，天空图不会伪造目标位置");
+        setCompassReason(
+          "设备没有提供可信方向，天空图不会伪造目标位置",
+          null,
+        );
         setCompassHeading(null);
         if (compassStaleTimerRef.current) {
           clearTimeout(compassStaleTimerRef.current);
           compassStaleTimerRef.current = null;
         }
+        if (motionStaleTimerRef.current) {
+          clearTimeout(motionStaleTimerRef.current);
+          motionStaleTimerRef.current = null;
+        }
         return;
       }
       const normalized = normalizeDegrees(direction);
+      compassQualityRef.current = nextState;
+      compassHeadingRef.current = normalized;
+      if (
+        devicePoseRef.current !== null &&
+        motionOffsetRef.current === null
+      ) {
+        motionOffsetRef.current = normalizeDegrees(
+          normalized - devicePoseRef.current.alphaDeg,
+        );
+      }
       const previous = lastCompassHeadingRef.current;
       const delta =
         previous === null
@@ -997,17 +998,33 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
       setCompassReason(
         nextState === "LOW_ACCURACY"
           ? "设备方向精度较低，目标列表仍可用"
-          : "设备方向已连接，天空图随设备朝向更新",
+          : devicePoseRef.current === null
+            ? "正在读取设备姿态"
+            : "设备方向已连接，天空图随设备朝向更新",
+        {
+          accuracy: event.accuracy,
+          sampledAt: Date.now(),
+        },
       );
       if (compassStaleTimerRef.current) {
         clearTimeout(compassStaleTimerRef.current);
       }
       compassStaleTimerRef.current = setTimeout(() => {
-        if (!compassLifecycle.isCurrent(listener)) return;
+        if (
+          !compassLifecycle.isCurrent(listener) ||
+          !compassLifecycle.isCurrentMotion(motionListener)
+        ) return;
         compassStaleTimerRef.current = null;
+        compassHeadingRef.current = null;
+        motionOffsetRef.current = null;
+        devicePoseRef.current = null;
+        setDevicePose(null);
         setCompassHeading(null);
         setCompassState("STALE");
-        setCompassReason("方向数据已暂时中断，请保持设备方向传感器可用");
+        compassQualityRef.current = "STALE";
+        setCompassReason(
+          "方向数据已暂时中断，请保持设备方向传感器可用",
+        );
       }, 1500);
     };
 
@@ -1016,32 +1033,70 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
         clearTimeout(compassStaleTimerRef.current);
         compassStaleTimerRef.current = null;
       }
+      if (motionStaleTimerRef.current) {
+        clearTimeout(motionStaleTimerRef.current);
+        motionStaleTimerRef.current = null;
+      }
       lastCompassHeadingRef.current = null;
+      compassHeadingRef.current = null;
+      compassQualityRef.current = "UNAVAILABLE";
+      devicePoseRef.current = null;
+      motionOffsetRef.current = null;
+      setDevicePose(null);
       setCompassHeading(null);
-      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      const message =
+        error instanceof Error
+          ? error.message.toLowerCase()
+          : error && typeof error === "object" && "errMsg" in error
+            ? String((error as { errMsg?: unknown }).errMsg ?? "").toLowerCase()
+            : String(error ?? "").toLowerCase();
       const permissionDenied =
         message.includes("auth") ||
         message.includes("permission") ||
         message.includes("deny") ||
         message.includes("authorize");
       setCompassState(permissionDenied ? "DENIED" : "UNAVAILABLE");
+      compassQualityRef.current = permissionDenied ? "DENIED" : "UNAVAILABLE";
       setCompassReason(
         permissionDenied
           ? "未获得设备方向权限，天空图不会伪造 heading"
           : "设备没有可用的方向传感器，目标列表仍可用",
+        null,
       );
-    });
-  }, [compassLifecycle, view]);
-
-  useDidHide(stopCompass);
+    }, motionListener);
+  }, [compassLifecycle]);
 
   useEffect(() => {
-    if (view !== "DETAIL") stopCompass();
-    return stopCompass;
-  }, [stopCompass, view]);
+    if (compassTelemetry.sampledAt === null) return;
+    const timer = setInterval(() => setCompassNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [compassTelemetry.sampledAt]);
+
+  const hideCompass = useCallback(() => {
+    // Backgrounding tears down native listeners, but preserves an explicit
+    // user intent so the stream can be reacquired on foreground. Route exit
+    // below clears this intent and therefore never restarts unexpectedly.
+    compassResumeRef.current = compassLifecycle.active || compassState === "CALIBRATING";
+    stopCompass();
+  }, [compassLifecycle, compassState, stopCompass]);
+
+  const showCompass = useCallback(() => {
+    if (!compassResumeRef.current) return;
+    compassResumeRef.current = false;
+    void startCompass();
+  }, [startCompass]);
+
+  useDidHide(hideCompass);
+  useDidShow(showCompass);
+
+  useEffect(() => {
+    return () => {
+      compassResumeRef.current = false;
+      stopCompass();
+    };
+  }, [stopCompass]);
 
   const draw = useCallback(() => {
-    if (view !== "MAIN" && view !== "DETAIL") return;
     try {
       Taro.createSelectorQuery()
         .select(".sky-scene__canvas")
@@ -1057,15 +1112,20 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
                 ? rect.height
                 : 270;
             const context = Taro.createCanvasContext(CANVAS_ID);
+            const canvasData =
+              report.data?.dataState === "EXPIRED" ||
+              report.data?.dataState === "UNAVAILABLE" ||
+              report.isError
+                ? undefined
+                : reportData;
             drawSkyScene(
               context,
-              reportData,
-              view === "MAIN" ? 0 : sensorHeadingForScene,
+              canvasData,
+              sensorHeadingForScene,
+              devicePose,
               width,
               height,
               mode,
-              rowTime,
-              view === "DETAIL",
             );
             setCanvasError(null);
           } catch (error) {
@@ -1080,15 +1140,26 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
         error instanceof Error ? error.message : "canvas_unavailable",
       );
     }
-  }, [mode, reportData, rowTime, sensorHeadingForScene, view]);
+  }, [
+    mode,
+    report.data?.dataState,
+    report.isError,
+    reportData,
+    sensorHeadingForScene,
+    devicePose,
+  ]);
 
   useReady(draw);
   useEffect(() => {
-    if ((view === "MAIN" || view === "DETAIL") && reportData) draw();
-  }, [activeIndex, draw, reportData, view]);
+    // Redraw on every report transition as well as time changes. Clearing the
+    // canvas on error/expiry prevents a previous successful target projection
+    // from remaining visible while the overlay truthfully reports failure.
+    draw();
+  }, [activeIndex, draw, reportData]);
 
   useEffect(() => {
     setPreviewIndex(null);
+    setOrientationObjectListOpen(false);
   }, [committedAt, routeContext.localDate, routeContext.spotId]);
 
   useEffect(() => {
@@ -1161,20 +1232,6 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
     });
   }, [canvasError, notify, routeContext.spotId]);
 
-  const navigateView = (nextView: SkyView) => {
-    const route =
-      nextView === "MAIN"
-        ? "spot/sky/index"
-        : nextView === "DETAIL"
-          ? "sky/detail/index"
-          : nextView === "PROFESSIONAL"
-            ? "sky/professional/index"
-            : "sky/targets/index";
-    void Taro.redirectTo({
-      url: `/${route}?${contextQuery(routeContext, committedAt)}`,
-    });
-  };
-
   const commitIndex = async (nextIndex: number) => {
     if (!reportData?.hourly.length || !activeContext || timeSaving) return;
     const safeIndex = clampIndex(nextIndex, reportData.hourly.length);
@@ -1241,65 +1298,61 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
       </View>
     );
 
-  const heading =
-    view === "DETAIL"
-      ? "方位天空"
-      : view === "PROFESSIONAL"
-        ? "专业数据"
-      : view === "TARGETS"
-        ? "观测目标"
-        : "此处夜空";
   const spotName = overview.data?.data.spot.name ?? "此观星点";
-  const usableData =
-    reportData &&
-    report.data?.dataState !== "EXPIRED" &&
-    report.data?.dataState !== "UNAVAILABLE";
-  const indexMax = Math.max(0, (reportData?.hourly.length ?? 1) - 1);
-  const compassIsReady = compassState === "READY" && compassHeading !== null;
+  const compassIsReady =
+    compassState === "READY" &&
+    compassHeading !== null &&
+    devicePose !== null &&
+    motionOffsetRef.current !== null;
+  // A compass can report before device-motion delivers its first pose. Keep
+  // the internal compass state for callback compatibility, but present this
+  // combined state as calibrating until both real streams are trustworthy.
+  const orientationSensorState =
+    compassState === "READY" && !compassIsReady ? "CALIBRATING" : compassState;
   const compassRecovery =
-    compassState === "DENIED"
+    orientationSensorState === "DENIED"
       ? {
           title: "方向权限未开启",
           detail: "开启后仅在本页前台读取设备方向；不会记录连续姿态轨迹。",
           action: "检查权限",
-          secondary: "先看列表",
+          secondary: "查看对象列表",
         }
-      : compassState === "UNAVAILABLE"
+      : orientationSensorState === "UNAVAILABLE"
         ? {
             title: "设备没有可用方向传感器",
             detail: "天空仍保留北向目标预览；当前不宣称手机方向，天体列表继续可用。",
             action: "重试方向",
-            secondary: "先看列表",
+            secondary: "查看对象列表",
           }
-        : compassState === "STALE"
+        : orientationSensorState === "STALE"
           ? {
               title: "方向数据暂时中断",
               detail: "天空暂停手机方向定位；重新连接后才恢复方向呈现。",
               action: "重新连接",
-              secondary: "先看列表",
+              secondary: "查看对象列表",
             }
-          : compassState === "CALIBRATING"
+          : orientationSensorState === "CALIBRATING"
             ? {
                 title: "正在校准设备方向",
                 detail: "保持手机平稳；可信方向到达前，天空保持北向预览。",
                 action: "重新校准",
-                secondary: "先看列表",
+                secondary: "查看对象列表",
               }
-            : compassState === "LOW_ACCURACY"
+            : orientationSensorState === "LOW_ACCURACY"
               ? {
                   title: "方向精度较低",
                   detail: "暂不显示当前方向结论；目标列表和北向预览仍可用。",
                   action: "重新校准",
-                  secondary: "先看列表",
+                  secondary: "查看对象列表",
                 }
               : {
                   title: "让天空图跟随手机方向",
                   detail: "仅在本页前台读取设备方向，用于旋转当前天空投影。",
                   action: "允许方向",
-                  secondary: "先看列表",
+                  secondary: "查看对象列表",
                 };
   const recoverCompass = () => {
-    if (compassState === "DENIED") {
+    if (orientationSensorState === "DENIED") {
       stopCompass();
       void Taro.openSetting()
         .catch(() => undefined)
@@ -1313,704 +1366,322 @@ export function SpotSkyPage({ view = "MAIN" }: { view?: SkyView }) {
     void startCompass();
   };
 
-  return (
-    <View
-      className={`${presentationClass} sky-page`}
-      data-route="spot-night"
-      data-spot-id={routeContext.spotId}
-      data-od-id="spot-night"
-    >
+  // `sky/detail` is a separate full-viewport surface. It intentionally does
+  // not share the summary page header or vertical content stack: the canvas,
+  // compact sensor telemetry, recovery and time ruler stay co-located so a
+  // real device can be rotated without losing the selected formal spot/time.
+  const orientationData =
+    reportData &&
+    !report.isError &&
+    report.data?.dataState !== "EXPIRED" &&
+    report.data?.dataState !== "UNAVAILABLE"
+      ? reportData
+      : undefined;
+  const orientationTargets = orientationData?.targets ?? [];
+  const orientationHeading = compassIsReady
+    ? `${Math.round(sensorHeadingForScene ?? compassHeading ?? 0)}°`
+    : "未提供";
+  const orientationAccuracy = compassAccuracyLabel(compassTelemetry.accuracy);
+  const orientationSampledAt = Math.max(
+    compassTelemetry.sampledAt ?? 0,
+    devicePose?.sampledAt ?? 0,
+  );
+  const orientationAge = compassAgeLabel(
+    orientationSampledAt > 0 ? orientationSampledAt : null,
+    compassNow,
+  );
+  const orientationSensorLabel = `设备方向，方位 ${orientationHeading}，精度 ${orientationAccuracy}，数据年龄 ${orientationAge}，${compassReason}`;
+  const orientationDataStatus =
+    report.isPending && !orientationData
+        ? {
+            state: "LOADING" as const,
+            detail:
+              "正在按正式观星点、观测夜和当前时刻加载天空数据；不会用当前位置或未经核验的结果顶替。",
+          }
+        : report.isError
+          ? {
+              state: "ERROR" as const,
+              detail:
+                "天空计算请求失败；正式点位与完整上下文仍保留，未静默显示成功或合成数据。",
+            }
+          : report.data?.dataState === "EXPIRED" ||
+              report.data?.dataState === "UNAVAILABLE"
+            ? {
+                state: "ERROR" as const,
+                detail:
+                  "当前天空数据不可用；不会用过期缓存或未经核验的结果替代今晚结论。",
+              }
+            : !reportData
+              ? {
+                  state: "ERROR" as const,
+                  detail:
+                    "返回结果与当前正式点位、日期或时区上下文不一致；为避免混用不同条件的结果，暂不展示。",
+                }
+              : null;
+
+    return (
       <View
-        className={`sky-mobile-header safe-top${view === "DETAIL" ? " sky-mobile-header--orientation" : ""}`}
-        data-od-id="spot-night-header"
-        {...(statusBarHeight > 0
-          ? { style: { paddingTop: `${statusBarHeight}px` } }
-          : {})}
+        className={`${presentationClass} sky-orientation-page`}
+        data-route="sky/detail"
+        data-spot-id={routeContext.spotId}
+        data-od-id="sky-orientation-route"
       >
-        {view === "DETAIL" ? (
+        <View
+          className="sky-orientation-canvas"
+          data-control="sky-orientation-canvas"
+          data-od-id="sky-orientation-canvas"
+          data-canvas-state={orientationDataStatus?.state ?? "READY"}
+          role="img"
+          aria-busy={orientationDataStatus?.state === "LOADING"}
+          aria-label={`${spotName}的方位高度天空图，${orientationData ? `${orientationData.targets.length} 个真实目标` : "当前没有可证明天空结果"}，${compassIsReady ? "已使用实时设备姿态" : "未提供实时设备姿态，保持北向预览"}，当前观测时刻 ${rowTime}`}
+        >
+          <Canvas
+            canvasId={CANVAS_ID}
+            id={CANVAS_ID}
+            className="sky-scene__canvas sky-orientation-canvas__surface"
+            style={{ width: "100%", height: "100vh" }}
+            aria-label="方位天空投影；目标标记只来自当前正式点和观测上下文的结果"
+          />
+          {canvasError ? (
+            <View
+              className="sky-orientation-canvas__error"
+              role="alert"
+              aria-live="assertive"
+            >
+              <Text>天空图暂不可绘制；对象列表和时间仍可访问。</Text>
+              <SoftButton
+                variant="ghost"
+                className="sky-orientation-canvas__retry"
+                label="重试天空图"
+                onClick={draw}
+              >
+                重试
+              </SoftButton>
+            </View>
+          ) : null}
+          {orientationDataStatus ? (
+            <View className="sky-orientation-data-status">
+              <StatusPanel
+                state={orientationDataStatus.state}
+                detail={orientationDataStatus.detail}
+                recoveryLabel={
+                  orientationDataStatus.state === "ERROR"
+                    ? "重试天空"
+                    : undefined
+                }
+                onRecover={
+                  orientationDataStatus.state === "ERROR"
+                    ? () => void report.refetch()
+                    : undefined
+                }
+              />
+            </View>
+          ) : null}
+        </View>
+
+        <View className="sky-orientation-notification" data-od-id="sky-orientation-notification">
+          <NotificationRegion owner="spot-night" placement="inline" />
+        </View>
+
+        <View
+          className="sky-orientation-back-layer safe-top"
+          data-od-id="sky-orientation-back"
+        >
           <SoftButton
             variant="ghost"
-            className="sky-mobile-header__back"
-            label="返回天文信息"
-            onClick={() => navigateView("MAIN")}
+            className="sky-orientation-back"
+            label="返回正式观星点"
+            onClick={goBack}
           >
-            返回天文信息
+            <SemanticIcon name="arrow-left" decorative />
+            <Text>返回</Text>
           </SoftButton>
-        ) : (
-          <View className="sky-mobile-header__identity">
-            <Text className="sky-mobile-header__eyebrow">
-              {spotName} · 今晚
-            </Text>
-            <Text className="sky-mobile-header__meta">
-              {routeContext.localDate} · {routeContext.timezone}
-            </Text>
-          </View>
-        )}
-        {view === "DETAIL" ? (
-          <View className="sky-mobile-header__identity sky-mobile-header__identity--orientation">
-            <Text className="sky-mobile-header__eyebrow">
-              {spotName} · {rowTime}
-            </Text>
-            <Text className="sky-mobile-header__meta">
-              {routeContext.localDate} · 同一观测上下文
-            </Text>
-          </View>
-        ) : null}
-        <View className="sky-mobile-header__status">
-          {view === "DETAIL" ? (
-            <SoftButton
-              variant={compassIsReady ? "default" : "primary"}
-              className="sky-mobile-header__action"
-              label={
-                compassIsReady ? "设备方向已连接" : "允许设备方向并开始校准"
-              }
-              onClick={() => (compassIsReady ? undefined : recoverCompass())}
-            >
-              <SemanticIcon name="compass" decorative />
-              {compassIsReady ? "已跟随手机" : "转为手机视图"}
-            </SoftButton>
-          ) : (
-            <Text
-              className="sky-mobile-header__time"
-              aria-label={`当前夜空时间 ${rowTime}${isPreviewing ? "，预览中" : ""}`}
-            >
-              {rowTime} {isPreviewing ? "预览" : "实时"}
-            </Text>
-          )}
         </View>
-      </View>
-      <NotificationRegion owner="spot-night" placement="inline" />
-      <View className="sky-page__scroll-viewport">
-        <ScrollView
-          scrollY
-          className="sky-page__scroll"
-          enhanced
-          showScrollbar={false}
+
+        <View
+          className={`sky-orientation-sensor sky-orientation-sensor--${orientationSensorState.toLowerCase()}`}
+          data-control="sky-orientation-sensor"
+          data-od-id="sky-orientation-sensor"
+          data-sensor-state={orientationSensorState}
+          role="status"
+          aria-live="polite"
+          aria-busy={orientationSensorState === "CALIBRATING"}
+          aria-label={orientationSensorLabel}
         >
-          <View className="sky-content page-inset safe-bottom">
-          <View
-            className="sky-context-strip"
-            role="status"
-            aria-label={`正式观星点 ${spotName}，观测夜 ${routeContext.localDate}，数据状态 ${report.data?.dataState ?? "UNAVAILABLE"}`}
-          >
-            <Text className="sky-context-strip__copy">
-              正式观星点 · {routeContext.localDate} · {routeContext.timezone}
-            </Text>
-            <DataStateBadge state={report.data?.dataState ?? "UNAVAILABLE"} />
-          </View>
-          {reportData &&
-          (report.data?.dataState === "UNAVAILABLE" ||
-            report.data?.dataState === "EXPIRED") ? (
-            <StatusPanel
-              state="ERROR"
-              detail="当前夜空数据不可用；正式点位、观测时间和来源说明保持可见，不会用过期缓存或未经核验的结果替代今晚结论。"
-              recoveryLabel="重试夜空"
-              onRecover={() => void report.refetch()}
-            />
-          ) : null}
-          {report.isPending ? (
-            <StatusPanel
-              state="LOADING"
-              detail="正在按正式观星点、当地观测夜和当前时刻加载当前数据；不会用当前位置或未经核验的结果顶替。"
-            />
-          ) : report.isError ? (
-            <StatusPanel
-              state="ERROR"
-              detail="夜空计算请求失败；正式点位与完整上下文仍保留，未静默显示成功或合成数据。"
-              recoveryLabel="重试夜空"
-              onRecover={() => void report.refetch()}
-            />
-          ) : !reportData ? (
-            <StatusPanel
-              state="ERROR"
-              detail="返回结果与当前正式点位、日期或时区上下文不一致；为避免混用不同条件的结果，暂不展示。"
-              recoveryLabel="重新加载"
-              onRecover={() => void report.refetch()}
-            />
-          ) : (
+          {!compassIsReady ? (
             <>
-              {view === "MAIN" ? (
-                <View className="sky-summary-stack sky-summary-stack--astronomy">
-                  <View className="sky-scene sky-scene--astronomy" data-od-id="sky-scene">
-                    <Canvas
-                      canvasId={CANVAS_ID}
-                      id={CANVAS_ID}
-                      className="sky-scene__canvas"
-                      style={{ width: "100%", height: "224px" }}
-                      aria-label={`北向静态天空投影，${rowTime}，${reportData.targets.length} 个真实目标`}
-                    />
-                    <View className="sky-scene__time-overlay">
-                      <Text className="sky-scene__time type-data">{rowTime}</Text>
-                      <Text className="sky-scene__time-caption">
-                        观测时间 · 预览松手后提交 · 数据与目标同一上下文
-                      </Text>
-                    </View>
-                    {canvasError ? (
-                      <Text className="sky-scene__error type-caption">
-                        天空图暂不可绘制；下方目标与条件证据仍可访问。
-                      </Text>
-                    ) : null}
-                  </View>
-
-                  <View
-                    className="sky-decision sky-decision--astronomy card"
-                    data-od-id="spot-night-summary"
-                  >
-                    <View className="sky-decision__top">
-                      <View className="sky-decision__heading">
-                        <Text className="sky-decision__eyebrow">今晚结论</Text>
-                        <Text className="sky-decision__label">
-                          {usableData
-                            ? reportData.decision.label
-                            : "数据不足，暂不判断"}
-                        </Text>
-                      </View>
-                      <DataStateBadge
-                        state={report.data?.dataState ?? "UNAVAILABLE"}
-                      />
-                    </View>
-                    <View className="sky-window-grid" role="list" aria-label="主窗口与备选窗口">
-                      <View className="sky-window sky-window--primary" role="listitem">
-                        <Text className="sky-window__label">主窗口</Text>
-                        <Text className="sky-window__value type-data">
-                          {usableData && reportData.decision.skyOpportunity.primaryWindow
-                            ? `${formatTime(reportData.decision.skyOpportunity.primaryWindow.start, routeContext.timezone)}—${formatTime(reportData.decision.skyOpportunity.primaryWindow.end, routeContext.timezone)}`
-                            : "暂无可证明窗口"}
-                        </Text>
-                        <Text className="sky-window__meta type-caption">
-                          {usableData && reportData.decision.skyOpportunity.primaryWindow
-                            ? `${reportData.decision.skyOpportunity.primaryWindow.durationMinutes} 分钟`
-                            : "不会用过期或未经核验的结果补齐"}
-                        </Text>
-                      </View>
-                      <View className="sky-window" role="listitem">
-                        <Text className="sky-window__label">备选窗口</Text>
-                        <Text className="sky-window__value type-data">
-                          {usableData && reportData.decision.skyOpportunity.backupWindow
-                            ? `${formatTime(reportData.decision.skyOpportunity.backupWindow.start, routeContext.timezone)}—${formatTime(reportData.decision.skyOpportunity.backupWindow.end, routeContext.timezone)}`
-                            : "暂无可证明窗口"}
-                        </Text>
-                        <Text className="sky-window__meta type-caption">
-                          {usableData && reportData.decision.skyOpportunity.backupWindow
-                            ? `${reportData.decision.skyOpportunity.backupWindow.durationMinutes} 分钟`
-                            : "数据不足时保持空缺"}
-                        </Text>
-                      </View>
-                    </View>
-                    {usableData ? (
-                      <Text className="sky-decision__support type-caption">
-                        {reportData.decision.skyOpportunity.label} · 天空信心 {reportData.decision.skyOpportunity.confidence === null ? "未知" : `${Math.round(reportData.decision.skyOpportunity.confidence * 100)}%`} · 出行信心 {reportData.decision.confidence === null ? "未知" : `${Math.round(reportData.decision.confidence * 100)}%`}
-                      </Text>
-                    ) : null}
-                  </View>
-
-                  <View className="time-card sky-time-card card" data-od-id="spot-night-time-focus">
-                    <View className="time-card__header">
-                      <View>
-                        <Text className="sky-section-title">选择观测时间</Text>
-                        <Text className="sky-time-card__value type-data">{rowTime}</Text>
-                        <Text className="type-caption">
-                          {isPreviewing ? "预览中 · 松手提交一次" : "已提交 · Map / Astronomy / Plan 共用"}
-                        </Text>
-                      </View>
-                      {isPreviewing ? (
-                        <SoftButton
-                          variant="ghost"
-                          className="sky-time-card__cancel"
-                          label="取消观测时间预览"
-                          onClick={() => setPreviewIndex(null)}
-                        >
-                          取消预览
-                        </SoftButton>
-                      ) : null}
-                    </View>
-                    <Slider
-                      min={0}
-                      max={indexMax}
-                      step={1}
-                      value={activeIndex}
-                      activeColor="var(--primary)"
-                      backgroundColor="var(--border)"
-                      blockColor="var(--primary)"
-                      blockSize={24}
-                      disabled={!reportData.hourly.length || timeSaving}
-                      aria-label="调整同一观测上下文的观测时间"
-                      onChanging={(event) => onPreview(event.detail.value)}
-                      onChange={(event) => void commitIndex(event.detail.value)}
-                    />
-                    <View className="sky-time-rail" aria-hidden>
-                      <View className="sky-time-rail__track">
-                        <View
-                          className="sky-time-rail__progress"
-                          style={{ width: `${reportData.hourly.length > 1 ? (activeIndex / (reportData.hourly.length - 1)) * 100 : 0}%` }}
-                        />
-                        {[reportData.decision.skyOpportunity.primaryWindow?.start, reportData.decision.skyOpportunity.primaryWindow?.end, reportData.decision.skyOpportunity.backupWindow?.start, reportData.decision.skyOpportunity.backupWindow?.end]
-                          .filter((value): value is string => Boolean(value))
-                          .map((value, eventIndex) => {
-                            const markerIndex = nearestHourIndex(reportData.hourly, value);
-                            const marker = reportData.hourly.length > 1 ? (markerIndex / (reportData.hourly.length - 1)) * 100 : 0;
-                            return <View key={`${value}:${eventIndex}`} className="sky-time-rail__event" style={{ left: `${marker}%` }} />;
-                          })}
-                        <View
-                          className="sky-time-rail__cursor"
-                          style={{ left: `${reportData.hourly.length > 1 ? (activeIndex / (reportData.hourly.length - 1)) * 100 : 0}%` }}
-                        />
-                      </View>
-                      <View className="sky-time-rail__labels">
-                        {[0, Math.floor(Math.max(0, reportData.hourly.length - 1) / 2), reportData.hourly.length - 1]
-                          .filter((value, index, all) => value >= 0 && value < reportData.hourly.length && all.indexOf(value) === index)
-                          .map((value) => (
-                            <Text key={value} className="type-caption">{formatTime(reportData.hourly[value]?.at, routeContext.timezone)}</Text>
-                          ))}
-                      </View>
-                    </View>
-                  </View>
-
-                  <View className="sky-bands-card card" data-od-id="sky-condition-bands">
-                    <View className="sky-section-header">
-                      <View className="sky-section-header__copy">
-                        <Text className="sky-section-title">条件随时间变化 · {rowTime}</Text>
-                        <Text className="type-caption">同一 selected time 对齐天空、主备窗口、目标与条件；缺失保持缺失。</Text>
-                      </View>
-                      <Text className="sky-bands-card__count type-caption">{reportData.hourly.length} 个时刻</Text>
-                    </View>
-                    <SkyConditionBands rows={reportData.hourly} activeIndex={activeIndex} timezone={routeContext.timezone} />
-                  </View>
-
-                  <View className="sky-targets sky-targets--compact card" data-od-id="sky-target-list" role="list" aria-label="当前真实观测目标">
-                    <View className="sky-section-header">
-                      <View className="sky-section-header__copy">
-                        <Text className="sky-section-title">目标</Text>
-                        <Text className="type-caption">来自当前正式点、观测夜与 selected time 的 API 结果</Text>
-                      </View>
-                      <Text className="sky-bands-card__count type-caption">{reportData.targets.length} 个</Text>
-                    </View>
-                    {reportData.targets.length ? (
-                      reportData.targets.map((target) => <SkyTargetRow target={target} key={target.targetId} />)
-                    ) : (
-                      <StatusPanel state="EMPTY" detail="当前没有可证明目标；不会显示预设天体。" />
-                    )}
-                  </View>
-
-                  <View className="sky-source-drawer" data-od-id="spot-source-evidence">
-                    <View className="sky-section-header">
-                      <View className="sky-section-header__copy">
-                        <Text className="sky-section-title">来源与完整度</Text>
-                        <Text className="type-caption">{reportData.context.algorithmVersion} · {reportData.context.catalogVersion} · {reportData.context.eventCatalogVersion}</Text>
-                      </View>
-                      <DataStateBadge state={report.data?.dataState ?? "UNAVAILABLE"} />
-                    </View>
-                    {reportData.sources.length ? (
-                      reportData.sources.map((source) => <Provenance source={source} key={source.id} compact />)
-                    ) : (
-                      <Text className="type-caption">当前没有可展示来源；不会把结果标记为完整。</Text>
-                    )}
-                    {report.data?.warnings.map((warning) => (
-                      <Text className="type-caption" key={warning}>· {warning}</Text>
-                    ))}
-                  </View>
-                </View>
-              ) : view === "DETAIL" ? (
-                <View className="sky-summary-stack sky-summary-stack--orientation">
-                  <View className="sky-scene sky-scene--orientation" data-od-id="sky-orientation-scene">
-                    <Canvas
-                      canvasId={CANVAS_ID}
-                      id={CANVAS_ID}
-                      className="sky-scene__canvas"
-                      style={{ width: "100%", height: "392px" }}
-                      aria-label={`方位高度天空图，${compassIsReady ? "跟随设备方向" : "北向预览"}，不改变地点、观测时间或天文结果`}
-                    />
-                    <View className="orientation-control" data-od-id="sky-orientation-control" role="status">
-                      <SemanticIcon name="compass" decorative={false} label="设备方向传感器" />
-                      <Text className="orientation-control__status">
-                        {compassIsReady
-                          ? `方向已连接 · 当前 ${Math.round(compassHeading)}° · 只改变天空呈现`
-                          : compassReason}
-                      </Text>
-                    </View>
-                    {!compassIsReady ? (
-                      <View className="orientation-recovery" role="group" aria-label={compassRecovery.title}>
-                        <View className="orientation-recovery__icon">
-                          <SemanticIcon name="compass" decorative={false} label="方向权限与传感器状态" />
-                        </View>
-                        <View className="orientation-recovery__copy">
-                          <Text className="orientation-recovery__title">{compassRecovery.title}</Text>
-                          <Text className="orientation-recovery__detail">{compassRecovery.detail}</Text>
-                        </View>
-                        <View className="orientation-actions">
-                          <SoftButton
-                            variant="primary"
-                            className="orientation-actions__primary"
-                            label={compassRecovery.action}
-                            disabled={compassState === "CALIBRATING"}
-                            onClick={recoverCompass}
-                          >
-                            {compassRecovery.action}
-                          </SoftButton>
-                          <SoftButton
-                            variant="ghost"
-                            className="orientation-actions__secondary"
-                            label="暂不启用方向，查看可访问对象列表"
-                            onClick={() => {
-                              stopCompass();
-                              navigateView("TARGETS");
-                            }}
-                          >
-                            {compassRecovery.secondary}
-                          </SoftButton>
-                        </View>
-                      </View>
-                    ) : null}
-                  </View>
-                  <View className="sky-targets sky-targets--orientation card" data-od-id="sky-orientation-object-list" role="list" aria-label="当前可访问天体对象列表">
-                    <View className="sky-section-header">
-                      <View className="sky-section-header__copy">
-                        <Text className="sky-section-title">对象列表</Text>
-                        <Text className="type-caption">传感器不可用、拒绝或过期时仍可阅读真实目标结果</Text>
-                      </View>
-                      <Text className="sky-bands-card__count type-caption">{reportData.targets.length} 个</Text>
-                    </View>
-                    {reportData.targets.length ? (
-                      reportData.targets.map((target) => (
-                        <SkyTargetRow target={target} key={target.targetId} />
-                      ))
-                    ) : (
-                      <StatusPanel state="EMPTY" detail="当前没有可证明目标；不会显示预设目标。" />
-                    )}
-                  </View>
-                  <View className="sky-source-drawer sky-source-drawer--orientation" data-od-id="sky-orientation-context">
-                    <Text className="type-caption">
-                      {spotName} · {rowTime} · {routeContext.timezone} · 方向只改变呈现，不改变地点、时间或天文真相。
-                    </Text>
-                    <DataStateBadge state={report.data?.dataState ?? "UNAVAILABLE"} />
-                  </View>
-                </View>
-              ) : view === "TARGETS" ? (
-                <View className="sky-targets card" data-od-id="sky-target-list">
-                  <View className="sky-section-header">
-                    <View className="sky-section-header__copy">
-                      <Text className="type-section">观测目标列表</Text>
-                      <Text className="type-caption">
-                        与当前观测时刻和观测夜同步
-                      </Text>
-                    </View>
-                  </View>
-                  {reportData.targets.length ? (
-                    reportData.targets.map((target) => (
-                      <SkyTargetCard target={target} key={target.targetId} />
-                    ))
-                  ) : (
-                    <StatusPanel
-                      state="EMPTY"
-                      detail="当前没有可证明目标，不显示预设目标。"
-                    />
-                  )}
-                </View>
-              ) : (
-                <View
-                  className="professional-card card"
-                  data-od-id="sky-professional-matrix"
-                >
-                  <View className="sky-section-header">
-                    <View className="sky-section-header__copy">
-                      <Text className="type-section">分小时专业数据</Text>
-                      <Text className="type-caption">
-                        机会分与信心独立展示，并保留云、降水、风、温度、能见度、月亮与黑暗原始证据
-                      </Text>
-                    </View>
-                    <DataStateBadge
-                      state={report.data?.dataState ?? "UNAVAILABLE"}
-                    />
-                  </View>
-                  {reportData.hourly.length ? (
-                    <View className="professional-table-shell">
-                      <ScrollView
-                        scrollX
-                        className="professional-table"
-                        data-od-id="sky-professional-matrix-scroll"
-                        enhanced
-                        showScrollbar={false}
-                        aria-label="专业数据横向矩阵，可左右滚动"
-                      >
-                        <View className="professional-table__inner">
-                          <ProfessionalMatrixRow
-                            header
-                            label="变量"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              formatTime(item.at, routeContext.timezone)
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="机会"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              metricValue(item.opportunityScore, "%")
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="信心"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              item.opportunityConfidence === null
-                                ? "未提供"
-                                : `${Math.round(item.opportunityConfidence * 100)}%`
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="总云"
-                            rows={reportData.hourly}
-                            value={(item) => metricValue(item.cloudPercent, "%")}
-                          />
-                          <ProfessionalMatrixRow
-                            label="低云"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              metricValue(item.lowCloudPercent, "%")
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="中云"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              metricValue(item.midCloudPercent, "%")
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="高云"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              metricValue(item.highCloudPercent, "%")
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="模型一致性"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              MODEL_CONSISTENCY_LABEL[
-                                item.modelConsistencyLabel
-                              ]
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="模型差幅"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              metricValue(item.modelSpreadPercent, "%", 1)
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="降水"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              metricValue(item.precipitationMm, " mm", 1)
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="风 / 阵风"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              `${metricValue(item.windKph, "", 0)} / ${metricValue(item.windGustKph, " km/h", 0)}`
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="温度"
-                            rows={reportData.hourly}
-                            value={(item) => metricValue(item.temperatureC, "℃", 1)}
-                          />
-                          <ProfessionalMatrixRow
-                            label="湿度 / 露点"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              `${metricValue(item.relativeHumidityPercent, "%", 0)} / ${metricValue(item.dewPointC, "℃", 1)}`
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="能见度"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              metricValue(item.visibilityKm, " km", 1)
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="月亮影响"
-                            rows={reportData.hourly}
-                            value={(item) =>
-                              `${Math.round(item.opportunityInput.moonPenalty * 100)}%`
-                            }
-                          />
-                          <ProfessionalMatrixRow
-                            label="黑暗"
-                            rows={reportData.hourly}
-                            value={(item) => DARKNESS_LABEL[item.darkness]}
-                          />
-                        </View>
-                      </ScrollView>
-                      <View
-                        className="professional-table-indicator"
-                        data-od-id="sky-professional-matrix-indicator"
-                        aria-hidden
-                      />
-                    </View>
-                  ) : (
-                    <StatusPanel
-                      state="EMPTY"
-                      detail="当前没有逐小时数据；缺失不会显示为 0。"
-                    />
-                  )}
-                </View>
-              )}
-              {view !== "DETAIL" ? (
-                <View className="sky-compact-data card">
-                  <View className="sky-section-header">
-                    <View className="sky-section-header__copy">
-                      <Text className="type-section">数据状态与边界</Text>
-                      <Text className="type-caption">
-                        更新时间{" "}
-                        {formatDateTime(
-                          report.data?.generatedAt,
-                          routeContext.timezone,
-                        )}
-                      </Text>
-                    </View>
-                    <DataStateBadge
-                      state={report.data?.dataState ?? "UNAVAILABLE"}
-                    />
-                  </View>
-                  <Text className="type-body">
-                    预缓存 {reportData.precachedHours} 小时 ·{" "}
-                    {reportData.offlineReady
-                      ? "声明可用的有限离线摘要"
-                      : "没有离线摘要"}
-                    ；硬过期或不可用时不显示当前推荐。
-                  </Text>
-                  <View className="weather-evidence-summary">
-                    <View>
-                      <Text className="type-caption">天气时间线</Text>
-                      <Text className="type-data">
-                        {
-                          WEATHER_TIMELINE_ROLE_LABEL[
-                            reportData.weatherEvidence.timelineRole
-                          ]
-                        }
-                      </Text>
-                    </View>
-                    <View>
-                      <Text className="type-caption">官方预警</Text>
-                      <Text className="type-data">
-                        {DATA_STATE_LABEL[reportData.weatherEvidence.warningState]}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text className="type-caption">
-                    天气模型：
-                    {reportData.weatherEvidence.modelRuns.length
-                      ? reportData.weatherEvidence.modelRuns
-                          .map(
-                            (run) =>
-                              WEATHER_MODEL_LABEL[run.modelKey] ?? run.provider,
-                          )
-                          .filter(
-                            (label, index, all) => all.indexOf(label) === index,
-                          )
-                          .join(" · ")
-                      : "未提供"}
-                  </Text>
-                  {reportData.weatherEvidence.alerts
-                    .filter(
-                      (alert) => alert.status === "ACTIVE" && alert.material,
-                    )
-                    .map((alert) => (
-                      <View className="weather-alert-summary" key={alert.id}>
-                        <Text className="type-label">{alert.headline}</Text>
-                        <Text className="type-caption">
-                          {alert.description}
-                        </Text>
-                        {alert.instruction ? (
-                          <Text className="type-caption">
-                            建议：{alert.instruction}
-                          </Text>
-                        ) : null}
-                        <Text className="type-caption">
-                          发布 {formatDateTime(
-                            alert.issuedAt,
-                            routeContext.timezone,
-                          )}
-                          {alert.expiresAt
-                            ? ` · 有效至 ${formatDateTime(alert.expiresAt, routeContext.timezone)}`
-                            : ""}
-                        </Text>
-                      </View>
-                    ))}
-                  <Text className="type-caption">
-                    计算标识 {reportData.context.algorithmVersion} · 星表标识{" "}
-                    {reportData.context.catalogVersion} · 事件目录标识{" "}
-                    {reportData.context.eventCatalogVersion}
-                  </Text>
-                  <Text className="type-caption">
-                    这些标识只用于追溯本次结果，不代表另一套产品；具体来源、适用时间和限制见下方说明。
-                  </Text>
-                  {report.data?.warnings.map((warning) => (
-                    <Text className="type-caption" key={warning}>
-                      · {warning}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
-              <View className="sources-stack" data-od-id="spot-source-evidence">
-                <Text className="type-section">计算与数据来源</Text>
-                {reportData.sources.map((source) => (
-                  <Provenance source={source} key={source.id} />
-                ))}
+              <View className="sky-orientation-sensor__heading">
+                <SemanticIcon name="compass" decorative />
+                <Text>设备方向</Text>
               </View>
-              <View className="sky-actions">
-                {view !== "DETAIL" ? (
-                  <SoftButton
-                    variant="primary"
-                    label="打开跟随设备方向的方位天空"
-                    onClick={() => navigateView("DETAIL")}
-                  >
-                    方位天空
-                  </SoftButton>
-                ) : null}
-                {view !== "PROFESSIONAL" ? (
-                  <SoftButton
-                    label="查看完整专业数据"
-                    onClick={() => navigateView("PROFESSIONAL")}
-                  >
-                    专业数据
-                  </SoftButton>
-                ) : null}
-                {view !== "TARGETS" ? (
-                  <SoftButton
-                    label="查看全部观测目标"
-                    onClick={() => navigateView("TARGETS")}
-                  >
-                    目标列表
-                  </SoftButton>
-                ) : null}
-                {view !== "MAIN" ? (
-                  <SoftButton
-                    variant="primary"
-                    label="返回夜空结论"
-                    onClick={() => navigateView("MAIN")}
-                  >
-                    返回结论
-                  </SoftButton>
-                ) : null}
-                <SoftButton
-                  variant="ghost"
-                  label="返回正式观星点详情"
-                  onClick={goBack}
-                >
-                  返回点位详情
-                </SoftButton>
+              <View
+                className="sky-orientation-sensor__metrics"
+                role="list"
+                aria-label="设备方向实时指标"
+              >
+                <View className="sky-orientation-sensor__metric" role="listitem">
+                  <Text className="sky-orientation-sensor__label">方位</Text>
+                  <Text className="sky-orientation-sensor__value type-data">
+                    {orientationHeading}
+                  </Text>
+                </View>
+                <View className="sky-orientation-sensor__metric" role="listitem">
+                  <Text className="sky-orientation-sensor__label">精度</Text>
+                  <Text className="sky-orientation-sensor__value type-data">
+                    {orientationAccuracy}
+                  </Text>
+                </View>
+                <View className="sky-orientation-sensor__metric" role="listitem">
+                  <Text className="sky-orientation-sensor__label">数据年龄</Text>
+                  <Text className="sky-orientation-sensor__value type-data">
+                    {orientationAge}
+                  </Text>
+                </View>
               </View>
             </>
-          )}
+          ) : null}
+        </View>
+
+        {!compassIsReady ? (
+          <View
+            className="sky-orientation-recovery"
+            data-control="sky-orientation-recovery"
+            data-od-id="sky-orientation-recovery"
+            role="group"
+            aria-label={compassRecovery.title}
+          >
+            <View className="sky-orientation-recovery__icon" aria-hidden="true">
+              <SemanticIcon name="compass" decorative />
+            </View>
+            <View className="sky-orientation-recovery__copy">
+              <Text className="sky-orientation-recovery__title">
+                {compassRecovery.title}
+              </Text>
+              <Text className="sky-orientation-recovery__detail">
+                {compassRecovery.detail}
+              </Text>
+            </View>
+            <View className="sky-orientation-recovery__actions">
+              <SoftButton
+                variant="primary"
+                className="sky-orientation-recovery__primary"
+                label={compassRecovery.action}
+                disabled={orientationSensorState === "CALIBRATING"}
+                onClick={recoverCompass}
+              >
+                {compassRecovery.action}
+              </SoftButton>
+              <SoftButton
+                variant="ghost"
+                className="sky-orientation-recovery__secondary"
+                label="查看对象列表"
+                onClick={() => {
+                  stopCompass();
+                  setOrientationObjectListOpen(true);
+                }}
+              >
+                {compassRecovery.secondary}
+              </SoftButton>
+            </View>
           </View>
-        </ScrollView>
+        ) : null}
+
+        <View
+          className="sky-orientation-object-toggle"
+          data-od-id="sky-orientation-object-list-toggle"
+        >
+          <Button
+            compileMode
+            className="sky-orientation-object-toggle__button"
+            ariaLabel={
+              orientationObjectListOpen ? "收起对象列表" : "查看对象列表"
+            }
+            aria-pressed={orientationObjectListOpen ? "true" : "false"}
+            onClick={() => setOrientationObjectListOpen((open) => !open)}
+          >
+            <SemanticIcon
+              name={orientationObjectListOpen ? "chevron-up" : "chevron-down"}
+              decorative
+            />
+            <Text>
+              {orientationObjectListOpen ? "收起对象列表" : "查看对象列表"}
+            </Text>
+          </Button>
+        </View>
+
+        {orientationObjectListOpen ? (
+          <View
+            className="sky-orientation-object-list"
+            data-control="sky-orientation-object-list"
+            data-od-id="sky-orientation-object-list"
+            role="list"
+            aria-label={`当前可访问天体对象列表，${orientationTargets.length} 个真实目标`}
+          >
+            <View className="sky-orientation-object-list__header">
+              <View className="sky-orientation-object-list__heading">
+                <Text className="sky-orientation-object-list__title">
+                  对象列表
+                </Text>
+                <Text className="sky-orientation-object-list__meta">
+                  {orientationData
+                    ? "与当前正式点、观测夜和天空结果同步"
+                    : "当前没有可证明的天空结果"}
+                </Text>
+              </View>
+              <Text className="sky-orientation-object-list__count type-data">
+                {orientationTargets.length} 个
+              </Text>
+            </View>
+            {orientationData ? (
+              orientationTargets.length ? (
+                <ScrollView
+                  scrollY
+                  enhanced
+                  showScrollbar={false}
+                  className="sky-orientation-object-list__scroll"
+                  aria-label="滚动查看真实观测对象"
+                >
+                  {orientationTargets.map((target) => (
+                    <SkyTargetRow target={target} key={target.targetId} />
+                  ))}
+                </ScrollView>
+              ) : (
+                <StatusPanel
+                  state="EMPTY"
+                  detail="当前没有可证明目标；不会显示预设目标。"
+                />
+              )
+            ) : (
+              <StatusPanel
+                state={orientationDataStatus?.state ?? "ERROR"}
+                detail={
+                  orientationDataStatus?.detail ??
+                  "当前没有可证明的天空结果；正式点位和观测上下文仍保留。"
+                }
+                recoveryLabel="重试天空"
+                onRecover={() => void report.refetch()}
+              />
+            )}
+          </View>
+        ) : null}
+
+        <View
+          className="sky-orientation-ruler-layer safe-bottom"
+          data-od-id="sky-orientation-time-ruler-layer"
+        >
+          <OrientationTimeRuler
+            rows={orientationData?.hourly ?? []}
+            activeIndex={activeIndex}
+            committedIndex={committedIndex}
+            timezone={routeContext.timezone}
+            isPreviewing={isPreviewing}
+            saving={timeSaving}
+            reducedMotion={reducedMotion}
+            onPreview={onPreview}
+            onCommit={(index) => void commitIndex(index)}
+            onCancel={() => setPreviewIndex(null)}
+          />
+        </View>
       </View>
-    </View>
-  );
+    );
 }

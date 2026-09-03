@@ -1,0 +1,71 @@
+{
+  "schema": "starward-open-design-current-style-closure",
+  "verifiedOn": "2026-09-03",
+  "result": "closure_passed",
+  "scope": {
+    "productSurfaces": 5,
+    "materialControls": 66,
+    "categoryCounts": {
+      "shellShared": 5,
+      "mapSearch": 15,
+      "spotInformationPanel": 18,
+      "fullSky": 5,
+      "myLibrary": 9,
+      "profileContent": 6,
+      "contribution": 8
+    },
+    "pageCountIsNotRevisionAuthority": true,
+    "newUiUxDecisionRequired": false
+  },
+  "source": {
+    "canonicalSectionSha256": "8ef768c6b9f1fb0e09bf4ca9835d5825b24d5a2a49f2c11eab985d9be7368bfe",
+    "providerBodySha256": "98218fd2a884373222a1b0e9e7892c133bbb4f78aeedec2c17a2ccc1fd9eae41",
+    "commissionSha256": "d243ea93fd68d74405ed56f2e1500c5a8d7070b5bf4832b87410abba1a9050ad",
+    "allExact": true
+  },
+  "initialDiagnostic": {
+    "runId": "9888d600-474c-43b7-a65b-582cad38b436",
+    "clientRequestId": "c1a2f3b0-ae10-4fc1-95c4-2deb9dfaa66e",
+    "status": "succeeded",
+    "readOnly": true,
+    "finding": "task-local total said 67 while the complete canonical inventory sums to 66",
+    "ownerDecisionRequired": false,
+    "disposition": "diagnostic-only"
+  },
+  "correctiveRun": {
+    "runId": "b56021c3-7ef0-4427-8cc1-cb3c3a44a1d7",
+    "clientRequestId": "d70bed44-79af-4f19-bfc3-d76c68017359",
+    "status": "succeeded",
+    "exitCode": 0,
+    "endedWithUnfinishedWork": false,
+    "agent": "codex",
+    "model": "gpt-5.6-sol",
+    "reasoning": "xhigh",
+    "skill": "frontend-design",
+    "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "designSystemSelectionSource": "request",
+    "resolvedDesignSystemDigest": "ad4f6e373d9340f2957591417232e9faa64f52c2eca418984b6c0271133879ac",
+    "pluginId": null,
+    "appliedPluginSnapshotId": null,
+    "readOnly": true,
+    "candidateFilesUnchanged": true,
+    "missingOwnerChoices": [],
+    "decisionRequiredKeys": [],
+    "turnBMayProceed": true
+  },
+  "dimensions": {
+    "primaryContentPriority": "existing-covered",
+    "compactButClearDensity": "existing-covered",
+    "hierarchyAndContainerTreatment": "existing-covered",
+    "visibleVersusHitGeometry": "existing-covered",
+    "singleCurrentDesignSystemLineage": "existing-covered",
+    "informationArchitectureAndRetiredRouteClosure": "existing-covered",
+    "feedbackAndMotion": "existing-covered",
+    "contentAndDataBoundaries": "existing-covered",
+    "responsiveSafeAreaAndTwoHundredPercentText": "existing-covered",
+    "accessibilityAndReducedMotion": "existing-covered",
+    "mapSearchPanelAndCurvedRuler": "existing-covered",
+    "fullSkySensorAndErrorBehavior": "existing-covered"
+  },
+  "sensitiveDataPersisted": false
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day" data-motion="normal" data-transparency="normal" data-text-scale="100">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Starward《今晚去观星》微信小程序五个产品面交互设计候选">
+  <meta name="design-system-id" content="user:starward-mini-program-sky-canvas-field-signal-revision">
+  <title>Starward 微信小程序 · 全量交互候选</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="audit-shell" data-od-id="audit-shell">
+    <aside class="audit-panel" aria-label="候选审计控制" data-od-id="audit-controls">
+      <header class="audit-heading" data-od-id="audit-heading">
+        <span class="audit-kicker">未选中候选</span>
+        <h1 data-od-id="candidate-title">今晚去观星</h1>
+        <p>5 个 Product Surfaces · 62 个 material Controls · 零未决项</p>
+      </header>
+
+      <section class="audit-group" aria-labelledby="surface-label">
+        <h2 id="surface-label">产品范围</h2>
+        <label for="surface-select">Surface</label>
+        <select id="surface-select" data-od-id="surface-switcher">
+          <option value="miniapp-map-discovery">地图发现</option>
+          <option value="miniapp-sky-orientation">方位天空</option>
+          <option value="miniapp-my-library">我的</option>
+          <option value="miniapp-profile-content">资料与内容</option>
+          <option value="miniapp-contribution-intake">现场反馈</option>
+        </select>
+        <label for="route-select">Route</label>
+        <select id="route-select" data-od-id="route-switcher"></select>
+      </section>
+
+      <section class="audit-group" aria-labelledby="condition-label">
+        <h2 id="condition-label">状态与适配</h2>
+        <label for="state-select">状态 / 场景</label>
+        <select id="state-select" data-od-id="state-switcher">
+          <option value="ready">就绪</option>
+          <option value="cold-start">冷启动</option>
+          <option value="loading">加载中</option>
+          <option value="empty">筛选无结果</option>
+          <option value="success">成功</option>
+          <option value="partial">视宁度缺失</option>
+          <option value="stale">云量更新较旧</option>
+          <option value="error">错误</option>
+          <option value="offline">离线缓存</option>
+          <option value="recovery">恢复中</option>
+          <option value="disabled">不可用</option>
+          <option value="pressed">按下</option>
+          <option value="focused">键盘焦点</option>
+          <option value="permission-required">需要方向权限</option>
+          <option value="calibrating">校准中</option>
+          <option value="low-accuracy">方向精度较低</option>
+          <option value="unavailable">方向不可用</option>
+          <option value="retry">可重试</option>
+          <option value="favorite-failure">想去保存失败</option>
+          <option value="pending">待审核</option>
+          <option value="approved">已通过</option>
+          <option value="rejected">未通过</option>
+        </select>
+
+        <span class="audit-label">主题</span>
+        <div class="audit-segment" role="group" aria-label="主题切换" data-od-id="theme-switcher">
+          <button type="button" data-theme-value="day" aria-pressed="true">日间</button>
+          <button type="button" data-theme-value="night" aria-pressed="false">夜间</button>
+          <button type="button" data-theme-value="observation" aria-pressed="false">观测</button>
+        </div>
+
+        <span class="audit-label">Viewport</span>
+        <div class="audit-segment audit-four" role="group" aria-label="视口宽度" data-od-id="viewport-switcher">
+          <button type="button" data-viewport="320" aria-pressed="false">320</button>
+          <button type="button" data-viewport="375" aria-pressed="false">375</button>
+          <button type="button" data-viewport="390" aria-pressed="true">390</button>
+          <button type="button" data-viewport="430" aria-pressed="false">430</button>
+        </div>
+
+        <span class="audit-label">文本缩放</span>
+        <div class="audit-segment" role="group" aria-label="文本缩放" data-od-id="text-scale-switcher">
+          <button type="button" data-text-scale="100" aria-pressed="true">100%</button>
+          <button type="button" data-text-scale="200" aria-pressed="false">200%</button>
+        </div>
+
+        <span class="audit-label">运动</span>
+        <div class="audit-segment" role="group" aria-label="运动偏好" data-od-id="motion-switcher">
+          <button type="button" data-motion-value="normal" aria-pressed="true">正常</button>
+          <button type="button" data-motion-value="reduced" aria-pressed="false">减少动态</button>
+        </div>
+
+        <span class="audit-label">透明度</span>
+        <div class="audit-segment" role="group" aria-label="透明度偏好" data-od-id="transparency-switcher">
+          <button type="button" data-transparency-value="normal" aria-pressed="true">正常</button>
+          <button type="button" data-transparency-value="reduced" aria-pressed="false">降低透明</button>
+        </div>
+      </section>
+
+      <section class="audit-group audit-summary" aria-labelledby="current-label">
+        <h2 id="current-label">当前审计点</h2>
+        <output id="audit-current" aria-live="polite"></output>
+        <a href="coverage.json" data-od-id="coverage-link">查看 coverage.json</a>
+      </section>
+
+      <section class="audit-group audit-pose" aria-labelledby="pose-label">
+        <h2 id="pose-label">方位姿态审计</h2>
+        <p class="audit-help">只验证画布响应，不代表真机传感器能力。</p>
+        <label for="pose-alpha">水平转向 <output id="pose-alpha-value">28°</output></label>
+        <input id="pose-alpha" type="range" min="-90" max="90" value="28" step="1">
+        <label for="pose-beta">俯仰 <output id="pose-beta-value">-12°</output></label>
+        <input id="pose-beta" type="range" min="-45" max="45" value="-12" step="1">
+        <label for="pose-gamma">横滚 <output id="pose-gamma-value">4°</output></label>
+        <input id="pose-gamma" type="range" min="-30" max="30" value="4" step="1">
+      </section>
+    </aside>
+
+    <main class="preview-stage" data-od-id="prototype-stage">
+      <div class="phone" id="phone" data-viewport="390" data-od-id="phone-frame">
+        <div class="wechat-reserve" aria-hidden="true">
+          <span class="device-time">21:18</span>
+          <span class="capsule"><i></i><i></i></span>
+        </div>
+        <div id="phone-root" class="phone-app" aria-live="polite" aria-atomic="false"></div>
+      </div>
+      <p class="stage-note">候选内使用有界代表值；地图、实时数据、系统键盘与设备传感器仍需生产侧独立验证。</p>
+    </main>
+  </div>
+  <div id="announcer" class="sr-only" aria-live="polite"></div>
+  <script src="assets/app.js"></script>
+</body>
+</html>

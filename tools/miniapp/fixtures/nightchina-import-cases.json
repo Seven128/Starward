@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "starward-nightchina-import-cases-v1",
+  "retrievedAt": "2026-09-04",
+  "purpose": "Fixed development-test inputs for the Profile Import journey and the post-import formal-spot information panel journey.",
+  "copyrightPolicy": {
+    "articleText": "Store only a short paraphrase plus source identity; do not copy article bodies.",
+    "sourcePhotos": "Rights are unconfirmed, so source photos are not copied, downloaded, uploaded, or represented as reusable.",
+    "testImage": "When a media-bearing import path is required, use a clearly labelled locally generated synthetic night-sky test image that is not derived from the source photo.",
+    "publication": "Import remains a draft/preview and never implies moderation, publication, or formal-spot creation success."
+  },
+  "cases": [
+    {
+      "key": "gd-yuebei-summer-night",
+      "regionBucket": "guangdong",
+      "title": "粤北夏夜引",
+      "sourceUrl": "https://nightchina.net/2026/07/25/%E7%B2%A4%E5%8C%97%E5%A4%8F%E5%A4%9C%E5%BC%95/",
+      "reportedLocation": "广东省清远市阳山县江英古道附近",
+      "reportedCaptureDate": "2026-07-11",
+      "importText": "来源页面描述了粤北阳山江英古道附近的夏季夜空拍摄；地点、日期与现场条件仍需在导入草稿中逐项核验。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "gd-oujia-terraces",
+      "regionBucket": "guangdong",
+      "title": "星映梯田月映云",
+      "sourceUrl": "https://nightchina.net/2022/07/15/%E6%98%9F%E6%98%A0%E6%A2%AF%E7%94%B0%E6%9C%88%E6%98%A0%E4%BA%91/",
+      "reportedLocation": "广东省清远市连山县欧家梯田",
+      "reportedCaptureDate": "2022-07-10",
+      "importText": "来源页面记录了清远欧家梯田的星空与月云场景；导入只建立可编辑草稿，不确认道路、设施或观测质量。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "gd-yangshan-watch-sky",
+      "regionBucket": "guangdong",
+      "title": "守望星空",
+      "sourceUrl": "https://nightchina.net/2024/12/06/%E5%AE%88%E6%9C%9B%E6%98%9F%E7%A9%BA-3/",
+      "reportedLocation": "广东省清远市阳山县",
+      "reportedCaptureDate": "2024-12-01",
+      "importText": "来源页面标注拍摄地为清远阳山；导入测试保留来源、地点和日期，并把其余信息标为待核验。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "gd-dapeng-summer-fireflies",
+      "regionBucket": "guangdong",
+      "title": "夏夜星萤",
+      "sourceUrl": "https://nightchina.net/2024/06/04/%E5%A4%8F%E5%A4%9C%E6%98%9F%E8%90%A4/",
+      "reportedLocation": "广东省深圳市大鹏半岛国家地质公园",
+      "reportedCaptureDate": "2024-05-14",
+      "importText": "来源页面记录深圳大鹏地质公园的夏夜星空场景；测试时可人工确认与现有深圳市天文台正式观星点的关联。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "existing_formal_spot", "spotId": "spot:sz-astronomical-observatory", "spotName": "深圳市天文台", "confirmation": "manual_required" },
+      "postImportSpotComponentChecks": [
+        "open_map_spot_information_panel",
+        "switch_objective_sections",
+        "inspect_route_and_facility_evidence",
+        "toggle_favorite_and_restore",
+        "invoke_share_boundary",
+        "open_cloud_stargazing",
+        "enter_sky_detail_and_return",
+        "open_spot_contribution_context"
+      ]
+    },
+    {
+      "key": "gd-bajieshan-cloud-sea",
+      "regionBucket": "guangdong",
+      "title": "银河与云海相遇",
+      "sourceUrl": "https://nightchina.net/2024/04/29/%E9%93%B6%E6%B2%B3%E4%B8%8E%E4%BA%91%E6%B5%B7%E7%9B%B8%E9%81%87/",
+      "reportedLocation": "广东省清远市连州市八戒山",
+      "reportedCaptureDate": "2024-03-12",
+      "importText": "来源页面记录连州八戒山的银河与云海；该地点在当前目录没有精确正式点，必须走独立地点提案。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "outside-anhui-shangcun",
+      "regionBucket": "outside_guangdong",
+      "title": "银河下的古村落",
+      "sourceUrl": "https://nightchina.net/2023/04/24/%E9%93%B6%E6%B2%B3%E4%B8%8B%E7%9A%84%E5%8F%A4%E6%9D%91%E8%90%BD/",
+      "reportedLocation": "安徽省宣城市绩溪县上村",
+      "reportedCaptureDate": "2023-04-17",
+      "importText": "来源页面记录安徽绩溪上村的银河与古村落；导入后应保持为可编辑的新地点提案。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "outside-anhui-xucun",
+      "regionBucket": "outside_guangdong",
+      "title": "星空下的历史",
+      "sourceUrl": "https://nightchina.net/2024/07/08/%E6%98%9F%E7%A9%BA%E4%B8%8B%E7%9A%84%E5%8E%86%E5%8F%B2/",
+      "reportedLocation": "安徽省黄山市歙县许村大观亭",
+      "reportedCaptureDate": "2024-07-05",
+      "importText": "来源页面记录歙县许村大观亭的夜空；导入不把文章描述提升为已核验的正式观星点事实。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "outside-yunnan-diqing",
+      "regionBucket": "outside_guangdong",
+      "title": "通天之河",
+      "sourceUrl": "https://nightchina.net/2023/09/24/%E9%80%9A%E5%A4%A9%E4%B9%8B%E6%B2%B3/",
+      "reportedLocation": "云南省迪庆藏族自治州湖乡公路附近",
+      "reportedCaptureDate": "2023-09-14",
+      "importText": "来源页面记录云南迪庆湖乡公路附近的银河；精确位置、通行与安全信息均保持待核验。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "outside-hebei-bingshanliang",
+      "regionBucket": "outside_guangdong",
+      "title": "星河画卷",
+      "sourceUrl": "https://nightchina.net/2023/10/08/%E6%98%9F%E6%B2%B3%E7%94%BB%E5%8D%B7/",
+      "reportedLocation": "河北省张家口市冰山梁",
+      "reportedCaptureDate": "2023-09-09",
+      "importText": "来源页面记录张家口冰山梁的星空；测试应走新地点提案并保留来源追溯。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    },
+    {
+      "key": "outside-tibet-dingjie",
+      "regionBucket": "outside_guangdong",
+      "title": "银河下的彗星",
+      "sourceUrl": "https://nightchina.net/2024/10/20/%E9%93%B6%E6%B2%B3%E4%B8%8B%E7%9A%84%E5%BD%97%E6%98%9F/",
+      "reportedLocation": "西藏自治区日喀则市定结县",
+      "reportedCaptureDate": "2024-10-19",
+      "importText": "来源页面记录日喀则定结县的银河与彗星场景；导入仅保留草稿事实，不能推断当前天象或现场可达性。",
+      "rightsDisposition": "unconfirmed_source_photo_not_reused",
+      "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
+    }
+  ]
+}

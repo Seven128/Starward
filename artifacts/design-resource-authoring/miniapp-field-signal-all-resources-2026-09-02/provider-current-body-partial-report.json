@@ -1,0 +1,40 @@
+{
+  "schema_version": "starward-open-design-current-body-partial-v1",
+  "observed_on": "2026-09-02",
+  "result": "partial_postcondition_failure",
+  "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+  "provider_version": "0.21.1",
+  "request": {
+    "method": "PATCH /api/design-systems/:id",
+    "fields": [
+      "status",
+      "artifactMode",
+      "body"
+    ],
+    "expected_body_sha256": "4c86d52c012900e71022e1725682b6119a62ea22935e426e83f965e0988158f1"
+  },
+  "satisfied": {
+    "provider_root_sha256": "4c86d52c012900e71022e1725682b6119a62ea22935e426e83f965e0988158f1",
+    "provider_root_bytes": 51605,
+    "status": "published",
+    "artifact_mode": "agent-managed",
+    "metadata_sha256": "ab26193d8978b03af8feef95eaaa9decd7fb8445d9b30e46297f31c4cb226d71",
+    "supporting_file_count": 30,
+    "supporting_manifest_sha256": "1ced0c8d52b77d5d4da9e5b00d199be3e1fc48404505c8a8119efc313fe5953a",
+    "pending_revision_status": "pending",
+    "pending_revision_sha256": "978b49ad81f2205100c3f534f961d8d167d04304a1361da97a901aa4fbf1dd41",
+    "system_project_newest_write_utc": "2026-09-01T23:54:07.8797152Z",
+    "target_project_exists": false
+  },
+  "failed": {
+    "structured_body_chars": 24093,
+    "structured_body_bytes": 41787,
+    "structured_body_sha256": "a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e",
+    "expected_chars": 32419,
+    "expected_bytes": 51605,
+    "expected_sha256": "4c86d52c012900e71022e1725682b6119a62ea22935e426e83f965e0988158f1"
+  },
+  "root_cause": "Open Design 0.21.1 GET detail and generation prompt resolution prefer the linked design-system workspace project DESIGN.md over the registry root body.",
+  "safety_action": "Stopped before project creation or generation; performed read-only provider implementation and project-binding inspection; did not retry the same PATCH.",
+  "sensitive_data_persisted": false
+}

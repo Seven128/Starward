@@ -4,16 +4,15 @@ export default defineAppConfig({
     {
       root: "spot",
       pages: [
-        "detail/index",
+        "search/index",
         "guides/index",
         "field/index",
-        "sky/index",
         "data-source/index",
       ],
     },
     {
       root: "sky",
-      pages: ["detail/index", "professional/index", "targets/index"],
+      pages: ["detail/index"],
     },
     {
       root: "content",
@@ -22,6 +21,8 @@ export default defineAppConfig({
         "plan/detail/index",
         "contribution/index",
         "settings/index",
+        "profile/links/index",
+        "import/index",
       ],
     },
   ],

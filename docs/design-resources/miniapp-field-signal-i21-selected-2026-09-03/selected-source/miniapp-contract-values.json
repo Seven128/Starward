@@ -1,0 +1,222 @@
+{
+  "schema_version": "starward-design-constraint-values-v1",
+  "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+  "values": {
+    "subject.miniapp.selected-package": {
+      "declared-state-matrix": "f7fcf9ae26b686665cf777940360d7f5340a4dc7de6baca34567f473f6b0bc42"
+    },
+    "subject.miniapp.frame.route-pages-map-index": {
+      "declared-state-matrix": "b8eb7b6e7c3e4055b35797117abc82f6c21197a144c80139ee172e8590c64f4c"
+    },
+    "subject.miniapp.frame.route-spot-search": {
+      "declared-state-matrix": "aa09444cefb4f3458cc9b02d95d52636acd35819074b2bda593cf3841606fe11"
+    },
+    "subject.miniapp.frame.route-sky-detail": {
+      "declared-state-matrix": "7912bce7e59c87a308adfc877553cd8aa008d0ee6e4749ee3926c7f7a37335e1"
+    },
+    "subject.miniapp.frame.route-pages-my-index": {
+      "declared-state-matrix": "55cbfd1337ca68e1a5f5054dfcbabaf88a434952d0eee4bdbb3a18caed798669"
+    },
+    "subject.miniapp.frame.route-plan-detail": {
+      "declared-state-matrix": "48322c8cab0f4fc3b89a5b3f6187b8d3eb2a1e14b06f1f802aaf1579604e43e0"
+    },
+    "subject.miniapp.frame.route-settings": {
+      "declared-state-matrix": "8ae984e16b4d1022a0d8c82f8646a0bbac78e0ca376f9a442af3faa0abd44e62"
+    },
+    "subject.miniapp.frame.route-profile-links": {
+      "declared-state-matrix": "7565b3d0dbfe749d9ea6442e4b6d7559fd0a56bc869fe9ad3979e7d3a5f724ff"
+    },
+    "subject.miniapp.frame.route-content-import": {
+      "declared-state-matrix": "65414302ffc6d599b28cf639ec060645384bd0048c39587c7fe9bfcff94fed4d"
+    },
+    "subject.miniapp.frame.route-content-contribution-index": {
+      "declared-state-matrix": "9df539f5de027696dc5c76fb61553ff2eb74743d8ff8505a4868b9796278d0f8"
+    },
+    "subject.miniapp.control.mini-primary-navigation": {
+      "declared-state-matrix": "00447b04314b46f69b9fb203e284d1198e0ad69af611f4c3e1d9bc2eff2f2197"
+    },
+    "subject.miniapp.control.display-mode-switcher": {
+      "declared-state-matrix": "2dc38ea4d14aa442cb3aed98f10a4ee27b94cf33bcca30ecf6b4f325815cb8ed"
+    },
+    "subject.miniapp.control.data-source-disclosure": {
+      "declared-state-matrix": "4fe54df3747b9f3dbaaa5ebb8e4244d7a971f67be15b0a792358276f439e69e1"
+    },
+    "subject.miniapp.control.notification-feedback": {
+      "declared-state-matrix": "158e044c9a26a6f221f329433e3431ff0fb48b5a41cac9ecb7663b92017c1be3"
+    },
+    "subject.miniapp.control.page-state-recovery": {
+      "declared-state-matrix": "45d8a07692a97ac873966f2656c15c406df7095217348848ee12d4d29d097ee3"
+    },
+    "subject.miniapp.control.map-search-entry": {
+      "declared-state-matrix": "5904bf0bd0711f485f1df3f5829f3ef608c500c64376eeb602dd4aa7088f7ac1"
+    },
+    "subject.miniapp.control.spot-search-shell": {
+      "declared-state-matrix": "e2af01c04d2601df53aa5e69c1ccaee9d0f64ec6713b068b979335c2ccee06a7"
+    },
+    "subject.miniapp.control.spot-search-field": {
+      "declared-state-matrix": "ec361ee3a6efed0c79b20044e214747f9c784eaaf61d7716f634d65274cad691"
+    },
+    "subject.miniapp.control.spot-search-query-overlay": {
+      "declared-state-matrix": "4445032b94902d29f83c0154cbb508d12729a7ff391be57fa25cbcef0e5eda4d"
+    },
+    "subject.miniapp.control.spot-search-filter-group": {
+      "declared-state-matrix": "91d56da53ca66c82e478c98f009db2f2bb282b86a1e71569a70e0c6f00a0c2f0"
+    },
+    "subject.miniapp.control.spot-search-filter-choice": {
+      "declared-state-matrix": "26daa17238a40907e00153801658b43152bc1af1e62e29da61fac613b2eee4af"
+    },
+    "subject.miniapp.control.spot-search-result-list": {
+      "declared-state-matrix": "6b13f6426e2f0840fb6d4fd3fb17791b83f4c76461875c0167184dc65e5359e4"
+    },
+    "subject.miniapp.control.spot-search-result-card": {
+      "declared-state-matrix": "effed891d44163ad4c8a5fbd9eb4979ef5356320b173ce1775a7453c5bf3b845"
+    },
+    "subject.miniapp.control.map-location-control": {
+      "declared-state-matrix": "f6bb612088d1095ad4a386671ad03eecd148d67f88f779313c2bb2f35545d199"
+    },
+    "subject.miniapp.control.map-analysis-focus-layer": {
+      "declared-state-matrix": "430e5e69e962cb5dc8a3fa38498f01df5cc8920c99a2efeed4e834041261e194"
+    },
+    "subject.miniapp.control.map-layer-selector": {
+      "declared-state-matrix": "33f8db7525b4d283522501daf48fc60a1ce45879aada8a2143701dfa89f7d9b5"
+    },
+    "subject.miniapp.control.map-time-control": {
+      "declared-state-matrix": "1e884269eddb6e6c731251619ce80e7b0d4d2f2282e413f30b9a88da9909b76d"
+    },
+    "subject.miniapp.control.map-marker-panel-coordinator": {
+      "declared-state-matrix": "bb3f88d22911e5c4cf6d96e26a857e9f6cb506252773636480ee210a89b69e1d"
+    },
+    "subject.miniapp.control.map-spot-information-panel": {
+      "declared-state-matrix": "f463190a5678a8f963f0d4517286b0e7e66511e7c80a6e762492742c44bcc55a"
+    },
+    "subject.miniapp.control.map-spot-panel-handle": {
+      "declared-state-matrix": "d3983612c630806e84909e2f60f62d9ac42f6a4631b95c76feab97104eed6b04"
+    },
+    "subject.miniapp.control.map-spot-panel-section-nav": {
+      "declared-state-matrix": "dd6e1a2ff27caa2facb848e0debc92a5686e6ce7f88ae2c35edbe1cbda636df7"
+    },
+    "subject.miniapp.control.map-spot-panel-action-bar": {
+      "declared-state-matrix": "7f6a2b44c3caa0d0b2dde95135c8d331c1383e654a44165d39352d430d68c7d6"
+    },
+    "subject.miniapp.control.spot-favorite-action": {
+      "declared-state-matrix": "8fbc8e92b6a5bb4cd02e56cd6bbea814c06eec04395a0ceec9fd47d385d8d103"
+    },
+    "subject.miniapp.control.spot-share-action": {
+      "declared-state-matrix": "00adf516d69e97418a072801b0c80097be31ea27aca7d5bcf23abdbfe5d60c86"
+    },
+    "subject.miniapp.control.spot-cloud-stargazing-action": {
+      "declared-state-matrix": "d82cc225665c24de21d8ff8ded65571080a598100f61dce2cfcbbb3103d1c1cc"
+    },
+    "subject.miniapp.control.spot-media-gallery": {
+      "declared-state-matrix": "168c700239f4c06c1abc8f63e0d8fe116538af0e0f42f5ee986a43f5e9b27f48"
+    },
+    "subject.miniapp.control.spot-navigation-action": {
+      "declared-state-matrix": "fcb3ac9ded9f1620d473f9dfb2f0fe4daeab8581869e7c0edee8e519239904f5"
+    },
+    "subject.miniapp.control.spot-contribution-entry": {
+      "declared-state-matrix": "104050d6aab18921d77639d3e1ce83702ee78d5669c44fb00c21fbd0df9b2cc5"
+    },
+    "subject.miniapp.control.spot-route-summary": {
+      "declared-state-matrix": "8a461c68941f2880fcb2ba1d6c0e8d76b5de351e6fa37a548ab3e4d915b4bb34"
+    },
+    "subject.miniapp.control.spot-facility-evidence": {
+      "declared-state-matrix": "60ef69763a5a965d63923c71444763a13dffb67e91a54b191078605bc272aafe"
+    },
+    "subject.miniapp.control.guide-article-viewer": {
+      "declared-state-matrix": "39baa32b724a6cb3599a8c1b145fd1ab638f8e94d6e5049a52f097138b77abef"
+    },
+    "subject.miniapp.control.sky-professional-matrix": {
+      "declared-state-matrix": "2b99f89d9e58748f0fc9763e0cbb98933cdd9b3c8ae83b706bf8845b08f82507"
+    },
+    "subject.miniapp.control.sky-target-list": {
+      "declared-state-matrix": "50ac3541310df8706e61221c23b0f230755c966b13b7a36952860455e5f14e8d"
+    },
+    "subject.miniapp.control.sky-time-scrubber": {
+      "declared-state-matrix": "bc0b3a230134e87ba5574f2c221724ecb5cceb5a051d6944d4883b9486e9c994"
+    },
+    "subject.miniapp.control.sky-map-canvas": {
+      "declared-state-matrix": "8fe60e8307e5060367600c1b03e1cf0a40c311c80a99e9d75cfcca629dd5812e"
+    },
+    "subject.miniapp.control.sky-orientation-canvas": {
+      "declared-state-matrix": "d8e1a9874a25d6839312d75f43a01e0eb34f9ccaeb426d9dba60dbaa778d4d7a"
+    },
+    "subject.miniapp.control.sky-orientation-sensor": {
+      "declared-state-matrix": "513b3f4c37cdd2b04e57d7f4d9e7e9fc7b1fd6139b7d68ebac8ddca99666489b"
+    },
+    "subject.miniapp.control.sky-orientation-recovery": {
+      "declared-state-matrix": "56eba156f72d64d967ac7ffe215eeff0c883e219162312dbe91e99d4e2eeda73"
+    },
+    "subject.miniapp.control.sky-orientation-object-list": {
+      "declared-state-matrix": "24eebb6cf2f5aa348bc79887d5de702a89dc673a7ec114edc101b2c19d120b21"
+    },
+    "subject.miniapp.control.sky-orientation-time-ruler": {
+      "declared-state-matrix": "54ab069b902255f0bbc99c52b17419d1f51caddc3452e9cc148af67ba726378e"
+    },
+    "subject.miniapp.control.my-account-header": {
+      "declared-state-matrix": "8efbcb7d7cbe8d967102dcf7845fb9c776fc12b37b92d0b3e15c1d8acfdbfdea"
+    },
+    "subject.miniapp.control.my-settings-action": {
+      "declared-state-matrix": "da66c3d7dba03a5a241185771d2f79184625107716256ef758038c30ce3ec588"
+    },
+    "subject.miniapp.control.my-profile-summary": {
+      "declared-state-matrix": "8dffd941cec22b15fca57edd1ca981cfcc0433469ca0949fdbb4307df9c1064f"
+    },
+    "subject.miniapp.control.my-grouped-entry-list": {
+      "declared-state-matrix": "a1b1556efea1583bbf1b53ecb901e7fc657bcdcc5d48c6c7b2bc3a54f3f35acd"
+    },
+    "subject.miniapp.control.my-plan-entry": {
+      "declared-state-matrix": "c4fec0b5d8621f7a3415394fd490f0e165f3ebb1b9fa40dec1f9b647e10c8be9"
+    },
+    "subject.miniapp.control.my-contribution-entry": {
+      "declared-state-matrix": "cae7f8909e12c3ba3a66d905ea6be4f305313acdb810a19c639786fbdbc8f932"
+    },
+    "subject.miniapp.control.plan-editor": {
+      "declared-state-matrix": "517ab20e42edbc024528d45fb8245e1c237d27b0252756eff679ba1444b776fc"
+    },
+    "subject.miniapp.control.settings-form": {
+      "declared-state-matrix": "236215c413468706bd16c47dc14aa5e222dcecbde5375162d918e2170923b39f"
+    },
+    "subject.miniapp.control.profile-link-editor": {
+      "declared-state-matrix": "6728198abc87f8e2ca999a123d9dad1d97b87dce4e8ffcdf1b7643f7337157a7"
+    },
+    "subject.miniapp.control.profile-link-open-copy": {
+      "declared-state-matrix": "7db3c9a588385d0971002ce24e1f8a8452b23310a84130f50cb95074a55ad409"
+    },
+    "subject.miniapp.control.import-source-rights": {
+      "declared-state-matrix": "74ac4801a65e5fe969af60e0b31cafaf499d75204fe7f9519cf2356f4d620b84"
+    },
+    "subject.miniapp.control.import-draft-editor": {
+      "declared-state-matrix": "7c146cc015954fd9cf0c1b0ae75f21d0de3a2112c222f701eb96dcafeb3f9310"
+    },
+    "subject.miniapp.control.import-spot-association": {
+      "declared-state-matrix": "300158374ebac310d732a5d5a211cdbe5617dcf597425f467c382b69da117163"
+    },
+    "subject.miniapp.control.import-preview-submit": {
+      "declared-state-matrix": "2aae2111b7b008b72c398ece488982e3875d5855b1949f1f86e90e742e0fdc34"
+    },
+    "subject.miniapp.control.contribution-kind-control": {
+      "declared-state-matrix": "95299ab19be67411baecd4463323efc48074cc8853c18e048323171f4e9f3bbf"
+    },
+    "subject.miniapp.control.contribution-spot-context": {
+      "declared-state-matrix": "1dc0c9c52a1536363cf7948c59c8775d8dd977f5ad2992a7ff56c66d516c92cc"
+    },
+    "subject.miniapp.control.contribution-topic-control": {
+      "declared-state-matrix": "362abd01eb29aec6ff0e8fd7d8dac6c80326525f84d24fd1899526e0f6db9f59"
+    },
+    "subject.miniapp.control.contribution-observed-at": {
+      "declared-state-matrix": "f997ae0a03dd3d37c6199aeb45239351eb332a4017fef85672d9b18eaa642a1c"
+    },
+    "subject.miniapp.control.contribution-location-consent": {
+      "declared-state-matrix": "e61691141f48b5ddd8f9dd2235a6630cf037f64c7a73c9524e066f990e7c09c2"
+    },
+    "subject.miniapp.control.contribution-media-upload": {
+      "declared-state-matrix": "8438dfa83d74b27efa487c336f1f2fa07f12220de690dd3f85490cb9ae46bd78"
+    },
+    "subject.miniapp.control.contribution-submit": {
+      "declared-state-matrix": "ec74c5431f7fa72fb3e4bed76ef53652a1d847a6f0286f46a460ac0dc7038e65"
+    },
+    "subject.miniapp.control.contribution-status-list": {
+      "declared-state-matrix": "bedc7fb329a62a8e12e76e1891bf62ae79a48852dfb11d7e75ff22679919bf2d"
+    }
+  }
+}

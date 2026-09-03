@@ -1,0 +1,29 @@
+{
+  "schema": "starward-open-design-candidate-pull-v1",
+  "providerVersion": "0.21.1",
+  "projectId": "starward-miniapp-field-signal-all-resources",
+  "files": {
+    "index.html": {
+      "bytes": 7226,
+      "sha256": "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60"
+    },
+    "assets/styles.css": {
+      "bytes": 54288,
+      "sha256": "216e82a5b94d9df27ed2cfbd478b9e3ca2a52845b5c314326071ec11acea3208"
+    },
+    "assets/app.js": {
+      "bytes": 135937,
+      "sha256": "d4f8b0848a99ea26c60ae70e5eddd1557eeb3fc6b710174879fde698d76f3e44"
+    },
+    "coverage.json": {
+      "bytes": 23962,
+      "sha256": "8e30a6e905c9b5af2ef506dc03edb76717e867ef766ad7ddcf03c1adf5c7b9f5"
+    },
+    "README.md": {
+      "bytes": 10995,
+      "sha256": "de8d30d0e024da794b55c5bffd54d64280f62791f5a9efcae6dd2cf66d4e5fd5"
+    }
+  },
+  "decisionRequired": false,
+  "sensitiveDataPersisted": false
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "starward-open-design-current-system-sync",
+  "verifiedOn": "2026-09-03",
+  "result": "verified",
+  "providerVersion": "0.21.1",
+  "designSystem": {
+    "id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "status": "published",
+    "artifactMode": "agent-managed",
+    "canMutate": true,
+    "canonicalSectionSha256": "8ef768c6b9f1fb0e09bf4ca9835d5825b24d5a2a49f2c11eab985d9be7368bfe",
+    "providerBodySha256Before": "c06f403fe2bda35e7d804b94cd1ea7627aafd298eda54b1928c88b917a82802f",
+    "providerBodySha256After": "98218fd2a884373222a1b0e9e7892c133bbb4f78aeedec2c17a2ccc1fd9eae41",
+    "providerBodyChars": 41265,
+    "providerBodyBytes": 62689,
+    "registryRootAndStructuredEquivalent": true,
+    "metadataInvariantPreserved": true,
+    "supportingFileCount": 28,
+    "supportingManifestSha256Before": "435dc825b57a002d22a138dfaa34262f56887a4af3b0694e4971ff586524106d",
+    "supportingManifestSha256After": "435dc825b57a002d22a138dfaa34262f56887a4af3b0694e4971ff586524106d"
+  },
+  "linkedSystemProject": {
+    "id": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "designRootSha256Before": "c06f403fe2bda35e7d804b94cd1ea7627aafd298eda54b1928c88b917a82802f",
+    "designRootSha256After": "98218fd2a884373222a1b0e9e7892c133bbb4f78aeedec2c17a2ccc1fd9eae41",
+    "otherFileCount": 82,
+    "otherManifestSha256Before": "766c3ac86cbf5de17a38022d758e330f0646fc133596e6a974bbb14be3738d2c",
+    "otherManifestSha256After": "766c3ac86cbf5de17a38022d758e330f0646fc133596e6a974bbb14be3738d2c"
+  },
+  "taskProject": {
+    "id": "starward-miniapp-field-signal-all-resources",
+    "skillId": "frontend-design",
+    "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "kind": "design-resource",
+    "intent": "design-resource-authoring",
+    "entryFile": "index.html",
+    "pluginSnapshot": null,
+    "commissionSha256Before": "1c442b848b6b6507b1c3238f0d51c951c03666a12e2f63621de10eeff9b17c39",
+    "commissionSha256After": "d243ea93fd68d74405ed56f2e1500c5a8d7070b5bf4832b87410abba1a9050ad",
+    "activeRunCountAtMutation": 0,
+    "candidateFilesUnchanged": true
+  },
+  "sensitiveDataPersisted": false
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "starward-open-design-project-create-partial-v1",
+  "observed_on": "2026-09-02",
+  "result": "rejected_empty_project_shell",
+  "project_id": "starward-miniapp-field-signal-all-resources",
+  "project_name": "Starward 微信小程序全量交互原型",
+  "expected": {
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "scenario_snapshot": null
+  },
+  "actual": {
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "scenario_plugin_id": "example-web-prototype",
+    "scenario_provenance": "automatic_default",
+    "file_count": 0
+  },
+  "reason": "Open Design 0.21.1 automatically attaches its desktop web-prototype scenario to a prototype project created in design session mode. The commission explicitly rejects an extra rendering template and requires a responsive phone-first canonical entry.",
+  "recovery": "Verify zero files and zero runs, delete only this task-created empty shell, then recreate the same identity in a session mode that does not auto-bind a scenario. Keep the explicit frontend-design skill and exact current design-system binding.",
+  "sensitive_data_persisted": false
+}

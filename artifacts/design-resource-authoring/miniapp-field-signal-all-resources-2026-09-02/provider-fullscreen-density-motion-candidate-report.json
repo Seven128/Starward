@@ -1,0 +1,232 @@
+{
+  "schema": "starward-miniapp-design-resource-candidate-report",
+  "status": "unselected-current-candidate-awaiting-owner-review",
+  "verifiedOn": "2026-09-03",
+  "scope": {
+    "product": "existing WeChat Mini Program",
+    "requirementCycle": "I15 plus I18 plus I19; I19 supersedes conflicts",
+    "surfaceMeaning": "five stable Product Surfaces are the complete resource and consistency-audit envelope, not permission for unrelated redesign",
+    "newUiUxOutsideAuthorizedChanges": "decision-required before mutation",
+    "surfaces": [
+      "miniapp-map-discovery",
+      "miniapp-sky-orientation",
+      "miniapp-my-library",
+      "miniapp-profile-content",
+      "miniapp-contribution-intake"
+    ],
+    "routes": [
+      "pages/map/index",
+      "spot/search",
+      "sky/detail",
+      "pages/my/index",
+      "plan/detail",
+      "settings",
+      "profile/links",
+      "content/import",
+      "content/contribution/index"
+    ],
+    "materialControls": 66,
+    "productLogicChanged": false,
+    "productionCodeChanged": false
+  },
+  "authority": {
+    "target": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+    "componentSource": "docs/design-resources/miniapp-field-signal-fullscreen-density-motion/selected-source/DESIGN.md",
+    "componentSourceSha256": "c3f694450139cbfb88a875cdd0a44d1563eeb04bc546c8e6afc673134b2d3b0e",
+    "canonicalSectionSha256": "f77644d84a8a5fb49153cd135d38d6051fc5a1cbe5839176a3783bf57fa15c08",
+    "providerBodySha256": "91f79eaa9cede62899fea02d8cca6e63da8ebd992e7bd2176a4d25578ccd6d35",
+    "commissionSha256": "009530885780956f4edce40c8e4d11734473ffbe7455a9a13bab4f5e245fe8ac",
+    "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "resolvedDesignSystemDigest": "0da7e4339a69aa0884964e9a4b55bbeadfdb42f56693ab30da7216862772b21d",
+    "historicalSourcesUsedForCurrentGeneration": false,
+    "visibleReleaseLabelPresent": false,
+    "visibleDemoOrFixtureLabelPresent": false
+  },
+  "provider": {
+    "version": "0.21.1",
+    "projectId": "starward-miniapp-field-signal-all-resources",
+    "conversationId": "4f290527-9979-4b24-b92c-8365b470bf9d",
+    "designSystemProjectId": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "styleClosureRun": {
+      "runId": "6cfd3abc-457b-4cf1-a82c-28c737c9177b",
+      "clientRequestId": "08cd2a96-a7b1-4f06-bfe5-0efb2b573735",
+      "result": "closure_passed"
+    },
+    "materialRevisionRun": {
+      "runId": "ffe3fe4f-c3df-46b0-9d70-e6f8ea1ff077",
+      "clientRequestId": "e7bb327e-1a7c-46c5-ab0c-0c98d258881f",
+      "status": "succeeded",
+      "exitCode": 0,
+      "endedWithUnfinishedWork": false,
+      "deliverableValid": true
+    },
+    "boundedRepairRun": {
+      "runId": "bb57e318-d572-4c8e-86b7-52342608b136",
+      "clientRequestId": "dd2bdfd3-150a-46ff-a49e-3be27157e924",
+      "status": "succeeded",
+      "exitCode": 0,
+      "endedWithUnfinishedWork": false,
+      "repairScope": [
+        "prevent Map scene focus scrolling and keep the layer sheet bottom-flush",
+        "refresh live panel-handle name and value after every extent transition",
+        "reflow the My surface at 320 CSS px and 200 percent text"
+      ]
+    },
+    "binding": {
+      "kind": "design-resource",
+      "intent": "design-resource-authoring",
+      "entryFile": "index.html",
+      "pluginSnapshotId": null,
+      "activeRuns": 0
+    }
+  },
+  "candidateFiles": [
+    {
+      "path": "candidate/index.html",
+      "sha256": "c80f1abf5ede17ca58797e7c46c5a3317d4a89678dcab2e0f67c882716201bc1",
+      "bytes": 7226
+    },
+    {
+      "path": "candidate/assets/styles.css",
+      "sha256": "972e1c7ac462f4b742c75864607b99d1446ea68826b1f65a35cc6e7f9cee6463",
+      "bytes": 50446
+    },
+    {
+      "path": "candidate/assets/app.js",
+      "sha256": "370891785e7e2066daa90db1b9238f9bde422853d48af8b4c0b98795dfa438f9",
+      "bytes": 111139
+    },
+    {
+      "path": "candidate/coverage.json",
+      "sha256": "e52b291419fa82d961153614b7f9a93a234e9f5080c22d9f59fd83f2192bc615",
+      "bytes": 13179
+    },
+    {
+      "path": "candidate/README.md",
+      "sha256": "2823b272c2de5952f92d6d53fac77abefef261b715f91e28bec2ec356f3d624d",
+      "bytes": 9827
+    }
+  ],
+  "requirementResults": {
+    "01FullScreenLargePanel": "passed: inset-zero page-equivalent large extent, top media, top-edge pull and left-edge back both return to medium",
+    "02NoVisibleMobileScrollbars": "passed: all scroll owners remain operable with scrollbar-width none and zero WebKit chrome",
+    "03PresenceDrivenMedia": "passed: no-image spots create no media node, placeholder or reserved height",
+    "04CenteredSectionRail": "passed: rail midpoint equals panel midpoint",
+    "05CompactBottomActionRail": "passed: normal visual rail is 44 CSS px with 14 CSS px icons and three 44 CSS px targets",
+    "06NoiseRemoval": "passed: all six named noise phrases and generic operation instructions are absent from visible material code",
+    "07ExistingRulerResearch": "passed: compatible Taro ScrollView behavior reused; curve, taper and snap remain bounded project-owned geometry",
+    "08NoDragBlankGap": "passed: drag presentation continuously reflows content; no stale media or top spacer appears",
+    "09AppWideInformationDensity": "passed: current compact type and spacing roles applied to all five surfaces",
+    "10CausalMotion": "passed: search, sheets, panels, selection, feedback and route transitions have normal and reduced-motion behavior",
+    "11BottomLayerSheet": "passed: fixed 180 CSS px sheet, app-bottom gap zero, selected spot and previous panel extent preserved",
+    "12StationarySearch": "passed: frame delta is zero, autofocus works, outside tap blurs, body reveals downward and fades",
+    "13PureWhiteDay": "passed: day canvas and surface both resolve to #FFFFFF",
+    "14MyAccountHub": "passed: compact existing-duty account hub with no copied Amap duties or invented product capability"
+  },
+  "coverage": {
+    "providerRepositoryAndHttpReviewParity": true,
+    "javascriptSyntax": "passed",
+    "coverageJsonParse": "passed",
+    "surfaces": "5/5",
+    "controls": "66/66",
+    "routes": "9/9",
+    "missingControls": [],
+    "extraControls": [],
+    "retiredControlsPresent": 0,
+    "retiredRoutesPresent": 0,
+    "prohibitedVisibleCopyPresent": 0,
+    "unresolvedItems": 0
+  },
+  "browserEvidence": {
+    "routeSmokeAt320Text200": {
+      "currentRoutes": "9/9",
+      "horizontalPageOverflowFailures": 0,
+      "visibleScrollbarRisks": 0,
+      "phoneRootWidthMismatch": 0
+    },
+    "mapSpotPanel": {
+      "extents": ["hidden", "small", "medium", "large"],
+      "largeAt320Text200PanelTopDeltaPx": 0,
+      "largeAt320Text200RailCenterDeltaPx": 0,
+      "largeAt320Text200SceneScrollTopPx": 0,
+      "noImageSpot": "洪水口村",
+      "noImageMediaNodeCount": 0,
+      "noImageSmallContentGapPx": 18,
+      "noImageLargeContentGapPx": 36,
+      "realPointerDragLargeToMedium": "passed",
+      "leftEdgeBackLargeToMedium": "passed",
+      "liveHandleNames": ["展开至中档信息", "展开至全屏信息", "返回中档信息"],
+      "nonSpotExitDurationMs": 220,
+      "bottomActions": ["想去", "分享", "云观星"]
+    },
+    "layerSheet": {
+      "heightCssPx": 180,
+      "appBottomGapCssPx": 0,
+      "mapSceneScrollTopPx": 0,
+      "previousPanelExtentPreserved": true
+    },
+    "dedicatedSearch": {
+      "route": "spot/search",
+      "mapToSearchFrameDeltaPx": {"x": 0, "y": 0, "width": 0, "height": 0},
+      "focusOnEntry": "passed",
+      "outsideTapBlur": "passed",
+      "searchAt320Text200HorizontalOverflowPx": 0,
+      "unifiedFilterGroup": true,
+      "wholeCardSelection": true,
+      "trailingSelectControlPresent": false
+    },
+    "curvedTimeRuler": {
+      "route": "sky/detail",
+      "tickCount": 13,
+      "centerOpacity": 1,
+      "centerScale": 1,
+      "edgeOpacity": 0.18,
+      "edgeScale": 0.46,
+      "horizontalScrollRangePx": 216,
+      "keyboardStepFrom": "22:00",
+      "keyboardStepTo": "22:30",
+      "visibleScrollbar": false
+    },
+    "myAccountHub": {
+      "dayBackground": "rgb(255, 255, 255)",
+      "pageTitleCssPx": 18,
+      "sectionCssPx": 15,
+      "bodyCssPx": 12.5,
+      "metaCssPx": 10.5,
+      "novelAmapDutyMatches": 0,
+      "noiseCopyMatches": 0,
+      "at320Text200HorizontalOverflowPx": 0,
+      "at320Text200FlowOverlapCount": 0
+    }
+  },
+  "projectChecks": {
+    "openDesignCandidateInspector": "passed with provider, repository and audited-digest parity",
+    "openDesignCurrentSystemReadback": "passed",
+    "candidateJavascriptSyntax": "passed",
+    "inspectorJavascriptSyntax": "passed",
+    "designSystemVerify": "passed",
+    "designLintErrors": 0,
+    "designLintExistingNativeProfileWarnings": 33,
+    "validateContext": "passed",
+    "validateHarness": "passed",
+    "touchedModularityWarnings": 0,
+    "gitDiffCheck": "passed with pre-existing line-ending advisory only"
+  },
+  "review": {
+    "url": "http://127.0.0.1:4173/",
+    "browserVisible": true,
+    "markedDeliverable": true,
+    "selectionStopRequired": true,
+    "userApprovalRecorded": false,
+    "downstreamReferencesRead": false,
+    "downstreamHandoffStarted": false,
+    "productionImplementationStarted": false
+  },
+  "boundaries": [
+    "The current candidate covers the accumulated I15, I18 and I19 requirements; conflicts resolve to I19.",
+    "Reference screenshots informed layout and density only; no Amap brand, map tiles, proprietary icons, data or unrelated capability was copied.",
+    "Visible product fields are required information structure; bounded representative values do not establish live production facts.",
+    "The prototype does not change production logic, APIs, schemas, account behavior, upload behavior, maps or sensor algorithms.",
+    "Browser evidence does not establish physical WeChat device, native map control, real sensor quality, system IME, screen reader or low-performance-device behavior."
+  ]
+}

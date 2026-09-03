@@ -2,7 +2,7 @@ import { Button, Switch, Text, View } from "@tarojs/components";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
-import { errorMessage } from "@/services/api-client";
+import { errorMessage, MiniappApiError } from "@/services/api-client";
 import {
   contributionStatusHistory,
   contributionSubmissionState,
@@ -27,6 +27,7 @@ export function ContributionMediaSection({
     <View
       className="contribution-card contribution-media-card card"
       data-od-id="contribution-media-upload"
+      data-control="contribution-media-upload"
     >
       <View className="contribution-section-heading">
         <View>
@@ -53,25 +54,47 @@ export function ContributionMediaSection({
       </View>
       {media.map((item) => (
         <View
-          className="contribution-media-row"
+          className="contribution-media-row contribution-media-cell"
           data-media-state={item.state.toLowerCase()}
           key={item.uploadId}
         >
+          <View className="contribution-media-cell__thumb" aria-hidden="true">
+            <SemanticIcon name="images" />
+          </View>
           <View className="contribution-media-row__copy">
             <Text className="type-label">{item.originalName}</Text>
             <Text className="type-caption">{mediaStateText(item)}</Text>
+            <View className="contribution-upload-progress" aria-hidden="true">
+              <View
+                className={`contribution-upload-progress__value${item.state === "UPLOADED" || item.state === "ATTACHED" ? " contribution-upload-progress__value--ready" : ""}`}
+              />
+            </View>
           </View>
-          {item.state === "PENDING" || item.state === "EXPIRED" ? (
+          <View className="contribution-media-cell__actions">
+            {item.state === "PENDING" || item.state === "EXPIRED" ? (
+              <SoftButton
+                label={item.state === "EXPIRED" ? "重新上传媒体" : "续传媒体"}
+                disabled={form.uploading}
+                onClick={() => void commands.retryMedia(item.uploadId)}
+              >
+                {item.state === "EXPIRED" ? "重选" : "续传"}
+              </SoftButton>
+            ) : null}
             <SoftButton
-              label={item.state === "EXPIRED" ? "重新上传媒体" : "续传媒体"}
-              disabled={form.uploading}
-              onClick={() => void commands.retryMedia(item.uploadId)}
+              label="移除媒体"
+              disabled
+              onClick={() => undefined}
             >
-              {item.state === "EXPIRED" ? "重新选" : "续传"}
+              移除
             </SoftButton>
-          ) : null}
+          </View>
         </View>
       ))}
+      {media.length ? (
+        <Text className="type-caption">
+          移除按钮保持禁用：当前服务端未提供撤回已建上传记录的接口；不会用本地隐藏伪造删除，失败媒体可续传或重选。
+        </Text>
+      ) : null}
       <SoftButton
         label="选择并上传现场图片"
         disabled={disabled}
@@ -314,7 +337,11 @@ export function ContributionActions({
 }) {
   const disabled = form.saving || form.submitting || form.uploading;
   return (
-    <View className="contribution-actions" data-od-id="contribution-submit">
+    <View
+      className="contribution-actions"
+      data-od-id="contribution-submit"
+      data-control="contribution-submit"
+    >
       <SoftButton
         label="保存现场反馈草稿"
         disabled={disabled}
@@ -335,6 +362,10 @@ export function ContributionActions({
 }
 
 export function ContributionHistory({ form }: { form: ContributionForm }) {
+  const permissionDenied =
+    form.history.isError &&
+    form.history.error instanceof MiniappApiError &&
+    form.history.error.code === "PERMISSION_DENIED";
   const filters = [
     ["ALL", `全部 ${form.submissions.length}`],
     [
@@ -350,6 +381,7 @@ export function ContributionHistory({ form }: { form: ContributionForm }) {
     <View
       className="contribution-history card"
       data-od-id="contribution-status-list"
+      data-control="contribution-status-list"
     >
       <View className="contribution-history__heading">
         <View>
@@ -373,8 +405,12 @@ export function ContributionHistory({ form }: { form: ContributionForm }) {
         <StatusPanel state="LOADING" detail="正在回读草稿和审核状态。" />
       ) : form.history.isError ? (
         <StatusPanel
-          state="ERROR"
-          detail={`暂时无法回读提交状态：${errorMessage(form.history.error)}。本页未提交输入仍保留。`}
+          state={permissionDenied ? "PERMISSION_DENIED" : "ERROR"}
+          detail={`${
+            permissionDenied
+              ? "当前身份没有回读投稿状态的权限"
+              : `暂时无法回读提交状态：${errorMessage(form.history.error)}`
+          }。本页未提交输入仍保留，不会把缺少回读误报为已提交。`}
           recoveryLabel="重试回读"
           onRecover={() => void form.history.refetch()}
         />

@@ -21,7 +21,17 @@ export async function inspectRuntime(mini, binding) {
     return { width: window.windowWidth, height: window.windowHeight, statusBarHeight: window.statusBarHeight, safeArea: window.safeArea, menu };
   });
   const page = await mini.currentPage();
-  const routes = ["pages/map/index", "pages/my/index", "spot/detail/index", "spot/sky/index", "content/settings/index", "content/plan/detail/index"];
+  const routes = [
+    "pages/map/index",
+    "spot/search/index",
+    "sky/detail/index",
+    "pages/my/index",
+    "content/plan/detail/index",
+    "content/settings/index",
+    "content/profile/links/index",
+    "content/import/index",
+    "content/contribution/index",
+  ];
   const route = routes.includes(page?.path) ? page.path : "other_route";
   const elements = {};
   let locationState = "unavailable";

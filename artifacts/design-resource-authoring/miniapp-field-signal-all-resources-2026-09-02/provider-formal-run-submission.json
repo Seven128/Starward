@@ -1,0 +1,24 @@
+{
+  "schema_version": "starward-open-design-formal-run-submission-v1",
+  "submitted_on": "2026-09-02",
+  "result": "submitted_provenance_verified",
+  "project_id": "starward-miniapp-field-signal-all-resources",
+  "run": {
+    "id": "f0a7f04b-8b55-4330-9d72-d69f5b1d6497",
+    "status_at_capture": "running",
+    "client_request_id": "038c4fdf-d863-45a5-bf2d-71d26303a6a4",
+    "agent_id": "codex",
+    "model": "gpt-5.6-sol",
+    "reasoning": "xhigh",
+    "service_tier": null,
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "design_system_digest": "a5966d3d8556897956d9a0128341975b7051c5906de6ca756b8aba0971aa1768",
+    "design_system_selection_source": "request",
+    "plugin_id": null,
+    "applied_plugin_snapshot_id": null,
+    "prompt_sha256": "2ce7b50f57fda22050834f6e2a76223e67ffdba552f73d3bcd3a5a87d45b6591"
+  },
+  "project_plugin_snapshot_id": null,
+  "sensitive_data_persisted": false
+}

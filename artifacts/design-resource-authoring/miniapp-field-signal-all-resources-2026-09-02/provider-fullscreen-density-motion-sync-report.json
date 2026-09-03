@@ -1,0 +1,63 @@
+{
+  "schema": "starward-open-design-current-system-sync",
+  "verifiedOn": "2026-09-03",
+  "result": "verified-current-readback",
+  "providerVersion": "0.21.1",
+  "source": {
+    "target": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+    "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "currentComponentSource": "docs/design-resources/miniapp-field-signal-fullscreen-density-motion/selected-source/DESIGN.md",
+    "currentComponentSourceSha256": "c3f694450139cbfb88a875cdd0a44d1563eeb04bc546c8e6afc673134b2d3b0e",
+    "canonicalSectionSha256": "f77644d84a8a5fb49153cd135d38d6051fc5a1cbe5839176a3783bf57fa15c08",
+    "providerBodySha256": "91f79eaa9cede62899fea02d8cca6e63da8ebd992e7bd2176a4d25578ccd6d35",
+    "providerBodyChars": 47786,
+    "providerBodyBytes": 72060,
+    "commissionSha256": "009530885780956f4edce40c8e4d11734473ffbe7455a9a13bab4f5e245fe8ac"
+  },
+  "designSystem": {
+    "status": "published",
+    "artifactMode": "agent-managed",
+    "canMutate": true,
+    "projectId": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "structuredBodySha256": "91f79eaa9cede62899fea02d8cca6e63da8ebd992e7bd2176a4d25578ccd6d35",
+    "providerRootSha256": "91f79eaa9cede62899fea02d8cca6e63da8ebd992e7bd2176a4d25578ccd6d35",
+    "metadataSha256": "ba1f5296c47ac01d979b94e5060a646fbd4758d92d4a1c11834e1e13429c25e1",
+    "metadataInvariantSha256": "6a1d7f705538e6359371bd2e272e979493a8b98301e610b4286bd584ef3a8c7f",
+    "supportingFileCount": 28,
+    "supportingManifestSha256": "435dc825b57a002d22a138dfaa34262f56887a4af3b0694e4971ff586524106d"
+  },
+  "linkedSystemProject": {
+    "id": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "designRootSha256": "91f79eaa9cede62899fea02d8cca6e63da8ebd992e7bd2176a4d25578ccd6d35",
+    "otherFileCount": 82,
+    "otherManifestSha256": "766c3ac86cbf5de17a38022d758e330f0646fc133596e6a974bbb14be3738d2c"
+  },
+  "taskProject": {
+    "id": "starward-miniapp-field-signal-all-resources",
+    "name": "Starward 微信小程序全量交互原型",
+    "skillId": "frontend-design",
+    "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "kind": "design-resource",
+    "intent": "design-resource-authoring",
+    "entryFile": "index.html",
+    "pluginSnapshotId": null,
+    "commissionSha256": "009530885780956f4edce40c8e4d11734473ffbe7455a9a13bab4f5e245fe8ac",
+    "activeRunCount": 0
+  },
+  "candidateReadback": {
+    "index.html": "c80f1abf5ede17ca58797e7c46c5a3317d4a89678dcab2e0f67c882716201bc1",
+    "assets/styles.css": "972e1c7ac462f4b742c75864607b99d1446ea68826b1f65a35cc6e7f9cee6463",
+    "assets/app.js": "370891785e7e2066daa90db1b9238f9bde422853d48af8b4c0b98795dfa438f9",
+    "coverage.json": "e52b291419fa82d961153614b7f9a93a234e9f5080c22d9f59fd83f2192bc615",
+    "README.md": "2823b272c2de5952f92d6d53fac77abefef261b715f91e28bec2ec356f3d624d"
+  },
+  "invariants": {
+    "registryStructuredAndRootEquivalent": true,
+    "linkedProjectRootEquivalent": true,
+    "taskBindingCurrent": true,
+    "providerAndRepositoryCandidateByteEquivalent": true,
+    "historicalSourcesUsedAsFallback": false,
+    "pluginOrTemplateSnapshotUsed": false,
+    "sensitiveDataPersisted": false
+  }
+}

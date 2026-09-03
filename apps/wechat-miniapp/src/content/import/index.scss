@@ -1,0 +1,198 @@
+.import-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.import-page__scroll {
+  flex: 1;
+  min-height: 0;
+}
+.import-content {
+  padding-top: 20rpx;
+  padding-bottom: 112rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
+}
+.import-source-card,
+.import-draft-card,
+.import-association-card,
+.import-preview-card,
+.import-history-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding: 24rpx;
+  box-shadow: none;
+}
+.import-platform-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10rpx;
+}
+.import-platform-grid .chip {
+  min-height: 72rpx;
+  padding: 10rpx 8rpx;
+  white-space: nowrap;
+}
+.import-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+.import-validation,
+.import-warning {
+  color: var(--danger);
+  line-height: 1.5;
+}
+.import-rights-row {
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+.import-rights-row > view:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.import-capability-note {
+  color: var(--text-secondary);
+}
+.import-stage-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8rpx;
+  padding: 6rpx 2rpx;
+}
+.import-stage {
+  min-height: 72rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+.import-stage__index {
+  width: 34rpx;
+  height: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid var(--border-strong);
+  border-radius: 50%;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+.import-stage--current {
+  color: var(--primary);
+  font-weight: 700;
+}
+.import-stage--current .import-stage__index,
+.import-stage--done .import-stage__index {
+  border-color: var(--primary);
+  background: var(--surface-subtle);
+}
+.import-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+.import-section-heading > view {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5rpx;
+}
+.import-status-pill {
+  flex: 0 0 auto;
+  padding: 6rpx 10rpx;
+  border: 1rpx solid var(--border-strong);
+  border-radius: 999rpx;
+  color: var(--text-secondary);
+  font-size: 20rpx;
+}
+.import-parse-note {
+  padding: 14rpx 16rpx;
+  border-left: 4rpx solid var(--warning);
+  background: var(--surface-subtle);
+}
+.import-body-field {
+  min-height: 240rpx;
+  padding-top: 16rpx;
+  line-height: 1.6;
+}
+.import-visibility-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8rpx;
+}
+.import-visibility-actions .chip {
+  min-width: 96rpx;
+}
+.import-association-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+.import-association-option {
+  width: 100%;
+  min-height: 92rpx;
+  padding: 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 18rpx;
+  background: var(--surface);
+  color: var(--text-primary);
+  text-align: left;
+}
+.import-association-option--selected {
+  border-color: var(--primary);
+  background: var(--surface-subtle);
+}
+.import-preview-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  padding: 16rpx;
+  border-radius: 16rpx;
+  background: var(--surface-subtle);
+}
+.import-history-row {
+  width: 100%;
+  min-height: 86rpx;
+  padding: 14rpx 16rpx;
+  display: flex;
+  align-items: flex-start;
+  border: 1rpx solid var(--border);
+  border-radius: 16rpx;
+  background: var(--surface);
+  color: var(--text-primary);
+  text-align: left;
+}
+.import-history-row--selected {
+  border-color: var(--primary);
+  background: var(--surface-subtle);
+}
+@media (max-width: 340px) {
+  .import-platform-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .import-stage-strip {
+    gap: 2rpx;
+  }
+  .import-stage .type-caption {
+    font-size: 20rpx;
+  }
+  .import-rights-row {
+    align-items: flex-start;
+  }
+}

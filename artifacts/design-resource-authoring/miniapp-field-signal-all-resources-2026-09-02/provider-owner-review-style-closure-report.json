@@ -1,0 +1,53 @@
+{
+  "schema_version": "starward-open-design-owner-review-style-closure-v1",
+  "verified_on": "2026-09-02",
+  "result": "closure_passed",
+  "scope": {
+    "revision_diff": "owner 11 audit points and direct dependencies",
+    "six_surface_meaning": "complete candidate coverage and global current-design-system consistency; not six-screen redesign authority",
+    "new_uiux_outside_audit_scope": "decision-required"
+  },
+  "source": {
+    "canonical_section_sha256": "81d865516305874121119356eb0b0112c9b4fa893d0110bd8d99d85d3a341583",
+    "provider_body_sha256": "c06f403fe2bda35e7d804b94cd1ea7627aafd298eda54b1928c88b917a82802f",
+    "provider_body_live_structured_linked_equivalent": true,
+    "commission_sha256": "1c442b848b6b6507b1c3238f0d51c951c03666a12e2f63621de10eeff9b17c39"
+  },
+  "provider": {
+    "project_id": "starward-miniapp-field-signal-all-resources",
+    "conversation_id": "4f290527-9979-4b24-b92c-8365b470bf9d",
+    "corrective_run_id": "4c794f4f-3cfc-4abc-bc17-8bd5dcc291df",
+    "corrective_client_request_id": "52c051f5-880b-413a-a6b1-4940bf934b77",
+    "status": "succeeded",
+    "exit_code": 0,
+    "ended_with_unfinished_work": false,
+    "agent": "codex",
+    "model": "gpt-5.6-sol",
+    "reasoning": "xhigh",
+    "skill": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "resolved_design_system_digest": "c46307fa5aeab347fa0bbb10012008d57a5f71ce518df88bde27422bec012564",
+    "plugin_id": null,
+    "applied_plugin_snapshot_id": null
+  },
+  "style_application": {
+    "primary_content_priority": "existing-covered",
+    "density": "existing-covered",
+    "container_treatment": "existing-covered",
+    "visible_vs_hit_geometry": "existing-covered",
+    "preserve": "existing-covered",
+    "prohibited_patterns": "existing-covered",
+    "information_architecture": "existing-covered",
+    "feedback_motion": "existing-covered",
+    "content_data_boundary": "existing-covered",
+    "responsive_accessibility": "existing-covered",
+    "projected_fields_required": false,
+    "decision_required": false
+  },
+  "read_only_proof": {
+    "candidate_file_count": 5,
+    "all_candidate_files_unchanged_after_both_closure_runs": true,
+    "decision_required_file_created": false
+  },
+  "note": "The first read-only closure used an overbroad root-document slice and produced a false digest conflict. The corrective run used the repository-owned markdownSection boundary and supersedes that diagnostic result."
+}

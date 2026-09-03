@@ -72,7 +72,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
         operatorPreviewToken(),
       ),
       __DELIVERY_TARGET__: JSON.stringify(
-        "target.system.wechat-miniapp-soft-instruments-2026-08-05",
+        "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
       ),
       __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: JSON.stringify(
         process.env.MINIAPP_ACCEPTANCE_DIAGNOSTICS === "1",

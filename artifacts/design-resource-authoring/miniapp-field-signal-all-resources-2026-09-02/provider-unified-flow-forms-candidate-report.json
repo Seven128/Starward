@@ -1,0 +1,151 @@
+{
+  "schema": "starward-open-design-candidate-inspection",
+  "providerVersion": "0.21.1",
+  "files": {
+    "index.html": {
+      "bytes": 7226,
+      "sha256": "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
+      "repositoryParity": true,
+      "auditedDigestMatch": true
+    },
+    "assets/styles.css": {
+      "bytes": 54288,
+      "sha256": "216e82a5b94d9df27ed2cfbd478b9e3ca2a52845b5c314326071ec11acea3208",
+      "repositoryParity": true,
+      "auditedDigestMatch": true
+    },
+    "assets/app.js": {
+      "bytes": 135937,
+      "sha256": "d4f8b0848a99ea26c60ae70e5eddd1557eeb3fc6b710174879fde698d76f3e44",
+      "repositoryParity": true,
+      "auditedDigestMatch": true
+    },
+    "coverage.json": {
+      "bytes": 23962,
+      "sha256": "8e30a6e905c9b5af2ef506dc03edb76717e867ef766ad7ddcf03c1adf5c7b9f5",
+      "repositoryParity": true,
+      "auditedDigestMatch": true
+    },
+    "README.md": {
+      "bytes": 10995,
+      "sha256": "de8d30d0e024da794b55c5bffd54d64280f62791f5a9efcae6dd2cf66d4e5fd5",
+      "repositoryParity": true,
+      "auditedDigestMatch": true
+    }
+  },
+  "controls": {
+    "expectedCount": 62,
+    "observedDataControlCount": 62,
+    "missing": [],
+    "extra": []
+  },
+  "retiredControlOccurrences": {
+    "map-finder-advanced-filters": 0,
+    "map-finder-query-overlay": 0,
+    "map-finder-quick-filters": 0,
+    "map-finder-result-list": 0,
+    "map-finder-search-field": 0,
+    "map-finder-sheet-handle": 0,
+    "map-marker-card-coordinator": 0,
+    "map-selected-spot-callout": 0,
+    "map-spot-finder-sheet": 0,
+    "map-spot-finder-trigger": 0,
+    "sky-orientation-entry": 0,
+    "spot-header-actions": 0,
+    "spot-night-entry": 0,
+    "spot-segment-tabs": 0,
+    "source-lift-focus-layer": 0,
+    "map-analysis-time-bar": 0,
+    "spot-tonight-decision": 0,
+    "observation-mode-control": 0
+  },
+  "retiredRouteOccurrences": {
+    "spot/detail": 0,
+    "spot/sky": 0,
+    "sky/professional": 0,
+    "sky/targets": 0
+  },
+  "prohibitedVisibleCopy": {
+    "demoData": 0,
+    "releaseVersionChinese": 0,
+    "releaseVersionEnglish": 0,
+    "noise": {
+      "操作说明": 0,
+      "方向跟随中": 0,
+      "部分数据": 0,
+      "同一地图": 0,
+      "一个分析图层": 0,
+      "本地时间": 0,
+      "谨慎出发": 0,
+      "推荐窗口": 0,
+      "关闭图层": 0,
+      "筛选条件": 0
+    }
+  },
+  "coverage": {
+    "parseError": null,
+    "topLevelKeys": [
+      "schema",
+      "canonicalEntry",
+      "designSystemId",
+      "stableTarget",
+      "candidateBoundary",
+      "sourceVerification",
+      "effectiveRun",
+      "inventorySummary",
+      "globalAuditConditions",
+      "productionReuseMapping",
+      "implementationVerification",
+      "routeTopology",
+      "coverageProfiles",
+      "controlDispositions",
+      "retiredControlDispositions",
+      "surfaceDispositions",
+      "media",
+      "representativeData",
+      "mechanicalChecks",
+      "diagnostics",
+      "unresolvedItems"
+    ],
+    "declaredSurfaceCount": 5,
+    "declaredControlCount": 62,
+    "missingControls": [],
+    "extraControls": [],
+    "unresolvedItems": 0
+  },
+  "markers": {
+    "dedicatedSearch": true,
+    "stationarySearchFrame": true,
+    "outsideSearchBlur": true,
+    "searchBackWithoutClear": true,
+    "searchBackHitTarget": true,
+    "titlelessFilters": true,
+    "retainedDisclosureTree": true,
+    "resultMedia52PercentField": true,
+    "curvedRuler": true,
+    "hiddenScrollbars": true,
+    "pureWhiteDay": true,
+    "navSafeLargePanel": true,
+    "handleOnlyPanelDrag": true,
+    "centeredSectionRail": true,
+    "compactActionRail": true,
+    "uniformActionIcons": true,
+    "bottomLayerSheet": true,
+    "imageBackedLayerChoices": true,
+    "conditionalMedia": true,
+    "causalPanelExit": true,
+    "panelExtents": true,
+    "cloudToSkyDetail": true,
+    "headerlessFullSky": true,
+    "oneRetainedPanelDocument": true,
+    "mediaFirstThenChrome": true,
+    "compactHandleGeometry": true,
+    "paleActiveSurface": true,
+    "arrowlessRuler": true,
+    "threeStateDisplayTrack": true,
+    "contributionSingleDocument": true,
+    "reuseFirstMapping": true,
+    "semanticIconRetained": true
+  },
+  "sensitiveDataPersisted": false
+}

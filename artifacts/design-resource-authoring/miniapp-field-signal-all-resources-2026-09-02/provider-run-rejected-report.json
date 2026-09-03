@@ -1,0 +1,20 @@
+{
+  "schema_version": "starward-open-design-run-rejected-v1",
+  "observed_on": "2026-09-02",
+  "result": "canceled_before_generation",
+  "project_id": "starward-miniapp-field-signal-all-resources",
+  "run_id": "780f0c02-a1f6-4261-a399-9984e3ec0520",
+  "client_request_id": "4200bf83-576a-4486-9990-f9d250d5cf7b",
+  "agent_id": "codex",
+  "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+  "unexpected_plugin_id": "example-web-prototype",
+  "unexpected_plugin_provenance": "automatic_default",
+  "final_status": "canceled",
+  "generated_file_count": 0,
+  "remaining_project_files": [
+    "COMMISSION.md"
+  ],
+  "reason": "Open Design 0.21.1 resolves its default prototype scenario again at run creation and pins it to the project. That unselected desktop template must not participate in the all-resources phone-first candidate.",
+  "recovery": "Persist this diagnostic, remove only the task-owned project after verifying its sole run is canceled and its sole file is reproducible COMMISSION.md, recreate with a provider kind that has no default scenario mapping, then submit a fresh corrected run with a new idempotency key.",
+  "sensitive_data_persisted": false
+}

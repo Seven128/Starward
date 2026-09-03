@@ -53,6 +53,43 @@ export default function SettingsPage() {
     status: preferenceSyncStatus,
   } = usePreferencesSync();
 
+  const selectDisplayMode = (next: DisplayMode) => {
+    if (next === "OBSERVATION") {
+      if (mode !== "OBSERVATION") enterObservation();
+      notify({
+        owner: "settings",
+        placement: "inline",
+        tone: "warning",
+        title: "观测红模式已开启",
+        body: "界面保持纯黑与暖红；媒体默认不自动点亮，退出会恢复此前显示模式。",
+        dismissible: true,
+        dedupeKey: "settings-observation-mode",
+      });
+      return;
+    }
+    setMode(next);
+    updatePreference("displayMode", next);
+    const currentState = useAppStore.getState();
+    for (const notification of currentState.notifications) {
+      if (
+        notification.owner === "settings" &&
+        notification.dedupeKey === "settings-observation-mode"
+      )
+        currentState.dismissNotification(notification.id);
+    }
+    notify({
+      owner: "settings",
+      placement: "floating",
+      tone: "success",
+      title: `已切换为${DISPLAY_MODE_LABEL[next]}`,
+      body: "当前路由、选中地点、筛选草稿和焦点上下文保持不变。",
+      dismissible: true,
+      dedupeKey: "settings-display-mode",
+    });
+  };
+
+  // Kept as page-local aliases for older callback probes; the rendered
+  // control exposes only the single three-state selector above.
   const chooseDisplayMode = (next: Exclude<DisplayMode, "OBSERVATION">) => {
     updatePreference("displayMode", next);
     setMode(next);
@@ -74,7 +111,6 @@ export default function SettingsPage() {
       dedupeKey: "settings-display-mode",
     });
   };
-
   const toggleObservation = () => {
     if (mode === "OBSERVATION") {
       exitObservation();
@@ -235,8 +271,7 @@ export default function SettingsPage() {
             preferences={preferences}
             mode={mode}
             updatePreference={updatePreference}
-            chooseDisplayMode={chooseDisplayMode}
-            toggleObservation={toggleObservation}
+            selectDisplayMode={selectDisplayMode}
           />
 
           <SettingsAccountActions

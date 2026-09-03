@@ -1,0 +1,128 @@
+{
+  "schema": "starward-open-design-current-system-sync",
+  "mode": "apply",
+  "providerVersion": "0.21.1",
+  "result": "verified",
+  "expected": {
+    "canonicalSectionSha256": "086088d3f54d4bcede978fa0d4c09002bd8660dab0294536106b8e8459f706fa",
+    "providerBodySha256": "53eaac22d20d7b2a3b2bd501c1199558f9601d1afc5ed611d4e5ef7518c8a99d",
+    "providerBodyChars": 57631,
+    "providerBodyBytes": 85870,
+    "commissionSha256": "79266ec6a6f98bfb60c1197226a196e70748cc1391674735ccb20f835a48f4d8"
+  },
+  "before": {
+    "designSystem": {
+      "status": "published",
+      "canMutate": true,
+      "projectId": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+      "bodySha256": "5af9c8b73a1fbf8f2d2a45ff903a14c4d19d8828e5df62799ab78f16a96a0715",
+      "metadataSha256": "69be1d87ce54edfd3f8fbcfd2309d3fd0c71eaf5e64bfcc9701c2616e85b30f9",
+      "metadataInvariantSha256": "6a1d7f705538e6359371bd2e272e979493a8b98301e610b4286bd584ef3a8c7f",
+      "artifactMode": "agent-managed",
+      "providerRootSha256": "5af9c8b73a1fbf8f2d2a45ff903a14c4d19d8828e5df62799ab78f16a96a0715",
+      "supporting": {
+        "count": 28,
+        "sha256": "435dc825b57a002d22a138dfaa34262f56887a4af3b0694e4971ff586524106d"
+      }
+    },
+    "linkedProject": {
+      "rootSha256": "5af9c8b73a1fbf8f2d2a45ff903a14c4d19d8828e5df62799ab78f16a96a0715",
+      "other": {
+        "count": 82,
+        "sha256": "766c3ac86cbf5de17a38022d758e330f0646fc133596e6a974bbb14be3738d2c"
+      }
+    },
+    "taskProject": {
+      "id": "starward-miniapp-field-signal-all-resources",
+      "name": "Starward 微信小程序全量交互原型",
+      "skillId": "frontend-design",
+      "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+      "kind": "design-resource",
+      "intent": "design-resource-authoring",
+      "entryFile": "index.html",
+      "pluginSnapshotId": null,
+      "commissionSha256": "83c0313dd0cfd69cee90a80bfa233e0db493efea6e1d149a59ebbc1638f00bfe",
+      "candidate": {
+        "index.html": {
+          "bytes": 7226,
+          "sha256": "0346c7f738cf853dd776654257b0d8fe5f736f1423fa9bdf42ebaaddc950871b"
+        },
+        "assets/styles.css": {
+          "bytes": 48014,
+          "sha256": "1f1262b036220c6b33e178e1f4d49043a7cdf3244c1f45ddc44d33abd0e52002"
+        },
+        "assets/app.js": {
+          "bytes": 119299,
+          "sha256": "afa995905e0bc94b2e54e89c50ba8ddf5e6d494fa9c77a7112d2ccf0f610ee03"
+        },
+        "coverage.json": {
+          "bytes": 21501,
+          "sha256": "2670fb10c00ababb4a6a69c2abede37d48b8e36ffadf4d59e7606d3efc5616a7"
+        },
+        "README.md": {
+          "bytes": 11299,
+          "sha256": "3a9c3c7c2d712fde35d0c852ee93f08682c4cddbf5f104174b78ca115377b603"
+        }
+      },
+      "activeRunCount": 0
+    }
+  },
+  "after": {
+    "designSystem": {
+      "status": "published",
+      "canMutate": true,
+      "projectId": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+      "bodySha256": "53eaac22d20d7b2a3b2bd501c1199558f9601d1afc5ed611d4e5ef7518c8a99d",
+      "metadataSha256": "e8eeb133c55cc4cfff5b08fb85e57873c2092b4c5ea4cb43dc99116ad1a946bf",
+      "metadataInvariantSha256": "6a1d7f705538e6359371bd2e272e979493a8b98301e610b4286bd584ef3a8c7f",
+      "artifactMode": "agent-managed",
+      "providerRootSha256": "53eaac22d20d7b2a3b2bd501c1199558f9601d1afc5ed611d4e5ef7518c8a99d",
+      "supporting": {
+        "count": 28,
+        "sha256": "435dc825b57a002d22a138dfaa34262f56887a4af3b0694e4971ff586524106d"
+      }
+    },
+    "linkedProject": {
+      "rootSha256": "53eaac22d20d7b2a3b2bd501c1199558f9601d1afc5ed611d4e5ef7518c8a99d",
+      "other": {
+        "count": 82,
+        "sha256": "766c3ac86cbf5de17a38022d758e330f0646fc133596e6a974bbb14be3738d2c"
+      }
+    },
+    "taskProject": {
+      "id": "starward-miniapp-field-signal-all-resources",
+      "name": "Starward 微信小程序全量交互原型",
+      "skillId": "frontend-design",
+      "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+      "kind": "design-resource",
+      "intent": "design-resource-authoring",
+      "entryFile": "index.html",
+      "pluginSnapshotId": null,
+      "commissionSha256": "79266ec6a6f98bfb60c1197226a196e70748cc1391674735ccb20f835a48f4d8",
+      "candidate": {
+        "index.html": {
+          "bytes": 7226,
+          "sha256": "0346c7f738cf853dd776654257b0d8fe5f736f1423fa9bdf42ebaaddc950871b"
+        },
+        "assets/styles.css": {
+          "bytes": 48014,
+          "sha256": "1f1262b036220c6b33e178e1f4d49043a7cdf3244c1f45ddc44d33abd0e52002"
+        },
+        "assets/app.js": {
+          "bytes": 119299,
+          "sha256": "afa995905e0bc94b2e54e89c50ba8ddf5e6d494fa9c77a7112d2ccf0f610ee03"
+        },
+        "coverage.json": {
+          "bytes": 21501,
+          "sha256": "2670fb10c00ababb4a6a69c2abede37d48b8e36ffadf4d59e7606d3efc5616a7"
+        },
+        "README.md": {
+          "bytes": 11299,
+          "sha256": "3a9c3c7c2d712fde35d0c852ee93f08682c4cddbf5f104174b78ca115377b603"
+        }
+      },
+      "activeRunCount": 0
+    }
+  },
+  "sensitiveDataPersisted": false
+}

@@ -21,6 +21,117 @@ const text = async (...segments) =>
 const json = async (...segments) => JSON.parse(await text(...segments));
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
+test("NightChina import corpus is balanced, traceable, rights-safe, and reaches a real formal-spot panel journey", async () => {
+  const fixture = await json(
+    "tools",
+    "miniapp",
+    "fixtures",
+    "nightchina-import-cases.json",
+  );
+  const catalog = await text(
+    "packages",
+    "miniapp-contracts",
+    "src",
+    "catalog.ts",
+  );
+  const [runner, importPage, mapPage] = await Promise.all([
+    text("tools", "miniapp", "run-wechat-devtools-session.mjs"),
+    text(
+      "apps",
+      "wechat-miniapp",
+      "src",
+      "content",
+      "import",
+      "index.tsx",
+    ),
+    text("apps", "wechat-miniapp", "src", "pages", "map", "index.tsx"),
+  ]);
+  assert.equal(fixture.schemaVersion, "starward-nightchina-import-cases-v1");
+  assert.equal(fixture.cases.length, 10);
+  assert.equal(
+    fixture.cases.filter((item) => item.regionBucket === "guangdong").length,
+    5,
+  );
+  assert.equal(
+    fixture.cases.filter((item) => item.regionBucket === "outside_guangdong")
+      .length,
+    5,
+  );
+  assert.equal(new Set(fixture.cases.map((item) => item.key)).size, 10);
+  for (const item of fixture.cases) {
+    const source = new URL(item.sourceUrl);
+    assert.equal(source.protocol, "https:");
+    assert.equal(source.hostname, "nightchina.net");
+    assert.match(item.reportedLocation, /省|自治区/u);
+    assert.match(item.reportedCaptureDate, /^\d{4}-\d{2}-\d{2}$/u);
+    assert.ok(item.importText.length >= 30);
+    assert.equal(
+      item.rightsDisposition,
+      "unconfirmed_source_photo_not_reused",
+    );
+  }
+  assert.match(fixture.copyrightPolicy.sourcePhotos, /not copied/u);
+  assert.match(fixture.copyrightPolicy.testImage, /synthetic/u);
+  assert.match(fixture.copyrightPolicy.publication, /never implies/u);
+
+  const formalCases = fixture.cases.filter(
+    (item) => item.expectedAssociation.kind === "existing_formal_spot",
+  );
+  assert.equal(formalCases.length, 1);
+  assert.equal(formalCases[0].expectedAssociation.confirmation, "manual_required");
+  assert.equal(formalCases[0].expectedAssociation.spotName, "深圳市天文台");
+  assert.ok(formalCases[0].postImportSpotComponentChecks.length >= 8);
+  assert.match(catalog, new RegExp(`id: "${formalCases[0].expectedAssociation.spotId.replace("spot:", "")}"`, "u"));
+  assert.match(
+    catalog,
+    new RegExp(`name: "${formalCases[0].expectedAssociation.spotName}"`, "u"),
+  );
+  assert.ok(
+    fixture.cases
+      .filter((item) => item !== formalCases[0])
+      .every((item) => item.expectedAssociation.kind === "new_place_proposal"),
+  );
+  assert.match(runner, /nightchina-import-cases\.json/u);
+  assert.match(runner, /tsImport/u);
+  assert.match(runner, /nightChinaCatalogSpot/u);
+  assert.match(runner, /identitySource/u);
+  assert.match(runner, /acceptanceSource/u);
+  assert.match(runner, /dataDisclosure: \[identitySource, acceptanceSource\]/u);
+  assert.doesNotMatch(runner, /const spotId = `spot:native-acceptance-/u);
+  assert.match(runner, /orderedNightChinaImportCases\.map/u);
+  assert.match(runner, /nightchina-post-import-formal-spot-panel/u);
+  assert.match(runner, /submit-manual-review-boundary/u);
+  assert.match(runner, /expectedSelectedSpotId/u);
+  assert.match(runner, /textIncludes: nightChinaFormalCase\.expectedAssociation\.spotName/u);
+  assert.match(runner, /key: "search-associated-formal-spot"/u);
+  assert.match(runner, /input: "\.spot-search-field__input"/u);
+  assert.match(runner, /tap: "\.spot-search-suggestion"/u);
+  assert.match(runner, /native_interaction_text_control_missing/u);
+  assert.match(
+    mapPage,
+    /\["dataRevision", spotDetail\.decision\.inputDigest\]/u,
+  );
+  assert.doesNotMatch(runner, /fetch\([^\n]*nightchina\.net/iu);
+  assert.match(importPage, /data-od-id=\{`import-platform-\$\{item\.key\.toLowerCase\(\)\}`\}/u);
+  for (const id of [
+    "import-source-url",
+    "import-rights-confirmation",
+    "import-create-draft",
+    "import-new-draft",
+    "import-title",
+    "import-body",
+    "import-source-note",
+    "import-enter-edit-draft",
+    "import-association-formal",
+    "import-association-proposal",
+    "import-formal-spot-id",
+    "import-save-association",
+    "import-open-preview",
+    "import-submit-review",
+  ])
+    assert.match(importPage, new RegExp(`data-od-id="${id}"`, "u"), id);
+});
+
 test("native runtime policy recognizes only the exact opaque DevTools envelope", () => {
   const known = WECHAT_AUTOMATOR_OPAQUE_ERROR_ENVELOPE_V1;
   const event = {
@@ -230,7 +341,7 @@ test("selected semantic assets retain the complete 8 by 3 source-derived closure
   }
 });
 
-test("the current Sky Canvas Mini Program and Operations handoffs are bound to production probes", async () => {
+test("the current Field Signal Mini Program and Operations handoffs are bound to production probes", async () => {
   const bindings = await json(
     "tools",
     "miniapp",
@@ -245,7 +356,8 @@ test("the current Sky Canvas Mini Program and Operations handoffs are bound to p
     [
       {
         key: "miniapp",
-        target: "target-miniapp-sky-canvas-current-constraint",
+        target:
+          "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
       },
       {
         key: "operations",
@@ -253,7 +365,9 @@ test("the current Sky Canvas Mini Program and Operations handoffs are bound to p
       },
     ],
   );
-  for (const handoff of bindings.handoffs) {
+  for (const handoff of bindings.handoffs.filter(
+    (candidate) => candidate.key === "operations",
+  )) {
     const owner = await text(
       "project_context", "areas", "main", "screen-contracts",
       `${handoff.key === "miniapp" ? "wechat-miniapp" : "operations"}.md`,
@@ -269,6 +383,31 @@ test("the current Sky Canvas Mini Program and Operations handoffs are bound to p
     assert.match(handoff.sha256, /^[a-f0-9]{64}$/u);
     assert.equal(handoff.expected_census.acceptance_blockers, 0);
   }
+  const i21Spec = await json(
+    "tools",
+    "miniapp",
+    "verification-spec-field-signal-i21.json",
+  );
+  const i21Handoff = i21Spec.authority.handoff;
+  const i21Owner = await text(
+    "project_context",
+    "areas",
+    "main",
+    "screen-contracts",
+    "wechat-miniapp.md",
+  );
+  const i21Adoption = i21Owner.split(/\r?\n/u).find(
+    (line) =>
+      line.includes(
+        "`target-miniapp-field-signal-i21-selected-constraint-2026-09-03`",
+      ),
+  );
+  assert.ok(i21Adoption?.includes(`\`${i21Handoff.sha256}\``));
+  assert.equal(
+    sha256(await readFile(at(...i21Handoff.path.split("/")))),
+    i21Handoff.sha256,
+  );
+  assert.equal(i21Spec.design_evidence.fact_refs.length, 72);
   assert.equal(bindings.authorities.length, 4);
   assert.ok(bindings.production_probes.length >= 5);
   for (const probe of bindings.production_probes) {
@@ -296,7 +435,7 @@ test("the current implementation has no proposal-version product profile", async
   for (const currentOwner of [miniappConfig, apiRuntimeConfig, nativeRunner]) {
     assert.doesNotMatch(
       currentOwner,
-      /MINIAPP_(?:PRODUCT_)?VERSION|acceptanceProfile|--profile|complete-demo/iu,
+      /MINIAPP_(?:PRODUCT_)?VERSION|acceptanceProfile|(?:^|\s)--profile(?:\s|=|$)|complete-demo/imu,
     );
   }
   assert.deepEqual(
@@ -393,6 +532,31 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "async function queryElements(page, selector)",
     "const nativeSelectorAliases = new Map([",
     `["[data-od-id='default-formal-markers']", "#spot-map"]`,
+    `["[data-od-id='my-profile-links-entry']", ".routine-entry--profile-links"]`,
+    `["[data-od-id='my-import-entry']", ".routine-entry--import"]`,
+    `["[data-od-id='profile-link-editor']", ".profile-links-editor"]`,
+    `["[data-od-id='display-mode-switcher']", { selector: ".settings-section", index: 0 }]`,
+    `["[data-od-id='import-platform-other']", { selector: ".import-platform-grid .chip", index: 3 }]`,
+    `["[data-od-id='import-source-note']", { selector: ".import-draft-card input", index: 1 }]`,
+    `["[data-od-id='import-submit-review'] .soft-button", ".import-preview-card .soft-button--primary"]`,
+    'fragment: "正式地点创建仍由后续审核/发布流程决定"',
+    'key: "candidate-form-ready"',
+    'key: "field-report-form-ready"',
+    '{ selector: ".contribution-actions .soft-button", minimum: 2 }',
+    'tap: ".contribution-actions .soft-button--primary"',
+    'key: "recovery-history-ready"',
+    'key: "recovery-inline-state-ready"',
+    'preparedRouteParams: ["spotId"]',
+    'const routeRequiresContextId = route.searchParams.has("contextId")',
+    "context?.contextId === memoryContext.contextId",
+    '{ selector: ".contribution-actions .soft-button--disabled", minimum: 1 }',
+    "const finalCounts = await Promise.all(",
+    "missing.map((item)",
+    'typeof nativeSelector === "string"',
+    "elements[nativeSelector.index]",
+    'page.getElementsByXpath("//*[@data-control]")',
+    "includes(odSelector[2])",
+    `selector: "[data-od-id='display-mode-switcher']"`,
     'setRuntimePhase("setup-day-control-tap")',
     "post_control_state_disposition",
     "my_tab_disposition",
@@ -408,32 +572,35 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "before.sha256 === after.sha256",
     "result.build.bundle.files_sha256 === bundleAfter.files_sha256",
     "unexpectedConsoleErrors.length === 0",
-    '"complete-current": [\n    "map-cold-start-location-fallback",\n    "formal-spot-detail",\n    "spot-night",\n    "my-home",',
-    'entryFlow: "map-to-detail"',
-    'entryFlow: "map-to-night"',
+    '"current-candidate": [\n    "map-cold-start-location-fallback",\n    "sky-orientation",\n    "my-home",',
+    'entryFlow: "map-to-sky"',
     'entryFlow: "map-to-my-plan"',
     'entryFlow: "map-to-my-settings"',
     'entryFlow: "map-to-my-contribution"',
-    'entryFlow: "map-to-detail-contribution"',
+    'entryFlow: "map-to-spot-contribution"',
     "selectFormalSpotThroughFinder",
-    "plan-formal-detail-back",
-    '".custom-nav__back-control .soft-button"',
-    '"[data-od-id=\'spot-finder-result-scroll\']"',
-    '".spot-card__result-main"',
-    'await waitForSelector(detailPage, ".night-entry", 1)',
-    'detailPage,\n        ".night-entry"',
+    '"formal-finder-relaunch-after-empty-result"',
+    "for (let attempt = 1; attempt <= 2; attempt += 1)",
+    '".custom-nav__side--right .soft-button"',
+    '"[data-control~=\'spot-search-result-list\']"',
+    '"[data-control~=\'spot-search-result-card\']"',
+    'await waitForSelector(returnedMap, "[data-control~=\'map-spot-information-panel\']", 1)',
     '".routine-entry-list .routine-entry"',
     "await currentPageUrl(",
     "faultJourney.preparedRouteParams",
     "native_prepared_route_parameter_missing",
     "bff_process_unavailable_then_restarted_matrix",
+    'expectedFragment: "天空计算请求失败"',
+    "const recoveryControl = await waitForRecoveryControl(page, probe);\n  await restartApi();\n  await recoveryControl.control.tap();",
+    'control.attribute("aria-label")',
+    "const observedLabel = controlText.trim() || ariaLabel.trim();",
     "miniapp_api_exited_before_ready",
     "captureJourneyViewports",
-    'target: ".media-empty"',
-    'target: ".sky-scene"',
+    'target: "#settings-form"',
+    'selector: "[data-od-id=\'sky-orientation-canvas\']"',
     'release_action: "none"',
     'rootClasses: ["map-page", "theme-day", "location-default-region"]',
-    'rootClasses: ["sky-page", "theme-night"]',
+    'rootClasses: ["sky-orientation-page"]',
     "missingRootClasses",
     "waitForSelectorSet",
     "teardownNativeSession",
@@ -445,6 +612,31 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "wechat_runtime_log_enable_timeout",
     "timeoutMs = 60_000",
     "retryIdempotentAutomatorOperation",
+    "official_automator_relaunch_production_root_after_empty_stack",
+    'miniProgram.reLaunch("/pages/map/index")',
+    'evidence_role: "automation_protocol_bootstrap_only"',
+    '`//*[@data-control=${JSON.stringify(token)}]`',
+    'page.getElementsByXpath("//*[@data-control]")',
+    'element.attribute("data-control")',
+    '["[data-control~=\'map-marker-panel-coordinator\']", ".map-stage"]',
+    '["[data-control~=\'spot-search-result-card\']", ".spot-search-result-card"]',
+    '["[data-control~=\'spot-share-action\']", ".spot-panel__action--share"]',
+    '["[data-control~=\'spot-cloud-stargazing-action\']", ".spot-panel__action--cloud"]',
+    '["[data-od-id=\'notification-feedback\']", ".notification__copy"]',
+    '["[data-od-id=\'sky-orientation-route\']", ".sky-orientation-page"]',
+    '["[data-od-id=\'sky-orientation-canvas\']", ".sky-orientation-canvas"]',
+    '["[data-od-id=\'sky-orientation-sensor\']", ".sky-orientation-sensor"]',
+    '"[data-od-id=\'sky-orientation-time-ruler\']"',
+    '"[data-od-id=\'sky-orientation-object-list-toggle\']"',
+    '".sky-orientation-object-toggle button"',
+    '"[data-od-id=\'sky-orientation-object-list\']"',
+    '".sky-orientation-object-list"',
+    '"[data-od-id=\'sky-orientation-back\'] .sky-orientation-back"',
+    "waitForFormalContextSpotId",
+    "native_interaction_formal_context_mismatch",
+    'key: "spot-panel-astronomy-section"',
+    'tap: ".spot-panel__section-tab"',
+    "minimum: 2",
     "isAutomatorResponseTimeout",
     "phase: runtimePhase",
     "offset_ms: Date.now() - runtimeStartedAt",
@@ -477,7 +669,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "waitForRootFragment",
     "waitForRecoveryControl",
     'recoveryLabel: "重试同步"',
-    'recoveryLabel: "重试夜空"',
+    'recoveryLabel: "重试天空"',
     'recoverySelector: ".status-panel__recovery"',
   ])
     assert.ok(runner.includes(required), required);
@@ -497,7 +689,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   assert.doesNotMatch(runner, /JSON\.stringify\(event \?\? null\)/u);
   assert.doesNotMatch(
     runner,
-    /acceptanceProfile|--profile|complete-demo|simplified-sky-map|profile-links|own-post-import|key: "favorites"/u,
+    /acceptanceProfile|(?:^|\s)--profile(?:\s|=|$)|complete-demo|simplified-sky-map|key: "favorites"/mu,
   );
   assert.match(
     ignore,
@@ -541,6 +733,22 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     runner.indexOf("await attachRuntimeObservers(attemptProgram)") <
       runner.indexOf("await waitForInitialPage(attemptProgram, 60_000)"),
     "runtime log activation must precede setup and initial-page observation",
+  );
+  assert.ok(
+    runner.indexOf(
+      'method: "official_automator_relaunch_production_root_after_empty_stack"',
+    ) < runner.indexOf("async function resetThroughAcceptanceControl"),
+    "the documented automator root activation must remain a pre-reset protocol bootstrap",
+  );
+  assert.match(
+    runner,
+    /key: "spot-panel-astronomy-section",\s*screenshot: true,\s*tap: "\.spot-panel__section-tab",\s*index: 1,\s*minimum: 2,/su,
+    "the astronomy interaction must match the two-section production panel",
+  );
+  assert.match(
+    runner,
+    /key: "expand-panel-large",[\s\S]*?selector: "\[data-control~='map-spot-information-panel'\]",\s*kind: "attribute",\s*name: "class",/u,
+    "panel expansion must observe the rendered extent class exposed by automator",
   );
   assert.ok(
     runner.indexOf('runtimePhase = "evidence-reset-before-control"') <
@@ -803,24 +1011,25 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
     mapPage.slice(mapPage.indexOf("const locateMap ="), mapPage.indexOf("const refreshMap =")),
     /await requestOneShotLocation\(Taro\)/u,
   );
-  assert.match(mapPage, /onClick=\{locateMap\}/u);
+  assert.match(
+    mapPage,
+    /data-control="map-location-control"[\s\S]*?void locateMap\(\)/u,
+  );
   const locationAdapter = await text("apps", "wechat-miniapp", "src", "services", "one-shot-location.ts");
   assert.equal([...locationAdapter.matchAll(/platform\.getLocation\(/gu)].length, 1);
-  assert.match(mapPage, /仅在你点击定位时请求一次位置权限/u);
   assert.match(
     mapPage,
-    /" map-page location-"\s*\+\s*locationState\.toLowerCase\(\)/u,
-  );
-  assert.match(mapPage, /className="map-refresh-control"/u);
-  assert.match(
-    mapPage,
-    /onClick=\{locateMap\}[\s\S]*?>\s*\{""\}\s*<\/SoftButton>\s*<SemanticIcon\s+name="location"\s+className="map-floating-tool__icon"/u,
-    "the map location glyph must remain outside SoftButton compileMode",
+    /" map-page location-"\s*\+\s*locationState\.toLowerCase\(\)\.replace\("_", "-"\)/u,
   );
   assert.match(
     mapPage,
-    /className="map-refresh-control"[\s\S]*?>\s*\{""\}\s*<\/SoftButton>\s*<SemanticIcon\s+name="refresh"\s+className="map-floating-tool__icon"/u,
-    "the map refresh glyph must remain outside SoftButton compileMode",
+    /className="map-tool map-tool--location focus-ring"[\s\S]*?<SemanticIcon name="location" \/>/u,
+    "the explicit one-shot location control must retain its semantic glyph",
+  );
+  assert.match(
+    mapPage,
+    /aria-label="刷新当前区域"[\s\S]*?<SemanticIcon name="refresh" \/>/u,
+    "the refresh action must remain explicit and semantically labelled",
   );
   assert.deepEqual(seed.committedFilters, {
     TONIGHT_RECOMMENDED: [],
@@ -907,8 +1116,8 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(nativeMetrics, /getWindowInfo\(\)\.statusBarHeight/u);
   assert.match(nativeMetrics, /Number\.isFinite\(height\)/u);
   assert.match(navigation, /nativeStatusBarHeightPx\(\)/u);
-  assert.match(sky, /nativeStatusBarHeightPx\(\)/u);
-  assert.match(sky, /data-od-id="spot-night-header"/u);
+  assert.match(sky, /className="sky-orientation-back-layer safe-top"/u);
+  assert.match(sky, /data-od-id="sky-orientation-back"/u);
   assert.match(sourceLift, /nativeNavigationInsets\(\)/u);
   assert.match(nativeMetrics, /getMenuButtonBoundingClientRect\(\)/u);
   assert.match(sourceLift, /--source-lift-status-bar-height/u);
@@ -916,18 +1125,34 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(sourceLiftStyles, /env\(safe-area-inset-top\)/u);
   const map = await text("apps", "wechat-miniapp", "src", "pages", "map", "index.tsx");
   const mapStyles = await text("apps", "wechat-miniapp", "src", "pages", "map", "index.scss");
-  const mapChrome = await text("apps", "wechat-miniapp", "src", "pages", "map", "use-map-chrome.ts");
-  assert.match(map, /style=\{mapChromeStyle\}/u);
-  assert.match(mapChrome, /nativeNavigationInsets\(\)/u);
-  assert.match(mapChrome, /useResize\(/u);
-  assert.match(mapChrome, /if \(!current\) return/u);
-  for (const selector of ["map-finder-anchor", "map-conditions-anchor"])
-    assert.ok(mapChrome.includes(`select(".${selector}").boundingClientRect()`));
-  assert.match(mapStyles, /top: var\(--map-finder-top, calc\(env\(safe-area-inset-top\) \+ 112rpx\)\)/u);
-  assert.match(mapStyles, /\.map-finder-quick-filters\s*\{[^}]*flex-wrap: wrap/su);
-  assert.match(mapStyles, /\.map-floating-tools\s*\{[^}]*top: var\(--map-chrome-bottom,/su);
-  assert.match(mapStyles, /\.map-floating-tool__icon\s*\{[^}]*pointer-events: none;/su);
-  assert.match(mapStyles, /\.map-feedback-column\s*\{[^}]*z-index: 28;[^}]*top: var\(--map-chrome-bottom,/su);
+  assert.match(map, /data-control="map-search-entry"/u);
+  assert.match(map, /data-control="map-location-control"/u);
+  assert.match(map, /data-control="map-analysis-focus-layer"/u);
+  assert.match(
+    mapStyles,
+    /\.map-search-anchor\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 24rpx\);/su,
+  );
+  assert.match(
+    mapStyles,
+    /\.map-top-tools\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 136rpx\);/su,
+  );
+  assert.match(
+    mapStyles,
+    /\.map-analysis-trigger\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 236rpx\);/su,
+  );
+  assert.match(
+    mapStyles,
+    /\.map-feedback-column\s*\{[^}]*z-index: 34;[^}]*top: calc\(env\(safe-area-inset-top\) \+ 320rpx\);/su,
+  );
+  assert.doesNotMatch(
+    mapStyles,
+    /\.map-feedback-column\s*>\s*\*/u,
+    "WeChat's WXSS compiler rejects the child universal selector in this production stylesheet",
+  );
+  assert.match(
+    mapStyles,
+    /\.map-feedback-column \.status-panel,\s*\.map-feedback-column \.notification\s*\{[^}]*pointer-events: auto;/su,
+  );
   assert.match(store, /restoreStartupMode\(state\.mode, state\.priorMode\)/u);
   assert.match(store, /mode: BOOTSTRAP_MODE/u);
 });
@@ -954,12 +1179,18 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   const verificationSpec = await json(
     "tools",
     "miniapp",
-    "verification-spec.json",
+    "verification-spec-field-signal-i21.json",
   );
-  const verifier = await text("tools", "miniapp", "verify-miniapp-target.mjs");
+  const verifier = await text(
+    "tools",
+    "miniapp",
+    "verifier-runtime",
+    "verify-miniapp-target.mjs",
+  );
   const launcher = await text(
     "tools",
     "miniapp",
+    "verifier-runtime",
     "verify-miniapp-target-launcher.c",
   );
   for (const required of [
@@ -980,9 +1211,6 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "writeGlobalConformanceArtifact",
     "emitStaleCarrierResult",
     "delivery_carrier_snapshot_stale",
-    '"const SEEDS: readonly OsmSpotSeed[] = Object.freeze(["',
-    'catalog.includes("SEEDS.map(toSpot)")',
-    "catalogProjectionBound",
   ])
     assert.ok(verifier.includes(required), required);
 
@@ -1034,13 +1262,13 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   for (const requiredPath of [
     "package.json",
     "package-lock.json",
-    "docs/wechat-miniapp-v2-source.md",
+    ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
     "DESIGN.md",
-    "docs/design-resources/miniapp-selected-handoff-2026-08-06/miniapp-complete-product-selected-v1.md",
-    "tools/miniapp/verification-spec.json",
-    "tools/miniapp/verify-miniapp-target.mjs",
-    "tools/miniapp/verify-miniapp-target-launcher.c",
-    "tools/miniapp/verify-miniapp-target.exe",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md",
+    "tools/miniapp/verification-spec-field-signal-i21.json",
+    "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
+    "tools/miniapp/verifier-runtime/verify-miniapp-target-launcher.c",
+    "tools/miniapp/verifier-runtime/verify-miniapp-target.exe",
   ])
     assert.ok(
       verificationSpec.counterfactual_projection.required_exact_paths.includes(
@@ -1050,7 +1278,9 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     );
   assert.deepEqual(
     verificationSpec.counterfactual_projection.required_tree_roots,
-    ["docs/design-resources/miniapp-selected-source-2026-08-06-v1"],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source",
+    ],
   );
   const verifyBody = verifier.slice(verifier.indexOf("async function verify"));
   assert.ok(
@@ -1067,7 +1297,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   );
   assert.equal(
     rootPackage.scripts["prepare:miniapp:final-candidate"],
-    ".\\tools\\miniapp\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-v2-1-1.json",
+    ".\\tools\\miniapp\\verifier-runtime\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-field-signal-i21.json",
   );
   assert.match(verifier, /if \(!failureObserved\) return null;/u);
   assert.match(verifier, /if \(record\) records\.push\(record\);/u);

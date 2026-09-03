@@ -38,7 +38,7 @@
     "check:miniapp:harness-compatibility": "node tools/miniapp/apply-ty-context-harness-compatibility.mjs --check",
     "test:miniapp:infrastructure": "node tools/miniapp/run-infrastructure-check.mjs",
     "test:miniapp:native": "node tools/miniapp/run-wechat-devtools-session.mjs",
-    "prepare:miniapp:final-candidate": ".\\tools\\miniapp\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-v2-1-1.json",
+    "prepare:miniapp:final-candidate": ".\\tools\\miniapp\\verifier-runtime\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-field-signal-i21.json",
     "miniapp:infra:up": "docker compose -f infra/miniapp/docker-compose.yml up -d --wait",
     "miniapp:infra:down": "docker compose -f infra/miniapp/docker-compose.yml down",
     "miniapp:backup": "node tools/miniapp/backup-restore.mjs backup",

@@ -1,0 +1,23 @@
+{
+  "schema_version": "starward-open-design-run-premature-cancel-v1",
+  "observed_on": "2026-09-02",
+  "result": "canceled_by_overeager_local_check",
+  "project_id": "starward-miniapp-field-signal-all-resources",
+  "run_id": "7db3fcab-fa3e-4927-a909-92d43c06b1f5",
+  "client_request_id": "0371f233-0875-4563-b67d-c49e55471d3f",
+  "final_provenance": {
+    "agent_id": "codex",
+    "model": "gpt-5.6-sol",
+    "reasoning": "xhigh",
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "design_system_digest": "a5966d3d8556897956d9a0128341975b7051c5906de6ca756b8aba0971aa1768",
+    "plugin_id": null,
+    "applied_plugin_snapshot_id": null
+  },
+  "generated_file_count": 0,
+  "project_plugin_snapshot_id": null,
+  "cause": "The local verifier treated the first materialized state.json as final even though Open Design populates model, reasoning, skill and design-system provenance asynchronously during startup. The safety branch canceled before those fields stabilized.",
+  "corrective_rule": "For the next logical run, wait until the provenance fields are all non-empty or the run reaches a terminal state; only then compare exact values. Do not use state-file existence as readiness.",
+  "sensitive_data_persisted": false
+}

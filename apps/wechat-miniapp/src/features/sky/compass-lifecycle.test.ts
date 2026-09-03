@@ -3,7 +3,12 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
-import { createCompassLifecycle, type CompassEvent } from "./compass-lifecycle";
+import {
+  createCompassLifecycle,
+  type CompassEvent,
+  type CompassPort,
+  type DeviceMotionEvent,
+} from "./compass-lifecycle";
 
 function deferred() {
   let resolve!: () => void;
@@ -54,9 +59,13 @@ function harness() {
   });
   const callbacks = vm.runInNewContext(callbackCode, {
     compassLifecycle: lifecycle, view: "DETAIL", Error, useCallback: (fn: unknown) => fn,
-    lastCompassHeadingRef: { current: null }, compassStaleTimerRef: { current: null },
+    lastCompassHeadingRef: { current: null }, compassHeadingRef: { current: null },
+    compassQualityRef: { current: null }, devicePoseRef: { current: null },
+    motionOffsetRef: { current: null }, compassStaleTimerRef: { current: null },
+    motionStaleTimerRef: { current: null },
     setCompassState: (value: string) => { state.status = value; },
     setCompassHeading: (value: number | null) => { state.heading = value; },
+    setDevicePose: () => undefined,
     setCompassReason: (value: string) => { state.reason = value; },
     setTimeout: (callback: () => void) => { timers.add(callback); return callback; },
     clearTimeout: (callback: () => void) => timers.delete(callback),
@@ -203,4 +212,72 @@ test("a replacement page shares native serialization and ignores the old page's 
   assert.equal(newEvents, 1);
   assert.equal(await newPage.stop(), true);
   assert.equal(running, false);
+});
+
+test("required orientation lifecycle owns compass and device-motion streams together", async () => {
+  const compassListeners = new Set<(event: CompassEvent) => void>();
+  const motionListeners = new Set<(event: DeviceMotionEvent) => void>();
+  let motionStartOptions: { interval?: string } | undefined;
+  let compassStarts = 0;
+  let motionStarts = 0;
+  let compassStops = 0;
+  let motionStops = 0;
+  const port: CompassPort = {
+    onCompassChange(listener) { compassListeners.add(listener); },
+    offCompassChange(listener) { compassListeners.delete(listener); },
+    startCompass() { compassStarts++; return Promise.resolve(); },
+    stopCompass() { compassStops++; return Promise.resolve(); },
+    onDeviceMotionChange(listener) { motionListeners.add(listener); },
+    offDeviceMotionChange(listener) { motionListeners.delete(listener); },
+    startDeviceMotionListening(options) {
+      motionStarts++;
+      motionStartOptions = options;
+      options.success?.();
+    },
+    stopDeviceMotionListening() { motionStops++; },
+  };
+  const lifecycle = createCompassLifecycle(port, { requireDeviceMotion: true });
+  let compassEvents = 0;
+  let motionEvents = 0;
+  await lifecycle.start(
+    () => { compassEvents++; },
+    error => { throw error; },
+    () => { motionEvents++; },
+  );
+
+  assert.equal(compassStarts, 1);
+  assert.equal(motionStarts, 1);
+  assert.equal(motionStartOptions?.interval, "ui");
+  assert.equal(compassListeners.size, 1);
+  assert.equal(motionListeners.size, 1);
+  [...compassListeners][0]!({ direction: 12, accuracy: 1 });
+  [...motionListeners][0]!({ alpha: 0.2, beta: 0.1, gamma: 0.05 });
+  assert.equal(compassEvents, 1);
+  assert.equal(motionEvents, 1);
+
+  assert.equal(await lifecycle.stop(), true);
+  assert.equal(compassStops, 1);
+  assert.equal(motionStops, 1);
+  assert.equal(compassListeners.size, 0);
+  assert.equal(motionListeners.size, 0);
+});
+
+test("required orientation lifecycle fails closed when device motion is unavailable", async () => {
+  let compassStarts = 0;
+  let failure: unknown;
+  const port: CompassPort = {
+    onCompassChange() {},
+    offCompassChange() {},
+    startCompass() { compassStarts++; return Promise.resolve(); },
+    stopCompass() { return Promise.resolve(); },
+  };
+  const lifecycle = createCompassLifecycle(port, { requireDeviceMotion: true });
+  await lifecycle.start(
+    () => undefined,
+    error => { failure = error; },
+    () => undefined,
+  );
+  assert.equal(compassStarts, 0);
+  assert.equal(failure instanceof Error && failure.message, "device_motion_unavailable");
+  assert.equal(lifecycle.active, false);
 });

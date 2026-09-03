@@ -508,8 +508,17 @@ test("account export is server-owned and deletion revokes identity state", async
   }
 });
 
-test("disabled optional product surfaces fail explicitly", async () => {
-  const service = testService();
+test("runtime prerequisites can explicitly gate selected profile-content surfaces", async () => {
+  const service = createTestMiniappService({
+    repository: new InMemoryTestRepository([TEST_PUBLISHED_SPOT]),
+    config: createTestRuntimeConfig({
+      features: {
+        ...createTestRuntimeConfig().features,
+        PROFILE_LINKS_ENABLED: false,
+        OWN_POST_IMPORT_ENABLED: false,
+      },
+    }),
+  });
   try {
     const principal = await user(service, "optional");
     await assert.rejects(

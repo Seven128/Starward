@@ -59,6 +59,7 @@ export function useContributionForm() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [validationField, setValidationField] = useState<string | null>(null);
 
   const history = useResourceQuery({
     queryKey: ["contributions"],
@@ -97,8 +98,45 @@ export function useContributionForm() {
       dedupeKey: `contribution-${tone}-${title}-${body.slice(0, 48)}`,
     });
 
-  const formInput = () =>
-    buildDraftInput(
+  const formInput = () => {
+    setValidationField(null);
+    if (!hasFormalSpot && kind !== "NEW_SPOT_PROPOSAL") {
+      setValidationField("contribution-spot-context");
+      announce("error", "缺少观星点", "请填写已确认的 spot_id 或改选新地点。 ");
+      return null;
+    }
+    if (kind === "NEW_SPOT_PROPOSAL") {
+      if (!candidateName.trim()) {
+        setValidationField("contribution-candidate-name");
+        announce("error", "资料未保存", "请填写地点名称；本页输入保持不变。 ");
+        return null;
+      }
+      if (!candidateRegion.trim()) {
+        setValidationField("contribution-candidate-region");
+        announce("error", "资料未保存", "请填写地区；本页输入保持不变。 ");
+        return null;
+      }
+      const parsedLatitude = Number(latitude);
+      const parsedLongitude = Number(longitude);
+      const latitudeInvalid =
+        !Number.isFinite(parsedLatitude) || Math.abs(parsedLatitude) > 90;
+      const longitudeInvalid =
+        !Number.isFinite(parsedLongitude) || Math.abs(parsedLongitude) > 180;
+      if (
+        latitudeInvalid ||
+        longitudeInvalid ||
+        (parsedLatitude === 0 && parsedLongitude === 0)
+      ) {
+        setValidationField(
+          latitudeInvalid
+            ? "contribution-candidate-latitude"
+            : "contribution-candidate-longitude",
+        );
+        announce("error", "资料未保存", "请填写有效的纬度和经度；不会后台持续定位。 ");
+        return null;
+      }
+    }
+    return buildDraftInput(
       {
         kind,
         routeSpotId: boundSpotId,
@@ -116,6 +154,7 @@ export function useContributionForm() {
       },
       announce,
     );
+  };
 
   const applyDraft = (
     submission: ContributionSubmission,
@@ -181,6 +220,8 @@ export function useContributionForm() {
   return {
     routeSpotId: boundSpotId,
     routeSpotName: boundSpotName || initialSpotName,
+    setRouteSpotId: setBoundSpotId,
+    setRouteSpotName: setBoundSpotName,
     hasFormalSpot,
     draft,
     phase,
@@ -199,6 +240,7 @@ export function useContributionForm() {
     saving,
     uploading,
     submitting,
+    validationField,
     history,
     capabilities,
     submissions,
@@ -225,6 +267,7 @@ export function useContributionForm() {
     setSaving,
     setUploading,
     setSubmitting,
+    setValidationField,
     setPhase,
     setHistoryFilter,
     goToForm,

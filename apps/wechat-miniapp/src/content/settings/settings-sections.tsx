@@ -3,32 +3,38 @@ import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
 import type { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import { SemanticIcon } from "@/components/semantic-asset";
 
-const DISPLAY_MODES: readonly Exclude<DisplayMode, "OBSERVATION">[] = [
+const DISPLAY_MODES: readonly DisplayMode[] = [
   "DAY",
   "NIGHT",
+  "OBSERVATION",
 ];
-export const DISPLAY_MODE_LABEL = { DAY: "日间", NIGHT: "夜间" } as const;
+export const DISPLAY_MODE_LABEL: Record<DisplayMode, string> = {
+  DAY: "日间",
+  NIGHT: "夜间",
+  OBSERVATION: "观测红光",
+};
 
 type SettingsControlsProps = {
   preferences: UserPreferences;
   mode: DisplayMode;
   updatePreference: ReturnType<typeof usePreferencesSync>["updatePreference"];
-  chooseDisplayMode: (mode: Exclude<DisplayMode, "OBSERVATION">) => void;
-  toggleObservation: () => void;
+  selectDisplayMode: (mode: DisplayMode) => void;
 };
 
 export function SettingsControls({
   preferences,
   mode,
   updatePreference,
-  chooseDisplayMode,
-  toggleObservation,
+  selectDisplayMode,
 }: SettingsControlsProps) {
   return (
     <>
       <View
         className="settings-section"
         data-od-id="display-mode-switcher"
+        data-control="display-mode-switcher"
+        role="radiogroup"
+        aria-label="显示模式"
       >
         <Text className="type-section">显示模式</Text>
         <View className="settings-card card">
@@ -36,27 +42,18 @@ export function SettingsControls({
             {DISPLAY_MODES.map((item) => (
               <Button
                 key={item}
-                className={`chip focus-ring${mode === item ? " chip--selected" : ""}`}
+                className={`chip settings-display-mode-choice focus-ring${mode === item ? " chip--selected" : ""}`}
+                data-mode={item.toLowerCase()}
                 aria-pressed={mode === item}
-                onClick={() => chooseDisplayMode(item)}
+                aria-label={`切换为${DISPLAY_MODE_LABEL[item]}模式`}
+                onClick={() => selectDisplayMode(item)}
               >
                 <Text>{DISPLAY_MODE_LABEL[item]}</Text>
               </Button>
             ))}
-            <Button
-              className={`chip observation-mode-entry focus-ring${mode === "OBSERVATION" ? " chip--selected" : ""}`}
-              data-od-id="observation-mode-entry"
-              aria-pressed={mode === "OBSERVATION"}
-              aria-label={
-                mode === "OBSERVATION" ? "退出观测红模式" : "进入观测红模式"
-              }
-              onClick={toggleObservation}
-            >
-              <Text>{mode === "OBSERVATION" ? "退出红光" : "观测红光"}</Text>
-            </Button>
           </View>
           <Text className="type-caption">
-            观测红光是封闭显示模式；退出后精确恢复此前日间/夜间与任务上下文。
+            三个选项共用同一个显示模式状态；观测红光退出后恢复此前日间/夜间与任务上下文。
           </Text>
         </View>
       </View>

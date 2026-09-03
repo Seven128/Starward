@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import Redis from "ioredis";
 import automator from "miniprogram-automator";
 import pg from "pg";
+import { tsImport } from "tsx/esm/api";
 import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
 import { knownWechatToolchainConsoleErrorId } from "./runtime-event-policy.mjs";
 
@@ -34,7 +35,7 @@ for (let index = 2; index < process.argv.length; index += 2) {
     throw new Error(`invalid_native_acceptance_argument:${key ?? "missing"}`);
   cliArgs.set(key, value);
 }
-const acceptanceScope = cliArgs.get("--scope") ?? "complete-current";
+const acceptanceScope = cliArgs.get("--scope") ?? "current-candidate";
 const acceptanceMode = cliArgs.get("--mode") ?? "success";
 const platformSimulation = acceptanceScope === "platform-simulation";
 const acceptanceDevice = cliArgs.get("--device") ?? null;
@@ -43,17 +44,12 @@ const acceptanceTextSize = cliArgs.has("--text-size")
   : null;
 if (
   ![
-    "global-conformance",
-    "map-discovery",
-    "spot-detail",
-    "spot-night",
-    "plan-editor",
-    "settings",
-    "my-library",
-    "upload-recovery",
-    "platform-operations",
+    "map-experience",
+    "full-sky",
+    "my-profile-settings",
+    "contribution",
     "platform-simulation",
-    "complete-current",
+    "current-candidate",
   ].includes(acceptanceScope)
 )
   throw new Error(`unknown_native_acceptance_scope:${acceptanceScope}`);
@@ -96,6 +92,48 @@ const acceptanceBootstrapState = JSON.parse(
     "utf8",
   ),
 );
+const nightChinaImportCorpus = JSON.parse(
+  await readFile(
+    path.join(
+      root,
+      "tools",
+      "miniapp",
+      "fixtures",
+      "nightchina-import-cases.json",
+    ),
+    "utf8",
+  ),
+);
+if (
+  nightChinaImportCorpus.schemaVersion !==
+    "starward-nightchina-import-cases-v1" ||
+  !Array.isArray(nightChinaImportCorpus.cases) ||
+  nightChinaImportCorpus.cases.length !== 10
+)
+  throw new Error("nightchina_import_corpus_invalid");
+const nightChinaCatalogAssociationCase = nightChinaImportCorpus.cases.find(
+  (item) => item.expectedAssociation.kind === "existing_formal_spot",
+);
+if (
+  !nightChinaCatalogAssociationCase?.expectedAssociation.spotId ||
+  !nightChinaCatalogAssociationCase.expectedAssociation.spotName
+)
+  throw new Error("nightchina_formal_association_case_missing");
+const { TEST_SPOTS: catalogSpots } = await tsImport(
+  new URL("../../packages/miniapp-contracts/src/catalog.ts", import.meta.url).href,
+  import.meta.url,
+);
+const nightChinaCatalogSpot = catalogSpots.find(
+  (spot) =>
+    spot.spotId ===
+    nightChinaCatalogAssociationCase.expectedAssociation.spotId,
+);
+if (
+  !nightChinaCatalogSpot ||
+  nightChinaCatalogSpot.name !==
+    nightChinaCatalogAssociationCase.expectedAssociation.spotName
+)
+  throw new Error("nightchina_formal_association_catalog_mismatch");
 const wechatAutomationPort = 9420;
 const wechatIdeHttpPort = 23977;
 const wechatAcceptanceSdkVersion = "3.17.1";
@@ -1243,13 +1281,14 @@ async function prepareNativePendingUpload({
 async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
   const base = `http://127.0.0.1:${apiPort}`;
   const suffix = sha256(runId).slice(0, 12);
-  const spotId = `spot:native-acceptance-${suffix}`;
+  const spotId = nightChinaCatalogSpot.spotId;
   const verifiedAt = new Date().toISOString();
-  const source = {
+  const identitySource = nightChinaCatalogSpot.source;
+  const acceptanceSource = {
     id: `source:native-acceptance-${suffix}`,
     kind: "OFFICIAL_VERIFICATION",
     provider: "Starward 隔离原生验收",
-    title: "当前候选生产链路核验记录",
+    title: "当前候选正式点组件生产链路核验记录",
     sourceUrl: "",
     license: "Project-owned automated acceptance record",
     licenseUrl: "",
@@ -1259,23 +1298,28 @@ async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
     validTo: null,
     state: "FRESH",
     confidence: 1,
-    precision: "只证明当前运行的数据门禁、持久化和交互，不陈述真实地点事实",
-    limitations: ["运行结束即销毁的隔离验收记录"],
+    precision:
+      "只证明当前运行的数据门禁、持久化和交互；地点身份与坐标由独立 OSM Source 承担，本记录不陈述现实场地条件",
+    limitations: [
+      "运行结束即销毁的隔离验收记录",
+      "设施、路线、光环境和安全字段仅为组件状态覆盖，不得用于现实出行判断",
+    ],
   };
   await adminRequest(base, infrastructure, "/v2/admin/spots", {
     method: "POST",
     body: JSON.stringify({
       spotId,
-      name: "隔离验收观测点",
-      region: "当前候选验证区域",
-      address: "仅用于本次生产链路验收，不对应现实地点",
-      timezone: "Asia/Shanghai",
-      latitude: 22.5431,
-      longitude: 114.0579,
-      altitudeM: 120,
-      visibilityPolicy: "PUBLIC_EXACT",
-      source,
-      reason: "建立本次运行唯一、可销毁且不可进入生产发布的数据记录",
+      name: nightChinaCatalogSpot.name,
+      region: nightChinaCatalogSpot.region,
+      address: nightChinaCatalogSpot.address,
+      timezone: nightChinaCatalogSpot.timezone,
+      latitude: nightChinaCatalogSpot.wgs84.latitude,
+      longitude: nightChinaCatalogSpot.wgs84.longitude,
+      altitudeM: nightChinaCatalogSpot.altitudeM,
+      visibilityPolicy: nightChinaCatalogSpot.visibilityPolicy,
+      source: identitySource,
+      reason:
+        "以当前目录的真实 OSM 地点身份建立本次运行唯一、可销毁且不可进入生产发布的组件验收记录",
     }),
   });
   const facilityTypes = [
@@ -1302,7 +1346,7 @@ async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
     usageCondition: "只用于隔离验收，不构成现实出行依据",
     verifiedAt,
     confidence: 1,
-    source,
+    source: acceptanceSource,
   }));
   const claims = [
     "SPOT_COORDINATE",
@@ -1339,7 +1383,7 @@ async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
           dataDate: verifiedAt.slice(0, 10),
           precision: "不外推为现实地点或 Bortle/SQM",
           state: "ESTIMATED",
-          source,
+          source: acceptanceSource,
         },
         obstructionPercent: 20,
         clearDirections: ["ALL"],
@@ -1354,7 +1398,7 @@ async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
           lastRoad: "两车道硬化道路；本次运行只验证信息闭环",
           parkingGuidance: "在标记区域内停车并保持通道；只用于隔离验收",
           state: "FRESH",
-          source,
+          source: acceptanceSource,
         },
         accessAndSafety: {
           openness: "OPEN",
@@ -1379,14 +1423,14 @@ async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
           claim,
           state: "CONFIRMED",
           sourceType: "OPERATOR",
-          sourceId: source.id,
+          sourceId: acceptanceSource.id,
           mediaIds: [],
           observedAt: verifiedAt,
           verifiedAt,
           validTo: null,
           confidence: 1,
         })),
-        dataDisclosure: [source],
+        dataDisclosure: [identitySource, acceptanceSource],
       }),
     },
   );
@@ -1441,7 +1485,8 @@ async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
     spotId,
     status: published.status,
     revision: Number(published.version),
-    sourceId: source.id,
+    identitySourceId: identitySource.id,
+    acceptanceSourceId: acceptanceSource.id,
   };
 }
 
@@ -1673,10 +1718,40 @@ async function waitForWechatIdeClosed(timeoutMs) {
 async function waitForInitialPage(miniProgram, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
+  let rootActivation = null;
   while (Date.now() < deadline) {
     try {
       const pages = await miniProgram.pageStack();
-      if (pages.length > 0) return pages.at(-1);
+      if (pages.length > 0)
+        return {
+          page: pages.at(-1),
+          activation:
+            rootActivation ?? {
+              status: "not_required",
+              method: "existing_connected_page_stack",
+              evidence_role: "automation_protocol_bootstrap_only",
+            },
+        };
+      if (!rootActivation) {
+        // The installed official miniprogram-automator protocol can connect to
+        // Tool.getInfo before the simulator has activated a first page. Its
+        // documented launch flow uses reLaunch to activate that page. This is
+        // only the protocol bootstrap: the acceptance reset and real-entry
+        // journeys below still establish the deterministic cold-start state.
+        rootActivation = {
+          status: "requested",
+          method: "official_automator_relaunch_production_root_after_empty_stack",
+          root: "pages/map/index",
+          evidence_role: "automation_protocol_bootstrap_only",
+        };
+        const activated = await retryIdempotentAutomatorOperation(
+          "initial-production-root-activation",
+          () => miniProgram.reLaunch("/pages/map/index"),
+        );
+        if (!activated)
+          throw new Error("wechat_initial_root_activation_unavailable");
+        rootActivation.status = "completed";
+      }
     } catch (error) {
       lastError = error;
     }
@@ -2111,6 +2186,49 @@ async function teardownNativeSession({
 }
 
 const nativeSelectorAliases = new Map([
+  ["[data-control~='map-marker-panel-coordinator']", ".map-stage"],
+  ["[data-control~='map-search-entry']", ".map-search-entry"],
+  ["[data-control~='map-location-control']", ".map-tool--location"],
+  ["[data-control~='map-analysis-focus-layer']", ".map-analysis-trigger"],
+  ["[data-control~='sky-map-canvas']", ".map-map-canvas-marker"],
+  ["[data-control~='map-layer-selector']", ".map-layer-sheet"],
+  ["[data-control~='map-time-control']", ".map-time-ruler"],
+  ["[data-control~='map-spot-information-panel']", ".spot-panel"],
+  ["[data-control~='map-spot-panel-handle']", ".spot-panel__handle"],
+  ["[data-control~='map-spot-panel-section-nav']", ".spot-panel__section-rail"],
+  ["[data-control~='map-spot-panel-action-bar']", ".spot-panel__action-bar"],
+  ["[data-control~='spot-route-summary']", ".spot-panel__block--route"],
+  ["[data-control~='spot-facility-evidence']", ".spot-panel__block--facility"],
+  ["[data-control~='spot-favorite-action']", ".spot-panel__action--favorite"],
+  ["[data-control~='spot-share-action']", ".spot-panel__action--share"],
+  ["[data-control~='spot-cloud-stargazing-action']", ".spot-panel__action--cloud"],
+  ["[data-control~='spot-contribution-entry']", ".spot-panel__text-action--contribution"],
+  ["[data-control~='sky-professional-matrix']", ".spot-panel__block--professional-matrix"],
+  ["[data-control~='sky-target-list']", ".spot-panel__block--target-list"],
+  ["[data-control~='sky-time-scrubber']", ".map-time-ruler"],
+  ["[data-control~='spot-search-shell']", ".spot-search-shell"],
+  ["[data-control~='spot-search-field']", ".spot-search-field"],
+  ["[data-control~='spot-search-query-overlay']", ".spot-search-query-overlay"],
+  ["[data-control~='spot-search-filter-group']", ".spot-search-filter-group"],
+  ["[data-control~='spot-search-filter-choice']", ".spot-search-filter-choice"],
+  ["[data-control~='spot-search-result-list']", ".spot-search-result-list"],
+  ["[data-control~='spot-search-result-card']", ".spot-search-result-card"],
+  ["[data-od-id='notification-feedback']", ".notification__copy"],
+  ["[data-od-id='sky-orientation-route']", ".sky-orientation-page"],
+  ["[data-od-id='sky-orientation-canvas']", ".sky-orientation-canvas"],
+  ["[data-od-id='sky-orientation-sensor']", ".sky-orientation-sensor"],
+  [
+    "[data-od-id='sky-orientation-time-ruler']",
+    ".sky-orientation-time-ruler",
+  ],
+  [
+    "[data-od-id='sky-orientation-object-list-toggle']",
+    ".sky-orientation-object-toggle button",
+  ],
+  [
+    "[data-od-id='sky-orientation-back'] .sky-orientation-back",
+    ".sky-orientation-back",
+  ],
   ["[data-od-id='default-formal-markers']", "#spot-map"],
   ["[data-od-id='map-search-summary']", ".map-finder-trigger"],
   ["[data-od-id='map-analysis-time-bar']", ".map-conditions-bar"],
@@ -2141,11 +2259,39 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='sky-target-list']", ".sky-targets"],
   ["[data-od-id='sky-orientation-scene']", ".sky-scene"],
   ["[data-od-id='sky-orientation-control']", ".orientation-control"],
-  ["[data-od-id='sky-orientation-object-list']", ".sky-targets"],
+  [
+    "[data-od-id='sky-orientation-object-list']",
+    ".sky-orientation-object-list",
+  ],
   ["[data-od-id='selected-card-star']", ".selected-card-star"],
   ["[data-od-id='my-contribution-entry']", ".routine-entry--contribution"],
+  ["[data-od-id='my-profile-links-entry']", ".routine-entry--profile-links"],
+  ["[data-od-id='my-import-entry']", ".routine-entry--import"],
   ["[data-od-id='my-plan-entry']", ".routine-entry--plan"],
   ["[data-od-id='my-settings-entry']", ".routine-entry--settings"],
+  ["[data-od-id='display-mode-switcher']", { selector: ".settings-section", index: 0 }],
+  ["[data-od-id='profile-link-editor']", ".profile-links-editor"],
+  ["[data-od-id='profile-link-open-copy']", ".profile-links-list"],
+  ["[data-od-id='import-source-rights']", ".import-source-card"],
+  ["[data-od-id='import-platform-other']", { selector: ".import-platform-grid .chip", index: 3 }],
+  ["[data-od-id='import-source-url']", ".import-source-card input"],
+  ["[data-od-id='import-rights-confirmation']", ".import-source-card switch"],
+  ["[data-od-id='import-create-draft'] .soft-button", ".import-source-card .soft-button--primary"],
+  ["[data-od-id='import-new-draft'] .soft-button", ".import-selected-draft .soft-button"],
+  ["[data-od-id='import-draft-editor']", ".import-draft-card"],
+  ["[data-od-id='import-spot-association']", ".import-association-card"],
+  ["[data-od-id='import-preview-submit']", ".import-preview-card"],
+  ["[data-od-id='import-title']", { selector: ".import-draft-card input", index: 0 }],
+  ["[data-od-id='import-body']", ".import-body-field"],
+  ["[data-od-id='import-source-note']", { selector: ".import-draft-card input", index: 1 }],
+  ["[data-od-id='import-enter-edit-draft'] .soft-button", ".import-draft-card .soft-button--primary"],
+  ["[data-od-id='import-association-formal']", { selector: ".import-association-option", index: 0 }],
+  ["[data-od-id='import-association-proposal']", { selector: ".import-association-option", index: 1 }],
+  ["[data-od-id='import-formal-spot-id']", ".import-association-card input"],
+  ["[data-od-id='import-save-association'] .soft-button", ".import-preview-card .soft-button--primary"],
+  ["[data-od-id='import-open-preview'] .soft-button", ".import-preview-card .soft-button--primary"],
+  ["[data-od-id='import-submit-review'] .soft-button", ".import-preview-card .soft-button--primary"],
+  ["[data-od-id='import-preview-submit'] .status-panel--ready", ".import-preview-card .status-panel--ready"],
   ["[data-od-id='plan-editor-form']", ".plan-editor-form"],
   ["[data-od-id='plan-summary']", ".plan-hero"],
   ["[data-od-id='plan-preparation']", ".plan-checklist"],
@@ -2200,20 +2346,53 @@ const nativeSelectorAliases = new Map([
     "[data-od-id='my-settings-action'] .soft-button",
     ".custom-nav__side--right .soft-button",
   ],
-  ["[data-od-id='observation-mode-entry'] .chip", ".observation-setting .chip"],
-  ["[data-od-id='observation-mode-entry']", ".observation-mode-entry"],
 ]);
 
 async function queryElements(page, selector) {
   const nativeSelector = nativeSelectorAliases.get(selector);
-  if (nativeSelector) return page.$$(nativeSelector);
+  if (typeof nativeSelector === "string") return page.$$(nativeSelector);
+  if (nativeSelector) {
+    const elements = await page.$$(nativeSelector.selector);
+    const selected = elements[nativeSelector.index];
+    return selected ? [selected] : [];
+  }
+  const controlTokenSelector = /^\[data-control~=(["'])([-\w.:]+)\1\]$/u.exec(
+    selector,
+  );
+  if (controlTokenSelector) {
+    const token = controlTokenSelector[2];
+    const exact = await page.getElementsByXpath(
+      `//*[@data-control=${JSON.stringify(token)}]`,
+    );
+    if (exact.length > 0) return exact;
+    const candidates = await page.getElementsByXpath("//*[@data-control]");
+    const values = await Promise.all(
+      candidates.map((element) =>
+        element.attribute("data-control").catch(() => ""),
+      ),
+    );
+    return candidates.filter((_, index) =>
+      String(values[index]).split(/\s+/u).includes(token),
+    );
+  }
   const odSelector = /^\[data-od-id=(["'])([-\w.:]+)\1\](?:\s+(.+))?$/u.exec(
     selector,
   );
   if (!odSelector) return page.$$(selector);
-  const roots = await page.getElementsByXpath(
+  let roots = await page.getElementsByXpath(
     `//*[@data-od-id=${JSON.stringify(odSelector[2])}]`,
   );
+  if (roots.length === 0) {
+    const controlCandidates = await page.getElementsByXpath("//*[@data-control]");
+    const controlValues = await Promise.all(
+      controlCandidates.map((element) =>
+        element.attribute("data-control").catch(() => ""),
+      ),
+    );
+    roots = controlCandidates.filter((_, index) =>
+      String(controlValues[index]).split(/\s+/u).includes(odSelector[2]),
+    );
+  }
   const descendantSelector = odSelector[3];
   if (!descendantSelector) return roots;
   const descendants = await Promise.all(
@@ -2382,7 +2561,8 @@ async function verifyPreparedContextContinuity(
   timeoutMs = 5_000,
 ) {
   const route = new URL(preparedUrl, "https://acceptance.invalid");
-  const expectedContextId = route.searchParams.get("contextId") ?? "";
+  const routeRequiresContextId = route.searchParams.has("contextId");
+  const expectedContextId = route.searchParams.get("contextId");
   const expectedSpotId = route.searchParams.get("spotId") ?? "";
   const deadline = Date.now() + timeoutMs;
   let latestMemoryContext = null;
@@ -2410,11 +2590,15 @@ async function verifyPreparedContextContinuity(
         }
       : null;
     const memoryMatches =
-      memoryContext?.contextId === expectedContextId &&
+      (!routeRequiresContextId || memoryContext?.contextId === expectedContextId) &&
       memoryContext?.locationKind === "FORMAL_SPOT" &&
       memoryContext?.spotId === expectedSpotId;
+    const contextIdsMatch = routeRequiresContextId
+      ? context?.contextId === expectedContextId
+      : Boolean(memoryContext?.contextId) &&
+        context?.contextId === memoryContext.contextId;
     const storedMatches =
-      context?.contextId === expectedContextId &&
+      contextIdsMatch &&
       context?.location?.kind === "FORMAL_SPOT" &&
       context.location.spotId === expectedSpotId;
     const privacyDispositionValid =
@@ -2426,7 +2610,7 @@ async function verifyPreparedContextContinuity(
     if (memoryMatches && privacyDispositionValid)
       return {
         status: "passed",
-        context_id_sha256: sha256(expectedContextId),
+        context_id_sha256: sha256(String(memoryContext.contextId ?? "")),
         spot_id_sha256: sha256(expectedSpotId),
         context_fingerprint_sha256: sha256(
           String(memoryContext.contextFingerprint ?? ""),
@@ -2439,7 +2623,7 @@ async function verifyPreparedContextContinuity(
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error(
-    `native_prepared_context_discontinuity:${sha256(expectedContextId)}:${sha256(expectedSpotId)}:memory-${latestMemoryContext ? `${latestMemoryContext.locationKind}:${latestMemoryContext.privacyClass}:${sha256(String(latestMemoryContext.contextId ?? ""))}:${sha256(String(latestMemoryContext.spotId ?? ""))}` : "none"}:stored-${latestStoredContext ? `${latestStoredContext.kind}:${latestStoredContext.privacy}:${latestStoredContext.contextIdSha256}:${latestStoredContext.spotIdSha256}` : "none"}`,
+    `native_prepared_context_discontinuity:${routeRequiresContextId ? sha256(String(expectedContextId)) : "route-context-not-required"}:${sha256(expectedSpotId)}:memory-${latestMemoryContext ? `${latestMemoryContext.locationKind}:${latestMemoryContext.privacyClass}:${sha256(String(latestMemoryContext.contextId ?? ""))}:${sha256(String(latestMemoryContext.spotId ?? ""))}` : "none"}:stored-${latestStoredContext ? `${latestStoredContext.kind}:${latestStoredContext.privacy}:${latestStoredContext.contextIdSha256}:${latestStoredContext.spotIdSha256}` : "none"}`,
   );
 }
 
@@ -2501,8 +2685,14 @@ async function inspectSelector(page, definition) {
   }
   return {
     selector: definition.selector,
-    native_selector:
-      nativeSelectorAliases.get(definition.selector) ?? definition.selector,
+    native_selector: (() => {
+      const alias = nativeSelectorAliases.get(definition.selector);
+      return typeof alias === "string"
+        ? alias
+        : alias
+          ? `${alias.selector}::${alias.index}`
+          : definition.selector;
+    })(),
     expected_minimum: definition.minimum,
     count: elements.length,
     passed: elements.length >= definition.minimum,
@@ -2550,6 +2740,22 @@ async function captureJourneyInteractions(
     const stepObservations = [];
     let actionPerformed = false;
     let watchedBefore = [];
+    if (step.waitForFormalContextSpotId) {
+      const context = await waitForFormalObservationContext(
+        miniProgram,
+        step.timeoutMs ?? 20_000,
+      );
+      if (context.spotId !== step.waitForFormalContextSpotId)
+        throw new Error(
+          `native_interaction_formal_context_mismatch:${definition.key}:${step.key}:${sha256(step.waitForFormalContextSpotId)}:${sha256(context.spotId)}`,
+        );
+      stepObservations.push({
+        formal_context_ready: true,
+        expected_spot_id_sha256: sha256(step.waitForFormalContextSpotId),
+        observed_spot_id_sha256: sha256(context.spotId),
+      });
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
     if (step.expectChanged?.length) {
       watchedBefore = await Promise.all(
         step.expectChanged.map(async (watch) => {
@@ -2647,7 +2853,24 @@ async function captureJourneyInteractions(
         step.minimum ?? 1,
         step.timeoutMs ?? 20_000,
       );
-      const control = controls[step.index ?? 0];
+      let controlIndex = step.index ?? 0;
+      if (step.textIncludes) {
+        const controlTexts = await Promise.all(
+          controls.map((candidate) => candidate.text().catch(() => "")),
+        );
+        controlIndex = controlTexts.findIndex((value) =>
+          value.includes(step.textIncludes),
+        );
+        if (controlIndex < 0)
+          throw new Error(
+            `native_interaction_text_control_missing:${definition.key}:${step.key}:${sha256(step.textIncludes)}`,
+          );
+        stepObservations.push({
+          selected_control_text_sha256: sha256(controlTexts[controlIndex]),
+          selected_control_text_match_sha256: sha256(step.textIncludes),
+        });
+      }
+      const control = controls[controlIndex];
       if (!control)
         throw new Error(
           `native_interaction_control_missing:${definition.key}:${step.key}`,
@@ -2699,11 +2922,52 @@ async function captureJourneyInteractions(
       actionPerformed = true;
     }
     if (step.expectedPath) {
-      page = await waitForCurrentPagePath(
-        miniProgram,
-        step.expectedPath,
-        step.timeoutMs ?? 20_000,
-      );
+      try {
+        page = await waitForCurrentPagePath(
+          miniProgram,
+          step.expectedPath,
+          step.timeoutMs ?? 20_000,
+        );
+      } catch (error) {
+        // A few DevTools builds acknowledge Element.tap before Taro's
+        // delegated event bridge is attached. Re-trigger the same rendered
+        // production control once while the source page is still topmost;
+        // never open the destination route directly from the runner.
+        if (
+          !String(error?.message ?? error).startsWith(
+            "native_formal_entry_timeout:",
+          )
+        )
+          throw error;
+        const currentPage = await miniProgram.currentPage().catch(() => null);
+        if (currentPage?.path !== page.path) throw error;
+        const freshControls = await waitForSelector(
+          currentPage,
+          step.tap,
+          step.minimum ?? 1,
+          step.timeoutMs ?? 20_000,
+        );
+        let freshControlIndex = step.index ?? 0;
+        if (step.textIncludes) {
+          const freshTexts = await Promise.all(
+            freshControls.map((candidate) => candidate.text().catch(() => "")),
+          );
+          freshControlIndex = freshTexts.findIndex((value) =>
+            value.includes(step.textIncludes),
+          );
+        }
+        const freshControl = freshControls[freshControlIndex];
+        if (!freshControl)
+          throw new Error(
+            `native_interaction_control_missing:${definition.key}:${step.key}:retry`,
+          );
+        await freshControl.trigger("tap");
+        page = await waitForCurrentPagePath(
+          miniProgram,
+          step.expectedPath,
+          step.timeoutMs ?? 20_000,
+        );
+      }
       stepObservations.push({
         expected_page_path: step.expectedPath,
         observed_page_path: page.path,
@@ -2744,10 +3008,25 @@ async function captureJourneyInteractions(
         step.waitFor,
         step.timeoutMs ?? 20_000,
       );
-      if (!ready)
-        throw new Error(
-          `native_interaction_wait_timeout:${definition.key}:${step.key}`,
+      if (!ready) {
+        const finalCounts = await Promise.all(
+          step.waitFor.map((definition) =>
+            queryElements(page, definition.selector)
+              .then((elements) => elements.length)
+              .catch(() => 0),
+          ),
         );
+        const missing = step.waitFor
+          .map((definition, index) => ({
+            selector: definition.selector,
+            count: finalCounts[index],
+            minimum: definition.minimum,
+          }))
+          .filter((item) => item.count < item.minimum);
+        throw new Error(
+          `native_interaction_wait_timeout:${definition.key}:${step.key}:${sha256(canonical(missing))}:${missing.map((item) => `${item.selector}=${item.count}/${item.minimum}`).join(",")}`,
+        );
+      }
     }
     if (step.waitForAbsent?.length) {
       for (const selector of step.waitForAbsent) {
@@ -2859,20 +3138,30 @@ async function waitForRootFragment(
 
 async function waitForRecoveryControl(page, probe, timeoutMs = 10_000) {
   const deadline = Date.now() + timeoutMs;
+  let latestControlCount = 0;
+  let latestLabelHashes = [];
   while (Date.now() < deadline) {
     const controls = await queryElements(page, probe.recoverySelector).catch(
       () => [],
     );
+    latestControlCount = controls.length;
+    latestLabelHashes = [];
     for (let index = 0; index < controls.length; index += 1) {
       const control = controls[index];
       const controlText = await control.text().catch(() => "");
-      if (controlText.trim() === probe.recoveryText)
-        return { control, index, controlText };
+      const ariaLabel = String(
+        (await control.attribute("aria-label").catch(() => "")) ||
+          (await control.attribute("ariaLabel").catch(() => "")),
+      );
+      const observedLabel = controlText.trim() || ariaLabel.trim();
+      latestLabelHashes.push(sha256(observedLabel));
+      if (observedLabel === probe.recoveryText)
+        return { control, index, controlText: observedLabel };
     }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(
-    `native_recovery_control_missing:${page.path}:${sha256(probe.recoveryLabel)}`,
+    `native_recovery_control_missing:${page.path}:${sha256(probe.recoveryLabel)}:${latestControlCount}:${sha256(canonical(latestLabelHashes))}`,
   );
 }
 
@@ -3123,29 +3412,55 @@ async function setDisplayModeThroughProductionUi(miniProgram, mode) {
   );
 }
 
-async function selectFormalSpotThroughFinder(mapPage) {
-  const existingCallout = await queryElements(
+async function selectFormalSpotThroughFinder(miniProgram, mapPage) {
+  const existingPanel = await queryElements(
     mapPage,
-    ".spot-card__callout-main",
+    "[data-control~='map-spot-information-panel']",
   ).catch(() => []);
-  if (existingCallout.length > 0) return;
+  if (existingPanel.length > 0) return mapPage;
 
-  const finderTriggers = await waitForSelector(
-    mapPage,
-    "[data-od-id='map-search-summary']",
-    1,
+  let searchPage;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    searchPage = await tapIntoPage(
+      miniProgram,
+      mapPage,
+      "[data-control~='map-search-entry']",
+      "spot/search/index",
+    );
+    await waitForSelector(
+      searchPage,
+      "[data-control~='spot-search-result-list']",
+      1,
+    );
+    try {
+      await waitForSelector(
+        searchPage,
+        "[data-control~='spot-search-result-card']",
+        1,
+        12_000,
+      );
+      break;
+    } catch (error) {
+      if (attempt === 2) throw error;
+      await retryIdempotentAutomatorOperation(
+        "formal-finder-relaunch-after-empty-result",
+        () => miniProgram.reLaunch("/pages/map/index"),
+      );
+      mapPage = await waitForCurrentPagePath(miniProgram, "pages/map/index");
+      await waitForSelector(mapPage, ".map-page", 1);
+    }
+  }
+  if (!searchPage) throw new Error("native_formal_finder_page_unavailable");
+  const returnedMap = await nativeDiagnosticStage("search-result-select", () =>
+    tapIntoPage(
+      miniProgram,
+      searchPage,
+      "[data-control~='spot-search-result-card']",
+      "pages/map/index",
+    ),
   );
-  await nativeDiagnosticStage("finder-open", () => finderTriggers[0].tap());
-  await waitForSelector(mapPage, "[data-od-id='spot-finder-result-scroll']", 1);
-  const formalResults = await waitForSelector(
-    mapPage,
-    ".spot-card__result-main",
-    1,
-  );
-  await nativeDiagnosticStage("finder-result-select", () =>
-    formalResults[0].tap(),
-  );
-  await waitForSelector(mapPage, ".spot-card__callout-main", 1);
+  await waitForSelector(returnedMap, "[data-control~='map-spot-information-panel']", 1);
+  return returnedMap;
 }
 
 async function waitForFormalObservationContext(
@@ -3232,6 +3547,8 @@ async function enterCurrentJourney(miniProgram, definition) {
     flow === "map-to-my" ||
     flow === "map-to-my-plan" ||
     flow === "map-to-my-settings" ||
+    flow === "map-to-my-profile-links" ||
+    flow === "map-to-my-import" ||
     flow === "map-to-my-contribution"
   ) {
     if (flow === "map-to-my-plan") {
@@ -3241,28 +3558,11 @@ async function enterCurrentJourney(miniProgram, definition) {
       // product state solely for the runner. Finder selection remains the
       // production owner when no formal callout is already selected.
       await nativeDiagnosticStage("plan-formal-spot-select", () =>
-        selectFormalSpotThroughFinder(mapPage),
-      );
-      await nativeDiagnosticStage("plan-formal-spot-detail-open", () =>
-        tapIntoPage(
-          miniProgram,
-          mapPage,
-          ".spot-card__callout-main",
-          "spot/detail/index",
-        ),
+        selectFormalSpotThroughFinder(miniProgram, mapPage),
       );
       await nativeDiagnosticStage("plan-formal-context-ready", () =>
         waitForFormalObservationContext(miniProgram),
       );
-      await nativeDiagnosticStage("plan-formal-detail-back", async () => {
-        const detailPage = await miniProgram.currentPage();
-        return tapIntoPage(
-          miniProgram,
-          detailPage,
-          ".custom-nav__back-control .soft-button",
-          "pages/map/index",
-        );
-      });
     }
     const requestedMyPage = await switchTabAndWait(
       miniProgram,
@@ -3288,6 +3588,14 @@ async function enterCurrentJourney(miniProgram, definition) {
         selector: "[data-od-id='my-contribution-entry']",
         path: "content/contribution/index",
       },
+      "map-to-my-profile-links": {
+        selector: "[data-od-id='my-profile-links-entry']",
+        path: "content/profile/links/index",
+      },
+      "map-to-my-import": {
+        selector: "[data-od-id='my-import-entry']",
+        path: "content/import/index",
+      },
     }[flow];
     if (!child) throw new Error(`unknown_native_my_flow:${flow}`);
     const childPage = await tapIntoPage(
@@ -3301,48 +3609,20 @@ async function enterCurrentJourney(miniProgram, definition) {
       : childPage;
   }
 
-  if (
-    flow === "map-to-detail" ||
-    flow === "map-to-night" ||
-    flow === "map-to-detail-contribution"
-  ) {
-    await nativeDiagnosticStage("formal-spot-select", () =>
-      selectFormalSpotThroughFinder(mapPage),
+  if (flow === "map-to-sky" || flow === "map-to-spot-contribution") {
+    mapPage = await nativeDiagnosticStage("formal-spot-select", () =>
+      selectFormalSpotThroughFinder(miniProgram, mapPage),
     );
-    const detailPage = await nativeDiagnosticStage(
-      "formal-spot-detail-open",
-      () =>
-        tapIntoPage(
-          miniProgram,
-          mapPage,
-          ".spot-card__callout-main",
-          "spot/detail/index",
-        ),
-    );
-    if (flow === "map-to-detail") return detailPage;
-    if (flow === "map-to-detail-contribution") {
-      const tabs = await waitForSelector(detailPage, ".segment-tab", 3);
-      await tabs[2].tap();
-      await waitForSelector(
-        detailPage,
-        "[data-od-id='spot-contribution-entry']",
-        1,
-      );
-      return tapIntoPage(
-        miniProgram,
-        detailPage,
-        "[data-od-id='spot-contribution-entry']",
-        "content/contribution/index",
-      );
-    }
-    await waitForSelector(detailPage, ".night-entry", 1);
-    return nativeDiagnosticStage("formal-spot-night-open", () =>
-      tapIntoPage(
-        miniProgram,
-        detailPage,
-        ".night-entry",
-        "spot/sky/index",
-      ),
+    await waitForFormalObservationContext(miniProgram);
+    return tapIntoPage(
+      miniProgram,
+      mapPage,
+      flow === "map-to-sky"
+        ? "[data-control~='spot-cloud-stargazing-action']"
+        : "[data-control~='spot-contribution-entry']",
+      flow === "map-to-sky"
+        ? "sky/detail/index"
+        : "content/contribution/index",
     );
   }
 
@@ -3423,8 +3703,8 @@ async function captureJourney(miniProgram, runRoot, definition) {
       resetThroughAcceptanceControl(miniProgram),
     );
   }
-  if (definition.key === "formal-spot-detail") {
-    await nativeDiagnosticStage("spot-detail-night-mode", () =>
+  if (definition.key === "sky-orientation") {
+    await nativeDiagnosticStage("sky-orientation-night-mode", () =>
       setDisplayModeThroughProductionUi(miniProgram, "NIGHT"),
     );
   } else if (definition.key === "my-home") {
@@ -3455,6 +3735,17 @@ async function captureJourney(miniProgram, runRoot, definition) {
     );
   }
   await waitForSelector(page, definition.root, 1);
+  if (definition.importFixture) {
+    const newDraftControls = await queryElements(
+      page,
+      "[data-od-id='import-new-draft'] .soft-button",
+    ).catch(() => []);
+    if (newDraftControls[0]) {
+      await newDraftControls[0].tap();
+      await waitForSelector(page, "[data-od-id='import-source-url']", 1);
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    }
+  }
   await new Promise((resolve) =>
     setTimeout(resolve, definition.settleMs ?? 1_000),
   );
@@ -3528,6 +3819,19 @@ async function captureJourney(miniProgram, runRoot, definition) {
     runRoot,
     definition,
   );
+  let expectedSelectedSpotReadback = null;
+  if (definition.expectedSelectedSpotId) {
+    const context = await waitForFormalObservationContext(miniProgram);
+    if (context.spotId !== definition.expectedSelectedSpotId)
+      throw new Error(
+        `nightchina_formal_spot_readback_mismatch:${sha256(definition.expectedSelectedSpotId)}:${sha256(context.spotId)}`,
+      );
+    expectedSelectedSpotReadback = {
+      expected_spot_id_sha256: sha256(definition.expectedSelectedSpotId),
+      observed_spot_id_sha256: sha256(context.spotId),
+      matched: true,
+    };
+  }
   return {
     key: definition.key,
     status:
@@ -3551,6 +3855,9 @@ async function captureJourney(miniProgram, runRoot, definition) {
       ? { settings_preference_readback: settingsPreferenceReadback }
       : {}),
     ...(interactions ? { interactions } : {}),
+    ...(expectedSelectedSpotReadback
+      ? { expected_selected_spot_readback: expectedSelectedSpotReadback }
+      : {}),
     injected_fixture: definition.injectedFixture ?? null,
   };
 }
@@ -3789,55 +4096,61 @@ const journeys = [
   },
   {
     order: 2,
-    key: "formal-spot-detail",
-    url: "/spot/detail/index",
-    entryFlow: "map-to-detail",
+    key: "sky-orientation",
+    url: "/sky/detail/index",
+    entryFlow: "map-to-sky",
     requiresPreparedContext: true,
-    preparedRouteParams: ["spotId", "contextId"],
-    root: ".spot-detail",
-    rootClasses: ["spot-detail", "theme-night"],
+    preparedRouteParams: [
+      "spotId",
+      "contextId",
+      "date",
+      "selectedAt",
+      "timezone",
+      "dataRevision",
+    ],
+    root: ".sky-orientation-page",
+    rootClasses: ["sky-orientation-page"],
     selectors: [
       {
-        selector: ".semantic-icon--arrow-left",
+        selector: "[data-od-id='sky-orientation-canvas']",
         minimum: 1,
         styles: ["display", "width", "height"],
-        attributes: ["class"],
       },
       {
-        selector: ".semantic-icon__contextual-source--dark",
+        selector: "[data-od-id='sky-orientation-sensor']",
         minimum: 1,
-        styles: ["display", "width", "height", "opacity"],
-        attributes: ["src", "class"],
+        styles: ["display"],
       },
-      { selector: ".segment-tab", minimum: 3, styles: ["min-height"] },
       {
-        selector: ".media-section",
+        selector: "[data-od-id='sky-orientation-time-ruler']",
         minimum: 1,
-        styles: ["width"],
+        styles: ["display", "width"],
       },
-      { selector: ".media-empty", minimum: 1, styles: ["border-radius"] },
-      { selector: ".decision-card", minimum: 1, styles: ["border-radius"] },
-      { selector: ".night-entry", minimum: 1, styles: ["min-height"] },
-      { selector: ".detail-route-action", minimum: 1, styles: ["min-height"] },
+      {
+        selector: "[data-od-id='sky-orientation-object-list-toggle']",
+        minimum: 1,
+        styles: ["min-height"],
+      },
     ],
-    viewportCaptures: [
+    interactions: [
       {
-        key: "media",
-        scroll: ".spot-detail__scroll",
-        target: ".media-empty",
-        fallbackScrollTop: 640,
-        selectors: [
-          { selector: ".media-section", minimum: 1 },
-          { selector: ".media-empty", minimum: 1 },
+        key: "orientation-object-list-open",
+        screenshot: true,
+        tap: "[data-od-id='sky-orientation-object-list-toggle']",
+        waitFor: [
+          {
+            selector: "[data-od-id='sky-orientation-object-list']",
+            minimum: 1,
+          },
         ],
       },
     ],
   },
   {
     order: 3,
-    key: "spot-night",
-    url: "/spot/sky/index",
-    entryFlow: "map-to-night",
+    key: "sky-supporting-data",
+    url: "/sky/detail/index",
+    entryFlow: "map-to-sky",
     requiresPreparedContext: true,
     preparedRouteParams: [
       "spotId",
@@ -3914,7 +4227,7 @@ const journeys = [
         screenshot: true,
         tap: ".sky-actions .soft-button",
         index: 0,
-        expectedPath: "sky/professional/index",
+        expectedPath: "sky/detail/index",
         settleMs: 1_500,
         waitFor: [
           { selector: ".professional-card", minimum: 1 },
@@ -3976,6 +4289,41 @@ const journeys = [
   },
   {
     order: 5,
+    key: "profile-links",
+    url: "/content/profile/links/index",
+    entryFlow: "map-to-my-profile-links",
+    root: ".profile-links-page",
+    rootClasses: ["profile-links-page"],
+    selectors: [
+      {
+        selector: "[data-od-id='profile-link-editor']",
+        minimum: 1,
+        styles: ["display"],
+      },
+      {
+        selector: "[data-od-id='profile-link-open-copy']",
+        minimum: 1,
+        styles: ["display"],
+      },
+    ],
+  },
+  {
+    order: 6,
+    key: "own-post-import",
+    url: "/content/import/index",
+    entryFlow: "map-to-my-import",
+    root: ".import-page",
+    rootClasses: ["import-page"],
+    selectors: [
+      {
+        selector: "[data-od-id='import-source-rights']",
+        minimum: 1,
+        styles: ["display"],
+      },
+    ],
+  },
+  {
+    order: 7,
     key: "new-place-contribution",
     url: "/content/contribution/index",
     entryFlow: "map-to-my-contribution",
@@ -3991,11 +4339,9 @@ const journeys = [
     ],
     interactions: [
       {
-        key: "candidate-form-open",
+        key: "candidate-form-ready",
         screenshot: true,
-        tap: ".contribution-card .soft-button--primary",
         waitFor: [
-          { selector: ".contribution-progress", minimum: 1 },
           {
             selector: "[data-od-id='contribution-location-consent']",
             minimum: 1,
@@ -4004,7 +4350,9 @@ const journeys = [
             selector: "[data-od-id='contribution-topic-control'] .chip",
             minimum: 9,
           },
-          { selector: ".contribution-actions--flow .soft-button", minimum: 3 },
+          { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
+          { selector: "[data-od-id='contribution-media-rights']", minimum: 1 },
+          { selector: ".contribution-actions .soft-button", minimum: 2 },
         ],
       },
       {
@@ -4038,21 +4386,9 @@ const journeys = [
         tap: "[data-od-id='contribution-coordinate-consent']",
       },
       {
-        key: "candidate-upload-open",
-        screenshot: true,
-        tap: ".contribution-actions--flow .soft-button--primary",
-        waitFor: [
-          { selector: ".contribution-upload-recovery", minimum: 1 },
-          {
-            selector: ".contribution-actions--submit .soft-button",
-            minimum: 1,
-          },
-        ],
-      },
-      {
         key: "candidate-submit",
         screenshot: true,
-        tap: ".contribution-actions--submit .soft-button--primary",
+        tap: ".contribution-actions .soft-button--primary",
         waitFor: [
           { selector: ".contribution-history__row", minimum: 1 },
           { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
@@ -4065,9 +4401,9 @@ const journeys = [
     order: 6,
     key: "formal-spot-contribution",
     url: "/content/contribution/index",
-    entryFlow: "map-to-detail-contribution",
+    entryFlow: "map-to-spot-contribution",
     requiresPreparedContext: true,
-    preparedRouteParams: ["spotId", "contextId"],
+    preparedRouteParams: ["spotId"],
     root: ".contribution-page",
     rootClasses: ["contribution-page", "theme-day"],
     selectors: [
@@ -4081,17 +4417,16 @@ const journeys = [
     ],
     interactions: [
       {
-        key: "field-report-form-open",
+        key: "field-report-form-ready",
         screenshot: true,
-        tap: ".contribution-card .soft-button--primary",
         waitFor: [
-          { selector: ".contribution-progress", minimum: 1 },
           {
             selector: "[data-od-id='contribution-topic-control'] .chip",
             minimum: 9,
           },
           { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
-          { selector: ".contribution-actions--flow .soft-button", minimum: 3 },
+          { selector: "[data-od-id='contribution-media-rights']", minimum: 1 },
+          { selector: ".contribution-actions .soft-button", minimum: 2 },
         ],
       },
       {
@@ -4101,21 +4436,9 @@ const journeys = [
           "这是原生验收建立的正式点现场反馈，只验证人工审核链路，不直接改变地图或今晚结论。",
       },
       {
-        key: "field-report-upload-open",
-        screenshot: true,
-        tap: ".contribution-actions--flow .soft-button--primary",
-        waitFor: [
-          { selector: ".contribution-upload-recovery", minimum: 1 },
-          {
-            selector: ".contribution-actions--submit .soft-button",
-            minimum: 1,
-          },
-        ],
-      },
-      {
         key: "field-report-submit",
         screenshot: true,
-        tap: ".contribution-actions--submit .soft-button--primary",
+        tap: ".contribution-actions .soft-button--primary",
         waitFor: [
           { selector: ".contribution-history__row", minimum: 1 },
           { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
@@ -4166,7 +4489,7 @@ const journeys = [
       { selector: "#departure-condition-reminder", minimum: 1 },
       { selector: "#contribution-status-reminder", minimum: 1 },
       {
-        selector: "[data-od-id='observation-mode-entry']",
+        selector: "[data-od-id='display-mode-switcher']",
         minimum: 1,
         styles: ["min-height"],
       },
@@ -4201,9 +4524,9 @@ const journeys = [
     order: 9,
     key: "upload-recovery",
     url: "/content/contribution/index",
-    entryFlow: "map-to-detail-contribution",
+    entryFlow: "map-to-spot-contribution",
     requiresPreparedContext: true,
-    preparedRouteParams: ["spotId", "contextId"],
+    preparedRouteParams: ["spotId"],
     root: ".contribution-page",
     rootClasses: ["contribution-page", "theme-day"],
     selectors: [
@@ -4216,8 +4539,7 @@ const journeys = [
     ],
     interactions: [
       {
-        key: "recovery-history-open",
-        tap: ".custom-nav__side--right .soft-button",
+        key: "recovery-history-ready",
         waitFor: [
           { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
           { selector: ".contribution-history__item .soft-button", minimum: 1 },
@@ -4238,15 +4560,13 @@ const journeys = [
         ],
       },
       {
-        key: "recovery-upload-open",
+        key: "recovery-inline-state-ready",
         screenshot: true,
-        tap: ".contribution-actions--flow .soft-button--primary",
         waitFor: [
-          { selector: ".contribution-upload-recovery", minimum: 1 },
-          { selector: ".contribution-recovery-notice", minimum: 1 },
+          { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
           { selector: ".contribution-media-row", minimum: 1 },
-          { selector: ".contribution-recovery-point", minimum: 1 },
-          { selector: ".contribution-preflight__row", minimum: 3 },
+          { selector: ".contribution-media-row .soft-button", minimum: 1 },
+          { selector: ".contribution-actions .soft-button--disabled", minimum: 1 },
         ],
         inspect: [
           {
@@ -4255,7 +4575,7 @@ const journeys = [
           },
           { selector: ".contribution-media-row .soft-button", minimum: 1 },
           {
-            selector: ".contribution-actions--submit .soft-button--disabled",
+            selector: ".contribution-actions .soft-button--disabled",
             minimum: 1,
           },
         ],
@@ -4264,19 +4584,408 @@ const journeys = [
   },
 ];
 
+function nightChinaImportInteractions(item) {
+  const associationSteps =
+    item.expectedAssociation.kind === "existing_formal_spot"
+      ? [
+          {
+            key: "choose-formal-association",
+            tap: "[data-od-id='import-association-formal']",
+            waitFor: [
+              { selector: "[data-od-id='import-formal-spot-id']", minimum: 1 },
+            ],
+          },
+          {
+            key: "enter-formal-spot-id",
+            input: "[data-od-id='import-formal-spot-id']",
+            value: item.expectedAssociation.spotId,
+          },
+        ]
+      : [
+          {
+            key: "choose-proposal-association",
+            tap: "[data-od-id='import-association-proposal']",
+          },
+        ];
+  return [
+    {
+      key: "choose-other-source",
+      tap: "[data-od-id='import-platform-other']",
+    },
+    {
+      key: "enter-source-url",
+      input: "[data-od-id='import-source-url']",
+      value: item.sourceUrl,
+    },
+    {
+      key: "confirm-owned-test-input-rights",
+      tap: "[data-od-id='import-rights-confirmation']",
+    },
+    {
+      key: "create-real-import-draft",
+      screenshot: true,
+      tap: "[data-od-id='import-create-draft'] .soft-button",
+      settleMs: 750,
+      waitFor: [
+        { selector: "[data-od-id='import-draft-editor']", minimum: 1 },
+        { selector: "[data-od-id='import-spot-association']", minimum: 1 },
+        { selector: "[data-od-id='import-preview-submit']", minimum: 1 },
+      ],
+    },
+    {
+      key: "enter-owned-paraphrase-title",
+      input: "[data-od-id='import-title']",
+      value: item.title,
+    },
+    {
+      key: "enter-owned-paraphrase-body",
+      input: "[data-od-id='import-body']",
+      value: item.importText,
+    },
+    {
+      key: "enter-traceable-source-note",
+      input: "[data-od-id='import-source-note']",
+      value: `${item.reportedLocation} · ${item.reportedCaptureDate} · 来源照片权利未确认且未复用`,
+    },
+    {
+      key: "enter-edit-stage",
+      tap: "[data-od-id='import-enter-edit-draft'] .soft-button",
+      settleMs: 650,
+    },
+    ...associationSteps,
+    {
+      key: "save-association-stage",
+      tap: "[data-od-id='import-save-association'] .soft-button",
+      settleMs: 750,
+      waitFor: [
+        { selector: "[data-od-id='import-open-preview'] .soft-button", minimum: 1 },
+      ],
+    },
+    {
+      key: "open-import-preview",
+      screenshot: true,
+      tap: "[data-od-id='import-open-preview'] .soft-button",
+      settleMs: 750,
+      waitFor: [
+        { selector: "[data-od-id='import-submit-review'] .soft-button", minimum: 1 },
+      ],
+    },
+    {
+      key: "submit-manual-review-boundary",
+      screenshot: true,
+      tap: "[data-od-id='import-submit-review'] .soft-button",
+      settleMs: 750,
+      waitFor: [
+        { selector: "[data-od-id='import-preview-submit'] .status-panel--ready", minimum: 1 },
+      ],
+      expectText: [
+        {
+          selector: "[data-od-id='import-preview-submit'] .status-panel--ready",
+          fragment: "正式地点创建仍由后续审核/发布流程决定",
+        },
+      ],
+    },
+  ];
+}
+
+const orderedNightChinaImportCases = [
+  ...nightChinaImportCorpus.cases.filter(
+    (item) => item.expectedAssociation.kind !== "existing_formal_spot",
+  ),
+  ...nightChinaImportCorpus.cases.filter(
+    (item) => item.expectedAssociation.kind === "existing_formal_spot",
+  ),
+];
+const nightChinaImportJourneyKeys = orderedNightChinaImportCases.map(
+  (item) => `nightchina-import-${item.key}`,
+);
+journeys.push(
+  ...orderedNightChinaImportCases.map((item, index) => ({
+    order: 20 + index,
+    key: nightChinaImportJourneyKeys[index],
+    url: "/content/import/index",
+    entryFlow: "map-to-my-import",
+    root: ".import-page",
+    rootClasses: ["import-page"],
+    selectors: [
+      { selector: "[data-od-id='import-source-rights']", minimum: 1 },
+    ],
+    importFixture: true,
+    injectedFixture: {
+      schema_version: nightChinaImportCorpus.schemaVersion,
+      case_key: item.key,
+      source_url_sha256: sha256(item.sourceUrl),
+      region_bucket: item.regionBucket,
+      rights_disposition: item.rightsDisposition,
+      expected_association_kind: item.expectedAssociation.kind,
+    },
+    interactions: nightChinaImportInteractions(item),
+  })),
+);
+
+const nightChinaFormalCase = nightChinaCatalogAssociationCase;
+const NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY =
+  "nightchina-post-import-formal-spot-panel";
+journeys.push({
+  order: 30,
+  key: NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY,
+  url: "/pages/map/index",
+  root: ".map-page",
+  rootClasses: ["map-page", "theme-day"],
+  selectors: [
+    { selector: "[data-control~='map-search-entry']", minimum: 1 },
+    { selector: "[data-control~='map-marker-panel-coordinator']", minimum: 1 },
+  ],
+  expectedSelectedSpotId: nightChinaFormalCase.expectedAssociation.spotId,
+  injectedFixture: {
+    schema_version: nightChinaImportCorpus.schemaVersion,
+    case_key: nightChinaFormalCase.key,
+    expected_formal_spot_id_sha256: sha256(
+      nightChinaFormalCase.expectedAssociation.spotId,
+    ),
+    component_checks: nightChinaFormalCase.postImportSpotComponentChecks,
+  },
+  interactions: [
+    {
+      key: "return-to-map-search",
+      tap: "[data-control~='map-search-entry']",
+      expectedPath: "spot/search/index",
+      waitFor: [
+        { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
+      ],
+    },
+    {
+      key: "search-associated-formal-spot",
+      input: ".spot-search-field__input",
+      value: nightChinaFormalCase.expectedAssociation.spotName,
+      settleMs: 1_000,
+      waitFor: [
+        { selector: ".spot-search-suggestion", minimum: 1 },
+      ],
+    },
+    {
+      key: "open-associated-formal-spot-panel",
+      screenshot: true,
+      tap: ".spot-search-suggestion",
+      textIncludes: nightChinaFormalCase.expectedAssociation.spotName,
+      expectedPath: "pages/map/index",
+      settleMs: 1_000,
+      waitFor: [
+        { selector: "[data-control~='map-spot-information-panel']", minimum: 1 },
+        { selector: "[data-control~='spot-route-summary']", minimum: 1 },
+        { selector: "[data-control~='spot-facility-evidence']", minimum: 1 },
+      ],
+    },
+    {
+      key: "expand-panel-large",
+      tap: ".spot-panel__extent-button",
+      index: 2,
+      minimum: 3,
+      expectChanged: [
+        {
+          selector: "[data-control~='map-spot-information-panel']",
+          kind: "attribute",
+          name: "class",
+        },
+      ],
+      inspect: [
+        { selector: "[data-control~='spot-route-summary']", minimum: 1 },
+        { selector: "[data-control~='spot-facility-evidence']", minimum: 1 },
+      ],
+    },
+    {
+      key: "favorite-associated-spot",
+      tap: "[data-control~='spot-favorite-action']",
+      // The favorite owner performs an optimistic transition and then
+      // reconciles the complete server relation. Pace the inverse action after
+      // that reconciliation so this journey represents two completed user
+      // operations instead of manufacturing an overlapping-mutation race.
+      settleMs: 1_000,
+      expectChanged: [
+        {
+          selector: "[data-control~='spot-favorite-action']",
+          kind: "attribute",
+          name: "class",
+        },
+      ],
+    },
+    {
+      key: "restore-associated-spot-favorite",
+      tap: "[data-control~='spot-favorite-action']",
+      settleMs: 1_000,
+      expectChanged: [
+        {
+          selector: "[data-control~='spot-favorite-action']",
+          kind: "attribute",
+          name: "class",
+        },
+      ],
+    },
+    {
+      key: "exercise-system-share-boundary",
+      tap: "[data-control~='spot-share-action']",
+      settleMs: 500,
+      waitFor: [
+        { selector: "[data-od-id='notification-feedback']", minimum: 1 },
+      ],
+    },
+    {
+      key: "inspect-astronomy-section",
+      tap: ".spot-panel__section-tab",
+      index: 1,
+      minimum: 2,
+      waitFor: [
+        { selector: "[data-control~='sky-professional-matrix']", minimum: 1 },
+        { selector: "[data-control~='sky-target-list']", minimum: 1 },
+      ],
+    },
+    {
+      key: "enter-associated-spot-sky",
+      waitForFormalContextSpotId:
+        nightChinaFormalCase.expectedAssociation.spotId,
+      tap: "[data-control~='spot-cloud-stargazing-action']",
+      expectedPath: "sky/detail/index",
+      waitFor: [
+        { selector: "[data-od-id='sky-orientation-route']", minimum: 1 },
+      ],
+    },
+    {
+      key: "return-from-associated-spot-sky",
+      tap: "[data-od-id='sky-orientation-back'] .sky-orientation-back",
+      expectedPath: "pages/map/index",
+      waitFor: [
+        { selector: "[data-control~='map-spot-information-panel']", minimum: 1 },
+      ],
+    },
+    {
+      key: "restore-overview-section",
+      tap: ".spot-panel__section-tab",
+      index: 0,
+      minimum: 2,
+      waitFor: [
+        { selector: "[data-control~='spot-contribution-entry']", minimum: 1 },
+      ],
+    },
+    {
+      key: "enter-associated-spot-contribution",
+      screenshot: true,
+      tap: "[data-control~='spot-contribution-entry']",
+      expectedPath: "content/contribution/index",
+      waitFor: [
+        { selector: "[data-od-id='contribution-spot-context']", minimum: 1 },
+      ],
+    },
+  ],
+});
+
+// Field Signal I21 keeps search as a real route and returns a selected formal
+// spot to the same map before opening the information panel. Override the
+// legacy in-page finder choreography with the current production route graph;
+// the capture/comparison machinery remains shared and unchanged.
+const currentMapJourney = journeys.find(
+  (journey) => journey.key === "map-cold-start-location-fallback",
+);
+if (!currentMapJourney)
+  throw new Error("field_signal_i21_map_journey_owner_missing");
+currentMapJourney.selectors = [
+  { selector: ".native-map", minimum: 1, styles: ["width", "height"] },
+  {
+    selector: "[data-control~='map-marker-panel-coordinator']",
+    minimum: 1,
+  },
+  { selector: "[data-control~='map-search-entry']", minimum: 1 },
+  { selector: "[data-control~='map-location-control']", minimum: 1 },
+  { selector: "[data-control~='map-analysis-focus-layer']", minimum: 1 },
+  { selector: "[data-control~='sky-map-canvas']", minimum: 1 },
+];
+currentMapJourney.interactions = [
+  {
+    key: "search-route-open",
+    screenshot: true,
+    tap: "[data-control~='map-search-entry']",
+    expectedPath: "spot/search/index",
+    waitFor: [
+      { selector: ".spot-search-page", minimum: 1 },
+      { selector: "[data-control~='spot-search-shell']", minimum: 1 },
+      { selector: "[data-control~='spot-search-field']", minimum: 1 },
+      { selector: "[data-control~='spot-search-filter-group']", minimum: 1 },
+      { selector: "[data-control~='spot-search-filter-choice']", minimum: 1 },
+      { selector: "[data-control~='spot-search-result-list']", minimum: 1 },
+      { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
+    ],
+    inspect: [
+      { selector: "[data-control~='spot-search-query-overlay']", minimum: 1 },
+      { selector: "[data-control~='spot-search-filter-choice']", minimum: 1 },
+      { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
+    ],
+  },
+  {
+    key: "formal-spot-select",
+    screenshot: true,
+    tap: "[data-control~='spot-search-result-card']",
+    expectedPath: "pages/map/index",
+    settleMs: 1_000,
+    waitFor: [
+      { selector: "[data-control~='map-spot-information-panel']", minimum: 1 },
+      { selector: "[data-control~='map-spot-panel-handle']", minimum: 1 },
+      { selector: "[data-control~='map-spot-panel-section-nav']", minimum: 1 },
+      { selector: "[data-control~='map-spot-panel-action-bar']", minimum: 1 },
+      { selector: "[data-control~='spot-favorite-action']", minimum: 1 },
+      { selector: "[data-control~='spot-share-action']", minimum: 1 },
+      { selector: "[data-control~='spot-cloud-stargazing-action']", minimum: 1 },
+    ],
+  },
+  {
+    key: "spot-panel-astronomy-section",
+    screenshot: true,
+    tap: ".spot-panel__section-tab",
+    index: 1,
+    minimum: 2,
+    waitFor: [
+      { selector: "[data-control~='sky-professional-matrix']", minimum: 1 },
+      { selector: "[data-control~='sky-target-list']", minimum: 1 },
+      { selector: "[data-control~='sky-time-scrubber']", minimum: 1 },
+    ],
+  },
+  {
+    key: "spot-panel-close",
+    tap: ".spot-panel__extent-button--close",
+    waitForAbsent: ["[data-control~='map-spot-information-panel']"],
+  },
+  {
+    key: "analysis-layer-open",
+    screenshot: true,
+    tap: "[data-control~='map-analysis-focus-layer']",
+    waitFor: [
+      { selector: "[data-control~='map-layer-selector']", minimum: 1 },
+      { selector: ".map-layer-sheet__choice", minimum: 3 },
+      { selector: "[data-control~='map-time-control']", minimum: 1 },
+    ],
+  },
+  {
+    key: "analysis-layer-change",
+    screenshot: true,
+    tap: ".map-layer-sheet__choice",
+    index: 1,
+    minimum: 3,
+    waitFor: [{ selector: ".map-layer-sheet__choice--active", minimum: 1 }],
+  },
+];
+
 if (platformSimulation) {
   const mapJourney = journeys.find(
     (journey) => journey.key === "map-cold-start-location-fallback",
   );
-  const skyJourney = journeys.find((journey) => journey.key === "spot-night");
+  const skyJourney = journeys.find(
+    (journey) => journey.key === "sky-orientation",
+  );
   if (!mapJourney || !skyJourney)
     throw new Error("platform_simulation_journey_owner_missing");
   mapJourney.interactions = [
     {
       key: "platform-simulated-location",
       screenshot: true,
-      tap: ".map-floating-tools .soft-button",
-      index: 0,
+      tap: "[data-control~='map-location-control']",
       settleMs: 1_500,
       waitFor: [{ selector: ".map-page.location-granted", minimum: 1 }],
       inspect: [
@@ -4285,91 +4994,91 @@ if (platformSimulation) {
       ],
     },
   ];
-  const orientationIndex = skyJourney.interactions.findIndex(
-    (step) => step.key === "orientation-open",
-  );
-  if (orientationIndex < 0)
-    throw new Error("platform_simulation_orientation_owner_missing");
-  const orientationOpen = skyJourney.interactions[orientationIndex];
   skyJourney.interactions = [
-    orientationOpen,
     {
-      key: "platform-simulated-orientation-follow",
+      key: "platform-simulated-orientation-state",
       screenshot: true,
-      tap: ".orientation-actions__primary",
+      tap: ".sky-orientation-object-toggle__button",
       settleMs: 900,
-      waitFor: [{ selector: ".orientation-control__status", minimum: 1 }],
-      waitForAbsent: [".orientation-recovery"],
-      expectText: [
-        {
-          selector: ".orientation-control__status",
-          fragment: "当前 137°",
-        },
+      waitFor: [
+        { selector: "[data-od-id='sky-orientation-sensor']", minimum: 1 },
+        { selector: "[data-od-id='sky-orientation-object-list']", minimum: 1 },
       ],
       inspect: [
-        { selector: ".orientation-control__status", minimum: 1 },
-        { selector: ".sky-scene__canvas", minimum: 1 },
+        { selector: "[data-od-id='sky-orientation-sensor']", minimum: 1 },
+        { selector: "[data-od-id='sky-orientation-canvas']", minimum: 1 },
       ],
     },
   ];
 }
 
 const journeyKeysByScope = {
-  "global-conformance": ["map-cold-start-location-fallback"],
-  "map-discovery": ["map-cold-start-location-fallback"],
-  "spot-detail": ["formal-spot-detail"],
-  "spot-night": ["spot-night"],
-  "plan-editor": ["plan-editor"],
-  settings: ["settings"],
-  "upload-recovery": ["upload-recovery"],
-  "my-library": [
+  "map-experience": [
+    "map-cold-start-location-fallback",
+    NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY,
+  ],
+  "full-sky": ["sky-orientation"],
+  "my-profile-settings": [
     "my-home",
+    "plan-editor",
+    "settings",
+    "profile-links",
+    "own-post-import",
+    ...nightChinaImportJourneyKeys,
+    NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY,
+  ],
+  contribution: [
     "new-place-contribution",
     "formal-spot-contribution",
     "upload-recovery",
+  ],
+  "platform-simulation": [
+    "map-cold-start-location-fallback",
+    "sky-orientation",
+  ],
+  "current-candidate": [
+    "map-cold-start-location-fallback",
+    "sky-orientation",
+    "my-home",
     "plan-editor",
     "settings",
+    "profile-links",
+    "own-post-import",
+    ...nightChinaImportJourneyKeys,
+    NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY,
+    "new-place-contribution",
+    "formal-spot-contribution",
+    "upload-recovery",
   ],
-  "platform-operations": ["map-cold-start-location-fallback", "settings"],
-  "platform-simulation": ["map-cold-start-location-fallback", "spot-night"],
-  "complete-current": journeys.map((journey) => journey.key),
 };
 
 const faultJourneysByScope = {
-  "global-conformance": ["map-cold-start-location-fallback"],
-  "map-discovery": ["map-cold-start-location-fallback"],
-  "spot-detail": ["formal-spot-detail"],
-  "spot-night": ["spot-night"],
-  "my-library": ["my-home"],
-  "platform-operations": ["map-cold-start-location-fallback"],
-  "complete-current": [
+  "map-experience": ["map-cold-start-location-fallback"],
+  "full-sky": ["sky-orientation"],
+  "my-profile-settings": ["my-home"],
+  contribution: ["formal-spot-contribution"],
+  "current-candidate": [
     "map-cold-start-location-fallback",
-    "formal-spot-detail",
-    "spot-night",
+    "sky-orientation",
     "my-home",
+    "formal-spot-contribution",
   ],
 };
 
 const faultProbeByJourney = {
   "map-cold-start-location-fallback": {
     expectedFragment: "网络连接失败",
-    recoveryLabel: "刷新当前区域",
-    recoverySelector: ".map-refresh-control",
-    recoveryText: "↻",
-  },
-  "formal-spot-detail": {
-    expectedFragment: "详情概览无法加载",
     faultTimeoutMs: 35_000,
-    recoveryLabel: "重试概览",
+    recoveryLabel: "重试",
     recoverySelector: ".status-panel__recovery",
-    recoveryText: "重试概览",
+    recoveryText: "重试",
   },
-  "spot-night": {
-    expectedFragment: "夜空计算请求失败",
+  "sky-orientation": {
+    expectedFragment: "天空计算请求失败",
     faultTimeoutMs: 35_000,
-    recoveryLabel: "重试夜空",
+    recoveryLabel: "重试天空",
     recoverySelector: ".status-panel__recovery",
-    recoveryText: "重试夜空",
+    recoveryText: "重试天空",
   },
   "my-home": {
     expectedFragment: "账户资料暂未刷新",
@@ -4377,6 +5086,13 @@ const faultProbeByJourney = {
     recoveryLabel: "重试同步",
     recoverySelector: ".status-panel__recovery",
     recoveryText: "重试同步",
+  },
+  "formal-spot-contribution": {
+    expectedFragment: "暂时无法回读提交状态",
+    faultTimeoutMs: 35_000,
+    recoveryLabel: "重试回读",
+    recoverySelector: ".status-panel__recovery",
+    recoveryText: "重试回读",
   },
 };
 
@@ -4550,8 +5266,8 @@ async function captureFaultAndRecovery({
     () => miniProgram.screenshot({ path: faultScreenshot }),
   );
 
-  await restartApi();
   const recoveryControl = await waitForRecoveryControl(page, probe);
+  await restartApi();
   await recoveryControl.control.tap();
   const recoveredWxml = await waitForRootFragment(
     page,
@@ -4764,11 +5480,12 @@ async function main() {
           );
         attemptDetachRuntimeObservers =
           await attachRuntimeObservers(attemptProgram);
-        await waitForInitialPage(attemptProgram, 60_000);
+        const initialPage = await waitForInitialPage(attemptProgram, 60_000);
         startupAttempts.push({
           stage,
           attempt,
           status: "passed",
+          initial_page_activation: initialPage.activation,
           project_path_binding: attemptLaunch.projectPathBinding,
           project_config_refresh: attemptLaunch.projectConfigRefresh,
           base_library_version: toolInfo.SDKVersion,

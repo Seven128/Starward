@@ -1,0 +1,47 @@
+{
+  "schema_version": "starward-open-design-review-body-sync-v1",
+  "verified_on": "2026-09-02",
+  "result": "verified",
+  "provider_version": "0.21.1",
+  "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+  "body_checks": {
+    "canonical_section_sha256": "81d865516305874121119356eb0b0112c9b4fa893d0110bd8d99d85d3a341583",
+    "provider_body_sha256": "c06f403fe2bda35e7d804b94cd1ea7627aafd298eda54b1928c88b917a82802f",
+    "structured_body_sha256": "c06f403fe2bda35e7d804b94cd1ea7627aafd298eda54b1928c88b917a82802f",
+    "registry_root_sha256": "c06f403fe2bda35e7d804b94cd1ea7627aafd298eda54b1928c88b917a82802f",
+    "linked_project_sha256": "c06f403fe2bda35e7d804b94cd1ea7627aafd298eda54b1928c88b917a82802f",
+    "chars": 37567,
+    "bytes": 58877,
+    "required_review_components_present": true
+  },
+  "provider": {
+    "status": "published",
+    "artifact_mode": "agent-managed",
+    "metadata_sha256": "9278d379443e6d68e4f2f8417a675ec0c2fd3b5be37dc4c1338e4947bf6d3d07",
+    "supporting_file_count": 30,
+    "supporting_manifest_sha256": "e6055568e0057913973b2a0f5a6c867b6257f80668366e8a3adf8e81cb989869",
+    "pending_revision_status": "pending",
+    "pending_revision_sha256": "978b49ad81f2205100c3f534f961d8d167d04304a1361da97a901aa4fbf1dd41"
+  },
+  "linked_project": {
+    "id": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "other_file_count": 117,
+    "other_manifest_sha256": "f814f72fcdf915abeff9629d25bcf67032323884c78e478caaf17778710faa29"
+  },
+  "task_project": {
+    "id": "starward-miniapp-field-signal-all-resources",
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "kind": "design-resource",
+    "intent": "design-resource-authoring",
+    "entry_file": "index.html",
+    "scenario_binding_present": false,
+    "plugin_snapshot_present": false,
+    "commission_sha256": "38e59538eb2874746a714130fe1b1d71a18b1352233c88ecb4f8905f725cd644",
+    "commission_chars": 17912,
+    "commission_bytes": 24496,
+    "first_candidate_files_unchanged_before_revision_run": true
+  },
+  "sensitive_data_persisted": false
+}

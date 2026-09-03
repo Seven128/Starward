@@ -28,6 +28,7 @@ export function PreferenceFields({
         id="settings-form"
         className="settings-card card"
         data-od-id="settings-form"
+        data-control="settings-form"
       >
         <Text className="type-section">选点偏好</Text>
         <View className="form-group">

@@ -1,0 +1,31 @@
+{
+  "schema_version": "starward-open-design-current-body-pre-mutation-v1",
+  "captured_on": "2026-09-02",
+  "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+  "provider_version": "0.21.1",
+  "authorization_record": "DECISION_REQUIRED.md#authorization",
+  "expected_current_source": {
+    "canonical_section_sha256": "6ac7bf2f1fad5e9893c9c482f65749ca1ff1598664bfedeaa650e7be53d0990e",
+    "provider_body_chars": 32419,
+    "provider_body_bytes": 51605,
+    "provider_body_sha256": "4c86d52c012900e71022e1725682b6119a62ea22935e426e83f965e0988158f1",
+    "base_source_sha256": "a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e",
+    "map_finder_source_sha256": "b4cd506d99caf3c5f59351f295f01cb7330ac720ce39f03abe464a143e09112e"
+  },
+  "provider_before": {
+    "status": "published",
+    "artifact_mode": "agent-managed",
+    "structured_body_chars": 24093,
+    "structured_body_sha256": "a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e",
+    "provider_root_bytes": 41787,
+    "provider_root_sha256": "a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e",
+    "metadata_sha256": "3fb1cc2c190cabc595371325d89e2e966f24a6143e2587cf3168bf048307bdb0",
+    "supporting_file_count": 30,
+    "supporting_manifest_sha256": "1ced0c8d52b77d5d4da9e5b00d199be3e1fc48404505c8a8119efc313fe5953a",
+    "pending_revision_status": "pending",
+    "pending_revision_sha256": "978b49ad81f2205100c3f534f961d8d167d04304a1361da97a901aa4fbf1dd41",
+    "system_project_newest_write_utc": "2026-09-01T23:54:07.8797152Z",
+    "target_project_exists": false
+  },
+  "sensitive_data_persisted": false
+}

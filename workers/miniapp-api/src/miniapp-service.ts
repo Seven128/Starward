@@ -1611,7 +1611,7 @@ export class MiniappService {
       {
         favorites,
         sortOptions: ["FAVORITED_AT", "DISTANCE", "RECENT_CONDITION"],
-        canonicalDetailRoute: "/spot/detail/index",
+        canonicalDetailRoute: "/pages/map/index",
       },
       "FRESH",
       uniqueSources(favorites.map((spot) => spot.source)),
@@ -2045,11 +2045,16 @@ export class MiniappService {
         editedByUser: true,
       };
     if (input.spotId !== undefined) {
-      if (
-        input.spotId !== null &&
-        !(await this.repository.getSpot(input.spotId as SpotId))
-      )
-        throw new Error("formal_spot_not_found");
+      if (input.spotId !== null) {
+        const selectedSpot = await this.repository.getSpot(
+          input.spotId as SpotId,
+        );
+        if (
+          !selectedSpot ||
+          !["PUBLISHED", "TEMPORARILY_CLOSED"].includes(selectedSpot.status)
+        )
+          throw new Error("formal_spot_not_found");
+      }
       next.spotId = input.spotId as SpotId | null;
       next.spotProposalId = null;
       next.proposalReviewState = "NOT_APPLICABLE";

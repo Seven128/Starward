@@ -5,12 +5,16 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  realpath,
   rm,
   writeFile,
 } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { OfficialWechatDevtools } from "./device-feedback-official.mjs";
+import {
+  OfficialWechatDevtools,
+  resolveOfficialCli,
+} from "./device-feedback-official.mjs";
 import {
   loadFeedbackRun,
   stopFeedbackRun,
@@ -85,6 +89,62 @@ test("official readiness probes automatic and ordinary preview independently", a
   assert.deepEqual(
     calls.map((args) => args[0]),
     ["auto-preview", "preview", "islogin"],
+  );
+});
+
+test("official CLI resolves the current Electron installation layout", async (t) => {
+  const directory = await mkdtemp(
+    path.join(os.tmpdir(), "starward-wechat-electron-cli-"),
+  );
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const cli = path.join(directory, "cli.bat");
+  const executable = path.join(directory, "微信开发者工具.exe");
+  const entry = path.join(
+    directory,
+    "resources",
+    "app.asar.unpacked",
+    "js",
+    "common",
+    "cli",
+    "index.js",
+  );
+  await mkdir(path.dirname(entry), { recursive: true });
+  await Promise.all([
+    writeFile(cli, "@echo off\r\n"),
+    writeFile(executable, "fixture"),
+    writeFile(entry, "fixture"),
+  ]);
+
+  const invocation = await resolveOfficialCli(cli, {});
+  assert.equal(invocation.file, await realpath(executable));
+  assert.equal(invocation.prefix[0], "-e");
+  assert.match(invocation.prefix[1], /--ms-enable-electron-run-as-node/u);
+  assert.equal(invocation.prefix[2], await realpath(entry));
+  assert.equal(invocation.cwd, await realpath(directory));
+  assert.equal(invocation.env.cwd, process.cwd());
+  assert.equal(invocation.env.ELECTRON_RUN_AS_NODE, "1");
+});
+
+test("official driver forwards installation cwd and Electron environment", async () => {
+  const calls = [];
+  const invocation = {
+    file: "official",
+    prefix: ["-e", "bootstrap", "entry"],
+    cwd: "official-directory",
+    env: { cwd: "caller-workspace", ELECTRON_RUN_AS_NODE: "1" },
+  };
+  const driver = new OfficialWechatDevtools(
+    invocation,
+    async (_file, args, options) => {
+      calls.push({ args, options });
+      if (args[3] === "islogin") return Buffer.from('{"login":false}\n');
+      return Buffer.alloc(0);
+    },
+  );
+  assert.equal((await driver.doctor()).officialTool, "available");
+  assert.deepEqual(
+    calls.map(({ options }) => ({ cwd: options.cwd, env: options.env })),
+    Array(3).fill({ cwd: invocation.cwd, env: invocation.env }),
   );
 });
 

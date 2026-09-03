@@ -1,0 +1,66 @@
+{
+  "schema": "starward-open-design-current-style-closure",
+  "verifiedOn": "2026-09-03",
+  "result": "closure_passed",
+  "scope": {
+    "requirementCycles": ["I15", "I18", "I19"],
+    "currentConflictAuthority": "I19",
+    "productSurfaces": 5,
+    "currentRoutes": 9,
+    "materialControls": 66,
+    "newUiUxDecisionRequired": false,
+    "surfaceCountIsCoverageNotRevisionAuthority": true
+  },
+  "source": {
+    "canonicalSectionSha256": "f77644d84a8a5fb49153cd135d38d6051fc5a1cbe5839176a3783bf57fa15c08",
+    "providerBodySha256": "91f79eaa9cede62899fea02d8cca6e63da8ebd992e7bd2176a4d25578ccd6d35",
+    "currentComponentSourceSha256": "c3f694450139cbfb88a875cdd0a44d1563eeb04bc546c8e6afc673134b2d3b0e",
+    "commissionSha256": "009530885780956f4edce40c8e4d11734473ffbe7455a9a13bab4f5e245fe8ac",
+    "allExact": true
+  },
+  "readOnlyRun": {
+    "runId": "6cfd3abc-457b-4cf1-a82c-28c737c9177b",
+    "clientRequestId": "08cd2a96-a7b1-4f06-bfe5-0efb2b573735",
+    "status": "succeeded",
+    "exitCode": 0,
+    "endedWithUnfinishedWork": false,
+    "agent": "codex",
+    "requestedModel": "gpt-5.6-sol",
+    "resolvedModel": "not-reported-by-runtime",
+    "reasoning": "xhigh",
+    "designSystemSelectionSource": "request",
+    "resolvedDesignSystemDigest": "0da7e4339a69aa0884964e9a4b55bbeadfdb42f56693ab30da7216862772b21d",
+    "pluginId": null,
+    "appliedPluginSnapshotId": null,
+    "candidateFilesChanged": false,
+    "missingOwnerChoices": [],
+    "decisionRequiredKeys": [],
+    "turnBMayProceed": true
+  },
+  "dimensions": {
+    "pureWhiteDayFoundation": "existing-covered",
+    "compactLegibleInformationDensity": "existing-covered",
+    "typeAndIconProportion": "existing-covered",
+    "stationaryMapSearchContinuity": "existing-covered",
+    "searchAutofocusAndOutsideBlur": "existing-covered",
+    "fullScreenSpotPanelAndContinuousContent": "existing-covered",
+    "presenceDrivenMedia": "existing-covered",
+    "centeredSectionRailAndCompactActionRail": "existing-covered",
+    "fixedBottomLayerSheet": "existing-covered",
+    "curvedTimeRulerAndDirectionLock": "existing-covered",
+    "mobileScrollbarSuppression": "existing-covered",
+    "noiseAndNotificationRestraint": "existing-covered",
+    "causalMotionAndReducedMotion": "existing-covered",
+    "existingDutyMyAccountHub": "existing-covered",
+    "responsiveSafeAreaAndTwoHundredPercentText": "existing-covered",
+    "accessibilityAndFortyFourPixelTargets": "existing-covered"
+  },
+  "buildReuseBuy": {
+    "genericIcons": "reuse existing SemanticIcon adapter and local Lucide-compatible ISC subset",
+    "curvedTimeRuler": "reuse Taro enhanced horizontal ScrollView semantics with project-local curve, opacity and snap projection",
+    "externalRulerDependencyAdded": false,
+    "secondUiSystemAdded": false,
+    "rationale": "available React Native ruler examples do not provide a directly compatible Taro/WEAPP curved and tapered primitive; a bounded project-owned projection preserves the existing time owner and avoids a second dependency truth"
+  },
+  "sensitiveDataPersisted": false
+}

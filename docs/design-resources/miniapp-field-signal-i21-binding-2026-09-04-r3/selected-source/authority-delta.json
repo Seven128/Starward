@@ -1,0 +1,36 @@
+{
+  "schema_version": "design-authority-delta-assessment-v1",
+  "assessment": "consistent_with_current_authority",
+  "based_on": {
+    "format_version": 1,
+    "entry_path": "DESIGN.md",
+    "manifest_path": null,
+    "closure_digest": "sha256:70e59fbc19d85c4062b3ed10d14a9368d9deda5501dfdd50898a5f73c271bfd2",
+    "revision": "2.0"
+  },
+  "evidence": {
+    "tokens": [
+      "type hierarchy 18/25→9.5/13.5",
+      "related/group/section spacing 3–5px/6–8px/11–14px",
+      "radius-panel 20rpx",
+      "sky-soft #F5F6FF",
+      "88rpx minimum touch target"
+    ],
+    "components": [
+      "map-spot-information-panel",
+      "map-layer-selector",
+      "Curved Time Ruler",
+      "display-mode-switcher",
+      "Compact Contribution Intake",
+      "SemanticIcon"
+    ],
+    "rules": [
+      "DESIGN.md#45-开源组件复用与设计权威边界",
+      "DESIGN.md#5a-map--search--spot-information-产品-ui-合同",
+      "DESIGN.md#5b-settings-与-my",
+      "DESIGN.md#5c-compact-contribution-intake",
+      "docs/design-resources/miniapp-field-signal-unified-flow-forms/selected-source/DESIGN.md#11-production-component-reuse-map"
+    ]
+  },
+  "observed_variances": []
+}

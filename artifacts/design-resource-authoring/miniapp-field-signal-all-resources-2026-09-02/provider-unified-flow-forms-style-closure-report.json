@@ -1,0 +1,61 @@
+{"event":"submitted","turn":"closure","clientRequestId":"e0b35d8e-7d04-47ea-bc5c-3f126acbf4bd"}
+{"event":"progress","turn":"closure","receivedBytes":2183,"eventCount":8}
+{"event":"progress","turn":"closure","receivedBytes":9497,"eventCount":12}
+{"event":"progress","turn":"closure","receivedBytes":38776,"eventCount":18}
+{"event":"progress","turn":"closure","receivedBytes":39582,"eventCount":22}
+{"event":"progress","turn":"closure","receivedBytes":41812,"eventCount":28}
+{"event":"progress","turn":"closure","receivedBytes":42925,"eventCount":34}
+{"event":"progress","turn":"closure","receivedBytes":45352,"eventCount":38}
+{"event":"progress","turn":"closure","receivedBytes":47645,"eventCount":41}
+{"event":"progress","turn":"closure","receivedBytes":51033,"eventCount":47}
+{"event":"progress","turn":"closure","receivedBytes":59009,"eventCount":52}
+{"event":"progress","turn":"closure","receivedBytes":61230,"eventCount":55}
+{"event":"progress","turn":"closure","receivedBytes":65411,"eventCount":60}
+{"event":"progress","turn":"closure","receivedBytes":77968,"eventCount":63}
+{"event":"progress","turn":"closure","receivedBytes":81924,"eventCount":68}
+{"event":"progress","turn":"closure","receivedBytes":83346,"eventCount":71}
+{"event":"progress","turn":"closure","receivedBytes":133806,"eventCount":75}
+{"event":"progress","turn":"closure","receivedBytes":185437,"eventCount":81}
+{"event":"progress","turn":"closure","receivedBytes":245687,"eventCount":87}
+{"event":"progress","turn":"closure","receivedBytes":344272,"eventCount":97}
+{"event":"progress","turn":"closure","receivedBytes":410666,"eventCount":99}
+{"event":"progress","turn":"closure","receivedBytes":431148,"eventCount":104}
+{"event":"progress","turn":"closure","receivedBytes":485297,"eventCount":109}
+{"event":"progress","turn":"closure","receivedBytes":501060,"eventCount":111}
+{"event":"progress","turn":"closure","receivedBytes":502818,"eventCount":113}
+{"event":"progress","turn":"closure","receivedBytes":505406,"eventCount":119}
+{"event":"progress","turn":"closure","receivedBytes":507157,"eventCount":121}
+{"event":"progress","turn":"closure","receivedBytes":510165,"eventCount":126}
+{"event":"progress","turn":"closure","receivedBytes":513231,"eventCount":127}
+{
+  "event": "stream-complete",
+  "turn": "closure",
+  "clientRequestId": "e0b35d8e-7d04-47ea-bc5c-3f126acbf4bd",
+  "receivedBytes": 514208,
+  "eventCount": 131,
+  "runIds": [
+    "0a9295c8-a6b9-48a4-8261-99cb151e3c3c"
+  ],
+  "observedStatuses": [
+    "resume_skipped",
+    "captured_not_resumed",
+    "pending",
+    "completed",
+    "succeeded"
+  ],
+  "textTail": "2\"\r\n  },\r\n  {\r\n    \"Path\": \"COMMISSION.md\",\r\n    \"Unchanged\": true,\r\n    \"Sha256\": \"79266ec6a6f98bfb60c1197226a196e70748cc1391674735ccb20f835a48f4d8\"\r\n  },\r\n  {\r\n    \"Path\": \"coverage.json\",\r\n    \"Unchanged\": true,\r\n    \"Sha256\": \"2670fb10c00ababb4a6a69c2abede37d48b8e36ffadf4d59e7606d3efc5616a7\"\r\n  },\r\n  {\r\n    \"Path\": \"index.html\",\r\n    \"Unchanged\": true,\r\n    \"Sha256\": \"0346c7f738cf853dd776654257b0d8fe5f736f1423fa9bdf42ebaaddc950871b\"\r\n  },\r\n  {\r\n    \"Path\": \"README.md\",\r\n    \"Unchanged\": true,\r\n    \"Sha256\": \"3a9c3c7c2d712fde35d0c852ee93f08682c4cddbf5f104174b78ca115377b603\"\r\n  }\r\n]\r\nid: 124event: stderrid: 125event: agent完整读取并校验 COMMISSION.md 与项目根 DESIGN.md定位并完整审计五个保留候选文件及 I20 缺陷基线核对十三项变更、62-Control 覆盖、README/coverage 与生产边界给出 closure_passed 或 decision_required 的只读结论id: 126event: stderrid: 127event: agentclosure_passed\n\nThis is a requirements/style-application closure, not an acceptance of the retained I20 artifact. No controlling conflict or additional owner choice was found; `decision_required: none`.\n\nAuthority checks passed:\n\n- Injected provider body SHA-256: `53eaac22d20d7b2a3b2bd501c1199558f9601d1afc5ed611d4e5ef7518c8a99d`\n- Injected body size: 85,870 UTF-8 bytes\n- [COMMISSION.md](</C:/Users/777/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/starward-miniapp-field-signal-all-resources/COMMISSION.md>) SHA-256: `79266ec6a6f98bfb60c1197226a196e70748cc1391674735ccb20f835a48f4d8`\n- Canonical section preflight retained: `086088d3…706fa`\n- Current component source preflight retained: `0fd87614…a4dd4`\n\nClosed dimensions:\n\n1. One retained panel document across all extents; media is presence-driven and revealed only toward large.\n2. Shorter three-action rail; ordinary missing values become `暂无数据` without collapsing domain states.\n3. Flush two-item section rail with zero internal gap.\n4. Raised 84rpx, draggable, arrowless Curved Time Ruler backed by the Taro ScrollView interaction model.\n5. Identical Map/Search text and stationary frame, with compact suggestions, filters, and partition rhythm.\n6. Media reveal precedes near-top Map-chrome fade; reverse ordering is preserved on collapse.\n7. Compact no-media handle band; only the centered `104×40rpx` region initiates panel dragging.\n8. One `bottomPresentation = none | spot-panel | layer-sheet` owner; layer-to-marker retargets directly to the new medium panel.\n9. Active surfaces use `#F5F6FF` plus boundary, indicator, or checked semantics.\n10. One draggable/keyboard-accessible day–night–observation track; `observation-mode-control` is retired.\n11. Compact My hierarchy with restrained semantic icon tiles and no added product duties.\n12. One-document Contribution intake with divider-backed cells, conditional complex groups, inline validation, upload recovery, draft/idempotency preservation, and one final submit.\n13. Reuse-first mapping is explicit: Taroify primitives where equivalent, Taro ScrollView for the ruler, retained `SemanticIcon`, and bounded adapter fallbacks without a second UI/form/icon truth.\n\nThe cross-cutting envelope is locked to 5 Surfaces, 9 current routes, and exactly 62 current Controls. Objective facts, meaningful recovery, privacy, accessibility, real scrolling with hidden chrome, unaffected controls/routes, and production-unverified native boundaries remain preserved.\n\nThe I20 baseline correctly remains rejected evidence: it still records 63 Controls with the extra `observation-mode-control`, uses the older active color and panel/presentation structures, retains ruler arrows and split observation control, and lacks the required complete Taroify mapping in README/coverage. Those are revision targets, not unresolved decisions.\n\nAll inspected project files remained byte-for-byte unchanged. Material revision may proceed.id: 128event: agent完整读取并校验 COMMISSION.md 与项目根 DESIGN.md定位并完整审计五个保留候选文件及 I20 缺陷基线核对十三项变更、62-Control 覆盖、README/coverage 与生产边界给出 closure_passed 或 decision_required 的只读结论id: 129event: agentid: 130event: diagnosticid: 131event: end",
+  "matchingRuns": [
+    {
+      "id": "0a9295c8-a6b9-48a4-8261-99cb151e3c3c",
+      "status": "succeeded",
+      "errorCode": null,
+      "exitCode": 0,
+      "endedWithUnfinishedWork": false,
+      "agentId": "codex",
+      "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+      "designSystemDigest": "c8ed87d21bf9f3b4298b7b5a8435f9ea897ed5c2bed8294cb63713e1ccae8969",
+      "pluginId": null,
+      "appliedPluginSnapshotId": null
+    }
+  ]
+}

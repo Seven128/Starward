@@ -1,0 +1,1396 @@
+{
+  "schema_version": "starward-field-signal-i21-implementation-handoff-spec-v1",
+  "status": "selected-implementation-constraint",
+  "authority": {
+    "design_system_target": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+    "design_system_owner": "DESIGN.md#wechat-mini-program--sky-canvas-field-signal",
+    "product_surface_owners": [
+      "project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "project_context/areas/main/screen-contracts/wechat-miniapp/surfaces-and-controls.md",
+      "project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md"
+    ],
+    "rule": "The selected prototype and this handoff constrain visible UI/UX. DESIGN.md remains the sole exact visual authority; Context and production owners retain product, data, permission, draft, transport and recovery truth."
+  },
+  "global_rules": [
+    "Use one retained spot document across extents; extent crops presentation and never creates three rendering/state owners.",
+    "A Map frame has exactly one bottomPresentation value: none, spot-panel or layer-sheet.",
+    "Use objective facts only; ordinary absent values are 暂无数据 and must remain distinct from loading, permission, stale, error and risk.",
+    "Hide scrollbar chrome everywhere on phone surfaces without disabling touch, wheel, keyboard, programmatic or screen-reader scrolling.",
+    "Keep compact visible geometry with at least 88rpx semantic touch targets, exact density hierarchy and reduced-motion/transparency alternatives.",
+    "Reuse mature compatible primitives through one Starward adapter; do not copy library brand defaults, install a second icon/suite, or let library state replace Product/Context owners.",
+    "Treat @taroify/core@1.0.6 as the research-qualified preferred generic substrate, subject to production package/license/lock/tree-shaking/bundle/WEAPP/IME/safe-area/accessibility/gesture proof.",
+    "Keep SemanticIcon as the only icon boundary and Taro enhanced horizontal ScrollView as the curved-time-ruler physics owner.",
+    "Map and My remain the only primary Mini Program destinations; all other current routes are drilldowns."
+  ],
+  "targets": {
+    "miniapp": {
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "platform": "WeChat Mini Program through the current Taro/React production owner",
+      "canonical_entry": "index.html",
+      "entries": [
+        "index.html"
+      ],
+      "frames": [
+        {
+          "key": "route.pages-map-index",
+          "duty": "Current miniapp-map-discovery route with current ownership",
+          "entry": "index.html#pages/map/index",
+          "route_owner": "pages/map/index"
+        },
+        {
+          "key": "route.spot-search",
+          "duty": "Current miniapp-map-discovery route with current-child ownership",
+          "entry": "index.html#spot/search",
+          "route_owner": "spot/search"
+        },
+        {
+          "key": "route.sky-detail",
+          "duty": "Current miniapp-sky-orientation route with only-full-sky-child ownership",
+          "entry": "index.html#sky/detail",
+          "route_owner": "sky/detail"
+        },
+        {
+          "key": "route.pages-my-index",
+          "duty": "Current miniapp-my-library route with current ownership",
+          "entry": "index.html#pages/my/index",
+          "route_owner": "pages/my/index"
+        },
+        {
+          "key": "route.plan-detail",
+          "duty": "Current miniapp-my-library route with current ownership",
+          "entry": "index.html#plan/detail",
+          "route_owner": "plan/detail"
+        },
+        {
+          "key": "route.settings",
+          "duty": "Current miniapp-my-library route with current ownership",
+          "entry": "index.html#settings",
+          "route_owner": "settings"
+        },
+        {
+          "key": "route.profile-links",
+          "duty": "Current miniapp-profile-content route with current ownership",
+          "entry": "index.html#profile/links",
+          "route_owner": "profile/links"
+        },
+        {
+          "key": "route.content-import",
+          "duty": "Current miniapp-profile-content route with current ownership",
+          "entry": "index.html#content/import",
+          "route_owner": "content/import"
+        },
+        {
+          "key": "route.content-contribution-index",
+          "duty": "Current miniapp-contribution-intake route with current ownership",
+          "entry": "index.html#content/contribution/index",
+          "route_owner": "content/contribution/index"
+        }
+      ],
+      "component_families": [
+        {
+          "key": "control.mini-primary-navigation",
+          "owner": "apps/wechat-miniapp/src/components/custom-nav.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "shared product state through the owning Starward store/coordinator",
+          "behavior": "Preserve mini-primary-navigation at [data-control~=\"mini-primary-navigation\"]; library=@taroify/core; component=Tabbar; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.tabbar",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.display-mode-switcher",
+          "owner": "apps/wechat-miniapp/src/content/settings/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "shared product state through the owning Starward store/coordinator",
+          "behavior": "Preserve display-mode-switcher at [data-control~=\"display-mode-switcher\"]; library=@taroify/core; component=Radio.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.radio-group",
+            "starward.display-mode-track",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.data-source-disclosure",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "shared product state through the owning Starward store/coordinator",
+          "behavior": "Preserve data-source-disclosure at [data-control~=\"data-source-disclosure\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.notification-feedback",
+          "owner": "apps/wechat-miniapp/src/components/status-panel.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "shared product state through the owning Starward store/coordinator",
+          "behavior": "Preserve notification-feedback at [data-control~=\"notification-feedback\"]; library=@taroify/core; component=Toast; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.toast",
+            "starward.notification-feedback"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.page-state-recovery",
+          "owner": "apps/wechat-miniapp/src/components/status-panel.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "shared product state through the owning Starward store/coordinator",
+          "behavior": "Preserve page-state-recovery at [data-control~=\"page-state-recovery\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-search-entry",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-search-entry at [data-control~=\"map-search-entry\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-search-shell",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-search-shell at [data-control~=\"spot-search-shell\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-search-field",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-search-field at [data-control~=\"spot-search-field\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-search-query-overlay",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-search-query-overlay at [data-control~=\"spot-search-query-overlay\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-search-filter-group",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-search-filter-group at [data-control~=\"spot-search-filter-group\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-search-filter-choice",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-search-filter-choice at [data-control~=\"spot-search-filter-choice\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-search-result-list",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-search-result-list at [data-control~=\"spot-search-result-list\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-search-result-card",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-search-result-card at [data-control~=\"spot-search-result-card\"]; library=@taroify/core; component=Search + Cell.Group/Cell + Checkbox.Group; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.search",
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.checkbox-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-location-control",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-location-control at [data-control~=\"map-location-control\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-analysis-focus-layer",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-analysis-focus-layer at [data-control~=\"map-analysis-focus-layer\"]; library=@taroify/core; component=Popup(placement=bottom); the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.popup",
+            "starward.bottom-presentation-coordinator",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-layer-selector",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-layer-selector at [data-control~=\"map-layer-selector\"]; library=@taroify/core; component=Popup(placement=bottom); the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.popup",
+            "starward.bottom-presentation-coordinator",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-time-control",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-time-control at [data-control~=\"map-time-control\"]; library=Taro platform primitive; component=enhanced horizontal ScrollView; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.scroll-view",
+            "starward.curved-time-projection"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-marker-panel-coordinator",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "map-search product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-marker-panel-coordinator at [data-control~=\"map-marker-panel-coordinator\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-spot-information-panel",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-spot-information-panel at [data-control~=\"map-spot-information-panel\"]; library=@taroify/core with bounded Taro fallback; component=FloatingPanel(anchors, contentDraggable=false); the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.floating-panel",
+            "taro.scroll-view",
+            "starward.bottom-presentation-coordinator"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-spot-panel-handle",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-spot-panel-handle at [data-control~=\"map-spot-panel-handle\"]; library=@taroify/core with bounded Taro fallback; component=FloatingPanel(anchors, contentDraggable=false); the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.floating-panel",
+            "taro.scroll-view",
+            "starward.bottom-presentation-coordinator"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-spot-panel-section-nav",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-spot-panel-section-nav at [data-control~=\"map-spot-panel-section-nav\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.map-spot-panel-action-bar",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve map-spot-panel-action-bar at [data-control~=\"map-spot-panel-action-bar\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-favorite-action",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-favorite-action at [data-control~=\"spot-favorite-action\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-share-action",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-share-action at [data-control~=\"spot-share-action\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-cloud-stargazing-action",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-cloud-stargazing-action at [data-control~=\"spot-cloud-stargazing-action\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-media-gallery",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-media-gallery at [data-control~=\"spot-media-gallery\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-navigation-action",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-navigation-action at [data-control~=\"spot-navigation-action\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-contribution-entry",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-contribution-entry at [data-control~=\"spot-contribution-entry\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-route-summary",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-route-summary at [data-control~=\"spot-route-summary\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.spot-facility-evidence",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve spot-facility-evidence at [data-control~=\"spot-facility-evidence\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.guide-article-viewer",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve guide-article-viewer at [data-control~=\"guide-article-viewer\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-professional-matrix",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-professional-matrix at [data-control~=\"sky-professional-matrix\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-target-list",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-target-list at [data-control~=\"sky-target-list\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-time-scrubber",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-time-scrubber at [data-control~=\"sky-time-scrubber\"]; library=Taro platform primitive; component=enhanced horizontal ScrollView; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.scroll-view",
+            "starward.curved-time-projection"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-map-canvas",
+          "owner": "apps/wechat-miniapp/src/pages/map/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "spot-panel product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-map-canvas at [data-control~=\"sky-map-canvas\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-orientation-canvas",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "full-sky product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-orientation-canvas at [data-control~=\"sky-orientation-canvas\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-orientation-sensor",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "full-sky product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-orientation-sensor at [data-control~=\"sky-orientation-sensor\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-orientation-recovery",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "full-sky product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-orientation-recovery at [data-control~=\"sky-orientation-recovery\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-orientation-object-list",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "full-sky product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-orientation-object-list at [data-control~=\"sky-orientation-object-list\"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.sky-orientation-time-ruler",
+          "owner": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "full-sky product state through the owning Starward store/coordinator",
+          "behavior": "Preserve sky-orientation-time-ruler at [data-control~=\"sky-orientation-time-ruler\"]; library=Taro platform primitive; component=enhanced horizontal ScrollView; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taro.scroll-view",
+            "starward.curved-time-projection"
+          ],
+          "strategy": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.my-account-header",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve my-account-header at [data-control~=\"my-account-header\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.my-settings-action",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve my-settings-action at [data-control~=\"my-settings-action\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.my-profile-summary",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve my-profile-summary at [data-control~=\"my-profile-summary\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.my-grouped-entry-list",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve my-grouped-entry-list at [data-control~=\"my-grouped-entry-list\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.my-plan-entry",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve my-plan-entry at [data-control~=\"my-plan-entry\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.my-contribution-entry",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve my-contribution-entry at [data-control~=\"my-contribution-entry\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.plan-editor",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve plan-editor at [data-control~=\"plan-editor\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.settings-form",
+          "owner": "apps/wechat-miniapp/src/content/settings/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "my product state through the owning Starward store/coordinator",
+          "behavior": "Preserve settings-form at [data-control~=\"settings-form\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.profile-link-editor",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "profile-content product state through the owning Starward store/coordinator",
+          "behavior": "Preserve profile-link-editor at [data-control~=\"profile-link-editor\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.profile-link-open-copy",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "profile-content product state through the owning Starward store/coordinator",
+          "behavior": "Preserve profile-link-open-copy at [data-control~=\"profile-link-open-copy\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.import-source-rights",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "profile-content product state through the owning Starward store/coordinator",
+          "behavior": "Preserve import-source-rights at [data-control~=\"import-source-rights\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.import-draft-editor",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "profile-content product state through the owning Starward store/coordinator",
+          "behavior": "Preserve import-draft-editor at [data-control~=\"import-draft-editor\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.import-spot-association",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "profile-content product state through the owning Starward store/coordinator",
+          "behavior": "Preserve import-spot-association at [data-control~=\"import-spot-association\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.import-preview-submit",
+          "owner": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "profile-content product state through the owning Starward store/coordinator",
+          "behavior": "Preserve import-preview-submit at [data-control~=\"import-preview-submit\"]; library=@taroify/core; component=Cell.Group/Cell + Switch/Radio.Group where semantically matched; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.cell-group",
+            "taroify.cell",
+            "taroify.switch",
+            "taroify.radio-group",
+            "starward.semantic-icon"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-kind-control",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-kind-control at [data-control~=\"contribution-kind-control\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-spot-context",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-spot-context at [data-control~=\"contribution-spot-context\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-topic-control",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-topic-control at [data-control~=\"contribution-topic-control\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-observed-at",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-observed-at at [data-control~=\"contribution-observed-at\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-location-consent",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-location-consent at [data-control~=\"contribution-location-consent\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-media-upload",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-media-upload at [data-control~=\"contribution-media-upload\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-submit",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-submit at [data-control~=\"contribution-submit\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        },
+        {
+          "key": "control.contribution-status-list",
+          "owner": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+          "states": [
+            "declared-state-matrix"
+          ],
+          "data": "contribution product state through the owning Starward store/coordinator",
+          "behavior": "Preserve contribution-status-list at [data-control~=\"contribution-status-list\"]; library=@taroify/core; component=Form/Field/Input/Textarea/Radio/Checkbox/DatetimePicker/Popup/Uploader/Progress/Button; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance.",
+          "primitives": [
+            "taroify.form",
+            "taroify.field",
+            "taroify.input",
+            "taroify.textarea",
+            "taroify.radio-group",
+            "taroify.checkbox-group",
+            "taroify.datetime-picker",
+            "taroify.popup",
+            "taroify.uploader",
+            "taroify.progress",
+            "taroify.button"
+          ],
+          "strategy": [
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -223,12 +223,26 @@ test("SDK probe rejects simulator and wrong account; only whitelisted fields lea
   assert.equal(result.phoneBundleBytesVerified, false);
   assert.equal(result.metrics.menu.bottom, 80);
   assert.ok(!JSON.stringify(result).includes("private"));
-  for (const route of ["spot/detail/index", "spot/sky/index", "content/settings/index", "content/plan/detail/index"]) {
+  for (const route of [
+    "spot/search/index",
+    "sky/detail/index",
+    "content/settings/index",
+    "content/plan/detail/index",
+    "content/profile/links/index",
+    "content/import/index",
+    "content/contribution/index",
+  ]) {
     await access(new URL(`../../apps/wechat-miniapp/src/${route}.tsx`, import.meta.url));
     mini.currentPage = async () => ({ path: route });
     assert.equal((await inspectRuntime(mini, binding)).route, route);
   }
-  for (const route of ["pages/spot-detail/index", "pages/spot-night/index", "content/plan/detail/index?private=secret"]) {
+  for (const route of [
+    "spot/detail/index",
+    "spot/sky/index",
+    "sky/professional/index",
+    "sky/targets/index",
+    "content/plan/detail/index?private=secret",
+  ]) {
     mini.currentPage = async () => ({ path: route });
     const unknown = await inspectRuntime(mini, binding);
     assert.equal(unknown.route, "other_route");

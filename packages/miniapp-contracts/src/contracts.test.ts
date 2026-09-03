@@ -147,4 +147,6 @@ test("the current feature set is one exact boolean closure", () => {
   assert.equal(SELECTED_FEATURE_FLAGS.ORDINARY_PLACE_SKY_ENABLED, false);
   assert.equal(SELECTED_FEATURE_FLAGS.DARK_SKY_CANDIDATES_ENABLED, false);
   assert.equal(SELECTED_FEATURE_FLAGS.REAL_WEATHER_ENABLED, true);
+  assert.equal(SELECTED_FEATURE_FLAGS.PROFILE_LINKS_ENABLED, true);
+  assert.equal(SELECTED_FEATURE_FLAGS.OWN_POST_IMPORT_ENABLED, true);
 });

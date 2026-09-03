@@ -1,0 +1,189 @@
+{
+  "schema": "starward-miniapp-design-resource-candidate-report",
+  "status": "unselected-current-candidate-awaiting-owner-review",
+  "verifiedOn": "2026-09-03",
+  "scope": {
+    "product": "existing WeChat Mini Program",
+    "requirementCycle": "I15 plus I18 plus I19 plus I20; later owner requirements supersede conflicts",
+    "revisionDiff": "I20's twelve owner-listed changes and their direct dependencies only",
+    "surfaceMeaning": "five stable Product Surfaces are the complete resource and regression-audit envelope, not permission for unrelated redesign",
+    "surfaces": [
+      "miniapp-map-discovery",
+      "miniapp-sky-orientation",
+      "miniapp-my-library",
+      "miniapp-profile-content",
+      "miniapp-contribution-intake"
+    ],
+    "routes": [
+      "pages/map/index",
+      "spot/search",
+      "sky/detail",
+      "pages/my/index",
+      "plan/detail",
+      "settings",
+      "profile/links",
+      "content/import",
+      "content/contribution/index"
+    ],
+    "materialControls": 63,
+    "productionCodeChanged": false
+  },
+  "authority": {
+    "target": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+    "componentSource": "docs/design-resources/miniapp-field-signal-compact-continuity/selected-source/DESIGN.md",
+    "componentSourceSha256": "07f7fa28f676dc3c42608a210b57f0ae38955570e7890c6c1e64069617d1d3fc",
+    "canonicalSectionSha256": "b5b1b95bd46787edd36c31121fa3d11f7b3003362cb44591590f863f6c9e2f52",
+    "providerBodySha256": "5af9c8b73a1fbf8f2d2a45ff903a14c4d19d8828e5df62799ab78f16a96a0715",
+    "commissionSha256": "83c0313dd0cfd69cee90a80bfa233e0db493efea6e1d149a59ebbc1638f00bfe",
+    "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "resolvedDesignSystemDigest": "a073b393181f1dd54612a9ef000a111cd27409601297860c0650a1e0d89d90af",
+    "historicalSourcesUsedForCurrentGeneration": false,
+    "formalQualification": "highest_performance_unverified"
+  },
+  "provider": {
+    "version": "0.21.1",
+    "projectId": "starward-miniapp-field-signal-all-resources",
+    "conversationId": "4f290527-9979-4b24-b92c-8365b470bf9d",
+    "designSystemProjectId": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "styleClosureRun": {
+      "runId": "1d529676-133e-4982-87da-461da7ae00ce",
+      "clientRequestId": "ef1f8688-9509-46ce-9ba5-5af17edcfec6",
+      "status": "succeeded",
+      "result": "closure_passed",
+      "exitCode": 0,
+      "endedWithUnfinishedWork": false
+    },
+    "materialRevisionRun": {
+      "runId": "1387e883-8432-4cd2-bfd2-4895240db70d",
+      "clientRequestId": "305dbbad-f929-4daa-a1ec-4d12d5a02bea",
+      "status": "succeeded",
+      "exitCode": 0,
+      "endedWithUnfinishedWork": false,
+      "deliverableValid": true
+    },
+    "boundedCompletionRun": {
+      "runId": "49650a64-8c0c-4b3f-82e4-11fc6f28a100",
+      "clientRequestId": "d70a7d60-9f8c-4f7d-9b5e-44f737cb5708",
+      "status": "succeeded",
+      "exitCode": 0,
+      "endedWithUnfinishedWork": false,
+      "note": "provider reported no new artifact envelope; current files were independently inspected and synchronized"
+    },
+    "finalMechanicalRepairs": [
+      "transparent decorative Search glyph no longer intercepts the visible Back control",
+      "Want, Share and Cloud Stargazing action icons share the exact 12 CSS px visual size"
+    ],
+    "binding": {
+      "kind": "design-resource",
+      "intent": "design-resource-authoring",
+      "entryFile": "index.html",
+      "pluginSnapshotId": null,
+      "activeRuns": 0
+    }
+  },
+  "candidateFiles": [
+    {"path":"candidate/index.html","sha256":"0346c7f738cf853dd776654257b0d8fe5f736f1423fa9bdf42ebaaddc950871b","bytes":7226},
+    {"path":"candidate/assets/styles.css","sha256":"1f1262b036220c6b33e178e1f4d49043a7cdf3244c1f45ddc44d33abd0e52002","bytes":48014},
+    {"path":"candidate/assets/app.js","sha256":"afa995905e0bc94b2e54e89c50ba8ddf5e6d494fa9c77a7112d2ccf0f610ee03","bytes":119299},
+    {"path":"candidate/coverage.json","sha256":"2670fb10c00ababb4a6a69c2abede37d48b8e36ffadf4d59e7606d3efc5616a7","bytes":21501},
+    {"path":"candidate/README.md","sha256":"3a9c3c7c2d712fde35d0c852ee93f08682c4cddbf5f104174b78ca115377b603","bytes":11299}
+  ],
+  "requirementResults": {
+    "01SearchBackAndContinuity": "passed: no trailing x; visible, system and left-edge Back repeatedly return to Map; field geometry is pixel-stationary",
+    "02CompactTitlelessSearch": "passed: visible filter heading and divider are absent; compact type and controls retain 44 CSS px semantic targets",
+    "03StableDisclosures": "passed: one retained DOM tree and live measured height/opacity animation support rapid reversal without remount",
+    "04HalfFieldImageResults": "passed: copy width is 52 percent and the reading gradient reaches transparent at the same boundary while preserving a faint image beneath",
+    "05IntegratedLayerSheet": "passed: trigger is stationary; three pale-active image-backed choices, objective condition summary, no x and no off row",
+    "06NavSafeHandleOnlyPanel": "passed: marker opens medium; panel remains above primary navigation; only the bounded handle lane initiates drag and tap is a no-op",
+    "07CompactUniformActionRail": "passed: rail is 44 CSS px and all three visible icons are 12 CSS px; Want reuses the rounded-star source",
+    "08FullWidthFloatingRailPanel": "passed: media begins at the panel edge without a blank band; the contiguous rail overlays at the exact panel midpoint and has no shadow",
+    "09ObjectiveInformationOnly": "passed: cautious-departure and recommended-window presentation is absent; objective route, access, facility, weather and astronomy facts remain",
+    "10BorderlessCurvedRuler": "passed: prototype renders the borderless curved ruler; production substrate is Taro enhanced horizontal ScrollView plus bounded local curve/snap projection",
+    "11HeaderlessFullSky": "passed: boxed title/place/time/target header is absent; quiet Back and source sky content remain",
+    "12MarkerDefaultsToMedium": "passed: formal Map marker and Search result selection both open the same panel at medium"
+  },
+  "browserEvidence": {
+    "search": {
+      "mapAndSearchFieldRectAt390Text100": {"x":475.9,"y":113.6,"width":364.4,"height":44},
+      "autofocus": "passed",
+      "outsideTapBlurAndSuggestionDismiss": "passed",
+      "visibleBack": "passed twice without stale navigation",
+      "systemBack": "passed",
+      "leftEdgeBack": "passed",
+      "trailingControlCount": 0,
+      "visibleFilterHeadingCount": 0
+    },
+    "layerSheet": {
+      "heightCssPx": 166,
+      "choiceCount": 3,
+      "closeControlCount": 0,
+      "triggerGeometryDeltaAfterMapClosePx": 0,
+      "activeUsesPaleSkyBoundaryWithoutDarkFill": true,
+      "observationConditionIntegrated": true
+    },
+    "spotPanel": {
+      "markerDefaultExtent": "medium",
+      "panelToPrimaryNavGapCssPx": 1.2,
+      "largeRailCenterDeltaCssPx": 0,
+      "railShadow": "none",
+      "activeRailShadow": "none",
+      "actionRailHeightCssPx": 44,
+      "actionIconWidthsCssPx": [12,12,12],
+      "noImageMediaNodeCount": 0
+    },
+    "fullSky": {
+      "route": "sky/detail",
+      "boxedHeaderCount": 0,
+      "rulerHeightCssPx": 44,
+      "rulerBorder": "none",
+      "rulerShadow": "none",
+      "rulerScrollbar": "none"
+    },
+    "responsive": {
+      "myAt320Text200HorizontalOverflowPx": 0,
+      "searchAt320Text200HorizontalOverflowPx": 0,
+      "dayCanvas": "#FFFFFF",
+      "browserConsoleWarningsOrErrors": 0
+    }
+  },
+  "coverage": {
+    "providerRepositoryAndHttpReviewParity": true,
+    "surfaces": "5/5",
+    "controls": "63/63",
+    "routes": "9/9",
+    "retiredControlsPresent": 0,
+    "retiredRoutesPresent": 0,
+    "prohibitedVisibleCopyPresent": 0,
+    "unresolvedItems": 0
+  },
+  "projectChecks": {
+    "openDesignCandidateInspector": "passed with provider, repository and audited-digest parity",
+    "openDesignCurrentSystemReadback": "passed",
+    "candidateJavascriptSyntax": "passed",
+    "inspectorJavascriptSyntax": "passed",
+    "coverageJsonParse": "passed",
+    "designSystemVerify": "passed",
+    "designLintErrors": 0,
+    "designLintExistingNativeProfileWarnings": 33,
+    "validateContext": "passed",
+    "validateHarness": "passed",
+    "touchedModularityWarnings": 0,
+    "gitDiffCheck": "passed with line-ending advisory only"
+  },
+  "review": {
+    "url": "http://127.0.0.1:4173/",
+    "browserVisible": true,
+    "markedDeliverable": true,
+    "selectionStopRequired": true,
+    "userApprovalRecorded": false,
+    "downstreamReferencesRead": false,
+    "downstreamHandoffStarted": false,
+    "productionImplementationStarted": false
+  },
+  "boundaries": [
+    "The current revision contains the owner's I20 twelve changes and direct dependencies; later requirements supersede earlier conflicts.",
+    "Reference screenshots informed interaction, density and proportion only; no third-party brand, proprietary map, icon, data or unrelated product duty was copied.",
+    "The prototype does not establish physical WeChat device, native map, real sensor, system IME, screen-reader or low-performance-device production behavior.",
+    "No candidate selection, immutable freeze, formal handoff or production acceptance is claimed."
+  ]
+}

@@ -565,6 +565,7 @@ export default function PlanEditorPage() {
       className={`${themeClass} plan-editor`}
       data-route="plan-editor"
       data-od-id="my-plan"
+      data-control="plan-editor"
     >
       <CustomNav
         title="今晚计划"

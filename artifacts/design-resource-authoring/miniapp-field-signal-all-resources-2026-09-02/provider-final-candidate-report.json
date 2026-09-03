@@ -1,0 +1,217 @@
+{
+  "schema": "starward-miniapp-design-resource-candidate-report",
+  "status": "unselected-current-candidate-awaiting-owner-review",
+  "scope": {
+    "product": "existing WeChat Mini Program",
+    "requirementCycle": "prior 11 review points plus current 7 requirement groups; current requirements supersede conflicts",
+    "surfaceMeaning": "five stable Product Surfaces form the complete resource and consistency-audit envelope; they are not permission for unrelated UI/UX redesign",
+    "newUiUxOutsideAuthorizedChanges": "decision-required before mutation",
+    "surfaces": [
+      "miniapp-map-discovery",
+      "miniapp-sky-orientation",
+      "miniapp-my-library",
+      "miniapp-profile-content",
+      "miniapp-contribution-intake"
+    ],
+    "routes": [
+      "pages/map/index",
+      "spot/search",
+      "sky/detail",
+      "pages/my/index",
+      "plan/detail",
+      "settings",
+      "profile/links",
+      "content/import",
+      "content/contribution/index"
+    ],
+    "materialControls": 66,
+    "productLogicChanged": false,
+    "productionCodeChanged": false
+  },
+  "authority": {
+    "target": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+    "componentSource": "docs/design-resources/miniapp-field-signal-map-search-spot-panel/selected-source/DESIGN.md",
+    "componentSourceSha256": "52104dfa7d34e27c95f3b971c6f1e306d95aba2a5d2f1edc5c414fb51073aae4",
+    "canonicalSectionSha256": "8ef768c6b9f1fb0e09bf4ca9835d5825b24d5a2a49f2c11eab985d9be7368bfe",
+    "providerBodySha256": "98218fd2a884373222a1b0e9e7892c133bbb4f78aeedec2c17a2ccc1fd9eae41",
+    "commissionSha256": "d243ea93fd68d74405ed56f2e1500c5a8d7070b5bf4832b87410abba1a9050ad",
+    "designSystemId": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "resolvedDesignSystemDigest": "ad4f6e373d9340f2957591417232e9faa64f52c2eca418984b6c0271133879ac",
+    "historicalSourcesUsedForCurrentGeneration": false,
+    "visibleReleaseLabelPresent": false,
+    "visibleDemoOrFixtureLabelPresent": false
+  },
+  "provider": {
+    "projectId": "starward-miniapp-field-signal-all-resources",
+    "conversationId": "4f290527-9979-4b24-b92c-8365b470bf9d",
+    "designSystemProjectId": "ds-starward-mini-program-sky-canvas-field-signal-revision",
+    "styleClosure": {
+      "diagnosticRunId": "9888d600",
+      "diagnosticDisposition": "count typo corrected without candidate writes",
+      "correctiveRunId": "b56021c3-7ef0-4427-8cc1-cb3c3a44a1d7",
+      "result": "closure_passed",
+      "surfaces": 5,
+      "controls": 66,
+      "decisionRequired": 0
+    },
+    "materialRevision": {
+      "primaryRunId": "396d20ad-1519-4c91-bd77-ea8dbfa4a7ad",
+      "primaryDisposition": "daemon restarted; retained writes were independently inspected and are not treated as run-success evidence",
+      "boundedCompletionClientRequestId": "b2688309",
+      "boundedCompletionDisposition": "daemon restarted; retained writes were independently inspected and are not treated as run-success evidence",
+      "mechanicalCompletionRunId": "e4b2acda-06cd-4199-b9ac-a47d92de428a",
+      "mechanicalCompletionClientRequestId": "3492afb6-a513-401c-b6a8-3d62977b17aa",
+      "mechanicalCompletionResult": "succeeded"
+    },
+    "binding": {
+      "kind": "design-resource",
+      "intent": "design-resource-authoring",
+      "entryFile": "index.html",
+      "pluginSnapshotId": null,
+      "activeRuns": 0
+    }
+  },
+  "candidateFiles": [
+    {
+      "path": "candidate/index.html",
+      "sha256": "92f65706ace5ad7ab1d52c40a9b4afb54aeafb56c749a7186916c3b73151f3e5",
+      "bytes": 7151
+    },
+    {
+      "path": "candidate/assets/styles.css",
+      "sha256": "8ec5192a10882b74d56152ca0c52e33a3a1aa9d7baae3a4fe3721c8faddb216f",
+      "bytes": 42886
+    },
+    {
+      "path": "candidate/assets/app.js",
+      "sha256": "23e609dfb60ceacfa9411c2711ffa8661db6c82906461b1768483c1a05d5bfb7",
+      "bytes": 100180
+    },
+    {
+      "path": "candidate/coverage.json",
+      "sha256": "33e54617f8fc87987327c899e0f4de28b17f6ba642b295931b081e596f17445f",
+      "bytes": 6976
+    },
+    {
+      "path": "candidate/README.md",
+      "sha256": "520808c11073438ed240cd521d1a01f1cd5416fb67d6911eee7c4220c9a39182",
+      "bytes": 6800
+    }
+  ],
+  "coverage": {
+    "providerRepoAndReviewServerParity": true,
+    "javascriptSyntax": "passed",
+    "coverageJsonParse": "passed",
+    "surfaces": "5/5",
+    "controls": "66/66",
+    "routes": "9/9",
+    "missingControls": [],
+    "extraControls": [],
+    "retiredControlsPresent": 0,
+    "retiredRoutesPresent": 0,
+    "prohibitedVisibleCopyPresent": 0,
+    "unresolvedItems": 0
+  },
+  "browserEvidence": {
+    "routeSmoke": {
+      "currentRoutes": "9/9",
+      "surfaceRouteMismatch": 0,
+      "horizontalOverflowFailures": 0,
+      "prohibitedVisibleCopyFailures": 0,
+      "minimumEffectiveInteractiveTargetPx": 44
+    },
+    "mapSpotPanel": {
+      "extents": ["hidden", "small", "medium", "large"],
+      "measuredHeightsPx": {"small": 138, "medium": 380, "large": 678.4},
+      "verticalDragSmallToLarge": "passed",
+      "verticalDragLargeToSmall": "passed",
+      "nonSpotTapHides": "passed",
+      "largeHidesSearchAndShowsMedia": "passed",
+      "downTransitionMediaThenSearchAndDirectLayerThreshold": "passed",
+      "overviewAstronomyRailPreservesPageTop": "passed",
+      "astronomyAlignmentOffsetPx": 32.5,
+      "bottomActions": ["想去", "分享", "云观星"],
+      "cloudDestination": "sky/detail"
+    },
+    "dedicatedSearch": {
+      "route": "spot/search",
+      "focusOnEntry": "passed",
+      "unifiedFilterGroup": true,
+      "quickMoreSplitPresent": false,
+      "prefixIcons": true,
+      "selectedChoiceWidthStable": true,
+      "selectedStarPx": 28,
+      "selectedStarOpacity": 0.48,
+      "selectMotionMs": 180,
+      "deselectMotionMs": 140,
+      "wholeCardSelection": "passed",
+      "trailingSelectControlPresent": false,
+      "imageCardFixedReadableCopyWidthPx": 232.19,
+      "keyboardArrowAndEscape": "passed"
+    },
+    "curvedTimeRuler": {
+      "centerEmphasis": true,
+      "sideScaleOpacityAndArcFalloff": true,
+      "horizontalDragAndSnap": "passed",
+      "keyboardArrowHomeEnd": "passed",
+      "panelScrollDeltaAfterDragPx": 0
+    },
+    "favoriteRitual": {
+      "stateShapeStable": true,
+      "mainStarPx": 26,
+      "mainTransitionMs": 180,
+      "satellites": 3,
+      "satelliteDurationMs": 420,
+      "satelliteDelaysMs": [60, 100, 140],
+      "floatingFeedbackCount": 0,
+      "scrollPositionPreserved": true
+    },
+    "fullSky": {
+      "route": "sky/detail",
+      "canvasCoverageRatio": 0.941,
+      "devicePoseControlsChangeCanvas": "passed",
+      "permissionRecovery": "passed",
+      "semanticObjectFallback": "passed",
+      "curvedRulerDrag": "passed"
+    },
+    "adaptation": {
+      "mapAt320Text200HorizontalOverflowPx": 0,
+      "searchAt320Text200HorizontalOverflowPx": 0,
+      "reducedMotionTransitionsSeconds": 0,
+      "reducedTransparencyUsesSolidSurface": true,
+      "observationPaletteUnexpectedValues": []
+    },
+    "targetedCurrentCandidateRerun": {
+      "favoriteSatelliteDelaysMs": [60, 100, 140],
+      "favoriteMainTransitionMs": 180,
+      "consoleWarningsOrErrors": 0,
+      "reviewEntry": "miniapp-map-discovery · pages/map/index · ready · day · 390px · 100% · normal"
+    }
+  },
+  "projectChecks": {
+    "designSystemVerify": "passed",
+    "designLintErrors": 0,
+    "designLintExistingWarnings": 33,
+    "validateContext": "passed",
+    "validateHarness": "passed",
+    "touchedModularityWarnings": 0,
+    "gitDiffCheck": "passed with line-ending advisory only"
+  },
+  "review": {
+    "url": "http://127.0.0.1:4173/",
+    "browserVisible": true,
+    "markedDeliverable": true,
+    "selectionStopRequired": true,
+    "userApprovalRecorded": false,
+    "downstreamReferencesRead": false,
+    "downstreamHandoffStarted": false,
+    "productionImplementationStarted": false
+  },
+  "boundaries": [
+    "The current candidate covers the accumulated prior 11 review points and current 7 requirement groups; conflicts resolve to the current requirements.",
+    "Amap screenshots are layout and density references only; no Amap brand, map tiles, provider chrome, icons, data, or product capability were copied.",
+    "Visible product fields are required information structure; bounded representative values do not establish live production facts.",
+    "The prototype does not change product logic, APIs, schemas, route ownership, accounts, uploads, maps, or sensor algorithms.",
+    "Browser evidence does not establish physical WeChat device, native map control, real sensor quality, screen reader, system font scaling, provider adapter, or low-performance-device behavior."
+  ]
+}

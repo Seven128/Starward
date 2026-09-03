@@ -1,0 +1,55 @@
+{
+  "schema_version": "starward-selected-resource-integrity-v1",
+  "algorithm": "sha256",
+  "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+  "resources": {
+    "README.md": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/README.md",
+      "sha256": "1e7577fc0f779a0e2f78bade109fc0c8436d5bbd63834c5f688790640aba0eae"
+    },
+    "artifact-manifest.json": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/artifact-manifest.json",
+      "sha256": "ee3c1b9c84fc3188e99e5dc3286a557e378724d2081de5fd912c50a4f7fd0731"
+    },
+    "assets/app.js": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/assets/app.js",
+      "sha256": "3cbc5f8e55ceaf6917b864150905f30ad539474c4c92f27a156e30079d9c99a1"
+    },
+    "assets/styles.css": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/assets/styles.css",
+      "sha256": "5284cc77d46dc6f61ab5ef6b2912d14949b9f59f385855cc890080084407f51f"
+    },
+    "authority-delta.json": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/authority-delta.json",
+      "sha256": "df851d2e2ec16d9c67caed10c960dd4a051345cd04bcdb374c3c4e0ccc057b9c"
+    },
+    "coverage.json": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/coverage.json",
+      "sha256": "0dcbeef98e091b2be2bfaef5a6c270a355fba121220fea5c9ec0ba3a51e7f886"
+    },
+    "design-system-snapshot.md": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/design-system-snapshot.md",
+      "sha256": "99decf190d2d5f49be34bb88893401f007ff0651883910ab7d6f08abb7c69b04"
+    },
+    "implementation-handoff-spec.json": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/implementation-handoff-spec.json",
+      "sha256": "f71c01fba8d2edb70d9f584f81e7b077e9c1032e89dcc4668c57fbfbf092f9eb"
+    },
+    "index.html": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/index.html",
+      "sha256": "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60"
+    },
+    "open-design-readme.md": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/open-design-readme.md",
+      "sha256": "8e7d6d15aa45244f03e211ebd1c4231958b5823921739f0596cb575c1576d5b1"
+    },
+    "proposal-reconciliation-index.md": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/proposal-reconciliation-index.md",
+      "sha256": "9e96faa58a6ef7c196bb2684bd10dc4f0c958a20748fbf2ad12dbbf13ace04ab"
+    },
+    "selection-and-qa.md": {
+      "path": "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/selection-and-qa.md",
+      "sha256": "b5b05733a927d994e1ae8b77036aa3f1f3daecbd215ee93fcca3d47557985930"
+    }
+  }
+}

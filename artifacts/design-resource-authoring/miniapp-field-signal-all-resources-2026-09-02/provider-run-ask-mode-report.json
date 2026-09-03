@@ -1,0 +1,26 @@
+{
+  "schema_version": "starward-open-design-run-ask-mode-v1",
+  "observed_on": "2026-09-02",
+  "result": "succeeded_without_artifact_not_a_candidate",
+  "project_id": "starward-miniapp-field-signal-all-resources",
+  "run_id": "f0a7f04b-8b55-4330-9d72-d69f5b1d6497",
+  "client_request_id": "038c4fdf-d863-45a5-bf2d-71d26303a6a4",
+  "provenance": {
+    "agent_id": "codex",
+    "model": "gpt-5.6-sol",
+    "reasoning": "xhigh",
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "design_system_digest": "a5966d3d8556897956d9a0128341975b7051c5906de6ca756b8aba0971aa1768",
+    "plugin_id": null,
+    "applied_plugin_snapshot_id": null
+  },
+  "provider_status": "succeeded",
+  "deliverable_valid": false,
+  "deliverable_validation": "no_artifact",
+  "artifact_count": 0,
+  "project_generated_file_count": 0,
+  "agent_outcome": "Read COMMISSION.md completely, then stopped because chat session mode was interpreted as Ask mode and requested Design mode.",
+  "correction": "Keep the scenario-free design-resource project kind, switch only the next run sessionMode to design, and send the requested continuation. The unrecognized project kind prevents the provider's default prototype scenario from resolving.",
+  "sensitive_data_persisted": false
+}

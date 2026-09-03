@@ -1,0 +1,29 @@
+{
+  "schema_version": "starward-open-design-project-corrected-v1",
+  "verified_on": "2026-09-02",
+  "result": "verified",
+  "project": {
+    "id": "starward-miniapp-field-signal-all-resources",
+    "name": "Starward 微信小程序全量交互原型",
+    "kind": "design-resource",
+    "intent": "design-resource-authoring",
+    "entry_file": "index.html",
+    "skill_id": "frontend-design",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "scenario_binding_present": false,
+    "plugin_snapshot_present": false,
+    "active_run_count": 0,
+    "files": [
+      "COMMISSION.md"
+    ],
+    "commission_sha256": "52279d72cd814c8651a5b73d9827eca536104ac05cda8c4ab2ae6bd26ed2494e"
+  },
+  "retained_provider_history": {
+    "run_id": "780f0c02-a1f6-4261-a399-9984e3ec0520",
+    "status": "canceled",
+    "generated_file_count": 0,
+    "unexpected_plugin_id": "example-web-prototype"
+  },
+  "note": "Open Design retains the canceled run record after the task-owned project shell is recreated with the same id. It is historical only and is not pinned to the current project.",
+  "sensitive_data_persisted": false
+}

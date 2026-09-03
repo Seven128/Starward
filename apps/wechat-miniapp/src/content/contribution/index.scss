@@ -16,6 +16,14 @@
   flex-direction: column;
   gap: 24rpx;
 }
+.contribution-document-note {
+  padding: 18rpx 22rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  border-left: 4rpx solid var(--primary);
+  box-shadow: none;
+}
 
 .contribution-progress {
   min-height: 72rpx;
@@ -69,6 +77,25 @@
 }
 .contribution-context--compact {
   gap: 6rpx;
+}
+.contribution-spot-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+.contribution-formal-spot-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+.contribution-inline-warning {
+  color: var(--warning);
+}
+.contribution-field-error {
+  color: var(--danger);
+  line-height: 1.45;
 }
 .contribution-kind-copy,
 .contribution-draft-recovery {
@@ -173,6 +200,37 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+}
+.contribution-media-cell {
+  display: grid;
+  grid-template-columns: 72rpx minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14rpx;
+}
+.contribution-media-cell__thumb {
+  width: 72rpx;
+  height: 72rpx;
+  display: grid;
+  place-items: center;
+  border-radius: 18rpx;
+  color: var(--primary);
+  background: var(--icon-green-soft);
+}
+.contribution-media-cell__thumb .semantic-icon {
+  width: 36rpx;
+  height: 36rpx;
+}
+.contribution-media-cell__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6rpx;
+}
+.contribution-media-cell__actions .soft-button {
+  min-width: 108rpx;
+  min-height: 64rpx;
+  padding: 0 12rpx;
+  white-space: nowrap;
 }
 .contribution-media-row__copy {
   min-width: 0;
@@ -491,10 +549,24 @@
   .contribution-coordinate-grid,
   .contribution-date-grid,
   .contribution-topic-grid,
+  .contribution-spot-choice,
   .contribution-actions,
   .contribution-actions--flow,
   .contribution-recovery-axis {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .contribution-media-cell {
+    grid-template-columns: 64rpx minmax(0, 1fr);
+    align-items: start;
+  }
+  .contribution-media-cell__thumb {
+    width: 64rpx;
+    height: 64rpx;
+  }
+  .contribution-media-cell__actions {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .contribution-history__filters {
     grid-template-columns: minmax(0, 1fr);
