@@ -9,6 +9,7 @@ const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
   "..",
+  "..",
 );
 let SPEC_PATH = "tools/miniapp/verification-spec.json";
 let SOURCE_PATH = "docs/wechat-miniapp-v2-source.md";

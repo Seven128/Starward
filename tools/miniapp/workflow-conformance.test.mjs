@@ -1299,6 +1299,11 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     rootPackage.scripts["prepare:miniapp:final-candidate"],
     ".\\tools\\miniapp\\verifier-runtime\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-field-signal-i21.json",
   );
+  assert.match(
+    verifier,
+    /path\.dirname\(fileURLToPath\(import\.meta\.url\)\),\s*"\.\.",\s*"\.\.",\s*"\.\."/u,
+    "the frozen verifier runtime must resolve paths from the repository root",
+  );
   assert.match(verifier, /if \(!failureObserved\) return null;/u);
   assert.match(verifier, /if \(record\) records\.push\(record\);/u);
   assert.match(verifier, /const current = await snapshotManifest\(spec\)/u);
