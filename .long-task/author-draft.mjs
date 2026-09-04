@@ -1149,6 +1149,7 @@ async function main() {
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04/**",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r2/**",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/**",
+          "tools/miniapp/device-adb.mjs",
           "tools/miniapp/device-feedback-official.mjs",
           "tools/miniapp/device-feedback-preview.test.mjs",
           "tools/miniapp/device-runtime.mjs",
