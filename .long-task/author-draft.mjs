@@ -32,8 +32,8 @@ const VERBATIM_INPUT_ARCHIVE = `${WORKDIR}/wechat-miniapp-field-signal-i21-start
 const PUBLIC_KEY_PATH = "project_context/areas/main/verification/wechat-device/field-signal-i21-owner-public.pem";
 const VERIFICATION_SPEC_PATH = "tools/miniapp/verification-spec-field-signal-i21.json";
 const NIGHTCHINA_FIXTURE_PATH = "tools/miniapp/fixtures/nightchina-import-cases.json";
-const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md";
-const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source";
+const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md";
+const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source";
 const CANONICAL_ENTRY = `${SELECTED_ROOT}/index.html`;
 const FACT_MANIFEST = `${SELECTED_ROOT}/miniapp-fact-manifest.json`;
 const FEASIBILITY_PATH = `${SELECTED_ROOT}/miniapp-implementation-feasibility.json`;
@@ -63,10 +63,10 @@ const GENERATED_BEGIN = "<!-- ty-long-task-source-inventory:begin -->";
 const GENERATED_END = "<!-- ty-long-task-source-inventory:end -->";
 
 const EXPECTED_HASHES = {
-  [HANDOFF_PATH]: "01e12307621b700f54d6e9878369fe1225f90d75adb1bd695af51f142fed78a6",
+  [HANDOFF_PATH]: "7ce4b4bffdbf2226e273e9b15279bf460a99b074f70648a240645925accbf5a7",
   [CANONICAL_ENTRY]: "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
-  [FACT_MANIFEST]: "e10faa4af0b8df987ea45ffc66cbbd13183e13447afc6bdd44703b961a9bcf53",
-  [FEASIBILITY_PATH]: "0fda88ffe26571eb7c7852568afd55b8be3f7cbe73d713e9d11f0de0ee804bf0",
+  [FACT_MANIFEST]: "76bea6a560fd552833c8a3588f54d75a9b16d05f61c5d4760b69708ab1a879b0",
+  [FEASIBILITY_PATH]: "4148de807c34b52decc702c2e7b39f4130635cfb4bfffd82a9834713f44135f6",
   [IMPLEMENTATION_SPEC]: "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611",
   [AUTHORITY_DELTA]: "df851d2e2ec16d9c67caed10c960dd4a051345cd04bcdb374c3c4e0ccc057b9c",
 };
@@ -1113,13 +1113,17 @@ async function main() {
           "tools/miniapp/device-test.test.mjs",
           HARNESS_COMPATIBILITY,
           "tools/miniapp/harness-external-design-compatibility.test.mjs",
+          "tools/miniapp/generate-mode-icons.mjs",
           "tools/miniapp/run-wechat-devtools-session.mjs",
           "tools/miniapp/selected-design-bindings.json",
           "tools/miniapp/verify-miniapp-target-launcher.c",
           "tools/miniapp/verify-miniapp-target.exe",
           "tools/miniapp/verify-miniapp-target.mjs",
           "tools/miniapp/workflow-conformance.test.mjs",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/handoff-draft/**",
           "tools/verify-miniapp-design-profile.mjs",
         ] : ["artifacts/miniapp/**"],
         forbidden_paths: forbiddenPaths,

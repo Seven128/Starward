@@ -2,7 +2,7 @@ schema_version: long-task-delivery-v2
 semantic_fact_manifest:
   key: wechat-miniapp-field-signal-i21.semantic-facts
   source_path: .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-  sha256: 8d0f12f5cdb08297c72d7193164070c59d870ab6bf20690461571d40a5a9876a
+  sha256: e428fadc0c83ac9aa1c0c03c974d18bd48458c03e44ce192753242959930dd4f
 task:
   id: wechat-miniapp-field-signal-i21
   title: WeChat Mini Program Field Signal I21 production implementation
@@ -43,7 +43,7 @@ task:
         - system-ui-observation
   source_paths:
     - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-    - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
   context_refs:
     - project_context/architecture/assurance-and-lifecycle.md
     - project_context/architecture/runtime-and-domain.md
@@ -1789,7 +1789,7 @@ source_claims:
         - current-candidate.requirement.context-delta-required
   - key: design-preflight-boundary
     source_ref: .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-    statement: Before Contract Preflight, rerun the pinned local Harness design-resource preflight for docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md; accept its complete 5/9/62 and 72-subject/15696-cell closure only as design-input integrity, at no time production conformance.
+    statement: Before Contract Preflight, rerun the pinned local Harness design-resource preflight for docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md; accept its complete 5/9/62 and 72-subject/15696-cell closure only as design-input integrity, at no time production conformance.
     disposition:
       type: claim
       refs:
@@ -1838,7 +1838,7 @@ source_claims:
         - constraint.authority-priority
   - key: constraint-i21-identity
     source_ref: .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-    statement: The selected constraint is target-miniapp-field-signal-i21-selected-constraint-2026-09-03; docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json and docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json form the current immutable design and implementation handoff closure.
+    statement: The selected constraint is target-miniapp-field-signal-i21-selected-constraint-2026-09-03; docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json and docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json form the current immutable design and implementation handoff closure.
     disposition:
       type: global_constraint
       refs:
@@ -12631,448 +12631,448 @@ source_claims:
       refs:
         - current-candidate.requirement.semantic-census-ai-ml
   - key: requirement-selected-current-resource-miniapp
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: The Field Signal I21 resource is the explicitly selected Mini Program implementation constraint. DESIGN.md remains the exact visual owner and Context/production Source remains the product, data, permission, draft, transport and business-rule owner.
     disposition:
       type: claim
       refs:
         - current-candidate.requirement.selected-current-resource-miniapp
   - key: control-development-consumption-boundary-miniapp
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: Development must consume the complete selected Source closure, map every library/component candidate through the existing Starward owner/adapter, preserve truthful loading/partial/stale/error/permission/recovery states, and independently verify the real WEAPP route. Mature compatible controls are reuse-first; semantic mismatches use the documented bounded Taro fallback rather than another UI suite or state owner.
     disposition:
       type: claim
       refs:
         - current-candidate.control.data-source-disclosure.validation
   - key: control-miniapp-01
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.mini-primary-navigation: Preserve mini-primary-navigation at [data-control~="mini-primary-navigation"]; library=Taro + existing Starward owner; component=View/Button navigation rail; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: shared product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/components/custom-nav.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.mini-primary-navigation.interaction
   - key: control-miniapp-02
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.display-mode-switcher: Preserve display-mode-switcher at [data-control~="display-mode-switcher"]; library=Taro + existing Starward owner; component=three-position Button track; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: shared product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/settings/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.display-mode-switcher.interaction
   - key: control-miniapp-03
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.data-source-disclosure: Preserve data-source-disclosure at [data-control~="data-source-disclosure"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: shared product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.data-source-disclosure.interaction
   - key: control-miniapp-04
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.notification-feedback: Preserve notification-feedback at [data-control~="notification-feedback"]; library=existing Starward owner; component=NotificationRegion/StatusPanel; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: shared product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/components/status-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.notification-feedback.interaction
   - key: control-miniapp-05
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.page-state-recovery: Preserve page-state-recovery at [data-control~="page-state-recovery"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: shared product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/components/status-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.page-state-recovery.interaction
   - key: control-miniapp-06
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-search-entry: Preserve map-search-entry at [data-control~="map-search-entry"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-search-entry.interaction
   - key: control-miniapp-07
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-search-shell: Preserve spot-search-shell at [data-control~="spot-search-shell"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-search-shell.interaction
   - key: control-miniapp-08
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-search-field: Preserve spot-search-field at [data-control~="spot-search-field"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-search-field.interaction
   - key: control-miniapp-09
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-search-query-overlay: Preserve spot-search-query-overlay at [data-control~="spot-search-query-overlay"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-search-query-overlay.interaction
   - key: control-miniapp-10
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-search-filter-group: Preserve spot-search-filter-group at [data-control~="spot-search-filter-group"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-search-filter-group.interaction
   - key: control-miniapp-11
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-search-filter-choice: Preserve spot-search-filter-choice at [data-control~="spot-search-filter-choice"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-search-filter-choice.interaction
   - key: control-miniapp-12
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-search-result-list: Preserve spot-search-result-list at [data-control~="spot-search-result-list"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-search-result-list.interaction
   - key: control-miniapp-13
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-search-result-card: Preserve spot-search-result-card at [data-control~="spot-search-result-card"]; library=Taro + existing Starward owner; component=Input/Button/ScrollView search composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/search-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-search-result-card.interaction
   - key: control-miniapp-14
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-location-control: Preserve map-location-control at [data-control~="map-location-control"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-location-control.interaction
   - key: control-miniapp-15
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-analysis-focus-layer: Preserve map-analysis-focus-layer at [data-control~="map-analysis-focus-layer"]; library=bounded Taro/Starward substrate; component=bottom layer sheet; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-analysis-focus-layer.interaction
   - key: control-miniapp-16
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-layer-selector: Preserve map-layer-selector at [data-control~="map-layer-selector"]; library=bounded Taro/Starward substrate; component=bottom layer sheet; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-layer-selector.interaction
   - key: control-miniapp-17
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-time-control: Preserve map-time-control at [data-control~="map-time-control"]; library=Taro platform primitive; component=enhanced horizontal ScrollView; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/time-ruler.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-time-control.interaction
   - key: control-miniapp-18
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-marker-panel-coordinator: Preserve map-marker-panel-coordinator at [data-control~="map-marker-panel-coordinator"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: map-search product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-marker-panel-coordinator.interaction
   - key: control-miniapp-19
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-spot-information-panel: Preserve map-spot-information-panel at [data-control~="map-spot-information-panel"]; library=bounded Taro/Starward substrate; component=retained panel document with explicit handle-only gesture owner; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-spot-information-panel.interaction
   - key: control-miniapp-20
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-spot-panel-handle: Preserve map-spot-panel-handle at [data-control~="map-spot-panel-handle"]; library=bounded Taro/Starward substrate; component=retained panel document with explicit handle-only gesture owner; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-spot-panel-handle.interaction
   - key: control-miniapp-21
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-spot-panel-section-nav: Preserve map-spot-panel-section-nav at [data-control~="map-spot-panel-section-nav"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-spot-panel-section-nav.interaction
   - key: control-miniapp-22
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.map-spot-panel-action-bar: Preserve map-spot-panel-action-bar at [data-control~="map-spot-panel-action-bar"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.map-spot-panel-action-bar.interaction
   - key: control-miniapp-23
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-favorite-action: Preserve spot-favorite-action at [data-control~="spot-favorite-action"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-favorite-action.interaction
   - key: control-miniapp-24
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-share-action: Preserve spot-share-action at [data-control~="spot-share-action"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-share-action.interaction
   - key: control-miniapp-25
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-cloud-stargazing-action: Preserve spot-cloud-stargazing-action at [data-control~="spot-cloud-stargazing-action"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-cloud-stargazing-action.interaction
   - key: control-miniapp-26
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-media-gallery: Preserve spot-media-gallery at [data-control~="spot-media-gallery"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-media-gallery.interaction
   - key: control-miniapp-27
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-navigation-action: Preserve spot-navigation-action at [data-control~="spot-navigation-action"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-navigation-action.interaction
   - key: control-miniapp-28
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-contribution-entry: Preserve spot-contribution-entry at [data-control~="spot-contribution-entry"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-contribution-entry.interaction
   - key: control-miniapp-29
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-route-summary: Preserve spot-route-summary at [data-control~="spot-route-summary"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-route-summary.interaction
   - key: control-miniapp-30
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.spot-facility-evidence: Preserve spot-facility-evidence at [data-control~="spot-facility-evidence"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.spot-facility-evidence.interaction
   - key: control-miniapp-31
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.guide-article-viewer: Preserve guide-article-viewer at [data-control~="guide-article-viewer"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.guide-article-viewer.interaction
   - key: control-miniapp-32
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-professional-matrix: Preserve sky-professional-matrix at [data-control~="sky-professional-matrix"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-professional-matrix.interaction
   - key: control-miniapp-33
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-target-list: Preserve sky-target-list at [data-control~="sky-target-list"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/spot-panel.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-target-list.interaction
   - key: control-miniapp-34
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-time-scrubber: Preserve sky-time-scrubber at [data-control~="sky-time-scrubber"]; library=Taro platform primitive; component=enhanced horizontal ScrollView; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/time-ruler.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-time-scrubber.interaction
   - key: control-miniapp-35
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-map-canvas: Preserve sky-map-canvas at [data-control~="sky-map-canvas"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: spot-panel product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/pages/map/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-map-canvas.interaction
   - key: control-miniapp-36
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-orientation-canvas: Preserve sky-orientation-canvas at [data-control~="sky-orientation-canvas"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: full-sky product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-orientation-canvas.interaction
   - key: control-miniapp-37
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-orientation-sensor: Preserve sky-orientation-sensor at [data-control~="sky-orientation-sensor"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: full-sky product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-orientation-sensor.interaction
   - key: control-miniapp-38
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-orientation-recovery: Preserve sky-orientation-recovery at [data-control~="sky-orientation-recovery"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: full-sky product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-orientation-recovery.interaction
   - key: control-miniapp-39
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-orientation-object-list: Preserve sky-orientation-object-list at [data-control~="sky-orientation-object-list"]; library=Taro + existing Starward owner; component=View/Button/ScrollView + SemanticIcon; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: full-sky product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-orientation-object-list.interaction
   - key: control-miniapp-40
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.sky-orientation-time-ruler: Preserve sky-orientation-time-ruler at [data-control~="sky-orientation-time-ruler"]; library=Taro platform primitive; component=enhanced horizontal ScrollView; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: full-sky product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.sky-orientation-time-ruler.interaction
   - key: control-miniapp-41
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.my-account-header: Preserve my-account-header at [data-control~="my-account-header"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/my/my-library-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.my-account-header.interaction
   - key: control-miniapp-42
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.my-settings-action: Preserve my-settings-action at [data-control~="my-settings-action"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/my/my-library-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.my-settings-action.interaction
   - key: control-miniapp-43
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.my-profile-summary: Preserve my-profile-summary at [data-control~="my-profile-summary"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/my/my-library-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.my-profile-summary.interaction
   - key: control-miniapp-44
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.my-grouped-entry-list: Preserve my-grouped-entry-list at [data-control~="my-grouped-entry-list"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/my/my-library-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.my-grouped-entry-list.interaction
   - key: control-miniapp-45
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.my-plan-entry: Preserve my-plan-entry at [data-control~="my-plan-entry"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/my/my-library-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.my-plan-entry.interaction
   - key: control-miniapp-46
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.my-contribution-entry: Preserve my-contribution-entry at [data-control~="my-contribution-entry"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/my/my-library-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.my-contribution-entry.interaction
   - key: control-miniapp-47
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.plan-editor: Preserve plan-editor at [data-control~="plan-editor"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/features/my/my-library-page.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.plan-editor.interaction
   - key: control-miniapp-48
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.settings-form: Preserve settings-form at [data-control~="settings-form"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: my product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/settings/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.settings-form.interaction
   - key: control-miniapp-49
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.profile-link-editor: Preserve profile-link-editor at [data-control~="profile-link-editor"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: profile-content product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/profile/links/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.profile-link-editor.interaction
   - key: control-miniapp-50
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.profile-link-open-copy: Preserve profile-link-open-copy at [data-control~="profile-link-open-copy"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: profile-content product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/profile/links/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.profile-link-open-copy.interaction
   - key: control-miniapp-51
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.import-source-rights: Preserve import-source-rights at [data-control~="import-source-rights"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: profile-content product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/import/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.import-source-rights.interaction
   - key: control-miniapp-52
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.import-draft-editor: Preserve import-draft-editor at [data-control~="import-draft-editor"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: profile-content product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/import/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.import-draft-editor.interaction
   - key: control-miniapp-53
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.import-spot-association: Preserve import-spot-association at [data-control~="import-spot-association"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: profile-content product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/import/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.import-spot-association.interaction
   - key: control-miniapp-54
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.import-preview-submit: Preserve import-preview-submit at [data-control~="import-preview-submit"]; library=Taro + existing Starward owner; component=View/Button/Input/Textarea/Switch composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: profile-content product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/import/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.import-preview-submit.interaction
   - key: control-miniapp-55
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-kind-control: Preserve contribution-kind-control at [data-control~="contribution-kind-control"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.contribution-kind-control.interaction
   - key: control-miniapp-56
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-spot-context: Preserve contribution-spot-context at [data-control~="contribution-spot-context"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.contribution-spot-context.interaction
   - key: control-miniapp-57
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-topic-control: Preserve contribution-topic-control at [data-control~="contribution-topic-control"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.contribution-topic-control.interaction
   - key: control-miniapp-58
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-observed-at: Preserve contribution-observed-at at [data-control~="contribution-observed-at"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.contribution-observed-at.interaction
   - key: control-miniapp-59
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-location-consent: Preserve contribution-location-consent at [data-control~="contribution-location-consent"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.contribution-location-consent.interaction
   - key: control-miniapp-60
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-media-upload: Preserve contribution-media-upload at [data-control~="contribution-media-upload"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.contribution-media-upload.interaction
   - key: control-miniapp-61
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-submit: Preserve contribution-submit at [data-control~="contribution-submit"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
       refs:
         - current-candidate.control.contribution-submit.interaction
   - key: control-miniapp-62
-    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+    source_ref: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
     statement: 'control.contribution-status-list: Preserve contribution-status-list at [data-control~="contribution-status-list"]; library=Taro + existing Starward form owner; component=Input/Textarea/Switch/Button/ScrollView form composition; the library supplies generic mechanics only and Starward retains Control semantics, exact tokens, state, recovery and acceptance. Data binding: contribution product state through the owning Starward store/coordinator. Production owner candidate: apps/wechat-miniapp/src/content/contribution/index.tsx. States: declared-state-matrix.'
     disposition:
       type: claim
@@ -14311,7 +14311,7 @@ global:
         applicability_refs:
           - current-candidate
       - key: i21-identity
-        statement: The selected constraint is target-miniapp-field-signal-i21-selected-constraint-2026-09-03; docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json and docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json form the current immutable design and implementation handoff closure.
+        statement: The selected constraint is target-miniapp-field-signal-i21-selected-constraint-2026-09-03; docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json and docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json form the current immutable design and implementation handoff closure.
         applicability_refs:
           - current-candidate
       - key: complete-scope
@@ -14457,27 +14457,27 @@ global:
           - tools/miniapp/fixtures/nightchina-import-cases.json
           - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
           - DESIGN.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
         input_paths:
           - apps/wechat-miniapp/**
           - packages/miniapp-contracts/**
@@ -14486,8 +14486,8 @@ global:
           - DESIGN.md
           - tools/miniapp/fixtures/nightchina-import-cases.json
           - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+          - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
           - tools/miniapp/verification-spec-field-signal-i21.json
           - tools/miniapp/run-wechat-devtools-session.mjs
         expected_output_paths: []
@@ -14528,7 +14528,7 @@ global:
             operator: equals
             expected: true
           - key: claim-constraint-i21-identity
-            criterion: The selected constraint is target-miniapp-field-signal-i21-selected-constraint-2026-09-03; docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json and docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json form the current immutable design and implementation handoff closure.
+            criterion: The selected constraint is target-miniapp-field-signal-i21-selected-constraint-2026-09-03; docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json, docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json and docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json form the current immutable design and implementation handoff closure.
             claims:
               - constraint.i21-identity
             applicability_ref: current-candidate
@@ -67776,7 +67776,7 @@ outcomes:
           applicability_ref: current-candidate
           required_polarity: positive
         - fact_ref: fact.map-experience.constraint.i21.identity.positive
-          fact_revision_digest: c43334e0e32c6d17729816be2363e67d07b021d546cf3192123787de0ce18b6d
+          fact_revision_digest: 79464838811443796ec4dfd464f45554afd0678f4b919e615aa7de951a3ffcf3
           claim_ref: semantic_fact.fact.map-experience.constraint.i21.identity.positive
           applicability_ref: current-candidate
           required_polarity: positive
@@ -68685,7 +68685,7 @@ outcomes:
           authority: external_confirmation
           confirmation_ref: field-signal-i21-native-and-device-conformance
         - proof_ref: proof.map-experience.constraint.i21.identity.positive
-          obligation_revision_digest: aaccbf703bb86544575e48069abdfc7408988e1f29bfa0c480317451224fc097
+          obligation_revision_digest: 99ed53d12c73f3f71845672d09c3c0f6123c0dd89b8acd83cea65a9d2d2355db
           fact_ref: fact.map-experience.constraint.i21.identity.positive
           method: exact_value
           proof_surface: runtime_behavior
@@ -69798,27 +69798,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -69827,8 +69827,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -70654,27 +70654,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -70683,8 +70683,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -70840,7 +70840,7 @@ outcomes:
           applicability_ref: current-candidate
           required_polarity: positive
         - fact_ref: fact.full-sky.constraint.i21.identity.positive
-          fact_revision_digest: 54c82a980c16eea41fa44c8c6a523e5a69ce0d265cbdfa100b83bc06bec82c3d
+          fact_revision_digest: f0b184c5a739e568d16459f43ca9202c55750be5cd09fa9c007564c5b001436a
           claim_ref: semantic_fact.fact.full-sky.constraint.i21.identity.positive
           applicability_ref: current-candidate
           required_polarity: positive
@@ -71401,7 +71401,7 @@ outcomes:
           authority: external_confirmation
           confirmation_ref: field-signal-i21-native-and-device-conformance
         - proof_ref: proof.full-sky.constraint.i21.identity.positive
-          obligation_revision_digest: d3294a721a91b1ad4973f139174e4484de2047bf98f1b19c71d2ba222909df3e
+          obligation_revision_digest: 40b3d06159b9dc817a4884f52145b308fee75fb626f7ca501cbd629699a585e7
           fact_ref: fact.full-sky.constraint.i21.identity.positive
           method: exact_value
           proof_surface: runtime_behavior
@@ -72326,27 +72326,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -72355,8 +72355,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -72803,27 +72803,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -72832,8 +72832,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -73004,7 +73004,7 @@ outcomes:
           applicability_ref: current-candidate
           required_polarity: positive
         - fact_ref: fact.my-profile-settings.constraint.i21.identity.positive
-          fact_revision_digest: 37eada9f3533335404bef376ff4493568d49aea72effce669aa384b0f61d8f53
+          fact_revision_digest: 484cc309a40028b44c7cc258d3a311ba57d96622296541906f53272305432be2
           claim_ref: semantic_fact.fact.my-profile-settings.constraint.i21.identity.positive
           applicability_ref: current-candidate
           required_polarity: positive
@@ -73581,7 +73581,7 @@ outcomes:
           authority: external_confirmation
           confirmation_ref: field-signal-i21-native-and-device-conformance
         - proof_ref: proof.my-profile-settings.constraint.i21.identity.positive
-          obligation_revision_digest: 75b4c7988af8c850f65d9a19e4702b615bdaf7b9b67776573f0de260af749d08
+          obligation_revision_digest: dbb698a87ac4ffeaeaf4ac101c7ca44d2cb79b1626013d7d0d2638ee8c5ca11d
           fact_ref: fact.my-profile-settings.constraint.i21.identity.positive
           method: exact_value
           proof_surface: runtime_behavior
@@ -74500,27 +74500,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -74529,8 +74529,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -74995,27 +74995,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -75024,8 +75024,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -75237,7 +75237,7 @@ outcomes:
           applicability_ref: current-candidate
           required_polarity: positive
         - fact_ref: fact.contribution.constraint.i21.identity.positive
-          fact_revision_digest: 0f4ae482758914501ab7db6c39d8d0bf61cf9186f143c9aaef44e2ad80070fe0
+          fact_revision_digest: e8e03d36afb17a16bbe26c2f300295777d9ece768c2b638f561b0c6bc763115c
           claim_ref: semantic_fact.fact.contribution.constraint.i21.identity.positive
           applicability_ref: current-candidate
           required_polarity: positive
@@ -75937,7 +75937,7 @@ outcomes:
           authority: external_confirmation
           confirmation_ref: field-signal-i21-native-and-device-conformance
         - proof_ref: proof.contribution.constraint.i21.identity.positive
-          obligation_revision_digest: 644f3d3267e68458fc28bb2a4bc04542e2892384a22f2f19937d9de7dd413e03
+          obligation_revision_digest: 21f240d252d670d5ca51e5598db1e5493ccad354e579a2091c9d7d23f54353c8
           fact_ref: fact.contribution.constraint.i21.identity.positive
           method: exact_value
           proof_surface: runtime_behavior
@@ -76964,27 +76964,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -76993,8 +76993,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -77576,27 +77576,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -77605,8 +77605,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -78335,7 +78335,7 @@ outcomes:
           applicability_ref: current-candidate
           required_polarity: positive
         - fact_ref: fact.current-candidate.architecture.deliberation.positive
-          fact_revision_digest: 4fe0223ea733c35fedad6fd48a9cabe37a2ec93c51e8603d2898124714a20514
+          fact_revision_digest: 628cc76560faeed6a1516bc3a27f504305585f988e0e5053ab81d02ade7d4e23
           claim_ref: semantic_fact.fact.current-candidate.architecture.deliberation.positive
           applicability_ref: current-candidate
           required_polarity: positive
@@ -78350,7 +78350,7 @@ outcomes:
           applicability_ref: current-candidate
           required_polarity: positive
         - fact_ref: fact.current-candidate.design.preflight.boundary.positive
-          fact_revision_digest: 055fe70bb38c593bb26d2b3018e42800dc1dd2f4903656409fff8f48c39e3e1e
+          fact_revision_digest: fb8a3dd77d16e416cb82e213add70f05cdd0bcd6334d59d2754f47d5df037a8f
           claim_ref: semantic_fact.fact.current-candidate.design.preflight.boundary.positive
           applicability_ref: current-candidate
           required_polarity: positive
@@ -78365,7 +78365,7 @@ outcomes:
           applicability_ref: current-candidate
           required_polarity: positive
         - fact_ref: fact.current-candidate.constraint.i21.identity.positive
-          fact_revision_digest: 492fb78644bb249e25f06032385eea8d787e84d1e91ccba6a47a778b4ce6bc27
+          fact_revision_digest: 43e6247d281bda78e7dbdf6782facafcb8ec6c40deffc41305d8cd5424fda579
           claim_ref: semantic_fact.fact.current-candidate.constraint.i21.identity.positive
           applicability_ref: current-candidate
           required_polarity: positive
@@ -87411,7 +87411,7 @@ outcomes:
           authority: external_confirmation
           confirmation_ref: field-signal-i21-native-and-device-conformance
         - proof_ref: proof.current-candidate.architecture.deliberation.positive
-          obligation_revision_digest: 7f960883017f3c3d9218364f3381996da17f16a138195ebe853c4314b50ce9ed
+          obligation_revision_digest: c3d265c4b32cf11ececaa263d4cd20290cad3ef99695fb38e5779ccfab00c7ef
           fact_ref: fact.current-candidate.architecture.deliberation.positive
           method: exact_value
           proof_surface: runtime_behavior
@@ -87441,7 +87441,7 @@ outcomes:
           authority: external_confirmation
           confirmation_ref: field-signal-i21-native-and-device-conformance
         - proof_ref: proof.current-candidate.design.preflight.boundary.positive
-          obligation_revision_digest: 8d38ee5ec41a6f8429471ad32e43298b169c132ec20eca22e18c6a28fb042e9c
+          obligation_revision_digest: 7ee6dbc532f4fcfc6c3c959b5969dae4a6ecb62e1bf3ca3a069c005d872483de
           fact_ref: fact.current-candidate.design.preflight.boundary.positive
           method: exact_value
           proof_surface: runtime_behavior
@@ -87471,7 +87471,7 @@ outcomes:
           authority: external_confirmation
           confirmation_ref: field-signal-i21-native-and-device-conformance
         - proof_ref: proof.current-candidate.constraint.i21.identity.positive
-          obligation_revision_digest: 5dd737fdf924da4c7590b462d9ae17450e747ba8521f7cadc65a92c08abce6c8
+          obligation_revision_digest: a1a6eab4a071616f2b727640d9369e9aaa9bc420b98a13a2d1635242de9866f8
           fact_ref: fact.current-candidate.constraint.i21.identity.positive
           method: exact_value
           proof_surface: runtime_behavior
@@ -103552,7 +103552,7 @@ outcomes:
           applicability_refs:
             - current-candidate
         - key: design-preflight-boundary
-          statement: Before Contract Preflight, rerun the pinned local Harness design-resource preflight for docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md; accept its complete 5/9/62 and 72-subject/15696-cell closure only as design-input integrity, at no time production conformance.
+          statement: Before Contract Preflight, rerun the pinned local Harness design-resource preflight for docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md; accept its complete 5/9/62 and 72-subject/15696-cell closure only as design-input integrity, at no time production conformance.
           required_proof_surfaces:
             - runtime_behavior
           applicability_refs:
@@ -107410,27 +107410,27 @@ outcomes:
             - key: target-miniapp-field-signal-i21-selected-constraint-2026-09-03
               interpretation: constraint
               source_paths:
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+                - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
               condition_keys:
                 - condition-miniapp-field-signal-phone-source-matrix
               claim_refs:
@@ -110296,13 +110296,17 @@ outcomes:
         - tools/miniapp/device-test.test.mjs
         - tools/miniapp/apply-ty-context-harness-compatibility.mjs
         - tools/miniapp/harness-external-design-compatibility.test.mjs
+        - tools/miniapp/generate-mode-icons.mjs
         - tools/miniapp/run-wechat-devtools-session.mjs
         - tools/miniapp/selected-design-bindings.json
         - tools/miniapp/verify-miniapp-target-launcher.c
         - tools/miniapp/verify-miniapp-target.exe
         - tools/miniapp/verify-miniapp-target.mjs
         - tools/miniapp/workflow-conformance.test.mjs
+        - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
+        - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
         - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/handoff-draft/**
+        - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/handoff-draft/**
         - tools/verify-miniapp-design-profile.mjs
       forbidden_paths:
         - apps/mobile/**
@@ -110464,27 +110468,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -110493,8 +110497,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
@@ -112302,7 +112306,7 @@ outcomes:
               operator: equals
               expected: true
             - key: claim-requirement-design-preflight-boundary
-              criterion: Before Contract Preflight, rerun the pinned local Harness design-resource preflight for docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md; accept its complete 5/9/62 and 72-subject/15696-cell closure only as design-input integrity, at no time production conformance.
+              criterion: Before Contract Preflight, rerun the pinned local Harness design-resource preflight for docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md; accept its complete 5/9/62 and 72-subject/15696-cell closure only as design-input integrity, at no time production conformance.
               claims:
                 - requirement.design-preflight-boundary
               applicability_ref: current-candidate
@@ -131567,27 +131571,27 @@ outcomes:
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
             - DESIGN.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
@@ -131596,8 +131600,8 @@ outcomes:
             - DESIGN.md
             - tools/miniapp/fixtures/nightchina-import-cases.json
             - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**
-            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
             - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
