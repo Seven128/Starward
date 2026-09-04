@@ -1,10 +1,10 @@
 {
   "schema_version": "miniapp-delivery-carrier-v1",
-  "generated_at": "2026-09-04T00:11:44.623Z",
-  "spec_sha256": "361ae2f0d91522ef312d5edeac6ff606101189c5c607b47e59aa6129f6259f23",
+  "generated_at": "2026-09-04T05:21:09.340Z",
+  "spec_sha256": "c289cd8d24ead451fdbef115c1491e42c2fc683663e08168b998ce488e7eafe2",
   "source_snapshot": {
     "files": {
-      ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md": "3d9bffcecfc48780e7b4539ad1035294eb6ea8e5238b2a99712c210e0891bfd0",
+      ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md": "c2fd582af968a1e8192e66f0b4e2b5620b7b7bdf6e627785dd314d1bd098088c",
       "DESIGN.md": "08a8719fee19638e8f5bbf34d2bf9a0421c6753db4e7830b9c11ff235d9839f3",
       "apps/wechat-miniapp/config/index.ts": "3edee9b5bad534e0c48dfb3b6044b67ed6b641608ff16feaed4d809b3f176f9a",
       "apps/wechat-miniapp/package.json": "9304ffaee7b02ab46f1a983ba7e07a8a92882f6e9551731b32ef47dca4f97829",
@@ -195,27 +195,27 @@
       "apps/wechat-miniapp/src/utils/presentation.test.ts": "1aefd28fd835cbc9ceeace4b53ab572a4798a10520ce7ecef6c41ba8d174f702",
       "apps/wechat-miniapp/src/utils/presentation.ts": "a0497ea4d3beea0a9bc6d1a311011c5cf030210169de25e06d292951c063a08f",
       "apps/wechat-miniapp/src/utils/zoned-date.ts": "30937945c47496ba3dbac39f2363fa291c2a15817257ef8ec34ee0e000fb1c7a",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md": "089ef57ce5d86f44d0b138f57478388a53967a9b48007bb35ab6f93fd189816a",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/README.md": "50826fef99108da537986ce9f8671b7909955cf87c3e7b50e56d37985e7a8f81",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/artifact-manifest.json": "ee3c1b9c84fc3188e99e5dc3286a557e378724d2081de5fd912c50a4f7fd0731",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/app.js": "3cbc5f8e55ceaf6917b864150905f30ad539474c4c92f27a156e30079d9c99a1",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/styles.css": "5284cc77d46dc6f61ab5ef6b2912d14949b9f59f385855cc890080084407f51f",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/authority-delta.json": "df851d2e2ec16d9c67caed10c960dd4a051345cd04bcdb374c3c4e0ccc057b9c",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/coverage.json": "0dcbeef98e091b2be2bfaef5a6c270a355fba121220fea5c9ec0ba3a51e7f886",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/design-system-snapshot.md": "08a8719fee19638e8f5bbf34d2bf9a0421c6753db4e7830b9c11ff235d9839f3",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/implementation-handoff-spec.json": "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/index.html": "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json": "08be96c7b0a418026644eee5772804fc3e5d60de5ac570b19c8349bc68bff78e",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-fact-manifest.json": "22baf8f4d96b56d76baa7c4509796f0f5027acc01b58afcff4caefc83b9d1ebd",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-inspector.mjs": "8c8a04be70d25fefd151a1e84b2e8d3af7df30a0089d0ac01613953f90c132c6",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-oracle.mjs": "2e3b31e8774155b4201c9466523db2cd9116d966d7aa105a22bd065370b2eb77",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-implementation-feasibility.json": "ee377fa71268391742d0313c85483e52fad156370b64391cb8c2f3cf411f91fb",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json": "c33d2506b09e99d906b299d6a8a16852fc391ca5153b2f070bd65d9cc56707ba",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json": "013f9360a8ca35e244281420a7eea42cbdfe31f1166a31d35cd7b253f28a6919",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json": "06a178d6da1a4d06d2932bc324dab5f51ccaf774b0c18f737c3e7970645d931e",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/open-design-readme.md": "8e7d6d15aa45244f03e211ebd1c4231958b5823921739f0596cb575c1576d5b1",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/proposal-reconciliation-index.md": "04eb66043af117506f30a859ca2f6d3fec0e270284502818ee2f4283aacc1068",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/selection-and-qa.md": "5d17525caf832200e0ed4ebb5bca39845d0343ed33469e173bb22a41375eb7cc",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md": "01e12307621b700f54d6e9878369fe1225f90d75adb1bd695af51f142fed78a6",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/README.md": "50826fef99108da537986ce9f8671b7909955cf87c3e7b50e56d37985e7a8f81",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/artifact-manifest.json": "ee3c1b9c84fc3188e99e5dc3286a557e378724d2081de5fd912c50a4f7fd0731",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js": "3cbc5f8e55ceaf6917b864150905f30ad539474c4c92f27a156e30079d9c99a1",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/styles.css": "5284cc77d46dc6f61ab5ef6b2912d14949b9f59f385855cc890080084407f51f",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/authority-delta.json": "df851d2e2ec16d9c67caed10c960dd4a051345cd04bcdb374c3c4e0ccc057b9c",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/coverage.json": "0dcbeef98e091b2be2bfaef5a6c270a355fba121220fea5c9ec0ba3a51e7f886",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/design-system-snapshot.md": "08a8719fee19638e8f5bbf34d2bf9a0421c6753db4e7830b9c11ff235d9839f3",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/implementation-handoff-spec.json": "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/index.html": "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json": "08be96c7b0a418026644eee5772804fc3e5d60de5ac570b19c8349bc68bff78e",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json": "e10faa4af0b8df987ea45ffc66cbbd13183e13447afc6bdd44703b961a9bcf53",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-inspector.mjs": "f9b83c24c36608f6af589df794481c5d4d7402bd4467343fc157f4cb40b4bcc9",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-frozen-oracle.mjs": "2e3b31e8774155b4201c9466523db2cd9116d966d7aa105a22bd065370b2eb77",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-implementation-feasibility.json": "0fda88ffe26571eb7c7852568afd55b8be3f7cbe73d713e9d11f0de0ee804bf0",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json": "c33d2506b09e99d906b299d6a8a16852fc391ca5153b2f070bd65d9cc56707ba",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json": "013f9360a8ca35e244281420a7eea42cbdfe31f1166a31d35cd7b253f28a6919",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json": "f652084a365acf8f3823e3846c2e7c3258ee84970ca3d10b5348679875d77e38",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/open-design-readme.md": "8e7d6d15aa45244f03e211ebd1c4231958b5823921739f0596cb575c1576d5b1",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/proposal-reconciliation-index.md": "04eb66043af117506f30a859ca2f6d3fec0e270284502818ee2f4283aacc1068",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/selection-and-qa.md": "5d17525caf832200e0ed4ebb5bca39845d0343ed33469e173bb22a41375eb7cc",
       "infra/miniapp/docker-compose.yml": "27f643d9e917129066f388506e6b44dfa94927593c11cc339c60532cb5101268",
       "package-lock.json": "8b28480172d3e13226cccc9d9457844681d4b74c97baa84bd3527212a11c61b1",
       "package.json": "57369e2026a8d640e1b50f2a730e0e82e9f6b96f566d42871506ef1ac7ef7400",
@@ -238,7 +238,7 @@
       "tools/miniapp/admin-operations-client.mjs": "9953fb2b2b4e562f8071a3375ca0e05a7baf1470ecb0dafab87c77def59b1dd2",
       "tools/miniapp/admin-operations-commands.mjs": "f438848d2001725aed6484dbcaa690feb2ad717f1b9d69c97bbd0b9c663ddc75",
       "tools/miniapp/admin-operations.mjs": "0030fa6061599fcb10159fb1c54096fcace99c2b381e3385de69b7c131841ce9",
-      "tools/miniapp/apply-ty-context-harness-compatibility.mjs": "d5f9256764efda21793c32b84affa5992b2ff8de0a07d7af494c985e1ec57636",
+      "tools/miniapp/apply-ty-context-harness-compatibility.mjs": "2fa6123572ac583957e0f470da48ff8f6a5e833aab6d923bee3fe9c6e1be141f",
       "tools/miniapp/backup-restore.mjs": "fe4b2162d84e9749e516691787604654c73aaa4807d0523cffa1d61aa15e3920",
       "tools/miniapp/build-release-bundle.mjs": "05556747df1bbdf555fb76f37016e34750e0a2676b89a52c86a3415f14430f50",
       "tools/miniapp/build-release-bundle.test.mjs": "0d549a440ec0a9892223c3e385b2bea8325eb2686297bac80ebfc81496ac049b",
@@ -282,11 +282,11 @@
       "tools/miniapp/run-operations-browser-session.mjs": "3a7889447ddac1a9eb120eb9699ce40a850827b21c768bcfc75ec768f8d0843e",
       "tools/miniapp/run-wechat-devtools-session.mjs": "4fd8e3f015baf2ae62ce84a1415cc3748469b721c1c67415fb716d8325b59db6",
       "tools/miniapp/runtime-event-policy.mjs": "9b50b6b65bf653d73c1ba6d903ba7b23042a42c09d2b213546edfabd35fb9aac",
-      "tools/miniapp/selected-design-bindings.json": "c7d503f5aefb66fd769d07a510c4b959053435a49596807c22fba2e62bc8d151",
+      "tools/miniapp/selected-design-bindings.json": "6bbc49e959351ed64f2441afe4e73e2463e8957affff10831387ec7286937e4b",
       "tools/miniapp/start-development-session.mjs": "5ff0290063307ba62ab748288e5601101ba88eeaa6444be85f65c096ed42f8f0",
       "tools/miniapp/upload-release-bundle.mjs": "aff930a20df01de4f5bc9548e8d927abc46521f7c7eb1a564d1556e6b996a78a",
       "tools/miniapp/upload-release-bundle.test.mjs": "25edce09cd3282bf0bd6be906606c85375db836f00df9b85230b94bb690f17a9",
-      "tools/miniapp/verification-spec-field-signal-i21.json": "361ae2f0d91522ef312d5edeac6ff606101189c5c607b47e59aa6129f6259f23",
+      "tools/miniapp/verification-spec-field-signal-i21.json": "c289cd8d24ead451fdbef115c1491e42c2fc683663e08168b998ce488e7eafe2",
       "tools/miniapp/verification-spec-v2-1-1.json": "76d1aaf2ac9c4c1134476ccf2d99014be3178162bcbba79e0d38dbf25a85f51d",
       "tools/miniapp/verification-spec.json": "1496766c2908d8183ee041c726a9ddc1d1bae1e54705b67449d17653b73ec8b3",
       "tools/miniapp/verifier-runtime/package-lock.json": "550dac0ab2b84dfafb07ff7b6b1b2d7d071583e82dac94ab1a4b3140239bda2f",
@@ -302,7 +302,7 @@
       "tools/miniapp/wechat-app-id-migration.test.mjs": "8b110658e05c9cfe4674d1e1bdc66e795e7a9a2417e7f23aff44b9c275a8249d",
       "tools/miniapp/wechat-platform-operation.mjs": "2d77dbcf42437057dc724140167d1f6d42fccf3b24a2ddc576161787d13ef667",
       "tools/miniapp/wechat-platform-request.mjs": "72698a5fff75c9f2bdb4fbb62da65493c956e7e4c8af846e68909f3d20187953",
-      "tools/miniapp/workflow-conformance.test.mjs": "c9d6c2c6bcc70b8b3282f5a64cbfa94d6ba0c9ccd4fadfec7e9eeeb0cd511c81",
+      "tools/miniapp/workflow-conformance.test.mjs": "ce9bdaf20826e2b60439f84bf26abc15f14b0f0266be8e7857ef3c418c8ea74f",
       "workers/miniapp-api/package.json": "f1869131833914c90692bf680056087feddae4ec0cb9935b2e4fdc6dd70aad25",
       "workers/miniapp-api/src/acceptance-controller.test.ts": "eba157f51a15bec7d09c7e41dfb337f1fb314831a5c7087aa35bb3e673bef2ff",
       "workers/miniapp-api/src/acceptance.controller.ts": "678abdac05f8098c1b00d474f2fe6272d193734c906705dce2496673b46e3eb1",
@@ -377,7 +377,7 @@
       "workers/miniapp-api/src/worker-heartbeat.ts": "df9630bb74e9bb008ac524b0141d2cc85639ec0d591a8efa9c502a039d5ee803",
       "workers/miniapp-api/src/worker.ts": "9dc946c0e059d9a543ea7e3fb5666c0478b9147d5307f9ce3bcceae9e54cfe1f"
     },
-    "sha256": "4c0834cd83e9286ed72a89b7fe9235d7215c0eb2d203a973dbde1b7e9f14b738"
+    "sha256": "f12eedc7570ff13fa3185b26dfec060cf53a9820fa77f967e956a862ac7c3b68"
   },
   "authority": {
     "design": {
@@ -387,13 +387,13 @@
     },
     "resource_manifest": {
       "passed": true,
-      "expected_sha256": "22baf8f4d96b56d76baa7c4509796f0f5027acc01b58afcff4caefc83b9d1ebd",
-      "actual_sha256": "22baf8f4d96b56d76baa7c4509796f0f5027acc01b58afcff4caefc83b9d1ebd"
+      "expected_sha256": "e10faa4af0b8df987ea45ffc66cbbd13183e13447afc6bdd44703b961a9bcf53",
+      "actual_sha256": "e10faa4af0b8df987ea45ffc66cbbd13183e13447afc6bdd44703b961a9bcf53"
     },
     "handoff": {
       "passed": true,
-      "expected_sha256": "089ef57ce5d86f44d0b138f57478388a53967a9b48007bb35ab6f93fd189816a",
-      "actual_sha256": "089ef57ce5d86f44d0b138f57478388a53967a9b48007bb35ab6f93fd189816a"
+      "expected_sha256": "01e12307621b700f54d6e9878369fe1225f90d75adb1bd695af51f142fed78a6",
+      "actual_sha256": "01e12307621b700f54d6e9878369fe1225f90d75adb1bd695af51f142fed78a6"
     },
     "implementation_handoff": {
       "passed": true,
@@ -402,31 +402,31 @@
     },
     "feasibility": {
       "passed": true,
-      "expected_sha256": "ee377fa71268391742d0313c85483e52fad156370b64391cb8c2f3cf411f91fb",
-      "actual_sha256": "ee377fa71268391742d0313c85483e52fad156370b64391cb8c2f3cf411f91fb"
+      "expected_sha256": "0fda88ffe26571eb7c7852568afd55b8be3f7cbe73d713e9d11f0de0ee804bf0",
+      "actual_sha256": "0fda88ffe26571eb7c7852568afd55b8be3f7cbe73d713e9d11f0de0ee804bf0"
     },
     "semantic_manifest": {
       "passed": true,
-      "expected_sha256": "8f80200d56cec8e85f292e942a2488d637c5eda0c2d2419c5aa44e99e53ec179",
-      "actual_sha256": "8f80200d56cec8e85f292e942a2488d637c5eda0c2d2419c5aa44e99e53ec179",
+      "expected_sha256": "8d0f12f5cdb08297c72d7193164070c59d870ab6bf20690461571d40a5a9876a",
+      "actual_sha256": "8d0f12f5cdb08297c72d7193164070c59d870ab6bf20690461571d40a5a9876a",
       "source_closure_passed": true,
-      "source_item_count": 1814,
-      "manifest_source_item_count": 1814,
+      "source_item_count": 1815,
+      "manifest_source_item_count": 1815,
       "template_count": 0
     }
   },
   "source": {
-    "item_count": 1814,
-    "semantic_manifest_sha256": "8f80200d56cec8e85f292e942a2488d637c5eda0c2d2419c5aa44e99e53ec179"
+    "item_count": 1815,
+    "semantic_manifest_sha256": "8d0f12f5cdb08297c72d7193164070c59d870ab6bf20690461571d40a5a9876a"
   },
   "suites": {
     "fast": {
       "passed": true,
       "exit_code": 0,
-      "duration_ms": 30203,
-      "stdout_sha256": "d120d78be7b84213db73f05538b920164a4abcc6ff1bf61c86aa7c847ca99a6a",
+      "duration_ms": 42086,
+      "stdout_sha256": "5b0d5be888456436a9785cf482472b44cae73ce6e57dc040e5c8547538dfa364",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_line_count": 302,
+      "stdout_line_count": 304,
       "stderr_line_count": 0,
       "diagnostic_sha256": null
     },
@@ -435,15 +435,15 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 10823,
-        "stdout_sha256": "780f4a21a9d5b4e9ae60c1752a6de7906c2daadd569f6c2e9e380ba7052c645a",
+        "duration_ms": 15043,
+        "stdout_sha256": "017397d5ac421bf2809f8ae29575f7ced51f7a1000a47872a7cef300d351ca65",
         "stderr_sha256": "30745afe699b237e4868b2f15f702636dd4090c24f37d0388f006c9c50098d94",
         "stdout_line_count": 3,
         "stderr_line_count": 8,
         "diagnostic_sha256": null
       },
       "artifact_path": "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json",
-      "artifact_sha256": "c89e239461c23d43914e481852c1d36e48f18035327d0d2f905d43f48d6fa23f",
+      "artifact_sha256": "7bbfa0f8cde07b03e55764e044bc8891e9672b7589a9c67c867571448390de8a",
       "checks": null
     },
     "h5": {
@@ -524,23 +524,23 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 755102,
-        "stdout_sha256": "be950b800e312bb319fcff6b615b73cfca61a9e09aa7b85352681916a905c5ef",
+        "duration_ms": 654336,
+        "stdout_sha256": "f0bc0cb41953c7e5d2d02edf9cd3de9836595878fa0cc5c903c02a95fab156c3",
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_line_count": 1,
         "stderr_line_count": 0,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/session.json",
-      "artifact_sha256": "2d264a7ea62c39ccbeb9bb01265f77385148422ccaada7a3a3bd28cb76cd1597",
-      "session_id": "wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53",
-      "run_id": "wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/session.json",
+      "artifact_sha256": "6f80137c028071251e64489499f7ada6bf3edf90f032de76c1c5ffe772ca693b",
+      "session_id": "wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7",
+      "run_id": "wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "current-candidate",
       "mode": "success",
-      "candidate_sha256": "85d2a83b25f51494c6d523cbb26ade45e7d7397a8a06a36173af08f86849ce38",
-      "bundle_sha256": "144c11f25fb37215122e3a1656663ca74e963c8d259f9f8e74d3fee1f3b2f47a",
+      "candidate_sha256": "21a740cc974322e2024b9fb8711893e7b4b7f1b7b2512722ded5c3b585c415fb",
+      "bundle_sha256": "50ae09f5b55ee4793824f94ae80ec77715ed8d53f9aea48daedbcc6becd9162e",
       "candidate_stable": true,
       "bundle_stable": true,
       "journeys": [
@@ -554,8 +554,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "39de51db69f832756b1ce85af85dd07081f04018d162eadd7eb744a4911f4d9c",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/01-map-cold-start-location-fallback.png",
-          "screenshot_sha256": "cb6a589ecce50fcda7f79a1d614a591357976d64a6ade27e5fc5d0fa23eb13bf"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/01-map-cold-start-location-fallback.png",
+          "screenshot_sha256": "fdb65bd3cc3f7c4af494f5c6791d39e4754fcb9a364933fd95cfebf0c05825ae"
         },
         {
           "key": "sky-orientation",
@@ -565,9 +565,9 @@
             "theme-night",
             "theme-page"
           ],
-          "root_wxml_sha256": "d5cdb448b03938bf7dbe0defc468f5fcd6956ecc74264c5b91c77086bcdeb34e",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/02-sky-orientation.png",
-          "screenshot_sha256": "23082a8d43817630a1abfb23ceefe494354cbfa6c7b0a1b5d027d0012c5bfc2f"
+          "root_wxml_sha256": "c3f0b378890c372ea63531281eb4592ba9190664cf0c1cee86f4ee66773c3736",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/02-sky-orientation.png",
+          "screenshot_sha256": "80e302b324f78ad3e49545b19a06a64eabd613e848aac74a3db21e379e2a7d70"
         },
         {
           "key": "my-home",
@@ -578,8 +578,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "20c537c92431bc866046bdf298e6511cc5545fda4fa9685896ff5dab576a4099",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/04-my-home.png",
-          "screenshot_sha256": "6e733f59f642c6a989859f850032abda60da1e0cd4d73c44f66c07d32998acc0"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/04-my-home.png",
+          "screenshot_sha256": "5db767d08b6b25b23c3567ff1331edf37bd0e5b93644ea4760c8c461c6e9d18a"
         },
         {
           "key": "profile-links",
@@ -590,8 +590,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "d727181efd097520aa75604f4348b910a87480cc451b7129317d73b4872dbae0",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/05-profile-links.png",
-          "screenshot_sha256": "c167ff37ece5cafde514d480fa75414a76d0dbc8b81760f859ed8e0b96e943f3"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/05-profile-links.png",
+          "screenshot_sha256": "9aa054c840d26e217373f30be9322e1931a130b376d74bbbf42a07c62a8a830e"
         },
         {
           "key": "own-post-import",
@@ -602,8 +602,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "f3ee36d7edf54df7138528dc114266e73ba5d1150f93c5cf75a71d04beea54ae",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/06-own-post-import.png",
-          "screenshot_sha256": "c2589a86a816f6f9e2f50dbfded570260adfc2f01b6e67ae2b3acf8fb39a3f0e"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/06-own-post-import.png",
+          "screenshot_sha256": "91dc497140d1be6d5ca6cdf5fb820888eb2375535f44fcbbf5a84ac825127b39"
         },
         {
           "key": "formal-spot-contribution",
@@ -613,9 +613,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "b0332ce05ed3684fa2ab15da62b5ce0ee49b2a49ca1ae4f7a8b418cb716d7660",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/06-formal-spot-contribution.png",
-          "screenshot_sha256": "29ba889893741708200b7333c9d2895eaa20c613dc5c00d38d0bfc490422c51d"
+          "root_wxml_sha256": "98e93838bdc4a0c7dbac16cc47ebc9fcfef72701048b4a080061e885c8c36f7d",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/06-formal-spot-contribution.png",
+          "screenshot_sha256": "dd4323d601da179170e2c9ef23984544ad11ac7e8c8478a842cc408d1e02ed7c"
         },
         {
           "key": "new-place-contribution",
@@ -625,9 +625,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "82e9aa582ffdd65849d33133e3d514f88958254a3681add483ae5f4d7626ed9d",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/07-new-place-contribution.png",
-          "screenshot_sha256": "5bcf2a3ed09292dd493931ab7c94c7251edf7285c9323f60342936b1ad2048ed"
+          "root_wxml_sha256": "3acc7b5b8fa7e52bab5763062430510c6ad48edb5c02b818a2f7aaf4288b97a3",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/07-new-place-contribution.png",
+          "screenshot_sha256": "c51d94733f780020f0d77dd05490f421db13a9c3491f4fd4e1f0881fb3ff1bda"
         },
         {
           "key": "plan-editor",
@@ -637,9 +637,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "28722565f0f71dec0a55b1ff6f36a21fff28a7ab7e02054c298ac0b2368d7834",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/07-plan-editor.png",
-          "screenshot_sha256": "32bdf1db2403833d0809045e523e0c39bc4e7768021b444794ad5901d4c707ba"
+          "root_wxml_sha256": "36e625c81633805782fbff7fee79d7cba0bee6841ab7cd142b0fbadd3ad8638b",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/07-plan-editor.png",
+          "screenshot_sha256": "3749c77b4bb22895531d610c2b726dfd02347b1db91e504a0a3f3c2103bdc040"
         },
         {
           "key": "settings",
@@ -649,9 +649,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "fd1cafd1291d0b5c74edf39e1f35eb7299b404dd58ab3665281715d0180ac584",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/08-settings.png",
-          "screenshot_sha256": "9de6a5bee4d7ffab54cd7513d4e11fbbad86542a738f9d357ff4564d620555ac"
+          "root_wxml_sha256": "9cce21326ce28bf8e374bef9b387e1ab7bc65bbdbc8eaec3ee13275c6dcfdb9c",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/08-settings.png",
+          "screenshot_sha256": "b90e131b2e271ea9f1245e603014cfbe4a3fa10444eb73c9cf218b2f8d6b2a90"
         },
         {
           "key": "upload-recovery",
@@ -661,9 +661,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "6eff75a847e420479edccb50ea6bfe6fa1edcee3338909ad740bed06b7b977d3",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/09-upload-recovery.png",
-          "screenshot_sha256": "a80b845ded21e18bdbf428499a6cc69e108d0ce5645a9c537e31c1a7bceeac35"
+          "root_wxml_sha256": "a9f3d186df8ef162b3bf3d227a18a73d1377f7c9138aba164bf1a749f3358b7f",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/09-upload-recovery.png",
+          "screenshot_sha256": "a1a7ab1b055b759d00664d3d2678400797cabc61f715a1f0978c78f1af30e861"
         },
         {
           "key": "nightchina-import-gd-yuebei-summer-night",
@@ -674,8 +674,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "458b42886e318d1d33f6435071c4a6da66f41bea841aa6364aeccf4106f1a920",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/20-nightchina-import-gd-yuebei-summer-night.png",
-          "screenshot_sha256": "af4278db02d3374731541861c41517e64a4debd8c311be712be5f9248544de4a"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/20-nightchina-import-gd-yuebei-summer-night.png",
+          "screenshot_sha256": "cb1838f65faded2cd7e240e2d92c7c51fac395fc25741f3957ff57a0fc3b95b8"
         },
         {
           "key": "nightchina-import-gd-oujia-terraces",
@@ -686,8 +686,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "bca5170ef51e19e78892fc8f66829574d0c2594f152da549186d583821bf4909",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/21-nightchina-import-gd-oujia-terraces.png",
-          "screenshot_sha256": "3e17d4cc1670b2458327b02ba57ccc42cd6e46f8558e0dcf4325472a58955e92"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/21-nightchina-import-gd-oujia-terraces.png",
+          "screenshot_sha256": "31faa7519228924489d16e1165e5e8c5ea72b4ecd28f94c8d775d6254dfcf397"
         },
         {
           "key": "nightchina-import-gd-yangshan-watch-sky",
@@ -698,8 +698,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "3fcce8779fad852ff6c257cc0df07220419028959c87a5f1908d735b3a09e5d7",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/22-nightchina-import-gd-yangshan-watch-sky.png",
-          "screenshot_sha256": "480cc55090f57900df93a7c2a5029ed55cc9d27e75b2491ed7d477f899abc6ca"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/22-nightchina-import-gd-yangshan-watch-sky.png",
+          "screenshot_sha256": "7368ef3ec750d045717d9bdc35a7e40ce964bddd580ef1b42fe76993a253b846"
         },
         {
           "key": "nightchina-import-gd-bajieshan-cloud-sea",
@@ -710,8 +710,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "b312771a0b81ec2294f40045b47e9a030cac62cb6bcb253cde8327c410a763ab",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/23-nightchina-import-gd-bajieshan-cloud-sea.png",
-          "screenshot_sha256": "561eed847abec61fac1d9d7e819e437b55f9f1b2e3987b611030e4e95b62bd63"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/23-nightchina-import-gd-bajieshan-cloud-sea.png",
+          "screenshot_sha256": "356f90d1ca0b4d19a62a4aab3933675146c9239e61464bf485ac602b4e86044f"
         },
         {
           "key": "nightchina-import-outside-anhui-shangcun",
@@ -722,8 +722,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "dbfcd5b7563c6fe0ee611c5fa67497892ec2a58d5d9de1b0fc7fb89d58e234fa",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/24-nightchina-import-outside-anhui-shangcun.png",
-          "screenshot_sha256": "790f0ae435a4e1d0752891e657f0009993bb89ee23041854b8954b1ecd7629dd"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/24-nightchina-import-outside-anhui-shangcun.png",
+          "screenshot_sha256": "7a119150954fb3ec26b4f05220b45fb5972e0adbd24321ecd295a0b73f1bb449"
         },
         {
           "key": "nightchina-import-outside-anhui-xucun",
@@ -734,8 +734,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "48e78a6142a5f848284fb7c1faa4c2137568e4534f00094b50df7773881b06c3",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/25-nightchina-import-outside-anhui-xucun.png",
-          "screenshot_sha256": "406d0e6eb0169f589f2ed980853039d80f5cfb1274689304a7b98247917d6053"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/25-nightchina-import-outside-anhui-xucun.png",
+          "screenshot_sha256": "6e7c936184a4370fb980b52775a2469c76386584dc46bddac6ebcd180cd3700d"
         },
         {
           "key": "nightchina-import-outside-yunnan-diqing",
@@ -746,8 +746,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "663f79d7858714e40f5755b61a27a7e65d1370af41502aa6f6537289537cf669",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/26-nightchina-import-outside-yunnan-diqing.png",
-          "screenshot_sha256": "20bc20828738b9f9c1e091f3ac30e6d8ed62ffec5897e5fc7eaa99ea9f3b4bdc"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/26-nightchina-import-outside-yunnan-diqing.png",
+          "screenshot_sha256": "ebf31ca11f1dbe2e5e890f096fb6a80689ae5d0d2bae5a91f64a13ef29b04c2d"
         },
         {
           "key": "nightchina-import-outside-hebei-bingshanliang",
@@ -758,8 +758,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "190a803abc17eb2c57ad28544000f8fe1e2c1092224631048ca1f562916b5112",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/27-nightchina-import-outside-hebei-bingshanliang.png",
-          "screenshot_sha256": "e05f3524d9af811e25fd08ee4e72a557aad106f4f988bb0b952337e578b13cad"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/27-nightchina-import-outside-hebei-bingshanliang.png",
+          "screenshot_sha256": "bb0695db04baebce458f88969b792713bff540e095e4dfd1e81b0bd2c3dbd21d"
         },
         {
           "key": "nightchina-import-outside-tibet-dingjie",
@@ -770,8 +770,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "0c581de15c0dddfd3eb79b00d72a7abfbcfc6ee232c4ea98017bd3e694729594",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/28-nightchina-import-outside-tibet-dingjie.png",
-          "screenshot_sha256": "5b61cab90f97b57a489712d46e3bb19ec89d414d35ffa8f45c720eb655f39366"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/28-nightchina-import-outside-tibet-dingjie.png",
+          "screenshot_sha256": "90e40a3b59d756d35b0711913677189774805af5c2050bf2cfd79e73bac07b86"
         },
         {
           "key": "nightchina-import-gd-dapeng-summer-fireflies",
@@ -782,8 +782,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "d5ee5e6f99ceae183a82a24f7d64e15d20c0b0b7a42507b14867994079bec0ea",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/29-nightchina-import-gd-dapeng-summer-fireflies.png",
-          "screenshot_sha256": "0b7bee90772d1409fd7fed5ebf03521d1e748a5266c5e87376d01e270a76e30d"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/29-nightchina-import-gd-dapeng-summer-fireflies.png",
+          "screenshot_sha256": "3d0265163d31f5d9a464f4aee5303ff3bfb9e429ba05b816b544a47c5afd9cef"
         },
         {
           "key": "nightchina-post-import-formal-spot-panel",
@@ -795,84 +795,70 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "897ea0536622b639bb894ef3cb067de06663555d890451fdfb316572a0e2777a",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-03T23-53-16-781Z-19d60f53/30-nightchina-post-import-formal-spot-panel.png",
-          "screenshot_sha256": "5f6587c9520ae86793f1338e481a8e32f86e8a16a9f443ded87ff598539105f4"
+          "root_wxml_sha256": "447c84e70c70d1474b47e25a5387b79579c4422448b20106b9ba381bef7c1f12",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-04-24-632Z-d3b5a4f7/30-nightchina-post-import-formal-spot-panel.png",
+          "screenshot_sha256": "733331fc29546223f9b616ac4108bce714df2f52806dc27209e38f0fc818760c"
         }
       ],
       "fault_probes": [],
       "runtime_observation": {
         "exception_count": 0,
         "expected_fault_console_error_count": 0,
-        "known_toolchain_console_error_count": 10,
+        "known_toolchain_console_error_count": 8,
         "known_toolchain_console_errors": [
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "setup-reset-before-control",
-            "offset_ms": 158008,
+            "offset_ms": 62461,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-reset-before-control",
-            "offset_ms": 207369,
+            "offset_ms": 110912,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:sky-orientation",
-            "offset_ms": 234744,
+            "offset_ms": 138418,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:my-home",
-            "offset_ms": 305147,
+            "offset_ms": 208212,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:profile-links",
-            "offset_ms": 312646,
+            "offset_ms": 215696,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:plan-editor",
-            "offset_ms": 391256,
+            "offset_ms": 293614,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:settings",
-            "offset_ms": 408086,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "evidence-journey:settings",
-            "offset_ms": 408307,
+            "offset_ms": 311169,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:nightchina-import-outside-anhui-xucun",
-            "offset_ms": 583338,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "evidence-journey:nightchina-import-outside-anhui-xucun",
-            "offset_ms": 593773,
+            "offset_ms": 483322,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           }
@@ -880,7 +866,7 @@
         "unexpected_console_error_count": 0,
         "final_quiescence": {
           "status": "passed",
-          "event_count": 79,
+          "event_count": 77,
           "quiet_window_ms": 750
         }
       },
@@ -891,23 +877,23 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 353162,
-        "stdout_sha256": "0b4c7b9748ebdc325c1b80923d285bcb0b22e28ddaea31c9ddac2ea8255f049c",
+        "duration_ms": 351042,
+        "stdout_sha256": "68797868306885b22fbd0fbb580a778e8aecde1d0a00b06ae4d8ea9c17229755",
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_line_count": 1,
         "stderr_line_count": 0,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/session.json",
-      "artifact_sha256": "736b38d522eb53d99f23f693cee4aa20cd73a90df45d2f961a09aaaacbaeebd6",
-      "session_id": "wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc",
-      "run_id": "wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/session.json",
+      "artifact_sha256": "d762bb790b29743a8b01fdfe183c9af329eefb335f4821367090bd6993c3ce62",
+      "session_id": "wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d",
+      "run_id": "wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "current-candidate",
       "mode": "degradation",
-      "candidate_sha256": "85d2a83b25f51494c6d523cbb26ade45e7d7397a8a06a36173af08f86849ce38",
-      "bundle_sha256": "1c1197903ec57c2cffa0e276890d68513464cd320b7673445ff4627968f2ece4",
+      "candidate_sha256": "21a740cc974322e2024b9fb8711893e7b4b7f1b7b2512722ded5c3b585c415fb",
+      "bundle_sha256": "cf3d49bce7d01be77de63d4e6c18fb7764b4f3cca6275db146a6aac68f56a75a",
       "candidate_stable": true,
       "bundle_stable": true,
       "journeys": [
@@ -921,8 +907,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "697e5152703816538e33d2cbd2072230cad60f6346e92ff0eb7e1b7b0df9d707",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/01-map-cold-start-location-fallback.png",
-          "screenshot_sha256": "5b24089f62f8ae267567081f290721bd4fa2f16948ade2e63d3a88edb22a87fa"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/01-map-cold-start-location-fallback.png",
+          "screenshot_sha256": "a962e94e5f6968cacfb75bb69b9e71431889f85a326d20c5115a5c681e91e8ed"
         },
         {
           "key": "sky-orientation",
@@ -932,9 +918,9 @@
             "theme-night",
             "theme-page"
           ],
-          "root_wxml_sha256": "7827cada67af343b1e2fbd368aade82a832f0f44c8e56ee8963bde6b1869829a",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/02-sky-orientation.png",
-          "screenshot_sha256": "9322e3afd74f56d5212cbae47b200f55540885a04f3ca37dc562b024e8c1ee71"
+          "root_wxml_sha256": "0a0c82c2a9d3f2c530a06bdb9ad11795fd4e742a2758c8c818aba68c02b9f11a",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/02-sky-orientation.png",
+          "screenshot_sha256": "bf9caab49ad4dcfceeca5c3c82c2d2ce9949f55f3d24d6b4072f2e5ae146a350"
         },
         {
           "key": "my-home",
@@ -945,8 +931,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "550c285e7d402cfe753f3579edd57eb11c591d9c39e0b76157feca4328d6cb61",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/04-my-home.png",
-          "screenshot_sha256": "e3257dad2a1624fb1b3c08ee5588e7040bd038a391b9880273b7b5081814dc01"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/04-my-home.png",
+          "screenshot_sha256": "586d43074a0232ded20ce1f5c81e29b9718f6ee74629631512386a35d5513026"
         },
         {
           "key": "formal-spot-contribution",
@@ -956,9 +942,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "347b3329ce8e0ca40693aec1a1d6679089d0e98c327fcb6220507f6cf7e96ebb",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/06-formal-spot-contribution.png",
-          "screenshot_sha256": "53e2cfbe02bfe7f00a023f9b9ca60cb347b7e748f14381a86532277cd378b259"
+          "root_wxml_sha256": "8c941fc348a3e4e685cb304f27977f85e02bf909fdee158f153a21cc0d458cda",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/06-formal-spot-contribution.png",
+          "screenshot_sha256": "2259c7f24c866aef421a395030320a1fdfd3074e36345dad114d913578135693"
         }
       ],
       "fault_probes": [
@@ -971,10 +957,10 @@
           "recovery_observation_sha256": "141ac8d738acbefae13f081310910f2d47cbd832f750a3bccc1313665eea8ff3",
           "recovery_control_selector": ".status-panel__recovery",
           "recovery_control_label": "重试",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/fault-map-cold-start-location-fallback.png",
-          "fault_screenshot_sha256": "096a0c4469a526f8c36f9bd46bc5820da55976ade61a3ff41b26f52eaf69d810",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/recovered-map-cold-start-location-fallback.png",
-          "recovery_screenshot_sha256": "ba3c545ecdf3df7e9085ec37486158150e9e782347f4f84dc48ad18446689d4a",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/fault-map-cold-start-location-fallback.png",
+          "fault_screenshot_sha256": "a4cb2afac24fbf96690da165902e5d44aa273f98c3e17ed45ae45c24a7eb215f",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/recovered-map-cold-start-location-fallback.png",
+          "recovery_screenshot_sha256": "f8d13b9f2c4881726f5c6d67e5b1bdcc44fc4b4f3310b07166f4b366345e962b",
           "runtime_quiescence": {
             "status": "passed",
             "event_count": 10,
@@ -986,17 +972,17 @@
           "status": "passed",
           "fault_observed": true,
           "recovery_observed": true,
-          "fault_observation_sha256": "eddb4bae972033ba4c15789a9db3bf544af3b10c02d918317dcb6510b14ff61b",
-          "recovery_observation_sha256": "a730f04f0e3b05f8ad3591c5a9e09bab15af8464cc34b56403a1a3c12adfbcd1",
+          "fault_observation_sha256": "17fd207774e128fe8a8caab2b044272b2a4f21121b76bc8d6c6c26863da1714b",
+          "recovery_observation_sha256": "3cbaefa8b970c11ce047cfb883586049362c49439c68840baec49a404287502f",
           "recovery_control_selector": ".status-panel__recovery",
           "recovery_control_label": "重试天空",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/fault-sky-orientation.png",
-          "fault_screenshot_sha256": "5e97b856cfc52c29c2066a8b76dc25b37c44cee70016b6cac34dc09708d312a4",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/recovered-sky-orientation.png",
-          "recovery_screenshot_sha256": "56e40b2e85116321ae80c7807ebe14579423ba47973a1ee135302d1d4cffb134",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/fault-sky-orientation.png",
+          "fault_screenshot_sha256": "944e15539fc0df7499d987da52967a3e0946111a478b953548ee55dc4406f1aa",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/recovered-sky-orientation.png",
+          "recovery_screenshot_sha256": "cae13da921db175bc4f343f2d539694f76eecb4a592d8b05739d47537bcfac56",
           "runtime_quiescence": {
             "status": "passed",
-            "event_count": 49,
+            "event_count": 47,
             "quiet_window_ms": 750
           }
         },
@@ -1009,13 +995,13 @@
           "recovery_observation_sha256": "bdb08f3ac09c004b9e55893e83ea777921bea46abd92c1136c0f99f4cbaa8113",
           "recovery_control_selector": ".status-panel__recovery",
           "recovery_control_label": "重试同步",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/fault-my-home.png",
-          "fault_screenshot_sha256": "4507021c447def151f69eb71471198d94c8c4234b1f545837747b47625740ef7",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/recovered-my-home.png",
-          "recovery_screenshot_sha256": "a9febb78b83d53ba47807ffc7554d79bf9f97ba0c5904cd4803b783a07739f99",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/fault-my-home.png",
+          "fault_screenshot_sha256": "6866fcc5567e85966a9c7f86ec2865753e70bc2deb6148a911cf5a390d59aad3",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/recovered-my-home.png",
+          "recovery_screenshot_sha256": "2c2487766b6c806639643a6295a192b6abe8a2c8198ead31a6529b35f5388d6f",
           "runtime_quiescence": {
             "status": "passed",
-            "event_count": 70,
+            "event_count": 68,
             "quiet_window_ms": 750
           }
         },
@@ -1024,17 +1010,17 @@
           "status": "passed",
           "fault_observed": true,
           "recovery_observed": true,
-          "fault_observation_sha256": "ab04f3aa0f3a4a060606e9a9f40ecbe58b061969df097ff1e1e18f9402e668aa",
-          "recovery_observation_sha256": "a1be297a04a41ba621e74b6c8256690282f79af4125b06f51ff7b201b308f85c",
+          "fault_observation_sha256": "3afea9e11c0313f2a5b20bac2b32b8f9e503b85ba656b8d103a74fe9d113985c",
+          "recovery_observation_sha256": "c77189fac84b11c4376e50c0fcd722f049e9c07c79b422a20f71e7c16438dc7f",
           "recovery_control_selector": ".status-panel__recovery",
           "recovery_control_label": "重试回读",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/fault-formal-spot-contribution.png",
-          "fault_screenshot_sha256": "9c33a7ee202bf76d2e782d59443e986ede2b72f0d79e2ea6fb264007d16a1edc",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T00-05-52-078Z-622bb0dc/recovered-formal-spot-contribution.png",
-          "recovery_screenshot_sha256": "9c33a7ee202bf76d2e782d59443e986ede2b72f0d79e2ea6fb264007d16a1edc",
+          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/fault-formal-spot-contribution.png",
+          "fault_screenshot_sha256": "948f5c269cc7129f9661ae33c6420241d72906f4d4cbe51a7a2fd6eeabc1400c",
+          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T05-15-18-659Z-d8ae389d/recovered-formal-spot-contribution.png",
+          "recovery_screenshot_sha256": "948f5c269cc7129f9661ae33c6420241d72906f4d4cbe51a7a2fd6eeabc1400c",
           "runtime_quiescence": {
             "status": "passed",
-            "event_count": 86,
+            "event_count": 85,
             "quiet_window_ms": 750
           }
         }
@@ -1042,68 +1028,75 @@
       "runtime_observation": {
         "exception_count": 0,
         "expected_fault_console_error_count": 14,
-        "known_toolchain_console_error_count": 9,
+        "known_toolchain_console_error_count": 10,
         "known_toolchain_console_errors": [
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "setup-reset-before-control",
-            "offset_ms": 58058,
+            "offset_ms": 58689,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-reset-before-control",
-            "offset_ms": 105780,
+            "offset_ms": 107959,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "fault-preparation:sky-orientation",
-            "offset_ms": 157470,
+            "offset_ms": 159433,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "post-recovery",
-            "offset_ms": 182144,
+            "offset_ms": 183983,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "post-recovery",
-            "offset_ms": 261802,
+            "offset_ms": 262557,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "post-recovery",
-            "offset_ms": 274796,
+            "offset_ms": 273907,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "post-recovery",
-            "offset_ms": 275978,
+            "offset_ms": 275103,
+            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
+            "payload_length": 28
+          },
+          {
+            "id": "wechat_automator_opaque_error_envelope_v1",
+            "phase": "post-recovery",
+            "offset_ms": 275105,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "fault-preparation:formal-spot-contribution",
-            "offset_ms": 296243,
+            "offset_ms": 295452,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "post-recovery",
-            "offset_ms": 321498,
+            "offset_ms": 319793,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           }
@@ -1111,7 +1104,7 @@
         "unexpected_console_error_count": 0,
         "final_quiescence": {
           "status": "passed",
-          "event_count": 88,
+          "event_count": 87,
           "quiet_window_ms": 750
         }
       },
@@ -1127,7 +1120,7 @@
         "subject_ref": "subject.miniapp.selected-package",
         "variation_ref": "variation.subject-miniapp-selected-package.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "baaf81494933f7012a4167bd5c32238a2182a83cf31abbca5fe78482bba854bd",
         "actual_sha256": "68f1b2a7c88d1a2982b3f203bd223e49f03232805a00f1ae30cff1778e0bd5c2",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1142,7 +1135,7 @@
         "subject_ref": "subject.miniapp.frame.route-pages-map-index",
         "variation_ref": "variation.subject-miniapp-frame-route-pages-map-index.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "b8eb7b6e7c3e4055b35797117abc82f6c21197a144c80139ee172e8590c64f4c",
         "actual_sha256": "9aa061075071b17ca20a82e7f74e76052dc751c323ad61d46410416e29212d96",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1157,7 +1150,7 @@
         "subject_ref": "subject.miniapp.frame.route-spot-search",
         "variation_ref": "variation.subject-miniapp-frame-route-spot-search.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "aa09444cefb4f3458cc9b02d95d52636acd35819074b2bda593cf3841606fe11",
         "actual_sha256": "dfbf0c36ab63bf1ca1b82e15674b71369bb8a931663f7a32a69e894373cbaf9a",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1172,7 +1165,7 @@
         "subject_ref": "subject.miniapp.frame.route-sky-detail",
         "variation_ref": "variation.subject-miniapp-frame-route-sky-detail.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "7912bce7e59c87a308adfc877553cd8aa008d0ee6e4749ee3926c7f7a37335e1",
         "actual_sha256": "ef6d264da57a1c21525bbcd886f6265ab0adc1695c6a08af86198a045febeb11",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1187,7 +1180,7 @@
         "subject_ref": "subject.miniapp.frame.route-pages-my-index",
         "variation_ref": "variation.subject-miniapp-frame-route-pages-my-index.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "55cbfd1337ca68e1a5f5054dfcbabaf88a434952d0eee4bdbb3a18caed798669",
         "actual_sha256": "6fdb5e29e5687e32708ef4d3cba8b707c2fca1ffae46ba5b087be491f8d9c7a9",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1202,7 +1195,7 @@
         "subject_ref": "subject.miniapp.frame.route-plan-detail",
         "variation_ref": "variation.subject-miniapp-frame-route-plan-detail.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "48322c8cab0f4fc3b89a5b3f6187b8d3eb2a1e14b06f1f802aaf1579604e43e0",
         "actual_sha256": "1a4b27516442fad3405868cb6bcfcceb60fef96c0d2b69ac0628207061cb717d",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1217,7 +1210,7 @@
         "subject_ref": "subject.miniapp.frame.route-settings",
         "variation_ref": "variation.subject-miniapp-frame-route-settings.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "8ae984e16b4d1022a0d8c82f8646a0bbac78e0ca376f9a442af3faa0abd44e62",
         "actual_sha256": "7453866210dbf8e39d7f9594a0a6acd288d736dfcf396c9a1b96dd69bf63eca5",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1232,7 +1225,7 @@
         "subject_ref": "subject.miniapp.frame.route-profile-links",
         "variation_ref": "variation.subject-miniapp-frame-route-profile-links.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "7565b3d0dbfe749d9ea6442e4b6d7559fd0a56bc869fe9ad3979e7d3a5f724ff",
         "actual_sha256": "0ba16ab2791198e5e3a2b5d11c32d719315a0607ce8ffb41fe8c0e1f3efddff4",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1247,7 +1240,7 @@
         "subject_ref": "subject.miniapp.frame.route-content-import",
         "variation_ref": "variation.subject-miniapp-frame-route-content-import.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "65414302ffc6d599b28cf639ec060645384bd0048c39587c7fe9bfcff94fed4d",
         "actual_sha256": "aace7451f4302b91cc64aeb5fd1840edfc399b5ee05dac6d2213cb23e881af8a",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1262,7 +1255,7 @@
         "subject_ref": "subject.miniapp.frame.route-content-contribution-index",
         "variation_ref": "variation.subject-miniapp-frame-route-content-contribution-index.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "9df539f5de027696dc5c76fb61553ff2eb74743d8ff8505a4868b9796278d0f8",
         "actual_sha256": "8fc27780d4a9cf1ede3ac483a67f3dc461e6e07ad09ee3e8d5457aac09d5f24c",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1277,7 +1270,7 @@
         "subject_ref": "subject.miniapp.control.mini-primary-navigation",
         "variation_ref": "variation.subject-miniapp-control-mini-primary-navigation.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "2c1dc1528c5ed0be9f758b9ede6fd02021ee31052b5beabf3d25469d81500ea4",
         "actual_sha256": "64699e07f2172d32d2570b4d14f8627353f20762718fc465b20dcf7b88ceb711",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1292,7 +1285,7 @@
         "subject_ref": "subject.miniapp.control.display-mode-switcher",
         "variation_ref": "variation.subject-miniapp-control-display-mode-switcher.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "6c371afd4d72084ecbc2e0fd06df25794e67804b2c1944ffa46fdcd17c2afcb8",
         "actual_sha256": "30478564feb4bd631249c4d6d4835c935c87732745de448b35a5638e1abcef11",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1307,7 +1300,7 @@
         "subject_ref": "subject.miniapp.control.data-source-disclosure",
         "variation_ref": "variation.subject-miniapp-control-data-source-disclosure.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "4fe54df3747b9f3dbaaa5ebb8e4244d7a971f67be15b0a792358276f439e69e1",
         "actual_sha256": "8adbb0dd8d3cae909209dfdbdd9491cc69925f5a65ad74e8871f21d65feacdab",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1322,7 +1315,7 @@
         "subject_ref": "subject.miniapp.control.notification-feedback",
         "variation_ref": "variation.subject-miniapp-control-notification-feedback.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "bb12ac7085f536b37a06191d4d05d07f1f9da6d51cd454ac1d25fb3f5c675849",
         "actual_sha256": "be7de2571d25dbaed12ccad688f6ddb8e6c5c76646cea556ede6ce39bf19698d",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1337,7 +1330,7 @@
         "subject_ref": "subject.miniapp.control.page-state-recovery",
         "variation_ref": "variation.subject-miniapp-control-page-state-recovery.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "45d8a07692a97ac873966f2656c15c406df7095217348848ee12d4d29d097ee3",
         "actual_sha256": "f5223b60b486cde543b828ce1248da5ec46a4ddb3f2b7f8a3594859dc8f7636a",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1352,7 +1345,7 @@
         "subject_ref": "subject.miniapp.control.map-search-entry",
         "variation_ref": "variation.subject-miniapp-control-map-search-entry.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "aaf7f1906e54600da501fb42bd54d1ac8c93e17df8f75a13ddf90acced2ba5dd",
         "actual_sha256": "946d5ed4767c8fa7f60e88586c140b42d234309432e5608c667cc79a835225b1",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1367,7 +1360,7 @@
         "subject_ref": "subject.miniapp.control.spot-search-shell",
         "variation_ref": "variation.subject-miniapp-control-spot-search-shell.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "120e37a5c3d7d396e74c7b964e291d4e30e8cb2f964250c118a40f4d1c3041b3",
         "actual_sha256": "8fe7f03042e97029ab455dea1d7493ba09eff3de64834959798df502b3202233",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1382,7 +1375,7 @@
         "subject_ref": "subject.miniapp.control.spot-search-field",
         "variation_ref": "variation.subject-miniapp-control-spot-search-field.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "007e24428be6ae0a35195ffd5c6695e4782038e3ef2604f4002b6bc31a144a84",
         "actual_sha256": "7e2e90d510d0df3619a687fa5646fcff186fb91dd11c66d142b0558634780789",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1397,7 +1390,7 @@
         "subject_ref": "subject.miniapp.control.spot-search-query-overlay",
         "variation_ref": "variation.subject-miniapp-control-spot-search-query-overlay.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "2c8cdb015c256ea7086aa983363e8d1ebb11a79c6b82808ac02edf7ccc3b41c8",
         "actual_sha256": "126ce1ae5446641eac50065d3bdee009388132e1a8b4ecb6803eb59164fd417d",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1412,7 +1405,7 @@
         "subject_ref": "subject.miniapp.control.spot-search-filter-group",
         "variation_ref": "variation.subject-miniapp-control-spot-search-filter-group.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "18a6e8690b10c8e7f72ac8e343d96d4b8ee68b695155c4c59f0a943449c976d4",
         "actual_sha256": "8e2f72e9cda306f5843679d5dae4e9a1ace9393632306a5ab9e2d7d19756ce44",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1427,7 +1420,7 @@
         "subject_ref": "subject.miniapp.control.spot-search-filter-choice",
         "variation_ref": "variation.subject-miniapp-control-spot-search-filter-choice.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "c9b1a69f29e61eec5a7f05ebcc6227e4f522cbcc292d7a9a8e94f69593c567b9",
         "actual_sha256": "9e2c69c4e52893f1095af02170e68ffd4ceeecae5868cade89496f1d4456e2e9",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1442,7 +1435,7 @@
         "subject_ref": "subject.miniapp.control.spot-search-result-list",
         "variation_ref": "variation.subject-miniapp-control-spot-search-result-list.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "e958f959e864b4ef04358d0cea8f983254d14122d69096ff5cef2d61fe67039f",
         "actual_sha256": "4b9b75f23fb2e3108503b4a2a5074c522fbb1eb9f2d448ccf10c041875339bba",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1457,7 +1450,7 @@
         "subject_ref": "subject.miniapp.control.spot-search-result-card",
         "variation_ref": "variation.subject-miniapp-control-spot-search-result-card.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "b7ef21177e98b42a6f49aff84fee5af31a2791978682864ab7d717d9f7503989",
         "actual_sha256": "dcccd74a399965dee4ed9bb7ae01448d15ba5f729699b8d781a7b3077bd6a3a6",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1472,7 +1465,7 @@
         "subject_ref": "subject.miniapp.control.map-location-control",
         "variation_ref": "variation.subject-miniapp-control-map-location-control.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "f6bb612088d1095ad4a386671ad03eecd148d67f88f779313c2bb2f35545d199",
         "actual_sha256": "7f219182d669236fdb3cd1980f0fa16df4bce98b9fb3a8e180a854d2536ed6db",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1487,7 +1480,7 @@
         "subject_ref": "subject.miniapp.control.map-analysis-focus-layer",
         "variation_ref": "variation.subject-miniapp-control-map-analysis-focus-layer.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "f8e7f18a074d225db133e8d7a5055c211e848e6a514ea6ea992df252c7c49ec4",
         "actual_sha256": "9265d066e30e6d5567648f2bd4cfee8b61eeac76d96e1f7ef096d02e58b8605c",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1502,7 +1495,7 @@
         "subject_ref": "subject.miniapp.control.map-layer-selector",
         "variation_ref": "variation.subject-miniapp-control-map-layer-selector.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "119d74b128b3ad9a2a865e32604b97296fc76a68e34a92d9a63d0b8bc8c5e4e7",
         "actual_sha256": "51b320c44164ebf0e3bd593ac59fd3c829cef642edeba4e773e96ad2a4a0d0b4",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1517,7 +1510,7 @@
         "subject_ref": "subject.miniapp.control.map-time-control",
         "variation_ref": "variation.subject-miniapp-control-map-time-control.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "021ab99a0fbb6d1b4ec5d3ef8d24b24138817ce65492884de7e30383ff83459a",
         "actual_sha256": "7f7d249102275bac8a1d0b03a092ec753c863915dca08f85563694c2121b60e5",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1532,7 +1525,7 @@
         "subject_ref": "subject.miniapp.control.map-marker-panel-coordinator",
         "variation_ref": "variation.subject-miniapp-control-map-marker-panel-coordinator.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "bb3f88d22911e5c4cf6d96e26a857e9f6cb506252773636480ee210a89b69e1d",
         "actual_sha256": "afe70992821eab021eb7fb00b7bab4c09ae152a43f602d860e503e4578e50135",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1547,7 +1540,7 @@
         "subject_ref": "subject.miniapp.control.map-spot-information-panel",
         "variation_ref": "variation.subject-miniapp-control-map-spot-information-panel.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "644b15a08343c70bc5b3e622a2a6ef0e25b9e190509dcca1479c71ddc40e4857",
         "actual_sha256": "0c60c2154d39a3be5ebf295f24be9362f2af2cfb2124d4349654b1fd88ddf2d8",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1562,7 +1555,7 @@
         "subject_ref": "subject.miniapp.control.map-spot-panel-handle",
         "variation_ref": "variation.subject-miniapp-control-map-spot-panel-handle.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "c624be8084a47adc433734512402b765fc73bf505464a3fd530cf46708e0d941",
         "actual_sha256": "e3ee449eee2d82d30e4a3bf2a715d42c977f43dd4451b7836efd3942a8e7c314",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1577,7 +1570,7 @@
         "subject_ref": "subject.miniapp.control.map-spot-panel-section-nav",
         "variation_ref": "variation.subject-miniapp-control-map-spot-panel-section-nav.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "7768feb0fdfa10594dd23d98f23eaf1d50ae72689f6090c4717038f2e39bcb2f",
         "actual_sha256": "66a824902ec2692165731483b159824c756d7f41980f377979ff91f85858ea5b",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1592,7 +1585,7 @@
         "subject_ref": "subject.miniapp.control.map-spot-panel-action-bar",
         "variation_ref": "variation.subject-miniapp-control-map-spot-panel-action-bar.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "761ffb2be442a5d5737d415e47ca5b08f3f50b6e4b754223cff99911f988a0b8",
         "actual_sha256": "25c40dacbdaad4bbd8ab7ab4ba7cf2b9c3f280609f1e36c3ca504cd3a09c3991",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1607,7 +1600,7 @@
         "subject_ref": "subject.miniapp.control.spot-favorite-action",
         "variation_ref": "variation.subject-miniapp-control-spot-favorite-action.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "d5aa5933612be8ef347058e250a78811258e617ebf7974137b6d66ffb10276d7",
         "actual_sha256": "d0c455c80e7b9ac8d42e38862b18aee5cecca444748a277b7c297327dff3ada6",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1622,7 +1615,7 @@
         "subject_ref": "subject.miniapp.control.spot-share-action",
         "variation_ref": "variation.subject-miniapp-control-spot-share-action.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "0db7ee2c84d4ff77d0ab842ece8d597f9c2f295e11124bf5cfdb48382a8e4174",
         "actual_sha256": "ac080dec1e836891b97f8392d0e6cfdd8f8225078c4b581f6c108ee14722ab59",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1637,7 +1630,7 @@
         "subject_ref": "subject.miniapp.control.spot-cloud-stargazing-action",
         "variation_ref": "variation.subject-miniapp-control-spot-cloud-stargazing-action.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "4e32dc9075481e67e7278f5802089869828944d783590e7ae501f18441f1193b",
         "actual_sha256": "ffc34d6426ad0b7f3f55b97e2b3209607c7e2c5294490d15e57df291b1b57700",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1652,7 +1645,7 @@
         "subject_ref": "subject.miniapp.control.spot-media-gallery",
         "variation_ref": "variation.subject-miniapp-control-spot-media-gallery.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "bc4fab68356213f37cb46c7520f4c2ed051e11a3cbc51924824e7595e9c8504b",
         "actual_sha256": "8942549605c2aa246be013aa65504b01e76bea05fec160ca69c8892987edd0cc",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1667,7 +1660,7 @@
         "subject_ref": "subject.miniapp.control.spot-navigation-action",
         "variation_ref": "variation.subject-miniapp-control-spot-navigation-action.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "c82e2ae0bdb9db2266e2643831fe461522491580d29ab35380a1ea26cd647418",
         "actual_sha256": "55e6f5a15add077751c1572ffccc1d6a79c8fb20c8a844a9f47931288f646702",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1682,7 +1675,7 @@
         "subject_ref": "subject.miniapp.control.spot-contribution-entry",
         "variation_ref": "variation.subject-miniapp-control-spot-contribution-entry.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "b675b7327045e40b70c36d9dfaf014f557f3c2c70f0e6690a57da50868f5d91d",
         "actual_sha256": "b5bc58394d04d7a8dca752ca700d87eb40dedc55f3c550c284d23f7027f61b1b",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1697,7 +1690,7 @@
         "subject_ref": "subject.miniapp.control.spot-route-summary",
         "variation_ref": "variation.subject-miniapp-control-spot-route-summary.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "3699048b2f93e6f44d59bc8a87827ee876e4b22c084daeb94d0ed0f317ab7647",
         "actual_sha256": "f515d7f569c84efe04c507e9e9486b86c3adde458b46c8a7407597228a2e3b7e",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1712,7 +1705,7 @@
         "subject_ref": "subject.miniapp.control.spot-facility-evidence",
         "variation_ref": "variation.subject-miniapp-control-spot-facility-evidence.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "fd5514d46b8a3cbed763a3c141e2ef68fab000f5bea608e940d27761fdd52d33",
         "actual_sha256": "6804a134605abf3d9f0f961eb0dd0c9e8cc85ef46c18372ad72d353d4b6342fb",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1727,7 +1720,7 @@
         "subject_ref": "subject.miniapp.control.guide-article-viewer",
         "variation_ref": "variation.subject-miniapp-control-guide-article-viewer.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "c7175cdbdfde18f85c7562343bdfaa8505fdc2e38c758366b7aafc50a6d3b13a",
         "actual_sha256": "1218f05b23968e1559b0f4a865dd0c716aecd80daa4dd83fbbfda9d1c947fb91",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1742,7 +1735,7 @@
         "subject_ref": "subject.miniapp.control.sky-professional-matrix",
         "variation_ref": "variation.subject-miniapp-control-sky-professional-matrix.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "bbb8ffe339d6491a23d05ae9670d549b0a8ecc00ba6af2fa4064fba7d3772ec9",
         "actual_sha256": "d16ce28dce096d996ad18a0a21c7850159c4bdedced099993edc2d3b9658f8f6",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1757,7 +1750,7 @@
         "subject_ref": "subject.miniapp.control.sky-target-list",
         "variation_ref": "variation.subject-miniapp-control-sky-target-list.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "bda0a9035bc21bfebd0b1924d66edcd735b1624d8cf77078c9baf5455123109c",
         "actual_sha256": "1f6a554753e46c9536a13b7df583a5fa9cf0aeda94aa4f086d8ddb83cd43d36b",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1772,7 +1765,7 @@
         "subject_ref": "subject.miniapp.control.sky-time-scrubber",
         "variation_ref": "variation.subject-miniapp-control-sky-time-scrubber.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "85ddd6350efc95df75eef7baee846fcd820286861631fafab84ee5d20a7093d0",
         "actual_sha256": "b30113ee60d04e9b2d38a00233488ae0c401d964e3791fdd0aeca5e2a1cd7993",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1787,7 +1780,7 @@
         "subject_ref": "subject.miniapp.control.sky-map-canvas",
         "variation_ref": "variation.subject-miniapp-control-sky-map-canvas.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "8fe60e8307e5060367600c1b03e1cf0a40c311c80a99e9d75cfcca629dd5812e",
         "actual_sha256": "1d8a3469ee18c97b710f24f52aa18cbbcc3e13e6b4e67d8e09b33f65023feecb",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1802,7 +1795,7 @@
         "subject_ref": "subject.miniapp.control.sky-orientation-canvas",
         "variation_ref": "variation.subject-miniapp-control-sky-orientation-canvas.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "d8e1a9874a25d6839312d75f43a01e0eb34f9ccaeb426d9dba60dbaa778d4d7a",
         "actual_sha256": "f7b2088f00b6958a1b672670f86132557a536aa2b0c0df5bf207a08c8df0f304",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1817,7 +1810,7 @@
         "subject_ref": "subject.miniapp.control.sky-orientation-sensor",
         "variation_ref": "variation.subject-miniapp-control-sky-orientation-sensor.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "513b3f4c37cdd2b04e57d7f4d9e7e9fc7b1fd6139b7d68ebac8ddca99666489b",
         "actual_sha256": "0f48a07ad0ed00f2726fc77f0b604e83e3e8272a6403a491b1ed482a50f281f0",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1832,7 +1825,7 @@
         "subject_ref": "subject.miniapp.control.sky-orientation-recovery",
         "variation_ref": "variation.subject-miniapp-control-sky-orientation-recovery.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "56eba156f72d64d967ac7ffe215eeff0c883e219162312dbe91e99d4e2eeda73",
         "actual_sha256": "db647e9006e49c8bff20457ef919f2c8555525822fdfdb632a85a5c4a02002a0",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1847,7 +1840,7 @@
         "subject_ref": "subject.miniapp.control.sky-orientation-object-list",
         "variation_ref": "variation.subject-miniapp-control-sky-orientation-object-list.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "24eebb6cf2f5aa348bc79887d5de702a89dc673a7ec114edc101b2c19d120b21",
         "actual_sha256": "56a824fbf3a4d1e9558ada588d16576dc17f5363b4a8cf6e0540acfa461fea05",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1862,7 +1855,7 @@
         "subject_ref": "subject.miniapp.control.sky-orientation-time-ruler",
         "variation_ref": "variation.subject-miniapp-control-sky-orientation-time-ruler.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "54ab069b902255f0bbc99c52b17419d1f51caddc3452e9cc148af67ba726378e",
         "actual_sha256": "2326a2221b2a1283a458b52c2a1fa881f463d9b7a6de8566236568b33dfb6c63",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1877,7 +1870,7 @@
         "subject_ref": "subject.miniapp.control.my-account-header",
         "variation_ref": "variation.subject-miniapp-control-my-account-header.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "62100213add7605333f90f68bb2b0028f48b03eea860c31b3832b7f5f6bacf95",
         "actual_sha256": "9db4be14b43c09805e85a4613e282b4f4bb70bc19a6f074b6ba7165e7975db5e",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1892,7 +1885,7 @@
         "subject_ref": "subject.miniapp.control.my-settings-action",
         "variation_ref": "variation.subject-miniapp-control-my-settings-action.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "771124caf78b7851338b9a2f5d2b20f2719171b4fa30ce0dc89675d844e14526",
         "actual_sha256": "2e95885f544211b977674c3bdcf26e04b6f0b108886b59263784519c8a81ddc8",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1907,7 +1900,7 @@
         "subject_ref": "subject.miniapp.control.my-profile-summary",
         "variation_ref": "variation.subject-miniapp-control-my-profile-summary.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "8ab2eeb9840e775b1f2fac395a1a29a04fcc571380df1bb0da91761169063323",
         "actual_sha256": "c83baf65ad2202769477115061ca6d2cbddf0e4eb05a0ee6909cde5db32dd05f",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1922,7 +1915,7 @@
         "subject_ref": "subject.miniapp.control.my-grouped-entry-list",
         "variation_ref": "variation.subject-miniapp-control-my-grouped-entry-list.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "2989dbbbea044869802616bff2653dfb8c495ef438e3a9636408f49240fb3a94",
         "actual_sha256": "b69058bf22ce76c0cdaf6154e1ce9ec99665bb2763c6b68cb45635116420cb31",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1937,7 +1930,7 @@
         "subject_ref": "subject.miniapp.control.my-plan-entry",
         "variation_ref": "variation.subject-miniapp-control-my-plan-entry.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "7843480e6d42d2abf0cffe77dbbe14411266c5702f6c3e8c562363c435777b5c",
         "actual_sha256": "66ced4176ffaf2b6ff60c10e7e93ec603c0653c57af841bc82b3296e64fbfb5f",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1952,7 +1945,7 @@
         "subject_ref": "subject.miniapp.control.my-contribution-entry",
         "variation_ref": "variation.subject-miniapp-control-my-contribution-entry.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "b1bd2005722157210262ad0afab13490a257a0f400805a52e50e8c341876aa51",
         "actual_sha256": "de78b9f03acc60cb17dbc8d50534358a898fce8581713755b9b2c91760e1becf",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1967,7 +1960,7 @@
         "subject_ref": "subject.miniapp.control.plan-editor",
         "variation_ref": "variation.subject-miniapp-control-plan-editor.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "34e6c98ad5726936c14b11f64b06c9caeae1fd2ac36e9e18ce17242376c7bb5e",
         "actual_sha256": "dbba4ab61cc358c5d3c3d1772ee9af92e3582222239d990f854ed81909a47526",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1982,7 +1975,7 @@
         "subject_ref": "subject.miniapp.control.settings-form",
         "variation_ref": "variation.subject-miniapp-control-settings-form.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "51d0b11b0dcca77d0f7e053bb920ada3b47b84b1c0e21e5dd089e0fb6159d2bc",
         "actual_sha256": "705cafbc2abfd4ac8ee218292121819b495dea0bfa32a580d67c24866de318bc",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -1997,7 +1990,7 @@
         "subject_ref": "subject.miniapp.control.profile-link-editor",
         "variation_ref": "variation.subject-miniapp-control-profile-link-editor.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "7757f512a940f997946041dee5fedff66d0830cf8bdebfccbb9bfc2a6243f320",
         "actual_sha256": "887b5cf2db4f951054b4bbbb7c5094d646a9b026b9bf1d07d3bf5d7fbbb20e4e",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2012,7 +2005,7 @@
         "subject_ref": "subject.miniapp.control.profile-link-open-copy",
         "variation_ref": "variation.subject-miniapp-control-profile-link-open-copy.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "553bbbe4ab6cbdbdc4311773b93ba070f49eb537e3007a8fba4ce4d32cd049e9",
         "actual_sha256": "229d82341f021ec7c6f06d05fa4970d4999ab0ebc161670c21058ba8c9e87bf4",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2027,7 +2020,7 @@
         "subject_ref": "subject.miniapp.control.import-source-rights",
         "variation_ref": "variation.subject-miniapp-control-import-source-rights.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "f86d2861b679730d7952012af4ef092553e48f1543d38257135d6b24ac172a71",
         "actual_sha256": "871a84cec62f5403428c0f13b724d36421e79c237e8ec70d747d490fe610baa7",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2042,7 +2035,7 @@
         "subject_ref": "subject.miniapp.control.import-draft-editor",
         "variation_ref": "variation.subject-miniapp-control-import-draft-editor.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "0a132095e09e2df83c0d1ae93aec2c60144901dfc019c8ba141dee12cdfee3b8",
         "actual_sha256": "99e639a45f8dfd41ade645d332dbe784f6f2e2e0e40e71c7079802c0275b9975",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2057,7 +2050,7 @@
         "subject_ref": "subject.miniapp.control.import-spot-association",
         "variation_ref": "variation.subject-miniapp-control-import-spot-association.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "5d31d68c5c2badaca29ec0711a642a2381d1ef487bb3ff93c08bf58921b192a4",
         "actual_sha256": "66facacc888ebeb0d1d0d2d20351cc81a6d7895fc42fbb9f5efe469e761a0538",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2072,7 +2065,7 @@
         "subject_ref": "subject.miniapp.control.import-preview-submit",
         "variation_ref": "variation.subject-miniapp-control-import-preview-submit.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "780a696891690c12a71ee20993571abcda6fad713a66460e34dfe6b311131530",
         "actual_sha256": "6b66e2e9a012bfad4b57d8ac07552a52aa526f580ff4f3ab612b0f6e2ec35bf2",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2087,7 +2080,7 @@
         "subject_ref": "subject.miniapp.control.contribution-kind-control",
         "variation_ref": "variation.subject-miniapp-control-contribution-kind-control.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "1ac271cbe6105b254786df54d60431878f0795f9379076167ecc7905a4516a76",
         "actual_sha256": "7d7c81455d13fb5572a790a8de96abc1834f1c6cf90600694ce339d61fe28668",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2102,7 +2095,7 @@
         "subject_ref": "subject.miniapp.control.contribution-spot-context",
         "variation_ref": "variation.subject-miniapp-control-contribution-spot-context.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "ef4c26449470888d9cbcd76fd433b413639a270c90262e6d27ebc1582d622967",
         "actual_sha256": "efe47747febd4ab48bade4c66f2a746148932bf7849c6b2c6ef590cd1acd6f16",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2117,7 +2110,7 @@
         "subject_ref": "subject.miniapp.control.contribution-topic-control",
         "variation_ref": "variation.subject-miniapp-control-contribution-topic-control.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "a0a1f751cd49ba3415144b9ece5fc77649ae6032487d4baf9ca5b8cd1e8d9097",
         "actual_sha256": "478e4c37f887a888961e0bff9c593bf3c4a08a31239acec3eebaec376e04ecb4",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2132,7 +2125,7 @@
         "subject_ref": "subject.miniapp.control.contribution-observed-at",
         "variation_ref": "variation.subject-miniapp-control-contribution-observed-at.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "332747fe5c762cc0a5e77fe52cd88a45671aec0c67c5f4613f80eed004cfa643",
         "actual_sha256": "6c68fc22a3ec43683ce6b886455e598b0756fa96a12f17af63a8c416b472ec60",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2147,7 +2140,7 @@
         "subject_ref": "subject.miniapp.control.contribution-location-consent",
         "variation_ref": "variation.subject-miniapp-control-contribution-location-consent.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "aab3913c73ef6d451c785edd247a9da0097af17c996a464802eebc93923c0184",
         "actual_sha256": "1b81426d8f265ac1a0e3cdd9173864497f78338037b8d77054fda8cbe663c137",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2162,7 +2155,7 @@
         "subject_ref": "subject.miniapp.control.contribution-media-upload",
         "variation_ref": "variation.subject-miniapp-control-contribution-media-upload.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "ea4c9a01fbcade5721192cb66f2f3d9862656a0170818898e1e76fcc7c9d74e4",
         "actual_sha256": "c36d65503f4287881ef5ebf5f7f53812bef38f2799c1def4647f87904b0335c8",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2177,7 +2170,7 @@
         "subject_ref": "subject.miniapp.control.contribution-submit",
         "variation_ref": "variation.subject-miniapp-control-contribution-submit.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "31d53c91965865d12e16bf5de2ea387180c0e70242ad051aaa21f8720ce373fd",
         "actual_sha256": "bf00608c52c9d87c9fffeefe6ed87e23baca6bfa89d217e86f32702e82f9f7c8",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2192,7 +2185,7 @@
         "subject_ref": "subject.miniapp.control.contribution-status-list",
         "variation_ref": "variation.subject-miniapp-control-contribution-status-list.declared-state-matrix",
         "property_ref": "custom.constraint-source-sha256",
-        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json",
+        "resource_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-contract-values.json",
         "actual": "29198483384fcf3d56dadf7ddc90878990a0c71c3cd0e8b67a646f9f975fd7ef",
         "actual_sha256": "f36eb5cf75ee960895bb1689c5569ca957ac83b4772ee193309499bf980e2695",
         "actual_environment": "miniapp-selected-source-inspection-v1",
@@ -2206,15 +2199,15 @@
     "artifacts": {
       "observations": {
         "path": "artifacts/miniapp/i21/design-asset-integrity-observations.json",
-        "sha256": "79b127fa2348042b55a005e0f675878ec553b0680058f7ca60b1506c677a80d6"
+        "sha256": "67514b0ac6e385eb988388b9cd5d4968978ded1eecb4d2086d8f132ca158f72a"
       },
       "method": {
         "path": "artifacts/miniapp/i21/design-asset-integrity.json",
-        "sha256": "d6f032b6ddc7de9d0e0cc347f297a2d061c03f92563de107bce79b8adeec0adb"
+        "sha256": "b3781ec0c92566a00c3ef10d87a4b2049b8044bdf74e0f049495912144359250"
       },
       "actual": {
         "path": "artifacts/miniapp/i21/production-actual.json",
-        "sha256": "a55bf79ae6f82d53caa32ae4cccf285b9e155fe913cdcc1e0980f5acf566ecfd"
+        "sha256": "fb433071841bc77f4b5ab4fd4b693c178fe7d30c79ee804365afbd67839667f0"
       },
       "comparison": {
         "path": "artifacts/miniapp/i21/constraint-comparison.json",
@@ -2225,7 +2218,7 @@
   "semantic": {
     "passed": true,
     "artifact_path": "artifacts/miniapp/semantic/current-candidate.json",
-    "artifact_sha256": "0497f5c47e06302c688459e3bd11ef00fd1c183aa078cec5c5a11140fd0814ad"
+    "artifact_sha256": "6de563561e07ea43aa38dee9d2ef3dbada51f42aa253cdc6d2c3af054e0ef80d"
   },
   "global": {
     "conformance": "passed"
