@@ -170,6 +170,11 @@ const candidateRoots = [
   "apps/wechat-miniapp/project.config.json",
   "apps/wechat-miniapp/config",
   "apps/wechat-miniapp/src",
+  "data-pipelines/src",
+  "packages/astronomy-core/data",
+  "packages/astronomy-core/src",
+  "packages/astronomy-core/package.json",
+  "packages/astronomy-core/tsconfig.json",
   "packages/miniapp-contracts/package.json",
   "packages/miniapp-contracts/src",
   "workers/miniapp-api/package.json",
@@ -2893,6 +2898,87 @@ async function waitForInteractionWatchChange(page, before, timeoutMs) {
   return null;
 }
 
+async function inputAndTapMatchingElement(
+  page,
+  miniProgram,
+  selection,
+  timeoutMs,
+) {
+  const startedAt = Date.now();
+  const deadline = startedAt + timeoutMs;
+  const maximumAttempts = selection.maximumAttempts ?? 3;
+  let lastMatchingCount = 0;
+  for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) break;
+    const currentPage = await miniProgram.currentPage();
+    if (currentPage.path !== page.path)
+      throw new Error(
+        `native_atomic_selection_source_path_changed:${page.path}:${currentPage.path}`,
+      );
+    const controls = await waitForSelector(
+      currentPage,
+      selection.input,
+      1,
+      Math.min(remainingMs, 5_000),
+    );
+    const control = controls[selection.inputIndex ?? 0];
+    if (!control || typeof control.input !== "function")
+      throw new Error(
+        `native_atomic_selection_input_unavailable:${page.path}:${selection.input}`,
+      );
+    await control.tap().catch(() => undefined);
+    await control.input(selection.value);
+
+    const attemptDeadline = Math.min(deadline, Date.now() + 5_000);
+    while (Date.now() < attemptDeadline) {
+      const candidates = await queryElements(
+        currentPage,
+        selection.candidates,
+      ).catch(() => []);
+      const matching = [];
+      for (const candidate of candidates) {
+        const candidateText = String(await candidate.text().catch(() => ""));
+        if (candidateText.includes(selection.textIncludes))
+          matching.push({ candidate, candidateText });
+      }
+      lastMatchingCount = matching.length;
+      for (const { candidate, candidateText } of matching) {
+        const tapped = await candidate
+          .tap()
+          .then(() => true)
+          .catch(() => false);
+        if (!tapped) continue;
+        const routeWaitMs = Math.min(
+          deadline - Date.now(),
+          selection.routeWaitMs ?? 3_500,
+        );
+        if (routeWaitMs <= 0) break;
+        try {
+          const destinationPage = await waitForCurrentPagePath(
+            miniProgram,
+            selection.expectedPath,
+            routeWaitMs,
+          );
+          return {
+            page: destinationPage,
+            attempts: attempt,
+            elapsedMs: Date.now() - startedAt,
+            candidateTextSha256: sha256(candidateText),
+          };
+        } catch (error) {
+          const observedPage = await miniProgram.currentPage().catch(() => null);
+          if (observedPage?.path !== page.path) throw error;
+        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  }
+  throw new Error(
+    `native_atomic_selection_timeout:${page.path}:${selection.candidates}:${maximumAttempts}:${lastMatchingCount}`,
+  );
+}
+
 async function captureJourneyInteractions(
   page,
   miniProgram,
@@ -3034,6 +3120,23 @@ async function captureJourneyInteractions(
         scroll_top: scrollTop,
       });
     }
+    if (step.inputAndTapMatch) {
+      const selected = await inputAndTapMatchingElement(
+        page,
+        miniProgram,
+        step.inputAndTapMatch,
+        step.timeoutMs ?? 20_000,
+      );
+      page = selected.page;
+      stepObservations.push({
+        atomic_text_selection: true,
+        atomic_text_selection_attempts: selected.attempts,
+        atomic_text_selection_elapsed_ms: selected.elapsedMs,
+        atomic_text_selection_candidate_sha256:
+          selected.candidateTextSha256,
+      });
+      actionPerformed = true;
+    }
     if (step.input) {
       const controls = await waitForSelector(
         page,
@@ -3160,6 +3263,7 @@ async function captureJourneyInteractions(
           throw error;
         const currentPage = await miniProgram.currentPage().catch(() => null);
         if (currentPage?.path !== page.path) throw error;
+        if (!step.tap) throw error;
         const freshControls = await waitForSelector(
           currentPage,
           step.tap,
@@ -5205,19 +5309,16 @@ journeys.push({
       ],
     },
     {
-      key: "search-associated-formal-spot",
-      input: ".spot-search-field__input",
-      value: nightChinaFormalCase.expectedAssociation.spotName,
-      settleMs: 1_000,
-      waitFor: [
-        { selector: ".spot-search-suggestion", minimum: 1 },
-      ],
-    },
-    {
       key: "open-associated-formal-spot-panel",
       screenshot: true,
-      tap: ".spot-search-suggestion",
-      textIncludes: nightChinaFormalCase.expectedAssociation.spotName,
+      inputAndTapMatch: {
+        input: ".spot-search-field__input",
+        value: nightChinaFormalCase.expectedAssociation.spotName,
+        candidates: ".spot-search-suggestion",
+        textIncludes: nightChinaFormalCase.expectedAssociation.spotName,
+        expectedPath: "pages/map/index",
+        maximumAttempts: 3,
+      },
       expectedPath: "pages/map/index",
       settleMs: 1_000,
       waitFor: [

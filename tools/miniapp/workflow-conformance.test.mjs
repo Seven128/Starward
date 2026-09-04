@@ -154,9 +154,10 @@ test("NightChina import corpus is balanced, traceable, rights-safe, and reaches 
   assert.match(runner, /submit-manual-review-boundary/u);
   assert.match(runner, /expectedSelectedSpotId/u);
   assert.match(runner, /textIncludes: nightChinaFormalCase\.expectedAssociation\.spotName/u);
-  assert.match(runner, /key: "search-associated-formal-spot"/u);
+  assert.doesNotMatch(runner, /key: "search-associated-formal-spot"/u);
+  assert.match(runner, /inputAndTapMatch:\s*\{/u);
   assert.match(runner, /input: "\.spot-search-field__input"/u);
-  assert.match(runner, /tap: "\.spot-search-suggestion"/u);
+  assert.match(runner, /candidates: "\.spot-search-suggestion"/u);
   assert.match(runner, /native_interaction_text_control_missing/u);
   assert.match(
     mapPage,
@@ -2097,6 +2098,37 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   );
   assert.match(launcher, /BCryptOpenAlgorithmProvider/u);
   assert.match(launcher, /return 125/u);
+});
+
+test("NightChina formal-spot selection keeps suggestion observation and tap atomic", async () => {
+  const runner = await text(
+    "tools",
+    "miniapp",
+    "run-wechat-devtools-session.mjs",
+  );
+  assert.match(runner, /async function inputAndTapMatchingElement\(/u);
+  assert.match(runner, /for \(const \{ candidate, candidateText \} of matching\)/u);
+  assert.match(runner, /await candidate\s*\.tap\(\)/u);
+  const journeyStart = runner.indexOf(
+    'const NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY =',
+  );
+  assert.ok(journeyStart >= 0);
+  const journey = runner.slice(journeyStart, runner.indexOf("journeys.push", journeyStart + 100));
+  assert.doesNotMatch(journey, /key: "search-associated-formal-spot"/u);
+  assert.match(journey, /inputAndTapMatch:\s*\{/u);
+  assert.match(journey, /candidates: "\.spot-search-suggestion"/u);
+  assert.match(journey, /maximumAttempts: 3/u);
+  for (const requiredCandidateRoot of [
+    "data-pipelines/src",
+    "packages/astronomy-core/data",
+    "packages/astronomy-core/src",
+    "packages/astronomy-core/package.json",
+    "packages/astronomy-core/tsconfig.json",
+  ])
+    assert.ok(
+      runner.includes(`\"${requiredCandidateRoot}\"`),
+      `${requiredCandidateRoot} must be bound into native candidate consistency`,
+    );
 });
 
 test("V2.1.1 semantic Source closure stays distinct from machine-observable templates", async () => {
