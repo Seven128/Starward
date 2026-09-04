@@ -1,9 +1,21 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFile, readdir } from "node:fs/promises";
+import {
+  cp,
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 import { parse as parseYaml } from "yaml";
 import {
   knownWechatToolchainConsoleErrorId,
@@ -15,11 +27,50 @@ const root = path.resolve(
   "..",
   "..",
 );
+const execFileAsync = promisify(execFile);
 const at = (...segments) => path.join(root, ...segments);
 const text = async (...segments) =>
   (await readFile(at(...segments), "utf8")).replace(/\r\n?/gu, "\n");
 const json = async (...segments) => JSON.parse(await text(...segments));
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+function jsonPointerValue(value, pointer) {
+  assert.match(pointer, /^\//u);
+  return pointer
+    .slice(1)
+    .split("/")
+    .map((segment) => segment.replace(/~1/gu, "/").replace(/~0/gu, "~"))
+    .reduce((current, segment) => current[segment], value);
+}
+
+function currentCandidateCheckVariant(compiled, mutate) {
+  return {
+    ...compiled,
+    outcomes: compiled.outcomes.map((outcome) =>
+      outcome.key !== "current-candidate"
+        ? outcome
+        : {
+            ...outcome,
+            acceptance: {
+              ...outcome.acceptance,
+              checks: outcome.acceptance.checks.map((check) =>
+                check.key === "current-candidate-runtime" ? mutate(check) : check,
+              ),
+            },
+          },
+    ),
+  };
+}
+
+function mismatchedJsonValue(value) {
+  if (typeof value === "string") return `${value}\u0000i21-mismatch`;
+  if (typeof value === "number") return value + 1;
+  if (typeof value === "boolean") return !value;
+  if (value === null) return { i21_mismatch: true };
+  if (Array.isArray(value)) return [...value, { i21_mismatch: true }];
+  if (typeof value === "object") return { ...value, i21_mismatch: true };
+  return `${String(value)}\u0000i21-mismatch`;
+}
 
 test("NightChina import corpus is balanced, traceable, rights-safe, and reaches a real formal-spot panel journey", async () => {
   const fixture = await json(
@@ -410,15 +461,15 @@ test("the current Field Signal Mini Program and Operations handoffs are bound to
   assert.equal(i21Spec.design_evidence.fact_refs.length, 72);
   assert.equal(
     i21Spec.design_evidence.resource_integrity_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-resource-integrity.json",
   );
   assert.equal(
     i21Spec.design_evidence.environment_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-render-environment.json",
   );
   assert.equal(
     i21Spec.design_evidence.parameters_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-proof-parameters.json",
   );
   assert.equal(bindings.authorities.length, 4);
   assert.ok(bindings.production_probes.length >= 5);
@@ -811,7 +862,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     assert.ok(proofWrapper.includes(required), required);
 });
 
-test("project Harness compatibility patch is version-pinned and only strengthens exact temporary-root cleanup", async () => {
+test("project Harness compatibility patch is version-pinned and fail-closed for cleanup and compiled design lookup", async () => {
   const rootPackage = await json("package.json");
   const patcher = await text(
     "tools",
@@ -849,6 +900,18 @@ test("project Harness compatibility patch is version-pinned and only strengthens
   );
   assert.match(patcher, /acceptance_semantics_changed: false/u);
   assert.match(
+    patcher,
+    /dist\/lib\/long-task-design-obligation\.js/u,
+    "the compatibility overlay must own the compiled design lookup repair",
+  );
+  assert.match(patcher, /compiledDesignFactObligation/u);
+  assert.match(patcher, /design_conformance_targets/u);
+  assert.match(patcher, /observation_authorities/u);
+  assert.match(
+    patcher,
+    /return candidates\.length === 1 \? candidates\[0\] : null/u,
+  );
+  assert.match(
     workspaceRuntime,
     /recursive: true, force: true, maxRetries: 20, retryDelay: 250/u,
   );
@@ -861,6 +924,573 @@ test("project Harness compatibility patch is version-pinned and only strengthens
     patcher,
     /long-task-final-v2|long-task-verifier-v2|delivery-contract|machine_accepted/u,
   );
+});
+
+test("Harness compatibility overlay resolves compiled I21 design facts and stays fail-closed", async () => {
+  const [authoredContract, compiled, designValues] = await Promise.all([
+    text(".long-task", "delivery-contract.yaml").then(parseYaml),
+    json(".long-task", ".ty-context", "compiled-contract.json"),
+    json(
+      "docs",
+      "design-resources",
+      "miniapp-field-signal-i21-binding-2026-09-04-r4",
+      "selected-source",
+      "miniapp-contract-values.json",
+    ),
+  ]);
+  const [
+    designObligation,
+    expectedModule,
+    preparationModule,
+    semanticIdentityModule,
+  ] = await Promise.all([
+    import(
+      pathToFileURL(
+        at(
+          "node_modules",
+          "project-tiny-context-harness",
+          "dist",
+          "lib",
+          "long-task-design-obligation.js",
+        ),
+      ).href,
+    ),
+    import(
+      pathToFileURL(
+        at(
+          "node_modules",
+          "project-tiny-context-harness",
+          "dist",
+          "lib",
+          "long-task-external-confirmation-expected.js",
+        ),
+      ).href,
+    ),
+    import(
+      pathToFileURL(
+        at(
+          "node_modules",
+          "project-tiny-context-harness",
+          "dist",
+          "lib",
+          "long-task-external-confirmation-preparation.js",
+        ),
+      ).href,
+    ),
+    import(
+      pathToFileURL(
+        at(
+          "node_modules",
+          "project-tiny-context-harness",
+          "dist",
+          "lib",
+          "long-task-obligation-semantic-identity.js",
+        ),
+      ).href,
+    ),
+  ]);
+  const compiledCheck = compiled.outcomes
+    .find((outcome) => outcome.key === "current-candidate")
+    ?.acceptance.checks.find((check) => check.key === "current-candidate-runtime");
+  assert.ok(compiledCheck);
+  const authoredDescriptors = designObligation.designFactObligationDescriptors(
+    authoredContract,
+  );
+  assert.equal(authoredDescriptors.length, 72);
+  assert.equal(compiledCheck.positive_assertions.length, 0);
+  assert.equal(compiledCheck.negative_assertions.length, 0);
+  assert.equal(compiledCheck.design_conformance_targets.length, 1);
+  const target = compiledCheck.design_conformance_targets[0];
+  const targetExpectations = target.verification_method_bindings.flatMap((binding) =>
+    binding.evidence_artifacts.flatMap((artifact) => artifact.fact_expectations),
+  );
+  assert.equal(targetExpectations.length, 72);
+  const targetExpectationByFact = new Map(
+    targetExpectations.map((expectation) => [expectation.fact_ref, expectation]),
+  );
+  assert.equal(targetExpectationByFact.size, 72);
+
+  const confirmation = compiled.global.acceptance.external_confirmations.find(
+    (candidate) => candidate.key === "field-signal-i21-native-and-device-conformance",
+  );
+  assert.ok(confirmation);
+  const designRows = compiled.acceptance_reachability.effective_external_routes.filter(
+    (row) =>
+      row.confirmation_ref === confirmation.key &&
+      row.expected_authority_ref?.startsWith("design-proof:") === true,
+  );
+  assert.equal(designRows.length, 72);
+  assert.equal(new Set(designRows.map((row) => row.proof_ref)).size, 72);
+  assert.equal(
+    confirmation.obligations.filter((row) =>
+      row.expected_authority_ref?.startsWith("design-proof:") === true,
+    ).length,
+    72,
+  );
+
+  const manifestWithoutSemanticFacts = { facts: [], proof_obligations: [] };
+  for (const row of designRows) {
+    const descriptor = designObligation.findDesignFactObligation(compiled, row);
+    const expectation = targetExpectationByFact.get(row.fact_ref);
+    assert.ok(descriptor, row.obligation_ref);
+    assert.ok(expectation, row.fact_ref);
+    assert.equal(descriptor.expected.sha256, expectation.expected.sha256);
+    assert.deepEqual(descriptor.comparison, expectation.comparison);
+    assert.equal(
+      expectedModule.expectedForExternalObligation(
+        compiled,
+        manifestWithoutSemanticFacts,
+        row,
+        `design-proof:${row.proof_ref}`,
+      ).located_value.sha256,
+      expectation.expected.sha256,
+    );
+  }
+
+  const representative = designRows[0];
+  assert.ok(designObligation.findDesignFactObligation(compiled, representative));
+  const derivedSemanticIdentity =
+    semanticIdentityModule.effectiveExternalObligationSemanticIdentity(
+      {
+        contract: authoredContract,
+        manifest: manifestWithoutSemanticFacts,
+      },
+      {
+        ...representative,
+        evidence_capabilities: representative.required_evidence_capabilities,
+        semantic_identity: null,
+      },
+    );
+  assert.equal(
+    derivedSemanticIdentity,
+    representative.semantic_identity,
+    "compiled semantic_identity must equal the package-derived design identity",
+  );
+  for (const [dimension, tampered] of [
+    ["outcome_key", { ...representative, outcome_key: "tampered-outcome" }],
+    ["claim_ref", { ...representative, claim_ref: "tampered-claim" }],
+    [
+      "applicability_ref",
+      { ...representative, applicability_ref: "tampered-applicability" },
+    ],
+    ["fact_ref", { ...representative, fact_ref: "tampered-fact" }],
+    ["proof_ref", { ...representative, proof_ref: "tampered-proof" }],
+    ["method", { ...representative, method: "tampered-method" }],
+    ["proof_surface", { ...representative, proof_surface: "tampered-surface" }],
+    [
+      "evidence_capabilities",
+      {
+        ...representative,
+        required_evidence_capabilities: [
+          ...representative.required_evidence_capabilities,
+          "tampered-capability",
+        ],
+      },
+    ],
+  ]) {
+    assert.equal(
+      designObligation.findDesignFactObligation(compiled, tampered),
+      null,
+      `tampered ${dimension} must fail closed`,
+    );
+  }
+
+  for (const [dimension, tampered] of [
+    [
+      "source_obligation_ref",
+      { ...representative, source_obligation_ref: "tampered-source-obligation" },
+    ],
+    [
+      "expected_authority_ref",
+      { ...representative, expected_authority_ref: "tampered-authority" },
+    ],
+    [
+      "semantic_identity",
+      { ...representative, semantic_identity: "0".repeat(64) },
+    ],
+  ]) {
+    assert.equal(
+      designObligation.findDesignFactObligation(compiled, tampered),
+      null,
+      `tampered ${dimension} must fail closed`,
+    );
+    assert.throws(
+      () =>
+        expectedModule.expectedForExternalObligation(
+          compiled,
+          manifestWithoutSemanticFacts,
+          tampered,
+          tampered.expected_authority_ref,
+        ),
+      /external_confirmation_expected_fact_missing/u,
+      `tampered ${dimension} must block expected preparation`,
+    );
+  }
+
+  const representativeObservation =
+    compiledCheck.observation_authorities.find(
+      (observation) => observation.obligation_ref === representative.proof_ref,
+    );
+  assert.ok(representativeObservation);
+  const tamperedObservationIdentityCompiled = currentCandidateCheckVariant(
+    compiled,
+    (check) => ({
+      ...check,
+      observation_authorities: check.observation_authorities.map((observation) =>
+        observation.obligation_ref === representative.proof_ref
+          ? { ...observation, expected_identity: "0".repeat(64) }
+          : observation,
+      ),
+    }),
+  );
+  assert.equal(
+    designObligation.findDesignFactObligation(
+      tamperedObservationIdentityCompiled,
+      representative,
+    ),
+    null,
+    "tampered observation expected_identity must fail closed",
+  );
+  assert.throws(
+    () =>
+      expectedModule.expectedForExternalObligation(
+        tamperedObservationIdentityCompiled,
+        manifestWithoutSemanticFacts,
+        representative,
+        representative.expected_authority_ref,
+      ),
+    /external_confirmation_expected_fact_missing/u,
+    "tampered observation expected_identity must block expected preparation",
+  );
+
+  const authorityIndex = compiledCheck.observation_authorities.findIndex(
+    (authority) => authority.obligation_ref === representative.proof_ref,
+  );
+  assert.ok(authorityIndex >= 0);
+  const duplicateAuthorityCompiled = currentCandidateCheckVariant(
+    compiled,
+    (check) => ({
+      ...check,
+      observation_authorities: [
+        ...check.observation_authorities,
+        structuredClone(check.observation_authorities[authorityIndex]),
+      ],
+    }),
+  );
+  assert.equal(
+    designObligation.findDesignFactObligation(
+      duplicateAuthorityCompiled,
+      representative,
+    ),
+    null,
+    "duplicate compiled observation authority must fail closed",
+  );
+  const duplicateCandidateCompiled = currentCandidateCheckVariant(
+    compiled,
+    (check) => ({
+      ...check,
+      design_conformance_targets: [
+        ...check.design_conformance_targets,
+        structuredClone(check.design_conformance_targets[0]),
+      ],
+    }),
+  );
+  assert.equal(
+    designObligation.findDesignFactObligation(
+      duplicateCandidateCompiled,
+      representative,
+    ),
+    null,
+    "duplicate compiled design target candidate must fail closed",
+  );
+
+  const duplicateConfirmationCompiled = structuredClone(compiled);
+  duplicateConfirmationCompiled.global.acceptance.external_confirmations.push(
+    structuredClone(confirmation),
+  );
+  assert.equal(
+    designObligation.findDesignFactObligation(
+      duplicateConfirmationCompiled,
+      representative,
+    ),
+    null,
+    "duplicate external confirmation must fail closed",
+  );
+  assert.throws(
+    () =>
+      expectedModule.expectedForExternalObligation(
+        duplicateConfirmationCompiled,
+        manifestWithoutSemanticFacts,
+        representative,
+        representative.expected_authority_ref,
+      ),
+    /external_confirmation_expected_fact_missing/u,
+    "duplicate external confirmation must block expected preparation",
+  );
+
+  const duplicateObligationCompiled = structuredClone(compiled);
+  const duplicateObligationConfirmation =
+    duplicateObligationCompiled.global.acceptance.external_confirmations.find(
+      (candidate) => candidate.key === confirmation.key,
+    );
+  assert.ok(duplicateObligationConfirmation);
+  const representativeObligation = duplicateObligationConfirmation.obligations.find(
+    (obligation) => obligation.key === representative.obligation_ref,
+  );
+  assert.ok(representativeObligation);
+  duplicateObligationConfirmation.obligations.push(
+    structuredClone(representativeObligation),
+  );
+  assert.equal(
+    designObligation.findDesignFactObligation(
+      duplicateObligationCompiled,
+      representative,
+    ),
+    null,
+    "duplicate external obligation must fail closed",
+  );
+  assert.throws(
+    () =>
+      expectedModule.expectedForExternalObligation(
+        duplicateObligationCompiled,
+        manifestWithoutSemanticFacts,
+        representative,
+        representative.expected_authority_ref,
+      ),
+    /external_confirmation_expected_fact_missing/u,
+    "duplicate external obligation must block expected preparation",
+  );
+
+  const sourceChallengePath = at(
+    ".long-task",
+    ".ty-context",
+    "external-confirmations",
+    "challenges",
+    `${confirmation.key}.json`,
+  );
+  const challengeBefore = await readFile(sourceChallengePath);
+  const preparedCompiled = {
+    ...compiled,
+    global: {
+      ...compiled.global,
+      acceptance: {
+        ...compiled.global.acceptance,
+        external_confirmations: compiled.global.acceptance.external_confirmations.map(
+          (candidate) =>
+            candidate.key === confirmation.key
+              ? {
+                  ...candidate,
+                  obligations: candidate.obligations.filter((row) =>
+                    row.expected_authority_ref?.startsWith("design-proof:") === true,
+                  ),
+                }
+              : candidate,
+        ),
+      },
+    },
+    acceptance_reachability: {
+      ...compiled.acceptance_reachability,
+      effective_external_routes: designRows,
+    },
+  };
+  const isolatedWorkdir = await mkdtemp(
+    path.join(root, ".tmp-miniapp-harness-external-design-"),
+  );
+  try {
+    const prepared = await preparationModule.externalFulfillableConfirmations(
+      {
+        repository: root,
+        workdir: isolatedWorkdir,
+        compiled: preparedCompiled,
+        manifest: { snapshot_sha256: "0".repeat(64), files: [] },
+        candidate: {
+          git_head: "test-fixture",
+          git_tree: "test-fixture",
+          snapshot_sha256: "0".repeat(64),
+        },
+        semantic_manifest: manifestWithoutSemanticFacts,
+      },
+      confirmation.key,
+    );
+    assert.equal(prepared.length, 1);
+    assert.equal(prepared[0].obligations.length, 72);
+    assert.ok(
+      prepared[0].obligations.every(
+        (row) =>
+          row.expected?.kind === "design_fact" &&
+          row.expected.located_value?.sha256 ===
+            targetExpectationByFact.get(row.fact_ref)?.expected.sha256,
+      ),
+    );
+
+    for (const row of designRows) {
+      const expectation = targetExpectationByFact.get(row.fact_ref);
+      const actual = jsonPointerValue(
+        designValues,
+        expectation.expected.locator.value,
+      );
+      assert.equal(
+        sha256(Buffer.from(actual)),
+        expectation.expected.sha256,
+        `fixture actual must bind the target SHA for ${row.fact_ref}`,
+      );
+      assert.deepEqual(
+        expectedModule.objectiveExternalComparison(
+          compiled,
+          manifestWithoutSemanticFacts,
+          row,
+          actual,
+        ),
+        { passed: true },
+        `equal actual must pass for ${row.fact_ref}`,
+      );
+      assert.deepEqual(
+        expectedModule.objectiveExternalComparison(
+          compiled,
+          manifestWithoutSemanticFacts,
+          row,
+          mismatchedJsonValue(actual),
+        ),
+        { passed: false },
+        `mismatched actual must fail for ${row.fact_ref}`,
+      );
+    }
+  } finally {
+    await rm(isolatedWorkdir, { recursive: true, force: true });
+  }
+  assert.deepEqual(await readFile(sourceChallengePath), challengeBefore);
+});
+
+test("fresh Harness 0.11.0 overlay rejects non-needle package tampering on --check", async () => {
+  const isolatedRoot = await mkdtemp(
+    path.join(tmpdir(), "starward-harness-fresh-"),
+  );
+  const packageName = "project-tiny-context-harness";
+  const packageVersion = "0.11.0";
+  const packageTarball = path.join(
+    isolatedRoot,
+    `${packageName}-${packageVersion}.tgz`,
+  );
+  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+  const npmCliPath = path.join(
+    path.dirname(process.execPath),
+    "node_modules",
+    "npm",
+    "bin",
+    "npm-cli.js",
+  );
+  let npmInvocation = {
+    command: npmCommand,
+    prefix: [],
+    shell: process.platform === "win32",
+  };
+  try {
+    await readFile(npmCliPath);
+    npmInvocation = {
+      command: process.execPath,
+      prefix: [npmCliPath],
+      shell: false,
+    };
+  } catch {
+    // Fall back to the platform npm launcher when Node is not bundled with npm.
+  }
+  const tarCommand = process.platform === "win32" ? "tar.exe" : "tar";
+  const commandOptions = {
+    cwd: root,
+    windowsHide: true,
+    maxBuffer: 4 * 1024 * 1024,
+  };
+  try {
+    await execFileAsync(
+      npmInvocation.command,
+      [
+        ...npmInvocation.prefix,
+        "pack",
+        `${packageName}@${packageVersion}`,
+        "--offline",
+        "--silent",
+        "--pack-destination",
+        isolatedRoot,
+      ],
+      { ...commandOptions, shell: npmInvocation.shell },
+    );
+    const packageRoot = path.join(isolatedRoot, "node_modules");
+    await mkdir(packageRoot, { recursive: true });
+    await execFileAsync(
+      tarCommand,
+      ["-xzf", packageTarball, "-C", packageRoot],
+      commandOptions,
+    );
+    await rename(
+      path.join(packageRoot, "package"),
+      path.join(packageRoot, packageName),
+    );
+
+    const designObligationPath = path.join(
+      packageRoot,
+      packageName,
+      "dist",
+      "lib",
+      "long-task-design-obligation.js",
+    );
+
+    const freshPackageJson = JSON.parse(
+      await readFile(
+        path.join(packageRoot, packageName, "package.json"),
+        "utf8",
+      ),
+    );
+    assert.equal(freshPackageJson.version, packageVersion);
+    assert.doesNotMatch(
+      await readFile(designObligationPath, "utf8"),
+      /compiledDesignFactObligation/u,
+      "npm tarball must be an unpatched 0.11.0 package",
+    );
+    const overlayPath = path.join(
+      isolatedRoot,
+      "tools",
+      "miniapp",
+      "apply-ty-context-harness-compatibility.mjs",
+    );
+    await mkdir(path.dirname(overlayPath), { recursive: true });
+    await cp(
+      at("tools", "miniapp", "apply-ty-context-harness-compatibility.mjs"),
+      overlayPath,
+    );
+    const runOverlay = (args) =>
+      execFileAsync(process.execPath, [overlayPath, ...args], {
+        ...commandOptions,
+        cwd: isolatedRoot,
+      });
+    await runOverlay([]);
+    await runOverlay(["--check"]);
+
+    const appliedDesign = await readFile(designObligationPath, "utf8");
+    assert.match(appliedDesign, /compiledDesignFactObligation/u);
+    const mutationNeedle = "export function designGroundObligationRef";
+    const mutationOffset = appliedDesign.indexOf(mutationNeedle);
+    assert.ok(mutationOffset >= 0);
+    const mutatedByteOffset = mutationOffset + "export function ".length;
+    const mutatedDesign = Buffer.from(appliedDesign, "utf8");
+    const originalByte = mutatedDesign[mutatedByteOffset];
+    mutatedDesign[mutatedByteOffset] = originalByte ^ 1;
+    assert.notEqual(mutatedDesign[mutatedByteOffset], originalByte);
+    await writeFile(designObligationPath, mutatedDesign);
+
+    let tamperedCheckError;
+    try {
+      await runOverlay(["--check"]);
+    } catch (error) {
+      tamperedCheckError = error;
+    }
+    assert.ok(
+      tamperedCheckError,
+      "--check must reject a fresh overlay package after a non-needle byte is tampered",
+    );
+    assert.notEqual(tamperedCheckError.code, 0);
+  } finally {
+    await rm(isolatedRoot, { recursive: true, force: true });
+  }
 });
 
 test("infrastructure verification survives the Harness-minimal process environment", async () => {
@@ -1284,7 +1914,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "package-lock.json",
     ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
     "DESIGN.md",
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md",
     "tools/miniapp/verification-spec-field-signal-i21.json",
     "tools/miniapp/run-wechat-devtools-session.mjs",
     "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
@@ -1300,7 +1930,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   assert.deepEqual(
     verificationSpec.counterfactual_projection.required_tree_roots,
     [
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source",
     ],
   );
   const verifyBody = verifier.slice(verifier.indexOf("async function verify"));

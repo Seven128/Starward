@@ -276,6 +276,13 @@ modularity:
       reason: This file is the immutable byte-exact copy of the independently reviewed Open Design interaction fixture; rewriting its aggregate prototype event wiring after selection would invalidate the canonical resource identity, and production packages are forbidden from importing it.
       tracking_issue: STARWARD-DRA-MOD-001
       expiry_condition: Remove this waiver when a newly selected immutable source replaces the fixture with modular provider output, or split the editable Open Design upstream before selecting a future revision that materially changes this interaction script.
+    - path: docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js
+      category: fixture_snapshot
+      owner: design-system-maintainers
+      introduced_at: "2026-09-04"
+      reason: This file is the immutable byte-exact copy of the independently reviewed Open Design interaction fixture; rewriting its aggregate prototype event wiring after selection would invalidate the canonical resource identity, and production packages are forbidden from importing it.
+      tracking_issue: STARWARD-DRA-MOD-001
+      expiry_condition: Remove this waiver when a newly selected immutable source replaces the fixture with modular provider output, or split the editable Open Design upstream before selecting a future revision that materially changes this interaction script.
 managed_files:
   - path: AGENTS.md
     strategy: merge-block

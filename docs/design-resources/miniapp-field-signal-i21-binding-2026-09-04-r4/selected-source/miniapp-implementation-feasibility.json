@@ -1,0 +1,3882 @@
+{
+  "schema_version": "design-resource-implementation-feasibility-v1",
+  "key": "feasibility.miniapp",
+  "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+  "realization_mode": "mapped_substrate",
+  "source_records": [
+    {
+      "key": "source.miniapp.platform",
+      "path": "apps/wechat-miniapp/project.config.json",
+      "media_type": "application/json",
+      "sha256": "84b865788c923934d97684252da9a346df29c98643fdda2399eff42745cd8e2c",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "technical_platform"
+      ]
+    },
+    {
+      "key": "source.miniapp.package",
+      "path": "apps/wechat-miniapp/package.json",
+      "media_type": "application/json",
+      "sha256": "9304ffaee7b02ab46f1a983ba7e07a8a92882f6e9551731b32ef47dca4f97829",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "framework_runtime",
+        "ui_system",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.tokens",
+      "path": "apps/wechat-miniapp/src/styles/tokens.scss",
+      "media_type": "text/x-scss",
+      "sha256": "33d894ca37a14773b6c04704082b3c741717245364a981d98aa84e27de178eb3",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "token_theming_adapter",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.routes",
+      "path": "apps/wechat-miniapp/src/app.config.ts",
+      "media_type": "text/typescript",
+      "sha256": "782728d6a1328ca04895b52c9d9a82cab88b0206647da5e9a66b8aff6072c2ab",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "route_owner",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.architecture",
+      "path": "project_context/architecture.md",
+      "media_type": "text/markdown",
+      "sha256": "d91505fc63a8228c56e9ffd376f859353e32e9bb2e31bc2995361051bd021f7b",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "ui_system",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.shared-state",
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md",
+      "media_type": "text/markdown",
+      "sha256": "e6383396d6d533ba9ff089dfb46834d980c5ff47086134b45aefc4fef94afb68",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "ui_system",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.implementation-index",
+      "path": "project_context/areas/main/implementation-index.md",
+      "media_type": "text/markdown",
+      "sha256": "ef201da408c4c9daa75facb782b0be74719724afbc0396f7002d561cc86f89fe",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.map",
+      "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "b0b7cbfeb7a3c7fe369e4315a4b38aec4b79aeeadcec3673c85cb9abe7930b0e",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.status",
+      "path": "apps/wechat-miniapp/src/components/status-panel.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "d5f24a636e3f20117a9f4654364a7e786b9d714286671f7ae00ae77740c2d8ac",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.asset",
+      "path": "apps/wechat-miniapp/src/components/semantic-asset.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "af1927a7daefa6975a6ce5a820acdc8934dda5e3847af3cfcdfc2dd4866b416b",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "ui_system",
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.sky",
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "edf06880f449d12b221746a51cc77063c88e649e39d0dd543b7cf9a37173eeb6",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.my",
+      "path": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "72a1b7911d8bd5794a1a78f668476c2ca23dcdb44016845a8f8bf30578fe4f89",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.contribution",
+      "path": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "59c8c6d9ce62be0ab2430224168087aee49990c75f5567fa34886ce881964440",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.settings",
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "29d96c835ba0e0e4294590c0d9efe378eee602c20a72b26303d2af645d7524f3",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    },
+    {
+      "key": "source.miniapp.nav",
+      "path": "apps/wechat-miniapp/src/components/custom-nav.tsx",
+      "media_type": "text/typescript-jsx",
+      "sha256": "49472ef4f790a6cd49a35d5a18a87711dfa08751dd8ff506ee3d208ce973f7ac",
+      "locator": {
+        "kind": "whole_resource",
+        "value": "."
+      },
+      "roles": [
+        "component_owner",
+        "feasibility_basis",
+        "capability_basis"
+      ]
+    }
+  ],
+  "substrate_observations": [
+    {
+      "kind": "platform",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "wechat-mini-program",
+        "version_source_ref": "source.miniapp.platform"
+      },
+      "source_record_refs": [
+        "source.miniapp.platform"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "framework_runtime",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "taro-react",
+        "version_source_ref": "source.miniapp.package"
+      },
+      "source_record_refs": [
+        "source.miniapp.package"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "ui_system",
+      "disposition": "observed",
+      "value": {
+        "kind": "identifier",
+        "name": "starward-local-components-on-bounded-taro-substrate",
+        "version_source_ref": "source.miniapp.architecture"
+      },
+      "source_record_refs": [
+        "source.miniapp.package",
+        "source.miniapp.architecture",
+        "source.miniapp.shared-state",
+        "source.miniapp.asset"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "token_theming_adapter",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/wechat-miniapp/src/styles/tokens.scss"
+        ]
+      },
+      "source_record_refs": [
+        "source.miniapp.tokens"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "component_owner_roots",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/wechat-miniapp/src/components",
+          "apps/wechat-miniapp/src/features",
+          "apps/wechat-miniapp/src/pages",
+          "apps/wechat-miniapp/src/sky",
+          "apps/wechat-miniapp/src/content"
+        ]
+      },
+      "source_record_refs": [
+        "source.miniapp.map",
+        "source.miniapp.status",
+        "source.miniapp.asset",
+        "source.miniapp.sky",
+        "source.miniapp.my",
+        "source.miniapp.contribution",
+        "source.miniapp.settings",
+        "source.miniapp.nav"
+      ],
+      "reason": null
+    },
+    {
+      "kind": "route_owner_roots",
+      "disposition": "observed",
+      "value": {
+        "kind": "repository_paths",
+        "paths": [
+          "apps/wechat-miniapp/src/pages",
+          "apps/wechat-miniapp/src/sky",
+          "apps/wechat-miniapp/src/content",
+          "apps/wechat-miniapp/src/features"
+        ]
+      },
+      "source_record_refs": [
+        "source.miniapp.routes"
+      ],
+      "reason": null
+    }
+  ],
+  "condition_model": {
+    "kind": "explicit_conditions_v1",
+    "profiles": [
+      {
+        "key": "profile.miniapp.current",
+        "condition_refs": [
+          "condition-miniapp-field-signal-phone-source-matrix"
+        ]
+      }
+    ]
+  },
+  "component_family_cells": [
+    {
+      "key": "feasibility-cell.miniapp.control-mini-primary-navigation",
+      "component_family_ref": "subject.miniapp.control.mini-primary-navigation",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-mini-primary-navigation.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-mini-primary-navigation.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/custom-nav.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.nav",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-display-mode-switcher",
+      "component_family_ref": "subject.miniapp.control.display-mode-switcher",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-display-mode-switcher.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-display-mode-switcher.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.button",
+            "starward.display-mode-track",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/settings/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.settings",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-data-source-disclosure",
+      "component_family_ref": "subject.miniapp.control.data-source-disclosure",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-data-source-disclosure.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-data-source-disclosure.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.map",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-notification-feedback",
+      "component_family_ref": "subject.miniapp.control.notification-feedback",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-notification-feedback.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-notification-feedback.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "starward.notification-feedback",
+            "taro.view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/status-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.status",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-page-state-recovery",
+      "component_family_ref": "subject.miniapp.control.page-state-recovery",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-page-state-recovery.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-page-state-recovery.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/components/status-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.status",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-search-entry",
+      "component_family_ref": "subject.miniapp.control.map-search-entry",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-search-entry.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-search-entry.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-search-shell",
+      "component_family_ref": "subject.miniapp.control.spot-search-shell",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-search-shell.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-search-shell.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-search-field",
+      "component_family_ref": "subject.miniapp.control.spot-search-field",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-search-field.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-search-field.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-search-query-overlay",
+      "component_family_ref": "subject.miniapp.control.spot-search-query-overlay",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-search-query-overlay.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-search-query-overlay.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-search-filter-group",
+      "component_family_ref": "subject.miniapp.control.spot-search-filter-group",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-search-filter-group.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-search-filter-group.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-search-filter-choice",
+      "component_family_ref": "subject.miniapp.control.spot-search-filter-choice",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-search-filter-choice.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-search-filter-choice.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-search-result-list",
+      "component_family_ref": "subject.miniapp.control.spot-search-result-list",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-search-result-list.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-search-result-list.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-search-result-card",
+      "component_family_ref": "subject.miniapp.control.spot-search-result-card",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-search-result-card.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-search-result-card.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/search-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-location-control",
+      "component_family_ref": "subject.miniapp.control.map-location-control",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-location-control.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-location-control.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.map",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-analysis-focus-layer",
+      "component_family_ref": "subject.miniapp.control.map-analysis-focus-layer",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-analysis-focus-layer.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-analysis-focus-layer.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.bottom-presentation-coordinator",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.map",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-layer-selector",
+      "component_family_ref": "subject.miniapp.control.map-layer-selector",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-layer-selector.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-layer-selector.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "starward.bottom-presentation-coordinator",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.map",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-time-control",
+      "component_family_ref": "subject.miniapp.control.map-time-control",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-time-control.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-time-control.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.scroll-view",
+            "starward.curved-time-projection"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/time-ruler.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-marker-panel-coordinator",
+      "component_family_ref": "subject.miniapp.control.map-marker-panel-coordinator",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-marker-panel-coordinator.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-marker-panel-coordinator.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.map",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-spot-information-panel",
+      "component_family_ref": "subject.miniapp.control.map-spot-information-panel",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-spot-information-panel.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-spot-information-panel.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.bottom-presentation-coordinator"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-spot-panel-handle",
+      "component_family_ref": "subject.miniapp.control.map-spot-panel-handle",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-spot-panel-handle.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-spot-panel-handle.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.bottom-presentation-coordinator"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-spot-panel-section-nav",
+      "component_family_ref": "subject.miniapp.control.map-spot-panel-section-nav",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-spot-panel-section-nav.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-spot-panel-section-nav.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-map-spot-panel-action-bar",
+      "component_family_ref": "subject.miniapp.control.map-spot-panel-action-bar",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-map-spot-panel-action-bar.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-map-spot-panel-action-bar.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-favorite-action",
+      "component_family_ref": "subject.miniapp.control.spot-favorite-action",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-favorite-action.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-favorite-action.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-share-action",
+      "component_family_ref": "subject.miniapp.control.spot-share-action",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-share-action.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-share-action.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-cloud-stargazing-action",
+      "component_family_ref": "subject.miniapp.control.spot-cloud-stargazing-action",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-cloud-stargazing-action.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-cloud-stargazing-action.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-media-gallery",
+      "component_family_ref": "subject.miniapp.control.spot-media-gallery",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-media-gallery.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-media-gallery.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-navigation-action",
+      "component_family_ref": "subject.miniapp.control.spot-navigation-action",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-navigation-action.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-navigation-action.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-contribution-entry",
+      "component_family_ref": "subject.miniapp.control.spot-contribution-entry",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-contribution-entry.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-contribution-entry.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-route-summary",
+      "component_family_ref": "subject.miniapp.control.spot-route-summary",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-route-summary.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-route-summary.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-spot-facility-evidence",
+      "component_family_ref": "subject.miniapp.control.spot-facility-evidence",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-spot-facility-evidence.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-spot-facility-evidence.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-guide-article-viewer",
+      "component_family_ref": "subject.miniapp.control.guide-article-viewer",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-guide-article-viewer.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-guide-article-viewer.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-professional-matrix",
+      "component_family_ref": "subject.miniapp.control.sky-professional-matrix",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-professional-matrix.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-professional-matrix.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-target-list",
+      "component_family_ref": "subject.miniapp.control.sky-target-list",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-target-list.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-target-list.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-time-scrubber",
+      "component_family_ref": "subject.miniapp.control.sky-time-scrubber",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-time-scrubber.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-time-scrubber.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.scroll-view",
+            "starward.curved-time-projection"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/time-ruler.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-map-canvas",
+      "component_family_ref": "subject.miniapp.control.sky-map-canvas",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-map-canvas.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-map-canvas.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/pages/map/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.map",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-orientation-canvas",
+      "component_family_ref": "subject.miniapp.control.sky-orientation-canvas",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-orientation-canvas.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-orientation-canvas.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-orientation-sensor",
+      "component_family_ref": "subject.miniapp.control.sky-orientation-sensor",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-orientation-sensor.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-orientation-sensor.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-orientation-recovery",
+      "component_family_ref": "subject.miniapp.control.sky-orientation-recovery",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-orientation-recovery.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-orientation-recovery.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-orientation-object-list",
+      "component_family_ref": "subject.miniapp.control.sky-orientation-object-list",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-orientation-object-list.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-orientation-object-list.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.scroll-view",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-sky-orientation-time-ruler",
+      "component_family_ref": "subject.miniapp.control.sky-orientation-time-ruler",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-sky-orientation-time-ruler.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-sky-orientation-time-ruler.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.scroll-view",
+            "starward.curved-time-projection"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.sky",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-my-account-header",
+      "component_family_ref": "subject.miniapp.control.my-account-header",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-my-account-header.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-my-account-header.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-my-settings-action",
+      "component_family_ref": "subject.miniapp.control.my-settings-action",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-my-settings-action.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-my-settings-action.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-my-profile-summary",
+      "component_family_ref": "subject.miniapp.control.my-profile-summary",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-my-profile-summary.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-my-profile-summary.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-my-grouped-entry-list",
+      "component_family_ref": "subject.miniapp.control.my-grouped-entry-list",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-my-grouped-entry-list.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-my-grouped-entry-list.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-my-plan-entry",
+      "component_family_ref": "subject.miniapp.control.my-plan-entry",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-my-plan-entry.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-my-plan-entry.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-my-contribution-entry",
+      "component_family_ref": "subject.miniapp.control.my-contribution-entry",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-my-contribution-entry.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-my-contribution-entry.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-plan-editor",
+      "component_family_ref": "subject.miniapp.control.plan-editor",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-plan-editor.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-plan-editor.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/features/my/my-library-page.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.my",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-settings-form",
+      "component_family_ref": "subject.miniapp.control.settings-form",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-settings-form.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-settings-form.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/settings/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.settings",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-profile-link-editor",
+      "component_family_ref": "subject.miniapp.control.profile-link-editor",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-profile-link-editor.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-profile-link-editor.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/profile/links/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-profile-link-open-copy",
+      "component_family_ref": "subject.miniapp.control.profile-link-open-copy",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-profile-link-open-copy.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-profile-link-open-copy.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/profile/links/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-import-source-rights",
+      "component_family_ref": "subject.miniapp.control.import-source-rights",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-import-source-rights.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-import-source-rights.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/import/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-import-draft-editor",
+      "component_family_ref": "subject.miniapp.control.import-draft-editor",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-import-draft-editor.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-import-draft-editor.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/import/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-import-spot-association",
+      "component_family_ref": "subject.miniapp.control.import-spot-association",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-import-spot-association.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-import-spot-association.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/import/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-import-preview-submit",
+      "component_family_ref": "subject.miniapp.control.import-preview-submit",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-import-preview-submit.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-import-preview-submit.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.view",
+            "taro.button",
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "starward.semantic-icon"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/import/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.tokens",
+            "source.miniapp.package"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-kind-control",
+      "component_family_ref": "subject.miniapp.control.contribution-kind-control",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-kind-control.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-kind-control.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-spot-context",
+      "component_family_ref": "subject.miniapp.control.contribution-spot-context",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-spot-context.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-spot-context.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-topic-control",
+      "component_family_ref": "subject.miniapp.control.contribution-topic-control",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-topic-control.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-topic-control.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-observed-at",
+      "component_family_ref": "subject.miniapp.control.contribution-observed-at",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-observed-at.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-observed-at.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-location-consent",
+      "component_family_ref": "subject.miniapp.control.contribution-location-consent",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-location-consent.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-location-consent.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-media-upload",
+      "component_family_ref": "subject.miniapp.control.contribution-media-upload",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-media-upload.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-media-upload.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-submit",
+      "component_family_ref": "subject.miniapp.control.contribution-submit",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-submit.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-submit.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    },
+    {
+      "key": "feasibility-cell.miniapp.control-contribution-status-list",
+      "component_family_ref": "subject.miniapp.control.contribution-status-list",
+      "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+      "condition_profile_ref": "profile.miniapp.current",
+      "design_fact_refs": [
+        "fact.subject-miniapp-control-contribution-status-list.declared-state-matrix.constraint-digest"
+      ],
+      "feasible_realizations": [
+        {
+          "key": "realization.miniapp.control-contribution-status-list.existing-substrate",
+          "strategy_steps": [
+            "reuse_existing",
+            "compose_existing",
+            "extend_shared_component",
+            "theme_with_tokens"
+          ],
+          "primitive_refs": [
+            "taro.input",
+            "taro.textarea",
+            "taro.switch",
+            "taro.button",
+            "taro.scroll-view"
+          ],
+          "owner_candidates": [
+            {
+              "kind": "existing_path",
+              "locator": "apps/wechat-miniapp/src/content/contribution/index.tsx",
+              "existence": "existing"
+            }
+          ],
+          "supported_customization_surfaces": [
+            "theme_tokens",
+            "component_variant",
+            "composition",
+            "content_slot",
+            "icon_slot",
+            "behavior_slot",
+            "style_api"
+          ],
+          "feasibility_basis_refs": [
+            "source.miniapp.contribution",
+            "source.miniapp.package",
+            "source.miniapp.tokens"
+          ],
+          "observed_costs": [
+            "Requires dependency admission where the preferred package is used, one shared Starward adapter/theme projection, and mapping the selected state vocabulary to existing stores, request lifecycles and route owners."
+          ],
+          "observed_risks": [
+            "Browser prototype and package metadata cannot prove native WeChat event, bundle, input-method, safe-area, accessibility or gesture behavior; the production candidate must verify these boundaries and retain the documented bounded fallback."
+          ]
+        }
+      ],
+      "required_realization": {
+        "realization_ref": null,
+        "technical_authority_source_refs": []
+      },
+      "blocker_refs": []
+    }
+  ],
+  "blockers": []
+}

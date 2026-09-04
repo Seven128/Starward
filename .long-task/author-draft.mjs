@@ -32,8 +32,8 @@ const VERBATIM_INPUT_ARCHIVE = `${WORKDIR}/wechat-miniapp-field-signal-i21-start
 const PUBLIC_KEY_PATH = "project_context/areas/main/verification/wechat-device/field-signal-i21-owner-public.pem";
 const VERIFICATION_SPEC_PATH = "tools/miniapp/verification-spec-field-signal-i21.json";
 const NIGHTCHINA_FIXTURE_PATH = "tools/miniapp/fixtures/nightchina-import-cases.json";
-const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md";
-const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source";
+const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md";
+const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source";
 const CANONICAL_ENTRY = `${SELECTED_ROOT}/index.html`;
 const FACT_MANIFEST = `${SELECTED_ROOT}/miniapp-fact-manifest.json`;
 const FEASIBILITY_PATH = `${SELECTED_ROOT}/miniapp-implementation-feasibility.json`;
@@ -49,6 +49,7 @@ const NATIVE_RUNNER_SOURCE = `${VERIFIER_RUNTIME_ROOT}/verify-miniapp-target.mjs
 const VERIFIER_RUNTIME_PACKAGE = `${VERIFIER_RUNTIME_ROOT}/package.json`;
 const VERIFIER_RUNTIME_LOCK = `${VERIFIER_RUNTIME_ROOT}/package-lock.json`;
 const NATIVE_SESSION_RUNNER = "tools/miniapp/run-wechat-devtools-session.mjs";
+const HARNESS_COMPATIBILITY = "tools/miniapp/apply-ty-context-harness-compatibility.mjs";
 const DELIVERY_CARRIER = "apps/wechat-miniapp/src/authority/delivery-carrier.json";
 const INSPECTOR = `${WORKDIR}/author-draft.mjs`;
 const MANIFEST_KEY = "wechat-miniapp-field-signal-i21.semantic-facts";
@@ -62,15 +63,22 @@ const GENERATED_BEGIN = "<!-- ty-long-task-source-inventory:begin -->";
 const GENERATED_END = "<!-- ty-long-task-source-inventory:end -->";
 
 const EXPECTED_HASHES = {
-  [HANDOFF_PATH]: "089ef57ce5d86f44d0b138f57478388a53967a9b48007bb35ab6f93fd189816a",
+  [HANDOFF_PATH]: "01e12307621b700f54d6e9878369fe1225f90d75adb1bd695af51f142fed78a6",
   [CANONICAL_ENTRY]: "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
-  [FACT_MANIFEST]: "22baf8f4d96b56d76baa7c4509796f0f5027acc01b58afcff4caefc83b9d1ebd",
-  [FEASIBILITY_PATH]: "ee377fa71268391742d0313c85483e52fad156370b64391cb8c2f3cf411f91fb",
+  [FACT_MANIFEST]: "e10faa4af0b8df987ea45ffc66cbbd13183e13447afc6bdd44703b961a9bcf53",
+  [FEASIBILITY_PATH]: "0fda88ffe26571eb7c7852568afd55b8be3f7cbe73d713e9d11f0de0ee804bf0",
   [IMPLEMENTATION_SPEC]: "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611",
   [AUTHORITY_DELTA]: "df851d2e2ec16d9c67caed10c960dd4a051345cd04bcdb374c3c4e0ccc057b9c",
 };
 
 const REVISED_USER_REQUIREMENTS = [
+  {
+    key: "harness-external-design-compatibility-overlay",
+    outcome: "current-candidate",
+    family: "architecture_ownership",
+    property: "source_of_truth",
+    statement: "With explicit user authorization, the project applies one temporary project-tiny-context-harness@0.11.0 version- and source-shape-pinned compatibility overlay through tools/miniapp/apply-ty-context-harness-compatibility.mjs solely to restore fail-closed compiled external-design Fact resolution from the already-authoritative design_conformance_targets and external-confirmation observation_authorities and to compare string Actuals using the canonical design locator's raw UTF-8 digest semantics while leaving non-string, semantic-Fact and ordinary-Claim comparison branches unchanged. The overlay preserves the complete obligation universe, exact identity, canonical Expected, comparison and signed whole-candidate boundary; it does not edit compiled Contract state, create evidence or accept missing, mismatched or ambiguous candidates. Unknown package versions or source shapes fail closed, and the overlay is removed when an upstream equivalent fix is adopted and the same regressions pass without it.",
+  },
   {
     key: "nightchina-balanced-import-corpus",
     outcome: "my-profile-settings",
@@ -645,6 +653,7 @@ async function main() {
     "Material alternatives remain existing Taro primitives, any future mature compatible library with a fully admissible dependency closure, bounded project-owned mechanics and intentional non-abstraction. A second UI suite, @taroify/icons, library fork, brand-default skin, second form/presentation/token owner, parallel legacy/current UI or component-library business state is prohibited.",
     "State and lifecycle boundaries include autofocus/IME/Back, handle and axis gesture capture, request cancellation, panel live-position interruption, map/layer retarget, sensor foreground/background cleanup, permission denial/recovery, form draft/media retry/idempotency/readback and exact mode restoration. Implementation-loop Device Development Feedback is risk-triggered at the first independently runnable device-owned slice or coherent stable batch and feeds findings back into cheap checks; it is diagnostic and never replaces fixed-candidate settled verification.",
     "A future I22 target or library upgrade creates a new immutable design record and changes mechanics through the adapter without changing stable route, Control, product-state or acceptance ownership. Current route, detached-page, contribution-wizard, duplicated mode and I21 visual/state drift are debt this task removes; unrelated React Native debt remains out of scope. No new duplicate truth, oversized owner, wrong dependency direction, silent failure, lifecycle leak, unsupported quality claim or untracked waiver is accepted.",
+    "For the current project-tiny-context-harness@0.11.0 external-design resolver and string-comparator defects, the package-managed compiled Contract remains the sole Authority while tools/miniapp/apply-ty-context-harness-compatibility.mjs is the one project compatibility extension point. The selected bounded overlay reuses the compiled design_conformance_targets plus the exact external-confirmation observation-authority plan, accepts exactly one full identity match and hashes string Actuals as the design locator's raw UTF-8 bytes while preserving the existing non-string branch; waiting for or adopting an upstream equivalent remain supported alternatives. A complete package fork was considered and rejected because it would duplicate package ownership and add disproportionate maintenance, while Contract weakening, compiled-state editing, fabricated evidence and ambiguous fallback are prohibited. The overlay is version- and original-source-shape pinned, is covered by prepare/equal/mismatch and ambiguity regressions, and fails closed on a future package shape; it is tracked technical debt removed only after an upstream equivalent passes those regressions without the overlay.",
     "Correctness/invariants and maintainability/changeability are mandatory. Reliability/resource lifecycle, concurrency/consistency, performance/bundle/cost, security/privacy/safety, Taro/WEAPP compatibility and rollout boundary, and operability/observability/testability are all material and must close through project checks or exact signed external obligations on the current candidate.",
   ].join(" "));
   addItem({ key: "architecture-deliberation", kind: "technical_obligation", aspect: "architecture", statement: architectureStatement, outcome: "current-candidate", family: "architecture_ownership", property: "conformance_check", disposition: { type: "claim", refs: ["current-candidate.obligation.architecture"] } });
@@ -1083,6 +1092,7 @@ async function main() {
         obligations: technicalObligations,
         expected_change_paths: outcome.key === "map-experience" ? ["apps/wechat-miniapp/src/pages/map/**", "apps/wechat-miniapp/src/components/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**"] : outcome.key === "full-sky" ? ["apps/wechat-miniapp/src/features/sky/**", "apps/wechat-miniapp/src/sky/**"] : outcome.key === "my-profile-settings" ? ["apps/wechat-miniapp/src/features/my/**", "apps/wechat-miniapp/src/content/settings/**", "apps/wechat-miniapp/src/content/profile/**", "apps/wechat-miniapp/src/content/import/**"] : outcome.key === "contribution" ? ["apps/wechat-miniapp/src/content/contribution/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**"] : ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**", "package.json", "package-lock.json"],
         allowed_support_paths: isCandidate ? [
+          ".codex/config.yaml",
           "artifacts/miniapp/**",
           "artifacts/design-resource-authoring/**",
           "docs/design-resources/miniapp-field-signal-compact-continuity/**",
@@ -1096,17 +1106,20 @@ async function main() {
           "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/handoff-draft/**",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04/**",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r2/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/**",
           "tools/miniapp/device-feedback-official.mjs",
           "tools/miniapp/device-feedback-preview.test.mjs",
           "tools/miniapp/device-runtime.mjs",
           "tools/miniapp/device-test.test.mjs",
+          HARNESS_COMPATIBILITY,
+          "tools/miniapp/harness-external-design-compatibility.test.mjs",
           "tools/miniapp/run-wechat-devtools-session.mjs",
           "tools/miniapp/selected-design-bindings.json",
           "tools/miniapp/verify-miniapp-target-launcher.c",
           "tools/miniapp/verify-miniapp-target.exe",
           "tools/miniapp/verify-miniapp-target.mjs",
           "tools/miniapp/workflow-conformance.test.mjs",
-          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/handoff-draft/**",
           "tools/verify-miniapp-design-profile.mjs",
         ] : ["artifacts/miniapp/**"],
         forbidden_paths: forbiddenPaths,
