@@ -9,7 +9,7 @@
       ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "tools/miniapp/fixtures/nightchina-import-cases.json",
       "DESIGN.md",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
       "tools/miniapp/verification-spec-field-signal-i21.json",
       "tools/miniapp/run-wechat-devtools-session.mjs",
       "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
@@ -17,7 +17,7 @@
       "tools/miniapp/verifier-runtime/verify-miniapp-target.exe"
     ],
     "required_tree_roots": [
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source"
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source"
     ]
   },
   "authority": {
@@ -27,25 +27,25 @@
       "target": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02"
     },
     "resource_manifest": {
-      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json",
-      "sha256": "76bea6a560fd552833c8a3588f54d75a9b16d05f61c5d4760b69708ab1a879b0"
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-fact-manifest.json",
+      "sha256": "d68e7afbde46dc0587a28c8f7a137e267a74bf54d075d29d538c968551e996b5"
     },
     "handoff": {
-      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md",
-      "sha256": "7ce4b4bffdbf2226e273e9b15279bf460a99b074f70648a240645925accbf5a7"
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "7121c460e3097abf43b86c4e74c4824f97b70185e31e31e4f728b15b3ae81d44"
     },
     "implementation_handoff": {
-      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/implementation-handoff-spec.json",
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/implementation-handoff-spec.json",
       "sha256": "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611"
     },
     "feasibility": {
-      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-implementation-feasibility.json",
-      "sha256": "4148de807c34b52decc702c2e7b39f4130635cfb4bfffd82a9834713f44135f6"
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-implementation-feasibility.json",
+      "sha256": "100134b49c86d0b7d4f50311fd844861d6cfc79cc850e337d184b1c7c9035fe6"
     },
     "semantic_manifest": {
       "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "key": "wechat-miniapp-field-signal-i21.semantic-facts",
-      "sha256": "136faeefae1a2c338d9c20affab3a3e6b4734ecceb0f526ef4f6b23afacbadca"
+      "sha256": "68893c65441c435d35ecb612585b0e4f009b09dcb153821a4ad5bc08c3103f7e"
     }
   },
   "counterfactual_controls": [],
@@ -57,9 +57,9 @@
     "condition_keys": [
       "condition-miniapp-field-signal-phone-source-matrix"
     ],
-    "resource_integrity_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json",
-    "environment_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json",
-    "parameters_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json",
+    "resource_integrity_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-resource-integrity.json",
+    "environment_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-render-environment.json",
+    "parameters_path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-proof-parameters.json",
     "actual_artifact_path": "artifacts/miniapp/i21/production-actual.json",
     "comparison_artifact_path": "artifacts/miniapp/i21/constraint-comparison.json",
     "method": "asset_integrity",

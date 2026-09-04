@@ -462,15 +462,15 @@ test("the current Field Signal Mini Program and Operations handoffs are bound to
   assert.equal(i21Spec.design_evidence.fact_refs.length, 72);
   assert.equal(
     i21Spec.design_evidence.resource_integrity_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-resource-integrity.json",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-resource-integrity.json",
   );
   assert.equal(
     i21Spec.design_evidence.environment_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-render-environment.json",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-render-environment.json",
   );
   assert.equal(
     i21Spec.design_evidence.parameters_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-proof-parameters.json",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-proof-parameters.json",
   );
   assert.equal(bindings.authorities.length, 4);
   assert.ok(bindings.production_probes.length >= 5);
@@ -1974,7 +1974,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "package-lock.json",
     ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
     "DESIGN.md",
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
     "tools/miniapp/verification-spec-field-signal-i21.json",
     "tools/miniapp/run-wechat-devtools-session.mjs",
     "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
@@ -1990,7 +1990,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   assert.deepEqual(
     verificationSpec.counterfactual_projection.required_tree_roots,
     [
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source",
     ],
   );
   const verifyBody = verifier.slice(verifier.indexOf("async function verify"));

@@ -35,8 +35,8 @@ const NIGHTCHINA_FIXTURE_PATH = "tools/miniapp/fixtures/nightchina-import-cases.
 const STAR_CATALOG_PIPELINE = "data-pipelines/src/gaia-star-catalog.ts";
 const STAR_CATALOG_PATH = "packages/astronomy-core/data/gaia-dr3-bright-stars.v1.json";
 const STAR_CATALOG_MANIFEST = "packages/astronomy-core/data/gaia-dr3-bright-stars.v1.manifest.json";
-const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md";
-const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source";
+const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md";
+const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source";
 const CANONICAL_ENTRY = `${SELECTED_ROOT}/index.html`;
 const FACT_MANIFEST = `${SELECTED_ROOT}/miniapp-fact-manifest.json`;
 const FEASIBILITY_PATH = `${SELECTED_ROOT}/miniapp-implementation-feasibility.json`;
@@ -66,10 +66,10 @@ const GENERATED_BEGIN = "<!-- ty-long-task-source-inventory:begin -->";
 const GENERATED_END = "<!-- ty-long-task-source-inventory:end -->";
 
 const EXPECTED_HASHES = {
-  [HANDOFF_PATH]: "7ce4b4bffdbf2226e273e9b15279bf460a99b074f70648a240645925accbf5a7",
+  [HANDOFF_PATH]: "7121c460e3097abf43b86c4e74c4824f97b70185e31e31e4f728b15b3ae81d44",
   [CANONICAL_ENTRY]: "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
-  [FACT_MANIFEST]: "76bea6a560fd552833c8a3588f54d75a9b16d05f61c5d4760b69708ab1a879b0",
-  [FEASIBILITY_PATH]: "4148de807c34b52decc702c2e7b39f4130635cfb4bfffd82a9834713f44135f6",
+  [FACT_MANIFEST]: "d68e7afbde46dc0587a28c8f7a137e267a74bf54d075d29d538c968551e996b5",
+  [FEASIBILITY_PATH]: "100134b49c86d0b7d4f50311fd844861d6cfc79cc850e337d184b1c7c9035fe6",
   [IMPLEMENTATION_SPEC]: "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611",
   [AUTHORITY_DELTA]: "df851d2e2ec16d9c67caed10c960dd4a051345cd04bcdb374c3c4e0ccc057b9c",
 };
@@ -1165,7 +1165,10 @@ async function main() {
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/**",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-handoff/miniapp-field-signal-i21-current.md",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/handoff-draft/**",
           "tools/verify-miniapp-design-profile.mjs",
         ] : ["artifacts/miniapp/**"],
         forbidden_paths: forbiddenPaths,

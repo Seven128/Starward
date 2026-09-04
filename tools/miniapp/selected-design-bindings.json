@@ -4,8 +4,8 @@
     {
       "key": "miniapp",
       "target": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
-      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md",
-      "sha256": "7ce4b4bffdbf2226e273e9b15279bf460a99b074f70648a240645925accbf5a7",
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "7121c460e3097abf43b86c4e74c4824f97b70185e31e31e4f728b15b3ae81d44",
       "manifest_key": "resource.miniapp.manifest",
       "expected_census": { "subjects": 72, "fact_cells": 15696, "facts": 72, "proof_obligations": 72, "acceptance_blockers": 0 }
     },
@@ -20,7 +20,7 @@
   ],
   "authorities": [
     { "key": "design", "path": "DESIGN.md", "sha256": "08a8719fee19638e8f5bbf34d2bf9a0421c6753db4e7830b9c11ff235d9839f3" },
-    { "key": "miniapp-surface", "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md", "sha256": "429a6eb5efd21bc1d29fb8d6a7e95ba1e7bcd767cbc358b25432b52df5a25a5c" },
+    { "key": "miniapp-surface", "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md", "sha256": "d12af9cfd6e43457e6444fdb9f7689727640d962e0a248cb5d9b267715c1a83b" },
     { "key": "operations-surface", "path": "project_context/areas/main/screen-contracts/operations.md", "sha256": "7061c41d28ff228d676c752bfbb2a1b5907869dd18e17a1b5bd2e5d1d226e15f" },
     { "key": "implementation-spec", "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/implementation-handoff-spec.json", "sha256": "7a6a341d700c351b1557af169e88ec931ba91b0a2c0cf4d92683869b63386b11" }
   ],

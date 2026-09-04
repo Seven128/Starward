@@ -1,0 +1,53 @@
+{
+  "schema_version": "starward-field-signal-i21-selected-artifact-v1",
+  "status": "selected-formal-implementation-constraint",
+  "selected_at": "2026-09-03",
+  "target_ref": "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
+  "canonical_entry": "index.html",
+  "candidate_hashes": {
+    "index.html": "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
+    "assets/styles.css": "5284cc77d46dc6f61ab5ef6b2912d14949b9f59f385855cc890080084407f51f",
+    "assets/app.js": "3cbc5f8e55ceaf6917b864150905f30ad539474c4c92f27a156e30079d9c99a1",
+    "coverage.json": "0dcbeef98e091b2be2bfaef5a6c270a355fba121220fea5c9ec0ba3a51e7f886",
+    "open-design-readme.md": "8e7d6d15aa45244f03e211ebd1c4231958b5823921739f0596cb575c1576d5b1"
+  },
+  "coverage": {
+    "expectedControls": 62,
+    "coveredControls": 62,
+    "missingControls": [],
+    "extraControls": [],
+    "categoryCounts": [
+      5,
+      13,
+      17,
+      5,
+      8,
+      6,
+      8
+    ],
+    "expectedSurfaces": 5,
+    "coveredSurfaces": 5,
+    "missingSurfaces": [],
+    "extraSurfaces": [],
+    "currentRoutes": 9,
+    "unresolvedItems": 0
+  },
+  "provider": {
+    "name": "Open Design",
+    "version": "0.21.1",
+    "project": "starward-miniapp-field-signal-all-resources",
+    "conversation": "4f290527-9979-4b24-b92c-8365b470bf9d",
+    "material_run": "b9459565-55ac-47c9-8876-296af2a2ce7e",
+    "mechanical_conformance_run": "e2607c5d-52fa-4bea-b6c3-d3fa966432a6",
+    "design_system_id": "user:starward-mini-program-sky-canvas-field-signal-revision",
+    "design_system_digest": "c8ed87d21bf9f3b4298b7b5a8435f9ea897ed5c2bed8294cb63713e1ccae8969",
+    "plugin": null,
+    "snapshot": null
+  },
+  "exclusions": [
+    "production conformance",
+    "release readiness",
+    "pixel-exact implementation acceptance",
+    "live data or native WEAPP capability proof"
+  ]
+}
