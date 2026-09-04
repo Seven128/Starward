@@ -10,6 +10,7 @@ import { useAppStore } from "@/state/app-store";
 import { resetAppStoreForAcceptance } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
 import { FloatingNotificationHost } from "@/components/notification";
+import { inspectAcceptanceSkyScene } from "@/services/acceptance-diagnostics";
 import "./app.scss";
 
 if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
@@ -30,9 +31,12 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
         locationKind: string;
         privacyClass: string;
         spotId: string;
+        selectedAtUtc: string;
+        revision: number;
         routeOriginContextId: string;
         routeOriginSource: string;
       } | null;
+      inspectSkyScene(): ReturnType<typeof inspectAcceptanceSkyScene>;
       inspectPreferences(): {
         revision: number;
         dirty: boolean;
@@ -62,6 +66,8 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
             contextFingerprint: context.contextFingerprint,
             locationKind: context.location.kind,
             privacyClass: context.privacyClass,
+            selectedAtUtc: context.selectedAtUtc,
+            revision: context.revision,
             spotId:
               context.location.kind === "FORMAL_SPOT"
                 ? context.location.spotId
@@ -70,6 +76,9 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
             routeOriginSource: context.routeOrigin?.source ?? "",
           }
         : null;
+    },
+    inspectSkyScene() {
+      return inspectAcceptanceSkyScene();
     },
     inspectPreferences() {
       const state = useAppStore.getState();

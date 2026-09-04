@@ -585,6 +585,10 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "miniProgram.switchTab(url)",
     "switchTabAndWait",
     "native_switch_tab_unavailable",
+    "native_switch_tab_recovery_unavailable",
+    'miniProgram.reLaunch("/pages/map/index")',
+    "triggerTapAndWait",
+    "native_formal_entry_trigger_timeout_unsettled",
     "attemptLimit = 3",
     "differentNumericValue",
     "native_interaction_numeric_bounds_unavailable",
@@ -643,12 +647,12 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'entryFlow: "map-to-my-contribution"',
     'entryFlow: "map-to-spot-contribution"',
     "selectFormalSpotThroughFinder",
-    '"formal-finder-relaunch-after-empty-result"',
-    "for (let attempt = 1; attempt <= 2; attempt += 1)",
+    "formal-finder-relaunch-after-transient-result-attempt",
+    "for (let attempt = 1; attempt <= 3; attempt += 1)",
     '".routine-entry--settings"',
     '"[data-control~=\'spot-search-result-list\']"',
     '"[data-control~=\'spot-search-result-card\']"',
-    'await waitForSelector(returnedMap, "[data-control~=\'map-spot-information-panel\']", 1)',
+    '"[data-control~=\'map-spot-information-panel\']"',
     '".routine-entry-list .routine-entry"',
     "await currentPageUrl(",
     "faultJourney.preparedRouteParams",
@@ -667,6 +671,30 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'rootClasses: ["sky-orientation-page"]',
     "missingRootClasses",
     "waitForSelectorSet",
+    "waitForSelectorInspection",
+    "definition.attributeChecks",
+    "numeric_minimum",
+    "attributes_passed",
+    "inspectSkyScene",
+    "validateSkySceneInspection",
+    "Number(value.starCount) <= 2048",
+    "skySceneReadback: true",
+    'key: "orientation-real-scene-time-change"',
+    "performHorizontalScrollRelease",
+    "native_interaction_horizontal_scroll_release_missing",
+    "horizontal_scroll_release_selector",
+    'selector: ".sky-orientation-time-ruler__viewport"',
+    "waitForInteractionWatchChange",
+    "change_wait_ms",
+    "expectFormalContextTimeChange",
+    "expectSkySceneFrameChange",
+    "native_interaction_formal_context_time_change_missing",
+    "native_interaction_sky_scene_frame_change_missing",
+    'selector: ".sky-orientation-time-ruler__current-value"',
+    'waitForAbsent: [".sky-orientation-data-status"]',
+    "frameAt: context.selectedAtUtc",
+    "native_interaction_selector_expectation_failed",
+    "attribute_checks: item.attribute_checks",
     "teardownNativeSession",
     'result.cleanup.status !== "passed"',
     'await program.send("App.enableLog")',
@@ -676,6 +704,9 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "wechat_runtime_log_enable_timeout",
     "timeoutMs = 60_000",
     "retryIdempotentAutomatorOperation",
+    "wechat_idempotent_automator_operation_timeout",
+    "formal-finder-open-search-attempt-",
+    "formal-finder-map-recovery-attempt-",
     "official_automator_relaunch_production_root_after_empty_stack",
     'miniProgram.reLaunch("/pages/map/index")',
     'evidence_role: "automation_protocol_bootstrap_only"',
@@ -704,6 +735,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'tap: ".spot-panel__section-tab"',
     "minimum: 2",
     "isAutomatorResponseTimeout",
+    "native_formal_entry_tap_timeout_unsettled",
     "phase: runtimePhase",
     "offset_ms: Date.now() - runtimeStartedAt",
     "safeRuntimeExcerpt",
@@ -725,6 +757,9 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "known_toolchain_console_error_count",
     "knownWechatToolchainConsoleErrorId",
     "degradation_probe_resets",
+    "degradation_probe_session_restarts",
+    "degradation-probe-session-restart",
+    "wechat_tool_identity_changed_between_degradation_probes",
     "waitForRuntimeEventQuiescence",
     "preclose_runtime_quiescence",
     "setup_request_diagnostics",
@@ -1763,6 +1798,18 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(navigation, /nativeStatusBarHeightPx\(\)/u);
   assert.match(sky, /className="sky-orientation-back-layer safe-top"/u);
   assert.match(sky, /data-od-id="sky-orientation-back"/u);
+  assert.match(sky, /data-sky-scene-state/u);
+  assert.match(sky, /data-sky-star-count/u);
+  assert.match(sky, /data-sky-catalog-version/u);
+  assert.match(sky, /data-sky-scene-frame-at/u);
+  assert.match(
+    sky,
+    /data\.skyScene\.frames\.find\(\(candidate\) => candidate\.at === frameAt\)/u,
+  );
+  assert.match(sky, /catalog\.entries\[catalogIndex\]/u);
+  assert.match(sky, /altitudeDeg <= 0/u);
+  assert.match(sky, /真实 Gaia 星表场景当前不可用/u);
+  assert.doesNotMatch(sky, /Math\.random/u);
   assert.match(sourceLift, /nativeNavigationInsets\(\)/u);
   assert.match(nativeMetrics, /getMenuButtonBoundingClientRect\(\)/u);
   assert.match(sourceLift, /--source-lift-status-bar-height/u);
@@ -1903,6 +1950,17 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
   assert.match(verifier, /projection\.required_exact_paths/u);
   assert.match(verifier, /projection\.required_tree_roots/u);
   assert.match(verifier, /empty_required_tree_roots/u);
+  for (const requiredSnapshotRoot of [
+    "data-pipelines/src",
+    "packages/astronomy-core/data",
+    "packages/astronomy-core/src",
+    "packages/astronomy-core/package.json",
+    "packages/astronomy-core/tsconfig.json",
+  ])
+    assert.ok(
+      verifier.includes(`\"${requiredSnapshotRoot}\"`),
+      `${requiredSnapshotRoot} must be bound into the complete candidate snapshot`,
+    );
   assert.match(verifier, /mode: "complete_candidate"/u);
   assert.match(verifier, /mode: "counterfactual_projection"/u);
   assert.match(verifier, /mismatched_files: mismatched\.slice\(0, 20\)/u);

@@ -53,6 +53,7 @@ import {
   wgs84ToGcj02,
 } from "@starward/coordinate-system";
 import { AstronomyService } from "./astronomy-service.ts";
+import type { SkyCatalogProvider } from "./sky-scene-catalog.ts";
 import { AuthService } from "./auth-service.ts";
 import { MemoryCache, RedisCache } from "./cache.ts";
 import {
@@ -720,6 +721,7 @@ export class MiniappService {
     telemetry?: TelemetryPort;
     cache?: CachePort;
     mediaStore?: MediaObjectStorePort;
+    skyCatalog?: SkyCatalogProvider;
   }) {
     this.repository = input.repository;
     this.config = input.config;
@@ -731,6 +733,7 @@ export class MiniappService {
       input.weather,
       this.repository,
       this.config,
+      input.skyCatalog,
     );
     this.auth = new AuthService(this.repository, this.config);
     this.observationContexts = new ObservationContextService(
@@ -1594,7 +1597,9 @@ export class MiniappService {
       ":" +
       context.contextId +
       ":" +
-      String(context.revision);
+      String(context.revision) +
+      ":catalog:" +
+      this.astronomy.catalogCacheKey();
     const cached = await this.cache.get<ApiEnvelope<SkyReport>>(cacheKey);
     if (cached) return cached;
     const result = await this.astronomy.compute(context);

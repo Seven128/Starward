@@ -17,6 +17,33 @@ export type AcceptanceDiagnosticEvent = {
   detail: string;
 };
 
+export type AcceptanceSkySceneInspection = {
+  state: "PENDING" | "READY" | "UNAVAILABLE" | "ERROR";
+  spotId: string;
+  frameAt: string;
+  catalogVersion: string;
+  starCount: number;
+  drawRevision: number;
+};
+
+let skySceneInspection: AcceptanceSkySceneInspection | null = null;
+
+export function publishAcceptanceSkySceneInspection(
+  inspection: AcceptanceSkySceneInspection,
+) {
+  if (!__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) return;
+  skySceneInspection = inspection;
+}
+
+export function clearAcceptanceSkySceneInspection() {
+  if (!__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) return;
+  skySceneInspection = null;
+}
+
+export function inspectAcceptanceSkyScene() {
+  return __MINIAPP_ACCEPTANCE_DIAGNOSTICS__ ? skySceneInspection : null;
+}
+
 /**
  * Acceptance-only, non-authoritative diagnostics. This function must never
  * change product behavior, even on older Mini Program JavaScript engines or

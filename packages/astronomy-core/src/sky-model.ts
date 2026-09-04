@@ -1,18 +1,38 @@
-import { Horizon, Observer } from "astronomy-engine";
+import {
+  GAIA_DR3_BRIGHT_STAR_CATALOG,
+  projectGaiaDr3Catalog,
+  type GaiaDr3Row,
+} from "./gaia-catalog.ts";
 
 export type SkyObjectKind = "star" | "deep-sky" | "constellation-anchor" | "milky-way-core";
-export interface CatalogObject { id: string; name: string; kind: SkyObjectKind; raHours: number; decDeg: number; magnitude: number; aliases: string[] }
+export interface CatalogObject { id: string; sourceId: string; name: string; kind: SkyObjectKind; raHours: number; decDeg: number; magnitude: number; bpRp: number | null; aliases: string[] }
 export interface PositionedObject extends CatalogObject { altitudeDeg: number; azimuthDeg: number; visible: boolean; obstructed: boolean | null }
 export interface HorizonPoint { azimuthDeg: number; altitudeDeg: number }
 export interface HorizonProfile { source: "measured" | "manual" | "estimated"; version: string; confidence: number; points: HorizonPoint[] }
 
-export const BRIGHT_SKY_CATALOG: readonly CatalogObject[] = [
-  { id: "sirius", name: "天狼星", kind: "star", raHours: 6.7525, decDeg: -16.7161, magnitude: -1.46, aliases: ["Sirius"] },
-  { id: "vega", name: "织女星", kind: "star", raHours: 18.6156, decDeg: 38.7837, magnitude: 0.03, aliases: ["Vega"] },
-  { id: "antares", name: "心宿二", kind: "star", raHours: 16.4901, decDeg: -26.432, magnitude: 1.06, aliases: ["Antares"] },
-  { id: "m31", name: "仙女座星系", kind: "deep-sky", raHours: 0.712, decDeg: 41.269, magnitude: 3.44, aliases: ["M31", "Andromeda"] },
-  { id: "milky-way-core", name: "银河核心", kind: "milky-way-core", raHours: 17.7611, decDeg: -29.0078, magnitude: 0, aliases: ["Sagittarius A*"] },
-] as const;
+/**
+ * Compatibility projection for legacy callers.  Rows are the same Gaia DR3
+ * rows returned by the validated catalog loader; this does not add named or
+ * representative stars.  Gaia source identifiers intentionally remain the
+ * only star identity and labels are blank because catalog stars are
+ * non-actionable scene geometry.
+ */
+export const BRIGHT_SKY_CATALOG: readonly CatalogObject[] =
+  GAIA_DR3_BRIGHT_STAR_CATALOG.map((row) => toCatalogObject(row));
+
+function toCatalogObject(row: GaiaDr3Row): CatalogObject {
+  return {
+    id: row.sourceId,
+    sourceId: row.sourceId,
+    name: "",
+    kind: "star",
+    raHours: row.raDeg / 15,
+    decDeg: row.decDeg,
+    magnitude: row.gMag,
+    bpRp: row.bpRp,
+    aliases: [],
+  };
+}
 
 const normalize = (value: number) => ((value % 360) + 360) % 360;
 const interpolateHorizon = (profile: HorizonProfile, azimuthDeg: number): number | null => {
@@ -32,11 +52,29 @@ const interpolateHorizon = (profile: HorizonProfile, azimuthDeg: number): number
 };
 
 export function positionCatalog(input: { at: Date; latitude: number; longitude: number; elevationM: number; magnitudeLimit: number; profile?: HorizonProfile }): PositionedObject[] {
-  const observer = new Observer(input.latitude, input.longitude, input.elevationM);
-  return BRIGHT_SKY_CATALOG.filter((object) => object.magnitude <= input.magnitudeLimit).map((object) => {
-    const horizontal = Horizon(input.at, observer, object.raHours, object.decDeg, "normal");
-    const obstruction = input.profile ? interpolateHorizon(input.profile, horizontal.azimuth) : null;
-    return { ...object, altitudeDeg: horizontal.altitude, azimuthDeg: horizontal.azimuth, visible: horizontal.altitude > 0, obstructed: obstruction === null ? null : horizontal.altitude <= obstruction };
+  const projected = projectGaiaDr3Catalog({
+    at: input.at,
+    observer: {
+      latitude: input.latitude,
+      longitude: input.longitude,
+      elevationM: input.elevationM,
+    },
+    magnitudeLimit: input.magnitudeLimit,
+    ...(input.profile
+      ? { horizonAltitudeAtAzimuth: (azimuthDeg: number) => interpolateHorizon(input.profile!, azimuthDeg) }
+      : {}),
+  });
+  const bySourceId = new Map(BRIGHT_SKY_CATALOG.map((object) => [object.sourceId, object] as const));
+  return projected.map((position) => {
+    const object = bySourceId.get(position.sourceId);
+    if (!object) throw new Error("gaia_catalog_projection_identity_invalid");
+    return {
+      ...object,
+      altitudeDeg: position.altitudeDeg,
+      azimuthDeg: position.azimuthDeg,
+      visible: position.visible,
+      obstructed: position.obstructed,
+    };
   });
 }
 
@@ -62,4 +100,3 @@ export function visibleIntervals(samples: Array<{ at: string; altitudeDeg: numbe
     return { ...sample, horizonAltitudeDeg: horizon, visible: sample.altitudeDeg > (horizon ?? 0), evidence: profile?.source ?? "astronomical-horizon" };
   });
 }
-

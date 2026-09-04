@@ -5,5 +5,6 @@ export * from "./url-policy.ts";
 export * from "./viewport.ts";
 export * from "./ranking.ts";
 export * from "./preferences.ts";
+export * from "./sky-scene.ts";
 export * from "./api-shapes.ts";
 export * from "./generated/miniapp-api.generated.ts";

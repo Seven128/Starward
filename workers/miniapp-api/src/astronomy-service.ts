@@ -25,6 +25,11 @@ import {
   SkyOpportunityEngine,
   type OpportunitySliceInput,
 } from "./sky-opportunity-engine.ts";
+import {
+  buildSkyScene,
+  createGaiaDr3SkyCatalogProvider,
+  type SkyCatalogProvider,
+} from "./sky-scene-catalog.ts";
 import { TripDecisionEngine } from "./trip-decision-engine.ts";
 import type {
   AstronomyApplicationPort,
@@ -192,11 +197,22 @@ function stateFor(
 }
 
 export class AstronomyService implements AstronomyApplicationPort {
+  private readonly skyCatalog: SkyCatalogProvider;
+
   constructor(
     readonly weather: WeatherPort,
     private readonly repository: MiniappRepositoryPort,
     private readonly config: MiniappRuntimeConfig,
-  ) {}
+    skyCatalog: SkyCatalogProvider = createGaiaDr3SkyCatalogProvider(),
+  ) {
+    this.skyCatalog = skyCatalog;
+  }
+
+  /** Included in the BFF cache identity so a catalog replacement cannot
+   * serve a report projected from a previous catalog. */
+  catalogCacheKey(): string {
+    return this.skyCatalog.cacheKey();
+  }
 
   async compute(context: ObservationContext): Promise<ApiEnvelope<SkyReport>> {
     if (context.location.kind !== "FORMAL_SPOT")
@@ -410,7 +426,8 @@ export class AstronomyService implements AstronomyApplicationPort {
       ];
     });
     const targets = [...eventTargets, ...everydayTargets];
-    const sourceRevision = `${astronomySource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}`;
+    const catalogCacheKey = this.catalogCacheKey();
+    const sourceRevision = `${astronomySource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}:catalog:${catalogCacheKey}`;
     const scoringEvent =
       selectedEvent ??
       (context.targetProfile === "METEOR"
@@ -541,6 +558,11 @@ export class AstronomyService implements AstronomyApplicationPort {
         opportunityInput: opportunitySlices[index]!,
       };
     });
+    const skyScene = buildSkyScene({
+      provider: this.skyCatalog,
+      hourlyAt: hourly.map((row) => row.at),
+      spot,
+    });
     const knownFacilities = spot.facilities.filter(
       (facility) => facility.status !== "UNKNOWN",
     );
@@ -605,11 +627,15 @@ export class AstronomyService implements AstronomyApplicationPort {
             : false,
       criticalConflict: criticalEvidenceConflict,
     });
-    const reportState = stateFor(
+    const baseReportState = stateFor(
       weather.state,
       spotState,
       spot.lightPollution.state,
     );
+    const reportState =
+      baseReportState === "FRESH" && skyScene.state === "UNAVAILABLE"
+        ? "PARTIAL"
+        : baseReportState;
     const report: SkyReport = {
       context: {
         contextId: context.contextId,
@@ -630,6 +656,12 @@ export class AstronomyService implements AstronomyApplicationPort {
           spot: spot.source.id,
           weather: weather.sources.map((source) => source.id),
           astronomy: astronomySource.id,
+          catalog: skyScene.catalog
+            ? {
+                version: skyScene.catalog.catalogVersion,
+                hash: skyScene.catalog.catalogHash,
+              }
+            : catalogCacheKey,
           events: eventTargets.map((target) => target.targetId),
           eventCatalog: eventCatalogSource.id,
           activityProfiles: eventTargets
@@ -638,7 +670,7 @@ export class AstronomyService implements AstronomyApplicationPort {
           light: spot.lightPollution.datasetVersion,
         }).slice(0, 24),
         algorithmVersion: this.config.astronomyAlgorithmVersion,
-        catalogVersion: this.config.skyCatalogVersion,
+        catalogVersion: skyScene.catalog?.catalogVersion ?? "UNAVAILABLE",
         eventCatalogVersion: this.config.eventCatalogVersion,
       },
       decision,
@@ -652,16 +684,21 @@ export class AstronomyService implements AstronomyApplicationPort {
           ? "月亮信息不足"
           : `观测夜中段月面照明约 ${Math.round(base.moonIlluminationAtMidpoint * 100)}%`,
       compass: { state: "UNAVAILABLE", manualOffsetDeg: 0 },
-      precachedHours: Math.min(8, Math.ceil(hourly.length / 2)),
-      offlineReady: hourly.length > 0,
+      precachedHours:
+        skyScene.state === "AVAILABLE"
+          ? Math.min(8, Math.ceil(hourly.length / 2))
+          : 0,
+      offlineReady: hourly.length > 0 && skyScene.state === "AVAILABLE",
       weatherEvidence: {
         timelineRole: weather.timelineRole,
         warningState: weather.warningState,
         alerts: weather.alerts,
         modelRuns: weather.modelRuns,
       },
+      skyScene,
       sources: [
         astronomySource,
+        ...(skyScene.catalog ? [skyScene.catalog.source] : []),
         ...(eventTargets.length ? [eventCatalogSource] : []),
         ...eventTargets.flatMap((target) =>
           target.activity ? [target.activity.source] : [],
@@ -690,6 +727,11 @@ export class AstronomyService implements AstronomyApplicationPort {
       ...(skyOpportunityResult.opportunity.primaryWindow
         ? []
         : ["没有找到满足回滞阈值与最短时长的连续观测窗口。"]),
+      ...(skyScene.state === "UNAVAILABLE"
+        ? [
+            "真实星场目录或场景当前不可用；不会使用图片、随机星点、代表性坐标或采样装饰替代。",
+          ]
+        : []),
     ];
     return envelope(report, reportState, report.sources, warnings);
   }

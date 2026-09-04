@@ -45,7 +45,7 @@
     "semantic_manifest": {
       "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "key": "wechat-miniapp-field-signal-i21.semantic-facts",
-      "sha256": "e428fadc0c83ac9aa1c0c03c974d18bd48458c03e44ce192753242959930dd4f"
+      "sha256": "136faeefae1a2c338d9c20affab3a3e6b4734ecceb0f526ef4f6b23afacbadca"
     }
   },
   "counterfactual_controls": [],
@@ -4943,6 +4943,61 @@
           ]
         },
         {
+          "key": "claim-requirement-cloud-stargazing-real-catalog-scene",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-real-catalog-scene",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-real-catalog-scene"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-gaia-offline-pack",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-gaia-offline-pack",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-gaia-offline-pack"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-projection-owner",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-projection-owner",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-projection-owner"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-scene-time-and-failure",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-scene-time-and-failure",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-scene-time-and-failure"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-scene-capacity",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-scene-capacity",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-scene-capacity"
+          ]
+        },
+        {
           "key": "claim-requirement-semantic-census-actor-role-tenant-entitlement",
           "observation": "full-sky.claim.requirement.semantic-census-actor-role-tenant-entitlement",
           "expected": true,
@@ -4962,17 +5017,6 @@
           ],
           "claims": [
             "requirement.semantic-census-business-rule-calculation"
-          ]
-        },
-        {
-          "key": "claim-requirement-semantic-census-data-model",
-          "observation": "full-sky.claim.requirement.semantic-census-data-model",
-          "expected": true,
-          "evidence_capabilities": [
-            "target_runtime"
-          ],
-          "claims": [
-            "requirement.semantic-census-data-model"
           ]
         },
         {
@@ -5064,17 +5108,6 @@
           ]
         },
         {
-          "key": "claim-requirement-semantic-census-fault-degradation-recovery",
-          "observation": "full-sky.claim.requirement.semantic-census-fault-degradation-recovery",
-          "expected": true,
-          "evidence_capabilities": [
-            "target_runtime"
-          ],
-          "claims": [
-            "requirement.semantic-census-fault-degradation-recovery"
-          ]
-        },
-        {
           "key": "claim-requirement-semantic-census-backup-restore-disaster-recovery",
           "observation": "full-sky.claim.requirement.semantic-census-backup-restore-disaster-recovery",
           "expected": true,
@@ -5105,17 +5138,6 @@
           ],
           "claims": [
             "requirement.semantic-census-compatibility-migration-rollout"
-          ]
-        },
-        {
-          "key": "claim-requirement-semantic-census-performance-capacity-cost",
-          "observation": "full-sky.claim.requirement.semantic-census-performance-capacity-cost",
-          "expected": true,
-          "evidence_capabilities": [
-            "target_runtime"
-          ],
-          "claims": [
-            "requirement.semantic-census-performance-capacity-cost"
           ]
         },
         {
@@ -5160,17 +5182,6 @@
           ],
           "claims": [
             "requirement.semantic-census-deployment-topology"
-          ]
-        },
-        {
-          "key": "claim-requirement-semantic-census-external-integration",
-          "observation": "full-sky.claim.requirement.semantic-census-external-integration",
-          "expected": true,
-          "evidence_capabilities": [
-            "target_runtime"
-          ],
-          "claims": [
-            "requirement.semantic-census-external-integration"
           ]
         },
         {
@@ -5250,9 +5261,13 @@
         "full-sky.claim.requirement.initial-source-101",
         "full-sky.claim.requirement.initial-source-122",
         "full-sky.claim.requirement.initial-source-144",
+        "full-sky.claim.requirement.cloud-stargazing-real-catalog-scene",
+        "full-sky.claim.requirement.cloud-stargazing-gaia-offline-pack",
+        "full-sky.claim.requirement.cloud-stargazing-projection-owner",
+        "full-sky.claim.requirement.cloud-stargazing-scene-time-and-failure",
+        "full-sky.claim.requirement.cloud-stargazing-scene-capacity",
         "full-sky.claim.requirement.semantic-census-actor-role-tenant-entitlement",
         "full-sky.claim.requirement.semantic-census-business-rule-calculation",
-        "full-sky.claim.requirement.semantic-census-data-model",
         "full-sky.claim.requirement.semantic-census-state-machine",
         "full-sky.claim.requirement.semantic-census-temporal-scheduling",
         "full-sky.claim.requirement.semantic-census-input-validation",
@@ -5261,16 +5276,13 @@
         "full-sky.claim.requirement.semantic-census-event-message-job",
         "full-sky.claim.requirement.semantic-census-persistence-cache-search",
         "full-sky.claim.requirement.semantic-census-transaction-consistency-concurrency-idempotency",
-        "full-sky.claim.requirement.semantic-census-fault-degradation-recovery",
         "full-sky.claim.requirement.semantic-census-backup-restore-disaster-recovery",
         "full-sky.claim.requirement.semantic-census-configuration-feature-flag-secret",
         "full-sky.claim.requirement.semantic-census-compatibility-migration-rollout",
-        "full-sky.claim.requirement.semantic-census-performance-capacity-cost",
         "full-sky.claim.requirement.semantic-census-privacy",
         "full-sky.claim.requirement.semantic-census-safety-compliance",
         "full-sky.claim.requirement.semantic-census-observability",
         "full-sky.claim.requirement.semantic-census-deployment-topology",
-        "full-sky.claim.requirement.semantic-census-external-integration",
         "full-sky.claim.requirement.semantic-census-notification-file-media",
         "full-sky.claim.requirement.semantic-census-localization",
         "full-sky.claim.requirement.semantic-census-commercial-billing",
@@ -27100,6 +27112,17 @@
           ]
         },
         {
+          "key": "claim-control-relation-real-sky-scene",
+          "observation": "current-candidate.claim.control_relation.real-sky-scene",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "control_relation.real-sky-scene"
+          ]
+        },
+        {
           "key": "claim-control-relation-feedback-recovery",
           "observation": "current-candidate.claim.control_relation.feedback-recovery",
           "expected": true,
@@ -28738,6 +28761,7 @@
         "current-candidate.claim.control_relation.contribution-submit",
         "current-candidate.claim.control_relation.profile-import-lineage",
         "current-candidate.claim.control_relation.nightchina-import-to-spot",
+        "current-candidate.claim.control_relation.real-sky-scene",
         "current-candidate.claim.control_relation.feedback-recovery",
         "current-candidate.claim.control_relation.image-eligibility",
         "current-candidate.claim.obligation.architecture",

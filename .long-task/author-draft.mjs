@@ -32,6 +32,9 @@ const VERBATIM_INPUT_ARCHIVE = `${WORKDIR}/wechat-miniapp-field-signal-i21-start
 const PUBLIC_KEY_PATH = "project_context/areas/main/verification/wechat-device/field-signal-i21-owner-public.pem";
 const VERIFICATION_SPEC_PATH = "tools/miniapp/verification-spec-field-signal-i21.json";
 const NIGHTCHINA_FIXTURE_PATH = "tools/miniapp/fixtures/nightchina-import-cases.json";
+const STAR_CATALOG_PIPELINE = "data-pipelines/src/gaia-star-catalog.ts";
+const STAR_CATALOG_PATH = "packages/astronomy-core/data/gaia-dr3-bright-stars.v1.json";
+const STAR_CATALOG_MANIFEST = "packages/astronomy-core/data/gaia-dr3-bright-stars.v1.manifest.json";
 const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md";
 const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source";
 const CANONICAL_ENTRY = `${SELECTED_ROOT}/index.html`;
@@ -107,6 +110,41 @@ const REVISED_USER_REQUIREMENTS = [
     property: "sequence",
     statement: "At least one geographically compatible fixed NightChina case is manually associated with an existing formal catalog spot, then returns through the real Map owner and exercises the actual spot information panel sections, route and facility evidence, favorite restore, share boundary, cloud-stargazing, sky-detail return and spot-scoped contribution entry on the same selected spot.",
   },
+  {
+    key: "cloud-stargazing-real-catalog-scene",
+    outcome: "full-sky",
+    family: "data_model",
+    property: "content_identity",
+    statement: "The Cloud Stargazing sky-orientation canvas is driven by a real astronomical star catalog and the same formal WGS84 spot plus real time-ruler slices as SkyReport; a static sky image, random/generated star pattern, representative coordinates or a sparse decorative substitute cannot satisfy the sky scene.",
+  },
+  {
+    key: "cloud-stargazing-gaia-offline-pack",
+    outcome: "full-sky",
+    family: "external_integration",
+    property: "provider_contract",
+    statement: `The selected owner-trial implementation uses a reproducibly derived, magnitude-limited Gaia DR3 bright-star offline pack at ${STAR_CATALOG_PATH}, with ${STAR_CATALOG_MANIFEST} and ${STAR_CATALOG_PIPELINE} binding the official release/table/query, selected fields, row order/count, source response and derived bytes by SHA-256, ESA/Gaia/DPAC credit and applicable license/terms; no user request or runtime startup fetches Gaia and no unlicensed or untraceable catalog is admitted.`,
+  },
+  {
+    key: "cloud-stargazing-projection-owner",
+    outcome: "full-sky",
+    family: "architecture_ownership",
+    property: "source_of_truth",
+    statement: "packages/astronomy-core owns the validated offline catalog and celestial projection primitives; workers/miniapp-api AstronomyService owns formal-spot/time projection and exposes the compact scene through packages/miniapp-contracts SkyReport; the Mini Program owns only sensor-relative viewport projection and Canvas drawing and cannot call a catalog provider or recalculate equatorial product truth independently.",
+  },
+  {
+    key: "cloud-stargazing-scene-time-and-failure",
+    outcome: "full-sky",
+    family: "fault_degradation_recovery",
+    property: "fallback_behavior",
+    statement: "Every real SkyReport time-ruler slice has a matching deterministic star-scene frame or an explicit unavailable state. Preview and committed time select the matching frame, catalog stars remain visually subordinate and non-actionable while SkyTarget labels retain target semantics, and missing/corrupt/oversize catalog or scene data never falls back to a picture, random points, stale coordinates or fabricated success; independently valid target-list and professional evidence remain available.",
+  },
+  {
+    key: "cloud-stargazing-scene-capacity",
+    outcome: "full-sky",
+    family: "performance_capacity_cost",
+    property: "capacity_limit",
+    statement: "The project-owned catalog check enforces at most 2048 deterministically ordered Gaia DR3 rows with G magnitude at or brighter than 5.5 and a derived pack no larger than 512 KiB; the SkyReport scene contains at most one point per catalog row per real hourly slice, uses compact catalog-indexed coordinates, stays below 1 MiB serialized in the fixed test scenario, and the WEAPP journey must render and scrub it without replacing data with sampled decorative stars.",
+  },
 ];
 
 const OUTCOMES = [
@@ -161,6 +199,7 @@ const CONTROL_RELATIONS = [
   ["contribution-submit", ["contribution-media-upload", "contribution-location-consent", "contribution-submit", "contribution-status-list"], "Rights, conditional location, upload identity, validation, idempotent submit and restart-readable pending receipt remain one durable transaction and recovery chain."],
   ["profile-import-lineage", ["import-source-rights", "import-draft-editor", "import-spot-association", "import-preview-submit"], "Import preserves rights, editable draft versions, formal spot or separate proposal identity, preview and moderation without automatic publication."],
   ["nightchina-import-to-spot", ["import-source-rights", "import-draft-editor", "import-spot-association", "import-preview-submit", "map-spot-information-panel"], "The fixed NightChina corpus exercises the real import lineage; only a manually confirmed compatible formal association may continue to the existing Map-owned spot information panel, while unmatched places remain separate proposals."],
+  ["real-sky-scene", ["sky-orientation-canvas", "sky-orientation-object-list", "sky-orientation-time-ruler", "data-source-disclosure"], "Cloud Stargazing uses one catalog-backed SkyReport scene for the same formal spot and real time slices; catalog stars remain subordinate scene data, SkyTarget labels remain actionable objects and provenance/failure stays reachable without any image or random-star fallback."],
   ["feedback-recovery", ["notification-feedback", "page-state-recovery", "data-source-disclosure"], "One priority-aware feedback owner preserves distinct loading, empty, partial, stale, offline, error, permission and success states plus their truthful recovery and provenance."],
   ["image-eligibility", ["spot-search-result-card", "spot-media-gallery", "contribution-media-upload"], "Media nodes exist only for valid usable assets; absent media reserves no placeholder while upload progress, retry and successful identity remain explicit."],
 ];
@@ -648,12 +687,13 @@ async function main() {
 
   const architectureStatement = normalizedStatement([
     "Architecture Deliberation: apps/wechat-miniapp/** owns the Taro/React WEAPP surfaces, routes and presentation/form state; packages/miniapp-contracts/** owns shared domain/API contracts; workers/miniapp-api/** owns BFF, contribution/media/moderation/persistence ports and adapters; tools/miniapp/** and tests/acceptance/miniapp/** own attributable current-candidate checks.",
-    "The extension points and sources of truth are the existing Taro route wrappers, app-store/coordinators, contribution draft/validation/upload/idempotency owners, SemanticIcon, Mini Program token projection, typed contracts/BFF ports, owning Context, DESIGN.md and the immutable I21 handoff. Dependencies remain pages/features -> Starward adapter/store/contracts -> BFF ports/adapters; no client provider call or native-App token import is admitted.",
+    "The extension points and sources of truth are the existing Taro route wrappers, app-store/coordinators, contribution draft/validation/upload/idempotency owners, SemanticIcon, Mini Program token projection, typed contracts/BFF ports, packages/astronomy-core catalog/projection primitives, owning Context, DESIGN.md and the immutable I21 handoff. Dependencies remain pages/features -> Starward adapter/store/contracts -> BFF ports/adapters -> shared astronomy/catalog owners; no client provider call, independent equatorial calculation or native-App token import is admitted.",
     "The selected design keeps one production tree and one state owner per Search, selected spot, bottom presentation, panel document/extent, time, display mode, notification/recovery and contribution transaction. Existing Taro 4.2.1 primitives plus Starward components/coordinators are the selected bounded substrate and SemanticIcon remains the sole icon extension point. Package inspection rejects @taroify/core@1.0.6 for this binding because its mandatory @taroify/icons dependency conflicts with that exclusive owner. The retained panel uses Taro enhanced ScrollView plus the existing coordinator with exact handle-only drag, three extents, nav-safe height, interruptibility and nested-scroll arbitration; the curved ruler also uses enhanced horizontal ScrollView.",
     "Material alternatives remain existing Taro primitives, any future mature compatible library with a fully admissible dependency closure, bounded project-owned mechanics and intentional non-abstraction. A second UI suite, @taroify/icons, library fork, brand-default skin, second form/presentation/token owner, parallel legacy/current UI or component-library business state is prohibited.",
     "State and lifecycle boundaries include autofocus/IME/Back, handle and axis gesture capture, request cancellation, panel live-position interruption, map/layer retarget, sensor foreground/background cleanup, permission denial/recovery, form draft/media retry/idempotency/readback and exact mode restoration. Implementation-loop Device Development Feedback is risk-triggered at the first independently runnable device-owned slice or coherent stable batch and feeds findings back into cheap checks; it is diagnostic and never replaces fixed-candidate settled verification.",
     "A future I22 target or library upgrade creates a new immutable design record and changes mechanics through the adapter without changing stable route, Control, product-state or acceptance ownership. Current route, detached-page, contribution-wizard, duplicated mode and I21 visual/state drift are debt this task removes; unrelated React Native debt remains out of scope. No new duplicate truth, oversized owner, wrong dependency direction, silent failure, lifecycle leak, unsupported quality claim or untracked waiver is accepted.",
     "For the current project-tiny-context-harness@0.11.0 external-design resolver and string-comparator defects, the package-managed compiled Contract remains the sole Authority while tools/miniapp/apply-ty-context-harness-compatibility.mjs is the one project compatibility extension point. The selected bounded overlay reuses the compiled design_conformance_targets plus the exact external-confirmation observation-authority plan, accepts exactly one full identity match and hashes string Actuals as the design locator's raw UTF-8 bytes while preserving the existing non-string branch; waiting for or adopting an upstream equivalent remain supported alternatives. A complete package fork was considered and rejected because it would duplicate package ownership and add disproportionate maintenance, while Contract weakening, compiled-state editing, fabricated evidence and ambiguous fallback are prohibited. The overlay is version- and original-source-shape pinned, is covered by prepare/equal/mismatch and ambiguity regressions, and fails closed on a future package shape; it is tracked technical debt removed only after an upstream equivalent passes those regressions without the overlay.",
+    "For the Cloud Stargazing scene, the allowed solution set is a catalog-backed BFF using a versioned offline asset, a qualified real catalog service behind the existing BFF/provider boundary, or another license-compatible real catalog that preserves the same contract and failure semantics. The selected bounded design reuses the existing @starward/astronomy-core and pinned Astronomy Engine with a reproducible Gaia DR3 magnitude-limited offline pack because it adds no runtime credential, network dependency or paid traffic and remains deterministic for owner-trial verification. Static pictures, random/procedural stars, client provider calls, unversioned/unlicensed rows, a second astronomical truth or silently sampled fake success are prohibited. The pack pipeline records official query/release/fields/credit/license and source plus derived digests; AstronomyService alone projects each formal-spot/time slice and the client only maps returned azimuth/altitude through the live sensor viewport. A future Gaia release, density tier or licensed provider can replace the pack behind astronomy-core/BFF without changing the route, Controls or sensor lifecycle.",
     "Correctness/invariants and maintainability/changeability are mandatory. Reliability/resource lifecycle, concurrency/consistency, performance/bundle/cost, security/privacy/safety, Taro/WEAPP compatibility and rollout boundary, and operability/observability/testability are all material and must close through project checks or exact signed external obligations on the current candidate.",
   ].join(" "));
   addItem({ key: "architecture-deliberation", kind: "technical_obligation", aspect: "architecture", statement: architectureStatement, outcome: "current-candidate", family: "architecture_ownership", property: "conformance_check", disposition: { type: "claim", refs: ["current-candidate.obligation.architecture"] } });
@@ -977,14 +1017,16 @@ async function main() {
   };
 
   const verificationInputs = [...new Set([NATIVE_RUNNER, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER_SOURCE, VERIFIER_RUNTIME_PACKAGE, VERIFIER_RUNTIME_LOCK, VERIFICATION_SPEC_PATH, NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, "DESIGN.md", ...targetSourcePaths])];
-  const checkInputPaths = ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**", "project_context/**", "DESIGN.md", NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, `${SELECTED_ROOT}/**`, HANDOFF_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER];
+  const checkInputPaths = ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "packages/astronomy-core/**", "workers/miniapp-api/**", "data-pipelines/src/**", "project_context/**", "DESIGN.md", NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, `${SELECTED_ROOT}/**`, HANDOFF_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER];
   const diagnosticVerificationInputs = verificationInputs;
   const diagnosticCheckInputPaths = checkInputPaths;
   const forbiddenPaths = ["apps/mobile/**", "docs/source-plan.md", "docs/wechat-miniapp-v2-source.md", "tmp/ty-context/long-task-runs/wechat-miniapp-v2-1-1-drift-correction/**"];
   const productOwnerPaths = [
     "apps/wechat-miniapp/**",
     "packages/miniapp-contracts/**",
+    "packages/astronomy-core/**",
     "workers/miniapp-api/**",
+    "data-pipelines/src/**",
     "tools/miniapp/**",
     "tools/verify-miniapp-design-profile.mjs",
     "tests/acceptance/miniapp/**",
@@ -1090,7 +1132,7 @@ async function main() {
       },
       technical: {
         obligations: technicalObligations,
-        expected_change_paths: outcome.key === "map-experience" ? ["apps/wechat-miniapp/src/pages/map/**", "apps/wechat-miniapp/src/components/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**"] : outcome.key === "full-sky" ? ["apps/wechat-miniapp/src/features/sky/**", "apps/wechat-miniapp/src/sky/**"] : outcome.key === "my-profile-settings" ? ["apps/wechat-miniapp/src/features/my/**", "apps/wechat-miniapp/src/content/settings/**", "apps/wechat-miniapp/src/content/profile/**", "apps/wechat-miniapp/src/content/import/**"] : outcome.key === "contribution" ? ["apps/wechat-miniapp/src/content/contribution/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**"] : ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**", "package.json", "package-lock.json"],
+        expected_change_paths: outcome.key === "map-experience" ? ["apps/wechat-miniapp/src/pages/map/**", "apps/wechat-miniapp/src/components/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**"] : outcome.key === "full-sky" ? ["apps/wechat-miniapp/src/features/sky/**", "apps/wechat-miniapp/src/sky/**", "packages/miniapp-contracts/**", "packages/astronomy-core/**", "workers/miniapp-api/**", "data-pipelines/src/**"] : outcome.key === "my-profile-settings" ? ["apps/wechat-miniapp/src/features/my/**", "apps/wechat-miniapp/src/content/settings/**", "apps/wechat-miniapp/src/content/profile/**", "apps/wechat-miniapp/src/content/import/**"] : outcome.key === "contribution" ? ["apps/wechat-miniapp/src/content/contribution/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**"] : ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "packages/astronomy-core/**", "workers/miniapp-api/**", "data-pipelines/src/**", "package.json", "package-lock.json"],
         allowed_support_paths: isCandidate ? [
           ".codex/config.yaml",
           "artifacts/miniapp/**",

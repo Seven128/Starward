@@ -5,7 +5,14 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./sky-capabilities": "./src/sky-capabilities.ts"
+    "./sky-capabilities": "./src/sky-capabilities.ts",
+    "./gaia-catalog": "./src/gaia-catalog.ts",
+    "./gaia-catalog-data": "./src/gaia-catalog-data.ts"
+  },
+  "scripts": {
+    "typecheck": "node ../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test",
+    "build:gaia-catalog": "node --import tsx ../../data-pipelines/src/gaia-star-catalog.ts"
   },
   "dependencies": {
     "astronomy-engine": "2.1.19"

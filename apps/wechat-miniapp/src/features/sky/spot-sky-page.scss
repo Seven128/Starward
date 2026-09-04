@@ -1286,6 +1286,7 @@
   justify-content: center;
   gap: 10rpx;
   padding: 0 72rpx;
+  pointer-events: none;
 }
 
 .sky-orientation-time-ruler__current-value {

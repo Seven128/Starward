@@ -581,6 +581,62 @@ export interface WeatherEvidenceSummary {
   modelRuns: readonly WeatherModelRunEvidence[];
 }
 
+/**
+ * A catalog row exposed to the Mini Program sky renderer.
+ *
+ * The row deliberately contains no equatorial coordinates: those are
+ * astronomy-core-owned implementation data and must not become a second
+ * client-side astronomy truth.  `bpRp` is Gaia DR3's measured BP-RP colour
+ * index and is nullable when the source row does not carry a valid colour
+ * measurement.
+ */
+export interface SkySceneCatalogEntry {
+  sourceId: string;
+  gMagnitude: number;
+  bpRp: number | null;
+}
+
+/**
+ * A compact, non-actionable point in one real sky-scene time slice.
+ *
+ * Tuple order is stable and intentionally part of the wire contract:
+ * `[catalogIndex, azimuthDeg, altitudeDeg]`.  Keeping the three values
+ * positional avoids repeating verbose JSON property names for every star in
+ * every frame while retaining one measured position per catalog row.
+ */
+export type SkyScenePoint = readonly [
+  catalogIndex: number,
+  azimuthDeg: number,
+  altitudeDeg: number,
+];
+
+export interface SkySceneFrame {
+  /** Must equal one and only one `SkyReport.hourly[].at` value. */
+  at: string;
+  state: "AVAILABLE" | "UNAVAILABLE";
+  points: readonly SkyScenePoint[] | null;
+}
+
+export interface SkySceneCatalog {
+  catalogVersion: string;
+  catalogHash: string;
+  magnitudeLimit: number;
+  source: SourceSummary;
+  entries: readonly SkySceneCatalogEntry[];
+}
+
+/**
+ * Real catalog-backed scene data.  Unavailable scenes retain one explicit
+ * unavailable frame per returned hourly slice and never contain a picture,
+ * random points, stale coordinates or a sampled decorative substitute.
+ */
+export interface SkyScene {
+  state: "AVAILABLE" | "UNAVAILABLE";
+  catalog: SkySceneCatalog | null;
+  frames: readonly SkySceneFrame[];
+  unavailableReason: string | null;
+}
+
 export interface SkyReport {
   context: SpotSkyContext;
   decision: TripDecision;
@@ -595,6 +651,7 @@ export interface SkyReport {
   precachedHours: number;
   offlineReady: boolean;
   weatherEvidence: WeatherEvidenceSummary;
+  skyScene: SkyScene;
   sources: readonly SourceSummary[];
 }
 

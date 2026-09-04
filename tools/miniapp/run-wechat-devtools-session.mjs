@@ -1798,7 +1798,12 @@ async function retryIdempotentAutomatorOperation(label, operation) {
       return await operation();
     } catch (error) {
       lastError = error;
-      if (!isAutomatorResponseTimeout(error) || attempt === 2) throw error;
+      if (!isAutomatorResponseTimeout(error)) throw error;
+      if (attempt === 2)
+        throw new Error(
+          `wechat_idempotent_automator_operation_timeout:${label}`,
+          { cause: error },
+        );
       await new Promise((resolve) => setTimeout(resolve, 1_000));
     }
   }
@@ -2675,12 +2680,51 @@ async function inspectSelector(page, definition) {
       attributes[attribute] = await element
         .attribute(attribute)
         .catch(() => null);
+    const attributeChecks = (definition.attributeChecks ?? []).map((check) => {
+      const value = attributes[check.name] ?? null;
+      const numericValue = Number(value);
+      let passed = value !== null;
+      if (check.equals !== undefined)
+        passed = passed && String(value) === String(check.equals);
+      if (check.pattern !== undefined)
+        passed =
+          passed &&
+          new RegExp(check.pattern, check.flags ?? "u").test(String(value));
+      if (check.numericMin !== undefined)
+        passed =
+          passed &&
+          Number.isFinite(numericValue) &&
+          numericValue >= Number(check.numericMin);
+      if (check.numericMax !== undefined)
+        passed =
+          passed &&
+          Number.isFinite(numericValue) &&
+          numericValue <= Number(check.numericMax);
+      return {
+        name: check.name,
+        passed,
+        ...(check.equals !== undefined ? { equals: String(check.equals) } : {}),
+        ...(check.pattern !== undefined ? { pattern: check.pattern } : {}),
+        ...(check.numericMin !== undefined
+          ? { numeric_minimum: Number(check.numericMin) }
+          : {}),
+        ...(check.numericMax !== undefined
+          ? { numeric_maximum: Number(check.numericMax) }
+          : {}),
+      };
+    });
     observations.push({
       text_sha256: sha256(text),
       text_length: text.length,
       size,
       styles,
       ...(Object.keys(attributes).length ? { attributes } : {}),
+      ...(attributeChecks.length
+        ? {
+            attribute_checks: attributeChecks,
+            attributes_passed: attributeChecks.every((check) => check.passed),
+          }
+        : {}),
     });
   }
   return {
@@ -2695,7 +2739,11 @@ async function inspectSelector(page, definition) {
     })(),
     expected_minimum: definition.minimum,
     count: elements.length,
-    passed: elements.length >= definition.minimum,
+    passed:
+      elements.length >= definition.minimum &&
+      observations.every(
+        (observation) => observation.attributes_passed !== false,
+      ),
     observations,
   };
 }
@@ -2717,6 +2765,17 @@ async function waitForSelectorSet(page, definitions, timeoutMs = 20_000) {
   return false;
 }
 
+async function waitForSelectorInspection(page, definition, timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+  let lastObservation = null;
+  while (Date.now() < deadline) {
+    lastObservation = await inspectSelector(page, definition).catch(() => null);
+    if (lastObservation?.passed) return lastObservation;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return lastObservation;
+}
+
 async function waitForSelectorAbsent(page, selector, timeoutMs = 20_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -2725,6 +2784,113 @@ async function waitForSelectorAbsent(page, selector, timeoutMs = 20_000) {
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   return false;
+}
+
+async function resolveInteractionTapIndex(
+  controls,
+  step,
+  definition,
+  observations,
+) {
+  let controlIndex = step.index ?? 0;
+  if (step.textIncludes) {
+    const controlTexts = await Promise.all(
+      controls.map((candidate) => candidate.text().catch(() => "")),
+    );
+    controlIndex = controlTexts.findIndex((value) =>
+      value.includes(step.textIncludes),
+    );
+    if (controlIndex < 0)
+      throw new Error(
+        `native_interaction_text_control_missing:${definition.key}:${step.key}:${sha256(step.textIncludes)}`,
+      );
+    observations?.push({
+      selected_control_text_sha256: sha256(controlTexts[controlIndex]),
+      selected_control_text_match_sha256: sha256(step.textIncludes),
+    });
+  }
+  return controlIndex;
+}
+
+async function performHorizontalScrollRelease(control, options = {}) {
+  if (
+    typeof control.scrollTo !== "function" ||
+    typeof control.scrollWidth !== "function" ||
+    typeof control.trigger !== "function"
+  )
+    throw new Error("native_horizontal_scroll_release_unsupported");
+  const [size, currentRaw, scrollWidthRaw] = await Promise.all([
+    control.size(),
+    control.property("scrollLeft"),
+    control.scrollWidth(),
+  ]);
+  const width = Number(size?.width);
+  const current = Number(currentRaw);
+  const scrollWidth = Number(scrollWidthRaw);
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(current) ||
+    !Number.isFinite(scrollWidth) ||
+    width < 44 ||
+    scrollWidth <= width
+  )
+    throw new Error("native_horizontal_scroll_release_geometry_unavailable");
+  const distance = Math.min(
+    Math.max(Number(options.minimumDistancePx ?? 56), width * 0.24),
+    width * 0.42,
+  );
+  const maximum = scrollWidth - width;
+  const canAdvance = current + distance <= maximum - 1;
+  const target = Math.max(
+    0,
+    Math.min(maximum, current + (canAdvance ? distance : -distance)),
+  );
+  await control.scrollTo(target, 0);
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  const observed = Number(await control.property("scrollLeft"));
+  if (!Number.isFinite(observed) || Math.abs(observed - current) < 2)
+    throw new Error("native_horizontal_scroll_release_no_movement");
+  const detail = {
+    scrollLeft: observed,
+    scrollTop: 0,
+    deltaX: observed - current,
+    deltaY: 0,
+  };
+  await control.trigger("scroll", detail);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  await control.trigger("scrollend", detail);
+  return {
+    direction: canAdvance ? "advance" : "reverse",
+    distance_px: Number(distance.toFixed(2)),
+    initial_scroll_left: current,
+    observed_scroll_left: observed,
+    scroll_width: scrollWidth,
+  };
+}
+
+async function waitForInteractionWatchChange(page, before, timeoutMs) {
+  const startedAt = Date.now();
+  const deadline = startedAt + timeoutMs;
+  while (Date.now() < deadline) {
+    const elements = await queryElements(page, before.watch.selector).catch(
+      () => [],
+    );
+    const element = elements[before.watch.index ?? 0];
+    if (element) {
+      const value =
+        before.watch.kind === "attribute"
+          ? await element.attribute(before.watch.name).catch(() => null)
+          : await element.text().catch(() => null);
+      const afterSha256 = sha256(canonical(value ?? null));
+      if (afterSha256 !== before.before_sha256)
+        return {
+          afterSha256,
+          elapsedMs: Date.now() - startedAt,
+        };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return null;
 }
 
 async function captureJourneyInteractions(
@@ -2740,6 +2906,47 @@ async function captureJourneyInteractions(
     const stepObservations = [];
     let actionPerformed = false;
     let watchedBefore = [];
+    let formalContextTimeBefore = null;
+    let skySceneBefore = null;
+    if (step.expectFormalContextTimeChange) {
+      const context = await waitForFormalObservationContext(
+        miniProgram,
+        step.timeoutMs ?? 20_000,
+      );
+      if (
+        typeof context.selectedAtUtc !== "string" ||
+        !Number.isFinite(Number(context.revision))
+      )
+        throw new Error(
+          `native_interaction_formal_context_time_unavailable:${definition.key}:${step.key}`,
+        );
+      formalContextTimeBefore = {
+        selectedAtUtc: context.selectedAtUtc,
+        revision: Number(context.revision),
+      };
+      stepObservations.push({
+        formal_context_time_before_sha256: sha256(context.selectedAtUtc),
+        formal_context_revision_before: Number(context.revision),
+      });
+    }
+    if (step.expectSkySceneFrameChange) {
+      const readback = await waitForSkySceneInspection(
+        miniProgram,
+        {},
+        step.timeoutMs ?? 20_000,
+      );
+      if (!readback.passed)
+        throw new Error(
+          `native_interaction_sky_scene_unavailable:${definition.key}:${step.key}`,
+        );
+      skySceneBefore = readback.value;
+      stepObservations.push({
+        sky_scene_frame_before_sha256: sha256(skySceneBefore.frameAt),
+        sky_scene_draw_revision_before: Number(skySceneBefore.drawRevision),
+        sky_scene_star_count_before: Number(skySceneBefore.starCount),
+        sky_scene_catalog_version: skySceneBefore.catalogVersion,
+      });
+    }
     if (step.waitForFormalContextSpotId) {
       const context = await waitForFormalObservationContext(
         miniProgram,
@@ -2846,6 +3053,29 @@ async function captureJourneyInteractions(
       await control.input(step.value ?? "");
       actionPerformed = true;
     }
+    if (step.horizontalScrollRelease) {
+      const controls = await waitForSelector(
+        page,
+        step.horizontalScrollRelease.selector,
+        step.minimum ?? 1,
+        step.timeoutMs ?? 20_000,
+      );
+      const control = controls[step.index ?? 0];
+      if (!control)
+        throw new Error(
+          `native_interaction_horizontal_scroll_release_missing:${definition.key}:${step.key}`,
+        );
+      const scrollRelease = await performHorizontalScrollRelease(
+        control,
+        step.horizontalScrollRelease,
+      );
+      stepObservations.push({
+        horizontal_scroll_release_selector:
+          step.horizontalScrollRelease.selector,
+        ...scrollRelease,
+      });
+      actionPerformed = true;
+    }
     if (step.tap) {
       const controls = await waitForSelector(
         page,
@@ -2853,23 +3083,12 @@ async function captureJourneyInteractions(
         step.minimum ?? 1,
         step.timeoutMs ?? 20_000,
       );
-      let controlIndex = step.index ?? 0;
-      if (step.textIncludes) {
-        const controlTexts = await Promise.all(
-          controls.map((candidate) => candidate.text().catch(() => "")),
-        );
-        controlIndex = controlTexts.findIndex((value) =>
-          value.includes(step.textIncludes),
-        );
-        if (controlIndex < 0)
-          throw new Error(
-            `native_interaction_text_control_missing:${definition.key}:${step.key}:${sha256(step.textIncludes)}`,
-          );
-        stepObservations.push({
-          selected_control_text_sha256: sha256(controlTexts[controlIndex]),
-          selected_control_text_match_sha256: sha256(step.textIncludes),
-        });
-      }
+      const controlIndex = await resolveInteractionTapIndex(
+        controls,
+        step,
+        definition,
+        stepObservations,
+      );
       const control = controls[controlIndex];
       if (!control)
         throw new Error(
@@ -2947,15 +3166,12 @@ async function captureJourneyInteractions(
           step.minimum ?? 1,
           step.timeoutMs ?? 20_000,
         );
-        let freshControlIndex = step.index ?? 0;
-        if (step.textIncludes) {
-          const freshTexts = await Promise.all(
-            freshControls.map((candidate) => candidate.text().catch(() => "")),
-          );
-          freshControlIndex = freshTexts.findIndex((value) =>
-            value.includes(step.textIncludes),
-          );
-        }
+        const freshControlIndex = await resolveInteractionTapIndex(
+          freshControls,
+          step,
+          definition,
+          null,
+        );
         const freshControl = freshControls[freshControlIndex];
         if (!freshControl)
           throw new Error(
@@ -2979,19 +3195,12 @@ async function captureJourneyInteractions(
     if (actionPerformed)
       await new Promise((resolve) => setTimeout(resolve, step.settleMs ?? 350));
     for (const before of watchedBefore) {
-      const elements = await waitForSelector(
+      const changed = await waitForInteractionWatchChange(
         page,
-        before.watch.selector,
-        before.watch.minimum ?? 1,
+        before,
         step.timeoutMs ?? 20_000,
       );
-      const element = elements[before.watch.index ?? 0];
-      const value =
-        before.watch.kind === "attribute"
-          ? await element.attribute(before.watch.name)
-          : await element.text();
-      const afterSha256 = sha256(canonical(value ?? null));
-      if (afterSha256 === before.before_sha256)
+      if (!changed)
         throw new Error(
           `native_interaction_expected_change_missing:${definition.key}:${step.key}:${before.watch.selector}:${before.watch.kind}:${before.watch.name ?? "text"}`,
         );
@@ -2999,8 +3208,48 @@ async function captureJourneyInteractions(
         selector: before.watch.selector,
         observed_change: true,
         before_sha256: before.before_sha256,
-        after_sha256: afterSha256,
+        after_sha256: changed.afterSha256,
+        change_wait_ms: changed.elapsedMs,
       });
+    }
+    if (formalContextTimeBefore) {
+      const context = await waitForFormalObservationContextTimeChange(
+        miniProgram,
+        formalContextTimeBefore,
+        step.timeoutMs ?? 20_000,
+      );
+      if (!context)
+        throw new Error(
+          `native_interaction_formal_context_time_change_missing:${definition.key}:${step.key}`,
+        );
+      stepObservations.push({
+        formal_context_time_changed: true,
+        formal_context_time_after_sha256: sha256(context.selectedAtUtc),
+        formal_context_revision_after: Number(context.revision),
+      });
+      if (skySceneBefore) {
+        const skyReadback = await waitForSkySceneInspection(
+          miniProgram,
+          {
+            frameAt: context.selectedAtUtc,
+            afterDrawRevision: skySceneBefore.drawRevision,
+          },
+          step.timeoutMs ?? 20_000,
+        );
+        if (!skyReadback.passed)
+          throw new Error(
+            `native_interaction_sky_scene_frame_change_missing:${definition.key}:${step.key}`,
+          );
+        stepObservations.push({
+          sky_scene_frame_changed: true,
+          sky_scene_frame_after_sha256: sha256(skyReadback.value.frameAt),
+          sky_scene_draw_revision_after: Number(
+            skyReadback.value.drawRevision,
+          ),
+          sky_scene_star_count_after: Number(skyReadback.value.starCount),
+          sky_scene_catalog_version: skyReadback.value.catalogVersion,
+        });
+      }
     }
     if (step.waitFor?.length) {
       const ready = await waitForSelectorSet(
@@ -3062,11 +3311,24 @@ async function captureJourneyInteractions(
       });
     }
     for (const selector of step.inspect ?? []) {
-      const observation = await inspectSelector(page, selector);
-      stepObservations.push(observation);
-      if (observation.count < selector.minimum)
+      const observation = await waitForSelectorInspection(
+        page,
+        selector,
+        step.timeoutMs ?? 20_000,
+      );
+      if (!observation)
         throw new Error(
-          `native_interaction_selector_timeout:${definition.key}:${step.key}:${selector.selector}:${selector.minimum}`,
+          `native_interaction_selector_inspection_unavailable:${definition.key}:${step.key}:${selector.selector}`,
+        );
+      stepObservations.push(observation);
+      if (!observation.passed)
+        throw new Error(
+          `native_interaction_selector_expectation_failed:${definition.key}:${step.key}:${selector.selector}:${selector.minimum}:${canonical(
+            observation.observations.map((item) => ({
+              attributes: item.attributes ?? null,
+              attribute_checks: item.attribute_checks ?? null,
+            })),
+          )}`,
         );
     }
     let stepScreenshot = null;
@@ -3267,6 +3529,13 @@ async function switchTabAndWait(
         )
       )
         throw error;
+      const recoveryPage = await retryIdempotentAutomatorOperation(
+        `${label}:canonical-map-recovery-${attempt}`,
+        () => miniProgram.reLaunch("/pages/map/index"),
+      );
+      if (!recoveryPage)
+        throw new Error(`native_switch_tab_recovery_unavailable:${label}:${attempt}`);
+      await waitForCurrentPagePath(miniProgram, "pages/map/index", 20_000);
     }
   }
   throw new Error(
@@ -3289,12 +3558,46 @@ async function tapIntoPage(miniProgram, page, selector, expectedPath) {
     }
     throw new Error(`native_enabled_selector_timeout:${targetPage.path}:${selector}`);
   };
+  const triggerTapAndWait = async (sourcePage) => {
+    let activeSourcePage = sourcePage;
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const activeControl = await waitForEnabledControl(activeSourcePage);
+      try {
+        await activeControl.trigger("tap");
+      } catch (error) {
+        if (!isAutomatorResponseTimeout(error)) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const currentPage = await miniProgram.currentPage().catch(() => null);
+        if (currentPage?.path === expectedPath) return currentPage;
+        if (currentPage?.path !== sourcePage.path || attempt === 2)
+          throw new Error(
+            `native_formal_entry_trigger_timeout_unsettled:${expectedPath}:${currentPage?.path ?? "unknown"}`,
+          );
+        activeSourcePage = currentPage;
+        continue;
+      }
+      return waitForCurrentPagePath(miniProgram, expectedPath);
+    }
+    throw new Error(`native_formal_entry_trigger_unreachable:${expectedPath}`);
+  };
   const control = await waitForEnabledControl(page);
   // A tab switch resolves before the DevTools simulator has always finished
   // attaching Taro's delegated event bridge. Pace this like a user arriving on
   // the page before pressing the next visible control.
   await new Promise((resolve) => setTimeout(resolve, 750));
-  await control.tap();
+  try {
+    await control.tap();
+  } catch (error) {
+    if (!isAutomatorResponseTimeout(error)) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const currentPage = await miniProgram.currentPage().catch(() => null);
+    if (currentPage?.path === expectedPath) return currentPage;
+    if (currentPage?.path !== page.path)
+      throw new Error(
+        `native_formal_entry_tap_timeout_unsettled:${expectedPath}:${currentPage?.path ?? "unknown"}`,
+      );
+    return triggerTapAndWait(currentPage);
+  }
   try {
     // First entry into a subpackage can spend several seconds compiling and
     // mounting. A short timeout would dispatch the fallback against the source
@@ -3318,9 +3621,7 @@ async function tapIntoPage(miniProgram, page, selector, expectedPath) {
       throw new Error(
         `native_formal_entry_unsettled:${expectedPath}:${currentPage?.path ?? "unknown"}`,
       );
-    const freshControl = await waitForEnabledControl(currentPage);
-    await freshControl.trigger("tap");
-    return waitForCurrentPagePath(miniProgram, expectedPath);
+    return triggerTapAndWait(currentPage);
   }
 }
 
@@ -3431,48 +3732,64 @@ async function selectFormalSpotThroughFinder(miniProgram, mapPage) {
   ).catch(() => []);
   if (existingPanel.length > 0) return mapPage;
 
-  let searchPage;
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
-    searchPage = await tapIntoPage(
-      miniProgram,
-      mapPage,
-      "[data-control~='map-search-entry']",
-      "spot/search/index",
-    );
-    await waitForSelector(
-      searchPage,
-      "[data-control~='spot-search-result-list']",
-      1,
-    );
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
+      const searchPage = await nativeDiagnosticStage(
+        `formal-finder-open-search-attempt-${attempt}`,
+        () =>
+          tapIntoPage(
+            miniProgram,
+            mapPage,
+            "[data-control~='map-search-entry']",
+            "spot/search/index",
+          ),
+      );
+      await waitForSelector(
+        searchPage,
+        "[data-control~='spot-search-result-list']",
+        1,
+      );
       await waitForSelector(
         searchPage,
         "[data-control~='spot-search-result-card']",
         1,
         12_000,
       );
-      break;
+      const returnedMap = await nativeDiagnosticStage(
+        `search-result-select-attempt-${attempt}`,
+        () =>
+          tapIntoPage(
+            miniProgram,
+            searchPage,
+            "[data-control~='spot-search-result-card']",
+            "pages/map/index",
+          ),
+      );
+      await waitForSelector(
+        returnedMap,
+        "[data-control~='map-spot-information-panel']",
+        1,
+      );
+      return returnedMap;
     } catch (error) {
-      if (attempt === 2) throw error;
-      await retryIdempotentAutomatorOperation(
-        "formal-finder-relaunch-after-empty-result",
-        () => miniProgram.reLaunch("/pages/map/index"),
+      lastError = error;
+      if (attempt === 3) throw error;
+      await nativeDiagnosticStage(
+        `formal-finder-map-recovery-attempt-${attempt}`,
+        () =>
+          retryIdempotentAutomatorOperation(
+            `formal-finder-relaunch-after-transient-result-attempt-${attempt}`,
+            () => miniProgram.reLaunch("/pages/map/index"),
+          ),
       );
       mapPage = await waitForCurrentPagePath(miniProgram, "pages/map/index");
       await waitForSelector(mapPage, ".map-page", 1);
     }
   }
-  if (!searchPage) throw new Error("native_formal_finder_page_unavailable");
-  const returnedMap = await nativeDiagnosticStage("search-result-select", () =>
-    tapIntoPage(
-      miniProgram,
-      searchPage,
-      "[data-control~='spot-search-result-card']",
-      "pages/map/index",
-    ),
+  throw new Error(
+    `native_formal_finder_page_unavailable:${sha256(String(lastError?.message ?? lastError ?? ""))}`,
   );
-  await waitForSelector(returnedMap, "[data-control~='map-spot-information-panel']", 1);
-  return returnedMap;
 }
 
 async function waitForFormalObservationContext(
@@ -3497,6 +3814,92 @@ async function waitForFormalObservationContext(
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error("native_formal_plan_context_timeout");
+}
+
+async function waitForFormalObservationContextTimeChange(
+  miniProgram,
+  before,
+  timeoutMs = 20_000,
+) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const context = await waitForFormalObservationContext(
+      miniProgram,
+      2_000,
+    ).catch(() => null);
+    if (
+      typeof context.selectedAtUtc === "string" &&
+      context.selectedAtUtc !== before.selectedAtUtc &&
+      Number(context.revision) > Number(before.revision)
+    )
+      return context;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return null;
+}
+
+function validateSkySceneInspection(value, requirements = {}) {
+  return Boolean(
+    value &&
+      value.state === "READY" &&
+      typeof value.spotId === "string" &&
+      value.spotId.length > 0 &&
+      typeof value.frameAt === "string" &&
+      !Number.isNaN(Date.parse(value.frameAt)) &&
+      typeof value.catalogVersion === "string" &&
+      /^gaia-dr3/u.test(value.catalogVersion) &&
+      Number.isInteger(Number(value.starCount)) &&
+      Number(value.starCount) >= 1 &&
+      Number(value.starCount) <= 2048 &&
+      Number.isInteger(Number(value.drawRevision)) &&
+      Number(value.drawRevision) >= 1 &&
+      (requirements.spotId === undefined ||
+        value.spotId === requirements.spotId) &&
+      (requirements.frameAt === undefined ||
+        value.frameAt === requirements.frameAt) &&
+      (requirements.afterDrawRevision === undefined ||
+        Number(value.drawRevision) > Number(requirements.afterDrawRevision))
+  );
+}
+
+async function waitForSkySceneInspection(
+  miniProgram,
+  requirements = {},
+  timeoutMs = 20_000,
+) {
+  const deadline = Date.now() + timeoutMs;
+  let latest = null;
+  while (Date.now() < deadline) {
+    latest = await miniProgram
+      .evaluate(function () {
+        return (
+          globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectSkyScene?.() ?? null
+        );
+      })
+      .catch(() => null);
+    if (validateSkySceneInspection(latest, requirements))
+      return { passed: true, value: latest };
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return { passed: false, value: latest };
+}
+
+function skySceneReadbackEvidence(readback) {
+  const value = readback?.value;
+  return {
+    passed: readback?.passed === true,
+    state: value?.state ?? null,
+    spot_id_sha256:
+      typeof value?.spotId === "string" ? sha256(value.spotId) : null,
+    frame_at: value?.frameAt ?? null,
+    catalog_version: value?.catalogVersion ?? null,
+    star_count: Number.isFinite(Number(value?.starCount))
+      ? Number(value.starCount)
+      : null,
+    draw_revision: Number.isFinite(Number(value?.drawRevision))
+      ? Number(value.drawRevision)
+      : null,
+  };
 }
 
 async function waitForMapPointObservationContext(miniProgram) {
@@ -3810,6 +4213,9 @@ async function captureJourney(miniProgram, runRoot, definition) {
     definition,
   );
   let settingsPreferenceReadback = null;
+  const skySceneReadback = definition.skySceneReadback
+    ? await waitForSkySceneInspection(miniProgram, {}, 20_000)
+    : null;
   if (definition.key === "settings") {
     const before = await miniProgram.evaluate(function () {
       return globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectPreferences?.();
@@ -3848,7 +4254,8 @@ async function captureJourney(miniProgram, runRoot, definition) {
     key: definition.key,
     status:
       missingRootClasses.length === 0 &&
-      selectors.every((entry) => entry.passed)
+      selectors.every((entry) => entry.passed) &&
+      (skySceneReadback === null || skySceneReadback.passed)
         ? "passed"
         : "failed",
     entry: definition.url.replace(/^\//u, ""),
@@ -3861,6 +4268,9 @@ async function captureJourney(miniProgram, runRoot, definition) {
     root_wxml_sha256: sha256(rootWxml),
     root_wxml_length: rootWxml.length,
     selectors,
+    ...(skySceneReadback
+      ? { sky_scene_readback: skySceneReadbackEvidence(skySceneReadback) }
+      : {}),
     screenshot: path.relative(root, screenshotAbsolute).replaceAll("\\", "/"),
     viewport_captures: viewportCaptures,
     ...(settingsPreferenceReadback
@@ -4122,6 +4532,7 @@ const journeys = [
     ],
     root: ".sky-orientation-page",
     rootClasses: ["sky-orientation-page"],
+    skySceneReadback: true,
     selectors: [
       {
         selector: "[data-od-id='sky-orientation-canvas']",
@@ -4145,6 +4556,33 @@ const journeys = [
       },
     ],
     interactions: [
+      {
+        key: "orientation-real-scene-time-change",
+        screenshot: true,
+        horizontalScrollRelease: {
+          selector: ".sky-orientation-time-ruler__viewport",
+          minimumDistancePx: 56,
+        },
+        minimum: 1,
+        settleMs: 500,
+        expectFormalContextTimeChange: true,
+        expectSkySceneFrameChange: true,
+        expectChanged: [
+          {
+            selector: ".sky-orientation-time-ruler__current-value",
+            kind: "text",
+            minimum: 1,
+          },
+        ],
+        waitForAbsent: [".sky-orientation-data-status"],
+        inspect: [
+          {
+            selector: "[data-od-id='sky-orientation-canvas']",
+            minimum: 1,
+            styles: ["display", "width", "height"],
+          },
+        ],
+      },
       {
         key: "orientation-object-list-open",
         screenshot: true,
@@ -5799,6 +6237,7 @@ async function main() {
       const faultResults = [];
       result.setup.degradation_probe_resets = [];
       result.setup.degradation_prepared_context_cache_resets = [];
+      result.setup.degradation_probe_session_restarts = [];
       for (let index = 0; index < faultKeys.length; index += 1) {
         const faultJourney = journeys.find(
           (journey) => journey.key === faultKeys[index],
@@ -5808,6 +6247,54 @@ async function main() {
             `native_fault_journey_missing:${acceptanceScope}:${faultKeys[index]}`,
           );
         if (index > 0) {
+          runtimePhase = "degradation-probe-session-restart";
+          const restartEvidence = {
+            status: "pending",
+            before_probe_index: index + 1,
+            preclose_runtime_quiescence:
+              await waitForRuntimeEventQuiescence(runtimeEvents),
+            client_close: { status: "pending" },
+            official_shutdown: { status: "pending" },
+          };
+          detachRuntimeObservers?.();
+          detachRuntimeObservers = undefined;
+          try {
+            await miniProgram.close();
+            restartEvidence.client_close = {
+              status: "passed",
+              method: "automator App.exit plus Tool.close and connection dispose",
+            };
+          } catch (error) {
+            try {
+              miniProgram.disconnect();
+            } catch {}
+            restartEvidence.client_close = {
+              status: "recovered_by_official_shutdown",
+              diagnostic_sha256: sha256(String(error?.message ?? error)),
+            };
+          }
+          miniProgram = undefined;
+          if (devtoolsLaunch?.cliProcess?.exitCode === null)
+            stopProcessTree(devtoolsLaunch.cliProcess.pid);
+          restartEvidence.official_shutdown = await quitWechatDevtoolsAndWait(
+            sourceProjectPath,
+            [wechatIdeHttpPort, automationPort],
+            60_000,
+          );
+          ({
+            launch: devtoolsLaunch,
+            program: miniProgram,
+            detachRuntimeObservers,
+            toolInfo: devtoolsToolInfo,
+          } = await openObservedSession(`evidence-fault-probe-${index + 1}`));
+          if (sha256(canonical(devtoolsToolInfo)) !== setupToolIdentity)
+            throw new Error(
+              "wechat_tool_identity_changed_between_degradation_probes",
+            );
+          restartEvidence.status = "passed";
+          result.setup.degradation_probe_session_restarts.push(
+            restartEvidence,
+          );
           runtimePhase = "acceptance-reset";
           result.setup.degradation_probe_resets.push(
             await resetBetweenFaultProbes(miniProgram),

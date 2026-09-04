@@ -1,5 +1,14 @@
-import { Body, Equator, Horizon, Illumination, Observer, SearchAltitude, SearchRiseSet } from "astronomy-engine";
+import {
+  Body,
+  Equator,
+  Horizon,
+  Illumination,
+  Observer,
+  SearchAltitude,
+  SearchRiseSet,
+} from "./astronomy-engine-runtime.ts";
 export * from "./sky-capabilities";
+export * from "./gaia-catalog";
 
 export const ASTRONOMY_ENGINE_VERSION = "2.1.19";
 export const STARWARD_ASTRONOMY_ALGORITHM = `starward-astronomy@1.0.0+astronomy-engine@${ASTRONOMY_ENGINE_VERSION}`;
