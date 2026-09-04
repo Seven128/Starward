@@ -21,8 +21,6 @@ const NATIVE_RUNNER = "tools/miniapp/run-wechat-devtools-session.mjs";
 const NATIVE_CURRENT = "artifacts/miniapp/native/wechat-devtools-session.json";
 const INFRA_CURRENT =
   "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json";
-const DESIGN_BINDING_CURRENT =
-  "artifacts/miniapp/design/selected-design-binding-conformance.json";
 let RESOURCE_INTEGRITY = `${SELECTED_RESOURCE_ROOT}/resource-integrity.json`;
 let DESIGN_ENVIRONMENT = `${SELECTED_RESOURCE_ROOT}/render-environment.json`;
 let DESIGN_PARAMETERS = `${SELECTED_RESOURCE_ROOT}/proof-parameters.json`;
@@ -949,7 +947,61 @@ async function buildDesignArtifacts(spec, evidence) {
     environmentValue === null ? null : sha256(environmentValue);
   const parameterValue = actualParameters.asset_integrity ?? null;
   const parameterSha = parameterValue === null ? null : sha256(parameterValue);
-  const binding = await readJson(DESIGN_BINDING_CURRENT).catch(() => null);
+  const handoffBytes = await readFile(repositoryPath(HANDOFF_SOURCE)).catch(
+    () => null,
+  );
+  const handoffSha = handoffBytes === null ? null : sha256(handoffBytes);
+  const handoffPayload = handoffBytes === null
+    ? null
+    : JSON.parse(
+        extractFencedBlock(
+          handoffBytes.toString("utf8"),
+          "yaml design-resource-handoff-v1",
+        ) ?? "null",
+      );
+  const target = handoffPayload?.targets?.find(
+    (item) => item.key === spec.design_evidence.design_target_ref,
+  );
+  const targetResourceRefs = new Set(target?.resource_refs ?? []);
+  const resources = (handoffPayload?.resources ?? [])
+    .filter((resource) => targetResourceRefs.has(resource.key));
+  const resourceResults = await Promise.all(
+    resources.map(async (resource) => {
+      const actualSha = await fileSha(resource.path).catch(() => null);
+      return {
+        ...resource,
+        actual_sha256: actualSha,
+        passed: actualSha === resource.sha256,
+      };
+    }),
+  );
+  const targetComplete =
+    targetResourceRefs.size > 0 &&
+    resourceResults.length === targetResourceRefs.size &&
+    [...targetResourceRefs].every((key) =>
+      resourceResults.some((resource) => resource.key === key),
+    );
+  const targetConditions = new Set(target?.condition_refs ?? []);
+  const conditionsMatch =
+    targetConditions.size === spec.design_evidence.condition_keys.length &&
+    spec.design_evidence.condition_keys.every((key) =>
+      targetConditions.has(key),
+    );
+  const binding = {
+    status:
+      handoffSha === spec.authority.handoff.sha256 &&
+      targetComplete &&
+      conditionsMatch &&
+      resourceResults.every((resource) => resource.passed)
+        ? "passed"
+        : "failed",
+    handoffs: [
+      {
+        target: target?.key ?? null,
+        resources: resourceResults,
+      },
+    ],
+  };
   const selectedHandoff = binding?.handoffs?.find(
     (handoff) => handoff.target === spec.design_evidence.design_target_ref,
   );
@@ -1009,10 +1061,8 @@ async function buildDesignArtifacts(spec, evidence) {
   const methodSha = await writeJson(DESIGN_METHOD, {
     schema_version: "miniapp-design-asset-integrity-v2",
     passed: methodPassed,
-    binding_artifact_path: DESIGN_BINDING_CURRENT,
-    binding_artifact_sha256: await fileSha(DESIGN_BINDING_CURRENT).catch(
-      () => null,
-    ),
+    binding_artifact_path: HANDOFF_SOURCE,
+    binding_artifact_sha256: handoffSha,
     fact_results: factResults.map((fact) => ({
       fact_ref: fact.fact_ref,
       passed: fact.passed,

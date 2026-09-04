@@ -647,6 +647,8 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "waitForFormalContextSpotId",
     "native_interaction_formal_context_mismatch",
     'key: "spot-panel-astronomy-section"',
+    'key: "formal-spot-query"',
+    'value: nightChinaCatalogSpot.name',
     'tap: ".spot-panel__section-tab"',
     "minimum: 2",
     "isAutomatorResponseTimeout",
@@ -1188,6 +1190,9 @@ test("Settings keeps orientation permission per-use without fabricating a global
 
 test("Final-Gate verifier derives actuals from the current candidate and fails closed", async () => {
   const rootPackage = await json("package.json");
+  const deliveryContract = parseYaml(
+    await text(".long-task", "delivery-contract.yaml"),
+  );
   const verificationSpec = await json(
     "tools",
     "miniapp",
@@ -1281,6 +1286,7 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "DESIGN.md",
     "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md",
     "tools/miniapp/verification-spec-field-signal-i21.json",
+    "tools/miniapp/run-wechat-devtools-session.mjs",
     "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
     "tools/miniapp/verifier-runtime/verify-miniapp-target-launcher.c",
     "tools/miniapp/verifier-runtime/verify-miniapp-target.exe",
@@ -1314,6 +1320,25 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     rootPackage.scripts["prepare:miniapp:final-candidate"],
     ".\\tools\\miniapp\\verifier-runtime\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-field-signal-i21.json",
   );
+  const outcomeChecks = deliveryContract.outcomes.flatMap(
+    (outcome) => outcome.acceptance.checks,
+  );
+  const degradationChecks = outcomeChecks.filter((check) =>
+    check.key.endsWith("-degradation"),
+  );
+  assert.equal(degradationChecks.length, 5);
+  for (const check of degradationChecks) {
+    const specIndex = check.runner.argv.indexOf("--spec");
+    assert.ok(specIndex >= 0, `${check.key} must select the I21 spec`);
+    assert.equal(
+      check.runner.argv[specIndex + 1],
+      "tools/miniapp/verification-spec-field-signal-i21.json",
+    );
+  }
+  assert.match(verifier, /extractFencedBlock\([\s\S]*?"yaml design-resource-handoff-v1"/u);
+  assert.match(verifier, /handoffSha === spec\.authority\.handoff\.sha256/u);
+  assert.match(verifier, /resourceResults\.every\(\(resource\) => resource\.passed\)/u);
+  assert.doesNotMatch(verifier, /readJson\(DESIGN_BINDING_CURRENT\)/u);
   assert.match(
     verifier,
     /path\.dirname\(fileURLToPath\(import\.meta\.url\)\),\s*"\.\.",\s*"\.\.",\s*"\.\."/u,

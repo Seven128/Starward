@@ -2,7 +2,7 @@ schema_version: long-task-delivery-v2
 semantic_fact_manifest:
   key: wechat-miniapp-field-signal-i21.semantic-facts
   source_path: .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
-  sha256: 1ee8cc888f10461cba5f8cb698523b18d6b1a951532713f94f973525bdacca8f
+  sha256: 8f80200d56cec8e85f292e942a2488d637c5eda0c2d2419c5aa44e99e53ec179
 task:
   id: wechat-miniapp-field-signal-i21
   title: WeChat Mini Program Field Signal I21 production implementation
@@ -14482,6 +14482,7 @@ global:
           - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
           - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
           - tools/miniapp/verification-spec-field-signal-i21.json
+          - tools/miniapp/run-wechat-devtools-session.mjs
         expected_output_paths: []
         artifact_globs:
           - artifacts/miniapp/**
@@ -69797,6 +69798,7 @@ outcomes:
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -70604,6 +70606,8 @@ outcomes:
               - map-experience
               - --surface
               - runtime_behavior
+              - --spec
+              - tools/miniapp/verification-spec-field-signal-i21.json
               - --diagnostic-recovery
             cwd: tools/miniapp/verifier-runtime
             timeout_ms: 900000
@@ -70614,10 +70618,43 @@ outcomes:
             - tools/miniapp/verifier-runtime/verify-miniapp-target.mjs
             - tools/miniapp/verifier-runtime/package.json
             - tools/miniapp/verifier-runtime/package-lock.json
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - DESIGN.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
             - workers/miniapp-api/**
+            - project_context/**
+            - DESIGN.md
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -72289,6 +72326,7 @@ outcomes:
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -72717,6 +72755,8 @@ outcomes:
               - full-sky
               - --surface
               - runtime_behavior
+              - --spec
+              - tools/miniapp/verification-spec-field-signal-i21.json
               - --diagnostic-recovery
             cwd: tools/miniapp/verifier-runtime
             timeout_ms: 900000
@@ -72727,10 +72767,43 @@ outcomes:
             - tools/miniapp/verifier-runtime/verify-miniapp-target.mjs
             - tools/miniapp/verifier-runtime/package.json
             - tools/miniapp/verifier-runtime/package-lock.json
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - DESIGN.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
             - workers/miniapp-api/**
+            - project_context/**
+            - DESIGN.md
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -74427,6 +74500,7 @@ outcomes:
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -74873,6 +74947,8 @@ outcomes:
               - my-profile-settings
               - --surface
               - runtime_behavior
+              - --spec
+              - tools/miniapp/verification-spec-field-signal-i21.json
               - --diagnostic-recovery
             cwd: tools/miniapp/verifier-runtime
             timeout_ms: 900000
@@ -74883,10 +74959,43 @@ outcomes:
             - tools/miniapp/verifier-runtime/verify-miniapp-target.mjs
             - tools/miniapp/verifier-runtime/package.json
             - tools/miniapp/verifier-runtime/package-lock.json
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - DESIGN.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
             - workers/miniapp-api/**
+            - project_context/**
+            - DESIGN.md
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -76855,6 +76964,7 @@ outcomes:
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -77418,6 +77528,8 @@ outcomes:
               - contribution
               - --surface
               - runtime_behavior
+              - --spec
+              - tools/miniapp/verification-spec-field-signal-i21.json
               - --diagnostic-recovery
             cwd: tools/miniapp/verifier-runtime
             timeout_ms: 900000
@@ -77428,10 +77540,43 @@ outcomes:
             - tools/miniapp/verifier-runtime/verify-miniapp-target.mjs
             - tools/miniapp/verifier-runtime/package.json
             - tools/miniapp/verifier-runtime/package-lock.json
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - DESIGN.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
             - workers/miniapp-api/**
+            - project_context/**
+            - DESIGN.md
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -110294,6 +110439,7 @@ outcomes:
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
             - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
             - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**
@@ -131337,6 +131483,8 @@ outcomes:
               - current-candidate
               - --surface
               - runtime_behavior
+              - --spec
+              - tools/miniapp/verification-spec-field-signal-i21.json
               - --diagnostic-recovery
             cwd: tools/miniapp/verifier-runtime
             timeout_ms: 900000
@@ -131347,10 +131495,43 @@ outcomes:
             - tools/miniapp/verifier-runtime/verify-miniapp-target.mjs
             - tools/miniapp/verifier-runtime/package.json
             - tools/miniapp/verifier-runtime/package-lock.json
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - DESIGN.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/README.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/artifact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/app.js
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/styles.css
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/authority-delta.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/coverage.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/design-system-snapshot.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/implementation-handoff-spec.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/index.html
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/open-design-readme.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/proposal-reconciliation-index.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/selection-and-qa.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-contract-values.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-resource-integrity.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-proof-parameters.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-render-environment.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-inspector.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-frozen-oracle.mjs
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-fact-manifest.json
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-implementation-feasibility.json
           input_paths:
             - apps/wechat-miniapp/**
             - packages/miniapp-contracts/**
             - workers/miniapp-api/**
+            - project_context/**
+            - DESIGN.md
+            - tools/miniapp/fixtures/nightchina-import-cases.json
+            - .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/**
+            - docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md
+            - tools/miniapp/verification-spec-field-signal-i21.json
+            - tools/miniapp/run-wechat-devtools-session.mjs
           expected_output_paths: []
           artifact_globs:
             - artifacts/miniapp/**

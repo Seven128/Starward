@@ -11,6 +11,7 @@
       "DESIGN.md",
       "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-handoff/miniapp-field-signal-i21-current.md",
       "tools/miniapp/verification-spec-field-signal-i21.json",
+      "tools/miniapp/run-wechat-devtools-session.mjs",
       "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
       "tools/miniapp/verifier-runtime/verify-miniapp-target-launcher.c",
       "tools/miniapp/verifier-runtime/verify-miniapp-target.exe"
@@ -44,7 +45,7 @@
     "semantic_manifest": {
       "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "key": "wechat-miniapp-field-signal-i21.semantic-facts",
-      "sha256": "1ee8cc888f10461cba5f8cb698523b18d6b1a951532713f94f973525bdacca8f"
+      "sha256": "8f80200d56cec8e85f292e942a2488d637c5eda0c2d2419c5aa44e99e53ec179"
     }
   },
   "counterfactual_controls": [],

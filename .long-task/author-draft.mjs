@@ -48,6 +48,7 @@ const NATIVE_LAUNCHER_SOURCE = `${VERIFIER_RUNTIME_ROOT}/verify-miniapp-target-l
 const NATIVE_RUNNER_SOURCE = `${VERIFIER_RUNTIME_ROOT}/verify-miniapp-target.mjs`;
 const VERIFIER_RUNTIME_PACKAGE = `${VERIFIER_RUNTIME_ROOT}/package.json`;
 const VERIFIER_RUNTIME_LOCK = `${VERIFIER_RUNTIME_ROOT}/package-lock.json`;
+const NATIVE_SESSION_RUNNER = "tools/miniapp/run-wechat-devtools-session.mjs";
 const DELIVERY_CARRIER = "apps/wechat-miniapp/src/authority/delivery-carrier.json";
 const INSPECTOR = `${WORKDIR}/author-draft.mjs`;
 const MANIFEST_KEY = "wechat-miniapp-field-signal-i21.semantic-facts";
@@ -417,7 +418,7 @@ function diagnosticRunner(scope, surface) {
   return {
     type: "project_binary",
     target: "verify-miniapp-target.exe",
-    argv: ["--scope", scope, "--surface", surface, "--diagnostic-recovery"],
+    argv: ["--scope", scope, "--surface", surface, "--spec", VERIFICATION_SPEC_PATH, "--diagnostic-recovery"],
     cwd: VERIFIER_RUNTIME_ROOT,
     timeout_ms: 900000,
     effect: "test_sandbox",
@@ -967,9 +968,9 @@ async function main() {
   };
 
   const verificationInputs = [...new Set([NATIVE_RUNNER, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER_SOURCE, VERIFIER_RUNTIME_PACKAGE, VERIFIER_RUNTIME_LOCK, VERIFICATION_SPEC_PATH, NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, "DESIGN.md", ...targetSourcePaths])];
-  const checkInputPaths = ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**", "project_context/**", "DESIGN.md", NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, `${SELECTED_ROOT}/**`, HANDOFF_PATH, VERIFICATION_SPEC_PATH];
-  const diagnosticVerificationInputs = [NATIVE_RUNNER, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER_SOURCE, VERIFIER_RUNTIME_PACKAGE, VERIFIER_RUNTIME_LOCK];
-  const diagnosticCheckInputPaths = ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**"];
+  const checkInputPaths = ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "workers/miniapp-api/**", "project_context/**", "DESIGN.md", NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, `${SELECTED_ROOT}/**`, HANDOFF_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER];
+  const diagnosticVerificationInputs = verificationInputs;
+  const diagnosticCheckInputPaths = checkInputPaths;
   const forbiddenPaths = ["apps/mobile/**", "docs/source-plan.md", "docs/wechat-miniapp-v2-source.md", "tmp/ty-context/long-task-runs/wechat-miniapp-v2-1-1-drift-correction/**"];
   const productOwnerPaths = [
     "apps/wechat-miniapp/**",
@@ -1228,7 +1229,7 @@ async function main() {
     schema_version: "miniapp-verification-spec-v1",
     carrier_schema_version: "miniapp-delivery-carrier-v1",
     delivery_carrier: DELIVERY_CARRIER,
-    counterfactual_projection: { required_exact_paths: ["package.json", "package-lock.json", SOURCE_PATH, NIGHTCHINA_FIXTURE_PATH, "DESIGN.md", HANDOFF_PATH, VERIFICATION_SPEC_PATH, NATIVE_RUNNER_SOURCE, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER], required_tree_roots: [SELECTED_ROOT] },
+    counterfactual_projection: { required_exact_paths: ["package.json", "package-lock.json", SOURCE_PATH, NIGHTCHINA_FIXTURE_PATH, "DESIGN.md", HANDOFF_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER, NATIVE_RUNNER_SOURCE, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER], required_tree_roots: [SELECTED_ROOT] },
     authority: {
       design: { path: "DESIGN.md", sha256: sha256Hex(await readFile(repoPath("DESIGN.md"))), target: "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02" },
       resource_manifest: { path: FACT_MANIFEST, sha256: EXPECTED_HASHES[FACT_MANIFEST] },

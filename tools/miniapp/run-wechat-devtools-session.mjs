@@ -4911,11 +4911,22 @@ currentMapJourney.interactions = [
       { selector: "[data-control~='spot-search-filter-group']", minimum: 1 },
       { selector: "[data-control~='spot-search-filter-choice']", minimum: 1 },
       { selector: "[data-control~='spot-search-result-list']", minimum: 1 },
-      { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
     ],
     inspect: [
       { selector: "[data-control~='spot-search-query-overlay']", minimum: 1 },
       { selector: "[data-control~='spot-search-filter-choice']", minimum: 1 },
+    ],
+  },
+  {
+    key: "formal-spot-query",
+    screenshot: true,
+    input: ".spot-search-field__input",
+    value: nightChinaCatalogSpot.name,
+    settleMs: 1_000,
+    waitFor: [
+      { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
+    ],
+    inspect: [
       { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
     ],
   },
