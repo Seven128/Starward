@@ -61,6 +61,9 @@ const permissionActivity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.App
 const permissionDetailActivity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandAuthorizeDetailUI";
 // Extend only after observing and testing a system-owned OEM permission component.
 const systemLocationActivity = "com.android.permissioncontroller/com.skyui.permissioncontroller.request.ui.SkyGrantPermissionsActivity";
+const SCREENSHOT_FOREGROUND_RECHECK_RETRY_LIMIT = 1;
+const SCREENSHOT_FOREGROUND_RECHECK_DELAY_MS = 100;
+const defaultWait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 function verifyPermissionOwner(output, activity) {
   // Read only OS activity metadata in memory. Never emit task/user ids or intent extras.
@@ -116,8 +119,24 @@ export function normalizedPoint(x, y, size) {
   return [Math.round(x * (size.width - 1)), Math.round(y * (size.height - 1))];
 }
 
+function isTransientForegroundRecheckFailure(error) {
+  return error?.message === "device_test_tool_failed";
+}
+
+async function recheckForeground(device, activity, options) {
+  for (let attempt = 0; attempt <= SCREENSHOT_FOREGROUND_RECHECK_RETRY_LIMIT; attempt += 1) {
+    try {
+      if (await device.foreground(options) !== activity) fail("foreground_changed");
+      return;
+    } catch (error) {
+      if (!isTransientForegroundRecheckFailure(error) || attempt === SCREENSHOT_FOREGROUND_RECHECK_RETRY_LIMIT) throw error;
+      await device.wait(SCREENSHOT_FOREGROUND_RECHECK_DELAY_MS);
+    }
+  }
+}
+
 export class AdbDevice {
-  constructor(file, run = runTool) { this.file = file; this.run = run; }
+  constructor(file, run = runTool, wait = defaultWait) { this.file = file; this.run = run; this.wait = wait; }
   async invoke(args) { return this.run(this.file, args); }
   async doctor() {
     const version = (await this.invoke(["version"])).toString().match(/Android Debug Bridge version ([\d.]+)/u)?.[1] ?? "unknown";
@@ -156,7 +175,7 @@ export class AdbDevice {
     const activity = await this.foreground({ permissionScope });
     const bytes = await this.command(["exec-out", "screencap", "-p"]);
     const size = pngSize(bytes);
-    if (await this.foreground({ permissionScope }) !== activity) fail("foreground_changed");
+    await recheckForeground(this, activity, { permissionScope });
     return { bytes, size, activity, permissionScope };
   }
   async input(action, values, capture) {

@@ -47,6 +47,51 @@ function adbDriver({ changed = false, permissions = false, osLocation = false, s
   return { driver, calls };
 }
 
+function appBrandForegroundState(current = activity, focus = current) {
+  return {
+    activity: `mResumedActivity: ActivityRecord{abc u0 ${current} t1}`,
+    window: `mCurrentFocus=Window{abc u0 ${focus}}`,
+  };
+}
+
+function screenshotDriver({ initial = appBrandForegroundState(), afterCapture = [], wait = async () => {} } = {}) {
+  const calls = [];
+  const states = [initial, ...afterCapture];
+  let foregroundCalls = 0;
+  let screencapSeen = false;
+  const driver = new AdbDevice("fixture-adb", async (_file, args) => {
+    calls.push(args);
+    if (args.join(" ") === "-d get-state") return Buffer.from("device\n");
+    if (args.join(" ") === "-d get-serialno") return Buffer.from("fixture-serial\n");
+    const command = args.slice(2).join(" ");
+    if (command === "shell dumpsys activity activities") {
+      const index = screencapSeen ? foregroundCalls++ + 1 : 0;
+      const state = states[index] ?? states.at(-1);
+      if (state.activityError) throw state.activityError;
+      return Buffer.from(state.activity);
+    }
+    if (command === "shell dumpsys window windows") {
+      const index = screencapSeen ? foregroundCalls : 0;
+      const state = states[index] ?? states.at(-1);
+      if (state.windowError) throw state.windowError;
+      return Buffer.from(state.window);
+    }
+    if (command === "exec-out screencap -p") {
+      screencapSeen = true;
+      return png();
+    }
+    if (command === "shell dumpsys package com.android.permissioncontroller") {
+      return Buffer.from("pkgFlags=[ SYSTEM HAS_CODE ]\n codePath=/system_ext/priv-app/PermissionController");
+    }
+    throw new Error("unexpected_screenshot_fixture_call");
+  }, wait);
+  return {
+    driver,
+    calls,
+    get postCaptureAttempts() { return foregroundCalls; },
+  };
+}
+
 test("device summary never contains serials; USB selection uses -d, not first listed device", async () => {
   assert.deepEqual(deviceSummary("List of devices attached\nSECRET1 unauthorized\nSECRET2 offline\nemulator-5554 device"), { detected: 3, states: ["unauthorized", "offline", "device"] });
   const { driver, calls } = adbDriver();
@@ -146,6 +191,65 @@ test("changed orientation prevents stale screenshot coordinates", async () => {
   const { driver, calls } = adbDriver({ changed: true }); await driver.select();
   await assert.rejects(driver.input("tap", [0.5, 0.5], { activity, size: { width: 1080, height: 2400 } }), /display_changed/u);
   assert.ok(!calls.some((args) => args.includes("input")));
+});
+
+test("screenshot retries one transient post-capture tool failure and returns the verified frame", async () => {
+  const waits = [];
+  const fixture = screenshotDriver({ wait: async (milliseconds) => waits.push(milliseconds), afterCapture: [
+    { activityError: new Error("device_test_tool_failed") },
+    appBrandForegroundState(),
+  ] });
+  await fixture.driver.select();
+  const result = await fixture.driver.screenshot();
+  assert.equal(result.activity, activity);
+  assert.deepEqual(result.size, { width: 1080, height: 2400 });
+  assert.equal(fixture.postCaptureAttempts, 2);
+  assert.deepEqual(waits, [100]);
+});
+
+test("screenshot bounds continuous post-capture tool failures to the retry budget", async () => {
+  const fixture = screenshotDriver({ afterCapture: Array.from({ length: 4 }, () => ({
+    activityError: new Error("device_test_tool_failed"),
+  })) });
+  await fixture.driver.select();
+  await assert.rejects(fixture.driver.screenshot(), { message: "device_test_tool_failed" });
+  assert.equal(fixture.postCaptureAttempts, 2);
+});
+
+test("screenshot never retries or swallows semantic foreground, focus or permission failures", async () => {
+  const cases = [
+    {
+      name: "foreground",
+      afterCapture: [{ activity: "mResumedActivity: ActivityRecord{abc u0 com.tencent.mm/.ui.LauncherUI t1}", window: "mCurrentFocus=Window{abc u0 com.tencent.mm/.ui.LauncherUI}" }],
+      expected: /wechat_miniapp_foreground_required/u,
+    },
+    {
+      name: "focus",
+      afterCapture: [appBrandForegroundState(activity, "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandUI1")],
+      expected: /wechat_miniapp_focus_required/u,
+    },
+    {
+      name: "permission",
+      permissionScope: "settings",
+      initial: { activity: permissionHistory(), window: `mCurrentFocus=Window{abc u0 ${permissionsActivity}}` },
+      afterCapture: [appBrandForegroundState()],
+      expected: /permission_settings_foreground_required/u,
+    },
+  ];
+  for (const scenario of cases) {
+    const fixture = screenshotDriver(scenario);
+    await fixture.driver.select();
+    await assert.rejects(fixture.driver.screenshot({ permissionScope: scenario.permissionScope }), scenario.expected, scenario.name);
+    assert.equal(fixture.postCaptureAttempts, 1, `${scenario.name} failure must not be retried`);
+  }
+});
+
+test("screenshot rejects a changed foreground activity after capture without retrying", async () => {
+  const changedActivity = `${activity}1`;
+  const fixture = screenshotDriver({ afterCapture: [appBrandForegroundState(changedActivity)] });
+  await fixture.driver.select();
+  await assert.rejects(fixture.driver.screenshot(), { message: "device_test_foreground_changed" });
+  assert.equal(fixture.postCaptureAttempts, 1);
 });
 
 test("session binds bundle before and after, rejects concurrent use, and cleans only owned directory", async (t) => {
