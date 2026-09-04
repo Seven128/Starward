@@ -37,24 +37,26 @@ export function SettingsControls({
         aria-label="显示模式"
       >
         <Text className="type-section">显示模式</Text>
-        <View className="settings-card card">
-          <View className="settings-choice-grid">
+        <View
+          className="settings-display-mode-track"
+          data-selected-mode={mode.toLowerCase()}
+        >
+          <View className="settings-display-mode-thumb" aria-hidden="true" />
             {DISPLAY_MODES.map((item) => (
               <Button
                 key={item}
-                className={`chip settings-display-mode-choice focus-ring${mode === item ? " chip--selected" : ""}`}
+                className={`settings-display-mode-choice focus-ring${mode === item ? " settings-display-mode-choice--selected" : ""}`}
                 data-mode={item.toLowerCase()}
                 aria-pressed={mode === item}
                 aria-label={`切换为${DISPLAY_MODE_LABEL[item]}模式`}
                 onClick={() => selectDisplayMode(item)}
               >
+                <SemanticIcon
+                  name={item === "DAY" ? "sun" : item === "NIGHT" ? "moon" : "star"}
+                />
                 <Text>{DISPLAY_MODE_LABEL[item]}</Text>
               </Button>
             ))}
-          </View>
-          <Text className="type-caption">
-            三个选项共用同一个显示模式状态；观测红光退出后恢复此前日间/夜间与任务上下文。
-          </Text>
         </View>
       </View>
 

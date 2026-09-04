@@ -12,7 +12,6 @@ import {
   type ObservationContext,
   type SkyReport,
 } from "@starward/miniapp-contracts";
-import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
@@ -148,6 +147,60 @@ function SkyTargetRow({
   );
 }
 
+function skyTargetWindowLabel(
+  target: SkyReport["targets"][number],
+  timezone: string,
+) {
+  return target.window
+    ? `窗口 ${formatTime(target.window.start, timezone)}—${formatTime(target.window.end, timezone)}`
+    : "窗口不足";
+}
+
+function SkyOrientationTargetLabel({
+  target,
+  projection,
+  width,
+  height,
+  timezone,
+}: {
+  target: SkyReport["targets"][number];
+  projection: SkyTargetProjection;
+  width: number;
+  height: number;
+  timezone: string;
+}) {
+  const altitude = `${projection.altitude}°`;
+  const isEvent =
+    target.type === "METEOR_SHOWER" ||
+    target.type === "CONJUNCTION" ||
+    target.type === "MILKY_WAY";
+  const left = Math.max(10, Math.min(width - 10, projection.x));
+  const top = Math.max(16, Math.min(height - 24, projection.y));
+  const label = `${target.displayName}，${TARGET_TYPE_LABEL[target.type]}，${target.direction}，高度 ${altitude}，${skyTargetWindowLabel(target, timezone)}`;
+  return (
+    <View
+      className={`sky-orientation-target-label${isEvent ? " sky-orientation-target-label--event" : ""}`}
+      style={{ left: `${left}px`, top: `${top}px` }}
+      role="listitem"
+      aria-label={label}
+      data-target-id={target.targetId}
+    >
+      <View className="sky-orientation-target-label__mark" aria-hidden="true" />
+      <View className="sky-orientation-target-label__copy">
+        <Text className="sky-orientation-target-label__name">
+          {target.displayName}
+        </Text>
+        <Text className="sky-orientation-target-label__meta">
+          {target.direction} · {altitude}
+        </Text>
+        <Text className="sky-orientation-target-label__window">
+          {skyTargetWindowLabel(target, timezone)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function clampIndex(index: number, length: number) {
   return Math.max(0, Math.min(index, Math.max(0, length - 1)));
 }
@@ -214,6 +267,67 @@ interface DevicePose {
   sampledAt: number;
 }
 
+interface SkyCanvasMetrics {
+  centerX: number;
+  horizonY: number;
+  radius: number;
+}
+
+interface SkyTargetProjection {
+  x: number;
+  y: number;
+  degrees: number;
+  altitude: number;
+}
+
+function skyCanvasMetrics(width: number, height: number): SkyCanvasMetrics {
+  // Keep the horizon clear of the raised ruler while preserving a useful
+  // field on short/landscape devices. The canvas itself still occupies the
+  // complete route; this only defines the honest projection geometry.
+  const centerX = width / 2;
+  const horizonY = Math.max(
+    120,
+    Math.min(Math.max(120, height - 150), height * 0.78),
+  );
+  const radius = Math.max(
+    64,
+    Math.min(Math.max(64, width / 2 - 24), Math.max(64, horizonY - 72)),
+  );
+  return { centerX, horizonY, radius };
+}
+
+function projectSkyTarget(
+  target: SkyReport["targets"][number],
+  heading: number | null,
+  pose: DevicePose | null,
+  width: number,
+  height: number,
+): SkyTargetProjection | null {
+  const degrees = extractDegrees(target.direction);
+  if (degrees === null || target.altitudeDeg === null) return null;
+  const { centerX, horizonY, radius } = skyCanvasMetrics(width, height);
+  const altitude = Math.max(0, Math.min(90, target.altitudeDeg));
+  const distance = radius * (1 - altitude / 90);
+  const projectionHeading = heading ?? 0;
+  const radians = ((degrees - projectionHeading - 90) * Math.PI) / 180;
+  // Device motion supplies pitch/roll only after the compass has provided an
+  // absolute heading. No synthetic tilt is introduced for missing/stale data.
+  const pitchOffset =
+    heading !== null && pose
+      ? (Math.max(-90, Math.min(90, pose.betaDeg)) / 90) * radius * 0.18
+      : 0;
+  const rollOffset =
+    heading !== null && pose
+      ? (Math.max(-90, Math.min(90, pose.gammaDeg)) / 90) * radius * 0.18
+      : 0;
+  return {
+    x: centerX + Math.cos(radians) * distance + rollOffset,
+    y: horizonY + Math.sin(radians) * distance + pitchOffset,
+    degrees,
+    altitude,
+  };
+}
+
 function compassAccuracyLabel(accuracy: CompassAccuracy) {
   if (accuracy === null || accuracy === undefined || accuracy === "") {
     return "未提供";
@@ -237,9 +351,10 @@ function compassAgeLabel(sampledAt: number | null, now: number) {
   return `${(ageMs / 1000).toFixed(ageMs < 10_000 ? 1 : 0)} s`;
 }
 
-// Keep every directly selectable time slice within the platform's 88rpx
-// semantic target while the marker itself remains visually compact.
-const ORIENTATION_RULER_STEP_RPX = 88;
+// The ruler's full ScrollView is the 88rpx direct-manipulation lane. Ticks
+// remain visually compact at the Design Authority's 34rpx cadence so the
+// selected center slice has useful temporal context instead of a sparse row.
+const ORIENTATION_RULER_STEP_RPX = 34;
 
 function orientationRulerStepPx() {
   try {
@@ -251,7 +366,7 @@ function orientationRulerStepPx() {
     // A conservative CSS-pixel fallback keeps the ruler usable in tests and
     // before the native system metrics are ready.
   }
-  return 44;
+  return 20;
 }
 
 function orientationRulerLabel(
@@ -381,9 +496,11 @@ function OrientationTimeRuler({
         <Text className="sky-orientation-time-ruler__current-value">
           {currentLabel}
         </Text>
-        <Text className="sky-orientation-time-ruler__current-state">
-          {saving ? "保存中" : isPreviewing ? "预览" : "已提交"}
-        </Text>
+        {saving || isPreviewing ? (
+          <Text className="sky-orientation-time-ruler__current-state">
+            {saving ? "保存中" : "预览"}
+          </Text>
+        ) : null}
       </View>
       <View className="sky-orientation-time-ruler__axis" aria-hidden="true" />
       <ScrollView
@@ -495,38 +612,54 @@ function drawSkyScene(
   height: number,
   mode: DisplayMode,
 ) {
-  const observation = mode === "OBSERVATION";
-  const canvas = observation ? "#000000" : "#050914";
-  const grid = observation ? "#551410" : "#1D2A45";
-  const gridSoft = observation ? "#32100D" : "#15213A";
-  const text = observation ? "#FF6A58" : "#EEF2FF";
-  const muted = observation ? "#C54438" : "#94A0B8";
-  const accent = observation ? "#FF3B30" : "#7E8FFF";
-  const object = observation ? "#FF8A72" : "#F1D58A";
-  const green = observation ? "#FF6A58" : "#55C7A5";
-  const centerX = width / 2;
-  const horizonY = height - 48;
-  const radius = Math.max(
-    64,
-    Math.min(width / 2 - 18, height - 90),
-  );
-  context.setFillStyle(canvas);
+  const palette =
+    mode === "OBSERVATION"
+      ? {
+          canvas: "#000000",
+          grid: "#7A1E18",
+          gridSoft: "#240000",
+          text: "#FF6B58",
+          muted: "#C23D32",
+          target: "#D84A3C",
+          event: "#FF6B58",
+        }
+      : mode === "NIGHT"
+        ? {
+            canvas: "#11120F",
+            grid: "#666D62",
+            gridSoft: "#343830",
+            text: "#F5F3EC",
+            muted: "#989E94",
+            target: "#D1D7FF",
+            event: "#FFE5A0",
+          }
+        : {
+            canvas: "#FFFFFF",
+            grid: "#8A9088",
+            gridSoft: "#E2E5DD",
+            text: "#282B29",
+            muted: "#6D746D",
+            target: "#4859B8",
+            event: "#6F5500",
+          };
+  const { centerX, horizonY, radius } = skyCanvasMetrics(width, height);
+  context.setFillStyle(palette.canvas);
   context.fillRect(0, 0, width, height);
 
-  context.setStrokeStyle(grid);
+  context.setStrokeStyle(palette.grid);
   context.setLineWidth(1);
   context.beginPath();
   context.arc(centerX, horizonY, radius, Math.PI, Math.PI * 2);
   context.stroke();
 
   [0.5, 0.76].forEach((scale) => {
-    context.setStrokeStyle(gridSoft);
+    context.setStrokeStyle(palette.gridSoft);
     context.beginPath();
     context.arc(centerX, horizonY, radius * scale, Math.PI, Math.PI * 2);
     context.stroke();
   });
 
-  context.setStrokeStyle(gridSoft);
+  context.setStrokeStyle(palette.gridSoft);
   [-60, -30, 0, 30, 60].forEach((angle) => {
     const radians = ((angle - 90) * Math.PI) / 180;
     context.beginPath();
@@ -538,71 +671,62 @@ function drawSkyScene(
     context.stroke();
   });
 
-  context.setStrokeStyle(grid);
+  context.setStrokeStyle(palette.grid);
   context.beginPath();
   context.moveTo(centerX - radius, horizonY);
   context.lineTo(centerX + radius, horizonY);
   context.stroke();
 
-  context.setFillStyle(text);
+  context.setFillStyle(palette.text);
   context.setFontSize(10);
   context.fillText("北", centerX - 5, horizonY - radius - 8);
   context.fillText("东", centerX + radius - 2, horizonY + 18);
   context.fillText("南", centerX - 5, horizonY + 18);
   context.fillText("西", centerX - radius - 8, horizonY + 18);
-  context.setFillStyle(muted);
+  context.setFillStyle(palette.muted);
   context.setFontSize(9);
   context.fillText("60°", centerX + 6, horizonY - radius * 0.76 + 3);
   context.fillText("30°", centerX + 6, horizonY - radius * 0.5 + 3);
-
-  context.setStrokeStyle(accent);
-  context.setLineWidth(2);
-  context.beginPath();
-  context.arc(
-    centerX,
-    horizonY,
-    radius * 0.76,
-    Math.PI * 1.18,
-    Math.PI * 1.72,
-  );
-  context.stroke();
 
   if (!data) {
     context.draw(false);
     return;
   }
 
-  const projectionHeading = heading ?? 0;
-  data.targets.forEach((target, index) => {
-    const degrees = extractDegrees(target.direction);
-    if (degrees === null) return;
-    if (target.altitudeDeg === null) return;
-    const altitude = Math.max(0, Math.min(90, target.altitudeDeg));
-    const distance = radius * (1 - altitude / 90);
-    const radians = ((degrees - projectionHeading - 90) * Math.PI) / 180;
-    // Device motion supplies pitch/roll only after the compass has provided
-    // an absolute heading. No synthetic tilt is introduced when either
-    // stream is missing or stale.
-    const pitchOffset =
-      heading !== null && pose
-        ? (Math.max(-90, Math.min(90, pose.betaDeg)) / 90) * radius * 0.18
-        : 0;
-    const rollOffset =
-      heading !== null && pose
-        ? (Math.max(-90, Math.min(90, pose.gammaDeg)) / 90) * radius * 0.18
-        : 0;
-    const x = centerX + Math.cos(radians) * distance + rollOffset;
-    const y = horizonY + Math.sin(radians) * distance + pitchOffset;
-    context.setGlobalAlpha(heading === null ? 0.68 : 1);
-    context.setFillStyle(index % 2 === 0 ? object : green);
+  data.targets.forEach((target) => {
+    const projection = projectSkyTarget(target, heading, pose, width, height);
+    if (!projection) return;
+    const isEvent =
+      target.type === "METEOR_SHOWER" ||
+      target.type === "CONJUNCTION" ||
+      target.type === "MILKY_WAY";
+    const mark = mode === "OBSERVATION"
+      ? palette.target
+      : isEvent
+        ? palette.event
+        : palette.target;
+    context.setGlobalAlpha(heading === null ? 0.72 : 1);
+    context.setFillStyle(mark);
     context.beginPath();
-    context.arc(x, y, target.type === "MILKY_WAY" ? 6 : 4, 0, Math.PI * 2);
+    context.arc(
+      projection.x,
+      projection.y,
+      target.type === "MILKY_WAY" ? 6 : 4,
+      0,
+      Math.PI * 2,
+    );
     context.fill();
+    if (target.type === "CONSTELLATION" || target.type === "MILKY_WAY") {
+      context.setStrokeStyle(mark);
+      context.setLineWidth(1);
+      context.beginPath();
+      context.moveTo(projection.x - 8, projection.y);
+      context.lineTo(projection.x + 8, projection.y);
+      context.moveTo(projection.x, projection.y - 8);
+      context.lineTo(projection.x, projection.y + 8);
+      context.stroke();
+    }
     context.setGlobalAlpha(1);
-    context.setFillStyle(text);
-    context.setFontSize(10);
-    const labelX = Math.min(width - 112, Math.max(12, x + 8));
-    context.fillText(target.displayName.slice(0, 10), labelX, y + 4);
   });
   context.draw(false);
 }
@@ -629,6 +753,35 @@ function ContextError({ onBack }: { onBack: () => void }) {
         detail="请从地图中的正式观星点进入详情，再打开“此处夜空”。入口信息不完整时不会回退到当前位置、普通地点或未经核验的结果。"
         recoveryLabel="返回地图"
         onRecover={onBack}
+      />
+    </View>
+  );
+}
+
+function OrientationQuietBack({
+  onBack,
+  label = "返回",
+}: {
+  onBack: () => void;
+  label?: string;
+}) {
+  return (
+    <View
+      className="sky-orientation-back-layer safe-top"
+      data-od-id="sky-orientation-back"
+    >
+      <SoftButton
+        variant="ghost"
+        className="sky-orientation-back"
+        label={label}
+        onClick={onBack}
+      >
+        <Text>{label}</Text>
+      </SoftButton>
+      <SemanticIcon
+        name="arrow-left"
+        decorative
+        className="sky-orientation-back__icon"
       />
     </View>
   );
@@ -674,10 +827,9 @@ export function SpotSkyPage() {
     (state) => state.preferences.reducedMotion,
   );
   const themeClass = useThemeClass();
-  const presentationClass =
-    mode === "OBSERVATION"
-      ? themeClass
-      : themeClass.replace(/theme-day/u, "theme-night");
+  // Full-sky uses the active product mode as-is. In particular, DAY is the
+  // selected white field profile; it must not be silently rendered as NIGHT.
+  const presentationClass = themeClass;
   const contextLookup = useResourceQuery({
     queryKey: ["observation-context", routeContext.contextId],
     queryFn: (signal) =>
@@ -797,6 +949,7 @@ export function SpotSkyPage() {
   );
   const compassResumeRef = useRef(false);
   const [canvasError, setCanvasError] = useState<string | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 343, height: 640 });
   const [timeSaving, setTimeSaving] = useState(false);
   const [orientationObjectListOpen, setOrientationObjectListOpen] =
     useState(false);
@@ -1110,7 +1263,12 @@ export function SpotSkyPage() {
             const height =
               rect && Number.isFinite(rect.height) && rect.height > 0
                 ? rect.height
-                : 270;
+                : 640;
+            setCanvasSize((previous) =>
+              previous.width === width && previous.height === height
+                ? previous
+                : { width, height },
+            );
             const context = Taro.createCanvasContext(CANVAS_ID);
             const canvasData =
               report.data?.dataState === "EXPIRED" ||
@@ -1277,9 +1435,21 @@ export function SpotSkyPage() {
 
   if (!activeContext && contextLookup.isPending)
     return (
-      <View className={themeClass} data-route="spot-night-context-loading">
-        <CustomNav title="此处夜空" back />
-        <View className="page-inset">
+      <View
+        className={`${presentationClass} sky-orientation-page sky-orientation-state-page`}
+        data-route="spot-night-context-loading"
+        data-od-id="sky-orientation-route"
+      >
+        <View className="sky-orientation-state-page__canvas" aria-hidden="true" />
+        <OrientationQuietBack
+          onBack={() =>
+            Taro.navigateBack().catch(() =>
+              Taro.switchTab({ url: "/pages/map/index" }),
+            )
+          }
+          label="返回地图"
+        />
+        <View className="sky-orientation-state-page__status">
           <StatusPanel
             state="LOADING"
             detail="正在恢复正式观星点、观测夜和已提交时刻。"
@@ -1290,11 +1460,21 @@ export function SpotSkyPage() {
 
   if (!contextComplete || !activeContext)
     return (
-      <View className={themeClass} data-route="spot-night-context-error">
-        <CustomNav title="此处夜空" back />
-        <ContextError
+      <View
+        className={`${presentationClass} sky-orientation-page sky-orientation-state-page`}
+        data-route="spot-night-context-error"
+        data-od-id="sky-orientation-route"
+      >
+        <View className="sky-orientation-state-page__canvas" aria-hidden="true" />
+        <OrientationQuietBack
           onBack={() => Taro.switchTab({ url: "/pages/map/index" })}
+          label="返回地图"
         />
+        <View className="sky-orientation-state-page__status">
+          <ContextError
+            onBack={() => Taro.switchTab({ url: "/pages/map/index" })}
+          />
+        </View>
       </View>
     );
 
@@ -1315,42 +1495,36 @@ export function SpotSkyPage() {
           title: "方向权限未开启",
           detail: "开启后仅在本页前台读取设备方向；不会记录连续姿态轨迹。",
           action: "检查权限",
-          secondary: "查看对象列表",
         }
       : orientationSensorState === "UNAVAILABLE"
         ? {
             title: "设备没有可用方向传感器",
             detail: "天空仍保留北向目标预览；当前不宣称手机方向，天体列表继续可用。",
             action: "重试方向",
-            secondary: "查看对象列表",
           }
         : orientationSensorState === "STALE"
           ? {
               title: "方向数据暂时中断",
               detail: "天空暂停手机方向定位；重新连接后才恢复方向呈现。",
               action: "重新连接",
-              secondary: "查看对象列表",
             }
           : orientationSensorState === "CALIBRATING"
             ? {
                 title: "正在校准设备方向",
                 detail: "保持手机平稳；可信方向到达前，天空保持北向预览。",
                 action: "重新校准",
-                secondary: "查看对象列表",
               }
             : orientationSensorState === "LOW_ACCURACY"
               ? {
                   title: "方向精度较低",
                   detail: "暂不显示当前方向结论；目标列表和北向预览仍可用。",
                   action: "重新校准",
-                  secondary: "查看对象列表",
                 }
               : {
-                  title: "让天空图跟随手机方向",
-                  detail: "仅在本页前台读取设备方向，用于旋转当前天空投影。",
-                  action: "允许方向",
-                  secondary: "查看对象列表",
-                };
+                title: "让天空图跟随手机方向",
+                detail: "仅在本页前台读取设备方向，用于旋转当前天空投影。",
+                action: "允许方向",
+              };
   const recoverCompass = () => {
     if (orientationSensorState === "DENIED") {
       stopCompass();
@@ -1381,6 +1555,26 @@ export function SpotSkyPage() {
   const orientationHeading = compassIsReady
     ? `${Math.round(sensorHeadingForScene ?? compassHeading ?? 0)}°`
     : "未提供";
+  const visibleOrientationTargets = useMemo(
+    () =>
+      orientationTargets.flatMap((target) => {
+        const projection = projectSkyTarget(
+          target,
+          sensorHeadingForScene,
+          devicePose,
+          canvasSize.width,
+          canvasSize.height,
+        );
+        return projection ? [{ target, projection }] : [];
+      }),
+    [
+      canvasSize.height,
+      canvasSize.width,
+      devicePose,
+      orientationTargets,
+      sensorHeadingForScene,
+    ],
+  );
   const orientationAccuracy = compassAccuracyLabel(compassTelemetry.accuracy);
   const orientationSampledAt = Math.max(
     compassTelemetry.sampledAt ?? 0,
@@ -1393,39 +1587,44 @@ export function SpotSkyPage() {
   const orientationSensorLabel = `设备方向，方位 ${orientationHeading}，精度 ${orientationAccuracy}，数据年龄 ${orientationAge}，${compassReason}`;
   const orientationDataStatus =
     report.isPending && !orientationData
+      ? {
+          state: "LOADING" as const,
+          detail:
+            "正在按正式观星点、观测夜和当前时刻加载天空数据；不会用当前位置或未经核验的结果顶替。",
+        }
+      : report.isError
         ? {
-            state: "LOADING" as const,
+            state: "ERROR" as const,
             detail:
-              "正在按正式观星点、观测夜和当前时刻加载天空数据；不会用当前位置或未经核验的结果顶替。",
+              "天空计算请求失败；正式点位与完整上下文仍保留，未静默显示成功或合成数据。",
           }
-        : report.isError
+        : report.data?.dataState === "EXPIRED" ||
+            report.data?.dataState === "UNAVAILABLE"
           ? {
               state: "ERROR" as const,
               detail:
-                "天空计算请求失败；正式点位与完整上下文仍保留，未静默显示成功或合成数据。",
+                "当前天空数据不可用；不会用过期缓存或未经核验的结果替代今晚结论。",
             }
-          : report.data?.dataState === "EXPIRED" ||
-              report.data?.dataState === "UNAVAILABLE"
+          : !reportData
             ? {
                 state: "ERROR" as const,
                 detail:
-                  "当前天空数据不可用；不会用过期缓存或未经核验的结果替代今晚结论。",
+                  "返回结果与当前正式点位、日期或时区上下文不一致；为避免混用不同条件的结果，暂不展示。",
               }
-            : !reportData
-              ? {
-                  state: "ERROR" as const,
-                  detail:
-                    "返回结果与当前正式点位、日期或时区上下文不一致；为避免混用不同条件的结果，暂不展示。",
-                }
-              : null;
+            : null;
+  const showOrientationObjectDisclosure =
+    !compassIsReady ||
+    orientationObjectListOpen ||
+    Boolean(orientationDataStatus) ||
+    Boolean(canvasError);
 
-    return (
-      <View
-        className={`${presentationClass} sky-orientation-page`}
-        data-route="sky/detail"
-        data-spot-id={routeContext.spotId}
-        data-od-id="sky-orientation-route"
-      >
+  return (
+    <View
+      className={`${presentationClass} sky-orientation-page`}
+      data-route="sky/detail"
+      data-spot-id={routeContext.spotId}
+      data-od-id="sky-orientation-route"
+    >
         <View
           className="sky-orientation-canvas"
           data-control="sky-orientation-canvas"
@@ -1439,9 +1638,19 @@ export function SpotSkyPage() {
             canvasId={CANVAS_ID}
             id={CANVAS_ID}
             className="sky-scene__canvas sky-orientation-canvas__surface"
-            style={{ width: "100%", height: "100vh" }}
+            style={{ width: "100%", height: "100%" }}
             aria-label="方位天空投影；目标标记只来自当前正式点和观测上下文的结果"
           />
+          {visibleOrientationTargets.map(({ target, projection }) => (
+            <SkyOrientationTargetLabel
+              key={target.targetId}
+              target={target}
+              projection={projection}
+              width={canvasSize.width}
+              height={canvasSize.height}
+              timezone={routeContext.timezone}
+            />
+          ))}
           {canvasError ? (
             <View
               className="sky-orientation-canvas__error"
@@ -1483,20 +1692,7 @@ export function SpotSkyPage() {
           <NotificationRegion owner="spot-night" placement="inline" />
         </View>
 
-        <View
-          className="sky-orientation-back-layer safe-top"
-          data-od-id="sky-orientation-back"
-        >
-          <SoftButton
-            variant="ghost"
-            className="sky-orientation-back"
-            label="返回正式观星点"
-            onClick={goBack}
-          >
-            <SemanticIcon name="arrow-left" decorative />
-            <Text>返回</Text>
-          </SoftButton>
-        </View>
+        <OrientationQuietBack onBack={goBack} label="返回" />
 
         <View
           className={`sky-orientation-sensor sky-orientation-sensor--${orientationSensorState.toLowerCase()}`}
@@ -1507,40 +1703,7 @@ export function SpotSkyPage() {
           aria-live="polite"
           aria-busy={orientationSensorState === "CALIBRATING"}
           aria-label={orientationSensorLabel}
-        >
-          {!compassIsReady ? (
-            <>
-              <View className="sky-orientation-sensor__heading">
-                <SemanticIcon name="compass" decorative />
-                <Text>设备方向</Text>
-              </View>
-              <View
-                className="sky-orientation-sensor__metrics"
-                role="list"
-                aria-label="设备方向实时指标"
-              >
-                <View className="sky-orientation-sensor__metric" role="listitem">
-                  <Text className="sky-orientation-sensor__label">方位</Text>
-                  <Text className="sky-orientation-sensor__value type-data">
-                    {orientationHeading}
-                  </Text>
-                </View>
-                <View className="sky-orientation-sensor__metric" role="listitem">
-                  <Text className="sky-orientation-sensor__label">精度</Text>
-                  <Text className="sky-orientation-sensor__value type-data">
-                    {orientationAccuracy}
-                  </Text>
-                </View>
-                <View className="sky-orientation-sensor__metric" role="listitem">
-                  <Text className="sky-orientation-sensor__label">数据年龄</Text>
-                  <Text className="sky-orientation-sensor__value type-data">
-                    {orientationAge}
-                  </Text>
-                </View>
-              </View>
-            </>
-          ) : null}
-        </View>
+        />
 
         {!compassIsReady ? (
           <View
@@ -1548,7 +1711,7 @@ export function SpotSkyPage() {
             data-control="sky-orientation-recovery"
             data-od-id="sky-orientation-recovery"
             role="group"
-            aria-label={compassRecovery.title}
+            aria-label={`${compassRecovery.title}。${compassRecovery.detail}`}
           >
             <View className="sky-orientation-recovery__icon" aria-hidden="true">
               <SemanticIcon name="compass" decorative />
@@ -1571,43 +1734,34 @@ export function SpotSkyPage() {
               >
                 {compassRecovery.action}
               </SoftButton>
-              <SoftButton
-                variant="ghost"
-                className="sky-orientation-recovery__secondary"
-                label="查看对象列表"
-                onClick={() => {
-                  stopCompass();
-                  setOrientationObjectListOpen(true);
-                }}
-              >
-                {compassRecovery.secondary}
-              </SoftButton>
             </View>
           </View>
         ) : null}
 
-        <View
-          className="sky-orientation-object-toggle"
-          data-od-id="sky-orientation-object-list-toggle"
-        >
-          <Button
-            compileMode
-            className="sky-orientation-object-toggle__button"
-            ariaLabel={
-              orientationObjectListOpen ? "收起对象列表" : "查看对象列表"
-            }
-            aria-pressed={orientationObjectListOpen ? "true" : "false"}
-            onClick={() => setOrientationObjectListOpen((open) => !open)}
+        {showOrientationObjectDisclosure ? (
+          <View
+            className="sky-orientation-object-toggle"
+            data-od-id="sky-orientation-object-list-toggle"
           >
-            <SemanticIcon
-              name={orientationObjectListOpen ? "chevron-up" : "chevron-down"}
-              decorative
-            />
-            <Text>
-              {orientationObjectListOpen ? "收起对象列表" : "查看对象列表"}
-            </Text>
-          </Button>
-        </View>
+            <Button
+              compileMode
+              className="sky-orientation-object-toggle__button"
+              ariaLabel={
+                orientationObjectListOpen ? "收起对象列表" : "查看对象列表"
+              }
+              aria-pressed={orientationObjectListOpen ? "true" : "false"}
+              onClick={() => setOrientationObjectListOpen((open) => !open)}
+            >
+              <SemanticIcon
+                name={orientationObjectListOpen ? "chevron-up" : "chevron-down"}
+                decorative
+              />
+              <Text>
+                {orientationObjectListOpen ? "收起对象列表" : "查看对象列表"}
+              </Text>
+            </Button>
+          </View>
+        ) : null}
 
         {orientationObjectListOpen ? (
           <View

@@ -20,9 +20,47 @@
 .semantic-icon--source {
   object-fit: contain;
 }
+
 .semantic-icon--source::before,
 .semantic-icon--source::after {
   display: none;
+}
+
+.semantic-icon__arrow-source {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The PNG remains the selected source. These owner-level strokes guarantee
+ * the same arrow remains legible when WEAPP drops a nested image paint. */
+.semantic-icon--arrow-left::before {
+  top: 18rpx;
+  left: 6rpx;
+  width: 28rpx;
+  height: 3rpx;
+  border-radius: 3rpx;
+  background: currentColor;
+}
+
+.semantic-icon--arrow-left::after {
+  top: 10rpx;
+  left: 6rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-bottom: 3rpx solid currentColor;
+  border-left: 3rpx solid currentColor;
+  border-radius: 2rpx;
+  transform: rotate(45deg);
+}
+
+.theme-night .semantic-icon--arrow-left,
+.theme-observation .semantic-icon--arrow-left,
+.semantic-icon--arrow-left.semantic-icon--night,
+.semantic-icon--arrow-left.semantic-icon--observation {
+  color: var(--text-primary);
 }
 
 .semantic-icon--contextual-source {
@@ -157,6 +195,42 @@
   background: currentColor;
   transform: rotate(-45deg);
   transform-origin: left center;
+}
+
+.semantic-icon--sun::before {
+  top: 10rpx;
+  left: 10rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+.semantic-icon--sun::after {
+  top: 3rpx;
+  left: 18rpx;
+  width: 4rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: currentColor;
+  box-shadow:
+    0 28rpx 0 currentColor,
+    -15rpx 14rpx 0 currentColor,
+    15rpx 14rpx 0 currentColor;
+}
+
+.semantic-icon--moon::before {
+  top: 5rpx;
+  left: 8rpx;
+  width: 27rpx;
+  height: 30rpx;
+  border: 3rpx solid currentColor;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  transform: rotate(18deg);
+}
+.semantic-icon--moon::after {
+  display: none;
 }
 
 .semantic-icon--info::before {

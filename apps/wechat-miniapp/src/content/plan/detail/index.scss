@@ -1,22 +1,4 @@
 .plan-editor {
-  --canvas: #edf2ef;
-  --surface: #fffdf8;
-  --surface-subtle: #f7f8f3;
-  --surface-elevated: #fffdf8;
-  --text-primary: #182338;
-  --text-secondary: #58647a;
-  --text-tertiary: #7c8798;
-  --border: #dce3df;
-  --primary: #7281ee;
-  --primary-pressed: #5867d7;
-  --on-primary: #07101f;
-  --success: #237960;
-  --warning: #9f6422;
-  --danger: #aa453f;
-  --focus: #7281ee;
-  --pressed-overlay: rgba(114, 129, 238, 0.12);
-  --accent-warm: #f3d878;
-  --plan-sky: #111c31;
   min-height: 100vh;
   overflow-x: hidden;
   background: var(--canvas);
@@ -24,27 +6,27 @@
 }
 
 .plan-editor .custom-nav {
-  padding-left: 32rpx;
-  padding-right: 32rpx;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
   background: var(--canvas);
 }
 
 .plan-editor .custom-nav__bar {
-  min-height: 128rpx;
+  min-height: 96rpx;
   grid-template-columns: 88rpx minmax(0, 1fr) 88rpx;
   gap: 0;
 }
 
 .plan-editor .custom-nav__title {
-  align-items: flex-start;
-  text-align: left;
+  align-items: center;
+  text-align: center;
 }
 
 .plan-editor .custom-nav__title .type-section {
   color: var(--text-primary);
-  font-size: 34rpx;
-  line-height: 44rpx;
-  font-weight: 700;
+  font-size: 27rpx;
+  line-height: 38rpx;
+  font-weight: 600;
 }
 
 .plan-editor .custom-nav__title .type-caption {
@@ -70,8 +52,8 @@
 .plan-content {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
-  padding: 0 32rpx 48rpx;
+  gap: 20rpx;
+  padding: 0 24rpx 48rpx;
 }
 
 .plan-notification-state:empty {
@@ -81,21 +63,16 @@
 .plan-hero {
   position: relative;
   overflow: hidden;
-  padding: 32rpx;
-  border-radius: 32rpx;
-  color: #f6f8ff;
-  background: var(--plan-sky);
-  box-shadow: 0 16rpx 36rpx rgba(24, 35, 56, 0.14);
+  padding: 16rpx 20rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 20rpx;
+  color: var(--text-primary);
+  background: var(--surface);
+  box-shadow: none;
 }
 
 .plan-hero__orbit {
-  position: absolute;
-  top: -104rpx;
-  right: -76rpx;
-  width: 220rpx;
-  height: 220rpx;
-  border: 24rpx solid rgba(114, 129, 238, 0.34);
-  border-radius: 50%;
+  display: none;
 }
 
 .plan-hero__moon {
@@ -127,38 +104,41 @@
 
 .plan-hero__title {
   margin-top: 8rpx;
-  color: #f6f8ff;
-  font-size: 44rpx;
-  line-height: 52rpx;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  font-size: 34rpx;
+  line-height: 46rpx;
+  font-weight: 600;
+  letter-spacing: 0;
   word-break: break-word;
 }
 
 .plan-hero__subtitle {
   margin-top: 8rpx;
   max-width: 92%;
-  color: #b8c2d9;
-  font-size: 22rpx;
-  line-height: 32rpx;
+  color: var(--text-secondary);
+  font-size: 20rpx;
+  line-height: 28rpx;
   word-break: break-word;
 }
 
 .plan-hero__facts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12rpx;
-  margin-top: 24rpx;
+  gap: 0;
+  margin-top: 12rpx;
+  border-top: 1rpx solid var(--border);
 }
 
 .plan-hero__fact {
   min-width: 0;
-  min-height: 82rpx;
-  padding: 16rpx 14rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.1);
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.055);
+  min-height: 68rpx;
+  padding: 10rpx 12rpx;
+  border: 0;
+  border-left: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
 }
+.plan-hero__fact:first-child { border-left: 0; }
 
 .plan-hero__fact-value,
 .plan-hero__fact-label {
@@ -167,18 +147,18 @@
 
 .plan-hero__fact-value {
   overflow: hidden;
-  color: #f6f8ff;
+  color: var(--text-primary);
   font-family: "SFMono-Regular", "Roboto Mono", monospace;
-  font-size: 26rpx;
+  font-size: 24rpx;
   line-height: 34rpx;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .plan-hero__fact-label {
   margin-top: 4rpx;
-  color: #9da8bf;
+  color: var(--text-tertiary);
   font-size: 18rpx;
   line-height: 26rpx;
   white-space: nowrap;
@@ -215,14 +195,14 @@
 .plan-route__card {
   overflow: hidden;
   border: 1rpx solid var(--border);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   background: var(--surface);
-  box-shadow: 0 8rpx 20rpx rgba(24, 35, 56, 0.06);
+  box-shadow: none;
 }
 
 .plan-checklist__row {
   width: 100%;
-  min-height: 112rpx;
+  min-height: 88rpx;
   padding: 8rpx 24rpx 8rpx 12rpx;
   display: grid;
   grid-template-columns: 88rpx minmax(0, 1fr) max-content;
@@ -266,7 +246,7 @@
 
 .plan-checklist__row--done .plan-checklist__check::before {
   border-color: var(--success);
-  background: #dff2e8;
+  background: var(--icon-green-soft);
 }
 
 .plan-checklist__check text {
@@ -290,9 +270,9 @@
 
 .plan-checklist__title {
   color: var(--text-primary);
-  font-size: 26rpx;
+  font-size: 24rpx;
   line-height: 34rpx;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .plan-checklist__detail {
@@ -314,12 +294,12 @@
 }
 
 .plan-checklist__status--done {
-  color: #175c49;
-  background: #dff2e8;
+  color: var(--positive);
+  background: var(--icon-green-soft);
 }
 
 .plan-route__card {
-  padding: 24rpx;
+  padding: 16rpx 20rpx;
 }
 
 .plan-route__timeline {
@@ -426,12 +406,13 @@
 .plan-editor-form {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
-  padding: 28rpx;
-  border: 1rpx solid var(--border);
-  border-radius: 28rpx;
-  background: var(--surface);
-  box-shadow: 0 8rpx 20rpx rgba(24, 35, 56, 0.06);
+  gap: 12rpx;
+  padding: 0 0 20rpx;
+  border: 0;
+  border-bottom: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .plan-empty .soft-button {
@@ -516,13 +497,13 @@
 
 .plan-editor .status-panel--error {
   border-color: var(--danger);
-  background: #ffebe8;
+  background: var(--icon-coral-soft);
 }
 
 .plan-editor .status-panel--stale,
 .plan-editor .status-panel--partial {
   border-color: var(--warning);
-  background: #fff0d6;
+  background: var(--icon-gold-soft);
 }
 
 .plan-editor .status-panel--loading {

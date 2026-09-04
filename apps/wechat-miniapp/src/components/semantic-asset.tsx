@@ -31,7 +31,10 @@ export type SemanticIconName =
   | "download"
   | "trash"
   | "wifi-off"
-  | "images";
+  | "images"
+  | "sun"
+  | "moon"
+  | "star";
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   "arrow-left": "/assets/icons/arrow-left.png",
@@ -86,23 +89,33 @@ export function SemanticIcon({
 }) {
   const mode = useAppStore((state) => state.mode);
   const source = SOURCE_ICON_FILE[name];
+  if (name === "star") {
+    return (
+      <Image
+        className={`semantic-icon semantic-icon--source semantic-icon--star semantic-icon--${mode.toLowerCase()} ${className}`}
+        src={`/assets/semantic/five-point-star-${MODE_FILE[mode]}.svg`}
+        mode="aspectFit"
+        {...(decorative
+          ? { "aria-hidden": true }
+          : { role: "img", "aria-label": label ?? name })}
+      />
+    );
+  }
   if (name === "arrow-left") {
     return (
       <View
-        className={`semantic-icon semantic-icon--source semantic-icon--contextual-source semantic-icon--arrow-left semantic-icon--${mode.toLowerCase()} ${className}`}
+        className={`semantic-icon semantic-icon--arrow-left semantic-icon--${mode.toLowerCase()} ${className}`}
         {...(decorative
           ? { "aria-hidden": true }
           : { role: "img", "aria-label": label ?? name })}
       >
         <Image
-          className="semantic-icon__contextual-source semantic-icon__contextual-source--day"
-          src="/assets/icons/arrow-left.png"
-          mode="aspectFit"
-          aria-hidden
-        />
-        <Image
-          className="semantic-icon__contextual-source semantic-icon__contextual-source--dark"
-          src="/assets/icons/arrow-left-light.png"
+          className="semantic-icon__arrow-source"
+          src={
+            mode === "DAY"
+              ? "/assets/icons/arrow-left.png"
+              : "/assets/icons/arrow-left-light.png"
+          }
           mode="aspectFit"
           aria-hidden
         />

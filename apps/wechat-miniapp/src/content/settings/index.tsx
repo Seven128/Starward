@@ -15,7 +15,6 @@ import {
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import {
-  DISPLAY_MODE_LABEL,
   SettingsControls,
   SettingsAccountActions,
 } from "./settings-sections";
@@ -56,15 +55,6 @@ export default function SettingsPage() {
   const selectDisplayMode = (next: DisplayMode) => {
     if (next === "OBSERVATION") {
       if (mode !== "OBSERVATION") enterObservation();
-      notify({
-        owner: "settings",
-        placement: "inline",
-        tone: "warning",
-        title: "观测红模式已开启",
-        body: "界面保持纯黑与暖红；媒体默认不自动点亮，退出会恢复此前显示模式。",
-        dismissible: true,
-        dedupeKey: "settings-observation-mode",
-      });
       return;
     }
     setMode(next);
@@ -77,15 +67,6 @@ export default function SettingsPage() {
       )
         currentState.dismissNotification(notification.id);
     }
-    notify({
-      owner: "settings",
-      placement: "floating",
-      tone: "success",
-      title: `已切换为${DISPLAY_MODE_LABEL[next]}`,
-      body: "当前路由、选中地点、筛选草稿和焦点上下文保持不变。",
-      dismissible: true,
-      dedupeKey: "settings-display-mode",
-    });
   };
 
   // Kept as page-local aliases for older callback probes; the rendered
@@ -101,40 +82,13 @@ export default function SettingsPage() {
       )
         currentState.dismissNotification(notification.id);
     }
-    notify({
-      owner: "settings",
-      placement: "floating",
-      tone: "success",
-      title: `已切换为${DISPLAY_MODE_LABEL[next]}`,
-      body: "当前路由、选中地点、筛选草稿和焦点上下文保持不变。",
-      dismissible: true,
-      dedupeKey: "settings-display-mode",
-    });
   };
   const toggleObservation = () => {
     if (mode === "OBSERVATION") {
       exitObservation();
-      notify({
-        owner: "settings",
-        placement: "inline",
-        tone: "success",
-        title: "已退出观测红模式",
-        body: "已恢复进入前的日间或夜间模式，设置页与待处理上下文保持原位。",
-        dismissible: true,
-        dedupeKey: "settings-observation-mode",
-      });
       return;
     }
     enterObservation();
-    notify({
-      owner: "settings",
-      placement: "inline",
-      tone: "warning",
-      title: "观测红模式已开启",
-      body: "界面保持纯黑与暖红；媒体默认不自动点亮，退出会恢复此前显示模式。",
-      dismissible: true,
-      dedupeKey: "settings-observation-mode",
-    });
   };
 
   const downloadAccountData = async () => {
@@ -230,7 +184,6 @@ export default function SettingsPage() {
     >
       <CustomNav
         title="设置"
-        subtitle="显示、权限与数据"
         back
         backOdId="my-settings-back-action"
         backFallbackTab="/pages/my/index"
@@ -238,6 +191,7 @@ export default function SettingsPage() {
       <ScrollView
         scrollY
         enhanced
+        bounces={false}
         showScrollbar={false}
         className="settings-page__scroll hide-scrollbar"
       >

@@ -6,8 +6,8 @@ page {
   background: var(--canvas);
   color: var(--text-primary);
   font-family: tokens.$font-native, system-ui, sans-serif;
-  font-size: 28rpx;
-  line-height: 1.5;
+  font-size: 24rpx;
+  line-height: 34rpx;
   overflow-x: hidden;
 }
 
@@ -66,55 +66,69 @@ button::after {
 }
 
 .large-text {
-  font-size: 32rpx;
+  font-size: 48rpx;
+  line-height: 68rpx;
 }
 .large-text .type-caption {
-  font-size: 28rpx;
-  line-height: 40rpx;
+  font-size: 40rpx;
+  line-height: 56rpx;
 }
 .large-text .type-label {
-  font-size: 30rpx;
-  line-height: 42rpx;
+  font-size: 46rpx;
+  line-height: 64rpx;
 }
 .large-text .type-body {
-  font-size: 34rpx;
-  line-height: 50rpx;
+  font-size: 48rpx;
+  line-height: 68rpx;
+}
+.large-text .type-page-title {
+  font-size: 68rpx;
+  line-height: 92rpx;
+}
+.large-text .type-section {
+  font-size: 54rpx;
+  line-height: 76rpx;
+}
+.large-text .type-data {
+  font-size: 48rpx;
+  line-height: 68rpx;
 }
 
 .type-display {
-  font-size: 44rpx;
-  line-height: 52rpx;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 36rpx;
+  line-height: 50rpx;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 .type-page-title {
-  font-size: 32rpx;
-  line-height: 42rpx;
+  font-size: 34rpx;
+  line-height: 46rpx;
   font-weight: 600;
 }
 .type-section {
-  font-size: 30rpx;
-  line-height: 42rpx;
+  font-size: 27rpx;
+  line-height: 38rpx;
   font-weight: 600;
 }
 .type-body {
-  font-size: 28rpx;
-  line-height: 42rpx;
+  font-size: 24rpx;
+  line-height: 34rpx;
 }
 .type-label {
-  font-size: 24rpx;
+  font-size: 23rpx;
   line-height: 32rpx;
   font-weight: 500;
 }
 .type-caption {
-  font-size: 22rpx;
-  line-height: 32rpx;
+  font-size: 20rpx;
+  line-height: 28rpx;
   color: var(--text-secondary);
 }
 .type-data {
-  font-size: 28rpx;
-  line-height: 40rpx;
-  font-weight: 500;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 24rpx;
+  line-height: 34rpx;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
@@ -128,7 +142,7 @@ button::after {
 .card {
   background: var(--surface);
   border: 1rpx solid var(--border);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   box-shadow: none;
 }
 
@@ -136,15 +150,17 @@ button::after {
   width: auto;
   min-height: 88rpx;
   min-width: 88rpx;
-  padding: 18rpx 28rpx;
+  padding: 12rpx 20rpx;
   border: 1rpx solid var(--border);
-  border-radius: 20rpx;
+  border-radius: 12rpx;
   background: var(--surface);
   color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
+  gap: 8rpx;
+  font-size: 23rpx;
+  line-height: 32rpx;
   font-weight: 500;
   white-space: nowrap;
   transition:
@@ -180,27 +196,29 @@ button::after {
   margin-top: 0;
 }
 
-.focus-ring:focus,
-.soft-button:focus,
-.chip:focus,
-input:focus,
-textarea:focus {
-  outline: 4rpx solid var(--focus);
-  outline-offset: 4rpx;
+.focus-ring:focus-visible,
+.soft-button:focus-visible,
+.chip:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 0;
+  box-shadow: inset 0 -4rpx 0 var(--focus);
 }
 
 .chip {
   min-height: 88rpx;
-  padding: 18rpx 24rpx;
+  padding: 10rpx 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 40rpx;
+  border-radius: 999rpx;
   border: 1rpx solid var(--border);
   color: var(--text-secondary);
   background: var(--surface);
   text-align: center;
   white-space: nowrap;
+  font-size: 21rpx;
+  line-height: 29rpx;
 }
 .chip--selected {
   border-width: 2rpx;
@@ -212,11 +230,13 @@ textarea:focus {
 .field {
   min-height: 88rpx;
   width: 100%;
-  padding: 20rpx 24rpx;
+  padding: 16rpx 20rpx;
   color: var(--text-primary);
   background: var(--surface);
   border: 1rpx solid var(--border);
-  border-radius: 20rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  line-height: 34rpx;
 }
 .field--disabled {
   color: var(--text-tertiary);
@@ -224,17 +244,17 @@ textarea:focus {
   cursor: not-allowed;
 }
 .field-textarea {
-  min-height: 220rpx;
+  min-height: 192rpx;
 }
 
 .section-stack {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 16rpx;
 }
 .page-inset {
-  padding-left: 32rpx;
-  padding-right: 32rpx;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
 }
 .compact-inset {
   padding-left: 24rpx;
@@ -292,5 +312,13 @@ textarea:focus {
 @media (prefers-reduced-motion: reduce) {
   .soft-button {
     transition-duration: 80ms !important;
+  }
+}
+
+@media (min-width: 421px) {
+  .page-inset,
+  .compact-inset {
+    padding-left: 32rpx;
+    padding-right: 32rpx;
   }
 }

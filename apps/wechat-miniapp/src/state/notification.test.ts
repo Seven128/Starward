@@ -66,7 +66,7 @@ test("repeated notifications deduplicate while preserving an occurrence count", 
   assert.deepEqual(dismissNotification(queue, queue[0]!.id), []);
 });
 
-test("actual Settings callbacks replace observation feedback and preserve unrelated errors", () => {
+test("actual Settings callbacks use control state feedback and preserve unrelated errors", () => {
   // Execute the page-owned callbacks, not copied notification fixtures. Platform
   // and mode mutations are explicit ports; arbitration is the production owner.
   const source = ts.createSourceFile(
@@ -139,14 +139,12 @@ test("actual Settings callbacks replace observation feedback and preserve unrela
 
   for (let repeat = 0; repeat < 3; repeat += 1) {
     callbacks.toggleObservation();
-    assert.equal(
-      selectNotification(queue, "inline", "settings").current?.title,
-      "观测红模式已开启",
-    );
+    assert.equal(mode, "OBSERVATION");
+    assert.equal(selectNotification(queue, "inline", "settings").current, null);
     callbacks.toggleObservation();
     const visible = selectNotification(queue, "inline", "settings");
     assert.equal(mode, "NIGHT");
-    assert.equal(visible.current?.title, "已退出观测红模式");
+    assert.equal(visible.current, null);
     assert.equal(visible.residualCount, 0);
   }
   runtime.notify({
@@ -173,9 +171,6 @@ test("actual Settings callbacks replace observation feedback and preserve unrela
       queue.filter((item) => item.placement === "inline").map((item) => item.id).sort(),
       ["map-error", "settings-sync-error"],
     );
-    assert.equal(
-      selectNotification(queue, "floating", "settings").current?.title,
-      target === "DAY" ? "已切换为日间" : "已切换为夜间",
-    );
+    assert.equal(selectNotification(queue, "floating", "settings").current, null);
   }
 });

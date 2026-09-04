@@ -296,12 +296,11 @@ export default function ImportPage() {
     >
       <CustomNav
         title="内容导入"
-        subtitle="来源、权利、草稿与审核沿袭"
         back
         backOdId="import-back-action"
         backFallbackTab="/pages/my/index"
       />
-      <ScrollView scrollY enhanced showScrollbar={false} className="import-page__scroll hide-scrollbar">
+      <ScrollView scrollY enhanced bounces={false} showScrollbar={false} className="import-page__scroll hide-scrollbar">
         <View className="import-content page-inset safe-bottom">
           {imports.isPending ? <StatusPanel state="LOADING" detail="正在回读当前身份的导入草稿。" /> : null}
           {imports.isError ? (

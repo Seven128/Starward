@@ -2,8 +2,7 @@ import Taro from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useMemo } from "react";
 import { CustomNav } from "@/components/custom-nav";
-import { SemanticIcon } from "@/components/semantic-asset";
-import { SoftButton } from "@/components/soft-button";
+import { SemanticAsset, SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
@@ -22,6 +21,7 @@ import "./my-library-page.scss";
  */
 export function MyLibraryPage() {
   const themeClass = useThemeClass();
+  const mode = useAppStore((state) => state.mode);
   const plans = useAppStore((state) => state.plans);
   const replacePlans = useAppStore((state) => state.replacePlans);
   const applyServerPreferences = useAppStore(
@@ -90,21 +90,7 @@ export function MyLibraryPage() {
       data-od-id="my-account-center"
     >
       <View data-control="my-account-header">
-        <CustomNav
-          title="我的"
-          odId="my-account-header"
-          right={
-            <View data-od-id="my-settings-action" data-control="my-settings-action">
-              <SoftButton
-                label="打开设置"
-                variant="ghost"
-                onClick={openSettings}
-              >
-                <SemanticIcon name="conditions" />
-              </SoftButton>
-            </View>
-          }
-        />
+        <CustomNav title="我的" odId="my-account-header" />
       </View>
       <ScrollView
         scrollY
@@ -128,6 +114,20 @@ export function MyLibraryPage() {
             role="group"
             aria-label="个人资料摘要"
           >
+            <View className="profile-summary__header">
+              <View className="profile-summary__avatar" aria-hidden="true">
+                <SemanticAsset
+                  subject="neutral-avatar"
+                  mode={mode}
+                  label=""
+                  className="profile-summary__asset"
+                />
+              </View>
+              <View className="profile-summary__copy">
+                <Text className="type-section">账户与内容</Text>
+                <Text className="type-caption">当前微信身份</Text>
+              </View>
+            </View>
             <View className="profile-summary__band">
               <View>
                 <Text className="type-section">个人链接</Text>
@@ -146,9 +146,6 @@ export function MyLibraryPage() {
                 </Text>
               </View>
             </View>
-            <Text className="type-caption">
-              计划、偏好与投稿按当前微信身份隔离；公开地图与点位详情无需额外授权。
-            </Text>
             <View className="my-focus-actions" data-od-id="my-focus-actions">
               <Button
                 className="routine-entry routine-entry--plan focus-ring"
@@ -215,7 +212,8 @@ export function MyLibraryPage() {
             <View className="routine-entry-list">
               <Button
                 className="routine-entry routine-entry--settings focus-ring"
-                data-od-id="my-settings-entry"
+                data-od-id="my-settings-action"
+                data-control="my-settings-action"
                 aria-label="打开设置"
                 onClick={openSettings}
               >

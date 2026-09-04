@@ -2,19 +2,25 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: var(--canvas);
 }
 
 .contribution-page__scroll {
+  position: relative;
+  z-index: 0;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  clip-path: inset(0);
 }
 
 .contribution-content {
-  padding-top: 20rpx;
+  padding-top: 12rpx;
   padding-bottom: 64rpx;
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 20rpx;
 }
 .contribution-document-note {
   padding: 18rpx 22rpx;
@@ -58,22 +64,27 @@
 
 .contribution-card,
 .contribution-history {
-  padding: 24rpx;
+  padding: 0 0 20rpx;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 12rpx;
+  border: 0;
+  border-bottom: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 
 .contribution-context,
 .contribution-media-row {
-  padding: 18rpx 20rpx;
+  padding: 8rpx 0;
   display: flex;
   flex-direction: column;
   gap: 4rpx;
-  border: 1rpx solid var(--border);
-  border-radius: 18rpx;
-  background: var(--surface-subtle);
+  border: 0;
+  border-bottom: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
 }
 .contribution-context--compact {
   gap: 6rpx;
@@ -99,11 +110,11 @@
 }
 .contribution-kind-copy,
 .contribution-draft-recovery {
-  padding: 16rpx;
+  padding: 12rpx 16rpx;
   display: flex;
   flex-direction: column;
   gap: 6rpx;
-  border-radius: 16rpx;
+  border-radius: 8rpx;
   background: var(--surface-subtle);
 }
 .contribution-draft-recovery {
@@ -120,32 +131,34 @@
 .contribution-topic-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12rpx;
+  gap: 8rpx;
 }
 .contribution-choice-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .contribution-kind-choice {
   position: relative;
   min-width: 0;
-  min-height: 168rpx;
+  min-height: 88rpx;
   margin: 0;
-  padding: 18rpx 14rpx;
+  padding: 8rpx 16rpx;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 8rpx;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
   color: var(--text-primary);
   text-align: left;
   border: 1rpx solid var(--border);
-  border-radius: 20rpx;
+  border-radius: 12rpx;
   background: var(--surface);
 }
 .contribution-kind-choice .type-caption {
+  flex: 1;
   color: var(--text-tertiary);
   white-space: normal;
+  text-align: right;
 }
 .contribution-kind-choice--selected {
   border-color: var(--choice-selected-border);
@@ -165,15 +178,15 @@
 .contribution-date-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+  gap: 8rpx;
 }
 
 .contribution-switch-row {
-  min-height: 96rpx;
+  min-height: 88rpx;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 20rpx;
+  gap: 12rpx;
 }
 
 .contribution-switch-row > view:first-child {
@@ -203,22 +216,23 @@
 }
 .contribution-media-cell {
   display: grid;
-  grid-template-columns: 72rpx minmax(0, 1fr) auto;
+  grid-template-columns: 64rpx minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14rpx;
+  gap: 10rpx;
 }
 .contribution-media-cell__thumb {
-  width: 72rpx;
-  height: 72rpx;
+  width: 64rpx;
+  height: 64rpx;
   display: grid;
   place-items: center;
-  border-radius: 18rpx;
+  border-radius: 8rpx;
   color: var(--primary);
   background: var(--icon-green-soft);
 }
 .contribution-media-cell__thumb .semantic-icon {
-  width: 36rpx;
-  height: 36rpx;
+  width: 24rpx;
+  height: 24rpx;
+  flex-basis: 24rpx;
 }
 .contribution-media-cell__actions {
   display: flex;
@@ -488,14 +502,14 @@
 }
 
 .contribution-textarea {
-  min-height: 220rpx;
+  min-height: 192rpx;
   width: 100%;
 }
 
 .contribution-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+  gap: 8rpx;
 }
 .contribution-actions.contribution-actions--submit {
   width: 100%;
@@ -509,8 +523,9 @@
 }
 
 .contribution-actions .soft-button--primary {
-  border-color: var(--success);
-  background: var(--success);
+  min-height: 80rpx;
+  border-color: var(--accent-warm);
+  background: var(--accent-warm);
   color: var(--on-primary);
 }
 

@@ -7,6 +7,7 @@ import {
 } from "@tarojs/components";
 import type { BaseEventOrig, MapProps } from "@tarojs/components";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import {
   type DisplayMode,
@@ -94,6 +95,26 @@ interface NativeLayerPolygon {
 
 type BottomPresentation = "none" | "spot-panel" | "layer-sheet";
 
+const PANEL_POSITION: Record<SpotPanelExtent, number> = {
+  small: 0,
+  medium: 0.5,
+  large: 1,
+};
+
+function clampUnit(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+function panelPresentationPosition(
+  extent: SpotPanelExtent,
+  dragOffset: number,
+) {
+  // Touch coordinates are reported in CSS px.  A bounded 240px span maps
+  // the live drag to one adjacent extent, while the coordinator still owns
+  // the discrete committed snap at release.
+  return clampUnit(PANEL_POSITION[extent] - dragOffset / 240);
+}
+
 function layerProjectionFingerprint(polygons: readonly NativeLayerPolygon[]) {
   let fingerprint = 2_166_136_261;
   const input = polygons
@@ -111,25 +132,40 @@ function layerProjectionFingerprint(polygons: readonly NativeLayerPolygon[]) {
 
 const MAP_MARKER_PALETTE: Record<
   DisplayMode,
-  { selected: string; text: string; surface: string; border: string }
+  {
+    selectedLabel: string;
+    selectedSurface: string;
+    selectedBorder: string;
+    text: string;
+    surface: string;
+    border: string;
+  }
 > = {
+  // Native Map labels cannot read WXSS custom properties; these are the
+  // corresponding values from the shared Field Signal role tokens.
   DAY: {
-    selected: "#536DFE",
-    text: "#111827",
+    selectedLabel: "#4859B8",
+    selectedSurface: "#F5F6FF",
+    selectedBorder: "#8799F6",
+    text: "#282B29",
     surface: "#FFFFFF",
-    border: "#536DFE",
+    border: "#8A9088",
   },
   NIGHT: {
-    selected: "#7E8FFF",
-    text: "#EEF2FF",
-    surface: "#0B1222",
-    border: "#7E8FFF",
+    selectedLabel: "#D1D7FF",
+    selectedSurface: "#292D45",
+    selectedBorder: "#A9B6FF",
+    text: "#F5F3EC",
+    surface: "#181A17",
+    border: "#666D62",
   },
   OBSERVATION: {
-    selected: "#FF3B30",
-    text: "#FF6A58",
-    surface: "#120000",
-    border: "#FF3B30",
+    selectedLabel: "#FF6B58",
+    selectedSurface: "#190000",
+    selectedBorder: "#A83229",
+    text: "#FF6B58",
+    surface: "#110000",
+    border: "#A83229",
   },
 };
 
@@ -207,18 +243,21 @@ function markerItems(
       latitude: group.latitude,
       longitude: group.longitude,
       iconPath: selected ? icons.selected : icons.regular,
-      width: selected || clustered ? 38 : 30,
-      height: selected || clustered ? 42 : 34,
+      // Native Map marker dimensions are device pixels (not WXSS rpx).
+      // Keep the regular/selected assets at the 32/40 visual-role steps;
+      // clustered groups retain their slightly larger count treatment.
+      width: selected ? 40 : clustered ? 38 : 32,
+      height: selected ? 45 : clustered ? 42 : 36,
       anchor: { x: 0.5, y: 1 },
       alpha: 0.96,
       label: {
         content: clustered
           ? String(group.spots.length)
           : String(group.id).padStart(2, "0"),
-        color: selected ? palette.selected : palette.text,
+        color: selected ? palette.selectedLabel : palette.text,
         fontSize: selected || clustered ? 13 : 18,
-        bgColor: palette.surface,
-        borderColor: palette.border,
+        bgColor: selected ? palette.selectedSurface : palette.surface,
+        borderColor: selected ? palette.selectedBorder : palette.border,
         borderWidth: 1,
         borderRadius: 12,
         padding: 5,
@@ -1046,9 +1085,8 @@ export default function MapPage() {
     selectedSpotId,
   ]);
 
-  const panelMediaVisible = Boolean(
+  const panelHasMedia = Boolean(
     bottomPresentation === "spot-panel" &&
-      panelExtent === "large" &&
       selected?.media.some(
         (media) =>
           media.state !== "EXPIRED" &&
@@ -1058,6 +1096,53 @@ export default function MapPage() {
           Boolean(media.thumbnailPath.trim() || media.localPath.trim()),
       ),
   );
+  const panelPosition =
+    bottomPresentation === "spot-panel"
+      ? panelPresentationPosition(panelExtent, panelDragOffset)
+      : 0;
+  const panelMediaReveal = panelHasMedia
+    ? clampUnit((panelPosition - 0.5) / 0.28)
+    : 0;
+  const panelChromeOpacity =
+    bottomPresentation === "spot-panel"
+      ? clampUnit(1 - clampUnit((panelPosition - 0.82) / 0.12))
+      : 1;
+  const panelChromeHidden =
+    bottomPresentation === "spot-panel" && panelChromeOpacity <= 0.08;
+  let panelMediaMaxHeightRpx = 420;
+  try {
+    const windowInfo = Taro.getWindowInfo();
+    if (
+      Number.isFinite(windowInfo.windowWidth) &&
+      windowInfo.windowWidth > 0 &&
+      Number.isFinite(windowInfo.windowHeight) &&
+      windowInfo.windowHeight > 0
+    ) {
+      panelMediaMaxHeightRpx = Math.min(
+        420,
+        Math.max(
+          300,
+          (27 * windowInfo.windowHeight * 750) /
+            (100 * windowInfo.windowWidth),
+        ),
+      );
+    }
+  } catch {
+    // The CSS fallback remains bounded when native window metrics are absent.
+  }
+  const panelMediaHeightRpx = Math.round(
+    panelMediaMaxHeightRpx * panelMediaReveal,
+  );
+  const panelHandleBandHeightRpx = Math.round(40 * (1 - panelMediaReveal));
+  const mapPresentationStyle = {
+    "--map-chrome-opacity": String(panelChromeOpacity),
+    "--panel-media-reveal": String(panelMediaReveal),
+    "--panel-media-height": `${panelMediaHeightRpx}rpx`,
+    "--panel-media-margin-top": panelMediaReveal ? "-40rpx" : "0rpx",
+    "--panel-handle-band-height": `${panelHandleBandHeightRpx}rpx`,
+    "--panel-media-image-offset": `${Math.round(-18 * (1 - panelMediaReveal))}rpx`,
+    "--panel-media-image-scale": String(1.02 - 0.02 * panelMediaReveal),
+  } as CSSProperties;
 
   return (
     <View
@@ -1068,8 +1153,10 @@ export default function MapPage() {
         (bottomPresentation === "spot-panel"
           ? ` map-page--panel-${panelExtent}`
           : "") +
-        (panelMediaVisible ? " map-page--panel-media-visible" : "")
+        (panelMediaReveal > 0 ? " map-page--panel-media-visible" : "") +
+        (panelChromeHidden ? " map-page--panel-chrome-hidden" : "")
       }
+      style={mapPresentationStyle}
       data-miniapp-production-root
       data-route="map"
       data-delivery-target={__DELIVERY_TARGET__}
@@ -1188,7 +1275,9 @@ export default function MapPage() {
                 onRecover={() => setMapRuntimeError(false)}
               />
             ) : null}
-            {pageState !== "READY" ? (
+            {pageState !== "READY" &&
+            pageState !== "PARTIAL" &&
+            pageState !== "STALE" ? (
               <StatusPanel
                 state={pageState}
                 detail={
@@ -1203,9 +1292,7 @@ export default function MapPage() {
                       : (scene.data?.warnings ?? []).join(" ")) ||
                   (pageState === "EMPTY"
                     ? "当前区域暂无正式观星点；可以移动地图或使用搜索。"
-                    : pageState === "PARTIAL"
-                      ? "部分正式点位或动态条件已返回，缺失值会明确标注。"
-                      : "正在解析地图上下文并加载正式点位与来源。")
+                    : "正在解析地图上下文并加载正式点位与来源。")
                 }
                 recoveryLabel={
                   pageState === "ERROR"

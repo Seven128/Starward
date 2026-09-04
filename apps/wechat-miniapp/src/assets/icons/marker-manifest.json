@@ -1,81 +1,81 @@
 {
   "schemaVersion": 2,
-  "authorityTarget": "target.system.wechat-miniapp-sky-canvas-2026-08-25",
-  "designSource": "DESIGN.md#wechat-mini-program--sky-canvas-v1",
-  "interpretation": "The existing bounded marker and native TabBar geometry is projected through the exact Sky Canvas day, night and observation roles. Selected state uses size, fill, outline, check and label rather than color alone.",
-  "generatedAt": "2026-08-25",
+  "authorityTarget": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+  "designSource": "DESIGN.md#wechat-mini-program--sky-canvas-field-signal",
+  "interpretation": "The existing bounded marker and native TabBar geometry is projected through the exact Field Signal day, night and observation roles. Selected state uses size, fill, outline, check and label rather than color alone.",
+  "generatedAt": "2026-09-04",
   "assets": [
     {
       "path": "spot-marker-night.png",
-      "sha256": "0d28c308b25ba9843a8ca254e7b31c27386f8373f14a959084930a4b09ab42a2"
+      "sha256": "73cad57671b89f1b96930eb0a1d0db4425a31843e25aa2280e1ee1c7657b8790"
     },
     {
       "path": "spot-marker-observation.png",
-      "sha256": "481e38cd56e6d94d5d8b266e393361ce2f88c4ce82370454b4627c5dbb1a7ab5"
+      "sha256": "9d7bc048fe72c54780ee43122cc333611817a11287449b98829664e35abbb33d"
     },
     {
       "path": "spot-marker-selected-night.png",
-      "sha256": "1f2c303b3c4b8245745efc2f58070cd74e6051646e27fc6a06b2ddfe77184262"
+      "sha256": "7075a09e396b7317aa381adcb8c2bf56f785edc38fc555b608b1aa6a44566598"
     },
     {
       "path": "spot-marker-selected-observation.png",
-      "sha256": "8289fb8595ffc63f1c6bec1b4f3e4a9e0781f3bb8457bfaabf2da0396c44d0e2"
+      "sha256": "b2553c8eab0d6738fc9cd9d92fc77c0d767463b6e4ab8b401b7f68d3a08c00b8"
     },
     {
       "path": "spot-marker-selected.png",
-      "sha256": "d5328891a9e14df0995f2b5349c3b1fc8224c3c4284c07e8424cf7d772e8c9e9"
+      "sha256": "571736d25439cea1723d11e44b9d91c4a244a19f24d574fcf85f6f1fbb9a63f7"
     },
     {
       "path": "spot-marker.png",
-      "sha256": "10159a6bb4d0e59245d608117d1ee8d0060d7b6275627621e43e48d6f0681a20"
+      "sha256": "235694bb8046f1590ddfc4db1814f467fce2af0971cfee390d26a408bab059b3"
     },
     {
       "path": "tab-map-night.png",
-      "sha256": "fb4ef676815aca1b752e2d735794c2575a8db9ccabaf8f84a479a3e0f5664419"
+      "sha256": "6b9e9907a0fe5172579288ea7fbe584723d4661e7ea36421d36900cc0d4985c3"
     },
     {
       "path": "tab-map-observation.png",
-      "sha256": "29d27f52f79bec814e5d9172d9241bf0f59a396722ce08ee5f9506238f016dd4"
+      "sha256": "d62de541f0ed112f0508862d60112accf55496c186f322de8128d6e9089287f7"
     },
     {
       "path": "tab-map-selected-night.png",
-      "sha256": "345b1ed04b826d5a8f60a7700a275f53a5eb8bfee6e9a8d32475bfd2a05523d3"
+      "sha256": "4d0d04f3acee1322cc4a51faa630e8b6daf80d363076f7bd6147dbbee493c976"
     },
     {
       "path": "tab-map-selected-observation.png",
-      "sha256": "a6c4bca2431feca01734f9a7ea2a4711363ca7399378d611d46c76e77547f3d9"
+      "sha256": "d0a69eaf4390a7451ec10c2307948511aec8d2fa95f38eb7631047b4a5ccc075"
     },
     {
       "path": "tab-map-selected.png",
-      "sha256": "b5d8050a639b76e3039ef8e4e99c109027db18eac7c586f0815d8d391bc866f6"
+      "sha256": "4d45c65b86ec47758a5923ca520397bada2a3f34d9b2094e530a56670aceddcd"
     },
     {
       "path": "tab-map.png",
-      "sha256": "8f900567bcd576b7bfb12adc1b58623b2afe7b9d4108c87e2ce758aeb6355cd7"
+      "sha256": "2ae8106376c5c4e6c6552e62ef4eaee045f58e9f0053e56a9a1ff47292a8f89c"
     },
     {
       "path": "tab-my-night.png",
-      "sha256": "559266d259a034cea40b3b685fe68e9f9ef3a345ebbec1cfad62da3e43d4de19"
+      "sha256": "cc011cf43e771ed258c143dbb1cf47000aec9232dbf2edc5c01b7c613dc75733"
     },
     {
       "path": "tab-my-observation.png",
-      "sha256": "90e7011a4ed3f304b664ce3f4c3ff51c36764a1e3d6529ca66cdae55d0d87e13"
+      "sha256": "3abc13f73bd4c4f7f6920474f1e4ec5f7175c53676dc488d464503ab17cf0322"
     },
     {
       "path": "tab-my-selected-night.png",
-      "sha256": "bd0de2022d2a9c4c5e3837277f43882d9c393a08e722bbdbd5918715b2134693"
+      "sha256": "083a2e4d2444f33a8a383bf44498c7a50f801150d399e948c99145dcf51deed6"
     },
     {
       "path": "tab-my-selected-observation.png",
-      "sha256": "b8cad25dd006e81f0457f0a2d5e581dc0e7042c9195bde18a844e7fa2b9dcbff"
+      "sha256": "b47739d758f481d55ddb8d159bf6cfb9a73a1d2699325c08599f728c1c477b7b"
     },
     {
       "path": "tab-my-selected.png",
-      "sha256": "1645d3c713753e007f6873d040ab98801c1611b4d3b0af2cc836c7d925aead4c"
+      "sha256": "9686ca75be29b509635affe45539867681fec9e7904719007a2499b9851c6391"
     },
     {
       "path": "tab-my.png",
-      "sha256": "0c52454698ff92a31358595d61cc85fe986580e675dcc70d87924a71c1ee09d3"
+      "sha256": "d1870dd128e782341a7d7e06a3a658ca2539e07d1b81418ec321ba5798aa0c71"
     }
   ]
 }

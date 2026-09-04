@@ -2,17 +2,22 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: var(--canvas);
 }
 .import-page__scroll {
+  position: relative;
+  z-index: 0;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 .import-content {
-  padding-top: 20rpx;
+  padding-top: 12rpx;
   padding-bottom: 112rpx;
   display: flex;
   flex-direction: column;
-  gap: 22rpx;
+  gap: 20rpx;
 }
 .import-source-card,
 .import-draft-card,
@@ -21,8 +26,12 @@
 .import-history-card {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  padding: 24rpx;
+  gap: 12rpx;
+  padding: 0 0 20rpx;
+  border: 0;
+  border-bottom: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 .import-platform-grid {
@@ -31,9 +40,41 @@
   gap: 10rpx;
 }
 .import-platform-grid .chip {
-  min-height: 72rpx;
-  padding: 10rpx 8rpx;
+  position: relative;
+  isolation: isolate;
+  min-height: 88rpx;
+  padding: 0 8rpx;
+  border-color: transparent;
+  background: transparent;
   white-space: nowrap;
+}
+.import-platform-grid .chip::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 20rpx;
+  right: 2rpx;
+  bottom: 20rpx;
+  left: 2rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 999rpx;
+  background: var(--surface);
+}
+.import-platform-grid .chip > text {
+  position: relative;
+  z-index: 1;
+}
+.import-platform-grid .chip[disabled] {
+  opacity: 1;
+  color: var(--text-secondary);
+  -webkit-text-fill-color: currentColor;
+}
+.import-platform-grid .chip--selected[disabled] {
+  color: var(--choice-selected-label);
+}
+.import-platform-grid .chip--selected::before {
+  border: 2rpx solid var(--primary);
+  background: var(--choice-selected-surface);
 }
 .import-field-group {
   display: flex;
@@ -64,7 +105,7 @@
 .import-stage-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8rpx;
+  gap: 4rpx;
   padding: 6rpx 2rpx;
 }
 .import-stage {
@@ -78,19 +119,19 @@
   text-align: center;
 }
 .import-stage__index {
-  width: 34rpx;
-  height: 34rpx;
+  width: 28rpx;
+  height: 28rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1rpx solid var(--border-strong);
   border-radius: 50%;
-  font-size: 20rpx;
-  font-weight: 700;
+  font-size: 18rpx;
+  font-weight: 500;
 }
 .import-stage--current {
   color: var(--primary);
-  font-weight: 700;
+  font-weight: 500;
 }
 .import-stage--current .import-stage__index,
 .import-stage--done .import-stage__index {
@@ -123,7 +164,7 @@
   background: var(--surface-subtle);
 }
 .import-body-field {
-  min-height: 240rpx;
+  min-height: 192rpx;
   padding-top: 16rpx;
   line-height: 1.6;
 }
@@ -143,13 +184,13 @@
 .import-association-option {
   width: 100%;
   min-height: 92rpx;
-  padding: 16rpx;
+  padding: 8rpx 16rpx;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 4rpx;
   border: 1rpx solid var(--border);
-  border-radius: 18rpx;
+  border-radius: 12rpx;
   background: var(--surface);
   color: var(--text-primary);
   text-align: left;
@@ -162,19 +203,20 @@
   display: flex;
   flex-direction: column;
   gap: 8rpx;
-  padding: 16rpx;
-  border-radius: 16rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 8rpx;
   background: var(--surface-subtle);
 }
 .import-history-row {
   width: 100%;
   min-height: 86rpx;
-  padding: 14rpx 16rpx;
+  padding: 8rpx 0;
   display: flex;
   align-items: flex-start;
-  border: 1rpx solid var(--border);
-  border-radius: 16rpx;
-  background: var(--surface);
+  border: 0;
+  border-top: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
   color: var(--text-primary);
   text-align: left;
 }

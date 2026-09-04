@@ -17,12 +17,14 @@ const iconRoot = path.join(
 );
 
 const TAB_MODES = {
-  night: { regular: "#94A0B8", selected: "#7E8FFF" },
-  observation: { regular: "#C54438", selected: "#FF3B30" },
+  day: { regular: "#5E655F", selected: "#4859B8" },
+  night: { regular: "#989E94", selected: "#D1D7FF" },
+  observation: { regular: "#D84A3C", selected: "#FF6B58" },
 };
 const MARKER_MODES = {
-  night: { primary: "#7E8FFF", surface: "#0B1222" },
-  observation: { primary: "#FF3B30", surface: "#120000" },
+  day: { primary: "#8799F6", surface: "#FFFFFF" },
+  night: { primary: "#A9B6FF", surface: "#181A17" },
+  observation: { primary: "#D84A3C", surface: "#110000" },
 };
 const DAY_PRIMARY = [83, 109, 254];
 const DAY_SURFACE = [255, 255, 255];
@@ -56,10 +58,11 @@ async function recolor(sourceName, targetName, selectColor) {
 
 for (const [mode, colors] of Object.entries(TAB_MODES)) {
   for (const icon of ["map", "my"]) {
-    await recolor(`tab-${icon}.png`, `tab-${icon}-${mode}.png`, () => rgb(colors.regular));
+    const suffix = mode === "day" ? "" : `-${mode}`;
+    await recolor(`tab-${icon}.png`, `tab-${icon}${suffix}.png`, () => rgb(colors.regular));
     await recolor(
       `tab-${icon}-selected.png`,
-      `tab-${icon}-selected-${mode}.png`,
+      `tab-${icon}-selected${suffix}.png`,
       () => rgb(colors.selected),
     );
   }
@@ -68,7 +71,8 @@ for (const [mode, colors] of Object.entries(TAB_MODES)) {
 for (const [mode, colors] of Object.entries(MARKER_MODES)) {
   for (const selected of [false, true]) {
     const stem = `spot-marker${selected ? "-selected" : ""}`;
-    await recolor(`${stem}.png`, `${stem}-${mode}.png`, (sourceColor) =>
+    const suffix = mode === "day" ? "" : `-${mode}`;
+    await recolor(`${stem}.png`, `${stem}${suffix}.png`, (sourceColor) =>
       distance(sourceColor, DAY_SURFACE) < distance(sourceColor, DAY_PRIMARY)
         ? rgb(colors.surface)
         : rgb(colors.primary),
@@ -79,14 +83,14 @@ for (const [mode, colors] of Object.entries(MARKER_MODES)) {
 const assetNames = [
   "spot-marker.png",
   "spot-marker-selected.png",
-  ...Object.keys(MARKER_MODES).flatMap((mode) => [
+  ...Object.keys(MARKER_MODES).filter((mode) => mode !== "day").flatMap((mode) => [
     `spot-marker-${mode}.png`,
     `spot-marker-selected-${mode}.png`,
   ]),
   ...["map", "my"].flatMap((icon) => [
     `tab-${icon}.png`,
     `tab-${icon}-selected.png`,
-    ...Object.keys(TAB_MODES).flatMap((mode) => [
+    ...Object.keys(TAB_MODES).filter((mode) => mode !== "day").flatMap((mode) => [
       `tab-${icon}-${mode}.png`,
       `tab-${icon}-selected-${mode}.png`,
     ]),
@@ -106,12 +110,12 @@ const manifestBytes = Buffer.from(
   `${JSON.stringify(
     {
       schemaVersion: 2,
-      authorityTarget: "target.system.wechat-miniapp-sky-canvas-2026-08-25",
+      authorityTarget: "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
       designSource:
-        "DESIGN.md#wechat-mini-program--sky-canvas-v1",
+        "DESIGN.md#wechat-mini-program--sky-canvas-field-signal",
       interpretation:
-        "The existing bounded marker and native TabBar geometry is projected through the exact Sky Canvas day, night and observation roles. Selected state uses size, fill, outline, check and label rather than color alone.",
-      generatedAt: "2026-08-25",
+        "The existing bounded marker and native TabBar geometry is projected through the exact Field Signal day, night and observation roles. Selected state uses size, fill, outline, check and label rather than color alone.",
+      generatedAt: "2026-09-04",
       assets,
     },
     null,

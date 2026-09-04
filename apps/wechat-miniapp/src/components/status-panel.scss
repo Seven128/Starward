@@ -1,3 +1,8 @@
-.status-panel { padding: 24rpx; border: 2rpx solid var(--border); border-radius: 20rpx; background: var(--surface-subtle); display: flex; flex-direction: column; gap: 12rpx; }
+.status-panel { padding: 12rpx 16rpx; border: 1rpx solid var(--border); border-radius: 12rpx; background: var(--surface-subtle); display: flex; flex-direction: column; gap: 4rpx; }
 .status-panel--error { border-color: var(--danger); }
 .status-panel--permission_denied, .status-panel--stale, .status-panel--partial { border-color: var(--warning); }
+.status-panel--permission_denied,
+.status-panel--error {
+  padding: 16rpx 20rpx;
+  border-radius: 32rpx;
+}

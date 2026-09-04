@@ -2,28 +2,38 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: var(--canvas);
 }
 .settings-page__scroll {
+  position: relative;
+  z-index: 0;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  clip-path: inset(0);
 }
 .settings-content {
-  padding-top: 20rpx;
+  padding-top: 12rpx;
   padding-bottom: 96rpx;
   display: flex;
   flex-direction: column;
-  gap: 28rpx;
+  gap: 20rpx;
 }
 .settings-section {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 8rpx;
 }
 .settings-card {
-  padding: 24rpx;
+  padding: 8rpx 0 12rpx;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 12rpx;
+  border: 0;
+  border-bottom: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 .settings-card--group {
@@ -32,8 +42,8 @@
   overflow: hidden;
 }
 .settings-card--group .setting-row {
-  min-height: 112rpx;
-  padding: 16rpx 24rpx;
+  min-height: 88rpx;
+  padding: 8rpx 16rpx;
 }
 .settings-card--group .setting-row + .setting-row {
   border-top: 1rpx solid var(--border);
@@ -45,13 +55,14 @@
 }
 .settings-state-pill {
   flex: 0 0 auto;
-  padding: 8rpx 14rpx;
-  border: 1rpx solid var(--positive);
+  padding: 4rpx 10rpx;
+  border: 1rpx solid var(--border);
   border-radius: 999rpx;
   color: var(--positive);
   background: var(--surface-subtle);
-  font-size: 22rpx;
-  font-weight: 700;
+  font-size: 19rpx;
+  line-height: 27rpx;
+  font-weight: 500;
 }
 .settings-capability-note {
   margin: 0 8rpx;
@@ -59,13 +70,13 @@
 .settings-entry-row {
   position: relative;
   display: grid;
-  grid-template-columns: 76rpx minmax(0, 1fr) auto;
+  grid-template-columns: 48rpx minmax(0, 1fr) auto;
   align-items: center;
-  gap: 24rpx;
+  gap: 12rpx;
   width: 100%;
-  min-height: 140rpx;
+  min-height: 88rpx;
   margin: 0;
-  padding: 20rpx 28rpx;
+  padding: 8rpx 16rpx;
   border: 0;
   border-radius: 0;
   color: var(--text-primary);
@@ -81,8 +92,8 @@
   content: "";
   position: absolute;
   top: 0;
-  right: 28rpx;
-  left: 136rpx;
+  right: 16rpx;
+  left: 76rpx;
   height: 1rpx;
   background: var(--border);
 }
@@ -92,9 +103,9 @@
 .settings-icon-well {
   display: grid;
   place-items: center;
-  width: 76rpx;
-  height: 76rpx;
-  border-radius: 26rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 12rpx;
 }
 .settings-icon-well--violet {
   color: var(--accent-violet);
@@ -105,8 +116,8 @@
   background: var(--icon-coral-soft);
 }
 .settings-icon-well .semantic-icon {
-  width: 40rpx;
-  height: 40rpx;
+  width: 24rpx;
+  height: 24rpx;
 }
 .settings-entry-copy {
   min-width: 0;
@@ -123,12 +134,12 @@
   display: inline-flex;
   align-items: center;
   color: var(--text-tertiary);
-  font-size: 22rpx;
-  font-weight: 700;
+  font-size: 20rpx;
+  font-weight: 500;
 }
 .settings-entry-meta .semantic-icon {
-  width: 34rpx;
-  height: 34rpx;
+  width: 28rpx;
+  height: 28rpx;
 }
 .settings-card--actions {
   display: grid;
@@ -139,6 +150,65 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12rpx;
+}
+.settings-display-mode-track {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 560rpx;
+  min-height: 88rpx;
+  padding: 8rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  border: 1rpx solid var(--border);
+  border-radius: 16rpx;
+  background: var(--surface-subtle);
+  overflow: hidden;
+}
+.settings-display-mode-thumb {
+  position: absolute;
+  z-index: 0;
+  top: 8rpx;
+  bottom: 8rpx;
+  left: 8rpx;
+  width: calc((100% - 16rpx) / 3);
+  border: 2rpx solid var(--primary);
+  border-radius: 12rpx;
+  background: var(--choice-selected-surface);
+  transform: translateX(0);
+  transition: transform 180ms cubic-bezier(.2, 0, 0, 1);
+}
+.settings-display-mode-track[data-selected-mode="night"] .settings-display-mode-thumb {
+  transform: translateX(100%);
+}
+.settings-display-mode-track[data-selected-mode="observation"] .settings-display-mode-thumb {
+  transform: translateX(200%);
+}
+.settings-display-mode-choice {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  color: var(--text-secondary);
+  font-size: 21rpx;
+  line-height: 29rpx;
+  font-weight: 500;
+}
+.settings-display-mode-choice .semantic-icon {
+  width: 24rpx;
+  height: 24rpx;
+  flex-basis: 24rpx;
+}
+.settings-display-mode-choice--selected {
+  color: var(--choice-selected-label);
+}
+.settings-display-mode-choice:active {
+  background: var(--pressed-overlay);
 }
 .form-group .settings-choice-grid,
 .settings-choice-grid--location {
@@ -156,7 +226,7 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 8rpx;
 }
 .settings-summary-row,
 .setting-row,
@@ -175,8 +245,11 @@
   gap: 4rpx;
 }
 .observation-setting {
-  padding-top: 16rpx;
+  padding-top: 8rpx;
   border-top: 1rpx solid var(--border);
+}
+.reduced-motion .settings-display-mode-thumb {
+  transition-duration: 0ms;
 }
 .observation-setting .chip {
   width: auto;

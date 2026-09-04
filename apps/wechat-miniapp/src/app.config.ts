@@ -29,14 +29,14 @@ export default defineAppConfig({
   window: {
     navigationStyle: "custom",
     navigationBarTitleText: "今晚去观星",
-    navigationBarBackgroundColor: "#F5F7FA",
+    navigationBarBackgroundColor: "#FFFFFF",
     navigationBarTextStyle: "black",
-    backgroundColor: "#F5F7FA",
+    backgroundColor: "#FFFFFF",
     backgroundTextStyle: "dark",
   },
   tabBar: {
-    color: "#667085",
-    selectedColor: "#536DFE",
+    color: "#5E655F",
+    selectedColor: "#4859B8",
     backgroundColor: "#FFFFFF",
     borderStyle: "white",
     list: [

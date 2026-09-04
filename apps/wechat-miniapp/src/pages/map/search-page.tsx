@@ -447,9 +447,12 @@ export function MapSearchSurface() {
           </ScrollView>
         ) : null}
 
-        <View
+        <ScrollView
           className="spot-search-filter-scroll"
           aria-label="可立即提交的筛选选项"
+          scrollX
+          enhanced
+          showScrollbar={false}
           onClick={(event) => event.stopPropagation()}
         >
           <View className="spot-search-filter-group" data-control="spot-search-filter-group" role="radiogroup" aria-label="地图筛选">
@@ -480,7 +483,7 @@ export function MapSearchSurface() {
               );
             })}
           </View>
-        </View>
+        </ScrollView>
 
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
@@ -505,7 +508,7 @@ export function MapSearchSurface() {
 
         <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="正式观星点结果" onClick={(event) => event.stopPropagation()}>
           <View className="spot-search-result-summary">
-            <Text className="type-caption">{formalSpots.length} 个正式观星点 · 选择卡片会返回同一地图并打开中面板</Text>
+            <Text className="type-caption">{formalSpots.length} 个正式观星点</Text>
           </View>
           <View className="spot-search-partition">
             <Button className="spot-search-partition__toggle" aria-expanded={wantedOpen} onClick={() => setWantedOpen((value) => !value)}>

@@ -569,21 +569,9 @@ export default function PlanEditorPage() {
     >
       <CustomNav
         title="今晚计划"
-        subtitle="出发前再复核动态条件"
         back
         backOdId="my-plan-back-action"
         backFallbackTab="/pages/my/index"
-        right={
-          activePlan ? (
-            <SoftButton
-              variant="ghost"
-              label={editing ? "查看计划详情，草稿保留" : "编辑计划"}
-              onClick={() => setEditing((current) => !current)}
-            >
-              {editing ? "×" : "…"}
-            </SoftButton>
-          ) : null
-        }
       />
       <View className="plan-content safe-bottom">
         <View

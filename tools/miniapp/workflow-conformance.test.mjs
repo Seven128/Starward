@@ -360,7 +360,7 @@ test("generated mode icons exactly match their checked manifest", async () => {
   assert.equal(manifest.schemaVersion, 2);
   assert.equal(
     manifest.authorityTarget,
-    "target.system.wechat-miniapp-sky-canvas-2026-08-25",
+    "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
   );
   assert.equal(manifest.assets.length, 18);
   for (const asset of manifest.assets) {
@@ -589,7 +589,8 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "differentNumericValue",
     "native_interaction_numeric_bounds_unavailable",
     "numeric_trigger_current",
-    '"[data-od-id=\'my-settings-action\'] .soft-button"',
+    '"[data-od-id=\'my-settings-action\']"',
+    '".settings-display-mode-choice"',
     "activateDayModeThroughProductionControl",
     "getElementsByXpath",
     "async function queryElements(page, selector)",
@@ -644,7 +645,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "selectFormalSpotThroughFinder",
     '"formal-finder-relaunch-after-empty-result"',
     "for (let attempt = 1; attempt <= 2; attempt += 1)",
-    '".custom-nav__side--right .soft-button"',
+    '".routine-entry--settings"',
     '"[data-control~=\'spot-search-result-list\']"',
     '"[data-control~=\'spot-search-result-card\']"',
     'await waitForSelector(returnedMap, "[data-control~=\'map-spot-information-panel\']", 1)',

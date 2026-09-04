@@ -26,15 +26,33 @@
   ],
   "production_probes": [
     {
-      "key": "exact-sky-canvas-day-tokens",
+      "key": "exact-field-signal-day-tokens",
       "path": "apps/wechat-miniapp/src/styles/tokens.scss",
-      "all_of": ["--canvas: #f5f7fa", "--surface: #ffffff", "--text-primary: #111827", "--primary: #536dfe", "#f3f4ff", "#aab4ff", "#f1d58a"]
+      "all_of": ["--canvas: #ffffff", "--surface: #ffffff", "--surface-subtle: #f6f7f5", "--text-primary: #282b29", "--text-secondary: #5e655f", "--border: #e2e5dd", "--border-strong: #8a9088", "--primary: #8799f6", "--primary-pressed: #4859b8", "--accent-cyan: #62c88b", "--accent-warm: #f2c94c", "--danger: #973d37", "--choice-selected-surface: #f5f6ff"],
+      "none_of": ["--canvas: #f5f7fa", "--text-primary: #111827", "--primary: #536dfe"]
+    },
+    {
+      "key": "exact-field-signal-night-tokens",
+      "path": "apps/wechat-miniapp/src/styles/tokens.scss",
+      "all_of": [".theme-night", "--canvas: #11120f", "--surface: #181a17", "--surface-subtle: #242720", "--text-primary: #f5f3ec", "--primary: #a9b6ff", "--accent-cyan: #7ed7a1", "--accent-warm: #f6d56f", "--danger: #ffc0ba"]
     },
     {
       "key": "observation-is-black-and-warm-red",
       "path": "apps/wechat-miniapp/src/styles/tokens.scss",
-      "all_of": [".theme-observation", "--canvas: #000000", "--primary: #ff3b30", "#ff8a72"],
-      "none_of": ["--primary: #1769d2"]
+      "all_of": [".theme-observation", "--canvas: #000000", "--surface: #110000", "--surface-subtle: #190000", "--surface-elevated: #240000", "--text-primary: #ff6b58", "--text-secondary: #d84a3c", "--border-strong: #a83229", "--primary: #d84a3c"],
+      "none_of": ["--primary: #1769d2", "--primary: #ff3b30", "#ff8a72"]
+    },
+    {
+      "key": "field-signal-native-chrome",
+      "path": "apps/wechat-miniapp/src/app.config.ts",
+      "all_of": ["navigationBarBackgroundColor: \"#FFFFFF\"", "backgroundColor: \"#FFFFFF\"", "color: \"#5E655F\"", "selectedColor: \"#4859B8\""],
+      "none_of": ["#F5F7FA", "#536DFE", "#667085"]
+    },
+    {
+      "key": "field-signal-mode-icon-authority",
+      "path": "apps/wechat-miniapp/src/assets/icons/marker-manifest.json",
+      "all_of": ["target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02", "DESIGN.md#wechat-mini-program--sky-canvas-field-signal", "2026-09-04"],
+      "none_of": ["target.system.wechat-miniapp-sky-canvas-2026-08-25", "sky-canvas-v1"]
     },
     {
       "key": "sensor-follow-only",

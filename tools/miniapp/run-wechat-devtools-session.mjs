@@ -2343,8 +2343,8 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='contribution-media-upload']", ".contribution-media-card"],
   ["[data-od-id='contribution-media-rights']", ".contribution-media-rights"],
   [
-    "[data-od-id='my-settings-action'] .soft-button",
-    ".custom-nav__side--right .soft-button",
+    "[data-od-id='my-settings-action']",
+    ".routine-entry--settings",
   ],
 ]);
 
@@ -2473,12 +2473,12 @@ async function activateDayModeThroughProductionControl(
   const settingsPage = await tapIntoPage(
     miniProgram,
     myPage,
-    "[data-od-id='my-settings-action'] .soft-button",
+    "[data-od-id='my-settings-action']",
     "content/settings/index",
   );
   const modeButtons = await waitForSelector(
     settingsPage,
-    ".settings-choice-grid .chip",
+    ".settings-display-mode-choice",
     3,
   );
   const controlText = await modeButtons[0].text().catch(() => "");
@@ -3277,12 +3277,24 @@ async function switchTabAndWait(
 }
 
 async function tapIntoPage(miniProgram, page, selector, expectedPath) {
-  const controls = await waitForSelector(page, selector, 1);
+  const waitForEnabledControl = async (targetPage) => {
+    const deadline = Date.now() + 20_000;
+    while (Date.now() < deadline) {
+      const controls = await queryElements(targetPage, selector).catch(() => []);
+      if (controls[0]) {
+        const disabled = await controls[0].property("disabled").catch(() => undefined);
+        if (disabled !== true && disabled !== "true") return controls[0];
+      }
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    throw new Error(`native_enabled_selector_timeout:${targetPage.path}:${selector}`);
+  };
+  const control = await waitForEnabledControl(page);
   // A tab switch resolves before the DevTools simulator has always finished
   // attaching Taro's delegated event bridge. Pace this like a user arriving on
   // the page before pressing the next visible control.
   await new Promise((resolve) => setTimeout(resolve, 750));
-  await controls[0].tap();
+  await control.tap();
   try {
     // First entry into a subpackage can spend several seconds compiling and
     // mounting. A short timeout would dispatch the fallback against the source
@@ -3306,8 +3318,8 @@ async function tapIntoPage(miniProgram, page, selector, expectedPath) {
       throw new Error(
         `native_formal_entry_unsettled:${expectedPath}:${currentPage?.path ?? "unknown"}`,
       );
-    const freshControls = await waitForSelector(currentPage, selector, 1);
-    await freshControls[0].trigger("tap");
+    const freshControl = await waitForEnabledControl(currentPage);
+    await freshControl.trigger("tap");
     return waitForCurrentPagePath(miniProgram, expectedPath);
   }
 }
@@ -3389,12 +3401,12 @@ async function setDisplayModeThroughProductionUi(miniProgram, mode) {
   const settingsPage = await tapIntoPage(
     miniProgram,
     myPage,
-    "[data-od-id='my-settings-action'] .soft-button",
+    "[data-od-id='my-settings-action']",
     "content/settings/index",
   );
   const choices = await waitForSelector(
     settingsPage,
-    ".settings-choice-grid .chip",
+    ".settings-display-mode-choice",
     2,
   );
   const target = choices[mode === "NIGHT" ? 1 : 0];
@@ -3581,7 +3593,7 @@ async function enterCurrentJourney(miniProgram, definition) {
         path: "content/plan/detail/index",
       },
       "map-to-my-settings": {
-        selector: "[data-od-id='my-settings-action'] .soft-button",
+        selector: "[data-od-id='my-settings-action']",
         path: "content/settings/index",
       },
       "map-to-my-contribution": {
@@ -4281,7 +4293,7 @@ const journeys = [
         styles: ["min-height"],
       },
       {
-        selector: "[data-od-id='my-settings-action'] .soft-button",
+        selector: "[data-od-id='my-settings-action']",
         minimum: 1,
         styles: ["min-height"],
       },
@@ -4512,7 +4524,7 @@ const journeys = [
         selectors: [
           { selector: "#settings-form", minimum: 1 },
           {
-            selector: ".settings-choice-grid .chip",
+            selector: ".settings-display-mode-choice",
             minimum: 2,
             styles: ["min-height"],
           },
@@ -4952,6 +4964,9 @@ currentMapJourney.interactions = [
     tap: ".spot-panel__section-tab",
     index: 1,
     minimum: 2,
+    expectChanged: [
+      { selector: ".spot-panel__section-tab--active", kind: "text", minimum: 1 },
+    ],
     waitFor: [
       { selector: "[data-control~='sky-professional-matrix']", minimum: 1 },
       { selector: "[data-control~='sky-target-list']", minimum: 1 },

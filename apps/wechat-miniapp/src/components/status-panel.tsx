@@ -14,6 +14,12 @@ const TITLES: Record<PageState, string> = {
   PERMISSION_DENIED: "权限未授予",
 };
 
+const TITLED_STATES = new Set<PageState>([
+  "EMPTY",
+  "ERROR",
+  "PERMISSION_DENIED",
+]);
+
 export function StatusPanel({
   state,
   detail,
@@ -34,7 +40,9 @@ export function StatusPanel({
       role={state === "ERROR" ? "alert" : "status"}
       aria-live={live ? "polite" : undefined}
     >
-      <Text className="type-label">{TITLES[state]}</Text>
+      {TITLED_STATES.has(state) ? (
+        <Text className="type-label">{TITLES[state]}</Text>
+      ) : null}
       <Text className="type-caption">{detail}</Text>
       {recoveryLabel && onRecover ? (
         <SoftButton

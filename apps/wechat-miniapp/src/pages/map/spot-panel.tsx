@@ -157,6 +157,11 @@ export function SpotInformationPanel({
   const route = detail?.route;
   const facilities = detail?.spot.facilities ?? effectiveSpot.facilities;
   const decision = detail?.decision;
+  const cloudReady = Boolean(
+    detail &&
+      context?.location.kind === "FORMAL_SPOT" &&
+      context.location.spotId === effectiveSpot.spotId,
+  );
   const detailPageState: PageState = isPermissionError(detailError)
     ? "PERMISSION_DENIED"
     : "ERROR";
@@ -204,15 +209,15 @@ export function SpotInformationPanel({
         </View>
       </View>
 
-      <ScrollView
-        className="spot-panel__scroll"
-        scrollY={extent === "large"}
-        enhanced
-        showScrollbar={false}
-        scrollIntoView={section}
-        ariaLabel="观星点信息"
-      >
-        <View className="spot-panel__document">
+      <View className="spot-panel__scroll-frame">
+        <ScrollView
+          className="spot-panel__scroll"
+          scrollY={extent === "large"}
+          enhanced
+          showScrollbar={false}
+          ariaLabel="观星点信息"
+        >
+          <View className="spot-panel__document">
           {media.length ? (
             <View className="spot-panel__media" data-control="spot-media-gallery">
               <Image
@@ -235,6 +240,7 @@ export function SpotInformationPanel({
             <Text className="spot-panel__source type-caption">{effectiveSpot.source.title || "来源暂无数据"} · <DataStateBadge state={effectiveSpot.source.state} /></Text>
           </View>
 
+          {section === "spot-panel-overview" ? (
           <View id="spot-panel-overview" className="spot-panel__section" ariaLabel="概览">
             {detailPending ? <StatusPanel state="LOADING" detail="正在加载正式点位概览；已保留地图选点。" /> : null}
             {detailError ? (
@@ -307,7 +313,9 @@ export function SpotInformationPanel({
               </Button>
             </View>
           </View>
+          ) : null}
 
+          {section === "spot-panel-astronomy" ? (
           <View id="spot-panel-astronomy" className="spot-panel__section" ariaLabel="天文">
             <View className="spot-panel__block spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
               <Text className="type-label">天空专业矩阵</Text>
@@ -336,14 +344,16 @@ export function SpotInformationPanel({
               {evaluation ? <Text className="type-caption">当前云量：{evaluation.cloudPercent === null ? "暂无数据" : `${evaluation.cloudPercent}%`} · 月亮影响：{observationStatusLabel(evaluation.moonImpact)}</Text> : null}
             </View>
           </View>
+          ) : null}
 
           <View className="spot-panel__disclosure" data-control="data-source-disclosure">
             <Text className="type-caption">点位标识：{String(effectiveSpot.spotId)}</Text>
             <Text className="type-caption">精确坐标是否可外部使用由该点位的可见性策略决定；未授权时不复制或打开精确坐标。</Text>
             {detail?.dataDisclosure.slice(0, 3).map((source) => <Text className="type-caption" key={source.id}>{source.title} · {source.state}</Text>)}
           </View>
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </View>
 
       <View
         className="spot-panel__section-rail"
@@ -355,9 +365,13 @@ export function SpotInformationPanel({
           <Button
             key={item.id}
             className={`spot-panel__section-tab${section === item.id ? " spot-panel__section-tab--active" : ""}`}
+            data-section={item.id}
             aria-selected={section === item.id}
             ariaLabel={`查看${item.label}`}
-            onClick={() => setSection(item.id)}
+            onClick={() => {
+              setSection(item.id);
+              onExtent("large");
+            }}
           >
             <SemanticIcon
               name={item.id === "spot-panel-overview" ? "info" : "horizon"}
@@ -382,7 +396,7 @@ export function SpotInformationPanel({
             <SemanticIcon name="download" />
             <Text>分享</Text>
           </Button>
-          <Button className="spot-panel__action spot-panel__action--cloud" data-control="spot-cloud-stargazing-action" ariaLabel={`打开${effectiveSpot.name}云观星`} onClick={onCloud}>
+          <Button className="spot-panel__action spot-panel__action--cloud" data-control="spot-cloud-stargazing-action" ariaLabel={`${cloudReady ? "打开" : "等待正式点位上下文后打开"}${effectiveSpot.name}云观星`} disabled={!cloudReady} onClick={onCloud}>
             <SemanticIcon name="conditions" />
             <Text>云观星</Text>
           </Button>

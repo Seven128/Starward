@@ -5,5 +5,7 @@
 .custom-nav__side--right { justify-content: flex-end; }
 .custom-nav__back-control { position: relative; width: 88rpx; height: 88rpx; }
 .custom-nav__side .soft-button { padding: 0; width: 88rpx; }
+.custom-nav__back-control .soft-button { border-color: transparent; background: transparent; }
+.custom-nav__back-control .soft-button:active { background: var(--surface-subtle); }
 .custom-nav__side .semantic-icon { color: var(--text-primary); }
 .custom-nav__back-icon { position: absolute; top: 24rpx; left: 24rpx; z-index: 1; pointer-events: none; }

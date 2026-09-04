@@ -192,7 +192,6 @@ export default function ProfileLinksPage() {
     >
       <CustomNav
         title="主页链接"
-        subtitle="外部主页关系与安全复制"
         back
         backOdId="profile-links-back-action"
         backFallbackTab="/pages/my/index"
