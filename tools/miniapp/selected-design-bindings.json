@@ -7,7 +7,13 @@
       "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
       "sha256": "3320cd9a8541840a215e527d5d3e554defeb6f29a6ffe3079d2a7983224f848c",
       "manifest_key": "resource.miniapp.manifest",
-      "expected_census": { "subjects": 72, "fact_cells": 15696, "facts": 72, "proof_obligations": 72, "acceptance_blockers": 0 }
+      "expected_census": {
+        "subjects": 72,
+        "fact_cells": 15696,
+        "facts": 72,
+        "proof_obligations": 72,
+        "acceptance_blockers": 0
+      }
     },
     {
       "key": "operations",
@@ -15,59 +21,157 @@
       "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-handoff/operations-sky-canvas-current.md",
       "sha256": "391d900dd35420bd33de29676b23a6767ba7b93fd3857bc3eec9b41bd971546f",
       "manifest_key": "resource.operations.manifest",
-      "expected_census": { "subjects": 18, "fact_cells": 3924, "facts": 18, "proof_obligations": 18, "acceptance_blockers": 0 }
+      "expected_census": {
+        "subjects": 18,
+        "fact_cells": 3924,
+        "facts": 18,
+        "proof_obligations": 18,
+        "acceptance_blockers": 0
+      }
     }
   ],
   "authorities": [
-    { "key": "design", "path": "DESIGN.md", "sha256": "08a8719fee19638e8f5bbf34d2bf9a0421c6753db4e7830b9c11ff235d9839f3" },
-    { "key": "miniapp-surface", "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md", "sha256": "1f5724cc82c7a2f60c0479562b2b2d5ba6c1af5c5767f53c52ede616311e2877" },
-    { "key": "operations-surface", "path": "project_context/areas/main/screen-contracts/operations.md", "sha256": "7061c41d28ff228d676c752bfbb2a1b5907869dd18e17a1b5bd2e5d1d226e15f" },
-    { "key": "implementation-spec", "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/implementation-handoff-spec.json", "sha256": "7a6a341d700c351b1557af169e88ec931ba91b0a2c0cf4d92683869b63386b11" }
+    {
+      "key": "design",
+      "path": "DESIGN.md",
+      "sha256": "cdd33e9944b9392294fe9d801b9ff608027e0e24748d9c12abe9dc62a91150ce"
+    },
+    {
+      "key": "miniapp-surface",
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "sha256": "856cee2ce87aca7132518759d7b93a0c9d43441d0b7cce9216f7f77d0f7a322d"
+    },
+    {
+      "key": "operations-surface",
+      "path": "project_context/areas/main/screen-contracts/operations.md",
+      "sha256": "7061c41d28ff228d676c752bfbb2a1b5907869dd18e17a1b5bd2e5d1d226e15f"
+    },
+    {
+      "key": "implementation-spec",
+      "path": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/implementation-handoff-spec.json",
+      "sha256": "7a6a341d700c351b1557af169e88ec931ba91b0a2c0cf4d92683869b63386b11"
+    }
   ],
   "production_probes": [
     {
       "key": "exact-field-signal-day-tokens",
       "path": "apps/wechat-miniapp/src/styles/tokens.scss",
-      "all_of": ["--canvas: #ffffff", "--surface: #ffffff", "--surface-subtle: #f6f7f5", "--text-primary: #282b29", "--text-secondary: #5e655f", "--border: #e2e5dd", "--border-strong: #8a9088", "--primary: #8799f6", "--primary-pressed: #4859b8", "--accent-cyan: #62c88b", "--accent-warm: #f2c94c", "--danger: #973d37", "--choice-selected-surface: #f5f6ff"],
-      "none_of": ["--canvas: #f5f7fa", "--text-primary: #111827", "--primary: #536dfe"]
+      "all_of": [
+        "--canvas: #ffffff",
+        "--surface: #ffffff",
+        "--surface-subtle: #f6f7f5",
+        "--text-primary: #282b29",
+        "--text-secondary: #5e655f",
+        "--border: #e2e5dd",
+        "--border-strong: #8a9088",
+        "--primary: #8799f6",
+        "--primary-pressed: #4859b8",
+        "--accent-cyan: #62c88b",
+        "--accent-warm: #f2c94c",
+        "--danger: #973d37",
+        "--choice-selected-surface: #f5f6ff"
+      ],
+      "none_of": [
+        "--canvas: #f5f7fa",
+        "--text-primary: #111827",
+        "--primary: #536dfe"
+      ]
     },
     {
       "key": "exact-field-signal-night-tokens",
       "path": "apps/wechat-miniapp/src/styles/tokens.scss",
-      "all_of": [".theme-night", "--canvas: #11120f", "--surface: #181a17", "--surface-subtle: #242720", "--text-primary: #f5f3ec", "--primary: #a9b6ff", "--accent-cyan: #7ed7a1", "--accent-warm: #f6d56f", "--danger: #ffc0ba"]
+      "all_of": [
+        ".theme-night",
+        "--canvas: #11120f",
+        "--surface: #181a17",
+        "--surface-subtle: #242720",
+        "--text-primary: #f5f3ec",
+        "--primary: #a9b6ff",
+        "--accent-cyan: #7ed7a1",
+        "--accent-warm: #f6d56f",
+        "--danger: #ffc0ba"
+      ]
     },
     {
       "key": "observation-is-black-and-warm-red",
       "path": "apps/wechat-miniapp/src/styles/tokens.scss",
-      "all_of": [".theme-observation", "--canvas: #000000", "--surface: #110000", "--surface-subtle: #190000", "--surface-elevated: #240000", "--text-primary: #ff6b58", "--text-secondary: #d84a3c", "--border-strong: #a83229", "--primary: #d84a3c"],
-      "none_of": ["--primary: #1769d2", "--primary: #ff3b30", "#ff8a72"]
+      "all_of": [
+        ".theme-observation",
+        "--canvas: #000000",
+        "--surface: #110000",
+        "--surface-subtle: #190000",
+        "--surface-elevated: #240000",
+        "--text-primary: #ff6b58",
+        "--text-secondary: #d84a3c",
+        "--border-strong: #a83229",
+        "--primary: #d84a3c"
+      ],
+      "none_of": [
+        "--primary: #1769d2",
+        "--primary: #ff3b30",
+        "#ff8a72"
+      ]
     },
     {
       "key": "field-signal-native-chrome",
       "path": "apps/wechat-miniapp/src/app.config.ts",
-      "all_of": ["navigationBarBackgroundColor: \"#FFFFFF\"", "backgroundColor: \"#FFFFFF\"", "color: \"#5E655F\"", "selectedColor: \"#4859B8\""],
-      "none_of": ["#F5F7FA", "#536DFE", "#667085"]
+      "all_of": [
+        "navigationBarBackgroundColor: \"#FFFFFF\"",
+        "backgroundColor: \"#FFFFFF\"",
+        "color: \"#5E655F\"",
+        "selectedColor: \"#4859B8\""
+      ],
+      "none_of": [
+        "#F5F7FA",
+        "#536DFE",
+        "#667085"
+      ]
     },
     {
       "key": "field-signal-mode-icon-authority",
       "path": "apps/wechat-miniapp/src/assets/icons/marker-manifest.json",
-      "all_of": ["target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02", "DESIGN.md#wechat-mini-program--sky-canvas-field-signal", "2026-09-04"],
-      "none_of": ["target.system.wechat-miniapp-sky-canvas-2026-08-25", "sky-canvas-v1"]
+      "all_of": [
+        "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
+        "DESIGN.md#wechat-mini-program--sky-canvas-field-signal",
+        "2026-09-04"
+      ],
+      "none_of": [
+        "target.system.wechat-miniapp-sky-canvas-2026-08-25",
+        "sky-canvas-v1"
+      ]
     },
     {
       "key": "sensor-follow-only",
       "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
-      "none_of": ["manualOrientationOffset", "手动方向偏移", "方向输入", "方向加", "方向减"]
+      "none_of": [
+        "manualOrientationOffset",
+        "手动方向偏移",
+        "方向输入",
+        "方向加",
+        "方向减"
+      ]
     },
     {
       "key": "operations-workflow",
       "path": "apps/admin-web/src/app/page.tsx",
-      "all_of": ["审核队列", "Case", "媒体核验", "合并预览", "发布评估", "替换与退役", "审计"]
+      "all_of": [
+        "审核队列",
+        "Case",
+        "媒体核验",
+        "合并预览",
+        "发布评估",
+        "替换与退役",
+        "审计"
+      ]
     },
     {
       "key": "contribution-three-axes",
       "path": "apps/wechat-miniapp/src/content/contribution/contribution-media-history.tsx",
-      "all_of": ["投稿审核", "证据合并", "公开影响"]
+      "all_of": [
+        "投稿审核",
+        "证据合并",
+        "公开影响"
+      ]
     }
   ]
 }

@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Starward mobile stargazing decision product and design system.",
   "scripts": {
-    "postinstall": "node tools/miniapp/apply-ty-context-harness-compatibility.mjs",
     "context:sync": "ty-context sync",
     "context:validate": "ty-context validate-context",
     "context:doctor": "ty-context doctor",
@@ -35,7 +34,6 @@
     "test:miniapp:design-bindings": "node tools/miniapp/verify-selected-design-bindings.mjs",
     "test:miniapp:design": "npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings",
     "test:miniapp:workflow": "node --test tools/miniapp/workflow-conformance.test.mjs tools/miniapp/device-test.test.mjs tools/miniapp/device-feedback.test.mjs tools/miniapp/device-feedback-preview.test.mjs tools/miniapp/device-feedback-boundaries.test.mjs tools/miniapp/project-skills.test.mjs tools/miniapp/run-wechat-devtools-session.test.mjs",
-    "check:miniapp:harness-compatibility": "node tools/miniapp/apply-ty-context-harness-compatibility.mjs --check",
     "test:miniapp:infrastructure": "node tools/miniapp/run-infrastructure-check.mjs",
     "test:miniapp:native": "node tools/miniapp/run-wechat-devtools-session.mjs",
     "prepare:miniapp:final-candidate": ".\\tools\\miniapp\\verifier-runtime\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-field-signal-i21.json",
@@ -61,9 +59,10 @@
     "deployment:create-request": "node tools/deployment/promotion-request.mjs create",
     "deployment:run-request": "node tools/deployment/promotion-request.mjs run",
     "test:deployment": "node --test tools/deployment/*.test.mjs",
-    "check:miniapp:fast": "npm run check:miniapp:harness-compatibility && npm run check:miniapp:app-id && npm run check:miniapp:sdk && npm run typecheck --workspace @starward/miniapp-contracts && npm run typecheck --workspace @starward/miniapp-api && npm run typecheck --workspace @starward/wechat-miniapp && npm run test --workspace @starward/miniapp-contracts && npm run test --workspace @starward/miniapp-api && npm run test --workspace @starward/wechat-miniapp && npm run design:system:verify && npm run test:miniapp:workflow && npm run check:miniapp:icons && npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings",
+    "check:miniapp:fast": "npm run check:miniapp:app-id && npm run check:miniapp:sdk && npm run typecheck --workspace @starward/miniapp-contracts && npm run typecheck --workspace @starward/miniapp-api && npm run typecheck --workspace @starward/wechat-miniapp && npm run test --workspace @starward/miniapp-contracts && npm run test --workspace @starward/miniapp-api && npm run test --workspace @starward/wechat-miniapp && npm run design:system:verify && npm run test:miniapp:workflow && npm run check:miniapp:icons && npm run check:miniapp:semantic-assets && npm run test:miniapp:design-bindings",
     "test:miniapp:current": "npm run check:miniapp:fast && npm run test:miniapp:infrastructure && npm run test:miniapp:native",
-    "test": "npm run context:validate"
+    "test": "npm run context:validate",
+    "context:upgrade": "ty-context upgrade"
   },
   "keywords": [
     "stargazing",
@@ -81,7 +80,7 @@
   "devDependencies": {
     "miniprogram-automator": "^0.12.1",
     "pngjs": "^7.0.0",
-    "project-tiny-context-harness": "0.11.0",
+    "project-tiny-context-harness": "0.12.0",
     "zod": "4.4.3"
   },
   "tyContext": {
@@ -91,5 +90,8 @@
     "expo": "~57.0.7",
     "react": "19.2.3",
     "react-native": "0.86.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

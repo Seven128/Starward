@@ -1,4 +1,6 @@
-# ty-context:make:begin
-# Included before project targets so project recipes win on name conflicts.
--include .codex/ty-context-managed/make/ty-context.mk
-# ty-context:make:end
+.PHONY: validate-context context-doctor
+validate-context:
+	npm run context:validate
+
+context-doctor:
+	npm run context:doctor

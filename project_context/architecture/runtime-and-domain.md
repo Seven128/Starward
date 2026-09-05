@@ -1,6 +1,6 @@
 # Architecture Detail: Runtime And Domain Components
 
-This on-demand foundation node continues `project_context/architecture.md#component-map`. It owns the detailed cross-workspace runtime, provider, data, decision, publication, contribution and identity component boundaries; the parent remains the default architecture entry and routing owner.
+This on-demand foundation node continues `project_context/architecture.md#component-map`. It owns the detailed cross-workspace runtime, provider, data, decision, publication, contribution and identity component boundaries; the parent remains the architecture entry and routing owner.
 
 ## Runtime And Domain Components
 

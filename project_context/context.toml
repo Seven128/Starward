@@ -1,16 +1,17 @@
-# Schema v4 Minimal Context graph manifest.
+default_files = []
+# Schema v5 optional Context routing. Only global.md is default body text.
 # Keep only near-universal recovery facts in the default path; route specialized
 # facts through registered on-demand nodes and widen reads through bounded search.
 # `workspaces/<workspace-id>/**` is optional and only for workspace-local owners;
 # cross-workspace truth remains under `areas/**` or a project-root role node.
-# `ty-context route` and doctor are diagnostics, not read ACLs or proof.
+# `ty-context context list --default` and doctor report structure, not product proof.
 
 [[areas]]
 id = "main"
 root = "."
 context = "project_context/areas/main.md"
 kind = "app"
-default = true
+default = false
 
 [[context]]
 path = "project_context/development-workflow.md"
@@ -27,7 +28,7 @@ triggers = ["deployment", "deploy", "release", "staging", "production", "cloud",
 [[context]]
 path = "project_context/areas/main/verification.md"
 role = "verification"
-read_policy = "default"
+read_policy = "on-demand"
 triggers = ["test", "verify", "smoke test", "测试", "验证"]
 
 [[context]]
@@ -258,3 +259,27 @@ path = "project_context/areas/main/verification/wechat-device/journey-and-eviden
 role = "verification"
 read_policy = "on-demand"
 triggers = ["device journey", "device evidence interpretation", "真机证据解释"]
+
+[[context]]
+path = "project_context/product-profile.md"
+role = "domain"
+read_policy = "on-demand"
+triggers = ["product goals", "release profile", "budget", "产品目标", "发布边界"]
+
+[[context]]
+path = "project_context/architecture.md"
+role = "architecture"
+read_policy = "on-demand"
+triggers = ["architecture", "dependency", "shared owner", "架构", "依赖"]
+
+[[context]]
+path = "project_context/context-maintenance.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["Tiny Context", "context maintenance", "design resources", "Context 整理", "设计资源"]
+
+[[context]]
+path = "project_context/architecture/maintenance-boundaries.md"
+role = "decision-rationale"
+read_policy = "on-demand"
+triggers = ["technical debt", "owner extraction", "maintainability", "技术债", "模块拆分"]

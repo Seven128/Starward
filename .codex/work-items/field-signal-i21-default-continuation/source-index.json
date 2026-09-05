@@ -1,66 +1,31 @@
 {
   "created_at": "2026-09-05T19:14:15.565Z",
-  "purpose": "Task-local full-file and section navigation, not product authority or acceptance. Re-read original requirements. Historical Long-Task procedures superseded by current user instruction.",
+  "purpose": "Task-local full-file and section navigation, not product authority or acceptance. Re-read original requirements. Historical Long-Task procedures superseded by current user instruction. Schema 5: current file identities refreshed after workflow retirement; duplicated draft entries point to byte-identical selected resources. Historical baseline.json remains unchanged.",
   "original_goal_attachment": "C:/Users/777/.codex/attachments/841761c7-182d-4094-adba-ecf5cf18e6e3/goal-objective.md",
   "files": [
     {
       "path": "E:/dev/Starward/AGENTS.md",
-      "bytes": 26730,
-      "sha256": "f7d9f3bbcd84fa460f18e8eb65b298242699ba30bd1e5e8ffa358aa1793338a5",
-      "line_count": 97,
+      "bytes": 3618,
+      "sha256": "adbab791f1e529669bad620d06f9f9626f2f4d9358e8e5bf661b2e5f79b53b28",
+      "line_count": 21,
       "sections": [
         {
           "line": 2,
-          "title": "# Minimal Context Harness Protocol",
-          "end_line": 5
+          "title": "# Tiny Context development contract",
+          "end_line": 17
         },
         {
-          "line": 6,
-          "title": "## Shared Engineering Quality Obligation",
-          "end_line": 15
-        },
-        {
-          "line": 16,
-          "title": "## Default Workflow Contract",
-          "end_line": 30
-        },
-        {
-          "line": 31,
-          "title": "## Non-UI Source And Assurance Boundary",
-          "end_line": 38
-        },
-        {
-          "line": 39,
-          "title": "## Selected-Design Conformance Obligation",
-          "end_line": 54
-        },
-        {
-          "line": 55,
-          "title": "## Long-Task Routing",
-          "end_line": 76
-        },
-        {
-          "line": 77,
-          "title": "## Durable Facts And Generated Surfaces",
-          "end_line": 83
-        },
-        {
-          "line": 84,
-          "title": "## Verification",
-          "end_line": 93
-        },
-        {
-          "line": 94,
+          "line": 18,
           "title": "## Project-local UI Implementation Rule",
-          "end_line": 97
+          "end_line": 21
         }
       ],
       "source_items": []
     },
     {
       "path": "E:/dev/Starward/DESIGN.md",
-      "bytes": 116097,
-      "sha256": "08a8719fee19638e8f5bbf34d2bf9a0421c6753db4e7830b9c11ff235d9839f3",
+      "bytes": 116107,
+      "sha256": "cdd33e9944b9392294fe9d801b9ff608027e0e24748d9c12abe9dc62a91150ce",
       "line_count": 869,
       "sections": [
         {
@@ -11398,8 +11363,10 @@
     },
     {
       "path": "E:/dev/Starward/tools/miniapp/selected-design-bindings.json",
-      "bytes": 4616,
-      "sha256": "de1238ba249cb46905dc27735bf7dc59407987d0b339e2c87703f4f7aa625779"
+      "bytes": 5404,
+      "sha256": "d64f3041d5ceb5fd20c955f511e44ef77718ed51dc634922f407a7c9452427b5",
+      "line_count": 178,
+      "sections": []
     },
     {
       "path": "E:/dev/Starward/tools/miniapp/fixtures/nightchina-import-cases.json",
@@ -11520,48 +11487,9 @@
       "source_items": []
     },
     {
-      "path": "E:/dev/Starward/.codex/skills/design-resource-authoring/SKILL.md",
-      "bytes": 13133,
-      "sha256": "19d7d244366f690e693aaeaf9be6369b1632c7e222e6d50e95c9317b27e82b36",
-      "line_count": 64,
-      "sections": [
-        {
-          "line": 6,
-          "title": "# Design Resource Authoring",
-          "end_line": 9
-        },
-        {
-          "line": 10,
-          "title": "## Hard boundaries",
-          "end_line": 24
-        },
-        {
-          "line": 25,
-          "title": "## Progressive references",
-          "end_line": 35
-        },
-        {
-          "line": 36,
-          "title": "## Workflow",
-          "end_line": 50
-        },
-        {
-          "line": 51,
-          "title": "## Conditional Design Authority stop",
-          "end_line": 58
-        },
-        {
-          "line": 59,
-          "title": "## Routing and output",
-          "end_line": 64
-        }
-      ],
-      "source_items": []
-    },
-    {
       "path": "E:/dev/Starward/project_context/architecture/assurance-and-lifecycle.md",
-      "bytes": 6984,
-      "sha256": "914bb6f4d605d47e727cbf24ad98245807e843bc364756d6c010ebb0b9032fba",
+      "bytes": 5908,
+      "sha256": "5cce6c581a4c6f0fe40702f094a361e2ecc767d876cd56fb55eb07ae66b460ee",
       "line_count": 24,
       "sections": [
         {
@@ -11589,8 +11517,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/architecture/runtime-and-domain.md",
-      "bytes": 15988,
-      "sha256": "269b3be25e467a6885771e4039ef70124fe3ca2f4c5d0f07f0acb6ef47a99e8b",
+      "bytes": 15980,
+      "sha256": "b6414f7c4c9ca23f6123cc8937c6e9e99668fc95610ca2f45c66679d48df7122",
       "line_count": 38,
       "sections": [
         {
@@ -11618,9 +11546,9 @@
     },
     {
       "path": "E:/dev/Starward/project_context/architecture.md",
-      "bytes": 13348,
-      "sha256": "d91505fc63a8228c56e9ffd376f859353e32e9bb2e31bc2995361051bd021f7b",
-      "line_count": 79,
+      "bytes": 13296,
+      "sha256": "1bb6306294af6b80db51a7482cc2469ea1951a208af76fcd6e23e425fd26dbfa",
+      "line_count": 81,
       "sections": [
         {
           "line": 1,
@@ -11665,16 +11593,16 @@
         {
           "line": 74,
           "title": "## Open Risks",
-          "end_line": 79
+          "end_line": 81
         }
       ],
       "source_items": []
     },
     {
       "path": "E:/dev/Starward/project_context/areas/main/implementation-index.md",
-      "bytes": 16291,
-      "sha256": "ef201da408c4c9daa75facb782b0be74719724afbc0396f7002d561cc86f89fe",
-      "line_count": 44,
+      "bytes": 14284,
+      "sha256": "bef3d1be090381a4bbb239a1c9202cbd773dfac3b56c06688d2b36f2b50e5589",
+      "line_count": 43,
       "sections": [
         {
           "line": 1,
@@ -11689,7 +11617,7 @@
         {
           "line": 22,
           "title": "## Verification Implementation Navigation",
-          "end_line": 44
+          "end_line": 43
         }
       ],
       "source_items": []
@@ -12158,8 +12086,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/areas/main/screen-contracts/wechat-miniapp.md",
-      "bytes": 15320,
-      "sha256": "1f5724cc82c7a2f60c0479562b2b2d5ba6c1af5c5767f53c52ede616311e2877",
+      "bytes": 13269,
+      "sha256": "856cee2ce87aca7132518759d7b93a0c9d43441d0b7cce9216f7f77d0f7a322d",
       "line_count": 47,
       "sections": [
         {
@@ -12197,8 +12125,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/areas/main/screen-contracts.md",
-      "bytes": 8088,
-      "sha256": "2dc2b7099735b09a050c7bdbf2099180d502673259269d378bcc449fac627213",
+      "bytes": 8100,
+      "sha256": "7fb28152212d3875d539c7fd1692c176f29b8f212e5b55664cd1ce6bfa34c8d9",
       "line_count": 38,
       "sections": [
         {
@@ -12231,8 +12159,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/areas/main/verification/acceptance-runtime.md",
-      "bytes": 16869,
-      "sha256": "d81cbd3a8435f7ec486fd7046da30ce6af047342f34c64ed15a8f12dd2b9f072",
+      "bytes": 16302,
+      "sha256": "0be854f06d2b0599f27b4f161060866f86772fb5ad16f3b128938fd0c16842ed",
       "line_count": 64,
       "sections": [
         {
@@ -12275,9 +12203,9 @@
     },
     {
       "path": "E:/dev/Starward/project_context/areas/main/verification/android-native.md",
-      "bytes": 7629,
-      "sha256": "d792e2e00c2e4cb8f204aa8edf43eb912efbac6a51d099d29b4d7e80d8197615",
-      "line_count": 37,
+      "bytes": 8029,
+      "sha256": "c0137eac5e52af6f7b6500e708caaa6aee2682469614690bbd0b1e51d262ddb9",
+      "line_count": 39,
       "sections": [
         {
           "line": 1,
@@ -12307,15 +12235,15 @@
         {
           "line": 32,
           "title": "## Session Preflight And Cost Feedback",
-          "end_line": 37
+          "end_line": 39
         }
       ],
       "source_items": []
     },
     {
       "path": "E:/dev/Starward/project_context/areas/main/verification/development-loop.md",
-      "bytes": 11708,
-      "sha256": "9e58259fdb6b4ef7a03e1aa5791452b0f85b177290ae5423ef5babc54c4e48f4",
+      "bytes": 11233,
+      "sha256": "d6ebfe3e95a7871b8f9754092ad7ced55420bbed0fdf4bd679363c077a5c2a7c",
       "line_count": 53,
       "sections": [
         {
@@ -12464,8 +12392,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/areas/main/verification.md",
-      "bytes": 4313,
-      "sha256": "13732bc455c76463774c90b1830560380005b4e44a85739272d96101da1aa40b",
+      "bytes": 4324,
+      "sha256": "a16e538ddfa35590b608c1ae60a68cce3a3ded30e19b0bf03e1260eaef03c53f",
       "line_count": 42,
       "sections": [
         {
@@ -12500,7 +12428,7 @@
         },
         {
           "line": 39,
-          "title": "## Forbidden Content",
+          "title": "## Storage Boundaries",
           "end_line": 42
         }
       ],
@@ -12562,74 +12490,74 @@
     },
     {
       "path": "E:/dev/Starward/project_context/context.toml",
-      "bytes": 10471,
-      "sha256": "eb0abbfafd8da433c55ad692d350e9ad33afa8293ad83bc935f66cee0e89c44c",
-      "line_count": 261,
+      "bytes": 11349,
+      "sha256": "9442ec72489947d1f5356e2994622eb910c4e06d665919550df8fd6df5d2184b",
+      "line_count": 286,
       "sections": [
         {
-          "line": 1,
-          "title": "# Schema v4 Minimal Context graph manifest.",
-          "end_line": 1
-        },
-        {
           "line": 2,
-          "title": "# Keep only near-universal recovery facts in the default path; route specialized",
+          "title": "# Schema v5 optional Context routing. Only global.md is default body text.",
           "end_line": 2
         },
         {
           "line": 3,
-          "title": "# facts through registered on-demand nodes and widen reads through bounded search.",
+          "title": "# Keep only near-universal recovery facts in the default path; route specialized",
           "end_line": 3
         },
         {
           "line": 4,
-          "title": "# `workspaces/<workspace-id>/**` is optional and only for workspace-local owners;",
+          "title": "# facts through registered on-demand nodes and widen reads through bounded search.",
           "end_line": 4
         },
         {
           "line": 5,
-          "title": "# cross-workspace truth remains under `areas/**` or a project-root role node.",
+          "title": "# `workspaces/<workspace-id>/**` is optional and only for workspace-local owners;",
           "end_line": 5
         },
         {
           "line": 6,
-          "title": "# `ty-context route` and doctor are diagnostics, not read ACLs or proof.",
-          "end_line": 92
+          "title": "# cross-workspace truth remains under `areas/**` or a project-root role node.",
+          "end_line": 6
         },
         {
-          "line": 93,
-          "title": "# Cross-workspace architecture continuations. The default architecture root",
+          "line": 7,
+          "title": "# `ty-context context list --default` and doctor report structure, not product proof.",
           "end_line": 93
         },
         {
           "line": 94,
+          "title": "# Cross-workspace architecture continuations. The default architecture root",
+          "end_line": 94
+        },
+        {
+          "line": 95,
           "title": "# remains the stable entry; specialized component detail is always on-demand.",
-          "end_line": 106
+          "end_line": 107
         },
         {
-          "line": 107,
+          "line": 108,
           "title": "# Deployment continuations.",
-          "end_line": 149
+          "end_line": 150
         },
         {
-          "line": 150,
+          "line": 151,
           "title": "# Mini Program workflow continuations.",
-          "end_line": 180
+          "end_line": 181
         },
         {
-          "line": 181,
+          "line": 182,
           "title": "# Product Surface Contract continuations.",
-          "end_line": 205
+          "end_line": 206
         },
         {
-          "line": 206,
+          "line": 207,
           "title": "# Screen Contract continuations.",
-          "end_line": 242
+          "end_line": 243
         },
         {
-          "line": 243,
+          "line": 244,
           "title": "# WeChat physical-device verification continuations.",
-          "end_line": 261
+          "end_line": 286
         }
       ],
       "source_items": []
@@ -12684,8 +12612,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/deployment/decisions-and-verification.md",
-      "bytes": 7140,
-      "sha256": "236b4783133d0ea1df89212dac6b77e2711913dd2748895fde0c02b831ecf4ea",
+      "bytes": 7053,
+      "sha256": "b98f133d32de73942ad435027a0dcd10c5eba2dd3e78ebdacc93275f9cb2eed3",
       "line_count": 34,
       "sections": [
         {
@@ -12838,8 +12766,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/development-workflow/authority-and-scope.md",
-      "bytes": 9824,
-      "sha256": "d449aba602cb3a15404f084868ac19ce1a92048f7d8df859aa87dc9ee65ec086",
+      "bytes": 9730,
+      "sha256": "9a24b8041fba4d93ec765b3e9010dcbe0f65496c9af6bf491dae5cdcf3aa0b57",
       "line_count": 40,
       "sections": [
         {
@@ -12872,8 +12800,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/development-workflow/candidate-acceptance.md",
-      "bytes": 14338,
-      "sha256": "668eef8dbfb889288f7fb0fbf64ffd7cdb81c4a9a5856dc5728b51013129a887",
+      "bytes": 13705,
+      "sha256": "bc3305d264642a143081e3c1df3d2b312f12983a37b067b06b594f6c3536996e",
       "line_count": 51,
       "sections": [
         {
@@ -12911,8 +12839,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/development-workflow/change-admission.md",
-      "bytes": 7039,
-      "sha256": "93a88cdb38e480b54e90e3896d2173fd16d402a7828ac5294a2c7a6759e85bd6",
+      "bytes": 6970,
+      "sha256": "c7ce10ce03fb54f9c16a3b7a11245e16ba779450b60d9b9583fb2a528582f85b",
       "line_count": 39,
       "sections": [
         {
@@ -12945,8 +12873,8 @@
     },
     {
       "path": "E:/dev/Starward/project_context/development-workflow/development-feedback.md",
-      "bytes": 11831,
-      "sha256": "79dd9bae9fa34725c174575bdc3a5244da09ad239a27ef8f76fe45c572d78396",
+      "bytes": 11843,
+      "sha256": "f2f190d2c98c087f53e7d7a3cb5af41675bbff2df67f4a4e77c3c5dc859e47f3",
       "line_count": 44,
       "sections": [
         {
@@ -12979,9 +12907,9 @@
     },
     {
       "path": "E:/dev/Starward/project_context/development-workflow/paths-and-lifecycle.md",
-      "bytes": 13774,
-      "sha256": "6cf50d511651f2647f1b8386a23e9dfe9760a5634b49bed4c04f01d465d05f34",
-      "line_count": 43,
+      "bytes": 13023,
+      "sha256": "08c7f1dc830d6e6401677c60d96d7129616f451d69acdddb3f9f5f1241ec83b3",
+      "line_count": 42,
       "sections": [
         {
           "line": 1,
@@ -12991,17 +12919,17 @@
         {
           "line": 5,
           "title": "## Reserved Paths",
-          "end_line": 19
+          "end_line": 18
         },
         {
-          "line": 20,
+          "line": 19,
           "title": "## Isolation And Resource-Lifecycle Invariants",
-          "end_line": 29
+          "end_line": 28
         },
         {
-          "line": 30,
+          "line": 29,
           "title": "## Failure And Recovery Ownership",
-          "end_line": 43
+          "end_line": 42
         }
       ],
       "source_items": []
@@ -13027,79 +12955,19 @@
     },
     {
       "path": "E:/dev/Starward/project_context/global.md",
-      "bytes": 14989,
-      "sha256": "0623a8b1b1fc2275502619050c937ea1d95af49f702d96dd1d8e627b7047a627",
-      "line_count": 102,
+      "bytes": 2323,
+      "sha256": "5fc99e627574533dd8d940e45b4e22cc907fc8cb67539362270a9cac3f7d2d9b",
+      "line_count": 23,
       "sections": [
         {
           "line": 1,
-          "title": "# Project / Delivery Context",
-          "end_line": 2
+          "title": "# Starward",
+          "end_line": 10
         },
         {
-          "line": 3,
-          "title": "## Project Goal",
-          "end_line": 7
-        },
-        {
-          "line": 8,
-          "title": "## Non-goals / Boundaries",
-          "end_line": 13
-        },
-        {
-          "line": 14,
-          "title": "## Background",
-          "end_line": 20
-        },
-        {
-          "line": 21,
-          "title": "## Design Rationale",
-          "end_line": 28
-        },
-        {
-          "line": 29,
-          "title": "## Architecture Context",
-          "end_line": 32
-        },
-        {
-          "line": 33,
-          "title": "## Context Graph",
-          "end_line": 40
-        },
-        {
-          "line": 41,
-          "title": "## Product / Delivery Brief",
-          "end_line": 46
-        },
-        {
-          "line": 47,
-          "title": "## Current Release Profile",
-          "end_line": 58
-        },
-        {
-          "line": 59,
-          "title": "## UX / Screen Brief",
-          "end_line": 69
-        },
-        {
-          "line": 70,
-          "title": "## Verification Entry Points",
-          "end_line": 73
-        },
-        {
-          "line": 74,
-          "title": "## Current State",
-          "end_line": 83
-        },
-        {
-          "line": 84,
-          "title": "## Next Safe Action",
-          "end_line": 87
-        },
-        {
-          "line": 88,
-          "title": "## Context Index",
-          "end_line": 102
+          "line": 11,
+          "title": "## Read the relevant owner",
+          "end_line": 23
         }
       ],
       "source_items": []
@@ -13588,399 +13456,6 @@
         }
       ],
       "source_items": []
-    },
-    {
-      "path": "E:/dev/Starward/docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/handoff-draft/miniapp-field-signal-i21-current.md",
-      "bytes": 1610928,
-      "sha256": "7121c460e3097abf43b86c4e74c4824f97b70185e31e31e4f728b15b3ae81d44",
-      "line_count": 18738,
-      "sections": [],
-      "source_items": [
-        {
-          "key": "requirement-selected-current-resource-miniapp",
-          "kind": "requirement",
-          "start_line": 1,
-          "end_line": 3
-        },
-        {
-          "key": "control-development-consumption-boundary-miniapp",
-          "kind": "control",
-          "start_line": 5,
-          "end_line": 7
-        },
-        {
-          "key": "control-miniapp-01",
-          "kind": "control",
-          "start_line": 9,
-          "end_line": 11
-        },
-        {
-          "key": "control-miniapp-02",
-          "kind": "control",
-          "start_line": 13,
-          "end_line": 15
-        },
-        {
-          "key": "control-miniapp-03",
-          "kind": "control",
-          "start_line": 17,
-          "end_line": 19
-        },
-        {
-          "key": "control-miniapp-04",
-          "kind": "control",
-          "start_line": 21,
-          "end_line": 23
-        },
-        {
-          "key": "control-miniapp-05",
-          "kind": "control",
-          "start_line": 25,
-          "end_line": 27
-        },
-        {
-          "key": "control-miniapp-06",
-          "kind": "control",
-          "start_line": 29,
-          "end_line": 31
-        },
-        {
-          "key": "control-miniapp-07",
-          "kind": "control",
-          "start_line": 33,
-          "end_line": 35
-        },
-        {
-          "key": "control-miniapp-08",
-          "kind": "control",
-          "start_line": 37,
-          "end_line": 39
-        },
-        {
-          "key": "control-miniapp-09",
-          "kind": "control",
-          "start_line": 41,
-          "end_line": 43
-        },
-        {
-          "key": "control-miniapp-10",
-          "kind": "control",
-          "start_line": 45,
-          "end_line": 47
-        },
-        {
-          "key": "control-miniapp-11",
-          "kind": "control",
-          "start_line": 49,
-          "end_line": 51
-        },
-        {
-          "key": "control-miniapp-12",
-          "kind": "control",
-          "start_line": 53,
-          "end_line": 55
-        },
-        {
-          "key": "control-miniapp-13",
-          "kind": "control",
-          "start_line": 57,
-          "end_line": 59
-        },
-        {
-          "key": "control-miniapp-14",
-          "kind": "control",
-          "start_line": 61,
-          "end_line": 63
-        },
-        {
-          "key": "control-miniapp-15",
-          "kind": "control",
-          "start_line": 65,
-          "end_line": 67
-        },
-        {
-          "key": "control-miniapp-16",
-          "kind": "control",
-          "start_line": 69,
-          "end_line": 71
-        },
-        {
-          "key": "control-miniapp-17",
-          "kind": "control",
-          "start_line": 73,
-          "end_line": 75
-        },
-        {
-          "key": "control-miniapp-18",
-          "kind": "control",
-          "start_line": 77,
-          "end_line": 79
-        },
-        {
-          "key": "control-miniapp-19",
-          "kind": "control",
-          "start_line": 81,
-          "end_line": 83
-        },
-        {
-          "key": "control-miniapp-20",
-          "kind": "control",
-          "start_line": 85,
-          "end_line": 87
-        },
-        {
-          "key": "control-miniapp-21",
-          "kind": "control",
-          "start_line": 89,
-          "end_line": 91
-        },
-        {
-          "key": "control-miniapp-22",
-          "kind": "control",
-          "start_line": 93,
-          "end_line": 95
-        },
-        {
-          "key": "control-miniapp-23",
-          "kind": "control",
-          "start_line": 97,
-          "end_line": 99
-        },
-        {
-          "key": "control-miniapp-24",
-          "kind": "control",
-          "start_line": 101,
-          "end_line": 103
-        },
-        {
-          "key": "control-miniapp-25",
-          "kind": "control",
-          "start_line": 105,
-          "end_line": 107
-        },
-        {
-          "key": "control-miniapp-26",
-          "kind": "control",
-          "start_line": 109,
-          "end_line": 111
-        },
-        {
-          "key": "control-miniapp-27",
-          "kind": "control",
-          "start_line": 113,
-          "end_line": 115
-        },
-        {
-          "key": "control-miniapp-28",
-          "kind": "control",
-          "start_line": 117,
-          "end_line": 119
-        },
-        {
-          "key": "control-miniapp-29",
-          "kind": "control",
-          "start_line": 121,
-          "end_line": 123
-        },
-        {
-          "key": "control-miniapp-30",
-          "kind": "control",
-          "start_line": 125,
-          "end_line": 127
-        },
-        {
-          "key": "control-miniapp-31",
-          "kind": "control",
-          "start_line": 129,
-          "end_line": 131
-        },
-        {
-          "key": "control-miniapp-32",
-          "kind": "control",
-          "start_line": 133,
-          "end_line": 135
-        },
-        {
-          "key": "control-miniapp-33",
-          "kind": "control",
-          "start_line": 137,
-          "end_line": 139
-        },
-        {
-          "key": "control-miniapp-34",
-          "kind": "control",
-          "start_line": 141,
-          "end_line": 143
-        },
-        {
-          "key": "control-miniapp-35",
-          "kind": "control",
-          "start_line": 145,
-          "end_line": 147
-        },
-        {
-          "key": "control-miniapp-36",
-          "kind": "control",
-          "start_line": 149,
-          "end_line": 151
-        },
-        {
-          "key": "control-miniapp-37",
-          "kind": "control",
-          "start_line": 153,
-          "end_line": 155
-        },
-        {
-          "key": "control-miniapp-38",
-          "kind": "control",
-          "start_line": 157,
-          "end_line": 159
-        },
-        {
-          "key": "control-miniapp-39",
-          "kind": "control",
-          "start_line": 161,
-          "end_line": 163
-        },
-        {
-          "key": "control-miniapp-40",
-          "kind": "control",
-          "start_line": 165,
-          "end_line": 167
-        },
-        {
-          "key": "control-miniapp-41",
-          "kind": "control",
-          "start_line": 169,
-          "end_line": 171
-        },
-        {
-          "key": "control-miniapp-42",
-          "kind": "control",
-          "start_line": 173,
-          "end_line": 175
-        },
-        {
-          "key": "control-miniapp-43",
-          "kind": "control",
-          "start_line": 177,
-          "end_line": 179
-        },
-        {
-          "key": "control-miniapp-44",
-          "kind": "control",
-          "start_line": 181,
-          "end_line": 183
-        },
-        {
-          "key": "control-miniapp-45",
-          "kind": "control",
-          "start_line": 185,
-          "end_line": 187
-        },
-        {
-          "key": "control-miniapp-46",
-          "kind": "control",
-          "start_line": 189,
-          "end_line": 191
-        },
-        {
-          "key": "control-miniapp-47",
-          "kind": "control",
-          "start_line": 193,
-          "end_line": 195
-        },
-        {
-          "key": "control-miniapp-48",
-          "kind": "control",
-          "start_line": 197,
-          "end_line": 199
-        },
-        {
-          "key": "control-miniapp-49",
-          "kind": "control",
-          "start_line": 201,
-          "end_line": 203
-        },
-        {
-          "key": "control-miniapp-50",
-          "kind": "control",
-          "start_line": 205,
-          "end_line": 207
-        },
-        {
-          "key": "control-miniapp-51",
-          "kind": "control",
-          "start_line": 209,
-          "end_line": 211
-        },
-        {
-          "key": "control-miniapp-52",
-          "kind": "control",
-          "start_line": 213,
-          "end_line": 215
-        },
-        {
-          "key": "control-miniapp-53",
-          "kind": "control",
-          "start_line": 217,
-          "end_line": 219
-        },
-        {
-          "key": "control-miniapp-54",
-          "kind": "control",
-          "start_line": 221,
-          "end_line": 223
-        },
-        {
-          "key": "control-miniapp-55",
-          "kind": "control",
-          "start_line": 225,
-          "end_line": 227
-        },
-        {
-          "key": "control-miniapp-56",
-          "kind": "control",
-          "start_line": 229,
-          "end_line": 231
-        },
-        {
-          "key": "control-miniapp-57",
-          "kind": "control",
-          "start_line": 233,
-          "end_line": 235
-        },
-        {
-          "key": "control-miniapp-58",
-          "kind": "control",
-          "start_line": 237,
-          "end_line": 239
-        },
-        {
-          "key": "control-miniapp-59",
-          "kind": "control",
-          "start_line": 241,
-          "end_line": 243
-        },
-        {
-          "key": "control-miniapp-60",
-          "kind": "control",
-          "start_line": 245,
-          "end_line": 247
-        },
-        {
-          "key": "control-miniapp-61",
-          "kind": "control",
-          "start_line": 249,
-          "end_line": 251
-        },
-        {
-          "key": "control-miniapp-62",
-          "kind": "control",
-          "start_line": 253,
-          "end_line": 255
-        }
-      ]
     },
     {
       "path": "E:/dev/Starward/docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
@@ -14921,7 +14396,7 @@
       "source_items": []
     },
     {
-      "path": "E:/dev/Starward/docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/handoff-draft/miniapp-field-signal-i21-current.md",
+      "path": "E:/dev/Starward/docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
       "bytes": 1610929,
       "sha256": "3320cd9a8541840a215e527d5d3e554defeb6f29a6ffe3079d2a7983224f848c",
       "line_count": 18738,
@@ -15328,399 +14803,6 @@
       "source_items": []
     },
     {
-      "path": "E:/dev/Starward/docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
-      "bytes": 1610929,
-      "sha256": "3320cd9a8541840a215e527d5d3e554defeb6f29a6ffe3079d2a7983224f848c",
-      "line_count": 18738,
-      "sections": [],
-      "source_items": [
-        {
-          "key": "requirement-selected-current-resource-miniapp",
-          "kind": "requirement",
-          "start_line": 1,
-          "end_line": 3
-        },
-        {
-          "key": "control-development-consumption-boundary-miniapp",
-          "kind": "control",
-          "start_line": 5,
-          "end_line": 7
-        },
-        {
-          "key": "control-miniapp-01",
-          "kind": "control",
-          "start_line": 9,
-          "end_line": 11
-        },
-        {
-          "key": "control-miniapp-02",
-          "kind": "control",
-          "start_line": 13,
-          "end_line": 15
-        },
-        {
-          "key": "control-miniapp-03",
-          "kind": "control",
-          "start_line": 17,
-          "end_line": 19
-        },
-        {
-          "key": "control-miniapp-04",
-          "kind": "control",
-          "start_line": 21,
-          "end_line": 23
-        },
-        {
-          "key": "control-miniapp-05",
-          "kind": "control",
-          "start_line": 25,
-          "end_line": 27
-        },
-        {
-          "key": "control-miniapp-06",
-          "kind": "control",
-          "start_line": 29,
-          "end_line": 31
-        },
-        {
-          "key": "control-miniapp-07",
-          "kind": "control",
-          "start_line": 33,
-          "end_line": 35
-        },
-        {
-          "key": "control-miniapp-08",
-          "kind": "control",
-          "start_line": 37,
-          "end_line": 39
-        },
-        {
-          "key": "control-miniapp-09",
-          "kind": "control",
-          "start_line": 41,
-          "end_line": 43
-        },
-        {
-          "key": "control-miniapp-10",
-          "kind": "control",
-          "start_line": 45,
-          "end_line": 47
-        },
-        {
-          "key": "control-miniapp-11",
-          "kind": "control",
-          "start_line": 49,
-          "end_line": 51
-        },
-        {
-          "key": "control-miniapp-12",
-          "kind": "control",
-          "start_line": 53,
-          "end_line": 55
-        },
-        {
-          "key": "control-miniapp-13",
-          "kind": "control",
-          "start_line": 57,
-          "end_line": 59
-        },
-        {
-          "key": "control-miniapp-14",
-          "kind": "control",
-          "start_line": 61,
-          "end_line": 63
-        },
-        {
-          "key": "control-miniapp-15",
-          "kind": "control",
-          "start_line": 65,
-          "end_line": 67
-        },
-        {
-          "key": "control-miniapp-16",
-          "kind": "control",
-          "start_line": 69,
-          "end_line": 71
-        },
-        {
-          "key": "control-miniapp-17",
-          "kind": "control",
-          "start_line": 73,
-          "end_line": 75
-        },
-        {
-          "key": "control-miniapp-18",
-          "kind": "control",
-          "start_line": 77,
-          "end_line": 79
-        },
-        {
-          "key": "control-miniapp-19",
-          "kind": "control",
-          "start_line": 81,
-          "end_line": 83
-        },
-        {
-          "key": "control-miniapp-20",
-          "kind": "control",
-          "start_line": 85,
-          "end_line": 87
-        },
-        {
-          "key": "control-miniapp-21",
-          "kind": "control",
-          "start_line": 89,
-          "end_line": 91
-        },
-        {
-          "key": "control-miniapp-22",
-          "kind": "control",
-          "start_line": 93,
-          "end_line": 95
-        },
-        {
-          "key": "control-miniapp-23",
-          "kind": "control",
-          "start_line": 97,
-          "end_line": 99
-        },
-        {
-          "key": "control-miniapp-24",
-          "kind": "control",
-          "start_line": 101,
-          "end_line": 103
-        },
-        {
-          "key": "control-miniapp-25",
-          "kind": "control",
-          "start_line": 105,
-          "end_line": 107
-        },
-        {
-          "key": "control-miniapp-26",
-          "kind": "control",
-          "start_line": 109,
-          "end_line": 111
-        },
-        {
-          "key": "control-miniapp-27",
-          "kind": "control",
-          "start_line": 113,
-          "end_line": 115
-        },
-        {
-          "key": "control-miniapp-28",
-          "kind": "control",
-          "start_line": 117,
-          "end_line": 119
-        },
-        {
-          "key": "control-miniapp-29",
-          "kind": "control",
-          "start_line": 121,
-          "end_line": 123
-        },
-        {
-          "key": "control-miniapp-30",
-          "kind": "control",
-          "start_line": 125,
-          "end_line": 127
-        },
-        {
-          "key": "control-miniapp-31",
-          "kind": "control",
-          "start_line": 129,
-          "end_line": 131
-        },
-        {
-          "key": "control-miniapp-32",
-          "kind": "control",
-          "start_line": 133,
-          "end_line": 135
-        },
-        {
-          "key": "control-miniapp-33",
-          "kind": "control",
-          "start_line": 137,
-          "end_line": 139
-        },
-        {
-          "key": "control-miniapp-34",
-          "kind": "control",
-          "start_line": 141,
-          "end_line": 143
-        },
-        {
-          "key": "control-miniapp-35",
-          "kind": "control",
-          "start_line": 145,
-          "end_line": 147
-        },
-        {
-          "key": "control-miniapp-36",
-          "kind": "control",
-          "start_line": 149,
-          "end_line": 151
-        },
-        {
-          "key": "control-miniapp-37",
-          "kind": "control",
-          "start_line": 153,
-          "end_line": 155
-        },
-        {
-          "key": "control-miniapp-38",
-          "kind": "control",
-          "start_line": 157,
-          "end_line": 159
-        },
-        {
-          "key": "control-miniapp-39",
-          "kind": "control",
-          "start_line": 161,
-          "end_line": 163
-        },
-        {
-          "key": "control-miniapp-40",
-          "kind": "control",
-          "start_line": 165,
-          "end_line": 167
-        },
-        {
-          "key": "control-miniapp-41",
-          "kind": "control",
-          "start_line": 169,
-          "end_line": 171
-        },
-        {
-          "key": "control-miniapp-42",
-          "kind": "control",
-          "start_line": 173,
-          "end_line": 175
-        },
-        {
-          "key": "control-miniapp-43",
-          "kind": "control",
-          "start_line": 177,
-          "end_line": 179
-        },
-        {
-          "key": "control-miniapp-44",
-          "kind": "control",
-          "start_line": 181,
-          "end_line": 183
-        },
-        {
-          "key": "control-miniapp-45",
-          "kind": "control",
-          "start_line": 185,
-          "end_line": 187
-        },
-        {
-          "key": "control-miniapp-46",
-          "kind": "control",
-          "start_line": 189,
-          "end_line": 191
-        },
-        {
-          "key": "control-miniapp-47",
-          "kind": "control",
-          "start_line": 193,
-          "end_line": 195
-        },
-        {
-          "key": "control-miniapp-48",
-          "kind": "control",
-          "start_line": 197,
-          "end_line": 199
-        },
-        {
-          "key": "control-miniapp-49",
-          "kind": "control",
-          "start_line": 201,
-          "end_line": 203
-        },
-        {
-          "key": "control-miniapp-50",
-          "kind": "control",
-          "start_line": 205,
-          "end_line": 207
-        },
-        {
-          "key": "control-miniapp-51",
-          "kind": "control",
-          "start_line": 209,
-          "end_line": 211
-        },
-        {
-          "key": "control-miniapp-52",
-          "kind": "control",
-          "start_line": 213,
-          "end_line": 215
-        },
-        {
-          "key": "control-miniapp-53",
-          "kind": "control",
-          "start_line": 217,
-          "end_line": 219
-        },
-        {
-          "key": "control-miniapp-54",
-          "kind": "control",
-          "start_line": 221,
-          "end_line": 223
-        },
-        {
-          "key": "control-miniapp-55",
-          "kind": "control",
-          "start_line": 225,
-          "end_line": 227
-        },
-        {
-          "key": "control-miniapp-56",
-          "kind": "control",
-          "start_line": 229,
-          "end_line": 231
-        },
-        {
-          "key": "control-miniapp-57",
-          "kind": "control",
-          "start_line": 233,
-          "end_line": 235
-        },
-        {
-          "key": "control-miniapp-58",
-          "kind": "control",
-          "start_line": 237,
-          "end_line": 239
-        },
-        {
-          "key": "control-miniapp-59",
-          "kind": "control",
-          "start_line": 241,
-          "end_line": 243
-        },
-        {
-          "key": "control-miniapp-60",
-          "kind": "control",
-          "start_line": 245,
-          "end_line": 247
-        },
-        {
-          "key": "control-miniapp-61",
-          "kind": "control",
-          "start_line": 249,
-          "end_line": 251
-        },
-        {
-          "key": "control-miniapp-62",
-          "kind": "control",
-          "start_line": 253,
-          "end_line": 255
-        }
-      ]
-    },
-    {
       "path": "E:/dev/Starward/docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json",
       "bytes": 149346,
       "sha256": "c6042aff1d916b152138a7100db6d2fef715a9143758baf65219b25943733a15"
@@ -15802,5 +14884,8 @@
     "outside-hebei-bingshanliang",
     "outside-tibet-dingjie"
   ],
-  "source_item_count": 1759
+  "source_item_count": 1759,
+  "retired_paths": [
+    "E:/dev/Starward/.codex/skills/design-resource-authoring/SKILL.md"
+  ]
 }

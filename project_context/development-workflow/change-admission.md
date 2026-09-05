@@ -33,6 +33,6 @@ The current Mini Program owners and command ladder are implemented. Any future w
 
 ## Repository Verification Boundary
 
-- `npm run context:validate`, `make validate-context`, `make validate-harness`, `npm run context:doctor`, and the package-managed source-parity check can validate Context structure, routing, installation health, and applicable source-workspace parity.
+- `npm run context:validate`, `make validate-context`, `npm run context:doctor` can validate Context structure, routing and installation health.
 - Repository review must confirm any current Mini Program workspace, acceptance and tool paths match their owners; generated/private artifacts remain ignored; the implementation index matches code truth; the selected visual target remains rooted only in `DESIGN.md`; and no historical output is promoted into Context.
-- Context checks do not build, test, run or accept the Mini Program. Only the active Contract's current-candidate checks and sole Final Gate may do so.
+- Context checks do not build, test, run or accept the Mini Program. Use the project-owned checks and real runtime/device observations appropriate to the current candidate and requirements.

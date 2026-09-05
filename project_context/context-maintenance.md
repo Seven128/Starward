@@ -1,0 +1,18 @@
+# Context Maintenance And Resource Interpretation
+
+Starward uses the pinned project-tiny-context-harness 0.12.0 package and schema 5, on Node.js 24 or newer. Run the installed CLI through npm scripts; do not mix old binaries or use an unpinned network CLI for ordinary reading and validation. On this Windows host, prefer the Node 24 installation over the Node 16 embedded in WeChat DevTools.
+
+Only global.md is default Context. Architecture, the cross-workspace main Area and verification are retained on demand. Routing metadata does not impose mandatory headings, line limits, fixed workflow stages, architecture deliberation artifacts or machine completion gates. Read related owners using the manifest and search; retain product requirements and confirmed decisions at their existing owners.
+
+Use npm run context:validate for manifest/path structure and npm run context:doctor for installation diagnostics. npm run context:sync updates only the managed startup entry. Explicit package upgrades use npm run context:upgrade after reviewing the installed version's migration notes. Project tests, actual runtime observations and required human/external decisions remain separate.
+
+## Design sources
+
+DSA/DRA, design preflight, symbolic compilation, Long-Task lifecycle and package acceptance are retired. Existing DESIGN.md, Screen Contracts and accepted product proposals remain useful, directly readable project sources; a new design system or formal handoff is not required to iterate UI.
+
+- Current Mini Program composition is selected in areas/main/screen-contracts/wechat-miniapp.md; exact system values remain in DESIGN.md. Current resource paths and byte identities are indexed in tools/miniapp/selected-design-bindings.json. Read the selected handoff's direct resources array, canonical HTML/DESIGN source, direct JSON values and feasibility text. The project integrity checker reads these files without a Tiny Context compiler. Stable IDs and manifests are navigation/provenance, not machine acceptance.
+- npm run design:system:verify checks confirmed system rules and native token projection. npm run test:miniapp:design-bindings checks retained resource identity and bounded production source probes. Neither proves runtime layout, interaction, sensor behavior or human acceptance. Existing frozen inspectors are project resource-integrity consumers only, not a replacement Harness compiler.
+- Retain resource bytes consumed by current checks and referenced accepted decisions. Remove unconsumed draft duplicates and superseded exploratory output only after following dependencies. Do not regenerate or discard an adopted decision merely because its authoring tool was retired. Earlier resources may remain dependencies of selected immutable packages; historical styling never overrides current selection.
+- .long-task/delivery-contract.yaml and historical task notes are retained provenance and, where explicitly read by project regression tools, ordinary data. They do not activate a workflow, require model switching, issue signed acceptance or certify completion. The project verifier under tools/miniapp/verifier-runtime remains a standalone diagnostic/observation tool; its legacy result shapes have no Tiny Context acceptance meaning. Old draft/rebind scripts are retired.
+
+The old package-internal compatibility overlay and its proof-command wrapper are removed: their engine no longer exists. Do not patch node_modules or weaken project runtime assertions to simulate old acceptance. Preserve source/candidate identity, truthful failure, resource cleanup and privacy boundaries in the project-owned runners.

@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -46,49 +48,20 @@ function parseDiagnosticArgs(values) {
   return options;
 }
 
-function spawnCapture(command, argv, { cwd = repositoryRoot, inherit = false } = {}) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, argv, {
-      cwd,
-      env: process.env,
-      shell: false,
-      windowsHide: true,
-      stdio: inherit ? "inherit" : ["ignore", "pipe", "pipe"],
-    });
-    const stdout = [];
-    const stderr = [];
-    if (!inherit) {
-      child.stdout.on("data", (chunk) => stdout.push(chunk));
-      child.stderr.on("data", (chunk) => stderr.push(chunk));
-    }
-    child.once("error", reject);
-    child.once("close", (code) => {
-      resolve({
-        code: code ?? 1,
-        stderr: Buffer.concat(stderr).toString("utf8"),
-        stdout: Buffer.concat(stdout).toString("utf8"),
-      });
-    });
-  });
-}
-
-async function activeAuthorityIdentity() {
-  const result = await spawnCapture("git", [
-    "config",
-    "--get-regexp",
-    "^ty-context\\.longTask\\.",
-  ]);
-  if (result.code !== 0) throw new Error("native_diagnostic_active_authority_missing");
-  const records = result.stdout.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean);
-  if (records.length !== 1) {
-    throw new Error(`native_diagnostic_active_authority_ambiguous:${records.length}`);
+async function diagnosticSourceIdentity(root = repositoryRoot) {
+  // Checkpoint reuse also binds production, verifier, design closure and device
+  // fingerprints in verify-native-target. This identity adds no acceptance state.
+  const inputs = [
+    "DESIGN.md",
+    "docs/design-resources/starward-residual-implementation-handoff.md",
+    "tests/acceptance/native/contracts.json",
+  ];
+  const digest = createHash("sha256");
+  for (const input of inputs) {
+    const bytes = await readFile(path.join(root, input));
+    digest.update(input).update("\0").update(String(bytes.length)).update("\0").update(bytes);
   }
-  const value = records[0].split(/\s+/u).slice(1).join(" ");
-  const [taskId, revision, identity] = value.split("|");
-  if (!taskId || !/^\d+$/u.test(revision ?? "") || !/^[a-f0-9]{64}$/u.test(identity ?? "")) {
-    throw new Error("native_diagnostic_active_authority_invalid");
-  }
-  return { identity, revision: Number(revision), taskId };
+  return { identity: digest.digest("hex"), inputs };
 }
 
 async function main(values = process.argv.slice(2)) {
@@ -103,11 +76,11 @@ async function main(values = process.argv.slice(2)) {
       "  --condition <key[,key]|all>      default: mobile-android-390-full",
       "  --serials <serial[,serial]|auto> default: STARWARD_ANDROID_SERIAL(S) or auto",
       "  --max-workers <n>                default: 1",
-      "  --resume <true|false>             default: true; exact Authority/candidate only",
+      "  --resume <true|false>             default: true; exact source/candidate only",
       "  --checkpoint-root <path>          optional explicit checkpoint directory",
       "  --output <path>                   optional diagnostic artifact directory",
       "",
-      "This command is diagnostic-only and cannot produce Long-Task acceptance.",
+      "This command is diagnostic-only; it does not certify product acceptance.",
       "",
     ].join("\n"));
     return 0;
@@ -115,7 +88,7 @@ async function main(values = process.argv.slice(2)) {
   if (!options.outcome || !/^[a-z0-9-]+$/u.test(options.outcome)) {
     throw new Error("native_diagnostic_outcome_required");
   }
-  const authority = await activeAuthorityIdentity();
+  const authority = await diagnosticSourceIdentity();
   const runnerArguments = [
     path.join(scriptDirectory, "verify-native-target.mjs"),
     "--platform", "android",
@@ -149,10 +122,9 @@ async function main(values = process.argv.slice(2)) {
       resolveRepositorySubdirectory(options.output, "output"),
     );
   }
-  process.stderr.write(`STARWARD_NATIVE_DIAGNOSTIC_AUTHORITY:${JSON.stringify({
+  process.stderr.write(`STARWARD_NATIVE_DIAGNOSTIC_SOURCE:${JSON.stringify({
     identity: authority.identity,
-    revision: authority.revision,
-    task_id: authority.taskId,
+    inputs: authority.inputs,
   })}\n`);
   const child = spawn(process.execPath, runnerArguments, {
     cwd: repositoryRoot,
@@ -174,7 +146,7 @@ if (invokedPath && path.normalize(invokedPath).toLowerCase() === path.normalize(
 }
 
 export {
-  activeAuthorityIdentity,
+  diagnosticSourceIdentity,
   main,
   parseDiagnosticArgs,
   resolveRepositorySubdirectory,

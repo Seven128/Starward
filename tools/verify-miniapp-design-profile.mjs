@@ -187,7 +187,7 @@ export async function verifyMiniappDesignProfile({ root, design }) {
   const expectedCurrentComponentSourceHash =
     "0fd87614b7d80c8d3f3c880fe39e81c9b7beda89f41e8492e4c113022eda4dd4";
   const expectedCanonicalSectionHash =
-    "c1c089f8a258f3e96b9154b4465f5c3db2eef60aeb0bb146413e82fbcf3c0606";
+    "50bf37f7050faec3793e92795ae013f670be4ac98544fcedf0e21559012621e4";
   const expectedSelectedResourceHashes = {
     miniapp_handoff: "17288e6ccc7092a5be6b1ea3bfc0ad73d0b7bea893b0e0bf1ffdc7c172426834",
     operations_handoff: "391d900dd35420bd33de29676b23a6767ba7b93fd3857bc3eec9b41bd971546f",

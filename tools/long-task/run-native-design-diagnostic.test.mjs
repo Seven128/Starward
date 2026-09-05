@@ -1,10 +1,39 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import test from "node:test";
 import {
   parseDiagnosticArgs,
+  diagnosticSourceIdentity,
   resolveRepositorySubdirectory,
 } from "./run-native-design-diagnostic.mjs";
+
+test("diagnostic identity works without Git workflow state and invalidates changed or missing sources", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "starward-diagnostic-source-"));
+  try {
+    const inputs = [
+      "DESIGN.md",
+      "docs/design-resources/starward-residual-implementation-handoff.md",
+      "tests/acceptance/native/contracts.json",
+    ];
+    for (const input of inputs) {
+      await mkdir(path.dirname(path.join(root, input)), { recursive: true });
+      await writeFile(path.join(root, input), input);
+    }
+    const first = await diagnosticSourceIdentity(root);
+    assert.deepEqual(await diagnosticSourceIdentity(root), first);
+    for (const input of inputs) {
+      await writeFile(path.join(root, input), `${input}:changed`);
+      assert.notEqual((await diagnosticSourceIdentity(root)).identity, first.identity);
+      await writeFile(path.join(root, input), input);
+    }
+    await rm(path.join(root, inputs[0]));
+    await assert.rejects(diagnosticSourceIdentity(root), { code: "ENOENT" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test("native diagnostic arguments preserve exact attributable filters", () => {
   assert.deepEqual(parseDiagnosticArgs([

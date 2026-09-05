@@ -10,9 +10,9 @@
 
 实际目标是完整 5 Surfaces、9 主路由、62 Controls、10 固定夜空中国来源样本及所有适用条件的真实 WEAPP 实现与验证。默认工作流的风险比例决定执行深度，不授权缩减明确的产品/验证范围。真机正式验收暂放意味着相关结论未验证，不能把整个 Goal 标记完成。
 
-当前设计入口是 `tools/miniapp/selected-design-bindings.json` 中 miniapp 条目，启动时为 R11，目标仍为 constraint。精确值归根 DESIGN.md 与 owning Screen Contract/selected resources；不回退到原 Goal 的旧 handoff。不可覆盖 immutable 资源；若实现绑定必须更新，使用设计资源的 immutable 新版本路线及默认 Context/Design 变更流程，不执行旧 Long-Task 修订仪式，也不单改哈希骗检查。
+当前设计入口是 `tools/miniapp/selected-design-bindings.json` 中 miniapp 条目，启动时为 R11，目标仍为 constraint。精确值归根 DESIGN.md 与 owning Screen Contract/selected resources；不回退到原 Goal 的旧 handoff。保留被检查消费的选中资源原始字节；普通代码变化不要求生成新 handoff。先审查实际差异，再更新受影响的项目绑定与检查，不能单改哈希掩盖设计或实现漂移。资源解释见 project_context/context-maintenance.md。
 
-每个材料性实现批次开始前，将 Architecture Deliberation 放在可观察的任务笔记/更新中；需要 durable 变更先更新 owning Context。实现后按默认 Contract Conformance（含 Engineering Quality/Architecture/selected-design）与单独 Context drift 检查收束。当前候选证据随代码、配置、输入、环境变化失效，历史记录不可升级为本轮通过。
+Tiny Context 已升级至 0.12.0/schema 5；按当前 AGENTS.md 与 owning Context 执行。旧笔记中的 Architecture Deliberation、Contract Conformance、模型卡点、DSA/DRA、protected revision 和 Final Gate 均不再是流程要求。保留其中的产品约束、实际检查和未完成事项；按风险选择验证，变更长期事实时更新 Context。
 
 任务更新规则：在 `execution-plan.md` 就地更新该项，写实际改动、检查命令/结果/边界、下一步和新发现的上游定位。新材料加入索引；哈希变化先读 diff 解释，不把索引的旧摘要当作 authority lock。不要存密钥、token、Cookie、设备标识、私密坐标、QR 原始数据。恢复前重新观察服务/端口/IDE/数据，旧句柄和坐标不可复用。
 

@@ -16,3 +16,13 @@ apps/wechat-miniapp/.swc/
 artifacts/miniapp/
 workers/miniapp-api/tmp/
 tmp/ty-context/long-task-runs/
+
+# Local migration backups and scratch are not source or Context.
+tmp/ty-context/upgrade-backups/
+tmp/ty-context/manual-retirement/
+tmp/*-schema5.cjs
+tmp/harness-*.txt
+tmp/context-remaining.txt
+tmp/*-check.log
+tmp/harness-install.log
+tmp/resource-cleanup*.json
