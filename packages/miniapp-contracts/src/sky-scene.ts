@@ -3,6 +3,8 @@ import type {
   SkySceneCatalogEntry,
   SkySceneFrame,
   SkyScenePoint,
+  SkyTarget,
+  SkyTargetFrame,
 } from "./types.ts";
 
 /** Hard product limits for the catalog-backed Mini Program scene. */
@@ -128,6 +130,40 @@ export function assertSkyScene(
 
   const bytes = new TextEncoder().encode(JSON.stringify(scene)).byteLength;
   if (bytes >= SKY_SCENE_MAX_SERIALIZED_BYTES) fail("serialized_size");
+}
+
+/**
+ * Validate the target timeline's relationship to the report's real hourly
+ * axis.  Target semantics remain actionable data, so this check deliberately
+ * validates only the time binding and per-frame identity shape; astronomy
+ * values remain owned and calculated by the BFF.
+ */
+export function assertSkyTargetFrames(
+  targetFrames: readonly SkyTargetFrame[],
+  hourlyAt: readonly string[],
+): asserts targetFrames is readonly SkyTargetFrame[] {
+  if (!Array.isArray(targetFrames)) fail("target_frames_root");
+  if (targetFrames.length !== hourlyAt.length)
+    fail("target_frame_count");
+  targetFrames.forEach((frame, index) => {
+    const expectedAt = hourlyAt[index];
+    if (!frame || typeof frame !== "object")
+      fail(`target_frame_${index}`);
+    if (frame.at !== expectedAt) fail(`target_frame_${index}:at`);
+    if (!Array.isArray(frame.targets))
+      fail(`target_frame_${index}:targets`);
+    const targetIds = new Set<string>();
+    const targets = frame.targets as readonly SkyTarget[];
+    targets.forEach((target, targetIndex) => {
+      if (!target || typeof target !== "object")
+        fail(`target_frame_${index}:target_${targetIndex}`);
+      if (typeof target.targetId !== "string" || !target.targetId.trim())
+        fail(`target_frame_${index}:target_${targetIndex}:id`);
+      if (targetIds.has(target.targetId))
+        fail(`target_frame_${index}:target_${targetIndex}:duplicate`);
+      targetIds.add(target.targetId);
+    });
+  });
 }
 
 export function skySceneSerializedBytes(scene: SkyScene): number {

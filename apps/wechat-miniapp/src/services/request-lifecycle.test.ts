@@ -9,6 +9,42 @@ import {
   isMiniappRequestCancelled,
 } from "./request-lifecycle";
 
+test("Taro callback plus rejected task settles once without an unhandled rejection", async () => {
+  for (const ending of ["cancel", "timeout", "network", "promise-only"] as const) {
+    const h = transportHarness(false, () => {}, true);
+    const pending = h.request("scene", "/scene");
+    const rejected = assert.rejects(pending, { message: {
+      cancel: "miniapp_request_cancelled:manual",
+      timeout: "bff_request_timeout",
+      network: "request:fail network",
+      "promise-only": "request:fail network",
+    }[ending] });
+    if (ending === "cancel") h.requests.cancel("scene");
+    else if (ending === "timeout") h.timeout();
+    else if (ending === "network") h.calls[0]!.fail({ errMsg: "request:fail network" });
+    else h.taskRejections[0]!({ errMsg: "request:fail network" });
+    await rejected;
+    // Allow native-task rejection reporting to run; node:test fails on any
+    // unhandled rejection, independently of the outer request's result.
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.equal(h.requests.has("scene"), false);
+    assert.equal(h.timers.size, 0);
+    assert.equal(h.diagnostics.filter((row) => row[1] !== "start").length, 1);
+  }
+});
+
+test("Taro's duplicate failure cannot replace one real-cache fallback", async () => {
+  const h = transportHarness(false, () => {}, true);
+  await h.seed();
+  const pending = h.request("scene", "/scene");
+  h.calls.at(-1)!.fail({ errMsg: "request:fail network" });
+  assert.equal((await pending).dataState, "STALE_USABLE");
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(h.diagnostics.filter((row) => row[2] === "transport_failure").length, 1);
+  assert.equal(h.diagnostics.filter((row) => row[2] === "stale_real_response").length, 1);
+  assert.equal(h.counts().writes, 1);
+});
+
 test("a newer request cancels the old owner and survives stale cleanup", () => {
   const registry = new LatestRequestRegistry();
   const cancellations: string[] = [];

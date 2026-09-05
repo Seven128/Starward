@@ -1,4 +1,5 @@
 import {
+  GAIA_DR3_PROJECTION_ALGORITHM,
   loadGaiaDr3BrightStarCatalog,
   positionGaiaDr3Catalog,
   type GaiaDr3ValidatedCatalog,
@@ -255,7 +256,7 @@ export function createGaiaDr3SkyCatalogProvider(): SkyCatalogProvider {
     cacheKey: () => {
       try {
         const active = ensureLoaded().snapshot;
-        return `${active.catalogVersion}:${active.catalogHash}`;
+        return `${active.catalogVersion}:${active.catalogHash}:${GAIA_DR3_PROJECTION_ALGORITHM}`;
       } catch {
         return "catalog-unavailable";
       }

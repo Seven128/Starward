@@ -173,21 +173,34 @@ test("fixed NightChina corpus traverses the real rights-safe import state owner"
         assert.equal(draft.proposalReviewState, "DRAFT");
       }
 
+      const associatedProposalId = draft.spotProposalId;
+      const repeatedAssociation = item.expectedAssociation.kind === "new_place_proposal"
+        ? { spotId: null, createProposal: true }
+        : {};
       draft = await update(
         service,
         principal.userId,
         draft,
-        { stage: "PREVIEW" },
+        repeatedAssociation,
+        `nightchina:${index}:repeat-save`,
+      );
+      assert.equal(draft.spotProposalId, associatedProposalId);
+      draft = await update(
+        service,
+        principal.userId,
+        draft,
+        { ...repeatedAssociation, stage: "PREVIEW" },
         `nightchina:${index}:preview`,
       );
       draft = await update(
         service,
         principal.userId,
         draft,
-        { stage: "SUBMIT" },
+        { ...repeatedAssociation, stage: "SUBMIT" },
         `nightchina:${index}:submit`,
       );
       assert.equal(draft.moderationState, "PENDING");
+      assert.equal(draft.spotProposalId, associatedProposalId);
       assert.equal(
         draft.proposalReviewState,
         item.expectedAssociation.kind === "new_place_proposal"

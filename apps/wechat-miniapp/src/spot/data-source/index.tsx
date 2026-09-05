@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import { useRouter } from "@tarojs/taro";
 import { Text, View } from "@tarojs/components";
 import { CustomNav } from "@/components/custom-nav";
@@ -39,6 +40,7 @@ export default function DataSourcePage() {
 
   return (
     <View className={themeClass + " sources-page"}>
+      <FloatingNotificationHost />
       <CustomNav title="来源与更新时间" subtitle={detail?.spot.name} back />
       <View className="sources-content page-inset safe-bottom">
         {!validRoute ? (

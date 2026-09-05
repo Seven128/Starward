@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { GAIA_DR3_PROJECTION_ALGORITHM } from "@starward/astronomy-core";
 import {
   SKY_SCENE_MAX_CATALOG_ENTRIES,
   skySceneSerializedBytes,
@@ -182,6 +183,13 @@ test("catalog and scene limits admit exactly 2048 rows but never a 2049th", () =
   });
   assert.equal(rejected.state, "UNAVAILABLE");
   assert.equal(rejected.unavailableReason, "CATALOG_LIMIT_INVALID");
+});
+
+test("real catalog cache identity binds projection algorithm as well as asset bytes", () => {
+  const provider = createGaiaDr3SkyCatalogProvider();
+  const catalog = provider.load();
+  assert.equal(provider.cacheKey(), `${catalog.catalogVersion}:${catalog.catalogHash}:${GAIA_DR3_PROJECTION_ALGORITHM}`);
+  assert.notEqual(provider.cacheKey(), `${catalog.catalogVersion}:${catalog.catalogHash}`);
 });
 
 test("SkyReport cache identity changes when catalog version/hash changes", async () => {

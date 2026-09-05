@@ -1,10 +1,10 @@
 {
   "schema_version": "miniapp-delivery-carrier-v1",
-  "generated_at": "2026-09-04T16:58:21.810Z",
-  "spec_sha256": "57b3acc828d9b639c03616d0b7b6263565929c97c727902982b853103f790fe9",
+  "generated_at": "2026-09-04T17:46:23.272Z",
+  "spec_sha256": "32fd7cd56b447e29c0a6c8eea806a2ea49b3a36970bb9e91f9a9b0791d0526ac",
   "source_snapshot": {
     "files": {
-      ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md": "5fa8429e70cedf66039fb5399c975cb788494a77855971fd166640384491b6df",
+      ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md": "a34c3577ddde97241b870a63283e8f4190e4bd98f1709c9bd386b32e551e0c1d",
       "DESIGN.md": "08a8719fee19638e8f5bbf34d2bf9a0421c6753db4e7830b9c11ff235d9839f3",
       "apps/wechat-miniapp/config/index.ts": "3edee9b5bad534e0c48dfb3b6044b67ed6b641608ff16feaed4d809b3f176f9a",
       "apps/wechat-miniapp/package.json": "9304ffaee7b02ab46f1a983ba7e07a8a92882f6e9551731b32ef47dca4f97829",
@@ -313,7 +313,7 @@
       "tools/miniapp/start-development-session.mjs": "5ff0290063307ba62ab748288e5601101ba88eeaa6444be85f65c096ed42f8f0",
       "tools/miniapp/upload-release-bundle.mjs": "aff930a20df01de4f5bc9548e8d927abc46521f7c7eb1a564d1556e6b996a78a",
       "tools/miniapp/upload-release-bundle.test.mjs": "25edce09cd3282bf0bd6be906606c85375db836f00df9b85230b94bb690f17a9",
-      "tools/miniapp/verification-spec-field-signal-i21.json": "57b3acc828d9b639c03616d0b7b6263565929c97c727902982b853103f790fe9",
+      "tools/miniapp/verification-spec-field-signal-i21.json": "32fd7cd56b447e29c0a6c8eea806a2ea49b3a36970bb9e91f9a9b0791d0526ac",
       "tools/miniapp/verification-spec-v2-1-1.json": "76d1aaf2ac9c4c1134476ccf2d99014be3178162bcbba79e0d38dbf25a85f51d",
       "tools/miniapp/verification-spec.json": "1496766c2908d8183ee041c726a9ddc1d1bae1e54705b67449d17653b73ec8b3",
       "tools/miniapp/verifier-runtime/package-lock.json": "550dac0ab2b84dfafb07ff7b6b1b2d7d071583e82dac94ab1a4b3140239bda2f",
@@ -408,7 +408,7 @@
       "workers/miniapp-api/src/worker-heartbeat.ts": "df9630bb74e9bb008ac524b0141d2cc85639ec0d591a8efa9c502a039d5ee803",
       "workers/miniapp-api/src/worker.ts": "9dc946c0e059d9a543ea7e3fb5666c0478b9147d5307f9ce3bcceae9e54cfe1f"
     },
-    "sha256": "41914c1240d3cbe811222170a18e848d6a13406c193fef2384fbd9bbd144ffa6"
+    "sha256": "796262799f71f9130518e0e839fe7d7470022e5ae76eaaa761fa912ff8ebe65c"
   },
   "authority": {
     "design": {
@@ -438,8 +438,8 @@
     },
     "semantic_manifest": {
       "passed": true,
-      "expected_sha256": "68893c65441c435d35ecb612585b0e4f009b09dcb153821a4ad5bc08c3103f7e",
-      "actual_sha256": "68893c65441c435d35ecb612585b0e4f009b09dcb153821a4ad5bc08c3103f7e",
+      "expected_sha256": "ca29021bf8588aa040bef8f18f82f4f2895a08e5cc8e734218bc8af7378d5c18",
+      "actual_sha256": "ca29021bf8588aa040bef8f18f82f4f2895a08e5cc8e734218bc8af7378d5c18",
       "source_closure_passed": true,
       "source_item_count": 1817,
       "manifest_source_item_count": 1817,
@@ -448,14 +448,14 @@
   },
   "source": {
     "item_count": 1817,
-    "semantic_manifest_sha256": "68893c65441c435d35ecb612585b0e4f009b09dcb153821a4ad5bc08c3103f7e"
+    "semantic_manifest_sha256": "ca29021bf8588aa040bef8f18f82f4f2895a08e5cc8e734218bc8af7378d5c18"
   },
   "suites": {
     "fast": {
       "passed": true,
       "exit_code": 0,
-      "duration_ms": 40896,
-      "stdout_sha256": "61af5cc799820c2907e5f7d0755ebf8ae11f465aa5ba69d05edac77e1bd62a83",
+      "duration_ms": 45385,
+      "stdout_sha256": "3f34ce147f277557359b0ac3739120921e2d74bc29762c2ebecd366b0d431e3e",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout_line_count": 316,
       "stderr_line_count": 0,
@@ -466,15 +466,15 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 12776,
-        "stdout_sha256": "27a80c5d1f5b7c0740b752d670a984df500a4b6245aba6b389245085114f1656",
+        "duration_ms": 10403,
+        "stdout_sha256": "41f9c16ca5e88ca1fd856dafaf8bda81197046ee26a02a01d90f79d5750f7709",
         "stderr_sha256": "30745afe699b237e4868b2f15f702636dd4090c24f37d0388f006c9c50098d94",
         "stdout_line_count": 3,
         "stderr_line_count": 8,
         "diagnostic_sha256": null
       },
       "artifact_path": "artifacts/miniapp/infrastructure/miniapp-infrastructure-session.json",
-      "artifact_sha256": "486d9aecaaee3b88fece6d682d33ecacc06153b9e1a863a883b2e3a099910ce4",
+      "artifact_sha256": "5dc4d08dd666d0083a8d97799764b047354ae873b98ede2befed228681d50bbf",
       "checks": null
     },
     "h5": {
@@ -555,23 +555,23 @@
       "command": {
         "passed": true,
         "exit_code": 0,
-        "duration_ms": 706233,
-        "stdout_sha256": "ba5bf96e7dcb4607f18396d2ec025d4fe6297c6d70e8fba24aed4b0eb6b65613",
+        "duration_ms": 675813,
+        "stdout_sha256": "917b593db5938eb1522ac08ea8fcb419116d9599dd298c3d5fd6eac91cf4d4df",
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_line_count": 1,
         "stderr_line_count": 0,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/session.json",
-      "artifact_sha256": "12e567da2a99050a3b13628cddd6007201692cbeef29d589e1939ce495115716",
-      "session_id": "wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c",
-      "run_id": "wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/session.json",
+      "artifact_sha256": "9ea5a24badc4d3d65ae0ed81882d2055c3b74a0ac9073198cd44361b1a3dbd8f",
+      "session_id": "wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0",
+      "run_id": "wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "current-candidate",
       "mode": "success",
       "candidate_sha256": "3923bd9463a7751183e1baf84fbccbb0e581e8211c2dff5d6c381395074c3529",
-      "bundle_sha256": "fe46833c76c75dc92dcd35aa69bb04c7d2ce86e9b201f33858d631d4f9d4df8c",
+      "bundle_sha256": "e5da57c0ff1d20a6d24d035ec83e9868a301b7ab818d7e612395bbe746649aa3",
       "candidate_stable": true,
       "bundle_stable": true,
       "journeys": [
@@ -585,8 +585,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "651d07bd8a146db494ae4e66dd8e19265824b90681e5f63335e8e75e8d3b73dd",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/01-map-cold-start-location-fallback.png",
-          "screenshot_sha256": "09df0d4f581a711d5ae50f78d8ce25409f0e621891e13f110f4544da9d9525b1"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/01-map-cold-start-location-fallback.png",
+          "screenshot_sha256": "f89d0421afacec914602c6737f5dc9048e215a0216842cad87db06c3cb9aaf7c"
         },
         {
           "key": "sky-orientation",
@@ -596,9 +596,9 @@
             "theme-night",
             "theme-page"
           ],
-          "root_wxml_sha256": "d490a833b7fc197925ae4e4b13cd1f2c0cac497f64c56a44bcc57128fff7531b",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/02-sky-orientation.png",
-          "screenshot_sha256": "945e253633badfc091c2ab39b5ed1a03c2cacf05a642970202df6f41a80d6fac"
+          "root_wxml_sha256": "d08056c2b6de6ec91d494dd892c2991277e3859ca4c8d3cbd89abdf1b3645df7",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/02-sky-orientation.png",
+          "screenshot_sha256": "307208d49c664f04d375f8448a89f6047ecea75bfb7c7ebfca556f4642f19cd3"
         },
         {
           "key": "my-home",
@@ -609,8 +609,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "f0c237fd919b545fc4721f8ab248e8c7b9983bcc97485bac272bb25037096eda",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/04-my-home.png",
-          "screenshot_sha256": "eb3b62048ecfb17c92cfb56dabaa820621744fbe86518043de0243740021edc8"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/04-my-home.png",
+          "screenshot_sha256": "358af02e99cfec5b7e4e4080b15f3f2690a1adc37026ea1908b4589e640511d5"
         },
         {
           "key": "profile-links",
@@ -621,8 +621,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "cad1f0f4e52a0a8652f02b62e6612735017c1416be9b2edf1d006de2f48319d5",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/05-profile-links.png",
-          "screenshot_sha256": "b5ebcaf9dbee4ee2ab3171bab3c67bc996db11a799ce24ceb787b46d3abc5bc0"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/05-profile-links.png",
+          "screenshot_sha256": "3b97e123bb9233ee7d30ccabcdc136dc6c3d4761ba6da61b6006359bd044ea6a"
         },
         {
           "key": "own-post-import",
@@ -633,8 +633,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "01592ea42e32dde0e8551fbed19381755c42f9b5718a7d5db67d27756ceb7caa",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/06-own-post-import.png",
-          "screenshot_sha256": "1b6979d3e5eba90bad5be8ebae7ea886571d820a990bc0b0c3345dbf5c449a11"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/06-own-post-import.png",
+          "screenshot_sha256": "029ab6eb1a66785f6b59b769a483ed089fbff21a3150b821207d46dcd9b448d4"
         },
         {
           "key": "formal-spot-contribution",
@@ -644,9 +644,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "a7c3fc2d8fdf65df7aa17f1a042cbb283f23cbef0bf3a0e91cfeff796c8f38b3",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/06-formal-spot-contribution.png",
-          "screenshot_sha256": "1af57462b31298770092876f142ee8ba4868c8f17f341815c9e13bf08b235246"
+          "root_wxml_sha256": "e9f5013ee9341e6c9bc3738c63588e42fee61baad378e023891e5a3f03d17e8a",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/06-formal-spot-contribution.png",
+          "screenshot_sha256": "3493ca9a8f75682504c8343ae9893404f1ed474cfa178d444492eb4248429048"
         },
         {
           "key": "new-place-contribution",
@@ -656,9 +656,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "7d90663774146020db0cff7ccae65a1b550e10f12306f2789b5b2ed3971178c9",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/07-new-place-contribution.png",
-          "screenshot_sha256": "144f2ca8631e4b5209d7bbd8908f62ed49cde5c9213c3457e66c171310122d6c"
+          "root_wxml_sha256": "14f6300d091783425ade4f83422fb75b80c2b66a6c58e601ee389f5236d4f090",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/07-new-place-contribution.png",
+          "screenshot_sha256": "24174a33e25fb2a853ba3624af21ea74b6240c4eb5ee85ca2468792e64f7b24e"
         },
         {
           "key": "plan-editor",
@@ -669,8 +669,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "40922440ae40e9be15814109301893094ec53ad10f0296120eddd72a99497ee2",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/07-plan-editor.png",
-          "screenshot_sha256": "0efd513c6776a33bddb102525efa5b48b947aa1e5558576089bf7ba11c464459"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/07-plan-editor.png",
+          "screenshot_sha256": "c40d1acf609b6467bfe39b50cd053d96588a66a5f79ba7b2b4731b03a47f24e6"
         },
         {
           "key": "settings",
@@ -681,8 +681,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "677b18c7eee39fa8d4d7af95ce35760cd5548c9494244ab66c70fe082cd531bb",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/08-settings.png",
-          "screenshot_sha256": "1da7c51a558bb120c48809d931e10ef3f2315aff64e1c6764ed1542c8e974387"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/08-settings.png",
+          "screenshot_sha256": "a02891992bb51469de0d85caf4d7be221167d86c40d73680781801d8a47f043b"
         },
         {
           "key": "upload-recovery",
@@ -692,9 +692,9 @@
             "theme-day",
             "theme-page"
           ],
-          "root_wxml_sha256": "b44e1cf68b36b3c8308aa9ab190a679c15b0f61dc4c042df6b661457b836be62",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/09-upload-recovery.png",
-          "screenshot_sha256": "3d33ec1f74dbc50fc3ed5954c6f7f8ca930f9d3cac22bd79c7695d5c0d081bff"
+          "root_wxml_sha256": "dbf9881b4df151276f3988209e9f96341eb42433ac9d14abb9b9c9ccc5a99f0c",
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/09-upload-recovery.png",
+          "screenshot_sha256": "77987d7fc1d00a464c644ea54624916d35b196d4e6115d6a02afaeb6d67f99bd"
         },
         {
           "key": "nightchina-import-gd-yuebei-summer-night",
@@ -705,8 +705,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "3d507f85f58a840ded8d4460e647a811a50b0c6e4637b31c940593c2d8b72f2a",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/20-nightchina-import-gd-yuebei-summer-night.png",
-          "screenshot_sha256": "32dadb5aae8e8b41da4e84b1750c785e59f9bb820640af8b591dfd55cdecd6db"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/20-nightchina-import-gd-yuebei-summer-night.png",
+          "screenshot_sha256": "f25c853cafab16366c6c6be6aec34cdb7286e312c2e1aeb767275586c69925d6"
         },
         {
           "key": "nightchina-import-gd-oujia-terraces",
@@ -717,8 +717,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "b81ce04cc96815ccab237e6d4deac89f11539eded4d76674f8965bd80970afcf",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/21-nightchina-import-gd-oujia-terraces.png",
-          "screenshot_sha256": "4c386d9b0eb610c4773c82be3fdca1d31693aa083969e80b5b7f320917ae1692"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/21-nightchina-import-gd-oujia-terraces.png",
+          "screenshot_sha256": "a617f0609b18b386178bfa50d8e46a7ee5c69f21ab608a56354c3e17ad1cfa52"
         },
         {
           "key": "nightchina-import-gd-yangshan-watch-sky",
@@ -729,8 +729,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "7382e3c157f3238e897d80ae79e9f5ecefc227644afee10762c6edab95dbdcb6",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/22-nightchina-import-gd-yangshan-watch-sky.png",
-          "screenshot_sha256": "74da4c973aa68475be0c46bd181dae044aa818ef558b984e677d253876bfe4fd"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/22-nightchina-import-gd-yangshan-watch-sky.png",
+          "screenshot_sha256": "54fc92efe70a62f547a1238b31de5906aa9ff3d56fa2526496044c26fdc33218"
         },
         {
           "key": "nightchina-import-gd-bajieshan-cloud-sea",
@@ -741,8 +741,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "69956c78dca570bb73daecdacfe89b7aab5937614c0fd8dc3af391cb28e05678",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/23-nightchina-import-gd-bajieshan-cloud-sea.png",
-          "screenshot_sha256": "70d80d216aefaf335fe57a4314607db81e791f513812a56e476979d8111b3b54"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/23-nightchina-import-gd-bajieshan-cloud-sea.png",
+          "screenshot_sha256": "ea2dbca660573263b0b47d329c821a1c7cfbe6d16f523a939c90ebbb82f7ec3b"
         },
         {
           "key": "nightchina-import-outside-anhui-shangcun",
@@ -753,8 +753,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "3e9edc5888309ba856e49db920d1252d166caf44098ba956a028d55a3d815df9",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/24-nightchina-import-outside-anhui-shangcun.png",
-          "screenshot_sha256": "6aafad0889ffb7ba24dd74fe5690deb0bf04345b938a03e7204040d9275bb069"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/24-nightchina-import-outside-anhui-shangcun.png",
+          "screenshot_sha256": "9a6d4dffa7f71d262f92a4fdf95ade9a29f233a9675b428f862a3225903bcaee"
         },
         {
           "key": "nightchina-import-outside-anhui-xucun",
@@ -765,8 +765,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "199421e78010cd54c348ae37dcf40b975177a956784524af4dda2fcbc3772266",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/25-nightchina-import-outside-anhui-xucun.png",
-          "screenshot_sha256": "006a95d6de6b936dc4c831d849498f5364846939952b001195733b2fb7df1008"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/25-nightchina-import-outside-anhui-xucun.png",
+          "screenshot_sha256": "de1e4d8e1b61e785219bbd1188c38593f90df3d5734cb724ba5349760a3dd35e"
         },
         {
           "key": "nightchina-import-outside-yunnan-diqing",
@@ -777,8 +777,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "78f224d10d399fd93d4acd758fd5d4d56745ec7bd216665d4bd9c8ea4bce2a12",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/26-nightchina-import-outside-yunnan-diqing.png",
-          "screenshot_sha256": "aece81a03ec8baf188936c0cd7fbb91625fe98e8f0b80cd7ad500f2541e09821"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/26-nightchina-import-outside-yunnan-diqing.png",
+          "screenshot_sha256": "4bc8b8d0db5428a014d7b8434698b17805614ba57d029441ea384bcd551434ab"
         },
         {
           "key": "nightchina-import-outside-hebei-bingshanliang",
@@ -789,8 +789,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "a02c05a5c1626674549ac6d10a05fde87698192b3133cdc1045c7fb3bb868311",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/27-nightchina-import-outside-hebei-bingshanliang.png",
-          "screenshot_sha256": "f7b7bf6f7bf15fc804ea7e0ab287aad3f3fbdd100584e606389a8ca6bdcfca24"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/27-nightchina-import-outside-hebei-bingshanliang.png",
+          "screenshot_sha256": "d79f4c478c59f826d0009f0b7db6cd043fa26377b1e6d86c00c1f38b89317afc"
         },
         {
           "key": "nightchina-import-outside-tibet-dingjie",
@@ -801,8 +801,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "dee961f6ed929538251e71de8c9a36c8f4ee7cc2a45626f9c82c0f35b248465f",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/28-nightchina-import-outside-tibet-dingjie.png",
-          "screenshot_sha256": "2fce95e60a96eb3c3e17885aa1c0273701e7a21be0f750dc016a7b6180413bc5"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/28-nightchina-import-outside-tibet-dingjie.png",
+          "screenshot_sha256": "9380e0ca946f765bb1cd44968a633fbc09b182813b1c9885794be79df44b4004"
         },
         {
           "key": "nightchina-import-gd-dapeng-summer-fireflies",
@@ -813,8 +813,8 @@
             "theme-page"
           ],
           "root_wxml_sha256": "35a6c1c11ef2595056e377eac899f942a5dd122e530bfcc86495fa42a8d82575",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/29-nightchina-import-gd-dapeng-summer-fireflies.png",
-          "screenshot_sha256": "22f8db6c8bb78073d1e466836ce58cf54c1c8e252e1e39995e1d6aa91f98b369"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/29-nightchina-import-gd-dapeng-summer-fireflies.png",
+          "screenshot_sha256": "363a779711be76603f537603d6169cf4286cf2fb5e0a1567908139495d845a5c"
         },
         {
           "key": "nightchina-post-import-formal-spot-panel",
@@ -827,76 +827,83 @@
             "theme-page"
           ],
           "root_wxml_sha256": "3881497c286225a57c86f00948783d7daa34239a2c7908db80e15ca52219ca22",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-38-41-577Z-fc04584c/30-nightchina-post-import-formal-spot-panel.png",
-          "screenshot_sha256": "09bb5ece76ce0f4872e13f226a513492a21803047fd4953e845d312693e7f7b7"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-29-11-705Z-ac86b5a0/30-nightchina-post-import-formal-spot-panel.png",
+          "screenshot_sha256": "330e88e0f572ee5f0c35ff246aa0ddc62292d3983bd5b08549aa79bc8da05893"
         }
       ],
       "fault_probes": [],
       "runtime_observation": {
         "exception_count": 0,
         "expected_fault_console_error_count": 0,
-        "known_toolchain_console_error_count": 9,
+        "known_toolchain_console_error_count": 10,
         "known_toolchain_console_errors": [
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
+            "phase": "setup-reset-before-control",
+            "offset_ms": 57400,
+            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
+            "payload_length": 28
+          },
+          {
+            "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-reset-before-control",
-            "offset_ms": 127514,
+            "offset_ms": 104890,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:sky-orientation",
-            "offset_ms": 157160,
+            "offset_ms": 134024,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:my-home",
-            "offset_ms": 197366,
+            "offset_ms": 171135,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:my-home",
-            "offset_ms": 238459,
+            "offset_ms": 210646,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:profile-links",
-            "offset_ms": 246209,
+            "offset_ms": 218189,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:plan-editor",
-            "offset_ms": 328271,
+            "offset_ms": 301098,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:settings",
-            "offset_ms": 346401,
+            "offset_ms": 318565,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:nightchina-import-outside-anhui-xucun",
-            "offset_ms": 528736,
+            "offset_ms": 499303,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           },
           {
             "id": "wechat_automator_opaque_error_envelope_v1",
             "phase": "evidence-journey:nightchina-post-import-formal-spot-panel",
-            "offset_ms": 669536,
+            "offset_ms": 640696,
             "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
             "payload_length": 28
           }
@@ -904,34 +911,34 @@
         "unexpected_console_error_count": 0,
         "final_quiescence": {
           "status": "passed",
-          "event_count": 102,
+          "event_count": 103,
           "quiet_window_ms": 750
         }
       },
       "cleanup_status": "passed"
     },
     "degradation": {
-      "passed": true,
+      "passed": false,
       "command": {
-        "passed": true,
-        "exit_code": 0,
-        "duration_ms": 474747,
-        "stdout_sha256": "8499c208564fe671e0fe12ae2029f3e509a265883f3c03910d2777d1029ba205",
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "passed": false,
+        "exit_code": 1,
+        "duration_ms": 356059,
+        "stdout_sha256": "589cc049cd581261a4ab01849aa1b3312337f9a386c3fceb2659af556819a15f",
+        "stderr_sha256": "4b06e00e3cfe1883d02a01b8e10175027753a8029391219c13b57bec5fe34eff",
         "stdout_line_count": 1,
-        "stderr_line_count": 0,
+        "stderr_line_count": 9,
         "diagnostic_sha256": null
       },
-      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/session.json",
-      "artifact_sha256": "041a18833d8eb44aa3af9b44e2730cb7c19f86ff298a0711fb7db27fb06a1e81",
-      "session_id": "wechat-devtools-2026-09-04T16-50-27-569Z-09081c53",
-      "run_id": "wechat-devtools-2026-09-04T16-50-27-569Z-09081c53",
+      "artifact_path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-40-27-708Z-aad843e3/session.json",
+      "artifact_sha256": "e1d3847c9b5b300cebf57a93f86d314f286c51473aad0bc0121e6e061078b7be",
+      "session_id": "wechat-devtools-2026-09-04T17-40-27-708Z-aad843e3",
+      "run_id": "wechat-devtools-2026-09-04T17-40-27-708Z-aad843e3",
       "cold_start": true,
       "project_root": "apps/wechat-miniapp/project.config.json",
       "scope": "current-candidate",
       "mode": "degradation",
       "candidate_sha256": "3923bd9463a7751183e1baf84fbccbb0e581e8211c2dff5d6c381395074c3529",
-      "bundle_sha256": "2c97456b8a103a9c17b4493b832fe42e5f315f9ef97b3fc54bc62a966dc00cf0",
+      "bundle_sha256": "c39bb60176460684fbf8a68b513210f05f2966dec114593d705a2e195d5885e9",
       "candidate_stable": true,
       "bundle_stable": true,
       "journeys": [
@@ -945,228 +952,12 @@
             "theme-page"
           ],
           "root_wxml_sha256": "ac1f56f3245afef29777931d03f16640ff62aa30e22fe6189a6a32d2b6ade632",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/01-map-cold-start-location-fallback.png",
-          "screenshot_sha256": "2917e53a2afe44daa23ae423f6de27f9c9a89842a0242d7e202e0b0ebdfe875d"
-        },
-        {
-          "key": "sky-orientation",
-          "status": "passed",
-          "root_classes": [
-            "sky-orientation-page",
-            "theme-night",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "3d3b74795021da2856ceb75f8f477fff4b4f87599437a8074766c44d9637acd5",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/02-sky-orientation.png",
-          "screenshot_sha256": "a2e90aa3a61cd0d6408bf81e73d569fed5e3f77491a1ac9d80dfcd2435b87641"
-        },
-        {
-          "key": "my-home",
-          "status": "passed",
-          "root_classes": [
-            "my-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "f2bc8047d9954cb988b91b963d15237ba0273c488b99347e21f1a0bbb0284edb",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/04-my-home.png",
-          "screenshot_sha256": "6e9a8d793088eaacf0894800691296449879cfbeaf8b1943c0c77e1667d7164f"
-        },
-        {
-          "key": "formal-spot-contribution",
-          "status": "passed",
-          "root_classes": [
-            "contribution-page",
-            "theme-day",
-            "theme-page"
-          ],
-          "root_wxml_sha256": "79636dcb0cde743cdba1d04d9cb40fd55653bdf47ae38e0e0b6367b8071dc800",
-          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/06-formal-spot-contribution.png",
-          "screenshot_sha256": "e619454381a29d501ec7954a54f1a36bfb15b06e9492c1955cf32334a258fd91"
+          "screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T17-40-27-708Z-aad843e3/01-map-cold-start-location-fallback.png",
+          "screenshot_sha256": "2d2bada623ae9809855774ff2e0ff439423b60ae5cf9c56a4959f69d2cf79ed7"
         }
       ],
-      "fault_probes": [
-        {
-          "journey_key": "map-cold-start-location-fallback",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "84c59640c28081bbbc4461535623d2efff9c042f88e7eac471d4a25e1864124c",
-          "recovery_observation_sha256": "f535529b3094204b839709ab03aa8daca59affb236de71eea05a5ddb1b8fc2dd",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重试",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/fault-map-cold-start-location-fallback.png",
-          "fault_screenshot_sha256": "2c83f9c105c55542710e3f17e736e6b1572c52fdef938f01bde8a7d3b7e60eeb",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/recovered-map-cold-start-location-fallback.png",
-          "recovery_screenshot_sha256": "b3f7a81a033c6f7d1817819bbc505dee8940a73e864f8d6bd73d7a475038fc96",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 10,
-            "quiet_window_ms": 750
-          }
-        },
-        {
-          "journey_key": "sky-orientation",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "5fb425d1a9f96d420c99818c9f7e3d147ac9b222184ae0d5cb747e1054005486",
-          "recovery_observation_sha256": "dc001382109e1710313f337e058c44162d2a3a466f5b3479c15c193c2bd4fdc9",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重试天空",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/fault-sky-orientation.png",
-          "fault_screenshot_sha256": "55f7ff3cb55a3d67dec6da933e7a69aa2daab73372d7a3e23d633d2c3a1fc26c",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/recovered-sky-orientation.png",
-          "recovery_screenshot_sha256": "d2950e1a1348196867e73d82c89691d577fd603fe6bc916e033b74b443d7c878",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 51,
-            "quiet_window_ms": 750
-          }
-        },
-        {
-          "journey_key": "my-home",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "80b98b5764d7995ff158286800024177b7f01c6e79b6b907eac727f23d08c617",
-          "recovery_observation_sha256": "d79ebe73ed64c87ee427e492a3a7cd71472381e8666ce2a55f002b0b5b2ba28d",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重试同步",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/fault-my-home.png",
-          "fault_screenshot_sha256": "b076f91407c53268234f6ef210080052d18296ec48bb3c04f05d006ec52b690a",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/recovered-my-home.png",
-          "recovery_screenshot_sha256": "6a365f957b71d31e7e26904e9066e6cfc1b01695cb97d4cc9ae29f902e2054fa",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 93,
-            "quiet_window_ms": 750
-          }
-        },
-        {
-          "journey_key": "formal-spot-contribution",
-          "status": "passed",
-          "fault_observed": true,
-          "recovery_observed": true,
-          "fault_observation_sha256": "0683aa80bd0d024972a84b1468baf620ee570467af77043f62003ec761dfd634",
-          "recovery_observation_sha256": "d8b59c73ca8c85b3acbe2354f00c6dcd2b87e5ce36df6fddcfa55a8294aad2a3",
-          "recovery_control_selector": ".status-panel__recovery",
-          "recovery_control_label": "重试回读",
-          "fault_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/fault-formal-spot-contribution.png",
-          "fault_screenshot_sha256": "618248bb2e6e3406352320cd74e188e8e6eca76446228ad4f7788e2a05b50c03",
-          "recovery_screenshot": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-04T16-50-27-569Z-09081c53/recovered-formal-spot-contribution.png",
-          "recovery_screenshot_sha256": "c1f60c631900b389788726e14bd5a320f671eea0b4c7baefbeb9c3b91880c82e",
-          "runtime_quiescence": {
-            "status": "passed",
-            "event_count": 112,
-            "quiet_window_ms": 750
-          }
-        }
-      ],
-      "runtime_observation": {
-        "exception_count": 0,
-        "expected_fault_console_error_count": 14,
-        "known_toolchain_console_error_count": 13,
-        "known_toolchain_console_errors": [
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "setup-reset-before-control",
-            "offset_ms": 56693,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "evidence-reset-before-control",
-            "offset_ms": 103956,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "acceptance-reset",
-            "offset_ms": 180393,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "fault-preparation:sky-orientation",
-            "offset_ms": 194000,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "post-recovery",
-            "offset_ms": 219783,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "acceptance-reset",
-            "offset_ms": 292058,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "post-recovery",
-            "offset_ms": 344865,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "post-recovery",
-            "offset_ms": 355661,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "post-recovery",
-            "offset_ms": 356838,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "post-recovery",
-            "offset_ms": 356840,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "acceptance-reset",
-            "offset_ms": 405101,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "fault-preparation:formal-spot-contribution",
-            "offset_ms": 419617,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          },
-          {
-            "id": "wechat_automator_opaque_error_envelope_v1",
-            "phase": "post-recovery",
-            "offset_ms": 443377,
-            "payload_sha256": "3114f3b3346bb53845fd85737e0fd5994b59b4513f98c035c560d2b5ba98f0b6",
-            "payload_length": 28
-          }
-        ],
-        "unexpected_console_error_count": 0,
-        "final_quiescence": {
-          "status": "passed",
-          "event_count": 114,
-          "quiet_window_ms": 750
-        }
-      },
+      "fault_probes": [],
+      "runtime_observation": null,
       "cleanup_status": "passed"
     }
   },
@@ -2266,7 +2057,7 @@
       },
       "actual": {
         "path": "artifacts/miniapp/i21/production-actual.json",
-        "sha256": "df2edf77f1c1f22ab57b1594588f04b971144986421c973b8c267863e4f1f61b"
+        "sha256": "c9a67a0cb42ea7c7a4442b5a5e3432c52e3d4585a58be499b3e63f5c1037a870"
       },
       "comparison": {
         "path": "artifacts/miniapp/i21/constraint-comparison.json",
@@ -2277,60 +2068,60 @@
   "semantic": {
     "passed": true,
     "artifact_path": "artifacts/miniapp/semantic/current-candidate.json",
-    "artifact_sha256": "8c26367bf5714fa8c76b2cee948e09f69ad9cc7683c50775757a3343d27a6c4f"
+    "artifact_sha256": "8a68053b0335ff1d8871056263fb1bf2897bf52edb62f3db2f7c8ab6cb2b8393"
   },
   "global": {
-    "conformance": "passed"
+    "conformance": "failed"
   },
   "outcomes": {
     "map-experience": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
         "native_success": true,
-        "native_degradation": true
+        "native_degradation": false
       }
     },
     "full-sky": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
         "native_success": true,
-        "native_degradation": true
+        "native_degradation": false
       }
     },
     "my-profile-settings": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
         "native_success": true,
-        "native_degradation": true
+        "native_degradation": false
       }
     },
     "contribution": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
         "native_success": true,
-        "native_degradation": true
+        "native_degradation": false
       }
     },
     "current-candidate": {
-      "status": "passed",
+      "status": "failed",
       "predicates": {
         "fast": true,
         "infrastructure": true,
         "h5": true,
         "native_success": true,
-        "native_degradation": true
+        "native_degradation": false
       }
     }
   }

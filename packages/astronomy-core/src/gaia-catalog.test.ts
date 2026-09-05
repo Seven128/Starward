@@ -175,6 +175,33 @@ test("projection is deterministic and changes with instant and WGS84 observer", 
   );
 });
 
+test("horizontal positions include the catalog-to-equator-of-date frame rotation", () => {
+  // Independent reference route: Astronomy Engine 2.1.19 Rotation_EQJ_HOR
+  // applied to a unit EQJ vector (RA=6h, Dec=20deg), then HorizonFromVector.
+  // Frozen on 2026-09-05; this is a geometric fixture, not an observed star.
+  // Feeding raw EQJ angles directly to Horizon instead gives az=11.889078,
+  // alt=-46.618066 and must fail this regression.
+  const row: GaiaDr3Row = {
+    sourceId: "100000000000000004",
+    raDeg: 90,
+    decDeg: 20,
+    pmRaMasYr: 0,
+    pmDecMasYr: 0,
+    refEpoch: 2016,
+    gMag: 3,
+    bpRp: null,
+  };
+  const result = projectGaiaDr3Star(row, {
+    at: "2026-09-05T12:00:00.000Z",
+    observer: { latitude: 22.55, longitude: 114.05, elevationM: 0 },
+  });
+  assert.ok(Math.abs(result.azimuthDeg - 11.353703315666507) < 1e-8);
+  assert.ok(Math.abs(result.altitudeDeg - (-46.690487045126225)) < 1e-8);
+  assert.equal(result.rightAscensionDeg, 90, "public catalog-frame RA stays unchanged");
+  assert.equal(result.declinationDeg, 20, "public catalog-frame Dec stays unchanged");
+  assert.equal(result.visible, false);
+});
+
 test("recognizable Sirius, Vega and Polaris fixtures retain their astrometric golden coordinates", () => {
   // These are test-only well-known-star astrometric fixtures.  They are not
   // appended to or mixed into the Gaia offline asset (which remains the sole

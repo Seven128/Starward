@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import { ScrollView, View } from "@tarojs/components";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
@@ -33,6 +34,7 @@ export default function ContributionPage() {
       data-route="contribution-intake"
       data-od-id="miniapp-contribution-intake"
     >
+      <FloatingNotificationHost />
       <CustomNav
         title="现场反馈与纠错"
         back

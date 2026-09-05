@@ -3,22 +3,14 @@ import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
 import type { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import { SemanticIcon } from "@/components/semantic-asset";
 
-const DISPLAY_MODES: readonly DisplayMode[] = [
-  "DAY",
-  "NIGHT",
-  "OBSERVATION",
-];
-export const DISPLAY_MODE_LABEL: Record<DisplayMode, string> = {
-  DAY: "日间",
-  NIGHT: "夜间",
-  OBSERVATION: "观测红光",
-};
+import { DisplayModeControl } from "./display-mode-control";
 
 type SettingsControlsProps = {
   preferences: UserPreferences;
   mode: DisplayMode;
   updatePreference: ReturnType<typeof usePreferencesSync>["updatePreference"];
   selectDisplayMode: (mode: DisplayMode) => void;
+  onModeGestureCapture: (captured: boolean) => void;
 };
 
 export function SettingsControls({
@@ -26,39 +18,11 @@ export function SettingsControls({
   mode,
   updatePreference,
   selectDisplayMode,
+  onModeGestureCapture,
 }: SettingsControlsProps) {
   return (
     <>
-      <View
-        className="settings-section"
-        data-od-id="display-mode-switcher"
-        data-control="display-mode-switcher"
-        role="radiogroup"
-        aria-label="显示模式"
-      >
-        <Text className="type-section">显示模式</Text>
-        <View
-          className="settings-display-mode-track"
-          data-selected-mode={mode.toLowerCase()}
-        >
-          <View className="settings-display-mode-thumb" aria-hidden="true" />
-            {DISPLAY_MODES.map((item) => (
-              <Button
-                key={item}
-                className={`settings-display-mode-choice focus-ring${mode === item ? " settings-display-mode-choice--selected" : ""}`}
-                data-mode={item.toLowerCase()}
-                aria-pressed={mode === item}
-                aria-label={`切换为${DISPLAY_MODE_LABEL[item]}模式`}
-                onClick={() => selectDisplayMode(item)}
-              >
-                <SemanticIcon
-                  name={item === "DAY" ? "sun" : item === "NIGHT" ? "moon" : "star"}
-                />
-                <Text>{DISPLAY_MODE_LABEL[item]}</Text>
-              </Button>
-            ))}
-        </View>
-      </View>
+      <DisplayModeControl mode={mode} onSelect={selectDisplayMode} onGestureCapture={onModeGestureCapture} />
 
       <View
         id="settings-permissions"

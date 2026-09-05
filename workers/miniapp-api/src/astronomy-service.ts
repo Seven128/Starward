@@ -7,13 +7,14 @@ import type {
   SkyReport,
   SpotSummary,
   SkyTarget,
+  SkyTargetFrame,
   SourceSummary,
 } from "@starward/miniapp-contracts";
+import { assertSkyTargetFrames } from "@starward/miniapp-contracts";
 import {
   calculateEquatorialHorizontalAt,
   calculateMiniappNightSky,
   calculateSolarLongitudeJ2000,
-  MINIAPP_ASTRONOMY_ALGORITHM,
 } from "./astronomy-engine-adapter.ts";
 import {
   activeMeteorEvents,
@@ -38,6 +39,8 @@ import type {
   WeatherPort,
 } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
+
+const SKY_REPORT_TIME_AXIS_CACHE_VERSION = "sky-report-time-axis-v1";
 
 function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -209,9 +212,9 @@ export class AstronomyService implements AstronomyApplicationPort {
   }
 
   /** Included in the BFF cache identity so a catalog replacement cannot
-   * serve a report projected from a previous catalog. */
+   * serve a report projected from a previous catalog or time-axis contract. */
   catalogCacheKey(): string {
-    return this.skyCatalog.cacheKey();
+    return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${this.skyCatalog.cacheKey()}`;
   }
 
   async compute(context: ObservationContext): Promise<ApiEnvelope<SkyReport>> {
@@ -231,6 +234,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         nightDate: context.localDate,
         target,
         cadenceMinutes: 30,
+        additionalTimes: [context.selectedAtUtc],
       }),
     );
     const selectedEvent = context.eventInstanceId
@@ -303,12 +307,42 @@ export class AstronomyService implements AstronomyApplicationPort {
           state: weather.state,
         };
       });
-    const everydayTargets: SkyTarget[] = calculations.flatMap((calculation) => {
-      const samples = calculation.samples.filter(
-        (sample) =>
-          Date.parse(sample.at) >= Date.parse(context.nightStartUtc) &&
-          Date.parse(sample.at) < Date.parse(context.nightEndUtc),
-      );
+    const selectedAt = new Date(context.selectedAtUtc);
+    if (!Number.isFinite(selectedAt.getTime()))
+      throw new Error("observation_selected_at_invalid");
+    const selectedAtIso = selectedAt.toISOString();
+    const nightStart = Date.parse(context.nightStartUtc);
+    const nightEnd = Date.parse(context.nightEndUtc);
+    const nightSamplesFor = (
+      calculation: (typeof calculations)[number],
+    ) => {
+      const dusk = Date.parse(calculation.astronomicalDusk ?? "");
+      const dawn = Date.parse(calculation.astronomicalDawn ?? "");
+      return calculation.samples.filter((sample) => {
+        const at = Date.parse(sample.at);
+        return (
+          Number.isFinite(at) &&
+          at >= nightStart &&
+          at < nightEnd &&
+          Number.isFinite(dusk) &&
+          Number.isFinite(dawn) &&
+          at >= dusk &&
+          at <= dawn
+        );
+      });
+    };
+    const exactSample = (
+      calculation: (typeof calculations)[number],
+      at: string,
+    ) => {
+      const instant = new Date(at);
+      if (!Number.isFinite(instant.getTime()))
+        throw new Error("sky_target_time_invalid");
+      const iso = instant.toISOString();
+      return calculation.samples.find((sample) => sample.at === iso) ?? null;
+    };
+    const everydayDescriptors = calculations.flatMap((calculation) => {
+      const samples = nightSamplesFor(calculation);
       const best = samples.reduce<(typeof samples)[number] | null>(
         (current, sample) =>
           current === null || sample.targetAltitudeDeg > current.targetAltitudeDeg
@@ -316,17 +350,8 @@ export class AstronomyService implements AstronomyApplicationPort {
             : current,
         null,
       );
-      if (!best || best.targetAltitudeDeg <= 0 || !samples.length) return [];
+      if (!best || best.targetAltitudeDeg <= 0) return [];
       const visible = samples.filter((sample) => sample.targetAltitudeDeg > 0);
-      const current = samples.reduce<(typeof samples)[number] | null>(
-        (nearest, sample) =>
-          nearest === null ||
-          Math.abs(Date.parse(sample.at) - Date.parse(context.selectedAtUtc)) <
-            Math.abs(Date.parse(nearest.at) - Date.parse(context.selectedAtUtc))
-            ? sample
-            : nearest,
-        null,
-      );
       const names: Partial<Record<typeof calculation.target, string>> = {
         jupiter: "木星",
         venus: "金星",
@@ -344,26 +369,40 @@ export class AstronomyService implements AstronomyApplicationPort {
       if (!name || !type) return [];
       return [
         {
+          calculation,
           targetId: `target:${calculation.target}`,
           displayName: name,
           type,
-          window: visible.length
-            ? {
-                start: localTime(visible[0]!.at, spot.timezone),
-                end: localTime(visible.at(-1)!.at, spot.timezone),
-              }
-            : null,
-          direction: `${Math.round(current?.targetAzimuthDeg ?? best.targetAzimuthDeg)}°`,
-          altitudeDeg: Math.round(
-            current?.targetAltitudeDeg ?? best.targetAltitudeDeg,
-          ),
-          reason: `当前时间使用同一观测上下文计算；本夜几何高度最高约 ${Math.round(best.targetAltitudeDeg)}°。仍需结合云、月光、局部遮挡和光害。`,
-          source: astronomySource,
-          confidence: 0.85,
+          window: {
+            start: localTime(visible[0]!.at, spot.timezone),
+            end: localTime(visible.at(-1)!.at, spot.timezone),
+          },
+          bestAltitudeDeg: best.targetAltitudeDeg,
         },
       ];
     });
-    const eventTargets: SkyTarget[] = (
+    const buildEverydayTarget = (
+      descriptor: (typeof everydayDescriptors)[number],
+      at: string,
+    ): SkyTarget => {
+      const sample = exactSample(descriptor.calculation, at);
+      if (!sample) throw new Error("sky_target_time_unavailable");
+      return {
+        targetId: descriptor.targetId,
+        displayName: descriptor.displayName,
+        type: descriptor.type,
+        window: descriptor.window,
+        direction: `${Math.round(sample.targetAzimuthDeg)}°`,
+        altitudeDeg: Math.round(sample.targetAltitudeDeg),
+        reason:
+          `当前时刻 ${localTime(sample.at, spot.timezone)} 的方向由地点和时间计算；` +
+          `本夜几何高度最高约 ${Math.round(descriptor.bestAltitudeDeg)}°。` +
+          "仍需结合云、月光、局部遮挡和光害。",
+        source: astronomySource,
+        confidence: 0.85,
+      };
+    };
+    const eventDescriptors = (
       selectedEvent
         ? [selectedEvent]
         : activeEvents
@@ -373,7 +412,7 @@ export class AstronomyService implements AstronomyApplicationPort {
             )
             .slice(0, 3)
     ).flatMap((event) => {
-      const samples = base.samples.map((sample) =>
+      const samples = nightSamplesFor(base).map((sample) =>
         calculateEquatorialHorizontalAt({
           latitude: spot.wgs84.latitude,
           longitude: spot.wgs84.longitude,
@@ -388,43 +427,71 @@ export class AstronomyService implements AstronomyApplicationPort {
       const best = visible.reduce((highest, sample) =>
         sample.altitudeDeg > highest.altitudeDeg ? sample : highest,
       );
-      const current = samples.reduce((nearest, sample) =>
-        Math.abs(Date.parse(sample.at) - Date.parse(context.selectedAtUtc)) <
-        Math.abs(Date.parse(nearest.at) - Date.parse(context.selectedAtUtc))
-          ? sample
-          : nearest,
-      );
-      const currentSolarLongitudeDeg = calculateSolarLongitudeJ2000(
-        context.selectedAtUtc,
-      );
-      const activity = meteorActivityAt(
-        event.occurrenceId,
-        currentSolarLongitudeDeg,
-        context.localDate,
-      );
       return [
         {
+          event,
           targetId: event.occurrenceId,
           displayName: event.displayName,
-          type: "METEOR_SHOWER" as const,
           window: {
             start: localTime(visible[0]!.at, spot.timezone),
             end: localTime(visible.at(-1)!.at, spot.timezone),
           },
-          direction: `${Math.round(current.azimuthDeg)}°`,
-          altitudeDeg: Math.round(current.altitudeDeg),
-          reason:
-            `当前时间的辐射点方向由地点和时间计算；本夜最高约 ${Math.round(best.altitudeDeg)}°。` +
-            `IMO 参考峰值日期为 ${event.peakDate.slice(5)}，参考 ZHR ${event.nominalPeakZhr} 只描述理想条件，不是预计可见数量。` +
-            (activity
-              ? `当前历史拟合相对活动为 ${Math.round(activity.relativeActivity * 100)}%，类型为历史拟合而非实时观测。`
-              : "当前事件没有已审阅的活动曲线，不能推算相对峰值活动。"),
-          source: eventCatalogSource,
-          confidence: activity ? 0.8 : 0.7,
-          activity,
+          bestAltitudeDeg: best.altitudeDeg,
         },
       ];
     });
+    const buildEventTarget = (
+      descriptor: (typeof eventDescriptors)[number],
+      at: string,
+    ): SkyTarget => {
+      const instant = new Date(at);
+      if (!Number.isFinite(instant.getTime()))
+        throw new Error("sky_target_time_invalid");
+      const current = calculateEquatorialHorizontalAt({
+        latitude: spot.wgs84.latitude,
+        longitude: spot.wgs84.longitude,
+        elevationM: spot.altitudeM ?? 0,
+        at: instant.toISOString(),
+        rightAscensionDeg: descriptor.event.radiantRightAscensionDeg,
+        declinationDeg: descriptor.event.radiantDeclinationDeg,
+      });
+      const activity = meteorActivityAt(
+        descriptor.event.occurrenceId,
+        calculateSolarLongitudeJ2000(current.at),
+        context.localDate,
+      );
+      return {
+        targetId: descriptor.targetId,
+        displayName: descriptor.displayName,
+        type: "METEOR_SHOWER",
+        window: descriptor.window,
+        direction: `${Math.round(current.azimuthDeg)}°`,
+        altitudeDeg: Math.round(current.altitudeDeg),
+        reason:
+          `当前时刻 ${localTime(current.at, spot.timezone)} 的辐射点方向由地点和时间计算；` +
+          `本夜最高约 ${Math.round(descriptor.bestAltitudeDeg)}°。` +
+          `IMO 参考峰值日期为 ${descriptor.event.peakDate.slice(5)}，` +
+          `参考 ZHR ${descriptor.event.nominalPeakZhr} 只描述理想条件，不是预计可见数量。` +
+          (activity
+            ? `当前历史拟合相对活动为 ${Math.round(activity.relativeActivity * 100)}%，类型为历史拟合而非实时观测。`
+            : "当前事件没有已审阅的活动曲线，不能推算相对峰值活动。"),
+        source: eventCatalogSource,
+        confidence: activity ? 0.8 : 0.7,
+        activity,
+      };
+    };
+    const buildTargetsAt = (at: string): SkyTarget[] => [
+      ...eventDescriptors.map((descriptor) => buildEventTarget(descriptor, at)),
+      ...everydayDescriptors.map((descriptor) =>
+        buildEverydayTarget(descriptor, at),
+      ),
+    ];
+    const eventTargets = eventDescriptors.map((descriptor) =>
+      buildEventTarget(descriptor, selectedAtIso),
+    );
+    const everydayTargets = everydayDescriptors.map((descriptor) =>
+      buildEverydayTarget(descriptor, selectedAtIso),
+    );
     const targets = [...eventTargets, ...everydayTargets];
     const catalogCacheKey = this.catalogCacheKey();
     const sourceRevision = `${astronomySource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}:catalog:${catalogCacheKey}`;
@@ -435,7 +502,7 @@ export class AstronomyService implements AstronomyApplicationPort {
             .filter((event) =>
               meteorActivityAt(
                 event.occurrenceId,
-                calculateSolarLongitudeJ2000(context.selectedAtUtc),
+                calculateSolarLongitudeJ2000(selectedAtIso),
                 context.localDate,
               ),
             )
@@ -558,6 +625,14 @@ export class AstronomyService implements AstronomyApplicationPort {
         opportunityInput: opportunitySlices[index]!,
       };
     });
+    const targetFrames: SkyTargetFrame[] = hourly.map((row) => ({
+      at: row.at,
+      targets: buildTargetsAt(row.at),
+    }));
+    assertSkyTargetFrames(
+      targetFrames,
+      hourly.map((row) => row.at),
+    );
     const skyScene = buildSkyScene({
       provider: this.skyCatalog,
       hourlyAt: hourly.map((row) => row.at),
@@ -643,7 +718,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         contextRevision: context.revision,
         spotId: spot.spotId,
         localDate: context.localDate,
-        at: context.selectedAtUtc,
+        at: selectedAtIso,
         timezone: spot.timezone,
         targetProfile:
           context.targetProfile === "MILKY_WAY"
@@ -675,6 +750,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       },
       decision,
       targets,
+      targetFrames,
       hourly,
       milkyWayDirection:
         targets.find((target) => target.type === "MILKY_WAY")?.direction ??

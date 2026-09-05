@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import {
   Button,
@@ -1161,12 +1162,14 @@ export default function MapPage() {
       data-route="map"
       data-delivery-target={__DELIVERY_TARGET__}
     >
+      <FloatingNotificationHost />
       <View className="map-workspace">
         <View
           className="map-stage"
           data-control="map-marker-panel-coordinator"
         >
           <Map
+            compileMode
             id="spot-map"
             className="native-map"
             latitude={viewport.center.latitude}

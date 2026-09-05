@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import { useRouter } from "@tarojs/taro";
 import { Button, Input, ScrollView, Switch, Text, Textarea, View } from "@tarojs/components";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -294,6 +295,7 @@ export default function ImportPage() {
       data-route="content-import"
       data-od-id="content-import"
     >
+      <FloatingNotificationHost />
       <CustomNav
         title="内容导入"
         back

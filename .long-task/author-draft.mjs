@@ -35,11 +35,11 @@ const NIGHTCHINA_FIXTURE_PATH = "tools/miniapp/fixtures/nightchina-import-cases.
 const STAR_CATALOG_PIPELINE = "data-pipelines/src/gaia-star-catalog.ts";
 const STAR_CATALOG_PATH = "packages/astronomy-core/data/gaia-dr3-bright-stars.v1.json";
 const STAR_CATALOG_MANIFEST = "packages/astronomy-core/data/gaia-dr3-bright-stars.v1.manifest.json";
-const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md";
+const HANDOFF_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md";
 const SELECTED_ROOT = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source";
 const CANONICAL_ENTRY = `${SELECTED_ROOT}/index.html`;
 const FACT_MANIFEST = `${SELECTED_ROOT}/miniapp-fact-manifest.json`;
-const FEASIBILITY_PATH = `${SELECTED_ROOT}/miniapp-implementation-feasibility.json`;
+const FEASIBILITY_PATH = "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json";
 const IMPLEMENTATION_SPEC = `${SELECTED_ROOT}/implementation-handoff-spec.json`;
 const AUTHORITY_DELTA = `${SELECTED_ROOT}/authority-delta.json`;
 const RESOURCE_INTEGRITY = `${SELECTED_ROOT}/miniapp-resource-integrity.json`;
@@ -66,15 +66,57 @@ const GENERATED_BEGIN = "<!-- ty-long-task-source-inventory:begin -->";
 const GENERATED_END = "<!-- ty-long-task-source-inventory:end -->";
 
 const EXPECTED_HASHES = {
-  [HANDOFF_PATH]: "7121c460e3097abf43b86c4e74c4824f97b70185e31e31e4f728b15b3ae81d44",
+  [HANDOFF_PATH]: "3320cd9a8541840a215e527d5d3e554defeb6f29a6ffe3079d2a7983224f848c",
   [CANONICAL_ENTRY]: "b30d751f852b5b978c84759a99762cd61201d25faf3e0bda77c5097690a88c60",
   [FACT_MANIFEST]: "d68e7afbde46dc0587a28c8f7a137e267a74bf54d075d29d538c968551e996b5",
-  [FEASIBILITY_PATH]: "100134b49c86d0b7d4f50311fd844861d6cfc79cc850e337d184b1c7c9035fe6",
+  [FEASIBILITY_PATH]: "c6042aff1d916b152138a7100db6d2fef715a9143758baf65219b25943733a15",
   [IMPLEMENTATION_SPEC]: "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611",
   [AUTHORITY_DELTA]: "df851d2e2ec16d9c67caed10c960dd4a051345cd04bcdb374c3c4e0ccc057b9c",
 };
 
 const REVISED_USER_REQUIREMENTS = [
+  {
+    key: "cloud-stargazing-pointing-window",
+    outcome: "full-sky",
+    family: "data_model",
+    property: "content_identity",
+    statement: "Owner clarification on 2026-09-05 requires the immersive star chart to correspond to the real sky in the direction the phone is pointing, with a usable approximately natural angular scale; stars concentrated by compressing the entire visible hemisphere into a small screen region are not an acceptable final result. Existing real-catalog and sensor-follow requirements remain in force.",
+  },
+  {
+    key: "cloud-stargazing-view-geometry",
+    outcome: "full-sky",
+    family: "architecture_ownership",
+    property: "source_of_truth",
+    statement: "Derived from the pointing-window requirement, sky/detail uses one three-dimensional view basis and an explicit angular field of view adjusted to the actual canvas aspect ratio for both catalog stars and SkyTarget objects. The phone back-facing direction is the view center; yaw, pitch and roll rotate that basis rather than translating a circular whole-hemisphere overview. The panel static 2D overview remains a separate presentation of the same astronomy truth, not the immersive projection owner.",
+  },
+  {
+    key: "cloud-stargazing-frustum-visibility",
+    outcome: "full-sky",
+    family: "data_model",
+    property: "content_identity",
+    statement: "Derived from the pointing-window requirement, angular separations, handedness and viewport aspect ratio remain consistent with the declared projection. Catalog stars and target positions outside the view frustum or behind the phone view are not clamped into apparent on-screen celestial positions; a label layout adjustment cannot change the represented celestial direction or fabricate target visibility.",
+  },
+  {
+    key: "cloud-stargazing-observer-context-boundary",
+    outcome: "full-sky",
+    family: "architecture_ownership",
+    property: "source_of_truth",
+    statement: "The existing cloud-observation route retains the selected formal WGS84 spot and shared committed time. Direct comparison with the observer's naked-eye sky is valid only when that observing context matches their actual location and time. The pointing-window correction does not silently switch to phone GPS, create a second location/time store, or introduce camera AR; any additional current-location mode requires its own explicit product decision.",
+  },
+  {
+    key: "cloud-stargazing-pointing-uncertainty",
+    outcome: "full-sky",
+    family: "fault_degradation_recovery",
+    property: "fallback_behavior",
+    statement: "Derived from the pointing-window requirement, declared field of view is distinct from measured pointing accuracy. Sensor axis convention, compass north reference, calibration, sample freshness and supported platform behavior must be established before claiming real alignment. Missing or untrusted pose retains truthful recovery rather than a synthesized aligned view. Exact apparent 1:1 scale cannot be claimed from logical pixels alone because physical screen size and viewing distance affect it.",
+  },
+  {
+    key: "cloud-stargazing-pointing-verification",
+    outcome: "full-sky",
+    family: "operation_workflow",
+    property: "sequence",
+    statement: "Pointing-window development checks exercise cardinal directions, pitch, roll, view boundaries, behind-view exclusion, aspect-ratio changes and shared star/target projection. Final physical-device evidence compares the current candidate with identifiable sky directions or celestial objects at matching observing coordinates/time and reports residual uncertainty. A simulated pose, attractive screenshot, catalog presence or geometry unit test alone cannot establish real-device alignment.",
+  },
   {
     key: "harness-external-design-compatibility-overlay",
     outcome: "current-candidate",
@@ -694,6 +736,8 @@ async function main() {
     "A future I22 target or library upgrade creates a new immutable design record and changes mechanics through the adapter without changing stable route, Control, product-state or acceptance ownership. Current route, detached-page, contribution-wizard, duplicated mode and I21 visual/state drift are debt this task removes; unrelated React Native debt remains out of scope. No new duplicate truth, oversized owner, wrong dependency direction, silent failure, lifecycle leak, unsupported quality claim or untracked waiver is accepted.",
     "For the current project-tiny-context-harness@0.11.0 external-design resolver and string-comparator defects, the package-managed compiled Contract remains the sole Authority while tools/miniapp/apply-ty-context-harness-compatibility.mjs is the one project compatibility extension point. The selected bounded overlay reuses the compiled design_conformance_targets plus the exact external-confirmation observation-authority plan, accepts exactly one full identity match and hashes string Actuals as the design locator's raw UTF-8 bytes while preserving the existing non-string branch; waiting for or adopting an upstream equivalent remain supported alternatives. A complete package fork was considered and rejected because it would duplicate package ownership and add disproportionate maintenance, while Contract weakening, compiled-state editing, fabricated evidence and ambiguous fallback are prohibited. The overlay is version- and original-source-shape pinned, is covered by prepare/equal/mismatch and ambiguity regressions, and fails closed on a future package shape; it is tracked technical debt removed only after an upstream equivalent passes those regressions without the overlay.",
     "For the Cloud Stargazing scene, the allowed solution set is a catalog-backed BFF using a versioned offline asset, a qualified real catalog service behind the existing BFF/provider boundary, or another license-compatible real catalog that preserves the same contract and failure semantics. The selected bounded design reuses the existing @starward/astronomy-core and pinned Astronomy Engine with a reproducible Gaia DR3 magnitude-limited offline pack because it adds no runtime credential, network dependency or paid traffic and remains deterministic for owner-trial verification. Static pictures, random/procedural stars, client provider calls, unversioned/unlicensed rows, a second astronomical truth or silently sampled fake success are prohibited. The pack pipeline records official query/release/fields/credit/license and source plus derived digests; AstronomyService alone projects each formal-spot/time slice and the client only maps returned azimuth/altitude through the live sensor viewport. A future Gaia release, density tier or licensed provider can replace the pack behind astronomy-core/BFF without changing the route, Controls or sensor lifecycle.",
+    "The pointing-window correction keeps celestial truth in astronomy-core/BFF and replaces only the Mini Program immersive viewport geometry through one bounded pure projection owner consumed by spot-sky-page.tsx. Reusing a compatible projection library remains allowed, but bounded vector/matrix perspective arithmetic is selected to avoid a second renderer or native-only dependency. The panel overview remains distinct. The compressed-hemisphere and pose-as-translation implementation is touched debt to remove, not an accepted fallback. A future viewport or screen-orientation change must preserve angular geometry through the same basis/aspect-ratio boundary. Direction sign, magnetic versus true north and physical pose remain explicitly verified platform boundaries; no calibration constant is invented to make a screenshot pass. Project-owned geometry tests and actual WEAPP/device journeys cover correctness, lifecycle, compatibility and observability independently; no frame-rate or pointing-accuracy claim is inferred from static structure.",
+    "The exact-time repair reuses AstronomyService and its existing Astronomy Engine adapter to include the valid committed instant as a real calculated sample alongside the regular cadence, with matching hourly, target and catalog frames. The shared DTO carries time-bound targets; the client selects exact frame identity for drawing, labels and object lists and never computes a second astronomical truth or borrows nearest/committed targets during preview. Missing frames remain unavailable. Preview stays transient, cancellation restores committed time and only the existing context update commits it. Relabeling a nearby sample, silently rounding user time and client-side equatorial recomputation are rejected alternatives. The report cache identity changes with this contract. A future cadence/timezone change must preserve exact instant identity, no-dusk/dawn failure, observation-night ownership and explicit recovery; project checks cover off-grid, daylight, midnight, target/catalog agreement and the effects on opportunity windows and payload limits. Physical sensor/visual alignment remains separately unverified until the real-device obligations are fulfilled.",
     "Correctness/invariants and maintainability/changeability are mandatory. Reliability/resource lifecycle, concurrency/consistency, performance/bundle/cost, security/privacy/safety, Taro/WEAPP compatibility and rollout boundary, and operability/observability/testability are all material and must close through project checks or exact signed external obligations on the current candidate.",
   ].join(" "));
   addItem({ key: "architecture-deliberation", kind: "technical_obligation", aspect: "architecture", statement: architectureStatement, outcome: "current-candidate", family: "architecture_ownership", property: "conformance_check", disposition: { type: "claim", refs: ["current-candidate.obligation.architecture"] } });
@@ -1017,7 +1061,7 @@ async function main() {
   };
 
   const verificationInputs = [...new Set([NATIVE_RUNNER, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER_SOURCE, VERIFIER_RUNTIME_PACKAGE, VERIFIER_RUNTIME_LOCK, VERIFICATION_SPEC_PATH, NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, "DESIGN.md", ...targetSourcePaths])];
-  const checkInputPaths = ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "packages/astronomy-core/**", "workers/miniapp-api/**", "data-pipelines/src/**", "project_context/**", "DESIGN.md", NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, `${SELECTED_ROOT}/**`, HANDOFF_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER];
+  const checkInputPaths = ["apps/wechat-miniapp/**", "packages/miniapp-contracts/**", "packages/astronomy-core/**", "workers/miniapp-api/**", "data-pipelines/src/**", "project_context/**", "DESIGN.md", NIGHTCHINA_FIXTURE_PATH, SOURCE_PATH, `${SELECTED_ROOT}/**`, HANDOFF_PATH, FEASIBILITY_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER];
   const diagnosticVerificationInputs = verificationInputs;
   const diagnosticCheckInputPaths = checkInputPaths;
   const forbiddenPaths = ["apps/mobile/**", "docs/source-plan.md", "docs/wechat-miniapp-v2-source.md", "tmp/ty-context/long-task-runs/wechat-miniapp-v2-1-1-drift-correction/**"];
@@ -1151,6 +1195,8 @@ async function main() {
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/**",
           "tools/miniapp/device-adb.mjs",
           "tools/miniapp/device-feedback-official.mjs",
+          "tools/miniapp/device-feedback-snapshot.mjs",
+          "tools/miniapp/device-feedback.test.mjs",
           "tools/miniapp/device-feedback-preview.test.mjs",
           "tools/miniapp/device-runtime.mjs",
           "tools/miniapp/device-test.test.mjs",
@@ -1170,6 +1216,27 @@ async function main() {
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-handoff/miniapp-field-signal-i21-current.md",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/handoff-draft/**",
           "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-implementation-feasibility.json",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/README.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/selected-handoff/miniapp-field-signal-i21-current.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/selected-source/miniapp-implementation-feasibility.json",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/README.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/selected-source/miniapp-implementation-feasibility.json",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/selected-handoff/miniapp-field-signal-i21-current.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/README.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/selected-handoff/miniapp-field-signal-i21-current.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/selected-source/miniapp-implementation-feasibility.json",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/README.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/handoff-draft/**",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/README.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/selected-handoff/miniapp-field-signal-i21-current.md",
+          "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/selected-source/miniapp-implementation-feasibility.json",
+          "tools/miniapp/run-wechat-devtools-session.test.mjs",
           "tools/verify-miniapp-design-profile.mjs",
         ] : ["artifacts/miniapp/**"],
         forbidden_paths: forbiddenPaths,
@@ -1292,7 +1359,7 @@ async function main() {
     schema_version: "miniapp-verification-spec-v1",
     carrier_schema_version: "miniapp-delivery-carrier-v1",
     delivery_carrier: DELIVERY_CARRIER,
-    counterfactual_projection: { required_exact_paths: ["package.json", "package-lock.json", SOURCE_PATH, NIGHTCHINA_FIXTURE_PATH, "DESIGN.md", HANDOFF_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER, NATIVE_RUNNER_SOURCE, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER], required_tree_roots: [SELECTED_ROOT] },
+    counterfactual_projection: { required_exact_paths: ["package.json", "package-lock.json", SOURCE_PATH, NIGHTCHINA_FIXTURE_PATH, "DESIGN.md", HANDOFF_PATH, FEASIBILITY_PATH, VERIFICATION_SPEC_PATH, NATIVE_SESSION_RUNNER, NATIVE_RUNNER_SOURCE, NATIVE_LAUNCHER_SOURCE, NATIVE_RUNNER], required_tree_roots: [SELECTED_ROOT] },
     authority: {
       design: { path: "DESIGN.md", sha256: sha256Hex(await readFile(repoPath("DESIGN.md"))), target: "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02" },
       resource_manifest: { path: FACT_MANIFEST, sha256: EXPECTED_HASHES[FACT_MANIFEST] },

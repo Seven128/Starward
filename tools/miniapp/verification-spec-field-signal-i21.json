@@ -9,7 +9,8 @@
       ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "tools/miniapp/fixtures/nightchina-import-cases.json",
       "DESIGN.md",
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json",
       "tools/miniapp/verification-spec-field-signal-i21.json",
       "tools/miniapp/run-wechat-devtools-session.mjs",
       "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
@@ -31,21 +32,21 @@
       "sha256": "d68e7afbde46dc0587a28c8f7a137e267a74bf54d075d29d538c968551e996b5"
     },
     "handoff": {
-      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
-      "sha256": "7121c460e3097abf43b86c4e74c4824f97b70185e31e31e4f728b15b3ae81d44"
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "3320cd9a8541840a215e527d5d3e554defeb6f29a6ffe3079d2a7983224f848c"
     },
     "implementation_handoff": {
       "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/implementation-handoff-spec.json",
       "sha256": "38b36f6fffb80cb0c7c2b933a398da322bd3d78e6169b618cca09f4aee6fd611"
     },
     "feasibility": {
-      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-implementation-feasibility.json",
-      "sha256": "100134b49c86d0b7d4f50311fd844861d6cfc79cc850e337d184b1c7c9035fe6"
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json",
+      "sha256": "c6042aff1d916b152138a7100db6d2fef715a9143758baf65219b25943733a15"
     },
     "semantic_manifest": {
       "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
       "key": "wechat-miniapp-field-signal-i21.semantic-facts",
-      "sha256": "ca29021bf8588aa040bef8f18f82f4f2895a08e5cc8e734218bc8af7378d5c18"
+      "sha256": "eb86eb80253fd75346fc7cf33ef66aa81ec13c90a4b18e31a2830e28668efe9f"
     }
   },
   "counterfactual_controls": [],
@@ -4943,6 +4944,72 @@
           ]
         },
         {
+          "key": "claim-requirement-cloud-stargazing-pointing-window",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-pointing-window",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-pointing-window"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-view-geometry",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-view-geometry",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-view-geometry"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-frustum-visibility",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-frustum-visibility",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-frustum-visibility"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-observer-context-boundary",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-observer-context-boundary",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-observer-context-boundary"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-pointing-uncertainty",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-pointing-uncertainty",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-pointing-uncertainty"
+          ]
+        },
+        {
+          "key": "claim-requirement-cloud-stargazing-pointing-verification",
+          "observation": "full-sky.claim.requirement.cloud-stargazing-pointing-verification",
+          "expected": true,
+          "evidence_capabilities": [
+            "target_runtime"
+          ],
+          "claims": [
+            "requirement.cloud-stargazing-pointing-verification"
+          ]
+        },
+        {
           "key": "claim-requirement-cloud-stargazing-real-catalog-scene",
           "observation": "full-sky.claim.requirement.cloud-stargazing-real-catalog-scene",
           "expected": true,
@@ -5261,6 +5328,12 @@
         "full-sky.claim.requirement.initial-source-101",
         "full-sky.claim.requirement.initial-source-122",
         "full-sky.claim.requirement.initial-source-144",
+        "full-sky.claim.requirement.cloud-stargazing-pointing-window",
+        "full-sky.claim.requirement.cloud-stargazing-view-geometry",
+        "full-sky.claim.requirement.cloud-stargazing-frustum-visibility",
+        "full-sky.claim.requirement.cloud-stargazing-observer-context-boundary",
+        "full-sky.claim.requirement.cloud-stargazing-pointing-uncertainty",
+        "full-sky.claim.requirement.cloud-stargazing-pointing-verification",
         "full-sky.claim.requirement.cloud-stargazing-real-catalog-scene",
         "full-sky.claim.requirement.cloud-stargazing-gaia-offline-pack",
         "full-sky.claim.requirement.cloud-stargazing-projection-owner",

@@ -6,7 +6,10 @@
  * WGS84/time coordinate boundary; callers never supply an alternate row set.
  */
 
-import { Horizon, Observer } from "./astronomy-engine-runtime.ts";
+import {
+  Horizon, Observer, Spherical, VectorFromSphere, RotateVector,
+  Rotation_EQJ_EQD, EquatorFromVector,
+} from "./astronomy-engine-runtime.ts";
 import {
   GAIA_DR3_CATALOG_VERSION,
   GAIA_DR3_MAGNITUDE_LIMIT,
@@ -19,7 +22,7 @@ import {
 } from "./gaia-catalog-integrity.ts";
 
 export const GAIA_DR3_PROJECTION_ALGORITHM =
-  "starward-gaia-dr3-projection@1.0.0+astronomy-engine@2.1.19";
+  "starward-gaia-dr3-projection@1.0.1+astronomy-engine@2.1.19";
 export const GAIA_DR3_PROJECTION_FRAME = "ICRS/J2000→EQD→HOR" as const;
 export const GAIA_DR3_PROJECTION_REFRACTION = "none" as const;
 
@@ -135,6 +138,15 @@ export function projectGaiaDr3Star(
   assertObserver(input.observer);
   const at = parseInstant(input.at);
   const propagated = propagateGaiaDr3Star(row, at);
+  // Proper motion advances the star within the catalog reference frame; it
+  // does not precess/nutate that frame to Earth's equator at observation time.
+  // Horizon consumes equator-of-date coordinates, not raw ICRS/J2000 angles.
+  const equatorOfDate = EquatorFromVector(RotateVector(
+    Rotation_EQJ_EQD(at),
+    VectorFromSphere(new Spherical(
+      propagated.declinationDeg, propagated.rightAscensionDeg, 1,
+    ), at),
+  ));
   const horizontal = Horizon(
     at,
     new Observer(
@@ -142,8 +154,8 @@ export function projectGaiaDr3Star(
       input.observer.longitude,
       input.observer.elevationM,
     ),
-    propagated.rightAscensionDeg / 15,
-    propagated.declinationDeg,
+    equatorOfDate.ra,
+    equatorOfDate.dec,
     "",
   );
   const horizonAltitude = input.horizonAltitudeAtAzimuth?.(horizontal.azimuth) ?? null;

@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Image, Input, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useMemo, useState } from "react";
@@ -356,6 +357,7 @@ export function MapSearchSurface() {
       data-delivery-target={__DELIVERY_TARGET__}
       onClick={blurSearch}
     >
+      <FloatingNotificationHost />
       <View className="spot-search-shell" data-control="spot-search-shell">
         <View
           className="spot-search-field"

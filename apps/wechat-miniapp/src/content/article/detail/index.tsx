@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import { useRouter } from "@tarojs/taro";
 import { Image, Text, View } from "@tarojs/components";
 import type { FacilityType } from "@starward/miniapp-contracts";
@@ -64,6 +65,7 @@ export default function ArticlePage() {
 
   return (
     <View className={themeClass + " article-page"}>
+      <FloatingNotificationHost />
       <CustomNav
         title={article?.title ?? "攻略"}
         subtitle={detail?.spot.name}

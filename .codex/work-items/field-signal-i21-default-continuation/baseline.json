@@ -1,0 +1,285 @@
+{
+  "created_at": "2026-09-05T18:24:07.658Z",
+  "note": "Captured after recovery documents only; no product edits in this Goal yet.",
+  "head": "eba72686d910cd0d263e2ab0adb66b2cbe313435",
+  "branch": "main",
+  "status": "M .codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md\n M .long-task/author-draft.mjs\n M .long-task/delivery-contract.yaml\n M apps/wechat-miniapp/src/authority/delivery-carrier.json\n M apps/wechat-miniapp/src/features/sky/compass-lifecycle.test.ts\n M apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx\n M apps/wechat-miniapp/src/services/acceptance-diagnostics.ts\n M package.json\n M packages/astronomy-core/src/astronomy-engine-runtime.ts\n M packages/astronomy-core/src/gaia-catalog-projection.ts\n M packages/astronomy-core/src/gaia-catalog.test.ts\n M packages/miniapp-contracts/src/sky-scene.test.ts\n M packages/miniapp-contracts/src/sky-scene.ts\n M packages/miniapp-contracts/src/types.ts\n M project_context/architecture/runtime-and-domain.md\n M project_context/areas/main/screen-contracts/wechat-miniapp.md\n M project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md\n M project_context/areas/main/verification/acceptance-runtime.md\n M project_context/areas/main/verification/wechat-device.md\n M project_context/areas/main/verification/wechat-device/development-feedback.md\n M project_context/development-workflow/candidate-acceptance.md\n M project_context/development-workflow/development-feedback.md\n M tools/miniapp/device-feedback-preview.test.mjs\n M tools/miniapp/device-feedback-snapshot.mjs\n M tools/miniapp/device-feedback.test.mjs\n M tools/miniapp/run-wechat-devtools-session.mjs\n M tools/miniapp/selected-design-bindings.json\n M tools/miniapp/verification-spec-field-signal-i21.json\n M tools/miniapp/workflow-conformance.test.mjs\n M workers/miniapp-api/src/astronomy-engine-adapter.ts\n M workers/miniapp-api/src/astronomy-golden.test.ts\n M workers/miniapp-api/src/astronomy-service.ts\n M workers/miniapp-api/src/miniapp-api.test.ts\n M workers/miniapp-api/src/miniapp-infrastructure.test.ts\n M workers/miniapp-api/src/miniapp-service.ts\n M workers/miniapp-api/src/nightchina-import-corpus.test.ts\n M workers/miniapp-api/src/sky-scene-catalog-provider.ts\n M workers/miniapp-api/src/sky-scene-catalog.test.ts\n?? .codex/work-items/field-signal-i21-default-continuation/README.md\n?? .codex/work-items/field-signal-i21-default-continuation/build-index.cjs\n?? .codex/work-items/field-signal-i21-default-continuation/execution-plan.md\n?? .codex/work-items/field-signal-i21-default-continuation/original-goal.md\n?? .codex/work-items/wechat-miniapp-field-signal-i21-remaining-work-handoff-2026-09-06.md\n?? .long-task/rebind-sky-measurement-r10.mjs\n?? .long-task/rebind-sky-recovery-r11.mjs\n?? apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts\n?? apps/wechat-miniapp/src/features/sky/sky-time-frame.test.ts\n?? apps/wechat-miniapp/src/features/sky/sky-time-frame.ts\n?? apps/wechat-miniapp/src/features/sky/sky-view-projection.test.ts\n?? apps/wechat-miniapp/src/features/sky/sky-view-projection.ts\n?? apps/wechat-miniapp/src/services/acceptance-diagnostics.test.ts\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/README.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/handoff-draft/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/selected-handoff/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/selected-source/miniapp-implementation-feasibility.json\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/README.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/handoff-draft/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/selected-handoff/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/selected-source/miniapp-implementation-feasibility.json\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/README.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/handoff-draft/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/selected-handoff/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/selected-source/miniapp-implementation-feasibility.json\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/README.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/handoff-draft/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/selected-handoff/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/selected-source/miniapp-implementation-feasibility.json\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/README.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/handoff-draft/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md\n?? docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json\n?? tools/miniapp/run-wechat-devtools-session.test.mjs\n?? workers/miniapp-api/src/test-fixtures/infrastructure-spot.ts",
+  "files": [
+    {
+      "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
+      "sha256": "e2bf2bf47befd52b343f7563b487740428930c1a6ecb883d3facd7c01c3a3f02"
+    },
+    {
+      "path": ".long-task/author-draft.mjs",
+      "sha256": "c93f2c9186854ecd17aed9cfa57f5e5adbc57f25b6d59b0cea01ecda01e152fd"
+    },
+    {
+      "path": ".long-task/delivery-contract.yaml",
+      "sha256": "9737282309a5e4d7a8f5504e49f8b151d0061b21788986908d2fdfb909639e13"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/authority/delivery-carrier.json",
+      "sha256": "d26f1d1480f3709a20e78a4358133a5ad26d2272c6acc8b1bf57e04ff389a19f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/compass-lifecycle.test.ts",
+      "sha256": "5a939528f81c2578d1deb6f94b06bbab50be8053c49b4f7c9d24d3f461d4fe8c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "d4b9247daa44263d78de77150d2f318b8a42bc2b7f4925c3a0275e62bd86307c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/acceptance-diagnostics.ts",
+      "sha256": "f358faa8caf5397a1378c675ff07578910f73ae6010c137d06c835910b7c629e"
+    },
+    {
+      "path": "package.json",
+      "sha256": "b5b786c10d16aa63d07aec4f0e34d1d65af3e793552ae0b5dbcded403461feb2"
+    },
+    {
+      "path": "packages/astronomy-core/src/astronomy-engine-runtime.ts",
+      "sha256": "7ee726cf1e9c63fcc7bc9225bd74b7ab893aeab4e219c5f227673e2fa48af886"
+    },
+    {
+      "path": "packages/astronomy-core/src/gaia-catalog-projection.ts",
+      "sha256": "ddb8364a3f23a5e9cabbbfeed8cae71bbdd08253c788f948b074449180602d45"
+    },
+    {
+      "path": "packages/astronomy-core/src/gaia-catalog.test.ts",
+      "sha256": "65ee788fc57fb865e59559e1c8f510dfb66eee36149a9b6f0fdd3ee92e756d4a"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-scene.test.ts",
+      "sha256": "a5fd02d633e2613ff9abc16ba31af216be7bf07eca281f550012f904afc0cdc3"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-scene.ts",
+      "sha256": "ada7d8dd2018c8cf1ad65f1ccaf11ed6ce66ccbbfef032a7110354a380592c90"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/types.ts",
+      "sha256": "35a0fee5de70561cf20d8b97a4cf8379d39ba6e55771dbe741aeb5fae1f0bcf8"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "sha256": "8aa7a117dd1e1ea9acb4a481cb8f1b9a3f4fb48997bf01c04a27a5d96851bfe4"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "sha256": "1f5724cc82c7a2f60c0479562b2b2d5ba6c1af5c5767f53c52ede616311e2877"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "sha256": "aa0254f566049887c1feb1cf8b4bb07f61d85c7b4b4074fd4de2bcab4bcc0779"
+    },
+    {
+      "path": "project_context/areas/main/verification/acceptance-runtime.md",
+      "sha256": "d81cbd3a8435f7ec486fd7046da30ce6af047342f34c64ed15a8f12dd2b9f072"
+    },
+    {
+      "path": "project_context/areas/main/verification/wechat-device.md",
+      "sha256": "abe1524fd3fdce862a885ed8801496ec966b6fbe504d2e3256186e8fd76706d9"
+    },
+    {
+      "path": "project_context/areas/main/verification/wechat-device/development-feedback.md",
+      "sha256": "0c0592f62ca9044f80221bbef238bfe7e923472794d3f170dbdd54704c093c25"
+    },
+    {
+      "path": "project_context/development-workflow/candidate-acceptance.md",
+      "sha256": "668eef8dbfb889288f7fb0fbf64ffd7cdb81c4a9a5856dc5728b51013129a887"
+    },
+    {
+      "path": "project_context/development-workflow/development-feedback.md",
+      "sha256": "79dd9bae9fa34725c174575bdc3a5244da09ad239a27ef8f76fe45c572d78396"
+    },
+    {
+      "path": "tools/miniapp/device-feedback-preview.test.mjs",
+      "sha256": "a3a662e3999948787bcc15bf208fab9a6f10ad9294c5a96ff2c4bfb954f514ef"
+    },
+    {
+      "path": "tools/miniapp/device-feedback-snapshot.mjs",
+      "sha256": "8aaf3da7ea32bc244683e17251e544e55afd7459c0c144c607ba301002379b85"
+    },
+    {
+      "path": "tools/miniapp/device-feedback.test.mjs",
+      "sha256": "ba60499e2979d54254e7664178f7935954a47ffdddbbcbb349c8236e71f4ac6d"
+    },
+    {
+      "path": "tools/miniapp/run-wechat-devtools-session.mjs",
+      "sha256": "5ea4d51fdc997c2cb3773aaa4636a729d020745e391649271ee24c1044d02f19"
+    },
+    {
+      "path": "tools/miniapp/selected-design-bindings.json",
+      "sha256": "de1238ba249cb46905dc27735bf7dc59407987d0b339e2c87703f4f7aa625779"
+    },
+    {
+      "path": "tools/miniapp/verification-spec-field-signal-i21.json",
+      "sha256": "93b73cb8cdd35004ac14f363c45b06ae1e00100f1ea027c12069bbed8723a1b6"
+    },
+    {
+      "path": "tools/miniapp/workflow-conformance.test.mjs",
+      "sha256": "3692b6f8ad904d07361a41ffad73918e3bd049b0aa8da177192fb9fb4b824455"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-engine-adapter.ts",
+      "sha256": "fa08eba5d8132f9a6cba86d05a64d27d3e8dc6ef6846153c5393bea86b0041a6"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-golden.test.ts",
+      "sha256": "ec86f4922ca60a353cea9b7b6c6cb853de8e187f0f0dc72c276af588e3366edc"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "6608ba7b970cab6c8a018091970b7ec2f0021632042252346be8040003f5e10f"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-api.test.ts",
+      "sha256": "2f4ac850d8592157bd1c53f8919c71f6ab54d0e12410996aaee5b41ae14a2e89"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "sha256": "90ed3897f7d5372360a5e083a3fff4b75d99a3f3f3f6c95b03985353673de9a7"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "4c3fd2b00c8c62c807d39294a4d343100178814748bf7ef285677c82a17ee4c1"
+    },
+    {
+      "path": "workers/miniapp-api/src/nightchina-import-corpus.test.ts",
+      "sha256": "445d49e21e340f6993b00b4abddab240dc6daa1e2944f6e6fb16a4ea9561fa4a"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-scene-catalog-provider.ts",
+      "sha256": "48db0c5fd445ea925764d3992a7e398d3329ccc3307d153d4812259130c3c5e5"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-scene-catalog.test.ts",
+      "sha256": "2d3ccb7cd069db608171f1068f8b887770d0fa2e744cb2ed3ae305a63052e559"
+    },
+    {
+      "path": ".codex/work-items/wechat-miniapp-field-signal-i21-remaining-work-handoff-2026-09-06.md",
+      "sha256": "ff2141b291dab755c75c0a0ab670799717336499cb8935f0850e2453eaed15a6"
+    },
+    {
+      "path": ".long-task/rebind-sky-measurement-r10.mjs",
+      "sha256": "b1534d2c04c1a79e98f5fb74231ff0d1bb749a6c41cbd359a0f2d620123c791f"
+    },
+    {
+      "path": ".long-task/rebind-sky-recovery-r11.mjs",
+      "sha256": "f0576ef6825af0668737107af97188ed9488cb3fa66e1f2fe41ce111ca2aa3dc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts",
+      "sha256": "d3751a67c8ded9e552e33ab3e65a5d6c682a8acb298e27be0058f90ddc7105b5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-frame.test.ts",
+      "sha256": "9139f2c7007314f415c68b9709bec0233f18facffec1044e2b1c42aa4f0f3f62"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-frame.ts",
+      "sha256": "40df40fd298fdf54585802827a70d6c8328df2f1e169014b7c03852cec972e2f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.test.ts",
+      "sha256": "36deee9456b7ad7162d3d34c72e551f6324662db1e7171aa642901143b44febd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "2100daa10a40c2b01da6ad877d5df20d00d4eccdc5a808cf80519d86af8eff51"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/acceptance-diagnostics.test.ts",
+      "sha256": "439e90103b2c012224d88b662f65519fb5834abb694bd62df1e92cec2bcd153c"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/README.md",
+      "sha256": "8a2883da8dbed7fcf1dae12018d1a149137b1c07d6b9fa3bc69a293ad5451924"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/handoff-draft/miniapp-field-signal-i21-current.md",
+      "sha256": "d8f1ac89870950a9bdcef2e67728a6c480a3d4db4e66ba49faf7b555225895e7"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "d8f1ac89870950a9bdcef2e67728a6c480a3d4db4e66ba49faf7b555225895e7"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r10/selected-source/miniapp-implementation-feasibility.json",
+      "sha256": "651e096c6ffbadc0692ca5a2037c1f9f86b9b861689e3893412af2b415ec0cb7"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/README.md",
+      "sha256": "83200793574b4158f379eb7a3adfb736f49d4560fb166349ba29cefec0874651"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/handoff-draft/miniapp-field-signal-i21-current.md",
+      "sha256": "15b29f3ff296804a3c31f9d3a6b48124ba11e9dc697c7dba3a07a9f6b8010e37"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "15b29f3ff296804a3c31f9d3a6b48124ba11e9dc697c7dba3a07a9f6b8010e37"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r7/selected-source/miniapp-implementation-feasibility.json",
+      "sha256": "e931189c33d723de98635d4c1d8a45659abd838f6fb0b1803268d602ab9d86b6"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/README.md",
+      "sha256": "eaa6656070059e6b2eb8d3db4ccd41e532b45f2763bef59ed20545b7b8be9985"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/handoff-draft/miniapp-field-signal-i21-current.md",
+      "sha256": "4dcb878d7065fdabb2b1d057fe204f664f6e2f7a4ffd8678a97ea6d217b6c5b9"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "4dcb878d7065fdabb2b1d057fe204f664f6e2f7a4ffd8678a97ea6d217b6c5b9"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r8/selected-source/miniapp-implementation-feasibility.json",
+      "sha256": "c8bb2264a1e2e4f9bfd52e81d0b6d9cb176fb8dbd8b84dc852b3e5d098de29c5"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/README.md",
+      "sha256": "551f46020818133eacad093e2165e02cd94a8677e35f2499b233bc92acdd4e0c"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/handoff-draft/miniapp-field-signal-i21-current.md",
+      "sha256": "f95a262937180700241f07058b3edc6110205918536a692f9bf7982c1296910b"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "f95a262937180700241f07058b3edc6110205918536a692f9bf7982c1296910b"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-05-r9/selected-source/miniapp-implementation-feasibility.json",
+      "sha256": "9aaf0d57709f0aa18172a6ced3378a16d78a52db318d05d7d1f900a05a9abc43"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/README.md",
+      "sha256": "1ab594b01500f513fd0251923ff9b35f14e9bfbc542b36a7634ffd010d1bd7e1"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/handoff-draft/miniapp-field-signal-i21-current.md",
+      "sha256": "3320cd9a8541840a215e527d5d3e554defeb6f29a6ffe3079d2a7983224f848c"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
+      "sha256": "3320cd9a8541840a215e527d5d3e554defeb6f29a6ffe3079d2a7983224f848c"
+    },
+    {
+      "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json",
+      "sha256": "c6042aff1d916b152138a7100db6d2fef715a9143758baf65219b25943733a15"
+    },
+    {
+      "path": "tools/miniapp/run-wechat-devtools-session.test.mjs",
+      "sha256": "55e7d19d4317b578a8a84a362c3416054e30c70d0e3defe023f18cc4b0ffa2ee"
+    },
+    {
+      "path": "workers/miniapp-api/src/test-fixtures/infrastructure-spot.ts",
+      "sha256": "fdd49319de1491d7c4c5298d5e1ea5e7c734846f50158efea4ecf3a64d9be032"
+    }
+  ]
+}

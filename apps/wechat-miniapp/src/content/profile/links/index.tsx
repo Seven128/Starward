@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro from "@tarojs/taro";
 import { Button, Input, ScrollView, Switch, Text, View } from "@tarojs/components";
 import { useMemo, useState } from "react";
@@ -190,6 +191,7 @@ export default function ProfileLinksPage() {
       data-route="profile-links"
       data-od-id="profile-links"
     >
+      <FloatingNotificationHost />
       <CustomNav
         title="主页链接"
         back

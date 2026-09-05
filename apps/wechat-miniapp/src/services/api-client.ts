@@ -393,6 +393,25 @@ async function request<T>(
       }
     };
 
+    const transportFailure = (error: { errMsg?: string }) => {
+      const message = error?.errMsg || "bff_request_failed";
+      if (/abort/iu.test(message)) {
+        finish(() => {
+          recordAcceptanceDiagnostic(key, "failure", "transport_abort");
+          reject(new MiniappRequestCancelled("transport_abort"));
+        });
+        return;
+      }
+      finish(() => {
+        recordAcceptanceDiagnostic(key, "failure", "transport_failure");
+        if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("transport", error);
+        transportFallback(
+          "连接失败，请联网后刷新。",
+          new Error(message),
+        );
+      });
+    };
+
     watchdog = setTimeout(() => {
       finish(() => {
         if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("watchdog");
@@ -448,25 +467,11 @@ async function request<T>(
             reject(new Error("bff_http_" + response.statusCode));
           });
         },
-        fail(error) {
-          const message = error.errMsg || "bff_request_failed";
-          if (/abort/iu.test(message)) {
-            finish(() => {
-              recordAcceptanceDiagnostic(key, "failure", "transport_abort");
-              reject(new MiniappRequestCancelled("transport_abort"));
-            });
-            return;
-          }
-          finish(() => {
-            recordAcceptanceDiagnostic(key, "failure", "transport_failure");
-            if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("transport", error);
-            transportFallback(
-              "连接失败，请联网后刷新。",
-              new Error(message),
-            );
-          });
-        },
+        fail: transportFailure,
       });
+      // Taro rejects its task Promise even after invoking fail. Observe both
+      // channels through the same single-settlement owner, including aborts.
+      void Promise.resolve(task).catch(transportFailure);
       if (settled) abortTask(task);
     } catch (error) {
       finish(() => {

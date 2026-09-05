@@ -7,6 +7,7 @@ import {
   readFile,
   readdir,
   rm,
+  writeFile,
 } from "node:fs/promises";
 import path from "node:path";
 import { fingerprintBundle } from "./release-bundle-artifact.mjs";
@@ -35,9 +36,25 @@ export function semanticConfigSha256(config) {
   return sha256(Buffer.from(JSON.stringify(canonicalJson(config)), "utf8"));
 }
 
-export async function sourceBinding(project) {
-  const canonical = await canonicalDirectory(project);
-  const configPath = path.join(canonical, "project.config.json");
+function preparedProjectConfig(config) {
+  const prepared = { ...config };
+  delete prepared.srcMiniprogramRoot;
+  if (
+    prepared.setting &&
+    typeof prepared.setting === "object" &&
+    !Array.isArray(prepared.setting)
+  ) {
+    prepared.setting = { ...prepared.setting };
+    delete prepared.setting.useCompilerPlugins;
+  }
+  return prepared;
+}
+
+function serializeProjectConfig(config) {
+  return Buffer.from(`${JSON.stringify(config, null, 2)}\n`, "utf8");
+}
+
+async function readProjectConfig(configPath) {
   let configBytes;
   let config;
   try {
@@ -48,6 +65,10 @@ export async function sourceBinding(project) {
     if (String(error?.message ?? error).startsWith("device_feedback_")) throw error;
     fail("project_config_invalid");
   }
+  return { configBytes, config };
+}
+
+function validateProjectConfig(config) {
   if (
     !config ||
     typeof config !== "object" ||
@@ -63,6 +84,14 @@ export async function sourceBinding(project) {
     path.isAbsolute(miniprogramRoot)
   )
     fail("bundle_root_invalid");
+  return miniprogramRoot;
+}
+
+export async function sourceBinding(project) {
+  const canonical = await canonicalDirectory(project);
+  const configPath = path.join(canonical, "project.config.json");
+  const { configBytes, config } = await readProjectConfig(configPath);
+  const miniprogramRoot = validateProjectConfig(config);
   const bundlePath = path.resolve(canonical, miniprogramRoot);
   if (!inside(canonical, bundlePath) || samePath(canonical, bundlePath))
     fail("separate_bundle_root_required");
@@ -73,12 +102,19 @@ export async function sourceBinding(project) {
   } catch {
     fail("bundle_app_json_required");
   }
+  const preparedConfig = preparedProjectConfig(config);
+  const preparedConfigBytes = serializeProjectConfig(preparedConfig);
   return {
     project: canonical,
     configPath,
+    config,
     configBytes,
     configSha256: sha256(configBytes),
     configSemanticSha256: semanticConfigSha256(config),
+    preparedConfig,
+    preparedConfigBytes,
+    preparedConfigSha256: sha256(preparedConfigBytes),
+    preparedConfigSemanticSha256: semanticConfigSha256(preparedConfig),
     miniprogramRoot,
     bundle,
   };
@@ -103,17 +139,30 @@ function sleep(milliseconds) {
 }
 
 async function sourceSnapshot(binding) {
-  const configBytes = await readFile(binding.configPath);
-  const bundle = await fingerprintBundle(binding.bundle);
-  return { configSha256: sha256(configBytes), bundle };
+  const current = await sourceBinding(binding.project);
+  const bundle = await fingerprintBundle(current.bundle);
+  return {
+    configSha256: current.configSha256,
+    configSemanticSha256: current.configSemanticSha256,
+    bundle,
+  };
 }
 
-function snapshotsMatch(left, right) {
+function sourceSnapshotsMatch(left, right) {
   return (
     left.configSha256 === right.configSha256 &&
+    left.configSemanticSha256 === right.configSemanticSha256 &&
     left.bundle.sha256 === right.bundle.sha256 &&
     left.bundle.fileCount === right.bundle.fileCount &&
     left.bundle.totalBytes === right.bundle.totalBytes
+  );
+}
+
+function bundlesMatch(left, right) {
+  return (
+    left.sha256 === right.sha256 &&
+    left.fileCount === right.fileCount &&
+    left.totalBytes === right.totalBytes
   );
 }
 
@@ -136,7 +185,12 @@ export async function createStableGeneration(
     const before = await sourceSnapshot(binding);
     if (settleMilliseconds > 0) await sleep(settleMilliseconds);
     const settled = await sourceSnapshot(binding);
-    if (!snapshotsMatch(before, settled)) continue;
+    if (
+      !sourceSnapshotsMatch(before, settled) ||
+      binding.configSha256 !== settled.configSha256 ||
+      binding.configSemanticSha256 !== settled.configSemanticSha256
+    )
+      continue;
 
     const directory = await mkdtemp(
       path.join(run.directory, `generation-${String(number).padStart(6, "0")}-`),
@@ -146,15 +200,21 @@ export async function createStableGeneration(
     let keep = false;
     try {
       await mkdir(project, { recursive: true });
-      await copyFile(binding.configPath, path.join(project, "project.config.json"));
+      await writeFile(
+        path.join(project, "project.config.json"),
+        binding.preparedConfigBytes,
+      );
       await copyTree(binding.bundle, bundle);
       await afterCopy?.({ attempt, binding, directory, project, bundle });
       const after = await sourceSnapshot(binding);
-      const copiedConfig = await readFile(path.join(project, "project.config.json"));
-      const copiedConfigValue = JSON.parse(copiedConfig.toString("utf8"));
-      const copiedBundle = await fingerprintBundle(bundle);
-      const copied = { configSha256: sha256(copiedConfig), bundle: copiedBundle };
-      if (snapshotsMatch(settled, after) && snapshotsMatch(after, copied)) {
+      const preparedBinding = await sourceBinding(project);
+      const copiedConfig = await readFile(preparedBinding.configPath);
+      const copiedBundle = await fingerprintBundle(preparedBinding.bundle);
+      if (
+        sourceSnapshotsMatch(settled, after) &&
+        bundlesMatch(settled.bundle, copiedBundle) &&
+        copiedConfig.equals(binding.preparedConfigBytes)
+      ) {
         keep = true;
         return {
           number,
@@ -163,8 +223,12 @@ export async function createStableGeneration(
           bundleSha256: copiedBundle.sha256,
           fileCount: copiedBundle.fileCount,
           totalBytes: copiedBundle.totalBytes,
-          configSha256: copied.configSha256,
-          configSemanticSha256: semanticConfigSha256(copiedConfigValue),
+          configSha256: preparedBinding.configSha256,
+          configSemanticSha256: preparedBinding.configSemanticSha256,
+          sourceConfigSha256: settled.configSha256,
+          sourceConfigSemanticSha256: settled.configSemanticSha256,
+          preparedConfigSha256: preparedBinding.configSha256,
+          preparedConfigSemanticSha256: preparedBinding.configSemanticSha256,
           createdAt: new Date().toISOString(),
         };
       }
@@ -177,8 +241,8 @@ export async function createStableGeneration(
 
 export async function assertGenerationCurrent(run) {
   if (!run.generation) fail("generation_required");
-  const binding = await sourceBinding(run.generation.project);
-  const bundle = await fingerprintBundle(binding.bundle);
+  const prepared = await sourceBinding(run.generation.project);
+  const bundle = await fingerprintBundle(prepared.bundle);
   if (
     bundle.sha256 !== run.generation.bundleSha256 ||
     bundle.fileCount !== run.generation.fileCount ||
@@ -186,20 +250,34 @@ export async function assertGenerationCurrent(run) {
   )
     fail("generation_changed_start_new_preview");
 
-  let expected = run.generation.configSemanticSha256;
-  if (!expected) {
-    const source = await sourceBinding(run.sourceProject);
-    if (source.configSemanticSha256 !== binding.configSemanticSha256)
-      fail("generation_config_changed_start_new_preview");
-    expected = binding.configSemanticSha256;
-    run.generation.configSemanticSha256 = expected;
-  }
-  if (binding.configSemanticSha256 !== expected)
+  if (
+    typeof run.generation.sourceConfigSha256 !== "string" ||
+    typeof run.generation.sourceConfigSemanticSha256 !== "string" ||
+    typeof run.generation.preparedConfigSha256 !== "string" ||
+    typeof run.generation.preparedConfigSemanticSha256 !== "string"
+  )
     fail("generation_config_changed_start_new_preview");
+  const source = await sourceBinding(run.sourceProject);
+  if (
+    source.configSemanticSha256 !== run.generation.sourceConfigSemanticSha256 ||
+    prepared.configSemanticSha256 !==
+      run.generation.preparedConfigSemanticSha256
+  )
+    fail("generation_config_changed_start_new_preview");
+
+  // DevTools may rewrite project.config.json's whitespace while preparing a
+  // preview.  Keep the recorded byte digests as the generation identity, but
+  // compare the live files by canonical JSON so formatting-only rewrites do
+  // not invalidate an otherwise unchanged candidate.
   return {
     bundleSha256: bundle.sha256,
     fileCount: bundle.fileCount,
     totalBytes: bundle.totalBytes,
-    configSemanticSha256: binding.configSemanticSha256,
+    configSha256: run.generation.preparedConfigSha256,
+    configSemanticSha256: run.generation.preparedConfigSemanticSha256,
+    sourceConfigSha256: run.generation.sourceConfigSha256,
+    sourceConfigSemanticSha256: run.generation.sourceConfigSemanticSha256,
+    preparedConfigSha256: run.generation.preparedConfigSha256,
+    preparedConfigSemanticSha256: run.generation.preparedConfigSemanticSha256,
   };
 }

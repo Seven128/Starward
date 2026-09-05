@@ -92,6 +92,17 @@ test("official readiness probes automatic and ordinary preview independently", a
   );
 });
 
+test("official CLI prefers the bundled Node entry over leftover Electron files", async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "starward-wechat-node-cli-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  for (const name of ["cli.bat", "node.exe", "cli.js", "微信开发者工具.exe"])
+    await writeFile(path.join(directory, name), "fixture");
+  const invocation = await resolveOfficialCli(path.join(directory, "cli.bat"), {});
+  assert.equal(invocation.file, await realpath(path.join(directory, "node.exe")));
+  assert.deepEqual(invocation.prefix, [await realpath(path.join(directory, "cli.js"))]);
+  assert.equal(invocation.env, undefined);
+});
+
 test("official CLI resolves the current Electron installation layout", async (t) => {
   const directory = await mkdtemp(
     path.join(os.tmpdir(), "starward-wechat-electron-cli-"),

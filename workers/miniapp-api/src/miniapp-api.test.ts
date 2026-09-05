@@ -667,6 +667,146 @@ test("detail and sky reject context drift and share one selected time", async ()
   }
 });
 
+test("sky report preserves exact selected time and binds targets and stars to every frame", async () => {
+  const service = testService();
+  try {
+    const selectedAt = "2026-08-06T13:00:00.000Z";
+    const context = (
+      await service.resolveObservationContext({
+        location: {
+          kind: "FORMAL_SPOT",
+          spotId: TEST_PUBLISHED_SPOT.spotId,
+        },
+        localDate: "2026-08-06",
+        selectedAt,
+      })
+    ).data;
+    const sky = (await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId))
+      .data;
+    assert.equal(sky.context.at, selectedAt);
+    assert.ok(
+      sky.hourly.some((row) => row.at === selectedAt),
+      "off-grid committed time is a calculated hourly row",
+    );
+    assert.equal(sky.targetFrames.length, sky.hourly.length);
+    assert.deepEqual(
+      sky.targetFrames.map((frame) => frame.at),
+      sky.hourly.map((row) => row.at),
+    );
+    assert.deepEqual(
+      sky.skyScene.frames.map((frame) => frame.at),
+      sky.hourly.map((row) => row.at),
+    );
+    const currentTargets = sky.targets;
+    const selectedFrame = sky.targetFrames.find(
+      (frame) => frame.at === selectedAt,
+    );
+    assert.ok(selectedFrame, "selected time has an exact target frame");
+    assert.deepEqual(
+      selectedFrame.targets.map((target) => target.targetId),
+      currentTargets.map((target) => target.targetId),
+    );
+    for (const target of currentTargets) {
+      const frameTarget: (typeof currentTargets)[number] | undefined =
+        selectedFrame.targets.find(
+          (candidate) => candidate.targetId === target.targetId,
+        );
+      assert.ok(frameTarget);
+      assert.equal(frameTarget.direction, target.direction);
+      assert.equal(frameTarget.altitudeDeg, target.altitudeDeg);
+    }
+    assert.ok(
+      sky.targetFrames.some((frame) =>
+        frame.targets.some((target) => {
+          const current = currentTargets.find(
+            (candidate) => candidate.targetId === target.targetId,
+          );
+          return (
+            frame.at !== selectedAt &&
+            current !== undefined &&
+            (target.direction !== current.direction ||
+              target.altitudeDeg !== current.altitudeDeg)
+          );
+        }),
+      ),
+      "target directions change with the frame rather than reusing committed targets",
+    );
+    const activityTarget = currentTargets.find(
+      (target) => target.type === "METEOR_SHOWER" && target.activity,
+    );
+    assert.ok(activityTarget, "an active meteor target carries activity evidence");
+    const activityValues = sky.targetFrames.flatMap((frame) =>
+      frame.targets
+        .filter((target) => target.targetId === activityTarget.targetId)
+        .map((target) => target.activity?.currentSolarLongitudeDeg ?? null),
+    );
+    assert.ok(
+      new Set(activityValues.filter((value): value is number => value !== null))
+        .size > 1,
+      "meteor activity is recalculated at each target frame time",
+    );
+    assert.ok(
+      sky.hourly.every((row) => row.opportunityInput.at === row.at),
+      "opportunity inputs retain the exact expanded presentation axis",
+    );
+    assert.ok(
+      Buffer.byteLength(JSON.stringify(sky), "utf8") < 1_048_576,
+      "target frames remain within the test report payload budget",
+    );
+    const selectedRow = sky.hourly.find((row) => row.at === selectedAt);
+    assert.equal(selectedRow?.opportunityInput.at, selectedAt);
+  } finally {
+    await service.onModuleDestroy();
+  }
+});
+
+test("daylight and cross-midnight selected instants stay exact instead of nearest-sampled", async () => {
+  const service = testService();
+  try {
+    const selectedInstants = [
+      "2026-08-06T05:00:00.000Z",
+      "2026-08-06T16:00:00.000Z",
+    ];
+    for (const selectedAt of selectedInstants) {
+      const context = (
+        await service.resolveObservationContext({
+          location: {
+            kind: "FORMAL_SPOT",
+            spotId: TEST_PUBLISHED_SPOT.spotId,
+          },
+          localDate: "2026-08-06",
+          selectedAt,
+        })
+      ).data;
+      const sky = (await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId))
+        .data;
+      assert.equal(sky.context.at, selectedAt);
+      assert.ok(sky.hourly.some((row) => row.at === selectedAt));
+      assert.ok(sky.targetFrames.some((frame) => frame.at === selectedAt));
+      assert.ok(sky.skyScene.frames.some((frame) => frame.at === selectedAt));
+    }
+    const daylightContext = (
+      await service.resolveObservationContext({
+        location: {
+          kind: "FORMAL_SPOT",
+          spotId: TEST_PUBLISHED_SPOT.spotId,
+        },
+        localDate: "2026-08-06",
+        selectedAt: selectedInstants[0],
+      })
+    ).data;
+    const daylightSky = (
+      await service.getSky(TEST_PUBLISHED_SPOT.spotId, daylightContext.contextId)
+    ).data;
+    assert.equal(
+      daylightSky.hourly.find((row) => row.at === selectedInstants[0])?.darkness,
+      "DAY",
+    );
+  } finally {
+    await service.onModuleDestroy();
+  }
+});
+
 test("equivalent observation contexts never reuse another context identity", async () => {
   const service = testService();
   try {

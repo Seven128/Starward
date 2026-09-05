@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro, {
   useDidHide,
   useDidShow,
@@ -26,17 +27,29 @@ import {
   updateObservationContext,
 } from "@/services/api-client";
 import {
+  acquireAcceptanceSkySceneInspection,
   clearAcceptanceSkySceneInspection,
   publishAcceptanceSkySceneInspection,
+  type AcceptanceSkySceneInspectionOwner,
 } from "@/services/acceptance-diagnostics";
 import { useAppStore } from "@/state/app-store";
 import {
   type DeviceMotionEvent,
   createCompassLifecycle,
 } from "./compass-lifecycle";
+import {
+  calibrateSkyHeadingOffset,
+  createSkyViewBasis,
+  projectSkyDirection,
+  resolveSkyHeading,
+} from "./sky-view-projection";
+import { exactSkyTimeFrame } from "./sky-time-frame";
 import "./spot-sky-page.scss";
 
 const CANVAS_ID = "spot-night-sky-scene";
+// Explicit angular view, independent of logical-pixel density. Physical
+// apparent scale and platform pose conventions still require device feedback.
+const SKY_VERTICAL_FOV_DEG = 45;
 
 const TARGET_TYPE_LABEL: Readonly<Record<SkyReport["targets"][number]["type"], string>> = {
   STAR: "恒星",
@@ -163,8 +176,6 @@ function skyTargetWindowLabel(
 function SkyOrientationTargetLabel({
   target,
   projection,
-  width,
-  height,
   timezone,
 }: {
   target: SkyReport["targets"][number];
@@ -178,8 +189,8 @@ function SkyOrientationTargetLabel({
     target.type === "METEOR_SHOWER" ||
     target.type === "CONJUNCTION" ||
     target.type === "MILKY_WAY";
-  const left = Math.max(10, Math.min(width - 10, projection.x));
-  const top = Math.max(16, Math.min(height - 24, projection.y));
+  const left = projection.x;
+  const top = projection.y;
   const label = `${target.displayName}，${TARGET_TYPE_LABEL[target.type]}，${target.direction}，高度 ${altitude}，${skyTargetWindowLabel(target, timezone)}`;
   return (
     <View
@@ -207,18 +218,6 @@ function SkyOrientationTargetLabel({
 
 function clampIndex(index: number, length: number) {
   return Math.max(0, Math.min(index, Math.max(0, length - 1)));
-}
-
-function nearestHourIndex(hourly: readonly HourlySkyRow[], selectedAt: string) {
-  if (!hourly.length || !isSelectedAt(selectedAt)) return 0;
-  const target = Date.parse(selectedAt);
-  return hourly.reduce((nearest, item, index) => {
-    const distance = Math.abs(Date.parse(item.at) - target);
-    const nearestDistance = Math.abs(
-      Date.parse(hourly[nearest]?.at ?? item.at) - target,
-    );
-    return distance < nearestDistance ? index : nearest;
-  }, 0);
 }
 
 function extractDegrees(direction: string) {
@@ -271,12 +270,6 @@ interface DevicePose {
   sampledAt: number;
 }
 
-interface SkyCanvasMetrics {
-  centerX: number;
-  horizonY: number;
-  radius: number;
-}
-
 interface SkyTargetProjection {
   x: number;
   y: number;
@@ -292,43 +285,11 @@ function projectHorizontalPoint(
   width: number,
   height: number,
 ): SkyTargetProjection | null {
-  if (!Number.isFinite(azimuthDeg) || !Number.isFinite(altitudeDeg)) return null;
-  const degrees = normalizeDegrees(azimuthDeg);
-  const { centerX, horizonY, radius } = skyCanvasMetrics(width, height);
-  const altitude = Math.max(0, Math.min(90, altitudeDeg));
-  const distance = radius * (1 - altitude / 90);
-  const projectionHeading = heading ?? 0;
-  const radians = ((degrees - projectionHeading - 90) * Math.PI) / 180;
-  const pitchOffset =
-    heading !== null && pose
-      ? (Math.max(-90, Math.min(90, pose.betaDeg)) / 90) * radius * 0.18
-      : 0;
-  const rollOffset =
-    heading !== null && pose
-      ? (Math.max(-90, Math.min(90, pose.gammaDeg)) / 90) * radius * 0.18
-      : 0;
-  return {
-    x: centerX + Math.cos(radians) * distance + rollOffset,
-    y: horizonY + Math.sin(radians) * distance + pitchOffset,
-    degrees,
-    altitude,
-  };
-}
-
-function skyCanvasMetrics(width: number, height: number): SkyCanvasMetrics {
-  // Keep the horizon clear of the raised ruler while preserving a useful
-  // field on short/landscape devices. The canvas itself still occupies the
-  // complete route; this only defines the honest projection geometry.
-  const centerX = width / 2;
-  const horizonY = Math.max(
-    120,
-    Math.min(Math.max(120, height - 150), height * 0.78),
-  );
-  const radius = Math.max(
-    64,
-    Math.min(Math.max(64, width / 2 - 24), Math.max(64, horizonY - 72)),
-  );
-  return { centerX, horizonY, radius };
+  if (heading === null || !pose) return null;
+  const basis = createSkyViewBasis(heading, pose.betaDeg, pose.gammaDeg);
+  return basis
+    ? projectSkyDirection(azimuthDeg, altitudeDeg, basis, width, height, SKY_VERTICAL_FOV_DEG)
+    : null;
 }
 
 function projectSkyTarget(
@@ -340,8 +301,8 @@ function projectSkyTarget(
 ): SkyTargetProjection | null {
   const degrees = extractDegrees(target.direction);
   if (degrees === null || target.altitudeDeg === null) return null;
-  // Device motion supplies pitch/roll only after the compass has provided an
-  // absolute heading. No synthetic tilt is introduced for missing/stale data.
+  // Stars and targets share the same perspective and live view basis.
+  // No synthetic direction is introduced for missing/stale sensor data.
   return projectHorizontalPoint(
     degrees,
     target.altitudeDeg,
@@ -667,73 +628,51 @@ function drawSkyScene(
             target: "#4859B8",
             event: "#6F5500",
           };
-  const { centerX, horizonY, radius } = skyCanvasMetrics(width, height);
   context.setFillStyle(palette.canvas);
   context.fillRect(0, 0, width, height);
-
-  context.setStrokeStyle(palette.grid);
-  context.setLineWidth(1);
-  context.beginPath();
-  context.arc(centerX, horizonY, radius, Math.PI, Math.PI * 2);
-  context.stroke();
-
-  [0.5, 0.76].forEach((scale) => {
-    context.setStrokeStyle(palette.gridSoft);
-    context.beginPath();
-    context.arc(centerX, horizonY, radius * scale, Math.PI, Math.PI * 2);
-    context.stroke();
-  });
-
-  context.setStrokeStyle(palette.gridSoft);
-  [-60, -30, 0, 30, 60].forEach((angle) => {
-    const radians = ((angle - 90) * Math.PI) / 180;
-    context.beginPath();
-    context.moveTo(centerX, horizonY);
-    context.lineTo(
-      centerX + Math.cos(radians) * radius,
-      horizonY + Math.sin(radians) * radius,
-    );
-    context.stroke();
-  });
-
-  context.setStrokeStyle(palette.grid);
-  context.beginPath();
-  context.moveTo(centerX - radius, horizonY);
-  context.lineTo(centerX + radius, horizonY);
-  context.stroke();
-
-  context.setFillStyle(palette.text);
-  context.setFontSize(10);
-  context.fillText("北", centerX - 5, horizonY - radius - 8);
-  context.fillText("东", centerX + radius - 2, horizonY + 18);
-  context.fillText("南", centerX - 5, horizonY + 18);
-  context.fillText("西", centerX - radius - 8, horizonY + 18);
-  context.setFillStyle(palette.muted);
-  context.setFontSize(9);
-  context.fillText("60°", centerX + 6, horizonY - radius * 0.76 + 3);
-  context.fillText("30°", centerX + 6, horizonY - radius * 0.5 + 3);
-
-  if (!data) {
+  const basis = heading !== null && pose
+    ? createSkyViewBasis(heading, pose.betaDeg, pose.gammaDeg)
+    : null;
+  // Missing pose has no invented North-facing view. Recovery/list semantics
+  // remain available outside this canvas until a trusted stream is present.
+  if (!data || !basis) {
     context.draw(false);
     return;
   }
+  const project = (azimuth: number, altitude: number) =>
+    projectSkyDirection(azimuth, altitude, basis, width, height, SKY_VERTICAL_FOV_DEG);
+  // The horizon is a world-space great circle, not fixed screen decoration.
+  // Break paths at clipped samples so a hidden arc cannot cross the viewport.
+  context.setLineWidth(1);
+  for (const altitude of [0, 30, 60]) {
+    context.setStrokeStyle(altitude === 0 ? palette.grid : palette.gridSoft);
+    context.beginPath();
+    let connected = false;
+    for (let azimuth = 0; azimuth <= 360; azimuth += 1) {
+      const point = project(azimuth, altitude);
+      if (!point) { connected = false; continue; }
+      if (connected) context.lineTo(point.x, point.y);
+      else context.moveTo(point.x, point.y);
+      connected = true;
+    }
+    context.stroke();
+  }
+  context.setFillStyle(palette.text);
+  context.setFontSize(10);
+  for (const [azimuth, label] of [[0, "北"], [90, "东"], [180, "南"], [270, "西"]] as const) {
+    const point = project(azimuth, 0);
+    if (point) context.fillText(label, point.x, point.y);
+  }
 
   const catalog = data.skyScene.state === "AVAILABLE" ? data.skyScene.catalog : null;
-  const frame = data.skyScene.frames.find((candidate) => candidate.at === frameAt);
+  const frame = exactSkyTimeFrame(data.skyScene.frames, frameAt);
   if (catalog && frame?.state === "AVAILABLE" && frame.points) {
     frame.points.forEach((point) => {
       const [catalogIndex, azimuthDeg, altitudeDeg] = point;
       if (altitudeDeg <= 0) return;
       const entry = catalog.entries[catalogIndex];
       if (!entry) return;
-      const projection = projectHorizontalPoint(
-        azimuthDeg,
-        altitudeDeg,
-        heading,
-        pose,
-        width,
-        height,
-      );
+      const projection = project(azimuthDeg, altitudeDeg);
       if (!projection) return;
       const brightness = Math.max(
         0,
@@ -759,7 +698,8 @@ function drawSkyScene(
     context.setGlobalAlpha(1);
   }
 
-  data.targets.forEach((target) => {
+  const targetFrame = exactSkyTimeFrame(data.targetFrames, frameAt);
+  (targetFrame?.targets ?? []).forEach((target) => {
     const projection = projectSkyTarget(target, heading, pose, width, height);
     if (!projection) return;
     const isEvent =
@@ -1016,8 +956,10 @@ export function SpotSkyPage() {
   const compassResumeRef = useRef(false);
   const canvasDrawRequestRef = useRef(0);
   const canvasDrawRevisionRef = useRef(0);
+  const skySceneInspectionOwnerRef =
+    useRef<AcceptanceSkySceneInspectionOwner | null>(null);
   const [canvasError, setCanvasError] = useState<string | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 343, height: 640 });
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [timeSaving, setTimeSaving] = useState(false);
   const [orientationObjectListOpen, setOrientationObjectListOpen] =
     useState(false);
@@ -1035,15 +977,15 @@ export function SpotSkyPage() {
   );
   const reportData = contextMatches ? data : undefined;
   const committedAt = activeContext?.selectedAtUtc ?? routeContext.selectedAt;
-  const committedIndex = clampIndex(
-    reportData ? nearestHourIndex(reportData.hourly, committedAt) : 0,
-    reportData?.hourly.length ?? 1,
+  const committedRow = exactSkyTimeFrame(reportData?.hourly, committedAt);
+  const committedIndex = committedRow
+    ? reportData!.hourly.indexOf(committedRow)
+    : -1;
+  const activeIndex = previewIndex ?? committedIndex;
+  const row = exactSkyTimeFrame(
+    reportData?.hourly,
+    previewIndex === null ? committedAt : reportData?.hourly[previewIndex]?.at,
   );
-  const activeIndex = clampIndex(
-    previewIndex ?? committedIndex,
-    reportData?.hourly.length ?? 1,
-  );
-  const row = reportData?.hourly[activeIndex];
   const isPreviewing = previewIndex !== null && previewIndex !== committedIndex;
   const rowTime = formatTime(row?.at ?? committedAt, routeContext.timezone);
   const sensorHeadingForScene =
@@ -1051,7 +993,7 @@ export function SpotSkyPage() {
     compassHeading !== null &&
     devicePose !== null &&
     motionOffsetRef.current !== null
-      ? normalizeDegrees(devicePose.alphaDeg + motionOffsetRef.current)
+      ? resolveSkyHeading(motionOffsetRef.current, devicePose.alphaDeg)
       : null;
 
   const stopCompass = useCallback(() => {
@@ -1101,6 +1043,7 @@ export function SpotSkyPage() {
         compassQualityRef.current = "UNAVAILABLE";
         devicePoseRef.current = null;
         motionOffsetRef.current = null;
+        lastCompassHeadingRef.current = null;
         setDevicePose(null);
         setCompassHeading(null);
         setCompassState("UNAVAILABLE");
@@ -1126,8 +1069,8 @@ export function SpotSkyPage() {
         // Calibrate the device-motion alpha stream against the absolute
         // compass once per foreground session; subsequent alpha changes are
         // the continuous orientation signal.
-        motionOffsetRef.current = normalizeDegrees(
-          compassHeadingRef.current - pose.alphaDeg,
+        motionOffsetRef.current = calibrateSkyHeadingOffset(
+          compassHeadingRef.current, pose.alphaDeg,
         );
       }
       if (compassQualityRef.current === "LOW_ACCURACY") {
@@ -1149,6 +1092,7 @@ export function SpotSkyPage() {
         motionStaleTimerRef.current = null;
         devicePoseRef.current = null;
         motionOffsetRef.current = null;
+        lastCompassHeadingRef.current = null;
         setDevicePose(null);
         setCompassHeading(null);
         if (
@@ -1199,8 +1143,8 @@ export function SpotSkyPage() {
         devicePoseRef.current !== null &&
         motionOffsetRef.current === null
       ) {
-        motionOffsetRef.current = normalizeDegrees(
-          normalized - devicePoseRef.current.alphaDeg,
+        motionOffsetRef.current = calibrateSkyHeadingOffset(
+          normalized, devicePoseRef.current.alphaDeg,
         );
       }
       const previous = lastCompassHeadingRef.current;
@@ -1237,6 +1181,7 @@ export function SpotSkyPage() {
         ) return;
         compassStaleTimerRef.current = null;
         compassHeadingRef.current = null;
+        lastCompassHeadingRef.current = null;
         motionOffsetRef.current = null;
         devicePoseRef.current = null;
         setDevicePose(null);
@@ -1317,7 +1262,16 @@ export function SpotSkyPage() {
     };
   }, [stopCompass]);
 
-  useEffect(() => clearAcceptanceSkySceneInspection, []);
+  useEffect(() => {
+    const owner = acquireAcceptanceSkySceneInspection();
+    skySceneInspectionOwnerRef.current = owner;
+    return () => {
+      clearAcceptanceSkySceneInspection(owner);
+      if (skySceneInspectionOwnerRef.current === owner) {
+        skySceneInspectionOwnerRef.current = null;
+      }
+    };
+  }, []);
 
   const draw = useCallback(() => {
     const requestRevision = canvasDrawRequestRef.current + 1;
@@ -1326,14 +1280,14 @@ export function SpotSkyPage() {
       reportData?.skyScene.state === "AVAILABLE"
         ? reportData.skyScene.catalog
         : null;
-    const requestedFrame = reportData?.skyScene.frames.find(
-      (candidate) => candidate.at === row?.at,
-    );
+    const requestedFrame = exactSkyTimeFrame(reportData?.skyScene.frames, row?.at);
+    const requestedTargetFrame = exactSkyTimeFrame(reportData?.targetFrames, row?.at);
     const requestedStarCount =
       requestedFrame?.state === "AVAILABLE" && requestedFrame.points
         ? requestedFrame.points.filter((point) => point[2] > 0).length
         : 0;
-    publishAcceptanceSkySceneInspection({
+    const owner = skySceneInspectionOwnerRef.current;
+    publishAcceptanceSkySceneInspection(owner, {
       state: "PENDING",
       spotId: routeContext.spotId,
       frameAt: requestedFrame?.at ?? "",
@@ -1348,14 +1302,11 @@ export function SpotSkyPage() {
           try {
             if (requestRevision !== canvasDrawRequestRef.current) return;
             const rect = Array.isArray(result) ? result[0] : result;
-            const width =
-              rect && Number.isFinite(rect.width) && rect.width > 0
-                ? rect.width
-                : 343;
-            const height =
-              rect && Number.isFinite(rect.height) && rect.height > 0
-                ? rect.height
-                : 640;
+            if (!rect || !Number.isFinite(rect.width) || rect.width <= 0 ||
+                !Number.isFinite(rect.height) || rect.height <= 0) {
+              throw new Error("sky_canvas_measurement_unavailable");
+            }
+            const { width, height } = rect;
             setCanvasSize((previous) =>
               previous.width === width && previous.height === height
                 ? previous
@@ -1379,13 +1330,16 @@ export function SpotSkyPage() {
               mode,
             );
             const sceneReady = Boolean(
-              canvasData?.skyScene.state === "AVAILABLE" &&
+              sensorHeadingForScene !== null &&
+                devicePose !== null &&
+                canvasData?.skyScene.state === "AVAILABLE" &&
                 requestedCatalog &&
+                requestedTargetFrame &&
                 requestedFrame?.state === "AVAILABLE" &&
                 requestedFrame.points,
             );
             if (sceneReady) canvasDrawRevisionRef.current += 1;
-            publishAcceptanceSkySceneInspection({
+            publishAcceptanceSkySceneInspection(owner, {
               state: sceneReady ? "READY" : "UNAVAILABLE",
               spotId: routeContext.spotId,
               frameAt: requestedFrame?.at ?? "",
@@ -1395,7 +1349,8 @@ export function SpotSkyPage() {
             });
             setCanvasError(null);
           } catch (error) {
-            publishAcceptanceSkySceneInspection({
+            setCanvasSize({ width: 0, height: 0 });
+            publishAcceptanceSkySceneInspection(owner, {
               state: "ERROR",
               spotId: routeContext.spotId,
               frameAt: requestedFrame?.at ?? "",
@@ -1410,7 +1365,8 @@ export function SpotSkyPage() {
         })
         .exec();
     } catch (error) {
-      publishAcceptanceSkySceneInspection({
+      setCanvasSize({ width: 0, height: 0 });
+      publishAcceptanceSkySceneInspection(owner, {
         state: "ERROR",
         spotId: routeContext.spotId,
         frameAt: requestedFrame?.at ?? "",
@@ -1566,6 +1522,7 @@ export function SpotSkyPage() {
         data-route="spot-night-context-loading"
         data-od-id="sky-orientation-route"
       >
+      <FloatingNotificationHost />
         <View className="sky-orientation-state-page__canvas" aria-hidden="true" />
         <OrientationQuietBack
           onBack={() =>
@@ -1591,6 +1548,7 @@ export function SpotSkyPage() {
         data-route="spot-night-context-error"
         data-od-id="sky-orientation-route"
       >
+      <FloatingNotificationHost />
         <View className="sky-orientation-state-page__canvas" aria-hidden="true" />
         <OrientationQuietBack
           onBack={() => Taro.switchTab({ url: "/pages/map/index" })}
@@ -1625,7 +1583,7 @@ export function SpotSkyPage() {
       : orientationSensorState === "UNAVAILABLE"
         ? {
             title: "设备没有可用方向传感器",
-            detail: "天空仍保留北向目标预览；当前不宣称手机方向，天体列表继续可用。",
+            detail: "方位投影暂不可用；天体列表继续可用，可重试设备方向。",
             action: "重试方向",
           }
         : orientationSensorState === "STALE"
@@ -1637,13 +1595,13 @@ export function SpotSkyPage() {
           : orientationSensorState === "CALIBRATING"
             ? {
                 title: "正在校准设备方向",
-                detail: "保持手机平稳；可信方向到达前，天空保持北向预览。",
+                detail: "保持手机平稳；获得可信方向后才恢复方位投影。",
                 action: "重新校准",
               }
             : orientationSensorState === "LOW_ACCURACY"
               ? {
                   title: "方向精度较低",
-                  detail: "暂不显示当前方向结论；目标列表和北向预览仍可用。",
+                  detail: "方位投影已暂停；天体列表继续可用，请重新校准。",
                   action: "重新校准",
                 }
               : {
@@ -1677,7 +1635,8 @@ export function SpotSkyPage() {
     report.data?.dataState !== "UNAVAILABLE"
       ? reportData
       : undefined;
-  const orientationTargets = orientationData?.targets ?? [];
+  const orientationTargetFrame = exactSkyTimeFrame(orientationData?.targetFrames, row?.at);
+  const orientationTargets = orientationTargetFrame?.targets ?? [];
   const orientationHeading = compassIsReady
     ? `${Math.round(sensorHeadingForScene ?? compassHeading ?? 0)}°`
     : "未提供";
@@ -1711,6 +1670,7 @@ export function SpotSkyPage() {
     compassNow,
   );
   const orientationSensorLabel = `设备方向，方位 ${orientationHeading}，精度 ${orientationAccuracy}，数据年龄 ${orientationAge}，${compassReason}`;
+  const activeSkySceneFrame = exactSkyTimeFrame(reportData?.skyScene.frames, row?.at);
   const orientationDataStatus =
     report.isPending && !orientationData
       ? {
@@ -1737,26 +1697,25 @@ export function SpotSkyPage() {
                 detail:
                   "返回结果与当前正式点位、日期或时区上下文不一致；为避免混用不同条件的结果，暂不展示。",
               }
+            : !row || !orientationTargetFrame
+              ? {
+                  state: "ERROR" as const,
+                  detail: "当前观测时刻没有对应的天空数据；不会用其他时刻替代，请重新加载。",
+                }
             : reportData.skyScene.state !== "AVAILABLE" ||
                 !reportData.skyScene.catalog ||
-                !reportData.skyScene.frames.some(
-                  (frame) =>
-                    frame.at === row?.at &&
-                    frame.state === "AVAILABLE" &&
-                    Boolean(frame.points),
-                )
+                activeSkySceneFrame?.state !== "AVAILABLE" ||
+                !activeSkySceneFrame.points
               ? {
                   state: "ERROR" as const,
                   detail:
                     "真实 Gaia 星表场景当前不可用；不会用静态图片、随机星点或稀疏装饰替代。独立天体和事件目标仍保留在对象列表中。",
                 }
             : null;
-  const activeSkySceneFrame = reportData?.skyScene.frames.find(
-    (frame) => frame.at === row?.at,
-  );
   const skySceneReady = Boolean(
     reportData?.skyScene.state === "AVAILABLE" &&
       reportData.skyScene.catalog &&
+      orientationTargetFrame &&
       activeSkySceneFrame?.state === "AVAILABLE" &&
       activeSkySceneFrame.points,
   );
@@ -1780,6 +1739,7 @@ export function SpotSkyPage() {
       data-spot-id={routeContext.spotId}
       data-od-id="sky-orientation-route"
     >
+      <FloatingNotificationHost />
         <View
           className="sky-orientation-canvas"
           data-control="sky-orientation-canvas"
@@ -1793,13 +1753,13 @@ export function SpotSkyPage() {
           data-sky-scene-frame-at={activeSkySceneFrame?.at ?? ""}
           role="img"
           aria-busy={orientationDataStatus?.state === "LOADING"}
-          aria-label={`${spotName}的方位高度天空图，${skySceneReady ? `${skySceneStarCount} 颗 Gaia 真实目录星` : "真实星表场景不可用"}${skySceneAccessibleProvenance}，${orientationData ? `${orientationData.targets.length} 个真实目标` : "当前没有可证明天空结果"}，${compassIsReady ? "已使用实时设备姿态" : "未提供实时设备姿态，保持北向预览"}，当前观测时刻 ${rowTime}`}
+          aria-label={`${spotName}的方位高度天空图，${skySceneReady ? `${skySceneStarCount} 颗 Gaia 真实目录星` : "真实星表场景不可用"}${skySceneAccessibleProvenance}，${orientationTargetFrame ? `${orientationTargets.length} 个真实目标` : "当前没有可证明天空结果"}，${compassIsReady ? "已使用实时设备姿态" : "当前设备姿态不可用，暂停方位投影"}，当前观测时刻 ${rowTime}`}
         >
           <Canvas
             canvasId={CANVAS_ID}
             id={CANVAS_ID}
             className="sky-scene__canvas sky-orientation-canvas__surface"
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: "100%", height: "100%", visibility: canvasError || canvasSize.width <= 0 || canvasSize.height <= 0 ? "hidden" : "visible" }}
             aria-label="方位天空投影；目录星与目标标记只来自当前正式点、真实时刻和服务端天文计算结果"
           />
           {visibleOrientationTargets.map(({ target, projection }) => (
@@ -1985,7 +1945,7 @@ export function SpotSkyPage() {
           data-od-id="sky-orientation-time-ruler-layer"
         >
           <OrientationTimeRuler
-            rows={orientationData?.hourly ?? []}
+            rows={committedRow ? orientationData?.hourly ?? [] : []}
             activeIndex={activeIndex}
             committedIndex={committedIndex}
             timezone={routeContext.timezone}

@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro from "@tarojs/taro";
 import { Text, View } from "@tarojs/components";
 import { useRef, useState } from "react";
@@ -89,6 +90,7 @@ export default function PermissionPage() {
   };
   return (
     <View className={`${themeClass} permission-page`}>
+      <FloatingNotificationHost />
       <CustomNav title="定位与隐私" back />
       <View className="permission-content page-inset safe-bottom">
         <View className="permission-hero card">

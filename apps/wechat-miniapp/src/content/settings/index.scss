@@ -179,10 +179,10 @@
   transform: translateX(0);
   transition: transform 180ms cubic-bezier(.2, 0, 0, 1);
 }
-.settings-display-mode-track[data-selected-mode="night"] .settings-display-mode-thumb {
+.settings-display-mode-track--night .settings-display-mode-thumb {
   transform: translateX(100%);
 }
-.settings-display-mode-track[data-selected-mode="observation"] .settings-display-mode-thumb {
+.settings-display-mode-track--observation .settings-display-mode-thumb {
   transform: translateX(200%);
 }
 .settings-display-mode-choice {

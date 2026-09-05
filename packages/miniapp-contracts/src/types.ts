@@ -498,6 +498,18 @@ export interface SkyTarget {
   activity?: MeteorActivityEvidence | null;
 }
 
+/**
+ * Actionable sky targets projected for one exact SkyReport time slice.
+ *
+ * The `at` value is required to equal one `SkyReport.hourly[].at` value.  The
+ * BFF owns every target calculation; the Mini Program may only project the
+ * returned directions into its sensor-relative viewport.
+ */
+export interface SkyTargetFrame {
+  at: string;
+  targets: readonly SkyTarget[];
+}
+
 export interface SkyOpportunitySliceInput {
   at: string;
   eventActivity: number | null;
@@ -641,6 +653,7 @@ export interface SkyReport {
   context: SpotSkyContext;
   decision: TripDecision;
   targets: readonly SkyTarget[];
+  targetFrames: readonly SkyTargetFrame[];
   hourly: readonly HourlySkyRow[];
   milkyWayDirection: string;
   moonSummary: string;

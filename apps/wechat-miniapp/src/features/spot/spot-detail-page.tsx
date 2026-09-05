@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useRouter } from "@tarojs/taro";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useMemo, useState } from "react";
@@ -201,6 +202,7 @@ export function SpotDetailPage({
   if (!spotId.startsWith("spot:") || !contextComplete || !observationContext)
     return (
       <View className={themeClass}>
+      <FloatingNotificationHost />
         <CustomNav title="观星点详情" back />
         <View className="page-inset">
           <StatusPanel
@@ -342,6 +344,7 @@ export function SpotDetailPage({
       data-route="spot-detail"
       data-spot-id={spotId}
     >
+      <FloatingNotificationHost />
       <CustomNav
         title={detail ? "" : "观星点详情"}
         back

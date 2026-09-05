@@ -543,7 +543,8 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "observed_ide_http_ports",
     "waitForWechatIdeClosed",
     "wechat_devtools_ide_did_not_close",
-    "cwd: path.dirname(devtoolsExecutable)",
+    "resolveOfficialCli(cliPath)",
+    "cwd: invocation.cwd ?? root",
     "cwd: root",
     "prepareWechatProjectIdentity",
     "restoreWechatProjectIdentity",
@@ -1799,14 +1800,17 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(navigation, /nativeStatusBarHeightPx\(\)/u);
   assert.match(sky, /className="sky-orientation-back-layer safe-top"/u);
   assert.match(sky, /data-od-id="sky-orientation-back"/u);
+  // Copy-level regression only: this does not establish native sensor behavior.
+  assert.doesNotMatch(sky, /北向(?:目标)?预览/u);
+  assert.match(sky, /当前设备姿态不可用，暂停方位投影/u);
   assert.match(sky, /data-sky-scene-state/u);
   assert.match(sky, /data-sky-star-count/u);
   assert.match(sky, /data-sky-catalog-version/u);
   assert.match(sky, /data-sky-scene-frame-at/u);
-  assert.match(
-    sky,
-    /data\.skyScene\.frames\.find\(\(candidate\) => candidate\.at === frameAt\)/u,
-  );
+  // Wiring only; sky-canvas-time.test.ts executes the production drawing
+  // function to establish exact-time selection and missing-frame behavior.
+  assert.match(sky, /exactSkyTimeFrame\(data\.skyScene\.frames, frameAt\)/u);
+  assert.match(sky, /exactSkyTimeFrame\(data\.targetFrames, frameAt\)/u);
   assert.match(sky, /catalog\.entries\[catalogIndex\]/u);
   assert.match(sky, /altitudeDeg <= 0/u);
   assert.match(sky, /真实 Gaia 星表场景当前不可用/u);
@@ -1974,7 +1978,8 @@ test("Final-Gate verifier derives actuals from the current candidate and fails c
     "package-lock.json",
     ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
     "DESIGN.md",
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-handoff/miniapp-field-signal-i21-current.md",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
+    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json",
     "tools/miniapp/verification-spec-field-signal-i21.json",
     "tools/miniapp/run-wechat-devtools-session.mjs",
     "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",

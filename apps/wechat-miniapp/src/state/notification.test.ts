@@ -81,9 +81,9 @@ test("actual Settings callbacks use control state feedback and preserve unrelate
     ts.ScriptKind.TSX,
   );
   const names = new Set([
-    "DISPLAY_MODE_LABEL",
-    "chooseDisplayMode",
-    "toggleObservation",
+
+    "selectDisplayMode",
+
   ]);
   const declarations: string[] = [];
   const visit = (node: ts.Node) => {
@@ -97,7 +97,6 @@ test("actual Settings callbacks use control state feedback and preserve unrelate
   let queue: NotificationRecord[] = [];
   let clock = 0;
   let mode = "NIGHT";
-  let priorMode = "NIGHT";
   const runtime = {
     get mode() {
       return mode;
@@ -107,11 +106,7 @@ test("actual Settings callbacks use control state feedback and preserve unrelate
       mode = next;
     },
     enterObservation() {
-      priorMode = mode;
       mode = "OBSERVATION";
-    },
-    exitObservation() {
-      mode = priorMode;
     },
     notify(intent: NotificationIntent) {
       queue = enqueueNotification(queue, intent, ++clock);
@@ -127,21 +122,21 @@ test("actual Settings callbacks use control state feedback and preserve unrelate
   };
   const callbacks = vm.runInNewContext(
     ts.transpileModule(
-      declarations.join("\n") + "\n({ chooseDisplayMode, toggleObservation });",
+      declarations.join("\n") + "\n({ selectDisplayMode });",
       { compilerOptions: { target: ts.ScriptTarget.ES2020 } },
     ).outputText,
     runtime,
     { timeout: 1000 },
   ) as {
-    chooseDisplayMode(mode: "DAY" | "NIGHT"): void;
-    toggleObservation(): void;
+    selectDisplayMode(mode: "DAY" | "NIGHT" | "OBSERVATION"): void;
+
   };
 
   for (let repeat = 0; repeat < 3; repeat += 1) {
-    callbacks.toggleObservation();
+    callbacks.selectDisplayMode("OBSERVATION");
     assert.equal(mode, "OBSERVATION");
     assert.equal(selectNotification(queue, "inline", "settings").current, null);
-    callbacks.toggleObservation();
+    callbacks.selectDisplayMode("NIGHT");
     const visible = selectNotification(queue, "inline", "settings");
     assert.equal(mode, "NIGHT");
     assert.equal(visible.current, null);
@@ -164,8 +159,8 @@ test("actual Settings callbacks use control state feedback and preserve unrelate
     body: "保持原位",
   });
   for (const target of ["DAY", "NIGHT"] as const) {
-    callbacks.toggleObservation();
-    callbacks.chooseDisplayMode(target);
+    callbacks.selectDisplayMode("OBSERVATION");
+    callbacks.selectDisplayMode(target);
     assert.equal(mode, target);
     assert.deepEqual(
       queue.filter((item) => item.placement === "inline").map((item) => item.id).sort(),

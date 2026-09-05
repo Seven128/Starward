@@ -50,6 +50,66 @@ async function fixture(t, label = "A") {
   return directory;
 }
 
+async function outputOnlyFixture(t, label = "A") {
+  const directory = await fixture(t, label);
+  const configPath = path.join(directory, "project.config.json");
+  await writeFile(
+    configPath,
+    `${JSON.stringify({
+      compileType: "miniprogram",
+      appid: testAppId,
+      miniprogramRoot: "weapp/",
+      srcMiniprogramRoot: "src/",
+      setting: { useCompilerPlugins: ["typescript"] },
+    })}\n`,
+  );
+
+  const app = {
+    pages: ["pages/index/index"],
+    tabBar: {
+      list: [
+        {
+          pagePath: "pages/index/index",
+          text: "地图",
+          iconPath: "assets/icons/tab-map.png",
+          selectedIconPath: "assets/icons/tab-map-selected.png",
+        },
+        {
+          pagePath: "pages/index/index",
+          text: "我的",
+          iconPath: "assets/icons/tab-my.png",
+          selectedIconPath: "assets/icons/tab-my-selected.png",
+        },
+      ],
+    },
+  };
+  await mkdir(path.join(directory, "src", "pages", "index"), {
+    recursive: true,
+  });
+  await writeFile(
+    path.join(directory, "src", "pages", "index", "index.ts"),
+    "export const sourceOnly = true;\n",
+  );
+  await mkdir(path.join(directory, "weapp", "assets", "icons"), {
+    recursive: true,
+  });
+  await writeFile(
+    path.join(directory, "weapp", "app.json"),
+    `${JSON.stringify(app)}\n`,
+  );
+  await Promise.all(
+    app.tabBar.list.flatMap((item) =>
+      [item.iconPath, item.selectedIconPath].map((iconPath) =>
+        writeFile(
+          path.join(directory, "weapp", iconPath),
+          `synthetic-${path.basename(iconPath)}\n`,
+        ),
+      ),
+    ),
+  );
+  return { directory, configPath, app };
+}
+
 function officialDriver({ fail = false } = {}) {
   const calls = [];
   return {
@@ -123,6 +183,76 @@ test("development start waits for confirmed phone delivery before binding a sess
   assert.equal(bound.officialInvocation, "operator_confirmed");
   assert.ok(!bound.unverified.includes("phone_visible_generation"));
   assert.match(bound.phoneHandoff, /fresh screenshot/u);
+});
+
+test("prepared generation is output-only and keeps every tab-bar asset resolvable", async (t) => {
+  const { directory: source, configPath, app } = await outputOnlyFixture(t);
+  const sourceConfigBytes = await readFile(configPath);
+  const official = officialDriver();
+  const output = collect();
+  await main(["start", "--project", source], {
+    official,
+    snapshotOptions: { settleMilliseconds: 0 },
+    emit: output.emit,
+  });
+  const result = output.values[0];
+  t.after(() =>
+    main(["stop", "--feedback", result.feedbackRun], { emit: () => {} }),
+  );
+
+  const preparedProject = official.calls[0].project;
+  const preparedConfig = JSON.parse(
+    await readFile(path.join(preparedProject, "project.config.json"), "utf8"),
+  );
+  assert.equal(preparedConfig.appid, testAppId);
+  assert.equal(preparedConfig.compileType, "miniprogram");
+  assert.equal(preparedConfig.miniprogramRoot, "weapp/");
+  assert.equal(Object.hasOwn(preparedConfig, "srcMiniprogramRoot"), false);
+  assert.equal(
+    Object.hasOwn(preparedConfig.setting ?? {}, "useCompilerPlugins"),
+    false,
+  );
+
+  // The official tool may normalize only project.config.json formatting. It
+  // must remain bindable when the canonical configuration is unchanged.
+  await writeFile(
+    path.join(preparedProject, "project.config.json"),
+    `${JSON.stringify(preparedConfig)}\n`,
+  );
+
+  assert.equal((await readFile(configPath)).toString(), sourceConfigBytes.toString());
+  await access(path.join(source, "project.private.config.json"));
+  await access(path.join(source, "src", "pages", "index", "index.ts"));
+
+  const preparedBundle = path.resolve(
+    preparedProject,
+    preparedConfig.miniprogramRoot,
+  );
+  const preparedApp = JSON.parse(
+    await readFile(path.join(preparedBundle, "app.json"), "utf8"),
+  );
+  assert.deepEqual(preparedApp.tabBar.list, app.tabBar.list);
+  for (const item of preparedApp.tabBar.list) {
+    for (const iconPath of [item.iconPath, item.selectedIconPath]) {
+      const iconFile = path.resolve(preparedBundle, iconPath);
+      const relative = path.relative(preparedBundle, iconFile);
+      assert.notEqual(relative, "");
+      assert.equal(relative === ".." || relative.startsWith(`..${path.sep}`), false);
+      assert.equal(path.isAbsolute(relative), false);
+      await access(iconFile);
+    }
+  }
+
+  await assert.rejects(
+    access(path.join(preparedProject, "project.private.config.json")),
+  );
+  await assert.rejects(
+    access(path.join(preparedProject, "src", "pages", "index", "index.ts")),
+  );
+
+  const bound = await bindFeedback(result.feedbackRun);
+  assertDevelopmentOnly(bound);
+  assert.equal(bound.officialInvocation, "operator_confirmed");
 });
 
 test("refresh accepts a new generation, destroys the old session and stale capture authority", async (t) => {

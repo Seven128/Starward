@@ -111,6 +111,60 @@ test("the same observation night spans UTC and local midnight without changing o
   assert.ok(result.samples.some((sample) => sample.at.startsWith("2026-11-02T")));
 });
 
+test("an exact off-grid or daylight instant is calculated without replacing regular samples", () => {
+  const regular = calculateMiniappNightSky({
+    latitude: 23.1291,
+    longitude: 113.2644,
+    elevationM: 20,
+    timezone: "Asia/Shanghai",
+    nightDate: "2026-08-06",
+    target: "moon",
+    cadenceMinutes: 30,
+  });
+  const selectedAt = "2026-08-06T13:00:00.000Z";
+  const daylightAt = "2026-08-06T05:00:00.000Z";
+  const exact = calculateMiniappNightSky({
+    latitude: 23.1291,
+    longitude: 113.2644,
+    elevationM: 20,
+    timezone: "Asia/Shanghai",
+    nightDate: "2026-08-06",
+    target: "moon",
+    cadenceMinutes: 30,
+    additionalTimes: [selectedAt, selectedAt, daylightAt],
+  });
+  assert.ok(
+    regular.samples.every((sample) =>
+      exact.samples.some((candidate) => candidate.at === sample.at),
+    ),
+    "regular cadence samples remain present",
+  );
+  assert.equal(
+    exact.samples.filter((sample) => sample.at === selectedAt).length,
+    1,
+  );
+  assert.equal(
+    exact.samples.filter((sample) => sample.at === daylightAt).length,
+    1,
+  );
+  const selected = exact.samples.find((sample) => sample.at === selectedAt)!;
+  const selectedMoon = calculateTargetHorizontalAt({
+    latitude: 23.1291,
+    longitude: 113.2644,
+    elevationM: 20,
+    at: selectedAt,
+    target: "moon",
+  });
+  assert.equal(selected.at, selectedMoon.at);
+  assert.equal(selected.targetAzimuthDeg, Math.round(selectedMoon.azimuthDeg * 1000) / 1000);
+  assert.equal(selected.targetAltitudeDeg, Math.round(selectedMoon.altitudeDeg * 1000) / 1000);
+  const daylight = exact.samples.find((sample) => sample.at === daylightAt)!;
+  assert.ok(
+    daylight.sunAltitudeDeg > 0,
+    "daylight sample is calculated at its exact instant",
+  );
+});
+
 test("observer elevation participates in lunar parallax", () => {
   const seaLevel = fixture.pointCases.find(
     (item) => item.id === "altitude-parallax-sea-level-moon",
@@ -161,6 +215,7 @@ test("no-rise/set and extreme-latitude cases fail closed without invented sample
     nightDate: "2026-06-21",
     target: "moon",
     cadenceMinutes: 60,
+    additionalTimes: ["2026-06-21T12:00:00.000Z"],
   });
   assert.equal(midnightSun.astronomicalDusk, polar.expected.astronomicalDusk);
   assert.equal(midnightSun.astronomicalDawn, polar.expected.astronomicalDawn);

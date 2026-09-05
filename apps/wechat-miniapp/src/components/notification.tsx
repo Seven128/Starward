@@ -1,4 +1,5 @@
-import Taro from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import { useState } from "react";
 import { Button, Text, View } from "@tarojs/components";
 import type { NotificationRecord } from "@/state/notification";
 import { selectNotification } from "@/state/notification";
@@ -112,6 +113,10 @@ export function NotificationRegion({
 }
 
 export function FloatingNotificationHost() {
+  const [visible, setVisible] = useState(true);
+  useDidShow(() => setVisible(true));
+  useDidHide(() => setVisible(false));
+  if (!visible) return null;
   return (
     <View className="notification-host" aria-label="全局通知">
       <NotificationRegion placement="floating" />

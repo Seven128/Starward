@@ -2067,8 +2067,11 @@ export class MiniappService {
     if (input.createProposal) {
       next.spotId = null;
       next.spotProposalId =
-        ("spot-proposal:" + randomUUID()) as ImportDraft["spotProposalId"];
-      next.proposalReviewState = "DRAFT";
+        current.spotProposalId ??
+        (("spot-proposal:" + randomUUID()) as ImportDraft["spotProposalId"]);
+      next.proposalReviewState = current.spotProposalId
+        ? current.proposalReviewState
+        : "DRAFT";
     }
     if (input.stage && input.stage !== current.stage) {
       if (!ALLOWED_STAGE_TRANSITIONS[current.stage].includes(input.stage))

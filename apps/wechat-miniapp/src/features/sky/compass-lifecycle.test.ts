@@ -9,6 +9,7 @@ import {
   type CompassPort,
   type DeviceMotionEvent,
 } from "./compass-lifecycle";
+import { calibrateSkyHeadingOffset } from "./sky-view-projection";
 
 function deferred() {
   let resolve!: () => void;
@@ -36,14 +37,21 @@ const callbackCode = ts.transpileModule(statements.join("\n") + "\n({startCompas
   compilerOptions: { target: ts.ScriptTarget.ES2020 },
 }).outputText;
 
-function harness() {
+function harness(withMotion = false) {
   const requests: ReturnType<typeof deferred>[] = [];
   const listeners = new Set<(event: CompassEvent) => void>();
+  const motionListeners = new Set<(event: DeviceMotionEvent) => void>();
   const timers = new Set<() => void>();
   const state = { status: "PERMISSION_REQUIRED", heading: null as number | null, reason: "", nativeActive: false, stopCalls: 0 };
   let rejectStop = false;
   let stopGate: ReturnType<typeof deferred> | null = null;
   const lifecycle = createCompassLifecycle({
+    ...(withMotion ? {
+      onDeviceMotionChange: (listener: (event: DeviceMotionEvent) => void) => { motionListeners.add(listener); },
+      offDeviceMotionChange: (listener: (event: DeviceMotionEvent) => void) => { motionListeners.delete(listener); },
+      startDeviceMotionListening: () => Promise.resolve(),
+      stopDeviceMotionListening: () => Promise.resolve(),
+    } : {}),
     onCompassChange: listener => { listeners.add(listener); },
     offCompassChange: listener => { listeners.delete(listener); },
     startCompass: () => {
@@ -58,6 +66,7 @@ function harness() {
     },
   });
   const callbacks = vm.runInNewContext(callbackCode, {
+    calibrateSkyHeadingOffset,
     compassLifecycle: lifecycle, view: "DETAIL", Error, useCallback: (fn: unknown) => fn,
     lastCompassHeadingRef: { current: null }, compassHeadingRef: { current: null },
     compassQualityRef: { current: null }, devicePoseRef: { current: null },
@@ -70,11 +79,36 @@ function harness() {
     setTimeout: (callback: () => void) => { timers.add(callback); return callback; },
     clearTimeout: (callback: () => void) => timers.delete(callback),
   }, { timeout: 1000 }) as { startCompass(): Promise<void>; stopCompass(): void };
-  return { ...callbacks, lifecycle, requests, listeners, timers, state,
+  return { ...callbacks, lifecycle, requests, listeners, motionListeners, timers, state,
     failStops(value: boolean) { rejectStop = value; },
     deferStop() { stopGate = deferred(); return stopGate; },
   };
 }
+
+test("same heading becomes usable again after compass timeout, motion timeout or invalid pose", async () => {
+  for (const interruption of ["compass-timeout", "motion-timeout", "invalid-pose"] as const) {
+    const h = harness(true);
+    const start = h.startCompass(); await scheduled();
+    h.requests[0]!.resolve(); await start;
+    const compass = [...h.listeners][0]!;
+    const motion = [...h.motionListeners][0]!;
+    const pose = { alpha: 0, beta: Math.PI / 2, gamma: 0 };
+    compass({ direction: 42, accuracy: 1 });
+    const compassTimeout = [...h.timers][0]!;
+    motion(pose);
+    const motionTimeout = [...h.timers].find(timer => timer !== compassTimeout)!;
+    assert.equal(h.state.heading, 42);
+    if (interruption === "compass-timeout") compassTimeout();
+    else if (interruption === "motion-timeout") motionTimeout();
+    else motion({ ...pose, beta: Number.NaN });
+    assert.equal(h.state.heading, null, interruption);
+    compass({ direction: 42, accuracy: 1 });
+    motion(pose);
+    assert.equal(h.state.status, "READY", interruption);
+    assert.equal(h.state.heading, 42, `${interruption}: identical fresh heading must not be filtered`);
+    h.stopCompass(); await scheduled();
+  }
+});
 
 test("hide during native start compensates late success without background publication", async () => {
   const h = harness();

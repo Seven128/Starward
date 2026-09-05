@@ -26,18 +26,58 @@ export type AcceptanceSkySceneInspection = {
   drawRevision: number;
 };
 
-let skySceneInspection: AcceptanceSkySceneInspection | null = null;
+/**
+ * A diagnostic publisher is scoped to one mounted sky route instance.  The
+ * token is intentionally opaque so a late callback from an older instance
+ * cannot publish over, or clear, the inspection owned by a newer instance.
+ */
+export type AcceptanceSkySceneInspectionOwner = {
+  readonly instanceId: number;
+};
 
-export function publishAcceptanceSkySceneInspection(
-  inspection: AcceptanceSkySceneInspection,
-) {
-  if (!__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) return;
-  skySceneInspection = inspection;
+let skySceneInspection: AcceptanceSkySceneInspection | null = null;
+let nextSkySceneInspectionInstanceId = 0;
+let activeSkySceneInspectionOwner: AcceptanceSkySceneInspectionOwner | null =
+  null;
+
+export function acquireAcceptanceSkySceneInspection():
+  | AcceptanceSkySceneInspectionOwner
+  | null {
+  if (!__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) return null;
+  const owner: AcceptanceSkySceneInspectionOwner = {
+    instanceId: ++nextSkySceneInspectionInstanceId,
+  };
+  activeSkySceneInspectionOwner = owner;
+  skySceneInspection = null;
+  return owner;
 }
 
-export function clearAcceptanceSkySceneInspection() {
-  if (!__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) return;
+export function publishAcceptanceSkySceneInspection(
+  owner: AcceptanceSkySceneInspectionOwner | null,
+  inspection: AcceptanceSkySceneInspection,
+) {
+  if (
+    !__MINIAPP_ACCEPTANCE_DIAGNOSTICS__ ||
+    owner === null ||
+    owner !== activeSkySceneInspectionOwner
+  )
+    return false;
+  skySceneInspection = inspection;
+  return true;
+}
+
+export function clearAcceptanceSkySceneInspection(
+  owner: AcceptanceSkySceneInspectionOwner | null,
+) {
+  if (
+    !__MINIAPP_ACCEPTANCE_DIAGNOSTICS__ ||
+    owner === null ||
+    owner !== activeSkySceneInspectionOwner
+  )
+    return false;
   skySceneInspection = null;
+  activeSkySceneInspectionOwner = null;
+  return true;
 }
 
 export function inspectAcceptanceSkyScene() {

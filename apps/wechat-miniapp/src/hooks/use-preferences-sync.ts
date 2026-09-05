@@ -33,7 +33,7 @@ export function usePreferencesSync() {
     inFlight.current = true;
     const snapshot = cloneUserPreferences(before.preferences);
     const snapshotText = JSON.stringify(snapshot);
-    setStatus("正在同步偏好…");
+    setStatus("");
     try {
       const response = await savePreferences(
         snapshot,
@@ -43,7 +43,7 @@ export function usePreferencesSync() {
       if (JSON.stringify(current.preferences) === snapshotText)
         current.markPreferencesSynced(response.data);
       else current.applyServerPreferences(response.data);
-      setStatus("偏好已同步");
+      setStatus("");
       return true;
     } catch (error) {
       if (error instanceof MiniappApiError && error.code === "CONFLICT") {

@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
 import type { DisplayMode } from "@starward/miniapp-contracts";
@@ -39,18 +40,31 @@ export default function SettingsPage() {
   const mode = useAppStore((state) => state.mode);
   const setMode = useAppStore((state) => state.setMode);
   const enterObservation = useAppStore((state) => state.enterObservation);
-  const exitObservation = useAppStore((state) => state.exitObservation);
   const clearLocalCache = useAppStore((state) => state.clearLocalCache);
   const resetAfterAccountDeletion = useAppStore(
     (state) => state.resetAfterAccountDeletion,
   );
   const notify = useAppStore((state) => state.notify);
   const [dataAction, setDataAction] = useState<"EXPORT" | "DELETE" | null>(null);
+  const [modeGestureCaptured, setModeGestureCaptured] = useState(false);
   const {
     updatePreference,
     syncNow,
     status: preferenceSyncStatus,
   } = usePreferencesSync();
+
+  const syncPreferencesManually = async () => {
+    if (!(await syncNow())) return;
+    notify({
+      owner: "settings",
+      placement: "floating",
+      tone: "success",
+      title: "偏好已同步",
+      body: "已保存到当前账户。",
+      dismissible: true,
+      dedupeKey: "settings-preferences-manual-sync",
+    });
+  };
 
   const selectDisplayMode = (next: DisplayMode) => {
     if (next === "OBSERVATION") {
@@ -67,28 +81,6 @@ export default function SettingsPage() {
       )
         currentState.dismissNotification(notification.id);
     }
-  };
-
-  // Kept as page-local aliases for older callback probes; the rendered
-  // control exposes only the single three-state selector above.
-  const chooseDisplayMode = (next: Exclude<DisplayMode, "OBSERVATION">) => {
-    updatePreference("displayMode", next);
-    setMode(next);
-    const currentState = useAppStore.getState();
-    for (const notification of currentState.notifications) {
-      if (
-        notification.owner === "settings" &&
-        notification.dedupeKey === "settings-observation-mode"
-      )
-        currentState.dismissNotification(notification.id);
-    }
-  };
-  const toggleObservation = () => {
-    if (mode === "OBSERVATION") {
-      exitObservation();
-      return;
-    }
-    enterObservation();
   };
 
   const downloadAccountData = async () => {
@@ -182,6 +174,7 @@ export default function SettingsPage() {
       data-route="my-settings"
       data-od-id="my-settings"
     >
+      <FloatingNotificationHost />
       <CustomNav
         title="设置"
         back
@@ -189,7 +182,7 @@ export default function SettingsPage() {
         backFallbackTab="/pages/my/index"
       />
       <ScrollView
-        scrollY
+        scrollY={!modeGestureCaptured}
         enhanced
         bounces={false}
         showScrollbar={false}
@@ -201,7 +194,7 @@ export default function SettingsPage() {
             <StatusPanel
               state={
                 preferenceSyncStatus.includes("仅保存在本机") ||
-                preferenceSyncStatus.includes("已有新修订")
+                preferenceSyncStatus.includes("云端偏好已有更新")
                   ? "STALE"
                   : "READY"
               }
@@ -226,6 +219,7 @@ export default function SettingsPage() {
             mode={mode}
             updatePreference={updatePreference}
             selectDisplayMode={selectDisplayMode}
+            onModeGestureCapture={setModeGestureCaptured}
           />
 
           <SettingsAccountActions
@@ -244,7 +238,7 @@ export default function SettingsPage() {
             <View className="settings-card--actions">
               <SoftButton
                 label="立即同步当前账户偏好"
-                onClick={() => void syncNow()}
+                onClick={() => void syncPreferencesManually()}
               >
                 同步账户偏好
               </SoftButton>

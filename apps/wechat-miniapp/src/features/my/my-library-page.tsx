@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useMemo } from "react";
@@ -89,6 +90,7 @@ export function MyLibraryPage() {
       data-route="my-account-center"
       data-od-id="my-account-center"
     >
+      <FloatingNotificationHost />
       <View data-control="my-account-header">
         <CustomNav title="我的" odId="my-account-header" />
       </View>

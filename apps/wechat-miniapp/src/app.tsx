@@ -9,7 +9,6 @@ import {
 import { useAppStore } from "@/state/app-store";
 import { resetAppStoreForAcceptance } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
-import { FloatingNotificationHost } from "@/components/notification";
 import { inspectAcceptanceSkyScene } from "@/services/acceptance-diagnostics";
 import "./app.scss";
 
@@ -105,7 +104,6 @@ export default function App({ children }: PropsWithChildren) {
   });
   return (
     <QueryClientProvider client={miniappQueryClient}>
-      <FloatingNotificationHost />
       {children}
     </QueryClientProvider>
   );

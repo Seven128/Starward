@@ -23,7 +23,7 @@ const {
 } = engine;
 
 export const MINIAPP_ASTRONOMY_ALGORITHM =
-  "miniapp-astronomy-engine-adapter@1.0.0+astronomy-engine@2.1.19";
+  "miniapp-astronomy-engine-adapter@1.1.0+astronomy-engine@2.1.19";
 
 export function calculateSolarLongitudeJ2000(at: string): number {
   const date = new Date(at);
@@ -52,6 +52,12 @@ export interface MiniappAstronomyRequest {
   nightDate: string;
   target: MiniappAstronomyTarget;
   cadenceMinutes?: number;
+  /**
+   * Additional instants that must be calculated exactly alongside the regular
+   * dusk-to-dawn cadence.  The caller owns the presentation axis; this
+   * adapter only validates and calculates the requested instants.
+   */
+  additionalTimes?: readonly string[];
 }
 
 export interface MiniappHorizontalRequest {
@@ -171,6 +177,13 @@ function assertRequest(input: MiniappAstronomyRequest): void {
   const cadence = input.cadenceMinutes ?? 30;
   if (!Number.isInteger(cadence) || cadence < 5 || cadence > 120)
     throw new RangeError("astronomy_cadence_out_of_range");
+  if (input.additionalTimes !== undefined) {
+    for (const value of input.additionalTimes) {
+      const instant = new Date(value);
+      if (!Number.isFinite(instant.getTime()))
+        throw new TypeError("astronomy_additional_time_invalid");
+    }
+  }
 }
 
 function zoneOffsetMillis(instant: Date, timezone: string): number {
@@ -361,25 +374,36 @@ export function calculateMiniappNightSky(
   const moonSet = SearchRiseSet(Body.Moon, observer, -1, start, 1.5);
   const samples: MiniappSkySample[] = [];
   const cadenceMs = (input.cadenceMinutes ?? 30) * 60_000;
+  const sampleAt = (at: Date): MiniappSkySample => {
+    const sun = horizontal(Body.Sun, at, observer);
+    const moon = horizontal(Body.Moon, at, observer);
+    const target = targetHorizontal(input.target, at, observer);
+    return {
+      at: at.toISOString(),
+      sunAltitudeDeg: round(sun.altitude),
+      moonAltitudeDeg: round(moon.altitude),
+      moonIllumination: round(Illumination(Body.Moon, at).phase_fraction, 4),
+      targetAltitudeDeg: round(target.altitude),
+      targetAzimuthDeg: round(target.azimuth),
+    };
+  };
   if (dusk && dawn) {
     for (
       let millis = Date.parse(dusk.toString());
       millis <= Date.parse(dawn.toString());
       millis += cadenceMs
     ) {
-      const at = new Date(millis);
-      const sun = horizontal(Body.Sun, at, observer);
-      const moon = horizontal(Body.Moon, at, observer);
-      const target = targetHorizontal(input.target, at, observer);
-      samples.push({
-        at: at.toISOString(),
-        sunAltitudeDeg: round(sun.altitude),
-        moonAltitudeDeg: round(moon.altitude),
-        moonIllumination: round(Illumination(Body.Moon, at).phase_fraction, 4),
-        targetAltitudeDeg: round(target.altitude),
-        targetAzimuthDeg: round(target.azimuth),
-      });
+      samples.push(sampleAt(new Date(millis)));
     }
+    const existing = new Set(samples.map((sample) => sample.at));
+    for (const additionalTime of input.additionalTimes ?? []) {
+      const at = new Date(additionalTime);
+      const iso = at.toISOString();
+      if (existing.has(iso)) continue;
+      samples.push(sampleAt(at));
+      existing.add(iso);
+    }
+    samples.sort((left, right) => Date.parse(left.at) - Date.parse(right.at));
   }
   const midpoint =
     dusk && dawn

@@ -19,6 +19,7 @@ import pg from "pg";
 import { tsImport } from "tsx/esm/api";
 import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
 import { knownWechatToolchainConsoleErrorId } from "./runtime-event-policy.mjs";
+import { resolveOfficialCli } from "./device-feedback-official.mjs";
 
 const { Client } = pg;
 
@@ -27,13 +28,18 @@ const root = path.resolve(
   "..",
   "..",
 );
+const runnerModulePath = path.resolve(fileURLToPath(import.meta.url));
+const directInvocation =
+  Boolean(process.argv[1]) && path.resolve(process.argv[1]) === runnerModulePath;
 const cliArgs = new Map();
-for (let index = 2; index < process.argv.length; index += 2) {
-  const key = process.argv[index];
-  const value = process.argv[index + 1];
-  if (!key?.startsWith("--") || value === undefined)
-    throw new Error(`invalid_native_acceptance_argument:${key ?? "missing"}`);
-  cliArgs.set(key, value);
+if (directInvocation) {
+  for (let index = 2; index < process.argv.length; index += 2) {
+    const key = process.argv[index];
+    const value = process.argv[index + 1];
+    if (!key?.startsWith("--") || value === undefined)
+      throw new Error(`invalid_native_acceptance_argument:${key ?? "missing"}`);
+    cliArgs.set(key, value);
+  }
 }
 const acceptanceScope = cliArgs.get("--scope") ?? "current-candidate";
 const acceptanceMode = cliArgs.get("--mode") ?? "success";
@@ -63,12 +69,7 @@ if (
 )
   throw new Error(`unknown_native_acceptance_text_size:${acceptanceTextSize}`);
 const cliPath = "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\cli.bat";
-const devtoolsExecutable =
-  "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\微信开发者工具.exe";
-const devtoolsCliEntry =
-  "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\resources\\app.asar.unpacked\\js\\common\\cli\\index.js";
-const devtoolsCliBootstrap =
-  "const e=process.argv[1],a=process.argv.slice(2).filter(function(x){return x!=='--electron'});if(!process.env.cwd)process.env.cwd=process.cwd();process.argv=[process.execPath,'--ms-enable-electron-run-as-node',e,'--electron'].concat(a);require(e)";
+let officialCliInvocation;
 const sourceProjectPath = path.join(root, "apps", "wechat-miniapp");
 const installationStorageKey = "starward.wechat-miniapp.installation.current";
 const canonicalWorkspaceRoot = path.resolve("E:\\Dev\\Starward");
@@ -748,9 +749,9 @@ async function restoreWechatProjectIdentity(session) {
   };
 }
 
-function watcherProjectPath(commandLine) {
+export function watcherProjectPath(commandLine) {
   const match = String(commandLine ?? "").match(
-    /wxfilewatcher_x64\.exe"?\s+(?:"([^"]+)"|(.+))$/iu,
+    /wxfilewatcher_x64\.exe"?\s+(?:"([^"]+)"|([^"\r\n]+))$/iu,
   );
   return match ? String(match[1] ?? match[2]).trim() : null;
 }
@@ -762,7 +763,7 @@ function observeWechatWatcherProjects() {
       "-NoProfile",
       "-NonInteractive",
       "-Command",
-      "$ErrorActionPreference='Stop'; $rows=@(Get-CimInstance Win32_Process -Filter \"Name='wxfilewatcher_x64.exe'\" | ForEach-Object { $_.CommandLine }); ConvertTo-Json -Compress -InputObject $rows",
+      "$ErrorActionPreference='Stop'; [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false); $rows=@(Get-CimInstance Win32_Process -Filter \"Name='wxfilewatcher_x64.exe'\" | ForEach-Object { $_.CommandLine }); ConvertTo-Json -Compress -InputObject $rows",
     ],
     {
       encoding: "utf8",
@@ -917,29 +918,63 @@ function forceStopWechatIdeInstances(observation) {
   };
 }
 
+async function discoverWechatInternalWatcherPaths() {
+  if (!process.env.LOCALAPPDATA) return [];
+  const userDataRoot = path.join(process.env.LOCALAPPDATA, "微信开发者工具", "User Data");
+  const profiles = await readdir(userDataRoot, { withFileTypes: true });
+  const internalPaths = [];
+  for (const profile of profiles) {
+    if (!profile.isDirectory() || !/^[a-f0-9]{32}$/iu.test(profile.name)) continue;
+    const directory = path.join(userDataRoot, profile.name, "WeappLocalData");
+    const info = await stat(directory).catch(() => null);
+    if (!info?.isDirectory()) continue;
+    const physical = await realpath(directory);
+    if (normalizeWindowsPath(physical) !== normalizeWindowsPath(directory))
+      throw new Error("wechat_internal_watcher_path_redirected");
+    internalPaths.push(normalizeWindowsPath(physical));
+  }
+  return internalPaths;
+}
+
+export function classifyWechatWatchers(observation, projectPath, internalPaths) {
+  const expected = normalizeWindowsPath(projectPath);
+  const internals = new Set(internalPaths.map(normalizeWindowsPath));
+  const projects = observation.projects.map(normalizeWindowsPath);
+  const candidateCount = projects.filter((item) => item === expected).length;
+  const internalCount = projects.filter((item) => item !== expected && internals.has(item)).length;
+  const unknownCount = observation.processCount - candidateCount - internalCount;
+  return {
+    candidateCount,
+    internalCount,
+    unknownCount,
+    bound: candidateCount > 0 && projects.length === observation.processCount && unknownCount === 0,
+  };
+}
+
 async function waitForWechatProjectBinding(projectPath, timeoutMs = 30_000) {
   const deadline = Date.now() + timeoutMs;
   const expected = normalizeWindowsPath(projectPath);
+  const internalPaths = await discoverWechatInternalWatcherPaths();
   let lastObservation = { processCount: 0, projects: [] };
   while (Date.now() < deadline) {
     lastObservation = observeWechatWatcherProjects();
-    const everyWatcherTargetsCandidate =
-      lastObservation.processCount > 0 &&
-      lastObservation.projects.length === lastObservation.processCount &&
-      lastObservation.projects.every((project) => project === expected);
-    if (everyWatcherTargetsCandidate)
+    const classification = classifyWechatWatchers(lastObservation, expected, internalPaths);
+    if (classification.bound)
       return {
         status: "passed",
         observer: "Win32_Process wxfilewatcher_x64.exe command line",
         expected_project_root: "apps/wechat-miniapp",
         expected_project_path_sha256: sha256(expected),
         observed_process_count: lastObservation.processCount,
+        candidate_watcher_count: classification.candidateCount,
+        internal_watcher_count: classification.internalCount,
         observed_project_path_sha256s: lastObservation.projects.map(sha256),
         observed_path_mode: "direct_physical_candidate",
       };
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   const diagnostic = {
+    classification: classifyWechatWatchers(lastObservation, expected, internalPaths),
     expected_project_path_sha256: sha256(expected),
     observed_process_count: lastObservation.processCount,
     parsed_project_count: lastObservation.projects.length,
@@ -1583,42 +1618,111 @@ async function startApi(apiPort, mediaRoot, runtimeEnvironment) {
   return child;
 }
 
-function runWechatCli(projectPath, args, options = {}) {
-  return spawn(
-    devtoolsExecutable,
-    [
-      "-e",
-      devtoolsCliBootstrap,
-      devtoolsCliEntry,
-      ...args,
-      "--port",
-      String(wechatIdeHttpPort),
-    ],
-    {
-      cwd: path.dirname(devtoolsExecutable),
-      env: {
-        ...wechatToolEnvironment(),
-        // Match the official cli.bat contract: the executable runs from the
-        // installed tool directory while its `cwd` environment binding names
-        // the caller workspace. The requested project is independently bound
-        // through a unique private identity and the actual file-watcher path.
-        cwd: root,
-        ELECTRON: "",
-        ELECTRON_RUN_AS_NODE: "1",
-      },
+export function wechatCliCommand(invocation, args, environment) {
+  if (!invocation) throw new Error("wechat_official_cli_not_resolved");
+  return {
+    file: invocation.file,
+    args: [...invocation.prefix, ...args, "--port", String(wechatIdeHttpPort)],
+    options: {
+      cwd: invocation.cwd ?? root,
+      env: { ...environment, ...invocation.env, cwd: root },
       windowsHide: true,
+      shell: false,
+    },
+  };
+}
+
+function runWechatCli(projectPath, args, options = {}) {
+  const command = wechatCliCommand(officialCliInvocation, args, wechatToolEnvironment());
+  return spawn(
+    command.file,
+    command.args,
+    {
+      ...command.options,
       stdio: options.stdio ?? "pipe",
     },
   );
+}
+
+export function boundWechatProtocol(program, timeoutMs = 20_000) {
+  const connection = program?.connection;
+  if (!connection || typeof connection.send !== "function" || typeof connection.dispose !== "function")
+    throw new Error("wechat_protocol_connection_shape_unsupported");
+  const send = connection.send.bind(connection);
+  const pending = new Set();
+  let failure;
+  connection.send = (method, params) => {
+    if (failure) return Promise.reject(failure);
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (ok, value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        pending.delete(finish);
+        if (ok) resolve(value);
+        else reject(value);
+      };
+      const timer = setTimeout(() => {
+        failure = new Error(`wechat_protocol_request_deadline:${sha256(String(method))}`);
+        for (const settle of [...pending]) settle(false, failure);
+        try { connection.dispose(); } catch {}
+      }, timeoutMs);
+      pending.add(finish);
+      Promise.resolve().then(() => send(method, params)).then(
+        (value) => finish(true, value),
+        (error) => finish(false, error),
+      );
+    });
+  };
+  return program;
+}
+
+export async function boundedWechatConnect(connect, timeoutMs) {
+  let expired = false;
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(connect).then((program) => {
+        if (expired) {
+          try { program.disconnect(); } catch {}
+          throw new Error("wechat_connection_arrived_after_deadline");
+        }
+        return program;
+      }),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          expired = true;
+          reject(new Error("wechat_connection_establishment_deadline"));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function waitForAutomationConnection(port, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
   while (Date.now() < deadline) {
+    let program;
     try {
-      return await automator.connect({ wsEndpoint: `ws://127.0.0.1:${port}` });
+      if (typeof automator.launcher?.connectTool !== "function")
+        throw new Error("wechat_automator_connection_seam_unsupported");
+      program = await boundedWechatConnect(
+        () => automator.launcher.connectTool({ wsEndpoint: `ws://127.0.0.1:${port}` }),
+        Math.max(1, deadline - Date.now()),
+      );
+      boundWechatProtocol(program);
+      if (typeof program.checkVersion !== "function")
+        throw new Error("wechat_automator_version_seam_unsupported");
+      await program.checkVersion();
+      return program;
     } catch (error) {
+      try { program?.disconnect(); } catch {}
+      if (/wechat_(?:protocol_|connection_|automator_)/u.test(String(error?.message ?? error)))
+        throw error;
       lastError = error;
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
@@ -1796,6 +1900,27 @@ function isAutomatorResponseTimeout(error) {
   );
 }
 
+const transientPageObservationPatterns = [
+  /timeout waiting for automator response/iu,
+  /\b(?:page|target|execution context)\b[\s\S]{0,96}\b(?:closed|detached|destroyed|stale|not found|not exist)\b/iu,
+  /\b(?:closed|detached|destroyed|stale|not found|not exist)\b[\s\S]{0,96}\b(?:page|target|execution context)\b/iu,
+];
+
+function isTransientPageObservationError(error) {
+  const message = String(error?.message ?? error);
+  return transientPageObservationPatterns.some((pattern) =>
+    pattern.test(message),
+  );
+}
+
+function pageObservationFailure(label, page, error) {
+  const message = String(error?.message ?? error);
+  return new Error(
+    `native_page_observation_failed:${label}:${page?.path ?? "unknown"}:${sha256(message)}`,
+    { cause: error },
+  );
+}
+
 async function retryIdempotentAutomatorOperation(label, operation) {
   let lastError;
   for (let attempt = 1; attempt <= 2; attempt += 1) {
@@ -1844,24 +1969,12 @@ async function waitForRuntimeEventQuiescence(
 }
 
 function quitWechatDevtools() {
+  const command = wechatCliCommand(officialCliInvocation, ["quit"], wechatToolEnvironment());
   const quit = spawnSync(
-    devtoolsExecutable,
-    [
-      "-e",
-      devtoolsCliBootstrap,
-      devtoolsCliEntry,
-      "quit",
-      "--port",
-      String(wechatIdeHttpPort),
-    ],
+    command.file,
+    command.args,
     {
-      cwd: path.dirname(devtoolsExecutable),
-      env: {
-        ...wechatToolEnvironment(),
-        cwd: root,
-        ELECTRON: "",
-        ELECTRON_RUN_AS_NODE: "1",
-      },
+      ...command.options,
       encoding: "utf8",
       maxBuffer: 8 * 1024 * 1024,
       timeout: 15_000,
@@ -2427,6 +2540,60 @@ async function nativeDiagnosticStage(label, operation) {
   }
 }
 
+async function readPageForObservation(miniProgram, label) {
+  try {
+    return await miniProgram.currentPage();
+  } catch (error) {
+    if (isTransientPageObservationError(error)) return null;
+    throw pageObservationFailure(label, null, error);
+  }
+}
+
+async function readElementsForObservation(page, selector, label) {
+  try {
+    const elements = await queryElements(page, selector);
+    if (!Array.isArray(elements))
+      throw new Error("native_page_selector_result_invalid");
+    return { status: "ready", elements };
+  } catch (error) {
+    if (isTransientPageObservationError(error)) return { status: "transient" };
+    throw pageObservationFailure(label, page, error);
+  }
+}
+
+async function readSelectorSetForObservation(page, definitions, label) {
+  const counts = [];
+  for (const definition of definitions ?? []) {
+    const observation = await readElementsForObservation(
+      page,
+      definition.selector,
+      `${label}:${definition.selector}`,
+    );
+    if (observation.status === "transient")
+      return { status: "transient", counts };
+    counts.push(observation.elements.length);
+  }
+  return {
+    status: "ready",
+    counts,
+    passed: counts.every(
+      (count, index) => count >= Number(definitions[index].minimum ?? 1),
+    ),
+  };
+}
+
+function samePageInstance(left, right) {
+  if (!left || !right) return false;
+  if (left === right) return true;
+  return (
+    left.id !== undefined &&
+    left.id !== null &&
+    right.id !== undefined &&
+    right.id !== null &&
+    String(left.id) === String(right.id)
+  );
+}
+
 async function waitForSelector(
   page,
   selector,
@@ -2435,8 +2602,16 @@ async function waitForSelector(
 ) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const elements = await queryElements(page, selector).catch(() => []);
-    if (elements.length >= minimum) return elements;
+    const observation = await readElementsForObservation(
+      page,
+      selector,
+      "selector-wait",
+    );
+    if (
+      observation.status === "ready" &&
+      observation.elements.length >= minimum
+    )
+      return observation.elements;
     // A just-pushed subpackage page can temporarily report itself as not yet
     // topmost. Do not ask that stale page handle to own the retry clock.
     await new Promise((resolve) => setTimeout(resolve, 250));
@@ -2753,18 +2928,39 @@ async function inspectSelector(page, definition) {
   };
 }
 
-async function waitForSelectorSet(page, definitions, timeoutMs = 20_000) {
+async function waitForSelectorSet(
+  page,
+  definitions,
+  timeoutMs = 20_000,
+  stableReads = 3,
+) {
   const deadline = Date.now() + timeoutMs;
+  const requiredStableReads = Math.max(2, Math.trunc(Number(stableReads) || 3));
+  let consecutive = 0;
+  let stablePage = null;
+  let lastCounts = [];
   while (Date.now() < deadline) {
-    const counts = await Promise.all(
-      definitions.map((definition) =>
-        queryElements(page, definition.selector)
-          .then((elements) => elements.length)
-          .catch(() => 0),
-      ),
+    const observation = await readSelectorSetForObservation(
+      page,
+      definitions,
+      "selector-set-wait",
     );
-    if (counts.every((count, index) => count >= definitions[index].minimum))
-      return true;
+    if (observation.status === "ready") {
+      lastCounts = observation.counts;
+      if (observation.passed) {
+        consecutive = samePageInstance(stablePage, page)
+          ? consecutive + 1
+          : 1;
+        stablePage = page;
+        if (consecutive >= requiredStableReads) return true;
+      } else {
+        consecutive = 0;
+        stablePage = null;
+      }
+    } else {
+      consecutive = 0;
+      stablePage = null;
+    }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   return false;
@@ -2911,7 +3107,14 @@ async function inputAndTapMatchingElement(
   for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
     const remainingMs = deadline - Date.now();
     if (remainingMs <= 0) break;
-    const currentPage = await miniProgram.currentPage();
+    const currentPage = await readPageForObservation(
+      miniProgram,
+      `nightchina-selection-source:${selection.expectedPath}`,
+    );
+    if (!currentPage) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      continue;
+    }
     if (currentPage.path !== page.path)
       throw new Error(
         `native_atomic_selection_source_path_changed:${page.path}:${currentPage.path}`,
@@ -2927,18 +3130,59 @@ async function inputAndTapMatchingElement(
       throw new Error(
         `native_atomic_selection_input_unavailable:${page.path}:${selection.input}`,
       );
-    await control.tap().catch(() => undefined);
+    await control.tap().catch((error) => {
+      if (isTransientPageObservationError(error)) return undefined;
+      throw pageObservationFailure(
+        `nightchina-selection-input-tap:${selection.input}`,
+        currentPage,
+        error,
+      );
+    });
     await control.input(selection.value);
 
     const attemptDeadline = Math.min(deadline, Date.now() + 5_000);
     while (Date.now() < attemptDeadline) {
-      const candidates = await queryElements(
-        currentPage,
+      const matchingPage = await readPageForObservation(
+        miniProgram,
+        `nightchina-selection-candidates:${selection.candidates}`,
+      );
+      if (!matchingPage) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      if (matchingPage.path !== page.path) {
+        // A route change before a matching candidate was tapped is not proof
+        // that this atomic selection succeeded. Returning a destination page
+        // here would make an unrelated/navigation-race event look like a
+        // matched NightChina selection, so fail closed and let the journey
+        // report the unproven source transition.
+        throw new Error(
+          `native_atomic_selection_source_path_changed:${page.path}:${matchingPage.path}`,
+        );
+      }
+      const candidateObservation = await readElementsForObservation(
+        matchingPage,
         selection.candidates,
-      ).catch(() => []);
+        `nightchina-selection-candidates:${selection.candidates}`,
+      );
+      if (candidateObservation.status === "transient") {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      const candidates = candidateObservation.elements;
       const matching = [];
       for (const candidate of candidates) {
-        const candidateText = String(await candidate.text().catch(() => ""));
+        let candidateText;
+        try {
+          candidateText = String(await candidate.text());
+        } catch (error) {
+          if (isTransientPageObservationError(error)) continue;
+          throw pageObservationFailure(
+            `nightchina-selection-candidate-text:${selection.candidates}`,
+            matchingPage,
+            error,
+          );
+        }
         if (candidateText.includes(selection.textIncludes))
           matching.push({ candidate, candidateText });
       }
@@ -2947,7 +3191,14 @@ async function inputAndTapMatchingElement(
         const tapped = await candidate
           .tap()
           .then(() => true)
-          .catch(() => false);
+          .catch((error) => {
+            if (isTransientPageObservationError(error)) return false;
+            throw pageObservationFailure(
+              `nightchina-selection-candidate-tap:${selection.candidates}`,
+              matchingPage,
+              error,
+            );
+          });
         if (!tapped) continue;
         const routeWaitMs = Math.min(
           deadline - Date.now(),
@@ -2955,9 +3206,10 @@ async function inputAndTapMatchingElement(
         );
         if (routeWaitMs <= 0) break;
         try {
-          const destinationPage = await waitForCurrentPagePath(
+          const destinationPage = await waitForCurrentPageReady(
             miniProgram,
             selection.expectedPath,
+            selection.readySelectors ?? [],
             routeWaitMs,
           );
           return {
@@ -2967,7 +3219,10 @@ async function inputAndTapMatchingElement(
             candidateTextSha256: sha256(candidateText),
           };
         } catch (error) {
-          const observedPage = await miniProgram.currentPage().catch(() => null);
+          const observedPage = await readPageForObservation(
+            miniProgram,
+            `nightchina-selection-route:${selection.expectedPath}`,
+          );
           if (observedPage?.path !== page.path) throw error;
         }
       }
@@ -3245,9 +3500,10 @@ async function captureJourneyInteractions(
     }
     if (step.expectedPath) {
       try {
-        page = await waitForCurrentPagePath(
+        page = await waitForCurrentPageReady(
           miniProgram,
           step.expectedPath,
+          [],
           step.timeoutMs ?? 20_000,
         );
       } catch (error) {
@@ -3261,7 +3517,10 @@ async function captureJourneyInteractions(
           )
         )
           throw error;
-        const currentPage = await miniProgram.currentPage().catch(() => null);
+        const currentPage = await readPageForObservation(
+          miniProgram,
+          `interaction-route-retry:${step.expectedPath}`,
+        );
         if (currentPage?.path !== page.path) throw error;
         if (!step.tap) throw error;
         const freshControls = await waitForSelector(
@@ -3282,9 +3541,10 @@ async function captureJourneyInteractions(
             `native_interaction_control_missing:${definition.key}:${step.key}:retry`,
           );
         await freshControl.trigger("tap");
-        page = await waitForCurrentPagePath(
+        page = await waitForCurrentPageReady(
           miniProgram,
           step.expectedPath,
+          [],
           step.timeoutMs ?? 20_000,
         );
       }
@@ -3356,18 +3616,33 @@ async function captureJourneyInteractions(
       }
     }
     if (step.waitFor?.length) {
-      const ready = await waitForSelectorSet(
-        page,
-        step.waitFor,
-        step.timeoutMs ?? 20_000,
-      );
+      const ready = step.expectedPath
+        ? await waitForCurrentPageReady(
+            miniProgram,
+            step.expectedPath,
+            step.waitFor,
+            step.timeoutMs ?? 20_000,
+          ).then((currentPage) => {
+            page = currentPage;
+            return true;
+          })
+        : await waitForSelectorSet(
+            page,
+            step.waitFor,
+            step.timeoutMs ?? 20_000,
+          );
       if (!ready) {
         const finalCounts = await Promise.all(
-          step.waitFor.map((definition) =>
-            queryElements(page, definition.selector)
-              .then((elements) => elements.length)
-              .catch(() => 0),
-          ),
+          step.waitFor.map(async (selectorDefinition) => {
+            const observation = await readElementsForObservation(
+              page,
+              selectorDefinition.selector,
+              `interaction-wait-final:${definition.key}:${step.key}:${selectorDefinition.selector}`,
+            );
+            return observation.status === "ready"
+              ? observation.elements.length
+              : 0;
+          }),
         );
         const missing = step.waitFor
           .map((definition, index) => ({
@@ -3580,31 +3855,75 @@ async function currentPageUrl(miniProgram, page, requiredQueryKeys = []) {
   return `/${routePath}${serialized ? `?${serialized}` : ""}`;
 }
 
+async function waitForCurrentPageReady(
+  miniProgram,
+  expectedPath,
+  definitions = [],
+  timeoutMs = 20_000,
+  stableReads = 3,
+) {
+  const normalized = expectedPath.replace(/^\//u, "");
+  const requiredDefinitions = Array.isArray(definitions) ? definitions : [];
+  const requiredStableReads = Math.max(2, Math.trunc(Number(stableReads) || 3));
+  const deadline = Date.now() + timeoutMs;
+  let consecutive = 0;
+  let stablePage = null;
+  let lastRoute = "unknown";
+  let lastCounts = [];
+  while (Date.now() < deadline) {
+    const page = await readPageForObservation(
+      miniProgram,
+      `current-page:${normalized}`,
+    );
+    lastRoute = page?.path ?? "unknown";
+    if (!page || page.path !== normalized) {
+      consecutive = 0;
+      stablePage = null;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      continue;
+    }
+    const observation = await readSelectorSetForObservation(
+      page,
+      requiredDefinitions,
+      `current-page-ready:${normalized}`,
+    );
+    if (observation.status === "transient") {
+      consecutive = 0;
+      stablePage = null;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      continue;
+    }
+    lastCounts = observation.counts;
+    if (!observation.passed) {
+      consecutive = 0;
+      stablePage = null;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      continue;
+    }
+    consecutive = samePageInstance(stablePage, page) ? consecutive + 1 : 1;
+    stablePage = page;
+    if (consecutive >= requiredStableReads) return page;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(
+    `native_formal_entry_timeout:${normalized}:${sha256(
+      canonical({
+        last_route: lastRoute,
+        last_counts: lastCounts,
+        required_count: requiredDefinitions.length,
+        stable_reads: consecutive,
+        required_stable_reads: requiredStableReads,
+      }),
+    )}`,
+  );
+}
+
 async function waitForCurrentPagePath(
   miniProgram,
   expectedPath,
   timeoutMs = 20_000,
 ) {
-  const normalized = expectedPath.replace(/^\//u, "");
-  const deadline = Date.now() + timeoutMs;
-  let stableMatches = 0;
-  let stablePage = null;
-  while (Date.now() < deadline) {
-    const page = await miniProgram.currentPage().catch(() => null);
-    if (page?.path === normalized) {
-      stableMatches += 1;
-      stablePage = page;
-      // DevTools can expose the destination path one render tick before the
-      // pushed page becomes the top queryable page. Three consecutive reads
-      // bind the returned handle to the settled production navigation.
-      if (stableMatches >= 3) return stablePage;
-    } else {
-      stableMatches = 0;
-      stablePage = null;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  }
-  throw new Error(`native_formal_entry_timeout:${normalized}`);
+  return waitForCurrentPageReady(miniProgram, expectedPath, [], timeoutMs);
 }
 
 async function switchTabAndWait(
@@ -4253,12 +4572,23 @@ async function captureJourney(miniProgram, runRoot, definition) {
       "pages/my/index",
     );
   }
+  // The journey definition URL is a source/configuration entry value and may
+  // carry query parameters or differ from a prepared child route. The page
+  // returned by the production entry flow is the route authority for this
+  // run; wait for that route only before the import-specific initialization.
+  const enteredPath = page.path;
+  page = await waitForCurrentPagePath(miniProgram, enteredPath, 20_000);
   await waitForSelector(page, definition.root, 1);
   if (definition.importFixture) {
-    const newDraftControls = await queryElements(
+    const newDraftObservation = await readElementsForObservation(
       page,
       "[data-od-id='import-new-draft'] .soft-button",
-    ).catch(() => []);
+      `journey-import-new-draft:${definition.key}`,
+    );
+    const newDraftControls =
+      newDraftObservation.status === "ready"
+        ? newDraftObservation.elements
+        : [];
     if (newDraftControls[0]) {
       await newDraftControls[0].tap();
       await waitForSelector(page, "[data-od-id='import-source-url']", 1);
@@ -4268,7 +4598,12 @@ async function captureJourney(miniProgram, runRoot, definition) {
   await new Promise((resolve) =>
     setTimeout(resolve, definition.settleMs ?? 1_000),
   );
-  await waitForSelectorSet(page, definition.selectors);
+  page = await waitForCurrentPageReady(
+    miniProgram,
+    enteredPath,
+    definition.selectors ?? [],
+    20_000,
+  );
   if (definition.key === "plan-editor") {
     const checklistRows = await waitForSelector(
       page,
@@ -6136,6 +6471,7 @@ async function main() {
   };
   try {
     runtimePhase = "durable-infrastructure";
+    officialCliInvocation = await resolveOfficialCli(cliPath);
     infrastructure = await prepareNativeInfrastructure(runId);
     result.durable_runtime = {
       status: "passed",
@@ -6720,4 +7056,14 @@ async function main() {
   if (result.status !== "passed") process.exitCode = 1;
 }
 
-await main();
+export {
+  inputAndTapMatchingElement,
+  isTransientPageObservationError,
+  validateSkySceneInspection,
+  waitForCurrentPagePath,
+  waitForCurrentPageReady,
+  waitForSelector,
+  waitForSelectorSet,
+};
+
+if (directInvocation) await main();

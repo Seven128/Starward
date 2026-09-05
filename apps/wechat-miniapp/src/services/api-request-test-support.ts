@@ -6,7 +6,7 @@ import { responseCacheKey } from "./cache-policy";
 import { LatestRequestRegistry, MiniappRequestCancelled } from "./request-lifecycle";
 // Execute the production transport/cache functions; only native I/O and time
 // delivery are synthetic. No phone, persistent user cache or credentials.
-export function transportHarness(abortThrows = false, onDispatch = () => {}) {
+export function transportHarness(abortThrows = false, onDispatch = () => {}, promiseTask = false) {
   const source = ts.createSourceFile("api-client.ts",
     readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true);
@@ -30,6 +30,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}) {
   type Response = { statusCode: number; data: unknown };
   type Call = { success(response: Response): void; fail(error: { errMsg: string }): void };
   const calls: Call[] = [];
+  const taskRejections: ((error: { errMsg: string }) => void)[] = [];
   const timers = new Map<number, () => void>();
   const diagnostics: string[][] = [];
   let timerId = 0;
@@ -47,13 +48,25 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}) {
       getEnv: () => "WEAPP", getStorageSync: () => undefined,
       setStorageSync: () => { writes++; },
       request: (call: Call) => {
-        calls.push(call);
+        let resolveTask!: (response: Response) => void;
+        let rejectTask!: (error: { errMsg: string }) => void;
+        const promise = promiseTask ? new Promise<Response>((resolve, reject) => {
+          resolveTask = resolve;
+          rejectTask = reject;
+        }) : null;
+        const nativeCall: Call = promise ? {
+          success: (response) => { call.success(response); resolveTask(response); },
+          fail: (error) => { call.fail(error); rejectTask(error); },
+        } : call;
+        if (promise) taskRejections.push(rejectTask);
+        calls.push(nativeCall);
         onDispatch();
-        return { abort: () => {
+        const methods = { abort: () => {
           aborts++;
           if (abortThrows) throw new Error("synthetic abort failure");
-          call.fail({ errMsg: "request:fail abort" });
+          nativeCall.fail({ errMsg: "request:fail abort" });
         } };
+        return promise ? Object.assign(promise, methods) : methods;
       },
     },
   }, { timeout: 1000 }) as {
@@ -65,7 +78,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}) {
     etag: "synthetic-etag", dataState: "FRESH", warnings: [] as string[],
     sources: [{ kind: "PROVIDER" }], data: { value: "synthetic cached payload" },
   };
-  return { ...actual, calls, timers, diagnostics, response,
+  return { ...actual, calls, timers, diagnostics, response, taskRejections,
     counts: () => ({ aborts, writes }),
     timeout: () => { const callback = timers.values().next().value; assert.ok(callback); callback(); },
     seed: async (envelope = response) => {

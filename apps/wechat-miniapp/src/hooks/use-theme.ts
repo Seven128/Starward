@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useDidShow } from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
 
@@ -15,5 +16,10 @@ export function useThemeClass() {
       console.warn("tab_bar_theme_sync_failed", error);
     });
   }, [mode]);
+  useDidShow(() => {
+    void syncNativeChrome(useAppStore.getState().mode).catch((error: unknown) => {
+      console.warn("tab_bar_theme_sync_failed", error);
+    });
+  });
   return `theme-page theme-${mode.toLowerCase()}${largeText ? " large-text" : ""}${reducedMotion ? " reduced-motion" : ""}`;
 }

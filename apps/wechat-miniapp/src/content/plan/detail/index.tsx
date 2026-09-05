@@ -1,3 +1,4 @@
+import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useRouter } from "@tarojs/taro";
 import { Button, Picker, Text, Textarea, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
@@ -567,6 +568,7 @@ export default function PlanEditorPage() {
       data-od-id="my-plan"
       data-control="plan-editor"
     >
+      <FloatingNotificationHost />
       <CustomNav
         title="今晚计划"
         back

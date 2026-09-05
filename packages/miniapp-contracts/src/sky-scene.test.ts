@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   assertSkyScene,
+  assertSkyTargetFrames,
   skySceneSerializedBytes,
   type SkyScene,
   type SourceSummary,
@@ -105,5 +106,37 @@ test("unavailable sky scene is explicit and cannot carry fallback points", () =>
         scene.frames.map((frame) => frame.at),
       ),
     /sky_scene_invalid:frame_0:unavailable_points/u,
+  );
+});
+
+test("target frames bind actionable targets to every hourly instant", () => {
+  const targetFrames = [
+    {
+      at: "2026-09-04T12:00:00.000Z",
+      targets: [],
+    },
+    {
+      at: "2026-09-04T12:30:00.000Z",
+      targets: [],
+    },
+  ] as const;
+  assert.doesNotThrow(() =>
+    assertSkyTargetFrames(
+      targetFrames,
+      targetFrames.map((frame) => frame.at),
+    ),
+  );
+  assert.throws(
+    () =>
+      assertSkyTargetFrames(targetFrames, [targetFrames[0]!.at]),
+    /sky_scene_invalid:target_frame_count/u,
+  );
+  assert.throws(
+    () =>
+      assertSkyTargetFrames(targetFrames, [
+        targetFrames[0]!.at,
+        "2026-09-04T13:00:00.000Z",
+      ]),
+    /sky_scene_invalid:target_frame_1:at/u,
   );
 });
