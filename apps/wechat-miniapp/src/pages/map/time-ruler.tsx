@@ -1,26 +1,27 @@
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import type { BaseEventOrig, ScrollViewProps } from "@tarojs/components";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { MapSceneTimeFrame } from "@starward/miniapp-contracts";
 import { nearestMapTimeFrameIndex } from "./map-time-frame";
+import { MINIAPP_DESIGN } from "../../theme/design-tokens";
+import { useDidHide } from "@tarojs/taro";
 
-function formatTime(value: string, timezone: string) {
+function formatTime(value: string, timezone: string, compact = false) {
   try {
     return new Intl.DateTimeFormat("zh-CN", {
       timeZone: timezone,
-      month: "2-digit",
-      day: "2-digit",
+      ...(compact ? {} : { month: "2-digit" as const, day: "2-digit" as const }),
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false,
+      hourCycle: "h23",
     }).format(new Date(value));
   } catch {
     return "时间暂无数据";
   }
 }
 
-const RULER_STEP = 34;
+const RULER_STEP = MINIAPP_DESIGN.geometry["target-min"];
 
 function rulerPosition(distance: number) {
   // Keep the projection deterministic while the native ScrollView supplies
@@ -47,6 +48,7 @@ export function MapTimeRuler({
   disabled,
   onPreview,
   onCommit,
+  onCancel,
   control = "map-time-control",
 }: {
   frames: readonly MapSceneTimeFrame[];
@@ -55,20 +57,40 @@ export function MapTimeRuler({
   disabled: boolean;
   onPreview: (index: number) => void;
   onCommit: (index: number) => void;
+  onCancel: () => void;
   control?: "map-time-control" | "sky-time-scrubber";
 }) {
   const initialIndex = frames.length
     ? nearestMapTimeFrameIndex(frames, selectedAt)
     : 0;
   const [index, setIndex] = useState(initialIndex);
+  const interacting = useRef(false);
+  const cancelCallback = useRef(onCancel);
+  cancelCallback.current = onCancel;
+  const frameIdentity = frames.map((frame) => frame.atUtc).join("|");
+
+  const cancelInteraction = () => {
+    const pending = interacting.current;
+    interacting.current = false;
+    setIndex(initialIndex);
+    if (pending) cancelCallback.current();
+  };
+  useDidHide(cancelInteraction);
+  useEffect(() => () => {
+    if (interacting.current) {
+      interacting.current = false;
+      cancelCallback.current();
+    }
+  }, []);
 
   useEffect(() => {
-    setIndex(initialIndex);
-  }, [initialIndex]);
+    cancelInteraction();
+  }, [initialIndex, selectedAt, frameIdentity, disabled]);
 
   const clamp = (value: number) =>
     Math.min(Math.max(0, value), Math.max(0, frames.length - 1));
   const updatePreview = (value: number) => {
+    if (disabled) return;
     const next = clamp(value);
     setIndex(next);
     onPreview(next);
@@ -107,7 +129,7 @@ export function MapTimeRuler({
       <View className="map-time-ruler__heading">
         <Text className="type-label">观测时间</Text>
         <Text className="type-caption">
-          {frames[index]
+          {interacting.current && frames[index]
             ? formatTime(frames[index]!.atUtc, timezone)
             : selectedAt
               ? formatTime(selectedAt, timezone)
@@ -116,14 +138,29 @@ export function MapTimeRuler({
       </View>
       <ScrollView
         className="map-time-ruler__scroll"
-        scrollX
+        scrollX={!disabled}
         enhanced
         showScrollbar={false}
         scrollLeft={index * RULER_STEP}
         scrollWithAnimation
         ariaLabel="观测时间切片；点击切片可直接选择时间"
-        onScroll={(event) => updatePreview(readIndex(event))}
+        onTouchStart={(event) => {
+          if (disabled || (event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) {
+            cancelInteraction();
+            return;
+          }
+          interacting.current = true;
+        }}
+        onTouchMove={(event) => {
+          if ((event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) cancelInteraction();
+        }}
+        onTouchCancel={cancelInteraction}
+        onScroll={(event) => {
+          if (interacting.current) updatePreview(readIndex(event));
+        }}
         onScrollEnd={(event) => {
+          if (disabled || !interacting.current) return;
+          interacting.current = false;
           const next = readIndex(event);
           updatePreview(next);
           onCommit(next);
@@ -131,8 +168,9 @@ export function MapTimeRuler({
       >
         <View className="map-time-ruler__track">
           {frames.map((frame, frameIndex) => {
+            const selected = interacting.current ? frameIndex === index : Date.parse(frame.atUtc) === Date.parse(selectedAt);
             const position = rulerPosition(frameIndex - index);
-            const labelled = frameIndex === index || frameIndex % 4 === 0;
+            const labelled = frameIndex === index || (frameIndex % 4 === 0 && Math.abs(frameIndex - index) >= 3);
             const style = {
               "--ruler-scale": String(position.scale),
               "--ruler-opacity": String(position.opacity),
@@ -141,18 +179,20 @@ export function MapTimeRuler({
             return (
               <Button
                 key={frame.atUtc}
-                className={`map-time-ruler__slice${frameIndex === index ? " map-time-ruler__slice--active" : ""}`}
+                className={`map-time-ruler__slice${selected ? " map-time-ruler__slice--active" : ""}`}
                 style={style}
                 data-time-index={frameIndex}
                 disabled={disabled}
-                ariaLabel={`${formatTime(frame.atUtc, timezone)}${frameIndex === index ? "，已选择" : ""}`}
+                ariaLabel={`${formatTime(frame.atUtc, timezone)}${selected ? "，已选择" : ""}`}
                 onClick={() => {
+                  if (disabled) return;
+                  interacting.current = false;
                   updatePreview(frameIndex);
                   onCommit(frameIndex);
                 }}
               >
                 <View className="map-time-ruler__tick" aria-hidden="true" />
-                {labelled ? <Text>{formatTime(frame.atUtc, timezone)}</Text> : null}
+                {labelled ? <Text>{formatTime(frame.atUtc, timezone, true)}</Text> : null}
               </Button>
             );
           })}

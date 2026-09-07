@@ -1,15 +1,20 @@
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro from "@tarojs/taro";
-import { Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
 import { useRef, useState } from "react";
 import type { PageState } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { useThemeClass } from "@/hooks/use-theme";
-import { useAppStore } from "@/state/app-store";
+import { useAppStore, type LocationState } from "@/state/app-store";
 import { requestOneShotLocation } from "@/services/one-shot-location";
 import "./index.scss";
+
+const LOCATION_STATE_LABEL: Record<LocationState, string> = {
+  DEFAULT_REGION: "使用默认区域", REQUESTING: "正在获取位置",
+  GRANTED: "已取得一次位置", DENIED: "定位权限未授予", UNAVAILABLE: "位置暂不可用",
+};
 
 export default function PermissionPage() {
   const themeClass = useThemeClass();
@@ -33,7 +38,7 @@ export default function PermissionPage() {
       setLocationState(result.state);
       setFeedback(
         result.state === "GRANTED"
-          ? "已获得一次位置；本页仅检查位置获取，不会更新地图观测上下文，也不会开启持续定位。"
+          ? "已获取一次位置，地图位置未改变。返回地图后可点击定位；不会持续定位。"
           : result.state === "DENIED"
             ? "定位权限未授予；原地图和手动搜索仍可使用。"
             : "暂时无法取得位置；请检查系统定位服务后重试，原地图和手动搜索仍可使用。",
@@ -92,14 +97,12 @@ export default function PermissionPage() {
     <View className={`${themeClass} permission-page`}>
       <FloatingNotificationHost />
       <CustomNav title="定位与隐私" back />
+      <ScrollView scrollY enhanced showScrollbar={false} className="permission-scroll">
       <View className="permission-content page-inset safe-bottom">
         <View className="permission-hero card">
-          <Text className="type-page-title">定位不是使用前提</Text>
+          <Text className="type-page-title">不定位也能浏览</Text>
           <Text className="type-body">
-            只在你主动请求位置时询问一次。拒绝后可继续浏览原地图，也可使用深圳试点区域，或在搜索框手动选择城市和普通地点。
-          </Text>
-          <Text className="type-body">
-            默认不持续定位、不保存每次打开的精确坐标，也不把常去观星点、夜间行程或收藏的隐蔽地点写入普通分析事件。
+            仅在你主动查找附近时定位一次。拒绝后仍可浏览地图，或选择默认的深圳区域。
           </Text>
         </View>
         <StatusPanel
@@ -111,7 +114,7 @@ export default function PermissionPage() {
                 : locationState === "DENIED" ? "PERMISSION_DENIED"
                   : locationState === "UNAVAILABLE" ? "ERROR" : "INITIAL")
           }
-          detail={feedback || `最近一次定位状态：${locationState}。手动路径始终保留。`}
+          detail={feedback || `定位状态：${LOCATION_STATE_LABEL[locationState]}。`}
         />
         <View className="permission-actions">
           <SoftButton
@@ -138,13 +141,13 @@ export default function PermissionPage() {
           </SoftButton>
         </View>
         <View className="privacy-card card">
-          <Text className="type-section">高敏感夜间数据</Text>
+          <Text className="type-section">位置与隐私</Text>
           <Text className="type-body">
-            常去点位、夜间出行、精确轨迹、隐蔽收藏与提醒位置按最小化采集、单独授权、可查看/删除处理。本
-            小程序不启用持续轨迹、广告画像或公开分享。
+            不持续记录轨迹，不将精确位置、夜间行程或收藏地点用于广告画像和普通分析。涉及敏感位置的功能单独询问授权；你可在设置中下载数据或删除账户。
           </Text>
         </View>
       </View>
+      </ScrollView>
     </View>
   );
 }

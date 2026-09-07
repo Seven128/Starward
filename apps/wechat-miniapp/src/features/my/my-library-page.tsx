@@ -1,18 +1,22 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useMemo } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { selectPlanEntry } from "./plan-entry";
 import { CustomNav } from "@/components/custom-nav";
 import { SemanticAsset, SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
-  getContributions,
+  currentDraftUserId,
   getUserLibrary,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
+import { recordAcceptanceDiagnostic } from "@/services/acceptance-diagnostics";
+import { miniappQueryClient } from "@/services/query-client";
 import "./my-library-page.scss";
 
 /**
@@ -23,31 +27,37 @@ import "./my-library-page.scss";
 export function MyLibraryPage() {
   const themeClass = useThemeClass();
   const mode = useAppStore((state) => state.mode);
-  const plans = useAppStore((state) => state.plans);
+  const mountId = useId();
+  const [, refreshIdentity] = useState(0);
+  useDidShow(() => refreshIdentity((value) => value + 1));
+  const libraryOwner = currentDraftUserId();
+  const notify = useAppStore((state) => state.notify);
   const replacePlans = useAppStore((state) => state.replacePlans);
   const applyServerPreferences = useAppStore(
     (state) => state.applyServerPreferences,
   );
   const library = useResourceQuery({
-    queryKey: ["user-library"],
-    queryFn: (signal) => getUserLibrary(signal),
+    queryKey: ["user-library", libraryOwner ?? `unresolved:${mountId}`],
+    queryFn: (signal) => getUserLibrary(signal, libraryOwner ?? undefined),
     staleTime: 30_000,
   });
-  const contributions = useResourceQuery({
-    queryKey: ["contributions"],
-    queryFn: (signal) => getContributions(signal),
-    staleTime: 15_000,
+  const contributions = useContributionHistory();
+  useDidShow(() => {
+    const owner = currentDraftUserId();
+    if (!owner) return;
+    // Tab pages stay mounted: returning to My must refresh expired summaries.
+    for (const resource of ["user-library", "contributions"]) {
+      void miniappQueryClient.refetchQueries({
+        queryKey: [resource, owner],
+        exact: true,
+        type: "active",
+        stale: true,
+      });
+    }
   });
+  const plans = library.data?.data.plans ?? [];
 
-  const tonightPlan = useMemo(
-    () =>
-      [...plans].sort((left, right) =>
-        `${left.localDate}T${left.localTime}`.localeCompare(
-          `${right.localDate}T${right.localTime}`,
-        ),
-      )[0] ?? null,
-    [plans],
-  );
+  const { plan: tonightPlan, title: planEntryTitle } = selectPlanEntry(plans, new Date());
   const contributionItems = contributions.data?.data.submissions ?? [];
   const pendingContributionCount = contributionItems.filter(
     (item) =>
@@ -61,28 +71,63 @@ export function MyLibraryPage() {
   ).length;
 
   useEffect(() => {
-    if (!library.data) return;
+    if (!library.data || !libraryOwner || currentDraftUserId() !== libraryOwner) return;
     replacePlans(library.data.data.plans);
     applyServerPreferences(library.data.data.preferences);
   }, [
     applyServerPreferences,
     library.data,
+    libraryOwner,
     replacePlans,
   ]);
 
+  const navigationPending = useRef(false);
+  const openPage = async (url: string, label: string, entry: string) => {
+    if (navigationPending.current) return;
+    navigationPending.current = true;
+    const diagnostic = `my-${entry}-navigation`;
+    const dedupeKey = `${diagnostic}-failed`;
+    recordAcceptanceDiagnostic(diagnostic, "start", "entry_click");
+    try {
+      await Taro.navigateTo({ url });
+      recordAcceptanceDiagnostic(diagnostic, "success", "route_opened");
+      const state = useAppStore.getState();
+      for (const notification of state.notifications) {
+        if (notification.owner === "my" && notification.dedupeKey === dedupeKey) {
+          state.dismissNotification(notification.id);
+        }
+      }
+    } catch {
+      recordAcceptanceDiagnostic(diagnostic, "failure", "route_rejected");
+      notify({
+        owner: "my",
+        placement: "floating",
+        tone: "warning",
+        title: `${label}暂未打开`,
+        body: "请稍后重试，当前内容已保留。",
+        dismissible: true,
+        dedupeKey,
+      });
+    } finally {
+      navigationPending.current = false;
+    }
+  };
   const openSettings = () =>
-    Taro.navigateTo({ url: "/content/settings/index" });
+    openPage("/content/settings/index", "设置", "settings");
   const openPlan = () =>
-    Taro.navigateTo({
-      url: tonightPlan
+    openPage(
+      tonightPlan
         ? `/content/plan/detail/index?planId=${encodeURIComponent(tonightPlan.planId)}`
         : "/content/plan/detail/index",
-    });
+      "今晚计划",
+      "plan",
+    );
   const openContribution = () =>
-    Taro.navigateTo({ url: "/content/contribution/index" });
+    openPage("/content/contribution/index", "反馈页面", "contribution");
   const openProfileLinks = () =>
-    Taro.navigateTo({ url: "/content/profile/links/index" });
-  const openImport = () => Taro.navigateTo({ url: "/content/import/index" });
+    openPage("/content/profile/links/index", "主页链接", "profile-links");
+  const openImport = () =>
+    openPage("/content/import/index", "内容导入", "import");
 
   return (
     <View
@@ -101,13 +146,19 @@ export function MyLibraryPage() {
         showScrollbar={false}
       >
         <View className="my-content page-inset safe-bottom">
-          {library.isError ? (
+          {library.isError || library.refreshError || library.data?.dataState === "STALE_USABLE" ? (
             <StatusPanel
-              state="STALE"
-              detail={`账户资料暂未刷新，继续显示本机最后一次可用关系：${errorMessage(library.error)}。`}
+              state={library.data ? "STALE" : "ERROR"}
+              detail={library.data ? "账户资料尚未确认最新状态，暂时显示上次记录。" : `账户资料暂不可用：${errorMessage(library.error)}。`}
               recoveryLabel="重试同步"
               onRecover={() => void library.refetch()}
             />
+          ) : null}
+          {contributions.isError || contributions.refreshError || contributions.data?.dataState === "STALE_USABLE" ? (
+            <StatusPanel state={contributions.data ? "STALE" : "ERROR"}
+              detail={contributions.data ? "反馈审核状态暂未更新，以下数量来自上次记录。" : "反馈审核状态暂不可用，暂时无法确认待处理数量。"}
+              recoveryLabel="重试审核状态"
+              onRecover={() => void contributions.refetch().catch(() => {})} />
           ) : null}
           <View
             className="profile-summary card"
@@ -135,8 +186,8 @@ export function MyLibraryPage() {
                 <Text className="type-section">个人链接</Text>
                 <Text className="type-caption">
                   {library.data
-                    ? `${library.data.data.profileLinks.length} 条已保存关系`
-                    : "服务端回读中"}
+                    ? `${library.refreshError || library.data.dataState === "STALE_USABLE" ? "上次 " : ""}${library.data.data.profileLinks.length} 条已保存`
+                    : library.isError ? "暂不可用" : "正在加载"}
                 </Text>
               </View>
               <View>
@@ -144,7 +195,8 @@ export function MyLibraryPage() {
                 <Text className="type-caption">
                   {contributions.isError
                     ? "状态暂不可用"
-                    : `${pendingContributionCount} 条待处理`}
+                    : !contributions.data ? "正在加载"
+                    : `${contributions.refreshError || contributions.data.dataState === "STALE_USABLE" ? "上次 " : ""}${pendingContributionCount} 条待处理`}
                 </Text>
               </View>
             </View>
@@ -160,7 +212,7 @@ export function MyLibraryPage() {
                   <SemanticIcon name="conditions" />
                 </View>
                 <View className="account-row__copy">
-                  <Text className="type-section">今晚计划</Text>
+                  <Text className="type-section">{planEntryTitle}</Text>
                   <Text className="type-caption">
                     {tonightPlan
                       ? `${tonightPlan.localDate} · 地点与出发准备`
@@ -175,7 +227,7 @@ export function MyLibraryPage() {
                 className="routine-entry routine-entry--contribution focus-ring"
                 data-od-id="my-contribution-entry"
                 data-control="my-contribution-entry"
-                aria-label="打开现场反馈与纠错"
+                ariaLabel="打开现场反馈与纠错"
                 onClick={openContribution}
               >
                 <View className="routine-entry__icon routine-entry__icon--moon" aria-hidden="true">
@@ -225,7 +277,7 @@ export function MyLibraryPage() {
                 <View className="account-row__copy">
                   <Text className="type-section">设置</Text>
                   <Text className="type-caption">
-                    显示模式、权限、提醒与本地数据动作
+                    显示、权限、提醒与数据管理
                   </Text>
                 </View>
                 <View className="account-row__chevron" aria-hidden="true">
@@ -245,7 +297,7 @@ export function MyLibraryPage() {
                 <View className="account-row__copy">
                   <Text className="type-section">主页链接</Text>
                   <Text className="type-caption">
-                    管理公开或私有的外部主页；打开受平台能力限制时仍可复制
+                    管理你的个人主页链接
                   </Text>
                 </View>
                 <View className="account-row__chevron" aria-hidden="true">
@@ -265,7 +317,7 @@ export function MyLibraryPage() {
                 <View className="account-row__copy">
                   <Text className="type-section">内容导入</Text>
                   <Text className="type-caption">
-                    先确认权利，再编辑草稿、关联点位并提交人工审核
+                    导入自己的帖子并提交审核
                   </Text>
                 </View>
                 <View className="account-row__chevron" aria-hidden="true">

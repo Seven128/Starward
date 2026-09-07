@@ -6,7 +6,8 @@ import Taro, {
   useRouter,
 } from "@tarojs/taro";
 import { Button, Canvas, ScrollView, Text, View } from "@tarojs/components";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { nativeNavigationInsets } from "@/theme/native-metrics";
 import {
   type DisplayMode,
   type HourlySkyRow,
@@ -399,6 +400,24 @@ function OrientationTimeRuler({
     safeActiveIndex * orientationRulerStepPx(),
   );
   const interactingRef = useRef(false);
+  const cancelRef = useRef(onCancel);
+  cancelRef.current = onCancel;
+  const cancelInteraction = () => {
+    const pending = interactingRef.current;
+    interactingRef.current = false;
+    setVisualIndex(safeCommittedIndex);
+    setScrollLeft(safeCommittedIndex * orientationRulerStepPx());
+    if (pending) cancelRef.current();
+  };
+  useDidHide(cancelInteraction);
+  useEffect(() => () => {
+    if (interactingRef.current) {
+      interactingRef.current = false;
+      cancelRef.current();
+    }
+  }, []);
+  const rowIdentity = rows.map(row => row.at).join("|");
+  useEffect(cancelInteraction, [committedIndex, rowIdentity, saving]);
 
   useEffect(() => {
     if (interactingRef.current) return;
@@ -489,7 +508,7 @@ function OrientationTimeRuler({
       </View>
       <View className="sky-orientation-time-ruler__axis" aria-hidden="true" />
       <ScrollView
-        scrollX
+        scrollX={!saving}
         enhanced
         fastDeceleration
         showScrollbar={false}
@@ -502,16 +521,26 @@ function OrientationTimeRuler({
         aria-valuemax={maxIndex}
         aria-valuenow={previewValue}
         aria-valuetext={orientationRulerLabel(rows[previewValue], timezone, previewValue)}
+        onTouchStart={(event) => {
+          if (saving || (event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) {
+            cancelInteraction();
+            return;
+          }
+          interactingRef.current = true;
+        }}
+        onTouchMove={(event) => {
+          if ((event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) cancelInteraction();
+        }}
+        onTouchCancel={cancelInteraction}
         onScroll={(event) => {
-          if (saving) return;
+          if (saving || !interactingRef.current) return;
           const nextScrollLeft = Number(event.detail.scrollLeft);
           if (Number.isFinite(nextScrollLeft)) {
-            interactingRef.current = true;
             setPreviewFromScroll(nextScrollLeft);
           }
         }}
         onScrollEnd={(event) => {
-          if (saving) return;
+          if (saving || !interactingRef.current) return;
           const nextScrollLeft = Number(event.detail.scrollLeft);
           settle(Number.isFinite(nextScrollLeft) ? nextScrollLeft : scrollLeft);
         }}
@@ -529,8 +558,7 @@ function OrientationTimeRuler({
                 compileMode
                 className={`sky-orientation-time-ruler__tick${isSelected ? " sky-orientation-time-ruler__tick--selected" : ""}${isEvent ? " sky-orientation-time-ruler__tick--event" : ""}`}
                 style={{
-                  opacity: 1 - distance * 0.68,
-                  transform: `translateY(${Math.round(distance * distance * 18)}rpx) scale(${(1 - distance * 0.34).toFixed(3)})`,
+                  transform: `translateY(${Math.round(distance * distance * 18)}rpx)`,
                 }}
                 ariaLabel={orientationRulerLabel(row, timezone, index)}
                 aria-pressed={isSelected ? "true" : "false"}
@@ -538,7 +566,7 @@ function OrientationTimeRuler({
                 onClick={() => selectTick(index)}
               >
                 <View className="sky-orientation-time-ruler__tick-mark" aria-hidden="true" />
-                {(index % 4 === 0 || isSelected) ? (
+                {(index % 4 === 0 && Math.abs(index - previewValue) >= 4) ? (
                   <Text className="sky-orientation-time-ruler__tick-label">
                     {formatTime(row.at, timezone)}
                   </Text>
@@ -756,7 +784,7 @@ function ContextError({ onBack }: { onBack: () => void }) {
     <View className="page-inset sky-context-error">
       <StatusPanel
         state="ERROR"
-        detail="请从地图中的正式观星点进入详情，再打开“此处夜空”。入口信息不完整时不会回退到当前位置、普通地点或未经核验的结果。"
+        detail="观测信息不完整，请返回地图选择观星点，再打开云观星。"
         recoveryLabel="返回地图"
         onRecover={onBack}
       />
@@ -773,7 +801,7 @@ function OrientationQuietBack({
 }) {
   return (
     <View
-      className="sky-orientation-back-layer safe-top"
+      className="sky-orientation-back-layer"
       data-od-id="sky-orientation-back"
     >
       <SoftButton
@@ -836,6 +864,10 @@ export function SpotSkyPage() {
   // Full-sky uses the active product mode as-is. In particular, DAY is the
   // selected white field profile; it must not be silently rendered as NIGHT.
   const presentationClass = themeClass;
+  const navigationInsets = useMemo(() => nativeNavigationInsets(), []);
+  const skyLayoutStyle = {
+    ...(navigationInsets.safeTop !== undefined ? { "--sky-controls-top": `${navigationInsets.safeTop}px` } : {}),
+  } as CSSProperties;
   const contextLookup = useResourceQuery({
     queryKey: ["observation-context", routeContext.contextId],
     queryFn: (signal) =>
@@ -1048,7 +1080,7 @@ export function SpotSkyPage() {
         setCompassHeading(null);
         setCompassState("UNAVAILABLE");
         setCompassReason(
-          "设备没有提供可信姿态，天空图不会伪造当前方向",
+          "设备方向暂不可用，请校准后重试",
           null,
         );
         return;
@@ -1415,7 +1447,7 @@ export function SpotSkyPage() {
         ...base,
         tone: "warning",
         title: "夜空数据不可用",
-        body: "保留正式点位和观测上下文；当前不把过期缓存或未经核验的结果当作今晚推荐。可在网络恢复后重试。",
+        body: "网络恢复后可重试，观测地点与时刻已保留。",
         dedupeKey: `spot-night-unavailable:${routeContext.spotId}:${routeContext.localDate}`,
       });
     } else if (dataState !== "FRESH") {
@@ -1519,6 +1551,7 @@ export function SpotSkyPage() {
     return (
       <View
         className={`${presentationClass} sky-orientation-page sky-orientation-state-page`}
+        style={skyLayoutStyle}
         data-route="spot-night-context-loading"
         data-od-id="sky-orientation-route"
       >
@@ -1535,7 +1568,7 @@ export function SpotSkyPage() {
         <View className="sky-orientation-state-page__status">
           <StatusPanel
             state="LOADING"
-            detail="正在恢复正式观星点、观测夜和已提交时刻。"
+            detail="正在恢复观测地点与时刻。"
           />
         </View>
       </View>
@@ -1545,6 +1578,7 @@ export function SpotSkyPage() {
     return (
       <View
         className={`${presentationClass} sky-orientation-page sky-orientation-state-page`}
+        style={skyLayoutStyle}
         data-route="spot-night-context-error"
         data-od-id="sky-orientation-route"
       >
@@ -1676,31 +1710,31 @@ export function SpotSkyPage() {
       ? {
           state: "LOADING" as const,
           detail:
-            "正在按正式观星点、观测夜和当前时刻加载天空数据；不会用当前位置或未经核验的结果顶替。",
+            "正在加载所选地点与时刻的天空。",
         }
       : report.isError
         ? {
             state: "ERROR" as const,
             detail:
-              "天空计算请求失败；正式点位与完整上下文仍保留，未静默显示成功或合成数据。",
+              "天空加载失败，请重试。观测地点与时刻已保留。",
           }
         : report.data?.dataState === "EXPIRED" ||
             report.data?.dataState === "UNAVAILABLE"
           ? {
               state: "ERROR" as const,
               detail:
-                "当前天空数据不可用；不会用过期缓存或未经核验的结果替代今晚结论。",
+                "天空数据暂不可用，请重新加载。",
             }
           : !reportData
             ? {
                 state: "ERROR" as const,
                 detail:
-                  "返回结果与当前正式点位、日期或时区上下文不一致；为避免混用不同条件的结果，暂不展示。",
+                  "天空数据与所选地点或时刻不一致，请重新加载。",
               }
             : !row || !orientationTargetFrame
               ? {
                   state: "ERROR" as const,
-                  detail: "当前观测时刻没有对应的天空数据；不会用其他时刻替代，请重新加载。",
+                  detail: "所选时刻暂无天空数据，请重新加载。",
                 }
             : reportData.skyScene.state !== "AVAILABLE" ||
                 !reportData.skyScene.catalog ||
@@ -1709,7 +1743,7 @@ export function SpotSkyPage() {
               ? {
                   state: "ERROR" as const,
                   detail:
-                    "真实 Gaia 星表场景当前不可用；不会用静态图片、随机星点或稀疏装饰替代。独立天体和事件目标仍保留在对象列表中。",
+                    "星图暂不可用，仍可在对象列表查看天体与事件。",
                 }
             : null;
   const skySceneReady = Boolean(
@@ -1735,6 +1769,7 @@ export function SpotSkyPage() {
   return (
     <View
       className={`${presentationClass} sky-orientation-page`}
+      style={skyLayoutStyle}
       data-route="sky/detail"
       data-spot-id={routeContext.spotId}
       data-od-id="sky-orientation-route"
@@ -1826,6 +1861,33 @@ export function SpotSkyPage() {
           aria-label={orientationSensorLabel}
         />
 
+        {showOrientationObjectDisclosure ? (
+          <View
+            className="sky-orientation-object-toggle"
+            data-od-id="sky-orientation-object-list-toggle"
+          >
+            <Button
+              compileMode
+              className="sky-orientation-object-toggle__button"
+              ariaLabel={
+                orientationObjectListOpen ? "收起对象列表" : "查看对象列表"
+              }
+              aria-pressed={orientationObjectListOpen ? "true" : "false"}
+              onClick={() => setOrientationObjectListOpen((open) => !open)}
+            >
+              <SemanticIcon
+                name={orientationObjectListOpen ? "chevron-up" : "chevron-down"}
+                decorative
+              />
+              <Text>
+                {orientationObjectListOpen ? "收起列表" : "天体列表"}
+              </Text>
+            </Button>
+          </View>
+        ) : null}
+
+        {!compassIsReady || orientationObjectListOpen ? (
+        <ScrollView scrollY enhanced showScrollbar={false} className="sky-orientation-details" aria-label="方向状态与天体列表">
         {!compassIsReady ? (
           <View
             className="sky-orientation-recovery"
@@ -1859,31 +1921,6 @@ export function SpotSkyPage() {
           </View>
         ) : null}
 
-        {showOrientationObjectDisclosure ? (
-          <View
-            className="sky-orientation-object-toggle"
-            data-od-id="sky-orientation-object-list-toggle"
-          >
-            <Button
-              compileMode
-              className="sky-orientation-object-toggle__button"
-              ariaLabel={
-                orientationObjectListOpen ? "收起对象列表" : "查看对象列表"
-              }
-              aria-pressed={orientationObjectListOpen ? "true" : "false"}
-              onClick={() => setOrientationObjectListOpen((open) => !open)}
-            >
-              <SemanticIcon
-                name={orientationObjectListOpen ? "chevron-up" : "chevron-down"}
-                decorative
-              />
-              <Text>
-                {orientationObjectListOpen ? "收起对象列表" : "查看对象列表"}
-              </Text>
-            </Button>
-          </View>
-        ) : null}
-
         {orientationObjectListOpen ? (
           <View
             className="sky-orientation-object-list"
@@ -1899,8 +1936,8 @@ export function SpotSkyPage() {
                 </Text>
                 <Text className="sky-orientation-object-list__meta">
                   {orientationData
-                    ? "与当前正式点、观测夜和天空结果同步"
-                    : "当前没有可证明的天空结果"}
+                    ? "所选地点与时刻的可见天体"
+                    : "暂无可用的天空数据"}
                 </Text>
               </View>
               <Text className="sky-orientation-object-list__count type-data">
@@ -1909,21 +1946,15 @@ export function SpotSkyPage() {
             </View>
             {orientationData ? (
               orientationTargets.length ? (
-                <ScrollView
-                  scrollY
-                  enhanced
-                  showScrollbar={false}
-                  className="sky-orientation-object-list__scroll"
-                  aria-label="滚动查看真实观测对象"
-                >
+                <View className="sky-orientation-object-list__scroll">
                   {orientationTargets.map((target) => (
                     <SkyTargetRow target={target} key={target.targetId} />
                   ))}
-                </ScrollView>
+                </View>
               ) : (
                 <StatusPanel
                   state="EMPTY"
-                  detail="当前没有可证明目标；不会显示预设目标。"
+                  detail="所选时刻暂无可用天体。"
                 />
               )
             ) : (
@@ -1931,13 +1962,16 @@ export function SpotSkyPage() {
                 state={orientationDataStatus?.state ?? "ERROR"}
                 detail={
                   orientationDataStatus?.detail ??
-                  "当前没有可证明的天空结果；正式点位和观测上下文仍保留。"
+                  "天空数据暂不可用，观测地点与时刻已保留。"
                 }
                 recoveryLabel="重试天空"
                 onRecover={() => void report.refetch()}
               />
             )}
           </View>
+        ) : null}
+
+        </ScrollView>
         ) : null}
 
         <View

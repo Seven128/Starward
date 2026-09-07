@@ -520,7 +520,7 @@ const publishedFixtureSource: SourceSummary = Object.freeze({
 export const TEST_PUBLISHED_SPOT: SpotSummary = Object.freeze({
   ...publishedFixtureBase,
   spotId: "spot:test-published" as SpotId,
-  name: "自动化测试正式观星点",
+  name: "示例观星点",
   address: "仅用于测试，不对应真实地点",
   status: "PUBLISHED",
   source: publishedFixtureSource,
@@ -663,7 +663,9 @@ export function buildTestSpotDetail(spotId: string): SpotDetail | null {
       driveMinutes: null,
       walkingMinutes: null,
       lastRoad: "暂无已核验末段道路信息",
-      parkingGuidance: "停车状态未知；请通过管理方或外部地图核验",
+      parkingGuidance: completeTestSpot
+        ? "请在划定车位停车，保持通道畅通"
+        : "停车状态未知；请通过管理方或外部地图核验",
       state: "SAMPLE_DATA",
       source: spot.source,
     },
@@ -696,8 +698,8 @@ export function buildTestSpotDetail(spotId: string): SpotDetail | null {
           legalAccess: "PERMITTED",
           nightSafety: "CAUTION",
           explicitDanger: false,
-          restrictions: ["仅为自动化测试状态，不对应真实地点"],
-          guidance: ["测试夹具只验证正式数据形状，不构成出行建议"],
+          restrictions: [],
+          guidance: [],
         }
       : {
           openness: "UNKNOWN",

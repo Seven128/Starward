@@ -1,4 +1,11 @@
 import Taro from "@tarojs/taro";
+import { clearPlanSaveRecovery, createPlanSaveRetry, planSaveBelongsTo } from "./plan-save-retry";
+import { planChecklistBelongsTo } from "../content/plan/detail/plan-checklist";
+import { importLocalDraftBelongsTo } from "../content/import/local-draft";
+import { clearImportSaveRecovery, createImportSaveRetry, importSaveBelongsTo } from "./import-save-retry";
+import { contributionDraftBelongsTo, planDraftBelongsTo, profileDraftBelongsTo } from "./local-draft-keys";
+import { contributionSubmitBelongsTo, createContributionSubmitRetry } from "./contribution-submit-retry";
+import { clearProfileSaveRecovery, createProfileLinkRetry, profileSaveBelongsTo } from "./profile-link-retry";
 import {
   MINIAPP_API_BASE_PATH,
   MINIAPP_API_OPERATIONS,
@@ -37,6 +44,7 @@ import {
 import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
 import { createDeviceFailureReporter } from "./device-request-diagnostic";
 import { miniappQueryClient } from "./query-client";
+import { createMutationRetry } from "./mutation-retry";
 import {
   LatestRequestRegistry,
   MiniappRequestCancelled,
@@ -124,6 +132,10 @@ export function errorMessage(error: unknown): string {
   }
   if (typeof error === "object" && error !== null && "message" in error) {
     const message = (error as { message?: unknown }).message;
+    if (typeof message === "string") return localFailureMessage(message);
+  }
+  if (typeof error === "object" && error !== null && "errMsg" in error) {
+    const message = (error as { errMsg?: unknown }).errMsg;
     if (typeof message === "string") return localFailureMessage(message);
   }
   return localFailureMessage(String(error ?? ""));
@@ -271,6 +283,11 @@ function readStoredSession(): AuthSessionData | null {
   }
 }
 
+/** Local drafts may be scoped by identity, never by an access token. */
+export function currentDraftUserId(): string | null {
+  return readStoredSession()?.userId ?? null;
+}
+
 function clearStoredSession() {
   sessionPromise = null;
   try {
@@ -327,6 +344,7 @@ async function request<T>(
     idempotencyKey?: string;
     signal?: AbortSignal;
     session?: AuthSessionData | null;
+    reauthenticationCode?: string;
     cache?: boolean;
   } = {},
 ): Promise<ApiEnvelope<T>> {
@@ -374,6 +392,8 @@ async function request<T>(
         ? responseCache.get(exactCacheKey)
         : undefined;
     const header: Record<string, string> = { Accept: "application/json" };
+    // WeChat defaults to JSON; an empty DELETE body must not trigger JSON parsing.
+    if (method === "DELETE" && options.body === undefined) header["Content-Type"] = "text/plain";
     if (__MINIAPP_OPERATOR_PREVIEW_TOKEN__)
       header["X-Starward-Operator-Preview"] =
         __MINIAPP_OPERATOR_PREVIEW_TOKEN__;
@@ -382,6 +402,8 @@ async function request<T>(
       header["Idempotency-Key"] = options.idempotencyKey;
     if (options.session)
       header.Authorization = "Bearer " + options.session.accessToken;
+    if (options.reauthenticationCode)
+      header["X-Wechat-Reauth-Code"] = options.reauthenticationCode;
 
     const transportFallback = (failure: string, error: Error) => {
       const stale = staleCandidate<T>(cached, failure);
@@ -559,12 +581,17 @@ async function requestOperation<K extends MiniappApiOperationId>(
     idempotencyKey?: string;
     signal?: AbortSignal;
     auth?: AuthPolicy;
+    reauthenticationCode?: string;
     cache?: boolean;
   } = {},
   retried = false,
+  expectedUserId?: string,
 ): Promise<MiniappApiResponse<K>> {
   const policy = options.auth ?? "NONE";
   const session = await resolveSession(policy);
+  if (expectedUserId && session?.userId !== expectedUserId) {
+    throw new Error("账户已变化，请重新打开页面后再操作。");
+  }
   try {
     return (await request<OperationData<K>>(
       key,
@@ -577,18 +604,22 @@ async function requestOperation<K extends MiniappApiOperationId>(
           : {}),
         ...(options.signal ? { signal: options.signal } : {}),
         ...(session ? { session } : {}),
+        ...(options.reauthenticationCode ? { reauthenticationCode: options.reauthenticationCode } : {}),
         ...(options.cache === undefined ? {} : { cache: options.cache }),
       },
     )) as MiniappApiResponse<K>;
   } catch (error) {
     if (
       !retried &&
+      !options.reauthenticationCode &&
       policy !== "NONE" &&
       error instanceof MiniappApiError &&
       error.code === "PERMISSION_DENIED"
     ) {
+      const currentSession = readStoredSession();
+      if (currentSession && currentSession.userId !== session?.userId) throw error;
       clearStoredSession();
-      return requestOperation(key, operationId, options, true);
+      return requestOperation(key, operationId, options, true, session?.userId);
     }
     throw error;
   }
@@ -854,11 +885,15 @@ export function getFavorites(signal?: AbortSignal) {
   });
 }
 
-export function getUserLibrary(signal?: AbortSignal) {
-  return requestOperation("user-library", "libraryGet", {
+export async function getUserLibrary(signal?: AbortSignal, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  const result = await requestOperation("user-library", "libraryGet", {
     auth: "REQUIRED",
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开页面读取个人资料。");
+  return result;
 }
 
 export function getPreferences(signal?: AbortSignal) {
@@ -885,21 +920,53 @@ export async function savePreferences(
   return result;
 }
 
-export function exportAccountData(signal?: AbortSignal) {
-  return requestOperation("account-data-export", "accountDataExportGet", {
+async function accountReauthentication() {
+  const { userId } = await ensureSession();
+  const capabilities = await getCapabilities();
+  const code = capabilities.data.flags.WECHAT_AUTH_ENABLED
+    ? (await Taro.login()).code
+    : installationIdentity();
+  if (!code) throw new Error("wechat_login_code_missing");
+  if (currentDraftUserId() !== userId) throw new Error("账户已变化，请重新打开页面后再操作。");
+  return { userId, code };
+}
+
+export async function exportAccountData(signal?: AbortSignal) {
+  const { userId, code } = await accountReauthentication();
+  const result = await requestOperation("account-data-export", "accountDataExportGet", {
     auth: "REQUIRED",
+    reauthenticationCode: code,
     cache: false,
     ...(signal ? { signal } : {}),
-  });
+  }, false, userId);
+  if (currentDraftUserId() !== userId) throw new Error("账户已变化，请重新下载当前账户的数据。");
+  return result;
 }
 
 export async function deleteAccount() {
+  const { userId: deletedUserId, code } = await accountReauthentication();
   const result = await requestOperation("account-delete", "accountDelete", {
     auth: "REQUIRED",
+    reauthenticationCode: code,
     body: { confirmation: "DELETE_ACCOUNT" },
     idempotencyKey: idempotencyKey("account-delete"),
-  });
-  clearStoredSession();
+  }, false, deletedUserId);
+  const localAccountReset = currentDraftUserId() === deletedUserId;
+  if (localAccountReset) clearStoredSession();
+  try {
+    for (const key of Taro.getStorageInfoSync().keys) {
+      if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
+      try { Taro.removeStorageSync(key); } catch { /* Continue clearing the remaining drafts. */ }
+    }
+  } catch { /* Session revocation remains authoritative if local storage is unavailable. */ }
+  if (!localAccountReset) {
+    for (const key of responseCache.keys()) {
+      if (key.endsWith(":" + deletedUserId)) responseCache.delete(key);
+    }
+    persistResponseCache();
+    miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) });
+    return { ...result, localAccountReset };
+  }
   responseCache.clear();
   responseCacheLoaded = true;
   try {
@@ -909,13 +976,16 @@ export async function deleteAccount() {
     // Server deletion and session revocation remain authoritative.
   }
   miniappQueryClient.clear();
-  return result;
+  return { ...result, localAccountReset };
 }
 
 export async function setFavoriteRelation(
   spotId: string,
   favorite: boolean,
+  expectedUserId?: string,
 ) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
   const result = await requestOperation(
     "favorite-mutation:" + spotId,
     "favoritePut",
@@ -925,16 +995,31 @@ export async function setFavoriteRelation(
       body: { favorite },
       idempotencyKey: idempotencyKey("favorite"),
     },
+    false,
+    owner,
   );
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开收藏。");
   await invalidateAfter("FAVORITE");
   return result;
 }
 
-export function getPlans(signal?: AbortSignal) {
-  return requestOperation("plans", "plansGet", {
+export async function getPlans(signal?: AbortSignal, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  const result = await requestOperation("plans", "plansGet", {
     auth: "REQUIRED",
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开页面读取计划。");
+  return result;
+}
+
+const retryPlanSave = createPlanSaveRetry(Taro, () => idempotencyKey("plan-save"),
+  error => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
+
+export function clearObservationPlanSaveRecovery(expectedUserId: string) {
+  if (currentDraftUserId() !== expectedUserId) throw new Error("账号已变化，请重新打开计划。");
+  clearPlanSaveRecovery(Taro, expectedUserId);
 }
 
 export async function saveObservationPlan(
@@ -944,29 +1029,41 @@ export async function saveObservationPlan(
   >,
   observationContextId: ObservationContext["contextId"],
   expectedRevision: number | null,
+  expectedUserId?: string,
+  contextIdentity = observationContextId as string,
 ) {
-  const result = await requestOperation(
-    "plan-mutation:" + plan.planId,
+  const session = await ensureSession();
+  if (expectedUserId && session.userId !== expectedUserId) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  const result = await retryPlanSave(session.userId, { ...plan, observationContextId, expectedRevision, contextIdentity }, (retryKey, original) => requestOperation(
+    "plan-mutation:" + original.planId,
     "planPut",
     {
       auth: "REQUIRED",
-      pathParams: { planId: plan.planId },
+      pathParams: { planId: original.planId },
       body: {
-        spotId: plan.spotId,
-        observationContextId,
-        localDate: plan.localDate,
-        localTime: plan.localTime,
-        notes: plan.notes,
-        expectedRevision,
+        spotId: original.spotId as SpotId,
+        observationContextId: original.observationContextId as ObservationContext["contextId"],
+        localDate: original.localDate,
+        localTime: original.localTime,
+        notes: original.notes,
+        expectedRevision: original.expectedRevision,
       },
-      idempotencyKey: idempotencyKey("plan-save"),
+      idempotencyKey: retryKey,
     },
-  );
+    false,
+    session.userId,
+  ));
+  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  miniappQueryClient.setQueryData<MiniappApiResponse<"plansGet">>(["plans", session.userId], (previous) => previous ? {
+    ...previous, data: { ...previous.data, plans: [...previous.data.plans.filter((item) => item.planId !== result.data.planId), result.data] },
+  } : previous);
   await invalidateAfter("PLAN");
   return result;
 }
 
-export async function deleteObservationPlan(planId: string) {
+export async function deleteObservationPlan(planId: string, expectedUserId?: string) {
+  const session = await ensureSession();
+  if (expectedUserId && session.userId !== expectedUserId) throw new Error("账号已变化，请回到原账号核对计划删除结果。");
   const result = await requestOperation(
     "plan-delete:" + planId,
     "planDelete",
@@ -975,16 +1072,33 @@ export async function deleteObservationPlan(planId: string) {
       pathParams: { planId },
       idempotencyKey: idempotencyKey("plan-delete"),
     },
+    false,
+    session.userId,
   );
+  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对计划删除结果。");
+  miniappQueryClient.setQueryData(["plans", session.userId], result);
   await invalidateAfter("PLAN");
   return result;
 }
 
-export function getProfileLinks(signal?: AbortSignal) {
-  return requestOperation("profile-links", "profileLinksGet", {
+export async function getProfileLinks(signal?: AbortSignal, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  const result = await requestOperation("profile-links", "profileLinksGet", {
     auth: "REQUIRED",
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开页面读取主页链接。");
+  return result;
+}
+
+const retryProfileLinkCreate = createProfileLinkRetry(Taro, () => idempotencyKey("profile-link"),
+  (error) => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
+const retryProfileLinkDelete = createMutationRetry(() => idempotencyKey("profile-link-delete"));
+
+export function clearProfileLinkSaveRecovery(expectedUserId: string) {
+  if (currentDraftUserId() !== expectedUserId) throw new Error("账号已变化，请重新打开主页链接。");
+  clearProfileSaveRecovery(Taro, expectedUserId);
 }
 
 export async function createProfileLink(input: {
@@ -993,68 +1107,106 @@ export async function createProfileLink(input: {
   url: string;
   visibility: "PRIVATE" | "PUBLIC";
   sortOrder: number;
-}) {
+}, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  if (session.userId !== owner) throw new Error("账号已变化，请回到原账号核对主页链接。");
+  return retryProfileLinkCreate(owner, input, async (retryKey, originalInput) => {
   const result = await requestOperation(
     "profile-link-mutation",
     "profileLinkPost",
     {
       auth: "REQUIRED",
-      body: input,
-      idempotencyKey: idempotencyKey("profile-link"),
+      body: originalInput,
+      idempotencyKey: retryKey,
     },
+    false,
+    owner,
   );
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对主页链接。");
   await invalidateAfter("PROFILE_LINK");
   return result;
+  });
 }
 
-export async function deleteProfileLink(profileLinkId: string) {
+export async function deleteProfileLink(profileLinkId: string, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  return retryProfileLinkDelete(owner, { profileLinkId }, async (retryKey) => {
   const result = await requestOperation(
     "profile-link-delete:" + profileLinkId,
     "profileLinkDelete",
     {
       auth: "REQUIRED",
       pathParams: { profileLinkId },
-      idempotencyKey: idempotencyKey("profile-link-delete"),
+      idempotencyKey: retryKey,
     },
+    false,
+    owner,
   );
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对链接删除结果。");
   await invalidateAfter("PROFILE_LINK");
   return result;
+  });
+}
+
+const retryImportSave = createImportSaveRetry(Taro, () => idempotencyKey("import-save"),
+  error => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
+
+export function clearPostImportSaveRecovery(expectedUserId: string) {
+  if (currentDraftUserId() !== expectedUserId) throw new Error("账号已变化，请重新打开内容导入。");
+  clearImportSaveRecovery(Taro, expectedUserId);
 }
 
 export async function createPostImport(input: {
   platform: PlatformKind;
   originalUrl: string;
   rightsConfirmed: boolean;
-}) {
-  const result = await requestOperation(
+}, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  if (session.userId !== owner) throw new Error("账号已变化，请回到原账号核对导入草稿。");
+  const result = await retryImportSave(owner, "create", "", input, retryKey => requestOperation(
     "import-create",
     "importPost",
     {
       auth: "REQUIRED",
       body: input,
-      idempotencyKey: idempotencyKey("import-create"),
+      idempotencyKey: retryKey,
     },
-  );
+    false,
+    owner,
+  ));
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对导入草稿。");
   await invalidateAfter("IMPORT");
   return result;
 }
 
-export function getPostImports(signal?: AbortSignal) {
-  return requestOperation("imports", "importsGet", {
+export async function getPostImports(signal?: AbortSignal, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  const result = await requestOperation("imports", "importsGet", {
     auth: "REQUIRED",
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开页面读取导入记录。");
+  return result;
 }
 
-export function getPostImport(
+export async function getPostImport(
   importDraftId: string,
   signal?: AbortSignal,
+  expectedUserId?: string,
 ) {
-  return requestOperation("import:" + importDraftId, "importGet", {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  const result = await requestOperation("import:" + importDraftId, "importGet", {
     auth: "REQUIRED",
     pathParams: { importId: importDraftId },
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开页面读取导入草稿。");
+  return result;
 }
 
 export async function updatePostImport(
@@ -1070,49 +1222,78 @@ export async function updatePostImport(
     spotId?: string | null;
     createProposal?: boolean;
   },
+  expectedUserId?: string,
 ) {
-  const result = await requestOperation(
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  if (session.userId !== owner) throw new Error("账号已变化，请回到原账号核对导入保存结果。");
+  const result = await retryImportSave(owner, "update", importDraftId, input, retryKey => requestOperation(
     "import-mutation:" + importDraftId,
     "importPut",
     {
       auth: "REQUIRED",
       pathParams: { importId: importDraftId },
       body: input,
-      idempotencyKey: idempotencyKey("import-update"),
+      idempotencyKey: retryKey,
     },
-  );
+    false,
+    owner,
+  ));
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对导入保存结果。");
   await invalidateAfter("IMPORT");
   return result;
 }
 
-export function getContributions(signal?: AbortSignal) {
-  return requestOperation("contributions", "contributionsGet", {
+export async function getContributions(signal?: AbortSignal, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  const result = await requestOperation("contributions", "contributionsGet", {
     auth: "REQUIRED",
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) {
+    throw new Error("账号已变化，请重新打开页面读取反馈记录。");
+  }
+  return result;
 }
+
+const retryContributionCreate = createMutationRetry(() => idempotencyKey("contribution-create"));
 
 export async function createContributionDraft(
   input: ContributionDraftRequest,
 ) {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionCreate(session.userId, input, async (retryKey) => {
   const result = await requestOperation(
     "contribution-create",
     "contributionPost",
     {
       auth: "REQUIRED",
       body: input,
-      idempotencyKey: idempotencyKey("contribution-create"),
+      idempotencyKey: retryKey,
     },
+    false,
+    session.userId,
   );
+  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
   await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
   return result;
+  });
 }
+
+const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contribution-update"));
 
 export async function updateContributionDraft(
   submissionId: ContributionId,
   input: ContributionUpdateRequest,
 ) {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionUpdate(session.userId, { submissionId, input }, async (retryKey) => {
   const result = await requestOperation(
     "contribution-update:" + submissionId,
     "contributionPut",
@@ -1120,17 +1301,27 @@ export async function updateContributionDraft(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: input,
-      idempotencyKey: idempotencyKey("contribution-update"),
+      idempotencyKey: retryKey,
     },
+    false,
+    session.userId,
   );
+  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
   return result;
+  });
 }
+
+const retryContributionUpload = createMutationRetry(() => idempotencyKey("contribution-upload-create"));
 
 export async function createContributionUpload(
   submissionId: ContributionId,
   input: ContributionUploadSessionRequest,
 ) {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionUpload(session.userId, { submissionId, input }, async (retryKey) => {
   const result = await requestOperation(
     "contribution-upload-create:" + submissionId,
     "contributionUploadPost",
@@ -1138,11 +1329,15 @@ export async function createContributionUpload(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: input,
-      idempotencyKey: idempotencyKey("contribution-upload-create"),
+      idempotencyKey: retryKey,
     },
+    false,
+    session.userId,
   );
+  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
   return result;
+  });
 }
 
 export async function completeContributionUpload(
@@ -1150,6 +1345,9 @@ export async function completeContributionUpload(
   uploadId: ContributionUploadId,
   input: ContributionUploadCompleteRequest,
 ) {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   const result = await requestOperation(
     "contribution-upload-complete:" + uploadId,
     "contributionUploadPut",
@@ -1159,15 +1357,41 @@ export async function completeContributionUpload(
       body: input,
       idempotencyKey: idempotencyKey("contribution-upload-complete"),
     },
+    false,
+    session.userId,
   );
+  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
   return result;
 }
+
+const retryContributionRemoval = createMutationRetry(() => idempotencyKey("contribution-upload-remove"));
+
+export async function removeContributionUpload(submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number) {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionRemoval(session.userId, { submissionId, uploadId, expectedRevision }, async (retryKey) => {
+    const result = await requestOperation("contribution-upload-remove:" + uploadId, "contributionUploadDelete", {
+      auth: "REQUIRED", pathParams: { submissionId, uploadId }, body: { expectedRevision }, idempotencyKey: retryKey,
+    }, false, session.userId);
+    if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
+    invalidateApiCache("contributions");
+    return result;
+  });
+}
+
+const retryContributionSubmit = createContributionSubmitRetry(Taro, () => idempotencyKey("contribution-submit"),
+  (error) => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
 
 export async function submitContribution(
   submissionId: ContributionId,
   expectedRevision: number,
 ) {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionSubmit(session.userId, { submissionId, expectedRevision }, async (retryKey) => {
   const result = await requestOperation(
     "contribution-submit:" + submissionId,
     "contributionSubmitPost",
@@ -1175,12 +1399,16 @@ export async function submitContribution(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: { expectedRevision },
-      idempotencyKey: idempotencyKey("contribution-submit"),
+      idempotencyKey: retryKey,
     },
+    false,
+    session.userId,
   );
+  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
   await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
   return result;
+  });
 }
 
 export function cancelRequest(key: string) {

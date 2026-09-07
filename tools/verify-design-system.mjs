@@ -220,28 +220,6 @@ assert.equal(type.displayFamily, "Bahnschrift");
 assert.equal(type.bodyFamily, "Aptos");
 assert.equal(type.dataFamily, "Cascadia Mono");
 
-for (const required of [
-  "`target.system.starward-blue-skeuomorphic-2026-07-29`",
-  "Open Design `0.16.1`",
-  "`user:starward-2026-07-29`",
-  "`ds-starward-2026-07-29`",
-  "`280b1d3726e181591f19b6ddef96ab5d32fb61c5302af07fcee194b32f135f70`",
-  "`ae9d23d7d2a127b5ea1feb1a86cebd1b5a33dc1294de0ad40c9e4803a8a9be8f`",
-]) {
-  assert(design.includes(required), `missing active-system adoption identity: ${required}`);
-}
-for (const legacyTarget of [
-  "target.mobile-product-pages-v2",
-  "target.ops-product-pages-v1",
-  "target.mobile-controls-v3",
-  "target.ops-controls-v2",
-]) {
-  assert(
-    design.includes(`Legacy rollback baseline \`${legacyTarget}\``),
-    `legacy target is not explicitly rollback-only: ${legacyTarget}`,
-  );
-}
-
 const miniappVerification = await verifyMiniappDesignProfile({ root, design });
 
 process.stdout.write(
@@ -258,6 +236,6 @@ process.stdout.write(
     color_roles_per_mode: roleKeys.length,
     observation_unique_values: observationValues.size,
     wechat_miniapp: miniappVerification,
-    legacy_visual_targets: "rollback-only",
+    legacy_visual_targets: "not-required",
   })}\n`,
 );

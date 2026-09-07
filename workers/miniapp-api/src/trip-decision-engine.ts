@@ -136,7 +136,7 @@ export class TripDecisionEngine {
           "SITE_EVIDENCE_INCOMPLETE",
           "地点关键资料不足",
           "UNKNOWN",
-          "开放、法律进入、道路或安全事实不完整时不能产生肯定出行建议。",
+          "开放、准入和道路安全尚未核实，请确认后再出发。",
           input.sourceRevision,
         ),
       );
@@ -151,7 +151,7 @@ export class TripDecisionEngine {
           "ROUTE_NOT_CURRENT",
           "实时路线未完整核验",
           "CAUTION",
-          "天空结论不等同于可达性；出发前仍需核验当前道路和末段路线。",
+          "出发前请核实道路和最后一段路线是否可通行。",
           input.sourceRevision,
         ),
       );
@@ -161,7 +161,7 @@ export class TripDecisionEngine {
           "WARNING_FEED_UNAVAILABLE",
           "官方天气预警不可用",
           "UNKNOWN",
-          "主预报不能证明没有官方预警；预警源恢复前不能产生肯定出行建议。",
+          "暂时无法确认官方预警，请查询当地气象部门后再决定出发。",
           input.sourceRevision,
         ),
       );

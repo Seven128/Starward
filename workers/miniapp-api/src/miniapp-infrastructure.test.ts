@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import test from "node:test";
-import type { ContributionSubmission } from "@starward/miniapp-contracts";
+import type { ContributionSubmission, ImportDraft } from "@starward/miniapp-contracts";
 import { eraseContributionContent } from "./account-data-erasure.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import {
@@ -115,6 +115,16 @@ test(
         const secondIdentity = (
           await first.login({ code: "local:integration-second-" + runId })
         ).data;
+        const profileInput = { platform: "OTHER" as const, displayName: "Isolated profile replay", url: "https://example.com/profile-replay", visibility: "PRIVATE" as const, sortOrder: 0 };
+        const profile = await first.saveProfileLink(firstIdentity.userId, profileInput, `infra:profile:${runId}`);
+        const replayedProfile = await first.saveProfileLink(firstIdentity.userId, profileInput, `infra:profile:${runId}`);
+        assert.deepEqual(replayedProfile.data, profile.data);
+        const competing = await Promise.allSettled(["a", "b"].map(suffix => first.saveProfileLink(
+          firstIdentity.userId, { ...profileInput, url: "https://example.com/profile-concurrent" }, `infra:profile:concurrent:${suffix}:${runId}`,
+        )));
+        assert.equal(competing.filter(result => result.status === "fulfilled").length, 1);
+        const duplicate = competing.find(result => result.status === "rejected");
+        assert.ok(duplicate?.status === "rejected" && /profile_link_duplicate/.test(String(duplicate.reason)));
         await first.setFavorite(
           firstIdentity.userId,
           spot.spotId,
@@ -148,9 +158,7 @@ test(
           },
           localDate: "2026-08-06",
         });
-        await first.savePlan(
-          firstIdentity.userId,
-          {
+        const planInput = {
             planId: ("plan:" + runId) as never,
             spotId: spot.spotId,
             observationContextId: planOrigin.data.contextId,
@@ -158,9 +166,13 @@ test(
             localTime: "23:40",
             notes: "restart readback",
             expectedRevision: null,
-          },
-          "infra:plan:" + runId,
-        );
+          };
+        const planSaves = await Promise.all(Array.from({ length: 3 }, () =>
+          first.savePlan(firstIdentity.userId, planInput, "infra:plan:" + runId)));
+        for (const result of planSaves) assert.deepEqual(result.data, planSaves[0]!.data);
+        await assert.rejects(first.savePlan(firstIdentity.userId,
+          { ...planInput, notes: "must not overwrite an existing plan" }, "infra:plan:duplicate-create:" + runId), /plan_revision_conflict/);
+        assert.deepEqual((await first.repository.listPlans(firstIdentity.userId))[0], planSaves[0]!.data);
         const draft = await first.createContributionDraft(
           firstIdentity.userId,
           {
@@ -176,6 +188,39 @@ test(
           },
           "infra:contribution-draft:" + runId,
         );
+        const recoveryDraft = await first.createContributionDraft(firstIdentity.userId, {
+          kind: "CORRECTION", spotId: spot.spotId, candidateLocation: null,
+          observedAt: null, topics: ["NIGHT_SAFETY"],
+          detail: "隔离数据库上传恢复测试，不构成真实地点事实或发布证据。",
+          rightsConfirmed: true, preciseLocationConsent: false,
+        }, `infra:recovery-draft:${runId}`);
+        let recovery = recoveryDraft.data;
+        for (let slot = 0; slot < 3; slot++) {
+          const input = { originalName: "recovery.png", mimeType: "image/png" as const, byteSize: 32, expectedRevision: recovery.revision };
+          recovery = (await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, input, `infra:recovery:${runId}:${slot}`)).data;
+          if (slot === 2) assert.deepEqual((await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, input, `infra:recovery:${runId}:${slot}`)).data, recovery);
+        }
+        await first.repository.expireContributionUploads(new Date(Date.parse(recovery.media[2]!.expiresAt) + 1000).toISOString());
+        recovery = (await first.repository.getContribution(firstIdentity.userId, recovery.submissionId))!;
+        const replaceInput = { originalName: "replacement.png", mimeType: "image/png" as const, byteSize: 32, expectedRevision: recovery.revision, replaceUploadId: recovery.media[1]!.uploadId };
+        const replacement = (await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, replaceInput, `infra:replacement:${runId}`)).data;
+        assert.equal(replacement.media.length, 3);
+        assert.deepEqual(replacement.media[0], recovery.media[0]);
+        assert.deepEqual(replacement.media[2], recovery.media[2]);
+        assert.notEqual(replacement.media[1]!.uploadId, recovery.media[1]!.uploadId);
+        assert.deepEqual((await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, replaceInput, `infra:replacement:${runId}`)).data, replacement);
+        const cleanupKey = `contributions/${"c".repeat(24)}/${String(replacement.media[1]!.uploadId).replace(/^upload:/u, "")}.png`;
+        const readyRecovery = await first.repository.completeContributionUpload(firstIdentity.userId, replacement.submissionId, replacement.media[1]!.uploadId, {
+          byteSize: 32, sha256: "c".repeat(64), objectKey: cleanupKey, uploadedAt: new Date().toISOString(),
+        }, `infra:ready-remove:${runId}`);
+        const removedRecovery = { data: await first.repository.removeContributionUpload(firstIdentity.userId, replacement.submissionId, replacement.media[1]!.uploadId, readyRecovery.revision, `infra:remove:${runId}`) };
+        assert.deepEqual(removedRecovery.data.media, [replacement.media[0], replacement.media[2]]);
+        assert.ok((await first.repository.expireContributionUploads(new Date().toISOString())).includes(cleanupKey));
+        assert.ok((await first.repository.expireContributionUploads(new Date().toISOString())).includes(cleanupKey), "unacknowledged deletion remains retryable");
+        await first.repository.acknowledgeContributionMediaDeletion([cleanupKey]);
+        assert.equal((await first.repository.expireContributionUploads(new Date().toISOString())).includes(cleanupKey), false);
+        assert.deepEqual((await first.removeContributionUpload(firstIdentity.userId, replacement.submissionId, replacement.media[1]!.uploadId, readyRecovery.revision, `infra:remove:${runId}`)).data, removedRecovery.data);
+        await assert.rejects(first.removeContributionUpload(secondIdentity.userId, replacement.submissionId, replacement.media[0]!.uploadId, removedRecovery.data.revision, `infra:remove-other:${runId}`), /contribution_not_found/);
         const uploadSession = await first.createContributionUpload(
           firstIdentity.userId,
           draft.data.submissionId,
@@ -189,24 +234,39 @@ test(
         );
         const upload = uploadSession.data.media[0]!;
         assert.ok(first.repository instanceof PostgresMiniappRepository);
-        let imported = (await first.createImportDraft(firstIdentity.userId, {
-          platform: "OTHER",
+        const importInput = {
+          platform: "OTHER" as const,
           originalUrl: "https://example.com/integration-proposal-identity",
           rightsConfirmed: true,
-        }, `infra:import:${runId}`)).data;
+        };
+        const concurrentImports = await Promise.all(Array.from({ length: 3 }, () =>
+          first.createImportDraft(firstIdentity.userId, importInput, `infra:import:${runId}`)));
+        let imported = concurrentImports[0]!.data;
+        for (const result of concurrentImports) assert.deepEqual(result.data, imported);
+        const importCount = await first.repository.pool.query(
+          "SELECT count(*)::int AS count FROM external_post_imports WHERE user_id = $1 AND original_url = $2",
+          [firstIdentity.userId, importInput.originalUrl],
+        );
+        assert.equal(importCount.rows[0].count, 1);
         let proposalId: string | null = null;
+        const importReceipts: ImportDraft[] = [];
         for (const [index, stage] of ([
           "EDIT_DRAFT", "EDIT_DRAFT", "ASSOCIATE_SPOT", "PREVIEW",
         ] as const).entries()) {
-          imported = (await first.updateImportDraft(firstIdentity.userId,
-            imported.importDraftId, {
+          const updateInput = {
               expectedRevision: imported.revision,
               stage,
               title: "隔离测试提案身份",
               body: "验证连续保存不创建重复提案，不陈述真实地点事实。",
               spotId: null,
               createProposal: true,
-            }, `infra:import-save:${runId}:${index}`)).data;
+            };
+          const concurrentUpdates = await Promise.all(Array.from({ length: 3 }, () =>
+            first.updateImportDraft(firstIdentity.userId, imported.importDraftId,
+              updateInput, `infra:import-save:${runId}:${index}`)));
+          imported = concurrentUpdates[0]!.data;
+          importReceipts.push(imported);
+          for (const result of concurrentUpdates) assert.deepEqual(result.data, imported);
           proposalId ??= imported.spotProposalId;
           assert.equal(imported.spotProposalId, proposalId);
           const proposals: { rows: { proposal_id: string }[] } = await first.repository.pool.query(
@@ -234,6 +294,7 @@ test(
           "infra:contribution-submit:" + runId,
         );
         assert.equal(submitted.data.state, "PENDING_REVIEW");
+        assert.deepEqual((await first.submitContribution(firstIdentity.userId, draft.data.submissionId, completed.revision, "infra:contribution-submit:" + runId)).data, submitted.data);
         assert.deepEqual(
           (await first.listContributions(secondIdentity.userId)).data
             .submissions,
@@ -314,9 +375,14 @@ test(
         return {
           firstIdentity,
           secondIdentity,
+          profileInput,
+          profile: profile.data,
+          planInput,
+          planReceipt: planSaves[0]!.data,
           saved,
           contributionId: submitted.data.submissionId,
           importId: imported.importDraftId,
+          firstImportReceipt: importReceipts[0]!,
           proposalId,
         };
       } finally {
@@ -327,11 +393,34 @@ test(
 
     const restarted = await MiniappService.createFromEnvironment();
     try {
+      const originalContextGet = restarted.observationContexts.get;
+      restarted.observationContexts.get = async () => { throw new Error("context_unavailable_for_replay_test"); };
+      try {
+        const replay = await restarted.savePlan(firstIdentity.userId, firstRun.planInput, "infra:plan:" + runId);
+        assert.deepEqual(replay.data, firstRun.planReceipt);
+        assert.equal((await restarted.repository.listPlans(firstIdentity.userId)).length, 1);
+        await assert.rejects(restarted.savePlan(secondIdentity.userId, firstRun.planInput, "infra:plan:" + runId), /context_unavailable_for_replay_test/);
+        await assert.rejects(restarted.savePlan(firstIdentity.userId, firstRun.planInput, "infra:plan:new:" + runId), /context_unavailable_for_replay_test/);
+      } finally { restarted.observationContexts.get = originalContextGet; }
+      const restartedProfile = await restarted.saveProfileLink(firstIdentity.userId, firstRun.profileInput, `infra:profile:${runId}`);
+      assert.deepEqual(restartedProfile.data, firstRun.profile);
       const restoredImport = (await restarted.getImportDraft(
         firstIdentity.userId, firstRun.importId,
       )).data;
       assert.equal(restoredImport.spotProposalId, firstRun.proposalId);
       assert.equal(restoredImport.stage, "PREVIEW");
+      const oldImportInput = {
+        expectedRevision: 1, stage: "EDIT_DRAFT" as const,
+        title: "隔离测试提案身份",
+        body: "验证连续保存不创建重复提案，不陈述真实地点事实。",
+        spotId: null, createProposal: true,
+      };
+      const lateImportReplay = await restarted.updateImportDraft(firstIdentity.userId,
+        firstRun.importId, oldImportInput, `infra:import-save:${runId}:0`);
+      assert.deepEqual(lateImportReplay.data, firstRun.firstImportReceipt);
+      assert.deepEqual((await restarted.getImportDraft(firstIdentity.userId, firstRun.importId)).data, restoredImport);
+      await assert.rejects(restarted.updateImportDraft(secondIdentity.userId,
+        firstRun.importId, oldImportInput, `infra:import-save:${runId}:0`), /import_draft_not_found/);
       assert.deepEqual(
         (await restarted.getFavorites(firstIdentity.userId)).data.favorites.map(
           (item) => item.spotId,

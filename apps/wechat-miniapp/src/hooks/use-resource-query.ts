@@ -7,9 +7,10 @@ interface QueryOptions<T> {
   queryFn: (signal: AbortSignal | undefined) => Promise<T>;
   enabled?: boolean;
   staleTime?: number;
+  throwOnRefetchError?: boolean;
 }
 
-type QueryResult<T> =
+type QueryResult<T> = (
   | {
       data: T;
       error: null;
@@ -30,13 +31,14 @@ type QueryResult<T> =
       isError: false;
       isPending: true;
       refetch: () => Promise<T | undefined>;
-    };
+    }) & { refreshError?: unknown };
 
 export function useResourceQuery<T>({
   queryKey,
   queryFn,
   enabled = true,
   staleTime = 60_000,
+  throwOnRefetchError = false,
 }: QueryOptions<T>): QueryResult<T> {
   const diagnosticKey = String(queryKey[0] ?? "resource-query");
   const result = useQuery<T>({
@@ -56,7 +58,10 @@ export function useResourceQuery<T>({
       `${result.status}:${result.fetchStatus}:${onlineManager.isOnline() ? "online" : "offline"}`,
     );
   }, [diagnosticKey, result.fetchStatus, result.status]);
-  const refetch = async () => (await result.refetch()).data;
+  const refetch = async () => {
+    const refreshed = await result.refetch({ throwOnError: throwOnRefetchError });
+    return refreshed.error ? undefined : refreshed.data;
+  };
   if (result.data !== undefined)
     return {
       data: result.data,
@@ -64,6 +69,7 @@ export function useResourceQuery<T>({
       isError: false,
       isPending: false,
       refetch,
+      refreshError: result.error ?? undefined,
     };
   if (result.error !== null)
     return {

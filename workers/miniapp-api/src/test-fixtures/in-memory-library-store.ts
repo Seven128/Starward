@@ -103,6 +103,10 @@ export class InMemoryLibraryStore {
     );
   }
 
+  getPlanSaveReceipt(userId: UserId, planId: string, idempotencyKey: string) {
+    const receipt = this.#replay<ObservationPlan>(userId, idempotencyKey);
+    return receipt?.planId === planId ? structuredClone(receipt) : null;
+  }
   savePlan(
     userId: UserId,
     plan: ObservationPlan,
@@ -114,6 +118,8 @@ export class InMemoryLibraryStore {
     if (replay) return structuredClone(replay);
     const plans = this.#plans.get(userId)!;
     const existing = plans.get(plan.planId);
+    if (expectedRevision === null && existing)
+      throw new Error("plan_revision_conflict");
     if (expectedRevision !== null && (existing?.revision ?? 0) !== expectedRevision)
       throw new Error("plan_revision_conflict");
     const saved = {
@@ -149,6 +155,8 @@ export class InMemoryLibraryStore {
     this.ensureUser(userId);
     const replay = this.#replay<ProfileLink>(userId, idempotencyKey);
     if (replay) return structuredClone(replay);
+    if ([...this.#links.get(userId)!.values()].some(existing => existing.url === link.url && existing.profileLinkId !== link.profileLinkId))
+      throw new Error("profile_link_duplicate");
     this.#links.get(userId)!.set(link.profileLinkId, structuredClone(link));
     this.#remember(userId, idempotencyKey, link);
     return structuredClone(link);
@@ -181,6 +189,11 @@ export class InMemoryLibraryStore {
     imports.set(saved.importDraftId, saved);
     this.#remember(userId, idempotencyKey, saved);
     return structuredClone(saved);
+  }
+
+  getImportSaveReceipt(userId: UserId, id: string, idempotencyKey: string) {
+    const receipt = this.#replay<ImportDraft>(userId, idempotencyKey);
+    return receipt?.importDraftId === id ? structuredClone(receipt) : null;
   }
 
   listImportDrafts(userId: UserId) {

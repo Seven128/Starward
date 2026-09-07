@@ -1,8 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile, stat, readFile } from "node:fs/promises";
 import path from "node:path";
 import { createServer } from "node:net";
+import { crc32, deflateSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import Redis from "ioredis";
 import pg from "pg";
@@ -359,6 +360,62 @@ try {
     if (!statusRoundtripSpot)
       throw new Error("admin_status_roundtrip_spot_missing");
     const spotId = statusRoundtripSpot.spot_id;
+    const contributionRequest = async (route, method, body, key, expectedStatus = 200) => {
+      const response = await fetch(`${base}/v2${route}`, {
+        method, headers: { ...identityHeaders, "content-type": "application/json", "idempotency-key": `${key}:${runId}` }, body: JSON.stringify(body),
+      });
+      const value = await response.json();
+      if (expectedStatus === 200 ? !response.ok : response.status !== expectedStatus) throw new Error(`contribution_http_${key}_failed:${response.status}:${value.code ?? "unexpected"}`);
+      return value;
+    };
+    const httpDraft = await contributionRequest("/me/contributions", "POST", {
+      kind: "FIELD_REPORT", spotId, candidateLocation: null, observedAt: new Date().toISOString(), topics: ["NIGHT_SAFETY"],
+      detail: "隔离HTTP图片移除测试，仅用于验证上传和清理，不构成真实地点证据。", rightsConfirmed: true, preciseLocationConsent: false,
+    }, "media-draft");
+    const chunk = (type, data) => {
+      const name = Buffer.from(type);
+      const output = Buffer.alloc(data.length + 12);
+      output.writeUInt32BE(data.length); name.copy(output, 4); data.copy(output, 8);
+      output.writeUInt32BE(crc32(Buffer.concat([name, data])) >>> 0, data.length + 8);
+      return output;
+    };
+    const pngHeader = Buffer.alloc(13);
+    pngHeader.writeUInt32BE(1); pngHeader.writeUInt32BE(1, 4); pngHeader[8] = 8; pngHeader[9] = 6;
+    const png = Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]), chunk("IHDR", pngHeader), chunk("IDAT", deflateSync(Buffer.from([0,32,64,96,255]))), chunk("IEND", Buffer.alloc(0))]);
+    const contributionPath = `/me/contributions/${encodeURIComponent(httpDraft.data.submissionId)}`;
+    const httpUpload = await contributionRequest(`${contributionPath}/media-uploads`, "POST", { originalName: "http-check.png", mimeType: "image/png", byteSize: png.length, expectedRevision: httpDraft.data.revision }, "media-upload");
+    const uploadPath = `${contributionPath}/media-uploads/${encodeURIComponent(httpUpload.data.media[0].uploadId)}`;
+    const httpCompleted = await contributionRequest(uploadPath, "PUT", { dataBase64: png.toString("base64") }, "media-complete");
+    if (httpCompleted.data.media[0].state !== "UPLOADED") throw new Error("media_http_upload_not_ready");
+    const storedPngPath = path.join(mediaStorageRoot, "contributions", createHash("sha256").update(login.data.userId).digest("hex").slice(0, 24), `${String(httpUpload.data.media[0].uploadId).replace(/^upload:/u, "")}.png`);
+    if (!(await stat(storedPngPath)).isFile()) throw new Error("media_http_file_not_persisted");
+    const unauthenticatedRemoval = await fetch(`${base}/v2${uploadPath}`, { method: "DELETE", headers: { "content-type": "application/json", "idempotency-key": `media-no-auth:${runId}` }, body: JSON.stringify({ expectedRevision: httpCompleted.data.revision }) });
+    if (unauthenticatedRemoval.status !== 403) throw new Error(`media_http_anonymous_delete_not_denied:${unauthenticatedRemoval.status}`);
+    await contributionRequest(uploadPath, "DELETE", { expectedRevision: httpDraft.data.revision }, "media-remove-stale", 409);
+    const httpRemoved = await contributionRequest(uploadPath, "DELETE", { expectedRevision: httpCompleted.data.revision }, "media-remove");
+    if (httpRemoved.data.media.length !== 0) throw new Error("media_http_removal_not_applied");
+    const fileAfterRemoval = await stat(storedPngPath).catch((error) => { if (error.code === "ENOENT") return null; throw error; });
+    if (fileAfterRemoval) throw new Error("media_http_private_file_not_removed");
+    const httpRemovalReplay = await contributionRequest(uploadPath, "DELETE", { expectedRevision: httpCompleted.data.revision }, "media-remove");
+    if (JSON.stringify(httpRemovalReplay.data) !== JSON.stringify(httpRemoved.data)) throw new Error("media_http_removal_replay_changed");
+    const jpeg = await readFile(path.join(root, "workers/miniapp-api/src/test-fixtures/self-generated-transport-test.jpg"));
+    const jpegPrivateText = Buffer.from("synthetic-private-location-after-scan");
+    const jpegComment = Buffer.from([0xff, 0xfe, 0, 0]);
+    jpegComment.writeUInt16BE(jpegPrivateText.length + 2, 2);
+    const privateJpeg = Buffer.concat([jpeg.subarray(0, -2), jpegComment, jpegPrivateText, jpeg.subarray(-2)]);
+    const jpegSession = await contributionRequest(`${contributionPath}/media-uploads`, "POST", {
+      originalName: "self-generated.jpg", mimeType: "image/jpeg", byteSize: privateJpeg.length, expectedRevision: httpRemoved.data.revision,
+    }, "jpeg-upload");
+    const jpegId = jpegSession.data.media[0].uploadId;
+    const jpegPath = `${contributionPath}/media-uploads/${encodeURIComponent(jpegId)}`;
+    const jpegReady = await contributionRequest(jpegPath, "PUT", { dataBase64: privateJpeg.toString("base64") }, "jpeg-complete");
+    if (jpegReady.data.media[0].state !== "UPLOADED" || jpegReady.data.media[0].byteSize !== jpeg.length) throw new Error("jpeg_http_sanitized_receipt_invalid");
+    const storedJpegPath = path.join(mediaStorageRoot, "contributions", createHash("sha256").update(login.data.userId).digest("hex").slice(0, 24), `${String(jpegId).replace(/^upload:/u, "")}.jpg`);
+    if (!(await readFile(storedJpegPath)).equals(jpeg)) throw new Error("jpeg_http_sanitized_bytes_changed");
+    const jpegRemoved = await contributionRequest(jpegPath, "DELETE", { expectedRevision: jpegReady.data.revision }, "jpeg-remove");
+    if (jpegRemoved.data.media.length !== 0) throw new Error("jpeg_http_removal_not_applied");
+    const jpegAfterRemoval = await stat(storedJpegPath).catch((error) => { if (error.code === "ENOENT") return null; throw error; });
+    if (jpegAfterRemoval) throw new Error("jpeg_http_private_file_not_removed");
     const currentRevision = Number(statusRoundtripSpot.version);
     if (!Number.isInteger(currentRevision) || currentRevision < 1)
       throw new Error("admin_status_roundtrip_revision_invalid");
@@ -435,6 +492,8 @@ try {
       isolated_local_identity: "passed",
       aggregate_library_read: "passed",
       typed_conflict_recovery: "passed",
+      private_media_http_upload_remove_replay: "passed",
+      jpeg_http_sanitization_and_removal: "passed",
       failed_favorite_is_not_committed: "passed",
       no_admin_web_surface: "passed",
       rbac_denial: "passed",

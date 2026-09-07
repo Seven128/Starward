@@ -150,3 +150,15 @@ test("the current feature set is one exact boolean closure", () => {
   assert.equal(SELECTED_FEATURE_FLAGS.PROFILE_LINKS_ENABLED, true);
   assert.equal(SELECTED_FEATURE_FLAGS.OWN_POST_IMPORT_ENABLED, true);
 });
+
+test("complete fixture parking guidance agrees with its available facility while unknown spots stay unknown", () => {
+  const complete = buildTestSpotDetail("spot:test-published")!;
+  assert.equal(complete.spot.facilities.find(item => item.type === "PARKING")?.status, "AVAILABLE");
+  assert.doesNotMatch(complete.route.parkingGuidance, /未知|待核验/);
+  assert.equal(complete.route.kind, "STRAIGHT_LINE_ONLY");
+  assert.equal(complete.route.driveMinutes, null);
+  for (const spot of TEST_SPOTS) {
+    if (spot.facilities.find(item => item.type === "PARKING")?.status === "UNKNOWN")
+      assert.match(buildTestSpotDetail(spot.spotId)!.route.parkingGuidance, /停车状态未知/);
+  }
+});

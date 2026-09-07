@@ -3,17 +3,12 @@ import { access, rm } from "node:fs/promises";
 import { createServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveOfficialCli } from "./device-feedback-official.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const projectPath = path.join(root, "apps", "wechat-miniapp");
 const outputEntry = path.join(projectPath, "dist", "weapp", "app.json");
 const composePath = path.join(root, "infra", "miniapp", "docker-compose.yml");
-const devtoolsExecutable =
-  "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\微信开发者工具.exe";
-const devtoolsCliEntry =
-  "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\resources\\app.asar.unpacked\\js\\common\\cli\\index.js";
-const devtoolsCliBootstrap =
-  "const e=process.argv[1],a=process.argv.slice(2).filter(function(x){return x!=='--electron'});if(!process.env.cwd)process.env.cwd=process.cwd();process.argv=[process.execPath,'--ms-enable-electron-run-as-node',e,'--electron'].concat(a);require(e)";
 const npmCli = path.join(
   path.dirname(process.execPath),
   "node_modules",
@@ -90,30 +85,26 @@ function startNpm(script, env) {
   });
 }
 
-function openDevtools() {
+async function openDevtools() {
   if (args.has("--no-open")) return;
+  const invocation = await resolveOfficialCli();
   const child = spawn(
-    devtoolsExecutable,
+    invocation.file,
     [
-      "-e",
-      devtoolsCliBootstrap,
-      devtoolsCliEntry,
+      ...invocation.prefix,
       "open",
       "--project",
       projectPath,
-      "--trust-project",
     ],
     {
-      cwd: path.dirname(devtoolsExecutable),
+      cwd: invocation.cwd ?? root,
       env: {
         ...process.env,
-        cwd: projectPath,
-        ELECTRON: "",
-        ELECTRON_RUN_AS_NODE: "1",
+        ...invocation.env,
       },
       detached: true,
       stdio: "ignore",
-      windowsHide: false,
+      windowsHide: true,
     },
   );
   child.unref();
@@ -204,7 +195,7 @@ await waitFor(async () => {
   await access(outputEntry);
   return true;
 }, "weapp_watch_build_ready");
-openDevtools();
+await openDevtools();
 
 process.stdout.write(
   `${JSON.stringify({

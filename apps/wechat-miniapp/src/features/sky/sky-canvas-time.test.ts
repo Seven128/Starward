@@ -8,7 +8,7 @@ import * as timeFrame from "./sky-time-frame.ts";
 
 // Execute the production drawing function with a recorded native-canvas boundary.
 // This establishes call/data selection, not WEAPP rendering or physical pointing.
-const source = readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8");
+const source = readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 test("production canvas measurement rejects missing dimensions instead of inventing a viewport", () => {
   // Execute the exact measurement boundary; this is not a native layout test.
   const start = source.indexOf("const rect = Array.isArray(result)");

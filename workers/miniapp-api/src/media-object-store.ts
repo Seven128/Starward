@@ -52,20 +52,29 @@ function sanitizeJpeg(input: Buffer) {
   const output: Buffer[] = [input.subarray(0, 2)];
   let offset = 2;
   let hasDimensions = false;
+  let hasScan = false;
   while (offset < input.length) {
     const marker = jpegMarkerAt(input, offset);
     if (marker === 0xda) {
-      if (
-        input.length < offset + 4 ||
-        input[input.length - 2] !== 0xff ||
-        input[input.length - 1] !== 0xd9
-      )
-        throw new Error("contribution_media_jpeg_invalid");
       if (!hasDimensions) throw new Error("contribution_media_jpeg_incomplete");
-      output.push(input.subarray(offset));
-      return Buffer.concat(output);
+      const { end } = jpegSegmentEnd(input, offset);
+      let scanEnd = end;
+      while (scanEnd < input.length) {
+        if (input[scanEnd] !== 0xff) { scanEnd++; continue; }
+        const next = input[scanEnd + 1];
+        if (next === 0x00 || (next !== undefined && next >= 0xd0 && next <= 0xd7)) {
+          scanEnd += 2;
+          continue;
+        }
+        break;
+      }
+      output.push(input.subarray(offset, scanEnd));
+      offset = scanEnd;
+      hasScan = true;
+      continue;
     }
     if (marker === 0xd9) {
+      if (!hasDimensions || !hasScan) throw new Error("contribution_media_jpeg_incomplete");
       output.push(input.subarray(offset, offset + 2));
       if (offset + 2 !== input.length)
         throw new Error("contribution_media_jpeg_trailing_data");

@@ -7,6 +7,7 @@ import type {
   ContributionKind,
   ContributionMediaUpload,
   ContributionSubmission,
+  ContributionUploadId,
   AdminMutationResult,
   MergePreview,
   ModerationCaseView,
@@ -418,10 +419,16 @@ export interface ContributionUploadSessionRequest {
   mimeType: ContributionMediaUpload["mimeType"];
   byteSize: number;
   expectedRevision: number;
+  /** Explicitly replace an expired slot; other uploads remain untouched. */
+  replaceUploadId?: ContributionUploadId;
 }
 
 export interface ContributionUploadCompleteRequest {
   dataBase64: string;
+}
+
+export interface ContributionUploadRemoveRequest {
+  expectedRevision: number;
 }
 
 export interface ContributionsData {

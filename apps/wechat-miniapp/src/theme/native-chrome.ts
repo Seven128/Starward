@@ -1,46 +1,16 @@
 import Taro from "@tarojs/taro";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 
-const NATIVE_CHROME_THEME: Record<
-  DisplayMode,
-  {
-    canvas: string;
-    color: string;
-    selectedColor: string;
-    backgroundColor: string;
-    borderStyle: "black" | "white";
-    suffix: string;
-  }
-> = {
-  DAY: {
-    canvas: "#FFFFFF",
-    color: "#5E655F",
-    selectedColor: "#4859B8",
-    backgroundColor: "#FFFFFF",
-    borderStyle: "white",
-    suffix: "",
-  },
-  NIGHT: {
-    canvas: "#11120F",
-    color: "#989E94",
-    selectedColor: "#D1D7FF",
-    backgroundColor: "#181A17",
-    borderStyle: "black",
-    suffix: "-night",
-  },
-  OBSERVATION: {
-    canvas: "#000000",
-    color: "#D84A3C",
-    selectedColor: "#FF6B58",
-    backgroundColor: "#110000",
-    borderStyle: "black",
-    suffix: "-observation",
-  },
-};
+import { NATIVE_CHROME_THEME } from "./design-tokens";
 
 export async function syncNativeChrome(mode: DisplayMode) {
   const theme = NATIVE_CHROME_THEME[mode];
+  const hasTabBar = () => {
+    const route = Taro.getCurrentPages().at(-1)?.route;
+    return route === "pages/map/index" || route === "pages/my/index";
+  };
   const syncTabBar = async () => {
+    if (!hasTabBar()) return;
     try {
       await Taro.setTabBarStyle({
         color: theme.color,
@@ -57,6 +27,7 @@ export async function syncNativeChrome(mode: DisplayMode) {
       ) return;
       throw error;
     }
+    if (!hasTabBar()) return;
     await Promise.all([
       Taro.setTabBarItem({
         index: 0,
@@ -68,9 +39,19 @@ export async function syncNativeChrome(mode: DisplayMode) {
         iconPath: `assets/icons/tab-my${theme.suffix}.png`,
         selectedIconPath: `assets/icons/tab-my-selected${theme.suffix}.png`,
       }),
-    ]);
+    ]).catch((error: unknown) => {
+      // Native dispatch can outlive the route check above when navigation wins
+      // the race. A tab page's next onShow reapplies its current icons.
+      if (error && typeof error === "object" && "errMsg" in error &&
+        error.errMsg === "setTabBarItem:fail not TabBar page") return;
+      throw error;
+    });
   };
   await Promise.all([
+    Taro.setNavigationBarColor({
+      frontColor: mode === "DAY" ? "#000000" : "#ffffff",
+      backgroundColor: theme.canvas,
+    }),
     Taro.setBackgroundColor({
       backgroundColor: theme.canvas,
       backgroundColorTop: theme.canvas,

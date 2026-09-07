@@ -283,3 +283,9 @@ path = "project_context/architecture/maintenance-boundaries.md"
 role = "decision-rationale"
 read_policy = "on-demand"
 triggers = ["technical debt", "owner extraction", "maintainability", "技术债", "模块拆分"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp/information-design.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["information density", "place details design", "visual hierarchy", "信息密度", "密而不挤", "地点详情设计", "小巧", "精致", "高级感"]

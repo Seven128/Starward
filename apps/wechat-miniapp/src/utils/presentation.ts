@@ -17,10 +17,13 @@ export function formatDisplayDate(value: string): string {
 /** Convert local transport/runtime failures to product copy, never raw codes. */
 export function localFailureMessage(value: string): string {
   const message = value.trim().toLowerCase();
-  if (!message) return "操作未完成，具体原因已记录";
+  if (!message) return "暂时无法完成此操作，请稍后重试";
   if (message.includes("cancel") || message.includes("abort"))
     return "操作已取消";
   if (message.includes("timeout")) return "请求超时";
+  if (message.includes("showmodal:fail")) return "确认窗口未能打开，请重试";
+  if (message.includes("writefile:fail") || message.includes("user_data_path_unavailable"))
+    return "文件未能保存，请检查可用存储空间后重试";
   if (
     message.includes("failed to fetch") ||
     message.includes("network") ||
@@ -31,5 +34,5 @@ export function localFailureMessage(value: string): string {
     return "微信登录未完成";
   if (message.includes("night_requires_formal_spot_id"))
     return "请从正式观星点进入今晚夜空";
-  return "操作未完成，具体技术原因已记录";
+  return "暂时无法完成此操作，请稍后重试";
 }

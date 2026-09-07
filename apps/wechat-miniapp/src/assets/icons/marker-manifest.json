@@ -6,6 +6,42 @@
   "generatedAt": "2026-09-04",
   "assets": [
     {
+      "path": "chevron-right-day.svg",
+      "sha256": "091bdee31888417aa71431993994751e989cc886fdee0cb49c572b3acc01d93a"
+    },
+    {
+      "path": "chevron-right-night.svg",
+      "sha256": "473762f671dc48231d16d83ae622969ccdb15b79e964dac612fe496d770361e1"
+    },
+    {
+      "path": "chevron-right-observation.svg",
+      "sha256": "267f50d2be2a892e5200a2f2eb6d0bcb760bb8210cd71ae2849d8b3fddf2b8a7"
+    },
+    {
+      "path": "download-day.svg",
+      "sha256": "47cb717cca6a56cef3cc7d46049d1182f0c52ca260ae8393f7f5ec6180d1bf63"
+    },
+    {
+      "path": "download-night.svg",
+      "sha256": "e50c8726774d7e7d26cb35cbc358f87da25e1866ff76f8bff3c125a7a8cdbd51"
+    },
+    {
+      "path": "download-observation.svg",
+      "sha256": "70d314cbfcf85f03b42b7e9e0609a0ff8b9fa60928555e396b06740a08178785"
+    },
+    {
+      "path": "images-day.svg",
+      "sha256": "e959c8751d059176cd043deea5005c9a78eda2677372fd5a9919c25b3179b94d"
+    },
+    {
+      "path": "images-night.svg",
+      "sha256": "0c04acd50b830ba6c71b8f39705e8498380595b09377da8bcff2a42226f1ac02"
+    },
+    {
+      "path": "images-observation.svg",
+      "sha256": "fec2ee988233cadf00b404869c7bdaa6d7008e0b119f60e9504519a9153afe53"
+    },
+    {
       "path": "spot-marker-night.png",
       "sha256": "73cad57671b89f1b96930eb0a1d0db4425a31843e25aa2280e1ee1c7657b8790"
     },
@@ -76,6 +112,30 @@
     {
       "path": "tab-my.png",
       "sha256": "d1870dd128e782341a7d7e06a3a658ca2539e07d1b81418ec321ba5798aa0c71"
+    },
+    {
+      "path": "trash-2-day.svg",
+      "sha256": "582a8ad0858645752a19b3a8707b098d1186fb42d509cf5c5000b08526d42c49"
+    },
+    {
+      "path": "trash-2-night.svg",
+      "sha256": "9919781c66657a26b1c913134b65a5d4ec4eb810a38e3e64d5fb781eecee02d6"
+    },
+    {
+      "path": "trash-2-observation.svg",
+      "sha256": "792a5fcb46f7c6ec86eb398fcf98a9d003fae9c1a6616807758eed9ffa5a472f"
+    },
+    {
+      "path": "wifi-off-day.svg",
+      "sha256": "3919fe0bbeeb2bd74069d2344ca516f270f9628bc4cd834566c9ef2105e62830"
+    },
+    {
+      "path": "wifi-off-night.svg",
+      "sha256": "84e5231bc74be824d389198cf89bab0b9069ffff3bb08e9b937932e3d70d4f19"
+    },
+    {
+      "path": "wifi-off-observation.svg",
+      "sha256": "fb8b7b45d6d8fbc3c570c1d2309777729d6aea460b07583a153d870609fd440b"
     }
   ]
 }

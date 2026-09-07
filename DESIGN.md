@@ -147,29 +147,14 @@ components:
 - This file is the sole authored visual authority and exact-value token source. Its YAML front matter owns the native App profile; `## WeChat Mini Program — Sky Canvas Field Signal` owns the independent Mini Program profile. `packages/ui-system/src/tokens.ts` consumes only the App profile, and the Mini Program adapter may consume only the named Mini Program section.
 - Design Authority status: configured and adopted for two independent owner-selected target profiles: native App and WeChat Mini Program. Surface ownership still belongs to `project_context/**`, and neither profile alone claims production/runtime acceptance.
 
-### Design Authority Index
+### Design authority
 
 - Authored exact-value token source: selected — this file. The YAML front matter is scoped to the native App profile; the exact Mini Program tables and contracts live only in the named Mini Program section below.
 - Generation direction and generated token targets: App profile `DESIGN.md` YAML → `packages/ui-system/src/tokens.ts`; Mini Program profile `DESIGN.md#wechat-mini-program--sky-canvas-field-signal` → its single framework adapter. TypeScript, WXSS, CSS, JSON, HTML, kits, manifests, screenshots, and provider files are consumers, candidates or verification inputs, never co-equal token authorities.
-- Active target (native App): `target.system.starward-blue-skeuomorphic-2026-07-29`, selected by the owner on 2026-07-29 with the explicit instruction “选定这个候选”. It controls the native App visual language, tokens, three modes, physical-material rendering, component appearance, state posture, accessibility posture, and motion posture. It does not replace product semantics or claim native/runtime conformance.
-- Active target (WeChat Mini Program): `target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02`, selected by the owner and subsequently revised through explicit design requirement cycles. It replaces the prior Sky Canvas target and controls the independent Mini Program visual language, exact day/night/observation roles, compact information density, typography, semantic geometry, common/domain component grammar, app-owned Map/Search/spot-information-panel chrome, curved time ruler, objective astronomy presentation, full-sky orientation, feedback discipline, motion and accessibility posture defined below. It does not define Product Surface, route, data, service, provider/basemap/native-map styling, runtime or acceptance truth.
-- Mini Program selected sources: exact-value base `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/DESIGN.md` SHA-256 `a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e`, complete manifest SHA-256 `d719dd753422112c4759cd77d0d9da3b7d40d5dd87b38fd3d327835f739f8bde`, package digest `253fbcbfaa083aa897eca2faf5e4eb6f3b99e69da7f485d485f89881adcc8276` and source index SHA-256 `727114ee2f72f6a68a8bd0d25c4d20470ae8b0d6a0ff2bcff6d0067e367543c1`; current component/layout source `docs/design-resources/miniapp-field-signal-unified-flow-forms/selected-source/DESIGN.md` SHA-256 `0fd87614b7d80c8d3f3c880fe39e81c9b7beda89f41e8492e4c113022eda4dd4`. Earlier Map/Finder, review-directed, Map/Search/spot-panel, fullscreen-density-motion, compact-continuity and unified-flow-modes source bytes remain immutable audit provenance only; they are not current generation dependencies, compatibility layouts, alternate UI or fallbacks.
-- Mini Program provider provenance: Open Design `0.21.1`, design-system ID `user:starward-mini-program-sky-canvas-field-signal-revision`, reviewed project `ds-starward-mini-program-sky-canvas-field-signal-revision`, conversation `0bcc669b-29b2-476b-b93d-f502d7b09917`. Revision `bccaa010-a3ef-4895-9fb0-4c874239fdac` is recorded as noncanonical and pending because its proposed body predates the final reviewed project bytes.
 - Mini Program reference interpretation: pure-white day canvas and restrained near-black night surfaces carry compact, clearly tiered information; sky/periwinkle owns time and selection, meteor yellow owns final commitment/celestial events and the translucent filter ornament, trail green owns route/opportunity, and risk coral stays semantic. Vitality comes from semantic color, aligned bands, calibrated draggable ticks, compact proportion and causal motion—not tinted page foundations, deep-blue slabs, oversized type, generic sliders, decorative ambient meteors or excessive padding. The same language governs the stationary Map/Search field, compact suggestions/titleless filters, one-document marker-to-medium information panel, mutually exclusive image-backed bottom layer sheet, objective astronomy facts, raised arrowless ruler, one three-state celestial mode track, headerless orientation canvas, restrained colored-icon My hub and cell-based compact Contribution intake; native App, App/Admin targets and provider/basemap/native-map styling remain excluded inputs.
-- Mini Program condition coverage: day, night, and separately authored strict black/warm-red observation; 320/375/390/430 CSS-pixel equivalents with `750rpx` mapping, safe-area/menu-capsule adaptation, 200% text, non-overlapping `88rpx` targets with smaller visible controls, reduced motion, touch/keyboard focus separation, pressed/selected/disabled/loading/empty/stale/partial/offline/error/success/permission states, mode-correct cold start and asset fallback. These are design contracts and selected-resource QA, not production conformance evidence.
-- Mini Program editable upstream and update route: revise Open Design project `ds-starward-mini-program-sky-canvas-field-signal-revision`, create and review a new immutable package/digest, obtain explicit selection, then replace the active target pointer and canonical section here. Never edit a generated runtime adapter to change the system, overwrite a selected source, or import values from the native App profile.
-- Provider: Open Design `0.16.1`; editable design-system ID `user:starward-2026-07-29`; bound workspace/project ID `ds-starward-2026-07-29`; selected provider body SHA-256 `280b1d3726e181591f19b6ddef96ab5d32fb61c5302af07fcee194b32f135f70`. The provider exposed no revision records at selection, so no revision ID could be accepted; the provider design-system metadata is published and this record owns project adoption.
-- Selected package integrity: `validation-manifest.json` SHA-256 `ae9d23d7d2a127b5ea1feb1a86cebd1b5a33dc1294de0ad40c9e4803a8a9be8f`. The package contained 62 required files, 16 HTML entries, role-isomorphic planning/night/observation specimens, 122 audit anchors, six-value observation pixels, and no package audit error or warning. Audit anchors are traceability markers, not a count of product controls.
-- Selection evidence was limited to the explicit owner brief and three supplied visual references: day image SHA-256 `62d286b330ce48cac73e1b1351e6c35502aac46989af971ee502466842d49fe0`, night image SHA-256 `5d5ec492c02e8d67b502ed7f672f1b8976da61d56f2702fbd7a59bbcb1ee3b5d`, and observation image SHA-256 `d8de918d08dab0f8d6f84bb097076671186a61a1494637f1e40b2fc7b97b8150`. Their logo, wording, poster/device composition, sample data, and proprietary imagery are not adopted.
-- Condition coverage: planning/day, night, and strict black-and-warm-red observation/red-light; 390×844 primary, 360/430 responsive checks, 200% text, 44×44 minimum targets, reduced motion, focus/pressed/disabled/loading/empty/no-results/stale/partial/degraded/unknown/offline/saving/error/success specimens, and decision → action → evidence hierarchy.
-- Editable upstream and update route: revise Open Design system `user:starward-2026-07-29` in project `ds-starward-2026-07-29`, review and validate the complete new package, record the new provider revision or immutable digest, and re-adopt it here. Never silently edit this authority from a generated export and never overwrite a previously selected source identity.
-- Legacy rollback baseline `target.mobile-product-pages-v2`: files remain immutable at `docs/design-targets/mobile-product-pages-v2/index.html` SHA-256 `21838ed2a28f218fb4b37a05827b1be1d6993b23a02fa97847e78fdaa0af4271` and `coverage-manifest.json` SHA-256 `6f99c5a965f167db39babacb853c984aa01e7805095dc9350b7126e36a1ed46f`. Its historical composition is inactive as a current visual constraint and will be regenerated separately.
-- Legacy rollback baseline `target.ops-product-pages-v1`: files remain immutable at `docs/design-targets/ops-product-pages-v1/index.html` SHA-256 `40510c23a88c00cb614cddeeaf9f4c895bc6d70c365b6ded7c5a2e286c4a55b5` and `coverage-manifest.json` SHA-256 `0362730488ec82620979a3ae317b8c3ad89081000071c6deb1901973e426d8e2`. Its historical composition is inactive as a current visual constraint and will be regenerated separately.
-- Legacy rollback baseline `target.mobile-controls-v3`: files remain immutable at `docs/design-targets/mobile-controls-v3/implementation-contract.json` SHA-256 `01f4eae8bb5e01b126480669d79f168508fcf2c821b9edce916dc77fdaae12c4` and `index.html` SHA-256 `c29beac7c41549478544beadef96810fb662487480032c15be5db6e536991b2a`. Its 83 stable Control Keys, scenarios, and behavior semantics remain historical traceability data, but its visual values, geometry, and styling are inactive and were not used to author this system.
-- Legacy rollback baseline `target.ops-controls-v2`: files remain immutable at `docs/design-targets/ops-controls-v2/implementation-contract.json` SHA-256 `13f0d0f50224e61045ad859bbd43d26da15689603121929907c44fe15fabb388` and `index.html` SHA-256 `dc82a4865b3f5fd235a1dadecc736430100a59599d1e439b406c23c18a9f645b`. Its behavior semantics remain historical traceability data, while its visual values, geometry, and styling are inactive.
-- Legacy exports under `docs/design-system/**` are retained unchanged as rollback/reference material. They are not a source for current colors, typography, component styling, geometry, imagery, or fidelity checks.
-- Target precedence is closed: Source/Context owns product, safety, privacy, information, interaction, route, and stable Control meaning; this file owns each explicitly scoped visual profile; a runtime token module may consume only its target profile. Legacy page/control resources may support rollback and semantic traceability only. Any conflict fails closed in favor of the upper owner and requires a new explicit adoption.
-- This document is complete and normative on its own for the adopted visual profiles. `.codex/skills/uiux_design/SKILL.md` remains only the React Native App implementation companion; it is not a Mini Program source or dependency. A future Mini Program implementation companion may be created only after its runtime exists and must consume, never redefine, the Mini Program profile below.
+- Product and Screen Contracts own page responsibilities, data and interaction meaning; this file owns the independent App and Mini Program visual profiles. Verify real runtime behavior separately.
+- Edit current rules and their generated adapters directly. Prototype packages, Open Design projects, handoffs, screenshots and historical hashes are not required inputs or synchronized deliverables. Preserve useful production assets and behavior checks.
+- Mini Program work currently targets standard text at 320/375/390/430 logical pixels, day/night/observation modes, safe areas, 44px touch targets, reduced motion and actual loading/error/permission states. Large-text adaptation is paused by the user.
 
 ## Colors
 
@@ -283,21 +268,229 @@ components:
 
 This section is the complete canonical visual-system profile for `target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02`. It replaces the previous Sky Canvas system for all current Mini Program visual-system work and remains independent from the native App profile above. Product semantics, route ownership, data truth and failure behavior remain owned by Context and the Mini Program Source; this section owns exact visual roles and their system-level projection.
 
-### Adoption record
+### Scope
 
-- Selection: owner-selected on 2026-09-02 through the explicit instruction “现在这套设计系统差不多了，就选中他吧”.
 - Display name: `Starward 微信小程序设计系统` / `Sky Canvas Field Signal`. Do not append version, date or revision labels in the handbook title, navigation, component specimens or ordinary product UI. The same rule applies to generated-candidate titles and design copy. Do not label a current route, component or resource as `old`, `new`, `legacy`, `vN`, `version`, `版本`, `旧版` or `新版`; stable target keys, protocol versions and source digests remain internal traceability metadata only and never become visible product/design labels.
-- Immutable selected sources: exact-value base `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/DESIGN.md`, SHA-256 `a3868d68649e51951f8ae9f9e7a4fa7a08a9270aa491f3f463d04fede655be2e`; current component/layout source `docs/design-resources/miniapp-field-signal-unified-flow-forms/selected-source/DESIGN.md`, SHA-256 `0fd87614b7d80c8d3f3c880fe39e81c9b7beda89f41e8492e4c113022eda4dd4`. Prior Map/Finder, review-directed, Map/Search/spot-panel, fullscreen-density-motion, compact-continuity and unified-flow-modes component sources remain immutable audit provenance only and cannot seed current generation or remain as fallback behavior.
-- Complete selected package: `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/artifact-manifest.json`, SHA-256 `d719dd753422112c4759cd77d0d9da3b7d40d5dd87b38fd3d327835f739f8bde`; package content digest `253fbcbfaa083aa897eca2faf5e4eb6f3b99e69da7f485d485f89881adcc8276`.
-- Source index: `docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/source-index.md`, SHA-256 `727114ee2f72f6a68a8bd0d25c4d20470ae8b0d6a0ff2bcff6d0067e367543c1`.
-- Provider lineage: Open Design `0.21.1`, design-system ID `user:starward-mini-program-sky-canvas-field-signal-revision`, reviewed project `ds-starward-mini-program-sky-canvas-field-signal-revision`, conversation `0bcc669b-29b2-476b-b93d-f502d7b09917`.
-- Provider revision `bccaa010-a3ef-4895-9fb0-4c874239fdac` remains a noncanonical pending lifecycle record because its proposed body predates the final reviewed project bytes. The immutable reviewed project snapshot above—not that stale revision body—is the selected source.
-- The frozen source retains “未选择候选” and candidate-boundary wording as historical lifecycle text. This canonical record owns the selected/adopted interpretation without altering those bytes.
-- The superseded `target.system.wechat-miniapp-sky-canvas-2026-08-25` and its immutable provider source are historical audit provenance only. They do not control, constrain, seed or scaffold current Mini Program generation, styling, composition, component grammar, motion or interaction presentation.
-- Owner instruction on 2026-09-02 retires `target-miniapp-sky-canvas-current-constraint` from current use. Its immutable files remain historical evidence only; current Mini Program composition and interaction responsibility comes directly from the owning Product Surface and Screen Contract, while this section supplies the sole current visual system. New resources must not bind, cite or project the retired entry/handoff as an `exact-target`, `constraint`, inspiration or current-implementation substitute. `target-operations-sky-canvas-current-constraint` remains independently scoped to owner operations and outside this Mini Program system. No resource or Context record proves pixel-exact or production conformance.
-- The owner explicitly authorized iterative design resource → requirement change → resource cycles, required every reusable change to enter the design system before regeneration, and on 2026-09-03 delegated selection and the complete remaining design iteration after this revision without another candidate-approval pause. The current revision makes all panel extents crop one retained document, reveals valid media only during medium→large, retains a compact no-media handle band, shortens the action rail, removes section-rail inner gaps, raises and enables the arrowless ruler, preserves Search text while compacting suggestions and vertical rhythm, stages media before late Map-chrome fade, replaces competing panel/layer flags with one bottom-presentation enum, lightens active surfaces, merges day/night/observation into one animated three-state track, normalizes ordinary missing-value copy to `暂无数据`, enriches My with restrained role-colored semantic icons, and rebuilds Contribution intake from compact divider-backed field cells, conditional complex groups and one final commit. The current component/layout source above owns those reusable expressions; corresponding product and screen responsibility remains in owning Context.
 - Third-party screenshots support only spatial proportion, density and interaction-class interpretation. They do not authorize copying brands, proprietary layouts/icons/basemaps, adding unsupported map layers, or inventing astronomy algorithms/provider styling.
 - Map provider/basemap/tile/native-map styling, provider/legal chrome, native App and owner-operations surfaces remain excluded. Future production projection must independently verify real WeChat controls, devices, safe areas, accessibility, motion, map integration and data-state behavior.
+- Current component and layout rules are maintained below with the owning Screen Contracts. Historical selection records are not development dependencies.
+
+### 当前可执行令牌
+
+2026-09-06 用户授权合并手机尺度重构与既有业务收尾。下列结构化段是当前小程序颜色、排版与通用几何的唯一精确值来源；生成器输出 SCSS 与原生 TS，禁止手改生成文件。逻辑 px 固定，不随窄屏缩小；Taro 保持 750 designWidth，生成的 Px 需经实际 WEAPP 编译确认。当前仅实施标准字号；大字号适配暂停。当前尺寸不从旧设计资源重新投射。组件章节的专用地图/手势几何仍适用，普通字级及通用命中下限统一使用这里的角色。该选择是实施起始尺度，尚不表示手机样板已获用户确认或全页面验证完成。
+
+<!-- miniapp-tokens:start -->
+```json
+{
+  "schema": 1,
+  "unit": "logical-px",
+  "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", system-ui, sans-serif",
+  "type": {
+    "page-title": {
+      "size": 18,
+      "line": 25,
+      "weight": 600
+    },
+    "spot-title": {
+      "size": 20,
+      "line": 28,
+      "weight": 600
+    },
+    "section": {
+      "size": 16,
+      "line": 23,
+      "weight": 600
+    },
+    "body": {
+      "size": 15,
+      "line": 22,
+      "weight": 400
+    },
+    "body-secondary": {
+      "size": 14,
+      "line": 21,
+      "weight": 400
+    },
+    "action": {
+      "size": 14,
+      "line": 20,
+      "weight": 500
+    },
+    "search": {
+      "size": 16,
+      "line": 23,
+      "weight": 400
+    },
+    "metadata": {
+      "size": 12,
+      "line": 18,
+      "weight": 400
+    },
+    "data": {
+      "size": 18,
+      "line": 25,
+      "weight": 500
+    },
+    "article": {
+      "size": 16,
+      "line": 26,
+      "weight": 400
+    },
+    "critical": {
+      "size": 14,
+      "line": 20,
+      "weight": 500
+    },
+    "display": {
+      "size": 20,
+      "line": 28,
+      "weight": 600
+    }
+  },
+  "geometry": {
+    "target-min": 44,
+    "icon-small": 18,
+    "icon-medium": 20,
+    "icon-large": 24,
+    "page-inset": 16,
+    "map-inset": 12,
+    "space-related": 4,
+    "space-inline": 8,
+    "space-group": 12,
+    "space-section": 18,
+    "radius-control": 8,
+    "radius-panel": 12,
+    "radius-sheet": 18,
+    "switch-width": 46,
+    "switch-height": 24,
+    "switch-thumb": 20,
+    "switch-inset": 2,
+    "switch-travel": 22,
+    "mode-track-height": 36,
+    "mode-track-max-width": 320
+  },
+  "themes": {
+    "day": {
+      "canvas": "#ffffff",
+      "surface": "#ffffff",
+      "surface-subtle": "#f6f7f5",
+      "surface-elevated": "#ffffff",
+      "text-primary": "#282b29",
+      "text-secondary": "#5e655f",
+      "text-tertiary": "#6d746d",
+      "text-muted": "var(--text-tertiary)",
+      "border": "#e2e5dd",
+      "border-strong": "#8a9088",
+      "primary": "#8799f6",
+      "primary-pressed": "#4859b8",
+      "on-primary": "#202332",
+      "accent-cyan": "#62c88b",
+      "accent-violet": "#8799f6",
+      "accent-warm": "#f2c94c",
+      "success": "#1f6b45",
+      "positive": "#1f6b45",
+      "warning": "#6f5500",
+      "danger": "#973d37",
+      "focus": "#6174d8",
+      "pressed-overlay": "rgba(135, 153, 246, 0.12)",
+      "favorite-outline": "#4859b8",
+      "favorite-active": "#f2c94c",
+      "favorite-fill": "#f2c94c",
+      "favorite-stroke": "#6f5500",
+      "choice-selected-surface": "#f5f6ff",
+      "choice-selected-border": "#8799f6",
+      "choice-selected-label": "#4859b8",
+      "choice-clipped-star": "#f2c94c",
+      "icon-violet-soft": "#f5f6ff",
+      "icon-green-soft": "#e9f8ee",
+      "icon-gold-soft": "#fff7d6",
+      "icon-coral-soft": "#fff0ed",
+      "elevation-card": "none",
+      "elevation-floating": "0 4rpx 16rpx rgba(40, 43, 41, 0.07)",
+      "map-tint": "#ffffff"
+    },
+    "night": {
+      "canvas": "#11120f",
+      "surface": "#181a17",
+      "surface-subtle": "#242720",
+      "surface-elevated": "#181a17",
+      "text-primary": "#f5f3ec",
+      "text-secondary": "#bec2b8",
+      "text-tertiary": "#989e94",
+      "text-muted": "var(--text-tertiary)",
+      "border": "#343830",
+      "border-strong": "#666d62",
+      "primary": "#a9b6ff",
+      "primary-pressed": "#d1d7ff",
+      "on-primary": "#202332",
+      "accent-cyan": "#7ed7a1",
+      "accent-violet": "#a9b6ff",
+      "accent-warm": "#f6d56f",
+      "success": "#b7eacb",
+      "positive": "#b7eacb",
+      "warning": "#ffe5a0",
+      "danger": "#ffc0ba",
+      "focus": "#b4beff",
+      "pressed-overlay": "rgba(169, 182, 255, 0.14)",
+      "favorite-outline": "#d1d7ff",
+      "favorite-active": "#f6d56f",
+      "favorite-fill": "#f6d56f",
+      "favorite-stroke": "#ffe5a0",
+      "choice-selected-surface": "#292d45",
+      "choice-selected-border": "#a9b6ff",
+      "choice-selected-label": "#d1d7ff",
+      "choice-clipped-star": "#f6d56f",
+      "icon-violet-soft": "#292d45",
+      "icon-green-soft": "#1b3426",
+      "icon-gold-soft": "#3a3118",
+      "icon-coral-soft": "#452724",
+      "elevation-card": "none",
+      "elevation-floating": "0 8rpx 24rpx rgba(0, 0, 0, 0.28)",
+      "map-tint": "#11120f"
+    },
+    "observation": {
+      "canvas": "#000000",
+      "surface": "#110000",
+      "surface-subtle": "#190000",
+      "surface-elevated": "#240000",
+      "text-primary": "#ff6b58",
+      "text-secondary": "#d84a3c",
+      "text-tertiary": "#d84a3c",
+      "text-muted": "var(--text-tertiary)",
+      "border": "#7a1e18",
+      "border-strong": "#a83229",
+      "primary": "#d84a3c",
+      "primary-pressed": "#ff6b58",
+      "on-primary": "#000000",
+      "accent-cyan": "#d84a3c",
+      "accent-violet": "#d84a3c",
+      "accent-warm": "#ff6b58",
+      "success": "#ff6b58",
+      "positive": "#ff6b58",
+      "warning": "#ff6b58",
+      "danger": "#ff6b58",
+      "focus": "#ff6b58",
+      "pressed-overlay": "rgba(216, 74, 60, 0.16)",
+      "favorite-outline": "#d84a3c",
+      "favorite-active": "#ff6b58",
+      "favorite-fill": "#d84a3c",
+      "favorite-stroke": "#ff6b58",
+      "choice-selected-surface": "#190000",
+      "choice-selected-border": "#a83229",
+      "choice-selected-label": "#ff6b58",
+      "choice-clipped-star": "#d84a3c",
+      "icon-violet-soft": "#190000",
+      "icon-green-soft": "#190000",
+      "icon-gold-soft": "#190000",
+      "icon-coral-soft": "#240000",
+      "elevation-card": "none",
+      "elevation-floating": "none",
+      "map-tint": "#000000"
+    }
+  }
+}
+```
+<!-- miniapp-tokens:end -->
 
 ### 1. 设计意图
 
@@ -321,44 +514,44 @@ This section is the complete canonical visual-system profile for `target.system.
 
 语义所有权：sky/periwinkle 负责时间、选择与信息焦点；meteor yellow 负责唯一最终承诺、天象事件和稀缺好窗口；trail green 负责路线、地形、可行机会和良好户外条件；risk coral 负责风险、阻断和失败。单一局部区域最多使用两种非中性色，另可加入必要风险色。日间大面积只使用纯白中性画布/表面，深色只承担可读文字；subtle neutral 仅用于局部分区和轨道，不得把页面重新染成米黄，也不得用任何强调色反复染标题、边界和普通容器。
 
-完整值位于 `tokens.scss` 与 `colors_and_type.css`。所有普通文本组合需达到 4.5:1；大文本和关键图形边界需达到 3:1。状态必须同时有文字、图标、形状或线型，不得只靠颜色。
+完整值只在当前可执行令牌的 themes 中维护，`tokens.scss` 与原生主题由此生成；下列旧来源表仅解释既有色彩角色。所有普通文本组合需达到 4.5:1；大文本和关键图形边界需达到 3:1。状态必须同时有文字、图标、形状或线型，不得只靠颜色。
 
 #### 2.1 日间模式
 
-| 角色 | 值 | 使用 |
-|---|---:|---|
-| canvas | `#FFFFFF` | 纯白页面与 page-like panel 背景 |
-| surface | `#FFFFFF` | 控件、内容面 |
-| surface-subtle | `#F6F7F5` | 仅局部技术带、轨道、skeleton 与隐式分组 |
-| text-primary | `#282B29` | 炭黑主要文本，对 canvas 14.44:1 |
-| text-secondary | `#5E655F` | 次级文本，对 canvas 6.08:1 |
-| text-tertiary | `#6D746D` | 必要辅助信息，对 canvas 4.88:1 |
-| border | `#E2E5DD` | 安静分隔线，不单独承担状态 |
-| border-strong | `#8A9088` | 关键图形边界，对白 3.27:1 |
-| sky / sky-soft / sky-strong | `#8799F6` / `#F5F6FF` / `#4859B8` | 时间、选择、信息焦点；soft只作极浅选中面，状态另有边界/indicator/checked |
-| meteor / meteor-soft / meteor-strong | `#F2C94C` / `#FFF7D6` / `#6F5500` | 最终承诺、天象、稀缺窗口；strong 对 soft 6.56:1 |
-| trail / trail-soft / trail-strong | `#62C88B` / `#E9F8EE` / `#1F6B45` | 路线、地形、可行机会；strong 对 soft 5.89:1 |
-| risk / risk-soft / risk-strong | `#E66F66` / `#FFF0ED` / `#973D37` | 风险、失败；strong 对 soft 6.23:1 |
-| focus | `#6174D8` | 可见组件边缘的 4rpx 内侧键盘焦点，对白 4.20:1 |
-| on-sky / on-meteor / on-trail | `#202332` / `#3A2E00` / `#153B2A` | 亮 common 填色上的深色文字，分别为 5.87:1 / 8.43:1 / 6.00:1；禁止白字 |
+| 角色 | 使用 |
+|---|---|
+| canvas | 纯白页面与 page-like panel 背景 |
+| surface | 控件、内容面 |
+| surface-subtle | 仅局部技术带、轨道、skeleton 与隐式分组 |
+| text-primary | 炭黑主要文本，对 canvas 14.44:1 |
+| text-secondary | 次级文本，对 canvas 6.08:1 |
+| text-tertiary | 必要辅助信息，对 canvas 4.88:1 |
+| border | 安静分隔线，不单独承担状态 |
+| border-strong | 关键图形边界，对白 3.27:1 |
+| sky / sky-soft / sky-strong | 时间、选择、信息焦点；soft只作极浅选中面，状态另有边界/indicator/checked |
+| meteor / meteor-soft / meteor-strong | 最终承诺、天象、稀缺窗口；strong 对 soft 6.56:1 |
+| trail / trail-soft / trail-strong | 路线、地形、可行机会；strong 对 soft 5.89:1 |
+| risk / risk-soft / risk-strong | 风险、失败；strong 对 soft 6.23:1 |
+| focus | 可见组件边缘的 4rpx 内侧键盘焦点，对白 4.20:1 |
+| on-sky / on-meteor / on-trail | 亮 common 填色上的深色文字，分别为 5.87:1 / 8.43:1 / 6.00:1；禁止白字 |
 
 #### 2.2 夜间模式
 
-| 角色 | 值 | 使用 |
-|---|---:|---|
-| canvas | `#11120F` | 中性近黑页面背景 |
-| surface | `#181A17` | 主要内容面 |
-| surface-subtle | `#242720` | 低色度技术带/行 |
-| text-primary | `#F5F3EC` | 主要文本，对 canvas 16.93:1 |
-| text-secondary | `#BEC2B8` | 次级文本，对 canvas 10.38:1 |
-| text-tertiary | `#989E94` | 辅助说明，对 canvas 6.85:1 |
-| border | `#343830` | 普通分隔线 |
-| border-strong | `#666D62` | 关键图形边界，对 canvas 3.52:1 |
-| sky / sky-soft / sky-strong | `#A9B6FF` / `#292D45` / `#D1D7FF` | 选择、时间；strong 对 soft 9.56:1 |
-| meteor / meteor-soft / meteor-strong | `#F6D56F` / `#3A3118` / `#FFE5A0` | 最终承诺、天象、窗口；strong 对 soft 10.39:1 |
-| trail / trail-soft / trail-strong | `#7ED7A1` / `#1B3426` / `#B7EACB` | 路线、机会；strong 对 soft 9.99:1 |
-| risk / risk-soft / risk-strong | `#FF8F87` / `#452724` / `#FFC0BA` | 风险、失败；strong 对 soft 8.61:1 |
-| focus | `#B4BEFF` | 内侧键盘焦点，对 surface 9.80:1 |
+| 角色 | 使用 |
+|---|---|
+| canvas | 中性近黑页面背景 |
+| surface | 主要内容面 |
+| surface-subtle | 低色度技术带/行 |
+| text-primary | 主要文本，对 canvas 16.93:1 |
+| text-secondary | 次级文本，对 canvas 10.38:1 |
+| text-tertiary | 辅助说明，对 canvas 6.85:1 |
+| border | 普通分隔线 |
+| border-strong | 关键图形边界，对 canvas 3.52:1 |
+| sky / sky-soft / sky-strong | 选择、时间；strong 对 soft 9.56:1 |
+| meteor / meteor-soft / meteor-strong | 最终承诺、天象、窗口；strong 对 soft 10.39:1 |
+| trail / trail-soft / trail-strong | 路线、机会；strong 对 soft 9.99:1 |
+| risk / risk-soft / risk-strong | 风险、失败；strong 对 soft 8.61:1 |
+| focus | 内侧键盘焦点，对 surface 9.80:1 |
 
 夜间不是观测模式。夜间仍可用四种语义色，但局部区域遵守“两种强调色上限”。
 
@@ -389,24 +582,13 @@ This section is the complete canonical visual-system profile for `target.system.
 
 字体不依赖网络资源，也不声称打包字体。中文和界面统一使用：`"Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif`。Windows 优先使用可用的 Noto Sans SC，微信平台自然回退到 PingFang SC。数字/时间可使用 `"SFMono-Regular", Consolas, "Liberation Mono", monospace`，只用于对齐数据，不用于导航、分类标题或长文。
 
-| 角色 | CSS px / rpx | 行高 | 字重 | 说明 |
-|---|---:|---:|---:|---|
-| conclusion | 18 / 36 | 25px / 50rpx | 600 | 稀有且真实的一句结论；当前 spot panel 不使用 |
-| page-title | 17 / 34 | 23px / 46rpx | 600 | 页面或 full document identity |
-| section-title | 13.5 / 27 | 19px / 38rpx | 550–600 | 只有命名有助扫描/导航的主要章节 |
-| body | 12 / 24 | 17px / 34rpx | 400 | 中文正文、核心列表值与 Search partition |
-| ordinary-action | 11.5 / 23 | 16px / 32rpx | 500 | 普通按钮与行内动作 |
-| compact-choice | 10.5 / 21 | 14.5px / 29rpx | 500 | 紧凑筛选、rail 与短值 |
-| metadata | 10 / 20 | 14px / 28rpx | 400 | 距离、更新时间、次级证据 |
-| final-commit | 12.5 / 25 | 17px / 34rpx | 550 | 唯一最终提交 CTA |
-| snackbar | 12 / 24 | 18px / 36rpx | 400 | 消息；动作使用 11px / 16px、500 |
-| status-tag | 9.5 / 19 | 13.5px / 27rpx | 500 | 仅改变使用的短状态词 |
+排版精确值只在上方 `type` 令牌维护：page-title 为页面、spot-title 为地点身份、section 为章节、body 为核心事实、body-secondary 为说明、action 为全部普通操作/筛选、search 为搜索、metadata 为来源时效、data 为关键数值、article 为长文、critical 为影响操作的状态、display 为少量主要展示。旧 type-label/type-caption 等生产类分别投射 action/metadata，不保留另一套数值。核心值/动作/风险不得借用 metadata 缩小。
 
 - 中文标题、按钮与标签字距均为 `0`，不得负字距或人为追踪。
 - 正文与 helper 使用 400；普通标签/控件使用 400–500；标题使用 500–600；600 只保留给结论与关键时间。普通界面禁止 700，正文禁止脆弱 ultralight。
 - 数字采用等宽数字 `font-variant-numeric: tabular-nums`；时间轴每列共享宽度。
 - 导航与分类标题使用中文系统字体、自然字距，不使用 tracked uppercase 或等宽行政标签。
-- 200% 文本缩放与长中文按钮/字段标签必须单独验证；允许换行，不以缩小字号维持单行。紧凑密度不得通过裁切、灰到不可读或全局机械缩放实现。
+- 长中文按钮和字段标签需验证；允许换行，不以缩小字号维持单行。紧凑密度不得通过裁切、灰到不可读或全局机械缩放实现。
 - 图标使用单一线性家族：22/24/28rpx 三档，默认 3rpx 描边；圆端点、圆连接，不混用填充图标集。实现通过项目 `SemanticIcon` adapter 本地化一小组 ISC 许可 Lucide path；产品专用天文几何与 rounded star 走同一资产管线。可见图标与 88rpx target 分离，不为命中面积同步放大图形。不得引入完整第二 UI 系统或运行时远程图标。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
 
@@ -477,14 +659,14 @@ This section is the complete canonical visual-system profile for `target.system.
 
 | 轴 | 跨平台基线 | Starward 户外 / 天文决策应用 | Do not |
 |---|---|---|---|
-| Layout 布局 | 320/375/390/430px 按内容优先级 reflow；200% 文本时重排而非缩放整页 | 结论、影响/行动、证据按纵向优先级连续；共享时间轴的标签列固定、数据列局部滚动 | 不按单一 390px 截图等比缩放；不让技术表制造页面级横滚 |
+| Layout 布局 | 320/375/390/430px 按内容优先级 reflow，不缩放整页 | 结论、影响/行动、证据按纵向优先级连续；共享时间轴的标签列固定、数据列局部滚动 | 不按单一 390px 截图等比缩放；不让技术表制造页面级横滚 |
 | Whitespace / density 留白密度 | 12–16px 移动边距；4/8px 节奏；屏幕、组间、组件内部、视觉重量四层分别控制 | 相关项 3–5px、普通组 6–8px、章节 11–14px；文字/图标/thumb 不贴边，先删除噪音，再用共享轴/divider 分组 | 不把 24–32px 当日常卡片 padding；不留空白列，也不把内容塞满模拟“紧凑” |
-| Type hierarchy 字体层级 | 尺寸、字重、行高、间距和少量语义色共同建立层级 | conclusion 18/25、page 17/23、section 13.5/19、body 12/17、ordinary 11.5/16、compact 10.5/14.5、metadata 10/14、status 9.5/13.5；400/500/600 三档 | 不用全局粗黑、追踪大写、中文加字距或等宽导航；不全局机械缩放或把辅助字变得不可读 |
+| Type hierarchy 字体层级 | 尺寸、字重、行高、间距和少量语义色共同建立层级 | 按当前结构化 type 角色投射，所有业务文字至少 metadata 下限；400/500/600 三档 | 不用全局粗黑、追踪大写、中文加字距或等宽导航；不全局机械缩放或把辅助字变得不可读 |
 | Color 色彩 | 中性承担大面积；强调色按语义和局部焦点使用；状态不得只靠颜色 | sky=时间/选择，meteor=最终承诺/天象/稀缺窗口，trail=路线/机会，risk=风险；局部最多两强调色 + 必要 risk | 不以深蓝覆盖标题、边框和容器；不把语义色做成彩虹指标墙；不在亮 common 上习惯性用白字 |
 | Cards / containment 卡片容纳 | 留白、字级、分隔线是默认容纳；卡片只包一个可独立识别的对象 | 重复事实使用行/带/矩阵；长卡可容纳一个观星点对象并用内部分隔行组织 | 不嵌套卡片；不把每个状态/指标/选择做成卡；卡内不放多个竞争 CTA |
 | Buttons / actions 按钮动作 | 命中区至少 44px；可见面可更小但扩展区不重叠；一个局部主动作 | compact 28px、ordinary 30–34px、final 40–44px；只有最终承诺可全宽并使用 meteor | 不把每个按钮都做 44/48px 实心大面；不让普通重试/导航看起来像提交 |
 | Visual focus 视觉焦点 | 触摸反馈、编辑态与键盘焦点分流；pressed/selected/disabled 各自有语义 | touch=80ms press 后恢复；input=光标+1px 浅变化；keyboard=`:focus-visible` 内侧下边缘 | 不把焦点当普通移动状态展出；不用完整深蓝框、offset 外环、双框、光晕或命中盒描边 |
-| Mobile adaptation 移动适配 | 触控、键盘、读屏、长标签、安全区和 200% 文本一起验证 | Search field 过渡前后保持同一 40px 可见面/44px target；large panel只填充主导航上方、居中悬浮section rail、compact action rail与bottom layer sheet避让安全区 | 不以隐藏、裁切或压缩表格通过窄屏；不显示 scrollbar chrome；不把桌面栏位仅缩小后塞进 320px |
+| Mobile adaptation 移动适配 | 验证触控、键盘、读屏、长标签与安全区 | Search field 过渡前后保持同一 40px 可见面/44px target；large panel只填充主导航上方、名称/地点下方的轻量横向吸顶章节Tab、compact action rail与bottom layer sheet避让安全区 | 不以隐藏、裁切或压缩表格通过窄屏；不显示 scrollbar chrome；不把桌面栏位仅缩小后塞进 320px |
 
 ### 5. 布局、平台与可访问性
 
@@ -497,7 +679,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - 键盘：所有交互可 Tab 到达；Choice Bar 支持方向键/Home/End；Escape 关闭 sheet/dialog；Enter/Space 激活。
 - 状态：pressed/active 用 80ms 轻微 tonal/边界变化与 scale .985，抬起即恢复；selected 使用 soft 语义底 + 单一移动指示 + 程序状态。触摸不留下持续焦点；文本编辑态只用光标与 1rpx 浅变化；外接键盘/桌面/辅助键盘的 `:focus-visible` 使用组件内侧下边缘并与相邻颜色 ≥3:1；hover 仅供文档浏览器且弱于 selected；disabled 保持可读且不似选中。
 - 屏幕阅读器：数据带提供可读摘要和表格语义；状态变化使用适度 `aria-live="polite"`；错误与字段通过 `aria-describedby` 关联。
-- 放大文本至 200% 时不得截断；长标签换行，数据值可保持一行但标签列加宽或转为上下结构。
+- 长标签换行，数据值可保持一行但标签列加宽或转为上下结构，不裁切有效信息。
 - 每个移动 scroll owner 必须同时保留 touch/wheel/keyboard/programmatic/screen-reader reachability 并隐藏纵横 scrollbar chrome；不得用 `overflow:hidden` 或裁切正文代替。WEAPP/Taro 优先 `ScrollView enhanced + showScrollbar=false`；H5/prototype 同时覆盖 Firefox、旧 Edge 与 WebKit 的 scrollbar-hiding declarations。
 - 不以色彩单独表达状态。Permission、risk、failure、partial/stale/unavailable 仅在具体状态改变当前结论、动作或恢复路径时可见，并直接说明受影响事实与结果；禁止常驻“部分数据”等泛化 badge。
 - 普通 material surface/state change 使用可中断、从 live presentation retarget 的因果动效，不突然出现或消失。`prefers-reduced-motion` 移除大幅位移、惯性与装饰运动，保留直接操控、即时功能状态和焦点反馈。
@@ -524,7 +706,7 @@ This section is the complete canonical visual-system profile for `target.system.
 
 #### 5A.3 Spot Information Panel
 
-- Panel 是 Map-parallel non-modal owner，状态为 hidden + `small|medium|large` 三个 visible extents。`small=232rpx + bottom-safe`；`medium=clamp(500rpx,52dvh,700rpx)`；large填满`mini-primary-navigation`上方的primary content viewport：`top:0;left:0;right:0;bottom:nav-top`，不覆盖或替换Map/My导航。Small/Medium top radius`32rpx`，Large top radius`0`且无外阴影；所有extent铺满content width。
+- Panel 是 Map-parallel non-modal owner，状态为 hidden + `small|medium|large` 三个 visible extents。`small=232rpx + bottom-safe`；`medium=clamp(320px,56vh,480px)（受可用高度与相邻档位约束；标准字号优先展示身份、到达与核心设施，不再使用随屏宽缩小的700rpx上限）`；large填满`mini-primary-navigation`上方的primary content viewport：`top:0;left:0;right:0;bottom:nav-top`，不覆盖或替换Map/My导航。Small/Medium top radius`32rpx`，Large top radius`0`且无外阴影；所有extent铺满content width。
 - 三档始终挂载同一份、同序、同identity的客观document：地点identity→route/access/facility/safety→guides/field/source→天文信息→sky geometry→ruler→matrices/targets/source。Small/Medium只是较短viewport裁剪；Large才启用唯一隐藏scrollbar chrome的internal vertical scroll。禁止按extent分别渲染、remount、重新排序或重复mapping。唯一presentation例外是合法media：small/medium不占media，medium→large时才在document顶部连续拉出；无图从不渲染media node/placeholder/空档。
 - Handle visible=`52×5rpx`；physical hit region=`104×40rpx`，assistive semantic target≥`88×88rpx`。无media时保留结构handle band=`40rpx`，在drag中持续存在且不是大片空白；media开始拉出后handle overlay到image，band连续收为0。Pointer down只改tonal/opacity，不改变extent/top/height/transform；未越过8px阈值的tap/release为no-op。
 - Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。Panel body/content/media或泛化top-edge均不发起extent drag。
@@ -543,7 +725,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - `map-layer-selector`由紧凑Map-edge trigger与固定高度bottom-sheet presentation组成，不新增第二Control key。Trigger active只用极浅`sky-soft=#F5F6FF`+inset boundary且几何不变。Sheet=`332rpx + safe-bottom`，top radius`28rpx`，无drag handle、`x`、Close row、多extent暗示或“关闭图层”。只列`光污染/总云量/观测机会`三个Source-supported值，每项为本地生成/自有abstract image-backed矩形卡；selected同样只用极浅fill、inner boundary和checked state。
 - Map只有一个`bottomPresentation = none | spot-panel | layer-sheet` coordinator。打开layer直接把spot presentation retarget为layer；panel hit/semantics/active在退出后清除，但selected spot与previous extent保留。Layer open时marker/result intent直接把同一owner retarget为新spot medium，不先恢复旧panel。关闭layer只在没有更新intent时恢复prior extent。任何帧不得同时存在panel/layer两个visible或active flag。
 - Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/layer/selection 的局部状态已是反馈，不另弹 floating notification，也不展示操作教程或实现说明。
-- `320/375/390/430`、safe area 与 `200%` text 必须 reflow。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
+- `320/375/390/430` 标准字号与 safe area 必须适配。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
 
 ### 5B. Settings 与 My
 
@@ -559,8 +741,8 @@ This section is the complete canonical visual-system profile for `target.system.
 - 信息顺序固定为 report kind + spot context → affected topics + observed time → concise evidence narrative → 仅 new-place proposal 出现的 location consent/location → bounded media + rights → one final submit；提交后的状态列表继续由 `contribution-status-list` 拥有。视觉分组不得发明 wizard、步骤 store、即时发布或新的业务字段。
 - 简单字段使用 divider-backed cell row：wrapper/target≥`88rpx`，visible content=`72–80rpx`，horizontal padding=`16–20rpx`，label column=`144–176rpx`且不截断，value/input占余宽。Multiline、topic group 与 media 使用 top-label，label→control=`8rpx`；group gap=`8–12rpx`，section gap=`20–24rpx`。不为每个字段创建 outer card、nested surface、空 section title、重复说明或预留空 helper/error 高度。
 - Label 使用 ordinary-action 或 body/500；value/body=`12/17px`；helper/error=`10/14px`；required mark 只标真实 required。Kind 为 single-choice compact rows/chips，topic 为 wrap-safe multi-select；visible=`48–56rpx`而 target=`88rpx`，selected 不改变尺寸。Observed-at 是普通 field row；textarea visible min-height=`176–208rpx`，counter 仅在存在真实上限时显示。
-- Location consent 只在 new-place condition 挂载并明确 scope，不为 existing-spot report 请求当前定位。Media grid 在 390px 为三列、320px/200% text 可降两列；cell=`128–136rpx`、gap=`8–12rpx`，thumbnail/progress/retry/remove 在同一 cell；达到上限即移除 add affordance，不留占位。Privacy、rights、precise location 与失败说明只在其改变当前决定时贴近对应 control。
-- Validation 在 blur 或 submit 后就地插入，不预留空错误区；提交时稳定 scroll/focus 第一个 invalid field，不能闪白或跳顶。200% text 时 horizontal cell 转 top-label stack，页面不横滚。Uploading/submitting 状态就地替换且不改变 owner；失败保留 draft、media identity 与同一 idempotency key。
+- Location consent 只在 new-place condition 挂载并明确 scope，不为 existing-spot report 请求当前定位。Media grid 在 390px 为三列、320px 可降两列；cell=`128–136rpx`、gap=`8–12rpx`，thumbnail/progress/retry/remove 在同一 cell；达到上限即移除 add affordance，不留占位。Privacy、rights、precise location 与失败说明只在其改变当前决定时贴近对应 control。
+- Validation 在 blur 或 submit 后就地插入，不预留空错误区；提交时稳定 scroll/focus 第一个 invalid field，不能闪白或跳顶。窄屏长标签可转 top-label stack，页面不横滚。Uploading/submitting 状态就地替换且不改变 owner；失败保留 draft、media identity 与同一 idempotency key。
 - `contribution-submit` 是唯一 filled final commit：content-width、visible=`80–88rpx`、target≥`88rpx`。默认位于 document 末端；仅在真实 viewport/keyboard 验证不覆盖内容时，才可固定到单一`88rpx + safe-bottom` lane并给scroll owner等量bottom inset。不得同时显示正文与底部两个提交。Success 只表述“已提交，等待审核”等真实 pending 状态，不能声称已发布或已核验。
 
 ### 6. 领域组件合同
@@ -602,7 +784,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **Curvature**：以tick中心到viewport中心的normalized distance`u=clamp(abs(x-center)/(viewportWidth/2),0,1)`计算：`scale=1-.56×u^1.2`、`opacity=1-.84×u^1.15`、`translateY=22rpx×u^1.55`。中心最大、最清晰且最高，两侧沿同一浅弧连续变小、变淡、下沉；track在fixed center下移动，不复制current value。
 - **Interaction**：拖动每帧preview nearest真实slice；scroll end/projected offset snap到最近valid slice并在≤120ms settle后commit；cancel回到committed offset。新手势从live offset接管，不排队。Horizontal intent获胜后parent panel不抢手势。不显示左右箭头按钮；programmatic increment/decrement只经键盘与辅助技术语义提供，也不显示“每次移动”“释放后对齐”等说明文案。
 - **Color/radius**：center/selection sky；event/peak meteor；适用的良好窗口可 trail subordinate band；Observation 用暖红高度/实虚/shape 区分。
-- **A11y**：adjustable/slider 暴露 min/max/current 与真实 step，提供键盘/辅助技术increment/decrement和文字摘要，不为此添加visible arrow chrome。320px/200% text只保留center与必要邻近/edge labels，不缩小current。Reduced motion保留直接跟手并即时snap，无额外inertia/spring。
+- **A11y**：adjustable/slider 暴露 min/max/current 与真实 step，提供键盘/辅助技术increment/decrement和文字摘要，不为此添加visible arrow chrome。320px只保留center与必要邻近/edge labels，不缩小current。Reduced motion保留直接跟手并即时snap，无额外inertia/spring。
 - **Composition / reuse**：一个 viewport 只有一个主时间尺；Map、spot-panel astronomy、Orientation 共享 component family 与同一 committed time store，不同时显示多个 current-time owner。实现复用Taro `ScrollView`的scroll physics/`scrollX`/`enhanced`/`showScrollbar=false`/`onScrollEnd`，project-local层只拥有curved tick projection、label pruning、window/event band与valid-slice snap；不引入第二UI system或把flat React Native ruler package移植为新基础设施。
 
 #### 6.5 Condition Band
@@ -661,11 +843,11 @@ This section is the complete canonical visual-system profile for `target.system.
 
 #### 6.11 Stargazing Spot Information Panel
 
-- **Anatomy**：稳定quiet handle-only drag zone、三档裁剪同一retained non-modal document、medium→large presence-driven licensed media、客观`基本信息 → 天文信息`顺序、vertically centered flush `概览/天文` rail、short fixed `想去/分享/云观星` action bar。
+- **Anatomy**：稳定quiet handle-only drag zone、三档裁剪同一retained non-modal document、medium→large presence-driven licensed media、客观`基本信息 → 天文信息`顺序、名称/地点下方轻量横向吸顶的 `概览/天文` 文字Tab、short fixed `想去/分享/云观星` action bar。
 - **Variants**：hidden、small、medium、large、dragging、settling、loading、partial、stale、error；hidden 与 visible extent 分开建模。
-- **Geometry**：small=`232rpx + bottom-safe`，medium=`clamp(500rpx,52dvh,700rpx)`，large填满primary navigation上方content viewport；Small/Medium top radius`32rpx`，Large radius`0`。Handle visible`52×5rpx`、physical hit`104×40rpx`/semantic≥`88×88rpx`且absolute overlay；pressed/tap不移动、不切档。Content不为rail预留全局列；rail `top:50% + translateY(-50%)`、visible width`60rpx`、outer height`104rpx`、2×`52rpx`items无gap/阴影。Action pill visible`52–56rpx`/outer lane`88rpx`，icon`22rpx`。
+- **Geometry**：复用本文件 Map / Search / Spot Information 合同中的三档高度、圆角、把手和导航边界，不维护第二组尺寸。章节Tab靠左排列，纯文字与短选中线，不加图标、填色或等分整行；滚动时吸顶，点击定位同一文档并扣除Tab高度，滚动回写选中章节。点击区域满足当前44px触控下限，正文全宽。动作栏使用当前令牌与共用动作规则。
 - **Transition**：`mediaReveal=clamp((p-.50)/.28,0,1)`先拉出top media；`chromeFade=1-clamp((p-.82)/.12,0,1)`后淡出Search/Location/Layer trigger。Reverse先恢复chrome再收media。No-media没有media phase，但保留`40rpx`compact handle band。Panel vertical drag、large content scroll与horizontal ruler通过direction-lock独占手势。
-- **A11y / composition**：large左边缘`32rpx`右滑或handle下拉执行Back语义的large→medium；named extent controls提供等价路径。Only `104×40rpx`handle region发起drag；whole panel body/media/content不启动。Small/medium/large不切换内容树，只裁剪同一document。普通missing值显示`暂无数据`但domain state不合并。不得恢复独立Spot Detail/Spot Night、tabs、推荐窗口、第二地图、nested full-height sheet或duplicate actions。
+- **A11y / composition**：large左边缘`32rpx`右滑或handle下拉执行Back语义的large→medium；named extent controls提供等价路径。Only `104×40rpx`handle region发起drag；whole panel body/media/content不启动。Small/medium/large不切换内容树，只裁剪同一document。普通missing值显示`暂无数据`但domain state不合并。不得恢复独立Spot Detail/Spot Night、切换独立内容树的tabs、推荐窗口、第二地图、nested full-height sheet或duplicate actions。
 
 #### 6.12 Full-Sky Orientation Canvas
 
@@ -703,7 +885,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - **Anatomy**：永久 label、field、value、按需 helper/error、可选字符计数；没有 helper/error 时不保留空槽。
 - **Variants / states**：text、time、multiline；divider-backed cell row 与 complex-field top-label；normal/focus/error/disabled/readonly/loading。
 - **Geometry**：单行 input visible `72–80rpx`、wrapper/target≥`88rpx`；cell horizontal padding=`16–20rpx`，label column=`144–176rpx`。Textarea visible min-height=`176–208rpx`并有内容上限；top-label gap=`8rpx`；control radius与neutral inset border。
-- **A11y / composition**：helper/error 紧贴 affected field并通过 aria-describedby 关联，input mode 匹配；blur/submit后出现的错误不得引发页面跳顶。200% 文本与长中文 label 将 horizontal cell 重排为 top-label stack，不横向裁切。
+- **A11y / composition**：helper/error 紧贴 affected field并通过 aria-describedby 关联，input mode 匹配；blur/submit后出现的错误不得引发页面跳顶。长中文 label 可将 horizontal cell 重排为 top-label stack，不横向裁切。
 - **Do not**：不靠 placeholder 充当 label；不通过更小可见输入伪造44px命中；不把每个字段包进卡片；不预留空 helper 高度；不把局部错误升级成整页警告。
 
 #### 7.4 Checkbox Group
@@ -763,6 +945,10 @@ This section is the complete canonical visual-system profile for `target.system.
 - **Do not**：不只显示色点；不让badge承载说明段落；不把每个普通标签做成pill；不显示泛化“部分数据”、实现状态或零决策价值标签。
 
 #### 7.10 Card / Containment
+
+- 地点类详情的内容分组、容器选择和密度检查遵循 [信息设计 Context](project_context/areas/main/screen-contracts/wechat-miniapp/information-design.md)；该节点解释布局决策，本文件继续单独拥有精确视觉值。
+
+- 信息密度按内容安排：短状态可并排、标量用共享列或分组指标、长说明自然展开；少量数据不逐项占满一行。使用留白、对齐和轻表面区分层次，避免统一卡片墙；保持标准字号与完整风险/缺失语义。
 
 - **Anatomy**：一个 coherent object 的 heading、content、meta、最多一个局部 action。
 - **Variants / states**：content/event card、saved-plan/action card、evidence/freshness card、compact metric/decision tile、full-width 长对象卡；implicit grouping 对照。
@@ -852,17 +1038,12 @@ This section is the complete canonical visual-system profile for `target.system.
 ### 11. 当前系统边界
 
 - 本节只描述一个当前 Mini Program 视觉系统，不在 handbook、candidate 或产品 UI 中维护 old/new 双轨或显示版本标签。
-- 当前视觉范围覆盖五个Mini Program Product Surfaces，以及stationary Map/Search field、compact suggestions/titleless filters/stable disclosure/half-field image results、one-enum互斥image-backed layer selector、marker-to-medium one-document panel、presence-driven media/compact handle band、flush centered section rail/short action rail、objective basic-plus-astronomy facts、raised draggable arrowless Taro-ScrollView-backed Curved Time Ruler、one animated three-state display-mode track、headerless Full-Sky、colored-icon existing-duty My hub、compact cell-based Contribution intake、reuse-first library/component/adaptation binding和bounded Favorite ritual；provider/basemap/tile/native-map appearance仍不属于本系统。五个Surface只是治理覆盖边界，本轮变更严格是owner列出的13项及其直接依赖，不是任意重做。
+- 当前视觉范围覆盖五个Mini Program Product Surfaces，以及stationary Map/Search field、compact suggestions/titleless filters/stable disclosure/half-field image results、one-enum互斥image-backed layer selector、marker-to-medium one-document panel、presence-driven media/compact handle band、flush centered section rail/short action rail、objective basic-plus-astronomy facts、raised draggable arrowless Taro-ScrollView-backed Curved Time Ruler、one animated three-state display-mode track、headerless Full-Sky、colored-icon existing-duty My hub、compact cell-based Contribution intake、reuse-first library/component/adaptation binding和bounded Favorite ritual；provider/basemap/tile/native-map appearance仍不属于本系统。Surface用于界定页面职责；当前实施范围由用户需求及所属Screen Contract确定。
 - 产品路线、Surface/Control ownership、interaction state、评分算法、数据来源、权限、安全、原生 App 与 owner-operations 权威均不因本视觉系统改变。
-- 当前 component/layout source为`docs/design-resources/miniapp-field-signal-unified-flow-forms/selected-source/DESIGN.md`，SHA-256 `0fd87614b7d80c8d3f3c880fe39e81c9b7beda89f41e8492e4c113022eda4dd4`。它完整替代所有冲突的per-extent content、旧media/chrome phase、handle band/hit geometry、action/section rail、ruler arrows/position/drag、Search suggestion spacing/text、并行panel/layer flags、deep active、split mode controls、plain My表达、oversized/card-wall Contribution form与custom-only component implementation posture；先前source不能继续当generation dependency、fallback或compatibility path。
-- 所有历史资源仅在 controlling protocol 要求时作为隔离的 immutable audit provenance；它们不得成为当前 layout、component、motion、compatibility 或 generation input。
 
-### 12. 投射与审查
+### 12. 实现与验证
 
-- `tokens.scss`：冻结来源中的 Taro/React/SCSS 投射；模式由根节点 `data-theme` 或等价状态切换。
-- `colors_and_type.css`：浏览器预览镜像，不是第二权威；值须与 SCSS 同步。
-- Base `index.html` / `preview/` 是既有 immutable foundation evidence；当前 generation 必须读取 current component/layout source，不得以任何历史 preview 画面覆盖它。
-- 任何进入生产的实现都必须重新验证真实字体、微信系统控件、设备安全区、屏幕阅读器、放大文字、隐藏scrollbar但可滚动、IME/outside blur、edge-back/gesture arbitration、低性能设备运动和真实数据边界。
-- 当前设计资源审查必须覆盖：Search text/frame continuity、compact suggestions/filter rhythm、Back/outside blur且无`x`；retained partitions无jitter；52% image/no-image results；marker默认medium；small/medium/large裁剪同一document；media先拉出、near-top才淡出Search/Location/Layer；no-media compact band/media overlay handle/only handle rectangle drag；flush section rail/short action rail；`none|spot-panel|layer-sheet`单一active及layer→marker无jump；极浅active；raised draggable arrowless ruler；day↔night↔observation三态track的tap/drag/keyboard及Observation无色闪；colored-icon compact My；Panel/My→Contribution context、compact field-cell rhythm、conditional location、media progress/failure/retry、keyboard/validation、single submit→pending与draft preservation；320/375/390/430px、100%/200% text、normal/reduced motion/transparency、touch/keyboard/screen-reader。
-
-本节已由 owner 明确选中，并按连续设计需求循环完成当前组件、布局与密度修订；选择只建立设计权威，不证明生产实现、页面像素一致、设备姿态质量或运行时合规。
+- 当前令牌由 tools/miniapp/generate-design-tokens.mjs 生成到生产 SCSS/TypeScript；修改本文件中的令牌后更新生成文件，不维护浏览器原型镜像。
+- 通过 design:system:verify 检查令牌一致性与对比度，通过 test:miniapp:ui-contracts 检查生产职责约束；图标和语义资产继续使用各自生成检查。
+- 实际 WEAPP 验证标准字号的字体层级、信息密度、吸顶章节Tab可辨识度、44px 点击区、各面板档位及滚动章节同步、媒体和地图状态连续性、三模式、输入法和键盘、失败恢复及真实数据边界。真机和环境限制如实记录。
+- 规则和自动检查不能证明页面视觉完成。仅在持久设计决策改变时更新其 owner，不为每次页面修改同步原型、快照、handoff 或历史 hash。

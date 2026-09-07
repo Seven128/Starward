@@ -42,7 +42,7 @@
   overflow: hidden;
 }
 .settings-card--group .setting-row {
-  min-height: 88rpx;
+  min-height: var(--target-min);
   padding: 8rpx 16rpx;
 }
 .settings-card--group .setting-row + .setting-row {
@@ -60,9 +60,9 @@
   border-radius: 999rpx;
   color: var(--positive);
   background: var(--surface-subtle);
-  font-size: 19rpx;
-  line-height: 27rpx;
-  font-weight: 500;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  font-weight: var(--type-metadata-weight);
 }
 .settings-capability-note {
   margin: 0 8rpx;
@@ -74,7 +74,7 @@
   align-items: center;
   gap: 12rpx;
   width: 100%;
-  min-height: 88rpx;
+  min-height: var(--target-min);
   margin: 0;
   padding: 8rpx 16rpx;
   border: 0;
@@ -116,8 +116,8 @@
   background: var(--icon-coral-soft);
 }
 .settings-icon-well .semantic-icon {
-  width: 24rpx;
-  height: 24rpx;
+  width: var(--icon-small);
+  height: var(--icon-small);
 }
 .settings-entry-copy {
   min-width: 0;
@@ -126,20 +126,20 @@
   gap: 4rpx;
 }
 .settings-entry-copy .type-caption {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .settings-entry-meta {
   display: inline-flex;
   align-items: center;
   color: var(--text-tertiary);
-  font-size: 20rpx;
-  font-weight: 500;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  font-weight: var(--type-metadata-weight);
 }
 .settings-entry-meta .semantic-icon {
-  width: 28rpx;
-  height: 28rpx;
+  width: var(--icon-small);
+  height: var(--icon-small);
 }
 .settings-card--actions {
   display: grid;
@@ -155,26 +155,33 @@
   position: relative;
   isolation: isolate;
   width: 100%;
-  max-width: 560rpx;
-  min-height: 88rpx;
-  padding: 8rpx;
+  max-width: var(--mode-track-max-width);
+  min-height: var(--target-min);
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
-  border: 1rpx solid var(--border);
-  border-radius: 16rpx;
+  border-radius: var(--radius-control);
+  overflow: visible;
+}
+.settings-display-mode-track::before {
+  content: "";
+  position: absolute;
+  inset: calc((var(--target-min) - var(--mode-track-height)) / 2) 0;
+  border: 1Px solid var(--border);
+  border-radius: inherit;
   background: var(--surface-subtle);
-  overflow: hidden;
 }
 .settings-display-mode-thumb {
   position: absolute;
   z-index: 0;
-  top: 8rpx;
-  bottom: 8rpx;
-  left: 8rpx;
-  width: calc((100% - 16rpx) / 3);
-  border: 2rpx solid var(--primary);
-  border-radius: 12rpx;
+  top: calc((var(--target-min) - var(--mode-track-height)) / 2);
+  bottom: calc((var(--target-min) - var(--mode-track-height)) / 2);
+  left: 0;
+  width: calc(100% / 3);
+  box-sizing: border-box;
+  border: 1Px solid var(--primary);
+  border-radius: var(--radius-control);
   background: var(--choice-selected-surface);
   transform: translateX(0);
   transition: transform 180ms cubic-bezier(.2, 0, 0, 1);
@@ -189,20 +196,32 @@
   position: relative;
   z-index: 1;
   min-width: 0;
-  min-height: 72rpx;
+  min-height: var(--target-min);
+  height: 100%;
+  margin: 0;
+  padding: 4Px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6rpx;
+  flex-wrap: wrap;
+  gap: 3Px;
   color: var(--text-secondary);
-  font-size: 21rpx;
-  line-height: 29rpx;
-  font-weight: 500;
+  font-size: var(--type-action-size);
+  line-height: var(--type-action-line);
+  font-weight: var(--type-action-weight);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.settings-display-mode-choice::after {
+  border: 0;
 }
 .settings-display-mode-choice .semantic-icon {
-  width: 24rpx;
-  height: 24rpx;
-  flex-basis: 24rpx;
+  width: var(--icon-small);
+  height: var(--icon-small);
+  flex-basis: var(--icon-small);
 }
 .settings-display-mode-choice--selected {
   color: var(--choice-selected-label);
@@ -216,7 +235,8 @@
 }
 .settings-choice-grid .chip,
 .facility-choice-grid .chip {
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .facility-choice-grid {
   display: grid;
@@ -231,7 +251,7 @@
 .settings-summary-row,
 .setting-row,
 .observation-setting {
-  min-height: 88rpx;
+  min-height: var(--target-min);
   display: flex;
   align-items: center;
   justify-content: space-between;

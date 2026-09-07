@@ -185,6 +185,9 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   async listPlans(userId: UserId) {
     return this.#library.listPlans(userId);
   }
+  async getPlanSaveReceipt(userId: UserId, planId: string, idempotencyKey: string) {
+    return this.#library.getPlanSaveReceipt(userId, planId, idempotencyKey);
+  }
   async savePlan(
     userId: UserId,
     plan: ObservationPlan,
@@ -233,6 +236,9 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       idempotencyKey,
     );
   }
+  async getImportSaveReceipt(userId: UserId, id: string, idempotencyKey: string) {
+    return this.#library.getImportSaveReceipt(userId, id, idempotencyKey);
+  }
   async listImportDrafts(userId: UserId) {
     return this.#library.listImportDrafts(userId);
   }
@@ -265,6 +271,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     upload: ContributionMediaUpload,
     expectedRevision: number,
     idempotencyKey: string,
+    replaceUploadId?: ContributionUploadId,
   ) {
     return this.#contributions.createUpload(
       userId,
@@ -272,6 +279,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       upload,
       expectedRevision,
       idempotencyKey,
+      replaceUploadId,
     );
   }
   async completeContributionUpload(
@@ -309,6 +317,12 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   }
   async expireContributionUploads(now: string) {
     return this.#contributions.expireUploads(now);
+  }
+  async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
+    return this.#contributions.removeUpload(userId, submissionId, uploadId, expectedRevision, idempotencyKey);
+  }
+  async acknowledgeContributionMediaDeletion(objectKeys: readonly string[]) {
+    this.#contributions.acknowledgeMediaDeletion(objectKeys);
   }
   async getContributionUploadObject(uploadId: ContributionUploadId) {
     return this.#contributions.getUploadObject(uploadId);

@@ -196,15 +196,15 @@ export function evaluateSpotCompleteness(input: {
   const light = spot.lightPollution;
   if (
     light.state !== "ESTIMATED" ||
-    light.productBand === null ||
-    light.radiance === null ||
+    light.productBand == null ||
+    light.radiance == null ||
     !Number.isFinite(light.radiance.median) ||
     !Number.isFinite(light.radiance.p10) ||
     !Number.isFinite(light.radiance.p90) ||
     light.radiance.p10 > light.radiance.median ||
     light.radiance.median > light.radiance.p90 ||
     light.radiance.unit !== "nW/cm²/sr" ||
-    light.minimumCloudFreeObservations === null ||
+    light.minimumCloudFreeObservations == null ||
     light.minimumCloudFreeObservations < 1 ||
     light.datasetVersion === "UNAVAILABLE" ||
     !meaningfulOperationalText(light.method) ||
@@ -217,7 +217,8 @@ export function evaluateSpotCompleteness(input: {
     );
 
   const evidenceIds = new Set<string>();
-  for (const evidence of input.detail.evidence) {
+  const evidenceRecords = input.detail.evidence ?? [];
+  for (const evidence of evidenceRecords) {
     if (evidenceIds.has(evidence.evidenceId))
       add(
         "evidence_id_duplicate",
@@ -226,7 +227,7 @@ export function evaluateSpotCompleteness(input: {
       );
     evidenceIds.add(evidence.evidenceId);
   }
-  const usableEvidence = input.detail.evidence.filter((evidence) =>
+  const usableEvidence = evidenceRecords.filter((evidence) =>
     evidenceUsable(evidence, new Set(sourceById.keys()), nowMs),
   );
   const satisfiedClaims = new Set(usableEvidence.map((evidence) => evidence.claim));
@@ -294,7 +295,10 @@ export function evaluateSpotCompleteness(input: {
       "停车必须具有已核验状态和可执行说明。",
     );
 
-  const access = input.detail.accessAndSafety;
+  const access = input.detail.accessAndSafety ?? {
+    openness: "UNKNOWN", legalAccess: "UNKNOWN", nightSafety: "UNKNOWN",
+    explicitDanger: null, restrictions: [], guidance: [],
+  };
   if (access.openness === "UNKNOWN")
     add(
       "openness_unknown",
@@ -348,7 +352,7 @@ export function evaluateSpotCompleteness(input: {
       "遮挡比例和至少一个开阔方向必须具有现场证据。",
     );
 
-  if (input.detail.siteMediaState === "UNKNOWN")
+  if (input.detail.siteMediaState == null || input.detail.siteMediaState === "UNKNOWN")
     add(
       "site_media_state_unknown",
       "spot.siteMediaState",

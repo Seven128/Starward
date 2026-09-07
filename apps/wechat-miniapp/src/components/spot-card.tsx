@@ -6,8 +6,8 @@ import type {
   SpotSummary,
 } from "@starward/miniapp-contracts";
 import { DataStateBadge } from "./data-state-badge";
-import { FavoriteStar } from "./selected-card-star";
 import { SemanticIcon } from "./semantic-asset";
+import { FavoriteStar } from "./selected-card-star";
 import { SoftButton } from "./soft-button";
 import "./spot-card.scss";
 

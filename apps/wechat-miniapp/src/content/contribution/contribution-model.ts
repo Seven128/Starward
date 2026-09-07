@@ -1,4 +1,7 @@
+import { calendarDateInTimezone, clockTimeInTimezone } from "../../utils/zoned-date";
 import Taro from "@tarojs/taro";
+import { parseCoordinateInput } from "./coordinate-input";
+import { parseObservationInput } from "./observation-input";
 import type {
   ContributionDraftRequest,
   ContributionKind,
@@ -31,6 +34,26 @@ export const KIND_LABEL: Record<ContributionKind, string> = {
   NEW_SPOT_PROPOSAL: "新增地点建议",
 };
 
+export function contributionConflictFacts(submission: ContributionSubmission): string[] {
+  const candidate = submission.candidateLocation;
+  let observed = "未填写";
+  if (submission.observedAt) {
+    try {
+      const date = new Date(submission.observedAt);
+      observed = `${calendarDateInTimezone(date, "Asia/Shanghai")} ${clockTimeInTimezone(date, "Asia/Shanghai")}（北京时间）`;
+    } catch { observed = "时间暂不可用"; }
+  }
+  return [
+    `地点：${candidate?.displayName ?? submission.spotNameSnapshot ?? "正式地点名称暂不可用"}`,
+    ...(candidate ? [`地区：${candidate.region}`, `坐标：${candidate.wgs84.latitude}，${candidate.wgs84.longitude}`] : []),
+    `现场时间：${observed}`,
+    `涉及事实：${submission.topics.map((topic) => TOPICS.find((item) => item.key === topic)?.label ?? "其他").join("、") || "未选择"}`,
+    `图片权利：${submission.rightsConfirmed ? "已确认" : "未确认"}`,
+    `精确坐标提交：${submission.preciseLocationConsent ? "已同意" : "未同意"}`,
+    `媒体：${submission.media.length} 张`,
+  ];
+}
+
 export const STATE_LABEL: Record<ContributionSubmissionState, string> = {
   DRAFT: "草稿",
   PENDING_REVIEW: "待审核",
@@ -53,11 +76,21 @@ export const PUBLICATION_IMPACT_LABEL: Record<
 > = {
   NONE: "没有",
   CANDIDATE_UPDATED: "候选地点已更新",
-  ACTIVE_REVISION_UPDATED: "正式地点 revision 已更新",
+  ACTIVE_REVISION_UPDATED: "正式地点资料已更新",
   SPOT_PUBLISHED: "正式地点已发布",
 };
 
 export type ContributionAxis = "SUBMISSION" | "MERGE" | "PUBLICATION";
+
+export function contributionHistoryLabel(axis: ContributionAxis, state: string): string {
+  const axes = {
+    SUBMISSION: { label: "投稿审核", states: STATE_LABEL },
+    MERGE: { label: "证据合并", states: MERGE_STATE_LABEL },
+    PUBLICATION: { label: "公开影响", states: PUBLICATION_IMPACT_LABEL },
+  };
+  const entry = axes[axis];
+  return `${entry.label}：${(entry.states as Record<string, string>)[state] ?? "状态待更新"}`;
+}
 
 export interface ContributionAxisPresentation {
   axis: ContributionAxis;
@@ -173,17 +206,11 @@ export function safeParam(value: string | undefined) {
 }
 
 export function localToday() {
-  const now = new Date();
-  return [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
+  return calendarDateInTimezone(new Date(), "Asia/Shanghai");
 }
 
 export function localTime() {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  return clockTimeInTimezone(new Date(), "Asia/Shanghai");
 }
 
 export function buildDraftInput(
@@ -191,8 +218,8 @@ export function buildDraftInput(
   announce: ContributionAnnouncement,
 ): ContributionDraftRequest | null {
   const candidate = values.kind === "NEW_SPOT_PROPOSAL";
-  const parsedLatitude = Number(values.latitude);
-  const parsedLongitude = Number(values.longitude);
+  const parsedLatitude = parseCoordinateInput(values.latitude);
+  const parsedLongitude = parseCoordinateInput(values.longitude);
   if (candidate && (!values.candidateName.trim() || !values.candidateRegion.trim())) {
     announce("error", "资料未保存", "请填写地点名称和地区；本页输入保持不变。");
     return null;
@@ -212,7 +239,11 @@ export function buildDraftInput(
     announce("error", "缺少观星点", "请从正式观星点详情进入现场反馈或纠错。");
     return null;
   }
-  const observed = new Date(`${values.date}T${values.time}:00+08:00`);
+  const observed = parseObservationInput(values.date, values.time);
+  if (values.kind !== "CORRECTION" && !observed) {
+    announce("error", "资料未保存", "请填写有效的现场日期和时间（北京时间）；本页输入保持不变。");
+    return null;
+  }
   return {
     kind: values.kind,
     spotId: candidate ? null : values.routeSpotId,
@@ -227,10 +258,7 @@ export function buildDraftInput(
           },
         }
       : null,
-    observedAt:
-      values.kind === "CORRECTION" || !Number.isFinite(observed.getTime())
-        ? null
-        : observed.toISOString(),
+    observedAt: values.kind === "CORRECTION" ? null : observed,
     topics: values.topics,
     detail: values.detail,
     rightsConfirmed: values.rightsConfirmed,

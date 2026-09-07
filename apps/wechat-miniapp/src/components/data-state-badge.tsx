@@ -8,7 +8,7 @@ export const DATA_STATE_LABELS: Readonly<Record<DataState, string>> = {
   EXPIRED: "已过期",
   UNAVAILABLE: "不可用",
   ESTIMATED: "估算",
-  SAMPLE_DATA: "资料不足",
+  SAMPLE_DATA: "示例数据",
 };
 export function DataStateBadge({ state }: { state: DataState }) {
   return (

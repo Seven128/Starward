@@ -1,12 +1,14 @@
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRouter } from "@tarojs/taro";
-import { Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
 import { CustomNav } from "@/components/custom-nav";
-import { Provenance } from "@/components/provenance";
+import { Provenance, SOURCE_KIND_LABEL } from "@/components/provenance";
+import { groupSources } from "./source-groups";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import { getSpotOverview } from "@/services/api-client";
+import { useAppStore } from "@/state/app-store";
 import "./data-source.scss";
 
 function safe(value?: string) {
@@ -21,14 +23,16 @@ export default function DataSourcePage() {
   const router = useRouter();
   const spotId = safe(router.params.spotId);
   const contextId = safe(router.params.contextId);
+  const context = useAppStore((state) => state.observationContext);
   const validRoute =
-    spotId.startsWith("spot:") && contextId.startsWith("ctx:");
+    spotId.startsWith("spot:") && context?.contextId === contextId &&
+    context.location.kind === "FORMAL_SPOT" && context.location.spotId === spotId;
   const overview = useResourceQuery({
-    queryKey: ["spot-overview", spotId, contextId],
+    queryKey: ["spot-overview", spotId, contextId, context?.contextFingerprint, context?.revision],
     queryFn: (signal) => getSpotOverview(spotId, contextId, signal),
     enabled: validRoute,
   });
-  const detail = overview.data?.data;
+  const detail = validRoute && overview.data?.data.spot.spotId === spotId ? overview.data.data : undefined;
   const themeClass = useThemeClass();
   const sources = detail
     ? [
@@ -42,6 +46,7 @@ export default function DataSourcePage() {
     <View className={themeClass + " sources-page"}>
       <FloatingNotificationHost />
       <CustomNav title="来源与更新时间" subtitle={detail?.spot.name} back />
+      <ScrollView scrollY enhanced showScrollbar={false} className="sources-scroll">
       <View className="sources-content page-inset safe-bottom">
         {!validRoute ? (
           <StatusPanel
@@ -53,22 +58,26 @@ export default function DataSourcePage() {
         ) : overview.isError || !detail ? (
           <StatusPanel
             state="ERROR"
-            detail="来源暂不可用；不会用未核验资料补齐。"
+            detail="来源暂时无法加载，请重试。"
             recoveryLabel="重试"
             onRecover={() => void overview.refetch()}
           />
         ) : (
           <>
-            <View className="source-principles card">
-              <Text className="type-section">如何理解这些数据</Text>
-              <Text className="type-body">
-                第三方预测、产品计算、官方核验、现场反馈与历史资料分开显示；缺失不显示为
-                0；估算不包装为实测；过期关键数据不能产生推荐。
-              </Text>
-            </View>
+            {overview.refreshError || overview.data?.dataState === "STALE_USABLE" ? (
+              <StatusPanel
+                state="STALE"
+                detail={overview.refreshError ? "来源更新失败，暂时显示上次记录，请留意资料的适用时段。" : "当前来源记录尚未确认最新状态，请留意适用时段并重新获取。"}
+                recoveryLabel="重新获取来源"
+                onRecover={() => void overview.refetch()}
+              />
+            ) : null}
             {sources.length ? (
-              sources.map((source) => (
-                <Provenance source={source} key={source.id} />
+              groupSources(sources).map((group) => (
+                <View className="source-group" key={group.kind}>
+                  <Text className="type-section">{SOURCE_KIND_LABEL[group.kind]}</Text>
+                  {group.sources.map((source) => <Provenance source={source} showKind={false} key={source.id} />)}
+                </View>
               ))
             ) : (
               <StatusPanel
@@ -77,14 +86,15 @@ export default function DataSourcePage() {
               />
             )}
             <View className="source-principles card">
-              <Text className="type-section">地图与许可边界</Text>
+              <Text className="type-section">使用这些资料前</Text>
               <Text className="type-body">
-                权威位置与微信地图显示坐标分开管理；公开运营前仍需逐项核验地图资质、天气署名、遥感许可和媒体台账。
+                请结合每项资料的适用时段、精度和限制判断。预测会随时间变化；道路、开放条件与夜间安全仍需在出发前核实。图片与资料的转载使用须遵守各自许可。
               </Text>
             </View>
           </>
         )}
       </View>
+      </ScrollView>
     </View>
   );
 }

@@ -88,19 +88,7 @@ export function SemanticIcon({
   className?: string;
 }) {
   const mode = useAppStore((state) => state.mode);
-  const source = SOURCE_ICON_FILE[name];
-  if (name === "star") {
-    return (
-      <Image
-        className={`semantic-icon semantic-icon--source semantic-icon--star semantic-icon--${mode.toLowerCase()} ${className}`}
-        src={`/assets/semantic/five-point-star-${MODE_FILE[mode]}.svg`}
-        mode="aspectFit"
-        {...(decorative
-          ? { "aria-hidden": true }
-          : { role: "img", "aria-label": label ?? name })}
-      />
-    );
-  }
+  const source = name === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[name];
   if (name === "arrow-left") {
     return (
       <View
@@ -109,7 +97,7 @@ export function SemanticIcon({
           ? { "aria-hidden": true }
           : { role: "img", "aria-label": label ?? name })}
       >
-        <Image
+        {mode !== "OBSERVATION" ? <Image
           className="semantic-icon__arrow-source"
           src={
             mode === "DAY"
@@ -118,20 +106,28 @@ export function SemanticIcon({
           }
           mode="aspectFit"
           aria-hidden
-        />
+        /> : null}
       </View>
     );
   }
   if (source) {
     return (
-      <Image
+      <View
         className={`semantic-icon semantic-icon--source semantic-icon--${name} semantic-icon--${mode.toLowerCase()} ${className}`}
-        src={source}
-        mode="aspectFit"
         {...(decorative
           ? { "aria-hidden": true }
           : { role: "img", "aria-label": label ?? name })}
-      />
+      >
+        {Object.values(MODE_FILE).map(theme => (
+          <Image
+            key={theme}
+            className={`semantic-icon__theme-source semantic-icon__theme-source--${theme}`}
+            src={source.replace(/\.svg$/, `-${theme}.svg`)}
+            mode="aspectFit"
+            aria-hidden
+          />
+        ))}
+      </View>
     );
   }
   return (

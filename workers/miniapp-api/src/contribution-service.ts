@@ -12,12 +12,10 @@ import {
 } from "@starward/miniapp-contracts";
 import {
   assertContributionRelation,
-  assertContributionSubmittable,
   cleanContributionText,
   CONTRIBUTION_MEDIA_MIME_TYPES,
   CONTRIBUTION_UPLOAD_TTL_MS,
   decodeContributionBase64,
-  MAX_CONTRIBUTION_MEDIA,
   normalizeContributionInput,
 } from "./contribution-validation.ts";
 import { sanitizeContributionImage } from "./media-object-store.ts";
@@ -109,11 +107,7 @@ export class ContributionService {
   ) {
     if (!this.mediaStore.enabled)
       throw new Error("media_upload_capability_disabled");
-    const submission = await this.#ownedDraft(userId, submissionId);
-    if (!submission.rightsConfirmed)
-      throw new Error("contribution_media_rights_required");
-    if (submission.media.length >= MAX_CONTRIBUTION_MEDIA)
-      throw new Error("contribution_media_count_invalid");
+    // Mutable draft constraints are checked under the repository lock after replay.
     if (!CONTRIBUTION_MEDIA_MIME_TYPES.has(input.mimeType))
       throw new Error("contribution_media_mime_invalid");
     const originalName = cleanContributionText(input.originalName, 120);
@@ -144,6 +138,7 @@ export class ContributionService {
       upload,
       input.expectedRevision,
       idempotencyKey,
+      input.replaceUploadId,
     );
   }
 
@@ -212,10 +207,8 @@ export class ContributionService {
     expectedRevision: number,
     idempotencyKey: string,
   ) {
-    const submission = await this.#ownedDraft(userId, submissionId);
-    if (submission.revision !== expectedRevision)
-      throw new Error("contribution_revision_conflict");
-    assertContributionSubmittable(submission);
+    // The repository checks replay before validating the locked current draft.
+    // A completed submission must remain replayable after its response is lost.
     return this.repository.submitContribution(
       userId,
       submissionId,
@@ -235,11 +228,20 @@ export class ContributionService {
     };
   }
 
+  async removeUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
+    const submission = await this.repository.removeContributionUpload(userId, submissionId, uploadId, expectedRevision, idempotencyKey);
+    await this.cleanupExpiredUploads();
+    return submission;
+  }
+
   async cleanupExpiredUploads() {
     const objectKeys = await this.repository.expireContributionUploads(
       new Date().toISOString(),
     );
-    await Promise.all(objectKeys.map((key) => this.mediaStore.delete(key)));
+    await Promise.all(objectKeys.map(async (key) => {
+      await this.mediaStore.delete(key);
+      await this.repository.acknowledgeContributionMediaDeletion([key]);
+    }));
     return objectKeys.length;
   }
 

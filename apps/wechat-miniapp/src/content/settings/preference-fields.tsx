@@ -1,4 +1,5 @@
-import { Button, Input, Slider, Switch, Text, View } from "@tarojs/components";
+import { ToggleField } from "@/components/toggle-field";
+import { Button, Input, Slider, Text, View } from "@tarojs/components";
 import type { FacilityType, UserPreferences } from "@starward/miniapp-contracts";
 import type { usePreferencesSync } from "@/hooks/use-preferences-sync";
 
@@ -81,7 +82,7 @@ export function PreferenceFields({
             }
           />
           <Text className="type-caption">
-            无许可路线供应商时只保留偏好，不把直线距离冒充驾车时间。
+            驾车时间不可用时，此偏好暂不参与选点。
           </Text>
         </View>
         <View className="form-group">
@@ -115,38 +116,14 @@ export function PreferenceFields({
 
       <View className="settings-card card">
         <Text className="type-section">可访问性</Text>
-        <View className="setting-row">
-          <View>
-            <Text className="type-label">大字模式</Text>
-            <Text className="type-caption">
-              内容重排，不产生页面横向滚动
-            </Text>
-          </View>
-          <Switch
-            checked={preferences.largeText}
-            color="var(--primary)"
-            aria-label="大字模式"
-            onChange={(event) =>
-              updatePreference("largeText", event.detail.value)
-            }
-          />
-        </View>
-        <View className="setting-row">
-          <View>
-            <Text className="type-label">减少动态</Text>
-            <Text className="type-caption">
-              即时或不超过 100ms 的等价反馈
-            </Text>
-          </View>
-          <Switch
-            checked={preferences.reducedMotion}
-            color="var(--primary)"
-            aria-label="减少动态"
-            onChange={(event) =>
-              updatePreference("reducedMotion", event.detail.value)
-            }
-          />
-        </View>
+        <ToggleField id="large-text-preference" label="大字模式" description="内容重排，不产生页面横向滚动"
+          checked={preferences.largeText}
+          onChange={(checked) => updatePreference("largeText", checked)}
+        />
+        <ToggleField id="reduced-motion-preference" label="减少动态" description="减少过渡动画与动态效果"
+          checked={preferences.reducedMotion}
+          onChange={(checked) => updatePreference("reducedMotion", checked)}
+        />
       </View>
     </>
   );

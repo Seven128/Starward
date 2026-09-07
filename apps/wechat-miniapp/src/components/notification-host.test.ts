@@ -54,3 +54,48 @@ test("each actual themed page branch mounts one floating host outside its scroll
   }
   assert.doesNotMatch(readFileSync(new URL("../app.tsx", import.meta.url), "utf8"), /FloatingNotificationHost/);
 });
+
+test("only passive dismissible success acknowledgements expire; cleanup protects replacements", () => {
+  const source = readFileSync(new URL("./notification.tsx", import.meta.url), "utf8");
+  const ast = ts.createSourceFile("notification.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const region = ast.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "NotificationRegion");
+  assert.ok(region);
+  let current: any = null;
+  let cleanup: undefined | (() => void);
+  let scheduled: (() => void)[] = [];
+  const dismissed: string[] = [];
+  const dismiss = (id: string) => dismissed.push(id);
+  const code = ts.transpileModule(region.getText(ast).replace(/^export /, ""), {
+    compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 },
+  }).outputText;
+  const render = vm.runInNewContext(code + "\nNotificationRegion", {
+    useAppStore: (select: any) => select({ notifications: [], dismissNotification: dismiss }),
+    selectNotification: () => ({ current, residualCount: 0 }),
+    useEffect: (effect: any) => { cleanup?.(); cleanup = effect(); },
+    setTimeout: (callback: () => void, delay: number) => { assert.equal(delay, 6000); scheduled.push(callback); return scheduled.length; },
+    clearTimeout: () => {},
+    React: { createElement: () => ({}) }, NotificationComponent: "NotificationComponent",
+  });
+  const success = { id: "saved", createdAt: 1, occurrences: 1, tone: "success", placement: "floating", dismissible: true };
+  for (const record of [null, { ...success, tone: "error" }, { ...success, tone: "warning" },
+    { ...success, placement: "inline" }, { ...success, dismissible: false },
+    { ...success, action: { label: "撤销", route: "/undo" } }]) {
+    current = record; render({});
+    assert.equal(scheduled.length, 0);
+  }
+  current = success; render({});
+  scheduled[0]!();
+  assert.deepEqual(dismissed, ["saved"]);
+  dismissed.length = 0; scheduled = [];
+  current = success; render({});
+  current = { ...success, occurrences: 2, createdAt: 2 }; render({});
+  scheduled[0]!();
+  assert.deepEqual(dismissed, []);
+  scheduled[1]!();
+  assert.deepEqual(dismissed, ["saved"]);
+  dismissed.length = 0;
+  current = success; render({});
+  cleanup?.();
+  scheduled.at(-1)!();
+  assert.deepEqual(dismissed, []);
+});

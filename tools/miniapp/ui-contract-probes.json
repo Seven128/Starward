@@ -1,0 +1,51 @@
+[
+  {
+    "key": "field-signal-native-chrome",
+    "path": "apps/wechat-miniapp/src/app.config.ts",
+    "all_of": [
+      "import { NATIVE_CHROME_THEME } from \"./theme/design-tokens\"",
+      "navigationBarBackgroundColor: NATIVE_CHROME_THEME.DAY.canvas",
+      "backgroundColor: NATIVE_CHROME_THEME.DAY.canvas",
+      "color: NATIVE_CHROME_THEME.DAY.color",
+      "selectedColor: NATIVE_CHROME_THEME.DAY.selectedColor"
+    ],
+    "none_of": [
+      "#F5F7FA",
+      "#536DFE",
+      "#667085"
+    ]
+  },
+  {
+    "key": "sensor-follow-only",
+    "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+    "none_of": [
+      "manualOrientationOffset",
+      "手动方向偏移",
+      "方向输入",
+      "方向加",
+      "方向减"
+    ]
+  },
+  {
+    "key": "operations-workflow",
+    "path": "apps/admin-web/src/app/page.tsx",
+    "all_of": [
+      "审核队列",
+      "Case",
+      "媒体核验",
+      "合并预览",
+      "发布评估",
+      "替换与退役",
+      "审计"
+    ]
+  },
+  {
+    "key": "contribution-three-axes",
+    "path": "apps/wechat-miniapp/src/content/contribution/contribution-media-history.tsx",
+    "all_of": [
+      "投稿审核",
+      "证据合并",
+      "公开影响"
+    ]
+  }
+]

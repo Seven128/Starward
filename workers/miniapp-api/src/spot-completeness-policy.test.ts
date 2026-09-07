@@ -27,6 +27,21 @@ const SOURCE: SourceSummary = {
   limitations: [],
 };
 
+test("legacy missing radiance is an incomplete estimate, not an assessment crash", () => {
+  const detail = completeDetail();
+  delete (detail.spot.lightPollution as Partial<typeof detail.spot.lightPollution>).radiance;
+  delete (detail as Partial<SpotDetail>).evidence;
+  delete (detail as Partial<SpotDetail>).accessAndSafety;
+  delete (detail as Partial<SpotDetail>).siteMediaState;
+  const result = evaluateSpotCompleteness({ detail, now: NOW,
+    review: { actorId: "policy-test", reason: "Check legacy data without publishing" } });
+  assert.equal(result.complete, false);
+  assert.ok(result.issues.some((issue) => issue.code === "light_pollution_estimate_incomplete"));
+  assert.ok(result.issues.some((issue) => issue.code === "required_evidence_missing_or_stale"));
+  assert.ok(result.issues.some((issue) => issue.code === "night_safety_unknown"));
+  assert.ok(result.issues.some((issue) => issue.code === "site_media_state_unknown"));
+});
+
 function completeDetail(): SpotDetail {
   const fixture = buildTestSpotDetail(TEST_PUBLISHED_SPOT.spotId);
   assert.ok(fixture);

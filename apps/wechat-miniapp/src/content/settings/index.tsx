@@ -2,7 +2,7 @@ import { FloatingNotificationHost } from "@/components/notification";
 import Taro from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
 import type { DisplayMode } from "@starward/miniapp-contracts";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
 import { SoftButton } from "@/components/soft-button";
@@ -46,6 +46,7 @@ export default function SettingsPage() {
   );
   const notify = useAppStore((state) => state.notify);
   const [dataAction, setDataAction] = useState<"EXPORT" | "DELETE" | null>(null);
+  const accountActionPending = useRef(false);
   const [modeGestureCaptured, setModeGestureCaptured] = useState(false);
   const {
     updatePreference,
@@ -84,7 +85,8 @@ export default function SettingsPage() {
   };
 
   const downloadAccountData = async () => {
-    if (dataAction) return;
+    if (accountActionPending.current) return;
+    accountActionPending.current = true;
     setDataAction("EXPORT");
     let filePath: string | null = null;
     try {
@@ -93,15 +95,21 @@ export default function SettingsPage() {
       if (!root) throw new Error("user_data_path_unavailable");
       const fileName = `starward-account-${response.data.generatedAt
         .replace(/[:.]/gu, "-")}.json`;
-      filePath = `${root}/${fileName}`;
-      await writeJsonFile(filePath, JSON.stringify(response.data, null, 2));
+      const destination = `${root}/${fileName}`;
+      await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
+      filePath = destination;
       await Taro.shareFileMessage({ filePath, fileName });
+      const currentState = useAppStore.getState();
+      for (const notification of currentState.notifications) {
+        if (notification.owner === "settings" && notification.dedupeKey === "settings-account-export-failed")
+          currentState.dismissNotification(notification.id);
+      }
       notify({
         owner: "settings",
         placement: "floating",
         tone: "success",
         title: "账户数据已生成",
-        body: "已通过微信文件分享交付当前服务端数据快照。",
+        body: "账户数据文件已分享。",
         dismissible: true,
         dedupeKey: "settings-account-exported",
       });
@@ -113,35 +121,46 @@ export default function SettingsPage() {
         title: filePath ? "文件已生成，尚未分享" : "账户数据导出失败",
         body: filePath
           ? "微信文件分享未完成；可再次点击下载并重试。"
-          : `${errorMessage(error)}；没有用本地缓存拼接替代导出。`,
+          : errorMessage(error),
         dismissible: true,
         dedupeKey: "settings-account-export-failed",
       });
     } finally {
+      accountActionPending.current = false;
       setDataAction(null);
     }
   };
 
   const deleteAccount = async () => {
-    if (dataAction) return;
-    const first = await Taro.showModal({
-      title: "删除账户？",
-      content:
-        "将撤销微信身份关联和全部会话，并删除偏好、收藏、计划、主页链接、导入草稿与投稿媒体。去身份化审核、合并、发布和审计证据会按完整性要求保留。",
-      confirmText: "继续",
-      confirmColor: "#B53A3A",
-    });
-    if (!first.confirm) return;
-    const final = await Taro.showModal({
-      title: "最后确认",
-      content: "此操作不可撤销。删除后再次使用会创建一个全新账户。",
-      confirmText: "删除账户",
-      confirmColor: "#B53A3A",
-    });
-    if (!final.confirm) return;
+    if (accountActionPending.current) return;
+    accountActionPending.current = true;
     setDataAction("DELETE");
+    let accountDeleted = false;
     try {
-      const response = await deleteAccountThroughApi();
+      const first = await Taro.showModal({
+        title: "删除账户？",
+        content:
+          "将撤销微信身份关联和全部会话，并删除偏好、收藏、计划、主页链接、导入草稿与投稿媒体。去身份化审核、合并、发布和审计证据会按完整性要求保留。",
+        confirmText: "继续",
+        confirmColor: "#B53A3A",
+      });
+      if (!first.confirm) return;
+      const final = await Taro.showModal({
+        title: "最后确认",
+        content: "此操作不可撤销。删除后再次使用会创建一个全新账户。",
+        confirmText: "删除账户",
+        confirmColor: "#B53A3A",
+      });
+      if (!final.confirm) return;
+        const response = await deleteAccountThroughApi();
+      accountDeleted = true;
+      if (!response.localAccountReset) {
+        notify({ owner: "settings", placement: "inline", tone: "success",
+          title: "原账户已删除", body: "当前页面状态已保留。", dismissible: true,
+          dedupeKey: "settings-account-deleted" });
+        return;
+      }
+      resetAfterAccountDeletion();
       await Taro.showModal({
         title: "账户已删除",
         content:
@@ -151,19 +170,21 @@ export default function SettingsPage() {
         showCancel: false,
         confirmText: "完成",
       });
-      resetAfterAccountDeletion();
       await Taro.reLaunch({ url: "/pages/auth/index?accountDeleted=1" });
     } catch (error) {
       notify({
         owner: "settings",
         placement: "inline",
         tone: "error",
-        title: "账户未删除",
-        body: `${errorMessage(error)}；本机状态和登录会话保持不变，可重试。`,
+        title: accountDeleted ? "账户已删除，页面尚未关闭" : "账户未删除",
+        body: accountDeleted
+          ? "账户删除已完成，本机会话已清除。请退出小程序后重新进入。"
+          : `${errorMessage(error)}；本机状态和登录会话保持不变，可重试。`,
         dismissible: true,
         dedupeKey: "settings-account-delete-failed",
       });
     } finally {
+      accountActionPending.current = false;
       setDataAction(null);
     }
   };

@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pngjs from "pngjs";
+import { readDesignTokens } from "./generate-design-tokens.mjs";
 
 const { PNG } = pngjs;
 const checkOnly = process.argv.slice(2).includes("--check");
@@ -39,6 +40,17 @@ function distance(left, right) {
 }
 
 const generatedAssets = new Map();
+const tokens = readDesignTokens(await readFile(path.join(root, "DESIGN.md"), "utf8"));
+const themedSvgNames = [];
+for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images"]) {
+  const source = await readFile(path.join(iconRoot, `${name}.svg`), "utf8");
+  if (!source.includes('stroke="currentColor"')) throw new Error(`source_icon_stroke_missing:${name}`);
+  for (const mode of ["day", "night", "observation"]) {
+    const target = `${name}-${mode}.svg`;
+    themedSvgNames.push(target);
+    generatedAssets.set(target, Buffer.from(source.replaceAll('stroke="currentColor"', `stroke="${tokens.themes[mode]["text-primary"]}"`)));
+  }
+}
 
 async function recolor(sourceName, targetName, selectColor) {
   const source = PNG.sync.read(await readFile(path.join(iconRoot, sourceName)));
@@ -81,6 +93,7 @@ for (const [mode, colors] of Object.entries(MARKER_MODES)) {
 }
 
 const assetNames = [
+  ...themedSvgNames,
   "spot-marker.png",
   "spot-marker-selected.png",
   ...Object.keys(MARKER_MODES).filter((mode) => mode !== "day").flatMap((mode) => [

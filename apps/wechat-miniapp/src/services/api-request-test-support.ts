@@ -28,7 +28,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
   }
   assert.equal(names.size, 0, `missing production declarations: ${[...names]}`);
   type Response = { statusCode: number; data: unknown };
-  type Call = { success(response: Response): void; fail(error: { errMsg: string }): void };
+  type Call = { header: Record<string, string>; data?: unknown; success(response: Response): void; fail(error: { errMsg: string }): void };
   const calls: Call[] = [];
   const taskRejections: ((error: { errMsg: string }) => void)[] = [];
   const timers = new Map<number, () => void>();
@@ -55,6 +55,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
           rejectTask = reject;
         }) : null;
         const nativeCall: Call = promise ? {
+          header: call.header, data: call.data,
           success: (response) => { call.success(response); resolveTask(response); },
           fail: (error) => { call.fail(error); rejectTask(error); },
         } : call;
@@ -70,7 +71,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
       },
     },
   }, { timeout: 1000 }) as {
-    request(key: string, path: string, options?: { cache?: boolean; signal?: AbortSignal }): Promise<typeof response>;
+    request(key: string, path: string, options?: { cache?: boolean; signal?: AbortSignal; method?: "DELETE"; body?: unknown }): Promise<typeof response>;
     requests: LatestRequestRegistry;
   };
   const response = {

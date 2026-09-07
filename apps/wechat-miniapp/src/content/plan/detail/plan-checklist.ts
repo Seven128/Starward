@@ -60,6 +60,34 @@ export function planChecklistProgress(state: PlanChecklistState) {
   return { completed, total: PLAN_CHECKLIST_ITEMS.length };
 }
 
-export function planChecklistStorageKey(planId: string) {
-  return `starward:plan-checklist:${planId}`;
+export function planChecklistStorageKey(planId: string, owner: string) {
+  return `starward:plan-checklist:v2:${JSON.stringify([owner, planId])}`;
+}
+
+export function planChecklistBelongsTo(key: string, owner: string) {
+  const prefix = "starward:plan-checklist:v2:";
+  if (!key.startsWith(prefix)) return false;
+  try {
+    const parts: unknown = JSON.parse(key.slice(prefix.length));
+    return Array.isArray(parts) && parts.length === 2 && parts[0] === owner && typeof parts[1] === "string";
+  } catch { return false; }
+}
+
+export function readOwnedPlanChecklist(
+  storage: { getStorageSync(key: string): unknown; setStorageSync(key: string, value: unknown): void; removeStorageSync(key: string): void },
+  planId: string, owner: string, ownsPlan: boolean,
+) {
+  if (!ownsPlan) return emptyPlanChecklist();
+  const key = planChecklistStorageKey(planId, owner);
+  const current = storage.getStorageSync(key);
+  if (current !== undefined && current !== null && current !== "") return normalizePlanChecklist(current);
+  // A current account-scoped server plan establishes ownership of this unique ID.
+  // Only then may its older, plan-ID-only preparation progress be adopted.
+  const legacyKey = `starward:plan-checklist:${planId}`;
+  const legacy = storage.getStorageSync(legacyKey);
+  if (legacy === undefined || legacy === null || legacy === "") return emptyPlanChecklist();
+  const migrated = normalizePlanChecklist(legacy);
+  storage.setStorageSync(key, migrated);
+  try { storage.removeStorageSync(legacyKey); } catch { /* Scoped value now takes precedence. */ }
+  return migrated;
 }

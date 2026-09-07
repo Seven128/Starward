@@ -518,9 +518,9 @@
 .sky-target-row__name {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 24rpx;
-  line-height: 32rpx;
-  white-space: nowrap;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  white-space: normal;
   text-overflow: ellipsis;
 }
 
@@ -529,8 +529,8 @@
   max-width: 48%;
   overflow-wrap: anywhere;
   color: var(--text-primary);
-  font-size: 20rpx;
-  line-height: 28rpx;
+  font-size: var(--type-data-size);
+  line-height: var(--type-data-line);
   text-align: right;
 }
 
@@ -780,6 +780,7 @@
 /* Full-sky orientation route ------------------------------------------------ */
 
 .sky-orientation-page {
+  --sky-controls-top: calc(env(safe-area-inset-top) + 52Px);
   position: relative;
   width: 100%;
   height: 100vh;
@@ -887,17 +888,17 @@
 .sky-orientation-target-label__name {
   min-width: 0;
   color: var(--text-primary);
-  font-size: 22rpx;
-  line-height: 30rpx;
-  font-weight: 650;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
+  font-weight: 600;
 }
 
 .sky-orientation-target-label__meta,
 .sky-orientation-target-label__window {
   min-width: 0;
   color: var(--text-secondary);
-  font-size: 18rpx;
-  line-height: 25rpx;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
 }
 
 .theme-night .sky-orientation-target-label {
@@ -911,31 +912,25 @@
 .sky-orientation-back-layer {
   position: absolute;
   z-index: 14;
-  top: calc(env(safe-area-inset-top) + 104rpx);
-  left: 0;
-  width: 112rpx;
-  min-width: 0;
-  padding-top: 0;
-  padding-right: 12rpx;
-  padding-left: 12rpx;
+  top: var(--sky-controls-top);
+  left: var(--map-inset);
+  width: var(--target-min);
+  height: var(--target-min);
+  padding: 0;
   pointer-events: none;
 }
 
 .sky-orientation-back.soft-button {
-  width: 88rpx;
-  max-width: 88rpx;
-  min-width: 88rpx;
-  height: 88rpx;
-  max-height: 88rpx;
-  min-height: 88rpx;
+  width: var(--target-min);
+  min-width: var(--target-min);
+  height: var(--target-min);
+  min-height: var(--target-min);
   padding: 0;
   border-color: var(--border);
   border-radius: 999rpx;
   background: var(--surface);
   color: var(--text-primary);
   pointer-events: auto;
-  font-size: 24rpx;
-  line-height: 34rpx;
 }
 
 .sky-orientation-back.soft-button:active {
@@ -945,10 +940,11 @@
 .sky-orientation-back-layer .sky-orientation-back__icon {
   position: absolute;
   z-index: 1;
-  top: 28rpx;
-  left: 40rpx;
-  width: 32rpx;
-  height: 32rpx;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--icon-medium);
+  height: var(--icon-medium);
   pointer-events: none;
 }
 .sky-orientation-back.soft-button > text { display: none; }
@@ -974,29 +970,34 @@
   pointer-events: none;
 }
 
-.sky-orientation-recovery {
+.sky-orientation-details {
   position: absolute;
-  z-index: 6;
-  top: auto;
-  right: auto;
-  bottom: calc(env(safe-area-inset-bottom) + 204rpx);
-  left: 16rpx;
-  max-width: 360rpx;
+  z-index: 9;
+  top: 42%;
+  right: 32rpx;
+  left: 32rpx;
+  width: auto;
+  height: calc(58% - env(safe-area-inset-bottom) - 204rpx - var(--target-min) - 24Px);
+}
+
+.sky-orientation-recovery {
+  position: relative;
   box-sizing: border-box;
   transform: none;
-  padding: 6rpx;
-  display: flex;
+  padding: 24rpx;
+  display: grid;
+  grid-template-columns: var(--icon-large) minmax(0, 1fr);
   align-items: center;
-  gap: 6rpx;
+  gap: 16rpx;
   border: 1rpx solid var(--border);
-  border-radius: 999rpx;
+  border-radius: 20rpx;
   background: var(--surface);
   color: var(--text-primary);
 }
 
 .sky-orientation-recovery__icon {
-  width: 44rpx;
-  height: 44rpx;
+  width: var(--icon-large);
+  height: var(--icon-large);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1005,34 +1006,32 @@
 }
 
 .sky-orientation-recovery__icon .semantic-icon {
-  width: 32rpx;
-  height: 32rpx;
+  width: var(--icon-medium);
+  height: var(--icon-medium);
 }
 
 .sky-orientation-recovery__copy {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .sky-orientation-recovery__title {
   color: var(--text-primary);
-  font-size: 28rpx;
-  line-height: 38rpx;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
   font-weight: 650;
 }
 
 .sky-orientation-recovery__detail {
   color: var(--text-secondary);
-  font-size: 22rpx;
-  line-height: 32rpx;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
 }
 
 .sky-orientation-recovery__actions {
-  grid-column: auto;
+  grid-column: 2;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -1041,12 +1040,12 @@
 }
 
 .sky-orientation-recovery__actions .soft-button {
-  min-width: 88rpx;
-  min-height: 88rpx;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   padding: 10rpx 16rpx;
   border-radius: 999rpx;
-  font-size: 22rpx;
-  line-height: 32rpx;
+  font-size: var(--type-action-size);
+  line-height: var(--type-action-line);
 }
 
 .sky-orientation-object-toggle {
@@ -1060,31 +1059,26 @@
 }
 
 .sky-orientation-object-toggle__button {
-  min-width: 88rpx;
-  min-height: 88rpx;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   padding: 12rpx 16rpx;
   border-color: var(--border);
   border-radius: 999rpx;
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 22rpx;
-  line-height: 32rpx;
+  font-size: var(--type-action-size);
+  line-height: var(--type-action-line);
 }
 
 .sky-orientation-object-toggle__button .semantic-icon {
-  width: 26rpx;
-  height: 26rpx;
+  width: var(--icon-medium);
+  height: var(--icon-medium);
 }
-.sky-orientation-object-toggle__button > text { display: none; }
+.sky-orientation-object-toggle__button > text { display: inline; }
 
 .sky-orientation-object-list {
-  position: absolute;
-  z-index: 9;
-  top: auto;
-  right: 16rpx;
-  bottom: calc(env(safe-area-inset-bottom) + 300rpx);
-  left: 16rpx;
-  max-height: 34vh;
+  position: relative;
+  margin-top: 12rpx;
   box-sizing: border-box;
   overflow: hidden;
   padding: 10rpx 14rpx;
@@ -1114,8 +1108,8 @@
 
 .sky-orientation-object-list__title {
   color: var(--text-primary);
-  font-size: 26rpx;
-  line-height: 36rpx;
+  font-size: var(--type-section-size);
+  line-height: var(--type-section-line);
   font-weight: 650;
 }
 
@@ -1126,20 +1120,27 @@
 .sky-orientation-object-list__count {
   flex: 0 0 auto;
   color: var(--text-primary);
-  font-size: 22rpx;
-  line-height: 32rpx;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
 }
 
 .sky-orientation-object-list__scroll {
   min-height: 0;
   width: 100%;
   flex: 1 1 auto;
-  overflow: hidden;
-  max-height: 288rpx;
+  overflow: visible;
 }
 
 .sky-orientation-object-list__scroll .sky-target-row {
-  min-height: 72rpx;
+  min-height: var(--target-min);
+}
+.large-text .sky-target-row {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.large-text .sky-target-row__geometry {
+  max-width: 100%;
+  text-align: left;
 }
 
 .sky-orientation-data-status {
@@ -1154,43 +1155,10 @@
 .sky-orientation-notification {
   position: absolute;
   z-index: 12;
-  top: calc(env(safe-area-inset-top) + 104rpx);
-  right: 196rpx;
-  left: 112rpx;
+  top: calc(var(--sky-controls-top) + var(--target-min) + 8Px);
+  right: var(--map-inset);
+  left: var(--map-inset);
   pointer-events: auto;
-}
-
-.sky-orientation-notification .notification {
-  min-height: 88rpx;
-  height: 88rpx;
-  box-sizing: border-box;
-  width: auto;
-  grid-template-columns: 32rpx minmax(0, 1fr) 88rpx;
-  padding: 6rpx 0 6rpx 10rpx;
-  gap: 6rpx;
-  border-radius: 999rpx;
-}
-.sky-orientation-notification .notification__icon {
-  width: 32rpx;
-  height: 32rpx;
-  border-radius: 999rpx;
-  font-size: 18rpx;
-}
-.sky-orientation-notification .notification__title {
-  overflow: hidden;
-  font-size: 19rpx;
-  line-height: 28rpx;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.sky-orientation-notification .notification__body {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .sky-orientation-data-status .status-panel {
@@ -1201,7 +1169,7 @@
 }
 
 .sky-orientation-data-status .status-panel__recovery {
-  min-height: 72rpx;
+  min-height: var(--target-min);
   padding: 10rpx 16rpx;
   font-size: 20rpx;
   line-height: 30rpx;
@@ -1235,8 +1203,8 @@
 
 .sky-orientation-canvas__retry.soft-button {
   flex: 0 0 auto;
-  min-width: 88rpx;
-  min-height: 72rpx;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   padding: 10rpx 14rpx;
   font-size: 20rpx;
   line-height: 30rpx;
@@ -1256,8 +1224,8 @@
 .sky-orientation-time-ruler {
   position: relative;
   width: 100%;
-  height: 88rpx;
-  min-height: 88rpx;
+  height: 72Px;
+  min-height: 72Px;
   box-sizing: border-box;
   overflow: hidden;
   padding: 0;
@@ -1279,8 +1247,8 @@
 .sky-orientation-time-ruler__current {
   position: relative;
   z-index: 2;
-  height: 28rpx;
-  min-height: 28rpx;
+  height: var(--type-body-secondary-line);
+  min-height: var(--type-body-secondary-line);
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -1291,23 +1259,23 @@
 
 .sky-orientation-time-ruler__current-value {
   color: var(--text-primary);
-  font-size: 24rpx;
-  line-height: 28rpx;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .sky-orientation-time-ruler__current-state {
   color: var(--text-secondary);
-  font-size: 18rpx;
-  line-height: 26rpx;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
   white-space: nowrap;
 }
 
 .sky-orientation-time-ruler__axis {
   position: absolute;
   z-index: 2;
-  top: 28rpx;
+  top: var(--type-body-secondary-line);
   left: 50%;
   width: 2rpx;
   height: 34rpx;
@@ -1325,7 +1293,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 88rpx;
+  height: 72Px;
   overflow: hidden;
   scrollbar-width: none;
 }
@@ -1338,20 +1306,21 @@
 
 .sky-orientation-time-ruler__track {
   min-width: max-content;
-  height: 88rpx;
+  height: 72Px;
   box-sizing: border-box;
-  padding: 0 calc(50% - 17rpx);
+  padding: 0 calc(50% - 17rpx) 18rpx;
   display: flex;
   align-items: flex-end;
 }
 
 .sky-orientation-time-ruler__tick {
   position: relative;
+  overflow: visible;
   flex: 0 0 34rpx;
   width: 34rpx;
-  height: 88rpx;
+  height: calc(72Px - 18rpx);
   box-sizing: border-box;
-  padding: 0;
+  padding: 0 0 var(--type-metadata-line);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1401,11 +1370,16 @@
 }
 
 .sky-orientation-time-ruler__tick-label {
-  max-width: 80rpx;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: none;
+  width: max-content;
   margin-top: 2rpx;
   color: currentColor;
-  font-size: 18rpx;
-  line-height: 24rpx;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1432,13 +1406,13 @@
   z-index: 3;
   top: 8rpx;
   right: 8rpx;
-  min-width: 88rpx;
-  min-height: 72rpx;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   padding: 8rpx 12rpx;
   border-color: transparent;
   color: var(--text-secondary);
-  font-size: 20rpx;
-  line-height: 28rpx;
+  font-size: var(--type-action-size);
+  line-height: var(--type-action-line);
 }
 
 .sky-orientation-time-ruler__empty {
@@ -1481,17 +1455,6 @@
 .large-text .sky-orientation-time-ruler__tick-label {
   font-size: 24rpx;
   line-height: 36rpx;
-}
-
-.large-text .sky-orientation-target-label__name {
-  font-size: 26rpx;
-  line-height: 34rpx;
-}
-
-.large-text .sky-orientation-target-label__meta,
-.large-text .sky-orientation-target-label__window {
-  font-size: 22rpx;
-  line-height: 30rpx;
 }
 
 .large-text .sky-orientation-recovery {
@@ -1554,19 +1517,12 @@
   }
 
   .sky-orientation-recovery {
-    right: 12rpx;
-    left: 12rpx;
     padding: 14rpx;
   }
 
   .sky-orientation-object-toggle {
     right: 8rpx;
     left: auto;
-  }
-
-  .sky-orientation-object-list {
-    right: 8rpx;
-    left: 8rpx;
   }
 
   .sky-orientation-ruler-layer {

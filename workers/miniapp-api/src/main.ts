@@ -43,6 +43,7 @@ app.enableCors({
     "x-admin-token",
     "x-admin-actor",
     "x-request-id",
+    "x-wechat-reauth-code",
   ],
 });
 app.useGlobalFilters(new ApiExceptionFilter());

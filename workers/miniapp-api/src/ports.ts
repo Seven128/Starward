@@ -232,6 +232,7 @@ export interface MiniappRepositoryPort {
     idempotencyKey: string,
   ): Promise<void>;
   listPlans(userId: UserId): Promise<readonly ObservationPlan[]>;
+  getPlanSaveReceipt(userId: UserId, planId: string, idempotencyKey: string): Promise<ObservationPlan | null>;
   savePlan(
     userId: UserId,
     plan: ObservationPlan,
@@ -254,6 +255,7 @@ export interface MiniappRepositoryPort {
   ): Promise<ImportDraft>;
   listImportDrafts(userId: UserId): Promise<readonly ImportDraft[]>;
   getImportDraft(userId: UserId, id: string): Promise<ImportDraft | null>;
+  getImportSaveReceipt(userId: UserId, id: string, idempotencyKey: string): Promise<ImportDraft | null>;
   listContributions(userId: UserId): Promise<readonly ContributionSubmission[]>;
   getContribution(
     userId: UserId,
@@ -271,6 +273,7 @@ export interface MiniappRepositoryPort {
     upload: ContributionMediaUpload,
     expectedRevision: number,
     idempotencyKey: string,
+    replaceUploadId?: ContributionUploadId,
   ): Promise<ContributionSubmission>;
   completeContributionUpload(
     userId: UserId,
@@ -291,6 +294,8 @@ export interface MiniappRepositoryPort {
     idempotencyKey: string,
   ): Promise<ContributionSubmission>;
   expireContributionUploads(now: string): Promise<readonly string[]>;
+  removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission>;
+  acknowledgeContributionMediaDeletion(objectKeys: readonly string[]): Promise<void>;
   getContributionUploadObject(
     uploadId: ContributionUploadId,
   ): Promise<{

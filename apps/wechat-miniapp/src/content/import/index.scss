@@ -42,19 +42,23 @@
 .import-platform-grid .chip {
   position: relative;
   isolation: isolate;
-  min-height: 88rpx;
-  padding: 0 8rpx;
+  min-height: var(--target-min);
+  height: auto;
+  padding: var(--space-inline);
   border-color: transparent;
   background: transparent;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: var(--type-action-size);
+  line-height: var(--type-action-line);
 }
 .import-platform-grid .chip::before {
   content: "";
   position: absolute;
   z-index: -1;
-  top: 20rpx;
+  top: 2Px;
   right: 2rpx;
-  bottom: 20rpx;
+  bottom: 2Px;
   left: 2rpx;
   border: 1rpx solid var(--border);
   border-radius: 999rpx;
@@ -84,14 +88,16 @@
 .import-validation,
 .import-warning {
   color: var(--danger);
-  line-height: 1.5;
+  font-size: var(--type-critical-size);
+  line-height: var(--type-critical-line);
 }
 .import-rights-row {
-  min-height: 88rpx;
+  min-height: var(--target-min);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18rpx;
+  flex-wrap: wrap;
 }
 .import-rights-row > view:first-child {
   min-width: 0;
@@ -119,14 +125,15 @@
   text-align: center;
 }
 .import-stage__index {
-  width: 28rpx;
-  height: 28rpx;
+  min-width: var(--type-metadata-line);
+  min-height: var(--type-metadata-line);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1rpx solid var(--border-strong);
   border-radius: 50%;
-  font-size: 18rpx;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
   font-weight: 500;
 }
 .import-stage--current {
@@ -143,6 +150,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16rpx;
+  flex-wrap: wrap;
 }
 .import-section-heading > view {
   min-width: 0;
@@ -151,12 +159,14 @@
   gap: 5rpx;
 }
 .import-status-pill {
-  flex: 0 0 auto;
+  max-width: 100%;
   padding: 6rpx 10rpx;
   border: 1rpx solid var(--border-strong);
   border-radius: 999rpx;
   color: var(--text-secondary);
-  font-size: 20rpx;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  overflow-wrap: anywhere;
 }
 .import-parse-note {
   padding: 14rpx 16rpx;
@@ -164,14 +174,16 @@
   background: var(--surface-subtle);
 }
 .import-body-field {
-  min-height: 192rpx;
+  min-height: calc(var(--type-body-line) * 5);
   padding-top: 16rpx;
-  line-height: 1.6;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
 }
 .import-visibility-actions {
   flex: 0 0 auto;
   display: flex;
   gap: 8rpx;
+  flex-wrap: wrap;
 }
 .import-visibility-actions .chip {
   min-width: 96rpx;
@@ -183,7 +195,7 @@
 }
 .import-association-option {
   width: 100%;
-  min-height: 92rpx;
+  min-height: var(--target-min);
   padding: 8rpx 16rpx;
   display: flex;
   flex-direction: column;
@@ -194,6 +206,8 @@
   background: var(--surface);
   color: var(--text-primary);
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .import-association-option--selected {
   border-color: var(--primary);
@@ -206,10 +220,12 @@
   padding: 12rpx 16rpx;
   border-radius: 8rpx;
   background: var(--surface-subtle);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .import-history-row {
   width: 100%;
-  min-height: 86rpx;
+  min-height: var(--target-min);
   padding: 8rpx 0;
   display: flex;
   align-items: flex-start;
@@ -219,7 +235,18 @@
   background: transparent;
   color: var(--text-primary);
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
+.import-history-row > view {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.large-text .import-platform-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.large-text .import-stage-strip { grid-template-columns: 1fr; }
+.large-text .import-stage { flex-direction: row; justify-content: flex-start; text-align: left; }
 .import-history-row--selected {
   border-color: var(--primary);
   background: var(--surface-subtle);
@@ -230,9 +257,6 @@
   }
   .import-stage-strip {
     gap: 2rpx;
-  }
-  .import-stage .type-caption {
-    font-size: 20rpx;
   }
   .import-rights-row {
     align-items: flex-start;

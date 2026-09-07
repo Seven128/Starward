@@ -327,9 +327,13 @@ function mapFrameTimes(context: ObservationContext) {
   const count = Math.ceil((end - start) / MAP_FRAME_CADENCE_MS);
   if (count > MAX_MAP_TIME_FRAMES)
     throw new Error("map_time_frame_limit_exceeded");
-  return Array.from({ length: count }, (_, index) =>
-    new Date(start + index * MAP_FRAME_CADENCE_MS).toISOString(),
-  );
+  const times = Array.from({ length: count }, (_, index) => start + index * MAP_FRAME_CADENCE_MS);
+  const selected = Date.parse(context.selectedAtUtc);
+  if (Number.isFinite(selected) && selected >= start && selected < end && !times.includes(selected))
+    times.push(selected);
+  if (times.length > MAX_MAP_TIME_FRAMES)
+    throw new Error("map_time_frame_limit_exceeded");
+  return times.sort((a, b) => a - b).map((time) => new Date(time).toISOString());
 }
 
 function moonImpact(
@@ -1784,6 +1788,8 @@ export class MiniappService {
     idempotencyKey: string,
   ) {
     assertIdempotencyKey(idempotencyKey);
+    const receipt = await this.repository.getPlanSaveReceipt(userId, input.planId, idempotencyKey);
+    if (receipt) return envelope(receipt, "FRESH", [], ["已返回这次计划保存的原始结果；当前计划可重新回读。"]);
     if (
       !/^\d{4}-\d{2}-\d{2}$/u.test(input.localDate) ||
       !/^\d{2}:\d{2}$/u.test(input.localTime)
@@ -1900,14 +1906,6 @@ export class MiniappService {
       throw new Error("profile_link_invalid:" + validation.code);
     if (!input.displayName.trim() || input.displayName.length > 80)
       throw new Error("profile_link_label_invalid");
-    if (
-      (await this.repository.listProfileLinks(userId)).some(
-        (link) =>
-          link.url === validation.normalizedUrl &&
-          link.profileLinkId !== input.profileLinkId,
-      )
-    )
-      throw new Error("profile_link_duplicate");
     const now = new Date().toISOString();
     const link: ProfileLink = {
       profileLinkId: (input.profileLinkId ??
@@ -2031,6 +2029,10 @@ export class MiniappService {
     idempotencyKey: string,
   ) {
     assertIdempotencyKey(idempotencyKey);
+
+
+    const receipt = await this.repository.getImportSaveReceipt(userId, id, idempotencyKey);
+    if (receipt) return envelope(receipt, "FRESH", [], ["已返回这次保存的原始结果；当前草稿可重新回读。"]);
     const current = await this.repository.getImportDraft(userId, id);
     if (!current) throw new Error("import_draft_not_found");
     const next = structuredClone(current);
@@ -2179,6 +2181,12 @@ export class MiniappService {
       [],
       ["上传会话 20 分钟后过期；仅接受受限大小的 JPEG 或 PNG。"],
     );
+  }
+
+  async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!Number.isInteger(expectedRevision) || expectedRevision < 1) throw new Error("contribution_revision_invalid");
+    return envelope(await this.contributions.removeUpload(userId, submissionId, uploadId, expectedRevision, idempotencyKey), "FRESH", []);
   }
 
   async completeContributionUpload(

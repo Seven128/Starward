@@ -28,7 +28,7 @@ test("local failures never expose transport or internal error codes", () => {
   );
   assert.equal(
     localFailureMessage("some_private_runtime_code"),
-    "操作未完成，具体技术原因已记录",
+    "暂时无法完成此操作，请稍后重试",
   );
 });
 

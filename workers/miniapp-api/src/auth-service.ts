@@ -72,6 +72,18 @@ export class AuthService {
     return userId;
   }
 
+  async requireReauthenticatedPrincipal(authorization?: string, code?: string): Promise<UserId> {
+    const userId = await this.requirePrincipal(authorization);
+    if (!code || code.length > 512) throw new Error("auth_reauthentication_required");
+    const verifiedUserId = this.config.authMode === "WECHAT"
+      ? await this.#wechatUser(code)
+      : await this.#localTestUser(code);
+    if (verifiedUserId !== userId) throw new Error("auth_reauthentication_identity_mismatch");
+    // The native code proves identity for this operation; it does not replace
+    // the current session or authorize an operation on a different account.
+    return userId;
+  }
+
   async #wechatUser(code: string): Promise<UserId> {
     const { appId, appSecret } = this.config.wechat;
     if (!appId || !appSecret) throw new Error("wechat_auth_not_configured");

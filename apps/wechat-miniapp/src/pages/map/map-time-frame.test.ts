@@ -7,6 +7,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import {
   nearestMapTimeFrameIndex,
+  mapTimeFrameAt,
   projectedLayerPolygons,
   projectMapEvaluations,
 } from "./map-time-frame.ts";
@@ -106,4 +107,39 @@ test("uses frame polygons only for the matching dynamic layer", () => {
   const light: MapLayerData = { ...cloud, kind: "LIGHT_POLLUTION" };
   assert.equal(projectedLayerPolygons(cloud, frames[1]!).length, 1);
   assert.equal(projectedLayerPolygons(light, frames[1]!).length, 0);
+});
+
+test("missing or mismatched time signals cannot retain another time's conditions", () => {
+  for (const frame of [frames[0]!, { ...frames[1]!, spotSignals: { "spot:test": { ...frames[1]!.spotSignals["spot:test"]!, spotId: "spot:other" as MapSpotEvaluation["spotId"] } } }]) {
+    const value = projectMapEvaluations({ "spot:test": baseEvaluation }, frame)["spot:test"]!;
+    assert.equal(value.cloudPercent, null);
+    assert.equal(value.lowCloudPercent, null);
+    assert.equal(value.moonImpact, "UNKNOWN");
+    assert.equal(value.opportunityScore, null);
+    assert.equal(value.opportunityEligible, false);
+    assert.equal(value.state, "UNAVAILABLE");
+    assert.equal(value.spotId, baseEvaluation.spotId);
+    assert.equal(value.driveMinutes, 20);
+    assert.equal(value.distanceKm, 12);
+  }
+  assert.equal(baseEvaluation.cloudPercent, 60, "preview must not mutate the committed reading");
+  const unavailable = { ...frames[1]!, spotSignals: { "spot:test": { ...frames[1]!.spotSignals["spot:test"]!, state: "UNAVAILABLE" as const } } };
+  assert.equal(projectMapEvaluations({ "spot:test": baseEvaluation }, unavailable)["spot:test"]!.cloudPercent, null);
+});
+
+test("missing dynamic frames clear old polygons while static light pollution remains", () => {
+  const layer: MapLayerData = { kind: "CLOUD", cloudLayer: "TOTAL", polygons: frames[1]!.dynamicLayer!.polygons, legend: [], validAt: frames[1]!.atUtc, datasetVersion: "test", precision: "test", state: "FRESH", source: null };
+  assert.equal(projectedLayerPolygons(layer, frames[0]!).length, 0);
+  assert.equal(projectedLayerPolygons({ ...layer, kind: "OPPORTUNITY" }, frames[1]!).length, 0);
+  assert.equal(projectedLayerPolygons(layer, { ...frames[1]!, dynamicLayer: { ...frames[1]!.dynamicLayer!, state: "UNAVAILABLE" } }).length, 0);
+  assert.equal(projectedLayerPolygons({ ...layer, kind: "LIGHT_POLLUTION" }, frames[0]!).length, 1);
+  assert.equal(projectedLayerPolygons(layer, null).length, 1);
+});
+
+test("off-cadence and duplicate map instants cannot borrow adjacent signals", () => {
+  const missing = mapTimeFrameAt(frames, "2026-08-23T12:20:00Z");
+  assert.deepEqual(missing.spotSignals, {});
+  assert.equal(projectMapEvaluations({ "spot:test": baseEvaluation }, missing)["spot:test"]?.state, "UNAVAILABLE");
+  assert.equal(mapTimeFrameAt(frames, frames[1]!.atUtc), frames[1]);
+  assert.deepEqual(mapTimeFrameAt([frames[1]!, frames[1]!], frames[1]!.atUtc).spotSignals, {});
 });

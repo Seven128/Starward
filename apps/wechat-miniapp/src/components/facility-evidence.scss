@@ -1,0 +1,40 @@
+.facility-evidence__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8Px;
+}
+.facility-evidence__heading .status-tag {
+  flex: 0 0 auto;
+  width: auto;
+}
+.facility-evidence__facts {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 8Px 16Px;
+}
+.facility-evidence__fact {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2Px 8Px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.facility-evidence__fact--wide,
+.facility-evidence__fact--conditions {
+  grid-column: 1 / -1;
+}
+.facility-evidence__fact--conditions {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8Px;
+}
+.facility-evidence__fact > .type-caption {
+  flex: 0 0 auto;
+}
+.facility-evidence__fact > .type-secondary {
+  flex: 1;
+  min-width: 0;
+}

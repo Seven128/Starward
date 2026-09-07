@@ -54,7 +54,7 @@
   border-top: 1rpx solid var(--border);
 }
 .my-focus-actions .routine-entry {
-  min-height: 88rpx;
+  min-height: var(--target-min);
   padding: 8rpx 10rpx;
   grid-template-columns: 40rpx minmax(0, 1fr) 24rpx;
   gap: 8rpx;
@@ -63,6 +63,14 @@
 }
 .my-focus-actions .routine-entry + .routine-entry {
   border-left: 1rpx solid var(--border);
+}
+.large-text .my-focus-actions,
+.large-text .profile-summary__band {
+  grid-template-columns: minmax(0, 1fr);
+}
+.large-text .my-focus-actions .routine-entry + .routine-entry {
+  border-left: 0;
+  border-top: 1rpx solid var(--border);
 }
 .my-focus-actions .routine-entry__icon {
   width: 40rpx;
@@ -117,7 +125,7 @@
 }
 .routine-entry {
   width: 100%;
-  min-height: 88rpx;
+  min-height: var(--target-min);
   padding: 8rpx 16rpx;
   display: grid;
   grid-template-columns: 48rpx minmax(0, 1fr) 28rpx;
@@ -128,6 +136,8 @@
   background: var(--surface);
   color: var(--text-primary);
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .routine-entry:first-child {
   border-top: 0;
@@ -145,9 +155,9 @@
   font-weight: 500;
 }
 .routine-entry__icon .semantic-icon {
-  width: 24rpx;
-  height: 24rpx;
-  flex-basis: 24rpx;
+  width: var(--icon-small);
+  height: var(--icon-small);
+  flex-basis: var(--icon-small);
 }
 .routine-entry__icon--moon {
   color: var(--warning);

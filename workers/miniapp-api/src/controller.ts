@@ -18,6 +18,7 @@ import {
   type ContributionSubmitRequest,
   type ContributionUpdateRequest,
   type ContributionUploadCompleteRequest,
+  type ContributionUploadRemoveRequest,
   type ContributionUploadId,
   type ContributionUploadSessionRequest,
   type FilterState,
@@ -321,9 +322,12 @@ export class MiniappController {
   }
 
   @Get("me/data-export")
-  async accountDataExport(@Headers("authorization") authorization?: string) {
+  async accountDataExport(
+    @Headers("authorization") authorization?: string,
+    @Headers("x-wechat-reauth-code") reauthenticationCode?: string,
+  ) {
     return this.service.exportAccountData(
-      await this.service.auth.requirePrincipal(authorization),
+      await this.service.auth.requireReauthenticatedPrincipal(authorization, reauthenticationCode),
     );
   }
 
@@ -332,9 +336,10 @@ export class MiniappController {
     @Body() body: { confirmation: "DELETE_ACCOUNT" },
     @Headers("authorization") authorization?: string,
     @Headers("idempotency-key") idempotencyKey = "",
+    @Headers("x-wechat-reauth-code") reauthenticationCode?: string,
   ) {
     return this.service.deleteAccount(
-      await this.service.auth.requirePrincipal(authorization),
+      await this.service.auth.requireReauthenticatedPrincipal(authorization, reauthenticationCode),
       body,
       idempotencyKey,
     );
@@ -426,6 +431,17 @@ export class MiniappController {
       body,
       idempotencyKey,
     );
+  }
+
+  @Delete("me/contributions/:submissionId/media-uploads/:uploadId")
+  async removeContributionUpload(
+    @Param("submissionId") submissionId: string,
+    @Param("uploadId") uploadId: string,
+    @Body() body: ContributionUploadRemoveRequest,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.removeContributionUpload(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(submissionId) as ContributionId, decodeURIComponent(uploadId) as ContributionUploadId, body.expectedRevision, idempotencyKey);
   }
 
   @Put("me/contributions/:submissionId/media-uploads/:uploadId")

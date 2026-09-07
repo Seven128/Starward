@@ -16,7 +16,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
-import { parse as parseYaml } from "yaml";
 import {
   knownWechatToolchainConsoleErrorId,
   WECHAT_AUTOMATOR_OPAQUE_ERROR_ENVELOPE_V1,
@@ -180,8 +179,14 @@ test("NightChina import corpus is balanced, traceable, rights-safe, and reaches 
     "import-save-association",
     "import-open-preview",
     "import-submit-review",
-  ])
-    assert.match(importPage, new RegExp(`data-od-id="${id}"`, "u"), id);
+  ]) {
+    if (id === "import-rights-confirmation" || id === "import-formal-spot-id") {
+      const component = id === "import-rights-confirmation" ? "ToggleField" : "FormalSpotField";
+      const file = component === "ToggleField" ? "toggle-field.tsx" : "formal-spot-field.tsx";
+      assert.match(importPage, new RegExp(`<${component}\\s+id="${id}"`, "u"), id);
+      assert.match(await text("apps", "wechat-miniapp", "src", "components", file), /data-od-id=\{id\}/u);
+    } else assert.match(importPage, new RegExp(`data-od-id="${id}"`, "u"), id);
+  }
 });
 
 test("native runtime policy recognizes only the exact opaque DevTools envelope", () => {
@@ -274,7 +279,7 @@ test("Mini Program UI has no Web implementation or H5 acceptance authority", asy
   assert.doesNotMatch(mapStyles, /map-proxy|map-page--h5/iu);
   assert.doesNotMatch(requestLifecycle, /\bH5\b|browser transport/iu);
   assert.match(mapSource, /useDidShow\(\(\) => setPageVisible\(true\)\)/u);
-  assert.match(mapSource, /useDidHide\(\(\) => setPageVisible\(false\)\)/u);
+  assert.match(mapSource, /useDidHide\(\(\) => \{ stopPanelSpring\(\); navigationEpoch\.current \+= 1; setPageVisible\(false\); panelDrag\.current = null; setPanelDragOffset\(0\); setPanelDragging\(false\); \}\)/u);
   assert.match(mapSource, /enabled: pageVisible && Boolean\(activeContext\)/u);
   for (const removed of [
     ["apps", "miniapp-admin", "package.json"],
@@ -363,7 +368,17 @@ test("generated mode icons exactly match their checked manifest", async () => {
     manifest.authorityTarget,
     "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
   );
-  assert.equal(manifest.assets.length, 18);
+  assert.equal(manifest.assets.length, 33);
+  const modeColors = { day: "#282b29", night: "#f5f3ec", observation: "#ff6b58" };
+  for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images"]) {
+    const source = await readFile(path.join(iconRoot, `${name}.svg`), "utf8");
+    for (const [mode, color] of Object.entries(modeColors)) {
+      const assetName = `${name}-${mode}.svg`;
+      assert.ok(manifest.assets.some((asset) => asset.path === assetName), assetName);
+      const generated = await readFile(path.join(iconRoot, assetName), "utf8");
+      assert.equal(generated, source.replaceAll('stroke="currentColor"', `stroke="${color}"`), `${assetName}: geometry and license preserved`);
+    }
+  }
   for (const asset of manifest.assets) {
     const bytes = await readFile(path.join(iconRoot, asset.path));
     assert.equal(sha256(bytes), asset.sha256, asset.path);
@@ -382,7 +397,7 @@ test("selected semantic assets retain the complete 8 by 3 source-derived closure
   );
   assert.equal(
     manifest.source_sha256,
-    "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534",
+    sha256(await readFile(at("tools", "miniapp", "semantic-art.mjs"))),
   );
   assert.equal(manifest.subjects.length, 8);
   assert.equal(manifest.modes.length, 3);
@@ -393,96 +408,20 @@ test("selected semantic assets retain the complete 8 by 3 source-derived closure
   }
 });
 
-test("the current Field Signal Mini Program and Operations handoffs are bound to production probes", async () => {
-  const bindings = await json(
-    "tools",
-    "miniapp",
-    "selected-design-bindings.json",
-  );
-  assert.equal(
-    bindings.schema_version,
-    "starward-sky-canvas-selected-design-bindings-v1",
-  );
-  assert.deepEqual(
-    bindings.handoffs.map(({ key, target }) => ({ key, target })),
-    [
-      {
-        key: "miniapp",
-        target:
-          "target-miniapp-field-signal-i21-selected-constraint-2026-09-03",
-      },
-      {
-        key: "operations",
-        target: "target-operations-sky-canvas-current-constraint",
-      },
-    ],
-  );
-  for (const handoff of bindings.handoffs.filter(
-    (candidate) => candidate.key === "operations",
-  )) {
-    const owner = await text(
-      "project_context", "areas", "main", "screen-contracts",
-      `${handoff.key === "miniapp" ? "wechat-miniapp" : "operations"}.md`,
-    );
-    const adoption = owner.split(/\r?\n/u).find((line) =>
-      /^- Current (?:page|screen)\/interaction resource:/u.test(line)
-      && line.includes(`\`${handoff.target}\``),
-    );
-    assert.ok(adoption?.includes(`\`${handoff.path}\``),
-      "handoff path must match its canonical adoption record");
-    assert.ok(adoption?.includes(`\`${handoff.sha256}\``),
-      "handoff digest must match its canonical adoption record");
-    assert.match(handoff.sha256, /^[a-f0-9]{64}$/u);
-    assert.equal(handoff.expected_census.acceptance_blockers, 0);
+test("ordinary UI checks depend on production owners, not prototype packages", async () => {
+  const probes = await json("tools", "miniapp", "ui-contract-probes.json");
+  assert.deepEqual(probes.map(probe => probe.key), ["field-signal-native-chrome", "sensor-follow-only", "operations-workflow", "contribution-three-axes"]);
+  for (const probe of probes) {
+    assert.ok(probe.path.startsWith("apps/"));
+    const source = await readFile(at(...probe.path.split("/")), "utf8");
+    for (const marker of probe.all_of ?? []) assert.ok(source.includes(marker), probe.key);
+    for (const marker of probe.none_of ?? []) assert.ok(!source.includes(marker), probe.key);
   }
-  const i21Spec = await json(
-    "tools",
-    "miniapp",
-    "verification-spec-field-signal-i21.json",
-  );
-  const i21Handoff = i21Spec.authority.handoff;
-  const i21Owner = await text(
-    "project_context",
-    "areas",
-    "main",
-    "screen-contracts",
-    "wechat-miniapp.md",
-  );
-  const i21Adoption = i21Owner.split(/\r?\n/u).find(
-    (line) =>
-      line.includes(
-        "`target-miniapp-field-signal-i21-selected-constraint-2026-09-03`",
-      ),
-  );
-  assert.ok(i21Adoption?.includes("tools/miniapp/selected-design-bindings.json"));
-  const indexedHandoff = bindings.handoffs.find((entry) => entry.key === "miniapp");
-  assert.equal(indexedHandoff.path, i21Handoff.path);
-  assert.equal(indexedHandoff.sha256, i21Handoff.sha256);
-  assert.equal(
-    sha256(await readFile(at(...i21Handoff.path.split("/")))),
-    i21Handoff.sha256,
-  );
-  assert.equal(i21Spec.design_evidence.fact_refs.length, 72);
-  assert.equal(
-    i21Spec.design_evidence.resource_integrity_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-resource-integrity.json",
-  );
-  assert.equal(
-    i21Spec.design_evidence.environment_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-render-environment.json",
-  );
-  assert.equal(
-    i21Spec.design_evidence.parameters_path,
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-proof-parameters.json",
-  );
-  assert.equal(bindings.authorities.length, 4);
-  assert.ok(bindings.production_probes.length >= 5);
-  for (const probe of bindings.production_probes) {
-    assert.ok(
-      (probe.all_of?.length ?? 0) + (probe.none_of?.length ?? 0) > 0,
-      probe.key,
-    );
-  }
+  const pkg = await json("package.json");
+  assert.ok(pkg.scripts["check:miniapp:fast"].includes("test:miniapp:ui-contracts"));
+  assert.ok(!pkg.scripts["check:miniapp:fast"].includes("design-bindings"));
+  const verifier = await text("tools", "verify-miniapp-design-profile.mjs");
+  assert.ok(!verifier.includes("docs/design-resources"));
 });
 
 test("the current implementation has no proposal-version product profile", async () => {
@@ -986,7 +925,7 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   assert.match(app, /if \(__MINIAPP_ACCEPTANCE_DIAGNOSTICS__\)/u);
   assert.doesNotMatch(app, /__MINIAPP_DEVELOPMENT_FIXTURE_MODE__/u);
   assert.match(customNav, /__MINIAPP_DEVELOPMENT_FIXTURE_MODE__/u);
-  assert.match(customNav, /开发验收数据 · 不用于现实判断/u);
+  assert.match(customNav, /测试数据 · 不用于现实判断/u);
   assert.match(customNav, /data-od-id="development-fixture-banner"/u);
   assert.match(
     miniappConfig,
@@ -1139,6 +1078,9 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
     "state",
     "app-store.ts",
   );
+  const generatedChrome = await text("apps", "wechat-miniapp", "src", "theme", "design-tokens.ts");
+  assert.match(chrome, /import \{ NATIVE_CHROME_THEME \} from "\.\/design-tokens"/u);
+  assert.match(chrome, /const theme = NATIVE_CHROME_THEME\[mode\]/u);
   for (const role of [
     "#FFFFFF",
     "#4859B8",
@@ -1147,12 +1089,14 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
     "#000000",
     "#FF6B58",
   ])
-    assert.ok(chrome.includes(role), role);
+    assert.ok(generatedChrome.includes(role), role);
   assert.match(nativeMetrics, /getWindowInfo\(\)\.statusBarHeight/u);
   assert.match(nativeMetrics, /Number\.isFinite\(height\)/u);
   assert.match(navigation, /nativeStatusBarHeightPx\(\)/u);
-  assert.match(sky, /className="sky-orientation-back-layer safe-top"/u);
+  assert.match(sky, /className="sky-orientation-back-layer"/u);
   assert.match(sky, /data-od-id="sky-orientation-back"/u);
+  assert.match(sky, /nativeNavigationInsets\(\)/u);
+  assert.match(await text("apps", "wechat-miniapp", "src", "features", "sky", "spot-sky-page.scss"), /top: var\(--sky-controls-top\)/u);
   // Copy-level regression only: this does not establish native sensor behavior.
   assert.doesNotMatch(sky, /北向(?:目标)?预览/u);
   assert.match(sky, /当前设备姿态不可用，暂停方位投影/u);
@@ -1166,7 +1110,7 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(sky, /exactSkyTimeFrame\(data\.targetFrames, frameAt\)/u);
   assert.match(sky, /catalog\.entries\[catalogIndex\]/u);
   assert.match(sky, /altitudeDeg <= 0/u);
-  assert.match(sky, /真实 Gaia 星表场景当前不可用/u);
+  assert.match(sky, /星图暂不可用，仍可在对象列表查看天体与事件/u);
   assert.doesNotMatch(sky, /Math\.random/u);
   assert.match(sourceLift, /nativeNavigationInsets\(\)/u);
   assert.match(nativeMetrics, /getMenuButtonBoundingClientRect\(\)/u);
@@ -1224,239 +1168,6 @@ test("Settings keeps orientation permission per-use without fabricating a global
   assert.doesNotMatch(orientationRow, /navigateTo|pages\/auth|SoftButton/u);
 });
 
-test("Standalone candidate verifier derives actuals from the current candidate and fails closed", async () => {
-  const rootPackage = await json("package.json");
-  const deliveryContract = parseYaml(
-    await text(".long-task", "delivery-contract.yaml"),
-  );
-  const verificationSpec = await json(
-    "tools",
-    "miniapp",
-    "verification-spec-field-signal-i21.json",
-  );
-  const verifier = await text(
-    "tools",
-    "miniapp",
-    "verifier-runtime",
-    "verify-miniapp-target.mjs",
-  );
-  const launcher = await text(
-    "tools",
-    "miniapp",
-    "verifier-runtime",
-    "verify-miniapp-target-launcher.c",
-  );
-  for (const required of [
-    "parseSourceAuthority",
-    "runNative",
-    "buildSemanticArtifact",
-    "buildDesignArtifacts",
-    "validateSnapshot",
-    "runtime_quiescence",
-    "assertExactEvidenceRecordShape",
-    "evidence_record_shape_invalid",
-    "failureInjectionRecord",
-    "currentCheckEvidencePassed",
-    "commandEvidenceSummary",
-    "failedBooleanObservation",
-    "counterfactualControlFor",
-    "populationRequirementFor",
-    "writeGlobalConformanceArtifact",
-    "emitStaleCarrierResult",
-    "delivery_carrier_snapshot_stale",
-  ])
-    assert.ok(verifier.includes(required), required);
-
-  assert.doesNotMatch(verifier, /actual:\s*template\.expected\.value/u);
-  assert.doesNotMatch(verifier, /actualSha\s*=\s*template\.expected\.sha256/u);
-  assert.doesNotMatch(
-    verifier,
-    /environment_sha256:\s*expectation\.environment\.definition\.sha256/u,
-  );
-  assert.doesNotMatch(verifier, /failure_observed:\s*true/u);
-  assert.doesNotMatch(verifier, /catalog\.matchAll\(\/\^\\s\+spotId:/u);
-  assert.doesNotMatch(verifier, /sha256\(`\$\{check\.scope\}:before`\)/u);
-  for (const unsupportedEvidenceField of [
-    "artifact_path: native?.artifact_path",
-    "artifact_sha256: native?.artifact_sha256",
-    "journeys: native?.journeys",
-    "probes,",
-    "observed_ids: ids",
-  ])
-    assert.ok(
-      !verifier
-        .slice(
-          verifier.indexOf("function recordsFor"),
-          verifier.indexOf("async function verify"),
-        )
-        .includes(unsupportedEvidenceField),
-      unsupportedEvidenceField,
-    );
-  assert.match(
-    verifier,
-    /const actual = sourceAuthority\.items\.get\(template\.source_item_key\)/u,
-  );
-  assert.match(verifier, /\[HANDOFF_SOURCE, handoff\]/u);
-  assert.match(verifier, /handoff\.target === spec\.design_evidence\.design_target_ref/u);
-  assert.match(verifier, /item\.key === locator\.resource_ref/u);
-  assert.match(verifier, /locator\.kind === "json_pointer"/u);
-  assert.match(verifier, /resourceSha === resource\?\.sha256/u);
-  assert.match(verifier, /requestOneShotLocation\(Taro\)/u);
-  assert.match(verifier, /platform\\\.getLocation/u);
-  assert.match(verifier, /evidence_capabilities/u);
-  assert.match(verifier, /counterfactualProjectionFiles/u);
-  assert.match(verifier, /projection\.required_exact_paths/u);
-  assert.match(verifier, /projection\.required_tree_roots/u);
-  assert.match(verifier, /empty_required_tree_roots/u);
-  for (const requiredSnapshotRoot of [
-    "data-pipelines/src",
-    "packages/astronomy-core/data",
-    "packages/astronomy-core/src",
-    "packages/astronomy-core/package.json",
-    "packages/astronomy-core/tsconfig.json",
-  ])
-    assert.ok(
-      verifier.includes(`\"${requiredSnapshotRoot}\"`),
-      `${requiredSnapshotRoot} must be bound into the complete candidate snapshot`,
-    );
-  assert.match(verifier, /mode: "complete_candidate"/u);
-  assert.match(verifier, /mode: "counterfactual_projection"/u);
-  assert.match(verifier, /mismatched_files: mismatched\.slice\(0, 20\)/u);
-  assert.match(
-    verifier,
-    /const snapshotValidation = await validateSnapshot\(spec, carrier, \{/u,
-  );
-  for (const requiredPath of [
-    "package.json",
-    "package-lock.json",
-    ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
-    "DESIGN.md",
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-handoff/miniapp-field-signal-i21-current.md",
-    "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-06-r11/selected-source/miniapp-implementation-feasibility.json",
-    "tools/miniapp/verification-spec-field-signal-i21.json",
-    "tools/miniapp/run-wechat-devtools-session.mjs",
-    "tools/miniapp/verifier-runtime/verify-miniapp-target.mjs",
-    "tools/miniapp/verifier-runtime/verify-miniapp-target-launcher.c",
-    "tools/miniapp/verifier-runtime/verify-miniapp-target.exe",
-  ])
-    assert.ok(
-      verificationSpec.counterfactual_projection.required_exact_paths.includes(
-        requiredPath,
-      ),
-      requiredPath,
-    );
-  assert.deepEqual(
-    verificationSpec.counterfactual_projection.required_tree_roots,
-    [
-      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source",
-    ],
-  );
-  const verifyBody = verifier.slice(verifier.indexOf("async function verify"));
-  assert.ok(
-    verifyBody.indexOf("const counterfactualControl") <
-      verifyBody.indexOf("const snapshotValidation"),
-    "counterfactual projection mode must be selected only from the declared carrier mutation status",
-  );
-  assert.ok(
-    verifyBody.indexOf("if (!snapshotValid)") <
-      verifyBody.indexOf(
-        "const sourceAuthority = await parseSourceAuthority()",
-      ),
-    "stale candidate carriers must fail before any expensive product execution",
-  );
-  assert.equal(
-    rootPackage.scripts["prepare:miniapp:final-candidate"],
-    ".\\tools\\miniapp\\verifier-runtime\\verify-miniapp-target.exe --collect current --spec tools/miniapp/verification-spec-field-signal-i21.json",
-  );
-  const outcomeChecks = deliveryContract.outcomes.flatMap(
-    (outcome) => outcome.acceptance.checks,
-  );
-  const degradationChecks = outcomeChecks.filter((check) =>
-    check.key.endsWith("-degradation"),
-  );
-  assert.equal(degradationChecks.length, 5);
-  for (const check of degradationChecks) {
-    const specIndex = check.runner.argv.indexOf("--spec");
-    assert.ok(specIndex >= 0, `${check.key} must select the I21 spec`);
-    assert.equal(
-      check.runner.argv[specIndex + 1],
-      "tools/miniapp/verification-spec-field-signal-i21.json",
-    );
-  }
-  assert.match(verifier, /extractFencedBlock\([\s\S]*?"yaml design-resource-handoff-v1"/u);
-  assert.match(verifier, /handoffSha === spec\.authority\.handoff\.sha256/u);
-  assert.match(verifier, /resourceResults\.every\(\(resource\) => resource\.passed\)/u);
-  assert.doesNotMatch(verifier, /readJson\(DESIGN_BINDING_CURRENT\)/u);
-  assert.match(
-    verifier,
-    /path\.dirname\(fileURLToPath\(import\.meta\.url\)\),\s*"\.\.",\s*"\.\.",\s*"\.\."/u,
-    "the frozen verifier runtime must resolve paths from the repository root",
-  );
-  assert.match(verifier, /function extractFencedBlock\(content, header\)/u);
-  assert.match(verifier, /RESOURCE_INTEGRITY = designEvidence\.resource_integrity_path/u);
-  assert.match(verifier, /DESIGN_ACTUAL = designEvidence\.actual_artifact_path/u);
-  assert.match(
-    verifier,
-    /const manifestText = extractFencedBlock\(\s*source,\s*"yaml semantic-fact-compact-carrier-v1"/u,
-    "large Source carriers must be sliced by bounded markers instead of a recursive whole-text regexp",
-  );
-  assert.match(verifier, /if \(!failureObserved\) return null;/u);
-  assert.match(verifier, /if \(record\) records\.push\(record\);/u);
-  assert.match(verifier, /const current = await snapshotManifest\(spec\)/u);
-  assert.match(verifier, /source_closure_passed: sourceClosure/u);
-  assert.match(verifier, /zeroTemplateProjectionAccepted/u);
-  assert.match(
-    verifier,
-    /manifestSourceKeys\.every\(\(item\) => parsed\.items\.has\(item\)\)/u,
-  );
-  assert.match(
-    verifier,
-    /templateKeys\.every\(\(item\) => uniqueManifestSourceKeys\.has\(item\)\)/u,
-  );
-  assert.match(
-    verifier,
-    /actualEnvironment = await readJson\(DESIGN_ENVIRONMENT\)/u,
-  );
-  assert.match(
-    verifier,
-    /actualParameters = await readJson\(DESIGN_PARAMETERS\)/u,
-  );
-  const crossSurfaceEvidence = verifier.slice(
-    verifier.indexOf('else if (capability === "cross_surface_consistency")'),
-    verifier.indexOf('else if (capability === "failure_injection")'),
-  );
-  assert.match(
-    crossSurfaceEvidence,
-    /const sharedStateSha256 = carrier\.source_snapshot\?\.sha256 \?\? null/u,
-  );
-  assert.equal(
-    [...crossSurfaceEvidence.matchAll(/state_sha256: sharedStateSha256/gu)]
-      .length,
-    2,
-    "native and browser observations must bind the same validated candidate-state identity",
-  );
-  assert.doesNotMatch(
-    crossSurfaceEvidence,
-    /candidate_sha256|stdout_sha256/u,
-    "runtime-specific artifact hashes cannot impersonate one cross-surface state version",
-  );
-  const embeddedDigest = [
-    ...(
-      launcher.match(
-        /expected_script_sha256\[32\]\s*=\s*\{([\s\S]*?)\};/u,
-      )?.[1] ?? ""
-    ).matchAll(/0x([0-9a-f]{2})/gu),
-  ]
-    .map((match) => match[1])
-    .join("");
-  assert.equal(
-    embeddedDigest,
-    sha256(Buffer.from(verifier)),
-    "the frozen executable launcher must bind the exact verifier script bytes",
-  );
-  assert.match(launcher, /BCryptOpenAlgorithmProvider/u);
-  assert.match(launcher, /return 125/u);
-});
 
 test("NightChina formal-spot selection keeps suggestion observation and tap atomic", async () => {
   const runner = await text(
@@ -1489,78 +1200,11 @@ test("NightChina formal-spot selection keeps suggestion observation and tap atom
     );
 });
 
-test("V2.1.1 semantic Source closure stays distinct from machine-observable templates", async () => {
-  const source = await text("docs", "wechat-miniapp-v2-1-1-source.md");
-  const handoff = await text(
-    "docs",
-    "design-resources",
-    "miniapp-selected-handoff-2026-08-22-v3",
-    "miniapp-drift-correction-selected-v3.md",
-  );
-  const spec = await json(
-    "tools",
-    "miniapp",
-    "verification-spec-v2-1-1.json",
-  );
-  const manifestText =
-    /```yaml semantic-fact-compact-carrier-v1\s*\r?\n([\s\S]*?)\r?\n```/u.exec(
-      source,
-    )?.[1];
-  assert.ok(manifestText);
-  const manifest = parseYaml(manifestText);
-  const markerKeys = [...`${source}\n${handoff}`.matchAll(
-    /<!--\s*ty-source-item:start\s+[^>]*?\bkey=([^\s>]+)/gu,
-  )].map((match) => match[1]);
-  const manifestKeys = manifest.scope.source_item_refs;
-  const templateKeys = spec.semantic_templates.map(
-    (item) => item.source_item_key,
-  );
-  assert.equal(new Set(markerKeys).size, markerKeys.length);
-  assert.equal(new Set(manifestKeys).size, manifestKeys.length);
-  assert.equal(new Set(templateKeys).size, templateKeys.length);
-  assert.equal(manifestKeys.length, 460);
-  assert.equal(markerKeys.length, 462);
-  assert.deepEqual(templateKeys, []);
-  assert.ok(manifestKeys.every((key) => markerKeys.includes(key)));
-  assert.ok(templateKeys.every((key) => manifestKeys.includes(key)));
-});
 
-test("Project verification adapter projects exact counterfactual and population authority", async () => {
-  const spec = await json("tools", "miniapp", "verification-spec.json");
-  assert.ok(spec.counterfactual_controls.length > 0);
-  assert.equal(
-    new Set(spec.counterfactual_controls.map((row) => row.key)).size,
-    spec.counterfactual_controls.length,
-  );
-  for (const control of spec.counterfactual_controls) {
-    assert.match(control.status, /^semantic-failure/u);
-    const check = spec.checks.find(
-      (row) =>
-        row.scope === control.scope &&
-        row.surface === control.surface &&
-        row.check_key === control.check_key,
-    );
-    assert.ok(check, `${control.scope}:${control.check_key}`);
-    const assertionKeys = new Set(
-      check.assertions.map((assertion) => assertion.key),
-    );
-    for (const key of [
-      ...control.expected_assertion_failures,
-      ...control.preserved_assertions,
-    ])
-      assert.ok(assertionKeys.has(key), `${control.key}:${key}`);
-  }
-  assert.deepEqual(spec.population_requirements, [
-    {
-      scope: "map-discovery",
-      surface: "population_coverage",
-      check_key: "map-population",
-      observations: {
-        universe_ids: "map-discovery.population.universe-ids",
-        eligible_ids: "map-discovery.population.eligible-ids",
-        observed_ids: "map-discovery.population.observed-ids",
-        excluded_items: "map-discovery.population.excluded-items",
-      },
-    },
-  ]);
+
+test("current candidate preparation keeps production checks without historical resource dependencies", async () => {
+  const command = (await json("package.json")).scripts["prepare:miniapp:final-candidate"];
+  for (const required of ["check:miniapp:fast", "design:system:verify", "test:miniapp:infrastructure", "check:miniapp:production", "--mode success", "--mode degradation"])
+    assert.ok(command.includes(required), required);
+  assert.doesNotMatch(command, /verifier-runtime|verification-spec|design-resources/u);
 });

@@ -45,3 +45,18 @@ test("missing or invalid native metrics preserve CSS fallbacks independently", (
   assert.equal(nativeNavigationInsets({ getWindowInfo: missing,
     getMenuButtonBoundingClientRect: () => ({ bottom: 0 }) }).safeTop, undefined);
 });
+
+const nativeMenuClearancePx = moduleExports.nativeMenuClearancePx as typeof NativeMetrics.nativeMenuClearancePx;
+test("title clearance follows the actual capsule edge and rejects unavailable geometry", () => {
+  for (const windowWidth of [320, 375, 390, 430]) {
+    const left = windowWidth - 87;
+    assert.equal(nativeMenuClearancePx({ getWindowInfo: () => ({ windowWidth }),
+      getMenuButtonBoundingClientRect: () => ({ left }) }), 95);
+  }
+  for (const left of [0, -1, NaN, Infinity, 320, 100]) {
+    assert.equal(nativeMenuClearancePx({ getWindowInfo: () => ({ windowWidth: 320 }),
+      getMenuButtonBoundingClientRect: () => ({ left }) }), undefined);
+  }
+  assert.equal(nativeMenuClearancePx({ getWindowInfo: () => { throw new Error("unavailable"); },
+    getMenuButtonBoundingClientRect: () => ({ left: 230 }) }), undefined);
+});

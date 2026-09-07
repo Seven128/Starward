@@ -1,20 +1,23 @@
 .plan-editor {
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--canvas);
   color: var(--text-primary);
+}
+
+.plan-editor__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  clip-path: inset(0);
 }
 
 .plan-editor .custom-nav {
   padding-left: 24rpx;
   padding-right: 24rpx;
   background: var(--canvas);
-}
-
-.plan-editor .custom-nav__bar {
-  min-height: 96rpx;
-  grid-template-columns: 88rpx minmax(0, 1fr) 88rpx;
-  gap: 0;
 }
 
 .plan-editor .custom-nav__title {
@@ -24,23 +27,23 @@
 
 .plan-editor .custom-nav__title .type-section {
   color: var(--text-primary);
-  font-size: 27rpx;
-  line-height: 38rpx;
+  font-size: var(--type-page-title-size);
+  line-height: var(--type-page-title-line);
   font-weight: 600;
 }
 
 .plan-editor .custom-nav__title .type-caption {
   color: var(--text-secondary);
-  font-size: 20rpx;
-  line-height: 28rpx;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
 }
 
 .plan-editor .custom-nav__side .soft-button {
-  width: 88rpx;
-  min-width: 88rpx;
-  min-height: 88rpx;
+  width: var(--target-min);
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   color: var(--text-primary);
-  font-size: 38rpx;
+  font-size: var(--icon-large);
   font-weight: 500;
 }
 
@@ -82,7 +85,7 @@
   width: 164rpx;
   height: 164rpx;
   border-radius: 50%;
-  background: var(--plan-sky);
+  background: var(--surface-subtle);
 }
 
 .plan-hero__eyebrow,
@@ -95,18 +98,18 @@
 }
 
 .plan-hero__eyebrow {
-  max-width: 78%;
+  max-width: 100%;
   color: var(--accent-warm);
-  font-size: 22rpx;
-  line-height: 30rpx;
-  font-weight: 700;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
+  font-weight: 600;
 }
 
 .plan-hero__title {
   margin-top: 8rpx;
   color: var(--text-primary);
-  font-size: 34rpx;
-  line-height: 46rpx;
+  font-size: var(--type-spot-title-size);
+  line-height: var(--type-spot-title-line);
   font-weight: 600;
   letter-spacing: 0;
   word-break: break-word;
@@ -114,10 +117,10 @@
 
 .plan-hero__subtitle {
   margin-top: 8rpx;
-  max-width: 92%;
+  max-width: 100%;
   color: var(--text-secondary);
-  font-size: 20rpx;
-  line-height: 28rpx;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
   word-break: break-word;
 }
 
@@ -146,22 +149,22 @@
 }
 
 .plan-hero__fact-value {
-  overflow: hidden;
+  overflow-wrap: anywhere;
   color: var(--text-primary);
   font-family: "SFMono-Regular", "Roboto Mono", monospace;
-  font-size: 24rpx;
-  line-height: 34rpx;
+  font-size: var(--type-data-size);
+  line-height: var(--type-data-line);
   font-weight: 500;
-  white-space: nowrap;
+  white-space: normal;
   text-overflow: ellipsis;
 }
 
 .plan-hero__fact-label {
   margin-top: 4rpx;
   color: var(--text-tertiary);
-  font-size: 18rpx;
-  line-height: 26rpx;
-  white-space: nowrap;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  white-space: normal;
 }
 
 .plan-section {
@@ -172,6 +175,7 @@
 
 .plan-section-heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 16rpx;
@@ -186,9 +190,9 @@
 .plan-section-caption {
   flex: 0 0 auto;
   color: var(--text-secondary);
-  font-size: 20rpx;
-  line-height: 28rpx;
-  white-space: nowrap;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  white-space: normal;
 }
 
 .plan-checklist__list,
@@ -202,10 +206,10 @@
 
 .plan-checklist__row {
   width: 100%;
-  min-height: 88rpx;
+  min-height: var(--target-min);
   padding: 8rpx 24rpx 8rpx 12rpx;
   display: grid;
-  grid-template-columns: 88rpx minmax(0, 1fr) max-content;
+  grid-template-columns: var(--target-min) minmax(0, 1fr) max-content;
   align-items: center;
   gap: 12rpx;
   border: 0;
@@ -225,13 +229,13 @@
 
 .plan-checklist__check {
   position: relative;
-  width: 88rpx;
-  height: 88rpx;
+  width: var(--target-min);
+  height: var(--target-min);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--success);
-  font-size: 28rpx;
+  font-size: var(--icon-medium);
   line-height: 1;
 }
 
@@ -252,7 +256,7 @@
 .plan-checklist__check text {
   position: relative;
   z-index: 1;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .plan-checklist__copy {
@@ -270,26 +274,26 @@
 
 .plan-checklist__title {
   color: var(--text-primary);
-  font-size: 24rpx;
-  line-height: 34rpx;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
   font-weight: 500;
 }
 
 .plan-checklist__detail {
   color: var(--text-secondary);
-  font-size: 20rpx;
-  line-height: 28rpx;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
 }
 
 .plan-checklist__status {
-  max-width: 112rpx;
+  max-width: 100%;
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
   color: var(--text-secondary);
   background: var(--surface-subtle);
-  font-size: 20rpx;
-  line-height: 28rpx;
-  white-space: nowrap;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  white-space: normal;
   text-align: center;
 }
 
@@ -359,24 +363,24 @@
 
 .plan-route__node-title {
   color: var(--text-primary);
-  font-size: 24rpx;
-  line-height: 32rpx;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
   font-weight: 600;
 }
 
 .plan-route__node-detail {
   color: var(--text-secondary);
-  font-size: 20rpx;
-  line-height: 28rpx;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
 }
 
 .plan-route__node-meta {
-  max-width: 112rpx;
+  max-width: 100%;
   color: var(--text-tertiary);
   font-family: "SFMono-Regular", "Roboto Mono", monospace;
-  font-size: 18rpx;
-  line-height: 28rpx;
-  white-space: nowrap;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  white-space: normal;
   text-align: right;
 }
 
@@ -386,8 +390,8 @@
   padding-top: 16rpx;
   border-top: 1rpx solid var(--border);
   color: var(--text-secondary);
-  font-size: 20rpx;
-  line-height: 28rpx;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
 }
 
 .plan-actions,
@@ -449,7 +453,7 @@
 }
 
 .plan-editor-form .field-textarea {
-  min-height: 220rpx;
+  min-height: calc(var(--type-body-line) * 5);
 }
 
 .plan-list--secondary {
@@ -480,7 +484,7 @@
 }
 
 .plan-list__item {
-  min-height: 88rpx;
+  min-height: var(--target-min);
   padding: 12rpx 0;
   border-top: 1rpx solid var(--border);
 }
@@ -511,13 +515,25 @@
 }
 
 @media (max-width: 340px) {
-  .plan-hero__facts,
-  .plan-editor-form .form-grid {
-    grid-template-columns: 1fr;
+  .plan-hero__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .plan-hero__fact:last-child {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-related);
+    min-height: 0;
+    border-left: 0;
+    border-top: 1rpx solid var(--border);
+  }
+
+  .plan-hero__fact:last-child .plan-hero__fact-label { margin-top: 0; }
+
   .plan-checklist__row {
-    grid-template-columns: 88rpx minmax(0, 1fr);
+    grid-template-columns: var(--target-min) minmax(0, 1fr);
   }
 
   .plan-checklist__status {
@@ -531,5 +547,40 @@
   .plan-editor .soft-button,
   .plan-editor .plan-checklist__row {
     transition-duration: 80ms;
+  }
+}
+
+.plan-editor.large-text {
+  .plan-hero__facts,
+  .plan-editor-form .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-hero__fact {
+    border-left: 0;
+    border-top: 1rpx solid var(--border);
+  }
+
+  .plan-hero__fact:first-child { border-top: 0; }
+
+  .plan-checklist__row {
+    grid-template-columns: var(--target-min) minmax(0, 1fr);
+  }
+
+  .plan-checklist__status,
+  .plan-route__node-meta {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .plan-route__node {
+    grid-template-columns: 40rpx minmax(0, 1fr);
+  }
+
+  .plan-list__heading,
+  .plan-list__item {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

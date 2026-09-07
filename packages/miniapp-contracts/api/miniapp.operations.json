@@ -36,6 +36,7 @@
     { "id": "contributionPut", "method": "PUT", "path": "/me/contributions/{submissionId}", "requestType": "ContributionUpdateRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionUploadPost", "method": "POST", "path": "/me/contributions/{submissionId}/media-uploads", "requestType": "ContributionUploadSessionRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionUploadPut", "method": "PUT", "path": "/me/contributions/{submissionId}/media-uploads/{uploadId}", "requestType": "ContributionUploadCompleteRequest", "responseType": "ContributionSubmission" },
+    { "id": "contributionUploadDelete", "method": "DELETE", "path": "/me/contributions/{submissionId}/media-uploads/{uploadId}", "requestType": "ContributionUploadRemoveRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionSubmitPost", "method": "POST", "path": "/me/contributions/{submissionId}/submit", "requestType": "ContributionSubmitRequest", "responseType": "ContributionSubmission" },
     { "id": "operationsGet", "method": "GET", "path": "/operations", "requestType": "void", "responseType": "OperationsData" }
   ]

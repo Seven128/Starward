@@ -1,5 +1,5 @@
 .semantic-icon {
-  --semantic-icon-color: var(--primary);
+  --semantic-icon-color: var(--choice-selected-label);
   position: relative;
   display: inline-block;
   flex: 0 0 40rpx;
@@ -26,6 +26,21 @@
   display: none;
 }
 
+// Keep the tiny local theme assets mounted so mode changes do not replace src.
+.semantic-icon__theme-source {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+.semantic-icon--day > .semantic-icon__theme-source--day,
+.semantic-icon--night > .semantic-icon__theme-source--night,
+.semantic-icon--observation > .semantic-icon__theme-source--observation {
+  opacity: 1;
+}
+
 .semantic-icon__arrow-source {
   position: absolute;
   inset: 0;
@@ -34,25 +49,25 @@
   height: 100%;
 }
 
-/* The PNG remains the selected source. These owner-level strokes guarantee
- * the same arrow remains legible when WEAPP drops a nested image paint. */
+/* Preserve the selected arrow geometry when WEAPP drops nested image paint.
+ * Observation uses these themed strokes without the pale night PNG overlay. */
 .semantic-icon--arrow-left::before {
-  top: 18rpx;
-  left: 6rpx;
-  width: 28rpx;
-  height: 3rpx;
-  border-radius: 3rpx;
+  top: 45%;
+  left: 15%;
+  width: 70%;
+  height: 1.5Px;
+  border-radius: 1.5Px;
   background: currentColor;
 }
 
 .semantic-icon--arrow-left::after {
-  top: 10rpx;
-  left: 6rpx;
-  width: 16rpx;
-  height: 16rpx;
-  border-bottom: 3rpx solid currentColor;
-  border-left: 3rpx solid currentColor;
-  border-radius: 2rpx;
+  top: 25%;
+  left: 15%;
+  width: 40%;
+  height: 40%;
+  border-bottom: 1.5Px solid currentColor;
+  border-left: 1.5Px solid currentColor;
+  border-radius: 1Px;
   transform: rotate(45deg);
 }
 

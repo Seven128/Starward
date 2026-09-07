@@ -53,8 +53,6 @@
 - Cross-surface responsibility: project_context/areas/main/product-surface-contract.md.
 - Screen/route/control ownership: project_context/areas/main/screen-contracts.md, with mobile and owner-operations detail in its registered on-demand detail Context.
 - Current code navigation: project_context/areas/main/implementation-index.md; code remains the current implementation truth.
-- Legacy generated design references: docs/design-system/; retained unchanged for rollback/reference and inactive as current visual input.
-- Legacy authored page/control targets: docs/design-targets/; retained immutable for rollback and stable semantic traceability, with visual styling/geometry inactive pending separate regeneration.
 - React Native interaction companion: .codex/skills/uiux_design/SKILL.md; it must obey DESIGN.md, Source Plan, and this Context.
 - Provider/data research input: docs/technical-data-source-decisions.md; recommendations are not approved production facts by themselves.
 - Mobile, API, owner-operations, and verification code entry points are indexed in project_context/areas/main/implementation-index.md so volatile code navigation does not redefine this Area's durable contract.

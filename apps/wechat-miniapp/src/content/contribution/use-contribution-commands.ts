@@ -1,4 +1,8 @@
 import Taro from "@tarojs/taro";
+import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
+import { useRef } from "react";
+import { createContributionCommandLock } from "./command-lock";
+import { createContributionAccountGuard } from "./account-guard";
 import type {
   ContributionMediaUpload,
   ContributionSubmission,
@@ -6,6 +10,9 @@ import type {
 } from "@starward/miniapp-contracts";
 import {
   completeContributionUpload,
+  removeContributionUpload,
+  currentDraftUserId,
+  getContributions,
   createContributionDraft,
   createContributionUpload,
   errorMessage,
@@ -28,12 +35,21 @@ function activeDraft(form: ContributionForm) {
   return form.matchingDraft;
 }
 
-function createSaveDraft(form: ContributionForm) {
+function createSaveDraft(form: ContributionForm, assertAccount: () => void) {
   return async (quiet = false) => {
+    if (!form.draft && form.matchingDraft) {
+      form.announce("warning", "请先继续已有草稿", "这里已有未完成草稿。请先点击“继续草稿”核对内容，再补充或保存。");
+      return null;
+    }
+    if (form.conflictDraft) {
+      form.announce("warning", "请先核对草稿", "草稿已在其他位置更新，请核对下方服务端内容后再保存。");
+      return null;
+    }
     const input = form.formInput();
     if (!input) return null;
     form.setSaving(true);
     try {
+      assertAccount();
       const active = activeDraft(form);
       const response = active
         ? await updateContributionDraft(active.submissionId, {
@@ -41,18 +57,35 @@ function createSaveDraft(form: ContributionForm) {
             expectedRevision: active.revision,
           })
         : await createContributionDraft(input);
+      assertAccount();
       form.applyDraft(response.data, form.phase);
       await form.history.refetch().catch(() => undefined);
+      assertAccount();
       if (!quiet)
         form.announce(
           "success",
           "草稿已保存",
-          "草稿已按当前微信身份保存，失败重试不会重复创建正式事实。",
+          "本页内容已保存，可继续编辑或提交审核。",
         );
       return response.data;
     } catch (error) {
-      if (error instanceof MiniappApiError && error.code === "CONFLICT")
-        await form.history.refetch().catch(() => undefined);
+      if (error instanceof MiniappApiError && error.code === "CONFLICT") {
+        const current = await form.history.refetch().catch(() => undefined);
+        assertAccount();
+        const id = activeDraft(form)?.submissionId;
+        const latest = current?.data.submissions.find((item) => item.submissionId === id);
+        if (latest) form.setConflictDraft(latest);
+        else {
+          form.announce(
+            "error",
+            "暂时无法核对草稿",
+            current
+              ? "该草稿已不在当前账号的记录中。本页输入完整保留，请先返回近期反馈核对记录。"
+              : "草稿已更新，但最新内容暂时未能读取。本页输入完整保留，恢复网络后可再次保存以重新核对。",
+          );
+          return null;
+        }
+      }
       form.announce(
         "error",
         "草稿保存失败",
@@ -73,14 +106,19 @@ async function chooseImage(count: number) {
       sourceType: ["album", "camera"],
     });
   } catch (error) {
-    if (/cancel/iu.test(error instanceof Error ? error.message : String(error)))
+    const message = error instanceof Error
+      ? error.message
+      : error && typeof error === "object" && "errMsg" in error
+        ? String(error.errMsg)
+        : String(error);
+    if (/cancel/iu.test(message))
       return null;
     throw error;
   }
 }
 
 function validateMediaFile(file: { path: string; size?: number }) {
-  if (!file.size || file.size > 1_200_000)
+  if (typeof file.size !== "number" || !Number.isSafeInteger(file.size) || file.size <= 0 || file.size > 1_200_000)
     throw new Error("单张图片必须小于 1.2 MB");
   return {
     originalName: mediaFileName(file.path),
@@ -93,32 +131,42 @@ async function uploadSelectedFile(
   form: ContributionForm,
   working: ContributionSubmission,
   file: { path: string; size?: number },
-  existingUpload?: ContributionMediaUpload,
+  existingUpload: ContributionMediaUpload | undefined,
+  assertAccount: () => void,
 ) {
+  assertAccount();
   const input = validateMediaFile(file);
   let current = working;
   let upload = existingUpload;
+  if (upload?.state === "PENDING" && (upload.mimeType !== input.mimeType || upload.declaredByteSize !== input.byteSize)) {
+    throw new Error("续传需要重新选择原来的图片；所选图片的格式或大小与上传记录不符。");
+  }
   if (!upload || upload.state === "EXPIRED") {
     const created = await createContributionUpload(current.submissionId, {
       ...input,
       expectedRevision: current.revision,
+      ...(upload?.state === "EXPIRED" ? { replaceUploadId: upload.uploadId } : {}),
     });
+    assertAccount();
     current = created.data;
     const knownIds = new Set(working.media.map((item) => item.uploadId));
     upload = current.media.find((item) => !knownIds.has(item.uploadId));
     if (!upload) throw new Error("上传会话未建立");
-    form.applyDraft(current, form.phase);
+    form.applyMediaDraft(current);
   }
+  const dataBase64 = await readBase64(file.path);
+  assertAccount();
   const completed = await completeContributionUpload(
     current.submissionId,
     upload.uploadId,
-    { dataBase64: await readBase64(file.path) },
+    { dataBase64 },
   );
-  form.applyDraft(completed.data, form.phase);
+  assertAccount();
+  form.applyMediaDraft(completed.data);
   return completed.data;
 }
 
-function createUseCurrentLocation(form: ContributionForm) {
+function createUseCurrentLocation(form: ContributionForm, assertAccount: () => void) {
   return async () => {
     const confirmation = await Taro.showModal({
       title: "使用一次当前位置？",
@@ -127,7 +175,9 @@ function createUseCurrentLocation(form: ContributionForm) {
     });
     if (!confirmation.confirm) return;
     try {
+      assertAccount();
       const location = await Taro.getLocation({ type: "wgs84" });
+      assertAccount();
       form.setLatitude(location.latitude.toFixed(6));
       form.setLongitude(location.longitude.toFixed(6));
       form.setPreciseLocationConsent(true);
@@ -149,6 +199,7 @@ function createUseCurrentLocation(form: ContributionForm) {
 function createAddMedia(
   form: ContributionForm,
   saveDraft: ReturnType<typeof createSaveDraft>,
+  assertAccount: () => void,
 ) {
   return async () => {
     if (!form.rightsConfirmed) {
@@ -174,12 +225,17 @@ function createAddMedia(
     if (!choice?.tempFiles.length) return;
     form.setUploading(true);
     try {
+      assertAccount();
+      if (choice.tempFiles.length > availableSlots)
+        throw new Error(`本次最多还能添加 ${availableSlots} 张图片，请重新选择。`);
+      for (const file of choice.tempFiles) validateMediaFile(file);
       let working = await saveDraft(true);
       if (!working) return;
       for (const file of choice.tempFiles) {
-        working = await uploadSelectedFile(form, working, file);
+        working = await uploadSelectedFile(form, working, file, undefined, assertAccount);
       }
       await form.history.refetch().catch(() => undefined);
+      assertAccount();
       form.announce(
         "success",
         "图片已安全上传",
@@ -199,9 +255,13 @@ function createAddMedia(
 
 function createRetryMedia(
   form: ContributionForm,
-  saveDraft: ReturnType<typeof createSaveDraft>,
+  assertAccount: () => void,
 ) {
   return async (uploadId: ContributionUploadId) => {
+    if (!form.rightsConfirmed) {
+      form.announce("warning", "请先确认图片权利", "确认图片权利后才能继续上传。");
+      return;
+    }
     const choice = await chooseImage(1).catch((error) => {
       form.announce("error", "无法选择图片", errorMessage(error));
       return null;
@@ -209,19 +269,21 @@ function createRetryMedia(
     if (!choice?.tempFiles.length) return;
     form.setUploading(true);
     try {
-      const working = await saveDraft(true);
+      assertAccount();
+      const working = activeDraft(form);
       if (!working) return;
       const target = working.media.find((item) => item.uploadId === uploadId);
       if (!target) {
         form.announce("warning", "上传记录已更新", "请先重新回读当前草稿状态。 ");
         return;
       }
-      await uploadSelectedFile(form, working, choice.tempFiles[0]!, target);
+      await uploadSelectedFile(form, working, choice.tempFiles[0]!, target, assertAccount);
       await form.history.refetch().catch(() => undefined);
+      assertAccount();
       form.announce(
         "success",
         "上传已恢复",
-        "继续使用同一条媒体记录；成功对象不会重复创建。",
+        "图片已上传，可继续提交审核。",
       );
     } catch (error) {
       form.announce(
@@ -238,10 +300,11 @@ function createRetryMedia(
 function createSubmit(
   form: ContributionForm,
   saveDraft: ReturnType<typeof createSaveDraft>,
+  assertAccount: () => void,
 ) {
   return async () => {
     if (form.submitting) return;
-    if (form.mediaNeedsRecovery) {
+    if (!form.pendingSubmission && form.mediaNeedsRecovery) {
       form.setValidationField("contribution-media-upload");
       form.announce(
         "warning",
@@ -250,7 +313,7 @@ function createSubmit(
       );
       return;
     }
-    if (form.detail.trim().length < 20 || form.topics.length === 0) {
+    if (!form.pendingSubmission && (form.detail.trim().length < 20 || form.topics.length === 0)) {
       form.setValidationField(
         form.topics.length === 0
           ? "contribution-topic-control"
@@ -259,11 +322,13 @@ function createSubmit(
       form.announce(
         "error",
         "还不能提交",
-        "请至少选择一项事实，并用不少于 20 个字描述现场依据。",
+        form.topics.length === 0
+          ? "请至少选择一项涉及的事实。"
+          : "请用不少于 20 个字描述现场依据。",
       );
       return;
     }
-    if (form.kind === "NEW_SPOT_PROPOSAL" && !form.preciseLocationConsent) {
+    if (!form.pendingSubmission && form.kind === "NEW_SPOT_PROPOSAL" && !form.preciseLocationConsent) {
       form.setValidationField("contribution-location-consent");
       form.announce(
         "error",
@@ -273,25 +338,34 @@ function createSubmit(
       return;
     }
     form.setSubmitting(true);
+    let awaitingReceipt = false;
     try {
-      const saved = await saveDraft(true);
+      const saved = form.pendingSubmission ?? await saveDraft(true);
       if (!saved) return;
+      assertAccount();
+      form.setPendingSubmission(saved);
+      awaitingReceipt = true;
       const response = await submitContribution(
         saved.submissionId,
         saved.revision,
       );
+      awaitingReceipt = false;
+      assertAccount();
       form.applyDraft(response.data, "HISTORY");
       await form.history.refetch().catch(() => undefined);
+      assertAccount();
       form.announce(
         "success",
         "已提交审核",
-        "管理员审核和合并后仍会重新执行正式点完整度检查，不会直接发布。",
+        "反馈已进入审核，不会直接改变公开地点资料。",
       );
     } catch (error) {
+      const uncertain = awaitingReceipt && !(error instanceof ContributionSubmitStorageError) && (!(error instanceof MiniappApiError) || error.statusCode >= 500 || error.statusCode === 408);
+      if (!uncertain) form.setPendingSubmission(null);
       form.announce(
         "error",
-        "提交失败",
-        `${errorMessage(error)}；草稿、图片和输入均已保留。`,
+        uncertain ? "提交结果待确认" : "提交失败",
+        uncertain ? "尚未确认服务端结果。请点击确认上次提交结果；将继续同一次提交，不会重新保存草稿。" : `${errorMessage(error)}；草稿、图片和输入均已保留。`,
       );
     } finally {
       form.setSubmitting(false);
@@ -299,14 +373,52 @@ function createSubmit(
   };
 }
 
+function createRemoveMedia(form: ContributionForm, assertAccount: () => void) {
+  return async (uploadId: ContributionUploadId) => {
+    const draft = activeDraft(form);
+    if (!draft || contributionSubmissionState(draft) !== "DRAFT" || !draft.media.some((item) => item.uploadId === uploadId)) return;
+    const confirmation = await Taro.showModal({ title: "移除这张图片？", content: "只从当前草稿移除这张图片，已填写的文字和其他图片会保留。", confirmText: "移除" });
+    if (!confirmation.confirm) return;
+    try {
+      assertAccount();
+      const response = await removeContributionUpload(draft.submissionId, uploadId, draft.revision);
+      assertAccount();
+      form.applyMediaDraft(response.data);
+      await form.history.refetch().catch(() => undefined);
+      assertAccount();
+      form.announce("success", "图片已移除", "其余图片和当前输入已保留。");
+    } catch (error) {
+      form.announce("error", "暂未确认移除结果", `${errorMessage(error)}；当前输入保留，可重试移除以确认结果。`);
+    }
+  };
+}
+
 export function useContributionCommands(form: ContributionForm) {
-  const saveDraft = createSaveDraft(form);
+  const exclusive = useRef(createContributionCommandLock(form.setCommandBusy)).current;
+  const assertAccount = useRef(createContributionAccountGuard(currentDraftUserId)).current;
+  const guard = <A extends unknown[], R,>(command: (...args: A) => Promise<R>, allowPending = false) =>
+    exclusive(async (...args: A) => {
+      try {
+        if (form.pendingSubmission && !allowPending) {
+          form.announce("warning", "请先确认提交结果", "上次提交结果尚未确认，请使用确认上次提交结果按钮继续。");
+          return undefined;
+        }
+        if (!currentDraftUserId()) await getContributions();
+        assertAccount();
+        return await command(...args);
+      } catch (error) {
+        form.announce("error", "操作未完成", errorMessage(error));
+        return undefined;
+      }
+    });
+  const saveDraft = createSaveDraft(form, assertAccount);
   return {
-    saveDraft,
-    useCurrentLocation: createUseCurrentLocation(form),
-    addMedia: createAddMedia(form, saveDraft),
-    retryMedia: createRetryMedia(form, saveDraft),
-    submit: createSubmit(form, saveDraft),
+    saveDraft: guard(saveDraft),
+    useCurrentLocation: guard(createUseCurrentLocation(form, assertAccount)),
+    addMedia: guard(createAddMedia(form, saveDraft, assertAccount)),
+    retryMedia: guard(createRetryMedia(form, assertAccount)),
+    removeMedia: guard(createRemoveMedia(form, assertAccount)),
+    submit: guard(createSubmit(form, saveDraft, assertAccount), true),
   };
 }
 

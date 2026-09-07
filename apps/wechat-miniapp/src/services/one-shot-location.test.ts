@@ -123,7 +123,7 @@ test("Map cannot announce context success when its location update was cancelled
   assert.deepEqual(map.busy, [true, false]);
   assert.equal(map.announcements.length, 0);
   assert.equal(map.visible().current?.tone, "info");
-  assert.equal(map.visible().current?.title, "位置已获取，本次上下文更新已停止");
+  assert.equal(map.visible().current?.title, "已定位，观测条件更新已取消");
 });
 
 test("actual Map serializes repeat clicks through GPS and context, then permits retry", async () => {
@@ -145,14 +145,14 @@ test("actual Map serializes repeat clicks through GPS and context, then permits 
   await contextEntered.promise;
   assert.equal(JSON.stringify(map.viewports), JSON.stringify([{ center, zoom: 10 }]));
   assert.equal(points[0], JSON.stringify({ point: center, source: "USER_LOCATION" }));
-  assert.equal(map.visible().current?.title, "已获取位置，正在更新观测上下文");
+  assert.equal(map.visible().current?.title, "已定位，正在更新观测条件");
   assert.match(map.visible().current!.body, /尚未确认/);
   await map.run();
   assert.equal(nativeCalls, 1);
   assert.equal(map.busy.at(-1), true);
   context.resolve();
   await pending;
-  assert.equal(map.visible().current?.title, "位置与观测上下文已更新");
+  assert.equal(map.visible().current?.title, "观测位置已更新");
   assert.match(map.visible().current!.body, /天气、天文以各自加载状态为准/);
   assert.equal(map.visible().residualCount, 0);
   assert.equal(map.announcements.length, 1);
@@ -169,7 +169,7 @@ test("actual Map context failure preserves the acquired-location state without s
   assert.equal(map.viewports.length, 1);
   assert.equal(map.announcements.length, 0);
   assert.equal(map.visible().current?.tone, "warning");
-  assert.match(map.visible().current!.body, /旧观测上下文不能作为当前位置结果/);
+  assert.match(map.visible().current!.body, /上次观测条件不适用于当前位置/);
   assert.equal(map.visible().residualCount, 0);
   assert.deepEqual(map.busy, [true, false]);
 });
@@ -210,7 +210,7 @@ test("actual permission request distinguishes outcomes, never claims map update,
     pending.resolve(state === "GRANTED" ? { state, center } : { state });
     await first;
     assert.deepEqual(states, ["REQUESTING", state]);
-    assert.match(feedback.at(-1)!, state === "GRANTED" ? /不会更新地图观测上下文/ : state === "DENIED" ? /权限未授予/ : /暂时无法取得位置/);
+    assert.match(feedback.at(-1)!, state === "GRANTED" ? /地图位置未改变/ : state === "DENIED" ? /权限未授予/ : /暂时无法取得位置/);
     await run();
     assert.equal(calls, 2);
   }

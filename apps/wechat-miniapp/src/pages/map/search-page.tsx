@@ -1,7 +1,9 @@
 import { FloatingNotificationHost } from "@/components/notification";
+import { nativeNavigationInsets } from "@/theme/native-metrics";
+import type { CSSProperties } from "react";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Image, Input, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import {
   FILTER_GROUPS,
@@ -13,12 +15,12 @@ import {
   type SpotSummary,
 } from "@starward/miniapp-contracts";
 import { NotificationRegion } from "@/components/notification";
-import { SelectedCardStar } from "@/components/selected-card-star";
 import {
   SemanticIcon,
   type SemanticIconName,
 } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
+import { SelectedCardStar } from "@/components/selected-card-star";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
@@ -31,6 +33,7 @@ import {
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
+import { canApplyContextRestore } from "./context-restore";
 import "./search-page.scss";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
@@ -103,6 +106,7 @@ const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
 };
 
 export function MapSearchSurface() {
+  const { safeTop } = nativeNavigationInsets();
   const themeClass = useThemeClass();
   const finderQuery = useAppStore((state) => state.finderQuery);
   const committedFilters = useAppStore((state) => state.committedFilters);
@@ -130,9 +134,11 @@ export function MapSearchSurface() {
   const [pageVisible, setPageVisible] = useState(true);
   const [debouncedQuery, setDebouncedQuery] = useState(finderQuery.trim());
   const [announcement, setAnnouncement] = useState("");
+  const selectionVersion = useRef(0);
 
   useDidShow(() => setPageVisible(true));
-  useDidHide(() => setPageVisible(false));
+  useDidHide(() => { selectionVersion.current++; setPageVisible(false); });
+  useEffect(() => () => { selectionVersion.current++; }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(finderQuery.trim()), 220);
@@ -186,13 +192,15 @@ export function MapSearchSurface() {
     if (
       pageVisible &&
       incoming &&
+      useAppStore.getState().mapResetVersion === mapResetVersion &&
+      canApplyContextRestore(observationContext, current, incoming) &&
       (current?.contextId !== incoming.contextId ||
         current.revision !== incoming.revision ||
         current.contextFingerprint !== incoming.contextFingerprint)
     ) {
       setObservationContext(incoming);
     }
-  }, [contextQuery.data?.data, pageVisible, setObservationContext]);
+  }, [contextQuery.data?.data, pageVisible, observationContext, mapResetVersion, setObservationContext]);
 
   const scene = useResourceQuery({
     queryKey: [
@@ -273,14 +281,27 @@ export function MapSearchSurface() {
   };
 
   const leaveSearch = async () => {
+    selectionVersion.current++;
     try {
       await Taro.navigateBack({ delta: 1 });
     } catch {
-      await Taro.switchTab({ url: "/pages/map/index" });
+      try {
+        await Taro.switchTab({ url: "/pages/map/index" });
+      } catch (error) {
+        notify({ owner: "search", placement: "inline", tone: "warning", title: "暂时无法返回地图", body: `${errorMessage(error)}。搜索内容和选择已保留，请再次返回。`, dismissible: true, dedupeKey: "search-return-failed" });
+        return;
+      }
+    }
+    const state = useAppStore.getState();
+    for (const item of state.notifications) {
+      if (item.owner === "search" && item.dedupeKey === "search-return-failed") {
+        state.dismissNotification(item.id);
+      }
     }
   };
 
   const selectFormal = async (spot: SpotSummary) => {
+    selectionVersion.current++;
     // Keep the shared query in the retained Map instance so its next scene
     // response contains the same formal object before the panel opens.
     setFinderQuery(spot.name);
@@ -288,13 +309,15 @@ export function MapSearchSurface() {
     setViewport({ center: spot.gcj02, zoom: Math.max(12, viewport.zoom) });
     if (finderQuery.trim()) addSearchHistory(finderQuery);
     setSuggestionsOpen(false);
-    setAnnouncement(`已选择${spot.name}；返回同一地图并打开中面板。`);
+    setAnnouncement(`已选择${spot.name}`);
     await leaveSearch();
   };
 
   const moveMapReference = async (
     result: OrdinaryPlaceRef | DarkSkyCandidateRef,
   ) => {
+    const version = ++selectionVersion.current;
+    setSuggestionsOpen(false);
     const center = {
       latitude: result.location.latitude,
       longitude: result.location.longitude,
@@ -326,11 +349,14 @@ export function MapSearchSurface() {
           eventInstanceId: activeContext.eventInstanceId,
           targetProfile: activeContext.targetProfile,
         });
+        if (version !== selectionVersion.current) return;
         setObservationContext(response.data);
       }
+      if (version !== selectionVersion.current) return;
       setAnnouncement(`地图已移动到${result.label}；正在查找附近正式观星点。`);
       await leaveSearch();
     } catch (error) {
+      if (version !== selectionVersion.current) return;
       if (isMiniappRequestCancelled(error)) return;
       notify({ owner: "search", placement: "inline", tone: "warning", title: "地图已移动，动态条件未更新", body: `${errorMessage(error)}。当前地点不会被当作正式观星点或生成今晚结论。`, dismissible: true, dedupeKey: "search-map-reference-context-failed" });
     }
@@ -352,6 +378,7 @@ export function MapSearchSurface() {
   return (
     <View
       className={`${themeClass} spot-search-page`}
+      style={(safeTop === undefined ? {} : { "--search-safe-top": `${safeTop}px` }) as CSSProperties}
       data-miniapp-production-root
       data-route="spot-search"
       data-delivery-target={__DELIVERY_TARGET__}
@@ -365,8 +392,9 @@ export function MapSearchSurface() {
           onClick={(event) => event.stopPropagation()}
         >
           <Button
+            compileMode
             className="spot-search-field__leading focus-ring"
-            aria-label={focused ? "返回地图" : "聚焦搜索"}
+            ariaLabel={focused ? "返回地图" : "聚焦搜索"}
             onClick={() => {
               if (focused) void leaveSearch();
               else {
@@ -393,12 +421,12 @@ export function MapSearchSurface() {
               setFocused(true);
               setSuggestionsOpen(true);
             }}
-            onBlur={blurSearch}
+            onBlur={() => setFocused(false)}
             onConfirm={() => setSuggestionsOpen(false)}
           />
         </View>
 
-        {focused && suggestionsOpen ? (
+        {suggestionsOpen ? (
           <ScrollView
             className="spot-search-query-overlay"
             data-control="spot-search-query-overlay"
@@ -419,13 +447,13 @@ export function MapSearchSurface() {
                 {candidates.map((result) => (
                   <Button key={result.candidateId} className="spot-search-suggestion" onClick={() => void moveMapReference(result)}>
                     <Text>{result.label}</Text>
-                    <Text className="type-caption">{result.region || result.address || "资料待核验 · 只移动地图"}</Text>
+                    <Text className="type-caption">资料待核验 · 只移动地图{result.region || result.address ? ` · ${result.region || result.address}` : ""}</Text>
                   </Button>
                 ))}
                 {ordinaryPlaces.map((result) => (
                   <Button key={result.placeId} className="spot-search-suggestion" onClick={() => void moveMapReference(result)}>
                     <Text>{result.label}</Text>
-                    <Text className="type-caption">{result.region || result.address || "普通地点 · 只移动地图"}</Text>
+                    <Text className="type-caption">普通地点 · 只移动地图{result.region || result.address ? ` · ${result.region || result.address}` : ""}</Text>
                   </Button>
                 ))}
                 {!placeSearch.isPending && !placeSearch.isError && !placeSearch.data?.data.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
@@ -445,39 +473,36 @@ export function MapSearchSurface() {
                 )) : <Text className="type-caption">暂无本地搜索记录</Text>}
               </View>
             )}
-            <Text className="type-caption spot-search-boundary">普通地点和待核验候选只用于移动地图或查找附近正式观星点，不能直接进入点位详情或今晚观星。</Text>
           </ScrollView>
         ) : null}
 
-        <ScrollView
+        <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="筛选与正式观星点结果" onClick={(event) => { event.stopPropagation(); blurSearch(); }}>
+        <View
           className="spot-search-filter-scroll"
           aria-label="可立即提交的筛选选项"
-          scrollX
-          enhanced
-          showScrollbar={false}
           onClick={(event) => event.stopPropagation()}
         >
-          <View className="spot-search-filter-group" data-control="spot-search-filter-group" role="radiogroup" aria-label="地图筛选">
+          <View className="spot-search-filter-group" data-control="spot-search-filter-group" role="group" aria-label="地图筛选，可多选">
             {FILTER_OPTIONS.map((option) => {
               const capability = scene.data?.data.filterCapabilities.byGroup[option.group];
               const disabled = capability?.state === "UNAVAILABLE";
               const selected = optionIsSelected(committedFilters, option.id, option.group);
               return (
                 <Button
+                  compileMode
                   key={option.id}
                   className={`spot-search-filter-choice${selected ? " spot-search-filter-choice--selected" : ""}`}
                   data-control="spot-search-filter-choice"
                   disabled={disabled}
-                  aria-checked={selected}
                   aria-pressed={selected}
-                  aria-label={`${option.label}${disabled ? "，当前不可用" : selected ? "，已应用" : ""}`}
+                  ariaLabel={`${option.label}${disabled ? "，当前不可用" : selected ? "，已应用" : ""}`}
                   onClick={() => commitFilter(option.id)}
                 >
                   <SemanticIcon
                     name={FILTER_ICON_BY_ID[option.id]}
                     className="spot-search-filter-choice__prefix"
                   />
-                  {option.label}
+                  <Text>{option.label}</Text>
                   {selected ? (
                     <SelectedCardStar className="spot-search-filter-choice__selected-ornament" />
                   ) : null}
@@ -485,7 +510,7 @@ export function MapSearchSurface() {
               );
             })}
           </View>
-        </ScrollView>
+        </View>
 
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
@@ -495,12 +520,12 @@ export function MapSearchSurface() {
               detail={
                 (contextQuery.isError ? errorMessage(contextQuery.error) : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
                 (isOfflineError(contextQuery.error ?? scene.error ?? placeSearch.error)
-                  ? "当前网络不可用；不会把普通地点或旧数据伪装成正式点位。"
+                  ? "网络不可用，请连接后重试。"
                   : searchState === "EMPTY"
                     ? "没有匹配的正式观星点；可移动地图或换一个名称。"
                     : searchState === "PARTIAL"
-                      ? "部分搜索结果可用，缺失资料会明确标注。"
-                      : "正在解析观测上下文和搜索结果。")
+                      ? "部分结果资料不全，请留意缺失标记。"
+                      : "正在搜索观星点。")
               }
               recoveryLabel={searchState === "ERROR" || searchState === "PERMISSION_DENIED" ? "返回地图重试" : undefined}
               onRecover={() => void leaveSearch()}
@@ -508,7 +533,6 @@ export function MapSearchSurface() {
           ) : null}
         </View>
 
-        <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="正式观星点结果" onClick={(event) => event.stopPropagation()}>
           <View className="spot-search-result-summary">
             <Text className="type-caption">{formalSpots.length} 个正式观星点</Text>
           </View>
@@ -519,7 +543,7 @@ export function MapSearchSurface() {
               <SemanticIcon name={wantedOpen ? "chevron-up" : "chevron-down"} />
             </Button>
             {wantedOpen ? (
-              wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">暂无已保存的正式点位。</Text>
+              wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text>
             ) : null}
           </View>
           <View className="spot-search-partition">
@@ -529,7 +553,7 @@ export function MapSearchSurface() {
               <SemanticIcon name={otherOpen ? "chevron-up" : "chevron-down"} />
             </Button>
             {otherOpen ? (
-              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">没有匹配的正式点位。</Text>
+              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">没有找到匹配的观星点。</Text>
             ) : null}
           </View>
         </ScrollView>
@@ -541,13 +565,14 @@ export function MapSearchSurface() {
 
 function SearchResultCard({ spot, onSelect }: { spot: SpotSummary; onSelect: () => void }) {
   const media = spot.media.filter(isRenderableMedia)[0];
+  const isTestSpot = __MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && spot.spotId === "spot:test-published";
   return (
-    <Button className={`spot-search-result-card${media ? " spot-search-result-card--with-media" : ""}`} data-control="spot-search-result-card" onClick={onSelect} aria-label={`选择${spot.name}`}>
+    <Button compileMode className={`spot-search-result-card${media ? " spot-search-result-card--with-media" : ""}`} data-control="spot-search-result-card" onClick={onSelect} ariaLabel={`选择${spot.name}`}>
       {media ? <Image className="spot-search-result-card__media" src={media.thumbnailPath || media.localPath} mode="aspectFill" lazyLoad ariaLabel={media.alt || `${spot.name}现场照片`} /> : null}
       <View className="spot-search-result-card__copy">
         <Text className="spot-search-result-card__title">{spot.name}</Text>
-        <Text className="type-caption">{spot.region || "区域暂无数据"}</Text>
-        <Text className="type-caption">{spot.address || "地址暂无数据"}</Text>
+        <Text className="type-caption">{spot.region || "区域暂无数据"}{isTestSpot ? " · 测试数据" : ""}</Text>
+        {!isTestSpot && spot.address ? <Text className="type-caption">{spot.address}</Text> : null}
       </View>
     </Button>
   );

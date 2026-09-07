@@ -3,6 +3,7 @@ import { Button, Text, View, type ITouchEvent } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { recordAcceptanceDiagnostic } from "@/services/acceptance-diagnostics";
 import { DISPLAY_MODES, DISPLAY_MODE_LABEL, moveModeDrag, releasedMode, tappedMode, type ModeDrag } from "./display-mode-gesture";
 
 export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
@@ -40,6 +41,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
 
   const start = (input: unknown) => {
     const event = input as ITouchEvent;
+    recordAcceptanceDiagnostic("display-mode-control", "start", `touch_start:${event.touches?.length ?? 0}`);
     cancel();
     suppressTap.current = false;
     if (event.touches?.length !== 1) return;
@@ -81,6 +83,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
   };
   const end = () => {
     const active = drag.current;
+    recordAcceptanceDiagnostic("display-mode-control", "success", `touch_end:${active?.axis ?? "none"}`);
     cancel();
     if (active?.axis === "horizontal") onSelect(releasedMode(active, currentMode.current, Date.now()));
   };
@@ -90,7 +93,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
       <Text className="type-section">显示模式</Text>
       <View
         className={`settings-display-mode-track settings-display-mode-track--${mode.toLowerCase()}`}
-        ariaRole="radiogroup" ariaLabel="显示模式"
+        ariaRole="group" ariaLabel="显示模式"
         onTouchStart={start} onTouchMove={move} onTouchEnd={end}
         onTouchCancel={() => { suppressTap.current = true; cancel(); }}
       >
@@ -99,8 +102,10 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
         {DISPLAY_MODES.map((item) => (
           <Button compileMode key={item} id={`settings-mode-${item.toLowerCase()}`}
             className={`settings-display-mode-choice focus-ring${mode === item ? " settings-display-mode-choice--selected" : ""}`}
+            aria-pressed={mode === item}
             ariaLabel={`${DISPLAY_MODE_LABEL[item]}${mode === item ? "，当前已选，再次点击切换下一模式" : "，切换模式"}`}
             onClick={() => {
+              recordAcceptanceDiagnostic("display-mode-control", "start", `tap:${item}:${suppressTap.current ? "suppressed" : "accepted"}`);
               if (suppressTap.current) { suppressTap.current = false; return; }
               onSelect(tappedMode(currentMode.current, item));
             }}

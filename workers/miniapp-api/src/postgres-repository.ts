@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { assertContributionSubmittable, MAX_CONTRIBUTION_MEDIA } from "./contribution-validation.ts";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -813,6 +814,12 @@ export class PostgresMiniappRepository
     return result.rows.map((row) => clone(row.payload));
   }
 
+  async getPlanSaveReceipt(userId: UserId, planId: string, idempotencyKey: string): Promise<ObservationPlan | null> {
+    return this.#transaction(async client => {
+      const receipt = await this.#replay<ObservationPlan>(client, userId, idempotencyKey);
+      return receipt?.planId === planId ? receipt : null;
+    });
+  }
   async savePlan(
     userId: UserId,
     plan: ObservationPlan,
@@ -820,6 +827,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ObservationPlan> {
     return this.#transaction(async (client) => {
+      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
       const replay = await this.#replay<ObservationPlan>(
         client,
         userId,
@@ -840,6 +848,8 @@ export class PostgresMiniappRepository
       if (existing.rows[0] && existing.rows[0].user_id !== userId)
         throw new Error("plan_identity_scope_conflict");
       const currentRevision = existing.rows[0]?.revision ?? 0;
+      if (expectedRevision === null && existing.rows[0])
+        throw new Error("plan_revision_conflict");
       if (expectedRevision !== null && currentRevision !== expectedRevision)
         throw new Error("plan_revision_conflict");
       const saved: ObservationPlan = {
@@ -928,12 +938,19 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ProfileLink> {
     return this.#transaction(async (client) => {
+      // Serialize a user's link writes, including initially empty lists.
+      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
       const replay = await this.#replay<ProfileLink>(
         client,
         userId,
         idempotencyKey,
       );
       if (replay) return replay;
+      const duplicate = await client.query(
+        "SELECT profile_link_id FROM user_profile_links WHERE user_id = $1 AND url = $2 AND profile_link_id <> $3 LIMIT 1",
+        [userId, link.url, link.profileLinkId],
+      );
+      if (duplicate.rows.length) throw new Error("profile_link_duplicate");
       await client.query(
         `INSERT INTO user_profile_links(
            profile_link_id, user_id, platform, url, visibility, sort_order, payload, updated_at
@@ -990,6 +1007,13 @@ export class PostgresMiniappRepository
     });
   }
 
+  async getImportSaveReceipt(userId: UserId, id: string, idempotencyKey: string): Promise<ImportDraft | null> {
+    return this.#transaction(async (client) => {
+      const receipt = await this.#replay<ImportDraft>(client, userId, idempotencyKey);
+      return receipt?.importDraftId === id ? receipt : null;
+    });
+  }
+
   async saveImportDraft(
     userId: UserId,
     draft: ImportDraft,
@@ -997,6 +1021,9 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ImportDraft> {
     return this.#transaction(async (client) => {
+      // A retried create may have a different generated draft ID. Lock the owner
+      // before looking up its receipt so concurrent retries share one result.
+      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
       const replay = await this.#replay<ImportDraft>(
         client,
         userId,
@@ -1240,6 +1267,7 @@ export class PostgresMiniappRepository
     upload: ContributionMediaUpload,
     expectedRevision: number,
     idempotencyKey: string,
+    replaceUploadId?: ContributionUploadId,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
       const replay = await this.#replay<ContributionSubmission>(
@@ -1266,9 +1294,18 @@ export class PostgresMiniappRepository
       if (current.revision !== expectedRevision)
         throw new Error("contribution_revision_conflict");
       const now = new Date().toISOString();
+      if (!current.payload.rightsConfirmed)
+        throw new Error("contribution_media_rights_required");
+      const replaced = replaceUploadId ? current.payload.media.find((item) => item.uploadId === replaceUploadId) : undefined;
+      if (replaceUploadId && (!replaced || replaced.state !== "EXPIRED"))
+        throw new Error("contribution_upload_replacement_invalid");
+      if (!replaced && current.payload.media.length >= MAX_CONTRIBUTION_MEDIA)
+        throw new Error("contribution_media_count_invalid");
       const next: ContributionSubmission = {
         ...normalizeContributionSubmission(current.payload),
-        media: [...current.payload.media.map(clone), clone(upload)],
+        media: replaced
+          ? current.payload.media.map((item) => clone(item.uploadId === replaceUploadId ? upload : item))
+          : [...current.payload.media.map(clone), clone(upload)],
         revision: current.revision + 1,
         updatedAt: now,
       };
@@ -1480,6 +1517,7 @@ export class PostgresMiniappRepository
         throw new Error("contribution_not_editable");
       if (current.revision !== expectedRevision)
         throw new Error("contribution_revision_conflict");
+      assertContributionSubmittable(normalizeContributionSubmission(current.payload));
       const uploads = await client.query<{ state: string }>(
         `SELECT state FROM contribution_media_uploads
           WHERE submission_id = $1 AND user_id = $2 FOR UPDATE`,
@@ -1569,8 +1607,46 @@ export class PostgresMiniappRepository
     });
   }
 
+  async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission> {
+    return this.#transaction(async (client) => {
+      const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
+      if (replay) return clone(replay);
+      const result = await client.query<{ user_id: string; state: string; revision: number; payload: ContributionSubmission }>(
+        "SELECT user_id, state, revision, payload FROM user_submissions WHERE submission_id = $1 FOR UPDATE", [submissionId],
+      );
+      const current = result.rows[0];
+      if (!current || current.user_id !== userId) throw new Error("contribution_not_found");
+      if (current.state !== "DRAFT") throw new Error("contribution_not_editable");
+      if (current.revision !== expectedRevision) throw new Error("contribution_revision_conflict");
+      const upload = current.payload.media.find((item) => item.uploadId === uploadId);
+      if (!upload) throw new Error("contribution_upload_not_found");
+      if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
+      const now = new Date().toISOString();
+      const next: ContributionSubmission = {
+        ...normalizeContributionSubmission(current.payload),
+        media: current.payload.media.filter((item) => item.uploadId !== uploadId).map(clone),
+        revision: current.revision + 1, updatedAt: now,
+      };
+      await client.query(
+        "UPDATE contribution_media_uploads SET state = 'EXPIRED', expires_at = $4, payload = payload || jsonb_build_object('state', 'EXPIRED') WHERE upload_id = $1 AND submission_id = $2 AND user_id = $3",
+        [uploadId, submissionId, userId, now],
+      );
+      await client.query("UPDATE user_submissions SET payload = $2, revision = $3, updated_at = $4 WHERE submission_id = $1", [submissionId, next, next.revision, now]);
+      await client.query(
+        `INSERT INTO contribution_revisions(revision_id, submission_id, revision_no, submission_state, merge_state, publication_impact, payload, payload_digest, actor_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [`contribution-revision:${submissionId}:${next.revision}`, submissionId, next.revision, next.submissionState, next.mergeState, next.publicationImpact, next, digest(next), userId],
+      );
+      await this.#recordMutation(client, { idempotencyKey, operation: "contribution-upload.remove", response: next, eventType: "ContributionMediaUploadRemoved", scopeId: userId, payload: { userId, submissionId, uploadId } });
+      return clone(next);
+    });
+  }
+
   async expireContributionUploads(now: string): Promise<readonly string[]> {
     return this.#transaction(async (client) => {
+      const retry = await client.query<{ object_key: string }>(
+        "SELECT object_key FROM contribution_media_uploads WHERE state = 'EXPIRED' AND object_key IS NOT NULL",
+      );
       const expired = await client.query<{
         upload_id: ContributionUploadId;
         submission_id: ContributionId;
@@ -1640,10 +1716,18 @@ export class PostgresMiniappRepository
             WHERE state IN ('PENDING', 'UPLOADED') AND expires_at <= $1`,
           [now],
         );
-      return expired.rows
+      return [...new Set([...retry.rows.map((row) => row.object_key), ...expired.rows
         .map((row) => row.object_key)
-        .filter((value): value is string => Boolean(value));
+        .filter((value): value is string => Boolean(value))])];
     });
+  }
+
+  async acknowledgeContributionMediaDeletion(objectKeys: readonly string[]): Promise<void> {
+    if (!objectKeys.length) return;
+    await this.pool.query(
+      "UPDATE contribution_media_uploads SET object_key = NULL WHERE state = 'EXPIRED' AND object_key = ANY($1::text[])",
+      [objectKeys],
+    );
   }
 
   async getContributionUploadObject(uploadId: ContributionUploadId) {

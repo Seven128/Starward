@@ -24,13 +24,26 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
   const target = process.env.TARO_ENV ?? "weapp";
   if (target !== "weapp")
     throw new Error("wechat_miniapp_web_target_removed");
+  // Keep fixture compilation away from the live development watch output.
+  // This switch deliberately accepts no caller-supplied filesystem path.
+  const isolatedFixtureBuild = process.env.MINIAPP_ISOLATED_FIXTURE_BUILD === "1";
+  if (isolatedFixtureBuild && process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE !== "1")
+    throw new Error("miniapp_isolated_build_requires_fixture_mode");
+  const isolatedCheckBuild = process.env.MINIAPP_ISOLATED_CHECK_BUILD === "1";
+  if (isolatedCheckBuild && (command !== "build" || process.argv.includes("--watch") || isolatedFixtureBuild ||
+      process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1" ||
+      process.env.MINIAPP_ACCEPTANCE_DIAGNOSTICS === "1" ||
+      process.env.MINIAPP_DEVICE_REQUEST_DIAGNOSTICS === "1"))
+    throw new Error("miniapp_isolated_check_requires_plain_build");
+  const outputRoot = isolatedCheckBuild ? "dist/weapp-check" :
+    isolatedFixtureBuild ? "dist/weapp-fixture" : "dist/weapp";
   const config: UserConfigExport = {
     projectName: "tonight-stargazing-wechat-miniapp",
     date: "2026-08-06",
     designWidth: 750,
     deviceRatio: { 320: 2.34375, 375: 2, 430: 1.744186, 750: 1 },
     sourceRoot: "src",
-    outputRoot: "dist/weapp",
+    outputRoot,
     framework: "react",
     compiler: {
       type: "webpack5",
@@ -47,6 +60,8 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     plugins: [
       "@tarojs/plugin-framework-react",
       "@tarojs/plugin-platform-weapp",
+      path.resolve(here, "./scroll-view-template.cjs"),
+      path.resolve(here, "./accessibility-template.cjs"),
     ],
     alias: {
       "@": path.resolve(here, "../src"),
@@ -88,7 +103,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       patterns: [
         {
           from: path.resolve(here, "../src/assets"),
-          to: path.resolve(here, "../dist/weapp/assets"),
+          to: path.resolve(here, "..", outputRoot, "assets"),
         },
       ],
       options: {},

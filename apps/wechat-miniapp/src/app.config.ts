@@ -1,3 +1,5 @@
+import { NATIVE_CHROME_THEME } from "./theme/design-tokens";
+
 export default defineAppConfig({
   pages: ["pages/map/index", "pages/my/index", "pages/auth/index"],
   subPackages: [
@@ -29,16 +31,16 @@ export default defineAppConfig({
   window: {
     navigationStyle: "custom",
     navigationBarTitleText: "今晚去观星",
-    navigationBarBackgroundColor: "#FFFFFF",
+    navigationBarBackgroundColor: NATIVE_CHROME_THEME.DAY.canvas,
     navigationBarTextStyle: "black",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: NATIVE_CHROME_THEME.DAY.canvas,
     backgroundTextStyle: "dark",
   },
   tabBar: {
-    color: "#5E655F",
-    selectedColor: "#4859B8",
-    backgroundColor: "#FFFFFF",
-    borderStyle: "white",
+    color: NATIVE_CHROME_THEME.DAY.color,
+    selectedColor: NATIVE_CHROME_THEME.DAY.selectedColor,
+    backgroundColor: NATIVE_CHROME_THEME.DAY.backgroundColor,
+    borderStyle: NATIVE_CHROME_THEME.DAY.borderStyle,
     list: [
       {
         pagePath: "pages/map/index",

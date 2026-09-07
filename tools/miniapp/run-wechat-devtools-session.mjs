@@ -185,8 +185,8 @@ const candidateRoots = [
   "project_context/areas/main/implementation-index.md",
   "tools/miniapp/generate-mode-icons.mjs",
   "tools/miniapp/generate-semantic-assets.mjs",
-  "tools/miniapp/selected-design-bindings.json",
-  "tools/miniapp/verify-selected-design-bindings.mjs",
+  "tools/miniapp/ui-contract-probes.json",
+  "tools/miniapp/verify-ui-contracts.mjs",
   "tools/miniapp/run-wechat-devtools-session.mjs",
   "tools/miniapp/runtime-event-policy.mjs",
   "tools/miniapp/workflow-conformance.test.mjs",
@@ -2313,7 +2313,6 @@ const nativeSelectorAliases = new Map([
   ["[data-control~='map-search-entry']", ".map-search-entry"],
   ["[data-control~='map-location-control']", ".map-tool--location"],
   ["[data-control~='map-analysis-focus-layer']", ".map-analysis-trigger"],
-  ["[data-control~='sky-map-canvas']", ".map-map-canvas-marker"],
   ["[data-control~='map-layer-selector']", ".map-layer-sheet"],
   ["[data-control~='map-time-control']", ".map-time-ruler"],
   ["[data-control~='map-spot-information-panel']", ".spot-panel"],
@@ -5782,7 +5781,6 @@ currentMapJourney.selectors = [
   { selector: "[data-control~='map-search-entry']", minimum: 1 },
   { selector: "[data-control~='map-location-control']", minimum: 1 },
   { selector: "[data-control~='map-analysis-focus-layer']", minimum: 1 },
-  { selector: "[data-control~='sky-map-canvas']", minimum: 1 },
 ];
 currentMapJourney.interactions = [
   {

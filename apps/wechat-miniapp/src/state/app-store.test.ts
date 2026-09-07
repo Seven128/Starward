@@ -63,6 +63,25 @@ function loadStore(storage: { value: unknown } = { value: {} }) {
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
 
+test("older account readback cannot roll back saved preferences or a newer local edit", () => {
+  const { store } = loadStore();
+  const saved = { preferences: { ...DEFAULT_USER_PREFERENCES, equipment: "红光手电" }, revision: 8, updatedAt: "2026-09-07T01:00:00Z" };
+  const old = { preferences: { ...DEFAULT_USER_PREFERENCES }, revision: 7, updatedAt: "2026-09-07T00:00:00Z" };
+  store.getState().markPreferencesSynced(saved);
+  store.getState().applyServerPreferences(old);
+  assert.equal(store.getState().preferences.equipment, "红光手电");
+  assert.equal(store.getState().preferencesRevision, 8);
+  assert.equal(store.getState().preferencesUpdatedAt, saved.updatedAt);
+  store.getState().setPreference("equipment", "双筒望远镜");
+  store.getState().applyServerPreferences(old);
+  assert.equal(store.getState().preferences.equipment, "双筒望远镜");
+  assert.equal(store.getState().preferencesRevision, 8);
+  assert.equal(store.getState().preferencesDirty, true);
+  store.getState().applyServerPreferences({ ...saved, revision: 9 });
+  assert.equal(store.getState().preferences.equipment, "双筒望远镜");
+  assert.equal(store.getState().preferencesRevision, 9);
+});
+
 test("default-region reset is atomic, retains user content and cannot be undone by focus restoration", () => {
   const { store, flush, storage } = loadStore();
   const initialViewport = JSON.stringify(store.getState().viewport);

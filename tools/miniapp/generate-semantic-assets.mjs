@@ -1,20 +1,18 @@
 import { createHash } from "node:crypto";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import vm from "node:vm";
+import { art } from "./semantic-art.mjs";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
 const sourceRelative =
-  "docs/design-resources/miniapp-selected-source-2026-08-06-v1/artifacts/app-08-semantic-asset-atlas.html";
+  "tools/miniapp/semantic-art.mjs";
 const sourcePath = path.join(root, ...sourceRelative.split("/"));
 const outputDirectory = path.join(
   root,
   "apps/wechat-miniapp/src/assets/semantic",
 );
-const expectedSourceSha =
-  "09fe77bc7d6f52a84fea96fafc8d85adc1ab976fc5f43b58b16c50458bad8534";
 const checkOnly = process.argv.includes("--check");
 
 const subjects = [
@@ -68,22 +66,6 @@ function standaloneSvg(fragment, palette) {
 
 const source = await readFile(sourcePath, "utf8");
 const sourceSha = sha256(source);
-if (sourceSha !== expectedSourceSha)
-  throw new Error(
-    `selected_semantic_asset_source_changed:${expectedSourceSha}:${sourceSha}`,
-  );
-
-const functionMatch = source.match(
-  /function art\(type\)\{[\s\S]*?\}\}\s*function renderTierB/u,
-);
-if (!functionMatch)
-  throw new Error("selected_semantic_asset_function_missing");
-const functionSource = functionMatch[0].replace(/\s*function renderTierB$/u, "");
-const art = vm.runInNewContext(`${functionSource}; art`, Object.create(null), {
-  timeout: 100,
-});
-if (typeof art !== "function")
-  throw new Error("selected_semantic_asset_function_invalid");
 
 const expectedFiles = new Map();
 for (const subject of subjects) {
@@ -104,7 +86,6 @@ const manifest = {
   schema_version: "starward-selected-semantic-assets-v1",
   source: sourceRelative,
   source_sha256: sourceSha,
-  design_target: "target.system.wechat-miniapp-soft-instruments-2026-08-05",
   subjects,
   modes: Object.keys(modes),
   assets: [...expectedFiles].map(([file, bytes]) => ({

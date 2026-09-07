@@ -1,6 +1,7 @@
 import Taro from "@tarojs/taro";
 import { View, Text } from "@tarojs/components";
-import { nativeStatusBarHeightPx } from "@/theme/native-metrics";
+import { useRef, useState } from "react";
+import { nativeStatusBarHeightPx, nativeMenuClearancePx, nativeNavigationInsets } from "@/theme/native-metrics";
 import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
 import "./custom-nav.scss";
@@ -23,7 +24,14 @@ export function CustomNav({
   right?: React.ReactNode | undefined;
 }) {
   const statusBarHeight = nativeStatusBarHeightPx();
-  const goBack = () => {
+  const menuClearance = nativeMenuClearancePx();
+  const actionSafeTop = right ? nativeNavigationInsets().safeTop : undefined;
+  const navigationBusy = useRef(false);
+  const [backError, setBackError] = useState(false);
+  const goBack = async () => {
+    if (navigationBusy.current) return;
+    navigationBusy.current = true;
+    setBackError(false);
     const fallback = () => Taro.switchTab({ url: backFallbackTab });
     let hasPriorPage = false;
     try {
@@ -31,20 +39,31 @@ export function CustomNav({
     } catch {
       // An unavailable page stack is equivalent to an unprovable back target.
     }
-    if (!hasPriorPage) {
-      void fallback();
-      return;
+    try {
+      if (hasPriorPage) {
+        try {
+          await Taro.navigateBack();
+        } catch {
+          await fallback();
+        }
+      } else {
+        await fallback();
+      }
+    } catch {
+      setBackError(true);
+    } finally {
+      navigationBusy.current = false;
     }
-    void Taro.navigateBack().catch(fallback);
   };
   return (
     <View
-      className="custom-nav safe-top"
+      className={`custom-nav safe-top${right ? " custom-nav--with-action" : ""}`}
       data-control="mini-primary-navigation"
       {...(odId ? { "data-od-id": odId } : {})}
-      {...(statusBarHeight > 0
-        ? { style: { paddingTop: `${statusBarHeight}px` } }
-        : {})}
+      style={{
+        ...(statusBarHeight > 0 ? { paddingTop: `${actionSafeTop ?? statusBarHeight}px` } : {}),
+        ...(menuClearance !== undefined ? { "--nav-menu-clearance": `${menuClearance}px` } : {}),
+      }}
     >
       <View className="custom-nav__bar">
         <View className="custom-nav__side">
@@ -71,14 +90,19 @@ export function CustomNav({
           {right}
         </View>
       </View>
+      {backError ? (
+        <View className="custom-nav__error" role="alert" aria-live="polite">
+          <Text className="type-caption">暂时无法返回，请再点一次返回。</Text>
+        </View>
+      ) : null}
       {__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ ? (
         <View
           className="development-fixture-banner"
           data-od-id="development-fixture-banner"
           role="status"
-          aria-label="开发验收数据，不能用于现实判断"
+          aria-label="测试数据，不能用于现实判断"
         >
-          <Text>开发验收数据 · 不用于现实判断</Text>
+          <Text>测试数据 · 不用于现实判断</Text>
         </View>
       ) : null}
     </View>

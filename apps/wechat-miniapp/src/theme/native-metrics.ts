@@ -1,5 +1,20 @@
 import Taro from "@tarojs/taro";
 
+/** Horizontal space occupied by the native menu, including a readable gap. */
+export function nativeMenuClearancePx(runtime: {
+  getWindowInfo: () => { windowWidth: number };
+  getMenuButtonBoundingClientRect: () => { left: number };
+} = Taro): number | undefined {
+  try {
+    const { windowWidth } = runtime.getWindowInfo();
+    const { left } = runtime.getMenuButtonBoundingClientRect();
+    if (Number.isFinite(windowWidth) && windowWidth > 0 &&
+        Number.isFinite(left) && left > windowWidth / 2 && left < windowWidth)
+      return windowWidth - left + 8;
+  } catch { /* Keep the stylesheet's conservative menu clearance. */ }
+  return undefined;
+}
+
 /**
  * Return the native status-bar inset when WEAPP exposes a finite metric.
  * Callers retain their CSS safe-area fallback when this returns zero.

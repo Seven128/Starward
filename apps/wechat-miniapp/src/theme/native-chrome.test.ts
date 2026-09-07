@@ -4,19 +4,24 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import type { DisplayMode } from "@starward/miniapp-contracts";
+import { NATIVE_CHROME_THEME } from "./design-tokens";
 
-function chromeHarness(failure?: { errMsg: string }) {
+function chromeHarness(failure?: { errMsg: string }, initialRoute = "pages/map/index", navigateDuringStyle = false, failureMethod = "style") {
   const source = readFileSync(new URL("./native-chrome.ts", import.meta.url), "utf8")
     .replace(/^import .*;\r?\n/gm, "").replace("export async function", "async function");
   const calls: { method: string; values: Record<string, unknown> }[] = [];
+  let route = initialRoute;
   const native = (method: string) => async (values: Record<string, unknown>) => {
     calls.push({ method, values });
-    if (method === "style" && failure) throw failure;
+    if (method === failureMethod && failure) throw failure;
+    if (method === "style" && navigateDuringStyle) route = "spot/search/index";
   };
   const sync = vm.runInNewContext(ts.transpileModule(source + "\nsyncNativeChrome;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
-  }).outputText, { Taro: {
+  }).outputText, { NATIVE_CHROME_THEME, Taro: {
+    getCurrentPages: () => route ? [{ route }] : [],
     setBackgroundColor: native("background"),
+    setNavigationBarColor: native("navigation"),
     setTabBarStyle: native("style"),
     setTabBarItem: native("item"),
   } }) as (mode: DisplayMode) => Promise<void>;
@@ -34,6 +39,9 @@ test("native chrome uses the selected Field Signal palette and existing mode ico
     await h.sync(mode);
     const [canvas, color, selectedColor, backgroundColor, suffix] = expected[mode];
     const background = h.calls.find((call) => call.method === "background")!.values;
+    const navigation = h.calls.find((call) => call.method === "navigation")!.values;
+    assert.equal(navigation.frontColor, mode === "DAY" ? "#000000" : "#ffffff");
+    assert.equal(navigation.backgroundColor, canvas);
     assert.deepEqual(Object.values(background), [canvas, canvas, canvas]);
     const style = h.calls.find((call) => call.method === "style")!.values;
     assert.equal(style.color, color);
@@ -56,11 +64,31 @@ test("a child route updates its background without unsupported tab item calls", 
   assert.equal(h.calls.some((call) => call.method === "item"), false);
 });
 
+test("non-tab routes and navigation during theme sync never request tab icons", async () => {
+  for (const route of ["spot/search/index", "content/settings/index", ""]) {
+    const h = chromeHarness(undefined, route);
+    await h.sync("NIGHT");
+    assert.deepEqual(h.calls.map(call => call.method).sort(), ["background", "navigation"]);
+  }
+  const h = chromeHarness(undefined, "pages/map/index", true);
+  await h.sync("NIGHT");
+  assert.equal(h.calls.filter(call => call.method === "style").length, 1);
+  assert.equal(h.calls.some(call => call.method === "item"), false);
+});
+
 test("unexpected tab bar failure is still observable", async () => {
   const failure = { errMsg: "setTabBarStyle:fail unavailable" };
   const h = chromeHarness(failure);
   await assert.rejects(h.sync("DAY"), (error: unknown) => error === failure);
   assert.equal(h.calls.some((call) => call.method === "item"), false);
+});
+
+test("navigation after icon dispatch tolerates only the native non-tab-page rejection", async () => {
+  const expected = chromeHarness({ errMsg: "setTabBarItem:fail not TabBar page" }, "pages/map/index", false, "item");
+  await expected.sync("NIGHT");
+  assert.equal(expected.calls.filter(call => call.method === "item").length, 2);
+  const failure = { errMsg: "setTabBarItem:fail unavailable" };
+  await assert.rejects(chromeHarness(failure, "pages/map/index", false, "item").sync("NIGHT"), (error: unknown) => error === failure);
 });
 
 test("returning to a page reapplies the current mode, not its mounted mode", async () => {

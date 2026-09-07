@@ -1,3 +1,12 @@
 .provenance { display: flex; flex-direction: column; gap: 8rpx; padding: 20rpx; border-radius: 20rpx; border: 2rpx solid var(--border); background: var(--surface-subtle); }
-.provenance__header { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.provenance__header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-inline); }
+.provenance__header > text { min-width: 0; overflow-wrap: anywhere; }
+.provenance__header > .type-label { flex: 1; }
+.provenance__header > .status-tag { flex: 0 0 auto; }
+.provenance__timing { display: flex; flex-direction: column; gap: 4Px; padding: 6Px 0; }
+.provenance__fact { display: grid; grid-template-columns: 28Px minmax(0, 1fr); align-items: baseline; gap: 8Px; }
+.provenance__fact > text { min-width: 0; overflow-wrap: anywhere; }
+.large-text .provenance__header { flex-direction: column; }
+.provenance__links { display: flex; flex-wrap: wrap; gap: var(--space-inline); }
+.large-text .provenance__links { flex-direction: column; }
 .provenance--compact { padding: 16rpx 20rpx; }

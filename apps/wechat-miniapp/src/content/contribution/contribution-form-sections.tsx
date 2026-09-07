@@ -1,8 +1,9 @@
+import { ToggleField } from "@/components/toggle-field";
+import { FormalSpotField } from "@/components/formal-spot-field";
 import {
   Button,
   Input,
   Picker,
-  Switch,
   Text,
   Textarea,
   View,
@@ -47,61 +48,51 @@ export function ContributionContextSection({
             {form.routeSpotName || "当前正式观星点"}
           </Text>
         ) : null}
-        {form.hasFormalSpot ? (
+        {form.inheritedSpot ? (
           <Text className="type-caption">
             {form.kind === "NEW_SPOT_PROPOSAL"
-              ? "新增地点将使用独立候选位置，不会改写当前正式观星点"
-              : "已从详情继承点位，不会改报到其他地点"}
+              ? "新地点建议会单独审核，当前观星点保持不变"
+              : "反馈将提交到当前观星点"}
           </Text>
         ) : (
           <>
             <Text className="type-caption">
-              从“我的”进入时可选择已确认的正式观星点，或保持为独立新增地点提议。
-              正式点位的现场反馈仍不会读取当前位置。
+              选择已有观星点，或建议新地点。已有地点的反馈不读取当前位置。
             </Text>
             <View className="contribution-spot-choice" role="radiogroup" aria-label="反馈地点类型">
-            <Button
+            <Button disabled={form.commandBusy}
               className={`chip focus-ring${spotChoice === "FORMAL" ? " chip--selected" : ""}`}
               aria-pressed={spotChoice === "FORMAL"}
               onClick={() => setSpotChoice("FORMAL")}
             >
               <Text>选择正式观星点</Text>
             </Button>
-            <Button
+            <Button disabled={form.commandBusy}
               className={`chip focus-ring${spotChoice === "NEW" ? " chip--selected" : ""}`}
               aria-pressed={spotChoice === "NEW"}
-              onClick={() => setSpotChoice("NEW")}
+              onClick={() => {
+                setSpotChoice("NEW");
+                form.setRouteSpotId("");
+                form.setRouteSpotName("");
+                form.selectKind("NEW_SPOT_PROPOSAL");
+              }}
             >
               <Text>新地点</Text>
             </Button>
             </View>
             {spotChoice === "FORMAL" ? (
               <View className="contribution-formal-spot-fields">
-              <View className="form-group">
-                <Text className="type-label">正式 spot_id</Text>
-                <Input
-                  className="field"
-                  data-od-id="contribution-formal-spot-id"
-                  focus={form.validationField === "contribution-spot-context"}
-                  value={form.routeSpotId}
-                  maxlength={180}
-                  placeholder="spot:…"
-                  onInput={(event) => form.setRouteSpotId(event.detail.value)}
-                />
-              </View>
-              <View className="form-group">
-                <Text className="type-label">点位名称（可选）</Text>
-                <Input
-                  className="field"
-                  value={form.routeSpotName}
-                  maxlength={120}
-                  placeholder="便于确认当前点位"
-                  onInput={(event) => form.setRouteSpotName(event.detail.value)}
-                />
-              </View>
+              <FormalSpotField id="contribution-formal-spot-id"
+                value={form.routeSpotId} disabled={form.commandBusy}
+                knownSpot={{ spotId: form.routeSpotId, name: form.routeSpotName }}
+                onChange={(spotId, spotName) => {
+                  form.setRouteSpotName(spotName);
+                  form.setRouteSpotId(spotId);
+                  form.selectKind("FIELD_REPORT");
+                }} />
               {!form.hasFormalSpot ? (
                 <Text className="type-caption contribution-inline-warning">
-                  请输入已确认且以 spot: 开头的 ID；没有可确认的 ID 时请改选新地点。
+                  只可选择已收录的正式观星点；尚未收录的位置请改选新地点。
                 </Text>
               ) : null}
               </View>
@@ -115,7 +106,7 @@ export function ContributionContextSection({
         data-control="contribution-kind-control"
       >
         {kinds.map((item) => (
-          <Button
+          <Button disabled={form.commandBusy}
             key={item}
             className={`contribution-kind-choice focus-ring${form.kind === item ? " contribution-kind-choice--selected" : ""}`}
             aria-pressed={form.kind === item}
@@ -126,20 +117,20 @@ export function ContributionContextSection({
           </Button>
         ))}
       </View>
-      {form.matchingDraft ? (
+      {!form.draft && form.matchingDraft ? (
         <View
           className="contribution-draft-recovery"
           data-od-id="contribution-draft-recovery"
         >
           <Text className="type-label">这里有一份未完成草稿</Text>
           <Text className="type-caption">
-            rev.{form.matchingDraft.revision} · 已绑定当前微信身份
+            已保存在当前账号下，可继续补充。
           </Text>
           <View className="contribution-draft-recovery__actions">
-            <SoftButton label="继续草稿" onClick={() => form.applyDraft(form.matchingDraft!)}>
+            <SoftButton disabled={form.commandBusy} label="继续草稿" onClick={() => form.applyDraft(form.matchingDraft!)}>
               继续草稿
             </SoftButton>
-            <SoftButton label="稍后处理" onClick={form.goBackPhase}>
+            <SoftButton disabled={form.commandBusy} label="稍后处理" onClick={form.goBackPhase}>
               稍后
             </SoftButton>
           </View>
@@ -166,7 +157,7 @@ export function ContributionLocationSection({
       <Text className="type-section">建议地点</Text>
       <View className="form-group">
         <Text className="type-label">地点名称</Text>
-        <Input
+        <Input disabled={form.commandBusy}
           className="field contribution-candidate-name"
           data-od-id="contribution-candidate-name"
           focus={form.validationField === "contribution-candidate-name"}
@@ -181,7 +172,7 @@ export function ContributionLocationSection({
       </View>
       <View className="form-group">
         <Text className="type-label">地区</Text>
-        <Input
+        <Input disabled={form.commandBusy}
           className="field contribution-candidate-region"
           data-od-id="contribution-candidate-region"
           focus={form.validationField === "contribution-candidate-region"}
@@ -195,7 +186,7 @@ export function ContributionLocationSection({
         ) : null}
       </View>
       <View className="contribution-coordinate-grid">
-        <CoordinateField
+        <CoordinateField disabled={form.commandBusy}
           label="纬度"
           odId="contribution-candidate-latitude"
           value={form.latitude}
@@ -203,7 +194,7 @@ export function ContributionLocationSection({
           focus={form.validationField === "contribution-candidate-latitude"}
           onInput={form.setLatitude}
         />
-        <CoordinateField
+        <CoordinateField disabled={form.commandBusy}
           label="经度"
           odId="contribution-candidate-longitude"
           value={form.longitude}
@@ -212,30 +203,13 @@ export function ContributionLocationSection({
           onInput={form.setLongitude}
         />
       </View>
-      <SoftButton
+      <SoftButton disabled={form.commandBusy}
         label="使用一次当前位置"
         onClick={() => void commands.useCurrentLocation()}
       >
         使用一次当前位置
       </SoftButton>
-      <View className="contribution-switch-row">
-        <View>
-          <Text className="type-label">同意提交该精确坐标</Text>
-          <Text className="type-caption">
-            审核前不公开；敏感地点可转为模糊或隐藏坐标
-          </Text>
-        </View>
-        <Switch
-          className="contribution-coordinate-consent"
-          data-od-id="contribution-coordinate-consent"
-          checked={form.preciseLocationConsent}
-          color="var(--primary)"
-          aria-label="同意提交新增地点精确坐标"
-          onChange={(event) =>
-            form.setPreciseLocationConsent(event.detail.value)
-          }
-        />
-      </View>
+      <ToggleField disabled={form.commandBusy} id="contribution-coordinate-consent" label="同意提交该精确坐标" description="审核前不公开；敏感地点可转为模糊或隐藏坐标" checked={form.preciseLocationConsent} onChange={form.setPreciseLocationConsent} stateLabels={{ checked: "已同意", unchecked: "未同意" }} />
       {form.validationField === "contribution-candidate-latitude" ||
       form.validationField === "contribution-candidate-longitude" ? (
         <FieldError>请输入有效的纬度和经度。</FieldError>
@@ -248,6 +222,7 @@ export function ContributionLocationSection({
 }
 
 function CoordinateField({
+  disabled,
   label,
   odId,
   value,
@@ -256,6 +231,7 @@ function CoordinateField({
   onInput,
 }: {
   label: string;
+  disabled: boolean;
   odId: string;
   value: string;
   placeholder: string;
@@ -265,7 +241,7 @@ function CoordinateField({
   return (
     <View className="form-group">
       <Text className="type-label">{label}</Text>
-      <Input
+      <Input disabled={disabled}
         className={`field ${odId}`}
         data-od-id={odId}
         focus={focus}
@@ -290,13 +266,13 @@ export function ContributionEvidenceSection({
         data-od-id="contribution-observed-at"
         data-control="contribution-observed-at"
       >
-        <DateTimeField
+        <DateTimeField disabled={form.commandBusy}
           mode="date"
           label="现场日期"
           value={form.date}
           onChange={form.setDate}
         />
-        <DateTimeField
+        <DateTimeField disabled={form.commandBusy}
           mode="time"
           label="现场时间"
           value={form.time}
@@ -310,7 +286,7 @@ export function ContributionEvidenceSection({
         ) : null}
         <View className="contribution-topic-grid">
           {TOPICS.map(({ key, label }) => (
-            <Button
+            <Button disabled={form.commandBusy}
               key={key}
               className={`chip focus-ring${form.topics.includes(key) ? " chip--selected" : ""}`}
               aria-pressed={form.topics.includes(key)}
@@ -323,7 +299,7 @@ export function ContributionEvidenceSection({
       </View>
       <View className="form-group">
         <Text className="type-label">现场依据或纠错说明</Text>
-        <Textarea
+        <Textarea disabled={form.commandBusy}
           className="field contribution-textarea"
           data-od-id="contribution-detail"
           focus={form.validationField === "contribution-detail"}
@@ -348,11 +324,13 @@ function FieldError({ children }: { children: string }) {
 }
 
 function DateTimeField({
+  disabled,
   mode,
   label,
   value,
   onChange,
 }: {
+  disabled: boolean;
   mode: "date" | "time";
   label: string;
   value: string;
@@ -361,7 +339,7 @@ function DateTimeField({
   return (
     <View className="form-group">
       <Text className="type-label">{label}</Text>
-      <Picker
+      <Picker disabled={disabled}
         mode={mode}
         value={value}
         onChange={(event) => onChange(event.detail.value)}

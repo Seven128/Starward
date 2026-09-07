@@ -48,9 +48,14 @@ export function usePreferencesSync() {
     } catch (error) {
       if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         const latest = await getPreferences().catch(() => null);
-        if (latest) useAppStore.getState().applyServerPreferences(latest.data);
-        setStatus("云端偏好已有更新；本机编辑保持不变，正在重新同步。");
-        rerun.current = true;
+        if (latest) {
+          useAppStore.getState().applyServerPreferences(latest.data);
+          setStatus("云端偏好已有更新；本机编辑保持不变，正在重新同步。");
+          rerun.current = true;
+        } else {
+          rerun.current = false;
+          setStatus("暂时无法读取云端最新偏好；本机编辑保持不变，恢复网络后可重试同步。");
+        }
       } else {
         setStatus(`偏好仅保存在本机：${errorMessage(error)}。可重试同步。`);
       }

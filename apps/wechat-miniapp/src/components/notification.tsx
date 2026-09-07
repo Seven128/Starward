@@ -1,5 +1,5 @@
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Text, View } from "@tarojs/components";
 import type { NotificationRecord } from "@/state/notification";
 import { selectNotification } from "@/state/notification";
@@ -102,6 +102,17 @@ export function NotificationRegion({
   const queue = useAppStore((state) => state.notifications);
   const dismiss = useAppStore((state) => state.dismissNotification);
   const selection = selectNotification(queue, placement, owner);
+  const current = selection.current;
+  useEffect(() => {
+    if (!current || current.placement !== "floating" || current.tone !== "success" ||
+      !current.dismissible || current.action) return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      if (!cancelled) dismiss(current.id);
+    }, 6000);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [current?.id, current?.createdAt, current?.occurrences, current?.tone,
+    current?.placement, current?.dismissible, current?.action, dismiss]);
   if (!selection.current) return null;
   return (
     <NotificationComponent

@@ -1,6 +1,10 @@
 .article-content { padding-top: 24rpx; display: flex; flex-direction: column; gap: 24rpx; }
-.article-meta, .article-tip, .article-ref { padding: 28rpx; display: flex; flex-direction: column; gap: 12rpx; }
-.article-paragraph { white-space: pre-wrap; }
+.article-meta { display: flex; flex-direction: column; gap: 6Px; padding-bottom: 12Px; border-bottom: 1rpx solid var(--border); }
+.article-meta > text { min-width: 0; overflow-wrap: anywhere; }
+.article-tip, .article-ref { padding: 12Px; display: flex; flex-direction: column; gap: 8Px; }
+.article-paragraph { white-space: pre-wrap; overflow-wrap: anywhere; }
 .article-media { overflow: hidden; display: flex; flex-direction: column; gap: 12rpx; padding-bottom: 20rpx; }
-.article-media image { width: 100%; height: 420rpx; background: var(--surface-subtle); }
+.article-media image { width: 100%; height: auto; background: var(--surface-subtle); }
 .article-media text { margin: 0 20rpx; }
+.article-page { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.article-scroll { flex: 1; min-height: 0; }

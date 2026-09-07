@@ -415,7 +415,9 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     applyServerPreferences(record) {
       commit((state) =>
-        state.preferencesDirty
+        record.revision < state.preferencesRevision
+          ? {}
+          : state.preferencesDirty
           ? {
               preferencesRevision: record.revision,
               preferencesUpdatedAt: record.updatedAt,

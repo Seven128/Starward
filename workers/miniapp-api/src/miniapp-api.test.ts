@@ -40,6 +40,21 @@ async function user(service: MiniappService, suffix: string) {
   ).data;
 }
 
+test("map time axis includes the exact off-cadence observing instant without duplicate ticks", async () => {
+  const service = testService();
+  try {
+    for (const selectedAt of ["2026-08-06T13:20:00.000Z", "2026-08-06T13:30:00.000Z"]) {
+      const context = (await service.resolveObservationContext({ location: { kind: "FORMAL_SPOT", spotId: TEST_PUBLISHED_SPOT.spotId }, localDate: "2026-08-06", selectedAt })).data;
+      const scene = await service.getMapScene({ contextId: context.contextId, layer: "CLOUD" });
+      const times = scene.data.timeFrames.map(frame => frame.atUtc);
+      assert.equal(times.filter(at => at === selectedAt).length, 1);
+      assert.deepEqual(times, [...times].sort());
+      assert.ok(times.length <= 49);
+      assert.equal(scene.data.context.selectedAtUtc, selectedAt);
+    }
+  } finally { await service.onModuleDestroy(); }
+});
+
 test("map scene is context-bound and computes actual dynamic projections", async () => {
   const service = testService();
   try {
@@ -506,6 +521,21 @@ test("account export is server-owned and deletion revokes identity state", async
   } finally {
     await service.onModuleDestroy();
   }
+});
+
+test("profile save replays before duplicate checks and still rejects a new duplicate intent", async () => {
+  const service = testService();
+  try {
+    const principal = await user(service, "profile-replay");
+    const input = { platform: "OTHER" as const, displayName: "Retry test", url: "https://example.com/retry", visibility: "PRIVATE" as const, sortOrder: 0 };
+    const first = await service.saveProfileLink(principal.userId, input, "profile:replay:0001");
+    const replay = await service.saveProfileLink(principal.userId, input, "profile:replay:0001");
+    assert.deepEqual(replay.data, first.data);
+    await assert.rejects(service.saveProfileLink(principal.userId, input, "profile:replay:0002"), /profile_link_duplicate/);
+    const other = await user(service, "profile-other");
+    const independent = await service.saveProfileLink(other.userId, input, "profile:replay:0001");
+    assert.notEqual(independent.data.profileLinkId, first.data.profileLinkId);
+  } finally { await service.onModuleDestroy(); }
 });
 
 test("runtime prerequisites can explicitly gate selected profile-content surfaces", async () => {

@@ -1,3 +1,4 @@
+import type { PanelCssMotion } from "./panel-spring-style";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import type {
   MapSpotEvaluation,
@@ -6,13 +7,17 @@ import type {
   PageState,
   SpotDetail,
   SpotSummary,
+  SkyOpportunity,
 } from "@starward/miniapp-contracts";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Taro, { useResize } from "@tarojs/taro";
+import { useAppStore } from "@/state/app-store";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { FavoriteStar } from "@/components/selected-card-star";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { MapTimeRuler } from "./time-ruler";
+import { panelAstronomyFacts } from "./panel-astronomy-facts";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
 export type SpotPanelPhase = "idle" | "closing";
@@ -21,6 +26,14 @@ const PANEL_SECTIONS = [
   { id: "spot-panel-overview", label: "概览" },
   { id: "spot-panel-astronomy", label: "天文" },
 ] as const;
+
+const SUITABLE_TARGET_LABELS: Readonly<Record<SkyOpportunity["suitableFor"][number], string>> = {
+  NAKED_EYE: "肉眼观星",
+  PHONE: "手机拍摄",
+  MILKY_WAY: "银河",
+  STAR_TRAIL: "星轨",
+  DEEP_SKY: "深空天体",
+};
 
 function isPermissionError(error: unknown) {
   return (
@@ -72,22 +85,6 @@ function facilityStatusLabel(status: string) {
   )[status] ?? "状态暂无数据";
 }
 
-function observationStatusLabel(value: string) {
-  return (
-    {
-      EXCELLENT: "优秀",
-      GOOD: "良好",
-      FAIR: "一般",
-      POOR: "较差",
-      INSUFFICIENT_DATA: "资料不足",
-      RECOMMENDED: "推荐",
-      CONSIDER: "可考虑",
-      NOT_RECOMMENDED: "不推荐",
-      DATA_INSUFFICIENT: "资料不足",
-    } as Record<string, string>
-  )[value] ?? "暂无数据";
-}
-
 function mediaIsRenderable(media: SpotSummary["media"][number]) {
   return Boolean(
     media.state !== "EXPIRED" &&
@@ -100,9 +97,13 @@ function mediaIsRenderable(media: SpotSummary["media"][number]) {
 
 export function SpotInformationPanel({
   spot,
+  visible = true,
+  settling = false,
+  springMotion,
   detail,
   detailPending,
   detailError,
+  detailStale = false,
   extent,
   phase,
   favorite,
@@ -112,9 +113,11 @@ export function SpotInformationPanel({
   timeSaving,
   onTimePreview,
   onTimeCommit,
+  onTimeCancel,
   onHandleTouchStart,
   onHandleTouchMove,
   onHandleTouchEnd,
+  onHandleTouchCancel,
   onExtent,
   onClose,
   onRecover,
@@ -123,11 +126,16 @@ export function SpotInformationPanel({
   onCloud,
   onNavigate,
   onContribution,
+  onEvidence,
 }: {
   spot: SpotSummary;
+  visible?: boolean;
+  settling?: boolean;
+  springMotion?: PanelCssMotion | null;
   detail: SpotDetail | null;
   detailPending: boolean;
   detailError: unknown;
+  detailStale?: boolean;
   extent: SpotPanelExtent;
   phase: SpotPanelPhase;
   favorite: boolean;
@@ -137,9 +145,11 @@ export function SpotInformationPanel({
   timeSaving: boolean;
   onTimePreview: (index: number) => void;
   onTimeCommit: (index: number) => void;
+  onTimeCancel: () => void;
   onHandleTouchStart: (event: unknown) => void;
   onHandleTouchMove: (event: unknown) => void;
-  onHandleTouchEnd: () => void;
+  onHandleTouchEnd: (event?: unknown) => void;
+  onHandleTouchCancel: () => void;
   onExtent: (extent: SpotPanelExtent) => void;
   onClose: () => void;
   onRecover: () => void;
@@ -148,10 +158,102 @@ export function SpotInformationPanel({
   onCloud: () => void;
   onNavigate: () => void;
   onContribution: () => void;
+  onEvidence: (kind: "guides" | "field" | "sources", articleId?: string) => void;
 }) {
   const [section, setSection] = useState<
     (typeof PANEL_SECTIONS)[number]["id"]
   >(PANEL_SECTIONS[0]!.id);
+  const [sectionRequest, setSectionRequest] = useState<{ id: string; spotId: string } | null>(null);
+  const handledSectionRequest = useRef<typeof sectionRequest>(null);
+  const [scrollAnchor, setScrollAnchor] = useState("");
+  const astronomyOffset = useRef<number | null>(null);
+  const lastScroll = useRef({ spotId: spot.spotId, top: 0 });
+  const wasVisible = useRef(visible);
+  const [restoredScrollTop, setRestoredScrollTop] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    const returning = visible && !wasVisible.current;
+    wasVisible.current = visible;
+    if (!visible) {
+      setScrollAnchor("");
+      setRestoredScrollTop(undefined);
+      return;
+    }
+    if (!returning || lastScroll.current.spotId !== spot.spotId) return;
+    const top = lastScroll.current.top;
+    const timer = setTimeout(() => setRestoredScrollTop(top), 200);
+    return () => clearTimeout(timer);
+  }, [visible, spot.spotId]);
+  const [layoutVersion, setLayoutVersion] = useState(0);
+  const scrollMeasureTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (scrollMeasureTimer.current !== null) clearTimeout(scrollMeasureTimer.current);
+    scrollMeasureTimer.current = null;
+  }, [visible, spot.spotId, extent]);
+  const largeText = useAppStore(state => state.preferences.largeText);
+  useResize(() => setLayoutVersion(value => value + 1));
+  useEffect(() => {
+    lastScroll.current = { spotId: spot.spotId, top: 0 };
+    setRestoredScrollTop(undefined);
+    setSection("spot-panel-overview");
+    setSectionRequest({ id: "spot-panel-document-start", spotId: spot.spotId });
+  }, [spot.spotId]);
+  useEffect(() => {
+    astronomyOffset.current = null;
+    if (extent !== "large" || settling) return;
+    let cancelled = false;
+    // Wait for native settling to finish before measuring final scroll boundaries.
+    const measurementTimer = setTimeout(() => {
+      if (cancelled) return;
+      const query = Taro.createSelectorQuery();
+      query.select("#spot-panel-scroll").boundingClientRect();
+      query.select("#spot-panel-astronomy").boundingClientRect();
+      query.select("#spot-panel-scroll").scrollOffset();
+      query.select("#spot-panel-document-start").boundingClientRect();
+      query.select(".spot-panel__section-rail").boundingClientRect();
+      query.exec(results => {
+        if (cancelled) return;
+        const [viewport, astronomy, scroll, document, tabs] = results as [{ top?: number; height?: number }?, { top?: number }?, { scrollTop?: number }?, { height?: number }?, { height?: number }?];
+        if (!Number.isFinite(viewport?.top) || !Number.isFinite(astronomy?.top) || !Number.isFinite(scroll?.scrollTop)) return;
+        astronomyOffset.current = astronomy!.top! - viewport!.top! + scroll!.scrollTop! - (tabs?.height ?? 44);
+        // The final chapter may never reach the viewport top in a short document.
+        const maximumScroll = (document?.height ?? NaN) - (viewport?.height ?? NaN);
+        if (Number.isFinite(maximumScroll) && maximumScroll > 1) {
+          astronomyOffset.current = Math.min(astronomyOffset.current, maximumScroll);
+        }
+        setSection(scroll!.scrollTop! >= astronomyOffset.current - 1 ? "spot-panel-astronomy" : "spot-panel-overview");
+      });
+    }, 200);
+    return () => { clearTimeout(measurementTimer); cancelled = true; astronomyOffset.current = null; };
+  }, [spot.spotId, detail, extent, settling, largeText, layoutVersion]);
+  useEffect(() => {
+    setScrollAnchor("");
+    if (settling || !sectionRequest || sectionRequest.spotId !== spot.spotId || handledSectionRequest.current === sectionRequest) return;
+    if (sectionRequest.id !== "spot-panel-document-start" && extent !== "large") return;
+    let cancelled = false;
+    setRestoredScrollTop(undefined);
+    const timer = setTimeout(() => {
+      if (sectionRequest.id !== "spot-panel-astronomy") {
+        handledSectionRequest.current = sectionRequest;
+        setScrollAnchor(sectionRequest.id);
+        return;
+      }
+      const query = Taro.createSelectorQuery();
+      query.select("#spot-panel-scroll").boundingClientRect();
+      query.select("#spot-panel-scroll").scrollOffset();
+      query.select("#spot-panel-astronomy").boundingClientRect();
+      query.select(".spot-panel__section-rail").boundingClientRect();
+      query.exec(results => {
+        if (cancelled) return;
+        const [viewport, scroll, target, tabs] = results as [{ top: number }?, { scrollTop: number }?, { top: number }?, { height: number }?];
+        if (!viewport || !scroll || !target || !tabs) return;
+        const top = target.top - viewport.top + scroll.scrollTop - tabs.height;
+        if (!Number.isFinite(top)) return;
+        handledSectionRequest.current = sectionRequest;
+        setRestoredScrollTop(Math.max(0, top));
+      });
+    }, settling ? 200 : 80);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [sectionRequest, extent, spot.spotId, settling]);
   const effectiveSpot = detail?.spot ?? spot;
   const media = effectiveSpot.media.filter(mediaIsRenderable);
   const route = detail?.route;
@@ -168,13 +270,19 @@ export function SpotInformationPanel({
 
   return (
     <View
-      className={`spot-panel spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
+      id="spot-information-panel"
+      className={`spot-panel${springMotion ? " spot-panel--spring" : ""} spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
       data-control="map-spot-information-panel"
       data-extent={extent}
       data-phase={phase}
       role="region"
       ariaLabel={`${effectiveSpot.name}观星点信息面板`}
     >
+      <View className="spot-panel__snap-measures" aria-hidden="true">
+        <View className="spot-panel__snap-small" />
+        <View className="spot-panel__snap-medium" />
+        <View className="spot-panel__snap-large" />
+      </View>
       <View className="spot-panel__handle-band">
         <Button
           className="spot-panel__handle focus-ring"
@@ -183,28 +291,33 @@ export function SpotInformationPanel({
           onTouchStart={onHandleTouchStart}
           onTouchMove={onHandleTouchMove}
           onTouchEnd={onHandleTouchEnd}
-          onTouchCancel={onHandleTouchEnd}
+          onTouchCancel={onHandleTouchCancel}
         >
           <View className="spot-panel__handle-bar" aria-hidden="true" />
         </Button>
-        <View className="spot-panel__extent-actions" role="group" ariaLabel="面板大小">
-          {(["small", "medium", "large"] as const).map((value) => (
-            <Button
-              key={value}
-              className={`spot-panel__extent-button${value === extent ? " spot-panel__extent-button--active" : ""}`}
-              ariaLabel={`${value === "small" ? "小" : value === "medium" ? "中" : "大"}面板`}
-              aria-pressed={value === extent}
-              onClick={() => onExtent(value)}
-            >
-              {value === "small" ? "小" : value === "medium" ? "中" : "大"}
-            </Button>
-          ))}
+        <View className="spot-panel__extent-actions" role="group" ariaLabel={`面板大小，当前${extent === "small" ? "小" : extent === "medium" ? "中" : "大"}档`}>
+          <Button
+            className="spot-panel__extent-button"
+            ariaLabel={extent === "large" ? "收起为中档面板" : "收起为小档面板"}
+            disabled={extent === "small"}
+            onClick={() => onExtent(extent === "large" ? "medium" : "small")}
+          >
+            <SemanticIcon name="chevron-down" />
+          </Button>
+          <Button
+            className="spot-panel__extent-button"
+            ariaLabel={extent === "small" ? "展开为中档面板" : "展开为大档面板"}
+            disabled={extent === "large"}
+            onClick={() => onExtent(extent === "small" ? "medium" : "large")}
+          >
+            <SemanticIcon name="chevron-up" />
+          </Button>
           <Button
             className="spot-panel__extent-button spot-panel__extent-button--close"
             ariaLabel="关闭观星点信息面板"
             onClick={onClose}
           >
-            <SemanticIcon name="chevron-down" />
+            <SemanticIcon name="close" />
           </Button>
         </View>
       </View>
@@ -212,12 +325,32 @@ export function SpotInformationPanel({
       <View className="spot-panel__scroll-frame">
         <ScrollView
           className="spot-panel__scroll"
+          id="spot-panel-scroll"
           scrollY={extent === "large"}
+          {...(restoredScrollTop === undefined ? {} : { scrollTop: restoredScrollTop })}
+          scrollIntoView={scrollAnchor}
+          scrollWithAnimation={false}
+          onScroll={event => {
+            const top = event.detail.scrollTop;
+            if (!visible || !Number.isFinite(top)) return;
+            lastScroll.current = { spotId: spot.spotId, top };
+            // Native anchor scrolling can finish after the extent layout measurement.
+            // Reconcile once after scrolling rests, never query geometry per frame.
+            if (extent === "large") {
+              if (scrollMeasureTimer.current !== null) clearTimeout(scrollMeasureTimer.current);
+              scrollMeasureTimer.current = setTimeout(() => {
+                scrollMeasureTimer.current = null;
+                setLayoutVersion(value => value + 1);
+              }, 80);
+            }
+            if (extent !== "large" || astronomyOffset.current === null) return;
+            setSection(top >= astronomyOffset.current - 1 ? "spot-panel-astronomy" : "spot-panel-overview");
+          }}
           enhanced
           showScrollbar={false}
           ariaLabel="观星点信息"
         >
-          <View className="spot-panel__document">
+          <View className="spot-panel__document" id="spot-panel-document-start">
           {media.length ? (
             <View className="spot-panel__media" data-control="spot-media-gallery">
               <Image
@@ -232,21 +365,48 @@ export function SpotInformationPanel({
             </View>
           ) : null}
 
-          <View className="spot-panel__identity">
-            <Text className="spot-panel__eyebrow">正式观星点</Text>
+          <View id="spot-panel-overview" className="spot-panel__identity" ariaLabel="地点概览">
+            {__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ ? <Text className="spot-panel__eyebrow">测试数据</Text> : null}
             <Text className="spot-panel__title">{effectiveSpot.name}</Text>
-            <Text className="spot-panel__region type-caption">{effectiveSpot.region || "区域暂无数据"} · {statusLabel(effectiveSpot.status)}</Text>
-            <Text className="spot-panel__address type-caption">{effectiveSpot.address || "地址暂无数据"}</Text>
-            <Text className="spot-panel__source type-caption">{effectiveSpot.source.title || "来源暂无数据"} · <DataStateBadge state={effectiveSpot.source.state} /></Text>
+            <View className="spot-panel__identity-meta">
+              {effectiveSpot.region ? <Text className="type-caption">{effectiveSpot.region}</Text> : null}
+              {effectiveSpot.status !== "PUBLISHED" ? <Text className="type-caption">{statusLabel(effectiveSpot.status)}</Text> : null}
+              {!(__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && effectiveSpot.source.state === "SAMPLE_DATA") ? <DataStateBadge state={effectiveSpot.source.state} /> : null}
+            </View>
+            {effectiveSpot.address && !(__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && effectiveSpot.spotId === "spot:test-published") ? <Text className="spot-panel__address type-caption">{effectiveSpot.address}</Text> : null}
           </View>
 
-          {section === "spot-panel-overview" ? (
-          <View id="spot-panel-overview" className="spot-panel__section" ariaLabel="概览">
-            {detailPending ? <StatusPanel state="LOADING" detail="正在加载正式点位概览；已保留地图选点。" /> : null}
-            {detailError ? (
+      <View
+        className="spot-panel__section-rail"
+        data-control="map-spot-panel-section-nav"
+        role="group"
+        ariaLabel="定位点位信息章节"
+      >
+        {PANEL_SECTIONS.map((item) => (
+          <Button
+            key={item.id}
+            className={`spot-panel__section-tab${section === item.id ? " spot-panel__section-tab--active" : ""}`}
+            data-section={item.id}
+            aria-pressed={section === item.id}
+            ariaLabel={`查看${item.label}`}
+            onClick={() => {
+              setSection(item.id);
+              setSectionRequest({ id: item.id, spotId: spot.spotId });
+              onExtent("large");
+            }}
+          >
+            <Text>{item.label}</Text>
+          </Button>
+        ))}
+      </View>
+
+
+          <View className="spot-panel__section" ariaLabel="场地资料">
+            {detailPending ? <StatusPanel state="LOADING" detail="正在加载地点信息" /> : null}
+            {detailError || detailStale ? (
               <StatusPanel
-                state={detailPageState}
-                detail={isOfflineError(detailError) ? "当前网络不可用；已保留正式点位摘要，不把旧数据当作当前条件。" : "正式点位概览暂不可用；地图选点仍保留。"}
+                state={detailError ? detailPageState : "STALE"}
+                detail={detailError ? detail ? "更新失败，暂时显示上次资料，请重试。" : isOfflineError(detailError) ? "网络不可用，请连接网络后重试。" : "地点信息暂时无法加载，请重试。" : "地点资料尚未确认最新状态，暂时显示上次结果。"}
                 recoveryLabel="重试概览"
                 onRecover={onRecover}
               />
@@ -254,40 +414,49 @@ export function SpotInformationPanel({
 
             <View className="spot-panel__block spot-panel__block--route" data-control="spot-route-summary">
               <View className="spot-panel__block-heading">
-                <Text className="type-label">路线与到达</Text>
-                <Button className="spot-panel__text-action" data-control="spot-navigation-action" ariaLabel={`查看${effectiveSpot.name}路线`} onClick={onNavigate}>
-                  <SemanticIcon name="compass" />
-                  <Text>查看路线</Text>
-                </Button>
-              </View>
               <Text className="spot-panel__value">
                 {route?.kind === "ROUTE_ESTIMATE"
                   ? [route.driveMinutes !== null ? `驾车约 ${route.driveMinutes} 分钟` : null, route.distanceKm !== null ? `路线约 ${route.distanceKm} km` : null].filter(Boolean).join(" · ") || "路线结果暂不完整"
                   : route?.kind === "STRAIGHT_LINE_ONLY"
                     ? route.distanceKm !== null ? `直线距离约 ${route.distanceKm} km` : "直线距离暂无数据"
-                    : detail ? "路线服务暂不可用" : "等待正式点位概览"}
+                    : detail ? "路线服务暂不可用" : "正在加载路线信息"}
               </Text>
-              <Text className="type-caption">{route?.parkingGuidance || "停车与末段道路信息以正式来源为准；没有路线估算时不以直线距离冒充。"}</Text>
+                <Button className="spot-panel__text-action" data-control="spot-navigation-action" ariaLabel={`查看${effectiveSpot.name}路线`} onClick={onNavigate}>
+                  <SemanticIcon name="compass" />
+                  <Text>查看路线</Text>
+                </Button>
+              </View>
+              <Text className="type-caption">{route?.parkingGuidance || "停车与末段道路信息待核验"}</Text>
             </View>
 
             <View className="spot-panel__block spot-panel__block--facility" data-control="spot-facility-evidence">
-              <Text className="type-label">设施证据</Text>
+              <View className="spot-panel__block-heading">
+              <Text className="type-label">场地设施</Text>
+              <Button className="spot-panel__text-action" ariaLabel="查看完整场地资料" onClick={() => onEvidence("field")}>查看详情</Button>
+              </View>
+              <View className="spot-panel__facilities">
               {facilities.length ? facilities.map((facility) => (
-                <View className="spot-panel__evidence-row" key={`${facility.type}-${facility.summary}`}>
-                  <Text>{facilityLabel(facility.type)}</Text>
-                  <Text className="type-caption">{facilityStatusLabel(facility.status)}</Text>
-                  <Text className="type-caption">{facility.summary || "详情暂无数据"}</Text>
+                <View className={`spot-panel__facility${facility.summary && !(__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && effectiveSpot.spotId === "spot:test-published") ? " spot-panel__facility--described" : ""}`} key={`${facility.type}-${facility.summary}`}>
+                  <Text className="spot-panel__facility-name">{facilityLabel(facility.type)}</Text>
+                  <Text className="spot-panel__facility-status type-secondary">{facilityStatusLabel(facility.status)}</Text>
+                  {facility.summary && !(__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && effectiveSpot.spotId === "spot:test-published") ? <Text className="spot-panel__facility-summary type-caption">{facility.summary}</Text> : null}
                 </View>
-              )) : <Text className="type-caption">暂无设施证据，不推断为“没有设施”。</Text>}
+              )) : <Text className="type-caption">设施信息待核验</Text>}
+              </View>
             </View>
 
             <View className="spot-panel__block" ariaLabel="开放与安全">
               <Text className="type-label">开放与夜间安全</Text>
-              <Text className="spot-panel__value">
-                {detail?.accessAndSafety
-                  ? `开放：${detail.accessAndSafety.openness === "OPEN" ? "开放" : detail.accessAndSafety.openness === "CONDITIONAL" ? "有条件开放" : detail.accessAndSafety.openness === "CLOSED" ? "暂时关闭" : "待核验"} · 夜间：${detail.accessAndSafety.nightSafety === "NO_KNOWN_HAZARD" ? "未发现明确危险" : detail.accessAndSafety.nightSafety === "CAUTION" ? "需谨慎" : detail.accessAndSafety.nightSafety === "DANGER" ? "存在明确危险" : "待核验"}`
-                  : "安全与开放状态等待正式概览"}
-              </Text>
+              <View className="spot-panel__safety-facts">
+                <View className="spot-panel__metric">
+                  <Text className="type-secondary">开放状态</Text>
+                  <Text className="type-body">{detail?.accessAndSafety?.openness === "OPEN" ? "当前开放" : detail?.accessAndSafety?.openness === "CONDITIONAL" ? "有条件开放" : detail?.accessAndSafety?.openness === "CLOSED" ? "暂时关闭" : "待核验"}</Text>
+                </View>
+                <View className="spot-panel__metric">
+                  <Text className="type-secondary">夜间安全</Text>
+                  <Text className="type-body">{detail?.accessAndSafety?.nightSafety === "NO_KNOWN_HAZARD" ? "未发现明确危险" : detail?.accessAndSafety?.nightSafety === "CAUTION" ? "需谨慎" : detail?.accessAndSafety?.nightSafety === "DANGER" ? "存在明确危险" : "待核验"}</Text>
+                </View>
+              </View>
               {detail?.accessAndSafety?.guidance.map((item) => <Text className="type-caption" key={item}>{item}</Text>)}
             </View>
 
@@ -296,37 +465,27 @@ export function SpotInformationPanel({
                 <Text className="type-label">观星攻略</Text>
                 {detail.guides.slice(0, 2).map((guide) => (
                   <View className="spot-panel__guide" key={guide.articleId}>
-                    <Text>{guide.title}</Text>
+                    <View className="spot-panel__guide-heading">
+                      <Text className="type-body">{guide.title}</Text>
+                      <Button className="spot-panel__text-action" ariaLabel={`阅读攻略 ${guide.title}`} onClick={() => onEvidence("guides", guide.articleId)}>阅读</Button>
+                    </View>
                     <Text className="type-caption">{guide.summary}</Text>
                     <Text className="type-caption">{guide.verified ? "已核验" : "资料待核验"} · {guide.authorName}</Text>
                   </View>
                 ))}
               </View>
             ) : null}
+            <Button className="spot-panel__text-action" ariaLabel="查看全部攻略" onClick={() => onEvidence("guides")}>全部攻略</Button>
 
             <View className="spot-panel__block spot-panel__contribution">
-              <Text className="type-label">现场资料</Text>
-              <Text className="type-caption">只提交可核验的现场变化或补充资料，不把提交内容当作已发布事实。</Text>
               <Button className="spot-panel__text-action spot-panel__text-action--contribution" data-control="spot-contribution-entry" onClick={onContribution}>
                 <SemanticIcon name="images" />
                 <Text>提交现场资料</Text>
               </Button>
             </View>
           </View>
-          ) : null}
-
-          {section === "spot-panel-astronomy" ? (
           <View id="spot-panel-astronomy" className="spot-panel__section" ariaLabel="天文">
-            <View className="spot-panel__block spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
-              <Text className="type-label">天空专业矩阵</Text>
-              <Text className="spot-panel__value">{decision ? observationStatusLabel(decision.skyOpportunity.status) : "当前天文数据暂无"}</Text>
-              <Text className="type-caption">{decision?.skyOpportunity.label || "没有加载到当前观测机会，不生成推荐。"}</Text>
-              {decision?.factors.slice(0, 3).map((factor) => <Text className="type-caption" key={factor.code}>{factor.label}：{factor.detail}</Text>)}
-            </View>
-            <View className="spot-panel__block spot-panel__block--target-list" data-control="sky-target-list">
-              <Text className="type-label">适合目标</Text>
-              <Text className="type-caption">{decision?.skyOpportunity.suitableFor.length ? decision.skyOpportunity.suitableFor.join(" · ") : "暂无适合目标数据"}</Text>
-            </View>
+            <Text className="type-section">天文信息</Text>
             <View className="spot-panel__block">
               <MapTimeRuler
                 frames={timeFrames}
@@ -335,50 +494,38 @@ export function SpotInformationPanel({
                 disabled={!context || !timeFrames.length || timeSaving}
                 onPreview={onTimePreview}
                 onCommit={onTimeCommit}
+                onCancel={onTimeCancel}
                 control="sky-time-scrubber"
               />
             </View>
-            <View className="spot-panel__block spot-panel__map-reference">
-              <Text className="type-label">地图视野</Text>
-              <Text className="type-caption">当前点位与地图标记保持同一选中状态；地图拖动仍由原生地图负责。</Text>
-              {evaluation ? <Text className="type-caption">当前云量：{evaluation.cloudPercent === null ? "暂无数据" : `${evaluation.cloudPercent}%`} · 月亮影响：{observationStatusLabel(evaluation.moonImpact)}</Text> : null}
+            <View className="spot-panel__block spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
+              <Text className="type-label">观测条件</Text>
+              <View className="spot-panel__metrics">
+              {panelAstronomyFacts(evaluation).filter(fact => fact.label === "总云量" || fact.label === "月光影响").map(fact => <View className="spot-panel__metric" key={fact.label}>
+                <Text className="type-secondary">{fact.label}</Text>
+                <Text className={`spot-panel__fact-value ${fact.value === "暂无数据" ? "type-secondary" : "type-data"}`}>{fact.value}</Text>
+              </View>)}
+              </View>
+              <View className="spot-panel__cloud-layers">
+              {panelAstronomyFacts(evaluation).filter(fact => ["低层云", "中层云", "高层云"].includes(fact.label)).map(fact => <View className="spot-panel__metric" key={fact.label}>
+                <Text className="type-secondary">{fact.label}</Text>
+                <Text className={`spot-panel__fact-value ${fact.value === "暂无数据" ? "type-secondary" : "type-data"}`}>{fact.value}</Text>
+              </View>)}
+              </View>
+              {evaluation?.state === "STALE_USABLE" ? <Text className="type-caption">预报待更新，仅供参考</Text> : null}
+              {decision?.factors.filter(factor => factor.severity === "CAUTION" || factor.severity === "BLOCKER").map(factor => <Text className="type-caption" key={factor.code}>{factor.label}：{factor.detail}</Text>)}
+            </View>
+            <View className="spot-panel__block spot-panel__block--target-list" data-control="sky-target-list">
+              <Text className="type-label">适合目标</Text>
+              <Text className="type-caption">{decision?.skyOpportunity.suitableFor.length ? decision.skyOpportunity.suitableFor.map(target => SUITABLE_TARGET_LABELS[target]).join(" · ") : "暂无适合目标数据"}</Text>
             </View>
           </View>
-          ) : null}
 
           <View className="spot-panel__disclosure" data-control="data-source-disclosure">
-            <Text className="type-caption">点位标识：{String(effectiveSpot.spotId)}</Text>
-            <Text className="type-caption">精确坐标是否可外部使用由该点位的可见性策略决定；未授权时不复制或打开精确坐标。</Text>
-            {detail?.dataDisclosure.slice(0, 3).map((source) => <Text className="type-caption" key={source.id}>{source.title} · {source.state}</Text>)}
+            <Button className="spot-panel__text-action" ariaLabel="查看完整来源与更新时间" onClick={() => onEvidence("sources")}>来源与更新时间</Button>
           </View>
           </View>
         </ScrollView>
-      </View>
-
-      <View
-        className="spot-panel__section-rail"
-        data-control="map-spot-panel-section-nav"
-        role="tablist"
-        ariaLabel="点位信息分区"
-      >
-        {PANEL_SECTIONS.map((item) => (
-          <Button
-            key={item.id}
-            className={`spot-panel__section-tab${section === item.id ? " spot-panel__section-tab--active" : ""}`}
-            data-section={item.id}
-            aria-selected={section === item.id}
-            ariaLabel={`查看${item.label}`}
-            onClick={() => {
-              setSection(item.id);
-              onExtent("large");
-            }}
-          >
-            <SemanticIcon
-              name={item.id === "spot-panel-overview" ? "info" : "horizon"}
-            />
-            <Text>{item.label}</Text>
-          </Button>
-        ))}
       </View>
 
       <View className="spot-panel__action-lane">
