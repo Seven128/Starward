@@ -1,0 +1,43 @@
+{
+  "file": "Starward-map-my-v2-all-trials.fig",
+  "bytes": 1355443,
+  "sha256": "14ec82717b315d19b25638d5ce14bcb10364f39d25a19a3a754bbeb5f2f4c30e",
+  "canvasHeader": "fig-kiwi",
+  "entries": [
+    {
+      "name": "canvas.fig",
+      "bytes": 723933
+    },
+    {
+      "name": "thumbnail.png",
+      "bytes": 6213
+    },
+    {
+      "name": "meta.json",
+      "bytes": 347
+    },
+    {
+      "name": "images/",
+      "bytes": 0
+    },
+    {
+      "name": "images/6757808aa926a3fd8c090196910e4cf2993a73d5",
+      "bytes": 699
+    },
+    {
+      "name": "images/ce46c2edbfa9fb19b2cec25ef3b7fd81d8f27cef",
+      "bytes": 209790
+    },
+    {
+      "name": "images/4f844c33bea670f4548c86e5e4f2c72309dabd35",
+      "bytes": 19497
+    },
+    {
+      "name": "images/e74d9c16091f03d7b0efe3fa09845095f25adb98",
+      "bytes": 393148
+    }
+  ],
+  "fontFiles": [],
+  "source": "Figma File > Save local copy after all v2 trials frozen; includes complete earlier history",
+  "reimportVerified": false
+}

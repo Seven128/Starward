@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "startedAt": "2026-09-07T11:13:16.120Z",
+  "status": "direction-b-selected-stitch-default-route-adopted",
+  "route": "official Stitch web; existing signed-in Chrome session",
+  "officialSources": [
+    "https://stitch.withgoogle.com/docs/mcp/setup",
+    "https://github.com/gemini-cli-extensions/stitch/blob/main/README.md"
+  ],
+  "connection": "No callable Stitch MCP, no STITCH env vars or configured MCP entry, settings no existing API keys; web already authenticated; no adapter or key creation",
+  "quotaBefore": {
+    "used": 0,
+    "total": 400,
+    "label": "每日额度",
+    "source": "actual Stitch settings UI"
+  },
+  "generationSubmissions": 2,
+  "requestedInitialScreens": 2,
+  "actualInitialScreens": 2,
+  "revisionSubmissions": 0,
+  "extensionScreens": 0,
+  "paidSpend": 0,
+  "tokenUsage": null,
+  "tokenUsageReason": "Not shown by web UI",
+  "files": [
+    {
+      "path": "inputs/01-business-baseline-7d0651de.png",
+      "source": "experiment-4/B/round-2/e4-B-1-map.png",
+      "purpose": "Business/state reference and unchanged comparison baseline. Whole design NOT approved.",
+      "sha256": "7b31f096e224d5efaac47e922193845480fef3a450d62ebe2a147809e2d7d406"
+    },
+    {
+      "path": "inputs/02-liked-region-redbox.png",
+      "source": "feedback/20260907-v2-local-preferences/image-1-7d0651de-map.png",
+      "purpose": "Only red-box spot information area received partial-positive feedback; red border is annotation, not UI.",
+      "sha256": "6dc941cab20f0c4e592717ed537605fae76011d5da242379b6c3e1e1c43346ce"
+    },
+    {
+      "path": "inputs/03-map-asset-unchanged.png",
+      "source": "assets/osm-reference.png",
+      "purpose": "Exact shared OSM background. Do not recolor or substitute.",
+      "sha256": "5762bb1de5b0cef150bf55b55ac7d50ed6b5e1008af85ae267ffb6eb204e1754"
+    }
+  ],
+  "selectedDirection": "B",
+  "production": "unchanged",
+  "connectionBlocker": null,
+  "promptInBrowser": true,
+  "browser": {
+    "url": "https://stitch.withgoogle.com/projects/587088532668047776",
+    "tabId": "1362040908",
+    "generationMode": "Balanced (visible UI; underlying model unknown)"
+  },
+  "manualIntervention": {
+    "required": false,
+    "completed": 0
+  },
+  "conclusion": "User explicitly prefers Stitch B over the other two compared screens and authorizes Stitch as the Skill default generation route. Supports this route choice; long-term aesthetic floor, one-feedback revision fidelity and cross-page consistency remain untested.",
+  "submittedAt": "2026-09-07T11:20:17.741Z",
+  "prompt": "prompt-submitted.txt",
+  "referenceUpload": {
+    "method": "supported browser PNG clipboard paste",
+    "count": 3,
+    "uiNames": [
+      "clipboard.png",
+      "clipboard.png",
+      "clipboard.png"
+    ],
+    "order": [
+      "inputs/01-business-baseline-7d0651de.png",
+      "inputs/02-liked-region-redbox.png",
+      "inputs/03-map-asset-unchanged.png"
+    ],
+    "verified": "Three attachment buttons observed before submit; exact reference order explained in submitted prompt"
+  },
+  "connectionBlockerResolved": "Filechooser failure resolved using normal image paste; no extension settings changed or API key created.",
+  "connectionHistory": [
+    {
+      "action": "Open chrome://extensions to inspect file access",
+      "result": "Blocked by browser URL policy; no workaround used to access or change extension settings."
+    },
+    {
+      "action": "Native PNG clipboard paste into Stitch input",
+      "result": "Succeeded for all three references through existing browser interface."
+    }
+  ],
+  "projectUrl": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "projectTitle": "Stargazing Map Detail View",
+  "technicalRetries": 1,
+  "failures": [
+    {
+      "submission": 1,
+      "message": "发生了意外错误，Stitch 无法完成生成作业。请稍后重试。",
+      "evidence": "outputs/generation-1-error.png",
+      "output": "Only three uploaded input references visible; no generated candidate"
+    }
+  ],
+  "submissionPrompts": [
+    "prompt-submitted.txt",
+    "prompt-technical-retry.txt"
+  ],
+  "extraGeneratedScreens": 0,
+  "outputs": {
+    "A": "outputs/direction-a-original",
+    "B": "outputs/direction-b-original"
+  },
+  "comparisonUrl": "http://127.0.0.1:4277/stitch/index.html",
+  "nativeCanvas": {
+    "width": 1280,
+    "height": 844,
+    "exportPngWidth": 1600,
+    "exportPngHeight": 1055
+  },
+  "comparisonMethod": "Byte-identical original HTML in 390x844 iframes, versus original 390x844 baseline PNG; no style or source changes. Original PNGs with extra blank width retained.",
+  "initialCompletedAt": "2026-09-07T11:29:57.253Z",
+  "userFeedback": {
+    "date": "2026-09-07",
+    "quote": "这三份稿子我选Stitch B · 连贯底抽屉 ，然后生成方案就改成用stitch，页面质量直接吊打了我们skill当前的生成工具（应该是gpt6本身？）",
+    "explicitDecision": "Choose Stitch B and change Skill default visual generation route to Stitch",
+    "scope": "Design direction and generation route; no production or DESIGN.md migration",
+    "revisionRequest": null
+  },
+  "editability": "Official ZIP exports contain original code.html and screen.png, plus live Stitch project. HTML source available for editing; development handoff quality and Figma conversion not validated.",
+  "preliminaryConclusion": "Initial technical findings remain open; previous wait-for-selection recommendation superseded by explicit user selection of B. See user-decision.md.",
+  "externalImageEquality": "Both use the same visible OSM scene but externally hosted image bytes were not verified identical; placement/crop differs and marker moved into sea.",
+  "checks": {
+    "renderedViewports": "A and B 390x844; original HTML byte-identical to ZIP",
+    "evidence": "outputs/render-inspection.json",
+    "A": "Facility text 12px, open-hours text ellipsized; locate/layer36px, navigation34px, main rail44px",
+    "B": "Facility text12px; locate/layer36px, navigation32px, main rail40px",
+    "semantic": "Locate icon appears sun-like; section labels are spans without working navigation; static drafts do not prove real interactions",
+    "initialSelfClaims": "Stitch claims complete/strict compliance; actual observation contradicts it, claims not treated as evidence"
+  },
+  "outputsIntegrity": [
+    {
+      "path": "outputs/direction-a-original/code.html",
+      "bytes": 14571,
+      "sha256": "2f5e94fa7f30651aaf37159ab9f686a5fd02ffc0c7b48d96d49057b92af5693b"
+    },
+    {
+      "path": "outputs/direction-a-original/screen.png",
+      "bytes": 310127,
+      "sha256": "7cffadadac01c5186f3d91c9f2501228eee052b32585f9a7e5cf0f59793904da"
+    },
+    {
+      "path": "outputs/direction-b-original/code.html",
+      "bytes": 14156,
+      "sha256": "98fea838bac266991ecd8c5df753c4a14d602b02518b8be0ee17cffdb4168ce7"
+    },
+    {
+      "path": "outputs/direction-b-original/screen.png",
+      "bytes": 316926,
+      "sha256": "634985e978115bcc2eab1cd7f2095ab145ca28627a46dc4e44287fe234c8d18c"
+    }
+  ],
+  "quotaAfter": {
+    "used": 4,
+    "total": 400,
+    "label": "每日额度",
+    "source": "Actual Stitch settings after two submissions and two output screens"
+  },
+  "visibleQuotaDelta": 4,
+  "skillRoute": ".agents/skills/starward-design-resource/references/stitch-route.md",
+  "pendingValidation": [
+    "One-feedback revision fidelity (no concrete visual revision requested yet)",
+    "Cross-page consistency",
+    "Development handoff and optional Figma conversion",
+    "Recorded B map marker, readability and hit target defects"
+  ]
+}

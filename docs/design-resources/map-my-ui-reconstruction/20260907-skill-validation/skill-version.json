@@ -1,0 +1,75 @@
+{
+  "frozenAt": "2026-09-07T08:44:42.324Z",
+  "status": "post-first-trial engineering snapshot; not yet retested as a frozen visual version",
+  "modelPolicy": "inherit calling task model and reasoning effort; never fixed Astra/high",
+  "files": [
+    {
+      "path": ".agents/skills/starward-design-resource/SKILL.md",
+      "sha256": "401766408983be7d9a758ee0d543436e85faf954c38abe86ce60d4ef060ad75c"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/tests/figma-helpers.test.mjs",
+      "sha256": "101f0edad56e20c4fdd620b59623e05a9b6a6428df7f6a88e340bc21b63d7e6d"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/tests/preflight.test.mjs",
+      "sha256": "dcf3fae3ed5812e14ca5e6eaaf2c98efe069a309b7367b47af7e244e1c6e2ae2"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/tests/resource-contract.test.mjs",
+      "sha256": "2d1e16a301bed15ea401000f2b2d0dc182fa477c5ef5137625769b6453748322"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/tests/review.test.mjs",
+      "sha256": "788978e5100ddfc87cf8cd84502b8a6c5e48800a19e95a4ed7487dac5569970d"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/tests/test-support.mjs",
+      "sha256": "913f06212c0f0bcd1498db24e374b79bda934885332cce0d3142f5d5545e4a0a"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/scripts/build-review.mjs",
+      "sha256": "22496f47ee627e3c7e143a12bec2f90c109813a4ae0df2c2cbb925bcc07f772a"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/scripts/check-resources.mjs",
+      "sha256": "5c26743c16fcc618bb3c787884e3d578bccc5c66d502ca03594c1f6694dca3ee"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/scripts/figma-helpers.js",
+      "sha256": "7dfe6ad2db8aebe4c18cb171ffe503380043c6810df123d6197ec286fb7ae0e5"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/scripts/preflight.mjs",
+      "sha256": "595d7634846fa51cbf4a8fc6e5cdf10c302708ded12eb1563bdf8290d600084c"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/scripts/resource-utils.mjs",
+      "sha256": "f05c6219c46bcbc1aafa7ccebf25e5d4a0fd70eb78a97f60afc0ba6145cd7d66"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/scripts/scripter-export.js",
+      "sha256": "d9af7a66add2faaaad81d9c8125f5040c80dc67039b175963ae32f9cbdc097ca"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/references/delivery-and-review.md",
+      "sha256": "52eab2d2439ae0eb5ecda05b1c8f3735ff0b2bf5e2c54da3699dbc9c4ca4ff94"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/references/design-method.md",
+      "sha256": "01d51373946469fcd3a8c5203b5315896ec2de36e954e518a71d2049df79b9c9"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/references/figma-runtime.md",
+      "sha256": "f5c2e9285e7055285424cd39a057d5b43ab7251f6d7961095158770f808a499f"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/references/starward-miniapp.md",
+      "sha256": "018876b819be8d69c85626d45a0c1043b34611ec0db60e401cff7d40b2dcb513"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/agents/openai.yaml",
+      "sha256": "92834e1b295179391520609964a27087fa87c633e87b5fda16d365f59c235aac"
+    }
+  ]
+}

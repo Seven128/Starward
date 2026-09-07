@@ -1,0 +1,27 @@
+[
+  {
+    "source": "stitch-trial/inputs/01-business-baseline-7d0651de.png",
+    "displayFile": "old.png",
+    "sha256": "7b31f096e224d5efaac47e922193845480fef3a450d62ebe2a147809e2d7d406"
+  },
+  {
+    "source": "stitch-trial/outputs/direction-a-original/code.html",
+    "displayFile": "a.html",
+    "sha256": "2f5e94fa7f30651aaf37159ab9f686a5fd02ffc0c7b48d96d49057b92af5693b"
+  },
+  {
+    "source": "stitch-trial/outputs/direction-b-original/code.html",
+    "displayFile": "b.html",
+    "sha256": "98fea838bac266991ecd8c5df753c4a14d602b02518b8be0ee17cffdb4168ce7"
+  },
+  {
+    "source": "stitch-trial/outputs/direction-a-original/screen.png",
+    "displayFile": "a-original.png",
+    "sha256": "7cffadadac01c5186f3d91c9f2501228eee052b32585f9a7e5cf0f59793904da"
+  },
+  {
+    "source": "stitch-trial/outputs/direction-b-original/screen.png",
+    "displayFile": "b-original.png",
+    "sha256": "634985e978115bcc2eab1cd7f2095ab145ca28627a46dc4e44287fe234c8d18c"
+  }
+]

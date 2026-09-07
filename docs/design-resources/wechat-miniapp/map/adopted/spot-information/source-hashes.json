@@ -1,0 +1,106 @@
+[
+  {
+    "name": "chapters.css",
+    "sha256": "3f39fb736bb5c41c830732382c5d42538c81b1b09e36ae310e8c0a6cf535f227"
+  },
+  {
+    "name": "chapters.js",
+    "sha256": "6e7fc45dbb0ecf32fc3cb1ae8f3ceb8f357ffa1ba9ee0825a52b9686a676e2de"
+  },
+  {
+    "name": "content.css",
+    "sha256": "2bb5305b6caa57b2e048d21d735cbb78d1f4dfa0fb15a469b218ef5d30e4c3d0"
+  },
+  {
+    "name": "content.js",
+    "sha256": "114844f0f7644925f0a3eb1b84fa93ac0bdb8d143c67e2fd6a40aa12a08d9654"
+  },
+  {
+    "name": "gestures.css",
+    "sha256": "6ab8c3f33713c9d748e5f5d3abdb0b2d2f145d3d4a11a23c26dea21ef760636e"
+  },
+  {
+    "name": "gestures.js",
+    "sha256": "957736e39d906c715af6ee99276358f805c3e6b4cec8cd8d2e11b4272acf90d0"
+  },
+  {
+    "name": "index.html",
+    "sha256": "79f4f526bb7755e9ba7bd7c7b4f834654eef76fd3ffd97a2d12cfcbca0c8384e"
+  },
+  {
+    "name": "map-reference.jpg",
+    "sha256": "1e6be3cde5d06683de31c1dfd1aa4828eb7c7ccabdffc5eac765d166567a94a0"
+  },
+  {
+    "name": "meteor.css",
+    "sha256": "2771bb5e1f4f246aaff3433f374dcde00ad16dd3a57597ecb729e43cef367671"
+  },
+  {
+    "name": "meteor.js",
+    "sha256": "0fe0229f6a7db3276c9d470a9a4683a31f229de607e7c0cde694c10d012d0b9e"
+  },
+  {
+    "name": "moon-data.js",
+    "sha256": "cc70710061be6246ec7c5132b11319e85090e5e917cf5f59c8cfae4e9d590175"
+  },
+  {
+    "name": "parking.jpg",
+    "sha256": "f9d8a651472778310b696a15fb4755cc83e6ee1f1f3f5e919858fdbc1a820333"
+  },
+  {
+    "name": "polish.css",
+    "sha256": "c9c6a968c8519154af69223432594df8edfeaff03605dedf877bd56d330a97c7"
+  },
+  {
+    "name": "polish.js",
+    "sha256": "28f847c8c4c8f907f09d2b86d9f5b67912fba09d1fb7b9d922eba0ce741eb71c"
+  },
+  {
+    "name": "preview.css",
+    "sha256": "2428a464354fb7f0bc811d6e9207a2ed9dc0dfa8c59cb842144ea097b095dedc"
+  },
+  {
+    "name": "preview.js",
+    "sha256": "e07381fedd7b8e263e2898d2cff7f2eb7021848c58fc15b3ef990a0d3026db68"
+  },
+  {
+    "name": "refinement.css",
+    "sha256": "ceb1a69a30ed345812e14fcf68b1d9ebd83a6eeb0c1166ef6fed424b8ce61a35"
+  },
+  {
+    "name": "refinement.js",
+    "sha256": "709dc56bbad1d6dbdb396e14e46ba4b9fd06c47546b0fcc3d0293f486caccd5c"
+  },
+  {
+    "name": "rendered.css",
+    "sha256": "759757217730b27a6cac56446097c92f4a6bed74e3281c95363b951db2244a8b"
+  },
+  {
+    "name": "scenes.css",
+    "sha256": "13f5394ac7201c4a75377f386609dbd7155af7e64f3ed77671bb63567194539c"
+  },
+  {
+    "name": "scenes.js",
+    "sha256": "244ef366bbba6bcf8957b4f0dca2c263d238764f24ade1dabf553a0ec034ac9f"
+  },
+  {
+    "name": "site-illustration.jpg",
+    "sha256": "ffaf962edf79ff0ca294e626efe55b3c41b3a025fe72085ed58b1517d00e1cdd"
+  },
+  {
+    "name": "stitch-parking.jpg",
+    "sha256": "1d1bbf43c4d4c332009d108e03741efa571e1a3462e7b136e6ef571881387cd5"
+  },
+  {
+    "name": "stitch-site.jpg",
+    "sha256": "ffaf962edf79ff0ca294e626efe55b3c41b3a025fe72085ed58b1517d00e1cdd"
+  },
+  {
+    "name": "stitch-toilet.jpg",
+    "sha256": "6df7a3bda3e39e81dfa858b7a816648fef374b8daa4c729fb0e1c52729aaf074"
+  },
+  {
+    "name": "toilet.jpg",
+    "sha256": "07ea57f4aa7fdcba2a8bb2ccfe894a6edfd5b9f6208c5e4a0db795afc1be1f57"
+  }
+]

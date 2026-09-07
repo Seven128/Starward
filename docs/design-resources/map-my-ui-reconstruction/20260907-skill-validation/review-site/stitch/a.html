@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, height=844, initial-scale=1.0, user-scalable=no">
+  <title>今晚去观星 - 方向A（轻透悬浮卡片·高密度精细版）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+    body { width: 390px; height: 844px; margin: 0; padding: 0; overflow: hidden; background: #E5E9E7; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+    .status-bar-time { font-feature-settings: "tnum"; }
+  </style>
+</head>
+<body class="relative w-[390px] h-[844px] overflow-hidden select-none bg-slate-100 flex flex-col justify-between text-slate-800">
+
+  <!-- 1. 底层高保真OSM地图背景（复用原始素材IMAGE_1） -->
+  <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWSO6SZ5DReg-Gx5OKxyf64VONF6Sm_IvFxW-tXZIGfKBIZ0-8ebpKVEboUnHg6ULjV2TF6YXQitmrIyk20deqJHgmamUbRUT6BSrAudKe3lVk0DIMkw0vLT_Wc_2TFgQcWi5sxZnSxXlY0inndylgLpn4m2sPHBa91mIDG9pObTNmOLJDIsUTUDXza_sRhAH-DjaAdP_yrGk-Jc_3a5fTtadL3twXkzKlzDaO1omQ0wDb9jZEIva96JkZ7rH8rt3T" class="w-[390px] h-auto object-cover object-top -translate-y-6" alt="地图背景" />
+    
+    <!-- 地图Pin标记（对应深圳市天文台崖头顶位置） -->
+    <div class="absolute left-[184px] top-[328px] -translate-x-1/2 -translate-y-full flex flex-col items-center drop-shadow-md">
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center ring-4 ring-white shadow-lg">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+      </div>
+      <div class="w-2 h-2 bg-blue-600 rotate-45 -mt-1 ring-1 ring-white"></div>
+    </div>
+
+    <!-- OSM版权声明标签 -->
+    <div class="absolute left-3 top-[374px] z-10 bg-white/85 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-slate-500 font-sans shadow-sm border border-black/5">
+      © OpenStreetMap 贡献者
+    </div>
+
+    <!-- 地图浮动工具按钮（图层、定位） -->
+    <div class="absolute right-3.5 top-[276px] flex flex-col gap-2.5 z-10">
+      <button class="w-9 h-9 bg-white/95 backdrop-blur rounded-lg shadow-md border border-slate-200/80 flex items-center justify-center text-slate-700 active:bg-slate-50">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M7.05 16.95l-1.414 1.414M16.95 16.95l1.414 1.414M7.05 7.05L5.636 5.636M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+      </button>
+      <button class="w-9 h-9 bg-white/95 backdrop-blur rounded-lg shadow-md border border-slate-200/80 flex items-center justify-center text-slate-700 active:bg-slate-50">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2l9 4.9-9 4.9-9-4.9L12 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 11.9l9 4.9 9-4.9"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.9l9 4.9 9-4.9"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. 顶部原生状态栏与小程序导航栏 -->
+  <header class="relative z-20 w-full pt-3 pb-2 px-4 bg-gradient-to-b from-white/90 via-white/70 to-transparent">
+    <!-- iOS 状态栏 (9:41, 信号, 电量) -->
+    <div class="flex items-center justify-between text-[14px] font-semibold text-slate-900 h-6 px-1">
+      <span class="status-bar-time">9:41</span>
+      <div class="flex items-center space-x-1.5">
+        <svg class="w-4 h-3.5" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+        <svg class="w-3.5 h-3.5" viewBox="0 0 16 12" fill="currentColor"><path d="M8 3.6C5.5 3.6 3.2 4.6 1.6 6.3l1.4 1.4C4.2 6.5 6 5.8 8 5.8s3.8.7 5 1.9l1.4-1.4C12.8 4.6 10.5 3.6 8 3.6zM8 0C4.3 0 1 1.6 0 4.1l1.4 1.4C2.3 3.4 5 2.1 8 2.1s5.7 1.3 6.6 3.4L16 4.1C15 1.6 11.7 0 8 0zm0 7.3a2.7 2.7 0 0 0-2.7 2.7c0 1.5 1.2 2.7 2.7 2.7 1.5 0 2.7-1.2 2.7-2.7A2.7 2.7 0 0 0 8 7.3z"/></svg>
+        <div class="w-5 h-2.5 rounded-[3px] border border-slate-900 p-0.5 flex items-center">
+          <div class="h-full w-3 bg-slate-900 rounded-[1px]"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 微信小程序Header与胶囊 -->
+    <div class="flex items-center justify-between mt-1 h-10">
+      <h1 class="text-[17px] font-bold tracking-tight text-slate-900">今晚去观星</h1>
+      
+      <!-- 微信胶囊按钮 -->
+      <div class="flex items-center h-8 px-2.5 bg-white/80 backdrop-blur-md rounded-full border border-black/10 shadow-sm space-x-2.5">
+        <button class="w-4 h-4 flex items-center justify-center text-slate-800">
+          <span class="w-1 h-1 rounded-full bg-current mx-0.5"></span>
+          <span class="w-1 h-1 rounded-full bg-current mx-0.5"></span>
+          <span class="w-1 h-1 rounded-full bg-current mx-0.5"></span>
+        </button>
+        <div class="w-px h-3.5 bg-slate-300"></div>
+        <button class="w-4 h-4 flex items-center justify-center text-slate-800">
+          <div class="w-3.5 h-3.5 rounded-full border-2 border-current"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 搜索条 -->
+    <div class="mt-2.5">
+      <div class="h-9 px-3 bg-white/95 backdrop-blur-md rounded-xl border border-slate-200/90 shadow-sm flex items-center text-slate-400 space-x-2">
+        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <span class="text-[13px] text-slate-500 font-normal">搜索观星点</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. 方向A：Medium展开态的观星点面板（精细、高密度、克制优雅） -->
+  <main class="relative z-20 w-full px-3 pb-2 mt-auto">
+    <!-- 面板外层卡片（白底微浮雕，圆角20px，阴影层次细腻） -->
+    <div class="w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-100 flex flex-col pt-2.5 pb-3.5 px-4">
+      
+      <!-- 拖动把手 (Medium状态指示，纯拖动语义) -->
+      <div class="w-full flex justify-center pb-2">
+        <div class="w-9 h-1 rounded-full bg-slate-200"></div>
+      </div>
+
+      <!-- 头部：点名与属地 -->
+      <div class="flex items-baseline justify-between pt-0.5">
+        <div class="flex items-baseline gap-2">
+          <h2 class="text-[19px] font-bold text-slate-900 tracking-tight leading-snug">深圳市天文台</h2>
+          <span class="text-[12px] text-slate-500 font-normal">深圳 · 大鹏</span>
+        </div>
+      </div>
+
+      <!-- 章节微导航（靠左、轻量化短下划线） -->
+      <div class="flex items-center space-x-5 mt-2 border-b border-slate-100 pb-1.5">
+        <div class="relative pb-1">
+          <span class="text-[13px] font-semibold text-blue-600 cursor-pointer">概览</span>
+          <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></span>
+        </div>
+        <div class="relative pb-1">
+          <span class="text-[13px] font-medium text-slate-500 cursor-pointer">天文</span>
+        </div>
+      </div>
+
+      <!-- 路线与到达区 (高密度并列卡片，整合安静导航操作) -->
+      <div class="mt-3 bg-slate-50/80 rounded-xl p-2.5 border border-slate-100/90 flex items-center justify-between">
+        <div class="space-y-0.5 pr-2">
+          <div class="text-[13px] font-semibold text-slate-800">路线与到达</div>
+          <div class="text-[12px] text-slate-400">距离、预计到达暂无数据</div>
+        </div>
+        <!-- 安静轻巧的操作按钮，确保不少于44px点击盒 -->
+        <button class="shrink-0 h-[34px] px-3 bg-blue-50 text-blue-700 hover:bg-blue-100 active:scale-95 rounded-lg flex items-center gap-1.5 border border-blue-150 text-[13px] font-medium transition-all">
+          <svg class="w-3.5 h-3.5 text-blue-600 -rotate-45" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          <span>导航</span>
+        </button>
+      </div>
+
+      <!-- 状态元数据（开放时间、停车、厕所三列或双排紧凑栅格） -->
+      <div class="mt-2.5 grid grid-cols-3 gap-2 text-[12px] text-slate-600 border-b border-slate-100 pb-3">
+        <!-- 开放时间 -->
+        <div class="flex items-center gap-1.5 bg-slate-50/60 py-1.5 px-2 rounded-lg border border-slate-100/60">
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
+          <span class="truncate">开放时间待核实</span>
+        </div>
+        <!-- 停车 -->
+        <div class="flex items-center gap-1.5 bg-slate-50/60 py-1.5 px-2 rounded-lg border border-slate-100/60">
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 3C2.1 11.2 2 11.6 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+          <span class="truncate">停车待核实</span>
+        </div>
+        <!-- 厕所 -->
+        <div class="flex items-center gap-1.5 bg-slate-50/60 py-1.5 px-2 rounded-lg border border-slate-100/60">
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4h10v10a5 5 0 01-10 0V4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 19v2m4-2v2M5 21h14"/></svg>
+          <span class="truncate">厕所待核实</span>
+        </div>
+      </div>
+
+      <!-- 辅助辅助入口链接 (场地资料、数据来源、反馈纠错) -->
+      <div class="flex items-center justify-around pt-2.5 pb-1 text-[12px] text-slate-400 font-normal">
+        <a href="#" class="hover:text-slate-600 transition-colors py-1 px-2">场地资料</a>
+        <span class="text-slate-200">|</span>
+        <a href="#" class="hover:text-slate-600 transition-colors py-1 px-2">数据来源</a>
+        <span class="text-slate-200">|</span>
+        <a href="#" class="hover:text-slate-600 transition-colors py-1 px-2">反馈纠错</a>
+      </div>
+
+      <!-- 核心行动点区域（想去、分享、云观星），保证44px轻灵胶囊形式 -->
+      <div class="grid grid-cols-3 gap-2.5 mt-2.5">
+        <button class="h-11 rounded-xl bg-slate-50 hover:bg-slate-100 active:scale-[0.98] border border-slate-200/70 text-slate-700 text-[13px] font-medium flex items-center justify-center gap-1.5 transition-all">
+          <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>想去</span>
+        </button>
+
+        <button class="h-11 rounded-xl bg-slate-50 hover:bg-slate-100 active:scale-[0.98] border border-slate-200/70 text-slate-700 text-[13px] font-medium flex items-center justify-center gap-1.5 transition-all">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <span>分享</span>
+        </button>
+
+        <button class="h-11 rounded-xl bg-indigo-50/80 hover:bg-indigo-100 active:scale-[0.98] border border-indigo-100 text-indigo-700 text-[13px] font-medium flex items-center justify-center gap-1.5 transition-all">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span>云观星</span>
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 4. 底部主导航（仅“地图”与“我的”，地图激活态）与 Home Indicator -->
+  <footer class="relative z-30 w-full bg-white/95 backdrop-blur-md border-t border-slate-200/80 flex flex-col items-center">
+    <div class="w-full h-12 flex items-center justify-around px-8">
+      <!-- 地图 (已选中) -->
+      <button class="flex items-center space-x-1.5 text-blue-600 py-1.5 px-3 rounded-full bg-blue-50/70 font-medium text-[13px]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        <span>地图</span>
+      </button>
+
+      <!-- 我的 -->
+      <button class="flex items-center space-x-1.5 text-slate-500 hover:text-slate-800 py-1.5 px-3 font-normal text-[13px]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </button>
+    </div>
+
+    <!-- iPhone 底部安全手势条 -->
+    <div class="w-full h-5 flex justify-center items-start pt-1">
+      <div class="w-32 h-1 bg-slate-900/80 rounded-full"></div>
+    </div>
+  </footer>
+
+</body>
+</html>

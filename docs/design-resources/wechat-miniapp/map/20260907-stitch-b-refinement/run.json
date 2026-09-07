@@ -1,0 +1,140 @@
+{
+  "status": "candidate-awaiting-user-review",
+  "projectUrl": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "head": "d0c77b613ebc581ee0be9cf283d1edb631643b2c",
+  "submittedAt": "2026-09-07T12:06:52.5217575Z",
+  "codexModel": "unknown",
+  "codexEffort": "unknown",
+  "hostSettingsSource": "unavailable",
+  "stitchMode": "Balanced",
+  "stitchModel": "unknown",
+  "generationSubmissions": 2,
+  "technicalRetries": 0,
+  "requestedScreens": 1,
+  "actualScreens": 2,
+  "tokenUsage": null,
+  "quotaBefore": null,
+  "quotaAfter": null,
+  "usageReason": "Not inspected in this run; previous run counters are not reused",
+  "productionChanged": false,
+  "adopted": false,
+  "inputs": [
+    {
+      "path": "DESIGN.md",
+      "sha256": "8fe7a82b9c7008bebf182805233d833f7249f751f8600a2bac804b2bc66b93c3"
+    },
+    {
+      "path": "project_context/global.md",
+      "sha256": "5fc99e627574533dd8d940e45b4e22cc907fc8cb67539362270a9cac3f7d2d9b"
+    },
+    {
+      "path": "project_context/context-maintenance.md",
+      "sha256": "d932eebfe26400e88fa1016dec0cc29bcd88e062bb0decd2d1003c0d8a0a55bd"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "sha256": "f7ca71b7b7308c068f2797c40080d4a5642f6bd6e127617d1fc4e643a48455f2"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md",
+      "sha256": "007e59adfd947c4c981b8f4b593a118318d575f5009fe2f4457e3634bd77764e"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "sha256": "519ec28110bcdcb60e315f34acce8a92b692a0e8be268c8a07b6cb6b4f55337e"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/information-design.md",
+      "sha256": "44c101957dcf9462f43e45b554ff750834e1837956f8c850271c7a7e3253b2fe"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/index.tsx",
+      "sha256": "26035c8b57e9269f2c8eab0ea15c8ed45ffb79cf331d27049957b459dcfdd0d0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/spot-panel.tsx",
+      "sha256": "0df10f8660e580d7cfe5f30571f9abc48748494e7e2de2c23116e0a89b170f4b"
+    },
+    {
+      "path": ".agents/skills/starward-design-resource/SKILL.md",
+      "sha256": "4e047110f8ac192a810795ad5c42bdcbd24aab579d150fd5691278384a256714"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/prompt-submitted.txt",
+      "sha256": "88962bf1e42e80db60094ddf80da5c12c9b46786d2458623611f0afb1a3c5b8a"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/inputs/ATTRIBUTION.md",
+      "sha256": "b054af6e82197d30032ae24c817581ac45a00409dc5142c604473b1ca7859402"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/inputs/osm-reference.png",
+      "sha256": "5762bb1de5b0cef150bf55b55ac7d50ed6b5e1008af85ae267ffb6eb204e1754"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/inputs/selected-b/code.html",
+      "sha256": "98fea838bac266991ecd8c5df753c4a14d602b02518b8be0ee17cffdb4168ce7"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/inputs/selected-b/screen.png",
+      "sha256": "634985e978115bcc2eab1cd7f2095ab145ca28627a46dc4e44287fe234c8d18c"
+    }
+  ],
+  "repairSubmissions": 1,
+  "originalScreenId": "00731589e59d449abace07b0df963468",
+  "downloadObservation": "Browser download event timed out, but one completed official ZIP was found in Downloads and copied without re-exporting.",
+  "initialRevisionScreens": 1,
+  "repairScreens": 1,
+  "extraStyleCandidates": 0,
+  "repairedScreenId": "90e6e511c60741639114ea42871766f0",
+  "technicalPreview": "outputs/technical-preview/code.html",
+  "preview": "outputs/map-medium-preview.jpg",
+  "reviewUrl": "http://127.0.0.1:4281/review.html",
+  "completedAt": "2026-09-07T12:19:47.864Z",
+  "codexTechnicalCorrections": [
+    "Search native form border and 44px wrapper",
+    "Attribution visibility",
+    "Remove unintended looping marker pulse",
+    "Evidence action 44px hit area without changing row flow",
+    "Local map asset reference"
+  ],
+  "outputs": [
+    {
+      "path": "outputs/original/code.html",
+      "bytes": 13654,
+      "sha256": "8dd838dd0b12ad61bafa4d7df704045f1ace6d5cc7d0c31ada8a135b6376c114"
+    },
+    {
+      "path": "outputs/original/screen.png",
+      "bytes": 301936,
+      "sha256": "874eebe6f247b699b540118fcddd5bae51e35735b3745b5b12f02a7e4ac49acc",
+      "width": 1600,
+      "height": 1055
+    },
+    {
+      "path": "outputs/repaired-original/code.html",
+      "bytes": 10598,
+      "sha256": "947f6df9242c69b6edf1f27df5e883eee8942449597ac7101d28b383a4149af8"
+    },
+    {
+      "path": "outputs/repaired-original/screen.png",
+      "bytes": 304663,
+      "sha256": "7d292863fd94ef99e9f3e066c8da33646d5d28e5448e078f143cc24aafc84d21",
+      "width": 487,
+      "height": 1055
+    },
+    {
+      "path": "outputs/technical-preview/code.html",
+      "bytes": 10747,
+      "sha256": "f482317eb3ca465b0a175cf93cd733481fbe571a5eba445d34c57e7de2ce1a19"
+    },
+    {
+      "path": "outputs/map-medium-preview.jpg",
+      "bytes": 34644,
+      "sha256": "1b0a07a5be61cc9b97f3832a55dbee776dea2bf289b99f619c091e7aac415074",
+      "width": 390,
+      "height": 843,
+      "mimeType": "image/jpeg"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "status": "exported-reviewed-candidate",
+  "head": "d0c77b613ebc581ee0be9cf283d1edb631643b2c",
+  "submittedAt": "2026-09-07T12:27:57.2308045Z",
+  "projectUrl": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "referenceScreen": "37c5a22042a548eba39f67fb7f62f2ce",
+  "codexModel": "unknown",
+  "codexEffort": "unknown",
+  "stitchMode": "Balanced",
+  "stitchModel": "unknown",
+  "generationSubmissions": 1,
+  "actualScreens": 1,
+  "technicalRetries": 0,
+  "tokenUsage": null,
+  "quotaUsed": null,
+  "productionChanged": false,
+  "adopted": false,
+  "inputs": [
+    {
+      "sha256": "0d3a5f4577381b73be6db550257288a12be9f8c17bdcf03897b465034a8516f3",
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/prompt.txt"
+    },
+    {
+      "sha256": "60423ecb6c1b5a853413d7c237a755f8767f8791c3ea369133423b1c5ac35bf4",
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/user-feedback.png"
+    },
+    {
+      "sha256": "98fea838bac266991ecd8c5df753c4a14d602b02518b8be0ee17cffdb4168ce7",
+      "path": "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/../inputs/selected-b/code.html"
+    }
+  ],
+  "completedAt": "2026-09-07T12:38:05.472Z",
+  "outputScreen": "b6c2546d454742c5b8a52fb29ddafa38",
+  "outputTitle": "今晚去观星 - 方向B（原尺度极简精修版）",
+  "technicalPreview": "outputs/technical-preview/code.html",
+  "previewImage": "outputs/map-medium-preview.jpg",
+  "previewDimensions": {
+    "height": 843,
+    "width": 390
+  },
+  "technicalChanges": [
+    "transparent 44px hit areas without visible resizing",
+    "accessible names for map tools and search",
+    "remove unverified geographic accuracy comment"
+  ],
+  "outputs": [
+    {
+      "path": "outputs/stitch-original.zip",
+      "sha256": "e0342d5b76fd8b6755d8f43f15a2868d22144820610e53ae5308b795a1c024e0"
+    },
+    {
+      "path": "outputs/original/code.html",
+      "sha256": "1984efa08149856310446bf9864914693519a4471c17110c3d538680df88b357"
+    },
+    {
+      "path": "outputs/original/screen.png",
+      "sha256": "7d15d52959a28c520458078c43756a6cad6cb7aec764c069df8458cdc3e38e26"
+    },
+    {
+      "path": "outputs/technical-preview/code.html",
+      "sha256": "1cb6d9d53b7ed1f8d01ab4bd834fabba0c18d1d3ab7ba80f5b6947efa93cc2b5"
+    },
+    {
+      "path": "outputs/map-medium-preview.jpg",
+      "sha256": "58e71e2b8d8b3e276ad6df8d846ffb48f3c0f87916c20ab955f05896539ee271"
+    }
+  ]
+}

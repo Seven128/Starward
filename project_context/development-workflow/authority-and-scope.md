@@ -13,8 +13,8 @@ This on-demand verification node owns the reserved scope, UI implementation and 
 ## UI Implementation
 
 - Read the affected Screen Contract for page responsibilities and DESIGN.md for visual rules and generated token values. Implement through existing production components and state owners, then inspect actual WEAPP behavior.
-- UI changes do not require prototypes, Open Design projects, selected snapshots, handoffs, resource hashes or regeneration of presentation packages. Update an owning Context only when a durable product decision changes.
-- Test generated token consistency, meaningful state/interaction behavior and actual layout. Prototype fidelity and frozen-package integrity are not product checks.
+- Follow [Mini Program Page Design Resources](../context-maintenance.md#mini-program-page-design-resources): developers must read and visually inspect adopted page resources referenced by the Screen Contract. Ordinary fixes do not require resource regeneration, handoffs or historical hash checks; update the resource and owning rules only for an intentional confirmed design change.
+- Test generated token consistency, meaningful state/interaction behavior and actual layout. Compare real WEAPP output against adopted page references under matching conditions; prototype rendering and frozen-package integrity alone are not product checks.
 - Preserve the independent Mini Program profile; App/Admin tokens and historical HTML are not runtime design inputs.
 
 ## Ownership And Dependency Direction

@@ -1,0 +1,994 @@
+[
+  {
+    "id": "icon-archive",
+    "path": "assets/icons/archive.svg",
+    "sha256": "a0180cbfd6c8e8799e929ddcd237e6ce259b2339f7be85b9df6ccdaff7d3757f",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/archive.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-arrow-left",
+    "path": "assets/icons/arrow-left.svg",
+    "sha256": "0835a3cb8e8f8062cdce6ed183ef7afbe771647793a3f21dfc50179f0c327eee",
+    "source": "apps/wechat-miniapp/src/assets/icons/arrow-left.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-badge-check",
+    "path": "assets/icons/badge-check.svg",
+    "sha256": "7e684ae1b855f13acf0c3105fa068a1c90a4ba65b36a0d7eb9d24dff8b138ca2",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/badge-check.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-ban",
+    "path": "assets/icons/ban.svg",
+    "sha256": "86820b873ac395989526157dfd2b2ff032f95e4acdf5dc55b4a24ae25b0c1e67",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/ban.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-bell",
+    "path": "assets/icons/bell.svg",
+    "sha256": "557518951259c54eeb003a83b6311e3bac0e317985e71ea49f1d3c01c7d211c7",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/bell.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-book-open-text",
+    "path": "assets/icons/book-open-text.svg",
+    "sha256": "910d1cb823759a4e3ad39a6aacb6d4608a00e75da3495687aa0959a729da4c9e",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/book-open-text.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-calendar-days",
+    "path": "assets/icons/calendar-days.svg",
+    "sha256": "af1618d24687cd7da9d0e4b54080fbf413806329ff470877799fbe72d1f8d06f",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/calendar-days.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-camera",
+    "path": "assets/icons/camera.svg",
+    "sha256": "4293f252aecdfe3aa206b8260272785426eb19df2eba07acc32250c595f1ae2d",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/camera.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-car-front",
+    "path": "assets/icons/car-front.svg",
+    "sha256": "c199f9fc3e276fcf48211831faaab90d6ee70ea46b24cb9ccf66a08211ad8108",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/car-front.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-check",
+    "path": "assets/icons/check.svg",
+    "sha256": "60b2b822a5efe5db2624127b49b40960f71960beabdfb9d82f0c4ca15373a9a1",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/check.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-chevron-down",
+    "path": "assets/icons/chevron-down.svg",
+    "sha256": "ea9643b648b39dd7a65a0e1eac3e6ee66f6291a200e3eeed1b5a02de01edcb7e",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/chevron-down.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-chevron-right",
+    "path": "assets/icons/chevron-right.svg",
+    "sha256": "4acfcd8faa0acbdf0b0ade1e342f8af4da02142143be08a6b038897f71e143f6",
+    "source": "apps/wechat-miniapp/src/assets/icons/chevron-right.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-circle-alert",
+    "path": "assets/icons/circle-alert.svg",
+    "sha256": "8d0771106d488893e14fa26ca5dac4d104dfef67d016b623e27571cdc54cf4fa",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/circle-alert.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-circle-check-big",
+    "path": "assets/icons/circle-check-big.svg",
+    "sha256": "a482548150c3ec22933c0371fa188746e78ab76c2d759df2b54613929de1961d",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/circle-check-big.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-circle-dot",
+    "path": "assets/icons/circle-dot.svg",
+    "sha256": "2b35bb7510e53e65d5d83e1e9c3e427d52c987cb419bb84466352d0eb19531c8",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/circle-dot.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-circle-pause",
+    "path": "assets/icons/circle-pause.svg",
+    "sha256": "c9cbf6b0fb893895f8de0ef68208340fb372d4c88bd86320e80a81bbcee85f6e",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/circle-pause.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-circle-x",
+    "path": "assets/icons/circle-x.svg",
+    "sha256": "7e0976619ca0e7e909f778cc0865a20c5ebfc9d102d7b20960cbdb7344d2e2e0",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/circle-x.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-clipboard-check",
+    "path": "assets/icons/clipboard-check.svg",
+    "sha256": "6785c1561e1588a6e298d587aa8a2107d3d45a1e1351166d99429161c2b66fb6",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/clipboard-check.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-clock-3",
+    "path": "assets/icons/clock-3.svg",
+    "sha256": "1d97b8e8e8edfc996aa326ca2362d53cfb1d989dd3647357a4c3b6e2f4b66e2f",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/clock-3.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-cloud-moon",
+    "path": "assets/icons/cloud-moon.svg",
+    "sha256": "8731cd4b2be31507403cbb6f9763bde8da768f57cdad6e19c5385a2554053105",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/cloud-moon.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-cloud-rain",
+    "path": "assets/icons/cloud-rain.svg",
+    "sha256": "e370821d9b5329ce96701c082d8bba582e12331e162a73bed6f7f961191a5e2d",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/cloud-rain.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-cloud",
+    "path": "assets/icons/cloud.svg",
+    "sha256": "e79b314f130c56c090725a5faff60f207cf105b220805a6ebcff4f202927b4fd",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/cloud.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-compass",
+    "path": "assets/icons/compass.svg",
+    "sha256": "f0bb395e8e97147b015a9e8252aae4c3b94c949fd6c8202e8791c7774fabc6b8",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/compass.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-download",
+    "path": "assets/icons/download.svg",
+    "sha256": "2ab30127e14dfbcb389972d9180c933463a8a0cfe0d0e6fc195fa922f9acfe08",
+    "source": "apps/wechat-miniapp/src/assets/icons/download.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-ellipsis",
+    "path": "assets/icons/ellipsis.svg",
+    "sha256": "5bee75c176aa6da2ae1f0d6259e3930db5d56953f2bd5c277a2923cf236aa075",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/ellipsis.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-external-link",
+    "path": "assets/icons/external-link.svg",
+    "sha256": "da2cee72502d429877b8eb30d305e7ae947f65f6c69260897182047afcc0b156",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/external-link.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-eye",
+    "path": "assets/icons/eye.svg",
+    "sha256": "bad479dbb0d4e5aefa88138ba109c1efd45fe54fe0812d44bd1cbba6096d9258",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/eye.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-file-search",
+    "path": "assets/icons/file-search.svg",
+    "sha256": "dd006de07e2162bf9a6f10ebb0dff45aa003977273f8223a0dcf8aa8352f47d5",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/file-search.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-file-up",
+    "path": "assets/icons/file-up.svg",
+    "sha256": "1f872ad77ddf526b10690ae7f5a65b83e52b44fe892a1d2d63b32ca0c27b5a52",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/file-up.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-filter",
+    "path": "assets/icons/filter.svg",
+    "sha256": "700783a573728db81a7812090f17df8c2425110f93893d2f5d94b13d686046bd",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/filter.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-footprints",
+    "path": "assets/icons/footprints.svg",
+    "sha256": "31839000f6913b0f0131c510f40562a65f23ac2aa51c875b1aa88567d055376a",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/footprints.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-git-compare",
+    "path": "assets/icons/git-compare.svg",
+    "sha256": "cd2a756cc35817586cebf7af7f358f187a5ca47a5b04a7e5a8dc84d2a6f1e0f0",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/git-compare.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-history",
+    "path": "assets/icons/history.svg",
+    "sha256": "a75ac63238800197ecc6ae18566a867352a58692c92eae28f9bab6ed55a73ef5",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/history.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-image-plus",
+    "path": "assets/icons/image-plus.svg",
+    "sha256": "4c20014f51cc6c28f3cc89d412efdc91544cec0ef5dc143f1cebd1d642f1eafc",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/image-plus.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-images",
+    "path": "assets/icons/images.svg",
+    "sha256": "383948086e00719e38eff73dec10a6513104b014f086957b800ec5e9ad3986ac",
+    "source": "apps/wechat-miniapp/src/assets/icons/images.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-inbox",
+    "path": "assets/icons/inbox.svg",
+    "sha256": "1922c725d1ec98d729bf1110da64e85eb31ab3e6177f669c4c90301c78934b95",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/inbox.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-info",
+    "path": "assets/icons/info.svg",
+    "sha256": "07ed8ed9eb40e18cbda7f9fcf9db84f6f27546b37b91ca3b95ce967a8c4ff2cd",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/info.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-layers-3",
+    "path": "assets/icons/layers-3.svg",
+    "sha256": "36406d6a7b71f15bd60f28fa574d19c8a787c161529c46bb586429f74694d232",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/layers-3.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-link",
+    "path": "assets/icons/link.svg",
+    "sha256": "bf6013d21b0c7c268b90502b51035f76134160a12a3dc885e6573d57aac9c86c",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/link.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-list",
+    "path": "assets/icons/list.svg",
+    "sha256": "a7cb1f4debb72cc38cd1179ed992fdd09c79526d11fe35f2db7469255e432f19",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/list.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-loader-circle",
+    "path": "assets/icons/loader-circle.svg",
+    "sha256": "c3a1cd2f01300574185856a3da7be7b84bf11b8fc2dd008373c3300cc204316c",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/loader-circle.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-locate-fixed",
+    "path": "assets/icons/locate-fixed.svg",
+    "sha256": "e91a31fa490e3f514e80ee1d5ed1768fdcf020fd0ade1aa87e163adf47500072",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/locate-fixed.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-lock-keyhole",
+    "path": "assets/icons/lock-keyhole.svg",
+    "sha256": "9ae8c7477deb11636a9e3211789e2ee21f9d60cafbc568af86ae309dd7840467",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/lock-keyhole.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-map-pin-plus",
+    "path": "assets/icons/map-pin-plus.svg",
+    "sha256": "38c4da003c40d8b8e0c83e16a4abd992bba5ddec5b1a59d79cd89d2de1e142cf",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/map-pin-plus.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-map-pin",
+    "path": "assets/icons/map-pin.svg",
+    "sha256": "501cfa0cca7ab492ef79277d468dae33b1fb62ce710c94003f121792be19d57f",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/map-pin.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-map-pinned",
+    "path": "assets/icons/map-pinned.svg",
+    "sha256": "63b45b4f5c74f5a72d24585c1eacee0d0032dfd64120f733e4ca43ca35abdac2",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/map-pinned.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-map",
+    "path": "assets/icons/map.svg",
+    "sha256": "3720a288f0bb59e472655ad22dbab133cf192e0f84470532ff728a38818be2e4",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/map.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-message-square-warning",
+    "path": "assets/icons/message-square-warning.svg",
+    "sha256": "1bd9ae4de8f7864652bf7bf3e9cd686ad4c377d3b7564d098fc81969a765257d",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/message-square-warning.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-messages-square",
+    "path": "assets/icons/messages-square.svg",
+    "sha256": "b50c53f5c9458cddbb13df07570f2519abc1b49a4891d594d4b30838bc6dfc35",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/messages-square.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-meteor",
+    "path": "assets/icons/meteor.svg",
+    "sha256": "c199532050d2ae772e6f1cd16ab950df250017b52aaf20b8a645c509990ee247",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/meteor.svg",
+    "license": "Font Awesome Free SVG icons / CC BY 4.0",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-moon-star",
+    "path": "assets/icons/moon-star.svg",
+    "sha256": "d78e10c5c3a025693ea7a97c024ca3399e61da362c364b780634626cd605c37f",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/moon-star.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-navigation",
+    "path": "assets/icons/navigation.svg",
+    "sha256": "1d1223c5b871f2bdc6940c0494a029642ef7cf5c9ea9ea6d6591fa012aed4e9f",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/navigation.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-notebook-tabs",
+    "path": "assets/icons/notebook-tabs.svg",
+    "sha256": "561f112e3f67730a1fe502dd457660ace55651deff4c2807eb6b65905f77dff3",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/notebook-tabs.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-paperclip",
+    "path": "assets/icons/paperclip.svg",
+    "sha256": "5626d3ed79608bd675b461a47149d3f44626fcb7c29224dec7e750a37b6b4bdd",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/paperclip.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-plus",
+    "path": "assets/icons/plus.svg",
+    "sha256": "f71c8192d4b43079d4ea34e54e8749632ea7a7882f2ef5732bc20ca346b22cb2",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/plus.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-refresh-cw",
+    "path": "assets/icons/refresh-cw.svg",
+    "sha256": "358d541000c3e98c2b345b4252c2395f069e5f1995dc3ead311149d1cce1aade",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/refresh-cw.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-repeat-2",
+    "path": "assets/icons/repeat-2.svg",
+    "sha256": "062e9331e6df05a4a11bb6ff3ba7c32da65213d558a6810313ec3a012881f0d6",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/repeat-2.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-replace",
+    "path": "assets/icons/replace.svg",
+    "sha256": "774e688bb553c8c56740f153818708b9da5f40985d90ceea8f68ec16b2f0542e",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/replace.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-rotate-ccw",
+    "path": "assets/icons/rotate-ccw.svg",
+    "sha256": "6fbe678ae404180237db0310e155f02610b468a64ff86c85e8378a7afcd54acc",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/rotate-ccw.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-route",
+    "path": "assets/icons/route.svg",
+    "sha256": "dcdd1576958a1531255659a5f28ab9d5d67f1e8b4223035bcd4b6b506a4f55f9",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/route.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-save",
+    "path": "assets/icons/save.svg",
+    "sha256": "244b3862a707ecf3d7090bf5a98f96869cd2e89eb992f8e8d7932ab765c3b277",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/save.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-search",
+    "path": "assets/icons/search.svg",
+    "sha256": "af7f18b8ae922bcd417eb45f9287eac2be78f8aa5b183919722f5161fa207ae1",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/search.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-send",
+    "path": "assets/icons/send.svg",
+    "sha256": "eca54017ed34ebad95114aa169f2f6a3cf9581a7aa9b6af95bc22e978a80d4e1",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/send.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-settings",
+    "path": "assets/icons/settings.svg",
+    "sha256": "ec04365f65ab25837987738c9c37ffb11f6f011217906ca617cb01e1bb456683",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/settings.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-shield-check",
+    "path": "assets/icons/shield-check.svg",
+    "sha256": "7fba4b6b794939d5c482aa16f09119cfc4e7498927f30a2004e375232c32998d",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/shield-check.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-sliders-horizontal",
+    "path": "assets/icons/sliders-horizontal.svg",
+    "sha256": "7be0c4e31e3d6527195057d73d0fdb21104f78d4662cce721b85bb2ac10548ba",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/sliders-horizontal.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-sparkles",
+    "path": "assets/icons/sparkles.svg",
+    "sha256": "830214d754ba655e15d7b63e56d1c824da84842ffb9044b867472663e72d258d",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/sparkles.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-star-filled",
+    "path": "assets/icons/star-filled.svg",
+    "sha256": "f5513cb89d280fd7f0e469ce38e8406a4c6180af4681aa7af215b3cc53535fb4",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/star-filled.svg",
+    "license": "lucide-static v1.33.0 / ISC; selected-state fill adaptation",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-star",
+    "path": "assets/icons/star.svg",
+    "sha256": "20f45e63f4a8c93531f74ac71e46747b26bc58ea0e24a974ef26752847a99f52",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/star.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-store",
+    "path": "assets/icons/store.svg",
+    "sha256": "21aede62e94d5802883ee0ea4af67121c5ff1076f26dc9e14e4929a247ab0724",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/store.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-sunset",
+    "path": "assets/icons/sunset.svg",
+    "sha256": "c4f7f7e27e50ecd8d09d4e29f4c5195d453074db183bf6c84d5f57cb6de8ab0e",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/sunset.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-telescope",
+    "path": "assets/icons/telescope.svg",
+    "sha256": "9892f242c95d995e4194a5b77a1ea45c0cb6cc842409ef07e514520e99ef0fdd",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/telescope.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-tent-tree",
+    "path": "assets/icons/tent-tree.svg",
+    "sha256": "34245e140868c0f299fe8cf24a41a00e0a2982b75a2d2708bfa1d3cb57462757",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/tent-tree.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-toilet",
+    "path": "assets/icons/toilet.svg",
+    "sha256": "d4d6eacd46218a3f0de435f30b9689e30d1e2bb4f7e31f11bae5a2e0543946b8",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/toilet.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-trash-2",
+    "path": "assets/icons/trash-2.svg",
+    "sha256": "8318684850184b890a7e87b708c6bd8af8e06c91e61b7fa9157b9020abfe65a5",
+    "source": "apps/wechat-miniapp/src/assets/icons/trash-2.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-tree-pine",
+    "path": "assets/icons/tree-pine.svg",
+    "sha256": "660964892aed02938dd0d6a60b878db429d25675b10e8a78d1a2230fe9baa415",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/tree-pine.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-triangle-alert",
+    "path": "assets/icons/triangle-alert.svg",
+    "sha256": "b20548d5b7802fa3b71602881898db785735afca3ec3519e4ed03ee657636381",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/triangle-alert.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-undo-2",
+    "path": "assets/icons/undo-2.svg",
+    "sha256": "75301ed36ba494988c38b5bed1caa427170f4de325116a04779556cf17c55df1",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/undo-2.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-upload",
+    "path": "assets/icons/upload.svg",
+    "sha256": "fb1a061069901dddfa6c3a3e6c78ebd2e32e89ee5feacf29c14148cca47ca210",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/upload.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-user-round",
+    "path": "assets/icons/user-round.svg",
+    "sha256": "126f42ab153a3cab47826d079557037d6c7c09f2dcc688d8b0f5d2fc24eaecca",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/user-round.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-user",
+    "path": "assets/icons/user.svg",
+    "sha256": "6580c8ffb147cb393da5a65f5705c93e83cc927513622cbd9929ef9bada7a6d0",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/user.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-wifi-off",
+    "path": "assets/icons/wifi-off.svg",
+    "sha256": "6fd6a8293b541737b6c836a46bb7d90a18e1afe30e2cc0af853112c205dca5c6",
+    "source": "apps/wechat-miniapp/src/assets/icons/wifi-off.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-wind",
+    "path": "assets/icons/wind.svg",
+    "sha256": "8eecc481afeb27e08659af3257c3ebeb09d37200d7105b38b7bd9f1aafe18ed2",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/wind.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-x",
+    "path": "assets/icons/x.svg",
+    "sha256": "eccb918cdd522143b7e511943df8c6e61b2380e386959669ebbd2cbf61ede1b6",
+    "source": "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons/x.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-backpack-day",
+    "path": "assets/icons/backpack-day.svg",
+    "sha256": "2339c86710909ea8961726ec6017b658116676ea3697530448ffb85404e66710",
+    "source": "apps/wechat-miniapp/src/assets/semantic/backpack-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-backpack-night",
+    "path": "assets/icons/backpack-night.svg",
+    "sha256": "d247dd962888bd8a00c4303d306a767ee495a41ddf43c932565d2b31fb30270c",
+    "source": "apps/wechat-miniapp/src/assets/semantic/backpack-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-backpack-observation",
+    "path": "assets/icons/backpack-observation.svg",
+    "sha256": "d5c0d5f295d4905ef4918d42adb9220a2e9693992dbe2fc021ec443cc5f772d7",
+    "source": "apps/wechat-miniapp/src/assets/semantic/backpack-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-binoculars-day",
+    "path": "assets/icons/binoculars-day.svg",
+    "sha256": "c3a55bfbcdb9d5a8224c18e1ce2b68c55eb8c6db685bf6ae3786730811bddbeb",
+    "source": "apps/wechat-miniapp/src/assets/semantic/binoculars-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-binoculars-night",
+    "path": "assets/icons/binoculars-night.svg",
+    "sha256": "8e90d9a458e6a3a0124ffd5e158a9df97fe1a34b454a4dcd2adc0aef3ab48b26",
+    "source": "apps/wechat-miniapp/src/assets/semantic/binoculars-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-binoculars-observation",
+    "path": "assets/icons/binoculars-observation.svg",
+    "sha256": "a4d5422ea6693dcd2ce6c8ca96a2c54e369c9762a44e3978ce89ec7c060a2075",
+    "source": "apps/wechat-miniapp/src/assets/semantic/binoculars-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-camera-day",
+    "path": "assets/icons/camera-day.svg",
+    "sha256": "16ffc89b873cefaacde3f1fe3bd949581d708f397f5b825493b3108fa3ef109f",
+    "source": "apps/wechat-miniapp/src/assets/semantic/camera-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-camera-night",
+    "path": "assets/icons/camera-night.svg",
+    "sha256": "8d8859cd8dd9712858a22ac490de2ad06a8d9a68ed0c9322d8f9b26c7107d0a9",
+    "source": "apps/wechat-miniapp/src/assets/semantic/camera-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-camera-observation",
+    "path": "assets/icons/camera-observation.svg",
+    "sha256": "c3d21a6fc7ae0185a585642d218d25830dae4c1f3a1574a1c321e99a2a6d09e5",
+    "source": "apps/wechat-miniapp/src/assets/semantic/camera-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-five-point-star-day",
+    "path": "assets/icons/five-point-star-day.svg",
+    "sha256": "6d4fd0345781bc274137f6f91045b2037c281448e99eb2b11dfbebb7e02ec139",
+    "source": "apps/wechat-miniapp/src/assets/semantic/five-point-star-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-five-point-star-night",
+    "path": "assets/icons/five-point-star-night.svg",
+    "sha256": "65a8bb963b2700b04efe7896c511b915aff1a0f551c053bac94a1ec3b131b5d6",
+    "source": "apps/wechat-miniapp/src/assets/semantic/five-point-star-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-five-point-star-observation",
+    "path": "assets/icons/five-point-star-observation.svg",
+    "sha256": "9d6356cac7c5177d4a3358836d81b7226f0674cacbfa90d9cdf986ce0b9909ef",
+    "source": "apps/wechat-miniapp/src/assets/semantic/five-point-star-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-four-point-star-day",
+    "path": "assets/icons/four-point-star-day.svg",
+    "sha256": "9bc531efb39abb958c55db17d06c8a34b912efb95c2d6ef80749ed95f319c05f",
+    "source": "apps/wechat-miniapp/src/assets/semantic/four-point-star-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-four-point-star-night",
+    "path": "assets/icons/four-point-star-night.svg",
+    "sha256": "d7417a38330d14da8ec5616844578c3428854bb507fb2f2cda26ec36d89af206",
+    "source": "apps/wechat-miniapp/src/assets/semantic/four-point-star-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-four-point-star-observation",
+    "path": "assets/icons/four-point-star-observation.svg",
+    "sha256": "1f8f2f53b6078f4e51ed8eaf7f8d220b1bf00da40c8d39b6a1eff86b93dd3fda",
+    "source": "apps/wechat-miniapp/src/assets/semantic/four-point-star-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-neutral-avatar-day",
+    "path": "assets/icons/neutral-avatar-day.svg",
+    "sha256": "b68ac66c13b52725aa899514814f62535aef7abffac04c5cd5e8d4925b5e48ff",
+    "source": "apps/wechat-miniapp/src/assets/semantic/neutral-avatar-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-neutral-avatar-night",
+    "path": "assets/icons/neutral-avatar-night.svg",
+    "sha256": "80a498c9000693c53ccdd2ce170960b5aef84460bf822a4eb4f9d4a60ee55eec",
+    "source": "apps/wechat-miniapp/src/assets/semantic/neutral-avatar-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-neutral-avatar-observation",
+    "path": "assets/icons/neutral-avatar-observation.svg",
+    "sha256": "3e3bb6cb035a1f36c578e1a5a7e60e042c3169ed39a9afb1426866ab8753ad62",
+    "source": "apps/wechat-miniapp/src/assets/semantic/neutral-avatar-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-telescope-day",
+    "path": "assets/icons/telescope-day.svg",
+    "sha256": "d13b8b49c9572f829a24070f7a920b1d02aa2a919228fdd48f61004e23fe2fbe",
+    "source": "apps/wechat-miniapp/src/assets/semantic/telescope-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-telescope-night",
+    "path": "assets/icons/telescope-night.svg",
+    "sha256": "cfe6530ad99d8ebc9761a0ae4cf75828d36cddf3a8e2beba2376b09602cea800",
+    "source": "apps/wechat-miniapp/src/assets/semantic/telescope-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-telescope-observation",
+    "path": "assets/icons/telescope-observation.svg",
+    "sha256": "b4cbde325fdeb794fb858ab638c5d79d9c583f3aec9adb2d2cb831f0ff400156",
+    "source": "apps/wechat-miniapp/src/assets/semantic/telescope-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-tent-day",
+    "path": "assets/icons/tent-day.svg",
+    "sha256": "c85ead94cc4f6aeeedfa6b60855f13c5512f1da80e08b90e404b827a6d675fe2",
+    "source": "apps/wechat-miniapp/src/assets/semantic/tent-day.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-tent-night",
+    "path": "assets/icons/tent-night.svg",
+    "sha256": "7000828bb44710df778befbd103cd37f6b4776a9f3c2b3ae4e01dd450129a80d",
+    "source": "apps/wechat-miniapp/src/assets/semantic/tent-night.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-tent-observation",
+    "path": "assets/icons/tent-observation.svg",
+    "sha256": "2fd0734310c47033fc463aec2531bed71897f3b4d6940e0f91e63395e0956019",
+    "source": "apps/wechat-miniapp/src/assets/semantic/tent-observation.svg",
+    "license": "Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-arrow-left-light",
+    "path": "assets/icons/arrow-left-light.svg",
+    "sha256": "4f4a65961be9c7d178fbcfba090532f4ede48511777cddf0b754679638050765",
+    "source": "apps/wechat-miniapp/src/assets/icons/arrow-left-light.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-chevron-right-day",
+    "path": "assets/icons/chevron-right-day.svg",
+    "sha256": "091bdee31888417aa71431993994751e989cc886fdee0cb49c572b3acc01d93a",
+    "source": "apps/wechat-miniapp/src/assets/icons/chevron-right-day.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-chevron-right-night",
+    "path": "assets/icons/chevron-right-night.svg",
+    "sha256": "473762f671dc48231d16d83ae622969ccdb15b79e964dac612fe496d770361e1",
+    "source": "apps/wechat-miniapp/src/assets/icons/chevron-right-night.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-chevron-right-observation",
+    "path": "assets/icons/chevron-right-observation.svg",
+    "sha256": "267f50d2be2a892e5200a2f2eb6d0bcb760bb8210cd71ae2849d8b3fddf2b8a7",
+    "source": "apps/wechat-miniapp/src/assets/icons/chevron-right-observation.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-download-day",
+    "path": "assets/icons/download-day.svg",
+    "sha256": "47cb717cca6a56cef3cc7d46049d1182f0c52ca260ae8393f7f5ec6180d1bf63",
+    "source": "apps/wechat-miniapp/src/assets/icons/download-day.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-download-night",
+    "path": "assets/icons/download-night.svg",
+    "sha256": "e50c8726774d7e7d26cb35cbc358f87da25e1866ff76f8bff3c125a7a8cdbd51",
+    "source": "apps/wechat-miniapp/src/assets/icons/download-night.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-download-observation",
+    "path": "assets/icons/download-observation.svg",
+    "sha256": "70d314cbfcf85f03b42b7e9e0609a0ff8b9fa60928555e396b06740a08178785",
+    "source": "apps/wechat-miniapp/src/assets/icons/download-observation.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-images-day",
+    "path": "assets/icons/images-day.svg",
+    "sha256": "e959c8751d059176cd043deea5005c9a78eda2677372fd5a9919c25b3179b94d",
+    "source": "apps/wechat-miniapp/src/assets/icons/images-day.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-images-night",
+    "path": "assets/icons/images-night.svg",
+    "sha256": "0c04acd50b830ba6c71b8f39705e8498380595b09377da8bcff2a42226f1ac02",
+    "source": "apps/wechat-miniapp/src/assets/icons/images-night.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-images-observation",
+    "path": "assets/icons/images-observation.svg",
+    "sha256": "fec2ee988233cadf00b404869c7bdaa6d7008e0b119f60e9504519a9153afe53",
+    "source": "apps/wechat-miniapp/src/assets/icons/images-observation.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-trash-2-day",
+    "path": "assets/icons/trash-2-day.svg",
+    "sha256": "582a8ad0858645752a19b3a8707b098d1186fb42d509cf5c5000b08526d42c49",
+    "source": "apps/wechat-miniapp/src/assets/icons/trash-2-day.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-trash-2-night",
+    "path": "assets/icons/trash-2-night.svg",
+    "sha256": "9919781c66657a26b1c913134b65a5d4ec4eb810a38e3e64d5fb781eecee02d6",
+    "source": "apps/wechat-miniapp/src/assets/icons/trash-2-night.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-trash-2-observation",
+    "path": "assets/icons/trash-2-observation.svg",
+    "sha256": "792a5fcb46f7c6ec86eb398fcf98a9d003fae9c1a6616807758eed9ffa5a472f",
+    "source": "apps/wechat-miniapp/src/assets/icons/trash-2-observation.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-wifi-off-day",
+    "path": "assets/icons/wifi-off-day.svg",
+    "sha256": "3919fe0bbeeb2bd74069d2344ca516f270f9628bc4cd834566c9ef2105e62830",
+    "source": "apps/wechat-miniapp/src/assets/icons/wifi-off-day.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-wifi-off-night",
+    "path": "assets/icons/wifi-off-night.svg",
+    "sha256": "84e5231bc74be824d389198cf89bab0b9069ffff3bb08e9b937932e3d70d4f19",
+    "source": "apps/wechat-miniapp/src/assets/icons/wifi-off-night.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  },
+  {
+    "id": "icon-wifi-off-observation",
+    "path": "assets/icons/wifi-off-observation.svg",
+    "sha256": "fb8b7b45d6d8fbc3c570c1d2309777729d6aea460b07583a153d870609fd440b",
+    "source": "apps/wechat-miniapp/src/assets/icons/wifi-off-observation.svg",
+    "license": "lucide-static v1.33.0 - ISC",
+    "usage": "Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board."
+  }
+]

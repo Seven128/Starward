@@ -1,0 +1,755 @@
+[
+  {
+    "file": "A/round-0/e2-A-1-map.json",
+    "rootId": "6:1641",
+    "sha256": "310cc337b40d555a54e9b232d27db8127ce70af3fc2b4491e961b978f6893cff",
+    "visibleTextCount": 36,
+    "visibleControlCount": 17,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 3,
+      "14/20/Regular": 4,
+      "11/16/Regular": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 11,
+      "13/19/Medium": 10,
+      "14/20/Medium": 1,
+      "17/24/Medium": 3,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.820253606410157,
+    "issues": [
+      {
+        "kind": "target-overlap",
+        "a": "route",
+        "b": "source",
+        "ids": [
+          "6:1779",
+          "6:1808"
+        ],
+        "overlap": {
+          "x": 300,
+          "y": 13502,
+          "width": 73.9999771118164,
+          "height": 3.5
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "field",
+        "b": "time",
+        "ids": [
+          "6:1796",
+          "6:1813"
+        ],
+        "overlap": {
+          "x": 16,
+          "y": 13543,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "contribute",
+        "b": "time",
+        "ids": [
+          "6:1802",
+          "6:1813"
+        ],
+        "overlap": {
+          "x": 136.66665649414062,
+          "y": 13543,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "source",
+        "b": "time",
+        "ids": [
+          "6:1808",
+          "6:1813"
+        ],
+        "overlap": {
+          "x": 257.33331298828125,
+          "y": 13543,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:1765",
+          "6:1789"
+        ],
+        "texts": [
+          "前往前请确认开放安排",
+          "停车  待核实"
+        ],
+        "overlap": {
+          "x": 16.63599967956543,
+          "y": 13497.1416015625,
+          "width": 74.71572494506836,
+          "height": 2.3662109375
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "I6:1796;6:1795",
+          "6:1812"
+        ],
+        "texts": [
+          "场地资料",
+          "天文信息"
+        ],
+        "overlap": {
+          "x": 45.749332427978516,
+          "y": 13519.1748046875,
+          "width": 29.515666961669922,
+          "height": 11.443359375
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:1828",
+          "6:1835"
+        ],
+        "texts": [
+          "24%",
+          "月光影响 较弱  ·  20:40 更新"
+        ],
+        "overlap": {
+          "x": 26.645999908447266,
+          "y": 13663.25,
+          "width": 34.09562683105469,
+          "height": 4.7216796875
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:1831",
+          "6:1835"
+        ],
+        "texts": [
+          "26°C",
+          "月光影响 较弱  ·  20:40 更新"
+        ],
+        "overlap": {
+          "x": 141.97933959960938,
+          "y": 13662.892578125,
+          "width": 27.58307647705078,
+          "height": 5.0791015625
+        }
+      }
+    ]
+  },
+  {
+    "file": "A/round-0/e2-A-1-my.json",
+    "rootId": "6:1955",
+    "sha256": "0483abcf3d079d76ac4b6281abcc6f40e1bca6cfaa781fe289074d96160988e6",
+    "visibleTextCount": 15,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 5,
+      "14/20/Medium": 4,
+      "16/23/Medium": 1,
+      "13/19/Regular": 1,
+      "13/19/Medium": 1
+    },
+    "minimumSolidTextContrast": 5.734333311371721,
+    "issues": [
+      {
+        "kind": "target-under44-or-clipped",
+        "id": "6:2025",
+        "key": "plan",
+        "visible": {
+          "x": 446,
+          "y": 13126,
+          "width": 358,
+          "height": 20
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2013",
+          "6:2028"
+        ],
+        "texts": [
+          "当前微信身份",
+          "今晚计划"
+        ],
+        "overlap": {
+          "x": 493.3800048828125,
+          "y": 13109.3603515625,
+          "width": 29.5,
+          "height": 10.3720703125
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2030",
+          "6:2048"
+        ],
+        "texts": [
+          "2026-09-07 · 地点与出发准备",
+          "现场反馈与纠错"
+        ],
+        "overlap": {
+          "x": 494.47601318359375,
+          "y": 13165.18359375,
+          "width": 96.99200439453125,
+          "height": 1.3125
+        }
+      }
+    ]
+  },
+  {
+    "file": "A/round-0/e2-A-2-map.json",
+    "rootId": "6:2121",
+    "sha256": "a816b0e50b205481f9b04dea16e811b4a7275d0c452d6cf2c4c35ffb38f0dca5",
+    "visibleTextCount": 37,
+    "visibleControlCount": 18,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 3,
+      "14/20/Regular": 4,
+      "11/16/Regular": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 12,
+      "13/19/Medium": 10,
+      "14/20/Medium": 1,
+      "17/24/Medium": 3,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.820253606410157,
+    "issues": [
+      {
+        "kind": "target-under44-or-clipped",
+        "id": "6:2317",
+        "key": "astronomy-source",
+        "visible": {
+          "x": 936,
+          "y": 13696,
+          "width": 358,
+          "height": 6
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "route",
+        "b": "source",
+        "ids": [
+          "6:2259",
+          "6:2287"
+        ],
+        "overlap": {
+          "x": 1214,
+          "y": 13469,
+          "width": 72,
+          "height": 8.5
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "field",
+        "b": "time",
+        "ids": [
+          "6:2275",
+          "6:2292"
+        ],
+        "overlap": {
+          "x": 936,
+          "y": 13510,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "contribute",
+        "b": "time",
+        "ids": [
+          "6:2281",
+          "6:2292"
+        ],
+        "overlap": {
+          "x": 1056.6666259765625,
+          "y": 13510,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "source",
+        "b": "time",
+        "ids": [
+          "6:2287",
+          "6:2292"
+        ],
+        "overlap": {
+          "x": 1177.3333740234375,
+          "y": 13510,
+          "width": 116.6666259765625,
+          "height": 3
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2226",
+          "I6:2232;6:2231"
+        ],
+        "texts": [
+          "深圳市天文台",
+          "概览"
+        ],
+        "overlap": {
+          "x": 941.31201171875,
+          "y": 13427.501953125,
+          "width": 24.94696044921875,
+          "height": 5.0751953125
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2226",
+          "I6:2239;6:2238"
+        ],
+        "texts": [
+          "深圳市天文台",
+          "天文"
+        ],
+        "overlap": {
+          "x": 997.468017578125,
+          "y": 13427.4111328125,
+          "width": 25.16796875,
+          "height": 5.166015625
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "I6:2275;6:2274",
+          "6:2291"
+        ],
+        "texts": [
+          "场地资料",
+          "天文信息"
+        ],
+        "overlap": {
+          "x": 965.7493286132812,
+          "y": 13486.1748046875,
+          "width": 29.51568603515625,
+          "height": 11.443359375
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2307",
+          "6:2314"
+        ],
+        "texts": [
+          "24%",
+          "月光影响 较弱  ·  20:40 更新"
+        ],
+        "overlap": {
+          "x": 946.64599609375,
+          "y": 13630.25,
+          "width": 34.09564208984375,
+          "height": 4.7216796875
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2310",
+          "6:2314"
+        ],
+        "texts": [
+          "26°C",
+          "月光影响 较弱  ·  20:40 更新"
+        ],
+        "overlap": {
+          "x": 1061.9793701171875,
+          "y": 13629.892578125,
+          "width": 27.5830078125,
+          "height": 5.0791015625
+        }
+      }
+    ]
+  },
+  {
+    "file": "A/round-0/e2-A-2-my.json",
+    "rootId": "6:2434",
+    "sha256": "8911333b483ccd8ce4b7154eb1c124edcdd9a92ce0fb0373a5d226ad420cee30",
+    "visibleTextCount": 17,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 6,
+      "17/24/Medium": 1,
+      "13/19/Medium": 2,
+      "16/23/Medium": 1,
+      "14/20/Medium": 3,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.820253606410157,
+    "issues": [
+      {
+        "kind": "target-under44-or-clipped",
+        "id": "6:2504",
+        "key": "plan",
+        "visible": {
+          "x": 1366,
+          "y": 13117,
+          "width": 358,
+          "height": 24
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "settings",
+        "b": "plan",
+        "ids": [
+          "6:2493",
+          "6:2504"
+        ],
+        "overlap": {
+          "x": 1680,
+          "y": 13117,
+          "width": 44,
+          "height": 5.5
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2510",
+          "6:2530"
+        ],
+        "texts": [
+          "深圳市天文台",
+          "现场反馈与纠错"
+        ],
+        "overlap": {
+          "x": 1444.5279541015625,
+          "y": 13155.3515625,
+          "width": 66.9400634765625,
+          "height": 6.880859375
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2510",
+          "6:2531"
+        ],
+        "texts": [
+          "深圳市天文台",
+          "1 条草稿 · 2 条待审核"
+        ],
+        "overlap": {
+          "x": 1444.5279541015625,
+          "y": 13168.8359375,
+          "width": 89.074951171875,
+          "height": 1.4921875
+        }
+      }
+    ]
+  },
+  {
+    "file": "A/round-0/e2-A-3-map.json",
+    "rootId": "6:2604",
+    "sha256": "091e5e5fd86ed907af0d16c57384a299dd100f5f8f88059455776ea06c9adbc5",
+    "visibleTextCount": 34,
+    "visibleControlCount": 17,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 3,
+      "14/20/Regular": 2,
+      "11/16/Regular": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 11,
+      "13/19/Medium": 10,
+      "14/20/Medium": 1,
+      "17/24/Medium": 3,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.507255817093428,
+    "issues": [
+      {
+        "kind": "target-overlap",
+        "a": "route",
+        "b": "source",
+        "ids": [
+          "6:2742",
+          "6:2766"
+        ],
+        "overlap": {
+          "x": 2132,
+          "y": 13503,
+          "width": 74,
+          "height": 14
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "field",
+        "b": "time",
+        "ids": [
+          "6:2754",
+          "6:2771"
+        ],
+        "overlap": {
+          "x": 1856,
+          "y": 13544,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "contribute",
+        "b": "time",
+        "ids": [
+          "6:2760",
+          "6:2771"
+        ],
+        "overlap": {
+          "x": 1976.6666259765625,
+          "y": 13544,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "source",
+        "b": "time",
+        "ids": [
+          "6:2766",
+          "6:2771"
+        ],
+        "overlap": {
+          "x": 2097.333251953125,
+          "y": 13544,
+          "width": 116.66666412353516,
+          "height": 3
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "I6:2754;6:2753",
+          "6:2770"
+        ],
+        "texts": [
+          "场地资料",
+          "天文信息"
+        ],
+        "overlap": {
+          "x": 1885.7493896484375,
+          "y": 13520.1748046875,
+          "width": 29.515625,
+          "height": 11.443359375
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2786",
+          "6:2793"
+        ],
+        "texts": [
+          "24%",
+          "月光影响 较弱  ·  20:40 更新"
+        ],
+        "overlap": {
+          "x": 1866.64599609375,
+          "y": 13664.25,
+          "width": 34.0955810546875,
+          "height": 4.7216796875
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:2789",
+          "6:2793"
+        ],
+        "texts": [
+          "26°C",
+          "月光影响 较弱  ·  20:40 更新"
+        ],
+        "overlap": {
+          "x": 1981.9793701171875,
+          "y": 13663.892578125,
+          "width": 27.5830078125,
+          "height": 5.0791015625
+        }
+      }
+    ]
+  },
+  {
+    "file": "A/round-0/e2-A-3-my.json",
+    "rootId": "6:2913",
+    "sha256": "14e1680044590d698857db7dd0373f4b7740063be5513c7a395b5eceec8ee315",
+    "visibleTextCount": 17,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 6,
+      "14/20/Medium": 5,
+      "14/20/Regular": 1,
+      "13/19/Regular": 1,
+      "13/19/Medium": 1
+    },
+    "minimumSolidTextContrast": 5.734333311371721,
+    "issues": [
+      {
+        "kind": "target-overlap",
+        "a": "settings",
+        "b": "contribution",
+        "ids": [
+          "6:2972",
+          "6:3012"
+        ],
+        "overlap": {
+          "x": 2600,
+          "y": 13113,
+          "width": 44,
+          "height": 9.5
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "plan",
+        "b": "profile-links",
+        "ids": [
+          "6:2983",
+          "6:3025"
+        ],
+        "overlap": {
+          "x": 2286,
+          "y": 13126,
+          "width": 174,
+          "height": 44
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "plan",
+        "b": "import",
+        "ids": [
+          "6:2983",
+          "6:3045"
+        ],
+        "overlap": {
+          "x": 2286,
+          "y": 13171,
+          "width": 174,
+          "height": 44
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "contribution",
+        "b": "profile-links",
+        "ids": [
+          "6:3012",
+          "6:3025"
+        ],
+        "overlap": {
+          "x": 2470,
+          "y": 13126,
+          "width": 174,
+          "height": 44
+        }
+      },
+      {
+        "kind": "target-overlap",
+        "a": "contribution",
+        "b": "import",
+        "ids": [
+          "6:3012",
+          "6:3045"
+        ],
+        "overlap": {
+          "x": 2470,
+          "y": 13171,
+          "width": 174,
+          "height": 44
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:3008",
+          "6:3037"
+        ],
+        "texts": [
+          "今晚计划",
+          "2 条已保存"
+        ],
+        "overlap": {
+          "x": 2334.47998046875,
+          "y": 13152.896484375,
+          "width": 16.39990234375,
+          "height": 10.3359375
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:3009",
+          "6:3060"
+        ],
+        "texts": [
+          "深圳市天文台",
+          "内容导入"
+        ],
+        "overlap": {
+          "x": 2335.31591796875,
+          "y": 13178.0576171875,
+          "width": 43.732177734375,
+          "height": 10.1044921875
+        }
+      },
+      {
+        "kind": "text-ink-bounds-overlap-review",
+        "ids": [
+          "6:3010",
+          "6:3061"
+        ],
+        "texts": [
+          "2026-09-07",
+          "导入自己的帖子并提交审核"
+        ],
+        "overlap": {
+          "x": 2334.743896484375,
+          "y": 13201.0478515625,
+          "width": 22.26611328125,
+          "height": 7.99609375
+        }
+      }
+    ]
+  }
+]

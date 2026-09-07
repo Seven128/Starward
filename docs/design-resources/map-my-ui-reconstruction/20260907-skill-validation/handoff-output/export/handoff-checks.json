@@ -1,0 +1,50 @@
+{
+  "revision": "handoff-long-contribution-description",
+  "fileKey": "tU01DsKBhSng9IHk1xlJQA",
+  "roots": {
+    "my": "1:5207",
+    "map": "1:4999"
+  },
+  "metrics": {
+    "descriptionId": "1:9164",
+    "width": 326,
+    "height": 42,
+    "lines": 2,
+    "contributionHeight": 155,
+    "statusY": 96,
+    "routineY": 405,
+    "contentHeight": 558,
+    "contentToNavigationGap": 88
+  },
+  "instanceInventory": [
+    {
+      "id": "1:5222",
+      "mainComponentId": "1:5218",
+      "policy": "preserve instance and main component unchanged"
+    },
+    {
+      "id": "1:5304",
+      "mainComponentId": "1:5298",
+      "policy": "preserve instance and main component unchanged"
+    },
+    {
+      "id": "1:5315",
+      "mainComponentId": "1:5310",
+      "policy": "preserve instance and main component unchanged"
+    }
+  ],
+  "checks": {
+    "exactOriginalRoots": true,
+    "mapFingerprintUnchanged": true,
+    "myExistingNodesRestrictedDiff": true,
+    "unchangedDraftAndReview": true,
+    "geometryNoOverlap": true
+  },
+  "unverified": [
+    "Post-export visual inspection by the executing task",
+    "Actual phone reading",
+    "Touch gestures",
+    "Other viewport widths",
+    "Production WEAPP conformance"
+  ]
+}

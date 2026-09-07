@@ -1,11 +1,11 @@
 ---
 name: starward-interaction-design
-description: Apply or review Starward React Native product interactions, gesture-driven UI, press feedback, Bottom Sheets, interruptible motion, haptics, accessibility, and cross-platform behavior. Use for any mobile surface or shared UI component that changes interaction, animation, navigation transition, drag/swipe behavior, map-card synchronization, time scrubbing, reduced-motion behavior, or tactile feedback.
+description: Implement or review Starward mobile interactions and shared UI for the native React Native App or Taro/WEAPP Mini Program. Use for gesture, animation, Bottom Sheet, map/card synchronization, time scrubber, press feedback, haptic, accessibility or shared interaction-component changes. Select the target platform before choosing primitives.
 ---
 
 # Starward Interaction Design
 
-Use this project Skill to translate Starward's durable design contract into React Native implementation and verification. It adapts useful fluid-interface principles from Emil Kowalski's `apple-design` Skill to Starward's own product, brand, platforms, and stack.
+Use this project Skill to translate Starward's durable design contract into implementation and verification on the actual target platform. It adapts useful fluid-interface principles from Emil Kowalski's `apple-design` Skill to Starward's own product, brand, platforms, and stack.
 
 ## Authority And Non-Recursion
 
@@ -15,6 +15,8 @@ Use this project Skill to translate Starward's durable design contract into Reac
 4. Treat `DESIGN.md`, the Source Plan, and owning Context as upstream authority. This Skill is an implementation companion and cannot override them.
 5. A pointer in `DESIGN.md` to this Skill is discoverability only. `DESIGN.md` remains complete without loading this file; this file depends on the upstream rules, not the reverse.
 6. If this Skill conflicts with an upstream rule, preserve the upstream rule and report the conflict. Do not invent a compromise silently.
+7. For Mini Program UI work, follow [Mini Program Page Design Resources](../../../project_context/context-maintenance.md#mini-program-page-design-resources): read and visually inspect the adopted resources linked by the affected Screen Contract, implement them faithfully, and derive verification from the current requirements and target runtime. Keep resource adoption and verification rules at that owner rather than duplicating them in this Skill.
+8. Follow [Project-local Implementation Decisions](../../../AGENTS.md#project-local-implementation-decisions) for architecture, extraction and dependency choices. This Skill adds UI-specific application of those rules, not another general development workflow.
 
 ## Required Workflow
 
@@ -33,7 +35,15 @@ For each changed control or transition, identify:
 
 Do not start from animation values. Start from the task, state transition, and recovery behavior.
 
-### 2. Select The React Native Primitive
+### 2. Find The Shared Owner And Select Target Primitives
+
+Inspect existing UI consumers before building the changed interaction. Share the state transition, gesture arbitration, cleanup and accessibility behavior when consumers need the same contract; keep their content and domain-specific commands at their own owners. A shared image viewer, disclosure or time ruler uses one implementation of its interaction rules; independent component instances may still own separate presentation state. Move affected consumers to the common implementation as part of extraction, and verify their distinct inputs and return/focus paths. Similar-looking UI with different semantics does not need a forced common component.
+
+Identify the target from the task and current route. Consult `project_context/architecture.md` for existing substrate decisions and the actual package manifest for installed capabilities. A design prototype supplies appearance and motion references; it does not choose production runtime dependencies. A mature component must support the adopted geometry, controlled state, gestures, theming and accessibility without overriding domain ownership. Use a small target-runtime check for an uncertain requirement before broad integration.
+
+**Taro / WeChat Mini Program:** reuse the relevant owners under `apps/wechat-miniapp/src/components/**`, bounded Taro/WEAPP primitives, the existing token projection and `semantic-asset.tsx`. Use the actual WEAPP touch/scroll, lifecycle and Back capabilities; browser DOM APIs and React Native packages are not substitutes. Keep official viewer/scroll capabilities when they satisfy the adopted contract; when an essential motion or interaction differs, establish that specific gap and implement the smallest shared adaptation. Do not infer that rejecting one library forbids future compatible libraries; current choices and reasons remain in the architecture owner.
+
+**Native React Native App:** use the following native primitives where applicable.
 
 - Use an accessible `Pressable` or an equivalent native-backed control for taps; feedback begins on press-in and the action commits only on a valid press-out.
 - Use React Native Gesture Handler for pan, pinch, rotation, composed gestures, map/sheet competition, and continuous direct manipulation.
@@ -42,7 +52,7 @@ Do not start from animation values. Start from the task, state transition, and r
 - Use `expo-haptics` or a narrowly wrapped native equivalent for optional semantic haptics. Never make haptics the sole feedback channel.
 - Use platform navigation and native accessibility APIs for back, focus, announcements, text scaling, and system preferences.
 
-Read `references/react-native-interaction-contract.md` for the detailed mapping and required edge cases.
+For native App work, read `references/react-native-interaction-contract.md` for the detailed mapping and required edge cases. Do not apply that runtime-specific mapping to WEAPP.
 
 ### 3. Implement Directness And Interruption
 
@@ -59,7 +69,7 @@ Exact thresholds and spring parameters are component tokens validated on represe
 
 ### 4. Preserve Starward Identity
 
-- Use Inter and the typography hierarchy in `DESIGN.md`; do not switch the product to a system-font visual identity because the upstream reference prefers one.
+- Use the target product's typography and adopted profile in `DESIGN.md`; native App uses its Inter hierarchy, while Mini Program follows its own profile. Do not substitute one carrier's visual defaults for another's.
 - Use solid or sufficiently opaque Starward surfaces, borders, luminance steps, and restrained elevation. Do not introduce broad blur, glassmorphism, decorative glow, or stacked translucent panels.
 - Planning, night, and red-light modes keep the same task state and interaction grammar. Red-light mode forbids accidental blue/white flashes during press, transition, loading, error, or native handoff. Warn before an unavoidable unthemed OS/vendor surface and provide a safe cancel/return or non-field alternative.
 - Keep motion fast, calm, and explanatory. Delight comes from clarity, continuity, and recovery, not bounce, particles, or ornamental movement.
@@ -88,7 +98,7 @@ Share domain state and acceptance behavior, not every platform animation detail.
 
 ### 7. Verify With Evidence
 
-For every materially changed interaction, verify:
+Select verification for the changed contract, affected consumers and target runtime. For material interaction changes, cover the applicable cases below; unrelated platform matrices are not a prerequisite for a local edit. Explicit project acceptance obligations still apply:
 
 - tap/press-in/press-out/cancel and rapid repeat;
 - drag slowly, flick, reverse, interrupt mid-settle, release outside bounds, and cancel;
@@ -98,6 +108,7 @@ For every materially changed interaction, verify:
 - reduced motion, screen reader, text scaling, haptics disabled/unavailable, and low-power behavior;
 - representative low-end and high-refresh Android plus supported iPhone hardware;
 - state synchronization among map, card, route, detail, sky, or time surfaces affected by the interaction;
+- shared-component consumers with different content, media presence, extent or return paths, verifying one behavior owner rather than parallel copies;
 - deterministic tests for state/snap selection and real-device review for physical feel.
 
 Do not claim a fluid interaction from static screenshots, unit tests alone, simulator-only evidence, or a nominal 60 FPS counter.

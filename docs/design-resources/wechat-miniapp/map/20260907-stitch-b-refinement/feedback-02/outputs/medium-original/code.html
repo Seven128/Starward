@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, height=844, initial-scale=1.0, user-scalable=no" name="viewport"/>
+<title>地图·基本信息修订·中档</title>
+<!-- Tailwind CSS v3 with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#2563EB',
+              night: '#1E293B',
+              gold: '#F59E0B'
+            }
+          }
+        }
+      }
+    };
+  </script>
+<style data-purpose="base-viewport">
+    /* Exact Mobile 390x844 restriction */
+    body {
+      width: 390px;
+      height: 844px;
+      margin: 0 auto;
+      overflow: hidden;
+      background-color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+<style data-purpose="custom-decorations">
+    /* Subdued static starry dots for Cloud Stargazing button */
+    .starlight-bg {
+      background-color: #1E293B;
+      background-image: 
+        radial-gradient(1px 1px at 14px 12px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1.2px 1.2px at 45px 28px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(0.8px 0.8px at 80px 10px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 98px 30px, rgba(255, 255, 255, 0.75), transparent);
+    }
+    /* Dynamic star spin transition on toggling */
+    .star-animate-spin {
+      animation: doubleSpin 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes doubleSpin {
+      0% { transform: scale(1) rotate(0deg); }
+      40% { transform: scale(0.85) rotate(360deg); }
+      100% { transform: scale(1) rotate(720deg); }
+    }
+  </style>
+</head>
+<body class="relative flex flex-col justify-between bg-slate-100 text-slate-800 antialiased shadow-2xl">
+<!-- BEGIN: MapBackgroundArea -->
+<div class="absolute inset-0 z-0 overflow-hidden" data-purpose="osm-map-viewport">
+<!-- SVG Vector Stylized OpenStreetMap Coastal Map Layer -->
+<svg class="w-full h-full object-cover" fill="none" viewbox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+<!-- Sea water / Coastal bay -->
+<rect fill="#B9E5EB" height="844" width="390"></rect>
+<!-- Landmass (Dameisha / Xichong Peninsula Coastal Topology) -->
+<path d="M-20,-20 L410,-20 L410,240 Q320,180 270,220 T180,180 Q120,150 40,240 T-20,380 Z" fill="#E8F4D9" stroke="#C4E0A5" stroke-width="1.5"></path>
+<path d="M-20,160 Q60,200 120,190 T240,240 Q310,250 410,160 L410,210 Q320,310 240,280 T90,260 L-20,330 Z" fill="#DCEDC8" opacity="0.6"></path>
+<!-- Coastal roads & tracks (Y268 & S359) -->
+<path d="M-10,310 Q60,250 110,195 T210,205 Q280,220 340,180 T400,160" fill="none" stroke="#FDE047" stroke-linecap="round" stroke-width="3"></path>
+<path d="M-10,310 Q60,250 110,195 T210,205 Q280,220 340,180 T400,160" fill="none" stroke="#F59E0B" stroke-linecap="round" stroke-width="1.5"></path>
+<path d="M-10,220 L60,170 Q130,160 170,120" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-width="2"></path>
+<!-- Coastline depth contours -->
+<path d="M-20,390 Q120,290 220,300 T410,280" fill="none" stroke="#99D5E0" stroke-dasharray="3 3" stroke-width="1"></path>
+<!-- Road Shields & Geo Labels -->
+<rect fill="#E2E8F0" height="15" rx="3" stroke="#94A3B8" stroke-width="0.5" width="38" x="12" y="210"></rect>
+<text fill="#475569" font-size="9" font-weight="600" text-anchor="middle" x="31" y="221">S359</text>
+<rect fill="#FEF08A" height="14" rx="3" stroke="#EAB308" stroke-width="0.5" width="36" x="98" y="142"></rect>
+<text fill="#854D0E" font-size="8.5" font-weight="bold" text-anchor="middle" x="116" y="152">Y268</text>
+<text fill="#64748B" font-family="PingFang SC" font-size="10" x="28" y="348">望鱼岭</text>
+<text fill="#64748B" font-family="PingFang SC" font-size="10" x="245" y="175">扯旗山</text>
+<text fill="#64748B" font-family="PingFang SC" font-size="10" x="330" y="188">大排头</text>
+<text fill="#94A3B8" font-family="PingFang SC" font-size="9" x="242" y="225">风田</text>
+</svg>
+<!-- Pinned Star Astronomical Observatory Marker -->
+<div class="absolute left-[175px] top-[340px] transform -translate-x-1/2 -translate-y-full cursor-pointer transition-transform hover:scale-105" data-purpose="pin-marker">
+<div class="relative flex flex-col items-center">
+<!-- Pin Body -->
+<div class="w-8 h-8 rounded-full bg-slate-900 border-2 border-white shadow-lg flex items-center justify-center">
+<svg class="w-4 h-4 text-amber-400 fill-amber-400" viewbox="0 0 20 20">
+<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+</div>
+<!-- Pin Tip Pointer -->
+<div class="w-2 h-2 bg-slate-900 rotate-45 -mt-1 border-r border-b border-white"></div>
+</div>
+</div>
+<!-- OSM Source Attribution Watermark -->
+<div class="absolute left-3 top-[418px] bg-white/80 backdrop-blur-xs border border-slate-200/60 rounded px-1.5 py-0.5 pointer-events-none">
+<span class="text-[10px] text-slate-500 font-sans">© OpenStreetMap 贡献者</span>
+</div>
+</div>
+<!-- END: MapBackgroundArea -->
+<!-- BEGIN: TopStatusBarAndNavigation -->
+<header class="relative z-10 w-full flex flex-col pt-3 px-4 pointer-events-auto" data-purpose="app-top-header">
+<!-- iOS Status Bar (390px spec) -->
+<div class="w-full flex justify-between items-center text-slate-900 text-[14px] font-semibold tracking-tight pb-2">
+<span>9:41</span>
+<div class="flex items-center space-x-1.5">
+<!-- Cellular bars -->
+<svg class="w-4 h-3 text-slate-900 fill-current" viewbox="0 0 17 12">
+<rect height="3" rx="0.5" width="3" x="0" y="9"></rect>
+<rect height="6" rx="0.5" width="3" x="4.5" y="6"></rect>
+<rect height="9" rx="0.5" width="3" x="9" y="3"></rect>
+<rect height="12" rx="0.5" width="3" x="13.5" y="0"></rect>
+</svg>
+<!-- Wifi icon -->
+<svg class="w-3.5 h-3 text-slate-900 stroke-current stroke-2" fill="none" viewbox="0 0 24 24">
+<path d="M3 8c5-4 13-4 18 0M6 12c3.5-3 8.5-3 12 0M9 16c1.8-1.5 4.2-1.5 6 0M12 20h.01" stroke-linecap="round"></path>
+</svg>
+<!-- Battery icon -->
+<div class="w-5 h-2.5 border border-slate-800 rounded-sm p-0.5 flex items-center">
+<div class="w-full h-full bg-slate-900 rounded-2xs"></div>
+</div>
+</div>
+</div>
+<!-- WeChat Mini-Program Navigation & Capsule Header -->
+<div class="w-full flex items-center justify-between mt-1">
+<h1 class="text-slate-900 text-lg font-bold tracking-tight">今晚去观星</h1>
+<!-- WeChat Capsule Bar -->
+<div class="h-8 px-2.5 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur-md flex items-center space-x-3 shadow-xs">
+<button aria-label="更多" class="flex items-center space-x-0.5 text-slate-900" type="button">
+<div class="w-1 h-1 rounded-full bg-current"></div>
+<div class="w-1 h-1 rounded-full bg-current"></div>
+<div class="w-1 h-1 rounded-full bg-current"></div>
+</button>
+<div class="w-px h-3 bg-slate-300"></div>
+<button aria-label="关闭小程序" class="flex items-center justify-center text-slate-900" type="button">
+<div class="w-3 h-3 rounded-full border border-slate-900 flex items-center justify-center p-0.5">
+<div class="w-1 h-1 rounded-full bg-slate-900"></div>
+</div>
+</button>
+</div>
+</div>
+<!-- Search Bar Capsule (36px visible height) -->
+<div class="w-full mt-2.5">
+<div class="w-full h-9 bg-white/90 backdrop-blur-md rounded-full px-3.5 shadow-sm border border-slate-200/80 flex items-center space-x-2">
+<svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="11" cy="11" r="7"></circle>
+<path d="M21 21l-4.35-4.35" stroke-linecap="round"></path>
+</svg>
+<span class="text-[13px] text-slate-400 font-normal tracking-wide">搜索观星点</span>
+</div>
+</div>
+</header>
+<!-- END: TopStatusBarAndNavigation -->
+<!-- BEGIN: FloatingMapTools -->
+<!-- Map floating controls (Right side) -->
+<aside class="absolute right-4 top-[300px] z-10 flex flex-col space-y-2.5 pointer-events-auto" data-purpose="floating-map-tools">
+<!-- Locate / Sun Crosshair Button -->
+<button aria-label="定位" class="w-9 h-9 bg-white/95 backdrop-blur-md rounded-full shadow-md border border-slate-100 flex items-center justify-center text-slate-700 active:scale-95 transition-transform" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="4"></circle>
+<path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.93 4.93l2.12 2.12m9.9 9.9l2.12 2.12M4.93 19.07l2.12-2.12m9.9-9.9l2.12-2.12" stroke-linecap="round"></path>
+</svg>
+</button>
+<!-- Map Layers Switcher Button -->
+<button aria-label="图层" class="w-9 h-9 bg-white/95 backdrop-blur-md rounded-full shadow-md border border-slate-100 flex items-center justify-center text-slate-700 active:scale-95 transition-transform" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</aside>
+<!-- END: FloatingMapTools -->
+<!-- BEGIN: InformationDrawer -->
+<!-- Bottom Sheet Drawer (Medium Stage ~48-52% Screen Height) -->
+<section class="relative z-20 w-full bg-white rounded-t-[20px] shadow-[0_-8px_24px_rgba(0,0,0,0.06)] flex flex-col pt-2.5 pb-2 px-4 transition-all duration-200" data-purpose="stargazing-spot-drawer">
+<!-- Top Drag Handle Bar -->
+<div class="w-full flex justify-center pb-2.5">
+<div class="w-9 h-1 bg-slate-300 rounded-full"></div>
+</div>
+<!-- Spot Title and Region Header -->
+<div class="flex items-baseline justify-between">
+<h2 class="text-[18px] font-bold text-slate-900 tracking-tight leading-tight">深圳市天文台</h2>
+<span class="text-[12px] text-slate-500 font-normal">深圳 · 大鹏</span>
+</div>
+<!-- Chapter Tabs: "基本信息" & "天文" -->
+<nav class="flex items-center space-x-6 border-b border-slate-100 mt-2.5 pb-2" data-purpose="chapter-tabs">
+<div class="relative cursor-pointer">
+<span class="text-[13px] font-bold text-slate-900">基本信息</span>
+<!-- Active Tab Underline Indicator -->
+<div class="absolute -bottom-2 left-0 right-0 h-0.5 bg-slate-900 rounded-full"></div>
+</div>
+<div class="cursor-pointer">
+<span class="text-[13px] font-normal text-slate-400 hover:text-slate-600 transition-colors">天文</span>
+</div>
+</nav>
+<!-- Route and Navigation Section -->
+<div class="mt-3 flex items-center justify-between pb-3 border-b border-slate-100" data-purpose="route-nav-bar">
+<div>
+<h3 class="text-[13px] font-medium text-slate-900">路线与到达</h3>
+<p class="text-[12px] text-slate-400 mt-0.5">距离、预计到达暂无数据</p>
+</div>
+<!-- Northeast navigation circular button (Exact 32px) -->
+<button aria-label="导航" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 transition flex items-center justify-center text-slate-800" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M7 17L17 7M17 7H7M17 7V17"></path>
+</svg>
+</button>
+</div>
+<!-- Facility Rows & Cards -->
+<div class="mt-2.5 space-y-2" data-purpose="facility-information">
+<!-- Row 1: Opening Hours (Text line row) -->
+<div class="flex items-center justify-between py-1 px-1">
+<div class="flex items-center space-x-2">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M12 7v5l3 3" stroke-linecap="round"></path>
+</svg>
+<span class="text-[12px] text-slate-600 font-normal">开放时间</span>
+</div>
+<span class="text-[12px] text-slate-400 font-normal">暂无数据</span>
+</div>
+<!-- Card Row 2: Parking Facilities (Lightweight card row) -->
+<div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 flex items-center justify-between">
+<div class="flex items-center space-x-2.5">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11v6a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-1H9v1a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6z" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="8" cy="13" fill="currentColor" r="1.5"></circle>
+<circle cx="16" cy="13" fill="currentColor" r="1.5"></circle>
+</svg>
+<span class="text-[12px] text-slate-700 font-medium">停车设施</span>
+</div>
+<span class="text-[12px] text-slate-400">暂无数据</span>
+</div>
+<!-- Card Row 3: Restroom Facilities (Lightweight card row) -->
+<div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 flex items-center justify-between">
+<div class="flex items-center space-x-2.5">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="18" rx="2" stroke-linecap="round" width="12" x="6" y="3"></rect>
+<path d="M10 8h4m-4 4h4" stroke-linecap="round"></path>
+</svg>
+<span class="text-[12px] text-slate-700 font-medium">洗手间</span>
+</div>
+<span class="text-[12px] text-slate-400">暂无数据</span>
+</div>
+</div>
+<!-- Entry Links: Data source attribution & Feedback button -->
+<div class="mt-2.5 flex items-center justify-between pt-1 text-[11.5px]" data-purpose="data-source-and-feedback">
+<span class="text-slate-400">资料来源：暂无数据</span>
+<button class="flex items-center text-slate-500 hover:text-slate-700 space-x-0.5 transition" type="button">
+<span>反馈纠错</span>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Bottom Action Buttons Row (Exact 40px Button Height) -->
+<div class="mt-3.5 grid grid-cols-3 gap-2.5" data-purpose="spot-cta-buttons">
+<!-- 1. "想去" Button (Active State with Yellow-Lime Meteor Trail Effect) -->
+<button class="h-10 rounded-full border border-amber-300 bg-amber-50/70 active:scale-95 flex items-center justify-center space-x-1.5 transition select-none" id="wantToGoBtn" type="button">
+<!-- Meteor-trail triple star cluster -->
+<div class="flex items-center space-x-0.5" id="starCluster">
+<!-- Companion mini star left -->
+<svg class="w-2.5 h-2.5 -mr-0.5 text-lime-500 fill-current opacity-85" viewbox="0 0 20 20">
+<path d="M10 1l2.5 5 5.5.8-4 3.9.9 5.3-4.9-2.6-4.9 2.6.9-5.3-4-3.9 5.5-.8z"></path>
+</svg>
+<!-- Main Focal Star with active golden/lime gradient -->
+<svg class="w-4 h-4 text-amber-500 fill-current drop-shadow-[0_1px_2px_rgba(234,179,8,0.4)]" viewbox="0 0 20 20">
+<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<!-- Companion mini star right -->
+<svg class="w-2 h-2 -ml-0.5 text-amber-400 fill-current opacity-75" viewbox="0 0 20 20">
+<path d="M10 1l2.5 5 5.5.8-4 3.9.9 5.3-4.9-2.6-4.9 2.6.9-5.3-4-3.9 5.5-.8z"></path>
+</svg>
+</div>
+<span class="text-[13px] font-semibold text-amber-800" id="wantToGoText">已想去</span>
+</button>
+<!-- 2. "分享" Button (Outline standard style) -->
+<button class="h-10 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:scale-95 flex items-center justify-center space-x-1.5 text-slate-700 transition" type="button">
+<svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<circle cx="18" cy="5" r="3"></circle>
+<circle cx="6" cy="12" r="3"></circle>
+<circle cx="18" cy="19" r="3"></circle>
+<path d="M8.59 13.51l6.83 3.98m-.01-10.98l-6.82 3.98"></path>
+</svg>
+<span class="text-[13px] font-medium">分享</span>
+</button>
+<!-- 3. "云观星" Button (Subtle Deep Navy/Slate Starlight Texture) -->
+<button class="h-10 rounded-full starlight-bg text-white hover:brightness-110 active:scale-95 flex items-center justify-center space-x-1.5 shadow-sm transition overflow-hidden" type="button">
+<svg class="w-4 h-4 text-slate-100 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="3.2"></circle>
+<path d="M2.05 12a10.5 10.5 0 0 1 19.9 0 10.5 10.5 0 0 1-19.9 0z" stroke-linecap="round"></path>
+</svg>
+<span class="text-[13px] font-medium tracking-wide">云观星</span>
+</button>
+</div>
+</section>
+<!-- END: InformationDrawer -->
+<!-- BEGIN: BottomTabBar -->
+<!-- Fixed Tab Navigation (Map & Profile) -->
+<footer class="relative z-30 w-full bg-white border-t border-slate-100 px-12 pt-2 pb-5 flex items-center justify-around" data-purpose="tab-bar">
+<!-- Map Tab (Active) -->
+<div class="flex items-center space-x-1.5 cursor-pointer">
+<svg class="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M9 18V5l-6 3v13l6-3zm0 0l6 3m-6-3V5m6 16V8l6-3v13l-6 3zm0 0V8"></path>
+</svg>
+<span class="text-[13px] font-bold text-brand-blue">地图</span>
+</div>
+<!-- Mine / Profile Tab (Inactive) -->
+<div class="flex items-center space-x-1.5 cursor-pointer opacity-50 hover:opacity-80 transition">
+<svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+<span class="text-[13px] font-medium text-slate-700">我的</span>
+</div>
+</footer>
+<!-- END: BottomTabBar -->
+<!-- BEGIN: iOSHomeIndicator -->
+<div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-[134px] h-[5px] bg-slate-900/30 rounded-full pointer-events-none z-40" data-purpose="ios-home-indicator"></div>
+<!-- END: iOSHomeIndicator -->
+<!-- Interactive JavaScript for "想去" Button Animation & State Toggle -->
+<script data-purpose="interaction-want-to-go">
+    const wantBtn = document.getElementById('wantToGoBtn');
+    const starCluster = document.getElementById('starCluster');
+    const btnText = document.getElementById('wantToGoText');
+    let isActive = true;
+
+    wantBtn.addEventListener('click', () => {
+      // Trigger smooth 720deg rotation animation
+      starCluster.classList.remove('star-animate-spin');
+      void starCluster.offsetWidth; // Trigger DOM reflow
+      starCluster.classList.add('star-animate-spin');
+
+      // Toggle state
+      isActive = !isActive;
+      if (isActive) {
+        wantBtn.className = 'h-10 rounded-full border border-amber-300 bg-amber-50/70 active:scale-95 flex items-center justify-center space-x-1.5 transition select-none';
+        btnText.textContent = '已想去';
+        btnText.className = 'text-[13px] font-semibold text-amber-800';
+        starCluster.innerHTML = `
+          <svg class="w-2.5 h-2.5 -mr-0.5 text-lime-500 fill-current opacity-85" viewBox="0 0 20 20"><path d="M10 1l2.5 5 5.5.8-4 3.9.9 5.3-4.9-2.6-4.9 2.6.9-5.3-4-3.9 5.5-.8z"/></svg>
+          <svg class="w-4 h-4 text-amber-500 fill-current drop-shadow-[0_1px_2px_rgba(234,179,8,0.4)]" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          <svg class="w-2 h-2 -ml-0.5 text-amber-400 fill-current opacity-75" viewBox="0 0 20 20"><path d="M10 1l2.5 5 5.5.8-4 3.9.9 5.3-4.9-2.6-4.9 2.6.9-5.3-4-3.9 5.5-.8z"/></svg>
+        `;
+      } else {
+        wantBtn.className = 'h-10 rounded-full border border-slate-200 bg-white active:scale-95 flex items-center justify-center space-x-1.5 transition select-none';
+        btnText.textContent = '想去';
+        btnText.className = 'text-[13px] font-medium text-slate-700';
+        starCluster.innerHTML = `
+          <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+        `;
+      }
+    });
+  </script>
+</body></html>

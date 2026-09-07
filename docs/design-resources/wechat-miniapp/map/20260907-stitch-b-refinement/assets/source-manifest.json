@@ -1,0 +1,15 @@
+{
+  "assets": [
+    {
+      "kind": "stylesheet",
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css",
+      "local": "fontawesome-original.css"
+    },
+    {
+      "kind": "image",
+      "url": "https://lh3.googleusercontent.com/aida-public/AB6AXuDtYNcFDPADatz7G8KpzNBnBHyMYwudNz-K_bd17qwfL7-p8-niX6n78D1emMuv0S4Mm0aUGFuIlyxAIXNoayJ2SiQEHZoIkbpmuI_OW7l3uJwP5HYgDPSIwvTy1L-30pJdTckvdlklsMt08XtbbuZfG0e691AdNbMh4PuIOZ4c6OoSh3-SnySLcswB653x9na9Fi0hEUPEAaVn_7tTzoAjq2RMqJW3Uzthyy7-Xm7pQMTwcIC5eh5r9wLauvM4sHB9",
+      "local": "stitch-map-reference.jpg"
+    }
+  ],
+  "failures": []
+}

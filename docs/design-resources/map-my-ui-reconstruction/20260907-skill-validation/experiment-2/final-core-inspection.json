@@ -1,0 +1,242 @@
+[
+  {
+    "file": "A/round-2/e2-A-1-map.json",
+    "rootId": "6:6418",
+    "sha256": "97973f2ca75cd8a0938be30119012903b3f3b58c934afe47be580b7cc484c1ba",
+    "visibleTextCount": 21,
+    "visibleControlCount": 16,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "14/20/Regular": 3,
+      "11/16/Regular": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 2,
+      "13/19/Medium": 10,
+      "14/20/Medium": 1,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.9590412343635375,
+    "issues": []
+  },
+  {
+    "file": "A/round-2/e2-A-1-my.json",
+    "rootId": "6:6706",
+    "sha256": "a1c584eef8fce59cef78cff7d6ad3d794342202fffea9afc50a43510ebca8595",
+    "visibleTextCount": 15,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 5,
+      "14/20/Medium": 4,
+      "16/23/Medium": 1,
+      "13/19/Regular": 1,
+      "13/19/Medium": 1
+    },
+    "minimumSolidTextContrast": 5.734333311371721,
+    "issues": []
+  },
+  {
+    "file": "A/round-2/e2-A-2-map.json",
+    "rootId": "6:6854",
+    "sha256": "1efa4aa5b9ca6d718b89965569b7e1d7564c8e0d47426d4d811b8f32c61ae3f7",
+    "visibleTextCount": 21,
+    "visibleControlCount": 16,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "14/20/Regular": 2,
+      "11/16/Regular": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 3,
+      "13/19/Medium": 10,
+      "14/20/Medium": 1,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.9590412343635375,
+    "issues": []
+  },
+  {
+    "file": "A/round-2/e2-A-2-my.json",
+    "rootId": "6:7141",
+    "sha256": "728192fef8f07678b6669fa927a1e00c1b74a84cd9b00072cd21eff20c092bf8",
+    "visibleTextCount": 17,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 6,
+      "17/24/Medium": 1,
+      "13/19/Medium": 2,
+      "16/23/Medium": 1,
+      "14/20/Medium": 3,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.820253606410157,
+    "issues": []
+  },
+  {
+    "file": "A/round-2/e2-A-3-map.json",
+    "rootId": "6:7293",
+    "sha256": "12e9852bb37f823d9fd281e0b1f9e171771ae25a16e82d0d1a24384a40c356ed",
+    "visibleTextCount": 22,
+    "visibleControlCount": 17,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 3,
+      "14/20/Regular": 1,
+      "11/16/Regular": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 3,
+      "13/19/Medium": 10,
+      "14/20/Medium": 1,
+      "13/19/Regular": 1
+    },
+    "minimumSolidTextContrast": 5.507255817093428,
+    "issues": []
+  },
+  {
+    "file": "A/round-2/e2-A-3-my.json",
+    "rootId": "6:7576",
+    "sha256": "9700a4393883cf46510bc7e2d9007a9c7512f5de5d6d003325c81318774fa424",
+    "visibleTextCount": 17,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/18/Medium": 1,
+      "15/22/Medium": 1,
+      "19/26/Medium": 1,
+      "12/18/Regular": 6,
+      "14/20/Medium": 5,
+      "14/20/Regular": 1,
+      "13/19/Regular": 1,
+      "13/19/Medium": 1
+    },
+    "minimumSolidTextContrast": 5.734333311371721,
+    "issues": []
+  },
+  {
+    "file": "B/round-1/e2-B-1-map.json",
+    "rootId": "6:5418",
+    "sha256": "eb66128ad575c5d1f69e400780771423f1be1cd65aeca83aae9f2e541969d64b",
+    "visibleTextCount": 21,
+    "visibleControlCount": 16,
+    "textStyles": {
+      "13/20/Medium": 7,
+      "14/21/Medium": 1,
+      "14/20/Medium": 1,
+      "11/18/Regular": 1,
+      "19/27/Bold": 1,
+      "12/18/Regular": 3,
+      "11/16/Regular": 1,
+      "13/19/Regular": 1,
+      "12/20/Medium": 3,
+      "11/16/Medium": 2
+    },
+    "minimumSolidTextContrast": 5.753163241358222,
+    "issues": []
+  },
+  {
+    "file": "B/round-1/e2-B-1-my.json",
+    "rootId": "6:5615",
+    "sha256": "2bb016895ba5d12bc2bfb578138392052b03a94d87616997a6a250c8fc13dc3b",
+    "visibleTextCount": 16,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/20/Medium": 2,
+      "14/21/Medium": 1,
+      "20/28/Bold": 1,
+      "12/18/Regular": 5,
+      "12/18/Medium": 1,
+      "15/22/Medium": 1,
+      "13/20/Regular": 1,
+      "14/20/Medium": 2,
+      "11/16/Medium": 2
+    },
+    "minimumSolidTextContrast": 5.579023351124218,
+    "issues": []
+  },
+  {
+    "file": "B/round-1/e2-B-2-map.json",
+    "rootId": "6:5764",
+    "sha256": "e08c496ff7115eeacf7074066ac490b16c453700e291a13d046c316fa3325427",
+    "visibleTextCount": 21,
+    "visibleControlCount": 16,
+    "textStyles": {
+      "13/20/Medium": 7,
+      "14/21/Medium": 1,
+      "14/20/Medium": 1,
+      "11/18/Regular": 1,
+      "12/18/Regular": 2,
+      "20/28/Bold": 1,
+      "11/16/Regular": 1,
+      "13/19/Regular": 1,
+      "12/17/Regular": 1,
+      "12/20/Medium": 3,
+      "11/16/Medium": 2
+    },
+    "minimumSolidTextContrast": 5.575005657487174,
+    "issues": []
+  },
+  {
+    "file": "B/round-1/e2-B-2-my.json",
+    "rootId": "6:5961",
+    "sha256": "d123fd2f7673ab37159748e9acf059e2edf64fabf88455ff29116c6c6fc7d602",
+    "visibleTextCount": 16,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/20/Medium": 1,
+      "14/21/Medium": 1,
+      "20/28/Bold": 1,
+      "12/18/Regular": 5,
+      "12/18/Medium": 1,
+      "17/25/Bold": 1,
+      "13/20/Regular": 1,
+      "14/20/Medium": 3,
+      "11/16/Medium": 2
+    },
+    "minimumSolidTextContrast": 5.460516459923346,
+    "issues": []
+  },
+  {
+    "file": "B/round-1/e2-B-3-map.json",
+    "rootId": "6:6098",
+    "sha256": "fd112cd1ad0cb67645d0f8eaf18df6d681aae1524742e8f9e62ff291738a7917",
+    "visibleTextCount": 23,
+    "visibleControlCount": 16,
+    "textStyles": {
+      "13/20/Medium": 7,
+      "14/21/Medium": 1,
+      "14/20/Medium": 1,
+      "11/18/Regular": 1,
+      "19/27/Bold": 1,
+      "12/18/Regular": 4,
+      "11/16/Regular": 1,
+      "13/19/Regular": 2,
+      "12/20/Medium": 3,
+      "11/16/Medium": 2
+    },
+    "minimumSolidTextContrast": 5.579023351124218,
+    "issues": []
+  },
+  {
+    "file": "B/round-1/e2-B-3-my.json",
+    "rootId": "6:6296",
+    "sha256": "d8b4f6b3926c26513c02e84a1d203e4f1af698b68535a31919f1a7ae4352ccd1",
+    "visibleTextCount": 17,
+    "visibleControlCount": 7,
+    "textStyles": {
+      "13/20/Medium": 3,
+      "14/21/Medium": 1,
+      "20/28/Bold": 1,
+      "12/18/Regular": 5,
+      "14/21/Regular": 3,
+      "14/20/Medium": 2,
+      "11/16/Medium": 2
+    },
+    "minimumSolidTextContrast": 5.579023351124218,
+    "issues": []
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "status": "adopted",
+  "date": "2026-09-08",
+  "scope": "Daytime formal spot information component: small medium large, basic/astronomy, related media/viewer, action bar",
+  "source": "20260907-stitch-b-refinement/feedback-13 final clockwise/clear-satellite correction",
+  "productionMigrated": false,
+  "stitchProject": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "stitchRole": "historical exploration; project renamed, no permanent deletion",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  }
+}

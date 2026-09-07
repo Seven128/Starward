@@ -1,0 +1,56 @@
+{
+  "mode": "applied_via_local_admin_http",
+  "spotName": "深圳市天文台",
+  "sources": [
+    {
+      "id": "source:sz-observatory-night-access-20251117",
+      "kind": "OFFICIAL_REFERENCE",
+      "provider": "深圳市气象局 / 深圳政府在线",
+      "title": "天文台晚上开放吗？",
+      "sourceUrl": "https://www.sz.gov.cn/hdjl/ywzsk/qxj/xzfwl/content/post_12494264.html",
+      "license": "仅记录链接、出处元数据和自写事实摘要；未获得照片或全文转载许可",
+      "licenseUrl": "",
+      "publishedAt": "2025-11-17T09:50:00+08:00",
+      "retrievedAt": "2026-09-06",
+      "validFrom": null,
+      "validTo": null,
+      "state": "PARTIAL",
+      "confidence": null,
+      "precision": "官方公众夜间开放答复；非坐标或现场核验",
+      "limitations": [
+        "天文台不向公众夜间开放。",
+        "西涌暗夜社区特定活动不能推导园区通用夜间准入。",
+        "未核验当前现场道路、设施或安全；检索日期不是现场 verifiedAt。"
+      ]
+    },
+    {
+      "id": "source:sz-observatory-visitor-rules-20250702",
+      "kind": "OFFICIAL_REFERENCE",
+      "provider": "深圳市气象局 / 深圳市天文台",
+      "title": "深圳市天文台公众开放参观须知",
+      "sourceUrl": "https://weather.sz.gov.cn/qixiangfuwu/tianwenfuwu/yuyuexuzhi/content/post_3584720.html",
+      "license": "仅记录链接、出处元数据和自写事实摘要；未获得照片或全文转载许可",
+      "licenseUrl": "",
+      "publishedAt": "2025-07-02T14:58:16+08:00",
+      "retrievedAt": "2026-09-06",
+      "validFrom": null,
+      "validTo": null,
+      "state": "PARTIAL",
+      "confidence": null,
+      "precision": "官方参观规则，publishedAt 对应页面更新日期；非现场核验",
+      "limitations": [
+        "参观需预约并按时段进入；外来车辆停山下后步行或接驳。",
+        "园区不允许露营，复杂地形需避开崖边。",
+        "规则不能证明夜间道路、停车或现场安全。"
+      ]
+    }
+  ],
+  "applicationConstraints": [
+    "sourceUrl 必须与已核对来源逐字一致。",
+    "通过现有 PATCH /v2/admin/spots/:spotId，先回读当前 detail，再按 source.id 合并 dataDisclosure；该字段是整体替换，不能直接发送本文件 sources 覆盖既有来源。",
+    "本文件不是 AdminSpotPatch 请求体。不得写入 evidence、lastVerifiedAt、设施状态或发布状态。",
+    "adminPatchSpot 会生成修订、完整性评估和审计，不是无副作用的单独来源登记。",
+    "不将正常库地点替换成隔离测试地点，不将第四样本自动关联。"
+  ],
+  "applicationResult": "observatory-source-intake-result.json"
+}

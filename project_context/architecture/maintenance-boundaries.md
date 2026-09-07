@@ -238,7 +238,7 @@ Revisit when: Extract normalization and window segmentation before adding anothe
 
 Owner: miniapp-api-maintainers. Tracking: WECHAT-MINIAPP-MOD-010.
 
-The current publication policy keeps every attributable spot fact and blocker in one fail-closed review surface so no incomplete record can bypass publication; rule-family extraction remains bounded debt.
+The publication assessment remains one server-owned review surface. Its intended boundary is the core-readiness policy in runtime-and-domain.md; the implementation still requires optional enrichment and must be migrated without weakening attributable core safety evidence, identity or visibility checks. Rule-family extraction remains bounded debt.
 
 Revisit when: Extract evidence-family validators before adding another publication fact, visibility policy or review transition.
 

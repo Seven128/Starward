@@ -1,0 +1,21 @@
+{
+  "license": "CC BY 2.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "purpose": "Illustrative reference only; neither photo depicts fictional 星湾观星点. Original files unchanged; card display uses CSS crop, blur and white overlay. Viewer shows unfiltered original.",
+  "assets": [
+    {
+      "file": "parking.jpg",
+      "author": "Matthew Paul Argall",
+      "source": "https://commons.wikimedia.org/wiki/File:Parked_cars,_parking_lot_(24760952367).jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/8/87/Parked_cars%2C_parking_lot_%2824760952367%29.jpg",
+      "sha256": "f9d8a651472778310b696a15fb4755cc83e6ee1f1f3f5e919858fdbc1a820333"
+    },
+    {
+      "file": "toilet.jpg",
+      "author": "Benjamin Berne / SuSanA Secretariat",
+      "source": "https://commons.wikimedia.org/wiki/File:Public_toilet_block_in_OFP_(5537452770).jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Public_toilet_block_in_OFP_%285537452770%29.jpg",
+      "sha256": "07ea57f4aa7fdcba2a8bb2ccfe894a6edfd5b9f6208c5e4a0db795afc1be1f57"
+    }
+  ]
+}

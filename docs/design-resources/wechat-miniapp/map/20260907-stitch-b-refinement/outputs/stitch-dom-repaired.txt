@@ -1,0 +1,311 @@
+- main:
+  - iframe [active] [id="I0_1788779899205"] [name="I0_1788779899205"]:
+    - main:
+      - button:
+      - button "Stargazing Map Detail View"
+      - button:
+      - toolbar:
+        - button "Generate":
+          - generic: Generate
+        - button "Modify":
+          - generic: Modify
+        - button "Preview":
+          - generic: Preview
+        - button "More":
+          - generic: More
+      - button:
+      - button "导出":
+        - paragraph: 导出
+      - button "共享":
+        - paragraph: 共享
+      - button "“账号”菜单":
+        - img "Profile image for 李晨"
+      - button:
+      - button:
+      - button:
+      - button:
+      - button "Choose File"
+      - button:
+      - button:
+      - button:
+      - button "撤销" [disabled]:
+        - generic: undo
+      - button "重做" [disabled]:
+        - generic: redo
+      - button "81%":
+        - generic: 81%
+      - button "实用链接":
+      - button "Choose File"
+      - application:
+        - generic: image
+        - generic: clipboard.png
+        - generic: image
+        - generic: clipboard.png
+        - generic: image
+        - generic: clipboard.png
+        - generic: devices
+        - generic: 今晚去观星 - 方向A（轻透悬浮卡片·高密度精细版）
+        - iframe:
+          - img "地图背景"
+          - generic: © OpenStreetMap 贡献者
+          - button:
+          - button:
+          - banner:
+            - generic: 9:41
+            - heading "今晚去观星" [level=1]
+            - button
+            - button
+            - generic: 搜索观星点
+          - main:
+            - heading "深圳市天文台" [level=2]
+            - generic: 深圳 · 大鹏
+            - generic: 概览
+            - generic: 天文
+            - generic: 路线与到达
+            - generic: 距离、预计到达暂无数据
+            - button "导航":
+              - generic: 导航
+            - generic: 开放时间待核实
+            - generic: 停车待核实
+            - generic: 厕所待核实
+            - link "场地资料":
+              - /url: "#"
+            - generic: "|"
+            - link "数据来源":
+              - /url: "#"
+            - generic: "|"
+            - link "反馈纠错":
+              - /url: "#"
+            - button "想去":
+              - generic: 想去
+            - button "分享":
+              - generic: 分享
+            - button "云观星":
+              - generic: 云观星
+          - contentinfo:
+            - button "地图":
+              - generic: 地图
+            - button "我的":
+              - generic: 我的
+        - generic: devices
+        - generic: 今晚去观星 - 方向B（连贯底抽屉·极简现代排版版）
+        - iframe:
+          - img "地图背景"
+          - generic: © OpenStreetMap 贡献者
+          - button:
+          - button:
+          - banner:
+            - generic: 9:41
+            - heading "今晚去观星" [level=1]
+            - button
+            - button
+            - generic: 搜索观星点
+          - main:
+            - heading "深圳市天文台" [level=2]
+            - generic: 深圳 · 大鹏
+            - generic: 概览
+            - generic: 天文
+            - generic: 路线与到达
+            - generic: 距离、预计到达暂无数据
+            - button "导航":
+              - generic: 导航
+            - generic: 开放时间
+            - generic: 开放时间待核实
+            - generic: 停车设施
+            - generic: 停车待核实
+            - generic: 洗手间
+            - generic: 厕所待核实
+            - link "场地资料":
+              - /url: "#"
+            - link "数据来源":
+              - /url: "#"
+            - link "反馈纠错":
+              - /url: "#"
+            - button "想去":
+              - generic: 想去
+            - button "分享":
+              - generic: 分享
+            - button "云观星":
+              - generic: 云观星
+          - contentinfo:
+            - button "地图":
+              - generic: 地图
+            - button "我的":
+              - generic: 我的
+        - generic: devices
+        - generic: 今晚去观星 - 连贯底抽屉主稿（精细手机版）
+        - iframe:
+          - img "OpenStreetMap 底图"
+          - generic: © OpenStreetMap 贡献者
+          - generic: 
+          - generic: 今晚去观星
+          - button "":
+            - generic: 
+          - button "":
+            - generic: 
+          - generic: 
+          - textbox "搜索观星点"
+          - button "":
+            - generic: 
+          - button "":
+            - generic: 
+          - heading "深圳市天文台" [level=1]
+          - generic: 深圳 · 大鹏
+          - generic: 概览
+          - generic: 天文
+          - generic: 路线与到达
+          - generic: 距离、预计到达暂无数据
+          - button " 导航":
+            - generic: 
+            - generic: 导航
+          - generic: 
+          - generic: 开放时间
+          - generic: 暂无数据
+          - generic: 
+          - generic: 停车设施
+          - generic: 暂无数据
+          - generic: 
+          - generic: 洗手间
+          - generic: 暂无数据
+          - button "场地资料"
+          - generic: "|"
+          - button "数据来源"
+          - generic: "|"
+          - button "反馈纠错"
+          - button " 想去":
+            - generic: 
+            - generic: 想去
+          - button " 分享":
+            - generic: 
+            - generic: 分享
+          - button " 云观星":
+            - generic: 
+            - generic: 云观星
+          - generic: 
+          - generic: 地图
+          - generic: 
+          - generic: 我的
+        - generic: drag_indicator
+        - generic: 今晚去观星 - 连贯底抽屉主稿（390×844修复版）
+        - button:
+        - button:
+        - button:
+        - generic: 390 x 844
+        - iframe:
+          - img "OpenStreetMap 底图"
+          - generic: 
+          - generic: © OpenStreetMap 贡献者
+          - generic: 今晚去观星
+          - button "":
+            - generic: 
+          - button "":
+            - generic: 
+          - generic: 
+          - textbox "搜索观星点"
+          - button "":
+            - generic: 
+          - button "":
+            - generic: 
+          - heading "深圳市天文台" [level=1]
+          - generic: 深圳 · 大鹏
+          - generic: 概览
+          - generic: 天文
+          - generic: 路线与到达
+          - generic: 距离、预计到达暂无数据
+          - button " 导航":
+            - generic: 
+            - generic: 导航
+          - generic: 
+          - generic: 开放时间
+          - generic: 暂无数据
+          - generic: 
+          - generic: 停车设施
+          - generic: 暂无数据
+          - generic: 
+          - generic: 洗手间
+          - generic: 暂无数据
+          - button "场地资料"
+          - generic: "|"
+          - button "数据来源"
+          - generic: "|"
+          - button "反馈纠错"
+          - button " 想去":
+            - generic: 
+            - generic: 想去
+          - button " 分享":
+            - generic: 
+            - generic: 分享
+          - button " 云观星":
+            - generic: 
+            - generic: 云观星
+          - generic: 
+          - generic: 地图
+          - generic: 
+          - generic: 我的
+        - button "今晚去观星 - 连贯底抽屉主稿（390×844修复版）":
+          - generic: 今晚去观星 - 连贯底抽屉主稿（390×844修复版）
+        - button "Remove":
+        - textbox:
+          - paragraph: 您想更改或创建什么内容？
+        - button "Choose File"
+        - button:
+        - button:
+        - button:
+        - button:
+        - button "Balanced":
+          - generic: Balanced
+        - button:
+        - button [disabled]:
+        - button [expanded]:
+          - status:
+            - generic: 智能体日志
+        - menu "智能体日志":
+          - menuitem "对当前选中的「今晚去观星 - 连贯底抽屉主稿（精细手机版）」做一次技术修复，保留现有文字和视觉方向，...":
+            - generic: 对当前选中的「今晚去观星 - 连贯底抽屉主稿（精细手机版）」做一次技术修复，保留现有文字和视觉方向，...
+          - menuitem "用户已明确选中当前附带的「方向B（连贯底抽屉·极简现代排版版）」。这是新的地图页资源重做任务，请延续...":
+            - generic: 用户已明确选中当前附带的「方向B（连贯底抽屉·极简现代排版版）」。这是新的地图页资源重做任务，请延续...
+          - menuitem "上一次生成返回了“发生了意外错误，Stitch无法完成生成作业”，画布上目前只有三张输入参考，没有新...":
+            - generic: 上一次生成返回了“发生了意外错误，Stitch无法完成生成作业”，画布上目前只有三张输入参考，没有新...
+          - menuitem "附件通过图片粘贴依次上传，界面文件名可能都显示clipboard.png。请按图片内容及顺序对应下文...":
+            - generic: 附件通过图片粘贴依次上传，界面文件名可能都显示clipboard.png。请按图片内容及顺序对应下文...
+        - button "Collapse panel":
+        - img "李晨"
+        - paragraph: 对当前选中的「今晚去观星 - 连贯底抽屉主稿（精细手机版）」做一次技术修复，保留现有文字和视觉方向，不开新方向、不增加其他页面。当前原稿已单独导出保存。 实物检查与你的完成声明不符：在真实390×844视口，抽屉被 justify-between 分散在屏幕中段，它的动作栏下方与主导航之间有约100px的空白地图色带。抽屉上边缘过高，遮住图层按钮，选中地点的地图Pin和OSM归属也完全藏在抽屉后。画布仍显示1280×844，导出PNG带大片边框留白。请实际修好布局，不只回复已完成。 恢复 B 的贴底连续抽屉：抽屉底部必须紧接底部主导航，所有多余空间留给上方地图；不在抽屉与主导航之间留缝。主导航贴底常驻，动作栏与其连续但层级清楚。地图工具完整露出在抽屉上方，OSM版权归属可读。不可通过隐藏工具/点位、遮盖版权、缩小整页、减少内容或缩小44px操作命中区来修好。 三行设施事实只是文本，不是可点击项，不必强制每行44px高；恢复 B 紧凑的事实节奏。路线区保留单行导航，正文不要过淡。定位/图层、搜索、导航和三个底部动作的操作区保持至少44px；概览/天文也需要可操作区域。不要保留额外的粗阴影、大模糊玻璃或新的卡片嵌套。 只按真实素材可辨识地点摆放地图Pin；当前素材无法精确定位就如实在回复中说明，不得声称“高精度视觉定位”。仍保留选中点的可辨识表达和OSM署名。 输出手机根页面390×844，无外部展示背景、无居中设备框；CSS在390手机视口能直接完整呈现。原先19px地点标题、明确缺失值、各既有入口与三个动作都保留。请完成这一次修复并实际生成可导出的单张稿件。
+        - button "复制提示":
+        - button "展开":
+        - paragraph:
+          - text: 已完成对选定主稿的技术修复与视口结构重建，生成全新单张稿件
+          - strong: 今晚去观星 - 连贯底抽屉主稿（390×844修复版）
+          - text: ：
+        - heading "核心问题修复与技术落实" [level=3]
+        - list:
+          - paragraph:
+            - strong: 彻底修复纯正 390×844 手机视口
+          - list:
+            - listitem: 画布与 HTML 根容器彻底剔除外部桌面灰色边距、居中容器外壳与多余空白，真实以 390×844 像素作为基准渲染，导出 PNG 不再带大片留白。
+          - paragraph:
+            - strong: 消除断层缝隙，恢复 B 的紧凑连续贴底抽屉
+          - list:
+            - listitem: 彻底移除了此前因 flex 伸缩导致的动作栏与主导航之间约 100px 的空白地图带；
+            - listitem: 主导航固定贴底常驻，动作栏（想去 / 分享 / 云观星）紧密衔接其上方，层级清晰连贯；
+            - listitem: 恢复方向 B 的紧凑垂直排版节奏：三行设施事实（开放时间、停车设施、洗手间）回归纯文本列表，行间距紧凑适中，不再强行撑大到 44px；正文字色加深强化对比，彻底解决字体发淡问题。
+          - paragraph:
+            - strong: 完整露出地图视口、工具、选点 Pin 与 OSM 归属
+          - list:
+            - text: 抽屉高度收敛后，将垂直空间充分还给上方地图：
+            - list:
+              - text: 地图右侧的
+              - strong:
+                - text: 定位图标（十字准星）
+                - strong: 与
+                - text: 图层按钮
+              - text: 完整陈列在抽屉上方，均保留 44×44px 独立命中区；
+              - strong: 选中点 Pin
+              - text: 完整显露在地图视野中（位于西涌崖头顶北侧山脊陆地可视处）；
+              - strong: 「© OpenStreetMap 贡献者」
+              - text: 署名在地图左下角单行清晰展示，完全不被白色抽屉遮挡。
+          - paragraph:
+            - strong: 关于地图定位精度的客观说明
+          - list:
+            - listitem: 本稿所使用的底图为静态裁切素材，缺乏动态矢量瓦片的精确经纬度投影与坐标锚定能力。因此，本稿中的观星点 Pin 仅为基于底图海岸线与等高线走势放置在可辨识陆地区域的视觉指示标记，无法声称坐标已与实际天文台地理坐标精确吻合。
+        - paragraph: 所有核心文案、19px 标题、安静单行的路线与导航、动作栏及入口均完整保留。您可直接检视与导出此修复版。

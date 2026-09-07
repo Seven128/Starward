@@ -1,0 +1,30 @@
+{
+  "actions": [
+    {
+      "bg": "rgb(234, 245, 255)",
+      "font": "12px",
+      "height": 32,
+      "label": "想去"
+    },
+    {
+      "bg": "rgb(89, 98, 119)",
+      "font": "12px",
+      "height": 32,
+      "label": "云观星"
+    },
+    {
+      "bg": "rgb(251, 239, 227)",
+      "font": "12px",
+      "height": 32,
+      "label": "分享"
+    }
+  ],
+  "panel": {
+    "height": 368,
+    "top": 407.2000122070313
+  },
+  "viewport": {
+    "height": 844,
+    "width": 390
+  }
+}

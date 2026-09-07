@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>地图 · 有内容的点位与天文</title>
+<link rel="stylesheet" href="rendered.css">
+<style>
+    * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+    body { width: 390px; height: 844px; margin: 0; padding: 0; overflow: hidden; background: #CBD5E1; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+    .status-bar-time { font-feature-settings: "tnum"; }
+  /* Codex: transparent hit extensions; visible geometry stays unchanged. */
+button[aria-label="导航"] {position:relative;}
+button[aria-label="导航"]::after {content:"";position:absolute;width:44px;height:44px;left:50%;top:50%;transform:translate(-50%,-50%);}
+.map-tool {position:relative;pointer-events:auto;}
+.map-tool::after {content:"";position:absolute;width:44px;height:44px;left:50%;top:50%;transform:translate(-50%,-50%);}
+.search-entry {position:relative;cursor:pointer;}
+.search-entry::after {content:"";position:absolute;width:100%;height:44px;left:0;top:50%;transform:translateY(-50%);}
+</style>
+<style>
+/* Codex repair: reuse adopted components and a single shared document. */
+body{width:390px;height:844px;margin:0 auto;overflow:hidden;}
+header,footer{flex-shrink:0;}
+#extent-panel{position:relative;z-index:20;width:100%;background:white;display:flex;flex-direction:column;overflow:hidden;margin-top:auto;}
+.small #extent-panel{height:156px;border-radius:24px 24px 0 0;box-shadow:0 -10px 25px #0000000f;flex-shrink:0;}
+#handle-band{padding:10px 16px 0;flex-shrink:0;}
+#document{padding:0 16px;min-height:0;}
+.small #document{flex:1;overflow:hidden;pointer-events:none;}
+#section-nav{background:white;margin-top:8px;padding-bottom:10px;border-bottom:1px solid #f1f5f9;}
+.large #section-nav{position:sticky;top:0;z-index:2;}
+#astronomy{padding-top:18px;}
+#fixed-actions{padding:4px 16px 8px;flex-shrink:0;background:white;}
+#fixed-actions button{position:relative;}
+#fixed-actions button::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%);}
+.large header{background:white;}
+.large header>div:last-child{display:none;}
+.large #map-reference{display:none;}
+.large #extent-panel{flex:1;min-height:0;margin-top:0;border-radius:0;}
+.large #document{flex:1;overflow-y:auto;scrollbar-width:none;}
+#document::-webkit-scrollbar{display:none;}
+.large #section-nav>div{cursor:pointer;}
+.small #map-reference>div>img{height:auto;min-height:640px;object-fit:cover;object-position:top;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body.phone{width:100%;height:100svh;}
+</style><link rel="stylesheet" href="preview.css?v=1788810812335"><link rel="stylesheet" href="content.css?v=1788810812335"><link rel="stylesheet" href="refinement.css?v=1788810812354"><link rel="stylesheet" href="chapters.css?v=1788810812362"><link rel="stylesheet" href="gestures.css?v=1788810812384"><link rel="stylesheet" href="polish.css?v=1788810812390"><link rel="stylesheet" href="scenes.css"><link rel="stylesheet" href="meteor.css"></head>
+<body class="relative flex flex-col text-slate-900"><div id="map-reference">
+<!-- 1. 底层高保真OSM地图背景（复用原始素材IMAGE_1） -->
+<div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+<img alt="地图背景" class="w-[390px] h-auto object-cover object-top -translate-y-6" src="map-reference.jpg"/>
+<!-- 静态地图参考点标；地理准确性未验证 -->
+<div class="absolute left-[184px] top-[328px] -translate-x-1/2 -translate-y-full flex flex-col items-center">
+<div class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center ring-2 ring-white shadow-md">
+<svg class="w-3.5 h-3.5 text-amber-300" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2l2.4 7.4h7.6l-6.1 4.5 2.3 7.1-6.2-4.6-6.2 4.6 2.3-7.1-6.1-4.5h7.6z"></path></svg>
+</div>
+<div class="w-1.5 h-1.5 bg-slate-900 rotate-45 -mt-0.5 ring-1 ring-white"></div>
+</div>
+<!-- OSM版权说明 -->
+<div class="absolute left-3 top-[374px] z-10 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded text-[10px] text-slate-500 border border-slate-200/50">
+      © OpenStreetMap 贡献者
+    </div>
+<!-- 极简圆圈式地图工具组 -->
+<div id="map-tool-dock" class="absolute right-3 top-[268px] flex flex-col gap-2 z-10">
+<button aria-label="定位" class="map-tool w-9 h-9 bg-white/95 rounded-full shadow-sm border border-slate-200 flex items-center justify-center text-slate-700">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M7.05 16.95l-1.414 1.414M16.95 16.95l1.414 1.414M7.05 7.05L5.636 5.636M12 8a4 4 0 100 8 4 4 0 000-8z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+<button aria-label="图层" class="map-tool w-9 h-9 bg-white/95 rounded-full shadow-sm border border-slate-200 flex items-center justify-center text-slate-700">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 2l9 4.9-9 4.9-9-4.9L12 2z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M3 11.9l9 4.9 9-4.9" stroke-linecap="round" stroke-linejoin="round"></path><path d="M3 16.9l9 4.9 9-4.9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+</div>
+</div>
+</div><header class="relative z-20 w-full pt-3 pb-2 px-4 bg-gradient-to-b from-white/95 via-white/80 to-transparent">
+<!-- iOS 状态栏 -->
+<div class="flex items-center justify-between text-[14px] font-semibold text-slate-900 h-6 px-1">
+<span class="status-bar-time">9:41</span>
+<div class="flex items-center space-x-1.5">
+<svg class="w-4 h-3.5" fill="currentColor" viewbox="0 0 17 11"><rect height="4" rx="0.5" width="2.5" x="0" y="7"></rect><rect height="6" rx="0.5" width="2.5" x="4" y="5"></rect><rect height="8.5" rx="0.5" width="2.5" x="8" y="2.5"></rect><rect height="11" rx="0.5" width="2.5" x="12" y="0"></rect></svg>
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 16 12"><path d="M8 3.6C5.5 3.6 3.2 4.6 1.6 6.3l1.4 1.4C4.2 6.5 6 5.8 8 5.8s3.8.7 5 1.9l1.4-1.4C12.8 4.6 10.5 3.6 8 3.6zM8 0C4.3 0 1 1.6 0 4.1l1.4 1.4C2.3 3.4 5 2.1 8 2.1s5.7 1.3 6.6 3.4L16 4.1C15 1.6 11.7 0 8 0zm0 7.3a2.7 2.7 0 0 0-2.7 2.7c0 1.5 1.2 2.7 2.7 2.7 1.5 0 2.7-1.2 2.7-2.7A2.7 2.7 0 0 0 8 7.3z"></path></svg>
+<div class="w-5 h-2.5 rounded-[3px] border border-slate-900 p-0.5 flex items-center">
+<div class="h-full w-3 bg-slate-900 rounded-[1px]"></div>
+</div>
+</div>
+</div>
+<!-- 小程序标题与微信胶囊 -->
+<div class="flex items-center justify-between mt-1 h-10">
+<h1 class="text-[17px] font-semibold tracking-tight text-slate-900">今晚去观星</h1>
+<!-- 胶囊外壳 -->
+<div class="flex items-center h-8 px-2.5 bg-white/90 rounded-full border border-slate-200/90 shadow-sm space-x-2.5">
+<button class="w-4 h-4 flex items-center justify-center text-slate-800">
+<span class="w-1 h-1 rounded-full bg-current mx-0.5"></span>
+<span class="w-1 h-1 rounded-full bg-current mx-0.5"></span>
+<span class="w-1 h-1 rounded-full bg-current mx-0.5"></span>
+</button>
+<div class="w-px h-3.5 bg-slate-200"></div>
+<button class="w-4 h-4 flex items-center justify-center text-slate-800">
+<div class="w-3.5 h-3.5 rounded-full border-2 border-current"></div>
+</button>
+</div>
+</div>
+<!-- 极简轻边框搜索框 -->
+<div class="mt-2.5">
+<div role="button" tabindex="0" aria-label="搜索观星点" class="search-entry h-9 px-3 bg-white/90 rounded-full border border-slate-200 shadow-xs flex items-center text-slate-400 space-x-2">
+<svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px] text-slate-400 font-normal">搜索观星点</span>
+</div>
+</div>
+</header><main id="extent-panel"><div id="handle-band" role="slider" aria-label="观星点面板高度" aria-valuemin="0" aria-valuemax="2" tabindex="0"><div class="w-full flex justify-center pb-2">
+<div class="w-8 h-1 rounded-full bg-slate-300"></div>
+</div></div><div id="document"><figure id="site-media" aria-hidden="true"><img src="site-illustration.jpg" alt="海岸观测建筑示意图，非真实场地照片"><figcaption>设计示意图 · 非场地实拍</figcaption></figure><div id="overview"><div class="flex items-baseline justify-between">
+<h2 class="text-[18px] font-bold text-slate-900 tracking-tight">星湾观星点</h2>
+<span class="text-[12px] text-slate-500">滨海 · 东岸</span>
+</div></div><div id="section-nav" class="flex items-center space-x-5 mt-2">
+<div class="relative pb-1 cursor-pointer">
+<span class="text-[13px] font-semibold text-slate-900">基本信息</span>
+<span class="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 rounded-full"></span>
+</div>
+<div class="relative pb-1 cursor-pointer">
+<span class="text-[13px] font-normal text-slate-400">天文</span>
+</div>
+</div><div id="overview-facts">
+<p class="location-facts">东岸路观景步道入口 <span>海拔 128m</span></p>
+<div class="route-row"><div><h3>24.6 <small>km</small> <span class="route-duration">驾车约42分钟 · 步行6分钟</span></h3><p>东侧停车区进入，末段步道约200米</p></div><button class="navigation-icon" aria-label="导航" data-target="navigation"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></button></div>
+<div class="hours-row"><span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>开放时间</span><span>18:00–次日06:00</span></div>
+<section class="access-compact" aria-label="进入与安全"><dl><div><dt>开放状态</dt><dd>限时开放</dd></div><div><dt>合法进入</dt><dd>预约进入</dd></div><div><dt>夜间安全</dt><dd>注意台阶</dd></div></dl><p>预约后进入，夜间台阶段需自备照明。</p></section>
+<div class="facility-stack"><button class="facility-card photo-card" data-photo="parking" aria-label="停车设施，查看设施照片"><img class="facility-background" src="parking.jpg" alt=""><span class="facility-shade"></span><span class="facility-content"><span class="facility-title"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M6 20V4h7a5 5 0 0 1 0 10H6"/></svg><strong>停车设施</strong><span>可用 · 入口120m</span></span><span class="facility-description" >约20个车位，夜间出场需联系值守</span></span><span class="photo-count" aria-hidden="true">▧ 1</span></button><button class="facility-card photo-card" data-photo="toilet" aria-label="洗手间，查看设施照片"><img class="facility-background" src="toilet.jpg" alt=""><span class="facility-shade"></span><span class="facility-content"><span class="facility-title"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 21V3h14v18M9 21V11h6v10"/><circle cx="12" cy="7" r="1"/></svg><strong>洗手间</strong><span>可用 · 入口80m</span></span><span class="facility-description" id="toilet-hours">开放时段暂无数据</span></span><span class="photo-count" aria-hidden="true">▧ 1</span></button></div>
+<div class="contact-row"><span>门禁 / 负责人电话</span><span id="contact-value" class="muted">暂无数据</span></div>
+<div class="source-row"><span>资料：场地管理方 · 09-06核验</span><button data-target="feedback">反馈纠错 ↗</button></div>
+<details class="more-site"><summary>更多场地信息 <span>平台、信号与现场指引</span></summary><p>平台位于步道尽头；东北方向开阔。现场有移动通信信号；未设充电设施，不允许露营。</p><p>夜间从东侧入口原路返回，台阶段自备照明。现场资料由场地管理方提供，09-06核验。</p></details>
+</div><section id="astronomy" aria-label="天文信息"><div class="astronomy-heading"><h3>天文信息</h3><span id="selected-time">09月07日 21:00</span></div>
+<div id="time-ruler" role="slider" tabindex="0" aria-label="观测时间" aria-valuemin="0" aria-valuemax="24" aria-valuenow="2" aria-valuetext="21:00"><div id="time-track"><button data-time="0" aria-label="18:00"><img class="tick-moon" alt=""><i></i><span>18:00</span></button><button data-time="1" aria-label="18:30"><img class="tick-moon" alt=""><i></i><span>18:30</span></button><button data-time="2" aria-label="19:00"><img class="tick-moon" alt=""><i></i><span>19:00</span></button><button data-time="3" aria-label="19:30"><img class="tick-moon" alt=""><i></i><span>19:30</span></button><button data-time="4" aria-label="20:00"><img class="tick-moon" alt=""><i></i><span>20:00</span></button><button data-time="5" aria-label="20:30"><img class="tick-moon" alt=""><i></i><span>20:30</span></button><button data-time="6" aria-label="21:00"><img class="tick-moon" alt=""><i></i><span>21:00</span></button><button data-time="7" aria-label="21:30"><img class="tick-moon" alt=""><i></i><span>21:30</span></button><button data-time="8" aria-label="22:00"><img class="tick-moon" alt=""><i></i><span>22:00</span></button><button data-time="9" aria-label="22:30"><img class="tick-moon" alt=""><i></i><span>22:30</span></button><button data-time="10" aria-label="23:00"><img class="tick-moon" alt=""><i></i><span>23:00</span></button><button data-time="11" aria-label="23:30"><img class="tick-moon" alt=""><i></i><span>23:30</span></button><button data-time="12" aria-label="00:00"><img class="tick-moon" alt=""><i></i><span>00:00</span></button><button data-time="13" aria-label="00:30"><img class="tick-moon" alt=""><i></i><span>00:30</span></button><button data-time="14" aria-label="01:00"><img class="tick-moon" alt=""><i></i><span>01:00</span></button><button data-time="15" aria-label="01:30"><img class="tick-moon" alt=""><i></i><span>01:30</span></button><button data-time="16" aria-label="02:00"><img class="tick-moon" alt=""><i></i><span>02:00</span></button><button data-time="17" aria-label="02:30"><img class="tick-moon" alt=""><i></i><span>02:30</span></button><button data-time="18" aria-label="03:00"><img class="tick-moon" alt=""><i></i><span>03:00</span></button><button data-time="19" aria-label="03:30"><img class="tick-moon" alt=""><i></i><span>03:30</span></button><button data-time="20" aria-label="04:00"><img class="tick-moon" alt=""><i></i><span>04:00</span></button><button data-time="21" aria-label="04:30"><img class="tick-moon" alt=""><i></i><span>04:30</span></button><button data-time="22" aria-label="05:00"><img class="tick-moon" alt=""><i></i><span>05:00</span></button><button data-time="23" aria-label="05:30"><img class="tick-moon" alt=""><i></i><span>05:30</span></button><button data-time="24" aria-label="06:00"><img class="tick-moon" alt=""><i></i><span>06:00</span></button></div><span class="time-center" aria-hidden="true"></span></div>
+<section class="evidence-group" aria-label="云层"><h4><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M7 18h11a4 4 0 0 0 .6-8A6 6 0 0 0 7 8a5 5 0 0 0 0 10Z"/></svg>云层</h4><dl class="metric-group clouds"><div><dt>总云量</dt><dd id="cloud-total">30<span>%</span></dd></div><div><dt>低云</dt><dd id="cloud-low">8<span>%</span></dd></div><div><dt>中云</dt><dd id="cloud-mid">12<span>%</span></dd></div><div><dt>高云</dt><dd id="cloud-high">25<span>%</span></dd></div></dl></section>
+<section class="evidence-group" aria-label="温湿"><h4><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M9 14V5a3 3 0 0 0-6 0v9a5 5 0 1 0 6 0ZM6 9v9M16 4s-4 5-4 8a4 4 0 0 0 8 0c0-3-4-8-4-8Z"/></svg>温湿</h4><dl class="metric-group"><div><dt>气温</dt><dd id="temperature">22<span>°C</span></dd></div><div><dt>湿度</dt><dd id="humidity">78<span>%</span></dd></div><div><dt>露点</dt><dd id="dew-point">18<span>°C</span></dd></div></dl></section>
+<section class="evidence-group" aria-label="风与能见度"><h4><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 8h12a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h5a3 3 0 1 1-3 3"/></svg>风与能见度</h4><dl class="metric-group"><div><dt>东北风</dt><dd id="wind">9<span>km/h</span></dd></div><div><dt>阵风</dt><dd id="gust">16<span>km/h</span></dd></div><div><dt>能见度</dt><dd id="visibility">24<span>km</span></dd></div></dl></section>
+<section class="evidence-group" aria-label="降水"><h4><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M7 14a4 4 0 0 1 0-8 6 6 0 0 1 11 1 4 4 0 0 1 0 8M7 17l-1 3M12 17l-1 3M17 17l-1 3"/></svg>降水</h4><dl class="metric-group two"><div><dt>降水量</dt><dd id="rain">0<span>mm</span></dd></div><div><dt>降水概率</dt><dd id="rain-chance">10<span>%</span></dd></div></dl></section>
+<p class="measurement-note">透明度、视宁度暂无独立数据</p>
+<div class="lunar-section"><section class="evidence-group" aria-label="月亮与夜间"><h4><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M20 14A9 9 0 0 1 10 3a9 9 0 1 0 10 11Z"/></svg>月亮与夜间</h4><dl class="metric-group"><div><dt>月照比例</dt><dd id="moon-lit">18<span>%</span></dd></div><div><dt>月亮高度</dt><dd id="moon-alt">−12<span>°</span></dd></div><div><dt>夜间阶段</dt><dd id="darkness">天文夜</dd></div></dl></section></div>
+<div class="night-light"><span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 20h18M5 20V9h5v11M14 20V4h5v16M7 12h1M16 8h1M16 12h1"/></svg>卫星夜光估算</span><strong>较低</strong><span>0.8 nW/cm²/sr</span></div>
+<div class="targets"><h3><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>当前目标</h3><div class="target-row"><span>织女星</span><span id="target-one-direction">西北</span><strong id="target-one-alt">52°</strong></div><div class="target-row"><span>天津四</span><span id="target-two-direction">东北</span><strong id="target-two-alt">61°</strong></div></div>
+<div class="source-row weather-source"><span>预报更新18:00 · 模型一致性高<br>天体位置按所选时刻计算</span></div>
+<details class="more-site"><summary>来源与有效时间 <span>查看详情</span></summary><p>此预览使用独立示意数据，并非实时预报。正式产品显示所选时间片的provider/model、运行时间、有效期与限制；卫星夜光与场地设施分别追溯。</p><p>透明度、视宁度及结构化日/月升落事件尚无当前接口独立输出；不得用能见度或假值替代。</p></details>
+</section></div><div id="fixed-actions"><div class="grid grid-cols-3 gap-2.5 pt-1.5 pb-1"><button id="favorite" aria-label="想去" aria-pressed="false" class="h-10 rounded-lg border border-slate-200 bg-white text-slate-800 text-[13px] font-medium flex items-center justify-center"><span class="star-stage" aria-hidden="true"><span class="meteor main-meteor"><i class="tail"></i><span class="rolling-star"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.07 3.29a1 1 0 0 0 .95.69h3.46c.97 0 1.37 1.24.59 1.81l-2.8 2.03a1 1 0 0 0-.36 1.12l1.07 3.29c.3.92-.76 1.69-1.54 1.12l-2.8-2.03a1 1 0 0 0-1.18 0l-2.8 2.03c-.78.57-1.84-.2-1.54-1.12l1.07-3.29a1 1 0 0 0-.36-1.12l-2.8-2.03c-.78-.57-.38-1.81.59-1.81h3.46a1 1 0 0 0 .95-.69z"/></svg></span></span><span class="meteor satellite satellite-one"><i class="tail"></i><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.07 3.29a1 1 0 0 0 .95.69h3.46c.97 0 1.37 1.24.59 1.81l-2.8 2.03a1 1 0 0 0-.36 1.12l1.07 3.29c.3.92-.76 1.69-1.54 1.12l-2.8-2.03a1 1 0 0 0-1.18 0l-2.8 2.03c-.78.57-1.84-.2-1.54-1.12l1.07-3.29a1 1 0 0 0-.36-1.12l-2.8-2.03c-.78-.57-.38-1.81.59-1.81h3.46a1 1 0 0 0 .95-.69z"/></svg></span><span class="meteor satellite satellite-two"><i class="tail"></i><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.07 3.29a1 1 0 0 0 .95.69h3.46c.97 0 1.37 1.24.59 1.81l-2.8 2.03a1 1 0 0 0-.36 1.12l1.07 3.29c.3.92-.76 1.69-1.54 1.12l-2.8-2.03a1 1 0 0 0-1.18 0l-2.8 2.03c-.78.57-1.84-.2-1.54-1.12l1.07-3.29a1 1 0 0 0-.36-1.12l-2.8-2.03c-.78-.57-.38-1.81.59-1.81h3.46a1 1 0 0 0 .95-.69z"/></svg></span></span><span>想去</span></button>
+<button class="h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 text-[13px] font-medium flex items-center justify-center space-x-1.5 transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>分享</span>
+</button>
+<button id="cloud-action" data-target="sky" class="h-10 rounded-lg bg-slate-900 hover:bg-slate-800 active:bg-black text-white text-[13px] font-medium flex items-center justify-center space-x-1.5 transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>云观星</span>
+</button>
+</div></div></main><footer class="relative z-30 w-full bg-white border-t border-slate-100 flex flex-col items-center">
+<div class="w-full h-12 flex items-center justify-around px-12">
+<!-- 地图 (激活态，深色加粗无过重底色) -->
+<button class="flex items-center space-x-1.5 text-slate-900 py-1 font-semibold text-[13px]">
+<svg class="w-4 h-4 text-slate-900" fill="currentColor" viewbox="0 0 24 24"><path d="M15 5.1L9 3 3.3 4.9C2.5 5.2 2 5.9 2 6.8V19c0 1.3 1.2 2.3 2.5 1.9L9 19l6 2.1 5.7-1.9c.8-.3 1.3-1 1.3-1.9V6c0-1.3-1.2-2.3-2.5-1.9L15 5.1zM9 5.2l6 2.1v11.5l-6-2.1V5.2z"></path></svg>
+<span>地图</span>
+</button>
+<!-- 我的 -->
+<button class="flex items-center space-x-1.5 text-slate-400 hover:text-slate-700 py-1 font-normal text-[13px]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+<span>我的</span>
+</button>
+</div>
+<!-- iPhone 底部安全手势条 -->
+<div class="w-full h-5 flex justify-center items-start pt-1">
+<div class="w-32 h-1 bg-slate-900/70 rounded-full"></div>
+</div>
+</footer><dialog id="route-note"><h2></h2><p></p><button autofocus>返回地图</button></dialog><dialog id="photo-viewer" aria-label="设施图片"><button id="photo-close" autofocus aria-label="关闭图片">×</button><img id="photo-original" alt=""><div><strong id="photo-title"></strong><p>参考照片 · 不属于这个虚构观星点</p><p id="photo-credit"></p></div></dialog><script src="preview.js?v=1788810812335"></script><script src="moon-data.js?v=1788810812362"></script><script src="content.js?v=1788810812335"></script><script src="refinement.js?v=1788810812354"></script><script src="chapters.js?v=1788810812362"></script><script src="gestures.js?v=1788810812384"></script><script src="polish.js?v=1788810812391"></script><script src="scenes.js"></script><script src="meteor.js"></script></body></html>

@@ -1,0 +1,3 @@
+import automator from 'miniprogram-automator';
+const p=await automator.connect({wsEndpoint:'ws://127.0.0.1:9421'});
+try{console.log(JSON.stringify(await p.evaluate(()=>new Promise(resolve=>{let done=false;const finish=value=>{if(done)return;done=true;resolve(value);};const timer=setTimeout(()=>finish({result:'timeout',route:getCurrentPages().at(-1)?.route}),8000);wx.switchTab({url:'/pages/map/index',success(){clearTimeout(timer);finish({result:'success',route:getCurrentPages().at(-1)?.route});},fail(error){clearTimeout(timer);finish({result:'failure',error:error.errMsg,route:getCurrentPages().at(-1)?.route});}});}))))}finally{await p.disconnect();}

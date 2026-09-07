@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "source": "current owner inventory + brief; established before candidates viewed",
+  "rules": [
+    {
+      "page": "map",
+      "state": "medium",
+      "controls": [
+        "search",
+        "locate",
+        "layers",
+        "handle",
+        "overview",
+        "astronomy",
+        "favorite",
+        "share",
+        "sky",
+        "nav-map",
+        "nav-my"
+      ],
+      "forbidden": [
+        "membership",
+        "favorites-tab",
+        "standalone-detail",
+        "recommendation-window"
+      ]
+    },
+    {
+      "page": "my",
+      "state": "normal",
+      "controls": [
+        "settings",
+        "plan",
+        "contribution",
+        "profile-links",
+        "import",
+        "nav-map",
+        "nav-my"
+      ],
+      "forbidden": [
+        "membership",
+        "shop",
+        "favorites-tab"
+      ]
+    }
+  ]
+}

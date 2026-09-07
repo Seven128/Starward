@@ -1,0 +1,3 @@
+import automator from 'miniprogram-automator';
+const p=await automator.connect({wsEndpoint:'ws://127.0.0.1:9421'});
+try { await p.evaluate(()=>{wx.switchTab({url:'/pages/map/index'});}); await new Promise(r=>setTimeout(r,1800)); console.log(JSON.stringify(await p.evaluate(()=>{const page=getCurrentPages().at(-1);const labels=[];function scan(n){if(!n||typeof n!=='object')return;const label=n.ariaLabel||n['aria-label'];if(label)labels.push(label);for(const v of Object.values(n))if(typeof v==='object')scan(v);}scan(page.data);return{route:page.route,labels};}))); } finally {await p.disconnect();}

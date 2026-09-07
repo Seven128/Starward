@@ -1,0 +1,5 @@
+import automator from 'miniprogram-automator';
+import {writeFile} from 'node:fs/promises';
+const p=await automator.connect({wsEndpoint:'ws://127.0.0.1:9421'});
+async function measure(){return p.evaluate(()=>new Promise(resolve=>{const page=getCurrentPages().at(-1);const q=wx.createSelectorQuery();q.select('.article-scroll').boundingClientRect();q.selectAll('.article-paragraph, .article-tip .type-article').fields({rect:true,size:true,computedStyle:['font-size','line-height','color']});q.selectAll('.provenance').boundingClientRect();q.select('.article-content').boundingClientRect();q.exec(values=>resolve({route:page.route,values}));}));}
+try{const before=await measure();if(before.route!=='content/article/detail/index')throw Error('requires_article');await p.evaluate(()=>new Promise(resolve=>{wx.createSelectorQuery().select('.article-scroll').node(r=>{r.node.scrollTo({top:10000,animated:false});resolve();}).exec();}));await new Promise(r=>setTimeout(r,500));const after=await measure();await writeFile('artifacts/miniapp/article-reading-geometry.json',JSON.stringify({before,after},null,2));console.log(JSON.stringify({before,after}));}finally{await p.disconnect();}

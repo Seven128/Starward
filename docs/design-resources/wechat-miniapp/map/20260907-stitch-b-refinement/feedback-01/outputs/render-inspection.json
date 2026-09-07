@@ -1,0 +1,170 @@
+{
+  "footer": {
+    "afterInset": "auto",
+    "color": "rgb(15, 23, 42)",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "height": 68.80000305175781,
+    "pointerEvents": "auto",
+    "radius": "0px",
+    "text": "地图\n\n\n\n\n我的",
+    "width": 390,
+    "x": 0,
+    "y": 775.2000122070312
+  },
+  "heading": {
+    "afterInset": "auto",
+    "color": "rgb(15, 23, 42)",
+    "fontSize": "18px",
+    "fontWeight": "700",
+    "height": 27,
+    "pointerEvents": "auto",
+    "radius": "0px",
+    "text": "深圳市天文台",
+    "width": 105.3000030517578,
+    "x": 16,
+    "y": 458.3000183105469
+  },
+  "image": [
+    {
+      "complete": true,
+      "width": 390
+    }
+  ],
+  "main": {
+    "afterInset": "auto",
+    "color": "rgb(15, 23, 42)",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "height": 339.70001220703125,
+    "pointerEvents": "auto",
+    "radius": "24px 24px 0px 0px",
+    "text": "深圳市天文台\n深圳 · 大鹏\n\n\n\n\n概览\n\n\n\n天文\n\n\n\n\n\n\n路线与到达\n距离、预计到达暂无数据\n\n\n\n\n\n开放时间暂无数据停车设施暂无数据洗手间暂无数据\n\n\n场地资料\n\n数据来源\n\n反馈纠错\n\n\n\n\n\n想去\n\n\n\n分享\n\n\n\n云观星",
+    "width": 390,
+    "x": 0,
+    "y": 435.5
+  },
+  "navigation": {
+    "accessibleName": "导航",
+    "afterInset": "-6px",
+    "color": "rgb(51, 65, 85)",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "height": 32,
+    "pointerEvents": "auto",
+    "radius": "4px",
+    "svgCount": 1,
+    "text": "",
+    "width": 32,
+    "x": 342,
+    "y": 545.8500366210938
+  },
+  "search": {
+    "afterInset": "-4px 0px",
+    "color": "rgb(148, 163, 184)",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "height": 36,
+    "pointerEvents": "auto",
+    "radius": "9999px",
+    "text": "搜索观星点",
+    "width": 358,
+    "x": 16,
+    "y": 90
+  },
+  "statuses": [
+    {
+      "afterInset": "auto",
+      "color": "rgb(148, 163, 184)",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "height": 18,
+      "pointerEvents": "auto",
+      "radius": "0px",
+      "text": "暂无数据",
+      "width": 48,
+      "x": 326,
+      "y": 602.4000244140625
+    },
+    {
+      "afterInset": "auto",
+      "color": "rgb(148, 163, 184)",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "height": 18,
+      "pointerEvents": "auto",
+      "radius": "0px",
+      "text": "暂无数据",
+      "width": 48,
+      "x": 326,
+      "y": 628.4000244140625
+    },
+    {
+      "afterInset": "auto",
+      "color": "rgb(148, 163, 184)",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "height": 18,
+      "pointerEvents": "auto",
+      "radius": "0px",
+      "text": "暂无数据",
+      "width": 48,
+      "x": 326,
+      "y": 654.4000244140625
+    }
+  ],
+  "tools": [
+    {
+      "afterInset": "-4px",
+      "color": "rgb(51, 65, 85)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": 36,
+      "pointerEvents": "auto",
+      "radius": "9999px",
+      "text": "",
+      "width": 36,
+      "x": 342,
+      "y": 268
+    },
+    {
+      "afterInset": "-4px",
+      "color": "rgb(51, 65, 85)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": 36,
+      "pointerEvents": "auto",
+      "radius": "9999px",
+      "text": "",
+      "width": 36,
+      "x": 342,
+      "y": 312
+    }
+  ],
+  "viewport": {
+    "height": 844,
+    "width": 390
+  },
+  "transparentHitAreas": [
+    {
+      "height": "44px",
+      "name": "定位",
+      "width": "44px"
+    },
+    {
+      "height": "44px",
+      "name": "图层",
+      "width": "44px"
+    },
+    {
+      "height": "44px",
+      "name": "搜索观星点",
+      "width": "356.4px"
+    },
+    {
+      "height": "44px",
+      "name": "导航",
+      "width": "44px"
+    }
+  ]
+}

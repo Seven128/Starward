@@ -1,0 +1,15 @@
+{
+  "status": "stitch-success-codex-companion",
+  "generationSubmissions": 1,
+  "technicalRetries": 0,
+  "screenTitle": "地图·中档·暖黄石墨与定位准星精修",
+  "projectUrl": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "mode": "Balanced",
+  "stitchModel": "unknown",
+  "codexModel": "unknown",
+  "codexEffort": "unknown",
+  "usage": null,
+  "productionMigrated": false,
+  "postGenerationFeedback": "supplement.txt",
+  "original": "outputs/stitch-original/index.html"
+}

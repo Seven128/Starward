@@ -1,0 +1,3714 @@
+{
+  "at": "2026-09-06T17:37:39.116Z",
+  "mode": "read_only_policy_evaluation",
+  "items": [
+    {
+      "name": "深圳市天文台",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-astronomical-observatory"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "桔钓沙",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-judiaosha"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "杨梅坑",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-yangmeikeng"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "鹿嘴山庄",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-luzui"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "七娘山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-qiniangshan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "梧桐山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-wutongshan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "大阳台",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-dayangtai"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "大南山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-dananshan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "排牙山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-paiyashan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "海柴角",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-sz-haichaijiao"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "双月湾",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hz-shuangyuewan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "巽寮湾",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hz-xunliaowan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "南昆山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hz-nankunshan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "黑排角",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hz-heipaijiao"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "白盆珠水库",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hz-baipenzhu"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "三门岛",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hz-sanmen-island"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "圭峰山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-jm-guifengshan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "淇澳岛",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-zh-qiao-island"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "东澳岛",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-zh-dongao-island"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "外伶仃岛",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-zh-wailingding-island"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "凤凰山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-zh-fenghuangshan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "石门国家森林公园",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-gz-shimen-forest"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "银瓶嘴—白云嶂山区",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-dg-yinping-baiyun"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "大帽山",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hk-taimoushan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "万宜水库",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-hk-high-island"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    },
+    {
+      "name": "鼎湖山国家级自然保护区",
+      "complete": false,
+      "issues": [
+        {
+          "code": "source_provenance_invalid",
+          "field": "spot.sources",
+          "message": "存在不可发布的来源：source-facility-unverified-zq-dinghushan"
+        },
+        {
+          "code": "light_pollution_estimate_incomplete",
+          "field": "spot.lightPollution",
+          "message": "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SPOT_COORDINATE",
+          "message": "缺少当前有效且已确认的 SPOT_COORDINATE 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LAST_ROAD",
+          "message": "缺少当前有效且已确认的 ACCESS_LAST_ROAD 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_PARKING",
+          "message": "缺少当前有效且已确认的 ACCESS_PARKING 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_OPENNESS",
+          "message": "缺少当前有效且已确认的 ACCESS_OPENNESS 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.ACCESS_LEGAL_ENTRY",
+          "message": "缺少当前有效且已确认的 ACCESS_LEGAL_ENTRY 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.SAFETY_NIGHT",
+          "message": "缺少当前有效且已确认的 SAFETY_NIGHT 证据。"
+        },
+        {
+          "code": "required_evidence_missing_or_stale",
+          "field": "spot.evidence.HORIZON_PROFILE",
+          "message": "缺少当前有效且已确认的 HORIZON_PROFILE 证据。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PARKING",
+          "message": "PARKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.TOILET",
+          "message": "TOILET 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.PLATFORM",
+          "message": "PLATFORM 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CHARGING",
+          "message": "CHARGING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.CAMPING",
+          "message": "CAMPING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.ROAD",
+          "message": "ROAD 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.WALKING",
+          "message": "WALKING 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_evidence_invalid",
+          "field": "spot.facilities.SIGNAL",
+          "message": "SIGNAL 缺少状态说明、核验时间或可追溯来源。"
+        },
+        {
+          "code": "facility_all_unknown",
+          "field": "spot.facilities",
+          "message": "八项设施不能全部以 UNKNOWN 通过发布门。"
+        },
+        {
+          "code": "access_last_road_incomplete",
+          "field": "spot.access.road",
+          "message": "末段道路必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "parking_incomplete",
+          "field": "spot.access.parking",
+          "message": "停车必须具有已核验状态和可执行说明。"
+        },
+        {
+          "code": "openness_unknown",
+          "field": "spot.accessAndSafety.openness",
+          "message": "开放状态必须经过核验。"
+        },
+        {
+          "code": "legal_access_unknown",
+          "field": "spot.accessAndSafety.legalAccess",
+          "message": "合法进入条件必须经过核验。"
+        },
+        {
+          "code": "night_safety_unknown",
+          "field": "spot.accessAndSafety.nightSafety",
+          "message": "夜间安全和明确危险状态必须经过核验。"
+        },
+        {
+          "code": "horizon_incomplete",
+          "field": "spot.horizon",
+          "message": "遮挡比例和至少一个开阔方向必须具有现场证据。"
+        },
+        {
+          "code": "site_media_state_unknown",
+          "field": "spot.siteMediaState",
+          "message": "必须明确现场媒体已核验，或明确没有已核验现场媒体。"
+        },
+        {
+          "code": "verification_stale",
+          "field": "spot.lastVerifiedAt",
+          "message": "点位最近核验时间必须处于当前 30 天有效窗口。"
+        },
+        {
+          "code": "operator_review_missing",
+          "field": "publication.review",
+          "message": "发布必须绑定有效操作者和审核原因。"
+        }
+      ],
+      "satisfiedClaims": []
+    }
+  ],
+  "counts": {
+    "source_provenance_invalid": 26,
+    "light_pollution_estimate_incomplete": 26,
+    "required_evidence_missing_or_stale": 182,
+    "facility_evidence_invalid": 208,
+    "facility_all_unknown": 26,
+    "access_last_road_incomplete": 26,
+    "parking_incomplete": 26,
+    "openness_unknown": 26,
+    "legal_access_unknown": 26,
+    "night_safety_unknown": 26,
+    "horizon_incomplete": 26,
+    "site_media_state_unknown": 26,
+    "verification_stale": 26,
+    "operator_review_missing": 26
+  }
+}

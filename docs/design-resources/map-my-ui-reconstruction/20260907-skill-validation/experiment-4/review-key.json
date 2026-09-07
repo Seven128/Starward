@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "entries": [
+    {
+      "candidateId": "e4-A-1",
+      "anonymousId": "e3797363"
+    },
+    {
+      "candidateId": "e4-A-2",
+      "anonymousId": "789268fb"
+    },
+    {
+      "candidateId": "e4-A-3",
+      "anonymousId": "1654fb83"
+    },
+    {
+      "candidateId": "e4-B-1",
+      "anonymousId": "7d0651de"
+    },
+    {
+      "candidateId": "e4-B-2",
+      "anonymousId": "a392b454"
+    },
+    {
+      "candidateId": "e4-B-3",
+      "anonymousId": "f946c266"
+    }
+  ]
+}

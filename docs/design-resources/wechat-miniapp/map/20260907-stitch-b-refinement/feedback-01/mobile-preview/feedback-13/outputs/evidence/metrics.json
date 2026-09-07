@@ -1,0 +1,31 @@
+{
+  "groups": [
+    {
+      "background": "rgb(251, 251, 252)",
+      "border": "0px"
+    },
+    {
+      "background": "rgb(251, 251, 252)",
+      "border": "0px"
+    },
+    {
+      "background": "rgb(251, 251, 252)",
+      "border": "0px"
+    },
+    {
+      "background": "rgb(251, 251, 252)",
+      "border": "0px"
+    },
+    {
+      "background": "rgb(251, 251, 252)",
+      "border": "0px"
+    }
+  ],
+  "order": [
+    "想去",
+    "云观星",
+    "分享"
+  ],
+  "p": "0.00000",
+  "rotor": "rotate(0) scale(1)"
+}

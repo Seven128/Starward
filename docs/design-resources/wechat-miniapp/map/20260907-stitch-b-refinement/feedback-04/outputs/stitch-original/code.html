@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>地图·黄绿体系与天文分组</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              DEFAULT: '#1B4332',
+              dark: '#133024',
+              light: '#2D6A4F',
+              tint: '#F2F7F4',
+              tintBorder: '#D8E8DF',
+              muted: '#4A6B5B'
+            },
+            fireball: {
+              DEFAULT: '#E5A93C',
+              dark: '#C88E28',
+              light: '#F5C26B',
+              bg: '#FEF9EE',
+              glow: '#D97706'
+            },
+            sage: {
+              bg: '#F5F7F6',
+              border: '#E3E8E5',
+              subtle: '#ECF1EE'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #E2E8F0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #1A202C;
+    }
+    .mobile-frame {
+      width: 390px;
+      height: 844px;
+      position: relative;
+      background: #FFFFFF;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18);
+    }
+    .scroll-content {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .scroll-content::-webkit-scrollbar {
+      display: none;
+    }
+    .active-star-anim {
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .active-star-anim:active {
+      transform: scale(0.92) rotate(360deg);
+    }
+    .time-arc-path {
+      stroke-dasharray: 2 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-frame">
+    <!-- 1. 微信小程序顶部状态栏 (高度约 44px) -->
+    <div class="h-[44px] w-full pt-3 px-5 flex justify-between items-center z-40 bg-white select-none">
+      <span class="text-[14px] font-semibold tracking-tight text-slate-800">9:41</span>
+      <!-- 右侧微信胶囊 (87x32) 模拟 -->
+      <div class="w-[87px] h-[32px] rounded-full border border-slate-200 bg-slate-50/70 flex items-center justify-between px-2.5 shadow-sm">
+        <div class="flex items-center gap-1">
+          <span class="w-[4px] h-[4px] rounded-full bg-slate-700"></span>
+          <span class="w-[5px] h-[5px] rounded-full bg-slate-700"></span>
+          <span class="w-[4px] h-[4px] rounded-full bg-slate-700"></span>
+        </div>
+        <div class="h-[14px] w-[1px] bg-slate-200"></div>
+        <div class="w-[12px] h-[12px] rounded-full border-[1.5px] border-slate-700 flex items-center justify-center">
+          <span class="w-[3px] h-[3px] rounded-full bg-slate-700"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 小程序页面标题行「今晚去观星」 (高约 40px) -->
+    <div class="h-[40px] px-4 flex items-center justify-between border-b border-slate-100 bg-white z-30">
+      <div class="flex items-center gap-2">
+        <!-- 品牌流星微标：墨绿与火流星黄微点 -->
+        <span class="text-[17px] font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+          今晚去观星
+          <span class="inline-block w-2 h-2 rounded-full bg-forest"></span>
+        </span>
+      </div>
+      <div class="text-[11px] text-forest font-medium bg-forest-tint px-2 py-0.5 rounded-full border border-forest-tintBorder">
+        大档 · 天文全览
+      </div>
+    </div>
+
+    <!-- 3. 同一文档吸顶章节定位导航 (基本信息 / 天文) -->
+    <div class="bg-white/95 backdrop-blur-sm border-b border-slate-100 px-4 py-2 z-20 flex items-center justify-between">
+      <div class="flex items-center space-x-6">
+        <button type="button" class="text-[13px] font-medium text-slate-400 hover:text-slate-600 transition-colors">
+          基本信息
+        </button>
+        <button type="button" class="relative text-[13px] font-bold text-forest py-1">
+          天文
+          <span class="absolute bottom-0 left-0 right-0 h-[2.5px] bg-forest rounded-full"></span>
+        </button>
+      </div>
+      <div class="text-[11px] text-slate-400 font-normal">
+        设计示意数据 · 非实况
+      </div>
+    </div>
+
+    <!-- 4. 主滚动文档区 (当前截面定位至天文章节，保持同一文档连贯性) -->
+    <div class="scroll-content flex-1 px-4 pt-3 pb-24 space-y-3.5 bg-white">
+      <!-- 地点身份微卡（表明当前所属观星点上下文） -->
+      <div class="flex items-baseline justify-between border-b border-slate-100 pb-2.5">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-[18px] font-bold text-slate-900 tracking-tight leading-none">星湾观星点</h1>
+            <span class="text-[11px] font-medium text-forest-muted bg-forest-tint px-1.5 py-0.5 rounded border border-forest-tintBorder">海拔 128m</span>
+          </div>
+          <p class="text-[12px] text-slate-500 mt-1 leading-none">滨海 · 东岸 · 东岸路观景步道入口</p>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] text-slate-400">预报基准</div>
+          <div class="text-[12px] font-semibold text-forest">09月07日 21:00</div>
+        </div>
+      </div>
+
+      <!-- 时间刻度尺：浅弧离散时间尺 (19/20/21/22/23时，当前21时居中并用沉静深绿高亮) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-[12px] font-bold text-slate-800 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            时间切片
+          </span>
+          <span class="text-[11px] text-slate-400">离散观测窗口</span>
+        </div>
+
+        <!-- 弧线与时间点 -->
+        <div class="relative pt-2 pb-1">
+          <!-- 背景微弧参考线 SVG -->
+          <svg class="w-full h-8 overflow-visible" viewBox="0 0 320 28" fill="none">
+            <path d="M 10 24 Q 160 4 310 24" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3 3" />
+          </svg>
+          <!-- 节点分布 -->
+          <div class="absolute inset-x-0 top-0 pt-1 flex justify-between px-2 items-center">
+            <!-- 19:00 -->
+            <div class="flex flex-col items-center">
+              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <span class="text-[11px] text-slate-400 mt-2 font-mono">19:00</span>
+            </div>
+            <!-- 20:00 -->
+            <div class="flex flex-col items-center">
+              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <span class="text-[11px] text-slate-400 mt-2 font-mono">20:00</span>
+            </div>
+            <!-- 21:00 当前活跃（深绿沉静强调，微带流星黄外环） -->
+            <div class="flex flex-col items-center -translate-y-1">
+              <div class="w-3.5 h-3.5 rounded-full bg-forest ring-2 ring-forest-tintBorder flex items-center justify-center shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+              </div>
+              <span class="text-[12px] font-bold text-forest mt-1.5 font-mono">21:00</span>
+              <span class="text-[9px] text-forest font-semibold bg-forest-tint px-1 rounded border border-forest-tintBorder">当前</span>
+            </div>
+            <!-- 22:00 -->
+            <div class="flex flex-col items-center">
+              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <span class="text-[11px] text-slate-400 mt-2 font-mono">22:00</span>
+            </div>
+            <!-- 23:00 -->
+            <div class="flex flex-col items-center">
+              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <span class="text-[11px] text-slate-400 mt-2 font-mono">23:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 统一同色、浅鼠尾草绿背景的分组面 (避免卡片墙，每组仅单图标+组名，指标紧凑共享) -->
+      
+      <!-- 分组 1: 云层指标 (总云量30%、低云8%、中云12%、高云25%) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <!-- 单一线性沉静深绿图标 -->
+            <svg class="w-4 h-4 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+            </svg>
+            <span class="text-[13px] font-bold text-slate-900">云层覆盖</span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-[11px] text-slate-500">总云量</span>
+            <span class="text-[15px] font-bold text-forest">30%</span>
+          </div>
+        </div>
+        <!-- 组内指标紧凑平铺共享列 -->
+        <div class="grid grid-cols-3 gap-2 pt-0.5">
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">低云</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">8%</div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">中云</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">12%</div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">高云</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">25%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分组 2: 温湿与气压体感 (22°C、湿度78%、露点18°C) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+            </svg>
+            <span class="text-[13px] font-bold text-slate-900">温湿环境</span>
+          </div>
+          <span class="text-[11px] text-slate-400">夜间凝露风险较低</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">气温</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">22°C</div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">相对湿度</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">78%</div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">露点温度</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">18°C</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分组 3: 风况与能见 (东北风9km/h、阵风暂无数据、能见度暂无数据) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"></path>
+              <path d="M9.6 4.6A2 2 0 1 1 11 8H2"></path>
+              <path d="M12.6 19.4A2 2 0 1 0 14 16H2"></path>
+            </svg>
+            <span class="text-[13px] font-bold text-slate-900">风况与能见</span>
+          </div>
+          <span class="text-[11px] text-forest font-medium">微风宜行</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">地面风速</div>
+            <div class="text-[13px] font-semibold text-slate-800">东北风 9<span class="text-[10px] font-normal text-slate-500 ml-0.5">km/h</span></div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">阵风</div>
+            <div class="text-[12px] font-medium text-slate-400">暂无数据</div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">能见度</div>
+            <div class="text-[12px] font-medium text-slate-400">暂无数据</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分组 4: 降水预测 (0mm、概率10%) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+            </svg>
+            <span class="text-[13px] font-bold text-slate-900">降水概率</span>
+          </div>
+          <span class="text-[11px] text-forest font-medium">干燥无雨</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100 flex items-center justify-between">
+            <span class="text-[12px] text-slate-500">累计降水量</span>
+            <span class="text-[13px] font-semibold text-slate-800 font-mono">0 mm</span>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100 flex items-center justify-between">
+            <span class="text-[12px] text-slate-500">降水概率</span>
+            <span class="text-[13px] font-semibold text-slate-800 font-mono">10%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分组 5: 月相与夜空背景 (月照18%、高度-12°、天文夜) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+            </svg>
+            <span class="text-[13px] font-bold text-slate-900">月相与夜间深度</span>
+          </div>
+          <span class="text-[11px] text-forest font-medium bg-forest-tint px-1.5 py-0.5 rounded border border-forest-tintBorder">已进入天文夜</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">月亮照亮比例</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">18% <span class="text-[11px] font-normal text-slate-400">残月</span></div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100">
+            <div class="text-[11px] text-slate-400">当前月亮地平高度</div>
+            <div class="text-[13px] font-semibold text-slate-800 font-mono">-12° <span class="text-[11px] font-normal text-slate-400">(地平线以下)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分组 6: 光污染与暗空背景 (卫星夜光估算较低 0.8nW/cm²/sr，非精确Bortle) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2"></path>
+              <path d="M12 20v2"></path>
+              <path d="m4.93 4.93 1.41 1.41"></path>
+              <path d="m17.66 17.66 1.41 1.41"></path>
+              <path d="M2 12h2"></path>
+              <path d="M20 12h2"></path>
+              <path d="m6.34 17.66-1.41 1.41"></path>
+              <path d="m19.07 4.93-1.41 1.41"></path>
+            </svg>
+            <span class="text-[13px] font-bold text-slate-900">人工光害环境</span>
+          </div>
+          <span class="text-[11px] text-forest font-medium">暗空质量优</span>
+        </div>
+        <div class="bg-white/80 rounded-lg p-2.5 border border-slate-100 flex items-center justify-between">
+          <div>
+            <div class="text-[12px] font-bold text-slate-800">卫星夜光估算 · 较低</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">VIIRS/DNB 卫星反演地表辐亮度</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[13px] font-bold text-forest font-mono">0.8 <span class="text-[10px] font-normal text-slate-500">nW/cm²/sr</span></div>
+            <div class="text-[10px] text-slate-400">非精确地面SQM/Bortle</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分组 7: 当前主要天体方位 (紧凑对象行：织女星·西北·52°、天津四·东北·61°) -->
+      <div class="bg-sage-bg border border-sage-border rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <!-- 沉静深绿星标图标 -->
+            <svg class="w-4 h-4 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span class="text-[13px] font-bold text-slate-900">当前天顶参考目标</span>
+          </div>
+          <span class="text-[11px] text-slate-400">肉眼/双筒可寻</span>
+        </div>
+        <div class="space-y-1.5">
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-forest"></span>
+              <span class="text-[12px] font-bold text-slate-800">织女星</span>
+              <span class="text-[11px] text-slate-400">(天琴座 α)</span>
+            </div>
+            <div class="text-[12px] font-medium text-slate-700 font-mono">
+              方位 <span class="text-slate-900 font-semibold">西北</span> · 高度角 <span class="text-forest font-bold">52°</span>
+            </div>
+          </div>
+          <div class="bg-white/80 rounded-lg px-2.5 py-1.5 border border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-forest"></span>
+              <span class="text-[12px] font-bold text-slate-800">天津四</span>
+              <span class="text-[11px] text-slate-400">(天鹅座 α)</span>
+            </div>
+            <div class="text-[12px] font-medium text-slate-700 font-mono">
+              方位 <span class="text-slate-900 font-semibold">东北</span> · 高度角 <span class="text-forest font-bold">61°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 说明与来源区 (轻说明：透明度、视宁度暂无独立数据；模型一致性高；更新18:00) -->
+      <div class="pt-1 pb-4 space-y-2 border-t border-slate-100">
+        <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>透明度、视宁度暂无独立传感器数据，已依据湿度与气溶胶模型折算参考。</span>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+          <div class="flex items-center gap-2">
+            <span>预报更新 18:00</span>
+            <span>·</span>
+            <span class="text-forest font-medium">模型一致性高</span>
+          </div>
+          <button type="button" class="text-slate-400 hover:text-slate-600 flex items-center gap-0.5">
+            来源与算法说明
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 底部固定三大操作栏 (高40px独立按钮，贴在主导航之上，不进入滚动流) -->
+    <div class="absolute bottom-[58px] left-0 right-0 px-4 py-2 bg-white/95 backdrop-blur-md border-t border-slate-100 z-30 flex items-center justify-between gap-2.5">
+      <!-- 5.1 「想去」按钮：圆角主星 + 恰好2颗小星 + 黄绿渐变流星拖尾，active态带正转缩放动效 -->
+      <button type="button" class="active-star-anim h-[40px] flex-1 rounded-xl border border-fireball/30 bg-fireball-bg px-3 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.96] transition-all">
+        <!-- 火流星意象五角星组合 -->
+        <div class="relative w-5 h-5 flex items-center justify-center shrink-0">
+          <!-- 主星 (圆角五角星，暖黄核心) -->
+          <svg class="w-4 h-4 text-fireball fill-fireball drop-shadow-sm" viewBox="0 0 24 24">
+            <path d="M12 2.5l2.4 6.8 7.1.3-5.5 4.3 2 6.9-6-4.2-6 4.2 2-6.9-5.5-4.3 7.1-.3z" stroke-linejoin="round" stroke-linecap="round"></path>
+          </svg>
+          <!-- 伴生小星 1 + 拖尾 (朝左上散逸，黄绿渐变) -->
+          <span class="absolute -top-0.5 -left-1 w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-fireball to-forest opacity-90"></span>
+          <!-- 伴生小星 2 + 拖尾 (朝右下散逸) -->
+          <span class="absolute -bottom-0.5 -right-0.5 w-1 h-1 rounded-full bg-gradient-to-br from-fireball to-forest opacity-80"></span>
+        </div>
+        <span class="text-[13px] font-bold text-amber-900 tracking-tight">已想去</span>
+      </button>
+
+      <!-- 5.2 「分享」按钮：安静极简白色轮廓 -->
+      <button type="button" class="h-[40px] flex-1 rounded-xl border border-slate-200 bg-white px-3 flex items-center justify-center gap-1.5 shadow-sm hover:bg-slate-50 active:scale-[0.96] transition-all">
+        <svg class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        <span class="text-[13px] font-medium text-slate-700">分享</span>
+      </button>
+
+      <!-- 5.3 「云观星」按钮：沉静墨绿灰星空微质感 + 少量静态极简星点 -->
+      <button type="button" class="h-[40px] flex-1 rounded-xl border border-emerald-900/40 bg-[#162720] px-3 flex items-center justify-center gap-1.5 text-white shadow-sm relative overflow-hidden active:scale-[0.96] transition-all">
+        <!-- 内部沉静稀疏静态微弱星点 (无过度闪烁) -->
+        <span class="absolute top-1.5 left-3 w-1 h-1 rounded-full bg-white/40"></span>
+        <span class="absolute bottom-2 right-4 w-0.5 h-0.5 rounded-full bg-white/50"></span>
+        <span class="absolute top-3 right-8 w-1 h-1 rounded-full bg-emerald-300/40"></span>
+        
+        <svg class="w-4 h-4 text-emerald-200 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19 12a7 7 0 1 0-14 0"></path>
+          <path d="M12 19a7 7 0 0 0 7-7"></path>
+        </svg>
+        <span class="text-[13px] font-medium text-emerald-50 relative z-10">云观星</span>
+      </button>
+    </div>
+
+    <!-- 6. 最底部一级导航栏 (地图 / 我的) (高度 58px含底部安全区) -->
+    <div class="h-[58px] bg-white border-t border-slate-100 px-12 flex justify-around items-center z-40">
+      <!-- 地图 (当前激活态：沉静深绿) -->
+      <button type="button" class="flex flex-col items-center gap-0.5 text-forest">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+          <line x1="9" y1="3" x2="9" y2="18"></line>
+          <line x1="15" y1="6" x2="15" y2="21"></line>
+        </svg>
+        <span class="text-[10px] font-bold">地图</span>
+        <span class="w-4 h-[2px] bg-forest rounded-full -mt-0.5"></span>
+      </button>
+
+      <!-- 我的 (默认态：温和中灰) -->
+      <button type="button" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span class="text-[10px] font-medium">我的</span>
+      </button>
+    </div>
+
+    <!-- 7. iOS底部手势横条 -->
+    <div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-[134px] h-[5px] bg-slate-900/20 rounded-full z-50 pointer-events-none"></div>
+  </div>
+</body>
+</html>

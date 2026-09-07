@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-09-07T10:49:59.002Z",
+  "source": "User explicit feedback with four red-box screenshots",
+  "experiment": 4,
+  "comparisonUrl": "http://127.0.0.1:4277/v2-retest2/index.html",
+  "verbatim": "## 1. 图1 即7d0651de ，红框部分即观星点信息组件的这一部分不错\n\n2. 图2、3、4，分别是789268fb、7d0651de、f946c266\n\n这两个点只能说还不错，没到特别好的地步，其他更是一般般。\n\n你先记下来，先不用继续",
+  "decision": "partial-positive-components-only",
+  "degree": "还不错，没到特别好；其他一般般",
+  "likedRegions": [
+    {
+      "source": "C:/Users/777/AppData/Local/Temp/codex-clipboard-50c09b4a-9b89-4b9d-8bc4-a7517f461e88.png",
+      "path": "feedback/20260907-v2-local-preferences/image-1-7d0651de-map.png",
+      "sha256": "6dc941cab20f0c4e592717ed537605fae76011d5da242379b6c3e1e1c43346ce",
+      "candidate": "7d0651de",
+      "page": "map",
+      "scope": "观星点信息组件红框：点位名称与地区、概览/天文、路线与到达及导航、开放时间、停车和厕所信息；不扩展为整页认可。"
+    },
+    {
+      "source": "C:/Users/777/AppData/Local/Temp/codex-clipboard-a87bd954-0b92-494f-8217-e933a5c805e2.png",
+      "path": "feedback/20260907-v2-local-preferences/image-2-789268fb-my.png",
+      "sha256": "fc285a58969756826678cdea509691aa2febeaf3eb00d1a2c9479933688e77cf",
+      "candidate": "789268fb",
+      "page": "my",
+      "scope": "我的页红框：今晚计划与现场反馈/纠错并排的组合区域。"
+    },
+    {
+      "source": "C:/Users/777/AppData/Local/Temp/codex-clipboard-67992875-78ff-4401-9beb-5a7c278f052d.png",
+      "path": "feedback/20260907-v2-local-preferences/image-3-7d0651de-my.png",
+      "sha256": "baf53324f35e8ef00538915f8ef69f0640e20b4cbd65601012ac7642b7c8e945",
+      "candidate": "7d0651de",
+      "page": "my",
+      "scope": "我的页红框：今晚计划与现场反馈/纠错上下排列的组合区域。"
+    },
+    {
+      "source": "C:/Users/777/AppData/Local/Temp/codex-clipboard-75a9f377-b05c-41ca-99c6-6180f81b9c2d.png",
+      "path": "feedback/20260907-v2-local-preferences/image-4-f946c266-my.png",
+      "sha256": "ad64dc6f601fc53d99fd55b9f79e5af25b18626d849c144d3436768b2fef8e09",
+      "candidate": "f946c266",
+      "page": "my",
+      "scope": "我的页红框：今晚计划与现场反馈/纠错双栏分隔的组合区域。"
+    }
+  ],
+  "acceptedWholeCandidates": [],
+  "rankingAmongMyVariants": null,
+  "productionApproval": false,
+  "nextAction": "Record only; do not continue design, tests, Skill iteration or production implementation until user resumes.",
+  "continuationPausedByUser": true
+}

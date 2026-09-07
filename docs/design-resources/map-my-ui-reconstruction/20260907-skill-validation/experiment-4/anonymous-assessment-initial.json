@@ -1,0 +1,763 @@
+{
+  "schemaVersion": 1,
+  "experiment": "experiment-4",
+  "stage": "initial-only",
+  "reviewRecordedAt": "2026-09-07T09:44:25Z",
+  "scope": {
+    "candidateCount": 6,
+    "imagesViewed": 12,
+    "pngScale": "原始1×PNG",
+    "readFinalImages": false,
+    "method": "逐张view_image查看本次12张匿名-0-图，按同一冻结brief与原量表独立评分；不读取分组、作者、私有key或Skill方法，不继承其他试验的评分及用户状态。"
+  },
+  "rubric": {
+    "criteria": [
+      {
+        "key": "hierarchy",
+        "label": "层级",
+        "weight": 0.25
+      },
+      {
+        "key": "typographyIcons",
+        "label": "字体图标",
+        "weight": 0.2
+      },
+      {
+        "key": "density",
+        "label": "密度",
+        "weight": 0.2
+      },
+      {
+        "key": "crossPageConsistency",
+        "label": "跨页一致",
+        "weight": 0.2
+      },
+      {
+        "key": "details",
+        "label": "细节",
+        "weight": 0.15
+      }
+    ],
+    "scale": "1严重影响基本阅读；2明显缺陷；3可理解但有具体改进项；4良好且有少量限制；5静态范围内突出",
+    "formula": "sum(score*weight)，满分5；均分仅作概览。",
+    "fixedThreshold": "每候选两页分别加权≥4且所有单项≥3；产品正确与用户认为值得继续是独立条件。匿名评审不进行分组汇总，不下调原阈值。"
+  },
+  "unverified": [
+    "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+    "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+    "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+    "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+    "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+  ],
+  "userPreference": null,
+  "userFeedbackForNewCandidates": "尚无用户对新v2候选的反馈；旧六组拒绝不继承。",
+  "summary": {
+    "initialPageMinimum": 3.4,
+    "initialPageMedian": 3.8,
+    "visualThresholdCandidateIds": [],
+    "fullExperimentPassEstablished": false
+  },
+  "candidates": [
+    {
+      "candidateId": "1654fb83",
+      "userPreference": null,
+      "initial": {
+        "pages": [
+          {
+            "page": "map",
+            "image": "review-site/1654fb83-0-map.png",
+            "imageSha256": "e78eb6d3425bdcb8a6def11b18f05ca66a59d8c57d717b76d34b915548509822",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "深圳市天文台及深圳·大鹏可读，地图保留©OpenStreetMap贡献者归属。",
+                "搜索、定位／图层、marker、把手、概览／天文、想去／分享／云观星及地图／我的主导航可见。",
+                "开放时间和停车／厕所明确标待核实，没有允许夜间进入或设施可用的虚构承诺。",
+                "天文段可见2026-09-07、21:00、20:40更新、总云量24%、气温26°C、风速2.4m/s、月光影响较弱，符合固定示例。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "地点、章节、现场事实与天文段落依次清楚；时间与四项天气指标突出于标签，角色层级明确。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "地点标题大于正文，四项指标值与弱化标签区分清楚；云观星实心图形略重但没有影响辨认。"
+              },
+              "density": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "medium内完整呈现未知现场事实与固定天气数据，各行没有靠重叠压缩；资料行和天气段占高相称。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与我的页白底、竖向细线强调、紫色选中态、图标辅助和横向导航保持一致。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "现场事实、时间、四列指标和操作栏均未见重叠或截字，章节线位置明确，边界稳定。"
+              }
+            },
+            "weightedScore": 4,
+            "userPreference": null
+          },
+          {
+            "page": "my",
+            "image": "review-site/1654fb83-0-my.png",
+            "imageSha256": "e665fe8e4a843ace6b3adf140d7f099621f49e7a62c9ed221eb72761ea70e853",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "账户与内容、当前微信身份及单一gear可读；主导航只有地图／我的。",
+                "计划显示2026-09-07、深圳市天文台及地点与出发准备。",
+                "现场反馈与纠错显示1条草稿／2条待审核；主页链接2条已保存；导入自己的帖子并提交审核。",
+                "未见会员、虚构次数或收藏夹。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "账户标题最突出，计划标题、地点和日期／说明可区分；四项入口依次清楚。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "主次字号可辨，图标和文字对应稳定；蓝色实心头像更重，但没有使辅助内容与标题混淆。"
+              },
+              "density": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "计划与反馈各保留较宽纵向间距，尤其反馈计数到下方分隔线空隙较大；完整但不够紧凑。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与地图页细竖线、白底、淡色图标底和紫色导航相互呼应，左右内缩一致。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "四项均有箭头，竖线与水平分隔边界完整，没有正文碰撞或截断。"
+              }
+            },
+            "weightedScore": 3.8,
+            "userPreference": null
+          }
+        ],
+        "meanWeightedScore": 3.9,
+        "bothPagesVisualThresholdMet": false,
+        "allDimensionsAtLeast3": true
+      }
+    },
+    {
+      "candidateId": "789268fb",
+      "userPreference": null,
+      "initial": {
+        "pages": [
+          {
+            "page": "map",
+            "image": "review-site/789268fb-0-map.png",
+            "imageSha256": "f37464c07a657d7507c7dd0a2d32007e83c3b16c69dc60784652886caacf3a9e",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "visible_issues",
+              "confirmed": [
+                "深圳市天文台及深圳·大鹏可读，地图保留©OpenStreetMap贡献者归属。",
+                "搜索、定位／图层、marker、把手、概览／天文、想去／分享／云观星及地图／我的主导航可见。",
+                "开放时间和停车／厕所明确标待核实，没有允许夜间进入或设施可用的虚构承诺。",
+                "天文段可见2026-09-07、21:00、20:40更新、总云量24%、气温26°C、风速2.4m/s、月光影响较弱，符合固定示例。"
+              ],
+              "issues": [
+                "天文指标下方一行文字被裁断，只露上缘，当前内容收口不完整。"
+              ],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "地点与地区同排，现场和天文用线条分隔；时间和天气值比标签突出，主体顺序清楚。"
+              },
+              "typographyIcons": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "天气四列字串偏近，风速2.4m/s与月光较弱之间横向余量很小；下方内容行被裁断影响阅读。"
+              },
+              "density": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "可见现场事实、日期时间和四项天气，单位面积信息量较高；但底部裁字不能算有效密度。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与我的页灰色分组区、紫色选择背景和横向导航一致，两页材料和字级基本统一。"
+              },
+              "details": {
+                "score": 2,
+                "weight": 0.15,
+                "evidence": "约y704–708的下一行文字只露上缘，操作栏前留下明显内容残行；风速／月光值之间也较挤。"
+              }
+            },
+            "weightedScore": 3.5,
+            "userPreference": null
+          },
+          {
+            "page": "my",
+            "image": "review-site/789268fb-0-my.png",
+            "imageSha256": "64db82a439f8f59651e8d906dae685a94dd930956226b2b59d360d1f44bdab64",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "账户与内容、当前微信身份及单一gear可读；主导航只有地图／我的。",
+                "计划显示2026-09-07、深圳市天文台及地点与出发准备。",
+                "现场反馈与纠错显示1条草稿／2条待审核；主页链接2条已保存；导入自己的帖子并提交审核。",
+                "未见会员、虚构次数或收藏夹。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 3,
+                "weight": 0.25,
+                "evidence": "计划与反馈双栏等权，左边计划多行、右边两个状态，信息量不同却获得同样权重；第一阅读重点不够明确。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "标题、辅助日期和状态行能辨认，图标规格一致；文字本身没有叠压。"
+              },
+              "density": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "灰卡约y184–358为174px，左侧计划分多行、右侧留较多空白；双栏没有充分提高有效密度。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "灰色双栏／灰事实带、紫色选中背景与地图页一致，跨页风格稳定。"
+              },
+              "details": {
+                "score": 3,
+                "weight": 0.15,
+                "evidence": "上方两项没有下方链接／导入同样的箭头，入口外观不统一；卡内文字虽完整但两栏缺少明确分界。"
+              }
+            },
+            "weightedScore": 3.4,
+            "userPreference": null
+          }
+        ],
+        "meanWeightedScore": 3.45,
+        "bothPagesVisualThresholdMet": false,
+        "allDimensionsAtLeast3": false
+      }
+    },
+    {
+      "candidateId": "7d0651de",
+      "userPreference": null,
+      "initial": {
+        "pages": [
+          {
+            "page": "map",
+            "image": "review-site/7d0651de-0-map.png",
+            "imageSha256": "5c3056f680e28d7dc97701e99e09303ece6dfba30648ebbfe1e5ede8c9166776",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "深圳市天文台及深圳·大鹏可读，地图保留©OpenStreetMap贡献者归属。",
+                "搜索、定位／图层、marker、把手、概览／天文、想去／分享／云观星及地图／我的主导航可见。",
+                "开放时间和停车／厕所明确标待核实，没有允许夜间进入或设施可用的虚构承诺。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "地点、章节、路线与到达、开放及设施、资料和动作的顺序清楚，导航靠近相关信息。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "标题与正文、距离／预计到达的灰色说明有清楚区分；图标与对应文字对齐稳定。"
+              },
+              "density": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "路线的距离／预计到达暂无数据另占一行，当前面板主要提供未知事实，资料至动作之间有留白，密度仍有限。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与我的页淡灰分组、线性图标、紫色强调及横向导航一致，边距稳定。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "时间／天气未在当前裁切露出，现有文本、资料行和动作栏均无截字或碰撞。"
+              }
+            },
+            "weightedScore": 3.8,
+            "userPreference": null
+          },
+          {
+            "page": "my",
+            "image": "review-site/7d0651de-0-my.png",
+            "imageSha256": "abc877ddf6a29630c7f6abee30862f296c7abc62d09d215e5995b0462be5fb92",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "账户与内容、当前微信身份及单一gear可读；主导航只有地图／我的。",
+                "计划显示2026-09-07、深圳市天文台及地点与出发准备。",
+                "现场反馈与纠错显示1条草稿／2条待审核；主页链接2条已保存；导入自己的帖子并提交审核。",
+                "未见会员、虚构次数或收藏夹。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "账户与大灰卡分区清楚，计划在上、反馈在下，入口顺序容易理解。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "账户标题、计划标题、地点与日期／说明可区分，图标和箭头一致，文字可读。"
+              },
+              "density": {
+                "score": 2,
+                "weight": 0.2,
+                "evidence": "灰卡约y186–413占227px，仅承载一次计划和两计数；计划四行之间及反馈周围的留白使占高明显偏大。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与地图页图标、浅灰容器、紫色状态和横向导航一致。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "四项箭头、卡内分隔线和文本齐整，未见遮挡或裁字；主要不足属于占高而非局部工艺。"
+              }
+            },
+            "weightedScore": 3.6,
+            "userPreference": null
+          }
+        ],
+        "meanWeightedScore": 3.7,
+        "bothPagesVisualThresholdMet": false,
+        "allDimensionsAtLeast3": false
+      }
+    },
+    {
+      "candidateId": "a392b454",
+      "userPreference": null,
+      "initial": {
+        "pages": [
+          {
+            "page": "map",
+            "image": "review-site/a392b454-0-map.png",
+            "imageSha256": "3aaa7e4300b57a6518b8db8b1650f9873f25921c79b3016f9750eff1970951ae",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "深圳市天文台及深圳·大鹏可读，地图保留©OpenStreetMap贡献者归属。",
+                "搜索、定位／图层、marker、把手、概览／天文、想去／分享／云观星及地图／我的主导航可见。",
+                "开放时间和停车／厕所明确标待核实，没有允许夜间进入或设施可用的虚构承诺。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "地点标题最突出，路线／开放／设施及底部资料区清楚分层，事实左标签右值可扫描。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "正文与灰标签大小／重量有差异，路线与导航图标对应明确，小字实际手机表现仍待测。"
+              },
+              "density": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "路线距离／预计到达暂无数据独立占行，现场只有两项未知事实；资料到动作间留白较大，当前有效内容偏少。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与我的页白底、细分隔线、紫色状态及横向导航一致；行内文字结构稳定。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "事实标签与值、分隔线、资料入口和操作边界没有明显碰撞或裁切。"
+              }
+            },
+            "weightedScore": 3.8,
+            "userPreference": null
+          },
+          {
+            "page": "my",
+            "image": "review-site/a392b454-0-my.png",
+            "imageSha256": "fdf1ca69a0db397817382f8be32de8a1788adaa4e2dab719aaddeab7e0c27b02",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "账户与内容、当前微信身份及单一gear可读；主导航只有地图／我的。",
+                "计划显示2026-09-07、深圳市天文台及地点与出发准备。",
+                "现场反馈与纠错显示1条草稿／2条待审核；主页链接2条已保存；导入自己的帖子并提交审核。",
+                "未见会员、虚构次数或收藏夹。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 3,
+                "weight": 0.25,
+                "evidence": "蓝色09.07日期侧栏比地点文字更强，日历数字获得较大视觉权重，计划地点优先级略弱。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "账户与业务标题、辅助日期和说明可辨，字串无碰撞；蓝色日期清楚但强调偏强。"
+              },
+              "density": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "日期在侧栏只出现一次，计划与后三项列表没有大卡多余占高，内容完整且相对紧凑。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与地图页白底、横向标签／值组织、细线和紫色导航统一。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "箭头、分隔线和图文对齐稳定，无叠字或截断；除信息强调取舍外当前细节完整。"
+              }
+            },
+            "weightedScore": 3.75,
+            "userPreference": null
+          }
+        ],
+        "meanWeightedScore": 3.775,
+        "bothPagesVisualThresholdMet": false,
+        "allDimensionsAtLeast3": true
+      }
+    },
+    {
+      "candidateId": "e3797363",
+      "userPreference": null,
+      "initial": {
+        "pages": [
+          {
+            "page": "map",
+            "image": "review-site/e3797363-0-map.png",
+            "imageSha256": "fa9247e0d1475182fd42a90daf7c6bfc2d591b46b65d362fbbee4602b8c62565",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "深圳市天文台及深圳·大鹏可读，地图保留©OpenStreetMap贡献者归属。",
+                "搜索、定位／图层、marker、把手、概览／天文、想去／分享／云观星及地图／我的主导航可见。",
+                "开放时间和停车／厕所明确标待核实，没有允许夜间进入或设施可用的虚构承诺。",
+                "天文段可见2026-09-07、21:00、20:40更新、总云量24%、气温26°C、风速2.4m/s、月光影响较弱，符合固定示例。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "地点、章节、现场事实与天文信息清楚分段，指标值与时间自然成为对应段落重点。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "地点标题大于普通说明，四项天气的标签和值层级可辨；文字没有互相挤压。"
+              },
+              "density": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "当前medium完整呈现到达未知信息和天气fixture，所有值可读，密度由合理分行实现。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与我的页白底、淡色图标、紫色状态及横向导航一致，边距和分隔规则稳定。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "天文四列、时间、更新说明和底部操作互不遮挡，分隔线和章节指示位置正常。"
+              }
+            },
+            "weightedScore": 4,
+            "userPreference": null
+          },
+          {
+            "page": "my",
+            "image": "review-site/e3797363-0-my.png",
+            "imageSha256": "c79f0e2b4ced0f8d014541256211ad4c40ad7fc15f04525d88849dfb70de4984",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "账户与内容、当前微信身份及单一gear可读；主导航只有地图／我的。",
+                "计划显示2026-09-07、深圳市天文台及地点与出发准备。",
+                "现场反馈与纠错显示1条草稿／2条待审核；主页链接2条已保存；导入自己的帖子并提交审核。",
+                "未见会员、虚构次数或收藏夹。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "账户标题明确，计划、反馈、链接和导入依次清楚，辅助日期与计数退后。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "标题与说明可辨，图标和文字比例稳定；蓝色实心头像较重但不影响其他内容层级。"
+              },
+              "density": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "计划和反馈各使用较宽行距，反馈计数后到分隔线留白偏大；四项可读，但仍有压缩无效间距的空间。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与地图页白底、淡色图标、紫色状态和横向导航保持一致，左边距统一。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "四项入口箭头和分隔线完整，文字与图标无明显错位或裁切。"
+              }
+            },
+            "weightedScore": 3.8,
+            "userPreference": null
+          }
+        ],
+        "meanWeightedScore": 3.9,
+        "bothPagesVisualThresholdMet": false,
+        "allDimensionsAtLeast3": true
+      }
+    },
+    {
+      "candidateId": "f946c266",
+      "userPreference": null,
+      "initial": {
+        "pages": [
+          {
+            "page": "map",
+            "image": "review-site/f946c266-0-map.png",
+            "imageSha256": "30c518c5891b6e66b4e057f45e225beea1649db8911320b4c39f75ca54da811c",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "深圳市天文台及深圳·大鹏可读，地图保留©OpenStreetMap贡献者归属。",
+                "搜索、定位／图层、marker、把手、概览／天文、想去／分享／云观星及地图／我的主导航可见。",
+                "开放时间和停车／厕所明确标待核实，没有允许夜间进入或设施可用的虚构承诺。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "地区置于地点名上方，地点为主标题；路线、未知事实、资料和操作分区清楚。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "标题大于元信息与说明，图文间距稳定，停车／厕所同句可读。"
+              },
+              "density": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "路线距离与预计到达暂无数据另占说明行，当前实质信息只有位置与未知条件，资料到操作间还有留白。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与我的页灰色分组、图标和紫色状态／导航一致，页面内缩和分隔规则清楚。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "标题、事实、资料与动作没有重叠或裁字，主导航选中背景及下划线边界稳定。"
+              }
+            },
+            "weightedScore": 3.8,
+            "userPreference": null
+          },
+          {
+            "page": "my",
+            "image": "review-site/f946c266-0-my.png",
+            "imageSha256": "9619b5d9956dff3bfb88d0686f3737715a388ba99bee03cf2e51eaf359ffb972",
+            "viewedActualPng": true,
+            "reviewedAt": "2026-09-07T09:44:25Z",
+            "productCorrectness": {
+              "status": "partial_static_confirmation",
+              "confirmed": [
+                "账户与内容、当前微信身份及单一gear可读；主导航只有地图／我的。",
+                "计划显示2026-09-07、深圳市天文台及地点与出发准备。",
+                "现场反馈与纠错显示1条草稿／2条待审核；主页链接2条已保存；导入自己的帖子并提交审核。",
+                "未见会员、虚构次数或收藏夹。"
+              ],
+              "issues": [],
+              "unverified": [
+                "44logical-px命中、区域互斥、精确字级／字重、文字4.5:1与图形3:1对比度未量测。",
+                "同文档裁切、large才滚动、把手tap无动作、章节文档定位／吸顶、marker首点medium未测。",
+                "三个图层互斥、LIGHT静态、真实时间切片及动作／入口跳转和状态恢复未测。",
+                "手机／真机、三模式、多宽度、无障碍、原生地图外观、Figma可编辑图层未测。",
+                "当前裁切没展示的章节不判缺失，也不判已经正确；可见单一21:00与刻度不证明时间交互已实现。"
+              ]
+            },
+            "visual": {
+              "hierarchy": {
+                "score": 4,
+                "weight": 0.25,
+                "evidence": "账户与计划灰卡区分明确，计划地点及日期／准备说明可辨，后续业务入口按顺序排列。"
+              },
+              "typographyIcons": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "标题、说明和日期大小有差异，图标、文字与箭头成组完整。"
+              },
+              "density": {
+                "score": 3,
+                "weight": 0.2,
+                "evidence": "计划卡约y182–314为132px，日期、地点和准备逐行后仍留较大上下空间；一般列表更紧凑，整体密度尚可提高。"
+              },
+              "crossPageConsistency": {
+                "score": 4,
+                "weight": 0.2,
+                "evidence": "与地图页灰色材料、图标、紫色选中背景和横向导航一致。"
+              },
+              "details": {
+                "score": 4,
+                "weight": 0.15,
+                "evidence": "计划卡、反馈和后续入口的边界清楚，箭头对齐，没有明显文字遮挡或裁切。"
+              }
+            },
+            "weightedScore": 3.8,
+            "userPreference": null
+          }
+        ],
+        "meanWeightedScore": 3.8,
+        "bothPagesVisualThresholdMet": false,
+        "allDimensionsAtLeast3": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "status": "stitch-success-codex-companion",
+  "generationSubmissions": 1,
+  "technicalRetries": 0,
+  "exportCorrection": "Read complete rendered iframe DOM; original srcdoc retained. One selector retry during export, no regeneration.",
+  "screenTitle": "地图·中档·黄绿火流星与间距精修",
+  "mode": "Balanced",
+  "stitchModel": "unknown",
+  "codexModel": "unknown",
+  "codexEffort": "unknown",
+  "usage": null,
+  "original": "outputs/stitch-original/index.html",
+  "projectUrl": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "productionMigrated": false
+}

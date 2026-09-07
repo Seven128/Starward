@@ -1,0 +1,14 @@
+[
+  {
+    "file": "prompt.txt",
+    "sha256": "e76226e2c40f3b8ffeb0d4c7230017de144dc014b32e2be2c1f418ce78116307"
+  },
+  {
+    "file": "../feedback-04/content.js",
+    "sha256": "5ea650719e957b5bf7fd3312c7c1fc576bbc9e3bec4e64eb24236d5916f632d6"
+  },
+  {
+    "file": "../feedback-04/refinement.css",
+    "sha256": "ceb1a69a30ed345812e14fcf68b1d9ebd83a6eeb0c1166ef6fed424b8ce61a35"
+  }
+]

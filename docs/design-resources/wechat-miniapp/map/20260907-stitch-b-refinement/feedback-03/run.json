@@ -1,0 +1,36 @@
+{
+  "status": "review-ready-codex-fallback",
+  "submittedAt": "2026-09-07T15:03:28.193Z",
+  "generationSubmissions": 2,
+  "actualScreens": 0,
+  "stitchMode": "Balanced",
+  "stitchModel": "unknown",
+  "codexModel": "unknown",
+  "codexEffort": "unknown",
+  "tokenUsage": null,
+  "adopted": false,
+  "productionChanged": false,
+  "promptSha256": "8b7acdddaa82cbbde05bf01e136bd8ca4960ce128e0b02782481f9a1bc71883b",
+  "technicalRetries": 1,
+  "firstAttempt": "error-no-requested-screens",
+  "stitchFailure": "Both attempts: unexpected error; requested screen titles absent",
+  "fallback": "Edit existing approved-style HTML with isolated scenario data; licensed illustrative facility photos",
+  "completedAt": "2026-09-07T15:23:44.717Z",
+  "head": "d0c77b613ebc581ee0be9cf283d1edb631643b2c",
+  "outputKind": "one editable Codex companion with basic/astronomy views and scenario controls",
+  "productContextChanged": true,
+  "hostModelSource": "not verifiable; unknown",
+  "usageNote": "Stitch did not report per-attempt usage. Two failures, zero requested new screen titles.",
+  "inputSha256": {
+    "../feedback-02/outputs/interactive/index.html": "7b492c8547798cc63584477c46202d0cf63c1ac7434aa2f2125522b818b36e69",
+    "../feedback-02/outputs/interactive/preview.css": "2428a464354fb7f0bc811d6e9207a2ed9dc0dfa8c59cb842144ea097b095dedc",
+    "../feedback-02/outputs/interactive/preview.js": "9bae247d23abae779f925de29d72126f1a93c9d5f1be5f22f7df4c415ab4d725"
+  },
+  "outputSha256": {
+    "prepare-preview.mjs": "b07ddefd074b08e3d39630ee23f99b85ccf7b81cf057b25e4e61caee07f29e9f",
+    "content.js": "41d234b5c957a6224da7e05c5465b41abac63a4cf1d6e64dbac6a4c1dc9af20d",
+    "content.css": "2bb5305b6caa57b2e048d21d735cbb78d1f4dfa0fb15a469b218ef5d30e4c3d0",
+    "outputs/interactive/index.html": "3aea3e8d5a6f52f2d98036e6149bb0c965de92b3be33937377f44bacdf037cde",
+    "assets/credits.json": "5397ebee65172105681eca5dba6cbc55b1f9826edbc3b721fc7b2befec32aaf0"
+  }
+}

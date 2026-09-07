@@ -1,0 +1,56 @@
+{
+  "checkedAt": "2026-09-07T08:44:44.014Z",
+  "preflight": {
+    "ok": true,
+    "errors": [],
+    "warnings": []
+  },
+  "coreAllHistory": {
+    "ok": false,
+    "reviewable": true,
+    "errors": [
+      "e1-A-1-map-round-0: visible text clipped by ancestor",
+      "e1-A-2-map-round-0: visible text clipped by ancestor",
+      "e1-A-3-map-round-0: visible text clipped by ancestor",
+      "e1-A-1-map-round-0-technical-1: visible text clipped by ancestor"
+    ],
+    "warnings": [],
+    "boardCount": 37
+  },
+  "coverageSummary": {
+    "boards": 24,
+    "enhancedBoards": 24,
+    "groups": {
+      "themes": 6,
+      "map": 5,
+      "my": 4,
+      "sizes": 6,
+      "components": 3
+    },
+    "pngDecoded": 24,
+    "errors": 0,
+    "review": 3,
+    "evidenceGaps": 0,
+    "nativeComponents": 197,
+    "nativeInstances": 189,
+    "instanceLinksUnrecorded": 0
+  },
+  "tests": {
+    "newSkill": 26,
+    "existingProjectSkills": 3,
+    "passed": 29,
+    "quickValidate": "passed",
+    "discoveryEvidence": "skill-discovery.json"
+  },
+  "native": {
+    "path": "native/Starward-map-my.fig",
+    "sha256": "256555be1d305f185099ad164b44ac39933bed1ce653f6521eabde3148406b1d",
+    "format": "Figma Save local copy ZIP; canvas.fig header fig-kiwi; no font file entries"
+  },
+  "unverified": [
+    "User visual preference",
+    "Second and third independent paired trial",
+    "WEAPP and phone interaction/runtime",
+    "Native .fig re-import"
+  ]
+}

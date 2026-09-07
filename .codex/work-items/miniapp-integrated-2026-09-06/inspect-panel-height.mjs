@@ -1,0 +1,5 @@
+import automator from 'miniprogram-automator';
+const timer=setTimeout(()=>process.exit(2),15000);const p=await automator.connect({wsEndpoint:'ws://127.0.0.1:9421'});
+try{console.log(JSON.stringify(await p.evaluate(()=>new Promise(resolve=>{const q=wx.createSelectorQuery();q.select('.spot-panel').fields({dataset:true,computedStyle:['height','border-top-left-radius','min-height','max-height','animation-name','animation-duration','animation-play-state','--panel-rest-height','--panel-available-height','--panel-drag-offset']});q.select('.map-panel-layer').fields({computedStyle:['--panel-drag-offset']});q.exec(rows=>{const found=[];function scan(n){if(!n||typeof n!=='object')return;if(n.cl && (n.cl.startsWith('spot-panel ') || n.cl.startsWith('map-panel-layer')))found.push(Object.fromEntries(Object.entries(n).filter(([k,v])=>typeof v!=='object')));for(const v of Object.values(n))if(typeof v==='object')scan(v)}scan(getCurrentPages().at(-1).data);resolve({rows,found})})}))));}finally{p.disconnect();clearTimeout(timer)}
+
+

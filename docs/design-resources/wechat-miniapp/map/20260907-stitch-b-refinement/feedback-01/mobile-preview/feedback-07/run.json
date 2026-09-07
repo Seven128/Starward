@@ -1,0 +1,17 @@
+{
+  "status": "stitch-success-codex-companion",
+  "projectUrl": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "generationSubmissions": 1,
+  "technicalRetries": 0,
+  "newScreens": 1,
+  "screenTitle": "地图·大档滚到天文·紧凑修订",
+  "mode": "Balanced",
+  "stitchModel": "unknown",
+  "codexModel": "unknown",
+  "codexEffort": "unknown",
+  "usage": null,
+  "unknownReason": "No verified host model/effort/usage metadata exposed.",
+  "original": "outputs/stitch-original/index.html",
+  "source": "Rendered screen iframe srcdoc exported intact; screenshot from current local rendering.",
+  "productionMigrated": false
+}

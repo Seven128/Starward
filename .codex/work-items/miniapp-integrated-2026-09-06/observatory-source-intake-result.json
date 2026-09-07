@@ -1,0 +1,16 @@
+{
+  "mode": "local_source_intake_via_admin_http",
+  "spotId": "spot:sz-astronomical-observatory",
+  "addedSourceIds": [
+    "source:sz-observatory-night-access-20251117",
+    "source:sz-observatory-visitor-rules-20250702"
+  ],
+  "priorSourceCount": 10,
+  "sourceCount": 12,
+  "priorRevision": 2,
+  "revision": 3,
+  "status": "DATA_INSUFFICIENT",
+  "allOtherDetailFieldsUnchanged": true,
+  "complete": false,
+  "temporaryServiceStopped": true
+}

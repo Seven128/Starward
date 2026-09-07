@@ -512,7 +512,9 @@ This section is the complete canonical visual-system profile for `target.system.
 
 ### 2. 色彩系统
 
-语义所有权：sky/periwinkle 负责时间、选择与信息焦点；meteor yellow 负责唯一最终承诺、天象事件和稀缺好窗口；trail green 负责路线、地形、可行机会和良好户外条件；risk coral 负责风险、阻断和失败。单一局部区域最多使用两种非中性色，另可加入必要风险色。日间大面积只使用纯白中性画布/表面，深色只承担可读文字；subtle neutral 仅用于局部分区和轨道，不得把页面重新染成米黄，也不得用任何强调色反复染标题、边界和普通容器。
+当前已确认方向退出绿色主导：深中性正文、白色全宽圆角模块与极浅中性数据组承担信息主体，暖黄只点睛选择和天象；月相为亮黄/灰。黄绿仅在想去的火流星拖尾等已明确批准的局部装饰出现，不推导安全或出发建议。风险色继续表达真实限制。观星点三动作的浅蓝白云、浅夜空和暖杏背景是已采用组件例外，具体值见§5A.0。其他页面按已有角色及其采用状态处理，不自动铺绿色，也不把组件例外推广为全局装饰。夜间/观测模式保留各自低亮/暖红约束。
+
+2026-09-08三档观星点组件已采用，具体视觉按§5A.0资源；上方可执行themes与生成tokens仍为尚未迁移的生产值。后续开发由同一token/component owner落实采用资源、校验对比度与主题映射，不建立平行主题。不恢复早期feedback-05的绿色候选，也不以本次文档采用宣称生产生成完成。原生App与运营端不在本次范围。
 
 完整值只在当前可执行令牌的 themes 中维护，`tokens.scss` 与原生主题由此生成；下列旧来源表仅解释既有色彩角色。所有普通文本组合需达到 4.5:1；大文本和关键图形边界需达到 3:1。状态必须同时有文字、图标、形状或线型，不得只靠颜色。
 
@@ -528,7 +530,7 @@ This section is the complete canonical visual-system profile for `target.system.
 | text-tertiary | 必要辅助信息，对 canvas 4.88:1 |
 | border | 安静分隔线，不单独承担状态 |
 | border-strong | 关键图形边界，对白 3.27:1 |
-| sky / sky-soft / sky-strong | 时间、选择、信息焦点；soft只作极浅选中面，状态另有边界/indicator/checked |
+| sky / sky-soft / sky-strong | 时间、选择、信息焦点（迁移为绿色）；soft只作极浅选中面，状态另有边界/indicator/checked |
 | meteor / meteor-soft / meteor-strong | 最终承诺、天象、稀缺窗口；strong 对 soft 6.56:1 |
 | trail / trail-soft / trail-strong | 路线、地形、可行机会；strong 对 soft 5.89:1 |
 | risk / risk-soft / risk-strong | 风险、失败；strong 对 soft 6.23:1 |
@@ -547,7 +549,7 @@ This section is the complete canonical visual-system profile for `target.system.
 | text-tertiary | 辅助说明，对 canvas 6.85:1 |
 | border | 普通分隔线 |
 | border-strong | 关键图形边界，对 canvas 3.52:1 |
-| sky / sky-soft / sky-strong | 选择、时间；strong 对 soft 9.56:1 |
+| sky / sky-soft / sky-strong | 选择、时间（迁移为绿色）；strong 对 soft 9.56:1 |
 | meteor / meteor-soft / meteor-strong | 最终承诺、天象、窗口；strong 对 soft 10.39:1 |
 | trail / trail-soft / trail-strong | 路线、机会；strong 对 soft 9.99:1 |
 | risk / risk-soft / risk-strong | 风险、失败；strong 对 soft 8.61:1 |
@@ -568,14 +570,14 @@ This section is the complete canonical visual-system profile for `target.system.
 
 #### 2.4 组件映射
 
-- Decision Summary：结论文字保持中性；建议用 trail、时间用 sky、稀缺窗口用 meteor，湿滑风险才用 risk；证据带分成局部子区遵守两强调色上限。
-- Observing Window：轨道选中段用 sky；稀缺天象窗口可加入 meteor；不同时再加入 trail。
+- Decision Summary：结论文字保持中性；建议用 trail、时间用绿色选择角色、稀缺窗口用 meteor，湿滑风险才用 risk；证据带分成局部子区遵守两强调色上限。
+- Observing Window：轨道选中段用绿色选择角色；稀缺天象窗口可加入 meteor；不同时再加入 trail。
 - Route/Elevation：trail 专属；风险标记可叠加 risk。
-- Sun/Moon Event：meteor 专属；选中游标仍用 sky。
+- Sun/Moon Event：meteor 专属；选中游标仍用绿色选择角色。
 - Provenance/Freshness：默认中性色；stale 用 meteor 图标+“数据较旧”；offline 用 risk+“离线缓存”。
-- 数据矩阵：中性底；只给当前选择列和真正异常单元着色，不把每一行染成不同颜色。
-- Map / Search：大面积 chrome 使用 neutral canvas/surface；query/selection 用 sky，机会用 trail，selected filter ornament 与稀缺天象用 meteor，失败/阻断用 risk。所有 filter 属于同一 Checkbox/Radio 语义家族，不创建 quick/advanced 两套 token 或组件。
-- Marker / Spot panel：formal marker 的 neutral core、selected sky boundary、锚点形状和 panel visible state 共同表达选择；marker 直接打开三档信息 panel，不保留 selected callout 或独立 Detail 页面。
+- 数据矩阵：同一模块共享白色圆角容器，内部每类一个语义图标，以对齐和必要细线分组；选择与异常单元另有明确状态，不把每行染成不同颜色。
+- Map / Search：大面积 chrome 使用 neutral canvas/surface；query/selection 用绿色选择角色，机会用 trail，selected filter ornament 与稀缺天象用 meteor，失败/阻断用 risk。所有 filter 属于同一 Checkbox/Radio 语义家族，不创建 quick/advanced 两套 token 或组件。
+- Marker / Spot panel：formal marker 的 neutral core、selected green boundary、锚点形状和 panel visible state 共同表达选择；marker 直接打开三档信息 panel，不保留 selected callout 或独立 Detail 页面。
 - Analysis/Legend：独立`观测条件`Bar已退休；当前layer/metric和唯一时间值只在`map-layer-selector` sheet的紧凑summary中出现。Active overlay legend同时使用色带与文字/形状，不混合多个layer legend。
 
 ### 3. 字体与图标
@@ -650,7 +652,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - 设计资源只展示 Starward UI/UX、状态和动效；对应技术说明以“library / component / Starward adaptation”标注。组件库提供通用交互、表单连接、弹层、滚动和可访问性基础，不拥有 Product Surface、Control key、业务 state、exact token、文案、数据或验收真相。
 - Current mapping：Primary navigation=`View/Button navigation rail`；Search=`Input + Button + ScrollView`；spot panel=`View + Button + ScrollView + bottom-presentation coordinator`；section/action rails=`View + Button`；layer sheet=`View + Button + bottom-presentation coordinator`；Settings/My=`Button + Input + Switch + existing Starward state owners`；Contribution=`Input + Textarea + Switch + Button + ScrollView + existing Starward form owner`。短暂异步反馈只由现有 `notification-feedback` owner 呈现。所有 glyph 仍通过现有 `SemanticIcon`，不得安装第二 icon family。
 - Specialized mapping：Curved Time Ruler 继续使用 Taro enhanced horizontal `ScrollView`，因为 generic Slider/Picker 不具备 real-slice curved scrub语义；三态 display track由一个可访问的 Starward button/radio-equivalent owner 实现，不复用 binary Switch 外观；Search fixed-frame transition、panel same-document/media phase、handle-only hot region、panel/layer互斥、upload transport/idempotency等均由现有 Starward owner 包裹。
-- Generic FloatingPanel 只有在其完整 dependency closure 与唯一 icon/state owner 相容，且真实 WEAPP 证明三 anchors、唯一滚动、nav-safe height、可中断 retarget以及仅`104×40rpx`header热区均成立时才可替换现有实现。本次采用 Taro `ScrollView` + 当前 panel coordinator，不扩大热区、不改变设计。未来 library admission 仍须复核 version/license/lock/tree-shaking/bundle、WEAPP/IME/safe-area/a11y/gesture 与 day/night/observation 主题投射。
+- Generic FloatingPanel 只有在其完整 dependency closure 与唯一 icon/state owner 相容，且真实 WEAPP 证明三 anchors、唯一滚动、nav-safe height、可中断 retarget以及仅当前全宽紧凑文档header热区均成立时才可替换现有实现。本次采用 Taro `ScrollView` + 当前 panel coordinator，遵循当前授权热区，不引入其他拖动入口。未来 library admission 仍须复核 version/license/lock/tree-shaking/bundle、WEAPP/IME/safe-area/a11y/gesture 与 day/night/observation 主题投射。
 - 禁止并行引入两套通用 UI suite、复制 library brand defaults、让 library form store成为第二 draft/state truth、使用 runtime CDN/remote asset、或为了声称复用而用语义不等价组件。任何外部 suite 的升级或替换只能发生在 Starward owner/adapter 下方，并保持本系统的精确尺寸、层级、边距、语义与产品状态。
 
 #### 4.6 八轴实践矩阵
@@ -688,6 +690,26 @@ This section is the complete canonical visual-system profile for `target.system.
 
 本合同只规范小程序自有的 Map、Search、spot-information-panel chrome；Surface、Control、状态与 commit/cancel/recovery 仍由 Mini Program Screen Contract 拥有。地图 provider、basemap、tile、道路/地形/卫星内容、native rendering 与不可移除 legal chrome 不属于本设计系统。
 
+#### 5A.0 已采用观星点信息组件（三档）
+
+地图唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/map/ADOPTED.md)。2026-09-08用户确认small/medium/large组件完成，采用[三档资源](docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)及最终动效；覆盖日间正式点位的基本信息、天文、相关媒体和底部操作。其具体几何/颜色/图标/动效替换本文件内该组件的旧rpx和中档静态表达，不自动推广到其他页面/主题。生产组件、接口和生成tokens尚未迁移；本次资源/规范采用不触发生产生成。
+
+| 角色 | 采用表达（逻辑px，具体级联值以采用源文件为准） |
+| --- | --- |
+| 字体尺度 | 保持原B紧凑尺度；地点名18px，地区/事实正文12px；不因三档高度不同整体缩放 |
+| 面板 | 同一保留文档、全宽白色紧凑身份区；small/medium顶部圆角，large直角；最终档位基准及安全区映射见采用包 |
+| 章节 | 首屏隐藏，天文边界出现；一级同文档定位、短圆头渐变滑动指示；第二章起标题位于卡片外 |
+| 设施 | 停车/洗手间上下各一张无框无阴影照片卡，开放时间为文字；仅图片虚化/局部遮罩，无图为纯色事实卡 |
+| 天文 | 全宽白色圆角模块，相关数据紧凑分组；内层底#FBFBFC、无框，月相亮黄/灰 |
+| 导航 | 右向且居中的纯箭头，无文字/边框/背景；具名且完整44px命中区 |
+| 三动作 | 想去/云观星/分享；等宽、可见32px、圆角7px、文字12px、图文间距6px、完整44px命中区，无边框 |
+| 动作背景 | 想去浅蓝白云#DFEFFC→#F6FAFF；选中想去与云观星夜空#61697E→#535C71，星位不同；分享#FBEFE3、文字#70563E |
+| 想去动效 | 主星顺时针360°/820ms、缩至.94；两副流星冲入渐显、不等待夜空；取消逆向接管live状态；主星黄绿拖尾避开副星头部 |
+
+昼夜背景只原位交叉淡入淡出；夜空星点缓慢明暗，减少动态效果静止。几何、色彩与交互须严格按采用资源开发；业务/数据/失败恢复由Screen Contract约束。示意地图点位、假数据、模拟系统栏和微信胶囊不是生产数据或自有像素基准。跨屏适配保持字体和控件尺寸，以实际安全区/容器布局映射；可访问性颜色差异须显式记录核对，不得默默改变已确认尺度。
+
+原2026-09-07地图外部Search/主导航尺度在未被明确替代部分继续有效；当前组件外的页面/图层及夜间、观测模式仍沿用其owner。
+
 #### 5A.1 Map 主体与悬浮 Search
 
 - 地图连续铺满 route 的可用内容区，是唯一地图对象。顶部只放一个 fixed floating Search field，左右 inset `24rpx`、top=`safe-top + 16rpx`、visible height `80rpx`、input/target `88rpx`、`radius-panel`、solid `surface`、`1rpx border`、`elevation-1`。它不承载 filters、results、快捷入口或说明副标题；activation 进入专用 Search page。
@@ -706,14 +728,14 @@ This section is the complete canonical visual-system profile for `target.system.
 
 #### 5A.3 Spot Information Panel
 
-- Panel 是 Map-parallel non-modal owner，状态为 hidden + `small|medium|large` 三个 visible extents。`small=232rpx + bottom-safe`；`medium=clamp(320px,56vh,480px)（受可用高度与相邻档位约束；标准字号优先展示身份、到达与核心设施，不再使用随屏宽缩小的700rpx上限）`；large填满`mini-primary-navigation`上方的primary content viewport：`top:0;left:0;right:0;bottom:nav-top`，不覆盖或替换Map/My导航。Small/Medium top radius`32rpx`，Large top radius`0`且无外阴影；所有extent铺满content width。
-- 三档始终挂载同一份、同序、同identity的客观document：地点identity→route/access/facility/safety→guides/field/source→天文信息→sky geometry→ruler→matrices/targets/source。Small/Medium只是较短viewport裁剪；Large才启用唯一隐藏scrollbar chrome的internal vertical scroll。禁止按extent分别渲染、remount、重新排序或重复mapping。唯一presentation例外是合法media：small/medium不占media，medium→large时才在document顶部连续拉出；无图从不渲染media node/placeholder/空档。
-- Handle visible=`52×5rpx`；physical hit region=`104×40rpx`，assistive semantic target≥`88×88rpx`。无media时保留结构handle band=`40rpx`，在drag中持续存在且不是大片空白；media开始拉出后handle overlay到image，band连续收为0。Pointer down只改tonal/opacity，不改变extent/top/height/transform；未越过8px阈值的tap/release为no-op。
-- Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。Panel body/content/media或泛化top-edge均不发起extent drag。
+- Panel 是 Map-parallel non-modal owner，状态为hidden + small/medium/large三个visible extents。三档具体高度/圆角/安全区构图以§5A.0采用资源为准，不恢复旧56vh或不同字号尺度。Large填满平台顶部chrome与Map/My主导航之间的可用区域，不覆盖或替换主导航；small/medium圆角，large顶部直角，无外阴影。
+- 三档始终挂载同一份、同序、同identity的客观document：有效media→地点identity→route/access/facility/safety→guides/field/source→卡片外天文标题→日期/时间尺→月相/气象/夜光/目标/来源。Small/Medium只是较短viewport裁剪；Large才启用唯一隐藏scrollbar chrome的internal vertical scroll。禁止按extent分别渲染、remount、重新排序或重复mapping。唯一presentation例外是合法media：small/medium不占media，medium→large时才在document顶部连续拉出；无图从不渲染media node/placeholder/空档。
+- Handle 保留短细圆头提示，整条面板宽度的紧凑白色 identity-header band 为拖动热区，触控高度至少44逻辑px。名称上移并可进入热区下部，不靠额外空白撑开；操作按钮不与热区重叠。Band 跟随同一document滚动，绝不fixed/sticky在panel可视区；有图时位于相册之后，无图时为首区。滚出视口后无替代热区，靠系统/平台Back或可用的edge-back返回档位；滚回真实header才恢复拖动。Pointer down仅改变press反馈，未过方向/距离阈值的tap为no-op。
+- Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。除实际可见header band以外的Panel body/content/media或泛化viewport top-edge均不发起extent drag。
 - Panel top/media/content size必须在每个direct-manipulation帧按live extent、safe area与actual media presence计算。有合法media时`mediaReveal=clamp((p-.50)/.28,0,1)`，clip-height从0到`clamp(300rpx,27dvh,420rpx)`，image从`translateY(-18rpx) scale(1.02)`到0/1；无图没有media phase。
 - 只有panel top接近screen top才淡出Map chrome：`chromeFade=1-clamp((p-.82)/.12,0,1)`。Search、Location与Layer trigger共享该phase，opacity≤.08才移除hit/semantics；反向先恢复chrome，再收media。不得在图片刚拉出时提前隐藏chrome。
-- Large content padding`24rpx`且不为section rail预留全局列。Rail absolute/fixed在panel visual viewport，`top:50% + translateY(-50%)`、right`10rpx`、visible width`60rpx`、outer height`104rpx`、padding=0、overflow clip、single `radius-pill` outline；两个`52rpx`items贴紧上下边、gap=0，中间仅共享divider。Active=`#F5F6FF`+indicator；无outer/drop/right shadow或item translate。
-- Bottom action bar左右inset=`40rpx`、bottom=`safe-bottom + 8rpx`、outer interaction lane=`88rpx`、visible pill height=`52–56rpx`；三项等宽，顺序为icon-labelled`想去`、`分享`、`云观星`，visible icon=`22rpx`、label=`18–19rpx/26rpx`。Favorite与filter ornament共用同一rounded-star `SemanticIcon` source。
+- Large采用全宽中性白色圆角模块与共享文字内距。章节导航遵循6.11：基本信息首屏隐藏，到天文章节出现并吸顶；仅一层同文档锚点，不恢复旧侧边rail。
+- Bottom action bar沿用§5A.0的三档采用资源几何，顺序想去/云观星/分享；可见区域与44px命中区分别处理。Favorite星形由既有语义图标owner承接已采用矢量，不建立第二套关系状态。
 - 只有handle hit region内的vertical panel drag从live position跟手；whole panel body/content/media不启动extent drag。Curved ruler的horizontal gesture获胜后panel不得抢占。Release使用nearest snap + velocity和bounded spring，≤280ms；tap handle为no-op。
 
 #### 5A.4 图层、观测摘要、状态与模式
@@ -722,7 +744,7 @@ This section is the complete canonical visual-system profile for `target.system.
 - Map analytical layer 使用 solid canvas/surface 与 dividers，不用 glass/card wall。Sheet overlay不remount或移动地图；同一物理地图、camera、selection与scroll coordinates保持连续。
 - App-owned legend 只随 active analytical overlay 出现，使用 `radius-band` solid strip、`1rpx border` 与 label/value/shape；一次只有一个 layer legend。
 - Day/Night 使用当前 roles；Night 不用 glow/neon。Observation 中 app-owned Search、marker、panel、rail、legend、loading、focus 和过渡只用 closed black/warm-red roles。不能主题化的 native/provider surface 必须在进入前提供 safe cancel/return 或 non-field alternative。
-- `map-layer-selector`由紧凑Map-edge trigger与固定高度bottom-sheet presentation组成，不新增第二Control key。Trigger active只用极浅`sky-soft=#F5F6FF`+inset boundary且几何不变。Sheet=`332rpx + safe-bottom`，top radius`28rpx`，无drag handle、`x`、Close row、多extent暗示或“关闭图层”。只列`光污染/总云量/观测机会`三个Source-supported值，每项为本地生成/自有abstract image-backed矩形卡；selected同样只用极浅fill、inner boundary和checked state。
+- `map-layer-selector`由紧凑Map-edge trigger与固定高度bottom-sheet presentation组成，不新增第二Control key。Trigger active只用极浅绿色选择面（旧`sky-soft`待迁移）+inset boundary且几何不变。Sheet=`332rpx + safe-bottom`，top radius`28rpx`，无drag handle、`x`、Close row、多extent暗示或“关闭图层”。只列`光污染/总云量/观测机会`三个Source-supported值，每项为本地生成/自有abstract image-backed矩形卡；selected同样只用极浅fill、inner boundary和checked state。
 - Map只有一个`bottomPresentation = none | spot-panel | layer-sheet` coordinator。打开layer直接把spot presentation retarget为layer；panel hit/semantics/active在退出后清除，但selected spot与previous extent保留。Layer open时marker/result intent直接把同一owner retarget为新spot medium，不先恢复旧panel。关闭layer只在没有更新intent时恢复prior extent。任何帧不得同时存在panel/layer两个visible或active flag。
 - Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/layer/selection 的局部状态已是反馈，不另弹 floating notification，也不展示操作教程或实现说明。
 - `320/375/390/430` 标准字号与 safe area 必须适配。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
@@ -836,18 +858,18 @@ This section is the complete canonical visual-system profile for `target.system.
 
 - **Anatomy**：摘要按钮、展开状态、证据区、来源/新鲜度。
 - **Variants**：collapsed、expanded、loading、partial。
-- **Layout**：内容原位展开，保持共享时间轴；不弹出二级卡片墙。
+- **Layout**：内容原位展开，保持共享时间轴；不弹出二级卡片墙。摘要尾部chevron在同一方形图标框垂直居中，随展开旋转，内容高度同步下拉/收起；快速反向从当前高度接管，焦点不跳转。
 - **Color/radius**：中性分隔线；选中 sky；外接键盘 focus-visible 使用局部内侧下边缘；0–8rpx 技术容器。
 - **A11y**：按钮同步 `aria-expanded`/`aria-controls`；焦点不跳转。
 - **Composition**：结论首屏最多一个证据入口；展开后先核心行再扩展行。
 
 #### 6.11 Stargazing Spot Information Panel
 
-- **Anatomy**：稳定quiet handle-only drag zone、三档裁剪同一retained non-modal document、medium→large presence-driven licensed media、客观`基本信息 → 天文信息`顺序、名称/地点下方轻量横向吸顶的 `概览/天文` 文字Tab、short fixed `想去/分享/云观星` action bar。
+- **Anatomy**：随document滚出的全宽紧凑白色header drag zone、三档裁剪同一retained non-modal document、medium→large presence-driven licensed media、客观`基本信息 → 天文信息`顺序、到天文边界才出现的轻量横向吸顶 `基本信息/天文` 章节导航、short fixed `想去/云观星/分享` action bar。
 - **Variants**：hidden、small、medium、large、dragging、settling、loading、partial、stale、error；hidden 与 visible extent 分开建模。
-- **Geometry**：复用本文件 Map / Search / Spot Information 合同中的三档高度、圆角、把手和导航边界，不维护第二组尺寸。章节Tab靠左排列，纯文字与短选中线，不加图标、填色或等分整行；滚动时吸顶，点击定位同一文档并扣除Tab高度，滚动回写选中章节。点击区域满足当前44px触控下限，正文全宽。动作栏使用当前令牌与共用动作规则。
-- **Transition**：`mediaReveal=clamp((p-.50)/.28,0,1)`先拉出top media；`chromeFade=1-clamp((p-.82)/.12,0,1)`后淡出Search/Location/Layer trigger。Reverse先恢复chrome再收media。No-media没有media phase，但保留`40rpx`compact handle band。Panel vertical drag、large content scroll与horizontal ruler通过direction-lock独占手势。
-- **A11y / composition**：large左边缘`32rpx`右滑或handle下拉执行Back语义的large→medium；named extent controls提供等价路径。Only `104×40rpx`handle region发起drag；whole panel body/media/content不启动。Small/medium/large不切换内容树，只裁剪同一document。普通missing值显示`暂无数据`但domain state不合并。不得恢复独立Spot Detail/Spot Night、切换独立内容树的tabs、推荐窗口、第二地图、nested full-height sheet或duplicate actions。
+- **Geometry**：复用本文件 Map / Search / Spot Information 合同中的三档高度、圆角、把手和导航边界，不维护第二组尺寸。章节导航默认仅一级，基本信息首屏隐藏，滚到天文章节边界后出现并吸顶；靠左排列，不加图标、填色或等分整行。单一选中线短、稍厚、圆端，局部渐变按最新配色方向确认，切换时连续滑动且可反向打断；文字保持可读中性深色，不再要求绿色。点击定位同一文档并扣除导航高度，滚动回写章节；出现/隐藏不改正文几何。点击区域满足当前44px触控下限，正文模块为全宽白色圆角卡，卡内保留文字内距；同类指标以细线/对齐组织，可尝试一个极浅中性内层共同区域辅助比较，不给每个标量套彩色小卡。全小程序章节标题遵循 information-design：第一项可省略重复大标题，第二项及之后必须在内容起点显示章节标题，吸顶导航不替代它；章节标题统一在卡片外，地图“天文”位于日期时间首卡上方。动作栏使用当前令牌与共用动作规则。
+- **Transition**：`mediaReveal=clamp((p-.50)/.28,0,1)`先拉出top media；`chromeFade=1-clamp((p-.82)/.12,0,1)`后淡出Search/Location/Layer trigger。Reverse先恢复chrome再收media。No-media没有media phase；紧凑白色header band位于真实document顶部，有图时在相册之后，随正文滚动而非悬浮。Panel vertical drag、large content scroll与horizontal ruler通过direction-lock独占手势。
+- **A11y / composition**：large左边缘`32rpx`右滑或handle下拉执行Back语义的large→medium；named extent controls提供等价路径。Only 实际可见的全宽紧凑header band发起drag；whole panel body/media/content不启动。Small/medium/large不切换内容树，只裁剪同一document。普通missing值显示`暂无数据`但domain state不合并。不得恢复独立Spot Detail/Spot Night、切换独立内容树的tabs、推荐窗口、第二地图、nested full-height sheet或duplicate actions。
 
 #### 6.12 Full-Sky Orientation Canvas
 
@@ -991,17 +1013,17 @@ This section is the complete canonical visual-system profile for `target.system.
 
 ### 8. 运动系统
 
-所有运动均由明确操作或数据因果触发，可中断、可反向、无环境循环；normal motion下material route/surface/state不得突然出现或消失。基础缓动：standard `cubic-bezier(.2,0,0,1)`，exit `cubic-bezier(.4,0,1,1)`；press 80ms、short 120ms、medium 160ms、long 200ms，direct-manipulation panel使用280ms上限。bounded spring：mass 1、stiffness 420、damping 34、rest delta 0.5；禁止持续弹跳。
+所有运动均由明确操作或数据因果触发，可中断、可反向，除明确授权的按钮夜空星点明暗外无环境循环；normal motion下material route/surface/state不得突然出现或消失。基础缓动：standard `cubic-bezier(.2,0,0,1)`，exit `cubic-bezier(.4,0,1,1)`；press 80ms、short 120ms、medium 160ms、long 200ms，direct-manipulation panel使用280ms上限。bounded spring：mass 1、stiffness 420、damping 34、rest delta 0.5；禁止持续弹跳。
 
 | Recipe | Trigger / current → target | Timing | Interruption / reverse | Reduced motion | Haptic | Observation |
 |---|---|---|---|---|---|---|
 | Press | pointer/key down；scale 1 → .985，抬起 → 1 | 80/120ms standard | 从当前值反向，不排队 | 仅边界/底色即时变化 | 可选 light | 只改暖红明度/边界，无白闪 |
 | Selection | 选择变化；旧指示器位置 → 新位置；Search filter star `scale(.42) rotate(-14deg) opacity(0)` → `scale(1) rotate(5deg) opacity(.32)` | fill/border 160ms；filter star select 170ms、deselect 140ms | 新选择从 live presentation 接管，不排队 | ≤80ms fill/opacity + 内侧 focus 边界 | 可选 selection | 同几何暖红 ornament，不保留黄色 |
 | Content/Search reveal | retained disclosure或Search child；普通content live measured height/clip/opacity→target；Search field固定、下方clip height0/`translateY(-12px)`/opacity0→full | ordinary 160ms；Search 180ms / exit160ms | 使用当前height/opacity反转，不remount/reset scroll，field geometry不动 | 内容即时显隐，保留状态/焦点 | 无 | 不经过白/灰中间token，不抖动/闪白 |
-| Panel extent/hide | marker/result/handle drag/edge-back/map tap；one retained document viewport→valid extent；media先拉出，近top后Search/Location/Layer淡出 | direct manipulation + bounded spring≤280ms；non-marker hide 220ms exit；section align 200ms | pointer down/tap不切档；只由`104×40rpx`handle region越过threshold后拖动；新拖动接管live value | 跟手；release即时snap；section直接对齐 | 到达端点可选 light | 黑底暖红边界先于内容；无白闪 |
+| Panel extent/hide | marker/result/handle drag/edge-back/map tap；one retained document viewport→valid extent；media先拉出，近top后Search/Location/Layer淡出 | direct manipulation + bounded spring≤280ms；non-marker hide 220ms exit；section align 200ms | pointer down/tap不切档；只由实际可见的全宽紧凑header band越过threshold后拖动；新拖动接管live value | 跟手；release即时snap；section直接对齐 | 到达端点可选 light | 黑底暖红边界先于内容；无白闪 |
 | Layer sheet | `bottomPresentation`在spot-panel/layer-sheet/none间从live值retarget | enter 220ms standard；exit 180ms | 单一枚举禁止双active；marker intent直接layer→new spot medium，不先恢复旧panel | 即时互斥切换并恢复 | 无 | 只用closed暖红surface/border |
 | Curved time scrub | arrowless Taro horizontal ScrollView track 在fixed center下移动；ticks按距中心实时scale/opacity/arc | 每帧直接跟手，释放后≤120ms snap/settle | 新手势立即接管live offset；不节流造成滞后 | 保持native direct scroll、即时snap，无额外spring/inertia | 跨关键事件可选 tick | 暖红 tick/axis；无其他模式中间帧 |
-| Favorite ritual | 收藏成功；52rpx outline → fill，主星 `scale(.92) rotate(7deg)`，最多三颗 subordinate satellites 从外侧进入并停止 | 主星 180ms ease；satellites 420ms ease-out，delay 60/100/140ms；单次 | 取消/失败从当前 presentation retarget，不排队 | 去除 travel/rotation/satellites，≤80ms fill/opacity | 可选 success | 同几何暖红填充；不发光、不循环 |
+| Favorite ritual | 用户点按：圆角主星恰好一整圈、微缩、填充，两颗副流星从左上向右下冲入并渐显，不等待夜空；主星黄绿火流星拖尾为视觉中心 | 单次可逆，一整圈；精确时长与位移见资源样例 | 再次点按接管live值回退，副星/拖尾渐隐；不排队，失败回权威状态 | 无旋转/位移；保留轮廓/填充与程序化选中状态 | 可选 success | 同几何全暖红；不循环 |
 | Loading/data arrival | 请求；skeleton → 真实行 | 最小 120ms crossfade，逐行最大错峰 16ms/总 160ms | 新请求取消旧 transition | 直接替换并播报 | 无 | 只在黑/暖红间切换 |
 | Mode change | 三站thumb的tap/drag/keyboard；day↔night↔observation | thumb 180ms；Day/Night Sun/Moon交叉；Observation先原子绑定target tokens再Moon/Star交叉 | 新输入从live thumb/icon接管；不wrap、不跳站 | 即时snap + ≤80ms icon opacity | 可选 medium | 只在black/warm-red目标令牌内完成，不跨色淡化 |
 | List/My group | result/filter/account group变化；旧flow→新flow+opacity | 160ms，stagger总计≤120ms | 新数据接管并取消旧stagger | 直接落位 | 无 | 同mode roles，不闪白 |
@@ -1019,11 +1041,11 @@ This section is the complete canonical visual-system profile for `target.system.
 
 ### 10. 反模式
 
-- 通用渐变、大面积光晕、玻璃拟态、环境粒子、循环流星、装饰 3D 天体。唯一例外是 `spot-favorite-action` 的 owner-confirmed 单次、因果、最多三颗 satellite ritual；不得扩散到背景或其他成功状态。
+- 通用渐变、大面积光晕、玻璃拟态、环境粒子、循环流星、装饰 3D 天体。明确例外是 `spot-favorite-action` 的单次可逆主星与两颗副星黄绿拖尾，以及 `云观星` 与已选 `想去` 按钮内部稀疏、缓慢明暗变化的星点（最新用户明确例外）；不得扩散到页面背景或其他成功状态，观测模式仍只用暖红。
 - 卡片套卡片、每指标一张卡、把所有选项做成 pill。
 - 以行政仪表盘密度代替移动决策流。
 - 用 generic linear slider或带框卡片代替Curved Time Ruler；重造scroll physics或引入flat React Native ruler作为第二基础；保留Finder Sheet、独立Spot Detail/Spot Night、quick/more split或稀疏tabs；用toast/snackbar/modal为每个普通点击重复反馈。
-- Panel覆盖primary nav、按extent维护不同内容树、whole-panel拖动、tap handle切档、无media时丢失compact handle band、有media时保留band、pressed handle位移、rail占content width/有内外gap或深蓝阴影、过大的底部action bar、单阶段提前隐藏Map chrome、右侧展开layer rail、Search text/field跳变、非marker tap瞬间隐藏。
+- Panel覆盖primary nav、按extent维护不同内容树、whole-panel拖动、tap handle切档、灰色/过高的handle空白带、把handle固定在已滚动内容上方、pressed handle位移、rail占content width/有内外gap或深蓝阴影、过大的底部action bar、单阶段提前隐藏Map chrome、右侧展开layer rail、Search text/field跳变、非marker tap瞬间隐藏。
 - 在移动端显示任意纵向/横向scrollbar chrome；为missing media保留占位图/空白区/“暂无图片”；用`overflow:hidden`禁止真实内容滚动。
 - 常驻“操作说明”“方向跟随中”“部分数据”“同一地图·一个分析图层·本地时间”或其他零决策价值实现/教程文案；为其新增长驻`?`或help chrome。
 - 当前Search同时显示Back与trailing `x`、进入后改写query/placeholder、suggestion rows或filter gaps过大；filter group显示“筛选条件”标题/无意义divider；layer sheet显示`x`/“关闭图层”或独立观测条件卡；panel与layer双active；current panel显示“谨慎出发”/推荐窗口/“尚未核实”。
@@ -1043,7 +1065,12 @@ This section is the complete canonical visual-system profile for `target.system.
 
 ### 12. 实现与验证
 
+- 页面资源的采用与严格还原遵循 [Context 中的小程序页面资源规则](project_context/context-maintenance.md#mini-program-page-design-resources)。开发必须读取并查看所属 Screen Contract 指向的已采用稿，按当前需求验证真实运行结果；页面具体布局由采用稿约束，共享视觉规则和精确 token 仍由本文件拥有，采用时同步消除差异。
 - 当前令牌由 tools/miniapp/generate-design-tokens.mjs 生成到生产 SCSS/TypeScript；修改本文件中的令牌后更新生成文件，不维护浏览器原型镜像。
 - 通过 design:system:verify 检查令牌一致性与对比度，通过 test:miniapp:ui-contracts 检查生产职责约束；图标和语义资产继续使用各自生成检查。
 - 实际 WEAPP 验证标准字号的字体层级、信息密度、吸顶章节Tab可辨识度、44px 点击区、各面板档位及滚动章节同步、媒体和地图状态连续性、三模式、输入法和键盘、失败恢复及真实数据边界。真机和环境限制如实记录。
 - 规则和自动检查不能证明页面视觉完成。仅在持久设计决策改变时更新其 owner，不为每次页面修改同步原型、快照、handoff 或历史 hash。
+
+### 已采用组件的补充实现边界
+
+观星点组件三档资源已采用，见§5A.0。图片/拖区、共享查看器、章节/日期、配色与想去动效的完整当前语义分别由map-and-finder、spot-and-sky及shared-state-and-recovery维护。既有生产tokens与组件尚未迁移，开发必须读取采用包并按真实WEAPP验证，不能把历史候选、Stitch原稿或网页检查当作生产完成证据。

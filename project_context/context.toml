@@ -270,7 +270,7 @@ triggers = ["product goals", "release profile", "budget", "产品目标", "发�
 path = "project_context/architecture.md"
 role = "architecture"
 read_policy = "on-demand"
-triggers = ["architecture", "dependency", "shared owner", "架构", "依赖"]
+triggers = ["architecture", "dependency", "shared owner", "component reuse", "library selection", "架构", "依赖", "公共组件", "复用", "组件库", "技术选型"]
 
 [[context]]
 path = "project_context/context-maintenance.md"
@@ -282,7 +282,7 @@ triggers = ["Tiny Context", "context maintenance", "design resources", "Context 
 path = "project_context/architecture/maintenance-boundaries.md"
 role = "decision-rationale"
 read_policy = "on-demand"
-triggers = ["technical debt", "owner extraction", "maintainability", "技术债", "模块拆分"]
+triggers = ["technical debt", "owner extraction", "maintainability", "shared extraction", "技术债", "模块拆分", "公共能力抽取"]
 
 [[context]]
 path = "project_context/areas/main/screen-contracts/wechat-miniapp/information-design.md"

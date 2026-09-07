@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-07",
+  "time": "21:00",
+  "updatedAt": "20:40",
+  "spot": {
+    "id": "spot:sz-astronomical-observatory",
+    "name": "深圳市天文台",
+    "region": "深圳 · 大鹏",
+    "latitude": 22.4826799,
+    "longitude": 114.5557147,
+    "cloud": 24,
+    "temperature": 26,
+    "wind": 2.4,
+    "moonImpact": "较弱",
+    "facilities": "待核实",
+    "access": "开放时间待核实",
+    "photo": null
+  },
+  "account": {
+    "title": "账户与内容",
+    "identity": "当前微信身份",
+    "profileLinks": 2,
+    "drafts": 1,
+    "pending": 2
+  },
+  "plan": {
+    "date": "2026-09-07",
+    "spotName": "深圳市天文台",
+    "detail": "地点与出发准备"
+  }
+}

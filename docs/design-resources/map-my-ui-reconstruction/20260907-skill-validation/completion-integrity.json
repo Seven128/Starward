@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-07T10:06:28.703Z",
+  "frozenInputsVerified": 168,
+  "liveSkillFilesIdenticalToFrozen": 17,
+  "reviewedPngsVerified": 72,
+  "nativeBackupSha256Verified": "14ec82717b315d19b25638d5ce14bcb10364f39d25a19a3a754bbeb5f2f4c30e",
+  "reportLocalLinksExist": true,
+  "trackedDiff": "git diff --stat empty; main; only expected new skill, input/archive paths and preserved unrelated work-item",
+  "scope": "Final artifact consistency, not visual acceptance or phone verification"
+}

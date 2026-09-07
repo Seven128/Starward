@@ -1,0 +1,61 @@
+{
+  "status": "reviewed-candidates",
+  "head": "d0c77b613ebc581ee0be9cf283d1edb631643b2c",
+  "referenceScreen": "b6c2546d454742c5b8a52fb29ddafa38",
+  "codexModel": "unknown",
+  "codexEffort": "unknown",
+  "stitchMode": "Balanced",
+  "stitchModel": "unknown",
+  "generationSubmissions": 1,
+  "actualScreens": 2,
+  "tokenUsage": null,
+  "quotaUsed": null,
+  "adopted": false,
+  "productionChanged": false,
+  "promptSha256": "65a540cfe33f2045ce5d8bb708aeb8b89cb03b7be782195d83d755046883a6d9",
+  "submittedAt": "2026-09-07T13:31:38.671Z",
+  "referenceSha256": "1cb6d9d53b7ed1f8d01ab4bd834fabba0c18d1d3ab7ba80f5b6947efa93cc2b5",
+  "projectUrl": "https://stitch.withgoogle.com/projects/587088532668047776",
+  "toolRoute": "Chrome browser-client 26.901.51231",
+  "usageNote": "模型具体版本和服务用量不可见，unknown/null不代表零用量",
+  "completedAt": "2026-09-07T13:44:23.922Z",
+  "technicalRetries": 0,
+  "visualRevisionSubmissions": 0,
+  "screens": {
+    "small": "e23877baa46540ea82ba065a45cd971c",
+    "large": "e122a4b54dcc4f88bc3c8643db316913"
+  },
+  "technicalChanges": [
+    "reuse adopted medium header, typography, SVG icons, overview and actions in separate previews",
+    "shared full document clipped for small and scrolled for large",
+    "remove fabricated time labels and unrequested recommendation/developer copy",
+    "localize CSS/map and add phone viewing adaptation"
+  ],
+  "phoneUrl": "http://192.168.31.26:4282/extents.html",
+  "outputs": [
+    {
+      "path": "outputs/small-original.zip",
+      "sha256": "86a0a27609163155f71e1ad8d65f525048b7d17c10c86ac6c7b03122cd1116fe"
+    },
+    {
+      "path": "outputs/large-original.zip",
+      "sha256": "2d5e7e45b6621de47e61734a35ee786b32218a4ad8f2eca8454ef22c76190c8c"
+    },
+    {
+      "path": "outputs/small-preview/index.html",
+      "sha256": "388c7659c7e99939414b9a698001428c3f65324806b40f9b17aa57865aa9fb33"
+    },
+    {
+      "path": "outputs/large-preview/index.html",
+      "sha256": "161eb14532632c1aa71c0d682b932e14e35a0d9be2a5d2da063a2d7e0bacde0c"
+    },
+    {
+      "path": "outputs/small-preview.jpg",
+      "sha256": "0baf8e7dbf2c9a065372bc1a690217edd335492201320d754ed268ea8ac113a1"
+    },
+    {
+      "path": "outputs/large-preview.jpg",
+      "sha256": "ec054216eed7000678f7914352ed7af269426d9ad4eae63b4d3b9bba8d65c646"
+    }
+  ]
+}

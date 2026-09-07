@@ -1,0 +1,247 @@
+- main:
+  - iframe [active] [id="I0_1788779899205"] [name="I0_1788779899205"]:
+    - main:
+      - button:
+      - button "Stargazing Map Detail View"
+      - button:
+      - button:
+      - button "导出":
+        - paragraph: 导出
+      - button "共享":
+        - paragraph: 共享
+      - button "“账号”菜单":
+        - img "Profile image for 李晨"
+      - button:
+      - button:
+      - button:
+      - button:
+      - button "Choose File"
+      - button:
+      - button:
+      - button:
+      - button "撤销" [disabled]:
+        - generic: undo
+      - button "重做" [disabled]:
+        - generic: redo
+      - button "70%":
+        - generic: 70%
+      - button "实用链接":
+      - button "Choose File"
+      - application:
+        - generic: image
+        - generic: clipboard.png
+        - generic: image
+        - generic: clipboard.png
+        - generic: image
+        - generic: clipboard.png
+        - generic: devices
+        - generic: 今晚去观星 - 方向A（轻透悬浮卡片·高密度精细版）
+        - iframe:
+          - img "地图背景"
+          - generic: © OpenStreetMap 贡献者
+          - button:
+          - button:
+          - banner:
+            - generic: 9:41
+            - heading "今晚去观星" [level=1]
+            - button
+            - button
+            - generic: 搜索观星点
+          - main:
+            - heading "深圳市天文台" [level=2]
+            - generic: 深圳 · 大鹏
+            - generic: 概览
+            - generic: 天文
+            - generic: 路线与到达
+            - generic: 距离、预计到达暂无数据
+            - button "导航":
+              - generic: 导航
+            - generic: 开放时间待核实
+            - generic: 停车待核实
+            - generic: 厕所待核实
+            - link "场地资料":
+              - /url: "#"
+            - generic: "|"
+            - link "数据来源":
+              - /url: "#"
+            - generic: "|"
+            - link "反馈纠错":
+              - /url: "#"
+            - button "想去":
+              - generic: 想去
+            - button "分享":
+              - generic: 分享
+            - button "云观星":
+              - generic: 云观星
+          - contentinfo:
+            - button "地图":
+              - generic: 地图
+            - button "我的":
+              - generic: 我的
+        - generic: devices
+        - generic: 今晚去观星 - 方向B（连贯底抽屉·极简现代排版版）
+        - iframe:
+          - img "地图背景"
+          - generic: © OpenStreetMap 贡献者
+          - button:
+          - button:
+          - banner:
+            - generic: 9:41
+            - heading "今晚去观星" [level=1]
+            - button
+            - button
+            - generic: 搜索观星点
+          - main:
+            - heading "深圳市天文台" [level=2]
+            - generic: 深圳 · 大鹏
+            - generic: 概览
+            - generic: 天文
+            - generic: 路线与到达
+            - generic: 距离、预计到达暂无数据
+            - button "导航":
+              - generic: 导航
+            - generic: 开放时间
+            - generic: 开放时间待核实
+            - generic: 停车设施
+            - generic: 停车待核实
+            - generic: 洗手间
+            - generic: 厕所待核实
+            - link "场地资料":
+              - /url: "#"
+            - link "数据来源":
+              - /url: "#"
+            - link "反馈纠错":
+              - /url: "#"
+            - button "想去":
+              - generic: 想去
+            - button "分享":
+              - generic: 分享
+            - button "云观星":
+              - generic: 云观星
+          - contentinfo:
+            - button "地图":
+              - generic: 地图
+            - button "我的":
+              - generic: 我的
+        - generic: devices
+        - generic: 今晚去观星 - 连贯底抽屉主稿（精细手机版）
+        - iframe:
+          - img "OpenStreetMap 底图"
+          - generic: © OpenStreetMap 贡献者
+          - generic: 
+          - generic: 今晚去观星
+          - button "":
+            - generic: 
+          - button "":
+            - generic: 
+          - generic: 
+          - textbox "搜索观星点"
+          - button "":
+            - generic: 
+          - button "":
+            - generic: 
+          - heading "深圳市天文台" [level=1]
+          - generic: 深圳 · 大鹏
+          - generic: 概览
+          - generic: 天文
+          - generic: 路线与到达
+          - generic: 距离、预计到达暂无数据
+          - button " 导航":
+            - generic: 
+            - generic: 导航
+          - generic: 
+          - generic: 开放时间
+          - generic: 暂无数据
+          - generic: 
+          - generic: 停车设施
+          - generic: 暂无数据
+          - generic: 
+          - generic: 洗手间
+          - generic: 暂无数据
+          - button "场地资料"
+          - generic: "|"
+          - button "数据来源"
+          - generic: "|"
+          - button "反馈纠错"
+          - button " 想去":
+            - generic: 
+            - generic: 想去
+          - button " 分享":
+            - generic: 
+            - generic: 分享
+          - button " 云观星":
+            - generic: 
+            - generic: 云观星
+          - generic: 
+          - generic: 地图
+          - generic: 
+          - generic: 我的
+        - textbox:
+          - paragraph: 您想更改或创建什么内容？
+        - button "Choose File"
+        - button:
+        - button:
+        - button:
+        - button:
+        - button "Balanced":
+          - generic: Balanced
+        - button:
+        - button [disabled] [active]:
+        - button [expanded]:
+          - status:
+            - generic: 智能体日志
+        - menu "智能体日志":
+          - menuitem "用户已明确选中当前附带的「方向B（连贯底抽屉·极简现代排版版）」。这是新的地图页资源重做任务，请延续...":
+            - generic: 用户已明确选中当前附带的「方向B（连贯底抽屉·极简现代排版版）」。这是新的地图页资源重做任务，请延续...
+          - menuitem "上一次生成返回了“发生了意外错误，Stitch无法完成生成作业”，画布上目前只有三张输入参考，没有新...":
+            - generic: 上一次生成返回了“发生了意外错误，Stitch无法完成生成作业”，画布上目前只有三张输入参考，没有新...
+          - menuitem "附件通过图片粘贴依次上传，界面文件名可能都显示clipboard.png。请按图片内容及顺序对应下文...":
+            - generic: 附件通过图片粘贴依次上传，界面文件名可能都显示clipboard.png。请按图片内容及顺序对应下文...
+        - button "Collapse panel":
+        - img "李晨"
+        - paragraph: 用户已明确选中当前附带的「方向B（连贯底抽屉·极简现代排版版）」。这是新的地图页资源重做任务，请延续 B，只生成一张改进的地图页 medium 主稿，不再生成两个方向，不做“我的”或其他页面，不覆盖旧 B 原稿。 请保留：连贯贴底抽屉、白色阅读表面、平铺而有层级的地点事实、克制分隔、紧凑精致的地图工具；地点名称是阅读焦点，导航与事实邻近，云观星有适度强调。用户喜欢整体 B，不代表具体每个字号颜色已经批准。不要整体放大、缩小或改成营销卡片，专业排版由你补全。 目标是微信小程序手机画面 390×844，画板和 HTML 根视口都必须是手机尺寸，不能再生成 1280 宽画板里只有左边390宽内容、右边空白。不要设备外框、展示标题、方案说明或并列画板。只做日间、选中「深圳市天文台」、无场地图片、medium 信息面板这一个状态；不在中档硬塞长文或天文数据。 必须保留的产品结构和文案： - 顶部「今晚去观星」与微信原生区域，固定「搜索观星点」入口（无尾部×），地图、定位、图层工具；底部主导航仅「地图」「我的」。 - 信息抽屉：短把手；「深圳市天文台」「深圳 · 大鹏」身份；身份下方左对齐「概览」「天文」文字和短下划线；「路线与到达」「距离、预计到达暂无数据」及安静但可读的「导航」操作。 - 场地事实依次为「开放时间 / 暂无数据」「停车设施 / 暂无数据」「洗手间 / 暂无数据」；不要重复“停车设施：停车待核实”等赘词，不捏造距离、开放时间、天气或实时状态。 - 保留「场地资料」「数据来源」「反馈纠错」既有入口。 - 底部独立动作栏完整保留「想去」「分享」「云观星」，主导航不能被面板覆盖。 Agent 实物检查发现，需要这次修正：原 B 的导航文字被挤成两行；定位图标像太阳；部分地图工具、导航和底部按钮命中区域不到44 logical px；正文/辅助文字偏小偏淡；原导出地图选点明显落在海里；OSM 归属断行。请保持外观小巧，给操作独立且互不重叠的至少44px命中区，保证长中文不挤压和截断。字号/字重/间距体现主次，不把所有行都做成44px高卡片，不靠整体缩放解决。 地图继续复用当前项目已有的 OSM 外部地图参考，不重新绘制地理内容或换成装饰地图，保留可读的「© OpenStreetMap 贡献者」。选点须与底图可辨识的对应地点一致，不把深圳市天文台标到海面；若已有素材无法支持精确定位，请明确在画面外报告限制，不声称坐标已验证。定位用明确定位语义图标。 交互含义不能变化：这是一张连续地点文档的中档裁切，不是独立详情页；概览/天文是同一文档定位，激活后进入大档再对齐章节；把手仅用于拖动，点击不切档；只有大档正文滚动；地图图层面板与地点面板互斥；中档不显示场地媒体、星图、推荐窗口或出发建议。无需在主稿添加手势教学、调试说明或“演示数据”标签。不要为这一张静态稿伪造整套交互已完成。 请实际生成上述一张 mobile 设计，并保留可导出的原始 HTML/图片。回复中简述改动与任何无法完成项；不要只给文字建议，不新增其他候选或隐含第二页面。
+        - button "复制提示":
+        - button "展开":
+        - paragraph:
+          - text: 已为您完成选定「方向B（连贯底抽屉·极简现代排版版）」的精细化主稿重构，生成全新屏幕
+          - strong: 今晚去观星 - 连贯底抽屉主稿（精细手机版）
+          - text: 。
+        - separator
+        - heading "本次重点改动与设计落实" [level=3]
+        - list:
+          - paragraph:
+            - strong: 画布视口规范（390×844 纯手机尺寸）
+          - list:
+            - listitem: 画布与 HTML 根容器均严格锁定为 390×844 逻辑像素，彻底解决了此前大宽屏画板左侧留白的问题；不添加多余外框、标题或无关说明，可直接作为移动端界面导出。
+          - paragraph:
+            - strong: 地图点位修正与 OSM 素材复用
+          - list:
+            - listitem: 严格复用项目指定的 OSM 原始地图素材（保持原色、原缩放及 390 宽对齐）；
+            - strong: 点位偏差修正
+            - text: ：根据底图海岸线与地名走向，将选中的观星点从此前落在海面的误标位置，校正至崖头顶南麓西涌山脊陆地区域；
+            - strong: 版权标识单行展示
+            - text: ：将「© OpenStreetMap 贡献者」置于地图左下侧单行规整排布，不再出现突兀折行。
+            - emphasis: (注：因当前为静态切片地图素材而非动态矢量瓦片，该点位为基于底图标注物的高精度视觉定位，系统未强行接入经纬度实测纠偏)
+            - text: 。
+          - paragraph:
+            - strong: 地图交互控件优化（44px 独立命中区）
+          - list:
+            - strong: 定位图标语义修正
+            - text: ：将此前容易混淆为“太阳/光晕”的图标替换为标准、高辨识度的瞄准定位十字标（Crosshairs）；
+            - strong: 热区标准
+            - text: ：地图右侧的定位、图层切换按钮均赋予符合规范的 44×44px 独立触摸区域，与底层图层互斥逻辑相呼应。
+          - paragraph:
+            - strong: 抽屉信息结构与文字层级校准
+          - list:
+            - strong: 地点身份为阅读焦点
+            - text: ：「深圳市天文台」采用 19px 加粗主标题，「深圳 · 大鹏」以 13px 次级字色右对齐；
+            - strong: 章节定位语义
+            - text: ：下方紧接靠左对齐的「概览」与「天文」，配合深色短下划线，清晰传达“同文档大档定位展开”的产品语义；
+            - strong: 路线与导航单行舒展
+            - text: ：「路线与到达」采用微淡底卡片，右侧「导航」操作设计为独立且安静的高对比度胶囊按钮，彻底解决了此前“导航”二字被挤压折行的问题；
+            - strong: 场地事实规范
+            - text: ：依次呈现「开放时间 / 暂无数据」「停车设施 / 暂无数据」「洗手间 / 暂无数据」，每行高度不低于 44px，文字清晰可读且不重复赘词；
+            - strong: 辅助入口与底部动作栏
+            - text: ：「场地资料」「数据来源」「反馈纠错」保持小巧低噪；底部「想去」「分享」「云观星」保持 44px 独立高度，「云观星」以深色调适度强调夜空心智；主导航「地图 / 我的」完好常驻于底端。
+        - separator
+        - paragraph: 您可以点选检查此主稿的视觉节奏与排版细节，随时根据后续需求进行细化调整。

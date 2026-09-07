@@ -1,0 +1,38 @@
+[
+  {
+    "file": "1.png",
+    "source": "user attachment 4fe6b0b2-c124-422e-8ad8-47dde8ee03a0.png",
+    "sha256": "5241a4aba54e0a35bca42f1b3e487131d9dc3a05e42f471020c112a3b07c2832",
+    "role": "current preview issue"
+  },
+  {
+    "file": "2.png",
+    "source": "user attachment 3e32c66d-067d-424d-bf53-78a7a58cf70e.png",
+    "sha256": "24d73a8df51b17ec3b3b7df652d2b8f6427171951bb49b99ae09b2fe41ae3113",
+    "role": "current preview issue"
+  },
+  {
+    "file": "3.jpg",
+    "source": "user attachment 2da2588c-b70f-4baa-a88c-d021af548c41.jpg",
+    "sha256": "e04716641a75775d30dcaa9f68d664b1897183743a1499c1177fc1a7206259f0",
+    "role": "Amap header/scroll/gallery interaction reference"
+  },
+  {
+    "file": "4.jpg",
+    "source": "user attachment c8e2808c-b566-4391-8806-704463c4bc67.jpg",
+    "sha256": "25f7ed3c63d31ab377454348fad312384b3572f72b5440361a9a7d8f6799b360",
+    "role": "Amap header/scroll/gallery interaction reference"
+  },
+  {
+    "file": "5.jpg",
+    "source": "user attachment d1899940-0c24-44a5-98ca-99871d468955.jpg",
+    "sha256": "81ed96af652e27c80a9944a8e54ff2bf29160d154f773299433b0688e5eaffe2",
+    "role": "Amap header/scroll/gallery interaction reference"
+  },
+  {
+    "file": "6.png",
+    "source": "user attachment ff5c080d-82c1-4602-870c-4b1469bd5ea8.png",
+    "sha256": "36c3712228deb3e66217e852ffaa5e3f06b4135c5914b20d72212319e39a78cd",
+    "role": "center date and reorder moon"
+  }
+]

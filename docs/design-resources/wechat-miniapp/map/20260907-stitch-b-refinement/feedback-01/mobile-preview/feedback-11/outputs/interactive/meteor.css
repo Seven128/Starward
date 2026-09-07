@@ -1,0 +1,9 @@
+/* No inherited .rolling-star/.tail/.satellite geometry survives this icon. */
+#fixed-actions #favorite .star-stage{width:28px;height:28px;margin:0 -4px 0 0;overflow:visible}
+.favorite-glyph{display:block;width:32px;height:28px;overflow:visible}
+.favorite-head-shape{fill:none;stroke:#b9871f;stroke-width:1.35;stroke-linejoin:round;transition:fill 180ms,stroke 180ms}
+#favorite[aria-pressed=true] .favorite-head-shape{fill:#ffd15a;stroke:#ffd15a}
+.meteor-constellation{opacity:0;transition:opacity 200ms;pointer-events:none}
+#favorite[aria-pressed=true][data-night-ready=true][data-meteor-settled=true] .meteor-constellation{opacity:1}
+.moon-inset,.weather-card .evidence-group{background:#fdfdfe;border:0;box-shadow:none}
+@media(prefers-reduced-motion:reduce){.meteor-constellation,.favorite-head-shape{transition:none}}

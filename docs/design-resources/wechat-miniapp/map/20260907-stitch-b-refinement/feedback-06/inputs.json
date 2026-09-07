@@ -1,0 +1,10 @@
+{
+  "gitHead": "see git rev-parse",
+  "files": {
+    "../feedback-05/prepare-preview.mjs": "d48d412edd35056282c03be4395676a79dd56b031b504fa77a27431638a89bba",
+    "../feedback-05/chapters.js": "6e7fc45dbb0ecf32fc3cb1ae8f3ceb8f357ffa1ba9ee0825a52b9686a676e2de",
+    "../feedback-05/content.js": "f176b3b5bcbccc2e41fa2d514ab6655bc77d2d339ab0bb9b795446ca68022414",
+    "../feedback-05/refinement.js": "b7aef6cd94e3ba26460ffb38883a10b16519b226128b5998612d267561926136"
+  },
+  "references": "references.json"
+}
