@@ -1,0 +1,42 @@
+✔ same heading becomes usable again after compass timeout, motion timeout or invalid pose (10.4942ms)
+✔ hide during native start compensates late success without background publication (1.5004ms)
+✔ stop clears trusted heading and rejects queued events and stale timers across retry (1.7188ms)
+✔ old startup rejection cannot clear a replacement listener or overwrite its state (2.3098ms)
+✔ replacement start waits for native stop acknowledgement and duplicate starts coalesce (2.1805ms)
+✔ uncertain native release blocks a new start until cleanup succeeds (2.1275ms)
+✔ current startup errors retain denied/unavailable recovery without a leaked listener (2.9372ms)
+✔ a replacement page shares native serialization and ignores the old page's late cleanup (0.8312ms)
+✔ required orientation lifecycle owns compass and device-motion streams together (0.4552ms)
+✔ required orientation lifecycle fails closed when device motion is unavailable (0.3376ms)
+✔ canvas measurement rejects missing geometry and accepts both platform result shapes (2.906ms)
+✔ ready, measurement and draw each retain only the latest requested frame (1.7156ms)
+✔ steady sensor frames reuse geometry/context and resizing reacquires both (0.5529ms)
+✔ resize, hide, removed canvas and unmount discard stale callbacks (0.9026ms)
+✔ measurement, context, draw and missing callback failures invalidate size and recover on retry (1.0851ms)
+✔ expiry/denial hides the previous projection until the clearing draw completes (0.4022ms)
+✔ continuous poses with a slower native draw cannot starve visibility, while invalidation still fences old frames (0.7952ms)
+✔ motion bursts publish the latest real sample once while null/unmount cancel pending pose (0.8589ms)
+✔ production frame requests preserve exact data/time and clear expired or untrusted input (50.6433ms)
+✔ production sky canvas switches exact target frames and restores committed geometry (11.7838ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (2.7984ms)
+✔ production sky canvas uses the same instant and projection for catalog stars and targets (6.9095ms)
+✔ sky frame selection never substitutes the nearest available instant (1.1031ms)
+✔ preview and cancellation select matching target and star identities without state (1.6647ms)
+✔ missing legacy target frames, duplicate identities and invalid times fail closed (0.3561ms)
+✔ upright cardinal headings map ENU camera basis correctly (2.3269ms)
+✔ flat, face-down and gamma-tilted poses preserve real 3D direction (0.2636ms)
+✔ compound heading, beta and gamma use the declared rotation order (0.1933ms)
+✔ heading wraps while beta and gamma reject impossible platform ranges (0.2561ms)
+✔ perspective projection preserves angular scale and canvas handedness (0.6985ms)
+✔ pole, frustum and behind-view directions return null rather than edge-clamped points (0.2499ms)
+✔ aspect ratio changes horizontal field without changing vertical field (0.1802ms)
+✔ invalid projection input is rejected without hidden defaults or clamping (0.1818ms)
+✔ inverse-clockwise alpha calibration wraps and resolves with the declared sign (0.2204ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3186.5367

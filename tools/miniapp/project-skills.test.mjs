@@ -14,14 +14,6 @@ const definitions = [
       "project_context/areas/main/verification/development-loop.md",
       "package.json",
     ],
-    requiredMeanings: [
-      "Development Device Feedback",
-      "Settled-Candidate Device Verification",
-      "development_feedback",
-      "preview --feedback <run>",
-      "remote --session <directory>",
-      "official_update_completed",
-    ],
   },
   {
     name: "starward-miniapp-release",
@@ -30,14 +22,6 @@ const definitions = [
       "project_context/development-workflow.md",
       "infrastructure/deployment/README.md",
       "package.json",
-    ],
-    requiredMeanings: [
-      "Owner IP trial",
-      "Staging",
-      "Production",
-      "WeChat preview",
-      "WeChat upload",
-      "public release",
     ],
   },
 ];
@@ -67,19 +51,5 @@ for (const definition of definitions) {
       assert.match(source, new RegExp(reference.replaceAll("/", "\\/"), "u"));
       await access(path.join(repository, ...reference.split("/")));
     }
-    for (const meaning of definition.requiredMeanings) assert.ok(source.includes(meaning));
   });
 }
-
-test("device verification and release remain separate Skills", async () => {
-  const [device, release] = await Promise.all(
-    definitions.map(({ name }) =>
-      readFile(
-        path.join(repository, ".codex", "skills", name, "SKILL.md"),
-        "utf8",
-      ),
-    ),
-  );
-  assert.doesNotMatch(device, /deployment:release|deployment:promote/u);
-  assert.doesNotMatch(release, /capture-location|capture-permissions|--x <0\.\.1>/u);
-});

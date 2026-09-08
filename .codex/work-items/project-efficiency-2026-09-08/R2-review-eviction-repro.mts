@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import { writeFileSync } from 'node:fs';
+import { transportHarness } from '../../../apps/wechat-miniapp/src/services/api-request-test-support.ts';
+const h=transportHarness();await h.seed();
+const original=h.responseCache.get('scene:/scene:anonymous');
+const pending=h.request('scene','/scene').then(()=>({status:'resolved'}),error=>({status:'rejected',error:error.message}));
+const base={...h.response,data:{value:''}};
+for(let i=0;i<2;i++) h.responseCache.set('memory-only:'+i,{...base,data:{value:'x'.repeat(3*1024*1024-Buffer.byteLength(JSON.stringify(base)))}});
+await h.flush();
+const restored=h.responseCache.get('scene:/scene:anonymous');
+assert.notEqual(restored,original);
+assert.deepEqual(restored?.envelope,original?.envelope);
+h.calls.at(-1).success({statusCode:304,data:undefined});
+const result={scenario:'valid body evicted from memory and restored from unchanged disk during in-flight 304',...await pending,expected:'resolved identical cached representation'};
+writeFileSync(new URL(process.argv[2] ?? './R2-review-eviction-repro-current.json',import.meta.url),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+h.queryClient.clear();

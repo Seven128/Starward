@@ -31,6 +31,7 @@ test("runtime dependencies are limited to the API workspace closure", () => {
   const build = stage("build");
   assert.match(build, /npm ci --ignore-scripts/u);
   assert.match(build, /--workspace @starward\/coordinate-system/u);
+  assert.match(build, /--workspace @starward\/astronomy-core/u);
   assert.match(build, /--workspace @starward\/miniapp-contracts/u);
   assert.match(build, /--workspace @starward\/miniapp-api/u);
   assert.match(build, /--include-workspace-root=false/u);
@@ -38,6 +39,7 @@ test("runtime dependencies are limited to the API workspace closure", () => {
   const dependencies = stage("production-dependencies");
   assert.match(dependencies, /npm ci --omit=dev --ignore-scripts/u);
   assert.match(dependencies, /--workspace @starward\/coordinate-system/u);
+  assert.match(dependencies, /--workspace @starward\/astronomy-core/u);
   assert.match(dependencies, /--workspace @starward\/miniapp-contracts/u);
   assert.match(dependencies, /--workspace @starward\/miniapp-api/u);
   assert.match(dependencies, /--include-workspace-root=false/u);
@@ -49,6 +51,19 @@ test("runtime dependencies are limited to the API workspace closure", () => {
   );
   assert.doesNotMatch(runtime, /COPY --from=build[^\n]*node_modules/u);
   assert.doesNotMatch(build, /npm prune/u);
+  assert.match(runtime, /COPY --from=build[^\n]*\/packages\/astronomy-core\/dist \.\/packages\/astronomy-core\/dist/u);
+});
+
+test("source-only edits preserve locked installation layers", () => {
+  const build = stage("build");
+  const install = build.indexOf("npm ci");
+  const beforeInstall = build.slice(0, install);
+  for (const match of beforeInstall.matchAll(/^COPY (.+)$/gmu))
+    assert.match(match[1], /package(?:-lock)?\.json/u);
+  assert.doesNotMatch(build, /^COPY \. /mu);
+  assert.match(build, /RUN --mount=type=cache,target=\/root\/\.npm/u);
+  assert.match(stage("production-dependencies"), /RUN --mount=type=cache,target=\/root\/\.npm/u);
+  assert.ok(build.indexOf("COPY tools/run-node.cjs") > install);
 });
 
 test("runtime image has no mutable operating-system package fetch or bundled init", () => {

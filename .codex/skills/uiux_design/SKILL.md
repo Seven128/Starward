@@ -9,9 +9,9 @@ Use this project Skill to translate Starward's durable design contract into impl
 
 ## Authority And Non-Recursion
 
-1. Read repository-root `DESIGN.md` before proposing or changing UI behavior.
-2. Read the relevant Outcome, cross-outcome obligations, acceptance scenarios, external confirmations, and decisions in `docs/source-plan.md` when the task is part of planned delivery.
-3. Read `project_context/global.md` and the owning area Context before changing durable surface responsibility.
+1. Identify the target from the request and current route before expanding references: native React Native App or Taro/WeChat Mini Program. Read `project_context/global.md`, the owning Screen Contract and the target's profile in repository-root `DESIGN.md` before proposing or changing UI behavior.
+2. For planned **native App** delivery, locate and read the relevant Outcome and its cross-outcome obligations, acceptance scenarios, external confirmations and decisions in `docs/source-plan.md`. For **Mini Program** work, start with `project_context/areas/main/screen-contracts/wechat-miniapp.md`, its affected owner and adopted resource links; retrieve a relevant Source key/section when the task or owner points to it. The native plan is not a prerequisite for an unrelated Mini Program change. Confirmed Source requirements still apply; historical workflow instructions do not reactivate retired tooling.
+3. Read additional owning area Context only for the responsibility or shared dependency being changed. Use bounded headings/key searches before opening large Source files.
 4. Treat `DESIGN.md`, the Source Plan, and owning Context as upstream authority. This Skill is an implementation companion and cannot override them.
 5. A pointer in `DESIGN.md` to this Skill is discoverability only. `DESIGN.md` remains complete without loading this file; this file depends on the upstream rules, not the reverse.
 6. If this Skill conflicts with an upstream rule, preserve the upstream rule and report the conflict. Do not invent a compromise silently.
@@ -42,6 +42,8 @@ Inspect existing UI consumers before building the changed interaction. Share the
 Identify the target from the task and current route. Consult `project_context/architecture.md` for existing substrate decisions and the actual package manifest for installed capabilities. A design prototype supplies appearance and motion references; it does not choose production runtime dependencies. A mature component must support the adopted geometry, controlled state, gestures, theming and accessibility without overriding domain ownership. Use a small target-runtime check for an uncertain requirement before broad integration.
 
 **Taro / WeChat Mini Program:** reuse the relevant owners under `apps/wechat-miniapp/src/components/**`, bounded Taro/WEAPP primitives, the existing token projection and `semantic-asset.tsx`. Use the actual WEAPP touch/scroll, lifecycle and Back capabilities; browser DOM APIs and React Native packages are not substitutes. Keep official viewer/scroll capabilities when they satisfy the adopted contract; when an essential motion or interaction differs, establish that specific gap and implement the smallest shared adaptation. Do not infer that rejecting one library forbids future compatible libraries; current choices and reasons remain in the architecture owner.
+
+For repeated WEAPP simulator observations, follow the optional warm official connection in [development feedback](../../../project_context/development-workflow/development-feedback.md). Use Computer Use for remaining visible tool/interaction gaps; retain target-native and physical-device verification where required.
 
 **Native React Native App:** use the following native primitives where applicable.
 

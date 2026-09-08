@@ -1,0 +1,16 @@
+{
+  "owner": "project-efficiency-2026-09-08 task-only fixtures",
+  "network": "starward-efficiency-20260908",
+  "postgresContainer": "starward-efficiency-20260908-pg",
+  "redisContainer": "starward-efficiency-20260908-redis",
+  "postgresPort": 55295,
+  "redisPort": 60237,
+  "postgresUser": "starward_efficiency",
+  "databases": {
+    "rootStartup": "starward_efficiency",
+    "r134Validation": "starward_efficiency_r134_validation",
+    "r134Integration": "starward_efficiency_integration"
+  },
+  "authentication": "trust only within this disposable container network and loopback-published ports; no credentials",
+  "cleanup": "Root coordinates removal of these two named containers and their named network after startup/readiness validation; never touch pre-existing demo or apexquant containers."
+}

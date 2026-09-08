@@ -1,0 +1,12 @@
+{
+  "project": "C:\\Users\\777\\AppData\\Local\\Temp\\starward-device-feedback-fixture-LQOk8L",
+  "namespace": "starward-efficiency-native-59a1953c-0b2c-41ce-9181-6324253b3d87:",
+  "sources": {
+    "cache": "3f4606139edc7dc855bc789b5fde3b9f927d120bbfae04011893a1e6cb8eeef3",
+    "canvas": "3e25cd47c06b96a1ae4c9ab8fc4f13dfc599e185ea356f5a2285165994453a8e"
+  },
+  "envelopeBytes": 707203,
+  "scope": "isolated_native_api_fixture",
+  "status": "prepared_not_run",
+  "cleanup": "existing fixture owner; namespaced wx keys cleaned by test"
+}

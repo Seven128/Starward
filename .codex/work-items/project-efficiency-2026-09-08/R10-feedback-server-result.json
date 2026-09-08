@@ -1,0 +1,10 @@
+{
+  "scope": "actual_local_http_receipts",
+  "requests": [
+    {
+      "method": "GET",
+      "matchingPath": true,
+      "status": 200
+    }
+  ]
+}

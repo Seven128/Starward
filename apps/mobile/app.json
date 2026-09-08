@@ -56,7 +56,9 @@
             "targetSdkVersion": 36,
             "buildToolsVersion": "36.0.0",
             "useDayNightTheme": true,
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": true,
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],

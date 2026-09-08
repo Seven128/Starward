@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "scope": "isolated_native_geometry_condition_only",
+  "elapsedMs": 110,
+  "result": {
+    "scope": "development_observation",
+    "method": "native_selector_query",
+    "path": "pages/index/index",
+    "elements": [
+      {
+        "selector": "#native-probe",
+        "count": 1,
+        "elements": [
+          {
+            "left": 16,
+            "top": 414.3999938964844,
+            "width": 240,
+            "height": 160
+          }
+        ]
+      }
+    ]
+  }
+}

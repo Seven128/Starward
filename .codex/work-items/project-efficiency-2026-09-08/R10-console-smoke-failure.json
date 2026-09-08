@@ -1,0 +1,9 @@
+{
+  "scope": "isolated_native_console_transport",
+  "passed": false,
+  "stage": "App.enableLog",
+  "source": "actual unified session3759 exit1; method SHA256 independently matched",
+  "error": "wechat_protocol_request_deadline:f4c0e71d7de519909e81fbe79c8fd0683be16ad38a730d7b793dd494263dd40e",
+  "eventObserved": false,
+  "listenerAfterCleanup": {"port":19421,"pid":24492}
+}

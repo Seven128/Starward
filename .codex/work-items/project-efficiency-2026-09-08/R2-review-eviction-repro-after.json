@@ -1,0 +1,5 @@
+{
+  "scenario": "valid body evicted from memory and restored from unchanged disk during in-flight 304",
+  "status": "resolved",
+  "expected": "resolved identical cached representation"
+}

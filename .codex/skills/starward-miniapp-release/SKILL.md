@@ -1,23 +1,21 @@
 ---
 name: starward-miniapp-release
-description: "Route Starward WeChat Mini Program build, AppID migration, owner-IP trial, staging, production, preview, upload, review, and public-release requests through existing project owners. Use it to begin with read-only or dry-run checks, preserve separate authorization boundaries, bind an exact candidate and environment, execute only explicitly authorized operations, recover without displacing the last healthy version, and report safe receipts without exposing secrets."
+description: "Route Starward WeChat Mini Program release bundles, AppID migration, official preview/upload, backend deployment and platform release requests through existing owners. Use for environment-bound release operations; ordinary local compilation and watch builds use the development workflow."
 ---
 
 # Starward Mini Program Release
 
 This Skill is an execution router, not a deployment system or policy owner. Durable semantics remain in Context and implementation remains in existing scripts/workflows.
 
-## Load authority before acting
+## Select the path before expanding references
 
-Read these current owners before selecting or invoking a path:
+Start with the requested operation and `package.json`, then inspect the exact existing script/workflow before invoking it. Read only the relevant owner branches:
 
-1. `project_context/deployment.md`
-2. `project_context/development-workflow.md`
-3. `infrastructure/deployment/README.md`
-4. `package.json`
-5. The exact existing owner under `tools/miniapp/**`, `tools/deployment/**`, or `.github/workflows/**` that the chosen path will invoke
+- **Ordinary local build/watch:** route to `project_context/development-workflow.md` and its applicable build/path node, the app package and Taro config. A local compile is not a release operation and needs no deployment-document preload.
+- **Release bundle, AppID migration, official preview or upload:** use `project_context/development-workflow.md`, its implicated candidate/path nodes and the invoked owner under `tools/miniapp/**`. Follow `project_context/deployment.md` when the chosen lane binds a remote environment, API origin or protected release identity.
+- **Owner IP trial, staging or production backend:** use `project_context/deployment.md` and its implicated nodes, then locate the selected operation's section in `infrastructure/deployment/README.md` and the owner under `tools/deployment/**` or `.github/workflows/**`. The full deployment runbook is not needed for an unrelated lane.
 
-Inspect `git status --short --branch` and the candidate revision. Preserve unrelated dirty state. Do not copy Context rules into this Skill, add a second deployment abstraction, or infer remote/public state from code, a CI bundle, a preview, or a historical receipt.
+Inspect `git status --short --branch` and the candidate revision when preparing or acting on a candidate. Preserve unrelated dirty state. Do not copy Context rules into this Skill, add a second deployment abstraction, or infer remote/public state from code, a CI bundle, a preview, or a historical receipt.
 
 ## Classify the requested operation
 
@@ -37,11 +35,11 @@ If the user asks only to inspect, assess, plan, verify, or dry-run, do not mutat
 1. Establish the exact intended environment and operation. Record candidate Git revision, immutable image digest when applicable, WEAPP fingerprint, AppID lane, and configuration/environment identity. Missing or conflicting identity blocks mutation.
 2. Begin with existing read-only checks or the owner's dry/fake-driver mode. Inspect command help and source rather than guessing flags. Reuse, as applicable, the existing `check:miniapp:app-id`, release-bundle, platform-operation, `deployment:validate-env`, operator-preview, backup/recovery, promotion-request, release/promote, and workflow owners.
 3. Verify prerequisites and authorization separately for build, AppID migration, infrastructure/data migration, remote deployment, platform upload, review, and public release. Ask only for the unresolved external choice or user action that changes authority.
-4. Execute an external mutation only when the user explicitly authorized that exact operation and target in the current request, all owning preconditions are established, and the existing script preserves its lock/idempotency/rollback semantics.
+4. Execute an external mutation only when the user explicitly authorized that operation and target in the conversation, the authorization still covers the current scope, all owning preconditions are established, and the existing script preserves its lock/idempotency/rollback semantics. Reuse established authorization across turns; ask only for a genuinely unresolved target, changed scope or required external action.
 5. On failure, stop at the safe stage, keep the previous healthy version serving, use only the owning rollback/recovery path, and report a fixed non-secret failure stage. Do not improvise a second uploader, migration runner, secret transport, or direct platform call.
 6. Run the owner's current-candidate checks after the last relevant change. A local build or successful command invocation does not establish remote health without its attributable smoke/receipt boundary.
 
-Never purchase a domain, service, or certificate. Never disable VPN/TLS checks, write a proxy, or bypass platform policy. Never generate, print, inspect beyond necessity, persist, or copy AppSecret, upload private keys, cookies, tokens, credentials, QR content, or secret-bearing command output. Use secret names/readiness only, and leave secret input with the established owner/human channel.
+Release authorization does not imply purchases or global VPN/proxy/TLS changes, and cannot bypass platform policy. Use the existing permitted local session or secret-loading capability when it is already authorized; request human input only for an actual unavailable capability, external MFA or platform approval. Inspect sensitive values only as needed for the authorized owner and keep them out of replies, logs, Context and source. Preserve the owner's private materialization and cleanup for upload keys or QR artifacts; report names/readiness, never their contents.
 
 ## Report the result
 

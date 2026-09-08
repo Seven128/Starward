@@ -1,0 +1,30 @@
+
+> starward@1.0.0 node
+> node tools/run-node.cjs --test tools/run-node.test.mjs tools/ci/affected-checks.test.mjs tools/deployment/image-contract.test.mjs tools/deployment/workflow-contract.test.mjs
+
+✔ lightweight and full installs resolve the same locked Context checker (19.5889ms)
+✔ context and existing Skill prose can use lightweight checks without skipping product inputs (2.1799ms)
+✔ manual dispatch, initial push, empty or failed diff retain full validation (1.166ms)
+✔ PRs compare the merge base and push ranges include every commit and deleted/renamed source (0.6975ms)
+✔ release image pins its Dockerfile frontend and base image (1.9925ms)
+✔ runtime dependencies are limited to the API workspace closure (0.8453ms)
+✔ source-only edits preserve locked installation layers (0.7564ms)
+✔ runtime image has no mutable operating-system package fetch or bundled init (0.4417ms)
+✔ product CI checks release products without design or Context gates (14.1466ms)
+✔ staging privilege follows only a successful trusted main push (2.3994ms)
+✔ production is a manual exact-digest promotion and never rebuilds (2.4073ms)
+✔ manual staging rechecks product CI and selects an explicit protected lane (3.4323ms)
+✔ WeChat platform operations use a protected dedicated runner and never publish from product CI (2.4757ms)
+✔ runtime selection uses a supported current Node without probing another installation (2.0414ms)
+✔ old script Node can recover only through a verified absolute npm Node path (1.0241ms)
+✔ child PATH selects Node on Windows and POSIX without mutating the parent (1.956ms)
+✔ binary resolution follows the invoking workspace and preserves literal arguments (20.0026ms)
+✔ real child and its nested node inherit the selected runtime; exit codes survive (360.1532ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 549.9605

@@ -1,0 +1,35 @@
+{
+  "scope": "isolated_devtools_fixture",
+  "layout": {
+    "scope": "development_observation",
+    "method": "native_selector_query",
+    "path": "pages/index/index",
+    "elements": [
+      {
+        "selector": "#native-probe",
+        "count": 1,
+        "elements": [
+          {
+            "left": 16,
+            "top": 498.3999938964844,
+            "width": 280,
+            "height": 160
+          }
+        ]
+      }
+    ]
+  },
+  "layoutMs": [
+    36,
+    32,
+    28,
+    31,
+    29
+  ],
+  "screenshotMs": 78,
+  "screenshot": {
+    "scope": "development_observation",
+    "path": "E:/dev/Starward/.codex/work-items/project-efficiency-2026-09-08/R10-warm-native.png",
+    "bytes": 98717
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "scope": "prepare-only local synthetic metadata, no full environment validation or promotion",
+  "first": "created",
+  "retrySamePath": {
+    "error": "release_candidate_output_exists:outputPath"
+  },
+  "originalUnchanged": true,
+  "retryDistinctAttempt": "created"
+}

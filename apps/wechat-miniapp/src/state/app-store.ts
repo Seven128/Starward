@@ -138,8 +138,8 @@ interface AppState extends PersistedState {
   savePlan(plan: ObservationPlan): void;
   replacePlans(plans: readonly ObservationPlan[]): void;
   deletePlan(planId: string): void;
-  clearLocalCache(): void;
-  resetAfterAccountDeletion(): void;
+  clearLocalCache(): Promise<boolean>;
+  resetAfterAccountDeletion(): boolean;
 }
 
 const DEFAULT_VIEWPORT: MapViewportState = {
@@ -602,12 +602,10 @@ export const useAppStore = create<AppState>((set, get) => {
       }));
     },
     clearLocalCache() {
-      const message =
-        "本地地图、筛选、搜索与夜空临时缓存已清除；持久化收藏、计划、主页链接和导入草稿保持不变。";
       try {
         Taro.removeStorageSync(STORAGE_KEY);
       } catch {
-        /* visible success below still resets in-memory state */
+        /* The replacement below can still remove the old recovery fields. */
       }
       set({
         viewport: DEFAULT_VIEWPORT,
@@ -619,29 +617,23 @@ export const useAppStore = create<AppState>((set, get) => {
         filterSnapshot: EMPTY_FILTER_STATE,
         selectedSpotId: null,
         searchHistory: [],
-        notifications: enqueueNotification(get().notifications, {
-          owner: "settings",
-          placement: "floating",
-          tone: "success",
-          title: "临时缓存已清除",
-          body: message,
-          dismissible: true,
-          dedupeKey: "settings-cache-cleared",
-        }),
       });
-      queueMicrotask(() => {
+      return new Promise<boolean>((resolve) => queueMicrotask(() => {
         try {
           Taro.setStorageSync(STORAGE_KEY, persisted(get()));
+          resolve(true);
         } catch {
-          /* cache clear already completed in memory */
+          resolve(false);
         }
-      });
+      }));
     },
     resetAfterAccountDeletion() {
+      let removed = true;
       try {
         Taro.removeStorageSync(STORAGE_KEY);
       } catch {
         // The server receipt remains authoritative; in-memory state is still reset.
+        removed = false;
       }
       set({
         mode: "DAY",
@@ -672,6 +664,7 @@ export const useAppStore = create<AppState>((set, get) => {
           finishOptions: { restoreMap: true, discardFilterDraft: true },
         },
       });
+      return removed;
     },
   };
 });

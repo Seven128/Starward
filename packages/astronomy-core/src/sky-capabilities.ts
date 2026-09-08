@@ -9,5 +9,5 @@ export function resolveSkyCapability(input: { arSupported: boolean; cameraGrante
   };
 }
 
-export { calculateFieldOfView, catalogChunks, positionCatalog, visibleIntervals, BRIGHT_SKY_CATALOG } from "./sky-model";
-export type { CatalogObject, HorizonProfile, PositionedObject, SkyObjectKind } from "./sky-model";
+export { calculateFieldOfView, catalogChunks, positionCatalog, visibleIntervals, BRIGHT_SKY_CATALOG } from "./sky-model.ts";
+export type { CatalogObject, HorizonProfile, PositionedObject, SkyObjectKind } from "./sky-model.ts";

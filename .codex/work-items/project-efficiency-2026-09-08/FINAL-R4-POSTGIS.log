@@ -1,0 +1,14 @@
+
+> starward@1.0.0 node
+> node tools/run-node.cjs --import tsx --test workers/miniapp-api/src/map-viewport-repository.test.ts
+
+✔ viewport fetches radius candidates directly while preserving complete population metadata and search (76.5038ms)
+✔ PostGIS radius, compact population and detail all enforce current publication facts (1006.8762ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1511.053

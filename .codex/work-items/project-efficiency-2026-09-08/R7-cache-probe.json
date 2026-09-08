@@ -1,0 +1,34 @@
+[
+  {
+    "name": "source-cache-probe",
+    "file": "workers/miniapp-api/src/provider-deadline.ts",
+    "originalSha256": "2037c6ff5a29c0a04aa8fb81ce51bb6df483b7b02144462a1f70c3cb46feb564",
+    "restored": true,
+    "code": 0,
+    "durationMs": 10086,
+    "installs": [
+      {
+        "stage": "build  8/14",
+        "cached": true
+      },
+      {
+        "stage": "production-dependencies 8/8",
+        "cached": true
+      }
+    ]
+  },
+  {
+    "name": "lock-cache-probe",
+    "file": "package-lock.json",
+    "originalSha256": "7c1983cc152b0f6a0116c5d4506857b51141def71f8a68b8ff9aef371de2c2dc",
+    "restored": true,
+    "code": 0,
+    "durationMs": 9376,
+    "installs": [
+      {
+        "stage": "production-dependencies 8/8",
+        "cached": false
+      }
+    ]
+  }
+]

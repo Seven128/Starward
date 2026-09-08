@@ -33,6 +33,39 @@ function weatherRun(model: string, cloudOffset = 0): NormalizedWeatherRun {
 }
 
 describe("forecast query service", () => {
+  it("bounds cached locations by recent use and expires entries before reuse", async () => {
+    let now = Date.parse("2026-07-20T12:05:00.000Z");
+    const primary = { load: vi.fn(async () => weatherRun("gfs_seamless")) };
+    const service = new ForecastQueryService({ primary, maxCacheEntries: 2, cacheTtlMs: 1000, now: () => new Date(now) });
+    const a = { latitude: 22.529, longitude: 113.9468, timezone: "Asia/Shanghai", nightDate: "2026-07-20", target: "milky-way-core" as const };
+    const b = { ...a, longitude: 114 };
+    const c = { ...a, longitude: 114.1 };
+    await service.get(a);
+    await service.get(b);
+    expect((await service.get(a)).status).toBe("cached");
+    await service.get(c);
+    expect((await service.get(a)).status).toBe("cached");
+    expect(primary.load).toHaveBeenCalledTimes(3);
+    await service.get(b);
+    expect(primary.load).toHaveBeenCalledTimes(4);
+    now += 1001;
+    await service.get(b);
+    expect(primary.load).toHaveBeenCalledTimes(5);
+  });
+
+  it("can disable completed-result caching without losing concurrent request coalescing or retry", async () => {
+    const query = { latitude: 22.529, longitude: 113.9468, timezone: "Asia/Shanghai", nightDate: "2026-07-20", target: "milky-way-core" as const };
+    const primary = { load: vi.fn(async () => weatherRun("gfs_seamless")) };
+    const service = new ForecastQueryService({ primary, maxCacheEntries: 0 });
+    await Promise.all([service.get(query), service.get(query)]);
+    expect(primary.load).toHaveBeenCalledTimes(1);
+    primary.load.mockRejectedValueOnce(new Error("provider unavailable"));
+    await expect(service.get(query)).rejects.toThrow("provider unavailable");
+    await service.get(query);
+    expect(primary.load).toHaveBeenCalledTimes(3);
+    expect(() => new ForecastQueryService({ primary, maxCacheEntries: -1 })).toThrow("forecast_cache_capacity_invalid");
+  });
+
   it("combines normalized provider runs with astronomy, trends, provenance, and cache semantics", async () => {
     const primary = { load: vi.fn(async () => weatherRun("gfs_seamless")) };
     const comparison = { load: vi.fn(async () => weatherRun("ecmwf_ifs025", 30)) };

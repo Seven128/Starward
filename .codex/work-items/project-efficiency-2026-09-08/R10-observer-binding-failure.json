@@ -1,0 +1,8 @@
+{
+  "scope": "isolated_development_tool_fixture",
+  "projectPath": "C:/Users/777/AppData/Local/Temp/starward-device-feedback-fixture-e5844U",
+  "port": 19420,
+  "steps": [],
+  "status": "failed",
+  "error": "development_observer_automation_binding_timeout"
+}

@@ -1,0 +1,4 @@
+
+> starward@1.0.0 test:miniapp:workflow
+> node tools/run-node.cjs --test tools/miniapp/workflow-conformance.test.mjs tools/miniapp/device-test.test.mjs tools/miniapp/device-feedback.test.mjs tools/miniapp/device-feedback-preview.test.mjs tools/miniapp/device-feedback-boundaries.test.mjs tools/miniapp/project-skills.test.mjs tools/miniapp/run-wechat-devtools-session.test.mjs tools/miniapp/accessibility-template.test.mjs
+

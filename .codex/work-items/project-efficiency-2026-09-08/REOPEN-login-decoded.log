@@ -1,0 +1,5 @@
+
+> starward@1.0.0 node
+> node tools/run-node.cjs .codex/work-items/project-efficiency-2026-09-08/R10-cli-probe.mjs run -c Codex login --type image
+
+{"code":0,"signal":null,"status":"pending","taskId":"login_cb672d0b-a68c-452b-8d56-a3ffa5342563","loginImagePath":"E:\\dev\\Starward\\artifacts\\miniapp\\development-observer\\login\\official-login-1788838881770.jpg","responseKeys":["ok","tool","clientName","result"],"resultKeys":["success","taskId","status"],"diagnostics":[],"stdoutBytes":63301,"stderrBytes":48}

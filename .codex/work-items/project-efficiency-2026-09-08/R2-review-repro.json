@@ -1,0 +1,33 @@
+[
+  {
+    "scenario": "Settings temporary clear during unrelated plan read",
+    "outcome": "304",
+    "result": "rejected",
+    "error": "bff_http_304",
+    "cachedEtag": "synthetic-etag",
+    "expected": "resolved original body"
+  },
+  {
+    "scenario": "Settings temporary clear during unrelated plan read",
+    "outcome": "offline",
+    "result": "rejected",
+    "error": "offline",
+    "cachedEtag": "synthetic-etag",
+    "expected": "resolved STALE_USABLE original body"
+  },
+  {
+    "scenario": "Settings temporary clear during unrelated plan read",
+    "outcome": "200",
+    "result": "resolved",
+    "error": null,
+    "cachedEtag": "synthetic-etag",
+    "expected": "newer-plans stored in cache"
+  },
+  {
+    "scenario": "native manifest replacement and deletion both fail during removeScope",
+    "operationResolved": true,
+    "manifestStillPresent": true,
+    "restoredRemovedBody": true,
+    "expected": "surface incomplete local erasure rather than claim successful cleanup"
+  }
+]

@@ -23,6 +23,7 @@ export interface ForecastQueryServiceOptions {
   comparison?: ForecastRunSource;
   now?: () => Date;
   cacheTtlMs?: number;
+  maxCacheEntries?: number;
 }
 
 interface CacheEntry { expiresAt: number; bundle: ForecastBundle }
@@ -249,17 +250,28 @@ function layers(run: NormalizedWeatherRun, now: Date): ForecastLayerDescriptor[]
 
 export class ForecastQueryService {
   private readonly now: () => Date;
+  private readonly maxCacheEntries: number;
   private readonly cache = new Map<string, CacheEntry>();
   private readonly inFlight = new Map<string, Promise<ForecastBundle>>();
 
   constructor(private readonly options: ForecastQueryServiceOptions) {
     this.now = options.now ?? (() => new Date());
+    this.maxCacheEntries = options.maxCacheEntries ?? 64;
+    if (!Number.isSafeInteger(this.maxCacheEntries) || this.maxCacheEntries < 0)
+      throw new RangeError("forecast_cache_capacity_invalid");
   }
 
   async get(query: ForecastQuery): Promise<ForecastBundle> {
     const key = `${query.latitude.toFixed(4)}:${query.longitude.toFixed(4)}:${query.timezone}:${query.nightDate}:${query.target}`;
+    const now = this.now().getTime();
+    for (const [entryKey, entry] of this.cache)
+      if (entry.expiresAt <= now) this.cache.delete(entryKey);
     const cached = this.cache.get(key);
-    if (cached && cached.expiresAt > this.now().getTime()) return { ...cached.bundle, status: "cached" };
+    if (cached) {
+      this.cache.delete(key);
+      this.cache.set(key, cached);
+      return { ...cached.bundle, status: "cached" };
+    }
     const pending = this.inFlight.get(key);
     if (pending) return pending;
     const task = this.load(query).finally(() => this.inFlight.delete(key));
@@ -300,7 +312,11 @@ export class ForecastQueryService {
         ...primaryRun.qualityFlags,
       ],
     };
-    this.cache.set(`${query.latitude.toFixed(4)}:${query.longitude.toFixed(4)}:${query.timezone}:${query.nightDate}:${query.target}`, { expiresAt: now.getTime() + (this.options.cacheTtlMs ?? 30 * 60_000), bundle });
+    if (this.maxCacheEntries > 0) {
+      this.cache.set(`${query.latitude.toFixed(4)}:${query.longitude.toFixed(4)}:${query.timezone}:${query.nightDate}:${query.target}`, { expiresAt: now.getTime() + (this.options.cacheTtlMs ?? 30 * 60_000), bundle });
+      while (this.cache.size > this.maxCacheEntries)
+        this.cache.delete(this.cache.keys().next().value!);
+    }
     return bundle;
   }
 }

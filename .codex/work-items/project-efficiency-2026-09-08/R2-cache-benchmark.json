@@ -1,0 +1,27 @@
+{
+  "realSky": {
+    "source": "Real committed Gaia2048 star catalog and 20 frames; deterministic fixture weather, no live provider/device evidence",
+    "chars": 680798,
+    "utf8Bytes": 707203,
+    "oldWouldCache": false,
+    "newMemoryAndRestartReadback": true,
+    "responseCacheSetMs": 10.970300000000009,
+    "nativeStorageMock": {
+      "totalWrites": 4,
+      "bodyWrites": 3,
+      "syncManifestBytes": [
+        194
+      ],
+      "maxStorageKeyBytes": 268731,
+      "totalWriteBytes": 735135
+    }
+  },
+  "sequentialWrites": {
+    "entries": 24,
+    "syntheticPayloadBytesEach": 60000,
+    "oldFullSnapshotNativeTransferBytes": 19500354,
+    "newBodyAndManifestNativeTransferBytes": 1608644,
+    "ratioNewToOld": 0.08249306653612545,
+    "limitation": "Counts serialized bridge payload in an injected storage adapter; not native device latency or disk throughput"
+  }
+}

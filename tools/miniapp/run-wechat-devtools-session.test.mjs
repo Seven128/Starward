@@ -10,9 +10,89 @@ import {
   waitForSelector,
   waitForSelectorSet,
   wechatCliCommand,
+  wechatToolEnvironment,
+  verifyWechatProcessEnvironment,
+  verifyWechatWorkspaceLocation,
 } from "./run-wechat-devtools-session.mjs";
 
 const required = [{ selector: ".ready", minimum: 1 }];
+
+test("native workspace admits only the physical canonical checkout", async () => {
+  const canonicalRoot = "E:\\Dev\\Starward";
+  const verify = (workspaceRoot, physicalRoot = workspaceRoot) =>
+    verifyWechatWorkspaceLocation({
+      platform: "win32",
+      workspaceRoot,
+      resolveRealPath: async () => physicalRoot,
+    });
+  const location = await verify("e:/dev/STARWARD/", `\\\\?\\${canonicalRoot}`);
+  assert.equal(location.status, "passed");
+  assert.equal(location.mode, "canonical_workspace");
+  assert.equal(location.root_path_sha256, location.physical_path_sha256);
+  assert.equal(location.direct_physical_path, true);
+  for (const copiedRoot of [
+    "E:\\Dev\\Starward-copy",
+    "E:\\Dev\\worktrees\\Starward\\candidate",
+    "E:\\Dev\\.starward-tmp\\run-012345abcdef\\ty-context-candidate",
+  ]) {
+    await assert.rejects(verify(copiedRoot), /wechat_canonical_workspace_required/u);
+  }
+  await assert.rejects(
+    verify(canonicalRoot, "E:\\Dev\\another-checkout"),
+    /wechat_workspace_location_must_be_physical/u,
+  );
+  await assert.rejects(
+    verify("Z:\\", canonicalRoot),
+    /wechat_workspace_location_must_be_physical/u,
+  );
+  await assert.rejects(
+    verifyWechatWorkspaceLocation({ platform: "linux" }),
+    /wechat_workspace_location_requires_windows/u,
+  );
+});
+
+test("DevTools temp remains a physical directory outside candidate and reserved run roots", async () => {
+  const systemTemp = "C:\\Users\\test\\AppData\\Local\\Temp";
+  const verify = (processTemp, physicalRoot = processTemp, directory = true) =>
+    verifyWechatProcessEnvironment({
+      processTemp,
+      resolveRealPath: async () => physicalRoot,
+      statPath: async () => ({ isDirectory: () => directory }),
+    });
+  assert.equal((await verify(systemTemp)).status, "passed");
+  await assert.rejects(verify(null), /wechat_process_temp_environment_missing/u);
+  await assert.rejects(
+    verify(systemTemp, systemTemp, false),
+    /wechat_process_temp_environment_not_directory/u,
+  );
+  await assert.rejects(
+    verify(systemTemp, "E:\\redirected-temp"),
+    /wechat_process_temp_environment_must_be_physical/u,
+  );
+  for (const overlappingTemp of [
+    "E:\\Dev\\Starward",
+    "E:\\Dev\\Starward\\tmp",
+    "E:\\Dev\\.starward-tmp",
+    "E:\\Dev\\.starward-tmp\\run-012345abcdef",
+  ]) {
+    await assert.rejects(
+      verify(overlappingTemp),
+      /wechat_process_temp_must_be_outside_candidate_and_run_roots/u,
+    );
+  }
+  assert.equal((await verify("E:\\Dev\\Starward-other\\temp")).status, "passed");
+});
+
+test("DevTools child environment binds both temp variables without changing the parent", () => {
+  const environment = { TEMP: "run-temp", TMP: "other-run-temp", PATH: "tool-bin" };
+  const processTemp = "C:\\Users\\test\\AppData\\Local\\Temp";
+  assert.deepEqual(wechatToolEnvironment({ environment, processTemp }), {
+    TEMP: processTemp,
+    TMP: processTemp,
+    PATH: "tool-bin",
+  });
+  assert.deepEqual(environment, { TEMP: "run-temp", TMP: "other-run-temp", PATH: "tool-bin" });
+});
 
 test("protocol deadline disposes once and rejects concurrent, late and subsequent requests", async () => {
   let disposeCount = 0;

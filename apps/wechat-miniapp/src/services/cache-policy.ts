@@ -20,6 +20,17 @@ export function responseCacheKey(group: string, path: string): string {
   return `${group}:${path}`;
 }
 
+const TEMPORARY_QUERY_ROOTS = new Set([
+  "map-scene", "spot-overview", "spot-guides", "spot-site", "spot-sky",
+  "observation-context", "place-search", "spot-search",
+  "map-observation-context", "search-observation-context", "search-scene",
+]);
+
+/** Settings clears trip-discovery cache, never account/library data or drafts. */
+export function isTemporaryCacheKey(key: string): boolean {
+  return TEMPORARY_QUERY_ROOTS.has(key.split(":", 1)[0]!);
+}
+
 export const READ_MODEL_INVALIDATION_POLICY: Readonly<
   Record<MiniappMutationKind, MutationInvalidationPolicy>
 > = Object.freeze({

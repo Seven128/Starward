@@ -1,0 +1,13 @@
+{
+  "project": "C:\\Users\\777\\AppData\\Local\\Temp\\starward-device-feedback-fixture-0sQGy3",
+  "scope": "isolated_native_agent_tools",
+  "prepared": true,
+  "runtimeVerified": false,
+  "expected": {
+    "tap": "count increments exactly once",
+    "input": "rendered echo equals entered fixture text",
+    "console": "STARWARD_AGENT_PROBE only",
+    "network": "one real local request returns marker"
+  },
+  "conditions": "local HTTP URL check disabled only in fixture; not product/device/domain acceptance"
+}

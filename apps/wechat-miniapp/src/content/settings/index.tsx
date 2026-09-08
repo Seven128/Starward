@@ -11,6 +11,7 @@ import { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   deleteAccount as deleteAccountThroughApi,
+  clearTemporaryApiCache,
   errorMessage,
   exportAccountData,
 } from "@/services/api-client";
@@ -136,6 +137,7 @@ export default function SettingsPage() {
     accountActionPending.current = true;
     setDataAction("DELETE");
     let accountDeleted = false;
+    let localCleanupComplete = true;
     try {
       const first = await Taro.showModal({
         title: "删除账户？",
@@ -152,19 +154,24 @@ export default function SettingsPage() {
         confirmColor: "#B53A3A",
       });
       if (!final.confirm) return;
-        const response = await deleteAccountThroughApi();
+      const response = await deleteAccountThroughApi();
       accountDeleted = true;
+      localCleanupComplete = response.localCleanupComplete;
       if (!response.localAccountReset) {
-        notify({ owner: "settings", placement: "inline", tone: "success",
-          title: "原账户已删除", body: "当前页面状态已保留。", dismissible: true,
+        notify({ owner: "settings", placement: "inline", tone: localCleanupComplete ? "success" : "warning",
+          title: "原账户已删除", body: localCleanupComplete
+            ? "当前页面状态已保留。"
+            : "当前账号已保留。原账户的本地数据未能全部清除，请通过微信清理本小程序的数据后重新进入。", dismissible: true,
           dedupeKey: "settings-account-deleted" });
         return;
       }
-      resetAfterAccountDeletion();
+      localCleanupComplete = resetAfterAccountDeletion() && localCleanupComplete;
       await Taro.showModal({
         title: "账户已删除",
         content:
-          response.data.mediaCleanupState === "QUEUED"
+          !localCleanupComplete
+            ? "账户和会话已在服务端撤销，本地数据未能全部清除。请通过微信清理本小程序的数据后重新进入。"
+            : response.data.mediaCleanupState === "QUEUED"
             ? "身份和会话已撤销；投稿媒体清理已进入可靠队列。"
             : "身份、会话和可删除账户数据已移除。",
         showCancel: false,
@@ -178,7 +185,9 @@ export default function SettingsPage() {
         tone: "error",
         title: accountDeleted ? "账户已删除，页面尚未关闭" : "账户未删除",
         body: accountDeleted
-          ? "账户删除已完成，本机会话已清除。请退出小程序后重新进入。"
+          ? localCleanupComplete
+            ? "账户删除已完成，本机会话已清除。请退出小程序后重新进入。"
+            : "账户删除已完成，本地数据未能全部清除。请通过微信清理本小程序的数据后重新进入。"
           : `${errorMessage(error)}；本机状态和登录会话保持不变，可重试。`,
         dismissible: true,
         dedupeKey: "settings-account-delete-failed",
@@ -272,7 +281,25 @@ export default function SettingsPage() {
                       "将清除本机地图视口、筛选、搜索记录与夜空临时缓存；收藏、计划、主页链接和导入草稿不会被删除。",
                     confirmText: "清除",
                     confirmColor: "#B53A3A",
-                  }).then((result) => result.confirm && clearLocalCache())
+                  }).then(async (result) => {
+                    if (!result.confirm) return;
+                    const cacheCleanup = clearTemporaryApiCache();
+                    const stateCleanup = clearLocalCache();
+                    try {
+                      const [, stateSaved] = await Promise.all([cacheCleanup, stateCleanup]);
+                      if (!stateSaved) throw new Error("local_state_cleanup_incomplete");
+                      notify({ owner: "settings", placement: "floating", tone: "success",
+                        title: "临时缓存已清除",
+                        body: "本地地图、筛选、搜索与夜空临时缓存已清除；持久化收藏、计划、主页链接和导入草稿保持不变。",
+                        dismissible: true, dedupeKey: "settings-cache-cleared" });
+                    }
+                    catch {
+                      notify({ owner: "settings", placement: "inline", tone: "warning",
+                        title: "临时缓存尚未清完",
+                        body: "当前地图状态已重置，但本地存储清理失败。请稍后重试，或通过微信清理本小程序的数据。",
+                        dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
+                    }
+                  })
                 }
               >
                 清除临时缓存

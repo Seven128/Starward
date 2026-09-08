@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { OrientationEngine } from "../../../modules/orientation/orientation-engine";
 import { resolveArMode } from "../../../modules/sky-ar/sky-ar-adapter";
-import { calculateFieldOfView, catalogChunks, positionCatalog, visibleIntervals } from "../../../../../packages/astronomy-core/src/sky-model";
+import { calculateFieldOfView, visibleIntervals } from "../../../../../packages/astronomy-core/src/sky-geometry";
 
 describe("sky runtime", () => {
   it("stops following when magnetic interference makes absolute heading untrustworthy", () => {
@@ -30,11 +30,11 @@ describe("sky runtime", () => {
     expect(calculateFieldOfView({ sensorWidthMm: 36, orientation: "landscape" })).toBeNull();
   });
 
-  it("positions a progressively loaded catalog and keeps obstruction provenance separate", () => {
-    expect(catalogChunks(4).map((chunk) => chunk.key)).toEqual(["bright", "deep"]);
-    const objects = positionCatalog({ at: new Date("2026-08-12T16:40:00Z"), latitude: 22.529, longitude: 113.9468, elevationM: 620, magnitudeLimit: 4 });
-    expect(objects).toHaveLength(5);
-    expect(objects.every((object) => object.obstructed === null)).toBe(true);
+  it("keeps unmeasured horizon provenance separate from an observed obstruction", () => {
     expect(visibleIntervals([{ at: "00:00", altitudeDeg: 10, azimuthDeg: 90 }])[0]).toMatchObject({ evidence: "astronomical-horizon", visible: true });
+    expect(visibleIntervals([{ at: "00:00", altitudeDeg: 10, azimuthDeg: 90 }], {
+      source: "measured", version: "field-v1", confidence: 0.9,
+      points: [{ azimuthDeg: 0, altitudeDeg: 20 }, { azimuthDeg: 180, altitudeDeg: 20 }],
+    })[0]).toMatchObject({ evidence: "measured", visible: false, horizonAltitudeDeg: 20 });
   });
 });

@@ -1,0 +1,5 @@
+
+> starward@1.0.0 node
+> node tools/run-node.cjs .codex/work-items/project-efficiency-2026-09-08/R10-cli-probe.mjs run -c Codex login --type image
+
+{"code":0,"signal":null,"responseKeys":["ok","tool","clientName","result"],"resultKeys":["content","structuredContent"],"diagnostics":[],"stdoutBytes":61897,"stderrBytes":48}

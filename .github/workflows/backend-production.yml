@@ -85,12 +85,12 @@ jobs:
           released_at=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
           archive="$RUNNER_TEMP/starward-control-$REVISION.tar.gz"
           request="$RUNNER_TEMP/starward-production-$REVISION.request.json"
-          tar -czf "$archive" package.json tools/deployment infrastructure/deployment
+          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -czf "$archive" package.json tools/run-node.cjs tools/deployment infrastructure/deployment
           archive_sha256=$(sha256sum "$archive" | cut -d' ' -f1)
           npm run deployment:create-request -- \
             --output "$request" \
             --base-deploy-env "$REMOTE_BASE_DEPLOY_ENV" \
-            --candidate-output "$REMOTE_CANDIDATE_ROOT/$REVISION/deploy.env" \
+            --candidate-output "$REMOTE_CANDIDATE_ROOT/$REVISION/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/deploy.env" \
             --image-ref "$image_ref" \
             --revision "$REVISION" \
             --released-at "$released_at" \

@@ -346,6 +346,34 @@ test("Android Gradle plan assembles one ABI and keeps bounded daemon reuse", () 
   assert.ok(argv.includes("-Dorg.gradle.daemon.idletimeout=600000"));
   assert.ok(!argv.includes(":app:installRelease"));
   assert.ok(!argv.includes("--no-daemon"));
+  assert.ok(argv.includes("-Pandroid.enableMinifyInReleaseBuilds=false"));
+  assert.ok(argv.includes("-Pandroid.enableShrinkResourcesInReleaseBuilds=false"));
+});
+
+test("Android release build follows declared shrink flags even with an existing native directory", () => {
+  const optimized = androidGradleArguments("x86_64", {
+    enableMinifyInReleaseBuilds: true,
+    enableShrinkResourcesInReleaseBuilds: true,
+  });
+  assert.ok(optimized.includes("-Pandroid.enableMinifyInReleaseBuilds=true"));
+  assert.ok(optimized.includes("-Pandroid.enableShrinkResourcesInReleaseBuilds=true"));
+  assert.ok(optimized.includes("-PreactNativeArchitectures=x86_64"));
+  const unminified = androidGradleArguments("arm64-v8a", {
+    enableMinifyInReleaseBuilds: false,
+    enableShrinkResourcesInReleaseBuilds: false,
+  });
+  assert.ok(unminified.includes("-Pandroid.enableMinifyInReleaseBuilds=false"));
+  assert.ok(unminified.includes("-Pandroid.enableShrinkResourcesInReleaseBuilds=false"));
+  const minifyOnly = androidGradleArguments("x86_64", { enableMinifyInReleaseBuilds: true });
+  assert.ok(minifyOnly.includes("-Pandroid.enableMinifyInReleaseBuilds=true"));
+  assert.ok(minifyOnly.includes("-Pandroid.enableShrinkResourcesInReleaseBuilds=false"));
+  assert.throws(() => androidGradleArguments("x86_64", {
+    enableMinifyInReleaseBuilds: "true",
+  }), /android_release_property_invalid/u);
+  assert.throws(() => androidGradleArguments("x86_64", {
+    enableMinifyInReleaseBuilds: false,
+    enableShrinkResourcesInReleaseBuilds: true,
+  }), /android_resource_shrinking_requires_minification/u);
 });
 
 test("Android build helpers reject unsupported ABIs", () => {
@@ -973,6 +1001,29 @@ test("Android build input fingerprint is deterministic and ABI-sensitive", async
   assert.match(first, /^[a-f0-9]{64}$/u);
   assert.equal(first, second);
   assert.notEqual(first, otherAbi);
+});
+
+test("Android APK reuse invalidates on shared sky code and its launcher, not test-only edits", async (t) => {
+  const root = await mkdtemp(path.join(tmpdir(), "starward-android-inputs-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const write = async (relative, text) => {
+    const target = path.join(root, relative);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, text);
+  };
+  const fingerprint = () => androidBuildInputFingerprint("x86_64", { root });
+  await write("apps/mobile/src/features/sky/SkyScreen.tsx", "export { visibleIntervals } from '../../../../../packages/astronomy-core/src/sky-model';\n");
+  await write("packages/astronomy-core/src/sky-model.ts", "export const visibleIntervals = () => [];\n");
+  await write("packages/astronomy-core/package.json", '{"name":"@starward/astronomy-core"}\n');
+  await write("tools/run-node.cjs", "process.exitCode = 0;\n");
+  const before = await fingerprint();
+  await write("packages/astronomy-core/src/sky-model.ts", "export const visibleIntervals = () => [1];\n");
+  const changedSky = await fingerprint();
+  assert.notEqual(changedSky, before);
+  await write("packages/astronomy-core/src/sky-model.test.ts", "test('changed test only');\n");
+  assert.equal(await fingerprint(), changedSky);
+  await write("tools/run-node.cjs", "process.exitCode = 1;\n");
+  assert.notEqual(await fingerprint(), changedSky);
 });
 
 test("Android APK fingerprint ignores test-only source files", () => {

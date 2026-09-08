@@ -1,0 +1,32 @@
+{
+  "controlFiles": 58,
+  "archive": {
+    "sameFileBytes": true,
+    "onlyModifiedMetadata": "package.json mtime",
+    "plain": {
+      "before": "60661412949aa453974a637a8f760b1710863a8596a9b94c1c85b3e73d56d18d",
+      "after": "564ebca62f5c94e1e8ffb310bde8ef322379bf922026148dea03e016df7829e4",
+      "equal": false
+    },
+    "normalized": {
+      "before": "3762a9bd9ac01b1943e63f7fca87e1e68ddd90b933ee98f803a7dbc331c3f30e",
+      "after": "3762a9bd9ac01b1943e63f7fca87e1e68ddd90b933ee98f803a7dbc331c3f30e",
+      "equal": true
+    }
+  },
+  "controlRuntime": {
+    "node": "v24.16.0",
+    "importExit": 0,
+    "importStdout": "control-import-ok",
+    "importError": "",
+    "npmDryCliExit": 1,
+    "npmDryCliDiagnostic": "{\"status\":\"failed\",\"code\":\"release_request_path_not_absolute:outputPath\"}",
+    "expectedValidationReached": true,
+    "noPackageInstallation": true
+  },
+  "minimalContextResolution": {
+    "resolvedInsideMinimalInstall": true,
+    "version": "0.12.0",
+    "binExists": true
+  }
+}

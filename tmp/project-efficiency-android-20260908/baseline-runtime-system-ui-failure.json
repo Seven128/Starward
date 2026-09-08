@@ -1,0 +1,17 @@
+{
+  "scope": "release_packaging_smoke",
+  "variant": "baseline",
+  "startedAt": "2026-09-07T22:34:00.123Z",
+  "apkSha256": "01fc1ccfdfa5e3fff94628d4564e32921a3d9acac573028d94e73369ecbc41b2",
+  "status": "failed",
+  "routes": [],
+  "api": "36",
+  "abi": "x86_64",
+  "installedApkSha256": "01fc1ccfdfa5e3fff94628d4564e32921a3d9acac573028d94e73369ecbc41b2",
+  "launchStatus": "ok",
+  "failedStage": "cold_start",
+  "failureCode": "required_runtime_marker_missing:primary-tab-map:3e9c5589189b5ea576cb390d6ef99a8ad00fba8d689a1716fd6bfede514f9034",
+  "errorSha256": "d882ee4d10fb86ac8d1aaa9ca4cd8c77ec6bf71d579445a3dbbc900956cc36ff",
+  "finishedAt": "2026-09-07T22:34:41.064Z",
+  "limitation": "Technical packaging/startup and five route mounts on a read-only API36 x86_64 emulator; no backend/provider, physical sensor, field or complete UI acceptance claim."
+}

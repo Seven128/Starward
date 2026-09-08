@@ -418,6 +418,21 @@ export class PostgresMiniappRepository
     return result.rows.map((row) => clone(row.payload));
   }
 
+  async listSpotPopulation(): Promise<readonly Pick<SpotSummary, "spotId" | "source">[]> {
+    const result = await this.pool.query<{ spot_id: SpotId; source: SpotSummary["source"] }>(
+      `SELECT s.spot_id, s.payload->'source' AS source
+         FROM spots s
+         JOIN spot_publication_assessments a USING (spot_id)
+        WHERE s.visibility_policy = 'PUBLIC_EXACT'
+          AND s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
+          AND a.complete = true
+          AND a.spot_revision = s.version
+          AND a.assessed_at >= now() - interval '30 days'
+        ORDER BY s.display_order`,
+    );
+    return result.rows.map((row) => ({ spotId: row.spot_id, source: clone(row.source) }));
+  }
+
   async listDarkSkyGridCells(input: {
     datasetVersion: string;
     center?: { system: "WGS84"; latitude: number; longitude: number };
@@ -504,8 +519,8 @@ export class PostgresMiniappRepository
   }
 
   async getDetail(spotId: SpotId): Promise<SpotDetail | null> {
-    const result = await this.pool.query<{ payload: SpotDetail }>(
-      `SELECT r.payload
+    const result = await this.pool.query<{ payload: SpotDetail; spot: SpotSummary }>(
+      `SELECT r.payload, s.payload AS spot
          FROM spot_overview_read_models r
          JOIN spots s USING (spot_id)
          JOIN spot_publication_assessments a USING (spot_id)
@@ -517,7 +532,9 @@ export class PostgresMiniappRepository
           AND a.assessed_at >= now() - interval '30 days'`,
       [spotId],
     );
-    return result.rows[0] ? clone(result.rows[0].payload) : null;
+    return result.rows[0]
+      ? clone({ ...result.rows[0].payload, spot: result.rows[0].spot })
+      : null;
   }
 
   async ensureUser(userId: UserId): Promise<void> {

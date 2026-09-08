@@ -193,6 +193,8 @@ export interface MiniappRepositoryPort {
   readonly kind: "memory" | "postgres";
   readinessSnapshot(): Promise<Readonly<Record<string, unknown>>>;
   listSpots(): Promise<readonly SpotSummary[]>;
+  /** Complete publication population metadata, without loading every spot payload. */
+  listSpotPopulation(): Promise<readonly Pick<SpotSummary, "spotId" | "source">[]>;
   listSpotsInRadius(
     center: Wgs84Point,
     radiusKm: number,
@@ -385,7 +387,7 @@ export interface AdminOperationsPort {
 }
 
 export interface AstronomyApplicationPort {
-  compute(context: ObservationContext): Promise<ApiEnvelope<SkyReport>>;
+  compute(context: ObservationContext, signal?: AbortSignal): Promise<ApiEnvelope<SkyReport>>;
 }
 
 export interface TelemetryPort {

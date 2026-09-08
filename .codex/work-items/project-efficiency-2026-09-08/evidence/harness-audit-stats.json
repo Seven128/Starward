@@ -1,0 +1,299 @@
+{
+  "data": [
+    {
+      "root": "project_context",
+      "files": 49,
+      "bytes": 439393,
+      "trackedFiles": 49,
+      "trackedBytes": 439393,
+      "top": [
+        {
+          "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+          "bytes": 26901
+        },
+        {
+          "path": "project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md",
+          "bytes": 16870
+        },
+        {
+          "path": "project_context/architecture/runtime-and-domain.md",
+          "bytes": 16752
+        },
+        {
+          "path": "project_context/architecture/maintenance-boundaries.md",
+          "bytes": 15303
+        },
+        {
+          "path": "project_context/deployment/current-state.md",
+          "bytes": 14567
+        }
+      ]
+    },
+    {
+      "root": ".codex",
+      "files": 109,
+      "bytes": 11277512,
+      "trackedFiles": 108,
+      "trackedBytes": 11264767,
+      "top": [
+        {
+          "path": ".codex/work-items/wechat-miniapp-field-signal-i21-long-task-input.md",
+          "bytes": 9437628
+        },
+        {
+          "path": ".codex/work-items/miniapp-integrated-2026-09-06/PROGRESS.md",
+          "bytes": 638495
+        },
+        {
+          "path": ".codex/work-items/field-signal-i21-default-continuation/source-index.json",
+          "bytes": 417726
+        },
+        {
+          "path": ".codex/work-items/miniapp-integrated-2026-09-06/spot-completeness-audit.json",
+          "bytes": 144504
+        },
+        {
+          "path": ".codex/work-items/field-signal-i21-default-continuation/execution-plan.md",
+          "bytes": 56593
+        }
+      ]
+    },
+    {
+      "root": ".agents",
+      "files": 18,
+      "bytes": 74690,
+      "trackedFiles": 18,
+      "trackedBytes": 74690,
+      "top": [
+        {
+          "path": ".agents/skills/starward-design-resource/scripts/figma-helpers.js",
+          "bytes": 8619
+        },
+        {
+          "path": ".agents/skills/starward-design-resource/scripts/resource-utils.mjs",
+          "bytes": 6351
+        },
+        {
+          "path": ".agents/skills/starward-design-resource/SKILL.md",
+          "bytes": 6345
+        },
+        {
+          "path": ".agents/skills/starward-design-resource/scripts/check-resources.mjs",
+          "bytes": 6182
+        },
+        {
+          "path": ".agents/skills/starward-design-resource/scripts/build-review.mjs",
+          "bytes": 5494
+        }
+      ]
+    },
+    {
+      "root": ".long-task",
+      "files": 3,
+      "bytes": 9135329,
+      "trackedFiles": 3,
+      "trackedBytes": 9135329,
+      "top": [
+        {
+          "path": ".long-task/delivery-contract.yaml",
+          "bytes": 9102456
+        },
+        {
+          "path": ".long-task/wechat-miniapp-field-signal-i21-startup-input-verbatim.md",
+          "bytes": 32760
+        },
+        {
+          "path": ".long-task/external-confirmation-owner-public.pem",
+          "bytes": 113
+        }
+      ]
+    },
+    {
+      "root": "docs",
+      "files": 3483,
+      "bytes": 528825126,
+      "trackedFiles": 3483,
+      "trackedBytes": 528825126,
+      "top": [
+        {
+          "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r2/selected-source/miniapp-fact-manifest.json",
+          "bytes": 23870537
+        },
+        {
+          "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/miniapp-fact-manifest.json",
+          "bytes": 23870537
+        },
+        {
+          "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/miniapp-fact-manifest.json",
+          "bytes": 23870537
+        },
+        {
+          "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/miniapp-fact-manifest.json",
+          "bytes": 23870537
+        },
+        {
+          "path": "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/miniapp-fact-manifest.json",
+          "bytes": 23870537
+        }
+      ]
+    },
+    {
+      "root": "tools",
+      "files": 131,
+      "bytes": 4899898,
+      "trackedFiles": 131,
+      "trackedBytes": 4899898,
+      "top": [
+        {
+          "path": "tools/miniapp/verification-spec.json",
+          "bytes": 1825677
+        },
+        {
+          "path": "tools/miniapp/verification-spec-field-signal-i21.json",
+          "bytes": 1071773
+        },
+        {
+          "path": "tools/miniapp-uploader/package-lock.json",
+          "bytes": 524216
+        },
+        {
+          "path": "tools/miniapp/run-wechat-devtools-session.mjs",
+          "bytes": 245273
+        },
+        {
+          "path": "tools/long-task/verify-native-target.mjs",
+          "bytes": 185397
+        }
+      ]
+    },
+    {
+      "root": "tests",
+      "files": 57,
+      "bytes": 362391,
+      "trackedFiles": 56,
+      "trackedBytes": 362346,
+      "top": [
+        {
+          "path": "tests/acceptance/ui/design-conformance-support.mjs",
+          "bytes": 75357
+        },
+        {
+          "path": "tests/acceptance/structured/probes.mjs",
+          "bytes": 60850
+        },
+        {
+          "path": "tests/acceptance/ui/mobile-design-diagnostic-support.mjs",
+          "bytes": 23201
+        },
+        {
+          "path": "tests/acceptance/ui/contracts.mjs",
+          "bytes": 17930
+        },
+        {
+          "path": "tests/acceptance/specs/quality-release-observability.json",
+          "bytes": 13542
+        }
+      ]
+    },
+    {
+      "root": "artifacts",
+      "files": 12416,
+      "bytes": 705713570,
+      "trackedFiles": 134,
+      "trackedBytes": 12152484,
+      "top": [
+        {
+          "path": "artifacts/verification/design-conformance/quality-release-observability/product-source-reference-comparison.png",
+          "bytes": 11680963
+        },
+        {
+          "path": "artifacts/miniapp/nutui-spike/nutui-nutui-react-taro-3.0.23-cpp.tgz",
+          "bytes": 2515522
+        },
+        {
+          "path": "artifacts/miniapp/nutui-spike/package/dist/nutui.react.umd.js",
+          "bytes": 1918072
+        },
+        {
+          "path": "artifacts/verification/native-diagnostics/checkpoints/tonight-decision/52b6b60c73ae8a5ddd83d767f04ce02fc3bf7b4b996f788184328076c2af9fcd-1785265735444-17076/fragments/7acbf911831681d337dd28fc3a3808efb33a5af265d3ef3cea59cbc9a3d73c85.json",
+          "bytes": 924395
+        },
+        {
+          "path": "artifacts/verification/native-diagnostics/checkpoints/tonight-decision/ee663759f1299026db19bf7b36f937764a871eec600912b51f9c7f63ba023938-1785266065868-2420/fragments/7acbf911831681d337dd28fc3a3808efb33a5af265d3ef3cea59cbc9a3d73c85.json",
+          "bytes": 923130
+        }
+      ]
+    },
+    {
+      "root": "output",
+      "files": 0,
+      "bytes": 0,
+      "trackedFiles": 0,
+      "trackedBytes": 0,
+      "top": []
+    },
+    {
+      "root": "tmp",
+      "files": 471,
+      "bytes": 9525584,
+      "trackedFiles": 92,
+      "trackedBytes": 3365342,
+      "top": [
+        {
+          "path": "tmp/dev-sessions/stage0/api-4318.out.log",
+          "bytes": 994179
+        },
+        {
+          "path": "tmp/design-resource-app-server-schema/codex_app_server_protocol.schemas.json",
+          "bytes": 560640
+        },
+        {
+          "path": "tmp/design-resource-app-server-schema/codex_app_server_protocol.v2.schemas.json",
+          "bytes": 471114
+        },
+        {
+          "path": "tmp/dev-sessions/stage0/api-diag-5.out.log",
+          "bytes": 454934
+        },
+        {
+          "path": "tmp/dev-sessions/stage0/tonight-restored.png",
+          "bytes": 325902
+        }
+      ]
+    }
+  ],
+  "textStats": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 7771,
+      "chars": 7771,
+      "lines": 34
+    },
+    {
+      "path": "DESIGN.md",
+      "bytes": 113403,
+      "chars": 80497,
+      "lines": 1077
+    },
+    {
+      "path": "project_context/global.md",
+      "bytes": 2323,
+      "chars": 2309,
+      "lines": 23
+    },
+    {
+      "path": "project_context/context.toml",
+      "bytes": 11802,
+      "chars": 11080,
+      "lines": 292
+    },
+    {
+      "path": "docs/source-plan.md",
+      "bytes": 599234,
+      "chars": 431020,
+      "lines": 6953
+    }
+  ],
+  "contextBodyFiles": 47,
+  "contextBodyBytes": 427478
+}

@@ -1,0 +1,11 @@
+{
+  "image": "starward-miniapp-api-efficiency:local",
+  "network": "starward-efficiency-20260908",
+  "api": "starward-efficiency-20260908-api",
+  "profile": "LOCAL",
+  "verifiedAt": "2026-09-07T22:13:48.014Z",
+  "imageIdentity": "sha256:1b310aac6e4116fe60ba522e83ae8a85b6542a01fe61d52e37b2d31d020fbb2e",
+  "imageBytes": 87332226,
+  "status": "failed",
+  "error": "Command failed: docker run --rm --network starward-efficiency-20260908 --cpus 2 --memory 512m --pids-limit 128 --env MINIAPP_RELEASE_PROFILE=LOCAL --env MINIAPP_STORAGE_MODE=POSTGRES --env MINIAPP_AUTH_MODE=LOCAL_TEST --env MINIAPP_MEDIA_STORAGE_MODE=DISABLED --env MINIAPP_ROUTE_PROVIDER=DISABLED --env MINIAPP_PLACE_SEARCH_PROVIDER=DISABLED --env DATABASE_URL=postgresql://starward_efficiency@postgres:5432/starward_efficiency --env REDIS_URL=redis://redis:6379 --env MINIAPP_CACHE_PREFIX=starward:efficiency:image: --env MINIAPP_QUEUE_NAME=starward-efficiency-image starward-miniapp-api-efficiency:local node --conditions=production workers/miniapp-api/dist/migrate.js\n/app/node_modules/pg-pool/index.js:45\n    Error.captureStackTrace(err)\n          ^\n\nerror: the database system is starting up\n    at /app/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runPostgresMigrations (file:///app/workers/miniapp-api/dist/migration-runner.js:133:20)\n    at async PostgresMiniappRepository.initialize (file:///app/workers/miniapp-api/dist/postgres-repository.js:187:13)\n    at async file:///app/workers/miniapp-api/dist/migrate.js:11:5 {\n  length: 105,\n  severity: 'FATAL',\n  code: '57P03',\n  detail: undefined,\n  hint: undefined,\n  position: undefined,\n  internalPosition: undefined,\n  internalQuery: undefined,\n  where: undefined,\n  schema: undefined,\n  table: undefined,\n  column: undefined,\n  dataType: undefined,\n  constraint: undefined,\n  file: 'backend_startup.c',\n  line: '275',\n  routine: 'BackendInitialize'\n}\n\nNode.js v24.19.0\n"
+}

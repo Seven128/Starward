@@ -1,0 +1,8 @@
+{
+  "variant": "unminified-x86_64",
+  "exitCode": 0,
+  "elapsedSeconds": 363.402111,
+  "maxWorkers": 2,
+  "cmakeParallelLevel": 2,
+  "metroMaxWorkers": 2
+}

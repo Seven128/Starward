@@ -1,0 +1,29 @@
+{
+  "verifiedAt": "2026-09-07T23:14:39.174Z",
+  "route": "pages/index/index",
+  "state": "NATIVE API CHECKS PASSED",
+  "metrics": {
+    "scope": "isolated_native_api_fixture",
+    "revision": "ports-match-product",
+    "nativeCallbacks": 13,
+    "measurements": 3,
+    "measureCallbacks": 3,
+    "contexts": 3,
+    "drawSubmissions": 13,
+    "presentations": 12,
+    "hideEvents": 1,
+    "showEvents": 1,
+    "storage": {
+      "bytes": 707203,
+      "restartReadback": true,
+      "asyncBodyWrites": 3,
+      "cleanupComplete": true,
+      "remainingKeys": 0
+    },
+    "initialHiddenCallback": true,
+    "presentedDuringPoseBurst": true,
+    "poseUpdates": 68,
+    "resizedWidth": 280,
+    "returnedAfterNativeHide": true
+  }
+}

@@ -10,13 +10,47 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: backend-staging
   cancel-in-progress: false
 
 jobs:
+  qualify:
+    if: >-
+      ${{ vars.STARWARD_STAGING_CD_ENABLED == 'true' &&
+        ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository)) }}
+    runs-on: ubuntu-latest
+    outputs:
+      product_checked: ${{ steps.checked.outputs.product_checked }}
+    steps:
+      - id: checked
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRIGGER_EVENT: ${{ github.event_name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          if [ "$TRIGGER_EVENT" = workflow_dispatch ]; then
+            echo 'product_checked=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # A successful lightweight docs run must not qualify a deployment.
+          [[ "$RUN_ID" =~ ^[0-9]+$ && "$RUN_ATTEMPT" =~ ^[0-9]+$ ]]
+          checked=$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/attempts/$RUN_ATTEMPT/jobs" \
+            --jq '.jobs[] | select(.name == "product" and .conclusion == "success") | .steps[] | select(.name == "Construct production OCI image" and .conclusion == "success") | "true"')
+          if [ "$checked" = true ]; then
+            echo 'product_checked=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'product_checked=false' >> "$GITHUB_OUTPUT"
+          fi
   publish-and-deploy:
+    needs: qualify
     if: >-
       ${{
         ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
@@ -24,7 +58,8 @@ jobs:
         github.event.workflow_run.event == 'push' &&
         github.event.workflow_run.head_branch == 'main' &&
         github.event.workflow_run.head_repository.full_name == github.repository)) &&
-        vars.STARWARD_STAGING_CD_ENABLED == 'true'
+        vars.STARWARD_STAGING_CD_ENABLED == 'true' &&
+        needs.qualify.outputs.product_checked == 'true'
       }}
     environment: staging
     runs-on: ubuntu-latest
@@ -119,7 +154,7 @@ jobs:
           released_at=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
           archive="$RUNNER_TEMP/starward-control-$REVISION.tar.gz"
           request="$RUNNER_TEMP/starward-staging-$REVISION.request.json"
-          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -czf "$archive" package.json tools/deployment infrastructure/deployment
+          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -czf "$archive" package.json tools/run-node.cjs tools/deployment infrastructure/deployment
           archive_sha256=$(sha256sum "$archive" | cut -d' ' -f1)
           npm run deployment:create-request -- \
             --lane "$DEPLOYMENT_LANE" \

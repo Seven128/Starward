@@ -17,11 +17,11 @@
     "@starward/coordinate-system": "*"
   },
   "scripts": {
-    "build:release": "node ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
-    "generate:sdk": "node ../../tools/miniapp/generate-miniapp-sdk.mjs",
-    "check:sdk": "node ../../tools/miniapp/generate-miniapp-sdk.mjs --check",
-    "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
-    "test": "node --import tsx --test src/**/*.test.ts"
+    "build:release": "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
+    "generate:sdk": "node ../../tools/run-node.cjs ../../tools/miniapp/generate-miniapp-sdk.mjs",
+    "check:sdk": "node ../../tools/run-node.cjs ../../tools/miniapp/generate-miniapp-sdk.mjs --check",
+    "typecheck": "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
+    "test": "node ../../tools/run-node.cjs --import tsx --test src/**/*.test.ts"
   },
   "devDependencies": {
     "tsx": "4.20.6",

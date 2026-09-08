@@ -1,0 +1,80 @@
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +27ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mMiniappController {/v2}:[39m[38;5;3m +5ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/capabilities, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/auth/wechat/login, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/observation-contexts/resolve, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/observation-contexts/:contextId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/observation-contexts/:contextId, PATCH} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/map/scene, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/places/search, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/routes/estimate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/spots/:spotId/overview, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/spots/:spotId/guides, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/spots/:spotId/field, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/spots/:spotId/sky, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/favorites, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/favorites/FORMAL_SPOT/:spotId, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/library, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/preferences, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/preferences, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/data-export, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/account, DELETE} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/observation-plans, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/observation-plans/:planId, PUT} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/observation-plans/:planId, DELETE} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/contributions, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/contributions, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/contributions/:submissionId, PUT} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/contributions/:submissionId/media-uploads, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/contributions/:submissionId/media-uploads/:uploadId, DELETE} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/contributions/:submissionId/media-uploads/:uploadId, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/contributions/:submissionId/submit, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/profile-links, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/profile-links, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/profile-links/:profileLinkId, DELETE} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/imports, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/imports, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/imports/:importId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/me/imports/:importId, PUT} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/operations, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAdminController {/v2/admin}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/dashboard, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId, PATCH} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/publish, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/suspend, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/articles, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/cases, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/contribution-media/:uploadId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/cases/:caseId/resolve, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/cases/:caseId/merge, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/data-sources, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/provider-health, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/costs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/decisions, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/audit-logs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAdminOperationsController {/v2/admin}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/queue, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/cases/:caseId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/cases/:caseId/request-changes, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/contribution-media/:uploadId/review, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/contribution-media/:uploadId/review, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/cases/:caseId/media-decisions, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/moderation/cases/:caseId/merge-preview, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAdminPublicationController {/v2/admin}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/publication-assessments, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/revisions, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/unpublish, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/retire, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/replacement-preview, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/spots/:spotId/replace, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/receipts/:receiptId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/v2/admin/audit, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/health}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/health/live, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/health/ready, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/health/release, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+[32m[Nest] 1  - [39m09/07/2026, 10:14:33 PM [32m    LOG[39m [38;5;3m[Bootstrap] [39m[32m{"event":"miniapp_api_ready","address":"http://0.0.0.0:8787","release":{"environment":"local","revision":"development","imageDigest":"unbuilt","releasedAt":"1970-01-01T00:00:00.000Z"}}[39m

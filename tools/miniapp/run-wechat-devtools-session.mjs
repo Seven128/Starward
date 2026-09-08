@@ -20,6 +20,8 @@ import { tsImport } from "tsx/esm/api";
 import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
 import { knownWechatToolchainConsoleErrorId } from "./runtime-event-policy.mjs";
 import { resolveOfficialCli } from "./device-feedback-official.mjs";
+import { boundWechatProtocol, boundedWechatConnect } from "./wechat-protocol.mjs";
+export { boundWechatProtocol, boundedWechatConnect } from "./wechat-protocol.mjs";
 
 const { Client } = pg;
 
@@ -72,8 +74,8 @@ const cliPath = "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\cli
 let officialCliInvocation;
 const sourceProjectPath = path.join(root, "apps", "wechat-miniapp");
 const installationStorageKey = "starward.wechat-miniapp.installation.current";
-const canonicalWorkspaceRoot = path.resolve("E:\\Dev\\Starward");
-const wechatFinalGateTempRoot = path.resolve("E:\\Dev\\.starward-tmp");
+const canonicalWorkspaceRoot = "E:\\Dev\\Starward";
+const wechatReservedRunTempRoot = "E:\\Dev\\.starward-tmp";
 const wechatProcessTemp = process.env.LOCALAPPDATA
   ? path.join(process.env.LOCALAPPDATA, "Temp")
   : null;
@@ -167,6 +169,7 @@ const candidateRoots = [
   "DESIGN.md",
   "package.json",
   "package-lock.json",
+  "tools/run-node.cjs",
   "apps/wechat-miniapp/package.json",
   "apps/wechat-miniapp/project.config.json",
   "apps/wechat-miniapp/config",
@@ -471,7 +474,7 @@ async function readOptionalFile(absolute) {
 }
 
 function normalizeWindowsPath(value) {
-  return path
+  return path.win32
     .resolve(value)
     .replace(/^\\\\\?\\/u, "")
     .replaceAll("/", "\\")
@@ -483,75 +486,65 @@ function isPathWithin(base, candidate) {
   return candidate === base || candidate.startsWith(`${base}\\`);
 }
 
-async function verifyWechatSnapshotLocation() {
-  if (process.platform !== "win32")
-    throw new Error("wechat_snapshot_location_requires_windows");
-  const requestedRoot = normalizeWindowsPath(root);
-  const physicalRoot = normalizeWindowsPath(await realpath(root));
+export async function verifyWechatWorkspaceLocation({
+  platform = process.platform,
+  workspaceRoot = root,
+  resolveRealPath = realpath,
+} = {}) {
+  if (platform !== "win32")
+    throw new Error("wechat_workspace_location_requires_windows");
+  const requestedRoot = normalizeWindowsPath(workspaceRoot);
+  const physicalRoot = normalizeWindowsPath(await resolveRealPath(workspaceRoot));
   if (requestedRoot !== physicalRoot)
-    throw new Error("wechat_snapshot_location_must_be_physical");
+    throw new Error("wechat_workspace_location_must_be_physical");
   const canonicalRoot = normalizeWindowsPath(canonicalWorkspaceRoot);
-  const finalGateTempRoot = normalizeWindowsPath(wechatFinalGateTempRoot);
-  const canonical = requestedRoot === canonicalRoot;
-  if (!canonical) {
-    const temp = process.env.TEMP
-      ? normalizeWindowsPath(process.env.TEMP)
-      : null;
-    const tmp = process.env.TMP ? normalizeWindowsPath(process.env.TMP) : null;
-    if (
-      !temp ||
-      temp !== tmp ||
-      !isPathWithin(finalGateTempRoot, temp) ||
-      path.dirname(temp) !== finalGateTempRoot ||
-      !/^run-[0-9a-f]{12}$/u.test(path.basename(temp))
-    )
-      throw new Error("wechat_snapshot_temp_environment_mismatch");
-    const physicalTemp = normalizeWindowsPath(await realpath(process.env.TEMP));
-    if (physicalTemp !== temp)
-      throw new Error("wechat_snapshot_temp_root_must_be_physical");
-    if (!isPathWithin(temp, requestedRoot))
-      throw new Error("wechat_snapshot_location_outside_supported_root");
-    const relative = path.relative(process.env.TEMP, root);
-    const firstSegment = relative.split(/[\\/]/u)[0];
-    if (!firstSegment?.startsWith("ty-context-"))
-      throw new Error("wechat_snapshot_not_harness_owned");
-  }
+  if (requestedRoot !== canonicalRoot)
+    throw new Error("wechat_canonical_workspace_required");
   return {
     status: "passed",
-    mode: canonical ? "canonical_workspace" : "isolated_harness_snapshot",
+    mode: "canonical_workspace",
     direct_physical_path: true,
     root_path_sha256: sha256(requestedRoot),
     physical_path_sha256: sha256(physicalRoot),
-    final_gate_temp_root_sha256: sha256(finalGateTempRoot),
   };
 }
 
-async function verifyWechatProcessEnvironment() {
-  if (!wechatProcessTemp)
+export async function verifyWechatProcessEnvironment({
+  processTemp = wechatProcessTemp,
+  resolveRealPath = realpath,
+  statPath = stat,
+} = {}) {
+  if (!processTemp)
     throw new Error("wechat_process_temp_environment_missing");
-  const info = await stat(wechatProcessTemp).catch(() => null);
+  const info = await statPath(processTemp).catch(() => null);
   if (!info?.isDirectory())
     throw new Error("wechat_process_temp_environment_not_directory");
-  const requested = normalizeWindowsPath(wechatProcessTemp);
-  const physical = normalizeWindowsPath(await realpath(wechatProcessTemp));
+  const requested = normalizeWindowsPath(processTemp);
+  const physical = normalizeWindowsPath(await resolveRealPath(processTemp));
   if (requested !== physical)
     throw new Error("wechat_process_temp_environment_must_be_physical");
-  if (isPathWithin(normalizeWindowsPath(wechatFinalGateTempRoot), physical))
+  if (
+    isPathWithin(normalizeWindowsPath(canonicalWorkspaceRoot), physical) ||
+    isPathWithin(normalizeWindowsPath(wechatReservedRunTempRoot), physical)
+  )
     throw new Error(
-      "wechat_process_temp_must_be_outside_harness_snapshot_root",
+      "wechat_process_temp_must_be_outside_candidate_and_run_roots",
     );
   return {
     status: "passed",
-    kind: "system user temporary directory isolated from Harness snapshots",
+    kind: "physical user temporary directory isolated from candidate and run roots",
     path_sha256: sha256(physical),
   };
 }
 
-function wechatToolEnvironment() {
+export function wechatToolEnvironment({
+  environment = process.env,
+  processTemp = wechatProcessTemp,
+} = {}) {
   return {
-    ...process.env,
-    ...(wechatProcessTemp
-      ? { TEMP: wechatProcessTemp, TMP: wechatProcessTemp }
+    ...environment,
+    ...(processTemp
+      ? { TEMP: processTemp, TMP: processTemp }
       : {}),
   };
 }
@@ -1644,64 +1637,6 @@ function runWechatCli(projectPath, args, options = {}) {
   );
 }
 
-export function boundWechatProtocol(program, timeoutMs = 20_000) {
-  const connection = program?.connection;
-  if (!connection || typeof connection.send !== "function" || typeof connection.dispose !== "function")
-    throw new Error("wechat_protocol_connection_shape_unsupported");
-  const send = connection.send.bind(connection);
-  const pending = new Set();
-  let failure;
-  connection.send = (method, params) => {
-    if (failure) return Promise.reject(failure);
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      const finish = (ok, value) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        pending.delete(finish);
-        if (ok) resolve(value);
-        else reject(value);
-      };
-      const timer = setTimeout(() => {
-        failure = new Error(`wechat_protocol_request_deadline:${sha256(String(method))}`);
-        for (const settle of [...pending]) settle(false, failure);
-        try { connection.dispose(); } catch {}
-      }, timeoutMs);
-      pending.add(finish);
-      Promise.resolve().then(() => send(method, params)).then(
-        (value) => finish(true, value),
-        (error) => finish(false, error),
-      );
-    });
-  };
-  return program;
-}
-
-export async function boundedWechatConnect(connect, timeoutMs) {
-  let expired = false;
-  let timer;
-  try {
-    return await Promise.race([
-      Promise.resolve().then(connect).then((program) => {
-        if (expired) {
-          try { program.disconnect(); } catch {}
-          throw new Error("wechat_connection_arrived_after_deadline");
-        }
-        return program;
-      }),
-      new Promise((_, reject) => {
-        timer = setTimeout(() => {
-          expired = true;
-          reject(new Error("wechat_connection_establishment_deadline"));
-        }, timeoutMs);
-      }),
-    ]);
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 async function waitForAutomationConnection(port, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
@@ -2156,90 +2091,6 @@ async function startWechatAutomation(projectPath, automationPort) {
 
 async function connectWechatAutomation(launch) {
   return waitForAutomationConnection(launch.automationPort, 90_000);
-}
-
-async function registerWechatSnapshotProject({
-  projectPath,
-  automationPort,
-  snapshotLocation,
-}) {
-  if (snapshotLocation.mode === "canonical_workspace")
-    return {
-      status: "passed",
-      mode: "not_required_for_canonical_workspace",
-      reason:
-        "the canonical workspace already has a durable WeChat DevTools project registration",
-    };
-  if (snapshotLocation.mode !== "isolated_harness_snapshot")
-    throw new Error("wechat_snapshot_registration_mode_unsupported");
-  let launch;
-  let program;
-  let registrationError;
-  let toolInfo;
-  let clientDisconnect = { status: "not_started" };
-  let cleanup;
-  try {
-    launch = await startWechatAutomation(projectPath, automationPort);
-    program = await connectWechatAutomation(launch);
-    toolInfo = await program.send("Tool.getInfo");
-    if (toolInfo.SDKVersion !== wechatAcceptanceSdkVersion)
-      throw new Error(
-        `wechat_snapshot_registration_base_library_mismatch:${sha256(
-          String(toolInfo.SDKVersion ?? "missing"),
-        )}`,
-      );
-  } catch (error) {
-    registrationError = error;
-  } finally {
-    if (program) {
-      try {
-        await program.close();
-        clientDisconnect = {
-          status: "passed",
-          method: "automator App.exit plus Tool.close and connection dispose",
-        };
-      } catch (error) {
-        try {
-          program.disconnect();
-        } catch {}
-        clientDisconnect = {
-          status: "failed",
-          diagnostic_sha256: sha256(String(error?.message ?? error)),
-        };
-      }
-    }
-    if (launch?.cliProcess?.exitCode === null)
-      stopProcessTree(launch.cliProcess.pid);
-    cleanup = await quitWechatDevtoolsAndWait(
-      projectPath,
-      [automationPort, wechatIdeHttpPort],
-      60_000,
-    ).catch((error) => ({
-      status: "failed",
-      diagnostic_sha256: sha256(String(error?.message ?? error)),
-    }));
-  }
-  if (cleanup.status !== "passed")
-    throw new Error(
-      `wechat_snapshot_registration_cleanup_failed:${cleanup.diagnostic_sha256}`,
-    );
-  if (clientDisconnect.status !== "passed")
-    throw new Error(
-      `wechat_snapshot_registration_project_close_failed:${clientDisconnect.diagnostic_sha256}`,
-    );
-  if (registrationError) throw registrationError;
-  return {
-    status: "passed",
-    mode: "isolated_snapshot_project_registration",
-    scope:
-      "tool project/config identity only; no product journey or acceptance claim",
-    project_path_binding: launch.projectPathBinding,
-    project_config_refresh: launch.projectConfigRefresh,
-    devtools_version: toolInfo.version,
-    base_library_version: toolInfo.SDKVersion,
-    client_disconnect: clientDisconnect,
-    cleanup,
-  };
 }
 
 function stopProcessTree(pid) {
@@ -6204,6 +6055,8 @@ async function captureFaultAndRecovery({
 }
 
 async function main() {
+  const workspaceLocation = await verifyWechatWorkspaceLocation();
+  const processEnvironment = await verifyWechatProcessEnvironment();
   const runId = `wechat-devtools-${new Date().toISOString().replaceAll(/[:.]/gu, "-")}-${randomUUID().slice(0, 8)}`;
   const runRoot = path.join(
     root,
@@ -6325,9 +6178,8 @@ async function main() {
       status: "pending",
       kind: "exclusive current-candidate WeChat DevTools project session",
       mutation_guard:
-        "candidate and generated-bundle before/after fingerprints plus direct physical snapshot-path, same-byte public-config refresh, semantic-equivalence-guarded exact public-config restoration, and exact private-config restoration",
-      snapshot_location: { status: "pending" },
-      snapshot_registration: { status: "pending" },
+        "candidate and generated-bundle before/after fingerprints plus direct physical workspace path, same-byte public-config refresh, semantic-equivalence-guarded exact public-config restoration, and exact private-config restoration",
+      workspace_location: workspaceLocation,
       preparation_shutdown: { status: "pending" },
       evidence_shutdown: { status: "pending" },
       public_config_restoration: { status: "pending" },
@@ -6484,10 +6336,7 @@ async function main() {
     while (apiPort === automationPort) apiPort = await availableLoopbackPort();
     result.toolchain.automation_port = automationPort;
     result.toolchain.api_port = apiPort;
-    result.project_session.snapshot_location =
-      await verifyWechatSnapshotLocation();
-    result.toolchain.process_environment =
-      await verifyWechatProcessEnvironment();
+    result.toolchain.process_environment = processEnvironment;
     result.project_session.preparation_shutdown =
       await quitWechatDevtoolsAndWait(
         sourceProjectPath,
@@ -6522,13 +6371,6 @@ async function main() {
       sourceProjectPath,
     );
     result.project_session.identity = projectIdentitySession.evidence;
-    runtimePhase = "snapshot-project-registration";
-    result.project_session.snapshot_registration =
-      await registerWechatSnapshotProject({
-        projectPath: sourceProjectPath,
-        automationPort,
-        snapshotLocation: result.project_session.snapshot_location,
-      });
     runtimePhase = "setup-startup";
     ({
       launch: devtoolsLaunch,

@@ -1,0 +1,5 @@
+{
+  "passed": false,
+  "stage": "layout",
+  "error": "development_observer_expected_page_not_active"
+}
