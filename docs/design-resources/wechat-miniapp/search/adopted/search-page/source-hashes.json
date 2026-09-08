@@ -1,0 +1,62 @@
+[
+  {
+    "file": "preview/assets/ATTRIBUTION.md",
+    "sha256": "76c4bb79049b6660799415c7ecbcce93dc8416249e10f2e98021f2af6e12e51c",
+    "bytes": 933
+  },
+  {
+    "file": "preview/assets/coastal-observatory.png",
+    "sha256": "b19dc05851046cb352f4564299dbf741126bbcb656f81631b3f07e21742815c5",
+    "bytes": 2064377
+  },
+  {
+    "file": "preview/assets/coastal-platform.png",
+    "sha256": "451213366423ebac2d268978ebda548379f4092886de406dfdc542384896c069",
+    "bytes": 1941178
+  },
+  {
+    "file": "preview/assets/map-medium-reference.jpg",
+    "sha256": "c1a60322a3b4d89c7b94a4b4388869f8aa9af73b5633b5d66ec721be29ae99d8",
+    "bytes": 40883
+  },
+  {
+    "file": "preview/assets/map-reference.jpg",
+    "sha256": "1e6be3cde5d06683de31c1dfd1aa4828eb7c7ccabdffc5eac765d166567a94a0",
+    "bytes": 19541
+  },
+  {
+    "file": "preview/assets/mountain-terrace.png",
+    "sha256": "14559a652d5688fa54a49fb3e84e027c4c9269c91097590f72c33287d0041e35",
+    "bytes": 1957302
+  },
+  {
+    "file": "preview/index.html",
+    "sha256": "48749d9871d77b6fc901a151af3f84e2285dcaa6265d3b5c634c5eee0a693b53",
+    "bytes": 29489
+  },
+  {
+    "file": "preview/interactions.mjs",
+    "sha256": "1be38bd2cb188759d5ff93bfef5d49e7e7b686265efaaedcdf4e017a88356e8c",
+    "bytes": 26432
+  },
+  {
+    "file": "preview/styles.css",
+    "sha256": "ee7a7517a5d3067e08c3028605c886772772c89efb909d6523e0b82e64d60290",
+    "bytes": 10976
+  },
+  {
+    "file": "../../../shared/spot-card/card.mjs",
+    "sha256": "ff9e00bbd5e9398173ffed12ab1590d3e0f035c7d1c061d271f0cb75ddce89a1",
+    "bytes": 1185
+  },
+  {
+    "file": "../../../shared/spot-card/card.css",
+    "sha256": "2537ad8bd87c9bc801d564bf2068970bc39227d2fde725a88c5b1739b395f53d",
+    "bytes": 2056
+  },
+  {
+    "file": "../../../shared/spot-card/README.md",
+    "sha256": "a52117acc2264da2b52e9c34c6aa18256707183f0f32056d36a708b15d53802d",
+    "bytes": 888
+  }
+]

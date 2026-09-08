@@ -1,0 +1,167 @@
+{
+  "collapsed": {
+    "expanded": "false",
+    "retainedCards": 5
+  },
+  "draftSelection": {
+    "committed": "2",
+    "draftToilet": "true"
+  },
+  "cancelRestored": "false",
+  "clearCommitted": "0",
+  "quickCommitted": "1",
+  "horizontalDrag": {
+    "before": {
+      "scrollLeft": 152.8000030517578,
+      "selected": [
+        "少云"
+      ]
+    },
+    "after": {
+      "scrollLeft": 312.79998779296875,
+      "selected": [
+        "少云"
+      ]
+    }
+  },
+  "fieldSearch": {
+    "border": "0.8px solid rgb(226, 232, 240)",
+    "count": 1,
+    "fill": "rgba(255, 255, 255, 0.9)",
+    "inputFont": "13px",
+    "inputX": 52.79999923706055,
+    "radius": "9999px",
+    "rect": [
+      16,
+      90,
+      358.3999938964844,
+      36
+    ],
+    "shadow": "none",
+    "value": "海角"
+  },
+  "fieldMap": {
+    "border": "0.8px solid rgb(226, 232, 240)",
+    "count": 1,
+    "fill": "rgba(255, 255, 255, 0.9)",
+    "inputFont": "13px",
+    "inputX": 52.79999923706055,
+    "radius": "9999px",
+    "rect": [
+      16,
+      90,
+      358.3999938964844,
+      36
+    ],
+    "shadow": "none",
+    "value": "海角"
+  },
+  "reducedMotion": {
+    "bodyHeight": 0,
+    "opacity": "1",
+    "route": "search",
+    "transition": "idle"
+  },
+  "narrow": {
+    "dialog": 320,
+    "optionButtons": [
+      {
+        "h": 44,
+        "name": "今晚推荐",
+        "overflow": false,
+        "w": 102.8000030517578
+      },
+      {
+        "h": 44,
+        "name": "最佳窗口时长",
+        "overflow": false,
+        "w": 102.8000030517578
+      },
+      {
+        "h": 44,
+        "name": "光害",
+        "overflow": false,
+        "w": 102.8000030517578
+      },
+      {
+        "h": 44,
+        "name": "少云",
+        "overflow": false,
+        "w": 102.8000030517578
+      },
+      {
+        "h": 44,
+        "name": "特定天象",
+        "overflow": false,
+        "w": 102.8000030517578
+      },
+      {
+        "h": 44,
+        "name": "低云阈值",
+        "overflow": false,
+        "w": 102.8000030517578
+      },
+      {
+        "h": 44,
+        "name": "月亮影响",
+        "overflow": false,
+        "w": 102.8000030517578
+      },
+      {
+        "h": 44,
+        "name": "天空开阔方向",
+        "overflow": false,
+        "w": 102.8000030517578
+      }
+    ],
+    "photoBorders": [
+      {
+        "border": "0px",
+        "shadow": "none"
+      },
+      {
+        "border": "0px",
+        "shadow": "none"
+      },
+      {
+        "border": "0px",
+        "shadow": "none"
+      }
+    ],
+    "scrollWidth": 320,
+    "width": 320
+  },
+  "backdropClosed": null,
+  "escape": {
+    "dialogOpen": false,
+    "focus": "",
+    "route": "search"
+  },
+  "empty": {
+    "count": "0",
+    "emptyShown": true,
+    "retained": 5
+  },
+  "additionalWidths": [
+    {
+      "documentWidth": 375,
+      "phone": 375.2000122070313,
+      "photoBorders": [
+        "0px",
+        "0px",
+        "0px"
+      ],
+      "viewport": 375
+    },
+    {
+      "documentWidth": 430,
+      "phone": 430,
+      "photoBorders": [
+        "0px",
+        "0px",
+        "0px"
+      ],
+      "viewport": 430
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 
 - [视觉基准](reference.jpg)：390×844 视口的浏览器原样截图，JPEG 实际390×843，未缩放。
 - [可编辑本地预览](index.html)、[对应渲染样式](rendered.css)、[采用时技术源稿](source.html)。本地预览只改依赖路径；内联 SVG 是当前图标造型的可编辑来源。
-- [生成来源与原件](../../20260907-stitch-b-refinement/feedback-01/INDEX.md)、[原字号比较](../../20260907-stitch-b-refinement/feedback-01/outputs/font-comparison.json)。来源 run 保留历史身份，不冒充新生成。
+- [生成来源与原件](provenance/README.md)、[原字号比较](provenance/font-comparison.json)。来源 run 保留历史身份，不冒充新生成。
 
 ## 采用范围
 

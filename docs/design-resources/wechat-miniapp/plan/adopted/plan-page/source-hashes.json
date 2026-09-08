@@ -1,0 +1,50 @@
+[
+  {
+    "path": "app.mjs",
+    "sha256": "8c679e4fb6a7db631ca48154c6cd374f88735f35187e8bbb4f88d2976b8305f4"
+  },
+  {
+    "path": "brief.md",
+    "sha256": "f81bb2fae753adf4bcb8dff3f658bd9dd2940f28d28b813d7283594d9d9bf949"
+  },
+  {
+    "path": "index.html",
+    "sha256": "3bb0131d9dc47e39d2ea2de87c38a1f6cceb0e2ed6df13c2e11ca8242eb02f8b"
+  },
+  {
+    "path": "plan-model.mjs",
+    "sha256": "4dbbc331240714bf37cb6427a3374cf250c194b61c2bd49de3456e6f9b0b3138"
+  },
+  {
+    "path": "prompt.txt",
+    "sha256": "16ecb4ae37cbf8a2eed16a56908e05c2537b9091fd32dec7d7c16b57f364eefb"
+  },
+  {
+    "path": "proposed-design-delta.md",
+    "sha256": "ffdfa37bc0dd66147a100af788815bab0f4a002b7ba0d47086c150c4e18bce94"
+  },
+  {
+    "path": "README.md",
+    "sha256": "5c4ffea82046e212a3c1e43fc32955b0c223645a3b60cd623eaf51bbbe1b6a56"
+  },
+  {
+    "path": "research.md",
+    "sha256": "175b3f2ab56210c5ae7752e58356c3dbd1a8f8c7a16bb84f952dcccf7850c155"
+  },
+  {
+    "path": "review.html",
+    "sha256": "024a8aaeab9f6cd08d135cae55e49300f89659cedc7e1b7bef05d9396d22d439"
+  },
+  {
+    "path": "run.json",
+    "sha256": "2649d20a27b10895691c7465d9b814aca0de97a48d2da8f4b9a47e2e22cf18c7"
+  },
+  {
+    "path": "style.css",
+    "sha256": "e440f03aea715fbcbd49b249fd109bff104a4f6c7ee451b20a4c2843fbfdeb7b"
+  },
+  {
+    "path": "verification.md",
+    "sha256": "bcca8f8c6850578fc7412c3fb3b1ab74e5a9ccdabc81e38455149930185de428"
+  }
+]

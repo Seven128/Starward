@@ -1,0 +1,21 @@
+.spot-card{position:relative;border-radius:12px;overflow:hidden;border:0;box-shadow:none;min-height:90px;background:#f8f8fa}
+.spot-card.with-photo{background:#fff;border:0!important;box-shadow:none!important}
+.spot-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.spot-copy{position:relative;z-index:1;padding:14px;min-height:90px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.with-photo .spot-copy{background:linear-gradient(90deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.82) 48%,rgba(255,255,255,.28) 82%,rgba(255,255,255,.04) 100%)}
+.spot-region{font-size:11px;line-height:14px;color:#86909c;margin-bottom:4px}
+.spot-copy h3{font-size:14px;line-height:20px;font-weight:600;letter-spacing:-.025em;margin:0;overflow-wrap:anywhere;color:#1d2129}
+.with-photo .spot-copy h3{max-width:72%}
+.spot-copy p{display:flex;align-items:flex-start;gap:4px;margin:8px 0 0;font-size:12px;line-height:16px;color:#646f7f;max-width:90%;overflow-wrap:anywhere}
+.spot-copy p svg{width:12px;height:12px;margin-top:2px;color:#a3abb8;flex-shrink:0}
+/* Feedback 02: align the pin with the first address line; retain multiline flow. */
+.spot-copy p.spot-address{display:grid;grid-template-columns:14px minmax(0,1fr);column-gap:4px;align-items:start;line-height:16px}
+.spot-address-icon{display:grid;place-items:center;width:14px;height:16px;align-self:start}
+.spot-copy p.spot-address svg{width:14px;height:14px;margin:0;transform:translateY(1px)}
+.spot-address-text{min-width:0;display:block;line-height:16px}
+.spot-card{cursor:pointer;transition:filter 140ms ease,transform 140ms ease}
+.spot-card:active{filter:brightness(.975);transform:scale(.995)}
+.spot-card{display:block;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;text-align:left}
+.spot-card svg{display:block;flex-shrink:0}
+@media(max-width:350px){.with-photo .spot-copy h3{max-width:78%}}
+@media(prefers-reduced-motion:reduce){.spot-card{transition:none}}

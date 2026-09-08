@@ -1,0 +1,74 @@
+[
+  {
+    "path": "adoption-prompt.txt",
+    "sha256": "1782069bf857f6b77a6f43acc9a99f2ebf3bb68a195b017ed2a4c89bc07c2dea"
+  },
+  {
+    "path": "brief.md",
+    "sha256": "23e60cd96db36598749496c542627981e51791535431c78874b1cfd70c816e8d"
+  },
+  {
+    "path": "catalog.mjs",
+    "sha256": "b443103504b44cc00d9afd00a3871688a1760009d0a7f1b42e43a866ac135ef6"
+  },
+  {
+    "path": "event.css",
+    "sha256": "7afcaef3e6715c1960041f6afa995f42c24546f33b9d4c443b1e472459fb2b58"
+  },
+  {
+    "path": "event.mjs",
+    "sha256": "242d255d110546f6a326c2c89fa59e35a3c3f0108ffbf7c9ce2c898d8fa0ed51"
+  },
+  {
+    "path": "generation-failure.txt",
+    "sha256": "afcbc2361c17c595f786c69469263b2975d5945f711cedcd17901816b50c701c"
+  },
+  {
+    "path": "index.html",
+    "sha256": "0ac70df9eded4e3bc49e9ef8db42a397bfe24307c24a95e478dcb5a8677a503a"
+  },
+  {
+    "path": "list-page.mjs",
+    "sha256": "d2b17c21c6653c291fc9fca0a2d89adc65d4c0c94722e1c5bb6178cbb3d4a1e5"
+  },
+  {
+    "path": "list.css",
+    "sha256": "e13896b23498ad4b841ef2942173822fdbcd2bdbea6993a28188ce4965c12b3c"
+  },
+  {
+    "path": "list.html",
+    "sha256": "f8f4cda8df174f92e2e394484d0026956aaa70c530c9c79f5b9c7bcbbd107721"
+  },
+  {
+    "path": "list.mjs",
+    "sha256": "a1963533688b558651886d4e2598eefd88113ef21300028244dbfaa5384761a8"
+  },
+  {
+    "path": "prompt.txt",
+    "sha256": "ab706f4813ba09788a0e5b3f1fb4ec4fb583c3d21db0f69d09771b76c3b77d2d"
+  },
+  {
+    "path": "proposed-design-delta.md",
+    "sha256": "ffdfa37bc0dd66147a100af788815bab0f4a002b7ba0d47086c150c4e18bce94"
+  },
+  {
+    "path": "README.md",
+    "sha256": "5d2726e13f4d4d03457211a9a6579d1d74d4dbcbec14c6e5ba19a2e109202b1a"
+  },
+  {
+    "path": "review.html",
+    "sha256": "faf565e88717c61fda0d74313e5528f3d9ec8617b0e207841494fbdc2bf0e9af"
+  },
+  {
+    "path": "run.json",
+    "sha256": "c00b225e9ba879d888d1c9c11788f6298fd59b7fd8f22a2b60fcd62479da5e2f"
+  },
+  {
+    "path": "stitch-adoption.md",
+    "sha256": "a5248aada8f105a48b5e83b52b2922a8ce091444c69a5af8f1fea9709e9953a3"
+  },
+  {
+    "path": "verification.md",
+    "sha256": "bcca8f8c6850578fc7412c3fb3b1ab74e5a9ccdabc81e38455149930185de428"
+  }
+]

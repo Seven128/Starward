@@ -1,0 +1,20 @@
+
+#phone[data-mode=feedback] [data-purpose=daytime-map-background],#phone[data-mode=feedback] #nearby-spots,#phone[data-mode=feedback] #map-touch,#phone[data-mode=feedback] #candidate,#phone[data-mode=feedback] [data-purpose=bottom-tab-bar]{display:none}
+#phone[data-mode=feedback] #add-sheet{top:84px;bottom:0;border-radius:0;box-shadow:none}
+#phone[data-mode=feedback] [data-purpose=wechat-header-bar] h1{visibility:hidden}
+#phone[data-mode=feedback]{background:white}#phone[data-mode=feedback] .sheet-heading h2{font-size:17px;max-width:245px;overflow-wrap:anywhere}
+#phone[data-mode=feedback] .sheet-heading{padding-top:4px}
+.changed{background:#fff9e9!important;border-radius:7px;transition:background 140ms}
+#changes{margin:28px 0 14px}#changes h3{font-size:15px;font-weight:600;margin-bottom:12px}.delta{padding:12px 0;border-bottom:1px solid #f0f2f5;font-size:12px}.delta strong{font-size:11px;color:#7b8490;display:block;margin-bottom:8px}.delta-line{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.delta del{color:#ba7774;text-decoration-thickness:1px}.delta .arrow{color:#9ca8b3}.old-photo{position:relative;display:inline-block;transform:rotate(-5deg)}.old-photo img{filter:grayscale(1);opacity:.42}.old-photo:after{content:"⊘";position:absolute;top:0;right:0;color:#76808a;background:#fffd;border-radius:50%;font-size:20px;line-height:20px}.delta img{width:64px;height:54px;object-fit:cover;border-radius:6px}.photo-list button{z-index:2}
+#change-list:empty:after{content:"尚未修改信息";font-size:12px;color:#a0a8b2}
+.review-tag{font-size:10px;color:#9a793e;background:#faf2df;border-radius:4px;padding:3px 6px;white-space:nowrap}
+.draft-pin svg>path:first-child{fill:#969da5}.draft-pin svg>path:last-child{display:none}.draft-pin span:after{content:" · 草稿";font-size:9px;color:#9aa1a9}
+#phone[data-frozen=true] input:disabled,#phone[data-frozen=true] textarea:disabled{opacity:1;-webkit-text-fill-color:#555f6c;color:#555f6c}
+#phone[data-frozen=true] .choice-group button:disabled{opacity:1;cursor:default}
+#phone[data-frozen=true] .sheet-actions{display:none}
+#phone[data-open=false] #candidate{visibility:hidden}
+#phone[data-open=true] #candidate{visibility:visible}
+#phone[data-mode=feedback] .consent,#phone[data-mode=feedback] .quiet{display:none}
+#save-status{font-size:10px!important}
+#service-state{position:absolute;top:90px;left:16px;right:16px;z-index:80;color:#9c6555;background:white;padding:8px 12px;font-size:12px}
+@media(prefers-reduced-motion:reduce){.changed{transition:none}}

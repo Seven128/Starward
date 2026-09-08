@@ -1,0 +1,13 @@
+{
+  "head": "86101d32c7f31be69bb32756a593375df150f7f4",
+  "codex_model": "unknown",
+  "codex_effort": "unknown",
+  "stitch_mode": "均衡",
+  "stitch_project": "13338420663663046308",
+  "usage": null,
+  "usage_note": "Web UI does not expose token usage; host exact model metadata unavailable",
+  "status": "adopted",
+  "prompt_sha256": "7430b4ba9eae104449953979169f725a9c825452e1b753a5eee5e93452f91cc2",
+  "adopted_at": "2026-09-08",
+  "user_authorization": "本轮用户要求优化并统一采用反馈至天文事件全部资源"
+}

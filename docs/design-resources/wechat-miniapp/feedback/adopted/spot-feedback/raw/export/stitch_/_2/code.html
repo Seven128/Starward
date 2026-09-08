@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, height=844, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>星湾观星点反馈 - 正式资料编辑</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              surface: '#FFFFFF',
+              canvas: '#F8F9FA',
+              subtle: '#FBFBFC',
+              border: '#ECEEF1',
+              divider: '#F1F3F5',
+              text: '#1F242D',
+              muted: '#7A828F',
+              accent: '#355070',
+              accentHover: '#2B4360',
+              modifiedBg: '#FFFBEB',
+              modifiedBorder: '#FDE68A',
+              modifiedBadge: '#F59E0B',
+              modifiedBadgeBg: '#FEF3C7'
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans SC"', '"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .tap-active:active {
+      opacity: 0.75;
+      transform: scale(0.985);
+      transition: transform 0.08s ease, opacity 0.08s ease;
+    }
+    input, textarea {
+      outline: none;
+      -webkit-appearance: none;
+    }
+  </style>
+</head>
+<body class="bg-brand-canvas text-brand-text font-sans antialiased select-none w-[390px] h-[844px] max-w-[390px] max-h-[844px] mx-auto overflow-hidden flex flex-col relative border-x border-[#E9ECEF] shadow-md">
+<!-- 1. 微信小程序顶部状态栏 & 胶囊导航区 (固定顶部) -->
+<header class="w-full bg-white z-40 shrink-0 border-b border-brand-border">
+<!-- 状态栏 (iOS 44px) -->
+<div class="h-11 w-full flex items-center justify-between px-6 pt-1 text-xs text-[#1F242D] font-medium tracking-tight">
+<span>9:41</span>
+<div class="flex items-center space-x-1.5 opacity-90">
+<!-- 信号 -->
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.23C3.52 16.48 3 14.32 3 12 3 7.03 7.03 3 12 3m0 3c-3.31 0-6 2.69-6 6 0 1.48.54 2.83 1.43 3.89l1.45-1.45C8.34 13.73 8 12.91 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .91-.34 1.73-.88 2.44l1.45 1.45C17.46 14.83 18 13.48 18 12c0-3.31-2.69-6-6-6z"></path></svg>
+<!-- Wifi -->
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.73 0 7.15 1.42 9.77 3.75L12 19.34 2.23 11.25C4.85 8.92 8.27 7.5 12 7.5z"></path></svg>
+<!-- 电池 -->
+<div class="w-5 h-2.5 border border-current rounded-sm p-0.5 flex items-center">
+<div class="h-full w-3 bg-current rounded-2xs"></div>
+</div>
+</div>
+</div>
+<!-- 导航栏主体 (44px) 返回箭头 + 居中标题 + 微信胶囊 -->
+<div class="h-11 px-4 flex items-center justify-between relative">
+<button aria-label="返回" class="p-1.5 -ml-1 text-[#2C333E] hover:text-black tap-active flex items-center justify-center rounded-full">
+<svg class="w-5 h-5 stroke-[2] stroke-current" fill="none" viewbox="0 0 24 24">
+<path d="M15.75 19.5L8.25 12l7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<span class="text-[15.5px] font-semibold text-[#1F242D] tracking-tight">星湾观星点反馈</span>
+<!-- 微信小程序胶囊 -->
+<div class="w-[87px] h-8 bg-white border border-[#E3E5E9] rounded-full flex items-center justify-evenly px-1 shadow-[0_0.5px_1px_rgba(0,0,0,0.04)]">
+<button class="w-7 h-full flex items-center justify-center tap-active">
+<span class="w-1 h-1 bg-[#1F242D] rounded-full mx-0.5"></span>
+<span class="w-1.5 h-1.5 bg-[#1F242D] rounded-full mx-0.5"></span>
+<span class="w-1 h-1 bg-[#1F242D] rounded-full mx-0.5"></span>
+</button>
+<div class="w-[1px] h-4 bg-[#E5E8EB]"></div>
+<button class="w-7 h-full flex items-center justify-center tap-active">
+<div class="w-3.5 h-3.5 border-[1.75px] border-[#1F242D] rounded-full flex items-center justify-center">
+<div class="w-1 h-1 bg-[#1F242D] rounded-full"></div>
+</div>
+</button>
+</div>
+</div>
+</header>
+<!-- 2. 纵向长文档正式资料编辑表单 -->
+<main class="flex-1 overflow-y-auto no-scrollbar bg-brand-canvas pb-4">
+<!-- 顶部提示说明栏 -->
+<div class="px-4 py-2.5 bg-[#F4F6F9] border-b border-brand-border flex items-center justify-between text-[11.5px] text-[#556272]">
+<div class="flex items-center space-x-1.5">
+<svg class="w-3.5 h-3.5 text-brand-accent shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>正式资料编辑模式 · 直接在对应字段修订</span>
+</div>
+<span class="text-[10.5px] text-[#B45309] bg-[#FEF3C7] px-1.5 py-0.5 rounded font-medium">已改动 2 项</span>
+</div>
+<form class="space-y-3 pt-2" onsubmit="event.preventDefault();">
+<!-- 第一章【地点基础】 -->
+<section class="bg-white border-y border-brand-border">
+<div class="px-4 py-2.5 bg-brand-subtle border-b border-brand-border/70 flex items-center justify-between">
+<div class="flex items-center space-x-1.5">
+<span class="w-1.5 h-3.5 rounded-full bg-brand-accent"></span>
+<h2 class="text-[13px] font-bold text-[#1F242D] tracking-wide">第一章 · 地点基础</h2>
+</div>
+<span class="text-[11px] text-brand-muted">基础地理与开放</span>
+</div>
+<div class="px-4 divide-y divide-brand-divider text-[12.5px]">
+<!-- 地点名称 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">地点名称</label>
+<input class="w-full text-[13px] font-medium text-brand-text bg-transparent border-0 p-0 focus:ring-0" type="text" value="星湾观星点"/>
+</div>
+<!-- 详细地址 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">详细地址</label>
+<input class="w-full text-[13px] text-brand-text bg-transparent border-0 p-0 focus:ring-0" type="text" value="东岸路观景步道入口"/>
+</div>
+<!-- 开放状态 -->
+<div class="py-2.5 flex items-center justify-between">
+<div>
+<label class="text-[11.5px] text-brand-muted font-medium block">开放状态</label>
+<span class="text-[13px] font-medium text-[#1F242D]">正常开放</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+              状态正常
+            </span>
+</div>
+<!-- 开放时间 (已修改项) -->
+<div class="my-2 p-2.5 rounded-lg bg-brand-modifiedBg border border-brand-modifiedBorder relative">
+<div class="flex items-center justify-between mb-1">
+<label class="text-[11.5px] font-semibold text-[#92400E] flex items-center space-x-1">
+<span>开放时间</span>
+<span class="text-[#D97706]">*</span>
+</label>
+<span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-brand-modifiedBadge text-white">已修改</span>
+</div>
+<input class="w-full text-[13px] font-semibold text-[#78350F] bg-white border border-[#FCD34D] rounded px-2.5 py-1.5 focus:ring-1 focus:ring-[#D97706]" type="text" value="19:00—次日05:00"/>
+<div class="mt-1 text-[10.5px] text-[#B45309] flex items-center space-x-1">
+<span>原值：</span>
+<span class="line-through">18:00—次日06:00</span>
+</div>
+</div>
+<!-- 进入规则 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">进入规则</label>
+<textarea class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 resize-none focus:ring-0 leading-snug" rows="2">无需预约，日落后可由步道闸机步行进入</textarea>
+</div>
+</div>
+</section>
+<!-- 第二章【交通到达】 -->
+<section class="bg-white border-y border-brand-border">
+<div class="px-4 py-2.5 bg-brand-subtle border-b border-brand-border/70 flex items-center justify-between">
+<div class="flex items-center space-x-1.5">
+<span class="w-1.5 h-3.5 rounded-full bg-brand-accent"></span>
+<h2 class="text-[13px] font-bold text-[#1F242D] tracking-wide">第二章 · 交通到达</h2>
+</div>
+<span class="text-[11px] text-brand-muted">路况通行与停车</span>
+</div>
+<div class="px-4 divide-y divide-brand-divider text-[12.5px]">
+<!-- 末段道路 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">末段道路</label>
+<textarea class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 resize-none focus:ring-0 leading-snug" rows="2">铺装硬化路面，末段200米微有碎石，低底盘轿车可慢行通过</textarea>
+</div>
+<!-- 夜间安全 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">夜间安全</label>
+<textarea class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 resize-none focus:ring-0 leading-snug" rows="2">步道入口处有监控，内侧无常态照明，建议携带红光手电</textarea>
+</div>
+<!-- 停车及照片 (已修改项) -->
+<div class="my-2 p-2.5 rounded-lg bg-brand-modifiedBg border border-brand-modifiedBorder relative">
+<div class="flex items-center justify-between mb-1.5">
+<label class="text-[11.5px] font-semibold text-[#92400E] flex items-center space-x-1">
+<span>停车及凭证照片</span>
+<span class="text-[#D97706]">*</span>
+</label>
+<span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-brand-modifiedBadge text-white">已修改</span>
+</div>
+<textarea class="w-full text-[12.5px] font-medium text-[#78350F] bg-white border border-[#FCD34D] rounded px-2.5 py-1.5 resize-none leading-snug mb-2 focus:ring-1 focus:ring-[#D97706]" rows="2">步道口外侧简易硬地车位约8个，免费停放</textarea>
+<!-- 照片上传展示区 -->
+<div class="flex items-center space-x-2.5 pt-1">
+<!-- 已替换新照片 -->
+<div class="relative w-[72px] h-[72px] rounded-lg overflow-hidden border border-[#F59E0B] shadow-sm shrink-0 bg-white">
+<img alt="已更新车位照片" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm5Tw66YM4MQ5MTnd32ecYfQWgomHcHkp-kcvOxmBtwcIOGZv5-UZ1mEXn8UN86bcYVkEIC9CUXh34YSwxn9GUsgC1hITMBV06z8Kt6oavi_PaqhgSIN5rIB4wASW3DMS11RGJJSvTnXsn9_P9hNH-6Sw_I5pQpDah11lKZyP5-dObBj1FjRdziupg-1H-4gtSjmmDTHbimtLcVGZDDJklQIwI46Ys5a6ehXAl86k5wcBewLGFyop5dw"/>
+<span class="absolute top-0 right-0 bg-[#D97706] text-[8.5px] text-white font-bold px-1 py-0.5 rounded-bl">已更新</span>
+<span class="absolute bottom-0 inset-x-0 bg-black/60 text-[9px] text-white text-center py-0.5">停车实拍</span>
+</div>
+<!-- 添加/替换按钮 -->
+<button class="w-[72px] h-[72px] rounded-lg border border-dashed border-[#D97706]/70 bg-white/70 flex flex-col items-center justify-center text-[#B45309] hover:bg-white tap-active shrink-0" type="button">
+<svg class="w-4 h-4 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.5v15m7.5-7.5h-15" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[9.5px] mt-1 font-medium">重选照片</span>
+</button>
+<div class="text-[11px] text-[#92400E] leading-tight flex-1">
+                已上传最新清晰车位与停车指引牌，旧模糊照片已自动替换并存档对比。
+              </div>
+</div>
+</div>
+</div>
+</section>
+<!-- 第三章【场地设施】 -->
+<section class="bg-white border-y border-brand-border">
+<div class="px-4 py-2.5 bg-brand-subtle border-b border-brand-border/70 flex items-center justify-between">
+<div class="flex items-center space-x-1.5">
+<span class="w-1.5 h-3.5 rounded-full bg-brand-accent"></span>
+<h2 class="text-[13px] font-bold text-[#1F242D] tracking-wide">第三章 · 场地设施</h2>
+</div>
+<span class="text-[11px] text-brand-muted">配套与观测条件</span>
+</div>
+<div class="px-4 divide-y divide-brand-divider text-[12.5px]">
+<!-- 洗手间及照片 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">洗手间设施及照片</label>
+<textarea class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 resize-none focus:ring-0 leading-snug" rows="2">入口处移动环保公厕2座，夜间开放，有简易洗手水龙头</textarea>
+<div class="mt-2 flex items-center space-x-2">
+<div class="relative w-[52px] h-[52px] rounded border border-brand-border overflow-hidden shrink-0">
+<img alt="既有公厕实拍" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK1Unz6cJvt6xTV0_oEXyF11uw0Nay0gVcbnb6PiesotP3AOAvV9jwCwxDtaj2gN1-wk8TYp71-x2cDo_vj5gLqarG7_wO49Mv8VdeSplWQN65twWM8AA-pHSmh4NJMmsxYc38w4SvcA5G0oAejDQO8wU1SUrMl5AZQGb_SxRqY0L0Ccw0dG8-Mo_YHXLMk7Ow0oFqFYPUgf3OMvvzcQXcdFVV3aTmgbRCicgO3SXGDu1idYWgLUSEZw"/>
+<span class="absolute bottom-0 inset-x-0 bg-black/50 text-[8px] text-white text-center py-0.2">环保公厕</span>
+</div>
+<span class="text-[11px] text-brand-muted">已有既有现场照片 (未变更)</span>
+</div>
+</div>
+<!-- 观测平台 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">观测平台</label>
+<input class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 focus:ring-0" type="text" value="沿步道前行约120米为平整木栈道开阔区"/>
+</div>
+<!-- 视野遮挡 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">视野遮挡</label>
+<input class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 focus:ring-0" type="text" value="正东至正南无明显高树遮挡，地平仰角5°以上开阔"/>
+</div>
+<!-- 灯光光害 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">灯光光害</label>
+<input class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 focus:ring-0" type="text" value="北侧远方城市微弱光晕， Bortle 4级，肉眼可见银河"/>
+</div>
+<!-- 通信充电 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">通信与充电</label>
+<input class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 focus:ring-0" type="text" value="移动/联通4G两格信号，电信微弱，现场无公用充电设施"/>
+</div>
+<!-- 露营规则 -->
+<div class="py-2.5 flex flex-col">
+<label class="text-[11.5px] text-brand-muted font-medium mb-1">露营规则</label>
+<textarea class="w-full text-[12.5px] text-brand-text bg-transparent border-0 p-0 resize-none focus:ring-0 leading-snug" rows="2">禁止明火野炊，允许便携折叠椅及简单天幕，次日清晨需收拾离场</textarea>
+</div>
+<!-- 场地联系 -->
+<div class="py-2.5 flex items-center justify-between">
+<label class="text-[11.5px] text-brand-muted font-medium">场地联系电话</label>
+<span class="text-[12.5px] font-medium text-brand-text">东岸绿道管养所 0755-8392****</span>
+</div>
+</div>
+</section>
+<!-- 第四章【补充说明与现场凭证】 -->
+<section class="bg-white border-y border-brand-border">
+<div class="px-4 py-2.5 bg-brand-subtle border-b border-brand-border/70 flex items-center justify-between">
+<div class="flex items-center space-x-1.5">
+<span class="w-1.5 h-3.5 rounded-full bg-brand-accent"></span>
+<h2 class="text-[13px] font-bold text-[#1F242D] tracking-wide">第四章 · 补充说明与现场凭证</h2>
+</div>
+<span class="text-[11px] text-brand-muted">近期公告变动</span>
+</div>
+<div class="px-4 py-3 space-y-3 text-[12.5px]">
+<div>
+<label class="text-[11.5px] text-brand-muted font-medium block mb-1">补充说明</label>
+<div class="p-2.5 rounded-lg border border-brand-border bg-brand-subtle">
+<textarea class="w-full text-[12.5px] leading-relaxed text-brand-text bg-transparent border-0 p-0 resize-none focus:ring-0" rows="3">近期步道入口闸机管理调整，夏季晚间7点后由保安手动放行步道门，请车友留意到场时间。</textarea>
+</div>
+</div>
+<div>
+<label class="text-[11.5px] text-brand-muted font-medium block mb-1.5">现场凭证照片</label>
+<div class="flex items-center space-x-3">
+<div class="relative w-[72px] h-[72px] rounded-lg border border-brand-border overflow-hidden shrink-0 shadow-2xs">
+<img alt="闸机公告照片" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm67Sa7YyjdcWkgIKTEq132E9rmxk1ZRV6erv3F3XCpmLs7mGVmgEcXHbKEYh3S59CpKOOmM23XMACg6c-0zMQI9nEg-MyCuHzAMCMNPVN97SbCVaLBDr1o9csatr4_A1GlXvzRIS27INCFhC64GkI59EdQQIKQp6HAITpcQHq5ZZL9CFDXV_MN7iJaykma9PWqf-2yRj_9NbKAYSaBFd7W0RbwDDYmAvWGWy68Ey-x1g1ahjesL1j3Q"/>
+<span class="absolute bottom-0 inset-x-0 bg-black/60 text-[9px] text-white text-center py-0.5">闸机新通告牌</span>
+</div>
+<div class="text-[11px] text-brand-muted leading-tight flex-1">
+                已拍摄现场闸机新张贴的管理通告照片作为依据，便于核实处理。
+              </div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. 底部“本次修改”(Diff 对比卡片区) -->
+<section class="mx-3 rounded-xl bg-white border border-[#E2E8F0] shadow-sm overflow-hidden mb-2">
+<div class="px-3.5 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-[#EAB308]"></span>
+<span class="text-[13px] font-bold text-[#1E293B]">本次修改 (2项)</span>
+</div>
+<span class="text-[11px] text-[#64748B] font-medium">版本对比预览</span>
+</div>
+<div class="p-3.5 space-y-3.5 text-[12px]">
+<!-- 字段 1：开放时间对比 -->
+<div class="rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] p-2.5">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-semibold text-[#334155] text-[11.5px]">第一章 · 开放时间</span>
+<span class="text-[10px] text-[#475569] bg-[#E2E8F0] px-1.5 py-0.5 rounded">文本更正</span>
+</div>
+<div class="flex items-center space-x-2 text-[12px] flex-wrap">
+<span class="line-through text-[#DC2626] font-medium bg-[#FEE2E2] px-1.5 py-0.5 rounded">18:00—次日06:00</span>
+<svg class="w-3.5 h-3.5 text-[#94A3B8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[#16A34A] font-bold bg-[#DCFCE7] px-1.5 py-0.5 rounded">19:00—次日05:00</span>
+</div>
+</div>
+<!-- 字段 2：停车照片对比 -->
+<div class="rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] p-2.5">
+<div class="flex items-center justify-between mb-2">
+<span class="font-semibold text-[#334155] text-[11.5px]">第二章 · 停车照片</span>
+<span class="text-[10px] text-[#475569] bg-[#E2E8F0] px-1.5 py-0.5 rounded">更新停车指示牌实拍</span>
+</div>
+<div class="flex items-center justify-around py-1">
+<!-- 旧图 (灰度、-4deg倾斜、叠加红色细禁用⊘图标) -->
+<div class="flex flex-col items-center">
+<div class="relative w-[60px] h-[60px] rounded border border-gray-300 overflow-hidden shadow-xs transform -rotate-[4deg] grayscale">
+<img alt="原停车指示牌" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAg15jtXkhJaLn3HCMhi7qMiZTVItvErPMUXpmdFLkh3XllTT5vpEjsQ-QHMRi-HYzw8r158uD-X-5twxotMTfFz7C54QRBHJgIwR6BtF62btK1w0XX_Nwv9OPw7c-H_W0LlhuXH2KCLF98iUYvvOcwENPt6HEnYLRh0kkk1SY4GsbgSxPSO-l2EQrUAE7Az56E72BFjZybV2xlqEjHdKCxf3BkoKT56HwReXLgBus_ozFWjwAevebxYg"/>
+<!-- 红色细禁用 ⊘ 图标 -->
+<div class="absolute inset-0 bg-white/30 flex items-center justify-center">
+<svg class="w-7 h-7 text-[#EF4444] opacity-90 stroke-[2.2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M5.5 5.5l13 13" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<span class="text-[10px] text-[#DC2626] font-medium mt-1.5">原照片(失效)</span>
+</div>
+<!-- 中间箭头 -->
+<svg class="w-5 h-5 text-[#94A3B8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<!-- 新图 (彩色清晰、高保真) -->
+<div class="flex flex-col items-center">
+<div class="relative w-[60px] h-[60px] rounded border border-[#22C55E] overflow-hidden shadow-xs">
+<img alt="新停车指示牌实拍" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDVq62dVcUzgKg2gbUsic__GwTKcN6-NGGcaR-VGZq8-n8fqhXW1nPoXbsnK146aypYgr0BaKqcEbgg9W1UfvLvHMvy221ng28ogkjqF4T9BkygqtjlmXVRbEyZS-27Y1VTjomz-nr2M3slC0UCZC_seTiFB9L-GoEAHZIzCMXY2sfisrKukJUchDzXLgBdn99vYm2bgSPq5FtKelenPY28KNzIL4S2TSrt4DO-N4k63uk7KG6z9dsIw"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#16A34A]/80 text-[8px] text-white text-center py-0.2 font-medium">新实拍</span>
+</div>
+<span class="text-[10px] text-[#16A34A] font-semibold mt-1.5">替换新指示牌</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</form>
+</main>
+<!-- 5. 底部固定安全操作栏 -->
+<footer class="w-full bg-white border-t border-brand-border px-4 pt-2.5 pb-6 shrink-0 z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
+<!-- 全宽主动作按钮 -->
+<button class="w-full py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-[14px] font-bold tracking-wide transition-all shadow-[0_2px_4px_rgba(53,80,112,0.25)] tap-active flex items-center justify-center space-x-2" id="submitFeedbackBtn" onclick="handleSubmit()" type="button">
+<span id="btnText">提交反馈</span>
+<!-- 原生细环 SVG Loading 动效 (默认隐藏) -->
+<svg class="hidden w-4 h-4 text-white animate-spin" fill="none" id="loadingSpinner" viewbox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+<path class="opacity-90" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+</button>
+<!-- 底部严格说明文案 (不出现虚构认证与3人交叉审核) -->
+<p class="text-center text-[10.5px] text-[#8C94A0] mt-2 leading-tight">
+      提交后将提交人工核实并进入审核，期间资料编辑将暂时冻结。
+    </p>
+</footer>
+<script>
+    function handleSubmit() {
+      const btn = document.getElementById('submitFeedbackBtn');
+      const text = document.getElementById('btnText');
+      const spinner = document.getElementById('loadingSpinner');
+
+      btn.disabled = true;
+      text.textContent = '提交审核中...';
+      spinner.classList.remove('hidden');
+
+      setTimeout(() => {
+        spinner.classList.add('hidden');
+        text.textContent = '已提交核实 · 资料已冻结';
+        btn.classList.remove('bg-brand-accent', 'hover:bg-brand-accentHover');
+        btn.classList.add('bg-[#4B5E74]');
+      }, 1200);
+    }
+  </script>
+</body></html>

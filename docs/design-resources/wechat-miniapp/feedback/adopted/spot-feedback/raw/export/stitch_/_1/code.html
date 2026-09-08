@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=390, height=844, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>观星点反馈 - 今晚去观星</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&amp;family=Noto+Sans+SC:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              surface: '#FFFFFF',
+              subtle: '#FBFBFC',
+              border: '#ECEEF1',
+              divider: '#F1F3F5',
+              text: '#1F242D',
+              muted: '#7A828F',
+              accent: '#3E5C76',
+              accentBg: '#F0F4F8',
+              accentHover: '#334D63',
+              tagBg: '#F4F5F7',
+              tagBorder: '#E5E8EB',
+              tagSelectedBg: '#EDF3F8',
+              tagSelectedBorder: '#CBD9E5',
+              tagSelectedText: '#2C4A63'
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans SC"', '"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* 隐藏滚动条但保留功能 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* iOS 风格点按水波与激活感 */
+    .tap-active:active {
+      opacity: 0.72;
+      transform: scale(0.985);
+      transition: transform 0.1s ease, opacity 0.1s ease;
+    }
+    input[type="text"], input[type="datetime-local"], textarea {
+      outline: none;
+      -webkit-appearance: none;
+    }
+  </style>
+</head>
+<body class="bg-white text-brand-text font-sans antialiased select-none w-[390px] h-[844px] max-w-[390px] max-h-[844px] mx-auto overflow-hidden flex flex-col relative border-x border-[#E9ECEF] shadow-sm">
+<!-- 1. 微信小程序顶部状态栏 & 胶囊导航区 (固定顶部) -->
+<header class="w-full bg-white z-40 shrink-0 border-b border-brand-border/60">
+<!-- 状态栏 (iOS 约 44px) -->
+<div class="h-11 w-full flex items-center justify-between px-6 pt-1.5 text-xs text-[#1F242D] font-medium tracking-tight">
+<span>9:41</span>
+<div class="flex items-center space-x-1.5 opacity-90">
+<!-- 信号图示 -->
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.23C3.52 16.48 3 14.32 3 12 3 7.03 7.03 3 12 3m0 3c-3.31 0-6 2.69-6 6 0 1.48.54 2.83 1.43 3.89l1.45-1.45C8.34 13.73 8 12.91 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .91-.34 1.73-.88 2.44l1.45 1.45C17.46 14.83 18 13.48 18 12c0-3.31-2.69-6-6-6z"></path></svg>
+<!-- Wifi 图标 -->
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.73 0 7.15 1.42 9.77 3.75L12 19.34 2.23 11.25C4.85 8.92 8.27 7.5 12 7.5z"></path></svg>
+<!-- 电池图标 -->
+<div class="w-5 h-2.5 border border-current rounded-sm p-0.5 flex items-center">
+<div class="h-full w-3 bg-current rounded-2xs"></div>
+</div>
+</div>
+</div>
+<!-- 导航栏主体 (44px) 包含返回与微信标准胶囊 -->
+<div class="h-11 px-4 flex items-center justify-between relative">
+<!-- 安静返回箭头 -->
+<button aria-label="返回" class="p-1.5 -ml-1.5 text-[#2C333E] hover:text-black tap-active flex items-center justify-center rounded-full">
+<svg class="w-5 h-5 stroke-[2] stroke-current" fill="none" viewbox="0 0 24 24">
+<path d="M15.75 19.5L8.25 12l7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- 页面标题与草稿保存时间（安静并置） -->
+<div class="flex items-baseline space-x-2">
+<span class="text-[16px] font-semibold text-[#1F242D] tracking-tight">观星点反馈</span>
+<span class="text-[11px] text-[#9AA1AC] font-normal tracking-tight" id="draftSaveTime">草稿已存 19:42</span>
+</div>
+<!-- 右侧微信小程序原生三点胶囊模拟 -->
+<div class="w-[87px] h-8 bg-white border border-[#E3E5E9] rounded-full flex items-center justify-evenly px-1 shadow-[0_0.5px_1px_rgba(0,0,0,0.04)]">
+<!-- 更多 ··· -->
+<button class="w-7 h-full flex items-center justify-center tap-active">
+<span class="w-1 h-1 bg-[#1F242D] rounded-full mx-0.5"></span>
+<span class="w-1.5 h-1.5 bg-[#1F242D] rounded-full mx-0.5"></span>
+<span class="w-1 h-1 bg-[#1F242D] rounded-full mx-0.5"></span>
+</button>
+<div class="w-[1px] h-4 bg-[#E5E8EB]"></div>
+<!-- 关闭/主页圆环 -->
+<button class="w-7 h-full flex items-center justify-center tap-active">
+<div class="w-3.5 h-3.5 border-[1.75px] border-[#1F242D] rounded-full flex items-center justify-center">
+<div class="w-1 h-1 bg-[#1F242D] rounded-full"></div>
+</div>
+</button>
+</div>
+</div>
+</header>
+<!-- 2. 可纵向滚动的表单内容区域 (单页面原生体验，内容完整) -->
+<main class="flex-1 overflow-y-auto no-scrollbar bg-white divide-y divide-brand-divider/70">
+<!-- 关联地点只读 Context 行 (只读安静，明确当前点位，非搜索) -->
+<div class="px-4 py-3 bg-brand-subtle flex items-start space-x-2.5 border-b border-brand-border/60">
+<div class="mt-0.5 text-brand-muted shrink-0">
+<!-- 观星点定位经纬/地标图标 -->
+<svg class="w-3.5 h-3.5 fill-current text-[#64748B]" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.588a13.987 13.987 0 003.03 2.198l.019.009.006.002.002.001zm-4.69-9.933a5 5 0 1110 0 5 5 0 01-10 0z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center space-x-1.5 leading-tight">
+<span class="text-[13px] font-semibold text-brand-text">星湾观星点</span>
+<span class="text-[10px] bg-[#EAEFF5] text-brand-accent px-1.5 py-0.5 rounded font-medium">官方认证点</span>
+</div>
+<p class="text-[11.5px] text-brand-muted mt-0.5 truncate">东岸路观景步道入口 · 距地表开阔视野区约120米</p>
+</div>
+</div>
+<!-- 反馈模式切换：资料纠错 / 现场反馈（默认资料纠错，同属一份轻量表单） -->
+<div class="px-4 py-3.5 bg-white">
+<div class="flex items-center justify-between mb-2">
+<label class="text-[13px] font-medium text-brand-text flex items-center">
+<span>反馈类型</span>
+<span class="text-[#E05252] ml-1 text-xs">*</span>
+</label>
+<span class="text-[11px] text-brand-muted">核实后将同步更新至全站指南</span>
+</div>
+<!-- 轻量分段切换器 (iOS 风格浅灰底内嵌) -->
+<div class="bg-[#F2F4F7] p-0.5 rounded-lg flex items-center text-[12.5px] font-medium text-brand-muted">
+<button class="flex-1 py-1.5 rounded-[6px] text-center transition-all bg-white text-[#1F242D] shadow-[0_1px_2px_rgba(0,0,0,0.06)] tap-active" id="tabCorrection" onclick="switchMode('correction')">
+          资料纠错
+        </button>
+<button class="flex-1 py-1.5 rounded-[6px] text-center transition-all text-brand-muted hover:text-brand-text tap-active" id="tabLive" onclick="switchMode('live')">
+          现场实况反馈
+        </button>
+</div>
+</div>
+<!-- 涉及内容多选胶囊（轻量浅灰、选中浅蓝灰，紧凑自适应栅格） -->
+<div class="px-4 py-3.5 bg-white">
+<div class="flex items-center justify-between mb-2">
+<label class="text-[13px] font-medium text-brand-text flex items-center">
+<span>涉及内容</span>
+<span class="text-[#E05252] ml-1 text-xs">*</span>
+</label>
+<span class="text-[11px] text-brand-muted">可多选</span>
+</div>
+<!-- 9 个核心业务项胶囊（默认选中“开放情况”） -->
+<div class="flex flex-wrap gap-2 pt-0.5" id="tagsContainer">
+<!-- 1. 开放情况 (默认选中) -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagSelectedBorder bg-brand-tagSelectedBg text-brand-tagSelectedText transition-colors flex items-center space-x-1" data-selected="true" onclick="toggleTag(this)" type="button">
+<span>开放情况</span>
+<svg class="w-3 h-3 stroke-[2.5] text-brand-tagSelectedText" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+<!-- 2. 进入规则 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>进入规则</span>
+</button>
+<!-- 3. 末段道路 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>末段道路</span>
+</button>
+<!-- 4. 停车信息 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>停车</span>
+</button>
+<!-- 5. 配套设施 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>设施</span>
+</button>
+<!-- 6. 夜间安全 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>夜间安全</span>
+</button>
+<!-- 7. 地平遮挡 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>地平遮挡</span>
+</button>
+<!-- 8. 现场照片 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>现场照片</span>
+</button>
+<!-- 9. 其他 -->
+<button class="tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1" data-selected="false" onclick="toggleTag(this)" type="button">
+<span>其他</span>
+</button>
+</div>
+</div>
+<!-- 现场反馈模式专有：发生/遇到时间行 (资料纠错模式下默认隐藏，无需强求时间) -->
+<div class="px-4 py-3 bg-brand-subtle hidden border-b border-brand-border/60" id="liveTimeSection">
+<div class="flex items-center justify-between">
+<label class="text-[13px] font-medium text-brand-text flex items-center">
+<span>遇到情况的时间</span>
+<span class="text-[#E05252] ml-1 text-xs">*</span>
+</label>
+<span class="text-[11px] text-brand-muted">有助于判断临时管制</span>
+</div>
+<div class="mt-2 flex items-center justify-between bg-white border border-brand-border rounded-lg px-3 py-2 text-xs text-brand-text">
+<span class="text-[#333E4D]">今晚 20:30（刚才）</span>
+<svg class="w-4 h-4 text-brand-muted" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- 反馈说明：固定高度 textarea，严谨设计无机械20字字数计数 -->
+<div class="px-4 py-3.5 bg-white">
+<div class="flex items-center justify-between mb-2">
+<label class="text-[13px] font-medium text-brand-text flex items-center">
+<span>详细说明</span>
+<span class="text-[#E05252] ml-1 text-xs">*</span>
+</label>
+<span class="text-[11px] text-brand-muted">准确陈述利于快速修正</span>
+</div>
+<div class="relative rounded-lg border border-brand-border bg-brand-subtle focus-within:border-brand-accent/60 focus-within:bg-white transition-all">
+<textarea class="w-full bg-transparent px-3 py-2.5 text-[12.5px] leading-relaxed text-brand-text placeholder-[#A0A7B1] resize-none h-[96px] block" id="feedbackTextarea" placeholder="哪些信息有变化？请说明正确情况或提供依据，如：门闸开放时间改至21:00、南向林木增高遮挡天蝎座尾部、末段施工封闭等..." rows="4"></textarea>
+</div>
+</div>
+<!-- 现场照片凭证：网格入口、缩略图展示、仅上传时显示权利确认 -->
+<div class="px-4 py-3.5 bg-white">
+<div class="flex items-center justify-between mb-2">
+<label class="text-[13px] font-medium text-brand-text">现场照片 / 凭证</label>
+<span class="text-[11px] text-brand-muted">选填 · 告示牌、道路路况或遮挡情况</span>
+</div>
+<!-- 缩略图列表与添加按钮 -->
+<div class="flex items-center space-x-2.5 pt-0.5">
+<!-- 示例已上传缩略图 (模拟1张拍摄的路口告示) -->
+<div class="relative w-[68px] h-[68px] rounded-lg overflow-hidden border border-brand-border bg-[#F0F2F5] shrink-0 group">
+<img alt="已上传路牌凭证" class="w-full h-full object-cover" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<!-- 删除小标 -->
+<button class="absolute top-1 right-1 w-4 h-4 bg-black/60 text-white rounded-full flex items-center justify-center tap-active" title="删除">
+<svg class="w-2.5 h-2.5 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+<span class="absolute bottom-0 inset-x-0 bg-black/45 text-[9px] text-white text-center py-0.5 font-light leading-none">告示牌</span>
+</div>
+<!-- 照片上传入口方块 (纯色虚线轻量边框) -->
+<button class="w-[68px] h-[68px] rounded-lg border border-dashed border-[#D2D6DC] bg-brand-subtle flex flex-col items-center justify-center text-brand-muted hover:border-brand-accent/50 hover:text-brand-accent transition-colors tap-active shrink-0" type="button">
+<svg class="w-5 h-5 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.5v15m7.5-7.5h-15" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] mt-1 text-[#8B93A0]">添加照片</span>
+</button>
+<div class="text-[11px] text-brand-muted pl-1.5 leading-tight flex-1">
+          支持拍摄指示牌、道路闸机或光害变化，单张最大 15MB
+        </div>
+</div>
+<!-- 仅上传照片时呈现的版权与授权小字 (安静严谨，无侵入感) -->
+<div class="mt-2.5 pt-2 border-t border-brand-divider flex items-center space-x-1 text-[11px] text-brand-muted">
+<svg class="w-3.5 h-3.5 text-[#8E97A4] shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>上传即确认拥有该照片权利，并授权用于观星点指南更正展示</span>
+</div>
+</div>
+<!-- 底部信息依据说明 (不设置大弹窗、无多余授权要求，轻量说明) -->
+<div class="px-4 py-3 bg-[#FAFBFD] text-[11px] text-[#8C94A0] leading-relaxed">
+<div class="flex items-start space-x-1.5">
+<span class="font-medium text-[#687280]">审核机制：</span>
+<span>反馈经由场地核实员或3位以上巡星同好交叉确认后生效。无需提供手机号与到访打卡。</span>
+</div>
+</div>
+</main>
+<!-- 3. 底部操作栏 (适配 iPhone 安全区，双动作：次动作存草稿、主动作提交，带行内细环loading) -->
+<footer class="w-full bg-white border-t border-brand-border/80 px-4 pt-2.5 pb-6 shrink-0 z-30">
+<div class="flex items-center space-x-3">
+<!-- 次动作：存草稿 (不弹全局Toast，直接安静更新顶部保存时间小字) -->
+<button class="w-[102px] py-2.5 rounded-lg border border-[#D5D9E0] text-[13px] font-medium text-[#444D5A] bg-white hover:bg-[#F9FAFB] active:bg-[#F0F2F5] transition-colors text-center tap-active flex items-center justify-center space-x-1" onclick="saveDraftSilently()" type="button">
+<svg class="w-3.5 h-3.5 text-[#6D7785]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>存草稿</span>
+</button>
+<!-- 主动作：提交反馈 (低饱和蓝灰主色，行内细环 loading 动效，无打扰) -->
+<button class="flex-1 py-2.5 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-[13.5px] font-medium transition-all shadow-[0_1px_2px_rgba(62,92,118,0.18)] tap-active flex items-center justify-center space-x-2" id="submitBtn" onclick="submitFeedback()" type="button">
+<!-- 正常文字 -->
+<span id="submitBtnText">提交反馈</span>
+<!-- 按钮内细环 Loading (默认隐藏) -->
+<svg class="hidden w-4 h-4 text-white animate-spin" fill="none" id="submitSpinner" viewbox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+<path class="opacity-90" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+</button>
+</div>
+</footer>
+<!-- 页面交互小逻辑：模式切换、多选胶囊高亮、安静保存草稿与提交按钮内loading -->
+<script>
+    // 切换反馈类型 (资料纠错 vs 现场反馈)
+    function switchMode(mode) {
+      const tabCorrection = document.getElementById('tabCorrection');
+      const tabLive = document.getElementById('tabLive');
+      const liveTimeSection = document.getElementById('liveTimeSection');
+      const textarea = document.getElementById('feedbackTextarea');
+
+      if (mode === 'correction') {
+        tabCorrection.className = 'flex-1 py-1.5 rounded-[6px] text-center transition-all bg-white text-[#1F242D] shadow-[0_1px_2px_rgba(0,0,0,0.06)] tap-active';
+        tabLive.className = 'flex-1 py-1.5 rounded-[6px] text-center transition-all text-brand-muted hover:text-brand-text tap-active';
+        liveTimeSection.classList.add('hidden');
+        textarea.placeholder = "哪些信息有变化？请说明正确情况或提供依据，如：门闸开放时间改至21:00、南向林木增高遮挡天蝎座尾部、末段施工封闭等...";
+      } else {
+        tabLive.className = 'flex-1 py-1.5 rounded-[6px] text-center transition-all bg-white text-[#1F242D] shadow-[0_1px_2px_rgba(0,0,0,0.06)] tap-active';
+        tabCorrection.className = 'flex-1 py-1.5 rounded-[6px] text-center transition-all text-brand-muted hover:text-brand-text tap-active';
+        liveTimeSection.classList.remove('hidden');
+        textarea.placeholder = "描述当前现场实际状况：如当前夜间照明是否开启、道路积雪通行受阻、实际停车是否已满等...";
+      }
+    }
+
+    // 胶囊多选切换
+    function toggleTag(btn) {
+      const isSelected = btn.getAttribute('data-selected') === 'true';
+      if (isSelected) {
+        btn.setAttribute('data-selected', 'false');
+        btn.className = 'tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagBorder bg-brand-tagBg text-[#4B5563] transition-colors flex items-center space-x-1';
+        // 移除勾选图标
+        const checkIcon = btn.querySelector('svg');
+        if (checkIcon) checkIcon.remove();
+      } else {
+        btn.setAttribute('data-selected', 'true');
+        btn.className = 'tag-item px-3 py-1.5 rounded-full text-[12px] font-medium border border-brand-tagSelectedBorder bg-brand-tagSelectedBg text-brand-tagSelectedText transition-colors flex items-center space-x-1';
+        // 添加细勾选
+        if (!btn.querySelector('svg')) {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('class', 'w-3 h-3 stroke-[2.5] text-brand-tagSelectedText');
+          svg.setAttribute('viewBox', '0 0 24 24');
+          svg.setAttribute('fill', 'none');
+          svg.setAttribute('stroke', 'currentColor');
+          svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>';
+          btn.appendChild(svg);
+        }
+      }
+    }
+
+    // 安静保存草稿：不弹Toast，仅更新顶部时间
+    function saveDraftSilently() {
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      const draftEl = document.getElementById('draftSaveTime');
+      draftEl.textContent = `草稿已存 ${timeStr}`;
+      draftEl.classList.add('text-brand-accent');
+      setTimeout(() => {
+        draftEl.classList.remove('text-brand-accent');
+      }, 1000);
+    }
+
+    // 提交：按钮内微型细环 Loading 动效，不大弹窗
+    function submitFeedback() {
+      const btn = document.getElementById('submitBtn');
+      const text = document.getElementById('submitBtnText');
+      const spinner = document.getElementById('submitSpinner');
+
+      btn.disabled = true;
+      text.textContent = "提交中...";
+      spinner.classList.remove('hidden');
+
+      setTimeout(() => {
+        spinner.classList.add('hidden');
+        text.textContent = "已提交核实";
+        btn.classList.remove('bg-brand-accent', 'hover:bg-brand-accentHover');
+        btn.classList.add('bg-[#5A738E]');
+      }, 1200);
+    }
+  </script>
+</body>
+</html>

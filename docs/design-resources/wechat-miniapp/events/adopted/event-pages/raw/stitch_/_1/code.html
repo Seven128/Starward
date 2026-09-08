@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Inter',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary":"#ffffff","on-secondary":"#ffffff","surface-tint":"#565e74","primary-container":"#131b2e","on-secondary-fixed-variant":"#6e3900","on-tertiary-container":"#3980f4","on-background":"#0b1c30","on-primary-fixed":"#131b2e","on-tertiary-fixed-variant":"#004395","surface-container-high":"#dce9ff","on-secondary-container":"#663500","on-tertiary":"#ffffff","on-surface":"#0b1c30","tertiary":"#000000","inverse-primary":"#bec6e0","error":"#ba1a1a","on-error":"#ffffff","surface-container-low":"#eff4ff","on-surface-variant":"#45464d","secondary-container":"#fe932c","outline":"#76777d","on-secondary-fixed":"#2f1500","secondary-fixed":"#ffdcc3","error-container":"#ffdad6","on-primary-container":"#7c839b","on-primary-fixed-variant":"#3f465c","outline-variant":"#c6c6cd","surface-bright":"#f8f9ff","inverse-on-surface":"#eaf1ff","primary":"#000000","surface-container-highest":"#d3e4fe","background":"#f8f9ff","tertiary-container":"#001a42","secondary":"#904d00","tertiary-fixed-dim":"#adc6ff","surface-container-lowest":"#ffffff","surface-container":"#e5eeff","on-tertiary-fixed":"#001a42","on-error-container":"#93000a","surface":"#f8f9ff","primary-fixed-dim":"#bec6e0","surface-dim":"#cbdbf5","primary-fixed":"#dae2fd","secondary-fixed-dim":"#ffb77d","surface-variant":"#d3e4fe","tertiary-fixed":"#d8e2ff","inverse-surface":"#213145"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"edge-margin":"16px","stack-2xl":"32px","stack-xl":"24px","gutter-md":"12px","gutter-sm":"8px","card-pad-sm":"12px","viewport-width":"390px","stack-sm":"8px","stack-lg":"16px","stack-md":"12px","card-pad-md":"16px","stack-xs":"4px"},fontFamily:{"mono-data-md":["JetBrains Mono"],"display-hero":["Inter"],"headline-lg":["Inter"],"mono-data-sm":["JetBrains Mono"],"headline-sm":["Inter"],"body-lg":["Inter"],"label-caps":["Inter"],"body-md":["Inter"],"mono-data-lg":["JetBrains Mono"],"body-sm":["Inter"],"headline-md":["Inter"]},fontSize:{"mono-data-md":["13px",{lineHeight:"16px",fontWeight:"500"}],"display-hero":["34px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"600"}],"headline-lg":["22px",{lineHeight:"28px",letterSpacing:"-0.015em",fontWeight:"600"}],"mono-data-sm":["10px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"500"}],"headline-sm":["15px",{lineHeight:"20px",letterSpacing:"-0.005em",fontWeight:"600"}],"body-lg":["15px",{lineHeight:"22px",fontWeight:"400"}],"label-caps":["10px",{lineHeight:"12px",letterSpacing:"0.06em",fontWeight:"600"}],"body-md":["13px",{lineHeight:"18px",fontWeight:"400"}],"mono-data-lg":["20px",{lineHeight:"24px",letterSpacing:"-0.02em",fontWeight:"600"}],"body-sm":["11px",{lineHeight:"16px",fontWeight:"400"}],"headline-md":["18px",{lineHeight:"24px",letterSpacing:"-0.01em",fontWeight:"600"}]}}}}</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-11 px-4 flex items-center justify-between text-on-surface"><span class="font-mono-data-md text-mono-data-md font-semibold tracking-tight">21:48</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[15px]">signal_cellular_alt</span><span class="font-mono-data-sm text-mono-data-sm font-semibold">5G</span><span class="material-symbols-outlined text-[17px] ml-0.5">battery_full</span></div></div><div class="h-11 px-2 flex items-center justify-between"><div class="flex items-center min-w-0 pr-2"><button aria-label="返回" class="w-11 h-11 flex items-center justify-center text-on-surface active:scale-95 transition-transform" onclick="history.back()"><span class="material-symbols-outlined text-[22px]">arrow_back_ios_new</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface truncate ml-0.5">Target Detail</h1></div><div class="flex items-center gap-2 pr-2"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="h-8 px-2.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-between gap-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]"><button aria-label="更多操作" class="w-5 h-5 flex items-center justify-center text-on-surface active:opacity-60" type="button"><span class="material-symbols-outlined text-[18px] leading-none">more_horiz</span></button><div class="w-px h-3.5 bg-outline-variant/60"></div><button aria-label="关闭小程序" class="w-5 h-5 flex items-center justify-center text-on-surface active:opacity-60" type="button"><span class="material-symbols-outlined text-[15px] leading-none">radio_button_checked</span></button></div></div></div></header><main class="flex flex-col relative w-full pt-[88px] pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full px-edge-margin space-y-stack-lg pb-10">
+<!-- 头部地点与时间轴卡片 -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-card-pad-md shadow-sm space-y-stack-md">
+<!-- 地点与元标签 -->
+<div class="flex items-start justify-between gap-gutter-sm">
+<div class="min-w-0 flex-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<a class="font-headline-md text-headline-md text-on-surface flex items-center gap-1 active:opacity-70 transition-opacity" href="javascript:void(0)">
+<span class="truncate">星湾观星点</span>
+<span class="material-symbols-outlined text-[17px] text-on-surface-variant shrink-0">north_east</span>
+</a>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps tracking-wider">正式观星点</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">大鹏半岛南部海角 · Bortle 3 · 21.60 MPSAS</p>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-mono-data-sm text-mono-data-sm shrink-0">
+        观星计划
+      </span>
+</div>
+<!-- 精致关联时间轴 -->
+<div class="bg-surface-container-low/70 rounded-lg p-card-pad-sm space-y-stack-sm">
+<!-- 节点1：出发时刻 -->
+<div class="flex items-center gap-3">
+<div class="w-5 flex justify-center shrink-0">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<div class="flex items-baseline justify-between flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-mono-data-md text-mono-data-md text-on-surface font-semibold">19:00</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">准备出发</span>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm text-on-surface-variant">科苑南路出发</span>
+</div>
+</div>
+<!-- 微型连接连线与在途耗时 -->
+<div class="flex items-center gap-3 py-0.5">
+<div class="w-5 flex justify-center shrink-0">
+<div class="w-0.5 h-6 bg-outline-variant/40 rounded-full"></div>
+</div>
+<div class="flex items-center gap-1.5 font-mono-data-sm text-mono-data-sm text-outline">
+<span class="material-symbols-outlined text-[13px]">directions_car</span>
+<span>预计行驶 1h 24m (约68km)</span>
+</div>
+</div>
+<!-- 节点2：核心观测窗口 (暖金微光强调) -->
+<div class="flex items-start gap-3">
+<div class="w-5 flex justify-center shrink-0 pt-1">
+<div class="w-2.5 h-2.5 rounded-full bg-secondary-container flex items-center justify-center shadow-[0_0_8px_rgba(254,147,44,0.45)]">
+<div class="w-1 h-1 rounded-full bg-surface-container-lowest"></div>
+</div>
+</div>
+<div class="flex-1 min-w-0 bg-surface-container-lowest/90 rounded-md p-2 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="font-mono-data-md text-mono-data-md text-secondary font-semibold">20:30 - 次日00:30</span>
+<span class="w-1 h-1 rounded-full bg-secondary-container"></span>
+<span class="font-body-sm text-body-sm text-secondary font-medium">黄金观测窗</span>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm px-1.5 py-0.5 rounded bg-secondary-fixed/50 text-on-secondary-fixed-variant">净窗口 4.0h</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">银河拱桥抬升至最佳仰角阶段，避开低空潮气</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 观测参考小节 (数据严谨·非预测假象) -->
+<section class="w-full space-y-stack-xs">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface">wb_twilight</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">观测参考</h2>
+</div>
+<div class="flex items-center gap-1 font-mono-data-sm text-mono-data-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[13px] text-outline">update</span>
+<span>临近24小时前自动校准</span>
+</div>
+</div>
+<!-- 2x2 严谨平铺数据卡 -->
+<div class="grid grid-cols-2 gap-gutter-sm">
+<!-- 指标1：天黑时刻 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-pad-sm shadow-sm flex flex-col justify-between space-y-stack-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">天文昏影终</span>
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">brightness_3</span>
+</div>
+<div>
+<div class="font-mono-data-lg text-mono-data-lg text-on-surface">20:12</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">完全进入天文黑夜</p>
+</div>
+</div>
+<!-- 指标2：月亮影响 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-pad-sm shadow-sm flex flex-col justify-between space-y-stack-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">月相与升落</span>
+<span class="w-3.5 h-3.5 rounded-full bg-secondary-fixed-dim/80 flex items-center justify-center">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest ml-1"></span>
+</span>
+</div>
+<div>
+<div class="font-mono-data-md text-mono-data-md text-on-surface font-semibold">蛾眉月 18%</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">22:15 月落 · 后半夜无月光</p>
+</div>
+</div>
+<!-- 指标3：云量变化 (未知明确) -->
+<div class="bg-surface-container-lowest rounded-xl p-card-pad-sm shadow-sm flex flex-col justify-between space-y-stack-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">总云量预测</span>
+<span class="material-symbols-outlined text-[15px] text-outline">filter_drama</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-outline font-mono-data-sm text-mono-data-sm">
+              待获取
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-1">距观测&gt;24h，数值待生成</p>
+</div>
+</div>
+<!-- 指标4：风温气压 (未知明确) -->
+<div class="bg-surface-container-lowest rounded-xl p-card-pad-sm shadow-sm flex flex-col justify-between space-y-stack-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">地面视宁/风温</span>
+<span class="material-symbols-outlined text-[15px] text-outline">air</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-outline font-mono-data-sm text-mono-data-sm">
+              待获取
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-1">ECMWF 微气象临近计算中</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 出行安排与路线 -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-card-pad-md shadow-sm space-y-stack-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface">route</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">出行与到场路线</h2>
+</div>
+<!-- 交通方式切换态 -->
+<div class="flex items-center bg-surface-container rounded-lg p-0.5">
+<button class="px-2 py-0.5 rounded-md bg-surface-container-lowest text-on-surface font-mono-data-sm text-mono-data-sm font-semibold shadow-xs" type="button">驾车</button>
+<button class="px-2 py-0.5 rounded-md text-outline font-mono-data-sm text-mono-data-sm" type="button">公共交通</button>
+</div>
+</div>
+<!-- 路线起终详情排版 (严谨无虚假配图) -->
+<div class="space-y-stack-sm">
+<div class="flex items-start justify-between gap-gutter-md">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface"></span>
+<span class="font-body-md text-body-md text-on-surface font-medium">科苑南路住所</span>
+<span class="font-mono-data-sm text-mono-data-sm text-on-surface-variant">(19:00 出发)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+<span class="font-body-md text-body-md text-on-surface font-medium">星湾观星点·东侧海角入口</span>
+</div>
+</div>
+<button class="px-2.5 py-1.5 rounded-lg bg-surface-container text-on-surface font-headline-sm text-headline-sm flex items-center gap-1 active:bg-surface-container-high transition-colors shrink-0" type="button">
+<span class="material-symbols-outlined text-[15px]">map</span>
+<span class="text-[12px]">调起地图</span>
+</button>
+</div>
+<div class="bg-surface-container-low rounded-lg p-card-pad-sm space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">实时路况路线</span>
+<span class="font-mono-data-sm text-mono-data-sm text-outline">路线尚未获取</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          路线节点：目的地末端需自驾至东岸临时停车场，随后沿沿海碎石步道步行约 350 米抵达观测台。
+        </p>
+</div>
+</div>
+</section>
+<!-- 天文事件关联小节 -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-card-pad-md shadow-sm space-y-stack-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface">auto_awesome</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">关联天文事件</h2>
+</div>
+<span class="font-label-caps text-label-caps text-outline">非必填</span>
+</div>
+<div class="flex items-center justify-between p-card-pad-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">event_busy</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">未关联天文事件（如流星雨/掩星）</span>
+</div>
+<button class="px-2 py-1 rounded-full bg-surface-container-lowest text-on-surface font-mono-data-sm text-mono-data-sm flex items-center gap-0.5 active:bg-surface-container transition-colors shadow-xs" type="button">
+<span class="material-symbols-outlined text-[13px]">add</span>
+<span>选择事件</span>
+</button>
+</div>
+</section>
+<!-- 用户提醒与准备清单 -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-card-pad-md shadow-sm space-y-stack-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface">checklist</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">行前准备与提醒</h2>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm text-on-surface-variant">2组 · 3项</span>
+</div>
+<!-- 微信通知授权说明条 (诚实告知非假装) -->
+<div class="flex items-center justify-between gap-gutter-sm px-3 py-2 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-[16px] text-secondary">notifications_off</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">未开启微信订阅通知 · 需授权后发送</span>
+</div>
+<button class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed font-mono-data-sm text-mono-data-sm font-semibold shrink-0 active:opacity-80" type="button">
+        开启通知
+      </button>
+</div>
+<!-- 提醒组 1 -->
+<div class="space-y-stack-xs">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-1.5">
+<span class="font-mono-data-sm text-mono-data-sm font-semibold text-on-surface">出发前 2 小时 (17:00)</span>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm text-outline" id="group-1-count">0/2</span>
+</div>
+<div class="space-y-1">
+<!-- 待办1 -->
+<label class="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-container-low/50 active:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center gap-2.5 min-w-0">
+<input class="w-4 h-4 rounded-full text-primary focus:ring-0 focus:outline-none accent-on-surface cursor-pointer" onchange="toggleItem(this, 'group-1-count')" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-has-[:checked]:line-through group-has-[:checked]:text-outline truncate">
+              相机与备用电池充电完成
+            </span>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm text-outline shrink-0">主设备</span>
+</label>
+<!-- 待办2 -->
+<label class="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-container-low/50 active:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center gap-2.5 min-w-0">
+<input class="w-4 h-4 rounded-full text-primary focus:ring-0 focus:outline-none accent-on-surface cursor-pointer" onchange="toggleItem(this, 'group-1-count')" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-has-[:checked]:line-through group-has-[:checked]:text-outline truncate">
+              装入重型碳纤三脚架与经纬仪/赤道仪
+            </span>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm text-outline shrink-0">承托</span>
+</label>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container"></div>
+<!-- 提醒组 2 -->
+<div class="space-y-stack-xs">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-1.5">
+<span class="font-mono-data-sm text-mono-data-sm font-semibold text-on-surface">出发前 30 分钟 (18:30)</span>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm text-outline" id="group-2-count">0/1</span>
+</div>
+<div>
+<label class="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-container-low/50 active:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center gap-2.5 min-w-0">
+<input class="w-4 h-4 rounded-full text-primary focus:ring-0 focus:outline-none accent-on-surface cursor-pointer" onchange="toggleItem(this, 'group-2-count')" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-has-[:checked]:line-through group-has-[:checked]:text-outline truncate">
+              携带足量饮用水及海边防风冲锋衣
+            </span>
+</div>
+<span class="font-mono-data-sm text-mono-data-sm text-outline shrink-0">后勤保暖</span>
+</label>
+</div>
+</div>
+</section>
+<!-- 用户自定义备注 -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-card-pad-md shadow-sm space-y-stack-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-surface">sticky_note_2</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">观测备忘</h2>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface active:opacity-70 font-mono-data-sm text-mono-data-sm" type="button">
+        编辑文字
+      </button>
+</div>
+<div class="bg-surface-container-low/70 rounded-lg p-card-pad-sm">
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        沿海平台拍银河，带三脚架与镜头除雾带，沿途留意潮汐涨落与沿岸夜间平流海雾。
+      </p>
+</div>
+</section>
+<!-- 操作互动脚本 -->
+<script>
+    function toggleItem(checkbox, counterId) {
+      const parentGroup = checkbox.closest('.space-y-stack-xs');
+      const allCheckboxes = parentGroup.querySelectorAll('input[type="checkbox"]');
+      const checkedCount = parentGroup.querySelectorAll('input[type="checkbox"]:checked').length;
+      const counterElem = document.getElementById(counterId);
+      if (counterElem) {
+        counterElem.textContent = `${checkedCount}/${allCheckboxes.length}`;
+        if (checkedCount === allCheckboxes.length) {
+          counterElem.classList.add('text-secondary', 'font-semibold');
+          counterElem.classList.remove('text-outline');
+        } else {
+          counterElem.classList.remove('text-secondary', 'font-semibold');
+          counterElem.classList.add('text-outline');
+        }
+      }
+    }
+  </script>
+</div></main><aside class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.04)]"><div class="h-16 px-edge-margin flex items-center justify-between gap-gutter-md"><button class="h-11 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm flex items-center justify-center gap-1.5 active:bg-surface-container-low transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">restart_alt</span><span>重置参数</span></button><button class="flex-1 h-11 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm font-semibold flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.12)] active:scale-[0.98] transition-transform" type="button"><span class="material-symbols-outlined text-[18px]">bookmark_add</span><span>保存观测窗口</span></button></div></aside></body></html>

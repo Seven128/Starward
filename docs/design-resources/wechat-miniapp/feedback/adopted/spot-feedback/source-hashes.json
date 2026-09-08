@@ -1,0 +1,98 @@
+[
+  {
+    "path": ".gitignore",
+    "sha256": "3d6565550214bf99bc547a76acd6e7833f0e7562d0cdae1f485cfe1c38d5250c"
+  },
+  {
+    "path": "baseline.json",
+    "sha256": "4cd8ab243421f8015894d33a1d11aabc0f7a94caa2390bb3a059a07fd16a0cb6"
+  },
+  {
+    "path": "brief.md",
+    "sha256": "8a575014a972a8d7bc46d656ab6d882ae503023027cf9ab3f50aeaa93b918dac"
+  },
+  {
+    "path": "input-hashes.json",
+    "sha256": "9e6c18f9c6659f839b42e8569de7e8c50371a32691cce7c92efcd9cb0b0a67af"
+  },
+  {
+    "path": "preview/chapters.mjs",
+    "sha256": "bb4c421643ec6836d92855f213738c15f6905a9f8c1cb69c2607913e07d6c38c"
+  },
+  {
+    "path": "preview/choices.mjs",
+    "sha256": "40931a9ed82f1f3ac12a4da8185bf2181b18b87917f81c4f49fb9ccd4f5c613f"
+  },
+  {
+    "path": "preview/diff.mjs",
+    "sha256": "91344f3f9627cd26800e492dcb4c56e90758204ae124340149752e0e40ca4650"
+  },
+  {
+    "path": "preview/diff.test.mjs",
+    "sha256": "5ec61e7fd4e5719042db1bd1fae47563909c994ca7d30450cf6ebf811dcde8fe"
+  },
+  {
+    "path": "preview/editor.css",
+    "sha256": "86473430c6d8825f75745a9d088c67b0d31459da466b13eefc9a4f9371f98296"
+  },
+  {
+    "path": "preview/editor.mjs",
+    "sha256": "22010d494b8d4f20dc67db3d48dfb081e5aef7d2618ede35428dbb9f8977d24a"
+  },
+  {
+    "path": "preview/index.html",
+    "sha256": "93cd6fd46836271fadac75bfb7b43f27fd204fc29488e0635d395644b81c5bd8"
+  },
+  {
+    "path": "preview/interaction.css",
+    "sha256": "78636b989f168dde64be1ad3566c32f9cdab6e5d12fc90c4ad4c4eaa38839a1b"
+  },
+  {
+    "path": "preview/map-form.css",
+    "sha256": "e788a49d47cd687b83eb275aafc4041ae1e546e030b706d991f258870d89118c"
+  },
+  {
+    "path": "preview/map.mjs",
+    "sha256": "852b6b34fd6bb0bdca21271cfb899e49990d402be01ba5891afb5ad40021cad8"
+  },
+  {
+    "path": "preview/refinement.css",
+    "sha256": "7905ff8f235e125eeb34d664f6e473a4b49f2894d83e9cf01e2dd50c80ae9a36"
+  },
+  {
+    "path": "preview/stitch-rendered.css",
+    "sha256": "d9a9a7b2002c4572f7f614eebe90a710c4b75b8a93f2a1f52d25fe638efc172d"
+  },
+  {
+    "path": "prompt.txt",
+    "sha256": "7430b4ba9eae104449953979169f725a9c825452e1b753a5eee5e93452f91cc2"
+  },
+  {
+    "path": "proposed-design-delta.md",
+    "sha256": "ffdfa37bc0dd66147a100af788815bab0f4a002b7ba0d47086c150c4e18bce94"
+  },
+  {
+    "path": "README.md",
+    "sha256": "d8a2aab105495d87e0d002aa7add8ece5e5c63243538dbe2f6a6b8a9aa2332f7"
+  },
+  {
+    "path": "review.html",
+    "sha256": "b7f212083e94ae05ceff37248564460dd780f3414bc00c18fbddcd368cd36b21"
+  },
+  {
+    "path": "run.json",
+    "sha256": "027278ce74917c4161b782680ee587da10143d0f8bb678d661539e7b15958889"
+  },
+  {
+    "path": "server.py",
+    "sha256": "26efba6c7a1950d1314c41b9471e69bf047715824e190270fb4ec49965a80852"
+  },
+  {
+    "path": "test_service.py",
+    "sha256": "5a7d057833f3b51369781b7069d4d1d49b29370c410e14db270b71f6c66b540a"
+  },
+  {
+    "path": "verification.md",
+    "sha256": "bcca8f8c6850578fc7412c3fb3b1ab74e5a9ccdabc81e38455149930185de428"
+  }
+]

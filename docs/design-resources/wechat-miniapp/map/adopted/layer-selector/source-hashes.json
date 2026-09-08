@@ -1,0 +1,66 @@
+[
+  {
+    "path": "adoption.json",
+    "sha256": "3ef152fdda8634b295a891844bbcbbe7913e46a1eb251371f6ce12eda2c58b74"
+  },
+  {
+    "path": "preview/index.html",
+    "sha256": "709d2aa9316d9fa2cbbc1a5f79fdbcc5b855eae67a7aca66419ad56bbe0b3c7e"
+  },
+  {
+    "path": "preview/interaction.css",
+    "sha256": "069cbb5ce05d7d7ba2af46aa3516d2d9eeaa55dd5b4da605edc7c9ebf4c93b6b"
+  },
+  {
+    "path": "preview/interaction.js",
+    "sha256": "cbb41379fae7cad61794204c23573b01da7d9e0844a3bf1e2b293d4b4f0182b6"
+  },
+  {
+    "path": "preview/rendered.css",
+    "sha256": "e213f1431fc3bf7b5d4b5a64227e70ff268971150a62c3a51de64c3db96d1705"
+  },
+  {
+    "path": "provenance/stitch-code.html",
+    "sha256": "c81d91fcae6c28c35dcf9b131885f57b7ddf9b7835a067b06bec70718b9ef720"
+  },
+  {
+    "path": "provenance/stitch-prompt.txt",
+    "sha256": "63d4a87046cd88e36d71fa348f6dfbd011fa985953f72a9f12b32d755f978a96"
+  },
+  {
+    "path": "provenance/stitch-screen.png",
+    "sha256": "605757b12b35348519dcdf50a72f33f79ebecf97d331281309c29d53516eddf2"
+  },
+  {
+    "path": "provenance/time-motion-checks.json",
+    "sha256": "734151556a38a83f3c583340668cbcb5d7c297b347c9d56cd3631177967fc182"
+  },
+  {
+    "path": "README.md",
+    "sha256": "d92de298059f3a04b931c25a684d99e79bc3676146af87e1387bdcf2ee09d95c"
+  },
+  {
+    "path": "reference/cloud.jpg",
+    "sha256": "3a165c536f4bf5ef550f3bff20d33a5a69ec7327ad6f2a04a3b4b0e328108fb2"
+  },
+  {
+    "path": "reference/light.jpg",
+    "sha256": "950b625ce4159c36ee68de98553591a6761078e10eb340ed0a913306431e5b79"
+  },
+  {
+    "path": "review.html",
+    "sha256": "5cdf95bb107e350b607bbc68426c38ffc5ab6d4c12aef804f24d19d0a12bffa3"
+  },
+  {
+    "path": "verification.md",
+    "sha256": "1dbe878d94b84f176e88a72f3c47a3f1f6664dbed66ea65871d0350490e32412"
+  },
+  {
+    "path": "../../../shared/observation-time/control.js",
+    "sha256": "d4a8278a112b9b70fb09f50e2d77ad8d3da27e36e2b028ef6ec0283da13ad707"
+  },
+  {
+    "path": "../../../shared/observation-time/control.css",
+    "sha256": "52c988d3eeb682a687e5c544f5d3dda7630b068d0e9c39934b87abb21a4d170d"
+  }
+]

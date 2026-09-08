@@ -1,8 +1,0 @@
-{
-  "name": "starward-sky-canvas-field-signal-candidate",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "check": "node verify.mjs"
-  }
-}

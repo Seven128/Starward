@@ -1,0 +1,2 @@
+import {renderEventList} from './list.mjs';
+const q=new URLSearchParams(location.search);renderEventList(document.querySelector('main'),{date:q.get('date')||'2026-09-08',onOpen:id=>{q.set('event',id);location.href='index.html?'+q;}});document.querySelector('#back').onclick=()=>location.href='/plan/adopted/plan-page/index.html';

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>天文事件详情</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#F8F9FA',
+            'surface-card': '#FFFFFF',
+            'surface-sub': '#F1F3F5',
+            'text-primary': '#0F172A',
+            'text-secondary': '#475569',
+            'text-tertiary': '#94A3B8',
+            'gold-primary': '#D97706',
+            'gold-light': '#FEF3C7',
+            'gold-border': '#FDE68A',
+            'slate-border': '#E2E8F0',
+            'slate-divider': '#F1F5F9'
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .tap-scale {
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s;
+    }
+    .tap-scale:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+    .collapse-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+      opacity: 0;
+    }
+    .collapse-content.expanded {
+      max-height: 180px;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-surface text-text-primary antialiased font-sans flex justify-center selection:bg-gold-light selection:text-gold-primary min-h-screen">
+  <!-- 390px 移动视口容器 -->
+  <div class="w-[390px] min-h-[844px] bg-surface flex flex-col relative pb-28 shadow-sm">
+    
+    <!-- 微信小程序原生 Header: 状态栏 + 导航条 + 胶囊 (严格规范，不加头像) -->
+    <header class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-slate-border/50">
+      <!-- 状态栏高度 -->
+      <div class="h-11 w-full flex items-center justify-between px-6 text-xs font-medium text-text-primary tracking-tight">
+        <span>21:48</span>
+        <div class="flex items-center space-x-1.5 text-text-primary">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.64 10.56 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+          <span class="text-[10px] font-semibold">5G</span>
+          <div class="w-5 h-2.5 border border-text-primary/70 rounded-sm p-0.5 flex items-center">
+            <div class="h-full w-3 bg-text-primary rounded-2xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 导航栏区域 -->
+      <div class="h-11 px-4 flex items-center justify-between">
+        <!-- 左侧标准返回 -->
+        <button class="tap-scale flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 text-text-primary" onclick="history.back()" aria-label="返回上一级">
+          <svg class="w-5 h-5 stroke-[2] stroke-current fill-none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+
+        <!-- 页面主标题 -->
+        <div class="text-center font-medium text-[15px] tracking-tight text-text-primary">
+          天文事件详情
+        </div>
+
+        <!-- 微信小程序标准胶囊 -->
+        <div class="w-20 h-8 rounded-full border border-slate-200/90 bg-white/80 backdrop-blur-sm flex items-center justify-between px-2.5 shadow-2xs">
+          <!-- 更多操作 ··· -->
+          <button class="w-3.5 h-3.5 flex items-center justify-center text-text-primary opacity-80" aria-label="小程序选项">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <circle cx="5" cy="12" r="2.2"/>
+              <circle cx="12" cy="12" r="2.2"/>
+              <circle cx="19" cy="12" r="2.2"/>
+            </svg>
+          </button>
+          <div class="w-px h-3 bg-slate-200"></div>
+          <!-- 关闭/退出 ⊙ -->
+          <button class="w-3.5 h-3.5 flex items-center justify-center text-text-primary opacity-80" aria-label="关闭小程序">
+            <svg class="w-3.5 h-3.5 stroke-[2.2] stroke-current fill-none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="8"/>
+              <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主体可滚动内容 -->
+    <main class="px-4 pt-3.5 space-y-3.5 flex-1">
+
+      <!-- 1. 事件核心概览卡片 (含微立体暖金流星插画 + 活动期横轴) -->
+      <section class="bg-surface-card rounded-2xl p-4 border border-slate-border/80 shadow-[0_1px_3px_rgba(0,0,0,0.02)] relative overflow-hidden">
+        <!-- 头部：标题与微立体插画身份 -->
+        <div class="flex items-start justify-between">
+          <div class="space-y-1">
+            <div class="flex items-center space-x-2">
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide bg-amber-50 text-gold-primary border border-gold-border/60">
+                流星雨
+              </span>
+              <span class="text-[11px] font-mono text-text-tertiary tracking-wider font-medium">SPE · 2026</span>
+            </div>
+            <h1 class="text-[19px] font-bold text-text-primary tracking-tight leading-snug pt-0.5">
+              九月英仙座ε流星雨
+            </h1>
+            <p class="text-[12px] text-text-secondary leading-relaxed pt-0.5">
+              秋季微弱流星群，常伴有明亮甚至偶发火流星
+            </p>
+          </div>
+
+          <!-- 微立体光泽暖金流星小插画 (单图标分量，约44x44) -->
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-b from-amber-50/70 to-amber-100/30 border border-amber-100 flex items-center justify-center shrink-0 ml-3 shadow-2xs p-1">
+            <img src="https://lh3.googleusercontent.com/aida/AEtjO1W05j2HhA02ptwHBMAJjCipSbmcl-VuMIpt10cDBPWdxdwgWP5jkhh6dWXtasOceAa3eJ3mkuy1MdI91OjIzSU-pRsINC6shIdmt9ZQs4Sk4L_GQrPrlQM63FgY3hoXfOswJl1D1HiJrHWXue_YNTMhtU5_Egwkd1M5_tmjOaEVMipd_2JG13rxafxDgW0OMl7v6R9EDieTVKhFGEWq0oZi7LDl092jnxyjTN5M1FhtDl4cG2BjHJMFBIo" alt="九月英仙座ε流星雨微立体标" class="w-10 h-10 object-contain drop-shadow-sm pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- 分割线 -->
+        <div class="h-px bg-slate-100 my-3.5"></div>
+
+        <!-- 活动期信息与时间轴 (仅日期范围展示，严格不假造小时尺与每小时可见数) -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-text-tertiary">活动周期</span>
+            <span class="font-medium text-text-secondary">09月05日 — 09月21日</span>
+          </div>
+
+          <!-- 优雅时间线进度条 -->
+          <div class="relative py-2.5">
+            <!-- 轨槽基线 -->
+            <div class="h-1.5 w-full bg-slate-100 rounded-full relative overflow-visible">
+              <!-- 活动期区间高亮 (09/05 ~ 09/21 全程) -->
+              <div class="absolute left-0 top-0 bottom-0 w-full bg-amber-100/70 rounded-full"></div>
+              
+              <!-- 选中观测日期：09月08日 (约18.75% 进度) -->
+              <div class="absolute -top-1 left-[18.75%] -translate-x-1/2 flex flex-col items-center group cursor-pointer">
+                <div class="w-3.5 h-3.5 rounded-full bg-white border-2 border-text-primary shadow-xs flex items-center justify-center ring-2 ring-slate-100">
+                  <div class="w-1 h-1 rounded-full bg-text-primary"></div>
+                </div>
+              </div>
+
+              <!-- 目录极大日期：09月09日 (约25% 进度) -->
+              <div class="absolute -top-1 left-[25%] -translate-x-1/2 flex flex-col items-center">
+                <div class="w-3.5 h-3.5 rounded-full bg-amber-50 border-2 border-gold-primary shadow-xs flex items-center justify-center">
+                  <div class="w-1 h-1 rounded-full bg-gold-primary"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 时间轴刻度与标签 -->
+            <div class="flex items-center justify-between text-[10px] text-text-tertiary mt-2">
+              <span>09.05 开始</span>
+              <div class="flex items-center space-x-3 -translate-x-3">
+                <span class="text-text-primary font-medium flex items-center space-x-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-text-primary inline-block"></span>
+                  <span>09.08 选中</span>
+                </span>
+                <span class="text-gold-primary font-medium flex items-center space-x-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gold-primary inline-block"></span>
+                  <span>09.09 极大</span>
+                </span>
+              </div>
+              <span>09.21 结束</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 地点与观测日期选择条 (精致浅灰容器，带微交互切换反馈) -->
+      <section class="bg-surface-card rounded-xl p-3 border border-slate-border/80 flex items-center justify-between shadow-2xs">
+        <div class="flex items-center space-x-2.5">
+          <!-- 拟物微标：定位基准点 -->
+          <div class="w-8 h-8 rounded-lg bg-surface-sub border border-slate-200/80 flex items-center justify-center text-text-secondary shrink-0">
+            <svg class="w-4 h-4 text-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[13px] font-semibold text-text-primary">星湾观星点</span>
+              <span class="text-[10px] px-1 py-0.2 bg-slate-100 text-text-tertiary rounded">Bortle 3</span>
+            </div>
+            <p class="text-[11px] text-text-tertiary pt-0.5">观测日期：2026年09月08日 (极大日前夕)</p>
+          </div>
+        </div>
+
+        <!-- 切换动作 -->
+        <button id="btnSwitchLocation" class="tap-scale text-xs font-medium text-text-secondary hover:text-text-primary px-2.5 py-1.5 bg-surface-sub rounded-md border border-slate-200 flex items-center space-x-1">
+          <span>切换</span>
+          <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </section>
+
+      <!-- 3. 重点小节：“在这里怎么看” (严谨提示待获取，优雅占位示意图，绝不造假) -->
+      <section class="bg-surface-card rounded-2xl p-4 border border-slate-border/80 space-y-3.5 shadow-2xs">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <div class="w-1 h-3.5 bg-gold-primary rounded-full"></div>
+            <h2 class="text-[14px] font-bold text-text-primary tracking-tight">在这里怎么看</h2>
+          </div>
+          <span class="text-[11px] text-text-tertiary flex items-center space-x-1">
+            <svg class="w-3 h-3 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>临近24小时内自动计算</span>
+          </span>
+        </div>
+
+        <!-- 合并的待获取提示 (严谨不堆四个巨大未知值) -->
+        <div class="bg-surface-sub/80 rounded-xl p-3 border border-slate-200/70 space-y-2">
+          <div class="flex items-start space-x-2.5">
+            <div class="w-5 h-5 rounded-full bg-amber-50 text-gold-primary flex items-center justify-center shrink-0 mt-0.5 border border-gold-border/60">
+              <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-medium text-text-primary">本地条件未计算</div>
+              <p class="text-[11px] text-text-secondary leading-relaxed mt-0.5">
+                距所选观测日期（09月08日）较远，本站点的<span class="text-text-primary font-medium">最佳可见时段</span>、<span class="text-text-primary font-medium">辐射点地平高度</span>与<span class="text-text-primary font-medium">月光冲刷影响</span>将在临近时结合精确星历与气象生成。
+              </p>
+            </div>
+          </div>
+
+          <!-- 矩阵状态摘要 (灰底精致小条目) -->
+          <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-200/60">
+            <div class="text-center py-1">
+              <div class="text-[10px] text-text-tertiary">辐射点高度</div>
+              <div class="text-[11px] font-medium text-slate-400 mt-0.5">待计算</div>
+            </div>
+            <div class="text-center py-1 border-x border-slate-200/60">
+              <div class="text-[10px] text-text-tertiary">月相干扰</div>
+              <div class="text-[11px] font-medium text-slate-400 mt-0.5">残月 (待校准)</div>
+            </div>
+            <div class="text-center py-1">
+              <div class="text-[10px] text-text-tertiary">有效观测窗</div>
+              <div class="text-[11px] font-medium text-slate-400 mt-0.5">待获取</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 优雅的本地观测示意占位图 (克制矢量坐标系，标明未计算，绝不假造真实星图) -->
+        <div class="w-full h-32 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100/80 border border-dashed border-slate-300 relative flex flex-col items-center justify-center overflow-hidden p-3">
+          <!-- 极坐标网格拟真底纹 (几何参考线) -->
+          <svg class="absolute inset-0 w-full h-full opacity-40 pointer-events-none" viewBox="0 0 320 128">
+            <circle cx="160" cy="140" r="110" fill="none" stroke="#CBD5E1" stroke-width="0.8" stroke-dasharray="3,3"/>
+            <circle cx="160" cy="140" r="75" fill="none" stroke="#CBD5E1" stroke-width="0.8" stroke-dasharray="2,2"/>
+            <line x1="160" y1="20" x2="160" y2="128" stroke="#E2E8F0" stroke-width="1"/>
+            <line x1="30" y1="120" x2="290" y2="120" stroke="#CBD5E1" stroke-width="1.2"/>
+            <text x="35" y="115" font-size="8" fill="#94A3B8" font-family="sans-serif">东 (E)</text>
+            <text x="150" y="32" font-size="8" fill="#94A3B8" font-family="sans-serif">天顶</text>
+            <text x="265" y="115" font-size="8" fill="#94A3B8" font-family="sans-serif">北 (N)</text>
+          </svg>
+
+          <!-- 占位状态提示文案 -->
+          <div class="relative z-10 flex flex-col items-center text-center space-y-1">
+            <div class="w-7 h-7 rounded-full bg-white/90 shadow-2xs border border-slate-200 flex items-center justify-center text-slate-400">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+              </svg>
+            </div>
+            <span class="text-[11px] font-medium text-text-secondary">星空地平仰角示意 · 待获取状态</span>
+            <span class="text-[10px] text-text-tertiary">未装载当前点位辐射点时序轨迹（非实测星图）</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 下一节：“认识这场流星雨” 与 “观测建议” (可折叠行，眼睛/月亮/背包拟物轻图标) -->
+      <section class="bg-surface-card rounded-2xl p-4 border border-slate-border/80 space-y-3 shadow-2xs">
+        <div class="flex items-center space-x-2">
+          <div class="w-1 h-3.5 bg-slate-400 rounded-full"></div>
+          <h2 class="text-[14px] font-bold text-text-primary tracking-tight">认识这场流星雨</h2>
+        </div>
+
+        <!-- 关键科学事实澄清 (非八月英仙座) -->
+        <div class="bg-blue-50/50 rounded-xl p-3 border border-blue-100/70 text-[12px] text-text-secondary leading-relaxed">
+          <strong class="text-text-primary font-semibold">明确区分：</strong>九月英仙座ε流星雨（September epsilon-Perseids, SPE）与著名的八月英仙座流星雨（Perseids, PER）由不同母体彗星碎片引发，<span class="text-slate-800">并非同一事件</span>。其辐射点靠近英仙座ε星，规模相对微弱但偶有亮火球。
+        </div>
+
+        <!-- 观测建议小节 (两至三条可折叠展开行) -->
+        <div class="space-y-2 pt-1">
+          <div class="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">观测建议与装备准备</div>
+
+          <!-- 条目 1：裸眼大范围巡天 (眼睛图标) -->
+          <div class="border border-slate-100 rounded-xl overflow-hidden bg-surface-sub/30">
+            <button class="w-full px-3 py-2.5 flex items-center justify-between text-left tap-scale" onclick="toggleCollapse('collapse-eye', 'icon-eye')">
+              <div class="flex items-center space-x-2.5">
+                <!-- 拟物化视力图标 -->
+                <div class="w-6 h-6 rounded-md bg-amber-50 border border-gold-border/60 text-gold-primary flex items-center justify-center shrink-0">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-medium text-text-primary">裸眼大视场巡视，无需望远镜</span>
+              </div>
+              <svg id="icon-eye" class="w-3.5 h-3.5 text-text-tertiary transition-transform duration-200 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div id="collapse-eye" class="collapse-content expanded px-3 pb-3 text-[11px] text-text-secondary leading-relaxed border-t border-slate-100/60 pt-2">
+              流星雨会在全天任意区域出现。使用望远镜视野极小，反而会错过流星。建议背靠躺椅或防潮垫，保持视线覆盖天顶至45度角开阔空域。
+            </div>
+          </div>
+
+          <!-- 条目 2：月相与暗夜适应 (月亮图标) -->
+          <div class="border border-slate-100 rounded-xl overflow-hidden bg-surface-sub/30">
+            <button class="w-full px-3 py-2.5 flex items-center justify-between text-left tap-scale" onclick="toggleCollapse('collapse-moon', 'icon-moon')">
+              <div class="flex items-center space-x-2.5">
+                <!-- 拟物化月相图标 -->
+                <div class="w-6 h-6 rounded-md bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-medium text-text-primary">暗夜红光照明与避光习惯</span>
+              </div>
+              <svg id="icon-moon" class="w-3.5 h-3.5 text-text-tertiary transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div id="collapse-moon" class="collapse-content px-3 pb-3 text-[11px] text-text-secondary leading-relaxed border-t border-slate-100/60 pt-2">
+              眼睛需约20分钟适应完全黑暗。夜间仅使用微弱红光手电，避免频繁查看明亮的手机屏幕破坏暗适应视紫红质。
+            </div>
+          </div>
+
+          <!-- 条目 3：夜间保暖与防潮装备 (背包图标) -->
+          <div class="border border-slate-100 rounded-xl overflow-hidden bg-surface-sub/30">
+            <button class="w-full px-3 py-2.5 flex items-center justify-between text-left tap-scale" onclick="toggleCollapse('collapse-bag', 'icon-bag')">
+              <div class="flex items-center space-x-2.5">
+                <!-- 拟物化背包装备图标 -->
+                <div class="w-6 h-6 rounded-md bg-amber-50/70 border border-gold-border/40 text-gold-primary flex items-center justify-center shrink-0">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-medium text-text-primary">防风外套与镜头除雾带</span>
+              </div>
+              <svg id="icon-bag" class="w-3.5 h-3.5 text-text-tertiary transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div id="collapse-bag" class="collapse-content px-3 pb-3 text-[11px] text-text-secondary leading-relaxed border-t border-slate-100/60 pt-2">
+              秋夜郊外近海湿度大且温差显著，久坐极易体温流失。若携带相机进行延时曝光，务必配齐镜头USB加热除雾带。
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 数据来源 (点击可查看规范与更新时间) -->
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <span class="text-text-tertiary">天文数据源</span>
+          <button id="btnSourceInfo" class="tap-scale text-text-secondary hover:text-text-primary flex items-center space-x-1 font-mono">
+            <span>IAU / IMO · 2026目录</span>
+            <svg class="w-3 h-3 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- 底部安全缓冲 -->
+      <div class="h-4"></div>
+    </main>
+
+    <!-- 底部固定主按钮条 (纯白底，轻柔阴影与分界线，支持按压微反馈与文案切换状态) -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-[390px] bg-white/95 backdrop-blur-md border-t border-slate-border px-4 py-3 z-30 flex items-center space-x-3 shadow-[0_-4px_16px_rgba(0,0,0,0.03)]">
+      <!-- 辅助返回按钮 -->
+      <button onclick="history.back()" class="tap-scale w-11 h-11 rounded-xl bg-surface-sub border border-slate-200 flex items-center justify-center text-text-secondary hover:text-text-primary shrink-0" aria-label="返回">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </button>
+
+      <!-- 主行动按钮：加入观星计划 (可动态切换为“关联此事件”) -->
+      <button id="btnMainAction" class="tap-scale flex-1 h-11 bg-text-primary hover:bg-slate-800 active:bg-black text-white font-medium text-[14px] rounded-xl flex items-center justify-center space-x-2 shadow-xs">
+        <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/>
+        </svg>
+        <span id="btnActionText">加入观星计划</span>
+      </button>
+    </div>
+
+    <!-- 交互抽屉弹层 1: 地点切换选择组件 (带上滑进入/下滑退出动效) -->
+    <div id="modalLocation" class="fixed inset-0 z-50 bg-black/30 backdrop-blur-2xs opacity-0 pointer-events-none transition-opacity duration-200 flex items-end justify-center">
+      <div id="modalLocationCard" class="w-[390px] bg-white rounded-t-2xl p-4 space-y-3 transform translate-y-full transition-transform duration-200 ease-out max-h-[70vh] flex flex-col">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <span class="text-sm font-bold text-text-primary">选择观测基准地点</span>
+          <button id="btnCloseModalLocation" class="text-text-tertiary hover:text-text-primary text-xs p-1">关闭</button>
+        </div>
+        <div class="space-y-2 overflow-y-auto custom-scroll">
+          <div class="p-3 rounded-xl border-2 border-text-primary bg-amber-50/20 flex items-center justify-between cursor-pointer">
+            <div>
+              <div class="text-xs font-bold text-text-primary">星湾观星点 (当前所选)</div>
+              <div class="text-[10px] text-text-tertiary">大鹏半岛南部海角 · Bortle 3</div>
+            </div>
+            <span class="text-xs font-semibold text-text-primary">✓</span>
+          </div>
+          <div class="p-3 rounded-xl border border-slate-200 bg-surface-sub/50 flex items-center justify-between hover:bg-slate-100 cursor-pointer">
+            <div>
+              <div class="text-xs font-medium text-text-primary">山顶观星点</div>
+              <div class="text-[10px] text-text-tertiary">星空保护区 · Bortle 2</div>
+            </div>
+          </div>
+          <div class="p-3 rounded-xl border border-slate-200 bg-surface-sub/50 flex items-center justify-between hover:bg-slate-100 cursor-pointer">
+            <div>
+              <div class="text-xs font-medium text-text-primary">海岸观星点</div>
+              <div class="text-[10px] text-text-tertiary">暗空观测站 · Bortle 3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 交互抽屉弹层 2: 数据来源与版本说明 -->
+    <div id="modalSource" class="fixed inset-0 z-50 bg-black/30 backdrop-blur-2xs opacity-0 pointer-events-none transition-opacity duration-200 flex items-end justify-center">
+      <div id="modalSourceCard" class="w-[390px] bg-white rounded-t-2xl p-4 space-y-3 transform translate-y-full transition-transform duration-200 ease-out">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <span class="text-sm font-bold text-text-primary">数据来源与更新</span>
+          <button id="btnCloseModalSource" class="text-text-tertiary hover:text-text-primary text-xs p-1">完成</button>
+        </div>
+        <div class="text-xs space-y-2 text-text-secondary leading-relaxed">
+          <p><strong class="text-text-primary font-medium">目录基准：</strong>国际天文学联合会流星数据中心（IAU MDC）及国际流星组织（IMO）2026年度工作目录。</p>
+          <p><strong class="text-text-primary font-medium">更新时间：</strong>2026-08-15 静态同步校对。</p>
+          <p class="text-[11px] text-text-tertiary">提示：未到访实测前，星历仅反映几何天文轨道预报，具体目视条件受当天气象影响。</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 展开收起交互逻辑
+    function toggleCollapse(contentId, iconId) {
+      const content = document.getElementById(contentId);
+      const icon = document.getElementById(iconId);
+      if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        icon.classList.remove('rotate-180');
+      } else {
+        content.classList.add('expanded');
+        icon.classList.add('rotate-180');
+      }
+    }
+
+    // 地点模态窗动画
+    const btnSwitchLocation = document.getElementById('btnSwitchLocation');
+    const modalLocation = document.getElementById('modalLocation');
+    const modalLocationCard = document.getElementById('modalLocationCard');
+    const btnCloseModalLocation = document.getElementById('btnCloseModalLocation');
+
+    btnSwitchLocation.addEventListener('click', () => {
+      modalLocation.classList.remove('opacity-0', 'pointer-events-none');
+      modalLocationCard.classList.remove('translate-y-full');
+    });
+
+    function hideLocationModal() {
+      modalLocation.classList.add('opacity-0', 'pointer-events-none');
+      modalLocationCard.classList.add('translate-y-full');
+    }
+    btnCloseModalLocation.addEventListener('click', hideLocationModal);
+    modalLocation.addEventListener('click', (e) => {
+      if (e.target === modalLocation) hideLocationModal();
+    });
+
+    // 数据源弹窗动画
+    const btnSourceInfo = document.getElementById('btnSourceInfo');
+    const modalSource = document.getElementById('modalSource');
+    const modalSourceCard = document.getElementById('modalSourceCard');
+    const btnCloseModalSource = document.getElementById('btnCloseModalSource');
+
+    btnSourceInfo.addEventListener('click', () => {
+      modalSource.classList.remove('opacity-0', 'pointer-events-none');
+      modalSourceCard.classList.remove('translate-y-full');
+    });
+
+    function hideSourceModal() {
+      modalSource.classList.add('opacity-0', 'pointer-events-none');
+      modalSourceCard.classList.add('translate-y-full');
+    }
+    btnCloseModalSource.addEventListener('click', hideSourceModal);
+    modalSource.addEventListener('click', (e) => {
+      if (e.target === modalSource) hideSourceModal();
+    });
+
+    // 检查URL参数或者点击模拟：若从计划编辑入口进入，按钮文案切换为“关联此事件”
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromEdit = urlParams.get('from') === 'edit';
+    const btnActionText = document.getElementById('btnActionText');
+    if (fromEdit) {
+      btnActionText.innerText = '关联此事件';
+    }
+
+    // 主按钮点击微反馈
+    const btnMainAction = document.getElementById('btnMainAction');
+    btnMainAction.addEventListener('click', () => {
+      if (btnActionText.innerText === '加入观星计划') {
+        btnActionText.innerText = '已加入计划清单';
+        btnMainAction.classList.remove('bg-text-primary');
+        btnMainAction.classList.add('bg-emerald-600');
+        setTimeout(() => {
+          btnActionText.innerText = '加入观星计划';
+          btnMainAction.classList.remove('bg-emerald-600');
+          btnMainAction.classList.add('bg-text-primary');
+        }, 2200);
+      }
+    });
+  </script>
+</body>
+</html>

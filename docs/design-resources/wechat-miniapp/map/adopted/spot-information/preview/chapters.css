@@ -22,23 +22,14 @@
 .source-row button,.more-site summary{color:#687c72}
 #cloud-action{background-color:#687c73}
 #fixed-actions button:not(#cloud-action){color:#5d6a63;border-color:#e3e8e3}
-#fixed-actions{background:#fff}.date-bar{display:flex;align-items:center;gap:4px;min-height:40px}.date-bar button{min-height:44px;color:#5e7167}.date-bar button:disabled{opacity:.25;cursor:default}#date-open{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;min-width:185px;justify-content:center}#date-prev,#date-next{width:32px;font-size:23px}#date-today{font-size:11px;margin-left:auto}
-.timeline-card{padding:8px 16px 9px}
-#time-ruler{height:84px;margin:0 -4px}#time-track{height:84px}#time-track button{height:78px;gap:4px}#time-track .tick-moon{width:16px;height:16px}#time-track i{height:7px}.time-center{top:28px;height:12px;background:#8da799}
-#time-track button[aria-pressed=true]{color:#536e5f}#night-time-label{font-size:10px;color:#7b857f;text-align:center;margin:0}
+#fixed-actions{background:#fff}
 .moon-card h3,.weather-card>h3{font-size:13px;font-weight:600;line-height:20px;margin:0 0 10px;color:#303936}
 .moon-summary{display:flex;align-items:center;gap:12px;margin:0 0 12px}.moon-summary>img{width:44px;height:44px}.moon-summary strong{font-size:14px;font-weight:500}.moon-summary p{font-size:11px;color:#707c75;margin:5px 0 0}.moon-events{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:9px 0;border-top:1px solid #f0f2f0;border-bottom:1px solid #f0f2f0}.moon-events>div{display:flex;flex-direction:column;gap:5px}.moon-events span{font-size:11px;color:#778179}.moon-events strong{font-size:12px;font-weight:400}
 .evidence-group{background:transparent;border-radius:0;margin:0;padding:10px 0;border-bottom:1px solid #eef1ed}.evidence-group:last-of-type{border:0}.evidence-group h4{color:#677c70}.evidence-group h4 svg{color:#8ca195}.evidence-group h4{margin-bottom:7px}
 .lunar-facts .evidence-group h4{display:none}.lunar-facts .metric-group{grid-template-columns:repeat(2,minmax(0,1fr))}.lunar-facts .metric-group>div:first-child{display:none}
 .metric-group dd{font-size:14px;font-weight:500;color:#344039}.metric-group dt{color:#737e77}.measurement-note{margin:7px 0 0}
 .night-light{display:flex;min-height:55px}.targets{margin:0 0 9px}.targets h3{font-size:13px;color:#4d5b53;font-weight:600;margin-bottom:7px}.source-card .more-site{border:0}.source-card .source-row{padding-top:0}
-#date-picker{border:0;border-radius:18px 18px 0 0;padding:20px 20px 28px;width:min(100vw,430px);max-width:100vw;margin:auto auto 0;color:#37423c;background:#fff;box-sizing:border-box}
-#date-picker::backdrop{background:#15221b55}
-#date-picker header{position:static!important;height:auto;display:flex;align-items:center;justify-content:space-between;pointer-events:auto}
-#date-picker h2{font-size:16px;font-weight:600;margin:0}#calendar-close{width:44px;height:44px;font-size:25px}#date-picker p{font-size:12px;color:#738077;margin:4px 0 16px}
-.calendar-week,#calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.calendar-week{text-align:center;font-size:11px;color:#859087;margin:10px 0}.calendar-week span{padding:4px}
-#calendar-days button{position:relative;min-height:44px;border-radius:10px;font-size:13px}#calendar-days button:disabled{color:#c4cbc6;cursor:default}#calendar-days button[aria-pressed=true]{background:#f4f6ee;box-shadow:inset 0 0 0 1px #9dad9b;color:#4c6555;font-weight:600}#calendar-days small{display:block;font-size:8px;line-height:10px}#date-picker .calendar-note{font-size:10px;line-height:17px;margin:16px 0 0}
 @media(prefers-reduced-motion:reduce){#section-nav,#chapter-indicator{transition:none}}
 #section-nav>div>span{color:#6d7972!important}
 #cloud-action{background-color:#65796f}
-.metric-group dt,.moon-events span,.moon-summary p,#night-time-label{color:#67736d}
+.metric-group dt,.moon-events span,.moon-summary p{color:#67736d}

@@ -26,6 +26,30 @@
 - In the native App profile, planning uses cool blue-white surfaces, night uses near-black navy depth with limited blue, and red-light observation is restricted to the six registered black/warm-red values. The Mini Program has its own role-isomorphic day/night/observation values in `DESIGN.md`; neither profile supplies values to the other. Physical/material cues remain concentrated in selected physical subjects rather than every data container.
 - Visual identity and exact tokens are owned by DESIGN.md. Product responsibility, information architecture, interactions, and state behavior are owned by project_context/**.
 
+## Mini Program design quality expectation
+
+The primary goal is to continuously refine the project’s understanding of the owner’s visual preferences and UIUX principles from accumulating design resources, explicit feedback and adopted revisions. Design decisions should become better grounded as that understanding improves. Adoption of a page records acceptance within its scope; it supplies no objective quality score, completion level or universal template. Follow [continuous design calibration](context-maintenance.md#持续校准设计系统与用户偏好) to update existing owners, distinguish general principles from page-specific choices and replace obsolete rules.
+
+Unless explicitly asking for wireframes or structure-only work, “做一版看看” authorizes a finished design proposal, including refinement within the requested scope; it does not mean a plain scaffold awaiting a separate beautification request. Repeated “太丑、再优化” feedback identified an overly conservative first-pass interpretation, not a request for a permanently minimalist product.
+
+“克制、简洁” governs competing emphasis, redundant content and unnecessary interaction. It does not remove expressive cards, crafted icons, appropriate material depth or fluid transitions. Choose these according to the page's real purpose; never manufacture information to make a screen look richer. The concrete visual rules and adopted examples are owned by [DESIGN.md §1.3](../DESIGN.md#13-设计判断与视觉表达); page scope and the sole adopted resources remain with Screen Contracts.
+
+Before a new page, use its task, current principles and applicable confirmed preferences to form a design hypothesis. Inspect relevant resources as concrete examples with known scope, not as a mandatory finish threshold. Check the rendered result for specific composition/interaction problems and revise those within the request before presenting it. A functional prototype or a list of compliant tokens does not establish visual quality. User preference still decides adoption; no mechanical score, mandatory extra variants or promise of guaranteed first-pass approval is introduced.
+
+## Design concepts and scope
+
+These concepts describe different kinds of decisions. A useful design resource can contain examples of all of them; its adoption does not make every detail a general principle.
+
+| Concept | Definition and applicability | Example / owner |
+| --- | --- | --- |
+| UIUX design principles | Explain how people perceive information, understand state and complete actions. Generalization requires a user need, mechanism, applicable conditions and exceptions; a principle is not a favorite visual treatment. “General” may mean across relevant Mini Program scenarios, not every platform or situation. | Reading hierarchy, feedback at the action, reversible cancellation and state continuity. Shared visual/information expression belongs to DESIGN.md; cross-control interaction semantics belong to the relevant Screen Contract. |
+| Visual style preferences | The owner's context-dependent aesthetic inclinations. Record what was liked/disliked and its scope; these are revisable preferences, not universal usability laws or exact component specifications. | Preference for rounded, cute, materially expressed illustrations; liking a glass card in My does not imply glass everywhere. Preference meaning is here; concrete visual expression belongs to DESIGN.md. |
+| Project visual style | A coherent visual language chosen for this product/platform: typography hierarchy, palette relationships, spatial rhythm, shapes, icon treatment, material and motion character. It translates applicable preferences into compatible choices rather than collecting every liked effect. | The Mini Program and native App have independent profiles, owned by DESIGN.md. New feedback can refine a profile without mechanically changing every page. |
+| Design system | Reusable implementation and composition rules that make the chosen style and interaction principles consistent: semantic tokens, component anatomy, variants, states, accessibility and motion behavior. Style is one input to the system, not a synonym for the whole system. | Shared time control geometry and behavior, button states and semantic color roles; use existing DESIGN/component/Screen Contract owners, with code owning implementation. |
+| Page or business decision | A choice whose meaning depends on a particular task, entity, state or layout. It may demonstrate a broader principle but is not itself promoted to a universal rule. | Plan cards show at most three upcoming items; My uses a specific SUV; drafts are saved remotely. Screen Contract owns business/interaction meaning; adopted resources own concrete page composition. |
+
+When generalizing feedback, identify what problem the user corrected and why the change helps. Distinguish the underlying reusable principle from the selected visual technique and local parameter. An explicit broadly scoped instruction is sufficient evidence for that scope; repeated choices can support a proposed preference, but repetition alone does not prove universality. Keep an unconfirmed interpretation as a hypothesis, not a settled preference. If scope is unclear, apply the explicit change locally and avoid silently narrowing creative options elsewhere.
+
 ## Architecture Context
 
 - See project_context/architecture.md for the source-of-truth split and current repository boundary.
@@ -49,6 +73,8 @@
 - Contracts, legal/store approval, expert sign-off, representative outdoor/device validation, and site-operation verification are future production-release gates. User spot/media/field-report uploads remain product behavior and are not release-evidence uploads.
 
 ## UX / Screen Brief
+
+- **同一对象的跨场景一致性（Mini Program）**：不同场景中表达同一业务对象的组件，尽量保持一致或较高相似度，以降低重复识别与学习成本。共同保留对象身份、核心信息层级、主要视觉线索和可预期的交互反馈；场景差异通过补充信息与明确动作表达。这里“观星点”是业务对象，“观星点卡片”是它的可复用表现组件。原则约束共同识别结构，不要求不同任务拥有完全相同的字段、权限或点击目的地；差异必须清楚可见。用户明确的通用UIUX原则，不是由单页采用推导的审美偏好。
 
 - Primary mobile viewport: 390 × 844; important touch targets are at least 44px and fixed actions respect safe areas.
 - Existing native App representative surfaces remain independently owned. The current WeChat Mini Program surface and navigation model is owned by `project_context/areas/main/screen-contracts/wechat-miniapp.md`: Map and My are its only primary destinations; Map owns a dedicated point-search child and the continuous basic-plus-astronomy spot information panel, while `sky/detail` is the only full-sky child route.

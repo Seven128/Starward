@@ -17,8 +17,5 @@ apps/wechat-miniapp/src/**/*.scss text eol=lf
 Makefile text eol=lf
 *.png binary
 *.woff2 binary
-docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/** -text
-docs/design-resources/miniapp-design-system-2026-09-02-sky-canvas-field-signal/selected-source/** -text whitespace=-trailing-space
 # Preserve exported resources and evidence exactly for their recorded content hashes.
-docs/design-resources/map-my-ui-reconstruction/** -text
-docs/design-resources/wechat-miniapp/** -text
+docs/design-resources/wechat-miniapp/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol

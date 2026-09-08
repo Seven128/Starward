@@ -1,0 +1,28 @@
+{
+  "hostModel": "unknown",
+  "hostEffort": "unknown",
+  "hostSource": "not exposed by current host",
+  "stitchMode": "均衡",
+  "stitchModel": "unknown",
+  "usage": null,
+  "usageReason": "工具未提供token或费用用量",
+  "head": "86101d32c7f31be69bb32756a593375df150f7f4",
+  "files": [
+    {
+      "file": "prompt.txt",
+      "sha256": "8d09e9e3ce51a52e01605c3922ce904ac6d87a7ff3d398b5a4465f69dc74ecc9"
+    },
+    {
+      "file": "reference/event-list.png",
+      "sha256": "07ac9fc440b931db34646dd9daab7e3ec3008aa0a0012af01c564ac43739cb1d"
+    },
+    {
+      "file": "reference/feedback-form.png",
+      "sha256": "0cad7bce1a8f30ea0e9e70ee4c4eecd2fa564f7e12bfc74c1fcfcb496e44ab93"
+    },
+    {
+      "file": "raw/stitch-export.zip",
+      "sha256": "9a2d255a42159bc0bb77348359982f52c879599444984b11e0955b67b1e74115"
+    }
+  ]
+}

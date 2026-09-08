@@ -5,9 +5,9 @@
 ## 开发必须读取
 
 - [可运行、可编辑原型](preview/index.html?extent=medium)：同一套HTML/CSS/JS，无需重新生成；small、medium、large通过extent参数选择。开发严格还原这些已采用资源，并遵循Screen Contract的真实数据/交互边界。
-- 基准截图：[小档](reference/small.jpg)、[中档](reference/medium.jpg)、[大档](reference/large.jpg)、[大档多图](reference/large-media.jpg)、[天文](reference/astronomy.jpg)、[想去选中](reference/favorite-active.jpg)。390×844逻辑视口，截图原样保存；实际编码尺寸由文件给出。
+- 基准截图：[小档](reference/small.jpg)、[中档](reference/medium.jpg)、[大档](reference/large.jpg)、[大档多图](reference/large-media.jpg)、[天文](reference/astronomy-shared.jpg)、[想去选中](reference/favorite-active.jpg)。390×844逻辑视口，截图原样保存；实际编码尺寸由文件给出。
 - 动效与图标：preview/meteor.js和meteor.css；背景/动作顺序：preview/scenes.js；相册/拖区：preview/gestures.js；章节/日期：preview/chapters.js；最终样式同时受其余级联CSS控制，不只复制最后一个文件。
-- [来源、提示词与历史验证](../../20260907-stitch-b-refinement/feedback-13/INDEX.md)。采用对象为最终Codex交互修订；Stitch原稿和更早反馈稿属于来源，不是另一份当前开发基准。
+- [来源、提示词与历史验证](provenance/README.md)。采用对象为最终Codex交互修订；Stitch原稿和更早反馈稿属于来源，不是另一份当前开发基准。
 
 ## 已确认内容与动效
 
@@ -24,3 +24,7 @@
 与设备相关的字体、安全区和原生显示须映射实际WEAPP；其他屏宽保持字号和控件尺度，以容器自适应，不能缩放整张图。按当前数据/状态和固定视口比较真实WEAPP截图，核对布局、字体、颜色、图标、图片和动态行为。样例的固定高度、日期、媒体数量不是业务上限。网页动效/截图检查不等于生产或真机验证；服务覆盖、授权/分享/导航、失败恢复、可访问性仍按现有owner实现。
 
 本次仅收敛已确认组件，不替代未评审页面、地图图层或夜间/观测模式设计。
+
+## 公共日期时间组件
+
+2026-09-08按用户要求，将原型日期/日历/时间尺提取到 [共用资源](../../../shared/observation-time/README.md)，本原型与图层预览同时使用。已采用的字号、曲率与月相顺序保留；底部说明不再重复中心时间，窄屏日期目标扩足44px。原先页面内重复的日历/手势与样式已移除。当前天文截图为 `reference/astronomy-shared.jpg`；原 `astronomy.jpg` 仅保留提取前参考，其他档位基准不变。生产Taro公共组件尚未迁移。

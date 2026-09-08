@@ -1,0 +1,25 @@
+{
+  "head": "86101d32c7f31be69bb32756a593375df150f7f4",
+  "files": [
+    {
+      "path": "DESIGN.md",
+      "sha256": "7ee64fe0612492570237a05ac48d7b35b8d356eb27baa1a6be35f86656080657"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "sha256": "3dd75a565bafe725145601824da82a95532c62645a20672d5aff818fc4109d90"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "2100daa10a40c2b01da6ad877d5df20d00d4eccdc5a808cf80519d86af8eff51"
+    },
+    {
+      "path": "packages/astronomy-core/data/gaia-dr3-bright-stars.v1.manifest.json",
+      "sha256": "f28379bcf103712bbcd0ea57ae1d620194ee1059e2267524982a63b227fa1b8c"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/shared/observation-time/control.js",
+      "sha256": "d4a8278a112b9b70fb09f50e2d77ad8d3da27e36e2b028ef6ec0283da13ad707"
+    }
+  ]
+}

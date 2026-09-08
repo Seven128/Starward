@@ -1,0 +1,57 @@
+[
+  {
+    "address": "东岸路观景步道入口",
+    "iconSize": [
+      14,
+      14
+    ],
+    "iconTop": 2,
+    "slotHeight": 16,
+    "textLineHeight": "16px",
+    "topDifference": 0
+  },
+  {
+    "address": "水库北侧步道入口",
+    "iconSize": [
+      14,
+      14
+    ],
+    "iconTop": 2,
+    "slotHeight": 16,
+    "textLineHeight": "16px",
+    "topDifference": 0
+  },
+  {
+    "address": "海角路山顶步道",
+    "iconSize": [
+      14,
+      14
+    ],
+    "iconTop": 2,
+    "slotHeight": 16,
+    "textLineHeight": "16px",
+    "topDifference": 0
+  },
+  {
+    "address": "松风山南侧入口",
+    "iconSize": [
+      14,
+      14
+    ],
+    "iconTop": 2,
+    "slotHeight": 16,
+    "textLineHeight": "16px",
+    "topDifference": 0
+  },
+  {
+    "address": "青岚山步道东入口",
+    "iconSize": [
+      14,
+      14
+    ],
+    "iconTop": 2,
+    "slotHeight": 16,
+    "textLineHeight": "16px",
+    "topDifference": 0
+  }
+]

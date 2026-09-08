@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>今晚去观星 · 图层与时间</title>
+  
+<link rel="stylesheet" href="rendered.css"><link rel="stylesheet" href="../../../../shared/observation-time/control.css"><link rel="stylesheet" href="interaction.css"></head>
+<body>
+
+  <div class="phone-container flex flex-col select-none">
+    
+    <!-- 1. MAP BACKGROUND & GEOGRAPHIC CONTEXT -->
+    <div class="map-bg">
+      <svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+        <!-- Land base -->
+        <rect width="390" height="844" fill="#e9efe6" />
+        
+        <!-- Water body / Sea / Coastline -->
+        <path d="M-10 260 C 70 270, 120 300, 160 315 C 220 340, 260 410, 310 400 C 350 390, 380 430, 410 450 L 410 850 L -10 850 Z" fill="#d7e8ee" />
+        <path d="M260 145 C 275 140, 295 155, 290 180 C 285 200, 265 205, 255 190 C 250 170, 252 150, 260 145 Z" fill="#cde0e7" stroke="#baced6" stroke-width="1"/>
+        
+        <!-- Mountain / Hills contour shading -->
+        <path d="M 60 120 Q 140 80 230 130 T 360 190" stroke="#d5e2d1" stroke-width="24" stroke-linecap="round" fill="none" opacity="0.6"/>
+        <path d="M 120 220 Q 210 180 320 240" stroke="#d5e2d1" stroke-width="32" stroke-linecap="round" fill="none" opacity="0.6"/>
+        <path d="M -20 200 Q 80 180 160 250" stroke="#dbe7d8" stroke-width="28" stroke-linecap="round" fill="none" opacity="0.6"/>
+
+        <!-- Minor green parks -->
+        <circle cx="210" cy="180" r="35" fill="#dbebd7" />
+        <circle cx="280" cy="270" r="45" fill="#dcecd8" />
+        <circle cx="100" cy="150" r="40" fill="#dcecd8" />
+
+        <!-- Road Casings & Secondary roads -->
+        <path d="M -20 120 C 80 150, 130 190, 190 280 C 240 350, 290 330, 410 320" stroke="#e0ded6" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <path d="M -20 120 C 80 150, 130 190, 190 280 C 240 350, 290 330, 410 320" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/>
+        
+        <path d="M 90 80 C 110 160, 140 230, 182 360" stroke="#e0ded6" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M 90 80 C 110 160, 140 230, 182 360" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- Primary Road (Y268) -->
+        <path d="M -20 220 Q 60 230 130 290 T 260 380 T 410 370" stroke="#f6cca0" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M -20 220 Q 60 230 130 290 T 260 380 T 410 370" stroke="#fed89f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+        <!-- Geographic Place Names (Subtle & Clean) -->
+        <text x="120" y="150" fill="#8d9987" font-size="10" font-weight="500">橘仔铺</text>
+        <text x="195" y="240" fill="#8d9987" font-size="10" font-weight="500">崖头顶</text>
+        <path d="M188 238 L191 233 L194 238 Z" fill="#8d9987" />
+        <text x="255" y="210" fill="#8d9987" font-size="10" font-weight="500">扯旗角</text>
+        <path d="M248 208 L251 203 L254 208 Z" fill="#8d9987" />
+        <text x="280" y="250" fill="#8d9987" font-size="10" font-weight="500">风田</text>
+        <text x="135" y="105" fill="#a4b29e" font-size="10" font-weight="500">沙澳坪</text>
+        <text x="340" y="270" fill="#8d9987" font-size="10" font-weight="500">大围</text>
+
+        <!-- Route label badge -->
+        <rect x="35" y="246" width="34" height="15" rx="3" fill="#ffffff" stroke="#d5d8db" stroke-width="0.8"/>
+        <text x="52" y="257.5" fill="#58636d" font-size="8.5" font-weight="600" text-anchor="middle">Y268</text>
+      </svg>
+
+      <!-- Local Cloud Sample Boundary (Strictly bounded around Star Bay spot) -->
+      <div class="cloud-bound-sample" style="top: 295px; left: 112px;"></div>
+
+      <!-- No active spot while the map layer presentation owns focus. -->
+      <!-- Map attribution (standard lightweight OpenStreetMap disclaimer) -->
+      <div class="absolute left-3 bottom-[428px] z-10 bg-white/80 backdrop-blur-xs px-2 py-0.5 rounded text-[9.5px] text-gray-500 border border-gray-200/60 flex items-center gap-1 shadow-2xs">
+        <span>© OpenStreetMap 贡献者</span>
+      </div>
+    </div>
+
+    <!-- 2. TOP HEADER & FIXED STATUS BAR (Z-20) -->
+    <div class="relative z-20 w-full pt-3 px-5 flex items-center justify-between pointer-events-auto">
+      <!-- 9:41 Status Bar standard time -->
+      <span class="text-[15px] font-semibold tracking-tight text-gray-900 pl-1 font-['Plus_Jakarta_Sans']">9:41</span>
+      
+      <!-- Native Mobile Status Icons (Signal, Wifi, Battery) -->
+      <div class="flex items-center gap-1.5 pr-1">
+        <!-- Cellular Signal -->
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none" class="text-gray-900">
+          <rect x="0.5" y="8" width="2.5" height="3" rx="0.6" fill="currentColor"/>
+          <rect x="4.5" y="5.5" width="2.5" height="5.5" rx="0.6" fill="currentColor"/>
+          <rect x="8.5" y="3" width="2.5" height="8" rx="0.6" fill="currentColor"/>
+          <rect x="12.5" y="0.5" width="2.5" height="10.5" rx="0.6" fill="currentColor"/>
+        </svg>
+        <!-- Wifi -->
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" class="text-gray-900">
+          <path d="M7.5 3C9.7 3 11.6 3.8 13.1 5.2L14.2 4.1C12.4 2.4 10.1 1.4 7.5 1.4C4.9 1.4 2.6 2.4 0.8 4.1L1.9 5.2C3.4 3.8 5.3 3 7.5 3Z" fill="currentColor"/>
+          <path d="M7.5 6.4C8.8 6.4 10 6.9 10.9 7.8L12 6.7C10.8 5.6 9.2 4.9 7.5 4.9C5.8 4.9 4.2 5.6 3 6.7L4.1 7.8C5 6.9 6.2 6.4 7.5 6.4Z" fill="currentColor"/>
+          <circle cx="7.5" cy="9.8" r="1.2" fill="currentColor"/>
+        </svg>
+        <!-- Battery -->
+        <div class="w-5 h-2.5 border border-gray-900 rounded-[2.5px] p-[1px] flex items-center">
+          <div class="h-full w-3 bg-gray-900 rounded-[1.5px]"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. BRAND TITLE & WECHAT MINI-PROGRAM CAPSULE (Z-20) -->
+    <div class="relative z-20 w-full px-4 pt-2.5 pb-2 flex items-center justify-between pointer-events-auto">
+      <h1 class="text-[19px] font-bold text-gray-900 tracking-normal pl-0.5">今晚去观星</h1>
+      
+      <!-- WeChat Mini Program Capsule standard widget (87x32, 16px radius, thin border) -->
+      <div class="h-[32px] w-[87px] bg-white/90 backdrop-blur-md rounded-full border border-gray-200/80 flex items-center justify-between px-2.5 shadow-2xs">
+        <div class="w-4 flex items-center justify-center text-gray-800">
+          <!-- Capsule three dots -->
+          <svg width="16" height="4" viewBox="0 0 16 4" fill="currentColor">
+            <circle cx="2" cy="2" r="1.5"/>
+            <circle cx="8" cy="2" r="1.5"/>
+            <circle cx="14" cy="2" r="1.5"/>
+          </svg>
+        </div>
+        <div class="w-[1px] h-3.5 bg-gray-200"></div>
+        <div class="w-4 flex items-center justify-center text-gray-800">
+          <!-- Capsule outer circle dot -->
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. SEARCH BAR: Identical to adopted search page reference (top: 90px, height: 36px, font: 13px, padding: 0 16px, no shadow) -->
+    <div class="absolute left-0 right-0 top-[90px] z-20 px-4 pointer-events-auto">
+      <div class="w-full h-[36px] bg-white rounded-full border border-gray-200/90 flex items-center px-3.5 gap-2 transition-all">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="6.5" cy="6.5" r="5"/>
+          <line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/>
+        </svg>
+        <span class="text-[13px] text-gray-400 font-normal">搜索观星点</span>
+      </div>
+    </div>
+
+    <!-- 5. FLOATING MAP BUTTONS (RIGHT SIDE: Location & Active Layer Toggle) -->
+    <div id="map-tool-dock" class="absolute right-4 top-[142px] z-20 flex flex-col gap-2.5 items-center pointer-events-auto">
+      <!-- Location Button (40x40 visible, touch target 44px) -->
+      <button class="w-[40px] h-[40px] bg-white rounded-full shadow-sm border border-gray-200/80 flex items-center justify-center text-gray-700 hover:bg-gray-50 active:scale-95 transition-transform" aria-label="定位">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+        </svg>
+      </button>
+
+      <!-- Layer Toggle Button: Active Open State (Extremely subtle neutral/warm tint with crisp inner border, no dark filled pill, visible 40x40, min 44px tap target) -->
+      <button class="relative w-[40px] h-[40px] rounded-full bg-[#fdfbf7] border-[1.5px] border-[#d8c29a] shadow-xs flex items-center justify-center text-[#8e6e30] active:scale-95 transition-transform" id="layer-toggle" aria-label="图层" aria-expanded="true" aria-controls="layer-panel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
+        </svg>
+        <!-- Subtle active status indicator dot -->
+        <span class="absolute top-[3px] right-[3px] w-2 h-2 rounded-full bg-[#d89726] ring-1.5 ring-white"></span>
+      </button>
+    </div>
+
+    <!-- 6. COMPACT BOTTOM LAYER & TIME CONTROL PANEL (White card, fixed bottom, seamless integration) -->
+    <div id="layer-panel" class="mt-auto relative z-30 w-full bg-white rounded-t-[24px] shadow-[0_-6px_24px_rgba(0,0,0,0.06)] border-t border-gray-100 flex flex-col pt-3 pb-2 pointer-events-auto">
+      
+      <div id="layer-time-region"><div class="time-clip"><section id="layer-time" aria-label="观测日期与时间"></section></div></div>
+      <p id="layer-source"></p>
+
+      <!-- D. OFFICIAL CLOUD COVER LEGEND (Authoritative 3-segment color dots and ranges) -->
+      <div id="layer-legend" class="w-full px-5 py-1 flex items-center justify-center gap-4 text-[11.5px] text-gray-600">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: #4E8E9B;"></span>
+          <span>少云 0–30%</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: #76AAB2;"></span>
+          <span>中等 31–65%</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: #A9C9CE;"></span>
+          <span>多云 66–100%</span>
+        </div>
+      </div>
+
+      <!-- E. DUAL RADIO CARDS: "光污染" VS "云量" (Equal-width, full-card clickable, min 44px touch height, clear checkbox checkmark) -->
+      <div role="radiogroup" aria-label="地图图层" class="w-full px-4 pt-2.5 pb-2 grid grid-cols-2 gap-3">
+        
+        <!-- Option 1: 光污染 (Unselected State) -->
+        <button class="layer-card-unselected relative h-[52px] rounded-xl px-3 flex items-center justify-between text-left transition-all active:scale-[0.98] overflow-hidden" data-layer="LIGHT" role="radio" aria-checked="false" aria-label="光污染">
+          <!-- Abstract light pollution texture background -->
+          <div class="absolute inset-0 opacity-[0.07] pointer-events-none flex items-center justify-end pr-2">
+            <svg width="70" height="40" viewBox="0 0 70 40" fill="none">
+              <circle cx="50" cy="20" r="16" fill="#f59e0b"/>
+              <circle cx="20" cy="15" r="8" fill="#d97706"/>
+              <circle cx="35" cy="30" r="10" fill="#fbbf24"/>
+            </svg>
+          </div>
+          
+          <div class="relative z-10 flex flex-col justify-center">
+            <span class="text-[13px] font-semibold text-gray-700">光污染</span>
+            <span class="text-[10px] text-gray-400 font-normal">夜光年度估算</span>
+          </div>
+
+          <!-- Unchecked Radio Circle -->
+          <div class="relative z-10 w-[18px] h-[18px] rounded-full border border-gray-300 bg-white flex items-center justify-center">
+          </div>
+        </button>
+
+        <!-- Option 2: 云量 (Selected State: Restrained border, light tinted surface, clear checkmark) -->
+        <button class="layer-card-selected relative h-[52px] rounded-xl px-3 flex items-center justify-between text-left transition-all active:scale-[0.98] overflow-hidden" data-layer="TOTAL_CLOUD" role="radio" aria-checked="true" aria-label="云量">
+          <!-- Abstract cloud ripple texture background -->
+          <div class="absolute inset-0 opacity-[0.14] pointer-events-none flex items-center justify-end pr-1">
+            <svg width="80" height="45" viewBox="0 0 80 45" fill="none">
+              <path d="M10 28 C 25 15, 45 35, 75 18" stroke="#4E8E9B" stroke-width="4" stroke-linecap="round"/>
+              <path d="M20 38 C 35 25, 55 38, 70 30" stroke="#76AAB2" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <div class="relative z-10 flex flex-col justify-center">
+            <span class="text-[13px] font-bold text-[#1f4a52]">云量</span>
+            <span class="text-[10px] text-[#4e7d85] font-medium">选定时刻气象</span>
+          </div>
+
+          <!-- Checked Indicator Circle with Checkmark icon -->
+          <div class="relative z-10 w-[19px] h-[19px] rounded-full bg-[#356d77] flex items-center justify-center shadow-2xs">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- 7. BOTTOM MAIN NAVIGATION: 地图 / 我的 (Z-40, Pure white bar with safe area) -->
+    <div id="primary-nav" class="relative z-40 w-full bg-white border-t border-gray-100 px-6 pt-2 pb-1 flex justify-around items-center">
+      <!-- Nav Item 1: 地图 (Active) -->
+      <div class="flex items-center gap-1.5 py-1 px-3 text-gray-900 cursor-pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+          <line x1="8" y1="2" x2="8" y2="18"/>
+          <line x1="16" y1="6" x2="16" y2="22"/>
+        </svg>
+        <span class="text-[13.5px] font-bold">地图</span>
+      </div>
+
+      <!-- Nav Item 2: 我的 (Inactive) -->
+      <div class="flex items-center gap-1.5 py-1 px-3 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="text-[13.5px] font-medium">我的</span>
+      </div>
+    </div>
+
+    <!-- 8. iOS Home Indicator Bar -->
+    <div class="relative z-40 w-full bg-white pb-2 flex justify-center">
+      <div class="w-[134px] h-[5px] bg-gray-900 rounded-full"></div>
+    </div>
+
+  </div>
+
+<script src="../../spot-information/preview/moon-data.js"></script><script src="../../../../shared/observation-time/control.js?v=20260908-snap-date"></script><script src="interaction.js"></script></body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "status": "adopted",
+  "date": "2026-09-08",
+  "head": "86101d32c7f31be69bb32756a593375df150f7f4",
+  "promptSha256": "16ecb4ae37cbf8a2eed16a56908e05c2537b9091fd32dec7d7c16b57f364eefb",
+  "hostModel": "unknown",
+  "hostEffort": "unknown",
+  "stitchProject": "1643718854829580633",
+  "visibleMode": "均衡",
+  "serviceModel": "unknown",
+  "generationSubmissions": 1,
+  "newScreens": 2,
+  "extraOutputs": [
+    "theme/design board"
+  ],
+  "technicalRetries": 0,
+  "usage": null,
+  "usageReason": "No reliable per-run usage shown",
+  "rawZip": "raw/stitch-export.zip",
+  "browserRuntime": "26.901.51231",
+  "implementation": "Codex local interactive reinterpretation; raw untouched",
+  "adopted_at": "2026-09-08",
+  "user_authorization": "本轮用户要求优化并统一采用反馈至天文事件全部资源"
+}

@@ -1,0 +1,35 @@
+.choice-row{align-items:center;gap:6px}.choice-row>span{width:64px;flex:none}.choice-group{display:flex;justify-content:flex-end;gap:4px;flex:1}.choice-group button{position:relative;border:0;background:transparent;border-radius:6px;padding:5px 7px;color:#929aa5;font-size:11px;white-space:nowrap;min-height:28px;transition:background 150ms,color 150ms}.choice-group button:before{content:"";position:absolute;inset:-8px -1px}.choice-group button[aria-checked=true]{background:#eaf2f5;color:#567481;font-weight:600}.choice-group button:hover{background:#f0f4f7}.choice-group button:disabled{cursor:wait}
+.required-mark{color:#d79b99;font-size:12px;font-weight:500;margin-left:2px}.required-address{display:block;font-size:12px;color:#737c88;margin-bottom:8px}.save-area{flex:none;border-top:1px solid #f0f2f5}.save-area .sheet-actions{border:0;padding-bottom:3px}.save-area #save-status{margin:0 16px 7px;height:17px;text-align:left;font-size:10px;line-height:17px;color:#9ca3ad;white-space:nowrap;min-width:0}.save-area .sheet-actions button{height:36px;min-height:36px}
+.map-search,[data-purpose=floating-map-tools]{transition:opacity 190ms ease,visibility 0s 190ms}
+#phone[data-open=true] .map-search,#phone[data-open=true] [data-purpose=floating-map-tools]{opacity:0;visibility:hidden;pointer-events:none}
+#phone[data-open=false] .map-search,#phone[data-open=false] [data-purpose=floating-map-tools]{opacity:1;visibility:visible;transition:opacity 220ms ease 90ms,visibility 0s}
+#candidate{top:125px!important;left:0;right:0;z-index:12;pointer-events:none}.map-search{z-index:20}#candidate .callout-shadow{padding:2px 8px;margin-bottom:3px}#candidate>div:last-child>svg{height:28px}
+#map-touch{position:absolute;inset:82px 0 62px;z-index:5;touch-action:none;cursor:grab;outline:none}#phone[data-open=true] #map-touch{bottom:auto;height:148px}#map-touch:active{cursor:grabbing}
+#nearby-spots{position:absolute;inset:0;z-index:13;pointer-events:none}.nearby-pin{position:absolute;width:38px;height:44px;border:0;background:none;color:#e5c774;pointer-events:auto;touch-action:none;transform:translate(-50%,-50%)}.nearby-pin svg{width:25px;height:31px;filter:drop-shadow(0 2px 2px #0002)}.nearby-pin span{position:absolute;top:31px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;color:#6b7480;background:#ffffffd9;padding:0 4px;border-radius:3px}.nearby-pin[aria-pressed=true] svg{filter:drop-shadow(0 1px 4px #44576744)}
+#spot-presentation{position:absolute;bottom:62px;left:0;right:0;height:368px;z-index:31;overflow:clip;border-radius:18px 18px 0 0;background:white;animation:spot-enter 300ms cubic-bezier(.2,.7,.2,1)}#spot-frame{position:absolute;left:0;bottom:-68.8px;width:100%;height:844px;border:0;background:white}#phone[data-spot-open=true] .map-search,#phone[data-spot-open=true] [data-purpose=floating-map-tools]{opacity:0;visibility:hidden}
+@keyframes spot-enter{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(prefers-reduced-motion:reduce){.map-search,[data-purpose=floating-map-tools],#spot-presentation{animation:none!important;transition:none!important}}
+
+/* Align option text with the input column; retain keyboard-only focus cues. */
+.choice-row{gap:12px}.choice-row>span{width:74px}.choice-group{justify-content:flex-start;margin-left:-7px}
+.evidence textarea:focus,.evidence textarea:focus-visible{outline:none;box-shadow:none}
+.photo-upload:focus-within{outline:none;box-shadow:none}
+.photo-upload:focus:not(:focus-visible){outline:none}
+.photo-upload:focus-visible{outline:2px solid #85bbce;outline-offset:2px}
+.evidence textarea,.photo-upload{-webkit-tap-highlight-color:transparent}
+.save-area #save-status{font-size:11px;letter-spacing:.3px;word-spacing:normal;font-kerning:normal}
+#spot-presentation{border-radius:24px 24px 0 0}
+
+.sheet-heading{gap:10px}.sheet-heading h2{flex:none}.sheet-heading #close-sheet{flex:none}
+.sheet-heading #save-status{margin:0 0 0 auto;min-width:0;text-align:right;font-size:10px;line-height:1.4;letter-spacing:.2px;color:#9ca3ad;white-space:nowrap}
+.sheet-heading #save-status[data-long=true]{font-size:9px;letter-spacing:0}
+.save-area .sheet-actions{padding-bottom:12px}
+
+/* Saved candidates remain selectable on the map; review is distinct from approval. */
+#phone[data-open=false] #candidate{visibility:visible}
+#phone[data-open=false] #candidate .callout-shadow,#phone[data-open=false] #candidate>div:last-child{pointer-events:auto;cursor:pointer}
+#candidate:focus-visible .callout-shadow{outline:2px solid #85bbce;outline-offset:3px}
+#phone[data-open=true] #candidate .callout-shadow{pointer-events:none}
+.review-clock{position:absolute;right:1px;top:-3px;width:14px;height:14px;border:2px solid white;border-radius:50%;background:#b69859;box-shadow:0 1px 3px #29324226}
+.review-clock:before{content:"";position:absolute;width:1px;height:4px;left:4px;top:2px;background:white;border-radius:1px}
+.review-clock:after{content:"";position:absolute;width:3px;height:1px;left:4px;top:5px;background:white;border-radius:1px;transform:rotate(25deg);transform-origin:left}

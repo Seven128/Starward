@@ -1,8 +1,0 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import {hash} from '../../../../../.agents/skills/starward-design-resource/scripts/resource-utils.mjs';
-const dir=path.resolve(import.meta.dirname,'..'),sources=new Map();
-for(const folder of ['docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas/selected-source/assets/icons','apps/wechat-miniapp/src/assets/semantic','apps/wechat-miniapp/src/assets/icons'])for(const name of await fs.readdir(folder))if(name.endsWith('.svg'))sources.set(name,path.join(folder,name));
-await fs.mkdir(path.join(dir,'assets/icons'),{recursive:true});const manifest=[];
-for(const [name,source] of sources){const bytes=await fs.readFile(source),text=bytes.toString();const license=text.match(/@license\s+([^\r\n]*?)\s*-->/)?.[1]??(text.includes('lucide-static')?'lucide-static v1.33.0 / ISC; selected-state fill adaptation':text.includes('Font Awesome')?'Font Awesome Free SVG icons / CC BY 4.0':'Existing Starward semantic artwork; generator tools/miniapp/semantic-art.mjs; reuse within this project only, no separate redistribution license asserted');await fs.writeFile(path.join(dir,'assets/icons',name),bytes);manifest.push({id:'icon-'+name.slice(0,-4),path:'assets/icons/'+name,sha256:hash(bytes),source:source.replaceAll('\\','/'),license,usage:'Shared supplied vocabulary; native vector import. Presence in vocabulary does not imply visible use on every board.'});}
-await fs.writeFile(path.join(dir,'assets/icon-sources.json'),JSON.stringify(manifest,null,2)+'\n');console.log(`Packaged ${manifest.length} existing SVG assets, no fonts`);

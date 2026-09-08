@@ -1,6 +1,0 @@
-interface:
-  display_name: "Starward 设计资源"
-  short_description: "将普通页面设计需求转为可编辑 Figma 资源，真实回看、比较候选并支持局部修改"
-  default_prompt: "使用 $starward-design-resource，沿用当前任务的模型和推理档位，为当前页面生成可编辑设计候选，保留业务与交互，查看真实导出并支持局部修改。"
-policy:
-  allow_implicit_invocation: false

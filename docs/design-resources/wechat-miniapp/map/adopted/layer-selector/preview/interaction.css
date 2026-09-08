@@ -1,0 +1,35 @@
+html,body{width:100%;height:100%;overflow:hidden}body{display:block;min-height:0;font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;color:#41434e}
+.phone-container{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none;box-sizing:border-box;max-width:none}
+#layer-panel{flex:none;box-shadow:none;border-color:#f1f2f4;border-radius:18px 18px 0 0;padding-top:4px;padding-bottom:4px}
+#layer-panel[hidden]{display:none}
+#layer-legend{display:flex;gap:14px;font-size:10px;line-height:18px;padding:2px 16px}
+#layer-legend>span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+#layer-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none}
+[data-layer]{border:1px solid #eceef0!important;box-shadow:none!important;outline-offset:2px}
+[data-layer][aria-checked=true]{background:#f6faf9;border-color:#71999f!important;box-shadow:inset 0 0 0 .5px #71999f!important}
+[data-layer][aria-checked=false]{background:#fff}
+[data-layer] .layer-check{position:relative;z-index:10;width:19px;height:19px;flex:none;border:1px solid #cbd2d9;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff}
+[data-layer][aria-checked=true] .layer-check{background:#356d77;border-color:#356d77}
+[data-layer] .layer-title{font-size:13px;font-weight:500;color:#41434e}
+[data-layer] .layer-title{display:flex;align-items:center;gap:5px}
+[data-layer] .layer-icon{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+[data-layer][aria-checked=true] .layer-title{color:#315c64;font-weight:600}
+[data-layer] .layer-subtitle{color:#9298a2;font-size:10px;font-weight:400}
+#layer-toggle{min-width:44px;min-height:44px}
+#layer-toggle[aria-expanded=false]{border-color:transparent;background:#fff}
+#layer-toggle[aria-expanded=false]>span{display:none}
+body[data-layer-open=false] #primary-nav{margin-top:auto}
+.cloud-bound-sample{display:none}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* Match the adopted spot resource: 36px visible circle, 44px hit region. */
+#map-tool-dock{right:16px;top:142px;gap:8px}
+#map-tool-dock>button{position:relative;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;box-shadow:none}
+#map-tool-dock>button::after{content:"";position:absolute;width:44px;height:44px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%}
+#map-tool-dock>button>svg{width:16px;height:16px}
+#layer-toggle>span{width:6px;height:6px;top:1px;right:1px}
+#layer-panel{overflow:hidden;isolation:isolate;border:0;padding-top:8px;border-radius:18px 18px 0 0}
+#layer-time-region{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows 240ms cubic-bezier(.2,.7,.2,1),opacity 160ms ease}
+#layer-time-region>.time-clip{min-height:0;overflow:hidden}
+body[data-selected-layer=LIGHT] #layer-time-region{grid-template-rows:0fr;opacity:0}
+#layer-source{margin:0;padding:7px 16px 5px;text-align:center;font-size:11px;line-height:18px;color:#858b94}

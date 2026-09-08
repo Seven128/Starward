@@ -1,23 +1,23 @@
 [
   {
     "name": "chapters.css",
-    "sha256": "3f39fb736bb5c41c830732382c5d42538c81b1b09e36ae310e8c0a6cf535f227"
+    "sha256": "e53d2957cf05ebd66b02d9bb5490985145bc93146fc5b14a1864c26060347426"
   },
   {
     "name": "chapters.js",
-    "sha256": "6e7fc45dbb0ecf32fc3cb1ae8f3ceb8f357ffa1ba9ee0825a52b9686a676e2de"
+    "sha256": "ad5a0741c8472579133f3d266ce407aefc2354e0b18b00aeaa9b30387f9ea54c"
   },
   {
     "name": "content.css",
-    "sha256": "2bb5305b6caa57b2e048d21d735cbb78d1f4dfa0fb15a469b218ef5d30e4c3d0"
+    "sha256": "cdfcfc0d968a058153bae6237b553695d5c2369e91a514bcfda3c4d27e6f7a06"
   },
   {
     "name": "content.js",
-    "sha256": "114844f0f7644925f0a3eb1b84fa93ac0bdb8d143c67e2fd6a40aa12a08d9654"
+    "sha256": "4f7f7188b6d99aad1a63ff1673f3edba6e9f7cc7b9cd468dbe69683936485885"
   },
   {
     "name": "gestures.css",
-    "sha256": "6ab8c3f33713c9d748e5f5d3abdb0b2d2f145d3d4a11a23c26dea21ef760636e"
+    "sha256": "30cd046e8db9cd1b0327b0b37a61434531ea5eb198742cba51233cf6a74592ad"
   },
   {
     "name": "gestures.js",
@@ -25,7 +25,7 @@
   },
   {
     "name": "index.html",
-    "sha256": "79f4f526bb7755e9ba7bd7c7b4f834654eef76fd3ffd97a2d12cfcbca0c8384e"
+    "sha256": "adb8321f0c3104ba50a8458c7a93459c9275bb8c34ff0bef9489f6fabd216ac7"
   },
   {
     "name": "map-reference.jpg",
@@ -40,6 +40,38 @@
     "sha256": "0fe0229f6a7db3276c9d470a9a4683a31f229de607e7c0cde694c10d012d0b9e"
   },
   {
+    "name": "moon/phase-0.svg",
+    "sha256": "e3b01f816e3e04434504665ef0d3cc27c91f2a73d24e8cb688139f154c5af7c1"
+  },
+  {
+    "name": "moon/phase-1.svg",
+    "sha256": "09a0f2760b3483714f31e74b9a065100115988459db5d14b366616adac806ae3"
+  },
+  {
+    "name": "moon/phase-2.svg",
+    "sha256": "58c7d0818c5b84c35066a860b51e8b5a7b8e82c776385bf06322afd92f51bdcb"
+  },
+  {
+    "name": "moon/phase-3.svg",
+    "sha256": "347eebfd27403e12b203c9fa15877cfbcc34c3bc33059fee57e1c25e0dd0c22d"
+  },
+  {
+    "name": "moon/phase-4.svg",
+    "sha256": "4230177989237fa6295c62c5be74c63e4ac3f8560d459abde58d5097f4832cfc"
+  },
+  {
+    "name": "moon/phase-5.svg",
+    "sha256": "14a9f8f98a0d24298a9ed95936c512a9663ebd67f5d03df42fa09bb38559ecb2"
+  },
+  {
+    "name": "moon/phase-6.svg",
+    "sha256": "266a80b11d667425a4b763c78d18a03a1c5fbcf26b071013eafd70ad8be43f27"
+  },
+  {
+    "name": "moon/phase-7.svg",
+    "sha256": "f12e2d06c2b9d54c38919dcd059c1a5bb565b9e505d2a43266cc32553eb2eb02"
+  },
+  {
     "name": "moon-data.js",
     "sha256": "cc70710061be6246ec7c5132b11319e85090e5e917cf5f59c8cfae4e9d590175"
   },
@@ -49,7 +81,7 @@
   },
   {
     "name": "polish.css",
-    "sha256": "c9c6a968c8519154af69223432594df8edfeaff03605dedf877bd56d330a97c7"
+    "sha256": "52c91e77a788456860ed1949e94bd52e5ad80de1f2b9acb97aaf73b9e3143a92"
   },
   {
     "name": "polish.js",
@@ -65,7 +97,7 @@
   },
   {
     "name": "refinement.css",
-    "sha256": "ceb1a69a30ed345812e14fcf68b1d9ebd83a6eeb0c1166ef6fed424b8ce61a35"
+    "sha256": "977fa73b665dd1271577f1f59153fada33bc3684bd85aaf820c492bff749e8e0"
   },
   {
     "name": "refinement.js",
@@ -102,5 +134,13 @@
   {
     "name": "toilet.jpg",
     "sha256": "07ea57f4aa7fdcba2a8bb2ccfe894a6edfd5b9f6208c5e4a0db795afc1be1f57"
+  },
+  {
+    "name": "../../../../shared/observation-time/control.css",
+    "sha256": "52c988d3eeb682a687e5c544f5d3dda7630b068d0e9c39934b87abb21a4d170d"
+  },
+  {
+    "name": "../../../../shared/observation-time/control.js",
+    "sha256": "d4a8278a112b9b70fb09f50e2d77ad8d3da27e36e2b028ef6ec0283da13ad707"
   }
 ]

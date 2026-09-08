@@ -1,0 +1,62 @@
+[
+  {
+    "path": "adoption.json",
+    "sha256": "156e5ab961326711ab7c2993a167b9f9c53b3e57be72d23a43fa17dc61ce21b2"
+  },
+  {
+    "path": "plan-selection.mjs",
+    "sha256": "77619844dfd7cbb27b4addbd8d612f92f914d56d1b7545b419919161df735a82"
+  },
+  {
+    "path": "plan-selection.test.mjs",
+    "sha256": "4017f992e03b1b045202cac7ce2a1ac938672be40ac7caf343522af04c586521"
+  },
+  {
+    "path": "preview/glass.css",
+    "sha256": "34837c1be57a7a56120310b1835a629e32c22613e76a8f9cd118149e5259e751"
+  },
+  {
+    "path": "preview/index.html",
+    "sha256": "755beb9fca5373b0bc9e25a3443e29b0652547868ee0c99df9e9f343c3549b7d"
+  },
+  {
+    "path": "preview/interaction.css",
+    "sha256": "7d4c152c3929700488f15c04be3d8b3fcec48236e064454a14d82d21b13bf0cf"
+  },
+  {
+    "path": "preview/interaction.mjs",
+    "sha256": "f62b07061952de47d90f5a24f73606f0a78449241f504652c2f54393ad28fe73"
+  },
+  {
+    "path": "preview/plan-entry.mjs",
+    "sha256": "c7cbd31fafb7b389f7127570a467b3cc063bbdc6c03284c894f5819afa39b194"
+  },
+  {
+    "path": "provenance/prompt.txt",
+    "sha256": "5245b72fbfa402fcc995b432c434c4c043733e039d53afc9793cc52716e0108e"
+  },
+  {
+    "path": "provenance/stitch-code.html",
+    "sha256": "77402654219d35fd741ab70211f09921bc273948cc03f94684829efdf5a1b67b"
+  },
+  {
+    "path": "provenance/stitch-screen.png",
+    "sha256": "6ffdad11ab39ac9e290bebb760e94702aae8e0eaa99a21e5ceccd79e0abffdc2"
+  },
+  {
+    "path": "README.md",
+    "sha256": "ec1da55cdb78349c40081e873c59328e4a1e95020ebfb86a5105f6c9cbe9978a"
+  },
+  {
+    "path": "review.html",
+    "sha256": "e5eb8cca640424afa4a851cfdff97ff27accacd13525ff28fd18a026f171fa05"
+  },
+  {
+    "path": "stitch-rendered.css",
+    "sha256": "b088dc187494904df404784016ad062548f045b1e954309d4c2b3114d309680f"
+  },
+  {
+    "path": "verification.md",
+    "sha256": "52e8eb7cdc12ad8fcd118a6ff328bb15000e1d8e75571367f4e3d0d6f870ce18"
+  }
+]

@@ -14,7 +14,6 @@ body{color:var(--ink)}
 #fixed-actions button:not(#cloud-action){border-color:var(--brand-border);color:var(--brand)}
 #favorite[aria-pressed=true]{background:#fcf6e5;border-color:#dec478}
 footer button:first-child{color:var(--brand)!important}
-.time-center{background:var(--brand)}#time-track button[aria-pressed=true]{color:var(--brand)}
 .evidence-group{background:var(--brand-soft);border-radius:8px;margin:7px 0;padding:9px 10px 8px}
 .evidence-group h4{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--brand);line-height:16px;margin:0 0 7px}
 .metric-group,.metric-group.clouds{border:0;padding:0;gap:7px}.metric-group.two{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -25,7 +24,7 @@ footer button:first-child{color:var(--brand)!important}
 #map-tool-dock{top:142px!important;right:16px!important;gap:8px!important}
 .map-tool{color:var(--brand)!important;background:#fffffff5!important}
 body[data-record=absent] #map-tool-dock{display:flex!important}
-button:focus-visible,[role=button]:focus-visible,#time-ruler:focus-visible{outline-color:var(--brand)}
+button:focus-visible,[role=button]:focus-visible{outline-color:var(--brand)}
 #photo-viewer{background:transparent;overflow:hidden;--reveal:0}
 #photo-viewer::backdrop{background:rgb(21 25 31 / calc(var(--reveal) * .98))}
 #photo-viewer #photo-original,#photo-viewer>div:not(#photo-flight){opacity:var(--reveal)}

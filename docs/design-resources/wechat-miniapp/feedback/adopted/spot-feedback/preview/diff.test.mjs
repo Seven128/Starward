@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {changes} from './diff.mjs';
+const base={fields:{hours:'18:00',name:'地点'},photos:[{id:'a',kind:'parking',url:'a.jpg'}]};
+test('restoring value removes change, clearing value remains explicit',()=>{let next=structuredClone(base);next.fields.hours='19:00';assert.equal(changes(base,next).length,1);next.fields.hours='18:00';assert.equal(changes(base,next).length,0);next.fields.hours='';assert.equal(changes(base,next)[0].after,'');});
+test('photo changes stay in their facility and preserve old image',()=>{let next=structuredClone(base);next.photos=[{id:'b',kind:'parking',url:'b.jpg'}];let [d]=changes(base,next);assert.equal(d.key,'parking');assert.equal(d.before[0].id,'a');assert.equal(d.after[0].id,'b');assert.equal(base.photos[0].id,'a');});

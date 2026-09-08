@@ -1,0 +1,22 @@
+{
+  "mapSnapX": [
+    -454,
+    -452.366,
+    -439.818,
+    -429
+  ],
+  "spotSnapX": [
+    -1592,
+    -1593.47,
+    -1612.39
+  ],
+  "regrabX": [
+    -472.348,
+    -476.45
+  ],
+  "reducedMotionSnapX": -495,
+  "midnight": "2026-09-08 23:30 -> 2026-09-09 00:00",
+  "calendarDateSelection": "2026-09-10 00:00, night 2026-09-09",
+  "sharedOwner": "observation-time/control.js",
+  "productionChanged": false
+}

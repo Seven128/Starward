@@ -3,8 +3,9 @@
 Starward owns 《今晚去观星》, a mobile-first stargazing trip decision product. Help users decide whether to go tonight, where and when to go, how to arrive, and how to observe safely. Conclusions lead to an executable plan and then supporting evidence; uncertain or unavailable data must remain explicit.
 
 - There is one current implementation per product responsibility. Native App, WeChat Mini Program and owner operations have distinct surfaces; do not infer one product's behavior or visual values from another.
-- The Mini Program has Map and My as its primary destinations. Its sky route belongs to a selected formal spot. Read the owning Screen Contract before changing those flows.
+- The Mini Program has Map and My as its primary destinations. Its sky route belongs to a selected formal spot or the current account’s submitted pending proposal, as defined by the Map Screen Contract. Read the owning Screen Contract before changing those flows.
 - Current distribution is owner-only, non-commercial personal trial. External-service budget is CNY 200/month; this is no purchase or public-release authorization. Commercial registration, platform approval and real-device/field acceptance cannot be inferred from code or tests.
+- Continuously calibrate Mini Program design style and UIUX principles from new resources and explicit user feedback. Update the existing design/Context owners as part of iteration and adoption; distinguish general preferences from page-specific choices. Read [design quality expectations](product-profile.md#mini-program-design-quality-expectation) and [calibration rules](context-maintenance.md#持续校准设计系统与用户偏好).
 - Context owns intended product meaning and boundaries; code owns current implementation. Root DESIGN.md owns the existing confirmed visual profiles. User requirements and confirmed decisions remain applicable after workflow-tool retirement.
 - Keep durable facts with their existing owner; reference exact sources rather than copying implementation. Task progress, logs and optional handoffs stay outside Context. Tiny Context does not manage task state or certify completion.
 
