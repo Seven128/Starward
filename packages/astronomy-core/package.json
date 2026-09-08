@@ -4,15 +4,31 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./sky-capabilities": "./src/sky-capabilities.ts",
-    "./gaia-catalog": "./src/gaia-catalog.ts",
-    "./gaia-catalog-data": "./src/gaia-catalog-data.ts"
+    ".": {
+      "production": "./dist/src/index.js",
+      "default": "./src/index.ts"
+    },
+    "./sky-capabilities": {
+      "production": "./dist/src/sky-capabilities.js",
+      "default": "./src/sky-capabilities.ts"
+    },
+    "./gaia-catalog": {
+      "production": "./dist/src/gaia-catalog.js",
+      "default": "./src/gaia-catalog.ts"
+    },
+    "./gaia-catalog-data": {
+      "production": "./dist/src/gaia-catalog-data.js",
+      "default": "./src/gaia-catalog-data.ts"
+    }
   },
   "scripts": {
-    "typecheck": "node ../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
-    "test": "node --import tsx --test",
-    "build:gaia-catalog": "node --import tsx ../../data-pipelines/src/gaia-star-catalog.ts"
+    "build:release": "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
+    "typecheck": "node ../../tools/run-node.cjs ../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
+    "test": "node ../../tools/run-node.cjs --import tsx --test",
+    "build:gaia-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/gaia-star-catalog.ts"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
   },
   "dependencies": {
     "astronomy-engine": "2.1.19"

@@ -1,0 +1,8 @@
+{
+  "variant": "minified-shrunk-x86_64",
+  "exitCode": 0,
+  "elapsedSeconds": 188.466503,
+  "maxWorkers": 2,
+  "cmakeParallelLevel": 2,
+  "metroMaxWorkers": 2
+}

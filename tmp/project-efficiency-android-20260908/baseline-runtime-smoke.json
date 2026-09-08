@@ -1,0 +1,49 @@
+{
+  "scope": "release_packaging_smoke",
+  "variant": "baseline",
+  "startedAt": "2026-09-07T23:01:11.684Z",
+  "apkSha256": "01fc1ccfdfa5e3fff94628d4564e32921a3d9acac573028d94e73369ecbc41b2",
+  "status": "passed",
+  "routes": [
+    {
+      "route": "tonight",
+      "markerPresent": true,
+      "uiSha256": "7b1cd384f43681a6cbf2fdc2b7dcf15c34b398b8e9c4eec0f76ac941fecc4262",
+      "productProcessAlive": true
+    },
+    {
+      "route": "map",
+      "markerPresent": true,
+      "uiSha256": "5b139e9cf95b78f9e2addd384b7c52987fa8b49f5d8f1c38466517aca3d77875",
+      "productProcessAlive": true
+    },
+    {
+      "route": "trips",
+      "markerPresent": true,
+      "uiSha256": "eaea5b70ac04dbf11631e777cbeee9426855a0d9682ef0b8038748e31992e893",
+      "productProcessAlive": true
+    },
+    {
+      "route": "sky",
+      "markerPresent": true,
+      "uiSha256": "666b848fa382e97b44cfa9660973aaec38926a7943149e38452f74b778526c7a",
+      "productProcessAlive": true
+    },
+    {
+      "route": "me",
+      "markerPresent": true,
+      "uiSha256": "08454ea1d6300e6174940c79fe72bc407abd96f7ad18ca5ec2fbd676c2ac8b92",
+      "productProcessAlive": true
+    }
+  ],
+  "api": "36",
+  "abi": "x86_64",
+  "installedApkSha256": "01fc1ccfdfa5e3fff94628d4564e32921a3d9acac573028d94e73369ecbc41b2",
+  "launchStatus": "ok",
+  "coldStart": {
+    "markerPresent": true,
+    "uiSha256": "7b1cd384f43681a6cbf2fdc2b7dcf15c34b398b8e9c4eec0f76ac941fecc4262"
+  },
+  "finishedAt": "2026-09-07T23:01:43.152Z",
+  "limitation": "Technical packaging/startup and five route mounts on a read-only API36 x86_64 emulator; no backend/provider, physical sensor, field or complete UI acceptance claim."
+}

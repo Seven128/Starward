@@ -5,10 +5,10 @@
   "description": "今晚去观星微信小程序",
   "type": "module",
   "scripts": {
-    "build:weapp": "taro build --type weapp",
-    "dev:weapp": "taro build --type weapp --watch",
-    "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
-    "test": "node --import tsx --test src/**/*.test.ts"
+    "build:weapp": "node ../../tools/run-node.cjs --bin @tarojs/cli taro build --type weapp",
+    "dev:weapp": "node ../../tools/run-node.cjs --bin @tarojs/cli taro build --type weapp --watch",
+    "typecheck": "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
+    "test": "node ../../tools/run-node.cjs --import tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@starward/miniapp-contracts": "*",

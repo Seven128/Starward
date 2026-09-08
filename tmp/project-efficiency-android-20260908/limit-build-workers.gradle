@@ -1,0 +1,15 @@
+// Disposable comparison settings. Do not change generated source or global caches.
+gradle.beforeProject { project ->
+    project.plugins.withId('com.facebook.react') {
+        project.extensions.getByName('react').extraPackagerArgs.addAll(['--max-workers', '2'])
+    }
+    ['com.android.application', 'com.android.library'].each { pluginId ->
+        project.plugins.withId(pluginId) {
+            project.extensions.getByName('android').defaultConfig.externalNativeBuild.cmake.arguments.addAll([
+                '-DCMAKE_JOB_POOLS=compile=2;link=1',
+                '-DCMAKE_JOB_POOL_COMPILE=compile',
+                '-DCMAKE_JOB_POOL_LINK=link'
+            ])
+        }
+    }
+}

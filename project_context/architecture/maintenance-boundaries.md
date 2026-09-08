@@ -30,9 +30,9 @@ Revisit when: Extract observation-context, Finder and viewport-selection control
 
 Owner: wechat-miniapp-maintainers. Tracking: WECHAT-MINIAPP-MOD-006.
 
-The one current BFF client co-locates request ownership, cancellation, cache policy, identity recovery and generated endpoint projection so failure semantics stay reviewable during drift repair; transport-family extraction remains explicit bounded debt.
+The BFF client owns transport and generated endpoint projection. `response-cache.ts` now owns bounded response persistence, representation identity and storage cleanup; `request-lifecycle.ts` owns request cancellation. Identity recovery remains in the client, so transport-family and identity-recovery extraction are still bounded debt.
 
-Revisit when: Extract transport, response-cache and identity-recovery adapters before adding another endpoint family or transport policy.
+Revisit when: Review the existing response-cache and request-lifecycle adapters, then extract the affected remaining transport or identity-recovery responsibility before adding another endpoint family or transport policy. Do not create a second cache owner.
 
 ## packages/miniapp-contracts/src/catalog.ts
 

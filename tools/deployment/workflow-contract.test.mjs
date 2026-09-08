@@ -35,6 +35,9 @@ test("staging privilege follows only a successful trusted main push", async () =
   assert.match(source, /RepoDigests/u);
   assert.match(source, /docker logout/u);
   assert.match(source, /host-preflight\.sh/u);
+  assert.match(source, /needs\.qualify\.outputs\.product_checked == 'true'/u);
+  assert.match(source, /actions\/runs\/\$RUN_ID\/attempts\/\$RUN_ATTEMPT\/jobs/u);
+  assert.match(source, /Construct production OCI image/u);
 });
 
 test("production is a manual exact-digest promotion and never rebuilds", async () => {

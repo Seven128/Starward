@@ -1,6 +1,6 @@
 # Context Maintenance And Resource Interpretation
 
-Starward uses the pinned project-tiny-context-harness 0.12.0 package and schema 5, on Node.js 24 or newer. Run the installed CLI through npm scripts; do not mix old binaries or use an unpinned network CLI for ordinary reading and validation. On this Windows host, prefer the Node 24 installation over the Node 16 embedded in WeChat DevTools.
+Starward uses the pinned project-tiny-context-harness 0.12.0 package and schema 5, on the Node range declared in root `package.json`. Run the installed CLI through npm scripts; do not mix old binaries or use an unpinned network CLI for ordinary reading and validation. Common project scripts use `tools/run-node.cjs`: it keeps a supported current Node or selects the verified `npm_node_execpath`, then prepends that executable's directory only to child PATH. This handles a shell resolving WeChat's older bundled Node without changing global PATH. For another local script use `npm run node -- <script-or-node-options>`; when neither runtime meets the declared range, the launcher fails before starting the command.
 
 Only global.md is default Context. Architecture, the cross-workspace main Area and verification are retained on demand. Routing metadata does not impose mandatory headings, line limits, fixed workflow stages, architecture deliberation artifacts or machine completion gates. Read related owners using the manifest and search; retain product requirements and confirmed decisions at their existing owners.
 
@@ -14,6 +14,12 @@ Use npm run context:validate for manifest/path structure and npm run context:doc
 - Task-local notes and runtime evidence stay outside Context. Historical records needed for investigation can be retrieved from Git, not loaded as current authority.
 
 The old package-internal compatibility overlay and its proof-command wrapper are removed: their engine no longer exists. Do not patch node_modules or weaken project runtime assertions to simulate old acceptance. Preserve source/candidate identity, truthful failure, resource cleanup and privacy boundaries in the project-owned runners.
+
+## Bounded Discovery
+
+- Start with the manifest's relevant owner or [implementation index](areas/main/implementation-index.md). Search its directories explicitly, for example `rg -n --max-columns 200 --max-columns-preview "<symbol>" tools/miniapp`; use `rg --files <owner-directory>` when locating filenames. Expand to direct callers and dependencies as the change requires.
+- Search Context headings/keys before opening large bodies. Historical task inputs, `.long-task/**`, retained verifier diagnostics and run outputs are provenance sources only when the current question needs them; avoid including them in a routine root-wide content search. This does not skip confirmed Source requirements or the adopted-resource reading rule below.
+- For a historical question, locate the exact file/key and read the relevant section with enough surrounding context to preserve its meaning. Report a failed or truncated query as incomplete, not as evidence that no owner exists. Keep new execution notes in the task's existing local index.
 
 ## Mini Program Page Design Resources
 

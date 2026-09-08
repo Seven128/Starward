@@ -71,6 +71,78 @@ const weatherInput = {
   timezone: "Asia/Shanghai",
 };
 
+function deadlineConfig() {
+  return createTestRuntimeConfig({ weatherProvider: "QWEATHER", qweather: {
+    apiHost: "test.qweatherapi.com", credentialId: "test-credential",
+    projectId: "test-project", privateKeyPem, forecastHours: 24,
+  } });
+}
+
+function deadlinePayload(lane: string) {
+  if (lane === "evidence") return openMeteoPayload();
+  if (lane === "alerts") return { metadata: { tag: "clear-alert-test", zeroResult: true }, alerts: [] };
+  return { metadata: { tag: "forecast-test" }, hours: [{
+    forecastTime: "2026-08-23T13:00:00Z", condition: { text: "多云", code: "101" },
+    temperature: { value: 27, unit: "°C" }, humidity: 0.72,
+    wind: { direction: { degree: 90 }, speed: { value: 2, unit: "m/s" } },
+    windGust: { value: 3, unit: "m/s" },
+    precipitation: { amount: { value: 0, unit: "mm" }, probability: 0.05 },
+    visibility: { value: 18_000, unit: "m" }, dewPoint: { value: 21, unit: "°C" }, cloudCover: 0.7,
+  }] };
+}
+
+test("each hanging weather lane reaches its deadline without discarding other lanes", async () => {
+  for (const hanging of ["primary", "alerts", "evidence", "all"]) {
+    const signals: AbortSignal[] = [];
+    const adapter = new QWeatherCompositeAdapter(deadlineConfig(), async (input, init) => {
+      const url = new URL(input.toString());
+      const lane = url.pathname.startsWith("/weather/v1/") ? "primary"
+        : url.pathname.startsWith("/weatheralert/") ? "alerts" : "evidence";
+      if (lane === hanging || hanging === "all") {
+        signals.push(init!.signal!);
+        return new Promise<Response>(() => {});
+      }
+      return response(deadlinePayload(lane));
+    }, 20);
+    const result = await adapter.getHourly(weatherInput);
+    assert.ok(signals.every((signal) => signal.aborted));
+    assert.ok(result.sources.some((source) => source.id.includes("weather_deadline_exceeded")));
+    if (hanging === "all") {
+      assert.equal(result.state, "UNAVAILABLE");
+      assert.equal(result.value, null);
+    } else {
+      assert.ok(result.value?.length);
+      assert.equal(result.timelineRole, hanging === "primary" ? "PRIMARY_FALLBACK" : "PRIMARY");
+      assert.equal(result.warningState, hanging === "alerts" ? "UNAVAILABLE" : "FRESH");
+      assert.equal(result.value![0]!.cloudPercent, hanging === "primary" ? 10 : 70);
+    }
+  }
+});
+
+test("weather deadline includes a slow JSON body, caller abort and subsequent successful retry", async () => {
+  let stall = true;
+  let seenSignal: AbortSignal | undefined;
+  const adapter = new OpenMeteoWeatherAdapter(createTestRuntimeConfig(), async (_input, init) => {
+    seenSignal = init!.signal!;
+    const result = response(openMeteoPayload());
+    if (stall) result.json = () => new Promise(() => {});
+    return result;
+  }, undefined, 20);
+  const timedOut = await adapter.getHourly(weatherInput);
+  assert.equal(timedOut.state, "UNAVAILABLE");
+  assert.equal(timedOut.errorCode, "weather_deadline_exceeded");
+  assert.equal(seenSignal?.aborted, true);
+  const controller = new AbortController();
+  const cancelled = adapter.getHourly({ ...weatherInput, signal: controller.signal });
+  const rejection = assert.rejects(cancelled, /caller_aborted/);
+  controller.abort(new Error("caller_aborted"));
+  await rejection;
+  stall = false;
+  const recovered = await adapter.getHourly(weatherInput);
+  assert.ok(recovered.value?.length);
+  assert.equal(recovered.errorCode, null);
+});
+
 test("Open-Meteo adapter requests explicit model evidence and never selects the clearest model", async () => {
   const requests: URL[] = [];
   const adapter = new OpenMeteoWeatherAdapter(

@@ -1,0 +1,68 @@
+[
+  {
+    "original": "E:\\dev\\Starward\\tmp\\project-efficiency-review-2026-09-08.md",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\project-efficiency-review-2026-09-08.md",
+    "bytes": 13792,
+    "sha256": "7a17183e17d066ba5ed389b9687c21898577c98cd0b500e683976e12f57c383e"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\performance-review-2026-09-08.md",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\performance-review-2026-09-08.md",
+    "bytes": 13342,
+    "sha256": "6a4818b64607baabaf9102c5e885b3e4de6588c1f67b94d6698978db89a48fba"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\perf-audit-20260908.mts",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\perf-audit-20260908.mts",
+    "bytes": 3737,
+    "sha256": "06e59c8cca4ca33d8192808c6650401c1b1d3d1d1309b9a5aab9946c47d30419"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\perf-audit-20260908.json",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\perf-audit-20260908.json",
+    "bytes": 2451,
+    "sha256": "c1708288c1421924407378f584d57155dcb4e80282f9a59a7e80ff6ed0a28170"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\perf-audit-benchmark.log",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\perf-audit-benchmark.log",
+    "bytes": 1758,
+    "sha256": "1df4c2a1b283a9a93c7dfee338b9fd01f445186c5569aff3c1ea8bf28e020000"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\perf-audit-build.log",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\perf-audit-build.log",
+    "bytes": 38401,
+    "sha256": "ba9bf5c5eecb819823c1ef6959308672cc98e53d11047bf2d6eaee3d14c854cb"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\perf-audit-tests.log",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\perf-audit-tests.log",
+    "bytes": 1083,
+    "sha256": "30b227f1e76296efe717856d100b91a0f0e4863e10c3965a69d3623d45328cc3"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\harness-audit-stats.mjs",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\harness-audit-stats.mjs",
+    "bytes": 1784,
+    "sha256": "a5e8d6811e8bfc9e74eb8e4d4c94f5a8662ea0da58faf6e60f338a810e2e34bf"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\harness-audit-stats.json",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\harness-audit-stats.json",
+    "bytes": 8314,
+    "sha256": "5e87c6c01135424fae626ae9dd42429a3cb70af35ab57d885fd1e833a12c5156"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\harness-audit-links.mjs",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\harness-audit-links.mjs",
+    "bytes": 2354,
+    "sha256": "08276869ac48c5d764dbc0b8d82c37b3240efdfb0017a2da05e189ef7eef21a8"
+  },
+  {
+    "original": "E:\\dev\\Starward\\tmp\\harness-audit-links.json",
+    "snapshot": "E:\\dev\\Starward\\.codex\\work-items\\project-efficiency-2026-09-08\\evidence\\harness-audit-links.json",
+    "bytes": 20278,
+    "sha256": "cf9b15931483c6cc11671ea6c539a17fd72276af3108f4b39b3d2bd4ec919e8f"
+  }
+]

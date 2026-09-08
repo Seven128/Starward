@@ -175,6 +175,7 @@ test("success closes the timer and ignores a queued watchdog or failure", async 
   const queuedTimeout = h.timers.values().next().value!;
   h.calls[0]!.success({ statusCode: 200, data: h.response });
   assert.equal(await pending, h.response);
+  await h.flush();
   queuedTimeout();
   h.calls[0]!.fail({ errMsg: "request:fail abort" });
   assert.deepEqual(h.counts(), { aborts: 0, writes: 1 });

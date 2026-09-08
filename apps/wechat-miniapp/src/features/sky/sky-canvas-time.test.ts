@@ -9,28 +9,6 @@ import * as timeFrame from "./sky-time-frame.ts";
 // Execute the production drawing function with a recorded native-canvas boundary.
 // This establishes call/data selection, not WEAPP rendering or physical pointing.
 const source = readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8").replace(/\r\n/g, "\n");
-test("production canvas measurement rejects missing dimensions instead of inventing a viewport", () => {
-  // Execute the exact measurement boundary; this is not a native layout test.
-  const start = source.indexOf("const rect = Array.isArray(result)");
-  const end = source.indexOf("setCanvasSize((previous)", start);
-  assert.ok(start >= 0 && end > start);
-  const measure = (result: unknown) => vm.runInNewContext(
-    `(() => { ${source.slice(start, end)} return { width, height }; })()`,
-    { result }, { timeout: 1000 },
-  );
-  for (const result of [null, undefined, [], {}, { width: 0, height: 800 },
-    { width: 375, height: -1 }, { width: NaN, height: 800 },
-    { width: 375, height: Infinity }, { width: "375", height: 800 }]) {
-    assert.throws(() => measure(result), /sky_canvas_measurement_unavailable/);
-  }
-  for (const size of [{ width: 375, height: 812 }, { width: 812, height: 375 }]) {
-    for (const result of [size, [size]]) {
-      assert.equal(measure(result).width, size.width);
-      assert.equal(measure(result).height, size.height);
-    }
-  }
-});
-
 const code = ts.transpileModule(`${source}\nexport { drawSkyScene };`, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
 }).outputText;
@@ -46,68 +24,52 @@ vm.runInNewContext(code, {
 }, { timeout: 1000 });
 
 const committed = "2026-09-05T13:00:00.000Z";
-test("production draw invalidates dimensions on failure and restores them on retry", () => {
-  const start = source.indexOf("const draw = useCallback(() => {");
-  const end = source.indexOf("  }, [\n    mode,", start);
-  assert.ok(start >= 0 && end > start);
-  const callbackCode = ts.transpileModule(
-    `${source.slice(start, end)} }, []); globalThis.retryDraw = draw;`,
-    { compilerOptions: { target: ts.ScriptTarget.ES2020 } },
-  ).outputText;
-  let dimensions = { width: 375, height: 812 };
-  let error: string | null = null;
-  let measured: unknown = null;
-  let throwQuery = false;
-  let throwDraw = false;
-  let drawn = 0;
-  let callback: (result: unknown) => void = () => undefined;
-  const states: string[] = [];
-  const query = {
-    select: () => query,
-    boundingClientRect: (next: typeof callback) => { callback = next; return query; },
-    exec: () => callback(measured),
+test("production frame requests preserve exact data/time and clear expired or untrusted input", () => {
+  const parsed = ts.createSourceFile("sky.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let declaration = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(parsed) === "draw") declaration = "const " + node.getText(parsed) + ";";
+    ts.forEachChild(node, visit);
   };
+  visit(parsed); assert.ok(declaration);
+  const requests: { frame: any; hidden: boolean }[] = [];
+  const states: string[] = [];
+  const data = { skyScene: { state: "AVAILABLE" } };
+  const pose = { alphaDeg: 0, betaDeg: 90, gammaDeg: 0, sampledAt: 1 };
   const sandbox = vm.createContext({
     useCallback: (fn: unknown) => fn,
-    canvasDrawRequestRef: { current: 0 }, canvasDrawRevisionRef: { current: 0 },
-    skySceneInspectionOwnerRef: { current: "test" },
-    reportData: undefined, report: {}, row: undefined,
-    routeContext: { spotId: "test" }, sensorHeadingForScene: null,
-    devicePose: null, mode: "NIGHT", CANVAS_ID: "test",
-    exactSkyTimeFrame: timeFrame.exactSkyTimeFrame,
-    publishAcceptanceSkySceneInspection: (_owner: unknown, row: { state: string }) => states.push(row.state),
-    setCanvasSize: (next: typeof dimensions | ((previous: typeof dimensions) => typeof dimensions)) => {
-      dimensions = typeof next === "function" ? next(dimensions) : next;
-    },
-    setCanvasError: (next: string | null) => { error = next; },
-    Taro: {
-      createSelectorQuery: () => { if (throwQuery) throw new Error("query_failed"); return query; },
-      createCanvasContext: () => ({}),
-    },
-    drawSkyScene: () => { if (throwDraw) throw new Error("draw_failed"); drawn++; },
+    canvasLifecycle: { request: (frame: unknown, hidden: boolean) => requests.push({ frame, hidden }) },
+    canvasDrawRevisionRef: { current: 0 }, skySceneInspectionOwnerRef: { current: "test" },
+    previousCanvasModeRef: { current: "NIGHT" }, devicePoseRef: { current: pose },
+    reportData: data, report: { data: { dataState: "FRESH" }, isError: false },
+    row: { at: committed }, sensorHeadingForScene: 0, devicePose: pose, mode: "NIGHT",
+    canvasFrameInfo: { catalog: {}, frame: { state: "AVAILABLE", points: [] }, targetFrame: {},
+      inspection: { spotId: "spot:test", frameAt: committed, catalogVersion: "test", starCount: 0 } },
+    publishAcceptanceSkySceneInspection: (_owner: unknown, value: { state: string }) => states.push(value.state),
   });
-  vm.runInContext(callbackCode, sandbox, { timeout: 1000 });
-  const retry = () => vm.runInContext("retryDraw()", sandbox, { timeout: 1000 });
-  retry();
-  assert.equal(dimensions.width, 0);
-  assert.equal(dimensions.height, 0);
-  assert.equal(error, "sky_canvas_measurement_unavailable");
-  assert.equal(drawn, 0);
-  assert.equal(states.at(-1), "ERROR");
-  measured = { width: 812, height: 375 };
-  retry();
-  assert.equal(dimensions.width, 812);
-  assert.equal(dimensions.height, 375);
-  assert.equal(error, null);
-  assert.equal(drawn, 1);
-  for (const failure of ["query", "draw"]) {
-    throwQuery = failure === "query";
-    throwDraw = failure === "draw";
-    retry();
-    assert.equal(dimensions.width, 0);
-    assert.equal(dimensions.height, 0);
-    assert.equal(states.at(-1), "ERROR");
+  const code = ts.transpileModule(declaration + "\nglobalThis.requestDraw = draw;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
+  vm.runInContext(code, sandbox);
+  const request = () => vm.runInContext("requestDraw()", sandbox);
+  request();
+  assert.equal(requests.at(-1)!.frame.data, data);
+  assert.equal(requests.at(-1)!.frame.frameAt, committed);
+  assert.equal(requests.at(-1)!.frame.sceneReady, true);
+  assert.equal(requests.at(-1)!.hidden, false);
+  for (const state of ["EXPIRED", "UNAVAILABLE"]) {
+    sandbox.report.data.dataState = state; request();
+    assert.equal(requests.at(-1)!.frame.data, undefined);
+    assert.equal(requests.at(-1)!.frame.sceneReady, false);
+    assert.equal(requests.at(-1)!.hidden, true);
   }
+  sandbox.report.data.dataState = "FRESH"; sandbox.report.isError = true; request();
+  assert.equal(requests.at(-1)!.frame.data, undefined);
+  sandbox.report.isError = false; sandbox.devicePoseRef.current = null; request();
+  assert.equal(requests.at(-1)!.frame.pose, null);
+  assert.equal(requests.at(-1)!.frame.heading, null);
+  sandbox.devicePoseRef.current = pose; sandbox.mode = "OBSERVATION"; request();
+  assert.equal(requests.at(-1)!.frame.mode, "OBSERVATION");
+  assert.equal(requests.at(-1)!.hidden, true, "mode change hides the previous palette until native completion");
+  assert.ok(states.every(state => state === "PENDING"), "queueing a draw is not completion evidence");
 });
 
 const preview = "2026-09-05T13:20:26.000Z";

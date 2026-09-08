@@ -1,0 +1,79 @@
+{
+  "image": "starward-miniapp-api-efficiency:local",
+  "network": "starward-efficiency-20260908",
+  "api": "starward-efficiency-20260908-api-final",
+  "profile": "LOCAL",
+  "verifiedAt": "2026-09-07T22:55:03.380Z",
+  "imageIdentity": "sha256:f1bf7695e0966182870e30e736a4caee36a95159147640728e93c9fbbf346a8d",
+  "imageBytes": 87332260,
+  "migration": {
+    "status": "migrated",
+    "release": {
+      "environment": "local",
+      "revision": "development",
+      "imageDigest": "unbuilt",
+      "releasedAt": "1970-01-01T00:00:00.000Z"
+    },
+    "schema": {
+      "ready": true,
+      "repository": "postgres",
+      "currentMigration": "010_account_erasure_append_only",
+      "expectedMigration": "010_account_erasure_append_only"
+    }
+  },
+  "workerOnce": {
+    "scheduled": 0,
+    "enqueued": 0,
+    "pending": 0,
+    "dispatched": 0,
+    "complete": 10,
+    "dead_letter": 0,
+    "executions": 10,
+    "effects": 10,
+    "effect_kinds": [
+      "ASTRONOMY",
+      "BACKUP",
+      "COST",
+      "DECISION",
+      "FRESHNESS",
+      "LIGHT",
+      "MEDIA",
+      "NOTIFICATION",
+      "PROVIDER_HEALTH",
+      "WEATHER"
+    ],
+    "manual_replays": 0,
+    "dead_letters": []
+  },
+  "readiness": {
+    "status": "ready",
+    "release": {
+      "environment": "local",
+      "revision": "development",
+      "imageDigest": "unbuilt",
+      "releasedAt": "1970-01-01T00:00:00.000Z"
+    },
+    "ready": true,
+    "dependencies": [
+      {
+        "name": "database",
+        "ready": true,
+        "repository": "postgres",
+        "currentMigration": "010_account_erasure_append_only",
+        "expectedMigration": "010_account_erasure_append_only"
+      },
+      {
+        "name": "cache",
+        "ready": true,
+        "cache": "redis"
+      }
+    ]
+  },
+  "capabilities": {
+    "status": 200,
+    "apiVersion": "v2",
+    "dataState": "FRESH"
+  },
+  "status": "passed",
+  "runtimeStopped": true
+}

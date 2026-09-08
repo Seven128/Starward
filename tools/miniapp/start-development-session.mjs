@@ -1,15 +1,15 @@
 import { spawn, spawnSync } from "node:child_process";
-import { access, rm } from "node:fs/promises";
-import { createServer } from "node:net";
+import { access, realpath, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveOfficialCli } from "./device-feedback-official.mjs";
+import { canListen, developmentOptions, startDevelopmentAutomation } from "./development-automation.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const projectPath = path.join(root, "apps", "wechat-miniapp");
 const outputEntry = path.join(projectPath, "dist", "weapp", "app.json");
 const composePath = path.join(root, "infra", "miniapp", "docker-compose.yml");
-const npmCli = path.join(
+const npmCli = process.env.npm_execpath ?? path.join(
   path.dirname(process.execPath),
   "node_modules",
   "npm",
@@ -17,30 +17,7 @@ const npmCli = path.join(
   "npm-cli.js",
 );
 
-const args = new Map();
-for (let index = 2; index < process.argv.length; index += 1) {
-  const key = process.argv[index];
-  const next = process.argv[index + 1];
-  if (key === "--api-port" && next) {
-    args.set(key, next);
-    index += 1;
-  } else {
-    args.set(key, true);
-  }
-}
-const apiPort = Number(args.get("--api-port") ?? 8787);
-if (!Number.isInteger(apiPort) || apiPort < 1 || apiPort > 65_535)
-  throw new Error("valid_development_api_port_required");
-
-function canListen(port) {
-  return new Promise((resolve) => {
-    const server = createServer();
-    server.once("error", () => resolve(false));
-    server.listen(port, "127.0.0.1", () =>
-      server.close(() => resolve(true)),
-    );
-  });
-}
+const { apiPort, automationPort, noOpen, memory: useMemory } = developmentOptions(process.argv.slice(2));
 
 async function waitFor(predicate, label, timeoutMs = 90_000) {
   const deadline = Date.now() + timeoutMs;
@@ -77,6 +54,7 @@ function stopProcessTree(pid) {
 }
 
 function startNpm(script, env) {
+  if (stopping) throw new Error("development_session_stopped");
   return spawn(process.execPath, [npmCli, "run", script], {
     cwd: root,
     env: { ...process.env, ...env },
@@ -86,7 +64,15 @@ function startNpm(script, env) {
 }
 
 async function openDevtools() {
-  if (args.has("--no-open")) return;
+  if (stopping) throw new Error("development_session_stopped");
+  if (noOpen) return;
+  if (automationPort !== null) {
+    const automation = await startDevelopmentAutomation(projectPath, automationPort, {
+      signal: shutdown.signal,
+      onStarted: cleanup => { automationCleanup = cleanup; },
+    });
+    return { automation_port: automation.port, observer_receipt: automation.receiptFile };
+  }
   const invocation = await resolveOfficialCli();
   const child = spawn(
     invocation.file,
@@ -107,13 +93,38 @@ async function openDevtools() {
       windowsHide: true,
     },
   );
+  await new Promise((resolve, reject) => {
+    child.once("spawn", resolve);
+    child.once("error", reject);
+  });
   child.unref();
 }
 
+const children = [];
+const shutdown = new AbortController();
+let stopping = false, automationCleanup, cleanupPromise;
+function stop(exitCode = 0) {
+  if (stopping) return cleanupPromise;
+  stopping = true;
+  shutdown.abort();
+  for (const child of children) stopProcessTree(child.pid);
+  cleanupPromise = Promise.resolve(automationCleanup?.());
+  process.exitCode = exitCode;
+  return cleanupPromise;
+}
+const signalHandlers = ["SIGINT", "SIGTERM", "SIGHUP"].map(signal => {
+  const handler = () => { void stop(0); };
+  process.once(signal, handler);
+  return [signal, handler];
+});
+
+try {
 if (!(await canListen(apiPort)))
   throw new Error(`development_api_port_in_use:${apiPort}`);
-
-const useMemory = args.has("--memory");
+if (automationPort !== null && !(await canListen(automationPort)))
+  throw new Error(`development_automation_port_in_use:${automationPort}`);
+if ((await realpath(projectPath)).toLowerCase() !== projectPath.toLowerCase())
+  throw new Error("development_project_must_be_physical");
 if (!useMemory) {
   const infrastructure = spawnSync(
     "docker",
@@ -144,18 +155,6 @@ const infrastructureEnv = useMemory
       MINIAPP_QUEUE_NAME: "starward-miniapp-development",
     };
 
-const children = [];
-let stopping = false;
-function stop(exitCode = 0) {
-  if (stopping) return;
-  stopping = true;
-  for (const child of children) stopProcessTree(child.pid);
-  process.exitCode = exitCode;
-}
-
-for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"])
-  process.once(signal, () => stop(0));
-
 const api = startNpm("dev:miniapp:api", {
   ...infrastructureEnv,
   MINIAPP_API_PORT: String(apiPort),
@@ -181,7 +180,12 @@ if (!useMemory) {
 // The generated WEAPP directory is disposable. Remove the previous compiler
 // output before starting watch mode so an old app.json can never be mistaken
 // for this session's first successful build or opened concurrently with emit.
-await rm(path.dirname(outputEntry), { recursive: true, force: true });
+const outputDirectory = path.dirname(outputEntry);
+const actualOutput = await realpath(outputDirectory).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+if (actualOutput && actualOutput.toLowerCase() !== outputDirectory.toLowerCase())
+  throw new Error("development_output_must_be_owned_physical_directory");
+if (stopping) throw new Error("development_session_stopped");
+await rm(outputDirectory, { recursive: true, force: true });
 const compiler = startNpm("dev:miniapp:weapp", {
   MINIAPP_API_BASE: `http://127.0.0.1:${apiPort}`,
   ...(useMemory ? { MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1" } : {}),
@@ -195,7 +199,7 @@ await waitFor(async () => {
   await access(outputEntry);
   return true;
 }, "weapp_watch_build_ready");
-await openDevtools();
+const automation = await openDevtools();
 
 process.stdout.write(
   `${JSON.stringify({
@@ -203,7 +207,8 @@ process.stdout.write(
     api: `http://127.0.0.1:${apiPort}/v2`,
     project: projectPath,
     authoring_root: path.join(projectPath, "src"),
-    devtools_opened: !args.has("--no-open"),
+    devtools_opened: !noOpen,
+    ...automation,
     persistence: useMemory
       ? "explicit_test_fixture_lane"
       : "postgres_postgis_redis_bullmq",
@@ -218,3 +223,10 @@ await new Promise((resolve) => {
     }
   }, 250);
 });
+} catch (error) {
+  await stop(1);
+  throw error;
+} finally {
+  await stop(process.exitCode ?? 0);
+  for (const [signal, handler] of signalHandlers) process.off(signal, handler);
+}

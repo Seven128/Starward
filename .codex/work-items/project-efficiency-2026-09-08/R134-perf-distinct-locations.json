@@ -1,0 +1,58 @@
+{
+  "environment": {
+    "node": "v24.16.0",
+    "data": "synthetic spots, deterministic weather, real committed Gaia catalog, in-memory repository/cache; no remote calls"
+  },
+  "rows": [
+    {
+      "spots": 8,
+      "label": "map-cold",
+      "ms": 370.62,
+      "weatherCalls": 8,
+      "positionCalls": 0,
+      "chars": 200920,
+      "bytes": 230157,
+      "gzipBytes": 9372
+    },
+    {
+      "spots": 8,
+      "label": "map-same-warm",
+      "ms": 62.22,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 200920,
+      "bytes": 230157,
+      "gzipBytes": 9372
+    },
+    {
+      "spots": 8,
+      "label": "map-switch-cloud",
+      "ms": 85.46,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 365367,
+      "bytes": 396258,
+      "gzipBytes": 12736
+    },
+    {
+      "spots": 8,
+      "label": "sky-after-map",
+      "ms": 378.03,
+      "weatherCalls": 0,
+      "positionCalls": 20,
+      "chars": 680956,
+      "bytes": 707361,
+      "gzipBytes": 223744
+    },
+    {
+      "spots": 8,
+      "label": "sky-warm",
+      "ms": 57.19,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 680956,
+      "bytes": 707361,
+      "gzipBytes": 223744
+    }
+  ]
+}

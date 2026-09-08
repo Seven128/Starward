@@ -1,0 +1,177 @@
+{
+  "fixture": "Exact real Gaia2048/20-frame catalog envelope with deterministic fixture weather; no device pointing evidence",
+  "comparedTo": "86101d32c7f31be69bb32756a593375df150f7f4",
+  "cases": 24,
+  "nativeCanvasCommandsUnchanged": true,
+  "comparison": [
+    {
+      "mode": "DAY",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 157
+    },
+    {
+      "mode": "DAY",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 132
+    },
+    {
+      "mode": "DAY",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 132
+    },
+    {
+      "mode": "DAY",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 127
+    },
+    {
+      "mode": "DAY",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 461
+    },
+    {
+      "mode": "DAY",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 495
+    },
+    {
+      "mode": "DAY",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 456
+    },
+    {
+      "mode": "DAY",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 415
+    },
+    {
+      "mode": "NIGHT",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 157
+    },
+    {
+      "mode": "NIGHT",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 132
+    },
+    {
+      "mode": "NIGHT",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 132
+    },
+    {
+      "mode": "NIGHT",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 127
+    },
+    {
+      "mode": "NIGHT",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 461
+    },
+    {
+      "mode": "NIGHT",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 495
+    },
+    {
+      "mode": "NIGHT",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 456
+    },
+    {
+      "mode": "NIGHT",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 415
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 157
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 132
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 132
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 375,
+      "height": 812,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 127
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 461
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T11:47:54.070Z",
+      "commands": 495
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 456
+    },
+    {
+      "mode": "OBSERVATION",
+      "width": 812,
+      "height": 375,
+      "frameAt": "2026-09-08T16:17:54.070Z",
+      "commands": 415
+    }
+  ],
+  "limitation": "Recorded API command/data equivalence only; neither pixels, actual native timing nor physical sensor correspondence"
+}

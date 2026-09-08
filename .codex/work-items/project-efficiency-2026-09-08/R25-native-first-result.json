@@ -1,0 +1,20 @@
+{
+  "route": "pages/index/index",
+  "state": "FAILED",
+  "metrics": {
+    "scope": "isolated_native_api_fixture",
+    "nativeCallbacks": 0,
+    "measurements": 1,
+    "presentations": 0,
+    "hideEvents": 0,
+    "showEvents": 0,
+    "storage": {
+      "bytes": 707203,
+      "restartReadback": true,
+      "asyncBodyWrites": 3,
+      "cleanupComplete": true,
+      "remainingKeys": 0
+    },
+    "error": "sky_canvas_callback_timeout"
+  }
+}

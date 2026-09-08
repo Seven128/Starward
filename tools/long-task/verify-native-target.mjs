@@ -224,11 +224,19 @@ async function stableRepositoryRoot(root = repositoryRoot) {
   return root;
 }
 
-function androidGradleArguments(androidAbi) {
+function androidGradleArguments(androidAbi, releaseProperties = {}) {
   if (!androidAbis.test(androidAbi)) throw new Error("android_device_abi_unsupported");
+  const propertyNames = ["enableMinifyInReleaseBuilds", "enableShrinkResourcesInReleaseBuilds"];
+  for (const name of propertyNames) {
+    if (releaseProperties[name] !== undefined && typeof releaseProperties[name] !== "boolean")
+      throw new Error(`android_release_property_invalid:${name}`);
+  }
+  if (releaseProperties.enableShrinkResourcesInReleaseBuilds && !releaseProperties.enableMinifyInReleaseBuilds)
+    throw new Error("android_resource_shrinking_requires_minification");
   return [
     ":app:assembleRelease",
     `-PreactNativeArchitectures=${androidAbi}`,
+    ...propertyNames.map((name) => `-Pandroid.${name}=${releaseProperties[name] ?? false}`),
     "--daemon",
     "--console=plain",
     "-Dorg.gradle.daemon.idletimeout=600000",
@@ -392,7 +400,7 @@ async function javaRuntimeIdentity() {
   return javaRuntimeIdentityPromise;
 }
 
-async function androidBuildInputFingerprint(androidAbi) {
+async function androidBuildInputFingerprint(androidAbi, { root = repositoryRoot } = {}) {
   if (!androidAbis.test(androidAbi)) throw new Error("android_device_abi_unsupported");
   const files = [];
   const roots = [
@@ -400,14 +408,17 @@ async function androidBuildInputFingerprint(androidAbi) {
     "packages/contracts/src",
     "packages/domain/src",
     "packages/ui-system/src",
+    "packages/astronomy-core/src",
+    "packages/astronomy-core/package.json",
+    "tools/run-node.cjs",
     "package.json",
     "package-lock.json",
     "patches",
   ];
-  for (const relativePath of roots) await collectBuildInputFiles(path.join(repositoryRoot, relativePath), files);
+  for (const relativePath of roots) await collectBuildInputFiles(path.join(root, relativePath), files);
   const digest = createHash("sha256");
   for (const filePath of files.sort((left, right) => left.localeCompare(right))) {
-    const relativePath = path.relative(repositoryRoot, filePath).replaceAll("\\", "/");
+    const relativePath = path.relative(root, filePath).replaceAll("\\", "/");
     if (relativePath.startsWith("apps/mobile/ios/")) continue;
     digest.update(relativePath);
     digest.update("\0");
@@ -2061,7 +2072,11 @@ async function prepareAndroidArtifact(androidAbi, gradleEnvironment) {
     const cacheIdentityRoot = await stableRepositoryRoot();
     const gradleWrapper = path.join(androidRoot, process.platform === "win32" ? "gradlew.bat" : "gradlew");
     if (!androidAbis.test(androidAbi)) throw new Error("android_device_abi_unsupported");
-    const gradleArguments = androidGradleArguments(androidAbi);
+    const appConfig = JSON.parse(await readFile(path.join(repositoryRoot, "apps/mobile/app.json"), "utf8"));
+    const releaseProperties = appConfig.expo?.plugins?.find(
+      (plugin) => Array.isArray(plugin) && plugin[0] === "expo-build-properties",
+    )?.[1]?.android ?? {};
+    const gradleArguments = androidGradleArguments(androidAbi, releaseProperties);
     const requireFromRepository = createRequire(path.join(repositoryRoot, "package.json"));
     const inputSha256 = await androidBuildInputFingerprint(androidAbi);
     const cacheRoot = androidPersistentCacheRoot(androidAbi, tmpdir(), cacheIdentityRoot);

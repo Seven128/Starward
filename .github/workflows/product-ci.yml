@@ -26,23 +26,35 @@ jobs:
         with:
           node-version: "24"
           cache: npm
+      - id: scope
+        run: node tools/ci/affected-checks.mjs
       - name: Install locked dependencies
+        if: steps.scope.outputs.product == 'true'
         run: npm ci
       - name: Audit Mini Program API production dependencies
+        if: steps.scope.outputs.product == 'true'
         run: npm audit --omit=dev --workspace @starward/miniapp-api --audit-level=high
       - name: Test deployment owners
+        if: steps.scope.outputs.product == 'true'
         run: npm run test:deployment
       - name: Validate release transport shell
+        if: steps.scope.outputs.product == 'true'
         run: sh -n infrastructure/deployment/run-remote-promotion.sh infrastructure/deployment/host-preflight.sh infrastructure/deployment/bootstrap-fresh-host.sh
       - name: Check release code
+        if: steps.scope.outputs.product == 'true'
         run: npm run check:miniapp:release-code
       - name: Build backend release packages
+        if: steps.scope.outputs.product == 'true'
         run: npm run build:miniapp:release
       - name: Test WEAPP release bundle owner
+        if: steps.scope.outputs.product == 'true'
         run: npm run test:miniapp:release && npm run test:miniapp:platform
       - name: Build nondeployable WEAPP CI bundle
+        if: steps.scope.outputs.product == 'true'
         run: npm run miniapp:bundle -- --lane ci --api-origin https://api.starward-ci.invalid --source-revision "$GITHUB_SHA"
       - name: Run isolated infrastructure checks
+        if: steps.scope.outputs.product == 'true'
         run: npm run test:miniapp:infrastructure
       - name: Construct production OCI image
+        if: steps.scope.outputs.product == 'true'
         run: docker build --file infrastructure/deployment/miniapp-api.Dockerfile --build-arg "STARWARD_RELEASE_REVISION=$GITHUB_SHA" --tag "starward-miniapp-api-ci:$GITHUB_SHA" .

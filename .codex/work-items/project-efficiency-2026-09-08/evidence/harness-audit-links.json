@@ -1,0 +1,242 @@
+{
+  "markdownFiles": 62,
+  "links": 64,
+  "broken": [],
+  "largestDesignDirs": [
+    [
+      "docs/design-resources/wechat-miniapp",
+      184951252
+    ],
+    [
+      "docs/design-resources/map-my-ui-reconstruction",
+      87461040
+    ],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03",
+      26076910
+    ],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r2",
+      26071681
+    ],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3",
+      26071681
+    ],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4",
+      26071681
+    ],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5",
+      26071681
+    ],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6",
+      26071681
+    ],
+    [
+      "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04",
+      26071141
+    ],
+    [
+      "docs/design-resources/miniapp-design-system-2026-08-25-sky-canvas",
+      23281706
+    ],
+    [
+      "docs/design-resources/miniapp-design-system-2026-08-05",
+      13644975
+    ],
+    [
+      "docs/design-resources/miniapp-selected-source-2026-08-06-v1",
+      5925696
+    ]
+  ],
+  "duplicateGroups": 90,
+  "duplicateBytes": 176025272,
+  "largestDuplicates": [
+    {
+      "size": 2936710,
+      "copies": 44,
+      "redundantBytes": 126278530,
+      "files": [
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-03/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-04/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-04/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-05/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-05/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-06/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-06/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-07/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-07/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-08/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-08/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-09/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-09/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-10/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-10/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-11/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-11/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-12/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-12/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-13/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-13/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-03/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-03/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-04/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-04/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-05/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-05/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-06/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-06/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-07/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-07/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-08/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-08/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-09/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-09/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-10/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-10/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-11/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-11/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-12/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-12/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-13/assets/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-13/outputs/interactive/parking.jpg",
+        "docs/design-resources/wechat-miniapp/map/adopted/spot-information/preview/parking.jpg"
+      ]
+    },
+    {
+      "size": 421279,
+      "copies": 44,
+      "redundantBytes": 18114997,
+      "files": [
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-03/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-04/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-04/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-05/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-05/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-06/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-06/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-07/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-07/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-08/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-08/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-09/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-09/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-10/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-10/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-11/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-11/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-12/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-12/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-13/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-13/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-03/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-03/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-04/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-04/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-05/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-05/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-06/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-06/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-07/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-07/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-08/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-08/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-09/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-09/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-10/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-10/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-11/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-11/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-12/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-12/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-13/assets/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-13/outputs/interactive/toilet.jpg",
+        "docs/design-resources/wechat-miniapp/map/adopted/spot-information/preview/toilet.jpg"
+      ]
+    },
+    {
+      "size": 173651,
+      "copies": 37,
+      "redundantBytes": 6251436,
+      "files": [
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-05/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-05/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-06/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-06/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-07/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-07/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-08/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-08/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-09/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-09/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-10/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-10/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-11/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-11/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-12/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-12/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-13/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-01/mobile-preview/feedback-13/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-05/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-05/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-06/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-06/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-07/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-07/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-08/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-08/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-09/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-09/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-10/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-10/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-11/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-11/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-12/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-12/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-13/assets/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/feedback-13/outputs/interactive/moon-data.js",
+        "docs/design-resources/wechat-miniapp/map/adopted/spot-information/preview/moon-data.js"
+      ]
+    },
+    {
+      "size": 168296,
+      "copies": 6,
+      "redundantBytes": 841480,
+      "files": [
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/experiment-4/B/round-1/e4-B-1-map.png",
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/experiment-4/B/round-2/e4-B-1-map.png",
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/experiment-4/review-site/7d0651de-f-map.png",
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/review-site/stitch/old.png",
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/review-site/v2-retest2/7d0651de-f-map.png",
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/stitch-trial/inputs/01-business-baseline-7d0651de.png"
+      ]
+    },
+    {
+      "size": 137713,
+      "copies": 7,
+      "redundantBytes": 826278,
+      "files": [
+        "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r2/selected-source/assets/app.js",
+        "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r3/selected-source/assets/app.js",
+        "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r4/selected-source/assets/app.js",
+        "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r5/selected-source/assets/app.js",
+        "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04-r6/selected-source/assets/app.js",
+        "docs/design-resources/miniapp-field-signal-i21-binding-2026-09-04/selected-source/assets/app.js",
+        "docs/design-resources/miniapp-field-signal-i21-selected-2026-09-03/selected-source/assets/app.js"
+      ]
+    },
+    {
+      "size": 316926,
+      "copies": 3,
+      "redundantBytes": 633852,
+      "files": [
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/review-site/stitch/b-original.png",
+        "docs/design-resources/map-my-ui-reconstruction/20260907-skill-validation/stitch-trial/outputs/direction-b-original/screen.png",
+        "docs/design-resources/wechat-miniapp/map/20260907-stitch-b-refinement/inputs/selected-b/screen.png"
+      ]
+    }
+  ]
+}

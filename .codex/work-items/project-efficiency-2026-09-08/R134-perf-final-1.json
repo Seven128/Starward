@@ -1,0 +1,118 @@
+{
+  "environment": {
+    "node": "v24.16.0",
+    "data": "synthetic spots, deterministic weather, real committed Gaia catalog, in-memory repository/cache; no remote calls"
+  },
+  "rows": [
+    {
+      "spots": 1,
+      "label": "map-cold",
+      "ms": 250.52,
+      "weatherCalls": 1,
+      "positionCalls": 0,
+      "chars": 32260,
+      "bytes": 36933,
+      "gzipBytes": 5177
+    },
+    {
+      "spots": 1,
+      "label": "map-same-warm",
+      "ms": 4.63,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 32260,
+      "bytes": 36933,
+      "gzipBytes": 5177
+    },
+    {
+      "spots": 1,
+      "label": "map-switch-cloud",
+      "ms": 11.1,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 54725,
+      "bytes": 59652,
+      "gzipBytes": 6324
+    },
+    {
+      "spots": 1,
+      "label": "sky-after-map",
+      "ms": 715.4,
+      "weatherCalls": 0,
+      "positionCalls": 20,
+      "chars": 680798,
+      "bytes": 707203,
+      "gzipBytes": 223813
+    },
+    {
+      "spots": 1,
+      "label": "sky-warm",
+      "ms": 92.9,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 680798,
+      "bytes": 707203,
+      "gzipBytes": 223813
+    },
+    {
+      "spots": 1,
+      "label": "map-4-identical-concurrent-misses",
+      "ms": 49.1,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 129045,
+      "bytes": 147737,
+      "gzipBytes": 17202
+    },
+    {
+      "spots": 8,
+      "label": "map-cold",
+      "ms": 323.09,
+      "weatherCalls": 1,
+      "positionCalls": 0,
+      "chars": 196984,
+      "bytes": 224729,
+      "gzipBytes": 8410
+    },
+    {
+      "spots": 8,
+      "label": "map-same-warm",
+      "ms": 116.47,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 196984,
+      "bytes": 224729,
+      "gzipBytes": 8410
+    },
+    {
+      "spots": 8,
+      "label": "map-switch-cloud",
+      "ms": 152.5,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 361451,
+      "bytes": 390850,
+      "gzipBytes": 10804
+    },
+    {
+      "spots": 8,
+      "label": "sky-after-map",
+      "ms": 657.05,
+      "weatherCalls": 0,
+      "positionCalls": 20,
+      "chars": 680798,
+      "bytes": 707203,
+      "gzipBytes": 223814
+    },
+    {
+      "spots": 8,
+      "label": "sky-warm",
+      "ms": 148.86,
+      "weatherCalls": 0,
+      "positionCalls": 0,
+      "chars": 680798,
+      "bytes": 707203,
+      "gzipBytes": 223814
+    }
+  ]
+}

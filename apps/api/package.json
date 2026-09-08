@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/start.ts",
-    "start:poc": "tsx src/start.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "dev": "node ../../tools/run-node.cjs --bin tsx tsx watch src/start.ts",
+    "start:poc": "node ../../tools/run-node.cjs --bin tsx tsx src/start.ts",
+    "typecheck": "node ../../tools/run-node.cjs --bin typescript tsc --noEmit",
+    "test": "node ../../tools/run-node.cjs --bin vitest vitest run"
   },
   "dependencies": {
     "@fastify/cors": "11.3.0",

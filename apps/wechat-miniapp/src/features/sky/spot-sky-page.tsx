@@ -3,6 +3,7 @@ import Taro, {
   useDidHide,
   useDidShow,
   useReady,
+  useResize,
   useRouter,
 } from "@tarojs/taro";
 import { Button, Canvas, ScrollView, Text, View } from "@tarojs/components";
@@ -45,12 +46,24 @@ import {
   resolveSkyHeading,
 } from "./sky-view-projection";
 import { exactSkyTimeFrame } from "./sky-time-frame";
+import { createPoseFramePublisher, createSkyCanvasLifecycle } from "./sky-canvas-lifecycle";
 import "./spot-sky-page.scss";
 
 const CANVAS_ID = "spot-night-sky-scene";
 // Explicit angular view, independent of logical-pixel density. Physical
 // apparent scale and platform pose conventions still require device feedback.
 const SKY_VERTICAL_FOV_DEG = 45;
+
+interface SkyCanvasFrame {
+  data: SkyReport | undefined;
+  frameAt: string | undefined;
+  heading: number | null;
+  pose: DevicePose | null;
+  mode: DisplayMode;
+  sceneReady: boolean;
+  owner: AcceptanceSkySceneInspectionOwner | null;
+  inspection: { spotId: string; frameAt: string; catalogVersion: string; starCount: number };
+}
 
 const TARGET_TYPE_LABEL: Readonly<Record<SkyReport["targets"][number]["type"], string>> = {
   STAR: "恒星",
@@ -625,6 +638,7 @@ function drawSkyScene(
   width: number,
   height: number,
   mode: DisplayMode,
+  completed?: () => void,
 ) {
   const palette =
     mode === "OBSERVATION"
@@ -664,7 +678,7 @@ function drawSkyScene(
   // Missing pose has no invented North-facing view. Recovery/list semantics
   // remain available outside this canvas until a trusted stream is present.
   if (!data || !basis) {
-    context.draw(false);
+    context.draw(false, completed);
     return;
   }
   const project = (azimuth: number, altitude: number) =>
@@ -762,7 +776,7 @@ function drawSkyScene(
     }
     context.setGlobalAlpha(1);
   });
-  context.draw(false);
+  context.draw(false, completed);
 }
 
 function contextQuery(context: SpotNightRouteContext, selectedAt: string) {
@@ -964,7 +978,8 @@ export function SpotSkyPage() {
       if (telemetry === null) {
         setCompassTelemetry({ accuracy: null, sampledAt: null });
       } else if (telemetry) {
-        setCompassTelemetry(telemetry);
+        setCompassTelemetry(previous => previous.accuracy === telemetry.accuracy &&
+          Math.floor((previous.sampledAt ?? 0) / 1000) === Math.floor((telemetry.sampledAt ?? 0) / 1000) ? previous : telemetry);
       }
     },
     [],
@@ -976,7 +991,9 @@ export function SpotSkyPage() {
   const lastCompassHeadingRef = useRef<number | null>(null);
   const compassHeadingRef = useRef<number | null>(null);
   const compassQualityRef = useRef<LocalCompassState | null>(null);
-  const [devicePose, setDevicePose] = useState<DevicePose | null>(null);
+  const [devicePose, publishDevicePose] = useState<DevicePose | null>(null);
+  const poseFrames = useMemo(() => createPoseFramePublisher<DevicePose>(publishDevicePose), []);
+  const setDevicePose = useCallback((pose: DevicePose | null) => poseFrames.set(pose), [poseFrames]);
   const devicePoseRef = useRef<DevicePose | null>(null);
   const motionOffsetRef = useRef<number | null>(null);
   const compassStaleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -986,12 +1003,29 @@ export function SpotSkyPage() {
     null,
   );
   const compassResumeRef = useRef(false);
-  const canvasDrawRequestRef = useRef(0);
   const canvasDrawRevisionRef = useRef(0);
   const skySceneInspectionOwnerRef =
     useRef<AcceptanceSkySceneInspectionOwner | null>(null);
   const [canvasError, setCanvasError] = useState<string | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const canvasLifecycle = useMemo(() => createSkyCanvasLifecycle<SkyCanvasFrame, ReturnType<typeof Taro.createCanvasContext>>({
+    measure: done => { Taro.createSelectorQuery().select(".sky-scene__canvas").boundingClientRect(done).exec(); },
+    createContext: () => Taro.createCanvasContext(CANVAS_ID),
+    paint: (context, frame, size, done) => drawSkyScene(context, frame.data, frame.frameAt, frame.heading, frame.pose, size.width, size.height, frame.mode, done),
+    sameScene: (completed, latest) => completed.data === latest.data && completed.frameAt === latest.frameAt &&
+      completed.mode === latest.mode && completed.owner === latest.owner && completed.inspection.spotId === latest.inspection.spotId,
+    presented: (frame, size) => {
+      setCanvasSize(previous => previous.width === size.width && previous.height === size.height ? previous : size);
+      if (frame.sceneReady) canvasDrawRevisionRef.current++;
+      publishAcceptanceSkySceneInspection(frame.owner, { ...frame.inspection, state: frame.sceneReady ? "READY" : "UNAVAILABLE", drawRevision: canvasDrawRevisionRef.current });
+      setCanvasError(null);
+    },
+    invalidated: () => setCanvasSize(previous => previous.width === 0 && previous.height === 0 ? previous : { width: 0, height: 0 }),
+    failed: (error, frame) => {
+      if (frame) publishAcceptanceSkySceneInspection(frame.owner, { ...frame.inspection, state: "ERROR", drawRevision: canvasDrawRevisionRef.current });
+      setCanvasError(error instanceof Error ? error.message : "canvas_unavailable");
+    },
+  }), []);
   const [timeSaving, setTimeSaving] = useState(false);
   const [orientationObjectListOpen, setOrientationObjectListOpen] =
     useState(false);
@@ -1050,7 +1084,7 @@ export function SpotSkyPage() {
       "允许后仅在本页前台读取设备方向，不记录连续姿态轨迹",
       null,
     );
-  }, [compassLifecycle]);
+  }, [compassLifecycle, setDevicePose]);
 
   const startCompass = useCallback(async () => {
     if (compassLifecycle.active) return;
@@ -1262,13 +1296,14 @@ export function SpotSkyPage() {
         null,
       );
     }, motionListener);
-  }, [compassLifecycle]);
+  }, [compassLifecycle, setDevicePose]);
 
+  const hasCompassSample = compassTelemetry.sampledAt !== null;
   useEffect(() => {
-    if (compassTelemetry.sampledAt === null) return;
+    if (!hasCompassSample) return;
     const timer = setInterval(() => setCompassNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [compassTelemetry.sampledAt]);
+  }, [hasCompassSample]);
 
   const hideCompass = useCallback(() => {
     // Backgrounding tears down native listeners, but preserves an explicit
@@ -1284,15 +1319,14 @@ export function SpotSkyPage() {
     void startCompass();
   }, [startCompass]);
 
-  useDidHide(hideCompass);
-  useDidShow(showCompass);
-
   useEffect(() => {
     return () => {
       compassResumeRef.current = false;
+      poseFrames.dispose();
+      canvasLifecycle.dispose();
       stopCompass();
     };
-  }, [stopCompass]);
+  }, [canvasLifecycle, poseFrames, stopCompass]);
 
   useEffect(() => {
     const owner = acquireAcceptanceSkySceneInspection();
@@ -1305,129 +1339,45 @@ export function SpotSkyPage() {
     };
   }, []);
 
-  const draw = useCallback(() => {
-    const requestRevision = canvasDrawRequestRef.current + 1;
-    canvasDrawRequestRef.current = requestRevision;
-    const requestedCatalog =
-      reportData?.skyScene.state === "AVAILABLE"
-        ? reportData.skyScene.catalog
-        : null;
-    const requestedFrame = exactSkyTimeFrame(reportData?.skyScene.frames, row?.at);
-    const requestedTargetFrame = exactSkyTimeFrame(reportData?.targetFrames, row?.at);
-    const requestedStarCount =
-      requestedFrame?.state === "AVAILABLE" && requestedFrame.points
-        ? requestedFrame.points.filter((point) => point[2] > 0).length
-        : 0;
-    const owner = skySceneInspectionOwnerRef.current;
-    publishAcceptanceSkySceneInspection(owner, {
-      state: "PENDING",
-      spotId: routeContext.spotId,
-      frameAt: requestedFrame?.at ?? "",
-      catalogVersion: requestedCatalog?.catalogVersion ?? "",
-      starCount: requestedStarCount,
-      drawRevision: canvasDrawRevisionRef.current,
-    });
-    try {
-      Taro.createSelectorQuery()
-        .select(".sky-scene__canvas")
-        .boundingClientRect((result) => {
-          try {
-            if (requestRevision !== canvasDrawRequestRef.current) return;
-            const rect = Array.isArray(result) ? result[0] : result;
-            if (!rect || !Number.isFinite(rect.width) || rect.width <= 0 ||
-                !Number.isFinite(rect.height) || rect.height <= 0) {
-              throw new Error("sky_canvas_measurement_unavailable");
-            }
-            const { width, height } = rect;
-            setCanvasSize((previous) =>
-              previous.width === width && previous.height === height
-                ? previous
-                : { width, height },
-            );
-            const context = Taro.createCanvasContext(CANVAS_ID);
-            const canvasData =
-              report.data?.dataState === "EXPIRED" ||
-              report.data?.dataState === "UNAVAILABLE" ||
-              report.isError
-                ? undefined
-                : reportData;
-            drawSkyScene(
-              context,
-              canvasData,
-              row?.at,
-              sensorHeadingForScene,
-              devicePose,
-              width,
-              height,
-              mode,
-            );
-            const sceneReady = Boolean(
-              sensorHeadingForScene !== null &&
-                devicePose !== null &&
-                canvasData?.skyScene.state === "AVAILABLE" &&
-                requestedCatalog &&
-                requestedTargetFrame &&
-                requestedFrame?.state === "AVAILABLE" &&
-                requestedFrame.points,
-            );
-            if (sceneReady) canvasDrawRevisionRef.current += 1;
-            publishAcceptanceSkySceneInspection(owner, {
-              state: sceneReady ? "READY" : "UNAVAILABLE",
-              spotId: routeContext.spotId,
-              frameAt: requestedFrame?.at ?? "",
-              catalogVersion: requestedCatalog?.catalogVersion ?? "",
-              starCount: requestedStarCount,
-              drawRevision: canvasDrawRevisionRef.current,
-            });
-            setCanvasError(null);
-          } catch (error) {
-            setCanvasSize({ width: 0, height: 0 });
-            publishAcceptanceSkySceneInspection(owner, {
-              state: "ERROR",
-              spotId: routeContext.spotId,
-              frameAt: requestedFrame?.at ?? "",
-              catalogVersion: requestedCatalog?.catalogVersion ?? "",
-              starCount: requestedStarCount,
-              drawRevision: canvasDrawRevisionRef.current,
-            });
-            setCanvasError(
-              error instanceof Error ? error.message : "canvas_unavailable",
-            );
-          }
-        })
-        .exec();
-    } catch (error) {
-      setCanvasSize({ width: 0, height: 0 });
-      publishAcceptanceSkySceneInspection(owner, {
-        state: "ERROR",
+  const canvasFrameInfo = useMemo(() => {
+    const catalog = reportData?.skyScene.state === "AVAILABLE" ? reportData.skyScene.catalog : null;
+    const frame = exactSkyTimeFrame(reportData?.skyScene.frames, row?.at);
+    const targetFrame = exactSkyTimeFrame(reportData?.targetFrames, row?.at);
+    return {
+      catalog, frame, targetFrame,
+      inspection: {
         spotId: routeContext.spotId,
-        frameAt: requestedFrame?.at ?? "",
-        catalogVersion: requestedCatalog?.catalogVersion ?? "",
-        starCount: requestedStarCount,
-        drawRevision: canvasDrawRevisionRef.current,
-      });
-      setCanvasError(
-        error instanceof Error ? error.message : "canvas_unavailable",
-      );
-    }
-  }, [
-    mode,
-    report.data?.dataState,
-    report.isError,
-    reportData,
-    routeContext.spotId,
-    row?.at,
-    sensorHeadingForScene,
-    devicePose,
-  ]);
+        frameAt: frame?.at ?? "",
+        catalogVersion: catalog?.catalogVersion ?? "",
+        starCount: frame?.state === "AVAILABLE" && frame.points ? frame.points.filter(point => point[2] > 0).length : 0,
+      },
+    };
+  }, [reportData, routeContext.spotId, row?.at]);
+  const previousCanvasModeRef = useRef(mode);
+  const draw = useCallback(() => {
+    const owner = skySceneInspectionOwnerRef.current;
+    const canvasData = report.data?.dataState === "EXPIRED" || report.data?.dataState === "UNAVAILABLE" || report.isError ? undefined : reportData;
+    // Native refs clear synchronously on hide/denial, before React's next commit.
+    const pose = devicePoseRef.current === null ? null : devicePose;
+    const heading = pose === null ? null : sensorHeadingForScene;
+    const sceneReady = Boolean(heading !== null && pose !== null && canvasData?.skyScene.state === "AVAILABLE" &&
+      canvasFrameInfo.catalog && canvasFrameInfo.targetFrame && canvasFrameInfo.frame?.state === "AVAILABLE" && canvasFrameInfo.frame.points);
+    publishAcceptanceSkySceneInspection(owner, { ...canvasFrameInfo.inspection, state: "PENDING", drawRevision: canvasDrawRevisionRef.current });
+    canvasLifecycle.request({ data: canvasData, frameAt: row?.at, heading, pose, mode, sceneReady, owner, inspection: canvasFrameInfo.inspection },
+      !canvasData || heading === null || previousCanvasModeRef.current !== mode);
+    previousCanvasModeRef.current = mode;
+  }, [canvasLifecycle, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, sensorHeadingForScene, devicePose]);
 
-  useReady(draw);
+  useReady(() => { canvasLifecycle.setMounted(Boolean(contextComplete && activeContext)); canvasLifecycle.ready(); draw(); });
+  useResize(() => { canvasLifecycle.resize(); draw(); });
+  useDidHide(() => { canvasLifecycle.hide(); hideCompass(); });
+  useDidShow(() => { canvasLifecycle.show(); showCompass(); draw(); });
   useEffect(() => {
-    // Redraw on every report transition as well as time changes. Clearing the
-    // canvas on error/expiry prevents a previous successful target projection
-    // from remaining visible while the overlay truthfully reports failure.
+    canvasLifecycle.setMounted(Boolean(contextComplete && activeContext));
+    // Include every report transition: error/expiry submits a clear frame,
+    // while the single native writer discards superseded completion callbacks.
     draw();
-  }, [activeIndex, draw, reportData]);
+  }, [activeIndex, activeContext, contextComplete, canvasLifecycle, draw, reportData]);
 
   useEffect(() => {
     setPreviewIndex(null);
@@ -1794,6 +1744,7 @@ export function SpotSkyPage() {
             canvasId={CANVAS_ID}
             id={CANVAS_ID}
             className="sky-scene__canvas sky-orientation-canvas__surface"
+            onError={() => canvasLifecycle.fail(new Error("sky_canvas_native_error"))}
             style={{ width: "100%", height: "100%", visibility: canvasError || canvasSize.width <= 0 || canvasSize.height <= 0 ? "hidden" : "visible" }}
             aria-label="方位天空投影；目录星与目标标记只来自当前正式点、真实时刻和服务端天文计算结果"
           />

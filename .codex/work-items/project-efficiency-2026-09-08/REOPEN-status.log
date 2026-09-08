@@ -1,0 +1,5 @@
+
+> starward@1.0.0 node
+> node tools/run-node.cjs .codex/work-items/project-efficiency-2026-09-08/R10-cli-probe.mjs run -c Codex check_wechatide_status --skill-version 0.3.9
+
+{"code":0,"signal":null,"versionRelation":"equal","loginExpired":true,"tokenRequired":false,"responseKeys":["ok","tool","clientName","result"],"resultKeys":["success","loginExpired","skillVersion","skillPath","tokenRequired","versionRelation"],"diagnostics":[],"stdoutBytes":361,"stderrBytes":65}

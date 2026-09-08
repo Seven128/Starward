@@ -13,6 +13,7 @@ import type {
   MiniappRuntimeConfig,
   OpenMeteoEvidenceMode,
 } from "./runtime-config.ts";
+import { WEATHER_DEADLINES, withDeadline } from "./provider-deadline.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -163,7 +164,7 @@ function unavailableSource(input: {
   };
 }
 
-function unavailableWeatherResult(
+export function unavailableWeatherResult(
   provider: string,
   errorCode: string,
   extraSources: readonly SourceSummary[] = [],
@@ -200,12 +201,16 @@ async function fetchJson<T>(
   url: URL,
   init: RequestInit,
   transport: typeof fetch,
+  deadlineMs: number = WEATHER_DEADLINES.requestMs,
 ): Promise<T> {
-  const response = await transport(url, init);
-  if (!response.ok) throw new Error(`provider_http_${response.status}`);
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("json")) throw new Error("provider_non_json_response");
-  return (await response.json()) as T;
+  return withDeadline(async (signal) => {
+    const response = await transport(url, { ...init, signal });
+    signal.throwIfAborted();
+    if (!response.ok) throw new Error(`provider_http_${response.status}`);
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("json")) throw new Error("provider_non_json_response");
+    return (await response.json()) as T;
+  }, deadlineMs, init.signal);
 }
 
 function normalizedAt(value: string): string {
@@ -279,6 +284,7 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
     private readonly config: MiniappRuntimeConfig,
     private readonly transport: typeof fetch = fetch,
     private readonly mode: OpenMeteoEvidenceMode = config.openMeteoEvidenceMode,
+    private readonly deadlineMs: number = WEATHER_DEADLINES.requestMs,
   ) {
     const commercial = mode === "OPEN_METEO_COMMERCIAL";
     this.key = commercial
@@ -333,6 +339,7 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
           ...(input.signal ? { signal: input.signal } : {}),
         },
         this.transport,
+        this.deadlineMs,
       );
       if (payload.utc_offset_seconds !== 0)
         throw new Error("open_meteo_not_utc");
@@ -711,6 +718,7 @@ export class QWeatherForecastAdapter {
   constructor(
     private readonly config: MiniappRuntimeConfig,
     private readonly transport: typeof fetch = fetch,
+    private readonly deadlineMs: number = WEATHER_DEADLINES.requestMs,
   ) {
     this.key = `qweather-weather-v1-hourly-${config.qweather.forecastHours}h`;
   }
@@ -754,6 +762,7 @@ export class QWeatherForecastAdapter {
           ...(input.signal ? { signal: input.signal } : {}),
         },
         this.transport,
+        this.deadlineMs,
       );
       if (!payload.hours?.length)
         throw new Error("qweather_rejected:empty");
@@ -909,6 +918,7 @@ export class QWeatherAlertAdapter {
   constructor(
     private readonly config: MiniappRuntimeConfig,
     private readonly transport: typeof fetch = fetch,
+    private readonly deadlineMs: number = WEATHER_DEADLINES.requestMs,
   ) {}
 
   async getAlerts(
@@ -945,6 +955,7 @@ export class QWeatherAlertAdapter {
           ...(input.signal ? { signal: input.signal } : {}),
         },
         this.transport,
+        this.deadlineMs,
       );
       if (!payload.metadata)
         throw new Error("qweather_alert_metadata_missing");
@@ -1098,13 +1109,15 @@ export class QWeatherCompositeAdapter implements WeatherPort {
   constructor(
     config: MiniappRuntimeConfig,
     transport: typeof fetch = fetch,
+    deadlineMs: number = WEATHER_DEADLINES.requestMs,
   ) {
-    this.forecast = new QWeatherForecastAdapter(config, transport);
-    this.alerts = new QWeatherAlertAdapter(config, transport);
+    this.forecast = new QWeatherForecastAdapter(config, transport, deadlineMs);
+    this.alerts = new QWeatherAlertAdapter(config, transport, deadlineMs);
     this.evidence = new OpenMeteoWeatherAdapter(
       config,
       transport,
       config.openMeteoEvidenceMode,
+      deadlineMs,
     );
   }
 

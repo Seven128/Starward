@@ -46,7 +46,7 @@ const validObservationContext = {
   expiresAt: "2999-08-30T00:00:00.000Z",
 };
 
-function loadStore(storage: { value: unknown } = { value: {} }) {
+function loadStore(storage: { value: unknown; failWrites?: boolean } = { value: {} }) {
   // Run the actual whole store module with real Zustand/transitions. Only native
   // storage and the microtask scheduler are ports; no Taro runtime or user data.
   const source = ts.createSourceFile("app-store.ts", readFileSync(new URL("./app-store.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -58,10 +58,34 @@ function loadStore(storage: { value: unknown } = { value: {} }) {
     enqueueNotification, removeNotification: dismissNotification,
     acceptanceBootstrapJson: {}, __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: false,
     queueMicrotask: (fn: () => void) => scheduled.push(fn),
-    Taro: { getStorageSync: () => storage.value, setStorageSync: (_key: string, value: unknown) => { storage.value = value; } },
+    Taro: {
+      getStorageSync: () => storage.value,
+      removeStorageSync: () => { if (storage.failWrites) throw Error("native removal failed"); storage.value = undefined; },
+      setStorageSync: (_key: string, value: unknown) => { if (storage.failWrites) throw Error("native write failed"); storage.value = value; },
+    },
   }, { timeout: 1000 });
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
+
+test("temporary cache reset is synchronous but reports durable write success only after native completion", async () => {
+  for (const failWrites of [false, true]) {
+    const { store, flush } = loadStore({ value: {}, failWrites });
+    store.setState({ observationContext: validObservationContext as never, favoriteIds: ["favorite"] as never,
+      plans: [{ planId: "retained" }] as never, finderQuery: "old search" });
+    const before = store.getState();
+    const pending = store.getState().clearLocalCache();
+    assert.equal(store.getState().observationContext, null);
+    assert.equal(store.getState().finderQuery, "");
+    assert.equal(store.getState().favoriteIds, before.favoriteIds);
+    assert.equal(store.getState().plans, before.plans);
+    assert.equal(store.getState().notifications.length, 0, "the caller owns feedback after all cache owners finish");
+    flush();
+    assert.equal(await pending, !failWrites);
+    assert.equal(store.getState().resetAfterAccountDeletion(), !failWrites);
+    assert.equal(store.getState().favoriteIds.length, 0);
+    assert.equal(store.getState().plans.length, 0);
+  }
+});
 
 test("older account readback cannot roll back saved preferences or a newer local edit", () => {
   const { store } = loadStore();

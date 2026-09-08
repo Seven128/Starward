@@ -36,7 +36,6 @@ import {
   type ProfileLinkId,
   type RouteEstimateRequest,
   type SearchData,
-  type SkyReport,
   type SourceSummary,
   type SpotDetail,
   type SpotId,
@@ -52,7 +51,7 @@ import {
   gcj02ToWgs84,
   wgs84ToGcj02,
 } from "@starward/coordinate-system";
-import { AstronomyService } from "./astronomy-service.ts";
+import { AstronomyService, type AstronomyDecisionReport } from "./astronomy-service.ts";
 import type { SkyCatalogProvider } from "./sky-scene-catalog.ts";
 import { AuthService } from "./auth-service.ts";
 import { MemoryCache, RedisCache } from "./cache.ts";
@@ -89,6 +88,7 @@ import {
   validateExternalUrl,
 } from "./security.ts";
 import { createWeatherPort } from "./weather-provider.ts";
+import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 
 function hash(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -265,7 +265,7 @@ function windowMinutes(
   return window?.durationMinutes ?? null;
 }
 
-function nearestHourly(report: SkyReport, selectedAt: string) {
+function nearestHourly(report: AstronomyDecisionReport, selectedAt: string) {
   const selected = Date.parse(selectedAt);
   return report.hourly.reduce<(typeof report.hourly)[number] | null>(
     (nearest, row) =>
@@ -297,7 +297,7 @@ function selectedTimeOpportunityLabel(
 
 function timeSignalFor(
   spotId: SpotId,
-  report: SkyReport,
+  report: AstronomyDecisionReport,
   selectedAtUtc: string,
 ): MapSpotTimeSignal {
   const row = nearestHourly(report, selectedAtUtc);
@@ -444,7 +444,7 @@ function layerFor(input: {
   cloudLayer: ObservationContext["weatherView"]["cloudLayer"];
   selectedAtUtc: string;
   spots: readonly SpotSummary[];
-  reports: Readonly<Record<string, ApiEnvelope<SkyReport>>>;
+  reports: Readonly<Record<string, ApiEnvelope<AstronomyDecisionReport>>>;
   evaluations: Readonly<Record<string, MapSpotEvaluation>>;
   config: MiniappRuntimeConfig;
   darkSkyCells: readonly DarkSkyGridCellRecord[];
@@ -578,12 +578,12 @@ function layerFor(input: {
         entry,
       ): entry is {
         spot: SpotSummary;
-        report: ApiEnvelope<SkyReport>;
+        report: ApiEnvelope<AstronomyDecisionReport>;
         evaluation: MapSpotEvaluation;
       } => Boolean(entry.report && entry.evaluation),
     );
   if (input.kind === "CLOUD") {
-    const cloudValue = (report: SkyReport) => {
+    const cloudValue = (report: AstronomyDecisionReport) => {
       const row = nearestHourly(report, input.selectedAtUtc);
       if (!row) return null;
       if (input.cloudLayer === "LOW") return row.lowCloudPercent;
@@ -787,6 +787,7 @@ export class MiniappService {
 
   async onModuleDestroy() {
     await this.repository.close();
+    this.astronomy.clearCaches();
     await this.cache.close();
     await this.contributions.mediaStore.close();
   }
@@ -835,6 +836,7 @@ export class MiniappService {
     this.outbox.resetForAcceptance();
     if (this.contributions.mediaStore.kind === "memory")
       await this.contributions.mediaStore.close();
+    this.astronomy.clearCaches();
     await this.cache.deleteByPrefix("");
   }
 
@@ -969,11 +971,12 @@ export class MiniappService {
     preferences?: SpotRankingPreferences;
     userId?: UserId | null;
   }): Promise<ApiEnvelope<MapSceneData>> {
+    const weatherDeadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs;
     const context = await this.observationContexts.get(input.contextId);
     const filters = input.filters ?? EMPTY_FILTER_STATE;
     const layerKind = input.layer ?? "NORMAL";
     const cloudLayer = input.cloudLayer ?? context.weatherView.cloudLayer;
-    const cacheKey =
+    let cacheKey =
       "map:" +
       context.contextFingerprint.slice(0, 16) +
       ":" +
@@ -989,20 +992,11 @@ export class MiniappService {
         cloudLayer,
         userId: input.userId ?? null,
       });
-    const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
-    if (cached) return cached;
 
-    const allCandidates = (await this.repository.listSpots()).filter(
-      (spot) =>
-        (spot.status === "PUBLISHED" ||
-          spot.status === "TEMPORARILY_CLOSED") &&
-        (this.repository.kind === "memory" ||
-          spot.source.kind !== "TEST_FIXTURE"),
-    );
     const radiusKm = input.viewport
       ? viewportRadiusKm(input.viewport.zoom)
       : null;
-    let viewportSpots = allCandidates;
+    let candidates: readonly SpotSummary[];
     let viewportCenterWgs84: Wgs84Point | null = null;
     if (input.viewport) {
       const converted = gcj02ToWgs84({
@@ -1015,16 +1009,18 @@ export class MiniappService {
         latitude: converted.lat,
         longitude: converted.lon,
       };
-      const ids = new Set(
-        (
-          await this.repository.listSpotsInRadius(
-            viewportCenterWgs84,
-            radiusKm!,
-          )
-        ).map((spot) => spot.spotId),
-      );
-      viewportSpots = allCandidates.filter((spot) => ids.has(spot.spotId));
+      candidates = await this.repository.listSpotsInRadius(viewportCenterWgs84, radiusKm!);
+    } else {
+      candidates = await this.repository.listSpots();
     }
+    const viewportSpots = candidates.filter((spot) =>
+      (spot.status === "PUBLISHED" || spot.status === "TEMPORARILY_CLOSED") &&
+      (this.repository.kind === "memory" || spot.source.kind !== "TEST_FIXTURE"),
+    );
+    const allCandidates = input.viewport
+      ? (await this.repository.listSpotPopulation()).filter((spot) =>
+        this.repository.kind === "memory" || spot.source.kind !== "TEST_FIXTURE")
+      : viewportSpots;
 
     const query = (input.query ?? "").trim().toLocaleLowerCase("zh-CN");
     const queryMatched = query
@@ -1034,7 +1030,7 @@ export class MiniappService {
             .includes(query),
         )
       : viewportSpots;
-    const reports: Record<string, ApiEnvelope<SkyReport>> = {};
+    const reports: Record<string, ApiEnvelope<AstronomyDecisionReport>> = {};
     const evaluations: Record<string, MapSpotEvaluation> = {};
     const routeSources: SourceSummary[] = [];
     const routeOrigin =
@@ -1062,7 +1058,7 @@ export class MiniappService {
                   eventInstanceId: context.eventInstanceId,
                   targetProfile: context.targetProfile,
                 });
-          const report = await this.astronomy.compute(spotContext);
+          const report = await this.astronomy.computeDecision(spotContext, undefined, undefined, weatherDeadlineAt);
           reports[spot.spotId] = report;
           const timeSignal = timeSignalFor(
             spot.spotId,
@@ -1129,6 +1125,12 @@ export class MiniappService {
     const favoriteSpotIds = input.userId
       ? await this.repository.listFavoriteIds(input.userId)
       : null;
+    // Validate current publication facts and weather before reusing the map
+    // representation. Context UUID alone cannot establish evidence freshness.
+    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations,
+      revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
+    const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
+    if (cached) return cached;
     const anyWeather = Object.values(evaluations).some(
       (evaluation) => evaluation.cloudPercent !== null,
     );
@@ -1436,19 +1438,10 @@ export class MiniappService {
       context.location.spotId !== spotId
     )
       throw new Error("spot_context_mismatch");
-    const cacheKey =
-      "spot-overview:" +
-      spotId +
-      ":" +
-      context.contextFingerprint +
-      ":" +
-      String(context.revision);
-    const cached = await this.cache.get<ApiEnvelope<SpotDetail>>(cacheKey);
-    if (cached) return cached;
     const detail = await this.repository.getDetail(spotId as SpotId);
     if (!detail || detail.spot.status === "DATA_INSUFFICIENT")
       throw new Error("formal_spot_not_found");
-    const sky = await this.astronomy.compute(context);
+    const sky = await this.astronomy.computeDecision(context, detail);
     const straightDistanceKm = context.routeOrigin
       ? Math.round(
           (distanceMeters(
@@ -1508,7 +1501,6 @@ export class MiniappService {
       contextId,
       state: result.dataState,
     });
-    await this.cache.set(cacheKey, result, 300);
     return result;
   }
 
@@ -1595,20 +1587,7 @@ export class MiniappService {
       context.location.spotId !== spotId
     )
       throw new Error("spot_context_mismatch");
-    const cacheKey =
-      "sky:" +
-      context.contextFingerprint +
-      ":" +
-      context.contextId +
-      ":" +
-      String(context.revision) +
-      ":catalog:" +
-      this.astronomy.catalogCacheKey();
-    const cached = await this.cache.get<ApiEnvelope<SkyReport>>(cacheKey);
-    if (cached) return cached;
-    const result = await this.astronomy.compute(context);
-    await this.cache.set(cacheKey, result, 30 * 60);
-    return result;
+    return this.astronomy.compute(context);
   }
 
   async getFavorites(userId: UserId) {

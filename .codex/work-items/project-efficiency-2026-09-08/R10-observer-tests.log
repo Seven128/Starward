@@ -1,0 +1,24 @@
+✔ development options make automation explicit and reject port conflicts or unknown flags (1.3557ms)
+✔ watcher binding permits only the exact candidate and selected renderer's exact internal directory (0.4138ms)
+✔ another renderer's project does not poison this port, but same-renderer and global ambiguity fail closed (0.4864ms)
+✔ launch binds only its free port and exact project; cleanup removes only its receipt/CLI (29.7502ms)
+✔ an occupied port or live owner is never adopted or displaced (17.5353ms)
+✔ PID reuse, different listener, project drift and ambiguous binding reject attach (25.3016ms)
+✔ startup failure or cancellation revokes the receipt without any IDE close operation (288.2218ms)
+✔ repeated/concurrent attaches reuse one client and explicit disconnect permits a fresh attach (23.0101ms)
+✔ the actual warm entry tears down owned children/receipt on startup failure and signals (20.8056ms)
+✔ one bound observer batches stable selectors and condition waiting without navigation or page data dumps (106.5783ms)
+✔ tap and input require an exact active page and one selected element, and never retry a failed mutation (2.278ms)
+✔ operation deadlines disconnect instead of replaying or allowing queued actions (27.1078ms)
+✔ screenshots run serially, save exclusively and never close the user's IDE (51.2535ms)
+✔ console output is bounded and redacts structured secrets, coordinates and common message formats (4.537ms)
+✔ identity loss and route change stop observation before a side effect (0.5908ms)
+✔ help is import-safe and exposes no cloud, evaluate or automatic relaunch command (1.494ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 947.7909

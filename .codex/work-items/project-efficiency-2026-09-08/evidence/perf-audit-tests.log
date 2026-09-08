@@ -1,0 +1,18 @@
+✔ BFF scene has one deterministic frame per real hourly slice and positions move with time (3.3536ms)
+✔ missing, malformed, duplicate and oversized catalogs fail closed without fake frames (3.7632ms)
+✔ catalog and scene limits admit exactly 2048 rows but never a 2049th (7.6296ms)
+✔ real catalog cache identity binds projection algorithm as well as asset bytes (0.8671ms)
+✔ SkyReport cache identity changes when catalog version/hash changes (103.5123ms)
+✔ the formal Gaia DR3 pack projects every real hourly slice under 1 MiB (141.9095ms)
+✔ Open-Meteo adapter requests explicit model evidence and never selects the clearest model (35.4141ms)
+✔ QWeather composition keeps the Weather API v1 timeline primary, adds layered cloud and applies official alerts (18.949ms)
+✔ QWeather v1 rejects an unexpected provider unit instead of mislabelling it (2.3216ms)
+✔ QWeather primary failure uses an explicit Open-Meteo fallback (3.6537ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1766.0643

@@ -1,0 +1,7 @@
+{
+  "scope": "host_http_fixture_only_not_wechat_network",
+  "successStatus": 200,
+  "marker": "STARWARD_AGENT_PROBE",
+  "unmatchedStatus": 404,
+  "passed": true
+}

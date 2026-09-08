@@ -1,0 +1,13 @@
+{
+  "baselineBytes": 48266844,
+  "optimizedBytes": 38742755,
+  "savedBytes": 9524089,
+  "reductionPercent": 19.732156094564626,
+  "nativeLibrariesIdentical": true,
+  "manifestFieldsIdentical": true,
+  "signerIdentical": true,
+  "dexCompressedBefore": 15622426,
+  "dexCompressedAfter": 6455890,
+  "resourcesCompressedBefore": 2895255,
+  "resourcesCompressedAfter": 2559128
+}

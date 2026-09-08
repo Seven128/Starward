@@ -278,9 +278,8 @@ test("Mini Program UI has no Web implementation or H5 acceptance authority", asy
   assert.doesNotMatch(mapSource, /isH5Proxy|map-proxy|TARO_ENV\s*===\s*["']h5/iu);
   assert.doesNotMatch(mapStyles, /map-proxy|map-page--h5/iu);
   assert.doesNotMatch(requestLifecycle, /\bH5\b|browser transport/iu);
-  assert.match(mapSource, /useDidShow\(\(\) => setPageVisible\(true\)\)/u);
-  assert.match(mapSource, /useDidHide\(\(\) => \{ stopPanelSpring\(\); navigationEpoch\.current \+= 1; setPageVisible\(false\); panelDrag\.current = null; setPanelDragOffset\(0\); setPanelDragging\(false\); \}\)/u);
-  assert.match(mapSource, /enabled: pageVisible && Boolean\(activeContext\)/u);
+  // Page visibility/cancellation are exercised by map-page-lifecycle.test.ts
+  // and the query owner's tests, without coupling to callback formatting.
   for (const removed of [
     ["apps", "miniapp-admin", "package.json"],
     ["apps", "wechat-miniapp", "src", "index.html"],
@@ -413,9 +412,7 @@ test("ordinary UI checks depend on production owners, not prototype packages", a
   assert.deepEqual(probes.map(probe => probe.key), ["field-signal-native-chrome", "sensor-follow-only", "operations-workflow", "contribution-three-axes"]);
   for (const probe of probes) {
     assert.ok(probe.path.startsWith("apps/"));
-    const source = await readFile(at(...probe.path.split("/")), "utf8");
-    for (const marker of probe.all_of ?? []) assert.ok(source.includes(marker), probe.key);
-    for (const marker of probe.none_of ?? []) assert.ok(!source.includes(marker), probe.key);
+    // Production marker checks are owned and executed once by verify-ui-contracts.
   }
   const pkg = await json("package.json");
   assert.ok(pkg.scripts["check:miniapp:fast"].includes("test:miniapp:ui-contracts"));
@@ -470,7 +467,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "const wechatIdeHttpPort = 23977",
     "verifyWechatProcessEnvironment",
     "wechatToolEnvironment",
-    "wechat_process_temp_must_be_outside_harness_snapshot_root",
+    "wechat_process_temp_must_be_outside_candidate_and_run_roots",
     "observeWechatIdeInstances",
     "forceStopWechatIdeInstances",
     "force_exact_root_process_trees",
@@ -488,13 +485,8 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "restoreWechatPublicProjectConfig",
     "public_config_semantic_ownership_lost",
     "formatting_normalization_detected",
-    "verifyWechatSnapshotLocation",
-    "wechatFinalGateTempRoot",
-    "wechat_snapshot_location_must_be_physical",
-    "wechat_snapshot_location_outside_supported_root",
-    "wechat_snapshot_temp_environment_mismatch",
-    "wechat_snapshot_not_harness_owned",
-    'mode: canonical ? "canonical_workspace" : "isolated_harness_snapshot"',
+    "verifyWechatWorkspaceLocation",
+    "wechatReservedRunTempRoot",
     'observed_path_mode: "direct_physical_candidate"',
     "expected_project_path_sha256",
     "every_watcher_targets_candidate",
@@ -507,9 +499,6 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "refreshWechatProjectConfig",
     "same-bytes project.config.json rewrite after watcher binding",
     "wechat_project_config_refresh_changed_candidate_bytes",
-    "registerWechatSnapshotProject",
-    "tool project/config identity only; no product journey or acceptance claim",
-    "wechat_snapshot_registration_project_close_failed",
     "observeWechatWatcherProjects",
     "Get-CimInstance Win32_Process",
     "wxfilewatcher_x64.exe",
@@ -736,22 +725,17 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     /^apps\/wechat-miniapp\/project\.private\.config\.json$/mu,
   );
   assert.ok(
-    runner.indexOf("await verifyWechatSnapshotLocation()") <
+    runner.indexOf("await verifyWechatWorkspaceLocation()") <
       runner.indexOf(
         "projectIdentitySession = await prepareWechatProjectIdentity",
       ),
-    "the physical Harness snapshot location must be verified before private identity and DevTools startup",
+    "the physical workspace must be verified before private identity and DevTools startup",
   );
   assert.ok(
     runner.indexOf(
       "projectIdentitySession = await prepareWechatProjectIdentity",
-    ) < runner.indexOf("await registerWechatSnapshotProject"),
+    ) < runner.indexOf('await openObservedSession("setup")'),
     "the private project identity must exist before DevTools opens the current candidate",
-  );
-  assert.ok(
-    runner.indexOf("await registerWechatSnapshotProject") <
-      runner.indexOf('await openObservedSession("setup")'),
-    "a newly materialized physical snapshot must complete its non-product project registration before the setup acceptance session",
   );
   assert.ok(
     runner.indexOf("await waitForWechatProjectBinding") <
@@ -937,14 +921,8 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   );
   assert.match(developmentSession, /npm-cli\.js/u);
   assert.doesNotMatch(developmentSession, /spawn\([^)]*"npm\.cmd"/u);
-  assert.match(
-    developmentSession,
-    /await rm\(path\.dirname\(outputEntry\), \{ recursive: true, force: true \}\)/u,
-  );
-  assert.ok(
-    developmentSession.indexOf("await rm(path.dirname(outputEntry)") <
-      developmentSession.indexOf('startNpm("dev:miniapp:weapp"'),
-  );
+  // The executed warm-entry tests verify the exact physical output reset and
+  // its ordering before the compiler, including redirected-output rejection.
   assert.match(
     nativeRunner,
     /const nativeAcceptanceBaseEnvironment = Object\.freeze\(\{[\s\S]*MINIAPP_STORAGE_MODE: "postgres"[\s\S]*MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM"[\s\S]*MINIAPP_AUTO_MIGRATE: "1"/u,
@@ -1175,9 +1153,8 @@ test("NightChina formal-spot selection keeps suggestion observation and tap atom
     "miniapp",
     "run-wechat-devtools-session.mjs",
   );
-  assert.match(runner, /async function inputAndTapMatchingElement\(/u);
-  assert.match(runner, /for \(const \{ candidate, candidateText \} of matching\)/u);
-  assert.match(runner, /await candidate\s*\.tap\(\)/u);
+  // Atomic observation/tap, retry and failure semantics live in the runner's
+  // actual-call tests; this check only binds the declared production journey.
   const journeyStart = runner.indexOf(
     'const NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY =',
   );
@@ -1186,7 +1163,6 @@ test("NightChina formal-spot selection keeps suggestion observation and tap atom
   assert.doesNotMatch(journey, /key: "search-associated-formal-spot"/u);
   assert.match(journey, /inputAndTapMatch:\s*\{/u);
   assert.match(journey, /candidates: "\.spot-search-suggestion"/u);
-  assert.match(journey, /maximumAttempts: 3/u);
   for (const requiredCandidateRoot of [
     "data-pipelines/src",
     "packages/astronomy-core/data",
@@ -1203,8 +1179,15 @@ test("NightChina formal-spot selection keeps suggestion observation and tap atom
 
 
 test("current candidate preparation keeps production checks without historical resource dependencies", async () => {
-  const command = (await json("package.json")).scripts["prepare:miniapp:final-candidate"];
-  for (const required of ["check:miniapp:fast", "design:system:verify", "test:miniapp:infrastructure", "check:miniapp:production", "--mode success", "--mode degradation"])
+  const scripts = (await json("package.json")).scripts;
+  const command = scripts["prepare:miniapp:final-candidate"];
+  for (const required of ["check:miniapp:fast", "test:miniapp:infrastructure", "check:miniapp:production", "--mode success", "--mode degradation"])
     assert.ok(command.includes(required), required);
+  function countCalls(name, target, ancestors = []) {
+    assert.ok(!ancestors.includes(name), `cyclic npm script: ${name}`);
+    return [...(scripts[name] ?? "").matchAll(/npm run ([\w:-]+)/gu)].reduce((count, [, child]) =>
+      count + (child === target ? 1 : countCalls(child, target, [...ancestors, name])), 0);
+  }
+  assert.equal(countCalls("prepare:miniapp:final-candidate", "design:system:verify"), 1);
   assert.doesNotMatch(command, /verifier-runtime|verification-spec|design-resources/u);
 });

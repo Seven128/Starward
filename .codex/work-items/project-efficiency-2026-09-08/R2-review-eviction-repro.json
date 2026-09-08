@@ -1,0 +1,6 @@
+{
+  "scenario": "valid body evicted from memory and restored from unchanged disk during in-flight 304",
+  "status": "rejected",
+  "error": "bff_http_304",
+  "expected": "resolved identical cached representation"
+}

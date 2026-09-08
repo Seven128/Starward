@@ -1,0 +1,13 @@
+
+> @starward/wechat-miniapp@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+src/services/response-cache.test.ts(325,71): error TS2345: Argument of type '{ data: { value: string; }; apiVersion: string; generatedAt: string; requestId: string; etag: string; dataState: string; warnings: string[]; sources: { kind: string; }[]; }' is not assignable to parameter of type 'ApiEnvelope<unknown>'.
+  Property 'validAt' is missing in type '{ data: { value: string; }; apiVersion: string; generatedAt: string; requestId: string; etag: string; dataState: string; warnings: string[]; sources: { kind: string; }[]; }' but required in type 'ApiEnvelope<unknown>'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path E:\dev\Starward\apps\wechat-miniapp
+npm error workspace @starward/wechat-miniapp@0.1.0
+npm error location E:\dev\Starward\apps\wechat-miniapp
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json

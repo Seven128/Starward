@@ -1,0 +1,122 @@
+{
+  "android": [
+    {
+      "variant": "baseline",
+      "routes": [
+        {
+          "route": "tonight",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "map",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "trips",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "sky",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "me",
+          "markerPresent": true,
+          "productProcessAlive": true
+        }
+      ],
+      "status": "passed",
+      "bytes": 48266844,
+      "hashMatches": true
+    },
+    {
+      "variant": "optimized",
+      "routes": [
+        {
+          "route": "tonight",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "map",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "trips",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "sky",
+          "markerPresent": true,
+          "productProcessAlive": true
+        },
+        {
+          "route": "me",
+          "markerPresent": true,
+          "productProcessAlive": true
+        }
+      ],
+      "status": "passed",
+      "bytes": 38742755,
+      "hashMatches": true
+    }
+  ],
+  "branch": "main",
+  "frozenDiff": [],
+  "nativeFixtureSourceMatches": {
+    "cache": true,
+    "canvas": true
+  },
+  "originalEvidence": [
+    {
+      "name": "project-efficiency-review-2026-09-08.md",
+      "passed": true
+    },
+    {
+      "name": "performance-review-2026-09-08.md",
+      "passed": true
+    },
+    {
+      "name": "perf-audit-20260908.mts",
+      "passed": true
+    },
+    {
+      "name": "perf-audit-20260908.json",
+      "passed": true
+    },
+    {
+      "name": "perf-audit-benchmark.log",
+      "passed": true
+    },
+    {
+      "name": "perf-audit-build.log",
+      "passed": true
+    },
+    {
+      "name": "perf-audit-tests.log",
+      "passed": true
+    },
+    {
+      "name": "harness-audit-stats.mjs",
+      "passed": true
+    },
+    {
+      "name": "harness-audit-stats.json",
+      "passed": true
+    },
+    {
+      "name": "harness-audit-links.mjs",
+      "passed": true
+    },
+    {
+      "name": "harness-audit-links.json",
+      "passed": true
+    }
+  ]
+}

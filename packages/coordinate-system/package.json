@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "build:release": "tsc -p tsconfig.build.json"
+    "build:release": "node ../../tools/run-node.cjs --bin typescript tsc -p tsconfig.build.json"
   },
   "devDependencies": {
     "typescript": "5.9.3"

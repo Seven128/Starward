@@ -1,0 +1,61 @@
+{
+  "file": "optimized-release-x86_64.apk",
+  "bytes": 38742755,
+  "sha256": "68089d82216a854c1cd3205de3d7067267ee2760bc4f94076e7e2ff0de2b1fd3",
+  "abis": [
+    "x86_64"
+  ],
+  "nativeLibrarySha256": {
+    "lib/x86_64/libandroidx.graphics.path.so": "4e56c996f13670e70082658de7880c4020eabf4f25e43387f88ed78a713fc9f0",
+    "lib/x86_64/libappmodules.so": "8113ea9546a9a5b9e6915c5dce2aacebb29668c8ad7c087c4b0d4f7f3feb207a",
+    "lib/x86_64/libc++_shared.so": "0a2c7afa35b183fdd5a3cb20e2080ad54cbea06c2a4f0bc8f122cb7d1e9e0b9f",
+    "lib/x86_64/libdatastore_shared_counter.so": "fb6c9208988c49ae94943bc3236fa763ba584722e044fa4ea9a12d2941027105",
+    "lib/x86_64/libexpo-modules-core.so": "881ee2e88a3ebd04f04e8f7ea9a671e982efee11ea54acc9dea7d9ed7aad8b3f",
+    "lib/x86_64/libexpo-sqlite.so": "819879a88d8374ee998d9f184ee8dd325e9011c3ddb5ef291b0fd343948af683",
+    "lib/x86_64/libfbjni.so": "a51410366a0394e05bc04052cfb237c70dcf7d4d53a56e1d00a041436cb0b653",
+    "lib/x86_64/libgesturehandler.so": "8a7849ca27784f447c32fe048f0eee87725ff774f8146ef612eb35f71330dfd4",
+    "lib/x86_64/libgifimage.so": "20768d822119deee9beeccfd4340987976381587b519b630f5393fee4d731c1f",
+    "lib/x86_64/libhermestooling.so": "4bf3efa9389f2b226ae0959854cd8f7ebe082e83bec86e4c0e1fdb09fb95f5fa",
+    "lib/x86_64/libhermesvm.so": "4c2ba4ea0863fb8b053fa118a78956e3b3ed871e19be499d04397049fcadc34f",
+    "lib/x86_64/libimagepipeline.so": "2e596f4955f65abaa93c891b49eb58b5416581806a04bde0097cc369ae4dbfb3",
+    "lib/x86_64/libjsi.so": "f3927514e215b9fe14bc6d5a1937c62b20ed55057ede7205fac198ec763d4349",
+    "lib/x86_64/libnative-filters.so": "1a5270f007dd4b2f0fc52ceac82e05143648ba9be59c2213a21cf61c84f1f5e5",
+    "lib/x86_64/libnative-imagetranscoder.so": "f6b92ad7f1c30973f40704c46987504757c3d079c7f4ace6efc8b318dd9c22f3",
+    "lib/x86_64/libreact_codegen_rnscreens.so": "f2a57605ee57b40824939c6b1f055f7bf1bc5a0e594f62d085e8113b50ab11f8",
+    "lib/x86_64/libreact_codegen_rnsvg.so": "b5409d92a63e265b5d3afd019707ec75cc2f89c34913b90abbb5b66921dbc084",
+    "lib/x86_64/libreact_codegen_safeareacontext.so": "12ed767e4d4422260c02395339e05aa54c22ea0063f6f527d1922c52b17aafb0",
+    "lib/x86_64/libreactnative.so": "57e8817f51ce7442fe440eeaac73c53e98e664356fd44fa5d2f48f481f34289a",
+    "lib/x86_64/libreanimated.so": "eae9df7fe9e0d9079be9dfb5781a5fbf750e28c5dec91957c8a226d87a8cff6d",
+    "lib/x86_64/librnscreens.so": "d8d303b75b30dec29de9c4ed248556124c5bf52a9cf6f90f487489c0d9cd6c16",
+    "lib/x86_64/libstatic-webp.so": "e7884cd18761b5ee54de98b9a3f4b9e4b0dea364c186e24ff9b740b29742562b",
+    "lib/x86_64/libworklets.so": "f271ea90af9668a1754d87b39cc04e6064a289c04d37c9a7ac7e173e20382e9c",
+    "lib/x86_64/libzstd-kmp.so": "fefcbdcd59580a3043c62380a83d92f13c031c278481e22591a2c75112296e28"
+  },
+  "groups": {
+    "dex": {
+      "entries": 3,
+      "bytes": 16093668,
+      "compressedBytes": 6455890
+    },
+    "native": {
+      "entries": 24,
+      "bytes": 24055560,
+      "compressedBytes": 24055560
+    },
+    "resources": {
+      "entries": 885,
+      "bytes": 3387682,
+      "compressedBytes": 2559128
+    },
+    "assets": {
+      "entries": 4,
+      "bytes": 5150652,
+      "compressedBytes": 5149924
+    },
+    "other": {
+      "entries": 256,
+      "bytes": 409056,
+      "compressedBytes": 178482
+    }
+  }
+}

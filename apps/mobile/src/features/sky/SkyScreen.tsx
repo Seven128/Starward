@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { SkyContext, SkyPosition } from "@starward/contracts/sky";
 import { colors, minimumTouchTarget, radii, spacing, type as typeToken } from "@starward/ui-system/tokens";
-import { calculateFieldOfView, visibleIntervals, type HorizonProfile } from "../../../../../packages/astronomy-core/src/sky-model";
+import { calculateFieldOfView, visibleIntervals, type HorizonProfile } from "../../../../../packages/astronomy-core/src/sky-geometry";
 import { startExpoOrientation } from "../../../modules/orientation/expo-orientation-adapter";
 import { OrientationEngine, type StableOrientation } from "../../../modules/orientation/orientation-engine";
 import { resolveArMode } from "../../../modules/sky-ar/sky-ar-adapter";

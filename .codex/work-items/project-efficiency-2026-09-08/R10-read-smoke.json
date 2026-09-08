@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "scope": "isolated_native_fixture_without_console_subscription",
+  "attachMs": 5924,
+  "status": {
+    "scope": "development_observation",
+    "connected": true,
+    "project": "C:\\Users\\777\\AppData\\Local\\Temp\\starward-device-feedback-fixture-LQOk8L",
+    "port": 19423,
+    "path": "pages/index/index"
+  },
+  "layoutMs": 342,
+  "layout": {
+    "scope": "development_observation",
+    "method": "native_selector_query",
+    "path": "pages/index/index",
+    "elements": [
+      {
+        "selector": "#native-probe",
+        "count": 1,
+        "elements": [
+          {
+            "left": 16,
+            "top": 83.20000457763672,
+            "width": 240,
+            "height": 160
+          }
+        ]
+      }
+    ]
+  },
+  "screenshot": {
+    "scope": "development_observation",
+    "path": "E:/dev/Starward/.codex/work-items/project-efficiency-2026-09-08/R10-read-smoke.png",
+    "bytes": 69032
+  }
+}

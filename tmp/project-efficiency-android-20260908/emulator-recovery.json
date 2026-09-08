@@ -1,0 +1,9 @@
+{
+  "processId": 14136,
+  "startedAt": "2026-09-07T23:00:26.7220165Z",
+  "port": 5580,
+  "readOnly": true,
+  "memoryMiB": 4096,
+  "cores": 4,
+  "gpu": "host"
+}

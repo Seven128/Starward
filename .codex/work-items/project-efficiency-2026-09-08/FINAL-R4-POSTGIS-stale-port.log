@@ -1,0 +1,33 @@
+
+> starward@1.0.0 node
+> node tools/run-node.cjs --import tsx --test workers/miniapp-api/src/map-viewport-repository.test.ts
+
+✔ viewport fetches radius candidates directly while preserving complete population metadata and search (70.5923ms)
+✖ PostGIS radius, compact population and detail all enforce current publication facts (12.4628ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1134.5139
+
+✖ failing tests:
+
+test at workers\miniapp-api\src\map-viewport-repository.test.ts:1:2607
+✖ PostGIS radius, compact population and detail all enforce current publication facts (12.4628ms)
+  Error: connect ECONNREFUSED 127.0.0.1:55295
+      at E:\dev\Starward\node_modules\pg-pool\index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async runPostgresMigrations (E:\dev\Starward\workers\miniapp-api\src\migration-runner.ts:160:18)
+      at async PostgresMiniappRepository.initialize (E:\dev\Starward\workers\miniapp-api\src\postgres-repository.ts:354:7)
+      at async TestContext.<anonymous> (E:\dev\Starward\workers\miniapp-api\src\map-viewport-repository.test.ts:46:22)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 55295
+  }

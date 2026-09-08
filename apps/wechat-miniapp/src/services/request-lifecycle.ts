@@ -22,6 +22,7 @@ export function isMiniappRequestCancelled(
 
 interface ActiveRequest {
   cancel: (reason: RequestCancellationReason) => void;
+  readOnly: boolean;
 }
 
 /**
@@ -32,9 +33,9 @@ interface ActiveRequest {
 export class LatestRequestRegistry {
   readonly #active = new Map<string, ActiveRequest>();
 
-  register(key: string, cancel: ActiveRequest["cancel"]): () => void {
+  register(key: string, cancel: ActiveRequest["cancel"], readOnly = false): () => void {
     this.cancel(key, "superseded");
-    const entry = { cancel };
+    const entry = { cancel, readOnly };
     this.#active.set(key, entry);
     return () => {
       if (this.#active.get(key) === entry) this.#active.delete(key);
@@ -59,6 +60,12 @@ export class LatestRequestRegistry {
   cancelAll(reason: RequestCancellationReason = "manual"): number {
     const keys = [...this.#active.keys()];
     for (const key of keys) this.cancel(key, reason);
+    return keys.length;
+  }
+
+  cancelReads(matches: (key: string) => boolean): number {
+    const keys = [...this.#active].filter(([key, entry]) => entry.readOnly && matches(key)).map(([key]) => key);
+    for (const key of keys) this.cancel(key);
     return keys.length;
   }
 }

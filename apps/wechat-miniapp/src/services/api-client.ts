@@ -38,12 +38,14 @@ import { localFailureMessage } from "@/utils/presentation";
 import { observationContextRecoveryInput } from "./observation-context-recovery";
 import {
   invalidationPolicy,
+  isTemporaryCacheKey,
   responseCacheKey,
   type MiniappMutationKind,
 } from "./cache-policy";
 import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
 import { createDeviceFailureReporter } from "./device-request-diagnostic";
 import { miniappQueryClient } from "./query-client";
+import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, type CachedResponse } from "./response-cache";
 import { createMutationRetry } from "./mutation-retry";
 import {
   LatestRequestRegistry,
@@ -54,11 +56,6 @@ import {
 const SESSION_STORAGE_KEY = "starward.wechat-miniapp.auth.current";
 const INSTALLATION_STORAGE_KEY =
   "starward.wechat-miniapp.installation.current";
-const RESPONSE_CACHE_STORAGE_KEY =
-  "starward.wechat-miniapp.response-cache.current";
-const MAX_PERSISTED_RESPONSES = 24;
-const MAX_PERSISTED_RESPONSE_BYTES = 300_000;
-const MAX_STALE_AGE_MS = 30 * 60 * 1_000;
 const SESSION_EXPIRY_SKEW_MS = 60_000;
 
 const requests = new LatestRequestRegistry();
@@ -72,19 +69,11 @@ type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 type AuthPolicy = "NONE" | "OPTIONAL" | "REQUIRED";
 type AnyEnvelope = ApiEnvelope<unknown>;
 
-interface CachedResponse {
-  envelope: AnyEnvelope;
-  storedAt: number;
-}
-
-interface PersistedResponseCache {
-  schemaVersion: 1;
-  entries: readonly (readonly [string, CachedResponse])[];
-}
-
-const responseCache = new Map<string, CachedResponse>();
-let responseCacheLoaded = false;
+const responseCache = createResponseCache(Taro);
 let sessionPromise: Promise<AuthSessionData> | null = null;
+// A server-confirmed erasure must stay revoked in this runtime even when the
+// native store cannot remove its old session. This is not a disk-erasure claim.
+let erasedStoredAccountId: string | null = null;
 
 export class MiniappApiError extends Error {
   readonly code: ApiError["code"];
@@ -152,15 +141,7 @@ function isApiError(value: unknown): value is ApiError {
 }
 
 function isEnvelope(value: unknown): value is AnyEnvelope {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    (value as { apiVersion?: unknown }).apiVersion === "v2" &&
-    typeof (value as { generatedAt?: unknown }).generatedAt === "string" &&
-    typeof (value as { requestId?: unknown }).requestId === "string" &&
-    Array.isArray((value as { warnings?: unknown }).warnings) &&
-    Array.isArray((value as { sources?: unknown }).sources)
-  );
+  return isResponseEnvelope(value);
 }
 
 function idempotencyKey(prefix: string) {
@@ -171,61 +152,6 @@ function idempotencyKey(prefix: string) {
     ":" +
     Math.random().toString(36).slice(2, 12)
   );
-}
-
-function loadResponseCache() {
-  if (responseCacheLoaded) return;
-  responseCacheLoaded = true;
-  try {
-    const value = Taro.getStorageSync(RESPONSE_CACHE_STORAGE_KEY) as unknown;
-    if (
-      typeof value !== "object" ||
-      value === null ||
-      (value as { schemaVersion?: unknown }).schemaVersion !== 1 ||
-      !Array.isArray((value as { entries?: unknown }).entries)
-    )
-      return;
-    for (const entry of (
-      value as PersistedResponseCache
-    ).entries.slice(-MAX_PERSISTED_RESPONSES)) {
-      if (
-        Array.isArray(entry) &&
-        typeof entry[0] === "string" &&
-        typeof entry[1] === "object" &&
-        entry[1] !== null &&
-        Number.isFinite(entry[1].storedAt) &&
-        isEnvelope(entry[1].envelope)
-      )
-        responseCache.set(entry[0], entry[1]);
-    }
-  } catch {
-    // Cache I/O is optional. Failure never creates product data.
-  }
-}
-
-function persistResponseCache() {
-  try {
-    const entries = [...responseCache.entries()]
-      .sort((left, right) => right[1].storedAt - left[1].storedAt)
-      .slice(0, MAX_PERSISTED_RESPONSES);
-    const payload: PersistedResponseCache = { schemaVersion: 1, entries };
-    Taro.setStorageSync(RESPONSE_CACHE_STORAGE_KEY, payload);
-  } catch {
-    // A valid network response remains usable if storage is full.
-  }
-}
-
-function cacheResponse(key: string, envelope: AnyEnvelope) {
-  if (JSON.stringify(envelope).length > MAX_PERSISTED_RESPONSE_BYTES) return;
-  responseCache.set(key, { envelope, storedAt: Date.now() });
-  while (responseCache.size > MAX_PERSISTED_RESPONSES) {
-    const oldest = [...responseCache.entries()].sort(
-      (left, right) => left[1].storedAt - right[1].storedAt,
-    )[0];
-    if (!oldest) break;
-    responseCache.delete(oldest[0]);
-  }
-  persistResponseCache();
 }
 
 function staleCandidate<T>(
@@ -270,6 +196,7 @@ function readStoredSession(): AuthSessionData | null {
     )
       return null;
     const session = value as AuthSessionData;
+    if (session.userId === erasedStoredAccountId) return null;
     if (
       !Number.isFinite(Date.parse(session.expiresAt)) ||
       Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
@@ -292,9 +219,16 @@ function clearStoredSession() {
   sessionPromise = null;
   try {
     Taro.removeStorageSync(SESSION_STORAGE_KEY);
+    return true;
   } catch {
     // A failed local deletion cannot authorize a server request.
+    return false;
   }
+}
+
+function markAccountErased(userId: string) {
+  erasedStoredAccountId = userId;
+  sessionPromise = null;
 }
 
 function installationIdentity() {
@@ -350,18 +284,20 @@ async function request<T>(
 ): Promise<ApiEnvelope<T>> {
   if (options.signal?.aborted)
     throw new MiniappRequestCancelled("query_signal");
-  loadResponseCache();
+  responseCache.load();
   return new Promise((resolve, reject) => {
     let settled = false;
     let task: unknown;
     let watchdog: ReturnType<typeof setTimeout> | undefined;
     let release = () => {};
+    let releaseCache = () => {};
     const finish = (callback: () => void, abort = false) => {
       if (settled) return;
       settled = true;
       if (watchdog) clearTimeout(watchdog);
       options.signal?.removeEventListener("abort", onAbort);
       release();
+      releaseCache();
       // Native abort may synchronously re-enter fail. Own the result first.
       if (abort) {
         try {
@@ -380,10 +316,10 @@ async function request<T>(
     };
     const onAbort = () => cancel("query_signal");
 
-    release = requests.register(key, cancel);
+    const method = options.method ?? "GET";
+    release = requests.register(key, cancel, method === "GET");
     recordAcceptanceDiagnostic(key, "start", Taro.getEnv());
 
-    const method = options.method ?? "GET";
     const scope = options.session?.userId ?? "anonymous";
     const exactCacheKey =
       responseCacheKey(key, path) + ":" + String(scope);
@@ -391,6 +327,8 @@ async function request<T>(
       method === "GET" && options.cache !== false
         ? responseCache.get(exactCacheKey)
         : undefined;
+    const cacheFence = responseCache.beginRequest(exactCacheKey);
+    releaseCache = cacheFence.release;
     const header: Record<string, string> = { Accept: "application/json" };
     // WeChat defaults to JSON; an empty DELETE body must not trigger JSON parsing.
     if (method === "DELETE" && options.body === undefined) header["Content-Type"] = "text/plain";
@@ -406,7 +344,7 @@ async function request<T>(
       header["X-Wechat-Reauth-Code"] = options.reauthenticationCode;
 
     const transportFallback = (failure: string, error: Error) => {
-      const stale = staleCandidate<T>(cached, failure);
+      const stale = staleCandidate<T>(cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence) ? cached : undefined, failure);
       if (stale) {
         recordAcceptanceDiagnostic(key, "success", "stale_real_response");
         resolve(stale);
@@ -459,7 +397,7 @@ async function request<T>(
         ...(options.body === undefined ? {} : { data: options.body }),
         success(response) {
           finish(() => {
-            if (response.statusCode === 304 && cached) {
+            if (response.statusCode === 304 && cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence)) {
               recordAcceptanceDiagnostic(key, "success", "not_modified");
               resolve(cached.envelope as ApiEnvelope<T>);
               return;
@@ -472,7 +410,7 @@ async function request<T>(
               }
               const envelope = response.data as ApiEnvelope<T>;
               if (method === "GET" && options.cache !== false)
-                cacheResponse(exactCacheKey, envelope as AnyEnvelope);
+                responseCache.set(exactCacheKey, envelope as AnyEnvelope, cacheFence);
               recordAcceptanceDiagnostic(
                 key,
                 "success",
@@ -508,10 +446,18 @@ async function request<T>(
 }
 
 export function invalidateApiCache(prefix = "") {
-  loadResponseCache();
-  for (const key of responseCache.keys())
-    if (!prefix || key.startsWith(prefix)) responseCache.delete(key);
-  persistResponseCache();
+  responseCache.invalidate(key => !prefix || key.startsWith(prefix));
+}
+
+export async function clearTemporaryApiCache() {
+  const cancelled = requests.cancelReads(isTemporaryCacheKey);
+  responseCache.invalidate(isTemporaryCacheKey);
+  const filters = { predicate: (query: { queryKey: readonly unknown[] }) => isTemporaryCacheKey(String(query.queryKey[0] ?? "")) };
+  await miniappQueryClient.cancelQueries(filters);
+  miniappQueryClient.removeQueries(filters);
+  await responseCache.flush();
+  if (!responseCache.cleanupComplete()) throw new Error("local_cache_cleanup_incomplete");
+  return cancelled;
 }
 
 export function resetApiNetworkCacheForAcceptance() {
@@ -519,12 +465,6 @@ export function resetApiNetworkCacheForAcceptance() {
     throw new Error("acceptance_api_reset_unavailable");
   const cancelled = requests.cancelAll("manual");
   responseCache.clear();
-  responseCacheLoaded = true;
-  try {
-    Taro.removeStorageSync(RESPONSE_CACHE_STORAGE_KEY);
-  } catch {
-    // Live network caches are still reset when storage is unavailable.
-  }
   return cancelled;
 }
 
@@ -647,6 +587,8 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
       auth: "NONE",
       body: { code },
     });
+    if (result.data.userId === erasedStoredAccountId)
+      throw new Error("account_identity_revoked");
     Taro.setStorageSync(SESSION_STORAGE_KEY, result.data);
     return result.data;
   })();
@@ -952,31 +894,31 @@ export async function deleteAccount() {
     idempotencyKey: idempotencyKey("account-delete"),
   }, false, deletedUserId);
   const localAccountReset = currentDraftUserId() === deletedUserId;
-  if (localAccountReset) clearStoredSession();
+  markAccountErased(deletedUserId);
+  let localCleanupComplete = !localAccountReset || clearStoredSession();
   try {
     for (const key of Taro.getStorageInfoSync().keys) {
       if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
-      try { Taro.removeStorageSync(key); } catch { /* Continue clearing the remaining drafts. */ }
+      try { Taro.removeStorageSync(key); } catch { localCleanupComplete = false; }
     }
-  } catch { /* Session revocation remains authoritative if local storage is unavailable. */ }
+  } catch { localCleanupComplete = false; }
   if (!localAccountReset) {
-    for (const key of responseCache.keys()) {
-      if (key.endsWith(":" + deletedUserId)) responseCache.delete(key);
-    }
-    persistResponseCache();
+    const cacheRemoved = await responseCache.removeScope(deletedUserId);
+    localCleanupComplete = cacheRemoved && localCleanupComplete;
     miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) });
-    return { ...result, localAccountReset };
+    return { ...result, localAccountReset, localCleanupComplete };
   }
   responseCache.clear();
-  responseCacheLoaded = true;
+  await responseCache.flush();
+  localCleanupComplete = responseCache.cleanupComplete() && localCleanupComplete;
   try {
-    Taro.removeStorageSync(RESPONSE_CACHE_STORAGE_KEY);
     Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
   } catch {
     // Server deletion and session revocation remain authoritative.
+    localCleanupComplete = false;
   }
   miniappQueryClient.clear();
-  return { ...result, localAccountReset };
+  return { ...result, localAccountReset, localCleanupComplete };
 }
 
 export async function setFavoriteRelation(

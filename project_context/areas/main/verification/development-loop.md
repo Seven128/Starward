@@ -8,6 +8,8 @@ This on-demand verification Context owns fast development feedback, bounded warm
 
 ## Development Verification Paths
 
+For Mini Program simulator feedback, use the [warm development observer](../../../development-workflow/development-feedback.md) when the installed tool supports the required read or action. Its owner distinguishes native layout/screenshots, version-dependent element APIs and physical-device evidence; Native App Metro rules below remain separate.
+
 - npm run test:mobile:fast runs the mobile TypeScript check and current mobile Vitest suite without starting Metro, an emulator, or an APK build.
 - npm run test:verification:fast checks Web session identity/reuse, native population/filter/shard/checkpoint semantics, installed-APK parsing, build fingerprint/cache invalidation, ABI scoping, stable CMake staging, and bounded Gradle reuse without compiling an APK.
 - npm run dev:acceptance:mobile starts one foreground API-watch + Expo Web/Fast Refresh development session on the stable local port; while it remains owned by that terminal, npm run test:acceptance:mobile:warm may rerun the existing Playwright journeys without another server startup. Formal Playwright startup remains non-watch; the warm path is repair feedback, not a replacement for Contract or final-candidate commands.

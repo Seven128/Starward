@@ -57,6 +57,12 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     return this.#spots.map((spot) => structuredClone(spot));
   }
 
+  async listSpotPopulation() {
+    return this.#spots
+      .filter((spot) => spot.status === "PUBLISHED" || spot.status === "TEMPORARILY_CLOSED")
+      .map((spot) => ({ spotId: spot.spotId, source: structuredClone(spot.source) }));
+  }
+
   async listSpotsInRadius(
     center: { system: "WGS84"; latitude: number; longitude: number },
     radiusKm: number,
@@ -84,7 +90,9 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     return spot ? structuredClone(spot) : null;
   }
   async getDetail(spotId: SpotId) {
-    return buildTestSpotDetail(spotId);
+    const spot = await this.getSpot(spotId);
+    const detail = buildTestSpotDetail(spotId);
+    return spot && detail ? { ...detail, spot } : null;
   }
 
   async ensureUser(userId: UserId) {

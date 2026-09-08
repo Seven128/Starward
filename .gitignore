@@ -1,5 +1,6 @@
 node_modules/
 packages/coordinate-system/dist/
+packages/astronomy-core/dist/
 packages/miniapp-contracts/dist/
 workers/miniapp-api/dist/
 __pycache__/
@@ -26,3 +27,18 @@ tmp/context-remaining.txt
 tmp/*-check.log
 tmp/harness-install.log
 tmp/resource-cleanup*.json
+
+# Local efficiency-audit build artifacts and disposable environments.
+tmp/context-ci-926d2fac2c40477ebfb2e41c966ae1f8/
+tmp/project-efficiency-android-20260908/*.apk
+.codex/work-items/project-efficiency-2026-09-08/H4-R8-candidate-retry-*/
+.codex/work-items/project-efficiency-2026-09-08/H4-R8-control-fixture/
+.codex/work-items/project-efficiency-2026-09-08/R134-baseline-runtime/
+.codex/work-items/project-efficiency-2026-09-08/*.tar
+.codex/work-items/project-efficiency-2026-09-08/*.tar.gz
+# Raw local Docker build logs may contain environment-derived connection strings.
+.codex/work-items/project-efficiency-2026-09-08/docker-build.log
+.codex/work-items/project-efficiency-2026-09-08/R7-build-final-1.log
+.codex/work-items/project-efficiency-2026-09-08/R7-label-final.log
+.codex/work-items/project-efficiency-2026-09-08/R7-lock-cache-probe.log
+.codex/work-items/project-efficiency-2026-09-08/R7-source-cache-probe.log
