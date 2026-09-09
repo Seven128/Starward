@@ -1,0 +1,127 @@
+- main [ref=f3e2]:
+  - complementary [ref=f3e3]:
+    - heading "计划 · 到达与提醒" [level=1] [ref=f3e4]
+    - paragraph [ref=f3e5]: 待审、未采用。路线耗时130分钟为交互样例；样例时钟2026-09-10 16:00，来源/更新时间无真实服务。本资源不发送通知。
+    - generic [ref=f3e6]:
+      - text: 宽度
+      - combobox "宽度" [ref=f3e7]:
+        - option "320"
+        - option "375"
+        - option "390" [selected]
+        - option "430"
+    - button "详情" [ref=f3e8]
+    - button "编辑" [ref=f3e9]
+    - button "远期无天气" [ref=f3e10]
+    - button "全部计划" [ref=f3e11]
+    - generic [ref=f3e12]:
+      - text: 路线
+      - combobox "路线" [ref=f3e13]:
+        - option "可靠估计" [selected]
+        - option "未获取"
+        - option "已过期"
+    - generic [ref=f3e14]:
+      - text: 首组通知
+      - combobox "首组通知" [ref=f3e15]:
+        - option "未授权" [selected]
+        - option "待发送"
+        - option "结果待确认"
+        - option "明确失败"
+        - option "过时跳过"
+    - paragraph [ref=f3e16]: 选择不同状态后，清单仍可独立勾选；未知结果不提供盲目重发。修改出发时间可查看迟到提示变化，保存不以天气或路线成功为前提。
+    - paragraph [ref=f3e17]: 当前集成仍在验证，尚未交付为已完成候选。
+  - iframe [ref=f3e18]:
+    - generic [ref=f4e2]:
+      - banner [ref=f4e3]:
+        - generic [ref=f4e4]:
+          - generic [ref=f4e5]: 9:41
+          - generic [ref=f4e6]: ▮▮▮ ◒ ▰
+        - navigation [ref=f4e7]:
+          - button "返回" [ref=f4e8] [cursor=pointer]: ‹
+          - heading "观星计划" [level=1] [ref=f4e9]
+          - generic [ref=f4e10]: ••• │ ⊙
+      - main [ref=f4e11]:
+        - generic [ref=f4e12]:
+          - generic [ref=f4e13]:
+            - button [ref=f4e14] [cursor=pointer]:
+              - heading "星湾观星点" [level=2] [ref=f4e15]
+            - generic [ref=f4e16]: ›
+          - paragraph [ref=f4e17]: 东岸路观景步道入口
+          - generic [ref=f4e18]:
+            - generic [ref=f4e19]: 今天 · 9月10日 · 观测时段
+            - strong [ref=f4e20]: 20:30—00:30
+            - generic [ref=f4e21]: 至 2026-09-11 次日 地点当地时间 · UTC+8
+        - generic [ref=f4e22]:
+          - generic [ref=f4e23]:
+            - heading "✧观测参考" [level=3] [ref=f4e24]
+            - generic [ref=f4e25]: 所选时间段
+          - generic [ref=f4e26]:
+            - generic [ref=f4e27]:
+              - generic [ref=f4e28]: ☾天黑与晨光
+              - strong [ref=f4e29]: 待获取
+            - generic [ref=f4e30]:
+              - generic [ref=f4e31]: ◔月亮影响
+              - strong [ref=f4e32]: 待获取
+            - generic [ref=f4e33]:
+              - generic [ref=f4e34]: ☁云量变化
+              - strong [ref=f4e35]: 待获取
+            - generic [ref=f4e36]:
+              - generic [ref=f4e37]: ≈风与气温
+              - strong [ref=f4e38]: 待获取
+          - paragraph [ref=f4e39]: 按所选观测时段读取；月亮影响包含月出月落与照明比例。
+        - generic [ref=f4e40]:
+          - heading "↗出行安排" [level=3] [ref=f4e42]
+          - generic [ref=f4e43]:
+            - generic [ref=f4e44]: 驾车
+            - button "查看路线 ›" [ref=f4e45] [cursor=pointer]
+          - generic [ref=f4e46]:
+            - generic [ref=f4e47]:
+              - strong [ref=f4e48]: 19:00家附近的地铁站
+              - paragraph [ref=f4e49]: 2026-09-10 出发
+            - generic [ref=f4e50]:
+              - strong [ref=f4e51]: 东岸路观景步道入口
+              - paragraph [ref=f4e52]: 路线耗时 2小时10分（有效估计场景）
+            - generic [ref=f4e53]:
+              - strong [ref=f4e54]: 20:30开始观测
+              - paragraph [ref=f4e55]: 预留停车、步行与架设器材的时间
+          - generic [ref=f4e56]:
+            - strong [ref=f4e57]: 预计 2026-09-10 21:10 到达
+            - paragraph [ref=f4e58]: 预计晚于观测开始 40 分钟
+            - text: 可保留原时间，或编辑出发安排
+        - generic [ref=f4e59]:
+          - heading "◌天文事件" [level=3] [ref=f4e61]
+          - button "还未关联事件 查看这个时段值得关注的天象 ›" [ref=f4e62] [cursor=pointer]:
+            - generic [ref=f4e63]: 还未关联事件查看这个时段值得关注的天象
+            - generic [ref=f4e64]: ›
+        - generic [ref=f4e65]:
+          - generic [ref=f4e66]:
+            - heading "☷提醒与清单" [level=3] [ref=f4e67]
+            - generic [ref=f4e68]: 2/5 个提醒
+          - paragraph [ref=f4e69]: 通知状态按每组记录，清单可独立使用。
+          - generic [ref=f4e70]:
+            - generic [ref=f4e71]:
+              - generic [ref=f4e72]:
+                - generic [ref=f4e73]: ◷
+                - strong [ref=f4e74]: 出发前 2 小时
+                - generic [ref=f4e75]: 0/2
+              - button "通知未授权" [ref=f4e76] [cursor=pointer]
+              - checkbox "✓ 相机与备用电池充满电" [ref=f4e77] [cursor=pointer]:
+                - generic [ref=f4e78]: ✓
+                - generic [ref=f4e79]: 相机与备用电池充满电
+              - checkbox "✓ 把三脚架放进后备箱" [ref=f4e80] [cursor=pointer]:
+                - generic [ref=f4e81]: ✓
+                - generic [ref=f4e82]: 把三脚架放进后备箱
+            - generic [ref=f4e83]:
+              - generic [ref=f4e84]:
+                - generic [ref=f4e85]: ◷
+                - strong [ref=f4e86]: 出发前 30 分钟
+                - generic [ref=f4e87]: 0/1
+              - button "待发送" [ref=f4e88] [cursor=pointer]
+              - checkbox "✓ 带上饮水和薄外套" [ref=f4e89] [cursor=pointer]:
+                - generic [ref=f4e90]: ✓
+                - generic [ref=f4e91]: 带上饮水和薄外套
+        - generic [ref=f4e92]:
+          - heading "备注" [level=3] [ref=f4e94]
+          - paragraph [ref=f4e95]: 沿海平台拍银河，带三脚架
+      - contentinfo [ref=f4e96]:
+        - button "删除" [ref=f4e97] [cursor=pointer]
+        - button "编辑计划" [ref=f4e98] [cursor=pointer]

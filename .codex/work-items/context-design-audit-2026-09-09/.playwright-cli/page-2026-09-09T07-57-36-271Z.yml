@@ -1,0 +1,77 @@
+- main [ref=e2]:
+  - complementary [ref=e3]:
+    - heading "My · 进行中计划" [level=1] [ref=e4]
+    - paragraph [ref=e5]: 待审候选，未采用。保留现有玻璃卡、SUV和入口布局，增加跨午夜的进行中计划与结束时间。
+    - generic [ref=e6]:
+      - text: 宽度
+      - combobox "宽度" [ref=e7]:
+        - option "320"
+        - option "375"
+        - option "390" [selected]
+        - option "430"
+    - generic [ref=e8]:
+      - text: 样例
+      - combobox "样例" [ref=e9]:
+        - option "进行中 + 即将开始" [selected]
+        - option "01:30，第一条恰好结束"
+        - option "仅一条进行中"
+        - option "无近期计划"
+        - option "读取中"
+        - option "读取失败"
+        - option "长地点名称"
+    - paragraph [ref=e10]:
+      - button "示例时钟前进1小时" [ref=e11]
+      - generic [ref=e12]:
+        - checkbox "减少透明度" [ref=e13]
+        - text: 减少透明度
+    - paragraph [ref=e14]: 固定样例时钟2026-09-10 00:30（上海）。第一条昨晚23:30开始、今天01:30结束。演示时钟仅在画外控制，不代表生产计时器。
+    - paragraph [ref=e15]: 点击卡头、行或入口后，下面记录真实选中的样例对象，避免把排序后的行号误当计划ID。跨页完整导航由后续计划资源继续覆盖。
+    - status [ref=e16]: 尚未选择入口
+    - paragraph [ref=e17]:
+      - link "来源与边界" [ref=e18] [cursor=pointer]:
+        - /url: README.md
+  - iframe [ref=e19]:
+    - generic [ref=f1e1]:
+      - banner [ref=f1e2]:
+        - generic [ref=f1e3]: 00:30
+        - generic [ref=f1e17]:
+          - button [ref=f1e18] [cursor=pointer]
+          - button [ref=f1e24] [cursor=pointer]
+      - main [ref=f1e28]:
+        - generic [ref=f1e29]:
+          - button "更换头像" [ref=f1e30] [cursor=pointer]
+          - button "修改昵称" [ref=f1e33] [cursor=pointer]:
+            - generic [ref=f1e34]: 微信用户
+          - button "设置" [ref=f1e37] [cursor=pointer]
+        - generic [ref=f1e41]:
+          - generic [ref=f1e42]:
+            - heading "观星计划" [level=2] [ref=f1e66]
+            - button "查看全部观星计划" [ref=f1e67] [cursor=pointer]
+          - generic [ref=f1e70]:
+            - button "星湾观星点 进行中 今天 01:30结束" [ref=f1e71] [cursor=pointer]:
+              - generic [ref=f1e73]:
+                - generic [ref=f1e74]: 星湾观星点
+                - generic [ref=f1e75]:
+                  - generic [ref=f1e76]: 进行中
+                  - generic [ref=f1e77]: 今天 01:30结束
+            - button "山顶观星点 今天 05:00 4小时30分后" [ref=f1e80] [cursor=pointer]:
+              - generic [ref=f1e82]:
+                - generic [ref=f1e83]: 山顶观星点
+                - generic [ref=f1e84]:
+                  - generic [ref=f1e85]: 今天 05:00
+                  - generic [ref=f1e86]: 4小时30分后
+            - button "海岸观星点 今天 20:30 20小时后" [ref=f1e89] [cursor=pointer]:
+              - generic [ref=f1e91]:
+                - generic [ref=f1e92]: 海岸观星点
+                - generic [ref=f1e93]:
+                  - generic [ref=f1e94]: 今天 20:30
+                  - generic [ref=f1e95]: 20小时后
+          - button "查看更多观星计划" [ref=f1e98] [cursor=pointer]: …
+        - button "观星点创建与反馈 草稿与审核进度" [ref=f1e100] [cursor=pointer]:
+          - generic [ref=f1e105]:
+            - generic [ref=f1e106]: 观星点创建与反馈
+            - generic [ref=f1e107]: 草稿与审核进度
+      - contentinfo [ref=f1e110]:
+        - navigation [ref=f1e111]:
+          - button "地图" [ref=f1e112] [cursor=pointer]
+          - button "我的" [ref=f1e116] [cursor=pointer]

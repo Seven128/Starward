@@ -1,0 +1,6 @@
+import fs from 'node:fs';import path from 'node:path';
+const root=process.cwd(),base='docs/design-resources/wechat-miniapp',files=[base+'/context-audit-2026-09-09.html'];
+for(const area of ['search','my','plan','sky','map']){const dir=base+'/'+area+'/candidates/context-audit-2026-09-09';function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){if(/stitch-original|stitch-refined|stitch-feedback|before-feedback|reference/.test(e.name)&&e.isDirectory())continue;const f=path.join(d,e.name);if(e.isDirectory())walk(f);else if(/\.(md|html)$/.test(f))files.push(f);}}walk(dir);}
+let checked=0;const issues=[];
+for(const f of files){const s=fs.readFileSync(f,'utf8'),htmlBase=f.endsWith('.html')?s.match(/<base\s+href="([^"]+)"/)?.[1]:null,links=f.endsWith('.md')?[...s.matchAll(/\]\(([^\s)]+)\)/g)].map(m=>m[1]):[...s.matchAll(/(?:href|src)="([^"]+)"/g)].map(m=>m[1]);for(const href of links){if(/^(https?:|data:|javascript:|#)/.test(href))continue;const p=decodeURIComponent(href.split(/[?#]/)[0]);if(!p)continue;const target=p.startsWith('/')?path.join(root,p):htmlBase?.startsWith('/')?path.join(root,htmlBase,p):path.resolve(path.dirname(f),p);checked++;if(!fs.existsSync(target))issues.push({f,href});}}
+console.log(JSON.stringify({files:files.length,localLinks:checked,issues},null,2));if(issues.length)process.exitCode=1;

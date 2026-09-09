@@ -1,0 +1,1 @@
+Stitch 第四轮原始 srcdoc；输出 f0b2c4e4d60a41abb027ad94c611572c。可运行本地整合见 ../preview；原稿不等于采用。Sky 原稿错误保留的依巴谷署名未继承。

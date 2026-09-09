@@ -46,7 +46,7 @@ Revisit when: Partition catalog data by domain before adding or materially chang
 
 Owner: miniapp-contract-maintainers. Tracking: WECHAT-MINIAPP-MOD-001.
 
-The complete current filter vocabulary and predicates remain co-located so the exact 10+8 closure is reviewable; predicate extraction is deferred until a real filter evolution requires another stable owner.
+The current implementation still co-locates the legacy 10+8 vocabulary and predicates. The confirmed Mini Program contract now has 16 conditions and an explicit driving-duration parameter; current intended meaning is owned by the Map/Search Screen Contract. This is a migration boundary, not an obligation to retain 18 options. No current Mini Program/BFF caller of shared filterSpots was found in the 2026-09-09 audit.
 
 Revisit when: Separate filter vocabulary from predicate evaluation before adding or changing a filter dimension.
 

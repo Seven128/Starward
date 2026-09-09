@@ -1,0 +1,44 @@
+{
+  "removed": [
+    "1c176ed793024cc899f6ae5bd98bfc54",
+    "d649b42a4a464f288dfdc0a136c2ce12"
+  ],
+  "items": [
+    {
+      "id": "11af9fb7a57d4df4bf1a190dfeba043e",
+      "title": "image\n微立体暖金流星徽标"
+    },
+    {
+      "id": "1eb02a6ec6a046c48922baaff35d4fab",
+      "title": "devices\n观星计划列表页"
+    },
+    {
+      "id": "1f010d5facc941e4ae74da2f45dc6f7e",
+      "title": "devices\n观星计划详情页 · 候选版"
+    },
+    {
+      "id": "458b3aebe5a4407db6ef7417f82927e1",
+      "title": "devices\n提醒与清单 · 勾选控件与交互放大规范"
+    },
+    {
+      "id": "548f93245ccb41a884a7b3f333aad944",
+      "title": "devices\n观星计划编辑页 · 候选版"
+    },
+    {
+      "id": "74d3971e19224b368694f133a2fe5edf",
+      "title": "devices\n天文事件详情 · 采用版"
+    },
+    {
+      "id": "8b0164d4-566d-46d6-a6ae-0016fa92b649",
+      "title": "image\nclipboard.png"
+    },
+    {
+      "id": "a4b52fe932a446b682929ffdf9e573cc",
+      "title": "devices\n天文事件列表 · 采用版"
+    },
+    {
+      "id": "58c72a7b-6797-43f3-8e4e-4a0a299a579e",
+      "title": "image\n当前精确参考 · plan · 2026-09-09 · 源见仓库CURRENT.md"
+    }
+  ]
+}

@@ -39,6 +39,15 @@ For an authorized adoption, read the packaged Skill's `references/adoption.md`, 
 
 `context:validate` checks explicitly declared local UTF-8 dependencies and supported ownership/path conflicts. It does not recursively validate links inside ADOPTED.md, open media/prototypes, access remote resources or infer overlapping prose scopes. Resource tasks explicitly check the needed linked files and real outputs; missing current input is a missing constraint, not permission to improvise. Structural checks, actual resource inspection and production verification are reported separately.
 
+## Shared component continuity
+
+Public/shared component identification begins during UI/UX and product design, under the [cross-stage rule](../AGENTS.md#shared-components-across-design-and-implementation). Record only affected responsibilities in existing owners, not a parallel global component registry:
+
+- The owning Screen Contract or shared contract records the component's purpose, actual consumers, shared product/interaction states, permitted differences and exclusions. DESIGN owns reusable visual rules/tokens; the resource package owns the editable shared definition, concrete variants/examples and review/adoption scope. Other pages reference that owner instead of duplicating its contract.
+- For each affected shared unit, preserve a stable name/key, links to consumers and resources, and the distinction between confirmed semantic decisions and candidate visuals. Material-only components do not acquire content, navigation or domain state merely because multiple pages use them. Product components may own shared semantic behavior when that is their established responsibility.
+- Architecture records dependency/data/platform boundaries and material unresolved implementation questions. When implementation is authorized, map the shared design responsibility to the actual source owners and consumers; until then, code mappings are explicitly planned or absent. Code may split/compose these responsibilities and add technical components without changing their adopted semantics. A static design family, a reusable prototype module and a verified production component are different facts.
+- Revise shared definitions and affected examples together within scope. Preserve unaffected variants and adoption status; keep generation prompts, experiments and progress outside durable Context. A routine resource edit needs no new schema, mandatory handoff or repository-wide catalogue.
+
 ## 持续校准设计系统与用户偏好
 
 设计资源持续增加的价值，是让项目对用户审美和UIUX预期的理解越来越准确。每次获得明确反馈、完成修订或采用页面时，在本次工作内检查是否产生新的持久设计事实；不能只存资源链接或要求下一页照着上一页画。没有新增认识时不制造文档变更。

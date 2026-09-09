@@ -1,0 +1,39 @@
+{
+  "removed": [
+    "95aab983615345e899e22f5aab1961f7",
+    "7747b7b6e8e740a9b7ee815ade7f7d10",
+    "ca4fe3ac90814e9c83a8e9eb97d6aca0",
+    "e0ff33be0fca46f5bf162188f2e9a2ce",
+    "f0b2c4e4d60a41abb027ad94c611572c"
+  ],
+  "items": [
+    {
+      "id": "007f2aa8a4e94733b4939275965e9b99",
+      "title": "devices\n云观星 - 方向B（焦点卡片与传感器浮层）"
+    },
+    {
+      "id": "080766c03f3b42f9be56730f2c482b79",
+      "title": "devices\n云观星 - 选定地点轻标签微调"
+    },
+    {
+      "id": "0d07a8b6124b485cbb84f32212e9ca26",
+      "title": "devices\n云观星 - 方向A（极简通透）"
+    },
+    {
+      "id": "10b46e14-ccc4-4efe-b6a4-fe526db1781d",
+      "title": "image\nclipboard.png"
+    },
+    {
+      "id": "assets_36794856c75847c6af2de203b2ca3fd8",
+      "title": "palette\nNocturne Celestial\nPrimary\n#78A6FF\nSecondary\n#F6C878\nTertiary\n#5CE1E6\nNeutral\n#8FA5CA\nHeadline\nSpace Grotesk\nAa\nPrimary\nSecondary\nInverted\nOutlined\nsearch\nSearch\nBody\nGeist"
+    },
+    {
+      "id": "8a01f5ba2e1a4f0d812fdb893a217edc",
+      "title": "devices\n云观星 - 天体居中详情弹窗（柔和毛玻璃液态质感）"
+    },
+    {
+      "id": "6a638a1d-8607-400b-894f-03c63d4961fe",
+      "title": "image\n当前精确参考 · 6px模糊 · 源见仓库sky/CURRENT.md"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+async page=>{await page.setViewportSize({width:1100,height:920});await page.goto('http://127.0.0.1:5329/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/stitch-feedback-07/index.html');await page.screenshot({path:'output/playwright/stitch-glass-07.png'});}

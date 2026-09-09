@@ -1,0 +1,37 @@
+{
+  "removed": [
+    "6a65e33dec004f03a800bf937f1608e0",
+    "a9f27bb700ad40c2a1934561d22fd3ae",
+    "ad8c09dc50a1483a851c88427e250ee1",
+    "6d6295a565d448dba233610f8599e4e7",
+    "56c13bcec5b340f48b23d33f44da6b7c",
+    "ada5bd64d07144dba8db589966dbc09b",
+    "de9c294d229b40609615c36ff6132a5f"
+  ],
+  "items": [
+    {
+      "id": "0aac09eb-6f86-463f-b474-6a9d6a431fb8",
+      "title": "image\nclipboard.jpeg"
+    },
+    {
+      "id": "17fb532a-a3f1-4851-8d81-a75d6025e59e",
+      "title": "image\nclipboard.jpeg"
+    },
+    {
+      "id": "49b1ac0b-7906-46ef-8ad1-896b8f896031",
+      "title": "image\nclipboard.png"
+    },
+    {
+      "id": "a3ea0314-2168-427c-a103-7cbe203956ec",
+      "title": "image\nclipboard.png"
+    },
+    {
+      "id": "e9db9aabb64f41908354d73cc272d34f",
+      "title": "devices\n我的 - 观星计划（进行中微调版）"
+    },
+    {
+      "id": "3922d43b-5cdc-46eb-8a47-bf65fc370379",
+      "title": "image\n当前精确参考 · my · 2026-09-09 · 源见仓库CURRENT.md"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+- main [ref=f29e2]:
+  - complementary [ref=f29e3]:
+    - heading "地图 · 身份与恢复" [level=1] [ref=f29e4]
+    - paragraph [ref=f29e5]: 设计演示，未采用。内存样例不连接远端草稿/审核服务；发布按钮仅模拟服务回执。天空采用固定演示坐标，非真实地图定位。
+    - generic [ref=f29e6]:
+      - text: 宽度
+      - combobox "宽度" [ref=f29e7]:
+        - option "320"
+        - option "375"
+        - option "390" [selected]
+        - option "430"
+    - paragraph [ref=f29e8]:
+      - button "我的草稿" [ref=f29e9]
+      - button "审核中提案" [ref=f29e10]
+      - button "正式点与我的反馈" [ref=f29e11]
+      - button "新建" [ref=f29e12]
+      - button "尝试切换地点" [ref=f29e13]
+      - button "模拟发布新点" [ref=f29e14]
+      - button "模拟合并正式点" [ref=f29e15]
+    - button "重置演示" [ref=f29e16]
+    - paragraph [ref=f29e17]: 切换目标前确认未保存修改；继续编辑应保留表单、照片、候选点和地图状态。发布/合并后重复回执不产生重复标记。
+    - status [ref=f29e18]: "{ \"type\": \"map-review-state\", \"surface\": \"spot-panel\", \"selected\": null }"
+    - paragraph [ref=f29e19]: 待完成实际验证后提供审查说明。
+  - iframe [ref=f29e20]:
+    - generic [ref=f30e2]:
+      - banner [ref=f30e3]:
+        - generic [ref=f30e4]: 9:41
+      - generic [ref=f30e15]:
+        - heading "今晚去观星" [level=1] [ref=f30e16]
+        - generic [ref=f30e17]:
+          - button "更多操作" [ref=f30e18] [cursor=pointer]
+          - button "退出小程序" [ref=f30e24] [cursor=pointer]
+      - generic:
+        - img:
+          - generic: 橘仔铺
+          - generic: ▲扯旗角
+          - generic: ▲座头顶
+          - generic: 风田
+          - generic: 大围
+          - generic: Y268
+          - generic: © OpenStreetMap 贡献者
+      - button "定位" [ref=f30e29] [cursor=pointer]
+      - button "图层" [ref=f30e34] [cursor=pointer]
+      - button "添加观星点" [ref=f30e40] [cursor=pointer]
+      - region "地图，可拖动浏览" [ref=f30e42]
+      - generic:
+        - button "查看星湾观星点" [pressed] [ref=f30e43] [cursor=pointer]:
+          - generic [ref=f30e47]: 星湾观星点
+        - button "查看山脊观星点" [ref=f30e48] [cursor=pointer]:
+          - generic [ref=f30e52]: 山脊观星点
+        - button "查看草稿：我的海岸草稿" [ref=f30e53] [cursor=pointer]:
+          - generic [ref=f30e56]: 我的海岸草稿 · 草稿
+        - button "查看星湾观星点，审核中" [ref=f30e57] [cursor=pointer]:
+          - generic [ref=f30e61]: 星湾观星点
+      - status [ref=f30e63]
+      - navigation [ref=f30e64]:
+        - generic [ref=f30e65]:
+          - button "地图" [ref=f30e66] [cursor=pointer]
+          - button "我的" [ref=f30e70] [cursor=pointer]

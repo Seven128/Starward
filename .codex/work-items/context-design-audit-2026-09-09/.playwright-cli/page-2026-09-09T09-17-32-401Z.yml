@@ -1,0 +1,315 @@
+- main [ref=f57e2]:
+  - complementary [ref=f57e3]:
+    - heading "地图 · 身份与恢复" [level=1] [ref=f57e4]
+    - paragraph [ref=f57e5]: 设计演示，未采用。内存样例不连接远端草稿/审核服务；发布按钮仅模拟服务回执。天空采用固定演示坐标，非真实地图定位。
+    - generic [ref=f57e6]:
+      - text: 宽度
+      - combobox "宽度" [ref=f57e7]:
+        - option "320"
+        - option "375"
+        - option "390" [selected]
+        - option "430"
+    - paragraph [ref=f57e8]:
+      - button "我的草稿" [ref=f57e9]
+      - button "审核中提案" [ref=f57e10]
+      - button "正式点与我的反馈" [ref=f57e11]
+      - button "新建" [ref=f57e12]
+      - button "打开图层" [ref=f57e13]
+      - button "关闭图层" [ref=f57e14]
+      - button "尝试切换地点" [ref=f57e15]
+      - button "模拟审核通过" [ref=f57e16]
+      - button "下一次写入失败" [ref=f57e17]
+      - button "模拟发布新点" [ref=f57e18]
+      - button "模拟合并正式点" [ref=f57e19]
+    - button "重置演示" [ref=f57e20]
+    - paragraph [ref=f57e21]: 切换目标前确认未保存修改；继续编辑应保留表单、照片、候选点和地图状态。发布/合并后重复回执不产生重复标记。
+    - status [ref=f57e22]: "{ \"type\": \"map-review-state\", \"surface\": \"spot-panel\", \"selected\": \"bay\" }"
+    - paragraph [ref=f57e23]:
+      - link "来源与审查范围" [ref=f57e24] [cursor=pointer]:
+        - /url: README.md
+      - text: ·
+      - link "验证记录" [ref=f57e25] [cursor=pointer]:
+        - /url: verification.md
+  - iframe [ref=f57e26]:
+    - generic [ref=f58e2]:
+      - banner [ref=f58e3]:
+        - generic [ref=f58e4]: 9:41
+      - generic [ref=f58e15]:
+        - heading "今晚去观星" [level=1] [ref=f58e16]
+        - generic [ref=f58e17]:
+          - button "更多操作" [ref=f58e18] [cursor=pointer]
+          - button "退出小程序" [ref=f58e24] [cursor=pointer]
+      - generic:
+        - img:
+          - generic: 橘仔铺
+          - generic: ▲扯旗角
+          - generic: ▲座头顶
+          - generic: 风田
+          - generic: 大围
+          - generic: Y268
+          - generic: © OpenStreetMap 贡献者
+      - button "定位" [ref=f58e29] [cursor=pointer]
+      - button "图层" [ref=f58e34] [cursor=pointer]
+      - button "添加观星点" [ref=f58e40] [cursor=pointer]
+      - region "地图，可拖动浏览" [ref=f58e42]
+      - generic:
+        - button "查看星湾观星点" [pressed] [ref=f58e43] [cursor=pointer]:
+          - generic [ref=f58e47]: 星湾观星点
+        - button "查看山脊观星点" [ref=f58e48] [cursor=pointer]:
+          - generic [ref=f58e52]: 山脊观星点
+        - button "查看草稿：我的海岸草稿" [ref=f58e53] [cursor=pointer]:
+          - generic [ref=f58e56]: 我的海岸草稿 · 草稿
+        - button "查看星湾观星点，审核中" [ref=f58e57] [cursor=pointer]:
+          - generic [ref=f58e61]: 星湾观星点
+      - iframe [ref=f58e64]:
+        - generic [ref=f60e1]:
+          - generic:
+            - generic:
+              - img "地图背景"
+              - generic: © OpenStreetMap 贡献者
+              - generic:
+                - button "当前位置" [ref=f60e2] [cursor=pointer]
+                - button "图层" [ref=f60e7] [cursor=pointer]
+          - banner:
+            - generic: 9:41
+            - generic:
+              - heading "今晚去观星" [level=1]
+              - generic:
+                - button [ref=f60e12] [cursor=pointer]
+                - button [ref=f60e16] [cursor=pointer]
+            - button "搜索观星点" [ref=f60e18] [cursor=pointer]
+          - main [ref=f60e22]:
+            - generic [ref=f60e23]:
+              - generic [ref=f60e24]:
+                - button [ref=f60e25] [cursor=pointer]:
+                  - generic [ref=f60e27]: 1 / 3
+                - button [ref=f60e28] [cursor=pointer]:
+                  - generic [ref=f60e30]: 2 / 3
+                - button [ref=f60e31] [cursor=pointer]:
+                  - generic [ref=f60e33]: 3 / 3
+              - generic [ref=f60e34]:
+                - slider "观星点顶部拖动区，调整面板高度" [ref=f60e35]
+                - generic [ref=f60e36]:
+                  - heading [level=2] [ref=f60e37]:
+                    - text: 星湾观星点
+                    - button "我的反馈" [ref=f60e38] [cursor=pointer]
+                  - generic [ref=f60e39]: 滨海 · 东岸
+                  - generic "审核中" [ref=f60e40]: ◷
+              - generic [ref=f60e41]:
+                - paragraph [ref=f60e42]:
+                  - text: 东岸路观景步道入口
+                  - generic [ref=f60e43]: 海拔 128m
+                - generic [ref=f60e44]:
+                  - generic [ref=f60e45]:
+                    - heading "24.6 km 驾车约42分钟 · 步行6分钟" [level=3] [ref=f60e46]
+                    - paragraph [ref=f60e47]: 东侧停车区进入，末段步道约200米
+                  - button "导航" [ref=f60e48] [cursor=pointer]
+                - generic [ref=f60e51]:
+                  - generic [ref=f60e52]: 开放时间
+                  - generic [ref=f60e56]: 18:00—次日06:00
+                - region "进入与安全" [ref=f60e57]:
+                  - generic [ref=f60e58]:
+                    - generic [ref=f60e59]:
+                      - term [ref=f60e60]: 开放状态
+                      - definition [ref=f60e61]: 有条件开放
+                    - generic [ref=f60e62]:
+                      - term [ref=f60e63]: 合法进入
+                      - definition [ref=f60e64]: 需预约或其他条件
+                    - generic [ref=f60e65]:
+                      - term [ref=f60e66]: 夜间安全
+                      - definition [ref=f60e67]: 临水台阶，注意落差
+                  - paragraph [ref=f60e68]: 提前预约，夜间需自备照明
+                - generic [ref=f60e69]:
+                  - button "停车设施，查看设施照片" [ref=f60e70] [cursor=pointer]:
+                    - generic [ref=f60e72]:
+                      - generic [ref=f60e73]:
+                        - strong [ref=f60e76]: 停车设施
+                        - generic [ref=f60e77]: 可用 · 入口120m
+                      - generic [ref=f60e78]: 约20个车位，夜间出场需联系值守
+                    - generic [ref=f60e79]: ▧ 2
+                  - button "洗手间，查看设施照片" [ref=f60e80] [cursor=pointer]:
+                    - generic [ref=f60e82]:
+                      - generic [ref=f60e83]:
+                        - strong [ref=f60e87]: 洗手间
+                        - generic [ref=f60e88]: 可用 · 入口80m
+                      - generic [ref=f60e89]: 开放时段暂无数据
+                    - generic [ref=f60e90]: ▧ 2
+                - generic [ref=f60e91]:
+                  - generic [ref=f60e92]: 门禁 / 负责人电话
+                  - generic [ref=f60e93]: 暂无数据
+                - generic [ref=f60e94]:
+                  - generic [ref=f60e95]: 资料：场地管理方 · 09-06核验
+                  - button "我要反馈 ↗" [ref=f60e96] [cursor=pointer]
+                - group [ref=f60e97]:
+                  - generic "更多场地信息 平台、信号与现场指引" [ref=f60e98] [cursor=pointer]:
+                    - text: 更多场地信息
+                    - generic [ref=f60e99]: 平台、信号与现场指引
+              - region [ref=f60e102]:
+                - generic [ref=f60e103]: 2026-09-08 21:00
+                - heading "天文" [level=3] [ref=f60e105]
+                - region "观测日期与时间" [ref=f60e106]:
+                  - generic [ref=f60e107]:
+                    - button "前一天" [ref=f60e108] [cursor=pointer]: ‹
+                    - button "09月08日 周二，选择日期" [ref=f60e109] [cursor=pointer]:
+                      - generic [ref=f60e110]: 09月08日 周二
+                    - button "后一天" [ref=f60e114] [cursor=pointer]: ›
+                  - slider "观测时间" [ref=f60e115]:
+                    - generic [ref=f60e116]:
+                      - button "18:00，残月，照明9.4%" [ref=f60e117] [cursor=pointer]:
+                        - generic [ref=f60e119]: 18:00
+                      - button "18:30，残月，照明9.3%" [ref=f60e120] [cursor=pointer]:
+                        - generic [ref=f60e122]: 18:30
+                      - button "19:00，残月，照明9.1%" [ref=f60e123] [cursor=pointer]:
+                        - generic [ref=f60e125]: 19:00
+                      - button "19:30，残月，照明9%" [ref=f60e126] [cursor=pointer]:
+                        - generic [ref=f60e128]: 19:30
+                      - button "20:00，残月，照明8.8%" [ref=f60e129] [cursor=pointer]:
+                        - generic [ref=f60e131]: 20:00
+                      - button "20:30，残月，照明8.7%" [ref=f60e132] [cursor=pointer]:
+                        - generic [ref=f60e134]: 20:30
+                      - button "21:00，残月，照明8.6%" [pressed] [ref=f60e135] [cursor=pointer]:
+                        - generic [ref=f60e137]: 21:00
+                      - button "21:30，残月，照明8.4%" [ref=f60e138] [cursor=pointer]:
+                        - generic [ref=f60e140]: 21:30
+                      - button "22:00，残月，照明8.3%" [ref=f60e141] [cursor=pointer]:
+                        - generic [ref=f60e143]: 22:00
+                      - button "22:30，残月，照明8.2%" [ref=f60e144] [cursor=pointer]:
+                        - generic [ref=f60e146]: 22:30
+                      - button "23:00，残月，照明8%" [ref=f60e147] [cursor=pointer]:
+                        - generic [ref=f60e149]: 23:00
+                      - button "23:30，残月，照明7.9%" [ref=f60e150] [cursor=pointer]:
+                        - generic [ref=f60e152]: 23:30
+                      - button "次日 00:00，残月，照明7.8%" [ref=f60e153] [cursor=pointer]:
+                        - generic [ref=f60e155]: 00:00
+                      - button "次日 00:30，残月，照明7.6%" [ref=f60e156] [cursor=pointer]:
+                        - generic [ref=f60e158]: 00:30
+                      - button "次日 01:00，残月，照明7.5%" [ref=f60e159] [cursor=pointer]:
+                        - generic [ref=f60e161]: 01:00
+                      - button "次日 01:30，残月，照明7.4%" [ref=f60e162] [cursor=pointer]:
+                        - generic [ref=f60e164]: 01:30
+                      - button "次日 02:00，残月，照明7.3%" [ref=f60e165] [cursor=pointer]:
+                        - generic [ref=f60e167]: 02:00
+                      - button "次日 02:30，残月，照明7.1%" [ref=f60e168] [cursor=pointer]:
+                        - generic [ref=f60e170]: 02:30
+                      - button "次日 03:00，残月，照明7%" [ref=f60e171] [cursor=pointer]:
+                        - generic [ref=f60e173]: 03:00
+                      - button "次日 03:30，残月，照明6.9%" [ref=f60e174] [cursor=pointer]:
+                        - generic [ref=f60e176]: 03:30
+                      - button "次日 04:00，残月，照明6.8%" [ref=f60e177] [cursor=pointer]:
+                        - generic [ref=f60e179]: 04:00
+                      - button "次日 04:30，残月，照明6.6%" [ref=f60e180] [cursor=pointer]:
+                        - generic [ref=f60e182]: 04:30
+                      - button "次日 05:00，残月，照明6.5%" [ref=f60e183] [cursor=pointer]:
+                        - generic [ref=f60e185]: 05:00
+                      - button "次日 05:30，残月，照明6.4%" [ref=f60e186] [cursor=pointer]:
+                        - generic [ref=f60e188]: 05:30
+                      - button "次日 06:00，残月，照明6.3%" [ref=f60e189] [cursor=pointer]:
+                        - generic [ref=f60e191]: 06:00
+                  - paragraph [ref=f60e192]: 今晚
+                - region [ref=f60e193]:
+                  - heading "月相" [level=3] [ref=f60e194]
+                  - generic [ref=f60e195]:
+                    - generic [ref=f60e196]:
+                      - img "残月" [ref=f60e197]
+                      - generic [ref=f60e198]:
+                        - strong [ref=f60e199]: 残月
+                        - paragraph [ref=f60e200]: 月面照明 8.6%
+                    - generic [ref=f60e201]:
+                      - generic [ref=f60e202]:
+                        - generic [ref=f60e203]: 月出
+                        - strong [ref=f60e204]: 09/09 03:59
+                      - generic [ref=f60e205]:
+                        - generic [ref=f60e206]: 月落
+                        - strong [ref=f60e207]: 09/08 16:36
+                    - region "月亮与夜间" [ref=f60e209]:
+                      - generic [ref=f60e210]:
+                        - generic [ref=f60e211]:
+                          - term [ref=f60e212]: 月亮高度
+                          - definition [ref=f60e213]: "-45.7°"
+                        - generic [ref=f60e214]:
+                          - term [ref=f60e215]: 夜间阶段
+                          - definition [ref=f60e216]: 天文夜
+                - region [ref=f60e217]:
+                  - heading "气象条件" [level=3] [ref=f60e218]
+                  - region "云层" [ref=f60e219]:
+                    - heading "云层" [level=4] [ref=f60e220]
+                    - generic [ref=f60e223]:
+                      - generic [ref=f60e224]:
+                        - term [ref=f60e225]: 总云量
+                        - definition [ref=f60e226]: 30%
+                      - generic [ref=f60e227]:
+                        - term [ref=f60e228]: 低云
+                        - definition [ref=f60e229]: 8%
+                      - generic [ref=f60e230]:
+                        - term [ref=f60e231]: 中云
+                        - definition [ref=f60e232]: 12%
+                      - generic [ref=f60e233]:
+                        - term [ref=f60e234]: 高云
+                        - definition [ref=f60e235]: 25%
+                  - region "温湿" [ref=f60e236]:
+                    - heading "温湿" [level=4] [ref=f60e237]
+                    - generic [ref=f60e240]:
+                      - generic [ref=f60e241]:
+                        - term [ref=f60e242]: 气温
+                        - definition [ref=f60e243]: 22°C
+                      - generic [ref=f60e244]:
+                        - term [ref=f60e245]: 湿度
+                        - definition [ref=f60e246]: 78%
+                      - generic [ref=f60e247]:
+                        - term [ref=f60e248]: 露点
+                        - definition [ref=f60e249]: 18°C
+                  - region "风与能见度" [ref=f60e250]:
+                    - heading "风与能见度" [level=4] [ref=f60e251]
+                    - generic [ref=f60e254]:
+                      - generic [ref=f60e255]:
+                        - term [ref=f60e256]: 东北风
+                        - definition [ref=f60e257]: 9km/h
+                      - generic [ref=f60e258]:
+                        - term [ref=f60e259]: 阵风
+                        - definition [ref=f60e260]: 暂无数据
+                      - generic [ref=f60e261]:
+                        - term [ref=f60e262]: 能见度
+                        - definition [ref=f60e263]: 暂无数据
+                  - region "降水" [ref=f60e264]:
+                    - heading "降水" [level=4] [ref=f60e265]
+                    - generic [ref=f60e268]:
+                      - generic [ref=f60e269]:
+                        - term [ref=f60e270]: 降水量
+                        - definition [ref=f60e271]: 0mm
+                      - generic [ref=f60e272]:
+                        - term [ref=f60e273]: 降水概率
+                        - definition [ref=f60e274]: 10%
+                  - paragraph [ref=f60e275]: 透明度、视宁度暂无独立数据
+                - generic [ref=f60e276]:
+                  - generic [ref=f60e277]: 卫星夜光估算
+                  - strong [ref=f60e280]: 较低
+                  - generic [ref=f60e281]: 0.8 nW/cm²/sr
+                - generic [ref=f60e282]:
+                  - heading "当前目标" [level=3] [ref=f60e283]
+                  - generic [ref=f60e287]:
+                    - generic [ref=f60e288]: 织女星
+                    - generic [ref=f60e289]: 西北
+                    - strong [ref=f60e290]: 52°
+                  - generic [ref=f60e291]:
+                    - generic [ref=f60e292]: 天津四
+                    - generic [ref=f60e293]: 东北
+                    - strong [ref=f60e294]: 61°
+                - generic [ref=f60e295]:
+                  - generic [ref=f60e296]: 预报更新18:00 · 模型一致性高天体位置按所选时刻计算
+                  - group [ref=f60e298]:
+                    - generic "数据来源 查看详情" [ref=f60e299] [cursor=pointer]:
+                      - text: 数据来源
+                      - generic [ref=f60e300]: 查看详情
+            - generic [ref=f60e304]:
+              - button "想去" [ref=f60e305] [cursor=pointer]
+              - button "云观星" [ref=f60e312] [cursor=pointer]
+              - button "分享" [ref=f60e317] [cursor=pointer]
+          - contentinfo [ref=f60e321]:
+            - generic [ref=f60e322]:
+              - button "地图" [ref=f60e323] [cursor=pointer]
+              - button "我的" [ref=f60e327] [cursor=pointer]
+      - status [ref=f58e65]
+      - navigation [ref=f58e66]:
+        - generic [ref=f58e67]:
+          - button "地图" [ref=f58e68] [cursor=pointer]
+          - button "我的" [ref=f58e72] [cursor=pointer]

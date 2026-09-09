@@ -1,0 +1,94 @@
+- main [ref=f21e2]:
+  - complementary [ref=f21e3]:
+    - heading "云观星 · 选定地点" [level=1] [ref=f21e4]
+    - paragraph [ref=f21e5]: 待审候选。只增加地点轻提示，复用采用版星场、时间组件与方向恢复。星湾观星点是原演示坐标22.6,114.5的样例别名；长名称仅测试文字排版，未切换真实地点。
+    - generic [ref=f21e6]:
+      - text: 宽度
+      - combobox "宽度" [ref=f21e7]:
+        - option "320"
+        - option "375"
+        - option "390" [selected]
+        - option "430"
+    - paragraph [ref=f21e8]:
+      - generic [ref=f21e9]:
+        - checkbox "长地点名" [ref=f21e10]
+        - text: 长地点名
+    - generic [ref=f21e11]:
+      - button "织女星视野" [ref=f21e12]
+      - button "土星视野" [ref=f21e13]
+      - button "焦点卡参考" [ref=f21e14]
+      - button "轻标签" [ref=f21e15]
+      - button "观测红光" [ref=f21e16]
+      - button "尚未授权" [ref=f21e17]
+      - button "权限未开" [ref=f21e18]
+      - button "方向暂停" [ref=f21e19]
+      - button "星空失败" [ref=f21e20]
+      - button "天体列表" [ref=f21e21]
+    - paragraph [ref=f21e22]: 姿态由画外注入，不代表真实手机方向。时间改变沿已有切片更新；本候选不证明生产星表完整性，不请求定位或相机。
+    - paragraph
+    - link "来源与验证" [ref=f21e23] [cursor=pointer]:
+      - /url: README.md
+  - iframe [ref=f21e24]:
+    - generic [ref=f22e2]:
+      - generic "所选地点与时刻的天空视窗" [ref=f22e3]
+      - button "织女星，方位332度，仰角71度" [ref=f22e4] [cursor=pointer]:
+        - strong [ref=f22e5]: 织女星
+        - generic [ref=f22e6]: 方位 332° · 仰角 71°
+      - generic [ref=f22e7]:
+        - generic [ref=f22e8]: 9:41
+        - generic [ref=f22e9]: ▂▃▅ ▰
+      - banner [ref=f22e10]:
+        - button "返回观星点" [ref=f22e11] [cursor=pointer]: ‹
+        - generic [ref=f22e12]: •••⊙
+      - generic:
+        - paragraph: 星湾观星点 · UTC+8
+        - generic [ref=f22e14]:
+          - generic [ref=f22e15]:
+            - button "前一天" [disabled] [ref=f22e16]: ‹
+            - button "09月09日 周三，选择日期" [ref=f22e17] [cursor=pointer]:
+              - generic [ref=f22e18]: 09月09日
+            - button "后一天" [ref=f22e22] [cursor=pointer]: ›
+          - slider "观测时间" [ref=f22e23]:
+            - generic [ref=f22e24]:
+              - button "18:00" [ref=f22e25] [cursor=pointer]
+              - button "18:30" [ref=f22e28] [cursor=pointer]
+              - button "19:00" [ref=f22e31] [cursor=pointer]
+              - button "19:30" [ref=f22e34] [cursor=pointer]
+              - button "20:00" [ref=f22e37] [cursor=pointer]
+              - button "20:30" [pressed] [ref=f22e40] [cursor=pointer]
+              - button "21:00" [ref=f22e43] [cursor=pointer]
+              - button "21:30" [ref=f22e46] [cursor=pointer]
+              - button "22:00" [ref=f22e49] [cursor=pointer]
+              - button "22:30" [ref=f22e52] [cursor=pointer]
+              - button "23:00" [ref=f22e55] [cursor=pointer]
+              - button "23:30" [ref=f22e58] [cursor=pointer]
+              - button "次日 00:00" [ref=f22e61] [cursor=pointer]:
+                - generic [ref=f22e63]: 00:00
+              - button "次日 00:30" [ref=f22e64] [cursor=pointer]:
+                - generic [ref=f22e66]: 00:30
+              - button "次日 01:00" [ref=f22e67] [cursor=pointer]:
+                - generic [ref=f22e69]: 01:00
+              - button "次日 01:30" [ref=f22e70] [cursor=pointer]:
+                - generic [ref=f22e72]: 01:30
+              - button "次日 02:00" [ref=f22e73] [cursor=pointer]:
+                - generic [ref=f22e75]: 02:00
+              - button "次日 02:30" [ref=f22e76] [cursor=pointer]:
+                - generic [ref=f22e78]: 02:30
+              - button "次日 03:00" [ref=f22e79] [cursor=pointer]:
+                - generic [ref=f22e81]: 03:00
+              - button "次日 03:30" [ref=f22e82] [cursor=pointer]:
+                - generic [ref=f22e84]: 03:30
+              - button "次日 04:00" [ref=f22e85] [cursor=pointer]:
+                - generic [ref=f22e87]: 04:00
+              - button "次日 04:30" [ref=f22e88] [cursor=pointer]:
+                - generic [ref=f22e90]: 04:30
+              - button "次日 05:00" [ref=f22e91] [cursor=pointer]:
+                - generic [ref=f22e93]: 05:00
+              - button "次日 05:30" [ref=f22e94] [cursor=pointer]:
+                - generic [ref=f22e96]: 05:30
+              - button "次日 06:00" [ref=f22e97] [cursor=pointer]:
+                - generic [ref=f22e99]: 06:00
+          - paragraph [ref=f22e100]: 今晚
+        - button "查看可见天体" [ref=f22e101] [cursor=pointer]:
+          - text: ✧
+          - generic [ref=f22e102]: 天体

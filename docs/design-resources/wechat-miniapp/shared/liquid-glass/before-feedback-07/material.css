@@ -1,0 +1,14 @@
+/* Candidate material. Shared optical layers; consumer content/geometry stay independent. */
+[data-liquid-glass]{--glass-tint:rgba(255,255,255,.10);--glass-shadow:rgba(48,70,85,.09);--glass-solid:#f1f3ef;--glass-blur:.5px;--glass-saturation:1.08;--glass-reflection:#fff;--glass-sheen:rgba(255,255,255,.055);background:var(--glass-tint)!important;backdrop-filter:var(--glass-displacement,blur(0px)) blur(var(--glass-blur)) saturate(var(--glass-saturation))!important;-webkit-backdrop-filter:var(--glass-displacement,blur(0px)) blur(var(--glass-blur)) saturate(var(--glass-saturation))!important;border:1px solid transparent!important;box-shadow:inset 0 .5px 1px #ffffff24,inset 0 -1px 2px #233d4910,0 8px 24px var(--glass-shadow)!important;isolation:auto!important}
+[data-liquid-glass="dark"]{--glass-tint:rgba(153,177,202,.055);--glass-shadow:rgba(0,0,0,.24);--glass-solid:#121c29;--glass-sheen:rgba(223,238,255,.025);--glass-reflection:#dfeaf3}
+[data-liquid-glass]:before{content:""!important;position:absolute!important;inset:0!important;border-radius:inherit!important;pointer-events:none!important;z-index:0!important;background:linear-gradient(145deg,var(--glass-sheen),transparent 28%,transparent 72%,var(--glass-sheen))!important;box-shadow:inset 1px 1px 2px #0000000a,inset -1px -1px 2px #0000000f!important;opacity:1!important}
+[data-liquid-glass]:after{content:""!important;position:absolute!important;inset:-1px!important;border-radius:inherit!important;pointer-events:none!important;z-index:2!important;padding:0!important;background:var(--glass-reflection)!important;mask-image:var(--glass-rim-map,linear-gradient(transparent,transparent))!important;mask-size:100% 100%!important;mask-repeat:no-repeat!important;mask-composite:add!important;-webkit-mask-composite:source-over!important}
+[data-liquid-glass]>*{position:relative;z-index:1}
+body.red [data-liquid-glass]{--glass-tint:rgba(120,48,26,.08);--glass-reflection:#b7784c;--glass-sheen:rgba(151,71,46,.035);--glass-solid:#20100c;--glass-saturation:1;box-shadow:inset 0 1px 1px #b8754d18,0 8px 24px #0003!important}
+[data-glass-mode="solid"],body[data-solid="true"] [data-liquid-glass]{background:var(--glass-solid)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+[data-glass-mode="solid"]:before,[data-glass-mode="solid"]:after,body[data-solid="true"] [data-liquid-glass]:before,body[data-solid="true"] [data-liquid-glass]:after{display:none!important}
+@supports not (backdrop-filter:blur(1px)){[data-liquid-glass]{background:var(--glass-solid)!important}}
+@media(prefers-reduced-transparency:reduce){[data-liquid-glass]{background:var(--glass-solid)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}[data-liquid-glass]:before,[data-liquid-glass]:after{display:none!important}}
+@media(prefers-reduced-motion:reduce){[data-liquid-glass]{transition:none!important;transform:none!important}}
+
+

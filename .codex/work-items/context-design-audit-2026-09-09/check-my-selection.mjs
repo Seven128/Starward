@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {selectUpcomingPlans,WINDOW_MS} from '../../../docs/design-resources/wechat-miniapp/my/candidates/context-audit-2026-09-09/plan-selection.mjs';
+const now=Date.parse('2026-09-10T00:30:00+08:00');
+const make=(id,start,end)=>({planId:id,selectedAt:new Date(now+start).toISOString(),endsAt:new Date(now+end).toISOString()});
+const input=[make('tomorrow',WINDOW_MS,WINDOW_MS+3600000),make('after',WINDOW_MS+1,WINDOW_MS+3600000),make('ended',-7200000,0),make('ongoing',-3600000,3600000),make('starting',0,7200000),make('same-b',1800000,7200000),make('same-a',1800000,7200000),{planId:'invalid',selectedAt:'unknown',endsAt:'unknown'},make('backward',100,-100)];
+const first=selectUpcomingPlans(input,now);assert.deepEqual(first.visible.map(p=>p.planId),['ongoing','starting','same-a']);assert.equal(first.total,5);assert.equal(first.hasMore,true);assert.equal(first.visible[0].ongoing,true);assert.equal(first.visible[1].ongoing,true);
+assert.equal(selectUpcomingPlans([make('ongoing',-3600000,3600000)],now+3600000).total,0);
+assert.equal(selectUpcomingPlans([make('ongoing',-3600000,3600000)],now-1800000).visible[0].ongoing,true);
+assert.equal(selectUpcomingPlans([make('tomorrow',WINDOW_MS,WINDOW_MS+3600000)],now).total,1);
+assert.equal(selectUpcomingPlans([make('after',WINDOW_MS+1,WINDOW_MS+3600000)],now).total,0);
+assert.equal(selectUpcomingPlans([],now).hasMore,false);
+console.log('My resource selection: midnight ongoing, exact start/end, +24h inclusive, beyond-window, stable order, top3, invalid intervals and empty passed.');

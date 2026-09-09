@@ -713,7 +713,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 | 角色 | 采用表达（逻辑px，具体级联值以采用源文件为准） |
 | --- | --- |
 | 字体尺度 | 保持原B紧凑尺度；地点名18px，地区/事实正文12px；不因三档高度不同整体缩放 |
-| 面板 | 同一保留文档、全宽白色紧凑身份区；small/medium顶部圆角，large直角；最终档位基准及安全区映射见采用包 |
+| 面板 | 同一保留文档、全宽白色紧凑身份区；无顶部图片时三档均保留顶部圆角；large有全幅顶部图片时沿用图片构图；最终档位基准及安全区映射见采用包 |
 | 章节 | 首屏隐藏，天文边界出现；一级同文档定位、短圆头渐变滑动指示；第二章起标题位于卡片外 |
 | 设施 | 停车/洗手间上下各一张无框无阴影照片卡，开放时间为文字；仅图片虚化/局部遮罩，无图为纯色事实卡 |
 | 天文 | 全宽白色圆角模块，相关数据紧凑分组；内层底#FBFBFC、无框，月相亮黄/灰 |
@@ -738,18 +738,18 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 搜索页唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/search/ADOPTED.md)。2026-09-08用户确认[搜索页资源](docs/design-resources/wechat-miniapp/search/adopted/search-page/README.md)完成，采用A方向的日间紧凑尺度及最终交互、地址对齐修正。下述组合替换该页旧全换行筛选、统一结果卡描边、固定半宽文字区及大号选中星标表达；未覆盖主题和状态保留原规则。具体页面级联值、图片与完整组合以采用包为准，生产页面、筛选/选点链路和生成tokens尚未迁移，本次采用不触发生产生成。
 
 - 页面按 Search → titleless unified filters → `想去`/`其他观星点` partitions 排列，一个 keyboard-safe vertical scroll owner。Map entry 与 Search field 使用同一 visual frame和同一可见query/placeholder字符串：outer rect、fill、border、radius、shadow、text、type baseline、slot 与 caret origin不变；leading glyph只在相同`88rpx`slot内Search→Back交叉替换，两态均无trailing `x`/clear/chevron。Field默认autofocus；任意外部有效tap可blur、关闭suggestions/IME而保留route/query/filter/result/scroll，再次tap可重新focus。Back glyph、系统/微信Back与平台edge-back都pop Search child回Map。Field以下内容以clip/reveal + `translateY(-12px→0)` + opacity `0→1` / `180ms`向下展开，field自身不动；退出反向`160ms`。
-- Query suggestion overlay紧贴field下沿，保持紧凑可读行和至少44px目标，不移动原框。筛选只展示一行，18个现有终端值可横向滑动，末端具名筛选图标固定；不分quick/more，不显示“筛选条件”标题或额外介绍带。日间胶囊、间距、轻分隔线与首分组距离沿用采用稿；横滑结束不误触选项。未覆盖主题的overlay保留4rpx贴边、72rpx可见行/88rpx目标、22rpx图标、16rpx水平内距与1rpx行分隔；胶囊保留44rpx可见/88rpx目标、10rpx内距、20rpx图标、4rpx图文间距、10.5/14.5px文字，以及原4–6rpx贴边与12–16rpx首分组距离。
-- 筛选图标打开底部二级分类弹层，左侧五类为观测条件、到达方式、设施配套、场地偏好、资料更新，右侧为对应终端值，不再嵌套第三层。横条点击即时提交；弹层基于同一committed值建立draft，清空只改draft，确定一次提交，关闭/遮罩/Escape/系统Back取消并恢复入口焦点。具体分组与数据含义由Screen Contract及采用包约束；弹层局部draft不成为第二筛选事实源。
+- Query suggestion overlay紧贴field下沿，保持紧凑可读行和至少44px目标，不移动原框。筛选只展示一行，按Screen Contract的16个终端值可横向滑动，末端具名筛选图标固定；不分quick/more，不显示“筛选条件”标题或额外介绍带。日间胶囊、间距、轻分隔线与首分组距离沿用采用稿；横滑结束不误触选项。未覆盖主题的overlay保留4rpx贴边、72rpx可见行/88rpx目标、22rpx图标、16rpx水平内距与1rpx行分隔；胶囊保留44rpx可见/88rpx目标、10rpx内距、20rpx图标、4rpx图文间距、10.5/14.5px文字，以及原4–6rpx贴边与12–16rpx首分组距离。
+- 筛选图标打开底部二级分类弹层，左侧五类为观测条件、到达方式、设施配套、场地偏好、资料更新，右侧为对应终端值，不再嵌套第三层。无参数横条项点击即时提交；驾车时长打开同一弹层的到达方式分类，按Screen Contract编辑启用状态、时间/距离模式及对应数值。弹层基于同一committed选择和参数建立draft，清空只改draft，确定一次提交，关闭/遮罩/Escape/系统Back取消并恢复入口焦点。具体分组与数据含义由Screen Contract约束；弹层局部draft不成为第二筛选事实源。2026-09-09业务修订后的局部资源待用户审查，现行采用包仍控制未变的视觉组合。
 - 日间selected使用采用稿的浅蓝填色、边界、文字和小星标，几何保持稳定；原大号半透星标不再约束本页日间稿。未覆盖Night保留 `48rpx` 圆润实心 ornament、`right:-4rpx; top:-8rpx`、meteor opacity `.30`及原sky-soft/`2rpx sky`inset boundary/checked表达，不参与inline sizing且文字仍可读；Observation映射暖红，不保留黄色。未覆盖主题保留原select `scale(.42) rotate(-14deg) opacity(0)`→`scale(1) rotate(5deg)` /170ms、deselect→`scale(.56) rotate(-7deg) opacity(0)` /140ms。选中/取消均从live状态反向接管，减少动态效果只保留≤80ms颜色/透明度变化；精确日间表达见采用源文件。
 - Result Card占满内容列。日间合法图片cover整卡，无边框、无阴影，leading白色到透明的可读性遮罩和名称宽度随采用稿，不再固定52%；图片仍可低对比透出，不用opaque slab、blur/glass。无图时只渲染安静纯色卡，不存在图片节点、placeholder、标签、固定高度空档或附加空间。地址图标与首行文本共用对齐槽，长地址换行仍贴齐首行。未覆盖主题保留原min-height`156rpx`、`radius-panel`、`1rpx border`及52%leading field和主题遮罩。
 - Whole card是唯一selection action；右侧不出现“选择”或第二control。选择提交formal spot、返回现有Map、重定位该点并打开medium panel；重复选择同一spotId也必须执行恢复，不得因ID相同跳过。两个Partition各自拥有44px具名operable heading和expanded状态；展开/收起保留同一DOM/state tree，以measured live height/clip+opacity在`160ms`可中断retarget，完成后才移除hit/semantics，不得remount、`display:none`、reset scroll或产生抖动/闪烁。城市只作group heading。资源中地图为静态、卡片只有按压外观，不代表正式点选择与地图/信息组件联动已验证。
 
 #### 5A.3 Spot Information Panel
 
-- Panel 是 Map-parallel non-modal owner，状态为hidden + small/medium/large三个visible extents。三档具体高度/圆角/安全区构图以§5A.0采用资源为准，不恢复旧56vh或不同字号尺度。Large填满平台顶部chrome与Map/My主导航之间的可用区域，不覆盖或替换主导航；small/medium圆角，large顶部直角，无外阴影。
+- Panel 是 Map-parallel non-modal owner，状态为hidden + small/medium/large三个visible extents。三档具体高度/圆角/安全区构图以§5A.0采用资源为准，不恢复旧56vh或不同字号尺度。Large填满平台顶部chrome与Map/My主导航之间的可用区域，不覆盖或替换主导航；无顶部图片时small/medium/large均保留顶部两角；large全幅图片按图片构图，无外阴影。
 - 三档始终挂载同一份、同序、同identity的客观document：有效media→地点identity→route/access/facility/safety→guides/field/source→卡片外天文标题→日期/时间尺→月相/气象/夜光/目标/来源。Small/Medium只是较短viewport裁剪；Large才启用唯一隐藏scrollbar chrome的internal vertical scroll。禁止按extent分别渲染、remount、重新排序或重复mapping。唯一presentation例外是合法media：small/medium不占media，medium→large时才在document顶部连续拉出；无图从不渲染media node/placeholder/空档。
 - Handle 保留短细圆头提示，整条面板宽度的紧凑白色 identity-header band 为拖动热区，触控高度至少44逻辑px。名称上移并可进入热区下部，不靠额外空白撑开；操作按钮不与热区重叠。Band 跟随同一document滚动，绝不fixed/sticky在panel可视区；有图时位于相册之后，无图时为首区。滚出视口后无替代热区，靠系统/平台Back或可用的edge-back返回档位；滚回真实header才恢复拖动。Pointer down仅改变press反馈，未过方向/距离阈值的tap为no-op。
-- Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。除实际可见header band以外的Panel body/content/media或泛化viewport top-edge均不发起extent drag。
+- Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。中/大档除实际可见header band以外的Panel body/content/media或泛化viewport top-edge均不发起extent drag。小档裁切正文上拖展开到中档，下拖在小档硬边界不动、不关闭；中/大档正文均可滚动。
 - Panel top/media/content size必须在每个direct-manipulation帧按live extent、safe area与actual media presence计算。有合法media时`mediaReveal=clamp((p-.50)/.28,0,1)`，clip-height从0到`clamp(300rpx,27dvh,420rpx)`，image从`translateY(-18rpx) scale(1.02)`到0/1；无图没有media phase。
 - 只有panel top接近screen top才淡出Map chrome：`chromeFade=1-clamp((p-.82)/.12,0,1)`。Search、Location与Layer trigger共享该phase，opacity≤.08才移除hit/semantics；反向先恢复chrome，再收media。不得在图片刚拉出时提前隐藏chrome。
 - Large采用全宽中性白色圆角模块与共享文字内距。章节导航遵循6.11：基本信息首屏隐藏，到天文章节出现并吸顶；仅一层同文档锚点，不恢复旧侧边rail。
@@ -763,7 +763,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - App-owned legend 只随 active analytical overlay 出现，使用 `radius-band` solid strip、`1rpx border` 与 label/value/shape；一次只有一个 layer legend。
 - Day/Night 使用当前 roles；Night 不用 glow/neon。Observation 中 app-owned Search、marker、panel、rail、legend、loading、focus 和过渡只用 closed black/warm-red roles。不能主题化的 native/provider surface 必须在进入前提供 safe cancel/return 或 non-field alternative。
 - `map-layer-selector`由紧凑Map-edge trigger与内容驱动高度bottom-sheet presentation组成，不新增第二Control key。Trigger active与地图定位/新增加号统一使用亮色边框和微弱柔雾阴影，缓慢呼吸且几何不变；减少动态效果时保持静态。无drag handle、`x`、Close row、多extent暗示或“关闭图层”。只列`光污染/云量`两张等宽、整卡可点的abstract image-backed单选卡；selected用极浅fill、inner boundary和checked state。有效选择即时切层，无额外确认；重复选择当前项保持选中，不产生全未选或叠加两层状态。“观测机会”已从小程序地图图层选择和对应摘要/图例中移除，原因是此处保留可直接理解的客观图层。原`332rpx + safe-bottom`主体不能裁切新共用日期时间组件；总云量高度须容纳正常字级、日期栏和独立44px触控区域；光污染使用紧凑高度及年度数据说明。底部选择卡与导航保持原位，顶边从当前呈现高度平滑伸缩，快速反向直接重定向，减少动态效果时直接切换；圆角由外层裁切保证白色子组件不溢出。日间采用稿由Map ADOPTED的layer-selector包给出：顶角18px且外层裁切，390×844视口下云量/光污染高度分别276px/134px，内容字号放大时按内容扩展，不硬裁切。
-- Map只有一个`bottomPresentation = none | spot-panel | layer-sheet` coordinator。打开layer直接把spot presentation retarget为layer；panel hit/semantics/active在退出后清除，但selected spot与previous extent保留。Layer open时marker/result intent直接把同一owner retarget为新spot medium，不先恢复旧panel。关闭layer只在没有更新intent时恢复prior extent。任何帧不得同时存在panel/layer两个visible或active flag。
+- Map只有一个`bottomPresentation = none | spot-panel | layer-sheet | spot-editor` coordinator。打开layer直接把spot presentation retarget为layer；panel hit/semantics/active在所有权切换时清除，只有旧视觉可完成退出，selected identity与previous extent保留为恢复历史。Layer open时marker/result intent直接把同一owner retarget为新spot medium，不先恢复旧panel。关闭layer只在没有更新intent时恢复prior extent。Editor未保存离开遵循Screen Contract的先确认后提交；取消保留输入、媒体、候选位置、相机和原上下文。任一时刻只有一个底部交互owner，不以并列active flag绕过协调器。
 - Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/layer/selection 的局部状态已是反馈，不另弹 floating notification，也不展示操作教程或实现说明。
 - `320/375/390/430` 标准字号与 safe area 必须适配。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
 
@@ -897,8 +897,8 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - **Anatomy**：随document滚出的全宽紧凑白色header drag zone、三档裁剪同一retained non-modal document、medium→large presence-driven licensed media、客观`基本信息 → 天文信息`顺序、到天文边界才出现的轻量横向吸顶 `基本信息/天文` 章节导航、short fixed `想去/云观星/分享` action bar。
 - **Variants**：hidden、small、medium、large、dragging、settling、loading、partial、stale、error；hidden 与 visible extent 分开建模。
 - **Geometry**：复用本文件 Map / Search / Spot Information 合同中的三档高度、圆角、把手和导航边界，不维护第二组尺寸。章节导航默认仅一级，基本信息首屏隐藏，滚到天文章节边界后出现并吸顶；靠左排列，不加图标、填色或等分整行。单一选中线短、稍厚、圆端，局部渐变按最新配色方向确认，切换时连续滑动且可反向打断；文字保持可读中性深色，不再要求绿色。点击定位同一文档并扣除导航高度，滚动回写章节；出现/隐藏不改正文几何。点击区域满足当前44px触控下限，正文模块为全宽白色圆角卡，卡内保留文字内距；同类指标以细线/对齐组织，可尝试一个极浅中性内层共同区域辅助比较，不给每个标量套彩色小卡。全小程序章节标题遵循 information-design：第一项可省略重复大标题，第二项及之后必须在内容起点显示章节标题，吸顶导航不替代它；章节标题统一在卡片外，地图“天文”位于日期时间首卡上方。动作栏使用当前令牌与共用动作规则。
-- **Transition**：`mediaReveal=clamp((p-.50)/.28,0,1)`先拉出top media；`chromeFade=1-clamp((p-.82)/.12,0,1)`后淡出Search/Location/Layer trigger。Reverse先恢复chrome再收media。No-media没有media phase；紧凑白色header band位于真实document顶部，有图时在相册之后，随正文滚动而非悬浮。Panel vertical drag、large content scroll与horizontal ruler通过direction-lock独占手势。
-- **A11y / composition**：large左边缘`32rpx`右滑或handle下拉执行Back语义的large→medium；named extent controls提供等价路径。Only 实际可见的全宽紧凑header band发起drag；whole panel body/media/content不启动。Small/medium/large不切换内容树，只裁剪同一document。普通missing值显示`暂无数据`但domain state不合并。不得恢复独立Spot Detail/Spot Night、切换独立内容树的tabs、推荐窗口、第二地图、nested full-height sheet或duplicate actions。
+- **Transition**：`mediaReveal=clamp((p-.50)/.28,0,1)`先拉出top media；`chromeFade=1-clamp((p-.82)/.12,0,1)`后淡出Search/Location/Layer trigger。Reverse先恢复chrome再收media。No-media没有media phase；紧凑白色header band位于真实document顶部，有图时在相册之后，随正文滚动而非悬浮。Panel vertical drag、medium/large content scroll与horizontal ruler通过direction-lock独占手势。
+- **A11y / composition**：large左边缘`32rpx`右滑或handle下拉执行Back语义的large→medium；named extent controls提供等价路径。中/大档仅实际可见的全宽紧凑header band发起extent drag；正文滚动。小档正文上拖展开至中档，下拖在硬边界不动、不关闭。Small/medium/large不切换内容树，只裁剪同一document。普通missing值显示`暂无数据`但domain state不合并。不得恢复独立Spot Detail/Spot Night、切换独立内容树的tabs、推荐窗口、第二地图、nested full-height sheet或duplicate actions。
 
 #### 6.12 Full-Sky Orientation Canvas
 
@@ -1035,7 +1035,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 - **Anatomy**：title、body、actions；只有可拖动sheet/panel另有handle、停靠边与安全区。
 - **Variants / states**：dialog confirm、sheet task、hidden/small/medium/full-screen-large/dragging/settling/loading/error。Map spot information panel使用三档visible extent；Search不使用Sheet；layer selector使用随所选图层内容伸缩的单一sheet且无drag/multi-extent暗示。
-- **Geometry**：dialog radius24rpx；small/medium spot panel top radius32rpx，page-like large radius0；fixed layer sheet top radius28rpx；只在真实浮层使用elevation-2；动作遵守ordinary/final梯级。所有内部scroll owner隐藏scrollbar chrome。
+- **Geometry**：dialog radius24rpx；无顶部图片的三档spot panel保留顶部圆角（沿small/medium的采用几何）；有全幅顶部图片的page-like large才允许radius0；fixed layer sheet top radius28rpx；只在真实浮层使用elevation-2；动作遵守ordinary/final梯级。所有内部scroll owner隐藏scrollbar chrome。
 - **A11y / composition**：Modal dialog使用focus trap；map-parallel non-modal panel不trap map semantic alternatives。Escape/返回按owning disclosure/extent逐级关闭并返回触发点；large另有左边缘Back gesture。Spot panel只有具名handle hit region可发起extent drag，tap handle为no-op；Layer sheet无handle/`x`/off row，与spot panel共用一个mutually-exclusive bottom-presentation owner并恢复此前panel extent。
 - **Do not**：不把常规分组画成 sheet/dialog；不新增产品路线；不在浮层中堆卡或并列多个主动作。
 
@@ -1111,3 +1111,16 @@ Map ADOPTED/add-spot 为新地点表单的日间构图依据，覆盖旧 contrib
 新增草稿/审核地图状态：灰色草稿点展示本人的草稿信息组件，并经编辑入口回填表单；加号总是新空表单；审核中点沿用星形正式点针，右上角14px级钟表徽标（非成功勾选、非加载转圈），文字替代语义含审核中。信息组件继续使用同一正式组件几何，标题旁小型浅暖色“审核中”tag；审核中隐藏想去/分享，仅保留云观星并填充可用动作行。正式点恢复原三动作。
 
 反馈编辑视觉修订：入口“我要反馈 ↗”纯文字；变化项浅黄底，文档末端旧文字红色删除线 → 新文字，旧照片灰度/微倾斜/禁用符号 → 新照片。没有反馈类型、到访时间、存草稿。提交后冻结，标题审核中tag，无提交按钮。正式信息组件本人“我的反馈”tag及右上时钟图标只表达私人待审状态，不覆盖正式资料。新增草稿只手动请求服务保存，多份草稿不在点击加号时恢复；不再自动保存或本地权威。
+
+### 2026-09-09 局部审查偏好校准
+
+Search 筛选可见底板、图标与留白略收紧，保持至少44px互不重叠的独立命中区，不缩放整页。My 进行中使用低饱和浅灰绿底、清晰深灰绿小字和舒展内边距，与时间形成轻层级；这不是全局绿色主题。省略入口用等大几何圆点，在完整点击区内双向居中，不依赖字体基线。计划清单用端正方框与居中等粗圆端SVG勾，外框不旋转、不被长文字挤压；长行按首行对齐，点击范围仍覆盖完整行。具体候选值与来源保留在各页候选包，待用户审查，未自动采用。
+
+
+2026-09-09 user feedback calibration (Mini Program candidates, adoption remains separate): driving range uses a light two-row control with enable/name and time-distance choice above a natural numeric reading, avoiding the enclosing blue card and large boxed input. My ongoing status uses a low-saturation mist-green badge with slightly increased inner space; badge and end-time text share their visual center. Sky object information uses a centered dark liquid-glass modal explicitly related to My’s plan-card material: restrained reflected edges, high transmission, moderate background blur that softens fine detail while transmitting colors and broad shapes and backdrop edge refraction/reflection; smaller coherent type, contained scrolling and a reachable close action. It inherits observation-mode colors and has an opaque fallback. Scope is these controls, not a new global style.
+
+2026-09-09 control proportion refinement: driving input is a subordinate parameter, not a highlighted metric; its visible face, numeral size, unit spacing and radius align with adjacent filters. Preserve independent hit targets instead of enlarging the colored input face. Sky modal candidate uses locally supplied Source Han Sans SC Regular; 14px title/parameter, 11px body are current celestial-modal review values, not an automatic global type-system change. Dark liquid glass is explicitly authorized here; it does not spread to unrelated pages.
+
+2026-09-09 material correction: My plan card and celestial information use the same shared liquid-glass resource. Preserve the actual backdrop through a low-alpha center; use restrained edge refraction and reflection instead of a heavy frosted or opaque panel. Light/dark are theme parameters. Celestial modal is compact (current candidate max-width294px), and its typography is subordinate to the sky; font readability and increased-text settings remain verification requirements. Driving range is an ordinary small bordered numeric input, without a separate decorative base or oversized metric. Exact current candidate geometry lives in its resource.
+
+2026-09-09 glass refinement: within the My/Sky shared-material scope, translucency is only one attribute. Seek smooth curved-edge lensing, directional fine highlights and restrained depth on both bright and dark real backgrounds; keep foreground type clear. A uniform bright outline or stronger blur alone does not meet this direction. Exact experimental values remain in the candidate; no Apple parity or target-device acceptance is implied.

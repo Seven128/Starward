@@ -1,0 +1,1 @@
+#phone{width:min(100%,430px)}#selected-place{margin:0 auto 2px;padding:0 30px;max-width:100%;font-size:12px;line-height:1.6;font-weight:400;text-align:center;color:#a7b6ca;overflow-wrap:anywhere;pointer-events:none}body.red #selected-place{color:#c2766e}#bottom{bottom:max(24px,env(safe-area-inset-bottom))}

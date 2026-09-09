@@ -1,0 +1,29 @@
+/* Codex integration: Stitch refined driving configuration within the unchanged adopted Search shell. */
+.drive-config{grid-column:1/-1;border:1px solid #bedaff;border-radius:12px;background:#f6faff;padding:4px 12px 10px;min-width:0}
+.drive-config[data-enabled="false"]{background:#fafbfc;border-color:#e5e8ed}
+.drive-config>.filter-option{border:0;background:transparent!important;width:100%;padding:0;min-height:44px;text-align:left}
+.drive-config .chip-face{justify-content:flex-start}
+.drive-input-row{display:flex;align-items:center;gap:8px;border-top:1px solid #e2edff;padding-top:6px;color:#475569;font-size:12px}
+.drive-input-row input{width:64px;min-height:44px;text-align:center;font-size:14px;font-weight:600;color:#1d2129;background:white;border:1px solid #c3dcff;border-radius:6px}
+.drive-input-row input:disabled{opacity:.5}.drive-error{font-size:11px;color:#a52937;line-height:16px;margin:6px 0 0}.coverage-note{font-size:12px;line-height:18px;padding:8px 0;color:#546275}.coverage-action{border:0;background:transparent;color:#356583;min-height:44px;padding:0 8px;font-size:12px}
+
+/* Stitch feedback 02: compact visible faces, separate 44px targets. */
+.filter-option{font-size:11px;padding:4px 3px;min-height:44px;border:0;background:transparent!important}.filter-option .chip-face{min-height:32px;height:auto;padding:5px 3px;border:1px solid #e5e8ed;border-radius:8px;background:#fafbfc}.filter-option[data-selected=true] .chip-face{background:#eff7fc;border-color:#bad8ec}.filter-option-grid{gap:4px 6px}.filter-category{height:48px}.filter-chip .chip-face{font-size:11px}.drive-config>.filter-option .chip-face{border:0;background:transparent!important;padding:0}.drive-config{padding:2px 10px 8px;border-radius:9px}.drive-mode{display:flex;gap:4px}.drive-mode button{position:relative;min-width:44px;height:44px;background:transparent;border:0;font-size:11px;color:#697584}.drive-mode button[aria-pressed=true]{color:#315571;font-weight:600}.drive-mode button[aria-pressed=true]:after{content:"";position:absolute;bottom:7px;left:14px;right:14px;height:2px;border-radius:2px;background:#92afc6}.drive-input-row{padding-top:2px}.drive-input-row input{font-size:13px}
+
+/* Feedback 03: Stitch double-row composition; local integration retains transactional controls. */
+.drive-config,.drive-config[data-enabled="false"]{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:2px;border:0;border-radius:0;background:transparent;padding:0 2px 8px}
+.drive-config>.filter-option{min-width:0;width:auto;margin:0;font-size:11px}
+.drive-config .chip-face{gap:4px;white-space:nowrap}.drive-config .chip-face svg{width:13px;height:13px;flex:none}
+.drive-mode{gap:0}.drive-mode button{padding:0;min-width:44px;height:44px;font-size:11px}
+.drive-mode button[aria-pressed=true]:after{bottom:8px;left:14px;right:14px;height:2px;background:#91a8b8}
+.drive-input-row{grid-column:1/-1;gap:10px;border:0;padding:0 0 4px;color:#697684;font-size:12px}
+.drive-input-row input{width:64px;height:44px;min-height:44px;border:0;border-bottom:1px solid #c6d1da;border-radius:5px 5px 0 0;background:#f4f6f8;color:#273c4b;font-size:19px;font-weight:500;font-variant-numeric:tabular-nums;outline-offset:2px;box-shadow:none}
+.drive-error{grid-column:1/-1}.drive-config[data-enabled="false"] .drive-input-row{opacity:.65}
+.drive-config .selection-star{position:static;transform:none;margin-left:2px;width:10px!important;height:10px!important}.drive-input-row input:focus-visible{outline:1px solid #91a8b8;outline-offset:2px}
+
+/* Feedback 04 / Stitch: visible 44×28 face, independent 44px input hit area. */
+.drive-config{padding-bottom:2px}.drive-input-row{gap:6px;padding-bottom:0;font-size:11px;min-height:44px}
+.drive-input-target{position:relative;display:inline-flex;width:44px;height:44px;flex:none;align-items:center;justify-content:center}
+.drive-input-target:before{content:"";position:absolute;inset:8px 0;background:#f3f5f7;border:1px solid #e3e8ed;border-radius:6px;pointer-events:none}
+.drive-input-row .drive-input-target input{position:relative;z-index:1;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;border-radius:6px;font-family:inherit;font-size:13px;font-weight:400;line-height:20px;color:#475569;box-shadow:none;outline:none}
+.drive-input-target:focus-within:before{border-color:#94acbd;box-shadow:0 0 0 1px #94acbd33}

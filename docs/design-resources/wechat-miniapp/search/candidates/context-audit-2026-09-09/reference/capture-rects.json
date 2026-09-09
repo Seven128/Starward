@@ -1,0 +1,26 @@
+[
+  {
+    "name": "arrival-375",
+    "raw": "full-375.png",
+    "height": 844,
+    "width": 375,
+    "x": 1502,
+    "y": 24
+  },
+  {
+    "name": "arrival-390",
+    "raw": "full-390.png",
+    "height": 844,
+    "width": 390,
+    "x": 1495,
+    "y": 24
+  },
+  {
+    "name": "arrival-430",
+    "raw": "full-430.png",
+    "height": 844,
+    "width": 430,
+    "x": 1475,
+    "y": 24
+  }
+]

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>今晚去观星 - 新增观星点</title>
+<!-- Tailwind CSS v3 with Plugins -->
+
+
+<!-- BEGIN: Custom CSS Styles -->
+<style data-purpose="custom-scrollbars-and-reset">
+    /* Lock viewport to exact mobile proportions */
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #0E1620;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Custom subtle scrollbar for sheet content */
+    .sheet-scroll::-webkit-scrollbar {
+      width: 3px;
+    }
+    .sheet-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.12);
+      border-radius: 9999px;
+    }
+  </style>
+<style data-purpose="map-visual-elements">
+    /* Subtle map contour lines and styling matching OpenStreetMap day style */
+    .map-svg-bg {
+      background-color: #EBF3E8;
+    }
+    .callout-shadow {
+      filter: drop-shadow(0 4px 10px rgba(25, 38, 56, 0.12));
+    }
+  </style>
+<!-- END: Custom CSS Styles -->
+<link rel="stylesheet" href="../../../../feedback/adopted/spot-feedback/preview/stitch-rendered.css"><link rel="stylesheet" href="../../../../feedback/adopted/spot-feedback/preview/interaction.css"><link rel="stylesheet" href="../../../../feedback/adopted/spot-feedback/preview/refinement.css"><link rel="stylesheet" href="../../../../feedback/adopted/spot-feedback/preview/map-form.css"><link rel="stylesheet" href="../../../../feedback/adopted/spot-feedback/preview/editor.css"><link rel="stylesheet" href="revision.css"></head>
+<body>
+<!-- Mobile Container (390x844 iPhone standard) -->
+<div class="relative w-[390px] h-[844px] bg-[#EBF3E8] overflow-hidden flex flex-col shadow-2xl select-none" data-purpose="mobile-screen-viewport" id="phone" data-open="false">
+<!-- BEGIN: TopStatusBar -->
+<!-- Native iOS status bar layout (9:41, Cellular, Wifi, Battery) -->
+<header class="relative z-30 w-full pt-3 px-7 flex justify-between items-center text-slate-800 text-xs font-semibold tracking-tight" data-purpose="ios-status-bar">
+<span>9:41</span>
+<div class="flex items-center space-x-1.5 text-slate-800">
+<!-- Cellular Signal Icon -->
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24">
+<rect height="6" rx="0.8" width="3" x="2" y="16"></rect>
+<rect height="10" rx="0.8" width="3" x="7" y="12"></rect>
+<rect height="15" rx="0.8" width="3" x="12" y="7"></rect>
+<rect height="20" rx="0.8" width="3" x="17" y="2"></rect>
+</svg>
+<!-- Wifi Icon -->
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24">
+<path d="M12 4C7.3 4 3.08 5.8 0 8.75L12 21 24 8.75C20.92 5.8 16.7 4 12 4zm0 3.2c3.8 0 7.23 1.45 9.8 3.84L12 18.9 2.2 11.04C4.77 8.65 8.2 7.2 12 7.2z"></path>
+</svg>
+<!-- Battery Icon -->
+<div class="w-5 h-2.5 border border-slate-700 rounded-sm p-0.5 flex items-center">
+<div class="h-full w-full bg-slate-800 rounded-2xs"></div>
+</div>
+</div>
+</header>
+<!-- END: TopStatusBar -->
+<!-- BEGIN: WeChatMiniProgramHeader -->
+<!-- App title with standard WeChat capsule button on the top-right -->
+<section class="relative z-30 w-full px-5 pt-2 pb-2 flex justify-between items-center" data-purpose="wechat-header-bar">
+<h1 class="text-xl font-bold tracking-tight text-slate-900 font-sans">今晚去观星</h1>
+<!-- WeChat standard pill capsule -->
+<div class="flex items-center h-8 bg-white/90 backdrop-blur-md rounded-full px-3 py-1 border border-black/5 shadow-xs space-x-2.5">
+<!-- More options (3 dots) -->
+<button aria-label="更多操作" class="text-slate-800 hover:opacity-75 focus:outline-none" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<circle cx="5" cy="12" r="2"></circle>
+<circle cx="12" cy="12" r="2"></circle>
+<circle cx="19" cy="12" r="2"></circle>
+</svg>
+</button>
+<!-- Vertical separator -->
+<div class="w-[1px] h-3.5 bg-slate-300"></div>
+<!-- Close mini program (target circle) -->
+<button aria-label="退出小程序" class="text-slate-800 hover:opacity-75 focus:outline-none" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="8"></circle>
+<circle cx="12" cy="12" fill="currentColor" r="2.5"></circle>
+</svg>
+</button>
+</div>
+</section>
+<!-- END: WeChatMiniProgramHeader -->
+<!-- BEGIN: MapCanvasBackground -->
+<!-- Detailed SVG background reproducing daytime OSM map with coastline, terrain & hills -->
+<div class="absolute inset-0 z-0 pointer-events-none" data-purpose="daytime-map-background">
+<svg class="w-full h-full" fill="none" viewbox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+<!-- Main terrain background -->
+<rect fill="#EEF4EC" height="844" width="390"></rect>
+<!-- Soft green vegetation / hill landforms -->
+<ellipse cx="230" cy="190" fill="#E2EEDD" opacity="0.9" rx="90" ry="70"></ellipse>
+<ellipse cx="270" cy="270" fill="#DBE9D5" opacity="0.8" rx="60" ry="55"></ellipse>
+<circle cx="170" cy="130" fill="#E6EFE2" r="85"></circle>
+<ellipse cx="140" cy="225" fill="#E2EEDD" opacity="0.75" rx="100" ry="45"></ellipse>
+<!-- Small lake/reservoir near mountain -->
+<path d="M250,140 C265,135 285,145 286,170 C287,195 272,215 255,210 C245,205 240,185 242,160 Z" fill="#D2E2EE"></path>
+<!-- Coastline water body (lower left to bottom right) -->
+<path d="M-10,265 C70,300 130,360 210,430 C280,490 330,510 400,535 L400,850 L-10,850 Z" fill="#DDEAF4"></path>
+<!-- Road Network - Primary coastal highway (Y268) -->
+<!-- Road base (border) -->
+<path d="M-20,225 C85,255 170,340 260,430 C320,490 360,510 410,525" fill="none" stroke="#F1C280" stroke-linecap="round" stroke-width="5"></path>
+<!-- Road inner white layer -->
+<path d="M-20,225 C85,255 170,340 260,430 C320,490 360,510 410,525" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-width="3"></path>
+<!-- Minor connecting mountain trails -->
+<path d="M100,105 L185,360" opacity="0.85" stroke="#FFFFFF" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M125,120 L155,270" opacity="0.75" stroke="#FFFFFF" stroke-linecap="round" stroke-width="1.8"></path>
+<path d="M210,320 C270,335 340,320 395,315" opacity="0.85" stroke="#FFFFFF" stroke-linecap="round" stroke-width="2"></path>
+<!-- Hill peak labels and spot markings matching the original map -->
+<text fill="#758A78" font-size="10" font-weight="500" x="120" y="150">橘仔铺</text>
+<text fill="#758A78" font-size="9.5" font-weight="500" x="245" y="210">▲扯旗角</text>
+<text fill="#758A78" font-size="9.5" font-weight="500" x="185" y="235">▲座头顶</text>
+<text fill="#758A78" font-size="10" font-weight="500" x="275" y="245">风田</text>
+<text fill="#758A78" font-size="10" font-weight="500" x="335" y="260">大围</text>
+<!-- Road marker tag (Y268) -->
+<g transform="translate(35, 245)">
+<rect fill="#FFFFFF" height="15" rx="3" stroke="#D3DCE4" stroke-width="1" width="36"></rect>
+<text fill="#708292" font-family="sans-serif" font-size="9" font-weight="bold" x="6" y="11">Y268</text>
+</g>
+<!-- OpenStreetMap attribution badge -->
+<g transform="translate(12, 395)">
+<rect fill="rgba(255,255,255,0.78)" height="18" rx="4" width="128"></rect>
+<text fill="#798E9E" font-family="sans-serif" font-size="8.5" x="6" y="12.5">© OpenStreetMap 贡献者</text>
+</g>
+</svg>
+</div>
+<!-- END: MapCanvasBackground -->
+<div class="map-search"><span>⌕</span> 搜索观星点</div><!-- BEGIN: CandidateSpotPinAndTag -->
+<!-- The candidate marker pin & name callout tag placed in visible upper portion of the map -->
+<div class="relative z-10 w-full mt-4 flex flex-col items-center pointer-events-none" data-purpose="stargazing-candidate-marker" id="candidate" style="transform: translate(-28px, 115px);">
+<!-- Callout Bubble -->
+<div class="callout-shadow flex items-center space-x-1.5 bg-slate-900/95 text-white px-2.5 py-1 rounded-full text-xs tracking-wide mb-1 border border-slate-700/50 backdrop-blur-sm pointer-events-auto">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="font-medium text-[11.5px]">东岸观景台</span>
+<svg class="w-3 h-3 text-slate-400" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<!-- Restrained slate teardrop pin (as specified: no star icon, simple teardrop with a clean center dot) -->
+<div class="relative flex flex-col items-center">
+<svg class="w-8 h-9 text-[#2C4156] filter drop-shadow-md" fill="currentColor" viewbox="0 0 24 30">
+<path d="M12 0C5.37 0 0 5.37 0 12C0 19.5 12 30 12 30C12 30 24 19.5 24 12C24 5.37 18.63 0 12 0Z"></path>
+<!-- Inner circle dot -->
+<circle cx="12" cy="11.5" fill="#FFFFFF" r="4.2"></circle>
+<circle cx="12" cy="11.5" fill="#2C4156" r="2.2"></circle>
+</svg>
+<!-- Pin bottom touch point shadow -->
+<div class="w-3 h-1 bg-black/25 rounded-full filter blur-[1px] -mt-0.5"></div>
+</div>
+</div>
+<!-- END: CandidateSpotPinAndTag -->
+<!-- BEGIN: FloatingMapToolButtons -->
+<!-- Stack of floating circular buttons on the right side: Locate, Layers, and Active "+" Add button -->
+<aside class="absolute right-3.5 top-[120px] z-20 flex flex-col space-y-2" data-purpose="floating-map-tools">
+<!-- 1. Locate Crosshair -->
+<div class="w-11 h-11 flex items-center justify-center">
+<button aria-label="定位" class="w-9 h-9 bg-white/95 rounded-full shadow-sm flex items-center justify-center text-slate-700 hover:bg-white active:scale-95 transition-all border border-slate-200/80" type="button">
+<svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="7"></circle>
+<line x1="12" x2="12" y1="2" y2="5"></line>
+<line x1="12" x2="12" y1="19" y2="22"></line>
+<line x1="2" x2="5" y1="12" y2="12"></line>
+<line x1="19" x2="22" y1="12" y2="12"></line>
+<circle cx="12" cy="12" fill="currentColor" r="2"></circle>
+</svg>
+</button>
+</div>
+<!-- 2. Layer Toggle -->
+<div class="w-11 h-11 flex items-center justify-center">
+<button aria-label="图层" class="w-9 h-9 bg-white/95 rounded-full shadow-sm flex items-center justify-center text-slate-700 hover:bg-white active:scale-95 transition-all border border-slate-200/80" type="button">
+<svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linejoin="round"></path>
+<path d="M2 12L12 17L22 12" stroke-linejoin="round"></path>
+<path d="M2 17L12 22L22 17" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- 3. Add Spot Button (Light active state with subtle breath ring, no solid black, no extra dots) -->
+<div class="w-11 h-11 flex items-center justify-center">
+<button aria-label="添加观星点" class="w-9 h-9 bg-white text-slate-800 rounded-full shadow-md flex items-center justify-center border-2 border-slate-800/80 active:scale-95 transition-all ring-2 ring-slate-400/30 animate-pulse" type="button">
+<svg class="w-4 h-4 stroke-slate-900" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<line stroke-linecap="round" x1="12" x2="12" y1="5" y2="19"></line>
+<line stroke-linecap="round" x1="5" x2="19" y1="12" y2="12"></line>
+</svg>
+</button>
+</div>
+</aside>
+<!-- END: FloatingMapToolButtons -->
+<section id="add-sheet" aria-label="新增观星点" data-purpose="add-spot-bottom-sheet">
+<header class="sheet-heading"><h2>新增观星点</h2><p id="save-status" role="status"></p><button type="button" id="close-sheet" aria-label="关闭新增观星点">×</button></header>
+<nav class="chapter-nav" aria-label="表单章节"><button data-chapter="place" aria-current="location">地点</button><button data-chapter="access">到达</button><button data-chapter="facilities">设施</button><button data-chapter="notes">说明</button><i></i></nav><form id="spot-form" autocomplete="off"><div class="form-scroll"><section id="chapter-place" class="chapter place-chapter" aria-label="地点">
+<label class="required-address" for="address">地点地址 <span class="required-mark" aria-hidden="true">*</span></label><div class="address-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 5 5"/></svg><input id="address" name="address" aria-required="true" aria-label="搜索地址" placeholder="搜索地址，确定观星位置" value="东岸观景台"><button id="clear-address" type="button" aria-label="清除地址">×</button></div>
+<div id="address-results" hidden></div><p id="selected-address">滨海 · 东岸观景步道入口</p>
+<label class="field-row"><span>地点名称 <b class="required-mark" aria-hidden="true">*</b></span><input name="name" aria-required="true" aria-label="地点名称" placeholder="给这里起个好认的名字" value="东岸观景台"></label>
+</section><section id="chapter-access" class="chapter"><h3>开放与到达</h3><div class="section-fields"><label class="field-row"><span>开放状态</span><select name="openness" aria-label="开放状态"><option value="">不清楚</option><option>开放</option><option>有条件开放</option><option>不开放</option></select></label><label class="field-row"><span>开放时间</span><input name="hours" aria-label="开放时间" placeholder="如 18:00—次日06:00" value=""></label><label class="field-row"><span>进入规则</span><select name="access" aria-label="进入规则"><option value="">不清楚</option><option>允许进入</option><option>需预约或其他条件</option><option>禁止进入</option></select></label><label class="field-row"><span>进入条件</span><input name="accessNote" aria-label="进入条件" placeholder="预约、门禁或许可方式" value=""></label><label class="field-row"><span>末段道路</span><input name="road" aria-label="末段道路" placeholder="入口、步行距离及路况" value=""></label><label class="field-row"><span>夜间安全</span><input name="safety" aria-label="夜间安全" placeholder="台阶、临水或其他风险" value=""></label></div></section><section id="chapter-facilities" class="chapter"><h3>设施与现场</h3><div class="facility-block"><h4>停车设施</h4><label class="field-row"><span>设施状态</span><select name="parking" aria-label="停车设施"><option value="">不清楚</option><option>有</option><option>没有</option><option>季节性开放</option></select></label><label class="field-row"><span>停车说明</span><input name="parkingNote" aria-label="停车说明" placeholder="距离、数量、费用与时段" value=""></label><div class="media-group"><div id="photo-list-parking" class="photo-list"></div><label class="photo-upload">＋ 添加停车照片<input data-photo-kind="parking" type="file" accept="image/*" multiple hidden></label></div></div><div class="facility-block"><h4>洗手间</h4><label class="field-row"><span>设施状态</span><select name="toilet" aria-label="洗手间"><option value="">不清楚</option><option>有</option><option>没有</option><option>季节性开放</option></select></label><label class="field-row"><span>洗手间说明</span><input name="toiletNote" aria-label="洗手间说明" placeholder="距离、开放时间与使用条件" value=""></label><div class="media-group"><div id="photo-list-toilet" class="photo-list"></div><label class="photo-upload">＋ 添加洗手间照片<input data-photo-kind="toilet" type="file" accept="image/*" multiple hidden></label></div></div><div class="facility-block"><h4>其他场地信息</h4><label class="field-row"><span>观测平台</span><input name="platform" aria-label="观测平台" placeholder="平台位置、地面情况" value=""></label><label class="field-row"><span>视野与遮挡</span><input name="horizon" aria-label="视野与遮挡" placeholder="开阔方向、树木或建筑遮挡" value=""></label><label class="field-row"><span>现场灯光</span><input name="light" aria-label="现场灯光" placeholder="附近路灯等实际情况" value=""></label><label class="field-row"><span>通信与充电</span><input name="signal" aria-label="通信与充电" placeholder="信号、充电设施，不清楚可留空" value=""></label><label class="field-row"><span>露营条件</span><input name="camping" aria-label="露营条件" placeholder="是否允许及限制" value=""></label><label class="field-row"><span>场地联系</span><input name="contact" aria-label="场地联系" placeholder="可公开的管理方联系方式" value=""></label></div></section><section id="chapter-notes" class="chapter evidence"><div class="section-label"><h3>补充说明</h3></div><textarea name="detail" aria-label="补充说明" placeholder="地点特点及注意事项" rows="3"></textarea><div class="media-group"><div id="photo-list-site" class="photo-list"></div><label class="photo-upload">＋ 添加现场照片<input data-photo-kind="site" type="file" accept="image/*" multiple hidden></label></div><label id="photo-rights" hidden><input type="checkbox" name="rights" aria-required="true">我有权使用这些照片 <b class="required-mark" aria-hidden="true">*</b></label><label class="consent"><input type="checkbox" name="consent" aria-required="true">同意提交此位置用于审核 <b class="required-mark" aria-hidden="true">*</b></label><p class="quiet">审核前不公开 · 进度可在「观星点创建与反馈」查看</p><section id="changes"><h3>本次修改</h3><div id="change-list"></div></section></section>
+</div><p id="form-error" role="alert" hidden></p><div class="save-area"><footer class="sheet-actions"><button id="save-draft" type="button">存草稿</button><button id="submit" type="submit">提交审核</button></footer></div></form></section>
+<div id="map-touch" role="region" aria-label="地图，可拖动浏览" tabindex="0"></div><div id="nearby-spots"></div><div id="spot-presentation" hidden><iframe id="spot-frame" title="观星点信息组件" loading="lazy"></iframe></div><div id="layer-demo" hidden><strong>地图图层</strong><button data-layer="light">♧ 光污染</button><button data-layer="cloud">☁ 云量</button><p>图层信息沿用已采用组件，此处仅演示工具栏选中态。</p></div><div id="notifications" aria-live="polite" aria-relevant="additions"></div><div id="loading-overlay" hidden role="status"><div class="loading-pill"><span class="spinner"></span><span>正在提交</span></div></div><span id="busy-status" class="sr-only" role="status"></span>
+
+<!-- BEGIN: BottomNavigationBar -->
+<!-- Mini Program Native Tab Bar ("地图" active, "我的" inactive) and iOS Home Indicator -->
+<nav class="relative z-30 w-full bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-12 pt-2 pb-6 flex flex-col items-center" data-purpose="bottom-tab-bar">
+<div class="w-full flex justify-around items-center">
+<!-- Tab 1: 地图 (Active) -->
+<button class="flex flex-col items-center text-slate-900 group" type="button">
+<svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" stroke-linecap="round" stroke-linejoin="round"></polygon>
+<line x1="8" x2="8" y1="2" y2="18"></line>
+<line x1="16" x2="16" y1="6" y2="22"></line>
+</svg>
+<span class="text-[11px] font-semibold tracking-tight">地图</span>
+</button>
+<!-- Tab 2: 我的 (Inactive) -->
+<button class="flex flex-col items-center text-slate-400 hover:text-slate-600 transition-colors" type="button">
+<svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[11px] font-normal tracking-tight">我的</span>
+</button>
+</div>
+<!-- iOS Home Indicator Bar -->
+<div class="w-32 h-1 bg-slate-900 rounded-full mt-2" data-purpose="ios-home-indicator"></div>
+</nav>
+<!-- END: BottomNavigationBar -->
+</div>
+<dialog id="leave-confirm"><h2>放弃未保存的修改？</h2><p>当前输入尚未保存，离开后将丢弃本次修改。</p><footer><button id="keep-editing">继续编辑</button><button id="discard-editing">放弃修改</button></footer></dialog><script type="module" src="editor.mjs"></script></body></html>

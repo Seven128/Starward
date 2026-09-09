@@ -3,7 +3,7 @@
 ## Project Goal
 
 - Build Starward as the repository for 《今晚去观星》, a mobile-first stargazing trip decision product.
-- Help a user move from “is tonight worth going?” to a safe, practical plan: where to go, when to leave, the best observing window, what may be visible, how to arrive, and how to observe or photograph on site.
+- For the native App, help a user move from “is tonight worth going?” to a safe, practical plan: where to go, when to leave, the best observing window, what may be visible, how to arrive, and how to observe or photograph on site.
 
 ## Non-goals / Boundaries
 
@@ -20,7 +20,7 @@
 
 ## Design Rationale
 
-- Users need a decision and next action before professional data, so the experience uses three layers: conclusion, executable plan, then evidence.
+- Native App uses conclusion, executable plan, then evidence. Mini Program uses objective place/arrival/safety and selected-time astronomy/weather facts plus user-owned plans; it removes combined recommendation presentation and recommendation filters while retaining safety restrictions.
 - Space and time use a shared visual grammar: routes, celestial tracks, horizon arcs, circular nodes, and continuous observing windows.
 - Planning, night-observing, and red-light field modes preserve information architecture so a mode change does not force the user to relearn the workflow.
 - In the native App profile, planning uses cool blue-white surfaces, night uses near-black navy depth with limited blue, and red-light observation is restricted to the six registered black/warm-red values. The Mini Program has its own role-isomorphic day/night/observation values in `DESIGN.md`; neither profile supplies values to the other. Physical/material cues remain concentrated in selected physical subjects rather than every data container.
@@ -56,16 +56,18 @@ When generalizing feedback, identify what problem the user corrected and why the
 
 ## Product / Delivery Brief
 
-- Primary users are people deciding on a same-night stargazing outing, including casual users who need a clear recommendation and experienced users who need professional conditions.
-- Core flow: tonight conclusion → choose main/alternate place → choose departure and observing window → review route/facilities/risk → inspect professional evidence as needed → prepare equipment/checklist → use night or red-light field controls on site.
-- Durable acceptance signals are a clear first-screen recommendation, a continuous place/time/route state, professional data available through progressive disclosure, and mode changes that preserve task position.
+- Native App primary users are people deciding on a same-night stargazing outing, including casual users who need a clear recommendation and experienced users who need professional conditions.
+- Native App core flow: tonight conclusion → choose main/alternate place → choose departure and observing window → review route/facilities/risk → inspect professional evidence as needed → prepare equipment/checklist → use night or red-light field controls on site.
+- Native App durable acceptance signals are a clear first-screen recommendation, a continuous place/time/route state, professional data available through progressive disclosure, and mode changes that preserve task position.
+
+Mini Program acceptance asks whether users can find the relevant trustworthy facts and arrange an executable, revisitable plan. Its discovery filters do not include 今晚推荐 or 最佳窗口时长. Formal restrictions and action checks remain even when combined recommendations are not displayed.
 
 ## Current Release Profile
 
 - Current operating entity: individual.
 - Target public-release operator: an individual industrial and commercial household using the selected trade-name candidate `茂文菲蛋`. The exact registered legal name, address, business scope, unified social credit code and approval are pending external registration; until they are confirmed and the Mini Program subject is changed or migrated through the supported platform route, the current individual profile remains controlling.
 - Current distribution: owner-only, non-commercial personal trial/internal install; no public operation or production app-store claim.
-- External-service ceiling: CNY 200 per month / CNY 2,400 per year. Prefer zero-cost sources only when their personal non-commercial terms, provenance, target-region behavior, and safe degradation are all acceptable.
+- External-service ceiling: native App CNY 200/month; independent Mini Program CNY 350/calendar month excluding application/database IaaS. The Mini Program ceiling supersedes its former 200/300 wording, is not additive, and does not promise complete provider coverage or availability. Prefer zero-cost sources only when their personal non-commercial terms, provenance, target-region behavior, and safe degradation are all acceptable.
 - Budget fit never authorizes a purchase, plan upgrade, second paid source, production traffic, or public redistribution.
 - Preserve every capability required by the current accepted Source in the one current implementation. Proposal labels such as MVP/V1/V2/V3 are provenance and precedence history only: they do not create parallel product paths, and superseded behavior is removed from its existing owner. Capabilities without commercial, legal, store, expert, representative-device, or field evidence stay experimental, unknown, pending, disabled, or truthfully degraded.
 - Keep one active representation of each responsibility. Migrate useful production assets and checks off obsolete prototype inputs before retiring them; an old checker alone does not justify retaining a display package. Git history provides recovery. Confirmed product and design decisions remain in their current owners; ordinary UI changes do not require prototype or handoff synchronization.
@@ -78,7 +80,7 @@ When generalizing feedback, identify what problem the user corrected and why the
 
 - Primary mobile viewport: 390 × 844; important touch targets are at least 44px and fixed actions respect safe areas.
 - Existing native App representative surfaces remain independently owned. The current WeChat Mini Program surface and navigation model is owned by `project_context/areas/main/screen-contracts/wechat-miniapp.md`: Map and My are its only primary destinations; Map owns a dedicated point-search child and the continuous basic-plus-astronomy spot information panel, while `sky/detail` is the only full-sky child route.
-- The first layer answers whether to go and when; the second supplies place, route, arrival, facilities, and risk; the third contains cloud layers, transparency, seeing, light pollution, lunar/solar events, model comparison, and photography details.
+- In the native App, the first layer answers whether to go and when; the second supplies place, route, arrival, facilities, and risk; the third contains cloud layers, transparency, seeing, light pollution, lunar/solar events, model comparison, and photography details.
 - Map marker, place preview, route, and detail screens share one selected-place state. Loading, empty, no-results, stale/degraded, error, and success states must remain distinguishable.
 - Planning, dark, and red-light modes change luminance and emphasis, not navigation ownership or task order.
 - DESIGN.md defines the visual identity, tokens, component appearance, and motion constraints.
@@ -97,8 +99,10 @@ When generalizing feedback, identify what problem the user corrected and why the
 - Product UI uses stable user-facing names without proposal dates, revision numbers or old/new implementation labels. Native App, Mini Program and owner operations retain their independent responsibilities. Static design checks do not establish runtime conformance.
 - A corrective audit found that several existing carriers use fixed responses, process-local state, metadata-only side effects, or declaration-only native boundaries. Those carriers are implementation scaffolding, not completed Outcomes, until variable-input, side-effect, restart-readback, failure-path, and counterfactual checks pass.
 - `docs/technical-data-source-decisions.md` records official-source research and the current individual personal-trial choices. No purchase, production traffic, public redistribution, production account, commercial contract, external approval, representative-device proof, or field validation is declared complete.
-- Current release authority is owner-only, non-commercial personal trial with a CNY 200/month external-service ceiling and qualifying free sources preferred. Future production gates do not block machine-local implementation, but they also cannot be represented as completed evidence.
+- Current release authority is owner-only, non-commercial personal trial with the product-scoped external-service ceilings above and qualifying free sources preferred. Future production gates do not block machine-local implementation, but they also cannot be represented as completed evidence.
 
 ## Next Safe Action
+
+- Apply [cross-stage capability research](../AGENTS.md#cross-stage-capability-research) when shaping or implementing complex product capabilities. Product and technical owners retain the confirmed choices, scope, reasons and unresolved feasibility boundaries; design evidence remains distinct from target-runtime validation.
 
 - Before implementing a product surface, read DESIGN.md and project_context/areas/main.md, identify the owning screen state, and update Context first if the change alters durable responsibility, information architecture, interaction, data, or verification. Treat each Outcome as unfinished until its production entry, real state transition, applicable side effect, restart readback, truthful failure/degradation, and counterfactual evidence all pass.

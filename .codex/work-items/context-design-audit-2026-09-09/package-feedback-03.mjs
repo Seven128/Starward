@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+const root='E:/dev/Starward',base=root+'/docs/design-resources/wechat-miniapp';
+const facts={
+ search:{id:'98442abefddc40eabdcf3c590b9f6024',project:'5585184579244766246',note:'驾车范围重做为轻薄两行：启用项与时间/距离同排，下一行自然数值，不再使用蓝框大卡。44px独立目标与参数确认/取消保留。',prompt:'用户明确不喜欢附图红框的驾车范围：大蓝色外框把一个简单条件堆成标题、模式、数值三层，笨重。沿已采用搜索壳只精修这一区域，保留当前版本。请改成精致轻薄的两行：首行左侧小车图标与「驾车范围」启用项，右侧小巧「时间 / 距离」切换；次行把可编辑180与「分钟以内」排成一条自然读数。取消大蓝底卡片和内部分隔线，数值用克制的小下划线输入或轻底面，不要大输入方框。选中用小星/轻色确认而不是整块边框。视觉紧凑、两行层级清楚，各点击区44px独立。保留启用、时间/路线公里独立参数与确认取消；不删功能不改整页，390×844，一张局部修订可编辑HTML。'},
+ my:{id:'e9db9aabb64f41908354d73cc272d34f',project:'11944978164995734673',note:'进行中与结束时间视觉中心对齐；标签浅雾灰绿，内边距略增，保留玻璃卡和三圆点。',prompt:'以附图当前候选为基准，只精修第一条进行中时间行，保留原稿。用户指出「进行中」与「今天01:30结束」垂直错位，标签仍不够精致，字到边框的内间距要再大一丢丢。请让这一行两个元素视觉中心严格对齐；标签为浅雾灰绿底、低饱和细边、清晰深灰绿文字，四周留白比现在略舒展，轻巧小圆角，字不挤边，不加阴影或高饱和绿。标签和后方时间分出轻层级，整条行保持紧凑。不要改变玻璃卡、SUV、其他条目、居中三圆点和账户区域。390×844，一张精修可编辑HTML。'},
+ sky:{id:'7747b7b6e8e740a9b7ee815ade7f7d10',project:'13823253487989500123',note:'点击具名天体直接打开居中暗色介绍弹窗。织女星展示 NASA 来源介绍；土星/月亮展示介绍暂未收录与已知位置。长内容内部滚动、暖红主题、关闭返回保留。背景所有星点的生产点选与大规模资料读取尚未实现，技术合同已写入 Context。',prompt:'为现有云观星轻标签方向新增一个「点击天体后的居中暗色介绍弹窗」设计，保留所有原稿。用户明确不要底部弹层，要求页面中间弹窗，高级感、暗色调，与黑色星空协调。沿既有天空与日期构图，在真正屏幕中央做适度宽、内容决定高度的深石墨蓝灰浮层，细腻微亮边缘、柔和阴影，背景星空轻度压暗。层级：小巧天体类别「恒星」；名称「织女星」与次要标识「Vega · α Lyrae」；简短介绍区域；两列当前方位/仰角；底部低调资料来源入口；右上44px关闭。示意正文只用「天体介绍按来源资料展示。没有资料时保留已知参数。」不要编造科学参数或生成假天体图片。长正文在弹窗内滚动，屏幕上下有余量，关闭返回原天空/时刻。文字清晰可读，不用巨型标题、饱和蓝发光、大片空白或底部抽屉；不加缩放控件（之前倍率草案未采用）。390×844，一张完整星空上的居中弹窗，可编辑HTML。'},
+ map:{note:'无顶部图片时大尺寸也保留顶部两角；圆角外像素不再穿透为地图关闭。保留此前无闪烁替换与小档下拖不关闭。此项是当前采用几何在用户明确范围内的本地候选修正，沿用既有 Stitch 构图。'}
+};
+for(const [key,v]of Object.entries(facts)){const dir=`${base}/${key}/candidates/context-audit-2026-09-09`;
+ if(v.id){fs.writeFileSync(dir+'/stitch-feedback-03/prompt.txt',v.prompt+'\n');fs.writeFileSync(dir+'/stitch-feedback-03/README.md',`# Stitch 第三轮原稿\n\n项目 [${v.project}](https://stitch.withgoogle.com/projects/${v.project})；输出 ${v.id}。原始 srcdoc 保存为 index.html，未清理生成器运行辅助代码；可运行候选为 ../preview/。生成结果不等于生产验证或采用。\n\n${v.note}\n\n本地整合保留原交互所有权，修正适配和来源；Sky 不继承原稿未经核实的依巴谷来源与参数，将介绍示例明确关联 NASA，位置继续使用既有演算 fixture。\n`);}
+ fs.appendFileSync(dir+'/README.md',`\n## 第三轮审查修订\n\n${v.note}\n\n修改前 preview 存于 before-feedback-03/；新稿仍待用户审查，未改 ADOPTED 或生产。${v.id?'Stitch 来源见 [第三轮原稿](stitch-feedback-03/README.md)。':''}\n`);
+ fs.appendFileSync(dir+'/verification.md',`\n## 第三轮实际检查\n\n${v.note}\n\n在本地设计预览完成 320/375/390/430 宽度检查与截图审视。Search 保留时间/公里参数确认、取消与越界反馈；My 检查 badge/结束时间几何中心；Sky 检查单击、居中、来源/无介绍、长内容滚动、红光和 Escape；Map 检查四宽度无图圆角与角落点击不关闭，并回归上一轮切换/拖动/滚动。未进行 WEAPP 真机、生产资料接口或大星表点选测试。\n`);
+ let html=fs.readFileSync(dir+'/review.html','utf8');html=html.replace('</h1>',`</h1><p><strong>第三轮修订：</strong>${v.note}</p>`);if(key==='sky')html=html.replace('只增加地点轻提示','增加地点轻提示与居中天体介绍').replace('<h1>云观星 · 选定地点</h1>','<h1>云观星 · 地点与天体介绍</h1>');fs.writeFileSync(dir+'/review.html',html);
+}
+const index=base+'/context-audit-2026-09-09.html';let html=fs.readFileSync(index,'utf8');html=html.replace('</h1>','</h1><p>第三轮修订已更新：驾车范围、进行中标签、云观星居中暗色介绍、无图大面板圆角。仍为待审候选。</p>');fs.writeFileSync(index,html);
+fs.appendFileSync(root+'/.codex/work-items/context-design-audit-2026-09-09/FEEDBACK-03.md','\n本地候选与 Context 已修改，四宽度/新增交互检查通过。织女星介绍为 NASA Night Sky Network 页面简短转述，非自动全星表百科。完整验证与交付以 PROGRESS 最新记录为准。\n');
