@@ -4,6 +4,6 @@
   "private": true,
   "description": "Locked minimal CI dependency closure for repository Context checks.",
   "devDependencies": {
-    "project-tiny-context-harness": "0.12.0"
+    "project-tiny-context-harness": "0.12.1"
   }
 }

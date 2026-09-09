@@ -2,7 +2,15 @@
 
 This on-demand subdomain node normatively continues shared manipulation, accessibility, Settings, import, notification and recovery invariants across Mini Program Surfaces.
 
+## Shared observation-time resource
+
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/observation-time/README.md" -->
+
+The [shared date/calendar/ruler resource](../../../../../docs/design-resources/wechat-miniapp/shared/observation-time/README.md) owns the adopted reusable browser composition and demonstrated motion for the consumers linked from current page entries, within those entries' theme/state scope. Date, slicing and commit semantics remain with the relevant Map and Spot/Sky contracts; production uses the existing Taro component and Observation Context owners. Consumer pages follow this shared owner rather than redeclaring the same resource. Its browser implementation is not WEAPP verification.
+
 ## Settings adopted design
+
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/settings/ADOPTED.md" -->
 
 设置采用唯一入口：[设置资源](../../../../../docs/design-resources/wechat-miniapp/settings/ADOPTED.md)。2026-09-08 用户确认：显示模式、位置与隐私、提醒、数据；移除选点偏好及其子页、减少动态效果设置项。保留系统级减少动态效果适配。弹层和蒙层同步进入/退出，关闭时蒙层渐隐露出原页面，页面滚动位置与焦点不跳动；箭头与右侧值垂直居中。产品选择不清除既有账户偏好数据。采用包覆盖三态显示与确认/失败演示，不证明生产代码、微信权限或服务端迁移完成。
 

@@ -1,6 +1,6 @@
 interface:
   display_name: "Starward 设计资源"
-  short_description: "使用 Stitch 生成与修改页面设计，检查真实渲染并交付可编辑资源"
-  default_prompt: "使用 $starward-design-resource，由当前任务模型和档位协调，通过 Stitch 生成或延续已选方向，保留业务与交互，查看真实渲染并交付实际可编辑资源。"
+  short_description: "组合 Tiny Context 设计资源能力与 Starward 设计方法，持续校准项目风格"
+  default_prompt: "使用 $starward-design-resource，组合包内 design-resource 与 Starward 设计原则，通过 Stitch 生成或延续已选方向，检查真实渲染，交付可编辑资源并按现有 owner 校准 Context。"
 policy:
   allow_implicit_invocation: false

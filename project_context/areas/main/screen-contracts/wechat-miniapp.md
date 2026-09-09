@@ -20,6 +20,10 @@
 
 ## Route And Package Ownership
 
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/map/ADOPTED.md" -->
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/search/ADOPTED.md" -->
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/my/ADOPTED.md" -->
+
 - Map's sole adopted resource entry is [current Map design resources](../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). On 2026-09-08 the owner adopted the final small/medium/large formal-spot information component, including basic/astronomy composition, its media/viewer and three bottom actions. Covered visual composition and demonstrated motion must be implemented faithfully; old medium component and historical candidates are superseded. The scope is daytime app-owned UI, not provider geography, fixture facts, unrelated pages/themes or production migration. DESIGN.md §5A.0 resolves shared-rule differences; uncovered states retain their existing owners.
 
 - On 2026-09-08 the owner also adopted Map's daytime layer selector through the same Map resource entry: LIGHT annual nightlight hides time input, TOTAL_CLOUD is labelled 云量 with the common date/calendar/ruler, bulb/cloud icons and exclusive checked cards. The bottom choices remain anchored during content-height transitions; Map layer/spot information is mutually exclusive. The shared ruler continuously settles and supports interruption; its date/calendar follows the sample's local civil date across midnight while retaining the domain night grouping. This replaces the old layer candidates, including their point summary and three-choice layout; production migration remains unverified.
@@ -35,7 +39,7 @@
 
 ## Contract Detail Routing
 
-This path remains the sole canonical adoption record and stable Screen Contract owner. The registered children below are normative continuations of this contract, not separate authorities; read every child whose Surface, Control, state or condition is affected.
+This path is the stable Screen Contract root and owns Map/Search/My adoption. The registered children below own their respective adoption scopes and normative continuations; declare each resource at that owner only, and read every child whose Surface, Control, state or condition is affected.
 
 - [地点详情的信息密度、层级与布局选择](wechat-miniapp/information-design.md)
 - [Five stable Surfaces and complete material Control inventory](wechat-miniapp/surfaces-and-controls.md)

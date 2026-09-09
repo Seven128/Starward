@@ -72,7 +72,7 @@ Exact thresholds and spring parameters are component tokens validated on represe
 ### 4. Preserve Starward Identity
 
 - Use the target product's typography and adopted profile in `DESIGN.md`; native App uses its Inter hierarchy, while Mini Program follows its own profile. Do not substitute one carrier's visual defaults for another's.
-- Use solid or sufficiently opaque Starward surfaces, borders, luminance steps, and restrained elevation. Do not introduce broad blur, glassmorphism, decorative glow, or stacked translucent panels.
+- Apply the target profile's surface, border, luminance and elevation rules. For Mini Program, preserve expressly adopted scoped materials such as My's single glass plan card and pale gradient; these do not authorize glass across other pages. Native App and unrepresented scopes retain their own DESIGN.md restrictions.
 - Planning, night, and red-light modes keep the same task state and interaction grammar. Red-light mode forbids accidental blue/white flashes during press, transition, loading, error, or native handoff. Warn before an unavoidable unthemed OS/vendor surface and provide a safe cancel/return or non-field alternative.
 - Keep motion fast, calm, and explanatory. Delight comes from clarity, continuity, and recovery, not bounce, particles, or ornamental movement.
 - Maps, real place imagery, sky, routes, and decision evidence remain the subject; chrome recedes.
@@ -92,7 +92,7 @@ Share domain state and acceptance behavior, not every platform animation detail.
 - Important targets are at least 44px and retain adequate hit area when visually compact.
 - Every control has a role, name, state/value, logical traversal order, and non-color-only selected/error feedback.
 - Honor system reduced motion. Replace large translation, parallax, depth, repeated motion, and elastic overshoot with static state changes or short fades; do not merely speed them up.
-- Honor reduced transparency where available by using an opaque surface and clear border; Starward's default already avoids glass.
+- Honor reduced transparency where available by using an opaque surface and clear border. Adopted transparent materials retain their meaning through the target profile's opaque alternative.
 - Support text scaling and reflow without clipping key decisions, units, action labels, or Bottom Sheet controls.
 - Announce important asynchronous completion, failure, stale/degraded data, selected-place changes, and safety warnings without flooding the screen reader.
 - Respect Android's recommended accessibility timeout for transient actionable content.

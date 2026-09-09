@@ -4,6 +4,10 @@ This on-demand subdomain node normatively continues `Cross-Control And State Inv
 
 ## 云观星采用资源
 
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/sky/ADOPTED.md" -->
+
+日期与时间尺资源沿用[公共观测时间 owner](shared-state-and-recovery.md#shared-observation-time-resource)及其当前引用；本页不重复声明共享资源。
+
 2026-09-09采用[云观星唯一入口](../../../../../docs/design-resources/wechat-miniapp/sky/ADOPTED.md)。默认轻标签，选中目标的信息卡参考同包焦点态；不是新的方向操作或模式开关。天空占满视口，时间/日期沿用公共组件，跨午夜同步；天体详情仅由点选/列表显式打开。方向未授权、校准、过期/不可用不伪装当前姿态；真实跟随仍由既有平台传感器owner负责。返回所进入的观星点及原上下文，不固定回我的。示例坐标/姿态/天体测量fixture和Web样本不是生产数据或真机精度证明。
 
 ## Cross-Control And State Invariants

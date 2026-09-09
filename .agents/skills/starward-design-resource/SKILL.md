@@ -1,47 +1,34 @@
 ---
 name: starward-design-resource
-description: 为 Starward 使用 Stitch 探索页面风格、生成与局部修改设计候选，检查真实渲染并交付可编辑资源。用于明确的设计资源任务，不用于普通代码修复、后端或发布。
+description: 为 Starward 组合 Tiny Context design-resource 与项目设计方法，使用 Stitch 探索、修改和采用可编辑设计资源，保留项目风格与持续偏好校准。用于设计资源任务，不用于普通实现修复。
 ---
 
 # Starward Design Resource
 
-把普通产品描述和审美偏好转成可编辑、可回看、可继续修改的资源。设计判断由 Agent 补齐，不要求用户提供排版参数，不以固定模板或自评分保证审美。
+这是 Tiny Context `design-resource` 的项目入口，保留 `$starward-design-resource` 的调用方式。用户说使用 design-resource 或要求生成、修改、整理、采用 Starward 设计资源时，也通过此入口组合项目方法。把普通产品描述和审美反馈转成可继续修改的资源；设计判断由 Agent 补齐，不要求用户提供排版参数。
 
-## 执行模型
+## 读取与组合
 
-Codex 协调、需求整理与检查跟随调用任务的实际模型和推理档位，不固定 Astra。视觉生成与修改默认使用 Stitch（用户于 2026-09-07 明确选用）；Stitch 的服务模型不受 Codex 任务设置控制。分别记录 Codex 宿主模型/effort 和 Stitch 可见模式/模型；无法核实时填 `unknown`，不让模型自报补齐。
+1. 从仓库根读取 `project_context/global.md`、manifest 的默认项和本次页面/组件 owner。读取 `project_context/product-profile.md` 的设计质量、概念分工与跨场景一致性原则，根 `DESIGN.md` 的目标平台档案，以及 `project_context/context-maintenance.md` 的设计资源与持续校准两节。精确 tokens 留在 DESIGN，业务/状态留在 Screen Contract，已采用构图留在资源包；本 Skill 不另存风格事实。
+2. 完整读取仓库安装的 [Tiny Context design-resource](../../../node_modules/project-tiny-context-harness/assets/skills/design-resource/SKILL.md)，按任务读取其 Stitch 或 adoption 引用；相对引用以包内 Skill 所在目录解析。通用生成、恢复、保存、交付与采用流程直接使用该能力，不复制一份到本项目。包缺失时明确报告缺少的文件，不声称已读取，也不自动换生成器。
+3. 小程序按 [当前 owner 导航](references/starward-miniapp.md) 找到相关 Screen Contract、当前采用入口、源文件与视觉/动效参考，实际查看适用资源。使用 `.codex/skills/uiux_design/SKILL.md` 中适用于 WEAPP 的交互原则；原生 App 使用自己的档案和 Source，不继承小程序值。
+4. 生成或视觉修订时读 [设计推敲方法](references/design-method.md) 与 [项目 Stitch 补充](references/stitch-route.md)。仅检查、整理或采用已有资源时无需建立生成连接。包内能力与项目扩展只加载一次，反向提及不形成递归读取。
 
-只有明确复做旧 Codex A/B 方法试验时才要求成对调用模型和档位一致。Stitch 与旧 Codex/Figma 路线属于生产路线比较，不声称同模型实验。独立评审或会话隔离如获授权，应继承调用任务设置。
+## 保留的项目体验
 
-## 范围与读取
+- 视觉生成与修改默认由 Stitch 完成。Codex 协调跟随调用任务的实际模型/effort，不固定模型；宿主与 Stitch 服务模型分开，任务需要记录时以实际可见值为准，未知不猜测。
+- 沿用已选方向，把用户普通语言、需要改善的具体区域与明确保留项交给 Stitch。新探索未指定数量时，保留从一屏两个有实质区别方向开始的项目默认；用户指定数量/范围优先，已有方向不重新制造候选。没有修改要求不凑修改轮数。
+- 按 DESIGN.md 小程序 §1.3 与产品 Context 形成正向设计目标：阅读重心、紧凑而可读的层级、恰当材质与图标、连续交互。实际查看有用途的参考区域；不预写一套任意精确字号/圆角/间距，也不把“简洁”降成默认控件或线框壳。同一业务对象沿用可辨认的共同表达。
+- 首次交付包含原请求范围内的精修。按设计方法先看完整真实画面，再修具体比例、层级、密度或交互问题；保存原稿与修订，不以自评分替用户决定审美。可见面与独立命中区分别设计，不靠整体缩小获得密度。
+- 资源留在 `docs/design-resources/`；按用户要求逐页推进。候选、偏好选择和采用范围遵循上游 adoption 与项目维护 owner；拟议的规则差异可留在候选 `proposed-design-delta.md`，不能悄悄覆盖现行要求。已有采用或实现授权直接执行其范围，不重复索取授权。
+- 每次明确反馈、修订或采用后，执行维护 owner 的持续校准：在原 owner 更新有新增事实的原则、偏好、风格或页面决定及范围/原因，并修正相关旧说法。不能只更新资源链接，也不把单页材质自动推广到全产品。无新增事实不制造 Context 修改。
+- 开发遵循 AGENTS 的通用契约及当前采用来源，无需再次调用生成 Skill。采用与生产迁移分别如实报告；升级 skill 不重新采用或重生成现有资源。
 
-先读用户输入、`project_context/global.md`、manifest 所需 owner、根 `DESIGN.md` 的小程序段及当前代码。小程序任务使用项目 `.codex/skills/uiux_design/SKILL.md` 的适用交互原则；不安装 React Native 依赖。首次地图/我的任务按 [starward-miniapp.md](references/starward-miniapp.md) 定位当前职责。
+## 按需下游转换与检查
 
-业务与交互不因视觉探索改变。默认只写本次设计资源与生成脚本；候选差异留在 `proposed-design-delta.md`，用户选定前不改根 DESIGN、生产页面或已采用资产。推荐标为 `recommended-unapproved`。不发布、不采购、不自动公开文件；此 Skill 不管理任务生命周期或建立长期验收工作流。
+只有任务需要 Figma 交付时才读 [Figma runtime](references/figma-runtime.md) 与 [原生资源契约](references/delivery-and-review.md)。保留 Stitch 原稿，验证实际转换结果，不把 HTML 或截图冒充原生节点。
 
-## 执行
-
-1. 建立 `brief.md`：必须保留职责、希望改善的问题、探索范围、设备/素材和外部缺项。记录 HEAD、输入哈希、实际模型/effort 的宿主来源、工具版本；未知为 `unknown`，未知用量为 `null` 并解释。当前截图必须来自当前运行，缺失不能以历史图替代。
-2. 按 [stitch-route.md](references/stitch-route.md) 使用现成官方工具/MCP或已登录网页。先跑通本次所需连接；不开发通用适配器，不以 Figma 探针作为 Stitch 生成前提。
-3. 用 [design-method.md](references/design-method.md) 检查需求和结果，向 Stitch 传达产品职责、普通语言偏好、具体参考区域及用途。专业排版补全交给 Stitch，不预写一套精确字号/圆角/间距让其照抄。已有选中方向时延续它；按 DESIGN.md §1.3 和 Context 的概念分工，从当前任务、适用原则与确认偏好形成设计判断；实际查看相关资源并说明参考用途，不设“已有采用稿完成度”的模糊门槛。新探索默认从一屏两个有实质差别的方向开始，用户数量与范围要求优先。
-4. 保存 Stitch 的完整原稿、实际提示词与参考，再按相同内容视口展示真实渲染。Codex 不先重绘/精修再冒充 Stitch 默认产出；候选名称、说明和装饰展示留在产品画面外。
-5. 用户选定方向后，将普通语言反馈和明确保留项传给 Stitch 做局部修改。新探索默认先验证一次修改；不暗中追加候选。保留修改前后与额外输出，技术失败/重试单记。没有具体修改要求时不凭空制造新一轮。
-6. 有明显价值且在授权范围内再延伸页面或补充状态。范围由当前请求决定，不自动展开旧测试计划中的全主题、全状态矩阵。静态原型不证明真实连续手势和产品交互。
-7. 按 [stitch-route.md](references/stitch-route.md) 交付实际支持的项目链接、原始 HTML/图片或其他可编辑产物，报告业务、可读性与命中区域问题。需要 Figma 时再按 [figma-runtime.md](references/figma-runtime.md) 检查转换，并使用 [delivery-and-review.md](references/delivery-and-review.md) 的 Figma 契约；转换成本单列，不提前承诺原生节点资源。
-
-## 逐页交付与采用
-
-小程序页面资源的保存、权威分工、采用与像素还原规则由 `project_context/context-maintenance.md` 的 `Mini Program Page Design Resources` 节维护。生成、替换或采用小程序资源时必须读取；开发读取义务由项目入口和 Screen Contract 承接，不依赖开发者再次调用本 Skill。
-
-- 资源保存在 `docs/design-resources/`，探索候选与正式采用稿分开；已有用户选中方向时延续它。按用户要求逐页推进，不批量替换尚未确认的页面。
-- 按当前需求交付实际可用的设计源文件、视觉参考、素材与必要的实现说明，明确资源覆盖范围和可复现的比较条件。具体内容从页面 owner 和采用稿推导，不在本 Skill 维护产品检查清单；资源清单、提示词和运行记录不塞进 Context。
-- 在用户确认本页采用且替换已获授权后，将唯一有效资源入口写入所属 Screen Contract，并同步处理 DESIGN.md/Context 中的明确差异，撤掉该页旧入口。未确认候选不能成为开发基准；其他页面与未覆盖状态沿用现有规则。已有采用授权时不重复询问。
-- 反馈、修订与采用同时按 `project_context/context-maintenance.md` 的持续校准规则更新有新增事实的风格偏好和UIUX原则；不只更新资源入口，不把单页选择自动扩大成全局偏好。
-- 资源应足以支持后续开发严格还原和验证；具体检查方法由当前需求、改动与目标运行时决定。复用 AGENTS.md 的 Tiny Context 开发约定与适用实现 Skill，资源生成结果不能证明生产还原。设计采用与生产代码迁移分别如实报告，不因新增此规则直接修改生产页面。
-
-## 本地命令
-
-以下是保留的 Codex/Figma 路线检查器，要求其原生节点契约；不直接用于 Stitch 原始输出，不伪造节点快照来通过。需要该路线时在仓库根目录用 Node 24+：
+以下现有检查器只用于该 Figma 原生资源契约；普通 Stitch 资源不运行它们，也不启动旧 A/B 实验。需要时在仓库根用 Node 24+：
 
 ```text
 node .agents/skills/starward-design-resource/scripts/preflight.mjs <run-directory>
@@ -50,4 +37,4 @@ node .agents/skills/starward-design-resource/scripts/build-review.mjs <run-direc
 node --test .agents/skills/starward-design-resource/tests/*.test.mjs
 ```
 
-检查器只给确定性完整性/几何问题，不给美感通过证明。真实节点树与截图同轮导出；修改后旧截图不可冒充当前。缺少登录、权限、字体或插件时说明具体前提；不换账号、付费绕过、贴整页截图或改名伪造 `.fig`。
+这些工具只检查其声明的完整性/几何契约，不证明审美或生产完成。

@@ -2,7 +2,7 @@
 
 This on-demand subdomain node normatively continues `Cross-Control And State Invariants` for Map, dedicated Search, the spot information panel and shared Observation Context behavior.
 
-The adopted daytime layer composition is reached through the sole [Map resource entry](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). Read its layer-selector package together with the shared observation-time resource before implementing this control.
+The adopted daytime layer composition is reached through the sole [Map resource entry](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). Read its layer-selector package together with the [shared observation-time owner](shared-state-and-recovery.md#shared-observation-time-resource) and its resource before implementing this control.
 
 ## Cross-Control And State Invariants
 
@@ -82,5 +82,10 @@ Each plan supports at most 5 user-created reminders relative to departure; each 
 Astronomical events extend the existing reviewed meteor-event owner rather than create a competing catalog. Event occurrence identity, type, official source/version, occurrence interval/peak and location-projected visibility are distinct. Initial scope: meteor showers, lunar and solar eclipses. An event detail child surface should answer when it occurs locally, whether the selected spot can see it, relevant phases/peak, horizon/direction and moon/darkness constraints, source freshness and genuinely event-specific constraints. Solar observation needs event-specific eye-protection instructions. No matching/local visibility result means unknown/unavailable, not globally visible. Event association is optional and does not silently move a plan date or location. The adopted event list groups concrete occurrences by peak-date month, with a compact date ticket, activity interval and truthful linked/date-overlap state. “认识这场流星雨” and “观测前的小准备” are removed; do not replace them with generic filler advice or fabricated local facts. An unconnected category is unavailable coverage, not an empty universe of events. Source/API support is not yet deployed.
 
 ## Adopted contribution, plan and event resources
+
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/contributions/ADOPTED.md" -->
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/feedback/ADOPTED.md" -->
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/plan/ADOPTED.md" -->
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/events/ADOPTED.md" -->
 
 The sole current [Feedback resource](../../../../../docs/design-resources/wechat-miniapp/feedback/ADOPTED.md) owns the unified new/edit-draft/feedback/frozen form and private draft/pending transitions; it supersedes the old single-local-draft demonstration. The [Plan resource](../../../../../docs/design-resources/wechat-miniapp/plan/ADOPTED.md) owns list/detail/editor and spot/My entry navigation. The [Event resource](../../../../../docs/design-resources/wechat-miniapp/events/ADOPTED.md) owns the shared event list/detail and association child flow. My keeps its existing adopted package with the refined glass material. User adopted these on 2026-09-08. Resource snapshots, source prompts and verification belong in these packages; browser demonstration is not production API, notification, ingestion or WEAPP completion.
