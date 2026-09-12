@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-function runtime() {
+function runtime(bypassOwnershipGuard = false) {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let declaration = "";
   const visit = (node: ts.Node) => {
@@ -13,6 +13,15 @@ function runtime() {
   };
   visit(source);
   assert.ok(declaration);
+  if (bypassOwnershipGuard) {
+    // Test-only mutation of the extracted production callback; source stays intact.
+    const mutated = declaration.replace(
+      /const isCurrentTimeRequest = \(\) => \{[\s\S]*?\n\s*\};/,
+      "const isCurrentTimeRequest = () => true;",
+    );
+    assert.notEqual(mutated, declaration, "the intended ownership guard must be located");
+    declaration = mutated;
+  }
   const activeContext = { contextId: "a", revision: 1, contextFingerprint: "first", selectedAtUtc: "2026-09-06T12:00:00Z" };
   const state = { mapResetVersion: 0, selectedSpotId: "a", observationContext: { ...activeContext } };
   const generation = { current: 0 }, busy = { current: false };
@@ -35,6 +44,12 @@ function runtime() {
   return { commit, state, generation, busy, requests, contexts, notifications, saving };
 }
 
+function assertNoStaleEffects(map: ReturnType<typeof runtime>) {
+  assert.deepEqual(map.contexts, []);
+  assert.deepEqual(map.notifications, []);
+  assert.equal(map.busy.current, false);
+}
+
 test("late time success and failure cannot affect a replaced spot, reset, or context revision", async () => {
   for (const change of ["spot", "reset", "revision", "selection-generation"] as const) {
     for (const failure of [false, true]) {
@@ -47,10 +62,20 @@ test("late time success and failure cannot affect a replaced spot, reset, or con
       if (failure) map.requests[0]!.reject(new Error("late"));
       else map.requests[0]!.resolve({ data: { selectedAtUtc: "late" } });
       await pending;
-      assert.deepEqual(map.contexts, []);
-      assert.deepEqual(map.notifications, []);
-      assert.equal(map.busy.current, false);
+      assertNoStaleEffects(map);
     }
+  }
+});
+
+test("the stale-response regression detects removal of the production ownership guard", async () => {
+  for (const failure of [false, true]) {
+    const map = runtime(true);
+    const pending = map.commit(0);
+    map.state.selectedSpotId = "b";
+    if (failure) map.requests[0]!.reject(new Error("late"));
+    else map.requests[0]!.resolve({ data: { selectedAtUtc: "late" } });
+    await pending;
+    assert.throws(() => assertNoStaleEffects(map), { name: "AssertionError" });
   }
 });
 

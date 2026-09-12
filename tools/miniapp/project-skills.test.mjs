@@ -7,6 +7,16 @@ const repository = path.resolve(import.meta.dirname, "../..");
 
 const definitions = [
   {
+    name: "starward-interaction-design",
+    directory: "uiux_design",
+    requiredReferences: [
+      "project_context/global.md",
+      "project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "project_context/development-workflow/development-feedback.md",
+      "AGENTS.md",
+    ],
+  },
+  {
     name: "starward-wechat-device-verification",
     requiredReferences: [
       "project_context/development-workflow.md",
@@ -28,7 +38,12 @@ const definitions = [
 
 for (const definition of definitions) {
   test(`${definition.name} stays a valid project-local router with live references`, async () => {
-    const skill = path.join(repository, ".codex", "skills", definition.name);
+    const skill = path.join(
+      repository,
+      ".codex",
+      "skills",
+      definition.directory ?? definition.name,
+    );
     const source = await readFile(path.join(skill, "SKILL.md"), "utf8");
     const interfaceYaml = await readFile(
       path.join(skill, "agents", "openai.yaml"),

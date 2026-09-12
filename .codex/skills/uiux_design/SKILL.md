@@ -106,6 +106,8 @@ Share domain state and acceptance behavior, not every platform animation detail.
 
 Select verification for the changed contract, affected consumers and target runtime. For material interaction changes, cover the applicable cases below; unrelated platform matrices are not a prerequisite for a local edit. Explicit project acceptance obligations still apply:
 
+Before a new shared interaction or realization path is copied to more consumers, close one representative result in the actual target runtime. Establish the current authority, the observable result and the responsible owner first. Apply the independent review and repair decisions in AGENTS.md at high-impact reuse and large delivery. Put the actual adopted visuals and runtime output into the reviewer's visual context with the relevant state, viewport and scroll position; use a sequence or recording for motion. A mismatch that would propagate through the shared path is repaired before expansion; unrelated local tuning may continue independently but remains open at delivery.
+
 - tap/press-in/press-out/cancel and rapid repeat;
 - drag slowly, flick, reverse, interrupt mid-settle, release outside bounds, and cancel;
 - scroll/map/system-back gesture competition;
@@ -117,7 +119,7 @@ Select verification for the changed contract, affected consumers and target runt
 - shared-component consumers with different content, media presence, extent or return paths, verifying one behavior owner rather than parallel copies;
 - deterministic tests for state/snap selection and real-device review for physical feel.
 
-Do not claim a fluid interaction from static screenshots, unit tests alone, simulator-only evidence, or a nominal 60 FPS counter.
+Do not claim a fluid interaction from static screenshots, unit tests alone, simulator-only evidence, or a nominal 60 FPS counter. Capture, actual review and the reviewer's conclusion remain distinct; a reviewed result may still be failed, unverified or not comparable. Keep reference, actual observation, difference and next action in the existing task evidence. Optional `miniapp:conformance-review` notes help track explicitly selected files; they neither require a cold DevTools run nor certify fidelity, complete scope or current-candidate acceptance. Physical behavior retains its device evidence requirement.
 
 ## Review Output
 

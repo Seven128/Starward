@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  collectionOutcome,
   assertWechatDevtoolsLoginReady,
   boundWechatProtocol,
   boundedWechatConnect,
@@ -23,6 +24,11 @@ import {
 } from "./run-wechat-devtools-session.mjs";
 
 const required = [{ selector: ".ready", minimum: 1 }];
+
+test("collector outcome reports automated collection without a product verdict", () => {
+  assert.deepEqual(collectionOutcome(true), { status: "collected", collection_status: "passed" });
+  assert.deepEqual(collectionOutcome(false), { status: "failed", collection_status: "failed" });
+});
 
 test("official WechatIDE skill token stays explicit, bounded and out of evidence defaults", () => {
   assert.deepEqual(

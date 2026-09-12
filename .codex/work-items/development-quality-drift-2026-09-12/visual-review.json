@@ -1,0 +1,55 @@
+{
+  "schema_version": "starward-miniapp-review-notes-v2",
+  "scope": "Historical astronomy composition only; not current candidate or motion acceptance",
+  "references": [
+    {
+      "path": "DESIGN.md",
+      "sha256": "46b76846539816c70c86fba3e59e7a58e133f95dcbf5805ed46e29499e27b578"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/ADOPTED.md",
+      "sha256": "2fd0eb09789e958f79fd93459067018fbee4ee667041d1c1d0763f227aa18af2"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md",
+      "sha256": "0fac5bdbbb37465c5a03cea342cfba27ba891f828bb174dacc52009e658946e1"
+    },
+    {
+      "path": "docs/design-resources/wechat-miniapp/map/adopted/spot-information/reference/astronomy-shared.jpg",
+      "sha256": "65b22f2fdb78c840f1dd06429011263ac5ae464d852293cea6742abcda67e90d"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-12T11-45-44-210Z-f418ed5b/01-map-cold-start-location-fallback-spot-panel-astronomy-section.png",
+      "sha256": "293941f55238a207a8243756fc18a8cac425d8dbc95e4c0ce0649fb2aa1121c1"
+    }
+  ],
+  "session": {
+    "path": "artifacts/miniapp/native/runs/wechat-devtools-2026-09-12T11-45-44-210Z-f418ed5b/session.json",
+    "sha256": "51a4dcac2517a4a4a851599c37112a07f4638d20310f521133165f868699acb7"
+  },
+  "reviewer": {
+    "identity": "GPT-6 /root with independent /root/visual_review",
+    "method": "Both reviewers actually viewed the adopted JPG and historical DevTools PNG and checked current adoption scope; independent reviewer received source inputs rather than author conclusions. Coarse composition only: reference encodes 390x843, runtime PNG encodes 192x413 despite logical viewport 390x844/DPR3 metadata. Different dates/data and native system chrome are excluded. No present-candidate, pixel-fidelity or motion inference.",
+    "reviewed_at": "2026-09-12T14:09:34Z"
+  },
+  "observations": [
+    {
+      "claim": "Historical astronomy composition preserves the adopted separation between the date/ruler, moon and weather modules.",
+      "verdict": "failed",
+      "observed": "The reference uses distinct full-width white rounded modules, including a pale inner moon-data area. The historical runtime date/ruler area reads as a continuous gray field with materially weaker module boundaries and inner/outer hierarchy. Independent review agrees. Exact colors, radii and typography cannot be judged from the downscaled runtime PNG.",
+      "reference_paths": ["DESIGN.md", "docs/design-resources/wechat-miniapp/map/ADOPTED.md", "docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md", "docs/design-resources/wechat-miniapp/map/adopted/spot-information/reference/astronomy-shared.jpg"],
+      "evidence_paths": ["artifacts/miniapp/native/runs/wechat-devtools-2026-09-12T11-45-44-210Z-f418ed5b/01-map-cold-start-location-fallback-spot-panel-astronomy-section.png"],
+      "next_action": "For the separately scoped product repair, capture the current candidate at the corresponding astronomy scroll position and logical viewport without downscaling. Inspect the shared card/date-ruler owners, repair confirmed hierarchy deviations and compare again before propagating that implementation. This historical finding is not proof of current candidate state."
+    },
+    {
+      "claim": "Panel handle behavior, action hit regions, cancellation and animation conform on the current target device.",
+      "verdict": "unverified",
+      "observed": "Only a historical static downscaled frame was inspected. A short light-blue mark beside the chapter navigation is visible, but its ownership and motion are unknown. The existing rule makes the header/handle scroll away with the document; it does not require a fixed handle. Button order and color families are visible, but neither hit regions nor motion/results can be established.",
+      "reference_paths": ["DESIGN.md", "docs/design-resources/wechat-miniapp/map/ADOPTED.md"],
+      "evidence_paths": ["artifacts/miniapp/native/runs/wechat-devtools-2026-09-12T11-45-44-210Z-f418ed5b/01-map-cold-start-location-fallback-spot-panel-astronomy-section.png"],
+      "next_action": "During product verification, inspect the mark's actual owner and observe continuous current-candidate scroll/drag and press/cancel/action sequences; acquire physical-device evidence for device-dependent claims. Do not turn the mark hypothesis into a confirmed defect or change the handle contract from convention."
+    }
+  ]
+}

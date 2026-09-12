@@ -7176,8 +7176,14 @@ async function main() {
   const privateMediaRoot = path.join(runRoot, "private-media");
   const startedAt = new Date().toISOString();
   await writeJson(currentEvidencePath, {
-    schema_version: "wechat-devtools-native-session-v2",
+    schema_version: "wechat-devtools-native-session-v3",
     status: "collecting",
+    collection_status: "collecting",
+    product_conformance: {
+      review_state: "unverified",
+      conformance_state: "unverified",
+      reason: "runtime_collection_not_finished",
+    },
     run_id: runId,
     started_at: startedAt,
   });
@@ -7250,8 +7256,9 @@ async function main() {
   };
   process.on("unhandledRejection", captureUnhandledRejection);
   const result = {
-    schema_version: "wechat-devtools-native-session-v2",
+    schema_version: "wechat-devtools-native-session-v3",
     status: "failed",
+    collection_status: "pending",
     run_id: runId,
     session_id: runId,
     started_at: startedAt,
@@ -7312,9 +7319,15 @@ async function main() {
     runner_faults: runnerFaults,
     startup_attempts: startupAttempts,
     limitations: [
-      "This evidence is a local current-candidate WeChat DevTools simulator session, not preview, upload, review, device, or release evidence.",
+      "This collector establishes only its automated runtime assertions and artifact capture. It does not establish that current product, design, interaction, architecture, or device conformance was reviewed.",
       "External provider capabilities that are unavailable remain gated and are not upgraded into live facts by this session.",
     ],
+    product_conformance: {
+      review_state: "unverified",
+      conformance_state: "unverified",
+      reason:
+        "Review actual results against current requirements. Optional miniapp:conformance-review notes organize evidence but do not certify acceptance.",
+    },
     durable_runtime: { status: "pending" },
   };
   const openObservedSession = async (stage) => {
@@ -7955,7 +7968,7 @@ async function main() {
     const journeysPassed = result.journeys.every(
       (journey) => journey.status === "passed",
     );
-    result.status =
+    const collectionPassed =
       journeysPassed &&
       (acceptanceMode === "success" ||
         result.fault_injection?.status === "passed") &&
@@ -7963,9 +7976,8 @@ async function main() {
       unexpectedConsoleErrors.length === 0 &&
       before.sha256 === after.sha256 &&
       result.build.bundle.files_sha256 === bundleAfter.files_sha256
-        ? "passed"
-        : "failed";
-    result.project_session.status = result.status;
+    Object.assign(result, collectionOutcome(collectionPassed));
+    result.project_session.status = result.collection_status;
   } catch (error) {
     capturedError = error;
     if (Array.isArray(apiProcess?.starwardDiagnosticOutput)) {
@@ -7988,6 +8000,7 @@ async function main() {
       stack_sha256: sha256(String(error?.stack ?? "")),
     };
     result.project_session.status = "failed";
+    result.collection_status = "failed";
   }
   const nativeCleanup = await teardownNativeSession({
     miniProgram,
@@ -8069,6 +8082,7 @@ async function main() {
   }
   if (result.cleanup.status !== "passed") {
     result.status = "failed";
+    result.collection_status = "failed";
     result.project_session.status = "failed";
     result.error ??= {
       message: `native_session_teardown_failed:${result.cleanup.failures_sha256}`,
@@ -8077,6 +8091,7 @@ async function main() {
   }
   if (runnerFaults.length > 0) {
     result.status = "failed";
+    result.collection_status = "failed";
     result.error ??= {
       message: `native_runner_unhandled_rejection:${sha256(canonical(runnerFaults))}`,
       stack_sha256: null,
@@ -8094,6 +8109,8 @@ async function main() {
   process.stdout.write(
     `${JSON.stringify({
       status: result.status,
+      collection_status: result.collection_status,
+      product_conformance_status: result.product_conformance.conformance_state,
       run_id: runId,
       evidence: path.relative(root, runEvidencePath).replaceAll("\\", "/"),
       candidate_sha256: result.candidate_after?.sha256 ?? null,
@@ -8103,10 +8120,36 @@ async function main() {
       sky_display_mode: acceptanceDisplayMode,
       fault_injection_status: result.fault_injection?.status ?? null,
       cleanup_status: result.cleanup.status,
+      optional_review_notes:
+        result.collection_status === "passed"
+          ? {
+              command: "npm run miniapp:conformance-review",
+              mode: "prepare",
+              session: path
+                .relative(root, runEvidencePath)
+                .replaceAll("\\", "/"),
+              output: path
+                .relative(root, path.join(runRoot, "conformance-review.json"))
+                .replaceAll("\\", "/"),
+              requires: [
+                "--scope describing only the claims being reviewed",
+                "one or more --authority paths resolved from the current owners",
+                "--evidence paths for the actual references/frames/traces reviewed",
+                "actual review; inspect validates notes, never product acceptance",
+              ],
+            }
+          : null,
     })}\n`,
   );
   if (capturedError) throw capturedError;
-  if (result.status !== "passed") process.exitCode = 1;
+  if (result.collection_status !== "passed") process.exitCode = 1;
+}
+
+export function collectionOutcome(passed) {
+  return {
+    status: passed ? "collected" : "failed",
+    collection_status: passed ? "passed" : "failed",
+  };
 }
 
 export {

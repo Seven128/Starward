@@ -121,3 +121,5 @@ Keep diagnostic-path status separate from product findings. Report exactly these
 - `Cleanup`: owned local resources removed and any user-owned phone/tool action still outstanding
 
 Development feedback must remain labelled `development_feedback`; never report it as passed or accepted. Do not write screenshots, locations, identifiers, run receipts, or issue lists into this Skill or durable Context.
+
+A fresh screenshot or recording is only captured. After evaluating the frame or sequence against the current owner and named runtime conditions, retain the actual verdict, including unverified or failed, with its next action. Phone evidence keeps the device-session binding owned here and its private storage rules. Optional `miniapp:conformance-review` notes may organize repository-safe observations without mandatory dimensions or DevTools prerequisites; they cannot upgrade development feedback or simulator observations into device acceptance.

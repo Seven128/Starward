@@ -17,6 +17,13 @@ This on-demand verification node owns the reserved scope, UI implementation and 
 - Test generated token consistency, meaningful state/interaction behavior and actual layout. Compare real WEAPP output against adopted page references under matching conditions; prototype rendering and frozen-package integrity alone are not product checks.
 - Preserve the independent Mini Program profile; App/Admin tokens and historical HTML are not runtime design inputs.
 
+## Evidence Meaning
+
+- For each material requirement, bind the current authority and expected result to the product or technical owner that can guarantee it, then use evidence capable of failing when the result or boundary is wrong. A representative real-runtime result is required before a new shared UI realization, cross-module path or technical approach is broadly replicated.
+- Keep `captured`, `reviewed`, `passed`, `failed` and `unverified` distinct. A generated screenshot, recording, log, selector/class/text/hash change, mocked response or successful command is evidence input for its declared layer; it cannot imply visual, interaction, product, architecture or device conformance.
+- Initial comparison with a current adopted resource establishes conformance; only a result already reviewed as conforming may become a later regression baseline. Missing comparison remains `unverified`; a known discrepancy remains `failed` until repaired or the current owner is intentionally changed.
+- The current `test:miniapp:native` command is a fail-closed DevTools collector. Collector success means its bound runtime journeys, automated assertions, capture and cleanup succeeded. Review actual evidence at the layer that can establish the obligation: visual comparison and motion sequences, business results through the responsible boundary, or real dependencies and runtime effects. Reuse existing task evidence and checks; optional `miniapp:conformance-review` notes record selected files and scoped observations without DevTools, screenshot or fixed-dimension prerequisites. Record validity, input integrity, candidate applicability and the reviewer's judgment are separate facts. The helper never certifies product acceptance.
+
 ## Ownership And Dependency Direction
 
 - This file is the unique source of truth for cross-layer Mini Program environment and evidence topology. `project_context/context.toml`, `project_context/global.md`, `project_context/architecture.md`, and the main verification index only route readers here; they do not duplicate its rules.
