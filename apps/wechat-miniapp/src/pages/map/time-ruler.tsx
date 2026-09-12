@@ -4,24 +4,26 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { MapSceneTimeFrame } from "@starward/miniapp-contracts";
 import { nearestMapTimeFrameIndex } from "./map-time-frame";
-import { MINIAPP_DESIGN } from "../../theme/design-tokens";
 import { useDidHide } from "@tarojs/taro";
+import type { MoonPhaseKey } from "@starward/miniapp-contracts";
+import { MoonPhaseImage, moonPhaseLabel } from "@/components/moon-phase";
+import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 
 function formatTime(value: string, timezone: string, compact = false) {
   try {
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: timezone,
-      ...(compact ? {} : { month: "2-digit" as const, day: "2-digit" as const }),
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(new Date(value));
+    const instant = new Date(value);
+    const clock = clockTimeInTimezone(instant, timezone);
+    if (compact) return clock;
+    const date = calendarDateInTimezone(instant, timezone);
+    return `${date.slice(5, 7)}/${date.slice(8, 10)} ${clock}`;
   } catch {
     return "时间暂无数据";
   }
 }
 
-const RULER_STEP = MINIAPP_DESIGN.geometry["target-min"];
+// The adopted shared ruler uses a 66px visual cadence. This is wider than
+// the 44px minimum hit target and leaves five primary slices visible at 390px.
+const RULER_STEP = 66;
 
 function rulerPosition(distance: number) {
   // Keep the projection deterministic while the native ScrollView supplies
@@ -49,6 +51,7 @@ export function MapTimeRuler({
   onPreview,
   onCommit,
   onCancel,
+  moonPhases,
   control = "map-time-control",
 }: {
   frames: readonly MapSceneTimeFrame[];
@@ -58,6 +61,7 @@ export function MapTimeRuler({
   onPreview: (index: number) => void;
   onCommit: (index: number) => void;
   onCancel: () => void;
+  moonPhases?: readonly (MoonPhaseKey | null)[];
   control?: "map-time-control" | "sky-time-scrubber";
 }) {
   const initialIndex = frames.length
@@ -125,17 +129,10 @@ export function MapTimeRuler({
   }
 
   return (
-    <View className="map-time-ruler" data-control={control}>
-      <View className="map-time-ruler__heading">
-        <Text className="type-label">观测时间</Text>
-        <Text className="type-caption">
-          {interacting.current && frames[index]
-            ? formatTime(frames[index]!.atUtc, timezone)
-            : selectedAt
-              ? formatTime(selectedAt, timezone)
-              : "时间暂无数据"}
-        </Text>
-      </View>
+    <View
+      className={`map-time-ruler${moonPhases !== undefined ? " map-time-ruler--with-moon" : ""}`}
+      data-control={control}
+    >
       <ScrollView
         className="map-time-ruler__scroll"
         scrollX={!disabled}
@@ -143,7 +140,7 @@ export function MapTimeRuler({
         showScrollbar={false}
         scrollLeft={index * RULER_STEP}
         scrollWithAnimation
-        ariaLabel="观测时间切片；点击切片可直接选择时间"
+        ariaLabel={`观测时间切片；当前${formatTime(selectedAt, timezone)}；点击切片可直接选择时间`}
         onTouchStart={(event) => {
           if (disabled || (event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) {
             cancelInteraction();
@@ -170,7 +167,7 @@ export function MapTimeRuler({
           {frames.map((frame, frameIndex) => {
             const selected = interacting.current ? frameIndex === index : Date.parse(frame.atUtc) === Date.parse(selectedAt);
             const position = rulerPosition(frameIndex - index);
-            const labelled = frameIndex === index || (frameIndex % 4 === 0 && Math.abs(frameIndex - index) >= 3);
+            const phase = moonPhases?.[frameIndex] ?? null;
             const style = {
               "--ruler-scale": String(position.scale),
               "--ruler-opacity": String(position.opacity),
@@ -183,7 +180,7 @@ export function MapTimeRuler({
                 style={style}
                 data-time-index={frameIndex}
                 disabled={disabled}
-                ariaLabel={`${formatTime(frame.atUtc, timezone)}${selected ? "，已选择" : ""}`}
+                ariaLabel={`${formatTime(frame.atUtc, timezone)}${moonPhases !== undefined ? `，${moonPhaseLabel(phase)}` : ""}${selected ? "，已选择" : ""}`}
                 onClick={() => {
                   if (disabled) return;
                   interacting.current = false;
@@ -192,7 +189,10 @@ export function MapTimeRuler({
                 }}
               >
                 <View className="map-time-ruler__tick" aria-hidden="true" />
-                {labelled ? <Text>{formatTime(frame.atUtc, timezone, true)}</Text> : null}
+                <Text>{formatTime(frame.atUtc, timezone, true)}</Text>
+                {moonPhases !== undefined ? (
+                  <MoonPhaseImage phase={phase} className="map-time-ruler__moon" decorative />
+                ) : null}
               </Button>
             );
           })}

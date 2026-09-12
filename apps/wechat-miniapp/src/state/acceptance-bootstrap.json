@@ -30,8 +30,6 @@
   "observationContext": null,
   "analysisOverlay": "NONE",
   "committedFilters": {
-    "TONIGHT_RECOMMENDED": [],
-    "BEST_WINDOW_DURATION": [],
     "DISTANCE_DRIVE_TIME": [],
     "LIGHT_POLLUTION": [],
     "LESS_CLOUD": [],
@@ -47,7 +45,12 @@
     "SIGNAL": [],
     "CHARGING": [],
     "OPEN_SKY_DIRECTION": [],
-    "LAST_VERIFIED_AT": []
+    "LAST_VERIFIED_AT": [],
+    "drivingRange": {
+      "mode": "TIME",
+      "maxMinutes": 180,
+      "maxDistanceKm": 100
+    }
   },
   "selectedSpotId": null,
   "searchHistory": [],

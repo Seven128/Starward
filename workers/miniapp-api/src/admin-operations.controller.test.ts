@@ -10,6 +10,7 @@ import {
 import { AppModule } from "./app.module.ts";
 import { AdminOperationsController } from "./admin-operations.controller.ts";
 import { AdminPublicationController } from "./admin-publication.controller.ts";
+import { AdminEventCatalogController } from "./admin-event-catalog.controller.ts";
 import { assertAdminOperation } from "./admin-auth.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
 
@@ -19,7 +20,7 @@ const METHOD_NAMES = new Map<number, string>([
 ]);
 
 function routes() {
-  return [AdminOperationsController, AdminPublicationController]
+  return [AdminOperationsController, AdminPublicationController, AdminEventCatalogController]
     .flatMap((controller) => {
       const root = Reflect.getMetadata(PATH_METADATA, controller) as string;
       const prototype = controller.prototype as unknown as Record<
@@ -55,6 +56,12 @@ test("Operations controller exposes every required high-impact endpoint", () => 
     "POST /v2/admin/spots/:spotId/replace",
     "POST /v2/admin/spots/:spotId/retire",
     "GET /v2/admin/receipts/:receiptId",
+    "POST /v2/admin/event-catalog/sources/:sourceId",
+    "POST /v2/admin/event-catalog/imports",
+    "POST /v2/admin/event-catalog/candidates/:candidateId/review",
+    "POST /v2/admin/event-catalog/candidates/:candidateId/publish",
+    "POST /v2/admin/event-catalog/rollback/:catalogVersion",
+    "POST /v2/admin/event-catalog/sources/:sourceId/retrieve",
   ])
     assert.ok(actual.includes(expected), `missing ${expected}`);
 });
@@ -66,6 +73,7 @@ test("Operations controller is registered in the production module", () => {
   ) as readonly Function[];
   assert.ok(controllers.includes(AdminOperationsController));
   assert.ok(controllers.includes(AdminPublicationController));
+  assert.ok(controllers.includes(AdminEventCatalogController));
 });
 
 test("admin RBAC fails closed in production and denies unauthorized operations", () => {

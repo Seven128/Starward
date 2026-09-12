@@ -1,0 +1,1638 @@
+{
+  "ok": true,
+  "tool": "automation_page_action",
+  "clientName": "Codex",
+  "result": {
+    "success": true,
+    "data": {
+      "root": {
+        "cn": [
+          {
+            "nn": "3",
+            "sid": "_Ak",
+            "cn": [
+              {
+                "nn": "6",
+                "sid": "_AG",
+                "ariaLabel": "全局通知",
+                "cn": [],
+                "cl": "notification-host"
+              },
+              {
+                "nn": "f1t0",
+                "sid": "_AH",
+                "cn": [],
+                "p7": true,
+                "p2": 1,
+                "p8": 1,
+                "p3": false,
+                "p6": false,
+                "p0": false
+              },
+              {
+                "nn": "3",
+                "sid": "_Ae",
+                "cn": [
+                  {
+                    "nn": "3",
+                    "sid": "_Ad",
+                    "cn": [
+                      {
+                        "nn": "f1t1",
+                        "sid": "_AI",
+                        "cn": [],
+                        "p14": 22.43123439369165,
+                        "p16": 114.30123366838342,
+                        "p23": 14,
+                        "p17": [
+                          {
+                            "id": 99999,
+                            "latitude": 22.43123439369165,
+                            "longitude": 114.30123366838342,
+                            "iconPath": "/assets/icons/draft-marker.png",
+                            "width": 32,
+                            "height": 36,
+                            "anchor": {
+                              "x": 0.5,
+                              "y": 1
+                            },
+                            "alpha": 0.96,
+                            "label": {
+                              "content": "东岸观景台",
+                              "color": "#30343a",
+                              "fontSize": 10,
+                              "bgColor": "#ffffff",
+                              "borderColor": "#9aa1a9",
+                              "borderWidth": 1,
+                              "borderRadius": 10,
+                              "padding": 5,
+                              "anchorX": 0,
+                              "anchorY": -40,
+                              "textAlign": "center"
+                            },
+                            "ariaLabel": "东岸观景台，当前候选位置"
+                          }
+                        ],
+                        "p20": [],
+                        "p26": false,
+                        "p8": false,
+                        "p6": false
+                      },
+                      {
+                        "nn": "6",
+                        "sid": "_AL",
+                        "ariaHidden": "true",
+                        "cn": [
+                          {
+                            "nn": "5",
+                            "sid": "_AK",
+                            "cn": [
+                              {
+                                "sid": "_AJ",
+                                "v": "今晚去观星",
+                                "nn": "9"
+                              }
+                            ]
+                          }
+                        ],
+                        "cl": "map-app-title"
+                      },
+                      {
+                        "nn": "3",
+                        "sid": "_AQ",
+                        "cn": [
+                          {
+                            "nn": "f1t2",
+                            "sid": "_AP",
+                            "ariaLabel": "搜索地点、区域或正式观星点",
+                            "cn": [
+                              {
+                                "nn": "6",
+                                "sid": "_AM",
+                                "ariaHidden": true,
+                                "cn": [],
+                                "cl": "semantic-icon semantic-icon--search semantic-icon--day "
+                              },
+                              {
+                                "nn": "5",
+                                "sid": "_AO",
+                                "cn": [
+                                  {
+                                    "sid": "_AN",
+                                    "v": "搜地点 / 区域 / 观星点",
+                                    "nn": "9"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "cl": "map-search-anchor"
+                      },
+                      {
+                        "nn": "6",
+                        "sid": "_AY",
+                        "ariaLabel": "地图工具",
+                        "cn": [
+                          {
+                            "nn": "14",
+                            "sid": "_AS",
+                            "ariaLabel": "请求一次性定位",
+                            "cn": [
+                              {
+                                "nn": "6",
+                                "sid": "_AR",
+                                "ariaHidden": true,
+                                "cn": [],
+                                "cl": "semantic-icon semantic-icon--location semantic-icon--day "
+                              }
+                            ],
+                            "cl": "map-tool map-tool--location focus-ring",
+                            "p2": false
+                          },
+                          {
+                            "nn": "14",
+                            "sid": "_AU",
+                            "ariaLabel": "打开地图图层，当前云量",
+                            "ariaPressed": false,
+                            "cn": [
+                              {
+                                "nn": "6",
+                                "sid": "_AT",
+                                "ariaHidden": true,
+                                "cn": [],
+                                "cl": "semantic-icon semantic-icon--layers semantic-icon--day "
+                              }
+                            ],
+                            "cl": "map-tool map-tool--layer focus-ring"
+                          },
+                          {
+                            "nn": "14",
+                            "sid": "_AX",
+                            "ariaLabel": "新增观星点",
+                            "cn": [
+                              {
+                                "nn": "5",
+                                "sid": "_AW",
+                                "ariaHidden": true,
+                                "cn": [
+                                  {
+                                    "sid": "_AV",
+                                    "v": "＋",
+                                    "nn": "9"
+                                  }
+                                ],
+                                "cl": "map-tool__plus"
+                              }
+                            ],
+                            "cl": "map-tool map-tool--add focus-ring"
+                          }
+                        ],
+                        "cl": "map-top-tools"
+                      },
+                      {
+                        "nn": "3",
+                        "sid": "_Ac",
+                        "cn": [
+                          {
+                            "nn": "6",
+                            "sid": "_Ab",
+                            "role": "status",
+                            "ariaLive": "polite",
+                            "cn": [
+                              {
+                                "nn": "5",
+                                "sid": "_An",
+                                "cn": [
+                                  {
+                                    "sid": "_Am",
+                                    "v": "暂无结果",
+                                    "nn": "9"
+                                  }
+                                ],
+                                "cl": "type-label"
+                              },
+                              {
+                                "nn": "5",
+                                "sid": "_Aa",
+                                "cn": [
+                                  {
+                                    "sid": "_AZ",
+                                    "v": "当前区域的观星点仍在核验道路、停车和夜间安全，完成后会在这里显示。",
+                                    "nn": "9"
+                                  }
+                                ],
+                                "cl": "type-caption"
+                              }
+                            ],
+                            "cl": "status-panel status-panel--empty"
+                          }
+                        ],
+                        "cl": "map-feedback-column"
+                      },
+                      {
+                        "nn": "1",
+                        "sid": "_Ej",
+                        "cn": [
+                          {
+                            "nn": "3",
+                            "sid": "_Ei",
+                            "cn": [
+                              {
+                                "nn": "3",
+                                "sid": "_Au",
+                                "cn": [
+                                  {
+                                    "nn": "5",
+                                    "sid": "_Ap",
+                                    "cn": [
+                                      {
+                                        "sid": "_Ao",
+                                        "v": "新增观星点",
+                                        "nn": "9"
+                                      }
+                                    ],
+                                    "cl": "type-section"
+                                  },
+                                  {
+                                    "nn": "5",
+                                    "sid": "_Ar",
+                                    "cn": [
+                                      {
+                                        "sid": "_Aq",
+                                        "v": "尚未保存",
+                                        "nn": "9"
+                                      }
+                                    ],
+                                    "cl": "contribution-editor-save-state"
+                                  },
+                                  {
+                                    "nn": "14",
+                                    "sid": "_At",
+                                    "ariaLabel": "关闭新增观星点",
+                                    "cn": [
+                                      {
+                                        "sid": "_As",
+                                        "v": "×",
+                                        "nn": "9"
+                                      }
+                                    ],
+                                    "cl": "contribution-editor-close focus-ring"
+                                  }
+                                ],
+                                "cl": "contribution-editor-header"
+                              },
+                              {
+                                "nn": "6",
+                                "sid": "_BE",
+                                "role": "tablist",
+                                "ariaLabel": "新增地点章节",
+                                "cn": [
+                                  {
+                                    "nn": "14",
+                                    "sid": "_Aw",
+                                    "ariaPressed": true,
+                                    "cn": [
+                                      {
+                                        "sid": "_Av",
+                                        "v": "地点",
+                                        "nn": "9"
+                                      }
+                                    ],
+                                    "cl": "is-active"
+                                  },
+                                  {
+                                    "nn": "14",
+                                    "sid": "_Ay",
+                                    "ariaPressed": false,
+                                    "cn": [
+                                      {
+                                        "sid": "_Ax",
+                                        "v": "到达",
+                                        "nn": "9"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "nn": "14",
+                                    "sid": "_BA",
+                                    "ariaPressed": false,
+                                    "cn": [
+                                      {
+                                        "sid": "_Az",
+                                        "v": "设施",
+                                        "nn": "9"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "nn": "14",
+                                    "sid": "_BC",
+                                    "ariaPressed": false,
+                                    "cn": [
+                                      {
+                                        "sid": "_BB",
+                                        "v": "说明",
+                                        "nn": "9"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "nn": "3",
+                                    "sid": "_BD",
+                                    "cn": [],
+                                    "cl": "formal-feedback-tabs__line",
+                                    "st": "left: 0%;"
+                                  }
+                                ],
+                                "cl": "formal-feedback-tabs contribution-document-tabs"
+                              },
+                              {
+                                "nn": "66",
+                                "sid": "_EZ",
+                                "cn": [
+                                  {
+                                    "nn": "3",
+                                    "sid": "_EY",
+                                    "cn": [
+                                      {
+                                        "nn": "3",
+                                        "sid": "_EX",
+                                        "uid": "feedback-location",
+                                        "cn": [
+                                          {
+                                            "nn": "3",
+                                            "sid": "_BX",
+                                            "uid": "formal-feedback-place",
+                                            "cn": [
+                                              {
+                                                "nn": "3",
+                                                "sid": "_BO",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_BI",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_BF",
+                                                        "v": "地点地址 ",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "nn": "5",
+                                                        "sid": "_BH",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_BG",
+                                                            "v": "*",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "cl": "formal-feedback-required"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "14",
+                                                    "sid": "_BN",
+                                                    "ariaLabel": "搜索地址，确定观星位置",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "5",
+                                                        "sid": "_BK",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_BJ",
+                                                            "v": "滨海 · 东岸观景步道入口",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "cl": ""
+                                                      },
+                                                      {
+                                                        "nn": "5",
+                                                        "sid": "_BM",
+                                                        "ariaHidden": "true",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_BL",
+                                                            "v": "⌖",
+                                                            "nn": "9"
+                                                          }
+                                                        ]
+                                                      }
+                                                    ],
+                                                    "cl": "contribution-address-picker focus-ring",
+                                                    "p2": false
+                                                  }
+                                                ],
+                                                "cl": "contribution-document-address contribution-address-group"
+                                              },
+                                              {
+                                                "nn": "5",
+                                                "sid": "_BQ",
+                                                "cn": [
+                                                  {
+                                                    "sid": "_BP",
+                                                    "v": "滨海 · 东岸观景步道入口",
+                                                    "nn": "9"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-address-copy"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_BW",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_BU",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_BR",
+                                                        "v": "地点名称",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "nn": "5",
+                                                        "sid": "_BT",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_BS",
+                                                            "v": " *",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "cl": "formal-feedback-required"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_BV",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "东岸观景台",
+                                                    "p10": 300,
+                                                    "p13": "地点名称"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--name"
+                                              }
+                                            ],
+                                            "cl": "formal-feedback-section"
+                                          },
+                                          {
+                                            "nn": "3",
+                                            "sid": "_CO",
+                                            "uid": "formal-feedback-access",
+                                            "cn": [
+                                              {
+                                                "nn": "5",
+                                                "sid": "_BZ",
+                                                "cn": [
+                                                  {
+                                                    "sid": "_BY",
+                                                    "v": "开放与到达",
+                                                    "nn": "9"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-section-title"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Bl",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Bb",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Ba",
+                                                        "v": "开放状态",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_Bk",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bd",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Bc",
+                                                            "v": "不清楚",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "cl": "is-selected",
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bf",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Be",
+                                                            "v": "开放",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bh",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Bg",
+                                                            "v": "有条件开放",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bj",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Bi",
+                                                            "v": "不开放",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-choices"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--openness"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Bp",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Bn",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Bm",
+                                                        "v": "开放时间",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_Bo",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "如 18:00—次日06:00"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--hours"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_CB",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Br",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Bq",
+                                                        "v": "进入规则",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_CA",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bt",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Bs",
+                                                            "v": "不清楚",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "cl": "is-selected",
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bv",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Bu",
+                                                            "v": "允许进入",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bx",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Bw",
+                                                            "v": "需预约或其他条件",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Bz",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_By",
+                                                            "v": "禁止进入",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-choices"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--access"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_CF",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_CD",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_CC",
+                                                        "v": "进入条件",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_CE",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "预约、门禁或许可方式"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--accessNote"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_CJ",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_CH",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_CG",
+                                                        "v": "末段道路",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_CI",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "入口、步行距离及路况"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--road"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_CN",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_CL",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_CK",
+                                                        "v": "夜间安全",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_CM",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "台阶、临水或其他风险"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--safety"
+                                              }
+                                            ],
+                                            "cl": "formal-feedback-section"
+                                          },
+                                          {
+                                            "nn": "3",
+                                            "sid": "_Dn",
+                                            "uid": "formal-feedback-facilities",
+                                            "cn": [
+                                              {
+                                                "nn": "5",
+                                                "sid": "_CQ",
+                                                "cn": [
+                                                  {
+                                                    "sid": "_CP",
+                                                    "v": "设施与现场",
+                                                    "nn": "9"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-section-title"
+                                              },
+                                              {
+                                                "nn": "5",
+                                                "sid": "_CS",
+                                                "cn": [
+                                                  {
+                                                    "sid": "_CR",
+                                                    "v": "停车设施",
+                                                    "nn": "9"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-subtitle"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Ce",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_CU",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_CT",
+                                                        "v": "设施状态",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_Cd",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_CW",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_CV",
+                                                            "v": "不清楚",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "cl": "is-selected",
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_CY",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_CX",
+                                                            "v": "有",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Ca",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_CZ",
+                                                            "v": "没有",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Cc",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Cb",
+                                                            "v": "季节性开放",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-choices"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--parking"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Ci",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Cg",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Cf",
+                                                        "v": "停车说明",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_Ch",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "距离、数量、费用与时段"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--parkingNote"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Co",
+                                                "cn": [
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_Cj",
+                                                    "cn": [],
+                                                    "cl": "formal-feedback-photo-list"
+                                                  },
+                                                  {
+                                                    "nn": "14",
+                                                    "sid": "_Cn",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Ck",
+                                                        "v": "＋ 添加",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "sid": "_Cl",
+                                                        "v": "停车",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "sid": "_Cm",
+                                                        "v": "照片",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-photo-action",
+                                                    "p2": false
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-photo-group"
+                                              },
+                                              {
+                                                "nn": "5",
+                                                "sid": "_Cq",
+                                                "cn": [
+                                                  {
+                                                    "sid": "_Cp",
+                                                    "v": "洗手间",
+                                                    "nn": "9"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-subtitle"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_DC",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Cs",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Cr",
+                                                        "v": "设施状态",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_DB",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Cu",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Ct",
+                                                            "v": "不清楚",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "cl": "is-selected",
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Cw",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Cv",
+                                                            "v": "有",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_Cy",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Cx",
+                                                            "v": "没有",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      },
+                                                      {
+                                                        "nn": "14",
+                                                        "sid": "_DA",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_Cz",
+                                                            "v": "季节性开放",
+                                                            "nn": "9"
+                                                          }
+                                                        ],
+                                                        "p2": false
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-choices"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--toilet"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_DG",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_DE",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_DD",
+                                                        "v": "洗手间说明",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_DF",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "距离、开放时间与使用条件"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--toiletNote"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_DM",
+                                                "cn": [
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_DH",
+                                                    "cn": [],
+                                                    "cl": "formal-feedback-photo-list"
+                                                  },
+                                                  {
+                                                    "nn": "14",
+                                                    "sid": "_DL",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_DI",
+                                                        "v": "＋ 添加",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "sid": "_DJ",
+                                                        "v": "洗手间",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "sid": "_DK",
+                                                        "v": "照片",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-photo-action",
+                                                    "p2": false
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-photo-group"
+                                              },
+                                              {
+                                                "nn": "5",
+                                                "sid": "_DO",
+                                                "cn": [
+                                                  {
+                                                    "sid": "_DN",
+                                                    "v": "其他场地信息",
+                                                    "nn": "9"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-subtitle"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_DS",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_DQ",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_DP",
+                                                        "v": "观测平台",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_DR",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "平台位置、地面情况"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--platform"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_DW",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_DU",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_DT",
+                                                        "v": "视野与遮挡",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_DV",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "开阔方向、树木或建筑遮挡"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--horizon"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Da",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_DY",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_DX",
+                                                        "v": "现场灯光",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_DZ",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "附近路灯等实际情况"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--light"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_De",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Dc",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Db",
+                                                        "v": "通信与充电",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_Dd",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "信号、充电设施，不清楚可留空"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--signal"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Di",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Dg",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Df",
+                                                        "v": "露营条件",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_Dh",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "是否允许及限制"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--camping"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Dm",
+                                                "cn": [
+                                                  {
+                                                    "nn": "5",
+                                                    "sid": "_Dk",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Dj",
+                                                        "v": "场地联系",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-field__label"
+                                                  },
+                                                  {
+                                                    "nn": "33",
+                                                    "sid": "_Dl",
+                                                    "cn": [],
+                                                    "p8": false,
+                                                    "p25": "",
+                                                    "p10": 300,
+                                                    "p13": "可公开的管理方联系方式"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-field formal-feedback-field--contact"
+                                              }
+                                            ],
+                                            "cl": "formal-feedback-section"
+                                          },
+                                          {
+                                            "nn": "3",
+                                            "sid": "_EW",
+                                            "uid": "formal-feedback-notes",
+                                            "cn": [
+                                              {
+                                                "nn": "5",
+                                                "sid": "_Dp",
+                                                "cn": [
+                                                  {
+                                                    "sid": "_Do",
+                                                    "v": "补充说明",
+                                                    "nn": "9"
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-section-title"
+                                              },
+                                              {
+                                                "nn": "79",
+                                                "sid": "_Dq",
+                                                "cn": [],
+                                                "cl": "formal-feedback-textarea",
+                                                "p9": false,
+                                                "p20": "",
+                                                "p12": 2000,
+                                                "p14": "地点特点及注意事项"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_Dw",
+                                                "cn": [
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_Dr",
+                                                    "cn": [],
+                                                    "cl": "formal-feedback-photo-list"
+                                                  },
+                                                  {
+                                                    "nn": "14",
+                                                    "sid": "_Dv",
+                                                    "cn": [
+                                                      {
+                                                        "sid": "_Ds",
+                                                        "v": "＋ 添加",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "sid": "_Dt",
+                                                        "v": "现场",
+                                                        "nn": "9"
+                                                      },
+                                                      {
+                                                        "sid": "_Du",
+                                                        "v": "照片",
+                                                        "nn": "9"
+                                                      }
+                                                    ],
+                                                    "cl": "formal-feedback-photo-action",
+                                                    "p2": false
+                                                  }
+                                                ],
+                                                "cl": "formal-feedback-photo-group"
+                                              },
+                                              {
+                                                "nn": "3",
+                                                "sid": "_EV",
+                                                "cn": [
+                                                  {
+                                                    "nn": "3",
+                                                    "sid": "_EF",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "3",
+                                                        "sid": "_EA",
+                                                        "cn": [
+                                                          {
+                                                            "nn": "5",
+                                                            "sid": "_Dy",
+                                                            "cn": [
+                                                              {
+                                                                "sid": "_Dx",
+                                                                "v": "纬度",
+                                                                "nn": "9"
+                                                              }
+                                                            ],
+                                                            "cl": "type-label"
+                                                          },
+                                                          {
+                                                            "nn": "33",
+                                                            "sid": "_Dz",
+                                                            "uid": "contribution-candidate-latitude",
+                                                            "focus": false,
+                                                            "cn": [],
+                                                            "cl": "field contribution-candidate-latitude",
+                                                            "p8": false,
+                                                            "p24": "digit",
+                                                            "p25": "22.434061",
+                                                            "p13": "22.000000"
+                                                          }
+                                                        ],
+                                                        "cl": "form-group"
+                                                      },
+                                                      {
+                                                        "nn": "3",
+                                                        "sid": "_EE",
+                                                        "cn": [
+                                                          {
+                                                            "nn": "5",
+                                                            "sid": "_EC",
+                                                            "cn": [
+                                                              {
+                                                                "sid": "_EB",
+                                                                "v": "经度",
+                                                                "nn": "9"
+                                                              }
+                                                            ],
+                                                            "cl": "type-label"
+                                                          },
+                                                          {
+                                                            "nn": "33",
+                                                            "sid": "_ED",
+                                                            "uid": "contribution-candidate-longitude",
+                                                            "focus": false,
+                                                            "cn": [],
+                                                            "cl": "field contribution-candidate-longitude",
+                                                            "p8": false,
+                                                            "p24": "digit",
+                                                            "p25": "114.296404",
+                                                            "p13": "114.000000"
+                                                          }
+                                                        ],
+                                                        "cl": "form-group"
+                                                      }
+                                                    ],
+                                                    "cl": "contribution-coordinate-grid"
+                                                  },
+                                                  {
+                                                    "nn": "14",
+                                                    "sid": "_EI",
+                                                    "ariaLabel": "使用一次当前位置",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "5",
+                                                        "sid": "_EH",
+                                                        "cn": [
+                                                          {
+                                                            "sid": "_EG",
+                                                            "v": "使用一次当前位置",
+                                                            "nn": "9"
+                                                          }
+                                                        ]
+                                                      }
+                                                    ],
+                                                    "cl": "soft-button soft-button--default focus-ring ",
+                                                    "p2": false
+                                                  },
+                                                  {
+                                                    "nn": "f4t0",
+                                                    "sid": "_EU",
+                                                    "uid": "contribution-coordinate-consent",
+                                                    "ariaLabel": "同意提交该精确坐标，未同意，点击已同意",
+                                                    "cn": [
+                                                      {
+                                                        "nn": "13",
+                                                        "sid": "_EJ",
+                                                        "cn": []
+                                                      },
+                                                      {
+                                                        "nn": "3",
+                                                        "sid": "_EO",
+                                                        "cn": [
+                                                          {
+                                                            "nn": "5",
+                                                            "sid": "_EL",
+                                                            "cn": [
+                                                              {
+                                                                "sid": "_EK",
+                                                                "v": "同意提交该精确坐标",
+                                                                "nn": "9"
+                                                              }
+                                                            ]
+                                                          },
+                                                          {
+                                                            "nn": "5",
+                                                            "sid": "_EN",
+                                                            "compileIf": "审核前不公开；敏感地点可转为模糊或隐藏坐标",
+                                                            "cn": [
+                                                              {
+                                                                "sid": "_EM",
+                                                                "v": "审核前不公开；敏感地点可转为模糊或隐藏坐标",
+                                                                "nn": "9"
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      },
+                                                      {
+                                                        "nn": "3",
+                                                        "sid": "_ET",
+                                                        "cn": [
+                                                          {
+                                                            "nn": "5",
+                                                            "sid": "_ES",
+                                                            "cn": [
+                                                              {
+                                                                "nn": "13",
+                                                                "sid": "_ER",
+                                                                "compileIf": {
+                                                                  "checked": "已同意",
+                                                                  "unchecked": "未同意"
+                                                                },
+                                                                "cn": [
+                                                                  {
+                                                                    "nn": "13",
+                                                                    "sid": "_EQ",
+                                                                    "cn": [
+                                                                      {
+                                                                        "sid": "_EP",
+                                                                        "v": "未同意",
+                                                                        "nn": "9"
+                                                                      }
+                                                                    ]
+                                                                  }
+                                                                ]
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      }
+                                                    ],
+                                                    "cl": "toggle-field setting-row focus-ring",
+                                                    "p2": false,
+                                                    "p5": 0,
+                                                    "p6": 0
+                                                  }
+                                                ],
+                                                "cl": "contribution-candidate-coordinate-consent"
+                                              }
+                                            ],
+                                            "cl": "formal-feedback-section"
+                                          }
+                                        ],
+                                        "cl": "formal-feedback-body contribution-document-body"
+                                      }
+                                    ],
+                                    "cl": "contribution-content safe-bottom"
+                                  }
+                                ],
+                                "cl": "contribution-page__scroll hide-scrollbar",
+                                "p35": true,
+                                "p28": "",
+                                "p33": false,
+                                "p8": true,
+                                "p2": false,
+                                "p36": false
+                              },
+                              {
+                                "nn": "3",
+                                "sid": "_Eh",
+                                "cn": [
+                                  {
+                                    "nn": "3",
+                                    "sid": "_Eg",
+                                    "cn": [
+                                      {
+                                        "nn": "14",
+                                        "sid": "_Ec",
+                                        "ariaLabel": "保存新增观星点草稿",
+                                        "cn": [
+                                          {
+                                            "nn": "5",
+                                            "sid": "_Eb",
+                                            "cn": [
+                                              {
+                                                "sid": "_Ea",
+                                                "v": "保存草稿",
+                                                "nn": "9"
+                                              }
+                                            ]
+                                          }
+                                        ],
+                                        "cl": "soft-button soft-button--default focus-ring ",
+                                        "p2": false
+                                      },
+                                      {
+                                        "nn": "14",
+                                        "sid": "_Ef",
+                                        "ariaLabel": "提交人工审核",
+                                        "cn": [
+                                          {
+                                            "nn": "5",
+                                            "sid": "_Ee",
+                                            "cn": [
+                                              {
+                                                "sid": "_Ed",
+                                                "v": "提交审核",
+                                                "nn": "9"
+                                              }
+                                            ]
+                                          }
+                                        ],
+                                        "cl": "soft-button soft-button--primary focus-ring ",
+                                        "p2": false
+                                      }
+                                    ],
+                                    "cl": "contribution-actions"
+                                  }
+                                ],
+                                "cl": "contribution-document-actions safe-bottom"
+                              }
+                            ],
+                            "cl": "theme-page theme-day contribution-page contribution-page--embedded",
+                            "st": "height: 532px; min-height: 0px; max-height: none;"
+                          }
+                        ],
+                        "cl": "map-spot-editor-layer"
+                      }
+                    ],
+                    "cl": "map-stage"
+                  }
+                ],
+                "cl": "map-workspace"
+              },
+              {
+                "nn": "6",
+                "sid": "_Ag",
+                "role": "status",
+                "ariaLive": "polite",
+                "cn": [
+                  {
+                    "nn": "5",
+                    "sid": "_Af",
+                    "cn": []
+                  }
+                ],
+                "cl": "sr-live"
+              },
+              {
+                "nn": "6",
+                "sid": "_Aj",
+                "uid": "map-layer-projection-empty",
+                "ariaHidden": "true",
+                "cn": [
+                  {
+                    "nn": "5",
+                    "sid": "_Ai",
+                    "cn": [
+                      {
+                        "sid": "_Ah",
+                        "v": "09/11 21:00",
+                        "nn": "9"
+                      }
+                    ]
+                  }
+                ],
+                "cl": "sr-live"
+              }
+            ],
+            "cl": "theme-page theme-day map-page location-default-region map-page--spot-editor",
+            "st": "--map-title-top: 51px; --map-search-top: 87px; --map-chrome-opacity: 1; --panel-media-reveal: 0; --panel-media-height: 0rpx; --panel-media-margin-top: 0rpx; --panel-handle-band-height: 40rpx; --panel-media-image-offset: -18rpx; --panel-media-image-scale: 1.02;"
+          }
+        ],
+        "uid": "pages/map/index?$taroTimestamp=1789060932926"
+      },
+      "__webviewId__": 4
+    }
+  }
+}

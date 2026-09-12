@@ -1,6 +1,12 @@
 export type PanelExtent = "small" | "medium" | "large";
 export type PanelSnapGeometry = Record<PanelExtent, number> & { startHeight: number };
 
+export function previousPanelExtent(extent: PanelExtent): PanelExtent | null {
+  if (extent === "large") return "medium";
+  if (extent === "medium") return "small";
+  return null;
+}
+
 export function readPanelSnapGeometry(rows: unknown): PanelSnapGeometry | null {
   if (!Array.isArray(rows) || rows.length !== 4) return null;
   const heights = rows.map(row => row && typeof row === "object" ? (row as { height?: unknown }).height : undefined);

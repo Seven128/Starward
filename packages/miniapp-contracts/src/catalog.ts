@@ -537,11 +537,12 @@ export const TEST_PUBLISHED_SPOT: SpotSummary = Object.freeze({
     confidence: 1,
     source: publishedFixtureSource,
   })),
-  media: publishedFixtureBase.media.map((media) => ({
+  media: MEDIA.map((media, index) => ({
     ...media,
-    id: "media:test-published",
-    alt: "自动化测试媒体占位",
-    caption: "仅用于验证本点位媒体门禁",
+    id: `media:test-published:${index + 1}`,
+    alt: `自动化测试现场媒体 ${index + 1}`,
+    caption: `仅用于验证本点位媒体门禁与多图交互 ${index + 1}`,
+    sequence: index + 1,
     isSiteSpecific: true,
     state: "SAMPLE_DATA",
   })),
@@ -650,8 +651,39 @@ export function buildTestSpotDetail(spotId: string): SpotDetail | null {
   ];
   return {
     spot,
+    ...(completeTestSpot
+      ? {
+          formalFacts: {
+            address: "仅用于测试，不对应真实地点",
+            name: "示例观星点",
+            openness: "限时开放",
+            hours: "18:00–次日06:00",
+            access: "预约进入",
+            accessNote: "排版测试说明；不代表任何地点可以进入。",
+            road: "末段步行约200米",
+            safety: "注意台阶",
+            parking: "有",
+            parkingNote: "排版测试停车资料；不代表真实场地",
+            toilet: "有",
+            toiletNote: "排版测试洗手间资料；不代表真实场地",
+            platform: "排版测试平台",
+            horizon: "排版测试地平线",
+            light: null,
+            signal: "排版测试信号",
+            camping: "不允许",
+            contact: null,
+            detail: "仅用于覆盖完整正式点信息组件。",
+          },
+          formalMedia: {
+            site: spot.media.map((media) => media.id),
+            parking: [spot.media[1]!.id],
+            toilet: [spot.media[2]!.id],
+          },
+        }
+      : {}),
     route: {
       kind: "STRAIGHT_LINE_ONLY",
+      travelMode: null,
       originLabel: "深圳市中心直线参考",
       distanceKm:
         Math.round(
@@ -661,6 +693,7 @@ export function buildTestSpotDetail(spotId: string): SpotDetail | null {
           }) / 100,
         ) / 10,
       driveMinutes: null,
+      durationMinutes: null,
       walkingMinutes: null,
       lastRoad: "暂无已核验末段道路信息",
       parkingGuidance: completeTestSpot

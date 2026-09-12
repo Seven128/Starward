@@ -15,15 +15,12 @@ test("section requests are consumed once and never replay for another spot", () 
   assert.ok(setup);
   const timers = new Map<number, () => void>(), anchors: string[] = [];
   const positions: (number | undefined)[] = [];
-  const query = { select: () => query, boundingClientRect: () => query, scrollOffset: () => query,
-    exec: (callback: (results: unknown[]) => void) => callback([{ top: 100 }, { scrollTop: 50 }, { top: 700 }, { height: 44 }]) };
   let serial = 0;
   const context = {
-    sectionRequest: { id: "spot-panel-astronomy", spotId: "spot:a" },
+    sectionRequest: { id: "spot-panel-astronomy-anchor", spotId: "spot:a" },
     handledSectionRequest: { current: null as unknown }, extent: "large", spot: { spotId: "spot:a" },
     setScrollAnchor: (value: string) => anchors.push(value),
     setRestoredScrollTop: (value: number | undefined) => positions.push(value), settling: false,
-    Taro: { createSelectorQuery: () => query },
     setTimeout: (callback: () => void) => { timers.set(++serial, callback); return serial; },
     clearTimeout: (id: number) => timers.delete(id),
   };
@@ -35,7 +32,8 @@ test("section requests are consumed once and never replay for another spot", () 
   assert.equal(context.handledSectionRequest.current, null, "retain the request until settling completes");
   context.settling = false;
   effect(); flush();
-  assert.equal(positions.at(-1), 606, "chapter aligns below the measured sticky tabs");
+  assert.equal(anchors.at(-1), "spot-panel-astronomy-anchor", "chapter jump reserves the visible 44px navigation rail above its heading");
+  assert.equal(positions.at(-1), undefined, "a chapter jump clears any restored numeric offset");
   context.extent = "medium"; effect();
   context.extent = "large"; effect();
   assert.equal(timers.size, 0);
@@ -70,7 +68,7 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   const { measure, onScroll } = vm.runInNewContext(ts.transpileModule(`({ measure: ${setup}, onScroll: ${scroll} });`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     visible: true, spot: { spotId: "spot:a" }, lastScroll: { current: { spotId: "spot:a", top: 0 } },
     scrollMeasureTimer: { current: null }, setLayoutVersion: () => { layoutRefreshes++; },
-    settling: false, extent: "large", astronomyOffset: offset, setSection: (value: string) => sections.push(value),
+    settling: false, extent: "large", astronomyOffset: offset, SECTION_NAV_REVEAL_PX: 44, setSection: (value: string) => sections.push(value),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
     clearTimeout: (id: number) => timers.delete(id),
     Taro: { nextTick: (callback: () => void) => callback(), createSelectorQuery: () => { queries++; return query; } },
@@ -78,10 +76,10 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   const cleanup = measure();
   assert.equal(queries, 0, "do not measure the still-animating viewport");
   flushTimers();
-  callbacks.shift()!([{ top: 100 }, { top: 700 }, { scrollTop: 50 }]);
-  assert.equal(offset.current, 606);
-  for (const scrollTop of [300, 606, 900, 100]) onScroll({ detail: { scrollTop } });
-  assert.deepEqual(sections, ["spot-panel-overview", "spot-panel-overview", "spot-panel-astronomy", "spot-panel-astronomy", "spot-panel-overview"]);
+  callbacks.shift()!([{ top: 100 }, { top: 700 }, { scrollTop: 50 }, { height: 44 }]);
+  assert.equal(offset.current, 650);
+  for (const scrollTop of [300, 649, 650, 900, 100]) onScroll({ detail: { scrollTop } });
+  assert.deepEqual(sections, ["spot-panel-overview", "spot-panel-overview", "spot-panel-astronomy", "spot-panel-astronomy", "spot-panel-astronomy", "spot-panel-overview"]);
   assert.equal(queries, 1);
   assert.equal(layoutRefreshes, 0, "scroll frames must not trigger layout queries");
   flushTimers();
@@ -91,14 +89,16 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   onScroll({ detail: { scrollTop: 900 } });
   assert.equal(sections.length, prior);
   const cancel = measure(); flushTimers(); cancel();
-  callbacks.shift()!([{ top: 0 }, { top: 1 }, { scrollTop: 9 }]);
+  callbacks.shift()!([{ top: 0 }, { top: 1 }, { scrollTop: 9 }, { height: 44 }]);
   assert.equal(offset.current, null);
   assert.equal(sections.length, prior);
   measure();
   flushTimers();
-  callbacks.shift()!([{ top: 100, height: 600 }, { top: 700 }, { scrollTop: 50 }, { height: 1000 }]);
-  assert.equal(offset.current, 400, "last chapter becomes active at the reachable document end");
-  onScroll({ detail: { scrollTop: 400 } });
+  callbacks.shift()!([{ top: 100, height: 600 }, { top: 700 }, { scrollTop: 50 }, { height: 44 }]);
+  assert.equal(offset.current, 650, "chapter navigation appears when the next chapter reaches the reading boundary below its 44px rail");
+  onScroll({ detail: { scrollTop: 605 } });
+  assert.equal(sections.at(-1), "spot-panel-overview");
+  onScroll({ detail: { scrollTop: 606 } });
   assert.equal(sections.at(-1), "spot-panel-astronomy");
   onScroll({ detail: { scrollTop: 200 } });
   assert.equal(sections.at(-1), "spot-panel-overview");

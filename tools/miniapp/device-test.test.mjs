@@ -94,11 +94,63 @@ function screenshotDriver({ initial = appBrandForegroundState(), afterCapture = 
 
 test("device summary never contains serials; USB selection uses -d, not first listed device", async () => {
   assert.deepEqual(deviceSummary("List of devices attached\nSECRET1 unauthorized\nSECRET2 offline\nemulator-5554 device"), { detected: 3, states: ["unauthorized", "offline", "device"] });
+  assert.deepEqual(deviceSummary("List of devices attached\n(no serial number)     device product:N2401 transport_id:2"), { detected: 1, states: ["device"] });
   const { driver, calls } = adbDriver();
   const result = await driver.doctor();
   assert.equal(result.usbReady, true);
   assert.ok(!JSON.stringify(result).includes("private-serial"));
   assert.ok(calls.some((args) => args.join(" ") === "-d get-serialno"));
+});
+
+test("OEM USB device without a serial binds its exact transport and invalidates it after reconnect", async () => {
+  const calls = [];
+  let currentPath = "usb:1-2";
+  const driver = new AdbDevice("fixture-adb", async (_file, args) => {
+    calls.push(args);
+    const command = args.join(" ");
+    if (command === "-d get-state") return Buffer.from("device\n");
+    if (command === "-d get-serialno") return Buffer.from("(no serial number)\n");
+    if (command === "-d get-devpath") return Buffer.from("usb:1-2\n");
+    if (command === "devices -l") return Buffer.from("List of devices attached\n(no serial number) device product:N2401 transport_id:7\nemulator-5554 device transport_id:8\n");
+    if (command === "-t 7 get-devpath") return Buffer.from(`${currentPath}\n`);
+    if (command === "-t 8 get-devpath") return Buffer.from("local:5554\n");
+    if (command === "-t 7 shell echo ready") return Buffer.from("ready\n");
+    throw new Error("unexpected_driver_call");
+  });
+  const identity = await driver.select();
+  assert.equal(identity, "transport:7:usb:1-2");
+  assert.equal((await driver.command(["shell", "echo", "ready"])).toString().trim(), "ready");
+  assert.ok(calls.some((args) => args.join(" ") === "-t 7 shell echo ready"));
+  currentPath = "usb:1-3";
+  await assert.rejects(driver.command(["shell", "echo", "ready"]), /device_changed_capture_again/u);
+});
+
+test("explicit wireless selection binds one TLS transport privately and invalidates endpoint drift", async () => {
+  const calls = [];
+  let endpoint = "192.0.2.10:37123";
+  const driver = new AdbDevice("fixture-adb", async (_file, args) => {
+    calls.push(args);
+    const command = args.join(" ");
+    if (command === "devices -l") return Buffer.from(`List of devices attached\nusb-fixture device product:test transport_id:4\n${endpoint} device product:test transport_id:9\n`);
+    if (command === "-t 9 get-state") return Buffer.from("device\n");
+    if (command === "-t 9 get-serialno") return Buffer.from(`${endpoint}\n`);
+    if (command === "-t 9 shell echo ready") return Buffer.from("ready\n");
+    throw new Error("unexpected_driver_call");
+  });
+  const identity = await driver.select({ transport: "wireless" });
+  assert.match(identity, /^wireless:[a-f0-9]{64}$/u);
+  assert.ok(!identity.includes(endpoint));
+  assert.equal((await driver.command(["shell", "echo", "ready"])).toString().trim(), "ready");
+  assert.ok(calls.some((args) => args.join(" ") === "-t 9 shell echo ready"));
+  endpoint = "192.0.2.10:38999";
+  await assert.rejects(driver.command(["shell", "echo", "ready"]), /device_changed_capture_again/u);
+});
+
+test("wireless selection requires an explicit unique connected TLS target", async () => {
+  const none = new AdbDevice("fixture-adb", async () => Buffer.from("List of devices attached\nusb-fixture device product:test transport_id:4\n"));
+  await assert.rejects(none.select({ transport: "wireless" }), /single_authorized_wireless_required/u);
+  const ambiguous = new AdbDevice("fixture-adb", async () => Buffer.from("List of devices attached\n192.0.2.10:37123 device transport_id:9\n192.0.2.11:38455 device transport_id:10\n"));
+  await assert.rejects(ambiguous.select({ transport: "wireless" }), /single_authorized_wireless_required/u);
 });
 
 test("zero/unauthorized/ambiguous USB blocks operations without guessing", async () => {
@@ -306,6 +358,9 @@ test("argument and endpoint allowlists block command passthrough or remote hosts
   assert.throws(() => parseArguments(["shell", "rm"]), /action_invalid/u);
   assert.throws(() => parseArguments(["doctor", "--serial", "private"]), /argument_invalid/u);
   assert.throws(() => parseArguments(["capture"]), /argument_missing/u);
+  assert.equal(parseArguments(["doctor", "--transport", "wireless"]).options.transport, "wireless");
+  assert.equal(parseArguments(["capture", "--session", "private", "--transport", "wireless"]).options.transport, "wireless");
+  assert.throws(() => parseArguments(["doctor", "--transport", "network"]), /transport_invalid/u);
   assert.equal(automationEndpoint("ws://127.0.0.1:9420"), "ws://127.0.0.1:9420/");
   for (const value of ["ws://example.com:9420", "ws://user:pass@127.0.0.1:9420", "ws://127.0.0.1:9420/?token=secret", "https://127.0.0.1:9420"]) assert.throws(() => automationEndpoint(value), /endpoint_required/u);
 });
@@ -328,13 +383,22 @@ test("SDK probe rejects simulator and wrong account; only whitelisted fields lea
   assert.equal(result.metrics.menu.bottom, 80);
   assert.ok(!JSON.stringify(result).includes("private"));
   for (const route of [
+    "pages/auth/index",
     "spot/search/index",
+    "spot/guides/index",
+    "spot/field/index",
+    "spot/plan/index",
+    "spot/data-source/index",
     "sky/detail/index",
+    "content/article/detail/index",
     "content/settings/index",
     "content/plan/detail/index",
-    "content/profile/links/index",
-    "content/import/index",
+    "content/plan/list/index",
+    "content/plan/edit/index",
+    "content/event/list/index",
+    "content/event/detail/index",
     "content/contribution/index",
+    "content/spot-feedback/index",
   ]) {
     await access(new URL(`../../apps/wechat-miniapp/src/${route}.tsx`, import.meta.url));
     mini.currentPage = async () => ({ path: route });

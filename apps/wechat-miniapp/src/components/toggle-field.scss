@@ -17,6 +17,19 @@
   flex-direction: column;
   gap: var(--space-related);
 }
+.toggle-field__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 58rpx;
+  width: 58rpx;
+  height: 58rpx;
+  border-radius: 18rpx;
+  color: var(--text-secondary);
+  background: var(--surface-subtle);
+}
+.toggle-field__icon--gold { color: var(--warning); background: var(--icon-gold-soft); }
+.toggle-field__icon--lilac { color: var(--accent-violet); background: var(--icon-violet-soft); }
+.toggle-field__icon .semantic-icon { width: 34rpx; height: 34rpx; flex-basis: 34rpx; }
 .toggle-field .toggle-field__indicator {
   flex: 0 0 auto;
   display: flex;

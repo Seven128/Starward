@@ -6,16 +6,16 @@ const MAP_MARKER_ICONS: Record<
   { regular: string; selected: string }
 > = {
   DAY: {
-    regular: "/assets/icons/spot-marker.png",
-    selected: "/assets/icons/spot-marker-selected.png",
+    regular: "/assets/icons/formal-spot-marker.png",
+    selected: "/assets/icons/formal-spot-marker-selected.png",
   },
   NIGHT: {
-    regular: "/assets/icons/spot-marker-night.png",
-    selected: "/assets/icons/spot-marker-selected-night.png",
+    regular: "/assets/icons/formal-spot-marker-night.png",
+    selected: "/assets/icons/formal-spot-marker-selected-night.png",
   },
   OBSERVATION: {
-    regular: "/assets/icons/spot-marker-observation.png",
-    selected: "/assets/icons/spot-marker-selected-observation.png",
+    regular: "/assets/icons/formal-spot-marker-observation.png",
+    selected: "/assets/icons/formal-spot-marker-selected-observation.png",
   },
 };
 
@@ -92,21 +92,23 @@ export function markerItems(
       height: selected ? 45 : clustered ? 42 : 36,
       anchor: { x: 0.5, y: 1 },
       alpha: 0.96,
-      label: {
-        content: clustered
-          ? String(group.spots.length)
-          : String(group.id).padStart(2, "0"),
-        color: selected ? palette.selectedLabel : palette.text,
-        fontSize: MINIAPP_DESIGN.type.data.size * textScale,
-        bgColor: selected ? palette.selectedSurface : palette.surface,
-        borderColor: selected ? palette.selectedBorder : palette.border,
-        borderWidth: 1,
-        borderRadius: 12,
-        padding: 5,
-        anchorX: 0,
-        anchorY: selected ? -48 : -40,
-        textAlign: "center" as const,
-      },
+      ...(clustered
+        ? {
+            label: {
+              content: String(group.spots.length),
+              color: selected ? palette.selectedLabel : palette.text,
+              fontSize: MINIAPP_DESIGN.type.data.size * textScale,
+              bgColor: selected ? palette.selectedSurface : palette.surface,
+              borderColor: selected ? palette.selectedBorder : palette.border,
+              borderWidth: 1,
+              borderRadius: 12,
+              padding: 5,
+              anchorX: 0,
+              anchorY: selected ? -48 : -40,
+              textAlign: "center" as const,
+            },
+          }
+        : {}),
       ...(clustered
         ? {
             callout: {

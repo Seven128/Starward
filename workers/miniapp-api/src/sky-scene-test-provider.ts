@@ -1,8 +1,5 @@
 import { createHash } from "node:crypto";
-import {
-  loadGaiaDr3BrightStarCatalog,
-  positionGaiaDr3Catalog,
-} from "@starward/astronomy-core";
+import { loadHipparcosBrightStarCatalog, positionHipparcosCatalog } from "@starward/astronomy-core";
 import {
   normalizeOwnerPositions,
   type SkyCatalogProvider,
@@ -10,12 +7,16 @@ import {
 } from "./sky-scene-catalog-provider.ts";
 
 export function createTestSkyCatalogProvider(): SkyCatalogProvider {
-  const owner = loadGaiaDr3BrightStarCatalog();
-  const entries = owner.entries.slice(0, 3).map((entry) => ({
+  const owner = loadHipparcosBrightStarCatalog();
+  const entries = owner.rows.slice(0, 3).map((entry) => ({
     sourceId: entry.sourceId,
-    gMagnitude: entry.gMagnitude,
-    bpRp: entry.bpRp,
-    raHours: entry.raHours,
+    objectRef: entry.sourceId,
+    displayName: entry.properName,
+    magnitude: entry.vMag,
+    magnitudeBand: "V" as const,
+    colorIndex: entry.bV,
+    colorIndexBand: "B-V" as const,
+    raHours: entry.raDeg / 15,
     decDeg: entry.decDeg,
   }));
   const catalogHash = createHash("sha256")
@@ -25,7 +26,7 @@ export function createTestSkyCatalogProvider(): SkyCatalogProvider {
     catalogVersion: "test-gaia-dr3-catalog-v1",
     catalogHash,
     magnitudeLimit: 5.5,
-    source: {
+    sources: [{
       id: "test:gaia-dr3-catalog",
       kind: "TEST_FIXTURE",
       provider: "Starward deterministic test fixture",
@@ -41,7 +42,7 @@ export function createTestSkyCatalogProvider(): SkyCatalogProvider {
       confidence: 1,
       precision: "Deterministic test fixture only",
       limitations: ["不可用于生产场景或用户展示"],
-    },
+    }],
     entries,
   };
   const selectedIds = new Set(entries.map((entry) => entry.sourceId));
@@ -49,12 +50,11 @@ export function createTestSkyCatalogProvider(): SkyCatalogProvider {
     load: () => catalog,
     position: (input) =>
       normalizeOwnerPositions(
-        positionGaiaDr3Catalog({
+        positionHipparcosCatalog({
           at: input.at,
           latitude: input.latitude,
           longitude: input.longitude,
           elevationM: input.elevationM,
-          magnitudeLimit: owner.magnitudeLimit,
           catalog: owner,
         }).filter((row) => selectedIds.has(row.sourceId)),
         input.catalog,

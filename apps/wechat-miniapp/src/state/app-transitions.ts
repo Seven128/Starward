@@ -1,5 +1,8 @@
 import {
+  EMPTY_FILTER_STATE,
   cloneFilterState,
+  setDrivingRangeParameter,
+  type DrivingRangeParameter,
   toggleFilter,
   type DisplayMode,
   type FilterState,
@@ -63,6 +66,19 @@ export function beginFilterDraft(committedFilters: FilterState) {
 
 export function toggleFilterDraft(draftFilters: FilterState, optionId: string) {
   return { draftFilters: toggleFilter(draftFilters, optionId) };
+}
+
+export function updateDraftDrivingRange(
+  draftFilters: FilterState,
+  parameter: DrivingRangeParameter,
+) {
+  return { draftFilters: setDrivingRangeParameter(draftFilters, parameter) };
+}
+
+export function clearFilterDraft(_draftFilters: FilterState) {
+  return {
+    draftFilters: cloneFilterState(EMPTY_FILTER_STATE),
+  };
 }
 
 export function revertFilterDraft(filterSnapshot: FilterState) {

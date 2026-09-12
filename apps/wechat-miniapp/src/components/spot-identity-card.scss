@@ -1,0 +1,31 @@
+.spot-identity-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 90Px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12Px;
+  background: #f8f8fa;
+  color: var(--text-primary);
+  text-align: left;
+  box-sizing: border-box;
+  transition: filter 140ms ease, transform 140ms ease;
+}
+.spot-identity-card::after { border: 0; }
+.spot-identity-card:active { filter: brightness(.975); transform: scale(.995); }
+.spot-identity-card__media { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; display: block; }
+.spot-identity-card__copy { position: relative; z-index: 1; min-height: 90Px; padding: 14Px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; box-sizing: border-box; }
+.spot-identity-card--with-media { background: #fff; }
+.spot-identity-card--with-media .spot-identity-card__copy { background: linear-gradient(90deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.82) 48%,rgba(255,255,255,.28) 82%,rgba(255,255,255,.04) 100%); }
+.spot-identity-card__region { display: block; margin-bottom: 4Px; color: #86909c; font-size: 11Px; line-height: 14Px; }
+.spot-identity-card__title { display: block; min-width: 0; color: #1d2129; font-size: 14Px; line-height: 20Px; font-weight: 600; letter-spacing: -.025em; white-space: normal; overflow-wrap: anywhere; }
+.spot-identity-card--with-media .spot-identity-card__title { max-width: 72%; }
+.spot-identity-card__address { max-width: 90%; margin-top: 8Px; display: grid; grid-template-columns: 14Px minmax(0,1fr); align-items: start; column-gap: 4Px; color: #646f7f; }
+.spot-identity-card__address .semantic-icon { width: 14Px; height: 14Px; margin-top: 1Px; color: #a3abb8; }
+.spot-identity-card__address-text { min-width: 0; display: block; font-size: 12Px; line-height: 16Px; white-space: normal; overflow-wrap: anywhere; }
+.large-text .spot-identity-card__copy { min-height: max(90Px, var(--target-min)); }
+@media (max-width: 350px) { .spot-identity-card--with-media .spot-identity-card__title { max-width: 78%; } }
+@media (prefers-reduced-motion: reduce) { .spot-identity-card { transition: none; } }

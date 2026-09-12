@@ -1,10 +1,13 @@
 import Taro from "@tarojs/taro";
+import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
 import { useRef } from "react";
 import { createContributionCommandLock } from "./command-lock";
 import { createContributionAccountGuard } from "./account-guard";
 import type {
+  ContributionMediaKind,
   ContributionMediaUpload,
+  ContributionDraftRequest,
   ContributionSubmission,
   ContributionUploadId,
 } from "@starward/miniapp-contracts";
@@ -26,17 +29,18 @@ import {
   mediaMimeType,
   readBase64,
 } from "./contribution-model";
+import { MEDIA_RIGHTS_MODAL } from "./media-rights-modal";
 import type { ContributionForm } from "./use-contribution-form";
 
 function activeDraft(form: ContributionForm) {
   const current = form.draft;
-  if (current && contributionSubmissionState(current) === "DRAFT")
+  if (current && ["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(current)))
     return current;
   return form.matchingDraft;
 }
 
 function createSaveDraft(form: ContributionForm, assertAccount: () => void) {
-  return async (quiet = false) => {
+  return async (quiet = false, inputPatch: Partial<ContributionDraftRequest> = {}) => {
     if (!form.draft && form.matchingDraft) {
       form.announce("warning", "请先继续已有草稿", "这里已有未完成草稿。请先点击“继续草稿”核对内容，再补充或保存。");
       return null;
@@ -45,8 +49,9 @@ function createSaveDraft(form: ContributionForm, assertAccount: () => void) {
       form.announce("warning", "请先核对草稿", "草稿已在其他位置更新，请核对下方服务端内容后再保存。");
       return null;
     }
-    const input = form.formInput();
-    if (!input) return null;
+    const formValue = form.formInput();
+    if (!formValue) return null;
+    const input = { ...formValue, ...inputPatch };
     form.setSaving(true);
     try {
       assertAccount();
@@ -133,6 +138,7 @@ async function uploadSelectedFile(
   file: { path: string; size?: number },
   existingUpload: ContributionMediaUpload | undefined,
   assertAccount: () => void,
+  kind?: ContributionMediaKind,
 ) {
   assertAccount();
   const input = validateMediaFile(file);
@@ -144,6 +150,7 @@ async function uploadSelectedFile(
   if (!upload || upload.state === "EXPIRED") {
     const created = await createContributionUpload(current.submissionId, {
       ...input,
+      ...(kind ? { kind } : {}),
       expectedRevision: current.revision,
       ...(upload?.state === "EXPIRED" ? { replaceUploadId: upload.uploadId } : {}),
     });
@@ -162,6 +169,7 @@ async function uploadSelectedFile(
     { dataBase64 },
   );
   assertAccount();
+  if (kind) form.setCandidateMediaPreview(upload.uploadId, file.path);
   form.applyMediaDraft(completed.data);
   return completed.data;
 }
@@ -178,8 +186,12 @@ function createUseCurrentLocation(form: ContributionForm, assertAccount: () => v
       assertAccount();
       const location = await Taro.getLocation({ type: "wgs84" });
       assertAccount();
-      form.setLatitude(location.latitude.toFixed(6));
-      form.setLongitude(location.longitude.toFixed(6));
+      form.selectCandidateLocation({
+        name: "",
+        address: "",
+        latitude: location.latitude,
+        longitude: location.longitude,
+      });
       form.setPreciseLocationConsent(true);
       form.announce(
         "success",
@@ -201,18 +213,27 @@ function createAddMedia(
   saveDraft: ReturnType<typeof createSaveDraft>,
   assertAccount: () => void,
 ) {
-  return async () => {
+  return async (kind?: ContributionMediaKind) => {
     if (!form.rightsConfirmed) {
+      if (kind) {
+        const consent = await Taro.showModal(MEDIA_RIGHTS_MODAL);
+        if (!consent.confirm) return;
+        form.setRightsConfirmed(true);
+      } else {
       form.announce(
         "warning",
         "请先确认图片权利",
         "只有你有权提交且同意用于核验的图片才能上传。",
       );
       return;
+      }
     }
-    const availableSlots = 3 - form.currentMedia.length;
+    const mediaInGroup = kind
+      ? form.currentMedia.filter((item) => item.kind === kind)
+      : form.currentMedia;
+    const availableSlots = 3 - mediaInGroup.length;
     if (availableSlots <= 0) {
-      form.announce("warning", "图片已达上限", "每条反馈最多上传 3 张图片。");
+      form.announce("warning", "图片已达上限", kind ? "这一组最多上传 3 张图片。" : "每条反馈最多上传 3 张图片。");
       return;
     }
     let choice;
@@ -229,10 +250,10 @@ function createAddMedia(
       if (choice.tempFiles.length > availableSlots)
         throw new Error(`本次最多还能添加 ${availableSlots} 张图片，请重新选择。`);
       for (const file of choice.tempFiles) validateMediaFile(file);
-      let working = await saveDraft(true);
+      let working = await saveDraft(true, kind ? { rightsConfirmed: true } : {});
       if (!working) return;
       for (const file of choice.tempFiles) {
-        working = await uploadSelectedFile(form, working, file, undefined, assertAccount);
+        working = await uploadSelectedFile(form, working, file, undefined, assertAccount, kind);
       }
       await form.history.refetch().catch(() => undefined);
       assertAccount();
@@ -277,7 +298,7 @@ function createRetryMedia(
         form.announce("warning", "上传记录已更新", "请先重新回读当前草稿状态。 ");
         return;
       }
-      await uploadSelectedFile(form, working, choice.tempFiles[0]!, target, assertAccount);
+      await uploadSelectedFile(form, working, choice.tempFiles[0]!, target, assertAccount, target.kind);
       await form.history.refetch().catch(() => undefined);
       assertAccount();
       form.announce(
@@ -313,7 +334,7 @@ function createSubmit(
       );
       return;
     }
-    if (!form.pendingSubmission && (form.detail.trim().length < 20 || form.topics.length === 0)) {
+    if (!form.pendingSubmission && form.kind !== "NEW_SPOT_PROPOSAL" && (form.detail.trim().length < 20 || form.topics.length === 0)) {
       form.setValidationField(
         form.topics.length === 0
           ? "contribution-topic-control"
@@ -328,14 +349,36 @@ function createSubmit(
       );
       return;
     }
-    if (!form.pendingSubmission && form.kind === "NEW_SPOT_PROPOSAL" && !form.preciseLocationConsent) {
-      form.setValidationField("contribution-location-consent");
-      form.announce(
-        "error",
-        "还不能提交",
-        "新增地点需要明确同意提交该坐标；审核前不会公开。",
-      );
-      return;
+    if (!form.pendingSubmission && form.kind === "NEW_SPOT_PROPOSAL") {
+      const parsedLatitude = Number(form.latitude);
+      const parsedLongitude = Number(form.longitude);
+      const invalidCoordinate = !Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude) ||
+        Math.abs(parsedLatitude) > 90 || Math.abs(parsedLongitude) > 180 ||
+        (parsedLatitude === 0 && parsedLongitude === 0);
+      const missingField = !form.candidateFields.address.trim()
+        ? "contribution-candidate-address"
+        : !form.candidateFields.name.trim()
+          ? "contribution-candidate-name"
+          : invalidCoordinate
+            ? "contribution-candidate-coordinate"
+            : !form.preciseLocationConsent
+              ? "contribution-location-consent"
+              : null;
+      if (missingField) {
+        form.setValidationField(missingField);
+        form.announce(
+          "error",
+          "还不能提交",
+          missingField === "contribution-candidate-address"
+            ? "请先搜索并确定地点地址。"
+            : missingField === "contribution-candidate-name"
+              ? "请填写地点名称。"
+              : missingField === "contribution-candidate-coordinate"
+                ? "请先在地图中确定有效位置。"
+                : "请确认同意提交精确坐标；审核前不会公开。",
+        );
+        return;
+      }
     }
     form.setSubmitting(true);
     let awaitingReceipt = false;
@@ -384,11 +427,39 @@ function createRemoveMedia(form: ContributionForm, assertAccount: () => void) {
       const response = await removeContributionUpload(draft.submissionId, uploadId, draft.revision);
       assertAccount();
       form.applyMediaDraft(response.data);
+      form.removeCandidateMediaPreview(uploadId);
       await form.history.refetch().catch(() => undefined);
       assertAccount();
       form.announce("success", "图片已移除", "其余图片和当前输入已保留。");
     } catch (error) {
       form.announce("error", "暂未确认移除结果", `${errorMessage(error)}；当前输入保留，可重试移除以确认结果。`);
+    }
+  };
+}
+
+function createChooseCandidateLocation(form: ContributionForm, assertAccount: () => void) {
+  return async () => {
+    try {
+      assertAccount();
+      const selected = await Taro.chooseLocation({});
+      assertAccount();
+      if (!Number.isFinite(selected.latitude) || !Number.isFinite(selected.longitude))
+        throw new Error("所选地点没有有效坐标");
+      const point = gcj02ToWgs84({
+        lat: selected.latitude,
+        lon: selected.longitude,
+        system: "GCJ-02",
+      });
+      form.selectCandidateLocation({
+        name: selected.name ?? "",
+        address: selected.address ?? "",
+        latitude: point.lat,
+        longitude: point.lon,
+      });
+    } catch (error) {
+      const message = errorMessage(error);
+      if (/cancel/iu.test(message)) return;
+      form.announce("warning", "地点未选择", `${message}；当前输入保持不变。`);
     }
   };
 }
@@ -414,6 +485,7 @@ export function useContributionCommands(form: ContributionForm) {
   const saveDraft = createSaveDraft(form, assertAccount);
   return {
     saveDraft: guard(saveDraft),
+    chooseCandidateLocation: guard(createChooseCandidateLocation(form, assertAccount)),
     useCurrentLocation: guard(createUseCurrentLocation(form, assertAccount)),
     addMedia: guard(createAddMedia(form, saveDraft, assertAccount)),
     retryMedia: guard(createRetryMedia(form, assertAccount)),

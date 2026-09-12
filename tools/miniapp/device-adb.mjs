@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { access } from "node:fs/promises";
 import path from "node:path";
 
@@ -47,10 +48,31 @@ export async function findAdb(env = process.env) {
 
 export function deviceSummary(output) {
   const states = String(output).split(/\r?\n/u).flatMap((line) => {
-    const match = line.match(/^\S+\s+(device|offline|unauthorized|recovery|sideload)\b/u);
+    // Some OEM adbd builds literally expose "(no serial number)" in the serial
+    // column. Match the state at the metadata boundary instead of assuming that
+    // the first column can never contain whitespace.
+    const match = line.match(/\s(device|offline|unauthorized|recovery|sideload)(?=\s+(?:product:|model:|device:|transport_id:)|\s*$)/u);
     return match ? [match[1]] : [];
   });
   return { detected: states.length, states };
+}
+
+function transportIds(output) {
+  return String(output).split(/\r?\n/u).flatMap((line) => {
+    if (!/\sdevice(?=\s+(?:product:|model:|device:|transport_id:)|\s*$)/u.test(line)) return [];
+    const match = line.match(/\btransport_id:(\d+)\b/u);
+    return match ? [match[1]] : [];
+  });
+}
+
+function wirelessTransports(output) {
+  return String(output).split(/\r?\n/u).flatMap((line) => {
+    if (!/\sdevice(?=\s+(?:product:|model:|device:|transport_id:)|\s*$)/u.test(line)) return [];
+    const id = line.match(/\btransport_id:(\d+)\b/u)?.[1];
+    const serial = line.match(/^\s*(\S+)\s+device(?=\s|$)/u)?.[1];
+    if (!id || !serial || (!serial.includes(":") && !serial.includes("._adb-tls-connect._tcp"))) return [];
+    return [{ id, fingerprint: createHash("sha256").update(serial).digest("hex") }];
+  });
 }
 
 function canonicalActivity(value) {
@@ -138,27 +160,80 @@ async function recheckForeground(device, activity, options) {
 export class AdbDevice {
   constructor(file, run = runTool, wait = defaultWait) { this.file = file; this.run = run; this.wait = wait; }
   async invoke(args) { return this.run(this.file, args); }
-  async doctor() {
+  async doctor({ transport = "usb" } = {}) {
     const version = (await this.invoke(["version"])).toString().match(/Android Debug Bridge version ([\d.]+)/u)?.[1] ?? "unknown";
     const summary = deviceSummary((await this.invoke(["devices", "-l"])).toString());
-    let usbReady = false;
-    try { await this.select(); usbReady = true; } catch {}
-    return { adbVersion: version, ...summary, usbReady, acceptance: "not_evaluated" };
+    let transportReady = false;
+    try { await this.select({ transport }); transportReady = true; } catch {}
+    return { adbVersion: version, ...summary, transport, transportReady, ...(transport === "usb" ? { usbReady: transportReady } : {}), acceptance: "not_evaluated" };
   }
-  async select() {
+  async select({ transport = "usb" } = {}) {
+    if (transport === "wireless") {
+      const matches = wirelessTransports((await this.invoke(["devices", "-l"])).toString());
+      if (matches.length !== 1) fail("single_authorized_wireless_required");
+      const selected = matches[0];
+      let state;
+      try { state = (await this.invoke(["-t", selected.id, "get-state"])).toString().trim(); }
+      catch { fail("single_authorized_wireless_required"); }
+      if (state !== "device") fail("single_authorized_wireless_required");
+      const serial = (await this.invoke(["-t", selected.id, "get-serialno"])).toString().trim();
+      if (!serial || createHash("sha256").update(serial).digest("hex") !== selected.fingerprint) fail("wireless_identity_unavailable");
+      this.selector = ["-t", selected.id];
+      this.transport = "wireless";
+      this.transportFingerprint = selected.fingerprint;
+      this.identity = `wireless:${selected.fingerprint}`;
+      return this.identity;
+    }
+    if (transport !== "usb") fail("transport_invalid");
     // -d is the official single USB transport selector; no guessing from serial strings.
     let state;
     try { state = (await this.invoke(["-d", "get-state"])).toString().trim(); }
     catch { fail("single_authorized_usb_required"); }
     if (state !== "device") fail("single_authorized_usb_required");
     const serial = (await this.invoke(["-d", "get-serialno"])).toString().trim();
-    if (!serial || serial === "unknown" || /[\s\0]/u.test(serial)) fail("usb_identity_unavailable");
-    this.serial = serial;
-    return serial;
+    if (serial && serial !== "unknown" && !/[\s\0]/u.test(serial)) {
+      this.selector = ["-s", serial];
+      this.transport = "usb";
+      this.identity = serial;
+      return this.identity;
+    }
+
+    // `-d` has already proved that exactly one USB transport is selected. Bind
+    // OEM devices without a usable serial to that transport's host-side path
+    // and transport id. A reconnect receives a new transport id, invalidating a
+    // prior screenshot/input grant instead of silently following another phone.
+    const devpath = (await this.invoke(["-d", "get-devpath"])).toString().trim();
+    if (!devpath || /[\s\0]/u.test(devpath)) fail("usb_identity_unavailable");
+    const ids = transportIds((await this.invoke(["devices", "-l"])).toString());
+    const matches = [];
+    for (const id of ids) {
+      try {
+        const candidatePath = (await this.invoke(["-t", id, "get-devpath"])).toString().trim();
+        if (candidatePath === devpath) matches.push(id);
+      } catch {}
+    }
+    if (matches.length !== 1) fail("usb_identity_unavailable");
+    this.selector = ["-t", matches[0]];
+    this.transport = "usb";
+    this.transportPath = devpath;
+    this.identity = `transport:${matches[0]}:${devpath}`;
+    return this.identity;
   }
   async command(args) {
-    if (!this.serial) fail("usb_not_selected");
-    return this.invoke(["-s", this.serial, ...args]);
+    if (!this.selector || !this.identity) fail("transport_not_selected");
+    if (this.transport === "wireless") {
+      let state;
+      try { state = (await this.invoke([...this.selector, "get-state"])).toString().trim(); }
+      catch { fail("device_changed_capture_again"); }
+      if (state !== "device") fail("device_changed_capture_again");
+      const serial = (await this.invoke([...this.selector, "get-serialno"])).toString().trim();
+      if (!serial || createHash("sha256").update(serial).digest("hex") !== this.transportFingerprint) fail("device_changed_capture_again");
+    }
+    if (this.transportPath) {
+      const currentPath = (await this.invoke([...this.selector, "get-devpath"])).toString().trim();
+      if (currentPath !== this.transportPath) fail("device_changed_capture_again");
+    }
+    return this.invoke([...this.selector, ...args]);
   }
   async foreground(options) {
     const activity = foregroundActivity((await this.command(["shell", "dumpsys", "activity", "activities"])).toString(), options);

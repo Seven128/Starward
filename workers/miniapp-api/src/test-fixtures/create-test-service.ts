@@ -18,6 +18,7 @@ import {
   createTestSkyCatalogProvider,
   type SkyCatalogProvider,
 } from "../sky-scene-catalog.ts";
+import type { AstronomicalEventCatalogOwner } from "../astronomical-event-catalog-owner.ts";
 
 export function createTestMiniappService(
   input: {
@@ -29,6 +30,7 @@ export function createTestMiniappService(
     mediaStore?: MemoryMediaObjectStore;
     skyCatalog?: SkyCatalogProvider;
     cache?: CachePort;
+    eventCatalog?: AstronomicalEventCatalogOwner;
   } = {},
 ) {
   const config = input.config ?? createTestRuntimeConfig();
@@ -40,6 +42,7 @@ export function createTestMiniappService(
     placeSearch: input.placeSearch ?? new DisabledPlaceSearchAdapter(),
     mediaStore: input.mediaStore ?? new MemoryMediaObjectStore(),
     skyCatalog: input.skyCatalog ?? createTestSkyCatalogProvider(),
+    ...(input.eventCatalog ? { eventCatalog: input.eventCatalog } : {}),
     ...(input.cache ? { cache: input.cache } : {}),
   });
 }

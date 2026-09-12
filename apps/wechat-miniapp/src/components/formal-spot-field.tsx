@@ -5,7 +5,7 @@ import { getSpotOverview, searchPlaces } from "../services/api-client";
 import { StatusPanel } from "./status-panel";
 
 export function FormalSpotField({ value, knownSpot, disabled, contextId, onChange, id }: {
-  id?: string;
+  id: string;
   knownSpot?: { spotId: string; name: string };
   value: string; disabled: boolean; contextId?: string | undefined; onChange: (spotId: string, spotName: string) => void;
 }) {
@@ -33,7 +33,7 @@ export function FormalSpotField({ value, knownSpot, disabled, contextId, onChang
   });
   const currentResults = query.trim() === debouncedQuery;
   return (
-    <View className="form-group import-field-group" data-od-id={id}>
+    <View id={id} className="form-group import-field-group">
       <Text className="type-label">正式观星点</Text>
       <Text className="type-caption">
         {value ? selectedName ? `已选择：${selectedName}` : "已保留地点关联，名称暂不可用" : "搜索并选择内容实际对应的地点"}
@@ -48,7 +48,8 @@ export function FormalSpotField({ value, knownSpot, disabled, contextId, onChang
         result.isError ? <StatusPanel state="ERROR" detail="地点搜索暂不可用，原有关联已保留。" recoveryLabel="重试搜索" onRecover={() => void result.refetch()} />
           : result.isPending ? <Text className="type-caption">正在查找正式观星点…</Text>
             : result.data.data.formalSpots.length ? result.data.data.formalSpots.map((spot) => (
-              <Button compileMode key={spot.spotId} className="soft-button focus-ring" ariaLabel={`选择${spot.name}`} aria-pressed={value === spot.spotId}
+              <Button key={spot.spotId} className="soft-button focus-ring"
+                ariaLabel={`${spot.name}${value === spot.spotId ? "，当前已选择" : "，选择此观星点"}`}
                 onClick={() => { setSelection({ id: spot.spotId, name: spot.name }); onChange(spot.spotId, spot.name); setQuery(""); }}>
                 {spot.name}
               </Button>

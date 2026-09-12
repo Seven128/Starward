@@ -2,9 +2,33 @@
   "schemaVersion": 2,
   "authorityTarget": "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
   "designSource": "DESIGN.md#wechat-mini-program--sky-canvas-field-signal",
-  "interpretation": "The existing bounded marker and native TabBar geometry is projected through the exact Field Signal day, night and observation roles. Selected state uses size, fill, outline, check and label rather than color alone.",
-  "generatedAt": "2026-09-04",
+  "interpretation": "Formal-spot markers use the adopted circular star pin. Mode variants preserve fill, outline and star contrast; selected state also uses size and never relies on color alone.",
+  "generatedAt": "2026-09-10",
   "assets": [
+    {
+      "path": "account-user-day.svg",
+      "sha256": "4c0a52af2ee571b2fbe9496d3977d68c07b4ef52ceb789a5f90c83437ce44ea6"
+    },
+    {
+      "path": "account-user-night.svg",
+      "sha256": "63aef9fb25f67ca9a63b3961a2e8a53a465e04edde8e912fa445698e6c0acff7"
+    },
+    {
+      "path": "account-user-observation.svg",
+      "sha256": "67675cc9ddd5ca2145ba57023b00ec295241d102e4739af7e46ef04bd4d7f39f"
+    },
+    {
+      "path": "bulb-day.svg",
+      "sha256": "7aece9ec557b4bb0bb0fa708740789e268a5a5fb51fe75224b7e63a1ae42202b"
+    },
+    {
+      "path": "bulb-night.svg",
+      "sha256": "8f6eeba9774d149b7e2a8332ed35ff8d85b61526f0153bdf50e5f8d2b7ab95f2"
+    },
+    {
+      "path": "bulb-observation.svg",
+      "sha256": "31aebace63d44189a5ddefcaacaaaa1b7464a1044e6c9298694c47b1a67f2a21"
+    },
     {
       "path": "chevron-right-day.svg",
       "sha256": "091bdee31888417aa71431993994751e989cc886fdee0cb49c572b3acc01d93a"
@@ -16,6 +40,18 @@
     {
       "path": "chevron-right-observation.svg",
       "sha256": "267f50d2be2a892e5200a2f2eb6d0bcb760bb8210cd71ae2849d8b3fddf2b8a7"
+    },
+    {
+      "path": "cloud-day.svg",
+      "sha256": "29ce399760f9739ad8d9f1e587fe56cce46c308bb4d759d81a30b670d8c260f5"
+    },
+    {
+      "path": "cloud-night.svg",
+      "sha256": "95a3e44b45c593421c9ded7e4afcca9910c1a52502da287ffd185355363ec097"
+    },
+    {
+      "path": "cloud-observation.svg",
+      "sha256": "7e7a105df1fe2da5f6b8b8018070c55ac49d6b51f40ad649b366eca44ff7d9f9"
     },
     {
       "path": "download-day.svg",
@@ -30,6 +66,42 @@
       "sha256": "70d314cbfcf85f03b42b7e9e0609a0ff8b9fa60928555e396b06740a08178785"
     },
     {
+      "path": "eye-day.svg",
+      "sha256": "679299c4d6804200b63704e31a5bcf250eb0cbd9a05af3b9b52c2959a6aaa07d"
+    },
+    {
+      "path": "eye-night.svg",
+      "sha256": "0d0ab56a81e7460796345016200b7c6ba57c71e1c354e1ed3f1971fe79ce9baa"
+    },
+    {
+      "path": "eye-observation.svg",
+      "sha256": "01ffd4fbfb29aa7a39966f7f9fcd8d48d30e1df6ec7f35d6c4517e413ad12280"
+    },
+    {
+      "path": "formal-spot-marker-night.png",
+      "sha256": "279ee163241ce63e57bd493b876d736cf466c87c296eb2ccf6b835c9fa450e50"
+    },
+    {
+      "path": "formal-spot-marker-observation.png",
+      "sha256": "6ecb83a8c38c93e9754e000b5f86ab568da05b97faa8a289e6633d020ef01591"
+    },
+    {
+      "path": "formal-spot-marker-selected-night.png",
+      "sha256": "29b780e76af3d9e66ef81895bf39e60f3402c567eaef9c9d6d49f51bec5a7d2a"
+    },
+    {
+      "path": "formal-spot-marker-selected-observation.png",
+      "sha256": "5bdba435c1e9aeffa11e90542a1b57dbcd5d5cd9db3a7b159ddc0a89fa0bc71a"
+    },
+    {
+      "path": "formal-spot-marker-selected.png",
+      "sha256": "c3acc9985cc33c2600dcc1306876ca05eb0a3945fd4c3a6f58c5d2a63f7d0410"
+    },
+    {
+      "path": "formal-spot-marker.png",
+      "sha256": "aec3660cec05b6de6f439184d9e448f05ea6d3f60edbfdafb3e30d71cde2b021"
+    },
+    {
       "path": "images-day.svg",
       "sha256": "e959c8751d059176cd043deea5005c9a78eda2677372fd5a9919c25b3179b94d"
     },
@@ -42,28 +114,40 @@
       "sha256": "fec2ee988233cadf00b404869c7bdaa6d7008e0b119f60e9504519a9153afe53"
     },
     {
-      "path": "spot-marker-night.png",
-      "sha256": "73cad57671b89f1b96930eb0a1d0db4425a31843e25aa2280e1ee1c7657b8790"
+      "path": "pencil-day.svg",
+      "sha256": "9e76f7a394ae42896aead7e92a4b167609bbc7a820acf56205890c721deddf41"
     },
     {
-      "path": "spot-marker-observation.png",
-      "sha256": "9d7bc048fe72c54780ee43122cc333611817a11287449b98829664e35abbb33d"
+      "path": "pencil-night.svg",
+      "sha256": "3bc964dd00dfbdc3846f4269e712e4d6cdd3bdf9000f13ed1b72f6e3bbece5f5"
     },
     {
-      "path": "spot-marker-selected-night.png",
-      "sha256": "7075a09e396b7317aa381adcb8c2bf56f785edc38fc555b608b1aa6a44566598"
+      "path": "pencil-observation.svg",
+      "sha256": "ced9b4809b1bf545a8d40742aed45acce680f18b9797e423ef19e38f60a683de"
     },
     {
-      "path": "spot-marker-selected-observation.png",
-      "sha256": "b2553c8eab0d6738fc9cd9d92fc77c0d767463b6e4ab8b401b7f68d3a08c00b8"
+      "path": "settings-day.svg",
+      "sha256": "0d30727d0f741c3431a271d5b4cc8fa6e0a66059c3fc836d820b3fd7ea42b7d7"
     },
     {
-      "path": "spot-marker-selected.png",
-      "sha256": "571736d25439cea1723d11e44b9d91c4a244a19f24d574fcf85f6f1fbb9a63f7"
+      "path": "settings-night.svg",
+      "sha256": "c0fd0c96fbbdbc508dda51b38087813c0a24a69dd3d80f53874aa96c9ffb71c6"
     },
     {
-      "path": "spot-marker.png",
-      "sha256": "235694bb8046f1590ddfc4db1814f467fce2af0971cfee390d26a408bab059b3"
+      "path": "settings-observation.svg",
+      "sha256": "1a70a201ca779a49c4392fb40699e9da7b404256bbf8de6a31535dbad077fb00"
+    },
+    {
+      "path": "share-day.svg",
+      "sha256": "69be07eb38ae671c7a1c237506fc73b427d1389e0ee8ef1f44c3a523965411a0"
+    },
+    {
+      "path": "share-night.svg",
+      "sha256": "43520c44824831be681d117015bf1d24c159c211127f6b8aeb7e2af249bdf732"
+    },
+    {
+      "path": "share-observation.svg",
+      "sha256": "7089ea70e085751cf1071cd128e991b07941e8153491b0070dbcd2790436851f"
     },
     {
       "path": "tab-map-night.png",

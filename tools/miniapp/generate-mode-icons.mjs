@@ -23,12 +23,13 @@ const TAB_MODES = {
   observation: { regular: "#D84A3C", selected: "#FF6B58" },
 };
 const MARKER_MODES = {
-  day: { primary: "#8799F6", surface: "#FFFFFF" },
-  night: { primary: "#A9B6FF", surface: "#181A17" },
-  observation: { primary: "#D84A3C", surface: "#110000" },
+  day: { primary: "#111827", surface: "#FFFFFF", accent: "#F2C94C" },
+  night: { primary: "#181A17", surface: "#A9B6FF", accent: "#F2C94C" },
+  observation: { primary: "#110000", surface: "#D84A3C", accent: "#FFB34D" },
 };
-const DAY_PRIMARY = [83, 109, 254];
+const DAY_PRIMARY = [17, 24, 39];
 const DAY_SURFACE = [255, 255, 255];
+const DAY_ACCENT = [242, 201, 76];
 
 function rgb(value) {
   const normalized = value.replace(/^#/u, "");
@@ -42,7 +43,7 @@ function distance(left, right) {
 const generatedAssets = new Map();
 const tokens = readDesignTokens(await readFile(path.join(root, "DESIGN.md"), "utf8"));
 const themedSvgNames = [];
-for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images"]) {
+for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images", "account-user", "pencil", "settings", "share", "eye", "bulb", "cloud"]) {
   const source = await readFile(path.join(iconRoot, `${name}.svg`), "utf8");
   if (!source.includes('stroke="currentColor"')) throw new Error(`source_icon_stroke_missing:${name}`);
   for (const mode of ["day", "night", "observation"]) {
@@ -82,23 +83,27 @@ for (const [mode, colors] of Object.entries(TAB_MODES)) {
 
 for (const [mode, colors] of Object.entries(MARKER_MODES)) {
   for (const selected of [false, true]) {
-    const stem = `spot-marker${selected ? "-selected" : ""}`;
+    const stem = `formal-spot-marker${selected ? "-selected" : ""}`;
     const suffix = mode === "day" ? "" : `-${mode}`;
-    await recolor(`${stem}.png`, `${stem}${suffix}.png`, (sourceColor) =>
-      distance(sourceColor, DAY_SURFACE) < distance(sourceColor, DAY_PRIMARY)
-        ? rgb(colors.surface)
-        : rgb(colors.primary),
-    );
+    await recolor(`${stem}.png`, `${stem}${suffix}.png`, (sourceColor) => {
+      const roles = [
+        { source: DAY_PRIMARY, target: colors.primary },
+        { source: DAY_SURFACE, target: colors.surface },
+        { source: DAY_ACCENT, target: colors.accent },
+      ];
+      roles.sort((left, right) => distance(sourceColor, left.source) - distance(sourceColor, right.source));
+      return rgb(roles[0].target);
+    });
   }
 }
 
 const assetNames = [
   ...themedSvgNames,
-  "spot-marker.png",
-  "spot-marker-selected.png",
+  "formal-spot-marker.png",
+  "formal-spot-marker-selected.png",
   ...Object.keys(MARKER_MODES).filter((mode) => mode !== "day").flatMap((mode) => [
-    `spot-marker-${mode}.png`,
-    `spot-marker-selected-${mode}.png`,
+    `formal-spot-marker-${mode}.png`,
+    `formal-spot-marker-selected-${mode}.png`,
   ]),
   ...["map", "my"].flatMap((icon) => [
     `tab-${icon}.png`,
@@ -127,8 +132,8 @@ const manifestBytes = Buffer.from(
       designSource:
         "DESIGN.md#wechat-mini-program--sky-canvas-field-signal",
       interpretation:
-        "The existing bounded marker and native TabBar geometry is projected through the exact Field Signal day, night and observation roles. Selected state uses size, fill, outline, check and label rather than color alone.",
-      generatedAt: "2026-09-04",
+        "Formal-spot markers use the adopted circular star pin. Mode variants preserve fill, outline and star contrast; selected state also uses size and never relies on color alone.",
+      generatedAt: "2026-09-10",
       assets,
     },
     null,

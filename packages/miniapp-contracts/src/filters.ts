@@ -1,10 +1,13 @@
 import type { SpotSummary } from "./types.ts";
 
-export type FilterTier = "FIRST_LEVEL" | "ADVANCED";
+export type FilterCategoryId =
+  | "OBSERVATION"
+  | "ARRIVAL"
+  | "FACILITIES"
+  | "PLACE"
+  | "FRESHNESS";
 
 export type FilterGroupKey =
-  | "TONIGHT_RECOMMENDED"
-  | "BEST_WINDOW_DURATION"
   | "DISTANCE_DRIVE_TIME"
   | "LIGHT_POLLUTION"
   | "LESS_CLOUD"
@@ -23,8 +26,6 @@ export type FilterGroupKey =
   | "LAST_VERIFIED_AT";
 
 export type FilterOptionId =
-  | "tonightRecommended"
-  | "bestWindowDuration"
   | "distanceDriveTime"
   | "lightPollution"
   | "lessCloud"
@@ -49,7 +50,7 @@ export interface FilterOption {
   id: FilterOptionId;
   label: string;
   group: FilterGroupKey;
-  tier: FilterTier;
+  category: FilterCategoryId;
   mode: FilterSelectionMode;
   evidence: FilterEvidence;
   test: (spot: SpotSummary) => boolean;
@@ -63,34 +64,16 @@ const facility = (spot: SpotSummary, type: string) =>
 const dynamicUnavailable = () => false;
 
 /**
- * The current product has one flat, ordered 10+8 taxonomy. Options whose
+ * The current product has one flat, ordered 16-option taxonomy. Options whose
  * SpotSummary cannot truthfully answer a time/provider-dependent predicate
  * return no match instead of manufacturing a favourable value.
  */
 export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
   {
-    id: "tonightRecommended",
-    label: "今晚推荐",
-    group: "TONIGHT_RECOMMENDED",
-    tier: "FIRST_LEVEL",
-    mode: "CANCELABLE_SINGLE",
-    evidence: "DYNAMIC_CONTEXT",
-    test: dynamicUnavailable,
-  },
-  {
-    id: "bestWindowDuration",
-    label: "最佳窗口时长",
-    group: "BEST_WINDOW_DURATION",
-    tier: "FIRST_LEVEL",
-    mode: "CANCELABLE_SINGLE",
-    evidence: "DYNAMIC_CONTEXT",
-    test: dynamicUnavailable,
-  },
-  {
     id: "distanceDriveTime",
-    label: "距离/驾车时间",
+    label: "驾车范围",
     group: "DISTANCE_DRIVE_TIME",
-    tier: "FIRST_LEVEL",
+    category: "ARRIVAL",
     mode: "CANCELABLE_SINGLE",
     evidence: "DYNAMIC_CONTEXT",
     test: dynamicUnavailable,
@@ -99,7 +82,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "lightPollution",
     label: "光害",
     group: "LIGHT_POLLUTION",
-    tier: "FIRST_LEVEL",
+    category: "OBSERVATION",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => spot.lightPollution.productBand !== null,
@@ -108,7 +91,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "lessCloud",
     label: "少云",
     group: "LESS_CLOUD",
-    tier: "FIRST_LEVEL",
+    category: "OBSERVATION",
     mode: "CANCELABLE_SINGLE",
     evidence: "DYNAMIC_CONTEXT",
     test: dynamicUnavailable,
@@ -117,7 +100,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "parking",
     label: "停车",
     group: "PARKING",
-    tier: "FIRST_LEVEL",
+    category: "FACILITIES",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => facility(spot, "PARKING"),
@@ -126,7 +109,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "restroom",
     label: "厕所",
     group: "RESTROOM",
-    tier: "FIRST_LEVEL",
+    category: "FACILITIES",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => facility(spot, "TOILET"),
@@ -135,7 +118,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "driveUpAccess",
     label: "可驾车直达",
     group: "DRIVE_UP_ACCESS",
-    tier: "FIRST_LEVEL",
+    category: "ARRIVAL",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => spot.accessTags.includes("DRIVE_TO"),
@@ -144,7 +127,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "photoForeground",
     label: "摄影前景",
     group: "PHOTO_FOREGROUND",
-    tier: "FIRST_LEVEL",
+    category: "PLACE",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => spot.media.some((item) => item.isSiteSpecific),
@@ -153,7 +136,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "campingOvernightParking",
     label: "可露营/驻车",
     group: "CAMPING_OVERNIGHT_PARKING",
-    tier: "FIRST_LEVEL",
+    category: "PLACE",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => facility(spot, "CAMPING"),
@@ -162,7 +145,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "specificCelestialEvent",
     label: "特定天象",
     group: "SPECIFIC_CELESTIAL_EVENT",
-    tier: "ADVANCED",
+    category: "OBSERVATION",
     mode: "CANCELABLE_SINGLE",
     evidence: "DYNAMIC_CONTEXT",
     test: dynamicUnavailable,
@@ -171,7 +154,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "lowCloudThreshold",
     label: "低云阈值",
     group: "LOW_CLOUD_THRESHOLD",
-    tier: "ADVANCED",
+    category: "OBSERVATION",
     mode: "CANCELABLE_SINGLE",
     evidence: "DYNAMIC_CONTEXT",
     test: dynamicUnavailable,
@@ -180,7 +163,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "moonImpact",
     label: "月亮影响",
     group: "MOON_IMPACT",
-    tier: "ADVANCED",
+    category: "OBSERVATION",
     mode: "CANCELABLE_SINGLE",
     evidence: "DYNAMIC_CONTEXT",
     test: dynamicUnavailable,
@@ -189,7 +172,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "hikingDifficulty",
     label: "徒步难度",
     group: "HIKING_DIFFICULTY",
-    tier: "ADVANCED",
+    category: "ARRIVAL",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => spot.accessTags.includes("NO_HIKE"),
@@ -198,7 +181,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "signal",
     label: "信号",
     group: "SIGNAL",
-    tier: "ADVANCED",
+    category: "FACILITIES",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => facility(spot, "SIGNAL"),
@@ -207,7 +190,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "charging",
     label: "充电",
     group: "CHARGING",
-    tier: "ADVANCED",
+    category: "FACILITIES",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => facility(spot, "CHARGING"),
@@ -216,7 +199,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "openSkyDirection",
     label: "天空开阔方向",
     group: "OPEN_SKY_DIRECTION",
-    tier: "ADVANCED",
+    category: "OBSERVATION",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => spot.clearDirections.length > 0,
@@ -225,7 +208,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "lastVerifiedAt",
     label: "最近核验时间",
     group: "LAST_VERIFIED_AT",
-    tier: "ADVANCED",
+    category: "FRESHNESS",
     mode: "CANCELABLE_SINGLE",
     evidence: "STATIC_SPOT",
     test: (spot) => spot.lastVerifiedAt !== null,
@@ -234,27 +217,42 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
 
 export const FILTER_GROUPS: ReadonlyArray<{
   key: FilterGroupKey;
-  section: "首层筛选" | "高级筛选";
+  category: FilterCategoryId;
   title: string;
   mode: FilterSelectionMode;
 }> = Object.freeze(
   FILTER_OPTIONS.map((option) => {
-    const section: "首层筛选" | "高级筛选" =
-      option.tier === "FIRST_LEVEL" ? "首层筛选" : "高级筛选";
     return {
       key: option.group,
-      section,
+      category: option.category,
       title: option.label,
       mode: option.mode,
     };
   }),
 );
 
-export type FilterState = Readonly<Record<FilterGroupKey, readonly string[]>>;
+export interface DrivingRangeParameter {
+  readonly mode: "TIME" | "DISTANCE";
+  readonly maxMinutes: number;
+  readonly maxDistanceKm: number;
+}
+
+export const DEFAULT_DRIVING_RANGE: DrivingRangeParameter = Object.freeze({
+  mode: "TIME",
+  maxMinutes: 180,
+  maxDistanceKm: 100,
+});
+
+export type FilterState = Readonly<Record<FilterGroupKey, readonly string[]>> & {
+  readonly drivingRange: DrivingRangeParameter;
+};
 
 export const EMPTY_FILTER_STATE: FilterState = Object.freeze(
   Object.fromEntries(
-    FILTER_GROUPS.map(({ key }) => [key, Object.freeze([])]),
+    [
+      ...FILTER_GROUPS.map(({ key }) => [key, Object.freeze([])]),
+      ["drivingRange", DEFAULT_DRIVING_RANGE],
+    ],
   ) as unknown as FilterState,
 );
 
@@ -264,7 +262,7 @@ export function assertFilterState(
   if (typeof value !== "object" || value === null || Array.isArray(value))
     throw new Error("filter_state_invalid:not_object");
   const record = value as Record<string, unknown>;
-  const expectedKeys = FILTER_GROUPS.map((group) => group.key).sort();
+  const expectedKeys = [...FILTER_GROUPS.map((group) => group.key), "drivingRange"].sort();
   const actualKeys = Object.keys(record).sort();
   if (
     actualKeys.length !== expectedKeys.length ||
@@ -290,12 +288,50 @@ export function assertFilterState(
     if (selected.some((id) => !allowed.has(id as FilterOptionId)))
       throw new Error(`filter_state_invalid:${group.key}:unknown_option`);
   }
+  assertDrivingRangeParameter(record.drivingRange);
+}
+
+export function assertDrivingRangeParameter(
+  value: unknown,
+): asserts value is DrivingRangeParameter {
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    throw new Error("driving_range_invalid:not_object");
+  const candidate = value as Record<string, unknown>;
+  if (candidate.mode !== "TIME" && candidate.mode !== "DISTANCE")
+    throw new Error("driving_range_invalid:mode");
+  if (
+    !Number.isInteger(candidate.maxMinutes) ||
+    (candidate.maxMinutes as number) < 30 ||
+    (candidate.maxMinutes as number) > 360
+  ) throw new Error("driving_range_invalid:max_minutes");
+  if (
+    !Number.isInteger(candidate.maxDistanceKm) ||
+    (candidate.maxDistanceKm as number) < 1 ||
+    (candidate.maxDistanceKm as number) > 1000
+  ) throw new Error("driving_range_invalid:max_distance_km");
 }
 
 export function cloneFilterState(state: FilterState): FilterState {
   return Object.fromEntries(
-    FILTER_GROUPS.map(({ key }) => [key, [...(state[key] ?? [])]]),
+    [
+      ...FILTER_GROUPS.map(({ key }) => [key, [...(state[key] ?? [])]]),
+      ["drivingRange", { ...(state.drivingRange ?? DEFAULT_DRIVING_RANGE) }],
+    ],
   ) as unknown as FilterState;
+}
+
+export function setDrivingRangeParameter(
+  state: FilterState,
+  parameter: DrivingRangeParameter,
+): FilterState {
+  assertDrivingRangeParameter(parameter);
+  return { ...cloneFilterState(state), drivingRange: { ...parameter } };
+}
+
+export function drivingRangeLabel(parameter: DrivingRangeParameter): string {
+  return parameter.mode === "TIME"
+    ? `驾车${parameter.maxMinutes}分钟内`
+    : `驾车${parameter.maxDistanceKm}公里内`;
 }
 
 export function toggleFilter(
@@ -304,10 +340,13 @@ export function toggleFilter(
 ): FilterState {
   const option = FILTER_OPTIONS.find((item) => item.id === optionId);
   if (!option) throw new Error(`unknown_filter:${optionId}`);
-  const next = cloneFilterState(state) as Record<FilterGroupKey, string[]>;
+  const next = cloneFilterState(state) as unknown as Record<
+    FilterGroupKey,
+    string[]
+  > & { drivingRange: DrivingRangeParameter };
   const selected = next[option.group];
   next[option.group] = selected.includes(optionId) ? [] : [optionId];
-  return next;
+  return next as FilterState;
 }
 
 export function countAppliedFilters(state: FilterState): number {
@@ -327,15 +366,9 @@ export function filterSpots(
   return spots.filter((spot) => active.every((option) => option.test(spot)));
 }
 
-const firstLevel = FILTER_OPTIONS.filter(
-  (option) => option.tier === "FIRST_LEVEL",
-);
-const advanced = FILTER_OPTIONS.filter((option) => option.tier === "ADVANCED");
 if (
-  FILTER_OPTIONS.length !== 18 ||
-  firstLevel.length !== 10 ||
-  advanced.length !== 8 ||
-  new Set(FILTER_OPTIONS.map((item) => item.id)).size !== 18
+  FILTER_OPTIONS.length !== 16 ||
+  new Set(FILTER_OPTIONS.map((item) => item.id)).size !== 16
 ) {
-  throw new Error("filter_schema_must_be_exact_ordered_10_plus_8");
+  throw new Error("filter_schema_must_be_exact_ordered_16");
 }

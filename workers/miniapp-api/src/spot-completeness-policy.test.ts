@@ -27,7 +27,7 @@ const SOURCE: SourceSummary = {
   limitations: [],
 };
 
-test("legacy missing radiance is an incomplete estimate, not an assessment crash", () => {
+test("legacy optional fields do not crash or replace missing core evidence", () => {
   const detail = completeDetail();
   delete (detail.spot.lightPollution as Partial<typeof detail.spot.lightPollution>).radiance;
   delete (detail as Partial<SpotDetail>).evidence;
@@ -36,10 +36,8 @@ test("legacy missing radiance is an incomplete estimate, not an assessment crash
   const result = evaluateSpotCompleteness({ detail, now: NOW,
     review: { actorId: "policy-test", reason: "Check legacy data without publishing" } });
   assert.equal(result.complete, false);
-  assert.ok(result.issues.some((issue) => issue.code === "light_pollution_estimate_incomplete"));
   assert.ok(result.issues.some((issue) => issue.code === "required_evidence_missing_or_stale"));
   assert.ok(result.issues.some((issue) => issue.code === "night_safety_unknown"));
-  assert.ok(result.issues.some((issue) => issue.code === "site_media_state_unknown"));
 });
 
 function completeDetail(): SpotDetail {
@@ -111,12 +109,70 @@ test("all UNKNOWN facilities and missing core evidence fail closed", () => {
   detail.evidence = [];
   const result = assess(detail);
   assert.equal(result.complete, false);
-  assert.ok(result.issues.some((issue) => issue.code === "facility_all_unknown"));
   assert.ok(
     result.issues.some(
       (issue) => issue.code === "required_evidence_missing_or_stale",
     ),
   );
+});
+
+test("verified core facts publish without optional facilities, light, horizon or photographs", () => {
+  const detail = completeDetail();
+  detail.spot.facilities = detail.spot.facilities.map((facility) => ({
+    ...facility, status: "UNKNOWN", summary: "未知", detail: "待核验",
+    verifiedAt: null, source: { ...SOURCE, id: "source:optional:missing", state: "UNAVAILABLE" },
+  }));
+  detail.spot.lightPollution = { ...detail.spot.lightPollution,
+    state: "UNAVAILABLE", radiance: null, productBand: null,
+    datasetVersion: "UNAVAILABLE", minimumCloudFreeObservations: null,
+    source: { ...SOURCE, id: "source:light:missing", state: "UNAVAILABLE" },
+  };
+  detail.spot.obstructionPercent = null;
+  detail.spot.clearDirections = [];
+  detail.spot.media = [];
+  detail.siteMediaState = "UNKNOWN";
+  detail.route = { ...detail.route, lastRoad: "未知", parkingGuidance: "待核验" };
+  detail.evidence = detail.evidence.filter((item) =>
+    ["SPOT_COORDINATE", "ACCESS_OPENNESS", "ACCESS_LEGAL_ENTRY", "SAFETY_NIGHT"].includes(item.claim));
+  const result = assess(detail);
+  assert.equal(result.complete, true, JSON.stringify(result.issues));
+});
+
+test("each core claim requires current evidence attributable to this spot and a usable source", () => {
+  for (const claim of ["SPOT_COORDINATE", "ACCESS_OPENNESS", "ACCESS_LEGAL_ENTRY", "SAFETY_NIGHT"]) {
+    for (const failure of ["missing", "wrong-spot", "expired-source", "reported"]) {
+      const detail = completeDetail();
+      const expired = { ...SOURCE, id: "source:expired", state: "EXPIRED" as const };
+      detail.dataDisclosure = [...detail.dataDisclosure, expired];
+      detail.evidence = detail.evidence.flatMap((item) => {
+        if (item.claim !== claim) return [item];
+        if (failure === "missing") return [];
+        return [{ ...item,
+          ...(failure === "wrong-spot" ? { subjectId: "spot:another" } : {}),
+          ...(failure === "expired-source" ? { sourceId: expired.id } : {}),
+          ...(failure === "reported" ? { state: "REPORTED" as const } : {}),
+        }];
+      });
+      const result = assess(detail);
+      assert.equal(result.complete, false, `${claim}: ${failure}`);
+      assert.ok(result.issues.some((issue) => issue.field === `spot.evidence.${claim}`));
+    }
+  }
+});
+
+test("closed, prohibited and dangerous states cannot be published as unrestricted points", () => {
+  for (const blocker of [
+    { openness: "CLOSED" as const },
+    { legalAccess: "PROHIBITED" as const },
+    { nightSafety: "DANGER" as const },
+    { explicitDanger: true },
+  ]) {
+    const detail = completeDetail();
+    detail.accessAndSafety = { ...detail.accessAndSafety, ...blocker };
+    assert.equal(assess(detail).complete, false);
+    detail.spot.status = "TEMPORARILY_CLOSED";
+    assert.equal(assess(detail).complete, true, "restrictive lifecycle retains verified facts");
+  }
 });
 
 test("a published spot with an explicit safety blocker is rejected", () => {
@@ -166,4 +222,18 @@ test("stale core evidence and missing operator review are independently rejected
   assert.ok(
     result.issues.some((issue) => issue.code === "operator_review_missing"),
   );
+});
+
+test("optional photographs cannot bypass verification by leaving media status unknown", () => {
+  const detail = completeDetail();
+  detail.siteMediaState = "UNKNOWN";
+  assert.ok(assess(detail).issues.some((issue) => issue.code === "site_media_state_conflict"));
+});
+
+test("missing access fields in legacy records remain unknown, not implicitly safe", () => {
+  for (const field of ["openness", "legalAccess", "nightSafety", "explicitDanger"] as const) {
+    const detail = completeDetail();
+    delete (detail.accessAndSafety as Partial<SpotDetail["accessAndSafety"]>)[field];
+    assert.equal(assess(detail).complete, false, field);
+  }
 });

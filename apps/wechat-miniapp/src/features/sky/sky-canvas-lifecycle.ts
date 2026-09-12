@@ -20,7 +20,7 @@ export function measuredCanvasSize(result: unknown): CanvasSize {
 /** One measured native surface, one outstanding native draw, one latest frame. */
 export function createSkyCanvasLifecycle<Frame, Context>(port: {
   measure(done: (result: unknown) => void): void;
-  createContext(): Context;
+  createContext(measurement: unknown, size: CanvasSize): Context;
   paint(context: Context, frame: Frame, size: CanvasSize, done: () => void): void;
   sameScene?(completed: Frame, latest: Frame): boolean;
   presented(frame: Frame, size: CanvasSize): void;
@@ -74,7 +74,7 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
           measured = true;
           try {
             size = measuredCanvasSize(result);
-            context = port.createContext();
+            context = port.createContext(result, size);
             paint(generation);
           } catch (error) { fail(error); }
         });

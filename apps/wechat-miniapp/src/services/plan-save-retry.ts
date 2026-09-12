@@ -1,6 +1,7 @@
-import type { ObservationContext } from "@starward/miniapp-contracts";
+import { PLAN_NOTES_MAX_LENGTH, parsePlanEventOccurrenceIds, parsePlanReminders, parsePlanTravel, type PlanReminder } from "@starward/miniapp-contracts";
+import type { ObservationContext, PlanTiming, PlanTravel } from "@starward/miniapp-contracts";
 
-export type PlanSaveInput = { planId: string; spotId: string; observationContextId: string; localDate: string; localTime: string; notes: string; expectedRevision: number | null; contextIdentity: string };
+export type PlanSaveInput = { planId: string; spotId: string; observationContextId: string; localDate: string; localTime: string; timing?: PlanTiming; travel?: PlanTravel; reminders?: readonly PlanReminder[]; eventOccurrenceIds?: readonly string[]; notes: string; expectedRevision: number | null; contextIdentity: string };
 type Entry = { input: PlanSaveInput; key: string };
 type Storage = { getStorageSync(key: string): unknown; setStorageSync(key: string, value: unknown): void; removeStorageSync(key: string): void };
 const storageKey = (owner: string) => "starward.plan-save.v1:" + JSON.stringify([owner]);
@@ -16,13 +17,26 @@ export function planContextIdentity(context: ObservationContext) {
 function clean(raw: unknown): PlanSaveInput {
   if (!raw || typeof raw !== "object") throw new Error("invalid plan input");
   const v = raw as PlanSaveInput;
-  for (const [field, max] of [["planId", 180], ["spotId", 180], ["observationContextId", 256], ["localDate", 10], ["localTime", 5], ["notes", 800], ["contextIdentity", 1000]] as const)
+  for (const [field, max] of [["planId", 180], ["spotId", 180], ["observationContextId", 256], ["localDate", 10], ["localTime", 5], ["notes", PLAN_NOTES_MAX_LENGTH], ["contextIdentity", 1000]] as const)
     if (typeof v[field] !== "string" || v[field].length > max) throw new Error("invalid plan input");
   if (!v.planId || !v.spotId || !v.observationContextId || !(v.expectedRevision === null || (Number.isSafeInteger(v.expectedRevision) && v.expectedRevision >= 0))) throw new Error("invalid plan identity");
+  let timing: PlanTiming | undefined;
+  if (v.timing !== undefined) {
+    const t = v.timing;
+    if (!t || typeof t !== "object" ||
+      ![t.endLocalDate, t.departureLocalDate].every((value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) ||
+      ![t.endLocalTime, t.departureLocalTime].every((value) => typeof value === "string" && /^\d{2}:\d{2}$/.test(value))) throw new Error("invalid plan timing");
+    timing = { endLocalDate: t.endLocalDate, endLocalTime: t.endLocalTime,
+      departureLocalDate: t.departureLocalDate, departureLocalTime: t.departureLocalTime };
+  }
   return { planId: v.planId, spotId: v.spotId, observationContextId: v.observationContextId, localDate: v.localDate, localTime: v.localTime,
+    ...(timing ? { timing } : {}),
+    ...(v.travel === undefined ? {} : { travel: parsePlanTravel(v.travel) }),
+    ...(v.reminders === undefined ? {} : { reminders: parsePlanReminders(v.reminders) }),
+    ...(v.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: parsePlanEventOccurrenceIds(v.eventOccurrenceIds) }),
     notes: v.notes, expectedRevision: v.expectedRevision, contextIdentity: v.contextIdentity };
 }
-const identity = (v: PlanSaveInput) => JSON.stringify([v.expectedRevision === null ? null : v.planId, v.expectedRevision, v.spotId, v.localDate, v.localTime, v.notes, v.contextIdentity]);
+const identity = (v: PlanSaveInput) => JSON.stringify([v.expectedRevision === null ? null : v.planId, v.expectedRevision, v.spotId, v.localDate, v.localTime, v.notes, v.contextIdentity, v.timing ?? null, v.travel ?? null, v.reminders ?? null, v.eventOccurrenceIds ?? null]);
 function read(storage: Storage, key: string): Entry[] {
   const raw = storage.getStorageSync(key);
   if (raw === undefined || raw === null || raw === "") return [];

@@ -34,6 +34,9 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const response = context.getResponse();
     const request = context.getRequest<{ headers?: Record<string, unknown> }>();
     const message = exception instanceof Error ? exception.message : "unknown";
+    if (process.env.STARWARD_ACCEPTANCE_DIAGNOSTICS === "1") {
+      process.stderr.write(`[starward-acceptance-error] ${message}\n`);
+    }
     const requestId = requestIdFromHeaders(request.headers);
     if (exception instanceof SpotPublicationBlockedError) {
       response.status(422).send({

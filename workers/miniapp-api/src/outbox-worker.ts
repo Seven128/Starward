@@ -12,6 +12,8 @@ import {
   type MiniappRuntimeConfig,
 } from "./runtime-config.ts";
 import { createWeatherPort } from "./weather-provider.ts";
+import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
+import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.ts";
 
 const { Pool } = pg;
 const DEFAULT_QUEUE_NAME = "starward-miniapp-current";
@@ -26,7 +28,9 @@ export const OPERATIONAL_JOB_KINDS = Object.freeze([
   "COST",
   "NOTIFICATION",
   "BACKUP",
+  "EVENT_CATALOG",
 ] as const);
+const HOURLY_OPERATIONAL_JOB_KINDS = OPERATIONAL_JOB_KINDS.filter(kind => kind !== "EVENT_CATALOG");
 type OperationalJobKind = (typeof OPERATIONAL_JOB_KINDS)[number];
 
 function isOperationalJobKind(value: unknown): value is OperationalJobKind {
@@ -42,6 +46,11 @@ function digest(value: unknown) {
 
 function hourBucket(at = new Date()) {
   return `${at.toISOString().slice(0, 13)}:00:00.000Z`;
+}
+
+function intervalBucket(days: number, at = new Date()) {
+  const width = days * 24 * 60 * 60 * 1_000;
+  return new Date(Math.floor(at.getTime() / width) * width).toISOString();
 }
 
 function localDate(timezone: string) {
@@ -108,21 +117,29 @@ export class OutboxWorkerRuntime {
   readonly mediaStore: MediaObjectStorePort;
   readonly observationContexts: ObservationContextService;
   readonly astronomy: AstronomyService;
+  readonly eventCatalog: AstronomicalEventCatalogOwner;
 
   constructor(options: OutboxWorkerOptions) {
     this.config = options.runtimeConfig ?? loadRuntimeConfig();
     this.repository = new PostgresMiniappRepository(options.databaseUrl);
     this.weather = options.weather ?? createWeatherPort(this.config);
     this.mediaStore = createMediaObjectStore(this.config);
+    this.eventCatalog = new AstronomicalEventCatalogOwner(
+      new PostgresAstronomicalEventCatalogStore(this.repository.pool),
+    );
     this.observationContexts = new ObservationContextService(
       this.repository,
       this.cache,
       this.config,
+      this.eventCatalog,
     );
     this.astronomy = new AstronomyService(
       this.weather,
       this.repository,
       this.config,
+      undefined,
+      Date.now,
+      this.eventCatalog,
     );
     const connection = connectionFromUrl(options.redisUrl);
     const queueName = options.queueName ?? DEFAULT_QUEUE_NAME;
@@ -152,7 +169,7 @@ export class OutboxWorkerRuntime {
     try {
       await client.query("BEGIN");
       let inserted = 0;
-      for (const jobKind of OPERATIONAL_JOB_KINDS) {
+      for (const jobKind of HOURLY_OPERATIONAL_JOB_KINDS) {
         const result = await client.query(
           `INSERT INTO outbox_events(
              event_id, event_type, idempotency_key, payload
@@ -179,6 +196,16 @@ export class OutboxWorkerRuntime {
     } finally {
       client.release();
     }
+  }
+
+  async enqueueEventCatalogSweep(bucket = intervalBucket(this.config.eventCatalogCheckIntervalDays)) {
+    const result = await this.pool.query(
+      `INSERT INTO outbox_events(event_id,event_type,idempotency_key,payload)
+       VALUES ($1,'OperationalEVENT_CATALOGRequested',$2,$3)
+       ON CONFLICT (idempotency_key) DO NOTHING`,
+      [randomUUID(), `operational:${bucket}:EVENT_CATALOG`, { jobKind: "EVENT_CATALOG", scheduleBucket: bucket, trigger: "BOUNDED_INTERVAL_SWEEP", intervalDays: this.config.eventCatalogCheckIntervalDays }],
+    );
+    return result.rowCount ?? 0;
   }
 
   async dispatchBatch(limit = 50) {
@@ -898,14 +925,58 @@ export class OutboxWorkerRuntime {
           "SELECT payload FROM feature_flags WHERE flag_key = 'NOTIFICATION_ENABLED'",
         );
         const enabled = flag.rows[0]?.payload.value === true;
+        await client.query(
+          `UPDATE plan_reminder_schedules
+              SET state = 'SKIPPED', reason = CASE
+                    WHEN departure_at <= now() THEN 'DEPARTURE_EXPIRED'
+                    ELSE 'TRIGGER_MISSED' END,
+                  updated_at = now()
+            WHERE active = true
+              AND state IN ('WAITING_AUTHORIZATION', 'SCHEDULED')
+              AND trigger_at <= now()`,
+        );
+        const schedules = await client.query<{ waiting: string; scheduled: string; skipped: string }>(
+          `SELECT
+             count(*) FILTER (WHERE active AND state = 'WAITING_AUTHORIZATION')::text AS waiting,
+             count(*) FILTER (WHERE active AND state = 'SCHEDULED')::text AS scheduled,
+             count(*) FILTER (WHERE state = 'SKIPPED')::text AS skipped
+           FROM plan_reminder_schedules`,
+        );
         outcome = {
-          resultState: enabled ? "EVALUATED" : "CAPABILITY_GATED",
+          resultState: "CAPABILITY_GATED",
           resultPayload: {
             enabled,
+            schedulingConnected: true,
+            waitingAuthorization: Number(schedules.rows[0]?.waiting ?? 0),
+            scheduled: Number(schedules.rows[0]?.scheduled ?? 0),
+            skipped: Number(schedules.rows[0]?.skipped ?? 0),
+            authorizationConnected: false,
             deliveryAttempted: false,
             reason: enabled
-              ? "No due notifications in this bounded sweep"
+              ? "Scheduling is connected; an approved AppID template and encrypted delivery identity are still required"
               : "Notification capability is disabled by the current feature flag",
+          },
+        };
+        break;
+      }
+      case "EVENT_CATALOG": {
+        await this.eventCatalog.initialize();
+        const sources = (await this.eventCatalog.listSourceConfigs()).filter(source => source.enabled);
+        const runs = [];
+        for (const source of sources)
+          runs.push(await this.eventCatalog.retrieve({ sourceId: source.sourceId, trigger: "SCHEDULED" }));
+        outcome = {
+          resultState: sources.length === 0
+            ? "SOURCE_UNAVAILABLE"
+            : runs.some(run => run.state === "FAILED" || run.state === "SOURCE_UNAVAILABLE")
+              ? "PARTIAL"
+              : "CHECKED",
+          resultPayload: {
+            intervalDays: this.config.eventCatalogCheckIntervalDays,
+            sourceCount: sources.length,
+            runs: runs.map(run => ({ runId: run.runId, sourceId: run.sourceId, state: run.state, candidateId: run.candidateId, errorCode: run.errorCode })),
+            activeCatalogVersion: this.eventCatalog.snapshot().catalogVersion,
+            priorCatalogRetainedOnFailure: true,
           },
         };
         break;
@@ -1022,8 +1093,13 @@ export class OutboxWorkerRuntime {
 export async function runOutboxOnce(options: OutboxWorkerOptions) {
   const runtime = new OutboxWorkerRuntime(options);
   try {
-    const scheduled = await runtime.enqueueOperationalSweep();
-    const enqueued = await runtime.dispatchBatch();
+    const scheduled = await runtime.enqueueOperationalSweep() + await runtime.enqueueEventCatalogSweep();
+    let enqueued = 0;
+    let dispatched = 0;
+    do {
+      dispatched = await runtime.dispatchBatch();
+      enqueued += dispatched;
+    } while (dispatched === 50);
     await runtime.waitForIdle();
     return { scheduled, enqueued, ...(await runtime.snapshot()) };
   } finally {

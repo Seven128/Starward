@@ -24,6 +24,11 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
         status: "passed";
         cancelledRequests: number;
       };
+      resetPreservingIdentity(): {
+        status: "passed";
+        cancelledRequests: number;
+        snapshot: unknown;
+      };
       inspectContext(): {
         contextId: string;
         contextFingerprint: string;
@@ -56,6 +61,12 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
       const cancelledRequests = resetApiNetworkCacheForAcceptance();
       miniappQueryClient.clear();
       return { status: "passed", cancelledRequests };
+    },
+    resetPreservingIdentity() {
+      const cancelledRequests = resetApiNetworkCacheForAcceptance();
+      miniappQueryClient.clear();
+      const snapshot = resetAppStoreForAcceptance();
+      return { status: "passed", cancelledRequests, snapshot };
     },
     inspectContext() {
       const context = useAppStore.getState().observationContext;

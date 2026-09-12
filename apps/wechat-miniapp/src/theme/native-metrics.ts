@@ -34,8 +34,13 @@ export function nativeStatusBarHeightPx(): number {
 export function nativeNavigationInsets(runtime: {
   getWindowInfo: () => { windowWidth: number; statusBarHeight?: number };
   getMenuButtonBoundingClientRect: () => { bottom: number };
-} = Taro): { statusBarHeight: number | undefined; safeTop: number | undefined } {
+} = Taro): {
+  statusBarHeight: number | undefined;
+  capsuleBottom: number | undefined;
+  safeTop: number | undefined;
+} {
   let statusBarHeight: number | undefined;
+  let capsuleBottom: number | undefined;
   let safeTop: number | undefined;
   try {
     const info = runtime.getWindowInfo();
@@ -47,8 +52,10 @@ export function nativeNavigationInsets(runtime: {
   } catch { /* Keep the stylesheet safe-area fallback. */ }
   try {
     const { bottom } = runtime.getMenuButtonBoundingClientRect();
-    if (Number.isFinite(bottom) && bottom > 0)
+    if (Number.isFinite(bottom) && bottom > 0) {
+      capsuleBottom = bottom;
       safeTop = Math.max(safeTop ?? 0, bottom + 4);
+    }
   } catch { /* Capsule geometry is optional on older runtimes. */ }
-  return { statusBarHeight, safeTop };
+  return { statusBarHeight, capsuleBottom, safeTop };
 }

@@ -16,6 +16,11 @@ test("local feedback drafts retain incomplete input without copying private resp
   assert.equal(parseLocalContributionDraft({ ...draft, detail: "x".repeat(2001) }), null);
   assert.equal(parseLocalContributionDraft({ ...draft, baseSubmissionId: "contribution:a", baseRevision: null }), null);
   assert.equal(parseLocalContributionDraft({ ...draft, baseSubmissionId: "contribution:a", baseRevision: 3 })?.baseRevision, 3);
+  assert.equal(parseLocalContributionDraft({ ...draft, topics: ["OTHER", "OTHER"] }), null);
+  assert.equal(parseLocalContributionDraft({ ...draft, detail: "unsafe\u0000text" }), null);
+  assert.equal(parseLocalContributionDraft({ ...draft, candidateProfile: { fields: { openness: "随时开放" }, media: {} } }), null);
+  assert.equal(parseLocalContributionDraft({ ...draft, candidateProfile: { fields: {}, media: { SITE: ["upload:a", "upload:a"] } } }), null);
+  assert.equal(parseLocalContributionDraft({ ...draft, candidateProfile: { fields: {}, media: { SITE: [""] } } }), null);
 });
 
 test("feedback draft storage is isolated by exact account and entry location", () => {

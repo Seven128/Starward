@@ -5,9 +5,16 @@ import {
   type ContributionMediaUpload,
   type ContributionSubmission,
   type ContributionUpdateRequest,
+  type ContributionFormalSubmitRequest,
+  type ContributionFormalUploadIntent,
+  type ContributionFormalUploadIntentRequest,
+  type ContributionFormalUploadSessionRequest,
+  type ContributionFormalUploadCompleteRequest,
+  type ContributionFormalMediaUpload,
   type ContributionUploadCompleteRequest,
   type ContributionUploadId,
   type ContributionUploadSessionRequest,
+  type SpotId,
   type UserId,
 } from "@starward/miniapp-contracts";
 import {
@@ -17,10 +24,12 @@ import {
   CONTRIBUTION_UPLOAD_TTL_MS,
   decodeContributionBase64,
   normalizeContributionInput,
+  normalizeFormalContributionInput,
 } from "./contribution-validation.ts";
 import { sanitizeContributionImage } from "./media-object-store.ts";
 import type { MediaObjectStorePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
+import { isContributionEditable } from "./contribution-attempts.ts";
 
 export class ContributionService {
   constructor(
@@ -57,6 +66,8 @@ export class ContributionService {
       mergeState: "NOT_STARTED",
       publicationImpact: "NONE",
       statusHistory: [],
+      attempts: [],
+      workingCopyFromAttemptId: null,
       revision: 1,
       createdAt: now,
       updatedAt: now,
@@ -119,9 +130,12 @@ export class ContributionService {
       input.byteSize > this.config.mediaStorage.maxUploadBytes
     )
       throw new Error("contribution_media_size_invalid");
+    if (input.kind !== undefined && !["parking", "toilet", "site"].includes(input.kind))
+      throw new Error("contribution_media_kind_invalid");
     const now = Date.now();
     const upload: ContributionMediaUpload = {
       uploadId: `upload:${randomUUID()}` as ContributionUploadId,
+      ...(input.kind ? { kind: input.kind } : {}),
       state: "PENDING",
       originalName,
       mimeType: input.mimeType,
@@ -234,6 +248,105 @@ export class ContributionService {
     return submission;
   }
 
+  async getForOwner(userId: UserId, submissionId: ContributionId) {
+    const submission = await this.repository.getContribution(userId, submissionId);
+    if (!submission) throw new Error("contribution_not_found");
+    return submission;
+  }
+
+  async readForOwner(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId) {
+    const submission = await this.repository.getContribution(userId, submissionId);
+    const ownsUpload = submission && (
+      submission.media.some(media => media.uploadId === uploadId) ||
+      submission.attempts.some(attempt => attempt.snapshot.media.some(media => media.uploadId === uploadId))
+    );
+    if (!ownsUpload)
+      throw new Error("contribution_upload_not_found");
+    return this.readForAdmin(uploadId);
+  }
+
+  async readForPublishedSpot(spotId: SpotId, uploadId: ContributionUploadId) {
+    const detail = await this.repository.getDetail(spotId);
+    const formalMediaIds = detail
+      ? Object.values(detail.formalMedia ?? {}).flatMap((ids) => ids ?? [])
+      : [];
+    if (!detail || (!detail.spot.media.some((media) => media.id === uploadId) && !formalMediaIds.includes(uploadId)))
+      throw new Error("contribution_upload_not_found");
+    return this.readForAdmin(uploadId);
+  }
+
+  async submitFormal(userId: UserId, input: ContributionFormalSubmitRequest, idempotencyKey: string) {
+    return this.repository.submitFormalContribution(
+      userId,
+      normalizeFormalContributionInput(input),
+      idempotencyKey,
+    );
+  }
+
+  async createFormalUploadIntent(userId: UserId, input: ContributionFormalUploadIntentRequest, idempotencyKey: string) {
+    const baseline = await this.repository.getContributionFormalBaseline(input.spotId);
+    if (!baseline) throw new Error("formal_spot_not_found");
+    if (baseline.revision !== input.baselineRevision) throw new Error("contribution_baseline_revision_conflict");
+    const now = Date.now();
+    const intent: ContributionFormalUploadIntent = {
+      intentId: `formal-upload-intent:${randomUUID()}`,
+      spotId: baseline.spotId,
+      baselineRevision: baseline.revision,
+      uploads: [], revision: 1,
+      createdAt: new Date(now).toISOString(),
+      expiresAt: new Date(now + CONTRIBUTION_UPLOAD_TTL_MS).toISOString(),
+    };
+    return this.repository.saveFormalUploadIntent(userId, intent, idempotencyKey);
+  }
+
+  async createFormalUpload(userId: UserId, intentId: string, input: ContributionFormalUploadSessionRequest, idempotencyKey: string) {
+    if (!this.mediaStore.enabled) throw new Error("media_upload_capability_disabled");
+    if (!CONTRIBUTION_MEDIA_MIME_TYPES.has(input.mimeType)) throw new Error("contribution_media_mime_invalid");
+    const originalName = cleanContributionText(input.originalName, 120);
+    if (!originalName || /[/\\]/u.test(originalName)) throw new Error("contribution_media_name_invalid");
+    if (!Number.isInteger(input.byteSize) || input.byteSize <= 0 || input.byteSize > this.config.mediaStorage.maxUploadBytes) throw new Error("contribution_media_size_invalid");
+    const intent = await this.repository.getFormalUploadIntent(userId, intentId);
+    if (!intent) throw new Error("formal_upload_intent_not_found");
+    const now = Date.now();
+    const upload: ContributionFormalMediaUpload = {
+      uploadId: `upload:${randomUUID()}` as ContributionUploadId,
+      ...(input.kind ? { kind: input.kind } : {}),
+      kind: input.kind, state: "PENDING", originalName, mimeType: input.mimeType,
+      declaredByteSize: input.byteSize, byteSize: null, sha256: null,
+      createdAt: new Date(now).toISOString(), expiresAt: intent.expiresAt, uploadedAt: null,
+    };
+    return this.repository.createFormalContributionUpload(userId, intentId, upload, input.expectedRevision, idempotencyKey);
+  }
+
+  async completeFormalUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, input: ContributionFormalUploadCompleteRequest, idempotencyKey: string) {
+    const intent = await this.repository.getFormalUploadIntent(userId, intentId);
+    const upload = intent?.uploads.find(value => value.uploadId === uploadId);
+    if (!intent || !upload) throw new Error("contribution_upload_not_found");
+    if (Date.parse(intent.expiresAt) <= Date.now()) throw new Error("formal_upload_intent_expired");
+    const raw = decodeContributionBase64(input.dataBase64, this.config.mediaStorage.maxUploadBytes);
+    if (raw.length !== upload.declaredByteSize) throw new Error("contribution_media_size_mismatch");
+    const sanitized = sanitizeContributionImage(raw, upload.mimeType);
+    const sha256 = createHash("sha256").update(sanitized).digest("hex");
+    if (upload.state === "UPLOADED" || upload.state === "ATTACHED") {
+      if (upload.sha256 !== sha256) throw new Error("contribution_upload_content_conflict");
+      return intent;
+    }
+    const extension = upload.mimeType === "image/jpeg" ? "jpg" : "png";
+    const scope = createHash("sha256").update(userId).digest("hex").slice(0, 24);
+    const objectKey = `contributions/${scope}/${String(uploadId).replace(/^upload:/u, "")}.${extension}`;
+    await this.mediaStore.put({ objectKey, bytes: sanitized, mimeType: upload.mimeType });
+    try {
+      return await this.repository.completeFormalContributionUpload(userId, intentId, uploadId, { byteSize: sanitized.length, sha256, objectKey, uploadedAt: new Date().toISOString() }, idempotencyKey);
+    } catch (error) { await this.mediaStore.delete(objectKey); throw error; }
+  }
+
+  async removeFormalUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
+    const object = await this.repository.getContributionUploadObject(uploadId);
+    const intent = await this.repository.removeFormalContributionUpload(userId, intentId, uploadId, expectedRevision, idempotencyKey);
+    if (object) await this.mediaStore.delete(object.objectKey);
+    return intent;
+  }
+
   async cleanupExpiredUploads() {
     const objectKeys = await this.repository.expireContributionUploads(
       new Date().toISOString(),
@@ -251,7 +364,7 @@ export class ContributionService {
       submissionId,
     );
     if (!submission) throw new Error("contribution_not_found");
-    if (submission.state !== "DRAFT")
+    if (!isContributionEditable(submission.state))
       throw new Error("contribution_not_editable");
     return submission;
   }

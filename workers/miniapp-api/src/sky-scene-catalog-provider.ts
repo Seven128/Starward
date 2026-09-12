@@ -1,9 +1,8 @@
 import {
-  GAIA_DR3_PROJECTION_ALGORITHM,
-  loadGaiaDr3BrightStarCatalog,
-  positionGaiaDr3Catalog,
-  type GaiaDr3ValidatedCatalog,
-  type GaiaStarProjection,
+  HIPPARCOS_PROJECTION_ALGORITHM,
+  loadHipparcosBrightStarCatalog,
+  positionHipparcosCatalog,
+  type HipparcosStarProjection,
 } from "@starward/astronomy-core";
 import {
   SKY_SCENE_MAX_CATALOG_ENTRIES,
@@ -21,7 +20,7 @@ export interface SkyCatalogSnapshot {
   readonly catalogVersion: string;
   readonly catalogHash: string;
   readonly magnitudeLimit: number;
-  readonly source: SourceSummary;
+  readonly sources: readonly SourceSummary[];
   readonly entries: readonly SkyCatalogEntry[];
 }
 
@@ -49,39 +48,63 @@ const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_ALTITUDE_DEG = 90;
 const MIN_CATALOG_MAGNITUDE = -10;
 
-function sourceSummary(source: GaiaDr3ValidatedCatalog["source"]): SourceSummary {
-  return {
-    id: source.id,
-    kind: source.kind,
-    provider: source.provider,
-    title: source.title,
-    sourceUrl: source.sourceUrl,
-    license: source.license,
-    licenseUrl: source.licenseUrl,
-    publishedAt: source.publishedAt,
-    retrievedAt: source.retrievedAt,
-    validFrom: source.validFrom,
-    validTo: source.validTo,
-    state: source.state,
-    confidence: source.confidence,
-    precision: source.precision,
-    limitations: source.limitations,
-  };
+export function hipparcosCatalogSources(catalog: ReturnType<typeof loadHipparcosBrightStarCatalog>): readonly SourceSummary[] {
+  const manifest = catalog.manifest;
+  return Object.freeze<SourceSummary[]>([
+      {
+        id: `catalog:${catalog.catalogVersion}:${manifest.derivedAssetSha256}`,
+        kind: "OPEN_DATA",
+        provider: "ESA Hipparcos / CDS VizieR",
+        title: "Hipparcos Main Catalogue bright-star subset",
+        sourceUrl: manifest.sources.hipparcos.landingUrl,
+        license: "Source-specific catalogue terms",
+        licenseUrl: manifest.sources.hipparcos.rightsUrl,
+        publishedAt: "1997-01-01T00:00:00.000Z",
+        retrievedAt: manifest.retrievedAt,
+        validFrom: null,
+        validTo: null,
+        state: "FRESH",
+        confidence: 0.98,
+        precision: "ICRS J1991.25 astrometry with published proper motion; Johnson V and B-V photometry",
+        limitations: ["V=-2..5.0 的完整有界子集；不表示天气、地形遮挡或肉眼可见性"],
+      },
+      {
+        id: `catalog:wgsn:${manifest.sources.names.responseSha256}`,
+        kind: "OFFICIAL_REFERENCE",
+        provider: manifest.sources.names.provider,
+        title: "IAU Catalog of Star Names",
+        sourceUrl: manifest.sources.names.sourceUrl,
+        license: "IAU standardized names",
+        licenseUrl: "https://exopla.net/star-names/wgsn-guidelines/",
+        publishedAt: null,
+        retrievedAt: manifest.retrievedAt,
+        validFrom: null,
+        validTo: null,
+        state: "FRESH",
+        confidence: 1,
+        precision: "Proper-name to HIP identity mapping",
+        limitations: ["名称目录持续更新；当前包固定到清单哈希"],
+      },
+  ]);
 }
 
-function snapshotFromOwner(catalog: GaiaDr3ValidatedCatalog): SkyCatalogSnapshot {
+function snapshotFromOwner(catalog: ReturnType<typeof loadHipparcosBrightStarCatalog>): SkyCatalogSnapshot {
   return Object.freeze({
     catalogVersion: catalog.catalogVersion,
     catalogHash: catalog.catalogHash,
     magnitudeLimit: catalog.magnitudeLimit,
-    source: sourceSummary(catalog.source),
+    sources: hipparcosCatalogSources(catalog),
     entries: Object.freeze(
-      catalog.entries.map((entry) =>
+      catalog.rows.map((entry) =>
         Object.freeze({
           sourceId: entry.sourceId,
-          gMagnitude: entry.gMagnitude,
-          bpRp: entry.bpRp,
-          raHours: entry.raHours,
+          objectRef: entry.sourceId,
+          displayName: entry.properName,
+          magnitude: entry.vMag,
+          magnitudeBand: "V" as const,
+          colorIndex: entry.bV,
+          colorIndexBand: "B-V" as const,
+          raHours: entry.raDeg / 15,
           decDeg: entry.decDeg,
         }),
       ),
@@ -120,10 +143,12 @@ function validCatalogEntry(
   if (!entry || typeof entry !== "object") return false;
   if (typeof entry.sourceId !== "string" || !entry.sourceId.trim()) return false;
   if (ids.has(entry.sourceId)) return false;
-  if (!finite(entry.gMagnitude)) return false;
-  if (entry.gMagnitude < MIN_CATALOG_MAGNITUDE) return false;
-  if (entry.gMagnitude > magnitudeLimit) return false;
-  if (entry.bpRp !== null && !finite(entry.bpRp)) return false;
+  if (!/^HIP:\d{1,6}$/u.test(entry.objectRef)) return false;
+  if (!finite(entry.magnitude)) return false;
+  if (entry.magnitude < MIN_CATALOG_MAGNITUDE) return false;
+  if (entry.magnitude > magnitudeLimit) return false;
+  if (entry.magnitudeBand !== "V" || entry.colorIndexBand !== "B-V") return false;
+  if (entry.colorIndex !== null && !finite(entry.colorIndex)) return false;
   if (!finite(entry.raHours) || entry.raHours < 0 || entry.raHours >= 24)
     return false;
   if (!finite(entry.decDeg) || entry.decDeg < -90 || entry.decDeg > 90)
@@ -159,7 +184,7 @@ function normalizedPosition(
 }
 
 type OwnerPosition = Pick<
-  GaiaStarProjection,
+  HipparcosStarProjection,
   "sourceId" | "azimuthDeg" | "altitudeDeg" | "visible" | "obstructed"
 >;
 
@@ -219,14 +244,14 @@ export function normalizeScenePositions(
 
 export function createGaiaDr3SkyCatalogProvider(): SkyCatalogProvider {
   let loaded:
-    | { owner: GaiaDr3ValidatedCatalog; snapshot: SkyCatalogSnapshot }
+    | { owner: ReturnType<typeof loadHipparcosBrightStarCatalog>; snapshot: SkyCatalogSnapshot }
     | undefined;
   let loadError: unknown;
   const ensureLoaded = () => {
     if (loadError) throw loadError;
     if (!loaded) {
       try {
-        const owner = loadGaiaDr3BrightStarCatalog();
+        const owner = loadHipparcosBrightStarCatalog();
         loaded = { owner, snapshot: snapshotFromOwner(owner) };
       } catch (error) {
         loadError = error;
@@ -242,12 +267,11 @@ export function createGaiaDr3SkyCatalogProvider(): SkyCatalogProvider {
       if (input.catalog.catalogHash !== active.snapshot.catalogHash)
         throw new Error("catalog_snapshot_mismatch");
       return normalizeOwnerPositions(
-        positionGaiaDr3Catalog({
+        positionHipparcosCatalog({
           at: input.at,
           latitude: input.latitude,
           longitude: input.longitude,
           elevationM: input.elevationM,
-          magnitudeLimit: active.snapshot.magnitudeLimit,
           catalog: active.owner,
         }),
         active.snapshot,
@@ -256,7 +280,7 @@ export function createGaiaDr3SkyCatalogProvider(): SkyCatalogProvider {
     cacheKey: () => {
       try {
         const active = ensureLoaded().snapshot;
-        return `${active.catalogVersion}:${active.catalogHash}:${GAIA_DR3_PROJECTION_ALGORITHM}`;
+        return `${active.catalogVersion}:${active.catalogHash}:${HIPPARCOS_PROJECTION_ALGORITHM}`;
       } catch {
         return "catalog-unavailable";
       }

@@ -19,13 +19,23 @@
     "./gaia-catalog-data": {
       "production": "./dist/src/gaia-catalog-data.js",
       "default": "./src/gaia-catalog-data.ts"
+    },
+    "./hipparcos-catalog": {
+      "production": "./dist/src/hipparcos-catalog.js",
+      "default": "./src/hipparcos-catalog.ts"
+    },
+    "./deep-sky-catalog": {
+      "production": "./dist/src/deep-sky-catalog.js",
+      "default": "./src/deep-sky-catalog.ts"
     }
   },
   "scripts": {
     "build:release": "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
     "typecheck": "node ../../tools/run-node.cjs ../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
     "test": "node ../../tools/run-node.cjs --import tsx --test",
-    "build:gaia-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/gaia-star-catalog.ts"
+    "build:gaia-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/gaia-star-catalog.ts",
+    "build:hipparcos-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/hipparcos-bright-star-catalog.ts",
+    "build:deep-sky-catalog": "node ../../tools/run-node.cjs --import tsx ../../data-pipelines/src/opengc-messier-deep-sky-catalog.ts"
   },
   "devDependencies": {
     "typescript": "5.9.3"

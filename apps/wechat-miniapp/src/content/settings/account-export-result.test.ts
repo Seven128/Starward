@@ -10,7 +10,7 @@ test('account export claims a generated file only after successful writing',asyn
  for(const failure of ['api','write','share','none']){
   const calls:string[]=[],notices:any[]=[],busy:unknown[]=[],dismissed:string[]=[];
   const run=vm.runInNewContext(ts.transpileModule(declaration+'\ndownloadAccountData;',{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,{
-   accountActionPending:{current:false},dataAction:null,setDataAction:(v:unknown)=>busy.push(v),exportAccountData:async()=>{calls.push('api');if(failure==='api')throw Error('api');return{data:{generatedAt:'2026-09-06T12:00:00Z'}};},
+   accountActionPending:{current:false},dataAction:null,setDataAction:(v:unknown)=>busy.push(v),setSheet(){},exportAccountData:async()=>{calls.push('api');if(failure==='api')throw Error('api');return{data:{generatedAt:'2026-09-06T12:00:00Z'}};},
    useAppStore:{getState:()=>({notifications:[{id:'export',owner:'settings',dedupeKey:'settings-account-export-failed'},{id:'other-owner',owner:'other',dedupeKey:'settings-account-export-failed'},{id:'other-action',owner:'settings',dedupeKey:'settings-account-delete-failed'}],dismissNotification:(id:string)=>dismissed.push(id)})},
    writeJsonFile:async()=>{calls.push('write');if(failure==='write')throw Error('disk');},notify:(n:unknown)=>notices.push(n),errorMessage:()=> '操作失败',
    Taro:{env:{USER_DATA_PATH:'/isolated'},shareFileMessage:async()=>{calls.push('share');if(failure==='share')throw Error('share');}},

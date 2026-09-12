@@ -12,7 +12,8 @@ test("optical field of view keeps numeric geometry, portrait axes and incomplete
   assert.deepEqual(calculateFieldOfView({ ...optics, orientation: "portrait" }), {
     horizontalDeg: landscape.verticalDeg, verticalDeg: landscape.horizontalDeg,
   });
-  for (const focalLengthMm of [undefined, 0, -1, Infinity, NaN])
+  assert.equal(calculateFieldOfView({ sensorWidthMm: optics.sensorWidthMm, sensorHeightMm: optics.sensorHeightMm, orientation: "landscape" }), null);
+  for (const focalLengthMm of [0, -1, Infinity, NaN])
     assert.equal(calculateFieldOfView({ ...optics, focalLengthMm, orientation: "landscape" }), null);
 });
 

@@ -29,10 +29,10 @@ test("detail child navigation preserves content on failure, prevents repeats and
     const epoch={current:0},lock={current:false},notices:any[]=[],dismissed:string[]=[];
     const run=vm.runInNewContext(ts.transpileModule(declaration+"\nopenDetailPage;",{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,{
       detailPagePending:lock,navigationEpoch:epoch,notify:(notice:unknown)=>notices.push(notice),
-      Taro:{navigateTo:({url}:{url:string})=>{assert.equal(url,"/content/contribution/index?spotId=spot%3Atest");calls++;return calls===1?new Promise((_resolve,fail)=>{reject=fail;}):Promise.resolve();}},
+      Taro:{navigateTo:({url}:{url:string})=>{assert.equal(url,"/content/spot-feedback/index?spotId=spot%3Atest");calls++;return calls===1?new Promise((_resolve,fail)=>{reject=fail;}):Promise.resolve();}},
       useAppStore:{getState:()=>({notifications:[{id:"mine",owner:"spot-detail",dedupeKey:"spot-detail-page-navigation-failed"},{id:"other",owner:"spot-detail",dedupeKey:"other-error"},{id:"other-owner",owner:"map",dedupeKey:"spot-detail-page-navigation-failed"}],dismissNotification:(id:string)=>dismissed.push(id)})},
     });
-    const args=["/content/contribution/index?spotId=spot%3Atest","反馈表单"];
+    const args=["/content/spot-feedback/index?spotId=spot%3Atest","反馈表单"];
     const pending=run(...args);await run(...args);assert.equal(calls,1);
     if(hidden)epoch.current++;
     reject(Error("navigation failed"));await pending;

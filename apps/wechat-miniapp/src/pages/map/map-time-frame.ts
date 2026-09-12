@@ -25,7 +25,7 @@ export function nearestMapTimeFrameIndex(
 export function mapTimeFrameAt(frames: readonly MapSceneTimeFrame[], atUtc: string): MapSceneTimeFrame {
   const instant = Date.parse(atUtc);
   const matches = Number.isFinite(instant) ? frames.filter(frame => Date.parse(frame.atUtc) === instant) : [];
-  return matches.length === 1 ? matches[0]! : { atUtc, spotSignals: {}, dynamicLayer: null };
+  return matches.length === 1 ? matches[0]! : { atUtc, moonPhase: null, spotSignals: {}, dynamicLayer: null };
 }
 
 export function projectMapEvaluations(

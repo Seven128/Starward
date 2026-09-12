@@ -63,6 +63,7 @@ test("TRIAL accepts explicitly selected non-commercial Open-Meteo evidence", () 
   assert.equal(config.openMeteoEvidenceMode, "OPEN_METEO_NONCOMMERCIAL");
   assert.equal(config.openMeteoApiKey, null);
   assert.equal(config.qweather.forecastHours, 24);
+  assert.equal(config.eventCatalogCheckIntervalDays, 7);
 });
 
 test("COMMERCIAL rejects non-commercial Open-Meteo evidence", () => {
@@ -109,5 +110,20 @@ test("QWeather forecast horizon rejects unsupported values", () => {
         () => loadRuntimeConfig(),
       ),
     /runtime_config_invalid:QWEATHER_FORECAST_HOURS:48/u,
+  );
+});
+
+test("event catalog check interval is configurable within a bounded range", () => {
+  const config = withEnvironment(
+    { ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS: "3" },
+    () => loadRuntimeConfig(),
+  );
+  assert.equal(config.eventCatalogCheckIntervalDays, 3);
+  assert.throws(
+    () => withEnvironment(
+      { ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS: "0" },
+      () => loadRuntimeConfig(),
+    ),
+    /runtime_config_invalid:MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS:0/u,
   );
 });

@@ -1,13 +1,14 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro, { useDidShow } from "@tarojs/taro";
+import { MyNickname } from "./my-nickname";
+import { MyAvatar } from "./my-avatar";
+import Taro, { useDidShow, useDidHide } from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useId, useRef, useState } from "react";
-import { selectPlanEntry } from "./plan-entry";
+import { MyPlanCard } from "./my-plan-card";
 import { CustomNav } from "@/components/custom-nav";
-import { SemanticAsset, SemanticIcon } from "@/components/semantic-asset";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
@@ -26,9 +27,21 @@ import "./my-library-page.scss";
  */
 export function MyLibraryPage() {
   const themeClass = useThemeClass();
-  const mode = useAppStore((state) => state.mode);
   const mountId = useId();
   const [, refreshIdentity] = useState(0);
+  const [now, setNow] = useState(() => new Date());
+  const clock = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stopClock = () => {
+    if (clock.current !== null) clearInterval(clock.current);
+    clock.current = null;
+  };
+  useDidShow(() => {
+    stopClock();
+    setNow(new Date());
+    clock.current = setInterval(() => setNow(new Date()), 1000);
+  });
+  useDidHide(stopClock);
+  useEffect(() => stopClock, []);
   useDidShow(() => refreshIdentity((value) => value + 1));
   const libraryOwner = currentDraftUserId();
   const notify = useAppStore((state) => state.notify);
@@ -41,12 +54,11 @@ export function MyLibraryPage() {
     queryFn: (signal) => getUserLibrary(signal, libraryOwner ?? undefined),
     staleTime: 30_000,
   });
-  const contributions = useContributionHistory();
   useDidShow(() => {
     const owner = currentDraftUserId();
     if (!owner) return;
     // Tab pages stay mounted: returning to My must refresh expired summaries.
-    for (const resource of ["user-library", "contributions"]) {
+    for (const resource of ["user-library"]) {
       void miniappQueryClient.refetchQueries({
         queryKey: [resource, owner],
         exact: true,
@@ -56,19 +68,6 @@ export function MyLibraryPage() {
     }
   });
   const plans = library.data?.data.plans ?? [];
-
-  const { plan: tonightPlan, title: planEntryTitle } = selectPlanEntry(plans, new Date());
-  const contributionItems = contributions.data?.data.submissions ?? [];
-  const pendingContributionCount = contributionItems.filter(
-    (item) =>
-      item.submissionState === "PENDING_REVIEW" ||
-      item.submissionState === "CHANGES_REQUESTED" ||
-      item.state === "PENDING_REVIEW" ||
-      item.state === "CHANGES_REQUESTED",
-  ).length;
-  const draftContributionCount = contributionItems.filter(
-    (item) => item.submissionState === "DRAFT" || item.state === "DRAFT",
-  ).length;
 
   useEffect(() => {
     if (!library.data || !libraryOwner || currentDraftUserId() !== libraryOwner) return;
@@ -114,21 +113,9 @@ export function MyLibraryPage() {
   };
   const openSettings = () =>
     openPage("/content/settings/index", "设置", "settings");
-  const openPlan = () =>
-    openPage(
-      tonightPlan
-        ? `/content/plan/detail/index?planId=${encodeURIComponent(tonightPlan.planId)}`
-        : "/content/plan/detail/index",
-      "今晚计划",
-      "plan",
-    );
+  const openPlan = () => openPage("/content/plan/list/index", "观星计划", "plan");
   const openContribution = () =>
-    openPage("/content/contribution/index", "反馈页面", "contribution");
-  const openProfileLinks = () =>
-    openPage("/content/profile/links/index", "主页链接", "profile-links");
-  const openImport = () =>
-    openPage("/content/import/index", "内容导入", "import");
-
+    openPage("/content/contribution/index?manage=1", "观星点创建与反馈", "contribution");
   return (
     <View
       className={`${themeClass} my-page`}
@@ -137,7 +124,7 @@ export function MyLibraryPage() {
     >
       <FloatingNotificationHost />
       <View data-control="my-account-header">
-        <CustomNav title="我的" odId="my-account-header" />
+        <CustomNav title="" odId="my-account-header" />
       </View>
       <ScrollView
         scrollY
@@ -154,91 +141,37 @@ export function MyLibraryPage() {
               onRecover={() => void library.refetch()}
             />
           ) : null}
-          {contributions.isError || contributions.refreshError || contributions.data?.dataState === "STALE_USABLE" ? (
-            <StatusPanel state={contributions.data ? "STALE" : "ERROR"}
-              detail={contributions.data ? "反馈审核状态暂未更新，以下数量来自上次记录。" : "反馈审核状态暂不可用，暂时无法确认待处理数量。"}
-              recoveryLabel="重试审核状态"
-              onRecover={() => void contributions.refetch().catch(() => {})} />
-          ) : null}
           <View
-            className="profile-summary card"
+            className="profile-summary"
             data-od-id="my-profile-summary"
             data-control="my-profile-summary"
             role="group"
             aria-label="个人资料摘要"
           >
             <View className="profile-summary__header">
-              <View className="profile-summary__avatar" aria-hidden="true">
-                <SemanticAsset
-                  subject="neutral-avatar"
-                  mode={mode}
-                  label=""
-                  className="profile-summary__asset"
-                />
-              </View>
-              <View className="profile-summary__copy">
-                <Text className="type-section">账户与内容</Text>
-                <Text className="type-caption">当前微信身份</Text>
-              </View>
-            </View>
-            <View className="profile-summary__band">
-              <View>
-                <Text className="type-section">个人链接</Text>
-                <Text className="type-caption">
-                  {library.data
-                    ? `${library.refreshError || library.data.dataState === "STALE_USABLE" ? "上次 " : ""}${library.data.data.profileLinks.length} 条已保存`
-                    : library.isError ? "暂不可用" : "正在加载"}
-                </Text>
-              </View>
-              <View>
-                <Text className="type-section">待审核内容</Text>
-                <Text className="type-caption">
-                  {contributions.isError
-                    ? "状态暂不可用"
-                    : !contributions.data ? "正在加载"
-                    : `${contributions.refreshError || contributions.data.dataState === "STALE_USABLE" ? "上次 " : ""}${pendingContributionCount} 条待处理`}
-                </Text>
-              </View>
+              <MyAvatar key={`avatar:${libraryOwner ?? "unresolved"}`} owner={libraryOwner} />
+              <MyNickname key={libraryOwner ?? "unresolved"} owner={libraryOwner} />
+              <Button className="my-settings-gear focus-ring" data-od-id="my-settings-action" data-control="my-settings-action" aria-label="打开设置" onClick={openSettings}><SemanticIcon name="settings" /></Button>
             </View>
             <View className="my-focus-actions" data-od-id="my-focus-actions">
-              <Button
-                className="routine-entry routine-entry--plan focus-ring"
-                data-od-id="my-plan-entry"
-                data-control="my-plan-entry"
-                aria-label="打开观星计划"
-                onClick={openPlan}
-              >
-                <View className="routine-entry__icon" aria-hidden="true">
-                  <SemanticIcon name="conditions" />
-                </View>
-                <View className="account-row__copy">
-                  <Text className="type-section">{planEntryTitle}</Text>
-                  <Text className="type-caption">
-                    {tonightPlan
-                      ? `${tonightPlan.localDate} · 地点与出发准备`
-                      : "地点与出发准备"}
-                  </Text>
-                </View>
-                <View className="account-row__chevron" aria-hidden="true">
-                  <SemanticIcon name="chevron-right" />
-                </View>
-              </Button>
+              <MyPlanCard plans={plans} spots={library.data?.data.planSpots ?? []} now={now}
+                loading={library.isPending} unavailable={library.isError || Boolean(library.refreshError)}
+                onOpenAll={openPlan}
+                onOpen={(plan) => void openPage(`/content/plan/detail/index?planId=${encodeURIComponent(plan.planId)}`, "观星计划", "plan")} />
               <Button
                 className="routine-entry routine-entry--contribution focus-ring"
                 data-od-id="my-contribution-entry"
                 data-control="my-contribution-entry"
-                ariaLabel="打开现场反馈与纠错"
+                ariaLabel="打开观星点创建与反馈"
                 onClick={openContribution}
               >
                 <View className="routine-entry__icon routine-entry__icon--moon" aria-hidden="true">
                   <SemanticIcon name="images" />
                 </View>
                 <View className="account-row__copy">
-                  <Text className="type-section">现场反馈与纠错</Text>
+                  <Text className="type-section">观星点创建与反馈</Text>
                   <Text className="type-caption">
-                    {draftContributionCount
-                      ? `${draftContributionCount} 条草稿 · 草稿与审核状态`
-                      : "草稿与审核状态"}
+                    草稿与审核进度
                   </Text>
                 </View>
                 <View className="account-row__chevron" aria-hidden="true">
@@ -253,79 +186,6 @@ export function MyLibraryPage() {
               detail="正在回读计划与偏好；账户摘要保持可用。"
             />
           ) : null}
-          <View
-            className="my-section"
-            data-od-id="my-grouped-entry-list"
-            data-control="my-grouped-entry-list"
-            role="group"
-            aria-label="日常入口"
-          >
-            <View className="my-section__heading">
-              <Text className="type-section">日常</Text>
-            </View>
-            <View className="routine-entry-list">
-              <Button
-                className="routine-entry routine-entry--settings focus-ring"
-                data-od-id="my-settings-action"
-                data-control="my-settings-action"
-                aria-label="打开设置"
-                onClick={openSettings}
-              >
-                <View className="routine-entry__icon" aria-hidden="true">
-                  <SemanticIcon name="conditions" />
-                </View>
-                <View className="account-row__copy">
-                  <Text className="type-section">设置</Text>
-                  <Text className="type-caption">
-                    显示、权限、提醒与数据管理
-                  </Text>
-                </View>
-                <View className="account-row__chevron" aria-hidden="true">
-                  <SemanticIcon name="chevron-right" />
-                </View>
-              </Button>
-              <Button
-                className="routine-entry routine-entry--profile-links focus-ring"
-                data-od-id="my-profile-links-entry"
-                data-control="my-profile-links-entry"
-                aria-label="打开主页链接"
-                onClick={openProfileLinks}
-              >
-                <View className="routine-entry__icon" aria-hidden="true">
-                  <SemanticIcon name="horizon" />
-                </View>
-                <View className="account-row__copy">
-                  <Text className="type-section">主页链接</Text>
-                  <Text className="type-caption">
-                    管理你的个人主页链接
-                  </Text>
-                </View>
-                <View className="account-row__chevron" aria-hidden="true">
-                  <SemanticIcon name="chevron-right" />
-                </View>
-              </Button>
-              <Button
-                className="routine-entry routine-entry--import focus-ring"
-                data-od-id="my-import-entry"
-                data-control="my-import-entry"
-                aria-label="打开内容导入"
-                onClick={openImport}
-              >
-                <View className="routine-entry__icon" aria-hidden="true">
-                  <SemanticIcon name="download" />
-                </View>
-                <View className="account-row__copy">
-                  <Text className="type-section">内容导入</Text>
-                  <Text className="type-caption">
-                    导入自己的帖子并提交审核
-                  </Text>
-                </View>
-                <View className="account-row__chevron" aria-hidden="true">
-                  <SemanticIcon name="chevron-right" />
-                </View>
-              </Button>
-            </View>
-          </View>
           {library.isError ? (
             <StatusPanel
               state="PARTIAL"

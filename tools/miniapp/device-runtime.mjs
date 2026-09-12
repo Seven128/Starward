@@ -23,14 +23,23 @@ export async function inspectRuntime(mini, binding) {
   const page = await mini.currentPage();
   const routes = [
     "pages/map/index",
-    "spot/search/index",
-    "sky/detail/index",
     "pages/my/index",
+    "pages/auth/index",
+    "spot/search/index",
+    "spot/guides/index",
+    "spot/field/index",
+    "spot/plan/index",
+    "spot/data-source/index",
+    "sky/detail/index",
+    "content/article/detail/index",
     "content/plan/detail/index",
-    "content/settings/index",
-    "content/profile/links/index",
-    "content/import/index",
+    "content/plan/list/index",
+    "content/plan/edit/index",
+    "content/event/list/index",
+    "content/event/detail/index",
     "content/contribution/index",
+    "content/spot-feedback/index",
+    "content/settings/index",
   ];
   const route = routes.includes(page?.path) ? page.path : "other_route";
   const elements = {};

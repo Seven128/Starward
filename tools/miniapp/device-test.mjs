@@ -7,14 +7,14 @@ import { automationEndpoint } from "./device-runtime.mjs";
 import { remoteProgressConsumer } from "./device-qr.mjs";
 
 const help = `Mini Program owner-assisted physical-device diagnostics (not acceptance)
-  doctor
+  doctor [--transport usb|wireless]
   start --project <absolute external phone project>
-  capture --session <directory>
-  capture-permissions --session <directory> (target Mini Program's WeChat permission page only)
-  capture-location --session <directory> (known Android location prompt requested by WeChat only)
-  tap --session <directory> --x <0..1> --y <0..1>
-  swipe --session <directory> --x <0..1> --y <0..1> --to-x <0..1> --to-y <0..1> --ms <100..2000>
-  back --session <directory>
+  capture --session <directory> [--transport usb|wireless]
+  capture-permissions --session <directory> [--transport usb|wireless] (target Mini Program's WeChat permission page only)
+  capture-location --session <directory> [--transport usb|wireless] (known Android location prompt requested by WeChat only)
+  tap --session <directory> --x <0..1> --y <0..1> [--transport usb|wireless]
+  swipe --session <directory> --x <0..1> --y <0..1> --to-x <0..1> --to-y <0..1> --ms <100..2000> [--transport usb|wireless]
+  back --session <directory> [--transport usb|wireless]
   remote|inspect --session <directory> --endpoint ws://127.0.0.1:<port>
   stop --session <directory>
 Input requires a screenshot taken in the last 60 seconds. Review it first.
@@ -28,21 +28,25 @@ Screenshots are private. Stop deletes this tool's session, not the phone bundle 
 export function parseArguments(argv) {
   const [action = "help", ...rest] = argv;
   const options = {};
-  const allowed = { help: [], doctor: [], start: ["project"], capture: ["session"], "capture-permissions": ["session"], "capture-location": ["session"], tap: ["session", "x", "y"], swipe: ["session", "x", "y", "to-x", "to-y", "ms"], back: ["session"], remote: ["session", "endpoint"], inspect: ["session", "endpoint"], stop: ["session"] };
+  const required = { help: [], doctor: [], start: ["project"], capture: ["session"], "capture-permissions": ["session"], "capture-location": ["session"], tap: ["session", "x", "y"], swipe: ["session", "x", "y", "to-x", "to-y", "ms"], back: ["session"], remote: ["session", "endpoint"], inspect: ["session", "endpoint"], stop: ["session"] };
+  const transportActions = new Set(["doctor", "capture", "capture-permissions", "capture-location", "tap", "swipe", "back"]);
+  const allowed = Object.fromEntries(Object.entries(required).map(([key, values]) => [key, transportActions.has(key) ? [...values, "transport"] : values]));
   if (!allowed[action]) fail("action_invalid");
   for (let i = 0; i < rest.length; i += 2) {
     const key = rest[i]?.slice(2);
     if (!rest[i]?.startsWith("--") || !allowed[action].includes(key) || options[key] !== undefined || !rest[i + 1]) fail("argument_invalid");
     options[key] = rest[i + 1];
   }
-  if (allowed[action].some((key) => options[key] === undefined)) fail("argument_missing");
+  if (required[action].some((key) => options[key] === undefined)) fail("argument_missing");
+  options.transport ??= "usb";
+  if (transportActions.has(action) && !["usb", "wireless"].includes(options.transport)) fail("transport_invalid");
   return { action, options };
 }
 
 export async function main(argv, { adb, emit = (value) => console.log(JSON.stringify(value)) } = {}) {
   const { action, options } = parseArguments(argv);
   if (action === "help") { console.log(help); return; }
-  if (action === "doctor") { emit(await (adb ?? new AdbDevice(await findAdb())).doctor()); return; }
+  if (action === "doctor") { emit(await (adb ?? new AdbDevice(await findAdb())).doctor({ transport: options.transport })); return; }
   if (action === "start") {
     const state = await startSession(options.project);
     emit({ session: state.directory, localBundleSha256: state.binding.sha256, fileCount: state.binding.fileCount, phoneBundleBytesVerified: false, acceptance: "not_evaluated" });
@@ -68,7 +72,7 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
       return result;
     }
     const device = adb ?? new AdbDevice(await findAdb());
-    const serial = await device.select();
+    const serial = await device.select({ transport: options.transport });
     if (["capture", "capture-permissions", "capture-location"].includes(action)) {
       state.capture = null;
       await saveSession(state);

@@ -1,3 +1,5 @@
+import type { UserId } from "@starward/miniapp-contracts";
+import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -49,16 +51,16 @@ test("account export obtains a fresh native code and refuses account changes or 
 test("a failed sensitive request never reuses its native code or clears the current session", async () => {
   let requests = 0;
   class ApiError extends Error { code = "PERMISSION_DENIED"; }
-  const run = vm.runInNewContext(codeFor(["requestOperation"], "requestOperation;"), {
-    resolveSession: async () => ({ userId: "a" }),
+  const run = createAuthenticatedOperationRequester({
+    resolveSession: async () => ({ userId: "a" as UserId, accessToken: "test-only", expiresAt: "2099-01-01T00:00:00Z" }),
     request: async (_key: string, _path: string, options: { reauthenticationCode: string }) => {
       requests++;
       assert.equal(options.reauthenticationCode, "synthetic-fresh-code");
       throw new ApiError();
     },
     clearStoredSession: () => assert.fail("must retain the session"),
-    operationPath: () => "/me/data-export",
-    MINIAPP_API_OPERATIONS: { accountDataExportGet: { method: "GET" } }, MiniappApiError: ApiError,
+    readStoredSession: () => null,
+    isPermissionDenied: (error: unknown) => error instanceof ApiError,
   });
   await assert.rejects(run("export", "accountDataExportGet", { auth: "REQUIRED", reauthenticationCode: "synthetic-fresh-code" }, false, "a"));
   assert.equal(requests, 1);
@@ -86,6 +88,7 @@ test("deletion receipts clean only the initiating account after an account switc
       planDraftBelongsTo: belongs, contributionDraftBelongsTo: belongs, contributionSubmitBelongsTo: belongs,
       profileDraftBelongsTo: belongs, profileSaveBelongsTo: belongs, importSaveBelongsTo: belongs,
       importLocalDraftBelongsTo: belongs, planChecklistBelongsTo: belongs, planSaveBelongsTo: belongs,
+      planEventSelectionBelongsTo: belongs,
       responseCache: {
         clear: () => cache.clear(), flush: async () => {}, cleanupComplete: () => true,
         removeScope: async (userId: string) => { for (const key of cache.keys()) if (key.endsWith(":" + userId)) cache.delete(key); return true; },
@@ -142,6 +145,7 @@ test("confirmed remote deletion reports failed native erasure and cannot restore
       planDraftBelongsTo: belongs, contributionDraftBelongsTo: belongs, contributionSubmitBelongsTo: belongs,
       profileDraftBelongsTo: belongs, profileSaveBelongsTo: belongs, importSaveBelongsTo: belongs,
       importLocalDraftBelongsTo: belongs, planChecklistBelongsTo: belongs, planSaveBelongsTo: belongs,
+      planEventSelectionBelongsTo: belongs,
       miniappQueryClient: { clear: () => { queryCleared = true; }, removeQueries: () => { queryCleared = true; } },
     });
     const receipt = await run.deleteAccount();

@@ -174,6 +174,18 @@
   background: currentColor;
 }
 
+.semantic-icon--layers::before,
+.semantic-icon--layers::after {
+  left: 8rpx;
+  width: 23rpx;
+  height: 23rpx;
+  border-right: 3rpx solid currentColor;
+  border-bottom: 3rpx solid currentColor;
+  transform: rotate(45deg) skew(-8deg, -8deg);
+}
+.semantic-icon--layers::before { top: 0; }
+.semantic-icon--layers::after { top: 9rpx; }
+
 .semantic-icon--refresh::before {
   top: 6rpx;
   left: 6rpx;
@@ -231,6 +243,23 @@
     0 28rpx 0 currentColor,
     -15rpx 14rpx 0 currentColor,
     15rpx 14rpx 0 currentColor;
+}
+
+.semantic-icon--clock::before {
+  top: 0;
+  left: 0;
+  width: 14Px;
+  height: 14Px;
+  border: 1.5Px solid currentColor;
+  border-radius: 50%;
+}
+.semantic-icon--clock::after {
+  top: 3Px;
+  left: 6Px;
+  width: 4Px;
+  height: 4Px;
+  border-bottom: 1.5Px solid currentColor;
+  border-left: 1.5Px solid currentColor;
 }
 
 .semantic-icon--moon::before {

@@ -36,8 +36,27 @@ export function summarizePackageBytes(files, subPackages = []) {
 }
 
 export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/dist/weapp" } = {}) {
-  const expectedRouteCount = 14;
-  const expectedFilterCount = 18;
+  const expectedRoutes = [
+    "pages/map/index",
+    "pages/my/index",
+    "pages/auth/index",
+    "spot/search/index",
+    "spot/guides/index",
+    "spot/field/index",
+    "spot/plan/index",
+    "spot/data-source/index",
+    "sky/detail/index",
+    "content/article/detail/index",
+    "content/plan/detail/index",
+    "content/plan/list/index",
+    "content/plan/edit/index",
+    "content/event/list/index",
+    "content/event/detail/index",
+    "content/contribution/index",
+    "content/spot-feedback/index",
+    "content/settings/index",
+  ];
+  const expectedFilterCount = 16;
   const project = await readJson("apps/wechat-miniapp/project.config.json");
   const appConfig = await readJson(
     `${bundleDirectory}/app.json`,
@@ -86,12 +105,16 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     })),
   );
   const totalBytes = sizes.reduce((sum, item) => sum + item.size, 0);
-  const routeCount =
-    (appConfig?.pages?.length ?? 0) +
-    (appConfig?.subPackages ?? []).reduce(
-      (sum, item) => sum + item.pages.length,
-      0,
-    );
+  const routes = [
+    ...(appConfig?.pages ?? []),
+    ...(appConfig?.subPackages ?? []).flatMap((item) =>
+      item.pages.map((page) => `${item.root}/${page}`),
+    ),
+  ];
+  const routeCount = routes.length;
+  const routeTopologyMatches =
+    routes.length === expectedRoutes.length &&
+    routes.every((route, index) => route === expectedRoutes[index]);
   const seedStart = catalog.indexOf(
     "const SEEDS: readonly OsmSpotSeed[] = Object.freeze([",
   );
@@ -130,7 +153,7 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     native_project:
       project.compileType === "miniprogram" &&
       project.miniprogramRoot === "dist/weapp/" &&
-      routeCount === expectedRouteCount,
+      routeTopologyMatches,
     filter_population:
       filterIds.length === expectedFilterCount &&
       new Set(filterIds).size === filterIds.length,
@@ -163,14 +186,19 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
       cachePolicy.includes("responseCacheKey") && cachePolicy.includes("path"),
     package_budget: totalBytes > 0 && totalBytes < 2 * 1024 * 1024,
     route_files:
-      routeCount === expectedRouteCount &&
-      weappFiles.some((file) => file.endsWith("pages/map/index.js")) &&
-      weappFiles.some((file) => file.endsWith("content/import/index.js")),
+      routeTopologyMatches &&
+      expectedRoutes.every((route) =>
+        weappFiles.some((file) => file.endsWith(`${route}.js`)),
+      ) &&
+      !weappFiles.some((file) =>
+        /(?:content\/profile\/links|content\/import)\/index\.js$/u.test(file),
+      ),
   };
   return {
     passed: Object.values(checks).every(Boolean),
     checks,
     route_count: routeCount,
+    routes,
     spot_ids: spotIds,
     filter_ids: filterIds,
     weapp_total_bytes: totalBytes,

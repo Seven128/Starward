@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey } from "./plan-draft";
 
+test("unfinished reminder edits survive restart without accepting corrupt identities", () => {
+  const reminders = [{ reminderId: "reminder:1", title: " ", hoursBeforeDeparture: 0, notifyOnWechat: false,
+    items: [{ itemId: "item:1", text: "", completed: true }] }];
+  const draft = { selectedSpotId: null, localDate: "2026-09-06", localTime: "22:00", notes: "", reminders };
+  assert.deepEqual(parsePlanDraft(structuredClone(draft)), draft);
+  assert.equal(parsePlanDraft({ ...draft, reminders: [...reminders, ...reminders] }), null);
+});
+
 test("saved drafts cannot restore after removal fails but invalidation succeeds", () => {
   let stored: unknown = { selectedSpotId: null, localDate: "2026-09-06", localTime: "22:00", notes: "saved" };
   assert.equal(clearPlanDraft({
@@ -31,9 +39,10 @@ test("draft storage is separated by account, plan and new-plan identity", () => 
 });
 
 test("draft restoration rejects malformed storage and retains editable text verbatim", () => {
-  const draft = { selectedSpotId: null, localDate: "2026-09-06", localTime: "22:00", notes: " 第一行\n第二行 " };
+const draft = { selectedSpotId: null, localDate: "2026-09-06", localTime: "22:00", notes: " 第一行\n第二行 " };
   assert.deepEqual(parsePlanDraft(draft), draft);
-  for (const value of [null, "bad", {}, { ...draft, notes: "x".repeat(801) }, { ...draft, selectedSpotId: 42 }, { ...draft, localTime: "bad" }]) assert.equal(parsePlanDraft(value), null);
+  assert.equal(parsePlanDraft({ ...draft, notes: "字".repeat(2000) })?.notes.length, 2000);
+  for (const value of [null, "bad", {}, { ...draft, notes: "x".repeat(2001) }, { ...draft, selectedSpotId: 42 }, { ...draft, localTime: "bad" }]) assert.equal(parsePlanDraft(value), null);
 });
 
 test("restoration preserves the edit's original revision instead of adopting a newer server version", () => {
@@ -41,4 +50,19 @@ test("restoration preserves the edit's original revision instead of adopting a n
   assert.equal(parsePlanDraft(draft)?.baseRevision, 2);
   for (const baseRevision of [-1, 0.5, "2", NaN]) assert.equal(parsePlanDraft({ ...draft, baseRevision }), null);
   assert.equal(parsePlanDraft({ ...draft, baseRevision: null })?.baseRevision, null);
+});
+
+test("partial interval editing survives draft restoration without adopting another plan's times", () => {
+  const timing = { endLocalDate: "2026-09-07", endLocalTime: "", departureLocalDate: "2026-09-06", departureLocalTime: "20:00" };
+  const draft = { selectedSpotId: null, localDate: "2026-09-06", localTime: "22:00", notes: "", timing, baseRevision: 2 };
+  assert.deepEqual(parsePlanDraft(draft), draft);
+  assert.equal(parsePlanDraft({ ...draft, timing: null }), null);
+  assert.equal(parsePlanDraft({ ...draft, timing: { ...timing, endLocalTime: 25 } }), null);
+});
+
+test("partial departure arrangement survives draft restoration", () => {
+  const draft = { selectedSpotId: null, localDate: "2026-09-06", localTime: "22:00", notes: "",
+    travel: { origin: "", mode: "TRANSIT" as const } };
+  assert.deepEqual(parsePlanDraft(draft)?.travel, draft.travel);
+  assert.equal(parsePlanDraft({ ...draft, travel: { origin: "深圳", mode: "FLYING" } }), null);
 });

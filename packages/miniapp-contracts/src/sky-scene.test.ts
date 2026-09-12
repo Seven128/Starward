@@ -32,10 +32,10 @@ const available: SkyScene = {
     catalogVersion: "gaia-dr3-test-v1",
     catalogHash: "a".repeat(64),
     magnitudeLimit: 5.5,
-    source,
+    sources: [source, { ...source, id: "source-wgsn-test", kind: "OFFICIAL_REFERENCE" }],
     entries: [
-      { sourceId: "1", gMagnitude: 1.2, bpRp: 0.2 },
-      { sourceId: "2", gMagnitude: 4.8, bpRp: null },
+      { sourceId: "HIP:1", objectRef: "HIP:1", displayName: "Alpha", magnitude: 1.2, magnitudeBand: "V", colorIndex: 0.2, colorIndexBand: "B-V" },
+      { sourceId: "HIP:2", objectRef: "HIP:2", displayName: null, magnitude: 4.8, magnitudeBand: "V", colorIndex: null, colorIndexBand: "B-V" },
     ],
   },
   frames: [
@@ -54,6 +54,23 @@ const available: SkyScene = {
     },
   ],
   unavailableReason: null,
+  deepSky: {
+    state: "AVAILABLE",
+    catalog: {
+      catalogVersion: "opengc-test-v1",
+      catalogHash: "b".repeat(64),
+      frame: "ICRS J2000",
+      sources: [{ ...source, id: "source-opengc", provider: "OpenNGC" }],
+      entries: [{ objectRef: "M:31", displayName: "M 31", kind: "GALAXY", aliases: ["NGC0224"],
+        magnitude: 3.44, magnitudeBand: "V", majorAxisArcmin: 178, minorAxisArcmin: 63,
+        positionAngleDeg: 35 }],
+    },
+    frames: [
+      { at: "2026-09-04T12:00:00.000Z", state: "AVAILABLE", points: [[0, 20, 30, 20, 30.1, 20.1, 30]] },
+      { at: "2026-09-04T12:30:00.000Z", state: "AVAILABLE", points: [[0, 25, 31, 25, 31.1, 25.1, 31]] },
+    ],
+    unavailableReason: null,
+  },
 };
 
 test("sky scene contract binds every frame to one hourly slice", () => {
@@ -139,4 +156,13 @@ test("target frames bind actionable targets to every hourly instant", () => {
       ]),
     /sky_scene_invalid:target_frame_1:at/u,
   );
+});
+
+test("deep-sky frames bind stable Messier identities and tangent samples to the same axis", () => {
+  assert.doesNotThrow(() => assertSkyScene(available, available.frames.map((frame) => frame.at)));
+  assert.throws(() => assertSkyScene({
+    ...available,
+    deepSky: { ...available.deepSky!, frames: [available.deepSky!.frames[0]!,
+      { ...available.deepSky!.frames[1]!, points: [[1, 25, 31, 25, 31.1, 25.1, 31]] }] },
+  }, available.frames.map((frame) => frame.at)), /deep_sky_point_1_0/u);
 });

@@ -32,6 +32,7 @@ import {
   type SkyCatalogProvider,
 } from "./sky-scene-catalog.ts";
 import { TripDecisionEngine } from "./trip-decision-engine.ts";
+import { deepSkySceneCacheKey } from "./deep-sky-scene-provider.ts";
 import type {
   AstronomyApplicationPort,
   CanonicalWeatherHour,
@@ -40,6 +41,7 @@ import type {
   WeatherEvidenceResult,
 } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
+import type { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import { ComputationCache } from "./computation-cache.ts";
 import { WEATHER_DEADLINES, waitForCaller, withDeadline } from "./provider-deadline.ts";
 import { unavailableWeatherResult } from "./weather-provider.ts";
@@ -253,6 +255,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     private readonly config: MiniappRuntimeConfig,
     skyCatalog: SkyCatalogProvider = createGaiaDr3SkyCatalogProvider(),
     private readonly now: () => number = Date.now,
+    private readonly eventCatalog?: AstronomicalEventCatalogOwner,
   ) {
     this.skyCatalog = skyCatalog;
     this.weatherCache = new ComputationCache(ASTRONOMY_CACHE_POLICY.weatherEntries, now);
@@ -274,7 +277,7 @@ export class AstronomyService implements AstronomyApplicationPort {
   /** Included in the BFF cache identity so a catalog replacement cannot
    * serve a report projected from a previous catalog or time-axis contract. */
   catalogCacheKey(): string {
-    return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${this.skyCatalog.cacheKey()}`;
+    return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${this.skyCatalog.cacheKey()}:${deepSkySceneCacheKey()}`;
   }
 
   private async prepare(context: ObservationContext, suppliedDetail?: SpotDetail, signal?: AbortSignal, weatherDeadlineAt?: number) {
@@ -319,7 +322,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       algorithm: this.config.astronomyAlgorithmVersion,
       opportunity: this.config.opportunityRuleVersion,
       trip: this.config.tripDecisionRuleVersion,
-      events: this.config.eventCatalogVersion, catalog: this.catalogCacheKey(),
+      events: this.eventCatalog?.snapshot().catalogVersion ?? this.config.eventCatalogVersion, catalog: this.catalogCacheKey(),
       verificationExpired: this.now() - Date.parse(spot.lastVerifiedAt ?? "") > 30 * 86_400_000,
     };
     const key = digest(effectiveInputs);
@@ -369,6 +372,48 @@ export class AstronomyService implements AstronomyApplicationPort {
     return structuredClone(result);
   }
 
+  /** Compute a private owner-authorized proposal at its submitted coordinate.
+   * The projected detail is calculation input only and never enters the formal
+   * spot repository or publication cache. The returned identity remains the
+   * proposal id supplied by the caller. */
+  async computeCandidate(context: ObservationContext, detail: SpotDetail, proposalId: string, signal?: AbortSignal): Promise<ApiEnvelope<SkyReport>> {
+    const calculationContext: ObservationContext = {
+      ...context,
+      location: {
+        kind: "FORMAL_SPOT",
+        spotId: proposalId as SpotDetail["spot"]["spotId"],
+        locationVersion: 1,
+      },
+    };
+    const { computation, spot, key, generation, expiresAt } = await this.prepare(calculationContext, detail, signal);
+    signal?.throwIfAborted();
+    const representationKey = digest({ key, proposalId, contextId: context.contextId,
+      contextFingerprint: context.contextFingerprint, revision: context.revision });
+    const result = await waitForCaller(this.reportCache.get(representationKey,
+      () => {
+        if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
+        return this.projectReport(computation, spot, calculationContext);
+      },
+      (report) => report.data.skyScene.state === "AVAILABLE" ? expiresAt : this.now()), signal);
+    return structuredClone({
+      ...result,
+      data: {
+        ...result.data,
+        context: {
+          ...result.data.context,
+          contextId: context.contextId,
+          contextFingerprint: context.contextFingerprint,
+          contextRevision: context.revision,
+          spotId: proposalId as SpotDetail["spot"]["spotId"],
+        },
+      },
+      warnings: [
+        ...result.warnings,
+        "该结果只按账号可见的审核中提案坐标计算；场地事实尚未审核，不构成正式点发布或出行建议。",
+      ],
+    });
+  }
+
   private async projectReport(computation: DecisionComputation, spot: SpotSummary,
     context: ObservationContext): Promise<ApiEnvelope<SkyReport>> {
     const { report } = computation;
@@ -383,11 +428,19 @@ export class AstronomyService implements AstronomyApplicationPort {
       computation.targetFrames = frames;
     }
     const targetFrames = structuredClone(computation.targetFrames);
-    const sources = structuredClone([...report.sources, ...(skyScene.catalog ? [skyScene.catalog.source] : [])]);
+    const sources = structuredClone([
+      ...report.sources,
+      ...(skyScene.catalog?.sources ?? []),
+      ...(skyScene.deepSky?.catalog?.sources ?? []),
+    ]);
     const data: SkyReport = this.bindContext({ ...structuredClone(report.data),
       context: { ...report.data.context, catalogVersion: skyScene.catalog?.catalogVersion ?? "UNAVAILABLE",
         dataRevision: digest({ evidence: report.data.context.dataRevision, sceneState: skyScene.state,
-          catalog: skyScene.catalog ? { version: skyScene.catalog.catalogVersion, hash: skyScene.catalog.catalogHash } : null }).slice(0, 24) },
+          catalog: skyScene.catalog ? { version: skyScene.catalog.catalogVersion, hash: skyScene.catalog.catalogHash } : null,
+          deepSkyCatalog: skyScene.deepSky?.catalog ? {
+            version: skyScene.deepSky.catalog.catalogVersion,
+            hash: skyScene.deepSky.catalog.catalogHash,
+          } : null }).slice(0, 24) },
       targetFrames, skyScene: structuredClone(skyScene), sources,
       precachedHours: skyScene.state === "AVAILABLE" ? Math.min(8, Math.ceil(hourlyAt.length / 2)) : 0,
       offlineReady: hourlyAt.length > 0 && skyScene.state === "AVAILABLE",
@@ -418,12 +471,20 @@ export class AstronomyService implements AstronomyApplicationPort {
         additionalTimes: [context.selectedAtUtc],
       }),
     ), () => this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs);
+    const selectedCatalogOccurrence = context.eventInstanceId && this.eventCatalog
+      ? this.eventCatalog.find(context.eventInstanceId)
+      : null;
     const selectedEvent = context.eventInstanceId
-      ? meteorEventByOccurrenceId(context.eventInstanceId)
+      ? this.eventCatalog
+        ? selectedCatalogOccurrence?.kind === "METEOR_SHOWER" ? selectedCatalogOccurrence : null
+        : meteorEventByOccurrenceId(context.eventInstanceId)
       : null;
     if (context.eventInstanceId && !selectedEvent)
       throw new Error("observation_event_not_found");
-    const activeEvents = activeMeteorEvents(context.localDate);
+    const activeEvents = this.eventCatalog
+      ? this.eventCatalog.active(context.localDate)
+          .filter((event): event is import("@starward/miniapp-contracts").MeteorShowerOccurrence => event.kind === "METEOR_SHOWER")
+      : activeMeteorEvents(context.localDate);
     if (
       selectedEvent &&
       !activeEvents.some(
@@ -431,7 +492,14 @@ export class AstronomyService implements AstronomyApplicationPort {
       )
     )
       throw new Error("observation_event_not_active");
-    const eventCatalogSource = meteorCatalogSource(context.localDate);
+    const dynamicSourceEvent = this.eventCatalog
+      ? (selectedCatalogOccurrence?.kind === "METEOR_SHOWER"
+          ? selectedCatalogOccurrence
+          : this.eventCatalog.active(context.localDate).find(event => event.kind === "METEOR_SHOWER"))
+      : null;
+    const eventCatalogSource = dynamicSourceEvent
+      ? this.eventCatalog!.sourceFor(dynamicSourceEvent)
+      : meteorCatalogSource(context.localDate);
     const astronomySource = calculationSource(context, this.config);
     const weatherRows = weather.value ?? [];
     const base = calculations[0]!;
@@ -474,6 +542,8 @@ export class AstronomyService implements AstronomyApplicationPort {
           visibilityKm: matchingWeather?.visibilityKm ?? null,
           moonAltitudeDeg: sample.moonAltitudeDeg,
           moonIllumination: sample.moonIllumination,
+          moonPhase: sample.moonPhase,
+          moonPhaseAngleDeg: sample.moonPhaseAngleDeg,
           darkness:
             sample.sunAltitudeDeg <= -18
               ? "ASTRONOMICAL_NIGHT"
@@ -801,6 +871,14 @@ export class AstronomyService implements AstronomyApplicationPort {
         opportunityInput: opportunitySlices[index]!,
       };
     });
+    const selectedLunarRow =
+      hourly.find((row) => row.at === selectedAtIso) ??
+      hourly.reduce<HourlySkyRow | null>((closest, row) =>
+        !closest ||
+        Math.abs(Date.parse(row.at) - selectedAt.getTime()) <
+          Math.abs(Date.parse(closest.at) - selectedAt.getTime())
+          ? row
+          : closest, null);
     const knownFacilities = spot.facilities.filter(
       (facility) => facility.status !== "UNKNOWN",
     );
@@ -900,7 +978,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         }).slice(0, 24),
         algorithmVersion: this.config.astronomyAlgorithmVersion,
         catalogVersion: catalogCacheKey,
-        eventCatalogVersion: this.config.eventCatalogVersion,
+        eventCatalogVersion: this.eventCatalog?.snapshot().catalogVersion ?? this.config.eventCatalogVersion,
       },
       decision,
       targets,
@@ -912,6 +990,15 @@ export class AstronomyService implements AstronomyApplicationPort {
         base.moonIlluminationAtMidpoint === null
           ? "月亮信息不足"
           : `观测夜中段月面照明约 ${Math.round(base.moonIlluminationAtMidpoint * 100)}%`,
+      lunarFacts: {
+        phase: selectedLunarRow?.moonPhase ?? null,
+        phaseAngleDeg: selectedLunarRow?.moonPhaseAngleDeg ?? null,
+        illumination: selectedLunarRow?.moonIllumination ?? null,
+        altitudeDeg: selectedLunarRow?.moonAltitudeDeg ?? null,
+        moonriseAt: base.moonRise,
+        moonsetAt: base.moonSet,
+        source: astronomySource,
+      },
       compass: { state: "UNAVAILABLE", manualOffsetDeg: 0 },
       weatherEvidence: {
         timelineRole: weather.timelineRole,

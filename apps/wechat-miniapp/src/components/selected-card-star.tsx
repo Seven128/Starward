@@ -38,13 +38,10 @@ export function FavoriteStar({
       aria-hidden="true"
     >
       <View className="favorite-star__shape" />
-      {active ? (
-        <View className="favorite-star__effect" aria-hidden="true">
-          <View className="favorite-star__meteor favorite-star__meteor--one" />
-          <View className="favorite-star__meteor favorite-star__meteor--two" />
-          <View className="favorite-star__meteor favorite-star__meteor--three" />
-        </View>
-      ) : null}
+      <View className="favorite-star__effect" aria-hidden="true">
+        <View className="favorite-star__meteor favorite-star__meteor--one" />
+        <View className="favorite-star__meteor favorite-star__meteor--two" />
+      </View>
     </View>
   );
 }

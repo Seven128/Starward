@@ -22,12 +22,12 @@ function runtime() {
   const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({openDetail, closeSpotPanel, openLayerSheet});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    detailRequestGeneration: { current: 0 }, lastHandledSelectedId: { current: null },
+    detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null },
     panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
-    mapResetVersion: 0, bottomPresentation: "spot-panel", panelExtent: "medium", selectedSpotId: "a",
+    mapResetVersion: 0, bottomPresentation: "spot-panel", panelExtent: "medium", selectedSpotId: "a", analysisOverlay: "TOTAL_CLOUD",
     useAppStore: { getState: () => ({ selectedSpotId, mapResetVersion: 0, observationContext: null }) },
     selectSpot: (id: string | null) => { selectedSpotId = id; },
-    setPanelPhase() {}, setPanelExtent() {}, setPanelDragOffset() {}, setSelectedFallback() {}, setAnnouncement() {},
+    setPanelPhase() {}, setPanelExtent() {}, setPanelDragOffset() {}, setSelectedFallback() {}, setSelectedProposal() {}, setAnnouncement() {}, setAnalysisOverlay() {},
     setBottomPresentation: (value: string) => presentations.push(value),
     setObservationContext: (value: unknown) => contexts.push(value),
     notify: (value: unknown) => notifications.push(value), errorMessage: () => "failed",

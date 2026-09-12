@@ -535,7 +535,7 @@ export default function ImportPage() {
               {PLATFORMS.map((item) => (
                 <Button
                   key={item.key}
-                  data-od-id={`import-platform-${item.key.toLowerCase()}`}
+                  id={`import-platform-${item.key.toLowerCase()}`}
                   className={`chip focus-ring${platform === item.key ? " chip--selected" : ""}`}
                   aria-pressed={platform === item.key}
                   disabled={Boolean(draft) || action !== null}

@@ -1,5 +1,6 @@
 .spot-search-page {
   --search-safe-top: calc(env(safe-area-inset-top) + 56Px);
+  --search-title-top: env(safe-area-inset-top);
   --search-control-height: max(var(--target-min), calc(var(--type-search-line) + 16Px));
   height: 100vh;
   min-height: 100vh;
@@ -14,6 +15,24 @@
   display: flex;
   flex-direction: column;
   gap: 12rpx;
+}
+.spot-search-title-row {
+  position: absolute;
+  z-index: 20;
+  top: var(--search-title-top);
+  right: 0;
+  left: 0;
+  height: 39Px;
+  display: flex;
+  align-items: center;
+}
+.spot-search-title {
+  display: block;
+  font-size: 17Px;
+  font-weight: 600;
+  line-height: 24Px;
+  letter-spacing: -.025em;
+  color: var(--text-primary);
 }
 .spot-search-field {
   position: relative;
@@ -101,12 +120,15 @@
   color: var(--primary);
 }
 .spot-search-filter-scroll {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  width: auto;
   padding: 4Px 0;
+  white-space: nowrap;
 }
 .spot-search-filter-group {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex;
+  flex-wrap: nowrap;
   align-items: stretch;
   gap: 4Px;
 }
@@ -128,7 +150,7 @@
   color: var(--text-secondary);
   font-size: var(--type-action-size);
   line-height: var(--type-action-line);
-  white-space: normal;
+  white-space: nowrap;
   text-align: left;
 }
 .spot-search-filter-choice::before {
@@ -168,6 +190,40 @@
   flex-direction: column;
   gap: 8rpx;
 }
+.spot-search-filter-evidence {
+  margin: 0 4rpx;
+  padding: 14rpx 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  border: 1rpx solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+}
+.spot-search-filter-evidence__actions {
+  display: flex;
+  gap: 12rpx;
+}
+.spot-search-filter-evidence__actions button {
+  min-height: var(--target-min);
+  margin: 0;
+  padding: 0 16rpx;
+  color: var(--primary);
+  background: transparent;
+  font-size: var(--type-metadata-size);
+}
+.spot-search-result-entry {
+  margin: 8rpx 0;
+}
+.spot-search-result-entry .spot-identity-card {
+  margin: 0;
+}
+.spot-search-result-entry__evidence {
+  display: block;
+  padding: 8rpx 12rpx 0;
+  color: var(--text-secondary);
+}
 .spot-search-result-list {
   flex: 1;
   min-height: 0;
@@ -195,73 +251,6 @@
   width: 26rpx;
   height: 26rpx;
 }
-.spot-search-result-card {
-  position: relative;
-  width: 100%;
-  min-height: max(var(--target-min), 96Px);
-  margin: 4Px 0;
-  padding: 8Px;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-  border: 1Px solid var(--border);
-  border-radius: 12Px;
-  background: var(--surface);
-  color: var(--text-primary);
-  text-align: left;
-}
-.spot-search-result-card__media {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-.spot-search-result-card__copy {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  min-width: 0;
-  flex: 0 0 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4Px;
-}
-.spot-search-result-card--with-media .spot-search-result-card__copy {
-  width: 58%;
-  flex-basis: 58%;
-  padding: 4Px 8Px;
-  border-radius: 8Px;
-  background: var(--surface);
-}
-.spot-search-result-card__title,
-.spot-search-result-card__copy .type-caption {
-  display: block;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.spot-search-result-card__title {
-  font-size: var(--type-spot-title-size);
-  line-height: var(--type-spot-title-line);
-  font-weight: 600;
-}
-.spot-search-page.large-text .spot-search-result-card--with-media {
-  flex-direction: column;
-  gap: 8Px;
-}
-.spot-search-page.large-text .spot-search-result-card__media {
-  position: relative;
-  height: 120Px;
-  flex: none;
-  border-radius: 8Px;
-}
-.spot-search-page.large-text .spot-search-result-card--with-media .spot-search-result-card__copy {
-  width: 100%;
-  flex-basis: auto;
-  padding: 0;
-}
 .spot-search-empty {
   display: block;
   padding: 14rpx 12rpx;
@@ -282,6 +271,13 @@
   }
 }
 
+.spot-search-filter-row{height:52Px;display:flex;align-items:center;gap:4Px;border-bottom:1Px solid var(--border)}
+.spot-search-filter-open{position:relative;flex:0 0 44Px;width:44Px;height:44Px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
+.spot-search-filter-open__face{width:32Px;height:32Px;display:flex;align-items:center;justify-content:center;border:1Px solid var(--border);border-radius:50%;background:var(--surface)}
+.spot-search-filter-open__face .semantic-icon{width:16Px;height:16Px}
+.spot-search-filter-open--active .spot-search-filter-open__face{border-color:var(--choice-selected-border);background:var(--choice-selected-surface);color:var(--choice-selected-label)}
+.spot-search-filter-open>text{position:absolute;top:1Px;right:1Px;min-width:14Px;height:14Px;padding:0 2Px;border:1Px solid var(--surface);border-radius:7Px;background:var(--choice-selected-surface);color:var(--choice-selected-label);font-size:9Px;line-height:12Px;text-align:center}
+
 /* Field Signal Search: keep the field fixed while the rest of the route
  * reveals below it.  The target wrapper remains 88rpx; its visible surface
  * is intentionally 80rpx so compactness does not steal the hit area. */
@@ -293,9 +289,11 @@
   background: var(--canvas);
 }
 .spot-search-shell {
-  gap: 4rpx;
-  padding-top: var(--search-safe-top);
+  gap: 0;
+  padding-top: calc(var(--search-safe-top) - 6Px);
+  padding-right: 16Px;
   padding-bottom: max(16rpx, env(safe-area-inset-bottom));
+  padding-left: 16Px;
 }
 .spot-search-field {
   flex: none;
@@ -310,7 +308,7 @@
 .spot-search-field::before {
   position: absolute;
   z-index: 0;
-  inset: 4rpx 0;
+  inset: 4Px 0;
   content: "";
   border: 1rpx solid var(--border);
   border-radius: var(--search-field-radius);
@@ -341,7 +339,9 @@
   line-height: var(--type-search-line);
 }
 .spot-search-query-overlay {
-  top: calc(var(--search-safe-top) + var(--search-control-height) + 8Px);
+  top: calc(var(--search-safe-top) + var(--search-control-height) + 2Px);
+  right: 16Px;
+  left: 16Px;
   max-height: 46vh;
   padding: 0;
   border-radius: var(--search-field-radius);
@@ -406,18 +406,18 @@
 }
 @media (max-width: 340px) {
   .spot-search-shell {
-    padding-right: 16rpx;
-    padding-left: 16rpx;
+    padding-right: 16Px;
+    padding-left: 16Px;
   }
   .spot-search-query-overlay {
-    right: 16rpx;
-    left: 16rpx;
+    right: 16Px;
+    left: 16Px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .spot-search-query-overlay,
   .spot-search-filter-choice,
-  .spot-search-result-card {
+  .spot-identity-card {
     transition: none;
   }
 }

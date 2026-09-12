@@ -14,6 +14,31 @@ import {
 
 const baseEvaluation: MapSpotEvaluation = {
   spotId: "spot:test" as MapSpotEvaluation["spotId"],
+  lunarFacts: {
+    phase: "WANING_CRESCENT",
+    phaseAngleDeg: 315,
+    illumination: 0.08,
+    altitudeDeg: -12,
+    moonriseAt: "2026-08-23T20:00:00.000Z",
+    moonsetAt: "2026-08-24T08:00:00.000Z",
+    source: {
+      id: "astronomy:test",
+      kind: "TEST_FIXTURE",
+      title: "Astronomy test fixture",
+      provider: "test",
+      sourceUrl: "https://example.invalid/astronomy-test",
+      license: "test-only",
+      licenseUrl: "https://example.invalid/test-license",
+      publishedAt: null,
+      retrievedAt: "2026-08-23T12:00:00.000Z",
+      validFrom: "2026-08-23T12:00:00.000Z",
+      validTo: "2026-08-24T12:00:00.000Z",
+      state: "FRESH",
+      confidence: 1,
+      precision: "test fixture",
+      limitations: [],
+    },
+  },
   recommendation: "CONSIDER",
   bestWindowMinutes: 90,
   cloudPercent: 60,
@@ -35,11 +60,13 @@ const baseEvaluation: MapSpotEvaluation = {
 const frames: readonly MapSceneTimeFrame[] = [
   {
     atUtc: "2026-08-23T12:00:00.000Z",
+    moonPhase: "WANING_CRESCENT",
     spotSignals: {},
     dynamicLayer: null,
   },
   {
     atUtc: "2026-08-23T12:30:00.000Z",
+    moonPhase: "WANING_CRESCENT",
     spotSignals: {
       "spot:test": {
         spotId: baseEvaluation.spotId,

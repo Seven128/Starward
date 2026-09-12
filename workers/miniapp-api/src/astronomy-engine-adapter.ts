@@ -1,4 +1,11 @@
 import { createRequire } from "node:module";
+import type {
+  AstronomicalEventLocalPhase,
+  AstronomicalEventLocalVisibility,
+  EclipseOccurrence,
+  MeteorShowerOccurrence,
+  MoonPhaseKey,
+} from "@starward/miniapp-contracts";
 
 type AstronomyEngine = typeof import("astronomy-engine");
 type EngineBody = Parameters<AstronomyEngine["Equator"]>[0];
@@ -15,15 +22,106 @@ const {
   GeoVector,
   Horizon,
   Illumination,
+  MoonPhase,
+  NextGlobalSolarEclipse,
+  NextLunarEclipse,
   Observer,
   RotateVector,
   Rotation_EQJ_ECL,
   SearchAltitude,
+  SearchGlobalSolarEclipse,
+  SearchLocalSolarEclipse,
+  SearchLunarEclipse,
   SearchRiseSet,
 } = engine;
 
 export const MINIAPP_ASTRONOMY_ALGORITHM =
   "miniapp-astronomy-engine-adapter@1.1.0+astronomy-engine@2.1.19";
+
+export const MINIAPP_EVENT_PROJECTION_ALGORITHM =
+  "miniapp-event-projection@1.0.0+astronomy-engine@2.1.19";
+
+type EclipsePhaseKey = AstronomicalEventLocalPhase["key"];
+
+function isoTime(value: { toString(): string }): string {
+  return new Date(value.toString()).toISOString();
+}
+
+function offsetMinutes(at: string, minutes: number): string {
+  return new Date(Date.parse(at) + minutes * 60_000).toISOString();
+}
+
+function calendarDateAt(at: string, timezone: string): string {
+  return localDateTime(at, timezone).slice(0, 10);
+}
+
+function eclipseKind(value: string): EclipseOccurrence["eclipseKind"] {
+  const normalized = value.toUpperCase();
+  if (normalized === "PENUMBRAL" || normalized === "PARTIAL" || normalized === "ANNULAR" || normalized === "TOTAL")
+    return normalized;
+  throw new Error("astronomy_eclipse_kind_unknown");
+}
+
+/** Deterministic annual eclipse occurrences from the project's pinned ephemeris. */
+export function calculateEclipseOccurrences(year: number): readonly EclipseOccurrence[] {
+  if (!Number.isInteger(year) || year < 1900 || year > 2100)
+    throw new RangeError("astronomy_eclipse_year_out_of_range");
+  const start = new Date(Date.UTC(year, 0, 1));
+  const end = Date.UTC(year + 1, 0, 1);
+  const result: EclipseOccurrence[] = [];
+  let lunar = SearchLunarEclipse(start);
+  while (Date.parse(lunar.peak.toString()) < end) {
+    const peakAtUtc = isoTime(lunar.peak);
+    const phaseTimesUtc: EclipseOccurrence["phaseTimesUtc"] = {
+      PENUMBRAL_BEGIN: offsetMinutes(peakAtUtc, -lunar.sd_penum),
+      ...(lunar.sd_partial > 0 ? { PARTIAL_BEGIN: offsetMinutes(peakAtUtc, -lunar.sd_partial) } : {}),
+      ...(lunar.sd_total > 0 ? { TOTAL_BEGIN: offsetMinutes(peakAtUtc, -lunar.sd_total) } : {}),
+      PEAK: peakAtUtc,
+      ...(lunar.sd_total > 0 ? { TOTAL_END: offsetMinutes(peakAtUtc, lunar.sd_total) } : {}),
+      ...(lunar.sd_partial > 0 ? { PARTIAL_END: offsetMinutes(peakAtUtc, lunar.sd_partial) } : {}),
+      PENUMBRAL_END: offsetMinutes(peakAtUtc, lunar.sd_penum),
+    };
+    const kind = eclipseKind(lunar.kind);
+    const peakDate = calendarDateAt(peakAtUtc, "Asia/Shanghai");
+    result.push({
+      occurrenceId: `event-occurrence:lunar-eclipse:${peakDate}`,
+      eventId: `lunar-eclipse:${peakDate}`,
+      kind: "LUNAR_ECLIPSE",
+      eclipseKind: kind,
+      code: `LE-${kind.slice(0, 1)}`,
+      displayName: kind === "TOTAL" ? "月全食" : kind === "PARTIAL" ? "月偏食" : "半影月食",
+      activeStartDate: calendarDateAt(phaseTimesUtc.PENUMBRAL_BEGIN!, "Asia/Shanghai"),
+      activeEndDate: calendarDateAt(phaseTimesUtc.PENUMBRAL_END!, "Asia/Shanghai"),
+      peakDate,
+      peakAtUtc,
+      obscuration: Math.round(lunar.obscuration * 1_000_000) / 1_000_000,
+      phaseTimesUtc,
+    });
+    lunar = NextLunarEclipse(lunar.peak);
+  }
+  let solar = SearchGlobalSolarEclipse(start);
+  while (Date.parse(solar.peak.toString()) < end) {
+    const peakAtUtc = isoTime(solar.peak);
+    const kind = eclipseKind(solar.kind);
+    const peakDate = calendarDateAt(peakAtUtc, "Asia/Shanghai");
+    result.push({
+      occurrenceId: `event-occurrence:solar-eclipse:${peakDate}`,
+      eventId: `solar-eclipse:${peakDate}`,
+      kind: "SOLAR_ECLIPSE",
+      eclipseKind: kind,
+      code: `SE-${kind.slice(0, 1)}`,
+      displayName: kind === "TOTAL" ? "日全食" : kind === "ANNULAR" ? "日环食" : "日偏食",
+      activeStartDate: peakDate,
+      activeEndDate: peakDate,
+      peakDate,
+      peakAtUtc,
+      obscuration: solar.obscuration === undefined ? null : Math.round(solar.obscuration * 1_000_000) / 1_000_000,
+      phaseTimesUtc: { PEAK: peakAtUtc },
+    });
+    solar = NextGlobalSolarEclipse(solar.peak);
+  }
+  return result.sort((left, right) => left.peakAtUtc!.localeCompare(right.peakAtUtc!));
+}
 
 export function calculateSolarLongitudeJ2000(at: string): number {
   const date = new Date(at);
@@ -103,8 +201,27 @@ export interface MiniappSkySample {
   sunAltitudeDeg: number;
   moonAltitudeDeg: number;
   moonIllumination: number;
+  moonPhase: MoonPhaseKey;
+  moonPhaseAngleDeg: number;
   targetAltitudeDeg: number;
   targetAzimuthDeg: number;
+}
+
+const MOON_PHASES: readonly MoonPhaseKey[] = [
+  "NEW",
+  "WAXING_CRESCENT",
+  "FIRST_QUARTER",
+  "WAXING_GIBBOUS",
+  "FULL",
+  "WANING_GIBBOUS",
+  "LAST_QUARTER",
+  "WANING_CRESCENT",
+];
+
+export function moonPhaseKey(angleDeg: number): MoonPhaseKey {
+  if (!Number.isFinite(angleDeg)) throw new RangeError("moon_phase_angle_invalid");
+  const normalized = ((angleDeg % 360) + 360) % 360;
+  return MOON_PHASES[Math.round(normalized / 45) % 8]!;
 }
 
 export interface MiniappNightSkyCalculation {
@@ -334,6 +451,173 @@ export function calculateEquatorialHorizontalAt(
   };
 }
 
+export interface MiniappEventProjectionRequest {
+  latitude: number;
+  longitude: number;
+  elevationM: number;
+  timezone: string;
+  localDate: string;
+  nightStartUtc: string;
+  nightEndUtc: string;
+  locationName: string;
+}
+
+function localDateTime(at: string, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date(at));
+  const value = (key: Intl.DateTimeFormatPartTypes) =>
+    parts.find(part => part.type === key)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")} ${value("hour")}:${value("minute")}`;
+}
+
+function phaseRows(
+  phases: EclipseOccurrence["phaseTimesUtc"],
+  timezone: string,
+  observer: EngineObserver,
+): AstronomicalEventLocalPhase[] {
+  const order: readonly EclipsePhaseKey[] = [
+    "PENUMBRAL_BEGIN", "PARTIAL_BEGIN", "TOTAL_BEGIN", "PEAK",
+    "TOTAL_END", "PARTIAL_END", "PENUMBRAL_END",
+  ];
+  return order.flatMap(key => {
+    const atUtc = phases[key];
+    if (!atUtc) return [];
+    const altitudeDeg = horizontal(Body.Moon, new Date(atUtc), observer).altitude;
+    return [{ key, atUtc, localDateTime: localDateTime(atUtc, timezone), altitudeDeg: round(altitudeDeg) }];
+  });
+}
+
+export function projectMeteorShowerAtLocation(
+  event: MeteorShowerOccurrence,
+  input: MiniappEventProjectionRequest,
+): AstronomicalEventLocalVisibility {
+  assertObserver(input);
+  const base = {
+    locationName: input.locationName,
+    timezone: input.timezone,
+    localDate: input.localDate,
+    algorithmVersion: MINIAPP_EVENT_PROJECTION_ALGORITHM,
+    constraints: [
+      "仅计算天文黑夜与目录峰值辐射点的几何高度、方位和月光；未纳入天气、光污染及真实地平遮挡。",
+      "目录辐射点未应用逐日漂移，结果不等于现场每小时可见流星数量。",
+    ],
+  };
+  if (input.localDate < event.activeStartDate || input.localDate > event.activeEndDate)
+    return { ...base, state: "NOT_VISIBLE", reason: "所选日期不在这场流星雨的目录活动期内。" };
+  const start = Date.parse(input.nightStartUtc);
+  const end = Date.parse(input.nightEndUtc);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start)
+    throw new Error("astronomy_event_night_interval_invalid");
+  const observer = new Observer(input.latitude, input.longitude, input.elevationM);
+  const samples: Array<{ at: string; altitude: number; azimuth: number; moon: number }> = [];
+  for (let at = start; at <= end; at += 15 * 60_000) {
+    const date = new Date(at);
+    if (horizontal(Body.Sun, date, observer).altitude > -18) continue;
+    const radiant = Horizon(date, observer, event.radiantRightAscensionDeg / 15, event.radiantDeclinationDeg, "");
+    if (radiant.altitude <= 0) continue;
+    samples.push({
+      at: date.toISOString(), altitude: radiant.altitude, azimuth: radiant.azimuth,
+      moon: Illumination(Body.Moon, date).phase_fraction,
+    });
+  }
+  if (!samples.length)
+    return { ...base, state: "NOT_VISIBLE", reason: "所选夜晚没有同时满足天文黑夜且目录峰值辐射点位于地平线以上的时段。" };
+  const best = samples.reduce((left, right) => right.altitude > left.altitude ? right : left);
+  return {
+    ...base,
+    state: "AVAILABLE",
+    reason: best.altitude < 15
+      ? "存在几何观测时段，但目录峰值辐射点始终较低；请结合现场地平遮挡判断。"
+      : "已按所选地点和日期计算天文黑夜中的几何观测时段。",
+    bestWindowStartUtc: samples[0]!.at,
+    bestWindowEndUtc: samples.at(-1)!.at,
+    bestAtUtc: best.at,
+    bestWindowStartLocal: localDateTime(samples[0]!.at, input.timezone),
+    bestWindowEndLocal: localDateTime(samples.at(-1)!.at, input.timezone),
+    bestAtLocal: localDateTime(best.at, input.timezone),
+    bestAltitudeDeg: round(best.altitude),
+    bestAzimuthDeg: round(best.azimuth),
+    moonIllumination: round(best.moon, 4),
+  };
+}
+
+export function projectEclipseAtLocation(
+  event: EclipseOccurrence,
+  input: MiniappEventProjectionRequest,
+): AstronomicalEventLocalVisibility {
+  assertObserver(input);
+  const observer = new Observer(input.latitude, input.longitude, input.elevationM);
+  const base = {
+    locationName: input.locationName,
+    timezone: input.timezone,
+    algorithmVersion: MINIAPP_EVENT_PROJECTION_ALGORITHM,
+    constraints: event.kind === "SOLAR_ECLIPSE"
+      ? [
+          "任何偏食、环食阶段都必须使用符合标准且完好的日食观测镜；普通太阳镜、相机取景器和裸眼都不能安全观测太阳。",
+          "几何结果未纳入天气和真实地平遮挡。",
+        ]
+      : ["月球高度为几何视线结果；未纳入天气、光污染及真实地平遮挡。"],
+  };
+  if (event.kind === "LUNAR_ECLIPSE") {
+    const phases = phaseRows(event.phaseTimesUtc, input.timezone, observer);
+    const start = Date.parse(event.phaseTimesUtc.PENUMBRAL_BEGIN ?? event.peakAtUtc!);
+    const end = Date.parse(event.phaseTimesUtc.PENUMBRAL_END ?? event.peakAtUtc!);
+    const visible: Array<{ at: string; altitude: number; azimuth: number }> = [];
+    const sampleTimes: number[] = [];
+    for (let at = start; at <= end; at += 5 * 60_000) sampleTimes.push(at);
+    if (sampleTimes.at(-1) !== end) sampleTimes.push(end);
+    for (const at of sampleTimes) {
+      const view = horizontal(Body.Moon, new Date(at), observer);
+      if (view.altitude > 0) visible.push({ at: new Date(at).toISOString(), altitude: view.altitude, azimuth: view.azimuth });
+    }
+    if (!visible.length)
+      return { ...base, state: "NOT_VISIBLE", reason: "食甚及各阶段期间月球均在所选地点的几何地平线以下。", phases };
+    const best = visible.reduce((left, right) => right.altitude > left.altitude ? right : left);
+    return {
+      ...base, state: "AVAILABLE",
+      reason: "月食期间月球至少有一段时间位于所选地点的几何地平线以上。",
+      localDate: localDateTime(event.peakAtUtc!, input.timezone).slice(0, 10),
+      bestWindowStartUtc: visible[0]!.at, bestWindowEndUtc: visible.at(-1)!.at,
+      bestAtUtc: best.at, bestAltitudeDeg: round(best.altitude), bestAzimuthDeg: round(best.azimuth),
+      bestWindowStartLocal: localDateTime(visible[0]!.at, input.timezone),
+      bestWindowEndLocal: localDateTime(visible.at(-1)!.at, input.timezone),
+      bestAtLocal: localDateTime(best.at, input.timezone),
+      phases,
+    };
+  }
+  const searchStart = new Date(Date.parse(event.peakAtUtc!) - 2 * 86_400_000);
+  const local = SearchLocalSolarEclipse(searchStart, observer);
+  const localPeak = isoTime(local.peak.time);
+  if (Math.abs(Date.parse(localPeak) - Date.parse(event.peakAtUtc!)) > 2 * 86_400_000)
+    return { ...base, state: "NOT_VISIBLE", reason: "这次日食在所选地点没有本地食相。" };
+  const rawPhases: Array<[EclipsePhaseKey, { time: { toString(): string }; altitude: number } | undefined]> = [
+    ["PARTIAL_BEGIN", local.partial_begin], ["TOTAL_BEGIN", local.total_begin],
+    ["PEAK", local.peak], ["TOTAL_END", local.total_end], ["PARTIAL_END", local.partial_end],
+  ];
+  const phases = rawPhases.flatMap(([key, phase]) => phase ? [{
+    key, atUtc: isoTime(phase.time), localDateTime: localDateTime(isoTime(phase.time), input.timezone), altitudeDeg: round(phase.altitude),
+  }] : []);
+  const above = phases.filter(phase => phase.altitudeDeg > 0);
+  if (!above.length)
+    return { ...base, state: "NOT_VISIBLE", reason: "本地食相发生时太阳位于所选地点的几何地平线以下。", phases };
+  const peakPhase = phases.find(phase => phase.key === "PEAK")!;
+  return {
+    ...base, state: "AVAILABLE",
+    reason: "所选地点存在太阳位于几何地平线以上的本地食相；观测时必须全程遵守太阳眼安全要求。",
+    localDate: peakPhase.localDateTime.slice(0, 10),
+    bestWindowStartUtc: above[0]!.atUtc, bestWindowEndUtc: above.at(-1)!.atUtc,
+    bestAtUtc: peakPhase.atUtc, bestAltitudeDeg: peakPhase.altitudeDeg,
+    bestWindowStartLocal: above[0]!.localDateTime,
+    bestWindowEndLocal: above.at(-1)!.localDateTime,
+    bestAtLocal: peakPhase.localDateTime,
+    bestAzimuthDeg: round(horizontal(Body.Sun, new Date(peakPhase.atUtc), observer).azimuth),
+    phases,
+  };
+}
+
 export function calculateMiniappNightSky(
   input: MiniappAstronomyRequest,
 ): MiniappNightSkyCalculation {
@@ -378,11 +662,14 @@ export function calculateMiniappNightSky(
     const sun = horizontal(Body.Sun, at, observer);
     const moon = horizontal(Body.Moon, at, observer);
     const target = targetHorizontal(input.target, at, observer);
+    const phaseAngle = MoonPhase(at);
     return {
       at: at.toISOString(),
       sunAltitudeDeg: round(sun.altitude),
       moonAltitudeDeg: round(moon.altitude),
       moonIllumination: round(Illumination(Body.Moon, at).phase_fraction, 4),
+      moonPhase: moonPhaseKey(phaseAngle),
+      moonPhaseAngleDeg: round(phaseAngle),
       targetAltitudeDeg: round(target.altitude),
       targetAzimuthDeg: round(target.azimuth),
     };

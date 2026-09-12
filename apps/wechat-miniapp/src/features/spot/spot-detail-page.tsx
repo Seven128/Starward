@@ -3,6 +3,7 @@ import Taro, { useDidHide, useRouter } from "@tarojs/taro";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type {
+  ObservationContext,
   RouteOverview,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
@@ -93,8 +94,10 @@ function isCancelledAction(error: unknown) {
 
 export function SpotDetailPage({
   initialSegment,
+  observationContextOverride,
 }: {
   initialSegment: SpotSegment;
+  observationContextOverride?: ObservationContext;
 }) {
   const router = useRouter();
   const spotId = safeParam(router.params.spotId);
@@ -109,9 +112,10 @@ export function SpotDetailPage({
   const favoriteIds = useAppStore((state) => state.favoriteIds);
   const { toggleFavorite } = useFavoriteMutation();
   const notify = useAppStore((state) => state.notify);
-  const observationContext = useAppStore(
+  const storedObservationContext = useAppStore(
     (state) => state.observationContext,
   );
+  const observationContext = observationContextOverride ?? storedObservationContext;
   const navigationEpoch = useRef(0);
   const detailPagePending = useRef(false);
   const navigationScope = useRef("");
@@ -375,7 +379,6 @@ export function SpotDetailPage({
         right={
           detail ? (
             <Button
-              compileMode
               className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : ""}`}
               data-od-id="spot-detail-favorite"
               ariaLabel={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
@@ -611,7 +614,7 @@ export function SpotDetailPage({
                     data-od-id="spot-contribution-entry"
                     onClick={() =>
                       openDetailPage(
-                          "/content/contribution/index?spotId=" +
+                          "/content/spot-feedback/index?spotId=" +
                           encodeURIComponent(spotId) +
                           "&spotName=" +
                           encodeURIComponent(detail.spot.name),

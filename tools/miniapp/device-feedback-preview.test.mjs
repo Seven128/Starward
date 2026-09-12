@@ -13,6 +13,7 @@ import os from "node:os";
 import path from "node:path";
 import {
   OfficialWechatDevtools,
+  parseOfficialLoginState,
   resolveOfficialCli,
 } from "./device-feedback-official.mjs";
 import {
@@ -90,6 +91,18 @@ test("official readiness probes automatic and ordinary preview independently", a
     calls.map((args) => args[0]),
     ["auto-preview", "preview", "islogin"],
   );
+});
+
+test("official login parsing tolerates current CLI progress output", () => {
+  assert.equal(
+    parseOfficialLoginState(Buffer.from('starting\n{"login":true}\nfinished\n')),
+    "ready",
+  );
+  assert.equal(
+    parseOfficialLoginState('progress\n{"login":false}\n'),
+    "required",
+  );
+  assert.equal(parseOfficialLoginState("progress only"), "unknown");
 });
 
 test("official CLI prefers the bundled Node entry over leftover Electron files", async (t) => {

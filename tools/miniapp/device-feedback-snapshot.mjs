@@ -148,6 +148,62 @@ async function sourceSnapshot(binding) {
   };
 }
 
+const phoneLoopbackOrigins = [
+  Buffer.from("http://127.0.0.1:8787", "utf8"),
+  Buffer.from("http://localhost:8787", "utf8"),
+];
+const phoneBundleTextExtensions = new Set([".js", ".json", ".wxml", ".wxs"]);
+const compiledApiOriginPattern = /url:(?:"([^"]{1,512})"|'([^']{1,512})')\.replace\(\/\\\/\+\$\/\s*,\s*(?:""|'')\)/gu;
+
+function assertCompiledApiOrigins(bytes) {
+  const text = bytes.toString("utf8");
+  for (const match of text.matchAll(compiledApiOriginPattern)) {
+    const value = match[1] ?? match[2];
+    let origin;
+    try {
+      origin = new URL(value);
+    } catch {
+      fail("phone_api_origin_invalid");
+    }
+    if (
+      !["http:", "https:"].includes(origin.protocol) ||
+      !origin.hostname ||
+      origin.username ||
+      origin.password ||
+      origin.hostname === "localhost" ||
+      origin.hostname === "0.0.0.0" ||
+      origin.hostname === "::1" ||
+      /^127(?:\.|$)/u.test(origin.hostname)
+    ) {
+      if (
+        origin.hostname === "localhost" ||
+        origin.hostname === "0.0.0.0" ||
+        origin.hostname === "::1" ||
+        /^127(?:\.|$)/u.test(origin.hostname)
+      ) fail("phone_loopback_origin_compiled");
+      fail("phone_api_origin_invalid");
+    }
+  }
+}
+
+export async function assertPhysicalDeviceBundleSafe(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  for (const entry of entries) {
+    const target = path.join(directory, entry.name);
+    if (entry.isSymbolicLink()) fail("bundle_symlink_forbidden");
+    if (entry.isDirectory()) await assertPhysicalDeviceBundleSafe(target);
+    else if (entry.isFile() && entry.name.endsWith("-templates.wxml"))
+      fail("experimental_compile_mode_artifact");
+    else if (entry.isFile() && phoneBundleTextExtensions.has(path.extname(entry.name).toLowerCase())) {
+      const bytes = await readFile(target);
+      if (phoneLoopbackOrigins.some((origin) => bytes.includes(origin)))
+        fail("phone_loopback_origin_compiled");
+      if (path.extname(entry.name).toLowerCase() === ".js")
+        assertCompiledApiOrigins(bytes);
+    }
+  }
+}
+
 function sourceSnapshotsMatch(left, right) {
   return (
     left.configSha256 === right.configSha256 &&
@@ -205,6 +261,7 @@ export async function createStableGeneration(
         binding.preparedConfigBytes,
       );
       await copyTree(binding.bundle, bundle);
+      await assertPhysicalDeviceBundleSafe(bundle);
       await afterCopy?.({ attempt, binding, directory, project, bundle });
       const after = await sourceSnapshot(binding);
       const preparedBinding = await sourceBinding(project);

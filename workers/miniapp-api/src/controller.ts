@@ -1,3 +1,4 @@
+import type { AccountAvatarSaveRequest, AccountNicknameSaveRequest } from "@starward/miniapp-contracts";
 import {
   Body,
   Controller,
@@ -10,10 +11,17 @@ import {
   Post,
   Put,
   Query,
+  Res,
 } from "@nestjs/common";
+import type { FastifyReply } from "fastify";
 import {
   assertFilterState,
   type ContributionDraftRequest,
+  type ContributionFormalSubmitRequest,
+  type ContributionFormalUploadIntentRequest,
+  type ContributionFormalUploadSessionRequest,
+  type ContributionFormalUploadCompleteRequest,
+  type ContributionFormalUploadRemoveRequest,
   type ContributionId,
   type ContributionSubmitRequest,
   type ContributionUpdateRequest,
@@ -22,6 +30,7 @@ import {
   type ContributionUploadId,
   type ContributionUploadSessionRequest,
   type FilterState,
+  type SpotId,
   type ImportStage,
   type MapLayerKind,
   type ObservationContext,
@@ -178,7 +187,7 @@ export class MiniappController {
     return this.service.getObservationContext(decodeURIComponent(contextId));
   }
 
-  @Patch("observation-contexts/:contextId")
+  @Put("observation-contexts/:contextId")
   updateContext(
     @Param("contextId") contextId: string,
     @Body() body: ObservationContextUpdateRequest,
@@ -233,10 +242,32 @@ export class MiniappController {
       typeof body?.contextId !== "string" ||
       !body.contextId.trim() ||
       typeof body?.spotId !== "string" ||
-      !body.spotId.startsWith("spot:")
+      !body.spotId.startsWith("spot:") ||
+      (body.travelMode !== undefined &&
+        !["DRIVING", "TRANSIT", "WALKING"].includes(body.travelMode)) ||
+      (body.departureLocalDate !== undefined &&
+        !/^\d{4}-\d{2}-\d{2}$/u.test(body.departureLocalDate)) ||
+      (body.departureLocalTime !== undefined &&
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/u.test(body.departureLocalTime))
     )
       throw new Error("route_estimate_input_invalid");
     return this.service.estimateRoute(body);
+  }
+
+  @Get("astronomical-events")
+  astronomicalEvents() {
+    return this.service.getAstronomicalEvents();
+  }
+
+  @Get("astronomical-events/:occurrenceId")
+  astronomicalEvent(
+    @Param("occurrenceId") occurrenceId: string,
+    @Query("contextId") contextId?: string,
+  ) {
+    return this.service.getAstronomicalEvent(
+      decodeURIComponent(occurrenceId),
+      contextId ? decodeURIComponent(contextId) : undefined,
+    );
   }
 
   @Get("spots/:spotId/overview")
@@ -260,15 +291,62 @@ export class MiniappController {
     return this.service.getSpotSite(decodeURIComponent(spotId));
   }
 
+  @Get("spots/:spotId/media/:uploadId")
+  spotContributionMedia(
+    @Param("spotId") spotId: string,
+    @Param("uploadId") uploadId: string,
+  ) {
+    if (!uploadId.startsWith("upload:")) throw new Error("contribution_upload_not_found");
+    return this.service.getSpotContributionMedia(
+      decodeURIComponent(spotId) as SpotId,
+      decodeURIComponent(uploadId) as ContributionUploadId,
+    );
+  }
+
+  @Get("spots/:spotId/contribution-baseline")
+  contributionBaseline(@Param("spotId") spotId: string) {
+    return this.service.getContributionFormalBaseline(decodeURIComponent(spotId));
+  }
+
   @Get("spots/:spotId/sky")
   sky(
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
+    @Headers("authorization") authorization?: string,
   ) {
-    return this.service.getSky(
-      decodeURIComponent(spotId),
-      required(contextId, "observation_context_required"),
-    );
+    const locationId = decodeURIComponent(spotId);
+    if (locationId.startsWith("contribution:")) {
+      return this.service.auth.requirePrincipal(authorization).then((userId) => this.service.getSky(
+        locationId,
+        required(contextId, "observation_context_required"),
+        userId,
+      ));
+    }
+    return this.service.getSky(locationId, required(contextId, "observation_context_required"));
+  }
+
+  @Get("celestial-objects/:reference")
+  celestialObject(
+    @Param("reference") reference: string,
+    @Query("locale") locale = "zh-CN",
+  ) {
+    return this.service.getCelestialObject(decodeURIComponent(reference), locale);
+  }
+
+  @Get("celestial-objects/:reference/image")
+  async celestialObjectImage(
+    @Param("reference") reference: string,
+    @Query("level") level = "MEDIUM",
+    @Res() reply: FastifyReply,
+  ) {
+    const image = await this.service.getDeepSkyImage(decodeURIComponent(reference), level);
+    reply
+      .header("content-type", image.contentType)
+      .header("cache-control", "public, max-age=86400")
+      .header("x-content-type-options", "nosniff")
+      .header("x-starward-image-source", image.sourceLabel)
+      .header("x-starward-image-field-degrees", String(image.fieldDegrees))
+      .send(image.bytes);
   }
 
   @Get("me/favorites")
@@ -298,6 +376,30 @@ export class MiniappController {
     return this.service.getUserLibrary(
       await this.service.auth.requirePrincipal(authorization),
     );
+  }
+
+  @Get("me/profile")
+  async accountProfile(@Headers("authorization") authorization?: string) {
+    return this.service.getAccountProfile(await this.service.auth.requirePrincipal(authorization));
+  }
+
+  @Put("me/profile/nickname")
+  async accountNickname(@Body() body: AccountNicknameSaveRequest,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "") {
+    return this.service.saveAccountNickname(await this.service.auth.requirePrincipal(authorization), body, idempotencyKey);
+  }
+
+  @Get("me/profile/avatar")
+  async accountAvatar(@Headers("authorization") authorization?: string) {
+    return this.service.getAccountAvatar(await this.service.auth.requirePrincipal(authorization));
+  }
+
+  @Put("me/profile/avatar")
+  async saveAccountAvatar(@Body() body: AccountAvatarSaveRequest,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "") {
+    return this.service.saveAccountAvatar(await this.service.auth.requirePrincipal(authorization), body, idempotencyKey);
   }
 
   @Get("me/preferences")
@@ -370,6 +472,18 @@ export class MiniappController {
     );
   }
 
+  @Put("me/observation-plans/:planId/checklist-completion")
+  async planChecklistCompletion(
+    @Param("planId") planId: string,
+    @Body() body: import("@starward/miniapp-contracts").PlanChecklistCompletionRequest,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.setPlanChecklistCompletion(
+      await this.service.auth.requirePrincipal(authorization), decodeURIComponent(planId), body, idempotencyKey,
+    );
+  }
+
   @Delete("me/observation-plans/:planId")
   async deletePlan(
     @Param("planId") planId: string,
@@ -388,6 +502,52 @@ export class MiniappController {
     return this.service.listContributions(
       await this.service.auth.requirePrincipal(authorization),
     );
+  }
+
+  @Post("me/formal-contributions/submit")
+  async submitFormalContribution(
+    @Body() body: ContributionFormalSubmitRequest,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.submitFormalContribution(
+      await this.service.auth.requirePrincipal(authorization),
+      body,
+      idempotencyKey,
+    );
+  }
+
+  @Get("me/contributions/:submissionId/media/:uploadId")
+  async contributionMedia(
+    @Param("submissionId") submissionId: string,
+    @Param("uploadId") uploadId: string,
+    @Headers("authorization") authorization?: string,
+  ) {
+    return this.service.getContributionMedia(
+      await this.service.auth.requirePrincipal(authorization),
+      decodeURIComponent(submissionId) as ContributionId,
+      decodeURIComponent(uploadId) as ContributionUploadId,
+    );
+  }
+
+  @Post("me/formal-contribution-upload-intents")
+  async createFormalUploadIntent(@Body() body: ContributionFormalUploadIntentRequest, @Headers("authorization") authorization?: string, @Headers("idempotency-key") idempotencyKey = "") {
+    return this.service.createFormalUploadIntent(await this.service.auth.requirePrincipal(authorization), body, idempotencyKey);
+  }
+
+  @Post("me/formal-contribution-upload-intents/:intentId/uploads")
+  async createFormalUpload(@Param("intentId") intentId: string, @Body() body: ContributionFormalUploadSessionRequest, @Headers("authorization") authorization?: string, @Headers("idempotency-key") idempotencyKey = "") {
+    return this.service.createFormalUpload(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(intentId), body, idempotencyKey);
+  }
+
+  @Put("me/formal-contribution-upload-intents/:intentId/uploads/:uploadId")
+  async completeFormalUpload(@Param("intentId") intentId: string, @Param("uploadId") uploadId: ContributionUploadId, @Body() body: ContributionFormalUploadCompleteRequest, @Headers("authorization") authorization?: string, @Headers("idempotency-key") idempotencyKey = "") {
+    return this.service.completeFormalUpload(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(intentId), decodeURIComponent(uploadId) as ContributionUploadId, body, idempotencyKey);
+  }
+
+  @Delete("me/formal-contribution-upload-intents/:intentId/uploads/:uploadId")
+  async removeFormalUpload(@Param("intentId") intentId: string, @Param("uploadId") uploadId: ContributionUploadId, @Body() body: ContributionFormalUploadRemoveRequest, @Headers("authorization") authorization?: string, @Headers("idempotency-key") idempotencyKey = "") {
+    return this.service.removeFormalUpload(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(intentId), decodeURIComponent(uploadId) as ContributionUploadId, body.expectedRevision, idempotencyKey);
   }
 
   @Post("me/contributions")

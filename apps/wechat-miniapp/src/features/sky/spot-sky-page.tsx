@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import {
   type DisplayMode,
+  type CelestialObjectInformation,
   type HourlySkyRow,
   type ObservationContext,
   type SkyReport,
@@ -19,10 +20,24 @@ import { NotificationRegion } from "@/components/notification";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
+import { ObservationDateControl } from "@/components/observation-date-control";
+import { NativeBackBoundary } from "@/components/native-back-boundary";
+import {
+  civilDateForInstant,
+  instantForCivilDate,
+  observationNightForInstant,
+  observationDateOptions,
+} from "@/components/observation-date";
+import {
+  calendarDateInTimezone,
+  clockTimeInTimezone,
+} from "@/utils/zoned-date";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
+  deepSkyImageUrl,
+  getCelestialObjectInformation,
   getObservationContext,
   getSkyReport,
   getSpotOverview,
@@ -32,6 +47,7 @@ import {
   acquireAcceptanceSkySceneInspection,
   clearAcceptanceSkySceneInspection,
   publishAcceptanceSkySceneInspection,
+  recordAcceptanceDiagnostic,
   type AcceptanceSkySceneInspectionOwner,
 } from "@/services/acceptance-diagnostics";
 import { useAppStore } from "@/state/app-store";
@@ -47,6 +63,21 @@ import {
 } from "./sky-view-projection";
 import { exactSkyTimeFrame } from "./sky-time-frame";
 import { createPoseFramePublisher, createSkyCanvasLifecycle } from "./sky-canvas-lifecycle";
+import {
+  isUnambiguousTapGesture,
+  pickPaintedSkyObjects,
+  type PaintedSkyObject,
+  type SkyPickSnapshot,
+} from "./sky-object-picking";
+import {
+  deepSkyImageFieldDegrees,
+  deepSkyImageLevelForFov,
+  pinchFieldOfView,
+} from "./sky-zoom";
+import {
+  startDeepSkyImageRequest,
+  type DeepSkyImageAsset,
+} from "./deep-sky-image-request";
 import "./spot-sky-page.scss";
 
 const CANVAS_ID = "spot-night-sky-scene";
@@ -60,9 +91,32 @@ interface SkyCanvasFrame {
   heading: number | null;
   pose: DevicePose | null;
   mode: DisplayMode;
+  verticalFovDeg: number;
+  deepSkyImage: SkyCanvasImageAsset | null;
   sceneReady: boolean;
   owner: AcceptanceSkySceneInspectionOwner | null;
   inspection: { spotId: string; frameAt: string; catalogVersion: string; starCount: number };
+}
+
+interface SkyCanvasImage {
+  onload: (() => void) | null;
+  onerror: (() => void) | null;
+  src: string;
+}
+
+interface SkyCanvasNode {
+  width: number;
+  height: number;
+  getContext(type: "2d"): CanvasRenderingContext2D | null;
+  createImage(): SkyCanvasImage;
+}
+
+type SkyCanvasImageAsset = DeepSkyImageAsset & { image: SkyCanvasImage };
+
+function canvasMeasurement(value: unknown) {
+  return (Array.isArray(value) ? value[0] : value) as
+    | { node?: SkyCanvasNode }
+    | null;
 }
 
 const TARGET_TYPE_LABEL: Readonly<Record<SkyReport["targets"][number]["type"], string>> = {
@@ -76,6 +130,7 @@ const TARGET_TYPE_LABEL: Readonly<Record<SkyReport["targets"][number]["type"], s
 
 interface SpotNightRouteContext {
   spotId: string;
+  locationName: string;
   contextId: string;
   localDate: string;
   selectedAt: string;
@@ -103,10 +158,50 @@ function isSelectedAt(value: string) {
   return Boolean(value) && !Number.isNaN(Date.parse(value));
 }
 
+type SkyTouchLike = {
+  touches?: readonly { clientX?: number; clientY?: number; x?: number; y?: number }[];
+  changedTouches?: readonly { clientX?: number; clientY?: number; x?: number; y?: number }[];
+};
+
+function skyTouchPoint(event: unknown, changed = false) {
+  const candidate = event as SkyTouchLike;
+  const touch = (changed ? candidate.changedTouches : candidate.touches)?.[0];
+  const x = touch?.x ?? touch?.clientX;
+  const y = touch?.y ?? touch?.clientY;
+  return Number.isFinite(x) && Number.isFinite(y) ? { x: x!, y: y! } : null;
+}
+
+function skyTouchDistance(event: unknown) {
+  const touches = (event as SkyTouchLike).touches;
+  if (!touches || touches.length !== 2) return null;
+  const [left, right] = touches;
+  const leftX = left?.x ?? left?.clientX;
+  const leftY = left?.y ?? left?.clientY;
+  const rightX = right?.x ?? right?.clientX;
+  const rightY = right?.y ?? right?.clientY;
+  return [leftX, leftY, rightX, rightY].every(Number.isFinite)
+    ? Math.hypot(rightX! - leftX!, rightY! - leftY!)
+    : null;
+}
+
+function skyPickIdentity(data: SkyReport | undefined) {
+  const star = data?.skyScene.catalog;
+  const deep = data?.skyScene.deepSky?.catalog;
+  return {
+    catalogVersion: [star?.catalogVersion, deep?.catalogVersion].filter(Boolean).join("+"),
+    catalogHash: [star?.catalogHash, deep?.catalogHash].filter(Boolean).join(":"),
+  };
+}
+
 function validTimezone(value: string) {
   if (!value) return false;
   try {
-    new Intl.DateTimeFormat("zh-CN", { timeZone: value }).format();
+    // Validate through the same formatter/fallback path used by the actual
+    // observation-night calculation. Some Android WeChat runtimes accept an
+    // IANA zone in Intl.DateTimeFormat but do not expose usable formatting
+    // parts; treating that runtime limitation as an invalid route strands a
+    // context that Map has already resolved successfully.
+    observationNightForInstant("2026-01-01T12:00:00.000Z", value);
     return true;
   } catch {
     return false;
@@ -114,18 +209,9 @@ function validTimezone(value: string) {
 }
 
 function observationDateFor(selectedAt: string, timezone: string) {
-  if (!isSelectedAt(selectedAt) || !validTimezone(timezone)) return "";
+  if (!isSelectedAt(selectedAt)) return "";
   try {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(new Date(Date.parse(selectedAt) - 12 * 60 * 60 * 1000));
-    const values = Object.fromEntries(
-      parts.map((part) => [part.type, part.value]),
-    );
-    return `${values.year ?? ""}-${values.month ?? ""}-${values.day ?? ""}`;
+    return observationNightForInstant(selectedAt, timezone);
   } catch {
     return "";
   }
@@ -134,21 +220,51 @@ function observationDateFor(selectedAt: string, timezone: string) {
 function formatTime(value: string | null | undefined, timezone: string) {
   if (!value) return "—";
   try {
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: timezone,
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(value));
+    return clockTimeInTimezone(new Date(value), timezone);
   } catch {
     return "时间不可用";
   }
 }
 
+function formatSkyDate(value: string | null | undefined, timezone: string) {
+  if (!value) return "日期不可用";
+  try {
+    const civil = calendarDateInTimezone(new Date(value), timezone);
+    const [, month, day] = civil.split("-").map(Number);
+    const weekday = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][
+      new Date(`${civil}T00:00:00Z`).getUTCDay()
+    ];
+    return `${String(month).padStart(2, "0")}月${String(day).padStart(2, "0")}日 ${weekday}`;
+  } catch {
+    return "日期不可用";
+  }
+}
+
+function timezoneOffsetLabel(value: string | null | undefined, timezone: string) {
+  if (!value) return timezone;
+  try {
+    const instant = new Date(value);
+    const localDate = calendarDateInTimezone(instant, timezone);
+    const localTime = clockTimeInTimezone(instant, timezone);
+    const localAsUtc = Date.parse(`${localDate}T${localTime}:00Z`);
+    const minutes = Math.round((localAsUtc - Date.parse(value)) / 60_000);
+    const sign = minutes >= 0 ? "+" : "−";
+    const absolute = Math.abs(minutes);
+    const hours = Math.floor(absolute / 60);
+    const remainder = absolute % 60;
+    return `UTC${sign}${hours}${remainder ? `:${String(remainder).padStart(2, "0")}` : ""}`;
+  } catch {
+    return timezone;
+  }
+}
+
 function SkyTargetRow({
   target,
+  onSelect,
   className = "",
 }: {
   target: SkyReport["targets"][number];
+  onSelect: (target: SkyReport["targets"][number]) => void;
   className?: string;
 }) {
   const altitude =
@@ -157,10 +273,10 @@ function SkyTargetRow({
     ? `${target.window.start}—${target.window.end}`
     : "窗口不足";
   return (
-    <View
+    <Button
       className={`sky-target-row ${className}`}
-      role="listitem"
-      aria-label={`${target.displayName}，${TARGET_TYPE_LABEL[target.type]}，${target.direction}，${altitude}，${window}`}
+      ariaLabel={`查看${target.displayName}信息，${TARGET_TYPE_LABEL[target.type]}，${target.direction}，${altitude}，${window}`}
+      onClick={() => onSelect(target)}
     >
       <View className="sky-target-row__identity">
         <SemanticIcon name="horizon" decorative />
@@ -174,7 +290,7 @@ function SkyTargetRow({
       <Text className="sky-target-row__geometry type-data">
         {target.direction} · {altitude}
       </Text>
-    </View>
+    </Button>
   );
 }
 
@@ -191,12 +307,14 @@ function SkyOrientationTargetLabel({
   target,
   projection,
   timezone,
+  onSelect,
 }: {
   target: SkyReport["targets"][number];
   projection: SkyTargetProjection;
   width: number;
   height: number;
   timezone: string;
+  onSelect: (target: SkyReport["targets"][number]) => void;
 }) {
   const altitude = `${projection.altitude}°`;
   const isEvent =
@@ -207,12 +325,12 @@ function SkyOrientationTargetLabel({
   const top = projection.y;
   const label = `${target.displayName}，${TARGET_TYPE_LABEL[target.type]}，${target.direction}，高度 ${altitude}，${skyTargetWindowLabel(target, timezone)}`;
   return (
-    <View
+    <Button
       className={`sky-orientation-target-label${isEvent ? " sky-orientation-target-label--event" : ""}`}
       style={{ left: `${left}px`, top: `${top}px` }}
-      role="listitem"
-      aria-label={label}
+      ariaLabel={`查看${label}`}
       data-target-id={target.targetId}
+      onClick={() => onSelect(target)}
     >
       <View className="sky-orientation-target-label__mark" aria-hidden="true" />
       <View className="sky-orientation-target-label__copy">
@@ -225,6 +343,153 @@ function SkyOrientationTargetLabel({
         <Text className="sky-orientation-target-label__window">
           {skyTargetWindowLabel(target, timezone)}
         </Text>
+      </View>
+    </Button>
+  );
+}
+
+function SkyOrientationCatalogLabel({
+  object,
+  onSelect,
+}: {
+  object: PaintedSkyObject;
+  onSelect: (object: PaintedSkyObject) => void;
+}) {
+  const kindLabel = object.kind === "STAR" ? "恒星" : object.kind === "GALAXY" ? "星系" : "星云";
+  const magnitudeLabel = object.magnitude === null ? "目录未提供V波段视星等" : `V 波段视星等 ${object.magnitude.toFixed(2)}`;
+  return (
+    <Button
+      className="sky-orientation-catalog-label"
+      style={{ left: `${object.x}px`, top: `${object.y}px` }}
+      ariaLabel={`查看${object.displayName}，${kindLabel}，${object.reference.replace(":", " ")}，${magnitudeLabel}`}
+      onClick={() => onSelect(object)}
+    >
+      <View className="sky-orientation-catalog-label__mark" aria-hidden="true" />
+      <Text>{object.displayName}</Text>
+    </Button>
+  );
+}
+
+function SkyTargetInformation({
+  target,
+  spotName,
+  selectedAt,
+  timezone,
+  onClose,
+}: {
+  target: SkyReport["targets"][number];
+  spotName: string;
+  selectedAt: string;
+  timezone: string;
+  onClose: () => void;
+}) {
+  const altitude = target.altitudeDeg === null ? "暂无数据" : `${target.altitudeDeg}°`;
+  const source = [target.source.provider, target.source.title]
+    .filter(Boolean)
+    .join(" · ");
+  return (
+    <View className="sky-object-modal" data-control="sky-object-modal">
+      <Button
+        className="sky-object-modal__backdrop"
+        ariaLabel="关闭天体信息"
+        onClick={onClose}
+      />
+      <View
+        className="liquid-glass-surface sky-object-modal__panel"
+        data-material="liquid-glass"
+        role="dialog"
+        aria-label={`${target.displayName}天体信息`}
+      >
+        <View className="sky-object-modal__header">
+          <View className="sky-object-modal__identity">
+            <Text className="sky-object-modal__title">{target.displayName}</Text>
+            <Text className="sky-object-modal__kind">{TARGET_TYPE_LABEL[target.type]}</Text>
+          </View>
+          <Button
+            className="sky-object-modal__close"
+            ariaLabel={`关闭${target.displayName}信息`}
+            onClick={onClose}
+          >
+            <SemanticIcon name="close" decorative />
+          </Button>
+        </View>
+        <ScrollView scrollY enhanced showScrollbar={false} className="sky-object-modal__body">
+          <Text className="sky-object-modal__basic">当前仅收录可核验的基本资料</Text>
+          <Text className="sky-object-modal__reason">{target.reason}</Text>
+          <View className="sky-object-modal__facts">
+            <View><Text>方位</Text><Text>{target.direction}</Text></View>
+            <View><Text>仰角</Text><Text>{altitude}</Text></View>
+          </View>
+          <Text className="sky-object-modal__context">
+            {spotName} · {formatSkyDate(selectedAt, timezone)} {formatTime(selectedAt, timezone)} · {timezoneOffsetLabel(selectedAt, timezone)}
+          </Text>
+          <Text className="sky-object-modal__limitation">
+            方位与仰角属于上述地点和时刻；现场山体、建筑、云层与光害可能遮挡。
+          </Text>
+          <Text className="sky-object-modal__source">来源 · {source || "暂无可用来源说明"}</Text>
+        </ScrollView>
+      </View>
+    </View>
+  );
+}
+
+function SkyCatalogInformation({
+  reference,
+  knownName,
+  knownKind,
+  onClose,
+}: {
+  reference: string;
+  knownName: string;
+  knownKind: PaintedSkyObject["kind"];
+  onClose: () => void;
+}) {
+  const information = useResourceQuery({
+    queryKey: ["celestial-object-information", reference, "zh-CN"],
+    queryFn: (signal) => getCelestialObjectInformation(reference, signal),
+    staleTime: 24 * 60 * 60 * 1_000,
+  });
+  const data: CelestialObjectInformation | undefined = information.data?.data;
+  const title = data?.displayName ?? knownName;
+  const resolvedKind = data?.kind ?? knownKind;
+  const kindLabel = resolvedKind === "GALAXY" ? "星系" : resolvedKind === "NEBULA" ? "星云" : resolvedKind === "PLANET" ? "行星" : "恒星";
+  return (
+    <View className="sky-object-modal" data-control="sky-object-modal" data-object-reference={reference}>
+      <Button className="sky-object-modal__backdrop" ariaLabel="关闭天体信息" onClick={onClose} />
+      <View className="liquid-glass-surface sky-object-modal__panel" data-material="liquid-glass" role="dialog" aria-label={`${title}天体信息`}>
+        <View className="sky-object-modal__header">
+          <View className="sky-object-modal__identity">
+            <Text className="sky-object-modal__title">{title}</Text>
+            <Text className="sky-object-modal__kind">{kindLabel} · {reference.replace(":", " ")}</Text>
+          </View>
+          <Button className="sky-object-modal__close" ariaLabel={`关闭${title}信息`} onClick={onClose}>
+            <SemanticIcon name="close" decorative />
+          </Button>
+        </View>
+        <ScrollView scrollY enhanced type="custom" showScrollbar={false} className="sky-object-modal__body">
+          {information.isPending ? <StatusPanel state="LOADING" detail={`正在读取${title}的资料…`} /> : null}
+          {information.isError ? (
+            <StatusPanel state="ERROR" detail={errorMessage(information.error)} recoveryLabel="重试资料" onRecover={() => void information.refetch()} />
+          ) : null}
+          {data ? (
+            <>
+              <Text className="sky-object-modal__basic">
+                {data.contentState === "READY" ? "已收录可核验的中文介绍与目录资料" : "当前仅收录可核验的目录基本资料"}
+              </Text>
+              {data.introduction ? <Text className="sky-object-modal__reason">{data.introduction}</Text> : null}
+              {data.aliases.length ? <Text className="sky-object-modal__aliases">{data.aliases.join(" · ")}</Text> : null}
+              <View className="sky-object-modal__facts">
+                {data.facts.map((fact) => (
+                  <View key={fact.label}><Text>{fact.label}</Text><Text>{fact.value}{fact.unit ? ` ${fact.unit}` : ""}</Text></View>
+                ))}
+              </View>
+              {data.limitations.map((limitation) => <Text className="sky-object-modal__limitation" key={limitation}>{limitation}</Text>)}
+              <Text className="sky-object-modal__source">
+                来源 · {data.sources.map((source) => source.provider).join(" · ")}
+              </Text>
+            </>
+          ) : null}
+        </ScrollView>
       </View>
     </View>
   );
@@ -298,11 +563,12 @@ function projectHorizontalPoint(
   pose: DevicePose | null,
   width: number,
   height: number,
+  verticalFovDeg = SKY_VERTICAL_FOV_DEG,
 ): SkyTargetProjection | null {
   if (heading === null || !pose) return null;
   const basis = createSkyViewBasis(heading, pose.betaDeg, pose.gammaDeg);
   return basis
-    ? projectSkyDirection(azimuthDeg, altitudeDeg, basis, width, height, SKY_VERTICAL_FOV_DEG)
+    ? projectSkyDirection(azimuthDeg, altitudeDeg, basis, width, height, verticalFovDeg)
     : null;
 }
 
@@ -312,6 +578,7 @@ function projectSkyTarget(
   pose: DevicePose | null,
   width: number,
   height: number,
+  verticalFovDeg = SKY_VERTICAL_FOV_DEG,
 ): SkyTargetProjection | null {
   const degrees = extractDegrees(target.direction);
   if (degrees === null || target.altitudeDeg === null) return null;
@@ -324,6 +591,7 @@ function projectSkyTarget(
     pose,
     width,
     height,
+    verticalFovDeg,
   );
 }
 
@@ -568,13 +836,11 @@ function OrientationTimeRuler({
             return (
               <Button
                 key={`${row.at}:${index}`}
-                compileMode
                 className={`sky-orientation-time-ruler__tick${isSelected ? " sky-orientation-time-ruler__tick--selected" : ""}${isEvent ? " sky-orientation-time-ruler__tick--event" : ""}`}
                 style={{
                   transform: `translateY(${Math.round(distance * distance * 18)}rpx)`,
                 }}
-                ariaLabel={orientationRulerLabel(row, timezone, index)}
-                aria-pressed={isSelected ? "true" : "false"}
+                ariaLabel={`${orientationRulerLabel(row, timezone, index)}${isSelected ? "，当前已选择" : "，选择此时刻"}`}
                 disabled={saving}
                 onClick={() => selectTick(index)}
               >
@@ -591,7 +857,6 @@ function OrientationTimeRuler({
       </ScrollView>
       <View className="sky-orientation-time-ruler__assistive" role="group" aria-label="观测时刻辅助操作">
         <Button
-          compileMode
           className="sky-orientation-time-ruler__step"
           ariaLabel="更早一个真实观测时刻"
           disabled={saving || safeActiveIndex <= 0}
@@ -600,7 +865,6 @@ function OrientationTimeRuler({
           更早一个时刻
         </Button>
         <Button
-          compileMode
           className="sky-orientation-time-ruler__step"
           ariaLabel="更晚一个真实观测时刻"
           disabled={saving || safeActiveIndex >= maxIndex}
@@ -630,7 +894,7 @@ function OrientationTimeRuler({
 }
 
 function drawSkyScene(
-  context: ReturnType<typeof Taro.createCanvasContext>,
+  context: CanvasRenderingContext2D,
   data: SkyReport | undefined,
   frameAt: string | undefined,
   heading: number | null,
@@ -638,7 +902,10 @@ function drawSkyScene(
   width: number,
   height: number,
   mode: DisplayMode,
+  painted?: (snapshot: SkyPickSnapshot | null) => void,
   completed?: () => void,
+  verticalFovDeg = SKY_VERTICAL_FOV_DEG,
+  deepSkyImage: SkyCanvasImageAsset | null = null,
 ) {
   const palette =
     mode === "OBSERVATION"
@@ -651,26 +918,19 @@ function drawSkyScene(
           target: "#D84A3C",
           event: "#FF6B58",
         }
-      : mode === "NIGHT"
-        ? {
-            canvas: "#11120F",
-            grid: "#666D62",
-            gridSoft: "#343830",
-            text: "#F5F3EC",
-            muted: "#989E94",
-            target: "#D1D7FF",
-            event: "#FFE5A0",
-          }
-        : {
-            canvas: "#FFFFFF",
-            grid: "#8A9088",
-            gridSoft: "#E2E5DD",
-            text: "#282B29",
-            muted: "#6D746D",
-            target: "#4859B8",
-            event: "#6F5500",
-          };
-  context.setFillStyle(palette.canvas);
+      : {
+          // The adopted Cloud Stargazing surface is a deep sky in both
+          // ordinary app modes. Observation alone swaps the whole surface to
+          // the approved black and warm-red palette.
+          canvas: "#080D17",
+          grid: "#536782",
+          gridSoft: "#29374B",
+          text: "#DCE4EF",
+          muted: "#7F90A8",
+          target: "#AABCCA",
+          event: "#CFC19A",
+        };
+  context.fillStyle = palette.canvas;
   context.fillRect(0, 0, width, height);
   const basis = heading !== null && pose
     ? createSkyViewBasis(heading, pose.betaDeg, pose.gammaDeg)
@@ -678,16 +938,47 @@ function drawSkyScene(
   // Missing pose has no invented North-facing view. Recovery/list semantics
   // remain available outside this canvas until a trusted stream is present.
   if (!data || !basis) {
-    context.draw(false, completed);
+    painted?.(null);
+    completed?.();
     return;
   }
+  const paintedObjects: PaintedSkyObject[] = [];
   const project = (azimuth: number, altitude: number) =>
-    projectSkyDirection(azimuth, altitude, basis, width, height, SKY_VERTICAL_FOV_DEG);
+    projectSkyDirection(azimuth, altitude, basis, width, height, verticalFovDeg);
+  const deepCatalog = data.skyScene.deepSky?.state === "AVAILABLE" ? data.skyScene.deepSky.catalog : null;
+  const deepFrame = exactSkyTimeFrame(data.skyScene.deepSky?.frames, frameAt);
+  if (deepSkyImage && deepCatalog && deepFrame?.state === "AVAILABLE" && deepFrame.points) {
+    const imageIndex = deepCatalog.entries.findIndex((entry) => entry.objectRef === deepSkyImage.reference);
+    const point = deepFrame.points.find((candidate) => candidate[0] === imageIndex);
+    if (point) {
+      const center = project(point[1], point[2]);
+      const north = project(point[3], point[4]);
+      const east = project(point[5], point[6]);
+      if (center && north && east) {
+        const scale = deepSkyImage.fieldDegrees / 0.1;
+        context.save();
+        context.globalAlpha = 0.58;
+        // SkyView JPEGs are north-up/east-left. The two server-projected
+        // tangent samples bind the bitmap to the same camera as stars.
+        context.transform(
+          -(east.x - center.x) * scale,
+          -(east.y - center.y) * scale,
+          -(north.x - center.x) * scale,
+          -(north.y - center.y) * scale,
+          center.x,
+          center.y,
+        );
+        context.drawImage(deepSkyImage.image as CanvasImageSource, -0.5, -0.5, 1, 1);
+        context.restore();
+        context.globalAlpha = 1;
+      }
+    }
+  }
   // The horizon is a world-space great circle, not fixed screen decoration.
   // Break paths at clipped samples so a hidden arc cannot cross the viewport.
-  context.setLineWidth(1);
+  context.lineWidth = 1;
   for (const altitude of [0, 30, 60]) {
-    context.setStrokeStyle(altitude === 0 ? palette.grid : palette.gridSoft);
+    context.strokeStyle = altitude === 0 ? palette.grid : palette.gridSoft;
     context.beginPath();
     let connected = false;
     for (let azimuth = 0; azimuth <= 360; azimuth += 1) {
@@ -699,8 +990,8 @@ function drawSkyScene(
     }
     context.stroke();
   }
-  context.setFillStyle(palette.text);
-  context.setFontSize(10);
+  context.fillStyle = palette.text;
+  context.font = "10px sans-serif";
   for (const [azimuth, label] of [[0, "北"], [90, "东"], [180, "南"], [270, "西"]] as const) {
     const point = project(azimuth, 0);
     if (point) context.fillText(label, point.x, point.y);
@@ -718,31 +1009,62 @@ function drawSkyScene(
       if (!projection) return;
       const brightness = Math.max(
         0,
-        Math.min(1, (catalog.magnitudeLimit - entry.gMagnitude) / 7),
+        Math.min(1, (catalog.magnitudeLimit - entry.magnitude) / 7),
       );
       const radiusPx = 0.7 + brightness * 1.65;
       const starColor =
         mode === "OBSERVATION"
           ? palette.target
-          : entry.bpRp !== null && entry.bpRp < 0.5
+          : entry.colorIndex !== null && entry.colorIndex < 0.5
             ? "#D8E5FF"
-            : entry.bpRp !== null && entry.bpRp > 1.5
+            : entry.colorIndex !== null && entry.colorIndex > 1.5
               ? "#FFE6C6"
               : palette.text;
-      context.setGlobalAlpha(
-        mode === "DAY" ? 0.46 + brightness * 0.28 : 0.52 + brightness * 0.48,
-      );
-      context.setFillStyle(starColor);
+      context.globalAlpha = 0.52 + brightness * 0.48;
+      context.fillStyle = starColor;
       context.beginPath();
       context.arc(projection.x, projection.y, radiusPx, 0, Math.PI * 2);
       context.fill();
+      paintedObjects.push({
+        reference: entry.objectRef,
+        displayName: entry.displayName ?? entry.objectRef.replace(":", " "),
+        kind: "STAR",
+        magnitude: entry.magnitude,
+        x: projection.x,
+        y: projection.y,
+      });
     });
-    context.setGlobalAlpha(1);
+    context.globalAlpha = 1;
+  }
+
+  if (deepCatalog && deepFrame?.state === "AVAILABLE" && deepFrame.points) {
+    deepFrame.points.forEach(([catalogIndex, azimuthDeg, altitudeDeg]) => {
+      if (altitudeDeg <= 0) return;
+      const entry = deepCatalog.entries[catalogIndex];
+      if (!entry) return;
+      const projection = project(azimuthDeg, altitudeDeg);
+      if (!projection) return;
+      context.globalAlpha = 0.9;
+      context.strokeStyle = mode === "OBSERVATION" ? palette.target : "#A9BDD6";
+      context.lineWidth = 1;
+      context.beginPath();
+      context.arc(projection.x, projection.y, 3.2, 0, Math.PI * 2);
+      context.stroke();
+      context.globalAlpha = 1;
+      paintedObjects.push({
+        reference: entry.objectRef,
+        displayName: entry.displayName,
+        kind: entry.kind,
+        magnitude: entry.magnitude,
+        x: projection.x,
+        y: projection.y,
+      });
+    });
   }
 
   const targetFrame = exactSkyTimeFrame(data.targetFrames, frameAt);
   (targetFrame?.targets ?? []).forEach((target) => {
-    const projection = projectSkyTarget(target, heading, pose, width, height);
+    const projection = projectSkyTarget(target, heading, pose, width, height, verticalFovDeg);
     if (!projection) return;
     const isEvent =
       target.type === "METEOR_SHOWER" ||
@@ -753,8 +1075,8 @@ function drawSkyScene(
       : isEvent
         ? palette.event
         : palette.target;
-    context.setGlobalAlpha(heading === null ? 0.72 : 1);
-    context.setFillStyle(mark);
+    context.globalAlpha = heading === null ? 0.72 : 1;
+    context.fillStyle = mark;
     context.beginPath();
     context.arc(
       projection.x,
@@ -765,8 +1087,8 @@ function drawSkyScene(
     );
     context.fill();
     if (target.type === "CONSTELLATION" || target.type === "MILKY_WAY") {
-      context.setStrokeStyle(mark);
-      context.setLineWidth(1);
+      context.strokeStyle = mark;
+      context.lineWidth = 1;
       context.beginPath();
       context.moveTo(projection.x - 8, projection.y);
       context.lineTo(projection.x + 8, projection.y);
@@ -774,9 +1096,18 @@ function drawSkyScene(
       context.lineTo(projection.x, projection.y + 8);
       context.stroke();
     }
-    context.setGlobalAlpha(1);
+    context.globalAlpha = 1;
   });
-  context.draw(false, completed);
+  const identity = skyPickIdentity(data);
+  painted?.(identity.catalogVersion && frameAt ? {
+    catalogVersion: identity.catalogVersion,
+    catalogHash: identity.catalogHash,
+    frameAt,
+    width,
+    height,
+    objects: paintedObjects,
+  } : null);
+  completed?.();
 }
 
 function contextQuery(context: SpotNightRouteContext, selectedAt: string) {
@@ -840,6 +1171,7 @@ export function SpotSkyPage() {
   const routeContext = useMemo<SpotNightRouteContext>(
     () => ({
       spotId: safeParam(router.params.spotId || router.params.spot_id),
+      locationName: safeParam(router.params.locationName || router.params.location_name),
       contextId: safeParam(router.params.contextId || router.params.context_id),
       localDate: safeParam(
         router.params.date || router.params.localDate || router.params.local_date,
@@ -862,6 +1194,8 @@ export function SpotSkyPage() {
       router.params.selected_at,
       router.params.spotId,
       router.params.spot_id,
+      router.params.locationName,
+      router.params.location_name,
       router.params.timezone,
     ],
   );
@@ -875,8 +1209,8 @@ export function SpotSkyPage() {
     (state) => state.preferences.reducedMotion,
   );
   const themeClass = useThemeClass();
-  // Full-sky uses the active product mode as-is. In particular, DAY is the
-  // selected white field profile; it must not be silently rendered as NIGHT.
+  // Retain the selected app mode for ordinary controls and Observation's
+  // red-only constraints; the sky stylesheet owns the adopted deep surface.
   const presentationClass = themeClass;
   const navigationInsets = useMemo(() => nativeNavigationInsets(), []);
   const skyLayoutStyle = {
@@ -908,8 +1242,13 @@ export function SpotSkyPage() {
     storedContext?.contextId,
   ]);
 
+  const proposalRoute = routeContext.spotId.startsWith("contribution:");
+  const contextLocationMatches = Boolean(activeContext && (
+    (routeContext.spotId.startsWith("spot:") && activeContext.location.kind === "FORMAL_SPOT" && activeContext.location.spotId === routeContext.spotId) ||
+    (proposalRoute && activeContext.location.kind === "MAP_POINT")
+  ));
   const contextComplete = Boolean(
-    routeContext.spotId.startsWith("spot:") &&
+    (routeContext.spotId.startsWith("spot:") || proposalRoute) &&
     routeContext.contextId.startsWith("ctx:") &&
     isDate(routeContext.localDate) &&
     isSelectedAt(routeContext.selectedAt) &&
@@ -919,13 +1258,12 @@ export function SpotSkyPage() {
     Boolean(routeContext.dataRevision) &&
     activeContext &&
     activeContext.contextId === routeContext.contextId &&
-    activeContext.location.kind === "FORMAL_SPOT" &&
-    activeContext.location.spotId === routeContext.spotId &&
-    activeContext.localDate === routeContext.localDate &&
+    contextLocationMatches &&
     activeContext.timezone === routeContext.timezone &&
     (activeContext.revision > 1 ||
-      Date.parse(activeContext.selectedAtUtc) ===
-        Date.parse(routeContext.selectedAt)),
+      (activeContext.localDate === routeContext.localDate &&
+        Date.parse(activeContext.selectedAtUtc) ===
+          Date.parse(routeContext.selectedAt))),
   );
   const overview = useResourceQuery({
     queryKey: [
@@ -938,10 +1276,10 @@ export function SpotSkyPage() {
     queryFn: (signal) =>
       getSpotOverview(
         routeContext.spotId,
-        routeContext.contextId,
+        activeContext?.contextId ?? routeContext.contextId,
         signal,
       ),
-    enabled: contextComplete,
+    enabled: contextComplete && !proposalRoute,
     staleTime: 30_000,
   });
   const report = useResourceQuery({
@@ -951,10 +1289,15 @@ export function SpotSkyPage() {
       activeContext?.contextId,
       activeContext?.contextFingerprint,
       activeContext?.revision,
+      activeContext?.localDate,
       routeContext.dataRevision,
     ],
     queryFn: (signal) =>
-      getSkyReport(routeContext.spotId, routeContext.contextId, signal),
+      getSkyReport(
+        routeContext.spotId,
+        activeContext?.contextId ?? routeContext.contextId,
+        signal,
+      ),
     enabled: contextComplete,
   });
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
@@ -1004,16 +1347,45 @@ export function SpotSkyPage() {
   );
   const compassResumeRef = useRef(false);
   const canvasDrawRevisionRef = useRef(0);
+  const paintedSkyObjectsRef = useRef<SkyPickSnapshot | null>(null);
+  const canvasNodeRef = useRef<SkyCanvasNode | null>(null);
+  const [canvasNodeRevision, setCanvasNodeRevision] = useState(0);
   const skySceneInspectionOwnerRef =
     useRef<AcceptanceSkySceneInspectionOwner | null>(null);
   const [canvasError, setCanvasError] = useState<string | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-  const canvasLifecycle = useMemo(() => createSkyCanvasLifecycle<SkyCanvasFrame, ReturnType<typeof Taro.createCanvasContext>>({
-    measure: done => { Taro.createSelectorQuery().select(".sky-scene__canvas").boundingClientRect(done).exec(); },
-    createContext: () => Taro.createCanvasContext(CANVAS_ID),
-    paint: (context, frame, size, done) => drawSkyScene(context, frame.data, frame.frameAt, frame.heading, frame.pose, size.width, size.height, frame.mode, done),
+  const canvasLifecycle = useMemo(() => createSkyCanvasLifecycle<SkyCanvasFrame, CanvasRenderingContext2D>({
+    measure: done => {
+      Taro.createSelectorQuery()
+        .select(`#${CANVAS_ID}`)
+        .fields({ node: true, size: true }, done)
+        .exec();
+    },
+    createContext: (measurement, size) => {
+      const node = canvasMeasurement(measurement)?.node;
+      if (!node) throw new Error("sky_canvas_2d_node_unavailable");
+      const pixelRatio = Math.max(1, Taro.getWindowInfo().pixelRatio || 1);
+      node.width = Math.round(size.width * pixelRatio);
+      node.height = Math.round(size.height * pixelRatio);
+      const context = node.getContext("2d");
+      if (!context) throw new Error("sky_canvas_2d_context_unavailable");
+      context.scale(pixelRatio, pixelRatio);
+      canvasNodeRef.current = node;
+      setCanvasNodeRevision((revision) => revision + 1);
+      return context;
+    },
+    paint: (context, frame, size, done) => drawSkyScene(
+      context, frame.data, frame.frameAt, frame.heading, frame.pose,
+      size.width, size.height, frame.mode,
+      (snapshot) => { paintedSkyObjectsRef.current = snapshot; },
+      done,
+      frame.verticalFovDeg,
+      frame.deepSkyImage,
+    ),
     sameScene: (completed, latest) => completed.data === latest.data && completed.frameAt === latest.frameAt &&
-      completed.mode === latest.mode && completed.owner === latest.owner && completed.inspection.spotId === latest.inspection.spotId,
+      completed.mode === latest.mode && completed.verticalFovDeg === latest.verticalFovDeg &&
+      completed.deepSkyImage?.tempFilePath === latest.deepSkyImage?.tempFilePath &&
+      completed.owner === latest.owner && completed.inspection.spotId === latest.inspection.spotId,
     presented: (frame, size) => {
       setCanvasSize(previous => previous.width === size.width && previous.height === size.height ? previous : size);
       if (frame.sceneReady) canvasDrawRevisionRef.current++;
@@ -1027,8 +1399,29 @@ export function SpotSkyPage() {
     },
   }), []);
   const [timeSaving, setTimeSaving] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [orientationObjectListOpen, setOrientationObjectListOpen] =
     useState(false);
+  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
+  const [selectedCatalogObject, setSelectedCatalogObject] = useState<PaintedSkyObject | null>(null);
+  const [catalogPickChoices, setCatalogPickChoices] = useState<readonly PaintedSkyObject[]>([]);
+  const [catalogListLimit, setCatalogListLimit] = useState(24);
+  const [verticalFovDeg, setVerticalFovDeg] = useState(SKY_VERTICAL_FOV_DEG);
+  const [deepSkyImageAsset, setDeepSkyImageAsset] = useState<DeepSkyImageAsset | null>(null);
+  const [canvasDeepSkyImage, setCanvasDeepSkyImage] = useState<SkyCanvasImageAsset | null>(null);
+  const [deepSkyImageState, setDeepSkyImageState] = useState<"IDLE" | "LOADING" | "READY" | "ERROR">("IDLE");
+  const [focusedDeepSkyReference, setFocusedDeepSkyReference] = useState<string | null>(null);
+  const [deepSkyImageRetry, setDeepSkyImageRetry] = useState(0);
+  const skyTapRef = useRef<{
+    startX: number;
+    startY: number;
+    travelPx: number;
+    startedWithTouches: number;
+    maximumTouches: number;
+    cancelled: boolean;
+    pinchStartDistance: number | null;
+    pinchStartFov: number;
+  } | null>(null);
 
   const data = report.data?.data;
   const contextMatches = Boolean(
@@ -1038,10 +1431,82 @@ export function SpotSkyPage() {
     data.context.contextFingerprint === activeContext.contextFingerprint &&
     data.context.contextRevision === activeContext.revision &&
     data.context.spotId === routeContext.spotId &&
-    data.context.localDate === routeContext.localDate &&
-    data.context.timezone === routeContext.timezone,
+    data.context.localDate === activeContext.localDate &&
+    data.context.timezone === activeContext.timezone,
   );
   const reportData = contextMatches ? data : undefined;
+  useEffect(() => {
+    if (selectedCatalogObject)
+      setFocusedDeepSkyReference(selectedCatalogObject.kind === "STAR" ? null : selectedCatalogObject.reference);
+  }, [selectedCatalogObject]);
+  const selectedDeepSkyEntry = focusedDeepSkyReference
+    ? reportData?.skyScene.deepSky?.catalog?.entries.find((entry) => entry.objectRef === focusedDeepSkyReference) ?? null
+    : null;
+  const desiredDeepSkyImageLevel = selectedDeepSkyEntry && mode !== "OBSERVATION"
+    ? deepSkyImageLevelForFov(verticalFovDeg)
+    : null;
+  useEffect(() => {
+    if (!selectedDeepSkyEntry || !desiredDeepSkyImageLevel) {
+      setDeepSkyImageAsset(null);
+      setDeepSkyImageState("IDLE");
+      return;
+    }
+    if (deepSkyImageAsset?.reference === selectedDeepSkyEntry.objectRef && deepSkyImageAsset.level === desiredDeepSkyImageLevel) {
+      setDeepSkyImageState("READY");
+      return;
+    }
+    if (deepSkyImageAsset && deepSkyImageAsset.reference !== selectedDeepSkyEntry.objectRef)
+      setDeepSkyImageAsset(null);
+    setDeepSkyImageState("LOADING");
+    const diagnosticKey = `deep-sky-image:${selectedDeepSkyEntry.objectRef}:${desiredDeepSkyImageLevel}`;
+    recordAcceptanceDiagnostic(diagnosticKey, "start", "request");
+    const imagePath = `${Taro.env.USER_DATA_PATH}/deep-sky-${selectedDeepSkyEntry.objectRef.replace(":", "-")}-${desiredDeepSkyImageLevel}.jpg`;
+    return startDeepSkyImageRequest({
+      asset: {
+        reference: selectedDeepSkyEntry.objectRef,
+        level: desiredDeepSkyImageLevel,
+        fieldDegrees: deepSkyImageFieldDegrees(selectedDeepSkyEntry.majorAxisArcmin, desiredDeepSkyImageLevel),
+        tempFilePath: imagePath,
+      },
+      url: deepSkyImageUrl(selectedDeepSkyEntry.objectRef, desiredDeepSkyImageLevel),
+      request: (options) => Taro.request<ArrayBuffer>(options),
+      writeFile: (options) => Taro.getFileSystemManager().writeFile(options),
+      onReady: (asset) => {
+        recordAcceptanceDiagnostic(diagnosticKey, "success", "ready");
+        setDeepSkyImageAsset(asset);
+        setDeepSkyImageState("READY");
+      },
+      onError: () => {
+        recordAcceptanceDiagnostic(diagnosticKey, "failure", "request_or_write");
+        setDeepSkyImageState("ERROR");
+      },
+      onCancel: () =>
+        recordAcceptanceDiagnostic(diagnosticKey, "cancel", "superseded_or_unmounted"),
+    });
+  }, [deepSkyImageAsset, deepSkyImageRetry, desiredDeepSkyImageLevel, selectedDeepSkyEntry]);
+  useEffect(() => {
+    const node = canvasNodeRef.current;
+    if (!deepSkyImageAsset || !node) {
+      setCanvasDeepSkyImage(null);
+      return;
+    }
+    let active = true;
+    const image = node.createImage();
+    image.onload = () => {
+      if (active) setCanvasDeepSkyImage({ ...deepSkyImageAsset, image });
+    };
+    image.onerror = () => {
+      if (!active) return;
+      setCanvasDeepSkyImage(null);
+      setDeepSkyImageState("ERROR");
+    };
+    image.src = deepSkyImageAsset.tempFilePath;
+    return () => {
+      active = false;
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [canvasNodeRevision, deepSkyImageAsset]);
   const committedAt = activeContext?.selectedAtUtc ?? routeContext.selectedAt;
   const committedRow = exactSkyTimeFrame(reportData?.hourly, committedAt);
   const committedIndex = committedRow
@@ -1054,6 +1519,16 @@ export function SpotSkyPage() {
   );
   const isPreviewing = previewIndex !== null && previewIndex !== committedIndex;
   const rowTime = formatTime(row?.at ?? committedAt, routeContext.timezone);
+  const presentedAt = row?.at ?? committedAt;
+  const selectedCivilDate = civilDateForInstant(
+    presentedAt,
+    routeContext.timezone,
+  );
+  const dateOptions = useMemo(
+    () => observationDateOptions(new Date(), routeContext.timezone),
+    [routeContext.timezone],
+  );
+  const todayCivilDate = dateOptions[7] ?? selectedCivilDate;
   const sensorHeadingForScene =
     compassState === "READY" &&
     compassHeading !== null &&
@@ -1363,10 +1838,12 @@ export function SpotSkyPage() {
     const sceneReady = Boolean(heading !== null && pose !== null && canvasData?.skyScene.state === "AVAILABLE" &&
       canvasFrameInfo.catalog && canvasFrameInfo.targetFrame && canvasFrameInfo.frame?.state === "AVAILABLE" && canvasFrameInfo.frame.points);
     publishAcceptanceSkySceneInspection(owner, { ...canvasFrameInfo.inspection, state: "PENDING", drawRevision: canvasDrawRevisionRef.current });
-    canvasLifecycle.request({ data: canvasData, frameAt: row?.at, heading, pose, mode, sceneReady, owner, inspection: canvasFrameInfo.inspection },
+    canvasLifecycle.request({ data: canvasData, frameAt: row?.at, heading, pose, mode,
+      verticalFovDeg, deepSkyImage: mode === "OBSERVATION" ? null : canvasDeepSkyImage,
+      sceneReady, owner, inspection: canvasFrameInfo.inspection },
       !canvasData || heading === null || previousCanvasModeRef.current !== mode);
     previousCanvasModeRef.current = mode;
-  }, [canvasLifecycle, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, sensorHeadingForScene, devicePose]);
+  }, [canvasLifecycle, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, sensorHeadingForScene, devicePose, verticalFovDeg, canvasDeepSkyImage]);
 
   useReady(() => { canvasLifecycle.setMounted(Boolean(contextComplete && activeContext)); canvasLifecycle.ready(); draw(); });
   useResize(() => { canvasLifecycle.resize(); draw(); });
@@ -1486,12 +1963,60 @@ export function SpotSkyPage() {
     }
   };
 
+  const commitCivilDate = async (nextDate: string) => {
+    if (!activeContext || timeSaving || nextDate === selectedCivilDate) return;
+    setPreviewIndex(null);
+    setTimeSaving(true);
+    try {
+      const next = instantForCivilDate(
+        nextDate,
+        committedAt,
+        activeContext.timezone,
+      );
+      const response = await updateObservationContext(activeContext, {
+        localDate: next.localDate,
+        selectedAt: next.selectedAt,
+        eventInstanceId: null,
+      });
+      setObservationContext(response.data);
+      setDatePickerOpen(false);
+    } catch (error) {
+      notify({
+        owner: "spot-night",
+        placement: "inline",
+        tone: "error",
+        title: "观测日期未更新",
+        body: errorMessage(error) + "。仍使用上一次已提交日期和时间。",
+        dismissible: true,
+        dedupeKey: "spot-night-date-update-failed",
+      });
+    } finally {
+      setTimeSaving(false);
+    }
+  };
+
   const onPreview = (value: number) => {
     if (!reportData?.hourly.length) return;
     setPreviewIndex(clampIndex(value, reportData.hourly.length));
   };
 
   const goBack = () => {
+    if (datePickerOpen) {
+      setDatePickerOpen(false);
+      return;
+    }
+    if (selectedCatalogObject) {
+      setSelectedCatalogObject(null);
+      return;
+    }
+    if (catalogPickChoices.length) {
+      setCatalogPickChoices([]);
+      return;
+    }
+    if (selectedTargetId) {
+      setSelectedTargetId(null);
+      return;
+    }
     Taro.navigateBack().catch(() =>
       Taro.switchTab({ url: "/pages/map/index" }),
     );
@@ -1546,7 +2071,9 @@ export function SpotSkyPage() {
       </View>
     );
 
-  const spotName = overview.data?.data.spot.name ?? "此观星点";
+  const spotName = proposalRoute
+    ? routeContext.locationName || "审核中观星点"
+    : overview.data?.data.spot.name ?? "此观星点";
   const compassIsReady =
     compassState === "READY" &&
     compassHeading !== null &&
@@ -1621,29 +2148,80 @@ export function SpotSkyPage() {
       : undefined;
   const orientationTargetFrame = exactSkyTimeFrame(orientationData?.targetFrames, row?.at);
   const orientationTargets = orientationTargetFrame?.targets ?? [];
+  const selectedTarget = selectedTargetId
+    ? orientationTargets.find((target) => target.targetId === selectedTargetId) ?? null
+    : null;
   const orientationHeading = compassIsReady
     ? `${Math.round(sensorHeadingForScene ?? compassHeading ?? 0)}°`
     : "未提供";
-  const visibleOrientationTargets = useMemo(
-    () =>
-      orientationTargets.flatMap((target) => {
-        const projection = projectSkyTarget(
-          target,
-          sensorHeadingForScene,
-          devicePose,
-          canvasSize.width,
-          canvasSize.height,
-        );
-        return projection ? [{ target, projection }] : [];
-      }),
-    [
-      canvasSize.height,
-      canvasSize.width,
-      devicePose,
-      orientationTargets,
+  const visibleOrientationTargets = orientationTargets.flatMap((target) => {
+    const projection = projectSkyTarget(
+      target,
       sensorHeadingForScene,
-    ],
-  );
+      devicePose,
+      canvasSize.width,
+      canvasSize.height,
+      verticalFovDeg,
+    );
+    return projection ? [{ target, projection }] : [];
+  });
+  const catalogFrameObjects = (() => {
+    if (!orientationObjectListOpen) return [];
+    const catalog = reportData?.skyScene.catalog;
+    const frame = exactSkyTimeFrame(reportData?.skyScene.frames, row?.at);
+    const stars: PaintedSkyObject[] = !catalog || frame?.state !== "AVAILABLE" || !frame.points ? [] : frame.points.flatMap(([catalogIndex]) => {
+      const entry = catalog.entries[catalogIndex];
+      return entry ? [{
+        reference: entry.objectRef,
+        displayName: entry.displayName ?? entry.objectRef.replace(":", " "),
+        kind: "STAR" as const,
+        magnitude: entry.magnitude,
+        x: 0,
+        y: 0,
+      }] : [];
+    });
+    const deepCatalog = reportData?.skyScene.deepSky?.catalog;
+    const deepFrame = exactSkyTimeFrame(reportData?.skyScene.deepSky?.frames, row?.at);
+    const deep: PaintedSkyObject[] = !deepCatalog || deepFrame?.state !== "AVAILABLE" || !deepFrame.points ? [] : deepFrame.points.flatMap(([catalogIndex]) => {
+      const entry = deepCatalog.entries[catalogIndex];
+      return entry ? [{ reference: entry.objectRef, displayName: entry.displayName, kind: entry.kind,
+        magnitude: entry.magnitude, x: 0, y: 0 }] : [];
+    });
+    return [...deep, ...stars].sort((left, right) =>
+      Number(left.kind === "STAR") - Number(right.kind === "STAR") ||
+      (left.magnitude ?? 99) - (right.magnitude ?? 99) ||
+      left.reference.localeCompare(right.reference));
+  })();
+  const visibleNamedCatalogObjects = (() => {
+    const catalog = reportData?.skyScene.catalog;
+    const frame = exactSkyTimeFrame(reportData?.skyScene.frames, row?.at);
+    if (!catalog || frame?.state !== "AVAILABLE" || !frame.points ||
+      sensorHeadingForScene === null || !devicePose || canvasSize.width <= 0 || canvasSize.height <= 0)
+      return [];
+    const starCandidates: PaintedSkyObject[] = frame.points.flatMap(([catalogIndex, azimuth, altitude]) => {
+      const entry = catalog.entries[catalogIndex];
+      if (!entry?.displayName || entry.magnitude > 2.5) return [];
+      const projection = projectHorizontalPoint(azimuth, altitude, sensorHeadingForScene, devicePose, canvasSize.width, canvasSize.height, verticalFovDeg);
+      return projection ? [{ reference: entry.objectRef, displayName: entry.displayName, kind: "STAR" as const, magnitude: entry.magnitude, x: projection.x, y: projection.y }] : [];
+    });
+    const deepCatalog = reportData?.skyScene.deepSky?.catalog;
+    const deepFrame = exactSkyTimeFrame(reportData?.skyScene.deepSky?.frames, row?.at);
+    const deepCandidates: PaintedSkyObject[] = !deepCatalog || deepFrame?.state !== "AVAILABLE" || !deepFrame.points ? [] : deepFrame.points.flatMap(([catalogIndex, azimuth, altitude]) => {
+      const entry = deepCatalog.entries[catalogIndex];
+      const projection = entry ? projectHorizontalPoint(azimuth, altitude, sensorHeadingForScene, devicePose, canvasSize.width, canvasSize.height, verticalFovDeg) : null;
+      return entry && projection ? [{ reference: entry.objectRef, displayName: entry.displayName, kind: entry.kind,
+        magnitude: entry.magnitude, x: projection.x, y: projection.y }] : [];
+    });
+    const candidates = [...deepCandidates, ...starCandidates]
+      .sort((left, right) => (left.magnitude ?? 99) - (right.magnitude ?? 99));
+    const retained: PaintedSkyObject[] = [];
+    for (const candidate of candidates) {
+      if (retained.every((current) => Math.hypot(current.x - candidate.x, current.y - candidate.y) > 46))
+        retained.push(candidate);
+      if (retained.length === 8) break;
+    }
+    return retained;
+  })();
   const orientationAccuracy = compassAccuracyLabel(compassTelemetry.accuracy);
   const orientationSampledAt = Math.max(
     compassTelemetry.sampledAt ?? 0,
@@ -1703,6 +2281,57 @@ export function SpotSkyPage() {
       activeSkySceneFrame?.state === "AVAILABLE" &&
       activeSkySceneFrame.points,
   );
+  const onSkyTouchStart = (event: unknown) => {
+    const point = skyTouchPoint(event);
+    const count = (event as SkyTouchLike).touches?.length ?? 0;
+    const pinchDistance = skyTouchDistance(event);
+    skyTapRef.current = point ? {
+      startX: point.x,
+      startY: point.y,
+      travelPx: 0,
+      startedWithTouches: count,
+      maximumTouches: count,
+      cancelled: false,
+      pinchStartDistance: pinchDistance,
+      pinchStartFov: verticalFovDeg,
+    } : null;
+  };
+  const onSkyTouchMove = (event: unknown) => {
+    const gesture = skyTapRef.current;
+    const point = skyTouchPoint(event);
+    if (!gesture || !point) return;
+    gesture.maximumTouches = Math.max(gesture.maximumTouches, (event as SkyTouchLike).touches?.length ?? 0);
+    const pinchDistance = skyTouchDistance(event);
+    if (gesture.pinchStartDistance !== null && pinchDistance !== null) {
+      setVerticalFovDeg(pinchFieldOfView(gesture.pinchStartFov, gesture.pinchStartDistance, pinchDistance));
+    }
+    gesture.travelPx = Math.max(gesture.travelPx, Math.hypot(point.x - gesture.startX, point.y - gesture.startY));
+  };
+  const onSkyTouchCancel = () => {
+    if (skyTapRef.current) skyTapRef.current.cancelled = true;
+    skyTapRef.current = null;
+  };
+  const onSkyTouchEnd = (event: unknown) => {
+    const gesture = skyTapRef.current;
+    skyTapRef.current = null;
+    const point = skyTouchPoint(event, true);
+    const identity = skyPickIdentity(reportData);
+    if (!gesture || !point || !row || !identity.catalogVersion || !isUnambiguousTapGesture(gesture)) return;
+    const choices = pickPaintedSkyObjects(paintedSkyObjectsRef.current, {
+      x: point.x,
+      y: point.y,
+      frameAt: row.at,
+      catalogVersion: identity.catalogVersion,
+      catalogHash: identity.catalogHash,
+    });
+    if (choices.length === 1) {
+      setCatalogPickChoices([]);
+      setSelectedTargetId(null);
+      setSelectedCatalogObject(choices[0]!);
+    } else if (choices.length > 1) {
+      setCatalogPickChoices(choices);
+    }
+  };
   const skySceneStarCount =
     activeSkySceneFrame?.state === "AVAILABLE" && activeSkySceneFrame.points
       ? activeSkySceneFrame.points.filter((point) => point[2] > 0).length
@@ -1710,12 +2339,6 @@ export function SpotSkyPage() {
   const skySceneAccessibleProvenance = skySceneReady
     ? `，星表版本 ${reportData?.skyScene.catalog?.catalogVersion ?? "未知"}，场景时刻 ${activeSkySceneFrame?.at ?? "未知"}`
     : "";
-  const showOrientationObjectDisclosure =
-    !compassIsReady ||
-    orientationObjectListOpen ||
-    Boolean(orientationDataStatus) ||
-    Boolean(canvasError);
-
   return (
     <View
       className={`${presentationClass} sky-orientation-page`}
@@ -1725,6 +2348,10 @@ export function SpotSkyPage() {
       data-od-id="sky-orientation-route"
     >
       <FloatingNotificationHost />
+      <NativeBackBoundary
+        active={Boolean(selectedTargetId || selectedCatalogObject || catalogPickChoices.length)}
+        onBack={goBack}
+      />
         <View
           className="sky-orientation-canvas"
           data-control="sky-orientation-canvas"
@@ -1738,16 +2365,50 @@ export function SpotSkyPage() {
           data-sky-scene-frame-at={activeSkySceneFrame?.at ?? ""}
           role="img"
           aria-busy={orientationDataStatus?.state === "LOADING"}
-          aria-label={`${spotName}的方位高度天空图，${skySceneReady ? `${skySceneStarCount} 颗 Gaia 真实目录星` : "真实星表场景不可用"}${skySceneAccessibleProvenance}，${orientationTargetFrame ? `${orientationTargets.length} 个真实目标` : "当前没有可证明天空结果"}，${compassIsReady ? "已使用实时设备姿态" : "当前设备姿态不可用，暂停方位投影"}，当前观测时刻 ${rowTime}`}
+          aria-label={`${spotName}的方位高度天空图，垂直视场 ${verticalFovDeg.toFixed(1)} 度，${skySceneReady ? `${skySceneStarCount} 颗真实亮星目录对象` : "真实星表场景不可用"}${skySceneAccessibleProvenance}，${orientationTargetFrame ? `${orientationTargets.length} 个真实目标` : "当前没有可证明天空结果"}，${compassIsReady ? "已使用实时设备姿态" : "当前设备姿态不可用，暂停方位投影"}，当前观测时刻 ${rowTime}`}
         >
           <Canvas
+            type="2d"
             canvasId={CANVAS_ID}
             id={CANVAS_ID}
             className="sky-scene__canvas sky-orientation-canvas__surface"
+            onTouchStart={onSkyTouchStart}
+            onTouchMove={onSkyTouchMove}
+            onTouchEnd={onSkyTouchEnd}
+            onTouchCancel={onSkyTouchCancel}
             onError={() => canvasLifecycle.fail(new Error("sky_canvas_native_error"))}
             style={{ width: "100%", height: "100%", visibility: canvasError || canvasSize.width <= 0 || canvasSize.height <= 0 ? "hidden" : "visible" }}
             aria-label="方位天空投影；目录星与目标标记只来自当前正式点、真实时刻和服务端天文计算结果"
           />
+          {verticalFovDeg < SKY_VERTICAL_FOV_DEG - 0.05 ? (
+            <View className="sky-zoom-status" role="status" aria-live="polite">
+              <Text>{verticalFovDeg.toFixed(1)}°</Text>
+              {verticalFovDeg <= 1.5 ? <Text>已到当前最高分辨率</Text> : null}
+            </View>
+          ) : null}
+          {selectedDeepSkyEntry && verticalFovDeg <= 15 ? (
+            <View className="sky-image-status" role="status" aria-live="polite">
+              {mode === "OBSERVATION" ? (
+                <Text>红光模式已隐藏巡天影像</Text>
+              ) : deepSkyImageState === "LOADING" ? (
+                <Text>正在载入 {selectedDeepSkyEntry.displayName} 巡天影像…</Text>
+              ) : deepSkyImageState === "ERROR" ? (
+                <Button onClick={() => setDeepSkyImageRetry((value) => value + 1)}>影像载入失败 · 重试</Button>
+              ) : deepSkyImageAsset ? (
+                <Text>NASA SkyView · WISE 12 μm · 处理后红外影像</Text>
+              ) : null}
+            </View>
+          ) : null}
+          {visibleNamedCatalogObjects.map((object) => (
+            <SkyOrientationCatalogLabel
+              key={object.reference}
+              object={object}
+              onSelect={(selected) => {
+                setSelectedTargetId(null);
+                setSelectedCatalogObject(selected);
+              }}
+            />
+          ))}
           {visibleOrientationTargets.map(({ target, projection }) => (
             <SkyOrientationTargetLabel
               key={target.targetId}
@@ -1756,6 +2417,10 @@ export function SpotSkyPage() {
               width={canvasSize.width}
               height={canvasSize.height}
               timezone={routeContext.timezone}
+              onSelect={(selected) => {
+                setSelectedCatalogObject(null);
+                setSelectedTargetId(selected.targetId);
+              }}
             />
           ))}
           {canvasError ? (
@@ -1812,18 +2477,16 @@ export function SpotSkyPage() {
           aria-label={orientationSensorLabel}
         />
 
-        {showOrientationObjectDisclosure ? (
+        {(
           <View
             className="sky-orientation-object-toggle"
             data-od-id="sky-orientation-object-list-toggle"
           >
             <Button
-              compileMode
               className="sky-orientation-object-toggle__button"
               ariaLabel={
-                orientationObjectListOpen ? "收起对象列表" : "查看对象列表"
+                orientationObjectListOpen ? "对象列表已展开，收起对象列表" : "对象列表已收起，查看对象列表"
               }
-              aria-pressed={orientationObjectListOpen ? "true" : "false"}
               onClick={() => setOrientationObjectListOpen((open) => !open)}
             >
               <SemanticIcon
@@ -1835,11 +2498,17 @@ export function SpotSkyPage() {
               </Text>
             </Button>
           </View>
-        ) : null}
+        )}
 
         {!compassIsReady || orientationObjectListOpen ? (
-        <ScrollView scrollY enhanced showScrollbar={false} className="sky-orientation-details" aria-label="方向状态与天体列表">
-        {!compassIsReady ? (
+        <ScrollView
+          scrollY
+          enhanced
+          showScrollbar={false}
+          className={`sky-orientation-details sky-orientation-details--${orientationObjectListOpen ? "list" : "recovery"}`}
+          aria-label={orientationObjectListOpen ? "天体列表" : "方向状态"}
+        >
+        {!compassIsReady && !orientationObjectListOpen ? (
           <View
             className="sky-orientation-recovery"
             data-control="sky-orientation-recovery"
@@ -1867,6 +2536,14 @@ export function SpotSkyPage() {
                 onClick={recoverCompass}
               >
                 {compassRecovery.action}
+              </SoftButton>
+              <SoftButton
+                variant="ghost"
+                className="sky-orientation-recovery__defer"
+                label="稍后启用方向，先查看天体列表"
+                onClick={() => setOrientationObjectListOpen(true)}
+              >
+                稍后
               </SoftButton>
             </View>
           </View>
@@ -1899,7 +2576,14 @@ export function SpotSkyPage() {
               orientationTargets.length ? (
                 <View className="sky-orientation-object-list__scroll">
                   {orientationTargets.map((target) => (
-                    <SkyTargetRow target={target} key={target.targetId} />
+                    <SkyTargetRow
+                      target={target}
+                      key={target.targetId}
+                      onSelect={(selected) => {
+                        setSelectedCatalogObject(null);
+                        setSelectedTargetId(selected.targetId);
+                      }}
+                    />
                   ))}
                 </View>
               ) : (
@@ -1919,16 +2603,92 @@ export function SpotSkyPage() {
                 onRecover={() => void report.refetch()}
               />
             )}
+            {catalogFrameObjects.length ? (
+              <View className="sky-orientation-object-list__catalog" role="list" aria-label={`当前地平线上 ${catalogFrameObjects.length} 个目录天体`}>
+                <Text className="sky-orientation-object-list__catalog-title">目录天体</Text>
+                {catalogFrameObjects.slice(0, catalogListLimit).map((object) => (
+                  <Button className="sky-catalog-row" key={object.reference} onClick={() => {
+                    setSelectedTargetId(null);
+                    setSelectedCatalogObject(object);
+                  }}>
+                    <Text>{object.displayName}</Text>
+                    <Text>{object.kind === "STAR" ? "恒星" : object.kind === "GALAXY" ? "星系" : "星云"} · {object.reference.replace(":", " ")}{object.magnitude === null ? "" : ` · V ${object.magnitude.toFixed(2)}`}</Text>
+                  </Button>
+                ))}
+                {catalogListLimit < catalogFrameObjects.length ? (
+                  <Button className="sky-catalog-row__more" onClick={() => setCatalogListLimit((value) => Math.min(value + 24, catalogFrameObjects.length))}>
+                    显示更多天体
+                  </Button>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         ) : null}
 
         </ScrollView>
         ) : null}
 
+        {selectedTarget ? (
+          <SkyTargetInformation
+            target={selectedTarget}
+            spotName={spotName}
+            selectedAt={row?.at ?? committedAt}
+            timezone={routeContext.timezone}
+            onClose={() => setSelectedTargetId(null)}
+          />
+        ) : null}
+
+        {catalogPickChoices.length > 1 ? (
+          <View className="sky-object-choice" role="dialog" aria-label="选择重叠的天体">
+            <Text className="sky-object-choice__title">选择天体</Text>
+            {catalogPickChoices.map((choice) => (
+              <Button key={choice.reference} className="sky-object-choice__row" onClick={() => {
+                setSelectedTargetId(null);
+                setSelectedCatalogObject(choice);
+                setCatalogPickChoices([]);
+              }}>
+                <Text>{choice.displayName}</Text>
+                <Text>{choice.kind === "STAR" ? "恒星" : choice.kind === "GALAXY" ? "星系" : "星云"} · {choice.reference.replace(":", " ")}{choice.magnitude === null ? "" : ` · V ${choice.magnitude.toFixed(2)}`}</Text>
+              </Button>
+            ))}
+            <Button className="sky-object-choice__cancel" onClick={() => setCatalogPickChoices([])}>取消</Button>
+          </View>
+        ) : null}
+
+        {selectedCatalogObject ? (
+          <SkyCatalogInformation
+            reference={selectedCatalogObject.reference}
+            knownName={selectedCatalogObject.displayName}
+            knownKind={selectedCatalogObject.kind}
+            onClose={() => setSelectedCatalogObject(null)}
+          />
+        ) : null}
+
         <View
           className="sky-orientation-ruler-layer safe-bottom"
           data-od-id="sky-orientation-time-ruler-layer"
         >
+          <View
+            className="sky-orientation-context"
+            role="status"
+            aria-label={`当前选定地点${spotName}，${formatSkyDate(row?.at ?? committedAt, routeContext.timezone)} ${formatTime(row?.at ?? committedAt, routeContext.timezone)}，${timezoneOffsetLabel(row?.at ?? committedAt, routeContext.timezone)}`}
+          >
+            <Text className="sky-orientation-context__place">
+              {spotName} · {timezoneOffsetLabel(row?.at ?? committedAt, routeContext.timezone)}
+            </Text>
+          </View>
+          <ObservationDateControl
+            dates={dateOptions}
+            selectedDate={selectedCivilDate}
+            today={todayCivilDate}
+            open={datePickerOpen}
+            busy={timeSaving}
+            onOpenChange={(open) => {
+              if (open) setPreviewIndex(null);
+              setDatePickerOpen(open);
+            }}
+            onSelect={(date) => void commitCivilDate(date)}
+          />
           <OrientationTimeRuler
             rows={committedRow ? orientationData?.hourly ?? [] : []}
             activeIndex={activeIndex}

@@ -100,9 +100,8 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
         <View id="settings-mode-thumb" className="settings-display-mode-thumb" aria-hidden="true"
           style={position === null ? {} : { transform: `translateX(${position * 100}%)`, transition: "none" }} />
         {DISPLAY_MODES.map((item) => (
-          <Button compileMode key={item} id={`settings-mode-${item.toLowerCase()}`}
+          <Button key={item} id={`settings-mode-${item.toLowerCase()}`}
             className={`settings-display-mode-choice focus-ring${mode === item ? " settings-display-mode-choice--selected" : ""}`}
-            aria-pressed={mode === item}
             ariaLabel={`${DISPLAY_MODE_LABEL[item]}${mode === item ? "，当前已选，再次点击切换下一模式" : "，切换模式"}`}
             onClick={() => {
               recordAcceptanceDiagnostic("display-mode-control", "start", `tap:${item}:${suppressTap.current ? "suppressed" : "accepted"}`);

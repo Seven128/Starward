@@ -9,6 +9,7 @@ export default defineAppConfig({
         "search/index",
         "guides/index",
         "field/index",
+        "plan/index",
         "data-source/index",
       ],
     },
@@ -21,10 +22,13 @@ export default defineAppConfig({
       pages: [
         "article/detail/index",
         "plan/detail/index",
+        "plan/list/index",
+        "plan/edit/index",
+        "event/list/index",
+        "event/detail/index",
         "contribution/index",
+        "spot-feedback/index",
         "settings/index",
-        "profile/links/index",
-        "import/index",
       ],
     },
   ],
@@ -58,10 +62,10 @@ export default defineAppConfig({
   },
   permission: {
     "scope.userLocation": {
-      desc: "仅主动查找附近观星点时定位一次；拒绝后仍可浏览默认区域。",
+      desc: "仅在定位附近观星点或主动选址时使用；拒绝后仍可浏览默认区域。",
     },
   },
-  requiredPrivateInfos: ["getLocation"],
+  requiredPrivateInfos: ["getLocation", "chooseLocation"],
   lazyCodeLoading: "requiredComponents",
   sitemapLocation: "sitemap.json",
 });

@@ -9,7 +9,10 @@ function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
-export async function insertExplicitTestSpot(repository: PostgresMiniappRepository) {
+export async function insertExplicitTestSpot(
+  repository: PostgresMiniappRepository,
+  options: { spotId?: string; status?: "PUBLISHED" | "DATA_INSUFFICIENT" } = {},
+) {
   const verifiedAt = new Date().toISOString();
   const source: SourceSummary = {
     id: "source:integration:field-verification",
@@ -31,6 +34,14 @@ export async function insertExplicitTestSpot(repository: PostgresMiniappReposito
   const fixtureDetail = buildTestSpotDetail(TEST_PUBLISHED_SPOT.spotId)!;
   const detail = structuredClone(fixtureDetail);
   const spot = detail.spot;
+  if (options.spotId) {
+    spot.spotId = options.spotId as typeof spot.spotId;
+    detail.evidence = detail.evidence.map((evidence) => ({
+      ...evidence,
+      subjectId: options.spotId!,
+    }));
+  }
+  if (options.status) spot.status = options.status;
   spot.source = source;
   spot.lastVerifiedAt = verifiedAt;
   spot.lightPollution.source = source;
@@ -136,4 +147,3 @@ export async function insertExplicitTestSpot(repository: PostgresMiniappReposito
   );
   return spot;
 }
-

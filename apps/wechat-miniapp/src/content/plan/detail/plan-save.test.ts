@@ -4,9 +4,10 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { planContextIdentity } from "../../../services/plan-save-retry";
+import { parsePlanReminders } from "@starward/miniapp-contracts";
 
 function runtime(changeAccount = false) {
-  const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let declaration = "";
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.name.getText(source) === "save") declaration = `const ${node.getText(source)};`;
@@ -17,6 +18,7 @@ function runtime(changeAccount = false) {
   class Conflict extends Error { code = "CONFLICT"; }
   const calls: string[] = [], submitted: number[] = [];
   const context = {
+    parsePlanReminders, reminders: [],
     planContextIdentity,
     PlanSaveRecoveryError: class extends Error {},
     mutationBusy: { current: false }, conflictPlan: null as unknown,
@@ -25,6 +27,8 @@ function runtime(changeAccount = false) {
     activeContext: { contextId: "context", location: {} },
     resolvePlanSaveSpotId: () => "spot", selectedSpotId: "spot", formalSpots: [],
     localDate: "2026-09-06", localTime: "22:00", notes: "my draft",
+    timing: { endLocalDate: "2026-09-07", endLocalTime: "02:00", departureLocalDate: "2026-09-06", departureLocalTime: "20:00" },
+    travel: { origin: "深圳", mode: "DRIVING" }, eventOccurrenceIds: [],
     draftBaseRevision: { current: 2 },
     setSaving() {}, planDraftKey: () => "draft", MiniappApiError: Conflict,
     saveObservationPlan: async (_plan: unknown, _context: unknown, revision: number) => {
@@ -61,4 +65,40 @@ test("a conflict arriving after account change cannot refresh or replace the new
   assert.deepEqual(page.calls, []);
   assert.equal(page.context.conflictPlan, null);
   assert.equal(page.context.mutationBusy.current, false);
+});
+
+test("incomplete timing preserves the draft and never dispatches a save", async () => {
+  const page = runtime();
+  page.context.timing.endLocalTime = "";
+  await page.save();
+  assert.deepEqual(page.submitted, []);
+  assert.equal(page.context.timing.endLocalTime, "");
+  assert.equal(page.context.notes, "my draft");
+  assert.deepEqual(page.calls, ["notice"]);
+});
+
+test("dedicated editor returns only after a confirmed save; navigation failure retains the saved result", async () => {
+  for (const navigationFails of [false, true]) {
+    const page = runtime();
+    let saved = 0, back = 0, cleared = 0, suspended = 0, restored = 0;
+    Object.assign(page.context, {
+      dedicatedEditor: true,
+      saveObservationPlan: async () => ({ data: { planId: "plan", revision: 3 } }),
+      savePlan: () => { saved++; }, clearPlanDraft: () => { cleared++; return true; },
+      setRecoveredLocalDraft() {}, hydratedPlanId: { current: "plan" }, newPlanRequested: { current: false },
+      setActivePlanId() {}, setEditing() {}, checklist: {}, planChecklistStorageKey: () => "checklist",
+      nativeLeaveGuard: {
+        suspendForProgrammaticLeave: () => { suspended++; },
+        restoreAfterFailedProgrammaticLeave: () => { restored++; },
+      },
+      Taro: { setStorageSync() {}, navigateBack: async () => { back++; if (navigationFails) throw new Error("navigation_failed"); } },
+    });
+    await page.save();
+    assert.equal(saved, 1); assert.equal(cleared, 1); assert.equal(back, 1);
+    assert.equal(suspended, 1);
+    assert.equal(restored, navigationFails ? 1 : 0);
+    assert.equal(page.context.draftBaseRevision.current, 3);
+    assert.equal(page.context.mutationBusy.current, false);
+    assert.deepEqual(page.calls, navigationFails ? ["notice", "notice"] : ["notice"]);
+  }
 });

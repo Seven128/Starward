@@ -1,21 +1,112 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertWechatDevtoolsLoginReady,
   boundWechatProtocol,
   boundedWechatConnect,
   classifyWechatWatchers,
   watcherProjectPath,
   inputAndTapMatchingElement,
+  isTransientPageObservationError,
+  performTouchSequence,
+  validateSkySceneInspection,
+  openNeutralAcceptancePage,
   waitForCurrentPageReady,
   waitForSelector,
   waitForSelectorSet,
   wechatCliCommand,
+  wechatIdeSkillAuthenticationFlags,
   wechatToolEnvironment,
   verifyWechatProcessEnvironment,
   verifyWechatWorkspaceLocation,
+  waitForRequestDiagnosticSubsequence,
 } from "./run-wechat-devtools-session.mjs";
 
 const required = [{ selector: ".ready", minimum: 1 }];
+
+test("official WechatIDE skill token stays explicit, bounded and out of evidence defaults", () => {
+  assert.deepEqual(
+    wechatIdeSkillAuthenticationFlags({ environment: {} }),
+    [],
+  );
+  assert.deepEqual(
+    wechatIdeSkillAuthenticationFlags({
+      environment: {
+        STARWARD_WECHATIDE_MCP_TOKEN: "synthetic_token_1234567890",
+      },
+    }),
+    ["--token synthetic_token_1234567890"],
+  );
+  assert.throws(
+    () =>
+      wechatIdeSkillAuthenticationFlags({
+        environment: { STARWARD_WECHATIDE_MCP_TOKEN: "unsafe token" },
+      }),
+    /wechatide_mcp_token_invalid/u,
+  );
+});
+
+test("sky scene readback accepts the current Hipparcos owner and rejects unrelated catalogs", () => {
+  const current = {
+    state: "READY",
+    spotId: "spot:test",
+    frameAt: "2026-09-11T13:00:00Z",
+    catalogVersion: "hipparcos-bright-stars.v1",
+    starCount: 798,
+    drawRevision: 1,
+  };
+  assert.equal(validateSkySceneInspection(current), true);
+  assert.equal(validateSkySceneInspection({ ...current, catalogVersion: "fixture-stars.v1" }), false);
+  assert.equal(validateSkySceneInspection({ ...current, state: "UNAVAILABLE" }), false);
+});
+
+test("native touch sequences preserve two-touch identity and element-relative geometry", async () => {
+  const events = [];
+  const control = {
+    async size() { return { width: 200, height: 400 }; },
+    async offset() { return { left: 10, top: 20 }; },
+    async touchstart(value) { events.push(["start", value]); },
+    async touchmove(value) { events.push(["move", value]); },
+    async touchend(value) { events.push(["end", value]); },
+  };
+  const observation = await performTouchSequence(control, [{
+    start: [{ x: 0.4, y: 0.5 }, { x: 0.6, y: 0.5 }],
+    moves: [[{ x: 0.2, y: 0.5 }, { x: 0.8, y: 0.5 }]],
+  }]);
+  assert.deepEqual(observation, {
+    gesture_count: 1,
+    touch_count_maximum: 2,
+    element_width: 200,
+    element_height: 400,
+  });
+  assert.deepEqual(events.map(([kind]) => kind), ["start", "move", "end"]);
+  assert.deepEqual(events[0][1].touches.map(({ identifier, clientX, clientY }) => ({ identifier, clientX, clientY })), [
+    { identifier: 0, clientX: 90, clientY: 220 },
+    { identifier: 1, clientX: 130, clientY: 220 },
+  ]);
+  assert.deepEqual(events[2][1].touches, []);
+  assert.equal(events[2][1].changeTouches.length, 2);
+});
+
+test("request diagnostic wait requires the declared ordered subsequence", async () => {
+  let reads = 0;
+  const expected = [
+    { key: "deep-sky-image:M:31:OVERVIEW", event: "start" },
+    { key: "deep-sky-image:M:31:OVERVIEW", event: "cancel" },
+    { key: "deep-sky-image:M:31:MEDIUM", event: "start" },
+  ];
+  const complete = [
+    { sequence: 1, ...expected[0], detail: "request" },
+    { sequence: 2, key: "another-owner", event: "success", detail: "ignored" },
+    { sequence: 3, ...expected[1], detail: "superseded_or_unmounted" },
+    { sequence: 4, ...expected[2], detail: "request" },
+  ];
+  const observed = await waitForRequestDiagnosticSubsequence({
+    async callWxMethod() { reads += 1; return reads === 1 ? complete.slice(0, 2) : complete; },
+  }, expected, 2_000);
+  assert.deepEqual(observed, complete);
+  assert.equal(reads, 2);
+});
 
 test("native workspace admits only the physical canonical checkout", async () => {
   const canonicalRoot = "E:\\Dev\\Starward";
@@ -191,6 +282,155 @@ test("native launch and quit preserve the resolved official CLI and fixed port",
   assert.throws(() => wechatCliCommand(null, ["auto"], {}), /wechat_official_cli_not_resolved/);
 });
 
+test("native acceptance fails fast when the official CLI login is unavailable", () => {
+  const invocation = { file: "installed-node.exe", prefix: ["installed-cli.js"] };
+  const run = (_file, args) => {
+    assert.deepEqual(args, ["installed-cli.js", "islogin", "--lang", "zh"]);
+    return { status: 0, stdout: 'progress\n{"login":true}\ndone\n' };
+  };
+  assert.deepEqual(assertWechatDevtoolsLoginReady(invocation, run), {
+    status: "passed",
+    login: "ready",
+  });
+  assert.throws(
+    () => assertWechatDevtoolsLoginReady(invocation, () => ({
+      status: 0,
+      stdout: '{"login":false}\n',
+    })),
+    /wechat_devtools_login_required/u,
+  );
+  assert.throws(
+    () => assertWechatDevtoolsLoginReady(invocation, () => ({
+      status: 0,
+      stdout: "progress only",
+    })),
+    /wechat_devtools_login_check_unreadable/u,
+  );
+});
+
+test("acceptance reset reuses an already neutral auth page", async () => {
+  const authPage = page("auth", "pages/auth/index", {
+    ".permission-page": [{}],
+  });
+  let relaunches = 0;
+  const miniProgram = {
+    async currentPage() { return authPage; },
+    async reLaunch() { relaunches += 1; throw new Error("must not relaunch"); },
+  };
+  assert.equal(await openNeutralAcceptancePage(miniProgram), authPage);
+  assert.equal(relaunches, 0);
+});
+
+test("acceptance reset prefers the current structured WeChat IDE navigation", async () => {
+  const mapPage = page("map", "pages/map/index", { ".map-page": [{}] });
+  const authPage = page("auth", "pages/auth/index", {
+    ".permission-page": [{}],
+  });
+  let current = mapPage;
+  const externalCalls = [];
+  const miniProgram = {
+    async currentPage() { return current; },
+    async reLaunch() { throw new Error("legacy navigation must not run"); },
+  };
+  const result = await openNeutralAcceptancePage(
+    miniProgram,
+    "structured-reset",
+    async (action, url) => {
+      externalCalls.push([action, url]);
+      current = authPage;
+    },
+  );
+  assert.equal(result, authPage);
+  assert.deepEqual(externalCalls, [["reLaunch", "/pages/auth/index"]]);
+});
+
+test("acceptance reset confirms target state after an opaque startup relaunch", async () => {
+  const mapPage = page("map", "pages/map/index", { ".map-page": [{}] });
+  const authPage = page("auth", "pages/auth/index", {
+    ".permission-page": [{}],
+  });
+  let current = mapPage;
+  let relaunches = 0;
+  const miniProgram = {
+    async currentPage() { return current; },
+    async reLaunch() {
+      relaunches += 1;
+      current = authPage;
+      throw new Error("Uncaught [object Object]");
+    },
+  };
+  assert.equal(await openNeutralAcceptancePage(miniProgram), authPage);
+  assert.equal(relaunches, 1);
+});
+
+test("acceptance reset observes a completed relaunch when automator returns no page handle", async () => {
+  const mapPage = page("map", "pages/map/index", { ".map-page": [{}] });
+  const authPage = page("auth", "pages/auth/index", {
+    ".permission-page": [{}],
+  });
+  let current = mapPage;
+  let relaunches = 0;
+  const miniProgram = {
+    async currentPage() { return current; },
+    async reLaunch() {
+      relaunches += 1;
+      current = authPage;
+      return undefined;
+    },
+  };
+  assert.equal(await openNeutralAcceptancePage(miniProgram), authPage);
+  assert.equal(relaunches, 1);
+});
+
+test("acceptance reset falls back to redirect when relaunch stays on the source page", async () => {
+  const mapPage = page("map", "pages/map/index", { ".map-page": [{}] });
+  const authPage = page("auth", "pages/auth/index", {
+    ".permission-page": [{}],
+  });
+  let current = mapPage;
+  let relaunches = 0;
+  let redirects = 0;
+  const miniProgram = {
+    async currentPage() { return current; },
+    async reLaunch() {
+      relaunches += 1;
+      throw new Error("Uncaught [object Object]");
+    },
+    async redirectTo() {
+      redirects += 1;
+      current = authPage;
+      return authPage;
+    },
+  };
+  assert.equal(await openNeutralAcceptancePage(miniProgram), authPage);
+  assert.equal(relaunches, 2);
+  assert.equal(redirects, 1);
+});
+
+test("acceptance reset can rebuild a main-package stack through the map tab", async () => {
+  const sourcePage = page("source", "content/settings/index", {
+    ".settings-page": [{}],
+  });
+  const mapPage = page("map", "pages/map/index");
+  const authPage = page("auth", "pages/auth/index", {
+    ".permission-page": [{}],
+  });
+  let current = sourcePage;
+  let switches = 0;
+  let navigations = 0;
+  const opaque = async () => { throw new Error("Uncaught [object Object]"); };
+  const miniProgram = {
+    async currentPage() { return current; },
+    reLaunch: opaque,
+    redirectTo: opaque,
+    async switchTab() { switches += 1; current = mapPage; return mapPage; },
+    async navigateTo() { navigations += 1; current = authPage; return authPage; },
+  };
+  assert.equal(await openNeutralAcceptancePage(miniProgram), authPage);
+  assert.equal(switches, 1);
+  assert.equal(navigations, 1);
+});
+
 test("navigation before a matching candidate tap cannot prove selection", async () => {
   const input = { async tap() {}, async input() {} };
   const source = page("source", "spot/search/index", { ".input": [input] });
@@ -264,6 +504,42 @@ test("selector waits fail on non-transient query errors instead of treating them
       error instanceof Error &&
       /^native_page_observation_failed:selector-wait:/u.test(error.message),
   );
+});
+
+test("the exact miniprogram-automator stale Page xpath failure is transient", () => {
+  assert.equal(
+    isTransientPageObservationError(
+      new TypeError("Cannot read properties of undefined (reading 'map')"),
+    ),
+    true,
+  );
+  assert.equal(
+    isTransientPageObservationError(
+      new TypeError("Cannot read properties of undefined (reading 'filter')"),
+    ),
+    false,
+  );
+});
+
+test("selector waits retry a bounded protocol deadline during DevTools page startup", async () => {
+  let reads = 0;
+  const startingPage = page("page", "pages/auth/index", {
+    ".permission-page": () => {
+      reads += 1;
+      if (reads === 1)
+        throw new Error("wechat_protocol_request_deadline:opaque-diagnostic");
+      return [{}];
+    },
+  });
+
+  const elements = await waitForSelector(
+    startingPage,
+    ".permission-page",
+    1,
+    2_000,
+  );
+  assert.equal(elements.length, 1);
+  assert.equal(reads, 2);
 });
 
 test("NightChina matching selection queries the current source page on every poll", async () => {

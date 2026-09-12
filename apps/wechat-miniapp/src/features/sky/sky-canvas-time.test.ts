@@ -43,6 +43,7 @@ test("production frame requests preserve exact data/time and clear expired or un
     previousCanvasModeRef: { current: "NIGHT" }, devicePoseRef: { current: pose },
     reportData: data, report: { data: { dataState: "FRESH" }, isError: false },
     row: { at: committed }, sensorHeadingForScene: 0, devicePose: pose, mode: "NIGHT",
+    verticalFovDeg: 45, canvasDeepSkyImage: null,
     canvasFrameInfo: { catalog: {}, frame: { state: "AVAILABLE", points: [] }, targetFrame: {},
       inspection: { spotId: "spot:test", frameAt: committed, catalogVersion: "test", starCount: 0 } },
     publishAcceptanceSkySceneInspection: (_owner: unknown, value: { state: string }) => states.push(value.state),
@@ -111,7 +112,12 @@ test("production sky canvas never borrows top-level targets for missing or dupli
 test("production sky canvas uses the same instant and projection for catalog stars and targets", () => {
   const data = { ...report, skyScene: {
     state: "AVAILABLE",
-    catalog: { magnitudeLimit: 5.5, entries: [{ gMagnitude: 2, bpRp: 1 }] },
+    catalog: {
+      catalogVersion: "hipparcos-test-v1",
+      catalogHash: "a".repeat(64),
+      magnitudeLimit: 5,
+      entries: [{ sourceId: "HIP:1", objectRef: "HIP:1", displayName: "Alpha", magnitude: 2, magnitudeBand: "V", colorIndex: 1, colorIndexBand: "B-V" }],
+    },
     frames: [
       { at: committed, state: "AVAILABLE", points: [[0, 0, 10]] },
       { at: preview, state: "AVAILABLE", points: [[0, 5, 10]] },

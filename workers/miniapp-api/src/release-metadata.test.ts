@@ -39,10 +39,10 @@ test("remote HTTP config accepts only HTTPS origins and one exact trusted proxy 
     trustedProxyCidrs: ["172.30.10.2/32"],
   });
   assert.deepEqual(fastifyDeploymentOptions(config), {
-    bodyLimit: 2_000_000,
-    connectionTimeout: 10_000,
-    requestTimeout: 15_000,
-    handlerTimeout: 30_000,
+    bodyLimit: 14_000_000,
+    connectionTimeout: 35_000,
+    requestTimeout: 35_000,
+    handlerTimeout: 35_000,
     keepAliveTimeout: 10_000,
     maxRequestsPerSocket: 1_000,
     forceCloseConnections: "idle",

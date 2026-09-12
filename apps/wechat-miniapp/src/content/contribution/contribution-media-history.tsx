@@ -343,7 +343,7 @@ export function ContributionActions({
         </View>
       ) : null}
       <SoftButton
-        label="保存现场反馈草稿"
+        label={form.kind === "NEW_SPOT_PROPOSAL" ? "保存新增观星点草稿" : "保存现场反馈草稿"}
         disabled={disabled}
         onClick={() => void commands.saveDraft()}
       >

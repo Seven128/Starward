@@ -4,7 +4,14 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-function navigation(stack: () => unknown[], back: () => Promise<void>, tab: (options: { url: string }) => Promise<void>) {
+function navigation(
+  stack: () => unknown[],
+  back: () => Promise<void>,
+  tab: (options: { url: string }) => Promise<void>,
+  beforeBack?: () => boolean | Promise<boolean>,
+  onBackAuthorized: () => void | Promise<void> = () => undefined,
+  onBackFailure: () => void | Promise<void> = () => undefined,
+) {
   const source = ts.createSourceFile("nav.tsx", readFileSync(new URL("./custom-nav.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let declaration = "";
   const visit = (node: ts.Node) => {
@@ -19,7 +26,7 @@ function navigation(stack: () => unknown[], back: () => Promise<void>, tab: (opt
   }).outputText, {
     navigationBusy: busy, setBackError: (value: boolean) => errors.push(value),
     backFallbackTab: "/pages/my/index",
-    Taro: { getCurrentPages: stack, navigateBack: back, switchTab: tab },
+    Taro: { getCurrentPages: stack, navigateBack: back, switchTab: tab }, beforeBack, onBackAuthorized, onBackFailure,
   }) as () => Promise<void>;
   return { goBack, busy, errors };
 }
@@ -33,6 +40,16 @@ test("back success preserves the actual previous page rather than switching tabs
   assert.deepEqual(nav.errors, [false]);
 });
 
+test("a declined editor back guard retains the route and releases the navigation lock", async () => {
+  let allowed = false, backs = 0;
+  const nav = navigation(() => [{}, {}], async () => { backs++; }, async () => assert.fail("unexpected fallback"), () => allowed);
+  await nav.goBack();
+  assert.equal(backs, 0);
+  allowed = true;
+  await nav.goBack();
+  assert.equal(backs, 1);
+});
+
 test("missing or unreadable stack returns to the configured tab", async () => {
   for (const stack of [() => [{}], () => { throw new Error("unavailable"); }]) {
     const urls: string[] = [];
@@ -44,14 +61,25 @@ test("missing or unreadable stack returns to the configured tab", async () => {
 });
 
 test("both navigation failures are visible and permit a successful retry", async () => {
-  let failed = true;
-  const nav = navigation(() => [{}, {}], async () => { throw new Error("back failed"); }, async () => { if (failed) throw new Error("tab failed"); });
+  let failed = true, authorized = 0, restored = 0;
+  const nav = navigation(
+    () => [{}, {}],
+    async () => { throw new Error("back failed"); },
+    async () => { if (failed) throw new Error("tab failed"); },
+    undefined,
+    () => { authorized++; },
+    () => { restored++; },
+  );
   await nav.goBack();
   assert.deepEqual(nav.errors, [false, true]);
+  assert.equal(authorized, 1);
+  assert.equal(restored, 1);
   assert.equal(nav.busy.current, false);
   failed = false;
   await nav.goBack();
   assert.deepEqual(nav.errors, [false, true, false]);
+  assert.equal(authorized, 2);
+  assert.equal(restored, 1);
 });
 
 test("rapid repeated activation does not pop a second page", async () => {

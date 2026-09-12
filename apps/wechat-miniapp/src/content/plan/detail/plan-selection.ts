@@ -6,7 +6,8 @@ export function planIdFromRoute(value: string | undefined): PlanId | null {
   catch { return value as PlanId; }
 }
 
-export function initialPlanSelection(requestedId: PlanId | null, plans: readonly ObservationPlan[]) {
+export function initialPlanSelection(requestedId: PlanId | null, plans: readonly ObservationPlan[], explicitNew = false) {
+  if (explicitNew) return { planId: null, plan: null };
   const planId = requestedId ?? plans[0]?.planId ?? null;
   return { planId, plan: plans.find((plan) => plan.planId === planId) ?? null };
 }

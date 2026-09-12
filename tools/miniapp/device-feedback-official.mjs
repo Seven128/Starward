@@ -136,6 +136,20 @@ export function runOfficialProcess(
   });
 }
 
+export function parseOfficialLoginState(output) {
+  const lines = Buffer.isBuffer(output)
+    ? output.toString("utf8").split(/\r?\n/u)
+    : String(output ?? "").split(/\r?\n/u);
+  for (const line of lines.toReversed()) {
+    try {
+      const parsed = JSON.parse(line.trim());
+      if (parsed?.login === true) return "ready";
+      if (parsed?.login === false) return "required";
+    } catch {}
+  }
+  return "unknown";
+}
+
 export class OfficialWechatDevtools {
   constructor(invocation, run = runOfficialProcess) {
     this.invocation = invocation;
@@ -178,8 +192,7 @@ export class OfficialWechatDevtools {
         this.args(["islogin", "--lang", "zh"]),
         this.options({ timeout: 15_000, maxBytes: 4 * 1024 }),
       );
-      const lines = output.toString("utf8").trim().split(/\r?\n/u);
-      login = JSON.parse(lines.at(-1) ?? "{}")?.login === true ? "ready" : "required";
+      login = parseOfficialLoginState(output);
     } catch {}
     return { officialTool: "available", automaticUpdate, ordinaryPreview, login };
   }

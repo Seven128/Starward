@@ -14,13 +14,18 @@ export type SemanticAssetSubject =
   | "neutral-avatar";
 
 export type SemanticIconName =
+  | "settings"
+  | "pencil"
+  | "account-user"
   | "arrow-left"
   | "search"
+  | "filter"
   | "chevron-right"
   | "chevron-down"
   | "chevron-up"
   | "close"
   | "location"
+  | "layers"
   | "refresh"
   | "conditions"
   | "info"
@@ -29,20 +34,33 @@ export type SemanticIconName =
   | "undo"
   | "check"
   | "download"
+  | "share"
+  | "eye"
+  | "bulb"
+  | "cloud"
   | "trash"
   | "wifi-off"
   | "images"
   | "sun"
+  | "clock"
   | "moon"
   | "star";
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
+  settings: "/assets/icons/settings.svg",
+  pencil: "/assets/icons/pencil.svg",
+  "account-user": "/assets/icons/account-user.svg",
   "arrow-left": "/assets/icons/arrow-left.png",
   "chevron-right": "/assets/icons/chevron-right.svg",
   download: "/assets/icons/download.svg",
+  share: "/assets/icons/share.svg",
+  eye: "/assets/icons/eye.svg",
+  bulb: "/assets/icons/bulb.svg",
+  cloud: "/assets/icons/cloud.svg",
   trash: "/assets/icons/trash-2.svg",
   "wifi-off": "/assets/icons/wifi-off.svg",
   images: "/assets/icons/images.svg",
+  filter: "/assets/icons/filter.svg",
 };
 
 const MODE_FILE: Record<DisplayMode, string> = {

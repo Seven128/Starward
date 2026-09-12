@@ -1,15 +1,29 @@
+import type { AccountProfileRecord } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
-import { assertContributionSubmittable, MAX_CONTRIBUTION_MEDIA } from "./contribution-validation.ts";
+import { assertContributionBaselineMatches, assertContributionSubmittable, assertContributionUploadFits } from "./contribution-validation.ts";
+import {
+  appendContributionAttempt,
+  appendCandidateProfileMedia,
+  isContributionEditable,
+  normalizeContributionAttempts,
+  reviewLatestContributionAttempt,
+  removeCandidateProfileMedia,
+} from "./contribution-attempts.ts";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   cloneUserPreferences,
   DEFAULT_USER_PREFERENCES,
   type AccountDeletionReceipt,
+  type AccessAndSafetyState,
   type ContributionId,
   type ContributionMediaUpload,
   type ContributionStatusHistoryEntry,
   type ContributionSubmission,
+  type ContributionFormalSubmitRequest,
+  type ContributionFormalSubmitResult,
+  type ContributionFormalUploadIntent,
+  type ContributionFormalMediaUpload,
   type ContributionTopic,
   type ContributionUploadId,
   type FactEvidence,
@@ -40,6 +54,9 @@ import {
 import { createMapCoordinateView } from "@starward/coordinate-system";
 import pg, { type PoolClient } from "pg";
 import { assertReceiptNotErased, eraseAccountContributionEvidence } from "./account-data-erasure.ts";
+import { derivePlanReminderSchedules, type StoredPlanReminderSchedule } from "./plan-reminder-schedule.ts";
+import { contributionFormalBaseline } from "./contribution-formal-baseline.ts";
+import { buildFormalContributionResult } from "./formal-contribution-submission.ts";
 import type {
   DarkSkyGridCellRecord,
   AdminOperationsPort,
@@ -119,6 +136,7 @@ export type AdminContributionEvidenceClaim =
   | "ACCESS_LEGAL_ENTRY"
   | "SAFETY_NIGHT"
   | "HORIZON_PROFILE"
+  | "SPOT_DETAILS"
   | "SITE_MEDIA_PROVENANCE";
 
 const CONTRIBUTION_TOPIC_CLAIMS = {
@@ -130,11 +148,57 @@ const CONTRIBUTION_TOPIC_CLAIMS = {
   NIGHT_SAFETY: ["SAFETY_NIGHT"],
   HORIZON: ["HORIZON_PROFILE"],
   SITE_MEDIA: ["SITE_MEDIA_PROVENANCE"],
-  OTHER: [],
+  OTHER: ["SPOT_DETAILS"],
 } as const satisfies Record<
   ContributionTopic,
   readonly AdminContributionEvidenceClaim[]
 >;
+
+const FORMAL_FIELD_TOPIC = {
+  address: "OTHER", name: "OTHER", detail: "OTHER",
+  openness: "OPENNESS", hours: "OPENNESS",
+  access: "LEGAL_ACCESS", accessNote: "LEGAL_ACCESS", camping: "LEGAL_ACCESS", contact: "LEGAL_ACCESS",
+  road: "LAST_ROAD", safety: "NIGHT_SAFETY",
+  parking: "PARKING", parkingNote: "PARKING",
+  toilet: "FACILITIES", toiletNote: "FACILITIES", platform: "FACILITIES", signal: "FACILITIES",
+  horizon: "HORIZON", light: "HORIZON",
+} as const;
+
+export function contributionResolvedProposal(submission: ContributionSubmission) {
+  return submission.formalFeedback?.resolvedProposal ??
+    (submission.kind === "NEW_SPOT_PROPOSAL" ? submission.candidateProfile : undefined);
+}
+
+export function contributionAllowedMergeClaims(
+  submission: ContributionSubmission,
+): readonly AdminContributionEvidenceClaim[] {
+  if (submission.kind !== "NEW_SPOT_PROPOSAL")
+    return [...new Set(submission.topics.flatMap((topic) => CONTRIBUTION_TOPIC_CLAIMS[topic]))];
+  const proposal = contributionResolvedProposal(submission);
+  if (!proposal) return [];
+  const claims: AdminContributionEvidenceClaim[] = Object.keys(proposal.fields).flatMap((key) => {
+    const topic = FORMAL_FIELD_TOPIC[key as keyof typeof FORMAL_FIELD_TOPIC];
+    return topic ? CONTRIBUTION_TOPIC_CLAIMS[topic] : [];
+  });
+  if (Object.values(proposal.media).some((ids) => Boolean(ids?.length)))
+    claims.push("SITE_MEDIA_PROVENANCE");
+  return [...new Set(claims)];
+}
+
+export function assertNewSpotContributionTarget(
+  submission: ContributionSubmission,
+  spot: SpotSummary,
+) {
+  if (submission.kind !== "NEW_SPOT_PROPOSAL") return;
+  const candidate = submission.candidateLocation?.wgs84;
+  if (
+    !candidate ||
+    candidate.system !== "WGS84" ||
+    Math.abs(candidate.latitude - spot.wgs84.latitude) > 0.000001 ||
+    Math.abs(candidate.longitude - spot.wgs84.longitude) > 0.000001
+  )
+    throw new Error("contribution_candidate_location_mismatch");
+}
 
 const CORE_FIELD_EVIDENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1_000;
 
@@ -148,6 +212,29 @@ const FACILITY_TYPES = [
   "WALKING",
   "SIGNAL",
 ] as const satisfies readonly FacilityEvidence["type"][];
+
+function formalFacilityStatus(value: string | null): FacilityEvidence["status"] {
+  const normalized = value?.trim() ?? "";
+  if (!normalized) return "UNKNOWN";
+  if (normalized === "有" || normalized === "可用" || normalized === "开放") return "AVAILABLE";
+  if (normalized === "没有" || normalized === "无" || normalized === "不可用" || normalized === "不开放") return "UNAVAILABLE";
+  if (normalized === "季节性开放") return "SEASONAL";
+  return "UNKNOWN";
+}
+
+function formalOpenness(value: string | null): AccessAndSafetyState["openness"] {
+  if (value === "开放") return "OPEN";
+  if (value === "有条件开放") return "CONDITIONAL";
+  if (value === "不开放") return "CLOSED";
+  return "UNKNOWN";
+}
+
+function formalLegalAccess(value: string | null): AccessAndSafetyState["legalAccess"] {
+  if (value === "允许进入") return "PERMITTED";
+  if (value === "需预约或其他条件") return "CONDITIONAL";
+  if (value === "禁止进入") return "PROHIBITED";
+  return "UNKNOWN";
+}
 
 function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -164,7 +251,7 @@ function normalizeContributionSubmission(
     value.submissionState ??
     (value.state === "APPROVED" ? "ACCEPTED" : value.state);
   return {
-    ...clone(value),
+    ...normalizeContributionAttempts(value),
     submissionState,
     mergeState: value.mergeState ?? "NOT_STARTED",
     publicationImpact: value.publicationImpact ?? "NONE",
@@ -187,6 +274,40 @@ function contributionEvent(
     reason,
     actorType,
     occurredAt: new Date().toISOString(),
+  };
+}
+
+export function publishMergedNewSpotContribution(
+  value: ContributionSubmission,
+  spotId: SpotId,
+  occurredAt: string,
+  reason: string,
+): ContributionSubmission | null {
+  const submission = normalizeContributionSubmission(value);
+  if (
+    submission.kind !== "NEW_SPOT_PROPOSAL" ||
+    submission.submissionState !== "ACCEPTED" ||
+    submission.mergeState !== "MERGED"
+  ) return null;
+  if (submission.spotId !== spotId) throw new Error("contribution_publication_spot_mismatch");
+  if (submission.publicationImpact === "SPOT_PUBLISHED") return null;
+  return {
+    ...submission,
+    publicationImpact: "SPOT_PUBLISHED",
+    revision: submission.revision + 1,
+    updatedAt: occurredAt,
+    statusHistory: [
+      ...submission.statusHistory,
+      {
+        eventId: `contribution-event:${randomUUID()}`,
+        axis: "PUBLICATION",
+        from: submission.publicationImpact,
+        to: "SPOT_PUBLISHED",
+        reason,
+        actorType: "OPERATOR",
+        occurredAt,
+      },
+    ],
   };
 }
 
@@ -270,6 +391,8 @@ function mergeClaimCurrentValue(detail: SpotDetail, claim: string): unknown {
       return detail.accessAndSafety.nightSafety;
     case "HORIZON_PROFILE":
       return { obstructionPercent: detail.spot.obstructionPercent, clearDirections: detail.spot.clearDirections };
+    case "SPOT_DETAILS":
+      return detail.formalFacts ?? {};
     case "SITE_MEDIA_PROVENANCE":
       return detail.spot.media.map((media) => media.id);
     default:
@@ -281,6 +404,8 @@ function mergeClaimCandidateValue(
   submission: ContributionSubmission,
   claim: string,
 ): unknown {
+  const proposal = contributionResolvedProposal(submission);
+  if (claim === "SPOT_DETAILS" && proposal) return proposal.fields;
   return {
     claim,
     detail: submission.detail,
@@ -537,6 +662,24 @@ export class PostgresMiniappRepository
       : null;
   }
 
+  async getContributionFormalBaseline(spotId: SpotId) {
+    const result = await this.pool.query<{ payload: SpotDetail; spot: SpotSummary; version: number }>(
+      `SELECT r.payload, s.payload AS spot, s.version
+         FROM spot_overview_read_models r
+         JOIN spots s USING (spot_id)
+         JOIN spot_publication_assessments a USING (spot_id)
+        WHERE r.spot_id = $1
+          AND s.visibility_policy = 'PUBLIC_EXACT'
+          AND s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
+          AND a.complete = true
+          AND a.spot_revision = s.version
+          AND a.assessed_at >= now() - interval '30 days'`,
+      [spotId],
+    );
+    const row = result.rows[0];
+    return row ? contributionFormalBaseline({ ...row.payload, spot: row.spot }, row.version) : null;
+  }
+
   async ensureUser(userId: UserId): Promise<void> {
     await this.#transaction(async (client) => {
       await client.query(
@@ -626,10 +769,18 @@ export class PostgresMiniappRepository
         throw new Error("account_not_active");
 
       const media = await client.query<{ object_key: string | null }>(
-        `SELECT object_key
-           FROM contribution_media_uploads
+        `SELECT object_key FROM contribution_media_uploads
           WHERE user_id = $1 AND object_key IS NOT NULL
-          FOR UPDATE`,
+         UNION ALL
+         SELECT media.object_key FROM formal_feedback_media_uploads media
+          WHERE media.user_id = $1 AND media.object_key IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM spot_formal_reference_media canonical
+               WHERE canonical.object_key = media.object_key
+            )
+         UNION ALL
+         SELECT avatar_object_key FROM users
+          WHERE user_id = $1 AND avatar_object_key IS NOT NULL`,
         [userId],
       );
       const objectKeys = [
@@ -651,6 +802,8 @@ export class PostgresMiniappRepository
         "DELETE FROM contribution_media_uploads WHERE user_id = $1",
         [userId],
       );
+      await client.query("DELETE FROM formal_feedback_media_uploads WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM formal_feedback_upload_intents WHERE user_id = $1", [userId]);
       await eraseAccountContributionEvidence(client, userId);
       for (const table of [
         "favorites",
@@ -675,7 +828,7 @@ export class PostgresMiniappRepository
       );
       const deletedAt = new Date().toISOString();
       await client.query(
-        "UPDATE users SET state = 'DELETED' WHERE user_id = $1",
+        "UPDATE users SET state = 'DELETED', nickname = NULL, avatar_object_key = NULL, avatar_mime_type = NULL, avatar_byte_size = NULL, avatar_sha256 = NULL, avatar_zoom = NULL WHERE user_id = $1",
         [userId],
       );
       const receipt: AccountDeletionReceipt = {
@@ -690,6 +843,7 @@ export class PostgresMiniappRepository
           "preferences",
           "favorites",
           "plans",
+          "notification-schedules",
           "profile-links",
           "imports",
           "media",
@@ -713,6 +867,64 @@ export class PostgresMiniappRepository
         },
       });
       return receipt;
+    });
+  }
+
+  async getAccountProfile(userId: UserId): Promise<AccountProfileRecord> {
+    const result = await this.pool.query<{ nickname: string | null; profile_revision: number; profile_updated_at: Date; avatar_sha256: string | null; avatar_mime_type: "image/jpeg" | "image/png" | "image/webp" | null; avatar_zoom: string | null }>(
+      "SELECT nickname, profile_revision, profile_updated_at, avatar_sha256, avatar_mime_type, avatar_zoom FROM users WHERE user_id = $1", [userId]);
+    const row = result.rows[0];
+    if (!row) throw new Error("account_profile_not_found");
+    return { nickname: row.nickname, avatar: row.avatar_sha256 && row.avatar_mime_type && row.avatar_zoom ? { version: row.avatar_sha256, mimeType: row.avatar_mime_type, zoom: Number(row.avatar_zoom) } : null, revision: row.profile_revision, updatedAt: row.profile_updated_at.toISOString() };
+  }
+
+  async saveAccountNickname(userId: UserId, nickname: string, expectedRevision: number, idempotencyKey: string): Promise<AccountProfileRecord> {
+    return this.#transaction(async client => {
+      const existing = await client.query<{ profile_revision: number; avatar_sha256: string | null; avatar_mime_type: "image/jpeg" | "image/png" | "image/webp" | null; avatar_zoom: string | null }>(
+        "SELECT profile_revision, avatar_sha256, avatar_mime_type, avatar_zoom FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      if (!existing.rows[0]) throw new Error("account_profile_not_found");
+      const replay = await this.#replay<AccountProfileRecord>(client, userId, idempotencyKey);
+      if (replay) {
+        if (replay.nickname !== nickname || replay.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
+        return replay;
+      }
+      if (existing.rows[0].profile_revision !== expectedRevision) throw new Error("account_profile_revision_conflict");
+      const avatar = existing.rows[0].avatar_sha256 && existing.rows[0].avatar_mime_type && existing.rows[0].avatar_zoom ? { version: existing.rows[0].avatar_sha256, mimeType: existing.rows[0].avatar_mime_type, zoom: Number(existing.rows[0].avatar_zoom) } : null;
+      const saved: AccountProfileRecord = { nickname, avatar, revision: expectedRevision + 1, updatedAt: new Date().toISOString() };
+      await client.query("UPDATE users SET nickname = $2, profile_revision = $3, profile_updated_at = $4 WHERE user_id = $1", [userId, nickname, saved.revision, saved.updatedAt]);
+      await this.#recordMutation(client, { idempotencyKey, operation: "account.nickname.save", response: saved,
+        eventType: "AccountProfileUpdated", scopeId: userId, payload: { userId, revision: saved.revision } });
+      return saved;
+    });
+  }
+
+  async getAccountAvatarObject(userId: UserId) {
+    const result = await this.pool.query<{ avatar_object_key: string | null; avatar_sha256: string | null; avatar_mime_type: "image/jpeg" | "image/png" | "image/webp" | null; avatar_zoom: string | null }>(
+      "SELECT avatar_object_key, avatar_sha256, avatar_mime_type, avatar_zoom FROM users WHERE user_id = $1", [userId]);
+    const row = result.rows[0];
+    if (!row) throw new Error("account_profile_not_found");
+    return row.avatar_object_key && row.avatar_sha256 && row.avatar_mime_type && row.avatar_zoom
+      ? { objectKey: row.avatar_object_key, version: row.avatar_sha256, mimeType: row.avatar_mime_type, zoom: Number(row.avatar_zoom) }
+      : null;
+  }
+
+  async saveAccountAvatar(userId: UserId, avatar: { objectKey: string; version: string; mimeType: "image/jpeg" | "image/png" | "image/webp"; zoom: number; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string) {
+    return this.#transaction(async client => {
+      const existing = await client.query<{ profile_revision: number; nickname: string | null; avatar_object_key: string | null }>(
+        "SELECT profile_revision, nickname, avatar_object_key FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      const row = existing.rows[0];
+      if (!row) throw new Error("account_profile_not_found");
+      const replay = await this.#replay<{ profile: AccountProfileRecord; previousObjectKey: string | null }>(client, userId, idempotencyKey);
+      if (replay) {
+        if (replay.profile.avatar?.version !== avatar.version || replay.profile.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
+        return replay;
+      }
+      if (row.profile_revision !== expectedRevision) throw new Error("account_profile_revision_conflict");
+      const profile: AccountProfileRecord = { nickname: row.nickname, avatar: { version: avatar.version, mimeType: avatar.mimeType, zoom: avatar.zoom }, revision: expectedRevision + 1, updatedAt: new Date().toISOString() };
+      const result = { profile, previousObjectKey: row.avatar_object_key };
+      await client.query("UPDATE users SET avatar_object_key=$2, avatar_mime_type=$3, avatar_byte_size=$4, avatar_sha256=$5, avatar_zoom=$6, profile_revision=$7, profile_updated_at=$8 WHERE user_id=$1", [userId, avatar.objectKey, avatar.mimeType, avatar.byteSize, avatar.sha256, avatar.zoom, profile.revision, profile.updatedAt]);
+      await this.#recordMutation(client, { idempotencyKey, operation: "account.avatar.save", response: result, eventType: "AccountProfileUpdated", scopeId: userId, payload: { userId, revision: profile.revision, field: "avatar" } });
+      return result;
     });
   }
 
@@ -831,6 +1043,26 @@ export class PostgresMiniappRepository
     return result.rows.map((row) => clone(row.payload));
   }
 
+  async listPlanReminderSchedules(userId: UserId): Promise<readonly StoredPlanReminderSchedule[]> {
+    const result = await this.pool.query<{
+      plan_id: string; user_id: string; reminder_id: string; plan_revision: number;
+      schedule_version: string; trigger_at: Date | null; departure_at: Date | null;
+      state: StoredPlanReminderSchedule["state"]; reason: string; attempt_count: number; updated_at: Date;
+    }>(`SELECT plan_id, user_id, reminder_id, plan_revision, schedule_version,
+               trigger_at, departure_at, state, reason, attempt_count, updated_at
+          FROM plan_reminder_schedules
+         WHERE user_id = $1 AND active = true
+         ORDER BY trigger_at NULLS LAST, reminder_id`, [userId]);
+    return result.rows.map(row => ({
+      planId: row.plan_id, userId: row.user_id, reminderId: row.reminder_id,
+      planRevision: row.plan_revision, scheduleVersion: row.schedule_version,
+      triggerAtUtc: row.trigger_at?.toISOString() ?? null,
+      departureAtUtc: row.departure_at?.toISOString() ?? null,
+      state: row.state, reason: row.reason, attemptCount: row.attempt_count,
+      updatedAt: row.updated_at.toISOString(),
+    }));
+  }
+
   async getPlanSaveReceipt(userId: UserId, planId: string, idempotencyKey: string): Promise<ObservationPlan | null> {
     return this.#transaction(async client => {
       const receipt = await this.#replay<ObservationPlan>(client, userId, idempotencyKey);
@@ -905,6 +1137,28 @@ export class PostgresMiniappRepository
         ],
       );
       if (!persisted.rowCount) throw new Error("plan_identity_scope_conflict");
+      const schedules = derivePlanReminderSchedules(userId, saved);
+      await client.query(
+        `UPDATE plan_reminder_schedules SET active = false, state = 'CANCELED',
+            reason = 'SUPERSEDED_OR_REMOVED', updated_at = now()
+          WHERE user_id = $1 AND plan_id = $2 AND active = true
+            AND NOT (schedule_version = ANY($3::text[]))`,
+        [userId, saved.planId, schedules.map(row => row.scheduleVersion)],
+      );
+      for (const row of schedules) {
+        await client.query(
+          `INSERT INTO plan_reminder_schedules(
+             schedule_version, plan_id, user_id, reminder_id, plan_revision,
+             trigger_at, departure_at, state, reason, attempt_count, active, updated_at
+           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,0,true,$10)
+           ON CONFLICT (schedule_version) DO UPDATE SET
+             plan_revision = EXCLUDED.plan_revision,
+             active = true,
+             updated_at = EXCLUDED.updated_at`,
+          [row.scheduleVersion, row.planId, row.userId, row.reminderId, row.planRevision,
+            row.triggerAtUtc, row.departureAtUtc, row.state, row.reason, row.updatedAt],
+        );
+      }
       await this.#recordMutation(client, {
         idempotencyKey,
         operation: "plan.save",
@@ -926,6 +1180,12 @@ export class PostgresMiniappRepository
   ): Promise<void> {
     await this.#transaction(async (client) => {
       if (await this.#replay(client, userId, idempotencyKey)) return;
+      await client.query(
+        `UPDATE plan_reminder_schedules SET active = false, state = 'CANCELED',
+            reason = 'PLAN_DELETED', updated_at = now()
+          WHERE plan_id = $1 AND user_id = $2 AND active = true`,
+        [planId, userId],
+      );
       await client.query(
         "DELETE FROM observation_plans WHERE plan_id = $1 AND user_id = $2",
         [planId, userId],
@@ -1171,7 +1431,7 @@ export class PostgresMiniappRepository
         ORDER BY updated_at DESC`,
       [userId],
     );
-    return result.rows.map((row) => clone(row.payload));
+    return result.rows.map((row) => normalizeContributionSubmission(row.payload));
   }
 
   async getContribution(
@@ -1183,7 +1443,55 @@ export class PostgresMiniappRepository
         WHERE submission_id = $1 AND user_id = $2`,
       [submissionId, userId],
     );
+    return result.rows[0]
+      ? normalizeContributionSubmission(result.rows[0].payload)
+      : null;
+  }
+
+  async getFormalUploadIntent(userId: UserId, intentId: string) {
+    const result = await this.pool.query<{ payload: ContributionFormalUploadIntent }>(
+      "SELECT payload FROM formal_feedback_upload_intents WHERE intent_id = $1 AND user_id = $2 AND consumed_at IS NULL",
+      [intentId, userId],
+    );
     return result.rows[0] ? clone(result.rows[0].payload) : null;
+  }
+
+  async saveFormalUploadIntent(userId: UserId, intent: ContributionFormalUploadIntent, idempotencyKey: string) {
+    return this.#transaction(async client => {
+      const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
+      await client.query(`INSERT INTO formal_feedback_upload_intents(intent_id,user_id,spot_id,baseline_revision,revision,payload,expires_at,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,[intent.intentId,userId,intent.spotId,intent.baselineRevision,intent.revision,intent,intent.expiresAt,intent.createdAt]);
+      await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload-intent.create",response:intent,eventType:"FormalUploadIntentCreated",scopeId:userId,payload:{userId,intentId:intent.intentId,spotId:intent.spotId}}); return clone(intent);
+    });
+  }
+
+  async createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string) {
+    return this.#transaction(async client => {
+      const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
+      const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent;expires_at:string}>("SELECT revision,payload,expires_at FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0];
+      if(!row)throw new Error("formal_upload_intent_not_found"); if(row.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(Date.parse(row.expires_at)<=Date.now())throw new Error("formal_upload_intent_expired"); if(row.payload.uploads.length>=9)throw new Error("contribution_media_count_invalid");
+      const next={...row.payload,uploads:[...row.payload.uploads,clone(upload)],revision:row.revision+1};
+      await client.query("INSERT INTO formal_feedback_media_uploads(upload_id,intent_id,user_id,state,mime_type,payload,expires_at) VALUES($1,$2,$3,'PENDING',$4,$5,$6)",[upload.uploadId,intentId,userId,upload.mimeType,upload,upload.expiresAt]);
+      await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2",[intentId,userId,next.revision,next]);
+      await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.create",response:next,eventType:"FormalUploadCreated",scopeId:userId,payload:{userId,intentId,uploadId:upload.uploadId}}); return clone(next);
+    });
+  }
+
+  async completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string) {
+    return this.#transaction(async client => {
+      const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
+      const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent}>("SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0]; if(!row)throw new Error("formal_upload_intent_not_found");
+      const target=row.payload.uploads.find(value=>value.uploadId===uploadId); if(!target)throw new Error("contribution_upload_not_found"); if(target.state!=="PENDING")throw new Error("contribution_upload_not_pending");
+      const uploads=row.payload.uploads.map(value=>value.uploadId===uploadId?{...value,state:"UPLOADED" as const,byteSize:completion.byteSize,sha256:completion.sha256,uploadedAt:completion.uploadedAt}:value); const next={...row.payload,uploads,revision:row.revision+1};
+      await client.query("UPDATE formal_feedback_media_uploads SET state='UPLOADED',object_key=$4,payload=$5 WHERE upload_id=$1 AND intent_id=$2 AND user_id=$3",[uploadId,intentId,userId,completion.objectKey,uploads.find(value=>value.uploadId===uploadId)]);
+      await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2",[intentId,userId,next.revision,next]);
+      await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.complete",response:next,eventType:"FormalUploadCompleted",scopeId:userId,payload:{userId,intentId,uploadId}}); return clone(next);
+    });
+  }
+
+  async removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
+    return this.#transaction(async client => {
+      const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay); const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent}>("SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0]; if(!row)throw new Error("formal_upload_intent_not_found"); if(row.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(!row.payload.uploads.some(value=>value.uploadId===uploadId))throw new Error("contribution_upload_not_found"); const next={...row.payload,uploads:row.payload.uploads.filter(value=>value.uploadId!==uploadId),revision:row.revision+1}; await client.query("DELETE FROM formal_feedback_media_uploads WHERE upload_id=$1 AND intent_id=$2 AND user_id=$3",[uploadId,intentId,userId]); await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2",[intentId,userId,next.revision,next]); await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.remove",response:next,eventType:"FormalUploadRemoved",scopeId:userId,payload:{userId,intentId,uploadId}}); return clone(next);
+    });
   }
 
   async saveContributionDraft(
@@ -1306,7 +1614,7 @@ export class PostgresMiniappRepository
       const current = result.rows[0];
       if (!current || current.user_id !== userId)
         throw new Error("contribution_not_found");
-      if (current.state !== "DRAFT")
+      if (!isContributionEditable(current.state))
         throw new Error("contribution_not_editable");
       if (current.revision !== expectedRevision)
         throw new Error("contribution_revision_conflict");
@@ -1316,13 +1624,14 @@ export class PostgresMiniappRepository
       const replaced = replaceUploadId ? current.payload.media.find((item) => item.uploadId === replaceUploadId) : undefined;
       if (replaceUploadId && (!replaced || replaced.state !== "EXPIRED"))
         throw new Error("contribution_upload_replacement_invalid");
-      if (!replaced && current.payload.media.length >= MAX_CONTRIBUTION_MEDIA)
-        throw new Error("contribution_media_count_invalid");
+      assertContributionUploadFits(normalizeContributionSubmission(current.payload), upload, replaced);
+      const candidateProfile = appendCandidateProfileMedia(normalizeContributionSubmission(current.payload), upload, replaced);
       const next: ContributionSubmission = {
         ...normalizeContributionSubmission(current.payload),
         media: replaced
           ? current.payload.media.map((item) => clone(item.uploadId === replaceUploadId ? upload : item))
           : [...current.payload.media.map(clone), clone(upload)],
+        ...(candidateProfile ? { candidateProfile } : {}),
         revision: current.revision + 1,
         updatedAt: now,
       };
@@ -1411,7 +1720,7 @@ export class PostgresMiniappRepository
       const current = submissionResult.rows[0];
       if (!current || current.user_id !== userId)
         throw new Error("contribution_not_found");
-      if (current.state !== "DRAFT")
+      if (!isContributionEditable(current.state))
         throw new Error("contribution_not_editable");
       const uploadResult = await client.query<{
         state: string;
@@ -1530,7 +1839,7 @@ export class PostgresMiniappRepository
       const current = result.rows[0];
       if (!current || current.user_id !== userId)
         throw new Error("contribution_not_found");
-      if (current.state !== "DRAFT")
+      if (!isContributionEditable(current.state))
         throw new Error("contribution_not_editable");
       if (current.revision !== expectedRevision)
         throw new Error("contribution_revision_conflict");
@@ -1540,13 +1849,15 @@ export class PostgresMiniappRepository
           WHERE submission_id = $1 AND user_id = $2 FOR UPDATE`,
         [submissionId, userId],
       );
-      if (uploads.rows.some((row) => row.state !== "UPLOADED"))
+      if (uploads.rows.some((row) => row.state !== "UPLOADED" && row.state !== "ATTACHED"))
         throw new Error("contribution_media_upload_incomplete");
       const now = new Date().toISOString();
       const next: ContributionSubmission = {
         ...normalizeContributionSubmission(current.payload),
+        ...appendContributionAttempt(normalizeContributionSubmission(current.payload), now),
         state: "PENDING_REVIEW",
         submissionState: "PENDING_REVIEW",
+        review: null,
         statusHistory: [
           ...normalizeContributionSubmission(current.payload).statusHistory,
           contributionEvent(
@@ -1600,7 +1911,8 @@ export class PostgresMiniappRepository
         `INSERT INTO moderation_cases(
            case_id, subject_type, subject_id, state, payload
          ) VALUES ($1, 'USER_CONTRIBUTION', $2, 'PENDING', $3)
-         ON CONFLICT (case_id) DO NOTHING`,
+         ON CONFLICT (case_id) DO UPDATE SET
+           state = 'PENDING', payload = EXCLUDED.payload, resolved_at = NULL`,
         [
           `moderation:${submissionId}`,
           submissionId,
@@ -1624,6 +1936,143 @@ export class PostgresMiniappRepository
     });
   }
 
+  async submitFormalContribution(
+    userId: UserId,
+    input: ContributionFormalSubmitRequest,
+    idempotencyKey: string,
+  ): Promise<ContributionFormalSubmitResult> {
+    return this.#transaction(async (client) => {
+      const replay = await this.#replay<ContributionFormalSubmitResult>(client, userId, idempotencyKey);
+      if (replay) return clone(replay);
+      // Serialize the user/spot subject so two first submissions cannot both pass
+      // the pending check when neither row exists yet.
+      await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [`formal-feedback:${userId}:${input.baseline.spotId}`]);
+      const formal = await client.query<{ payload: SpotDetail; spot: SpotSummary; version: number }>(
+        `SELECT r.payload, s.payload AS spot, s.version
+           FROM spot_overview_read_models r
+           JOIN spots s USING (spot_id)
+           JOIN spot_publication_assessments a USING (spot_id)
+          WHERE r.spot_id = $1
+            AND s.visibility_policy = 'PUBLIC_EXACT'
+            AND s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
+            AND a.complete = true
+            AND a.spot_revision = s.version
+            AND a.assessed_at >= now() - interval '30 days'
+          FOR UPDATE OF s`,
+        [input.baseline.spotId],
+      );
+      const formalRow = formal.rows[0];
+      if (!formalRow) throw new Error("formal_spot_not_found");
+      const currentBaseline = contributionFormalBaseline({ ...formalRow.payload, spot: formalRow.spot }, formalRow.version);
+      const historical = await client.query<{ spot_payload: SpotSummary; detail_payload: SpotDetail }>(
+        `SELECT spot_payload, detail_payload FROM spot_revisions
+          WHERE spot_id = $1 AND revision_no = $2`,
+        [input.baseline.spotId, input.baseline.revision],
+      );
+      const historicalRow = historical.rows[0];
+      if (!historicalRow) throw new Error("contribution_baseline_revision_not_found");
+      assertContributionBaselineMatches(
+        input.baseline,
+        contributionFormalBaseline({ ...historicalRow.detail_payload, spot: historicalRow.spot_payload }, input.baseline.revision),
+      );
+
+      let existing: ContributionSubmission | null = null;
+      if (input.submissionId) {
+        const result = await client.query<{ user_id: string; revision: number; payload: ContributionSubmission }>(
+          "SELECT user_id, revision, payload FROM user_submissions WHERE submission_id = $1 FOR UPDATE",
+          [input.submissionId],
+        );
+        const row = result.rows[0];
+        if (!row || row.user_id !== userId) throw new Error("contribution_not_found");
+        existing = normalizeContributionSubmission(row.payload);
+        if (!isContributionEditable(existing.state)) throw new Error("contribution_not_editable");
+        if (row.revision !== input.expectedSubmissionRevision) throw new Error("contribution_revision_conflict");
+        if (existing.spotId !== input.baseline.spotId || existing.kind === "NEW_SPOT_PROPOSAL") throw new Error("contribution_resubmit_identity_invalid");
+      }
+      const pending = await client.query<{ submission_id: string }>(
+        `SELECT submission_id FROM user_submissions
+          WHERE user_id = $1 AND spot_id = $2 AND state = 'PENDING_REVIEW'
+            AND ($3::text IS NULL OR submission_id <> $3)
+          LIMIT 1 FOR UPDATE`,
+        [userId, input.baseline.spotId, input.submissionId ?? null],
+      );
+      if (pending.rowCount) throw new Error("contribution_formal_pending_exists");
+
+      let uploadIntent: ContributionFormalUploadIntent | null = null;
+      if (input.uploadIntentId) {
+        const uploadResult = await client.query<{ revision: number; payload: ContributionFormalUploadIntent; expires_at: string }>(
+          "SELECT revision,payload,expires_at FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",
+          [input.uploadIntentId, userId],
+        );
+        const row = uploadResult.rows[0];
+        if (!row) throw new Error("formal_upload_intent_not_found");
+        uploadIntent = row.payload;
+        if (row.revision !== input.expectedUploadIntentRevision) throw new Error("formal_upload_intent_revision_conflict");
+        if (Date.parse(row.expires_at) <= Date.now()) throw new Error("formal_upload_intent_expired");
+        if (uploadIntent.spotId !== input.baseline.spotId || uploadIntent.baselineRevision !== input.baseline.revision) throw new Error("formal_upload_intent_scope_invalid");
+        if (uploadIntent.uploads.some(value => value.state !== "UPLOADED")) throw new Error("formal_upload_incomplete");
+        const allowed = new Set([...Object.values(input.baseline.media).flat(), ...(existing?.media ?? []).map(value => value.uploadId), ...uploadIntent.uploads.map(value => value.uploadId)]);
+        if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !allowed.has(id))) throw new Error("contribution_formal_media_unknown");
+      } else if (Object.keys(input.proposal.media).length) {
+        const baselineIds = new Set([...Object.values(input.baseline.media).flat(), ...(existing?.media ?? []).map(value => value.uploadId)]);
+        if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !baselineIds.has(id))) throw new Error("formal_upload_intent_required");
+      }
+      const result = buildFormalContributionResult({ request: input, currentBaseline, existing, uploads: [...(existing?.media ?? []), ...(uploadIntent?.uploads ?? [])] });
+      if (result.state === "CONFLICT") {
+        await this.#recordMutation(client, {
+          idempotencyKey,
+          operation: "formal-contribution.conflict",
+          response: result,
+          eventType: "FormalContributionConflictDetected",
+          scopeId: userId,
+          payload: { userId, spotId: input.baseline.spotId, currentRevision: currentBaseline.revision },
+        });
+        return clone(result);
+      }
+      const submission = result.submission;
+      if (uploadIntent && input.uploadIntentId) {
+        await client.query("UPDATE formal_feedback_upload_intents SET consumed_at=now(), revision=revision+1 WHERE intent_id=$1 AND user_id=$2",[input.uploadIntentId,userId]);
+      }
+      await client.query(
+        `INSERT INTO user_submissions(submission_id, user_id, spot_id, state, payload, revision, created_at, updated_at)
+         VALUES ($1, $2, $3, 'PENDING_REVIEW', $4, $5, $6, $7)
+         ON CONFLICT (submission_id) DO UPDATE SET
+           state = 'PENDING_REVIEW', payload = EXCLUDED.payload, revision = EXCLUDED.revision, updated_at = EXCLUDED.updated_at
+         WHERE user_submissions.user_id = EXCLUDED.user_id`,
+        [submission.submissionId, userId, submission.spotId, submission, submission.revision, submission.createdAt, submission.updatedAt],
+      );
+      if (uploadIntent && input.uploadIntentId) {
+        await client.query("UPDATE formal_feedback_media_uploads SET state='ATTACHED',submission_id=$3,payload=payload||jsonb_build_object('state','ATTACHED') WHERE intent_id=$1 AND user_id=$2",[input.uploadIntentId,userId,submission.submissionId]);
+      }
+      await client.query(
+        `INSERT INTO contribution_revisions(revision_id, submission_id, revision_no, submission_state, merge_state, publication_impact, payload, payload_digest, actor_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [`contribution-revision:${submission.submissionId}:${submission.revision}`, submission.submissionId, submission.revision,
+          submission.submissionState, submission.mergeState, submission.publicationImpact, submission, digest(submission), userId],
+      );
+      await client.query(
+        `INSERT INTO moderation_cases(case_id, subject_type, subject_id, state, payload)
+         VALUES ($1, 'USER_CONTRIBUTION', $2, 'PENDING', $3)
+         ON CONFLICT (case_id) DO UPDATE SET state = 'PENDING', payload = EXCLUDED.payload, resolved_at = NULL`,
+        [`moderation:${submission.submissionId}`, submission.submissionId, {
+          submission,
+          contributorDigest: digest(userId).slice(0, 24),
+          canonicalMergeRequired: true,
+          publicationGateRequired: true,
+        }],
+      );
+      await this.#recordMutation(client, {
+        idempotencyKey,
+        operation: "formal-contribution.submit",
+        response: result,
+        eventType: "FormalContributionSubmitted",
+        scopeId: userId,
+        payload: { userId, submissionId: submission.submissionId, revision: submission.revision, spotRevision: currentBaseline.revision },
+      });
+      return clone(result);
+    });
+  }
+
   async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
       const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
@@ -1633,15 +2082,17 @@ export class PostgresMiniappRepository
       );
       const current = result.rows[0];
       if (!current || current.user_id !== userId) throw new Error("contribution_not_found");
-      if (current.state !== "DRAFT") throw new Error("contribution_not_editable");
+      if (!isContributionEditable(current.state)) throw new Error("contribution_not_editable");
       if (current.revision !== expectedRevision) throw new Error("contribution_revision_conflict");
       const upload = current.payload.media.find((item) => item.uploadId === uploadId);
       if (!upload) throw new Error("contribution_upload_not_found");
       if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
       const now = new Date().toISOString();
+      const candidateProfile = removeCandidateProfileMedia(normalizeContributionSubmission(current.payload), upload);
       const next: ContributionSubmission = {
         ...normalizeContributionSubmission(current.payload),
         media: current.payload.media.filter((item) => item.uploadId !== uploadId).map(clone),
+        ...(candidateProfile ? { candidateProfile } : {}),
         revision: current.revision + 1, updatedAt: now,
       };
       await client.query(
@@ -1663,6 +2114,9 @@ export class PostgresMiniappRepository
     return this.#transaction(async (client) => {
       const retry = await client.query<{ object_key: string }>(
         "SELECT object_key FROM contribution_media_uploads WHERE state = 'EXPIRED' AND object_key IS NOT NULL",
+      );
+      const formalRetry = await client.query<{ object_key: string }>(
+        "SELECT object_key FROM formal_feedback_media_uploads WHERE state = 'EXPIRED' AND object_key IS NOT NULL",
       );
       const expired = await client.query<{
         upload_id: ContributionUploadId;
@@ -1733,7 +2187,51 @@ export class PostgresMiniappRepository
             WHERE state IN ('PENDING', 'UPLOADED') AND expires_at <= $1`,
           [now],
         );
-      return [...new Set([...retry.rows.map((row) => row.object_key), ...expired.rows
+      const formalExpired = await client.query<{
+        upload_id: ContributionUploadId;
+        intent_id: string;
+        object_key: string | null;
+      }>(
+        `SELECT upload_id, intent_id, object_key
+           FROM formal_feedback_media_uploads
+          WHERE state IN ('PENDING', 'UPLOADED') AND expires_at <= $1
+          FOR UPDATE`,
+        [now],
+      );
+      const formalByIntent = new Map<string, Set<ContributionUploadId>>();
+      for (const row of formalExpired.rows) {
+        const ids = formalByIntent.get(row.intent_id) ?? new Set<ContributionUploadId>();
+        ids.add(row.upload_id);
+        formalByIntent.set(row.intent_id, ids);
+      }
+      for (const [intentId, uploadIds] of formalByIntent) {
+        const intent = await client.query<{ payload: ContributionFormalUploadIntent; revision: number }>(
+          "SELECT payload,revision FROM formal_feedback_upload_intents WHERE intent_id=$1 FOR UPDATE",
+          [intentId],
+        );
+        const row = intent.rows[0];
+        if (!row) continue;
+        const next: ContributionFormalUploadIntent = {
+          ...row.payload,
+          uploads: row.payload.uploads.map(upload => uploadIds.has(upload.uploadId)
+            ? { ...upload, state: "EXPIRED" as const }
+            : upload),
+          revision: row.revision + 1,
+        };
+        await client.query(
+          "UPDATE formal_feedback_upload_intents SET payload=$2,revision=$3 WHERE intent_id=$1",
+          [intentId, next, next.revision],
+        );
+      }
+      if (formalExpired.rowCount) await client.query(
+        `UPDATE formal_feedback_media_uploads
+            SET state='EXPIRED', payload=payload || jsonb_build_object('state','EXPIRED')
+          WHERE state IN ('PENDING','UPLOADED') AND expires_at <= $1`,
+        [now],
+      );
+      return [...new Set([...retry.rows.map((row) => row.object_key), ...formalRetry.rows.map((row) => row.object_key), ...expired.rows
+        .map((row) => row.object_key)
+        .filter((value): value is string => Boolean(value)), ...formalExpired.rows
         .map((row) => row.object_key)
         .filter((value): value is string => Boolean(value))])];
     });
@@ -1741,10 +2239,16 @@ export class PostgresMiniappRepository
 
   async acknowledgeContributionMediaDeletion(objectKeys: readonly string[]): Promise<void> {
     if (!objectKeys.length) return;
-    await this.pool.query(
-      "UPDATE contribution_media_uploads SET object_key = NULL WHERE state = 'EXPIRED' AND object_key = ANY($1::text[])",
-      [objectKeys],
-    );
+    await this.#transaction(async client => {
+      await client.query(
+        "UPDATE contribution_media_uploads SET object_key = NULL WHERE state = 'EXPIRED' AND object_key = ANY($1::text[])",
+        [objectKeys],
+      );
+      await client.query(
+        "UPDATE formal_feedback_media_uploads SET object_key = NULL WHERE state = 'EXPIRED' AND object_key = ANY($1::text[])",
+        [objectKeys],
+      );
+    });
   }
 
   async getContributionUploadObject(uploadId: ContributionUploadId) {
@@ -1753,8 +2257,14 @@ export class PostgresMiniappRepository
       mime_type: ContributionMediaUpload["mimeType"];
     }>(
       `SELECT object_key, mime_type FROM contribution_media_uploads
-        WHERE upload_id = $1 AND state IN ('UPLOADED', 'ATTACHED')
-          AND object_key IS NOT NULL`,
+        WHERE upload_id = $1 AND state IN ('UPLOADED', 'ATTACHED') AND object_key IS NOT NULL
+       UNION ALL
+       SELECT object_key, mime_type FROM formal_feedback_media_uploads
+        WHERE upload_id = $1 AND state IN ('UPLOADED', 'ATTACHED') AND object_key IS NOT NULL
+       UNION ALL
+       SELECT object_key, mime_type FROM spot_formal_reference_media
+        WHERE upload_id = $1
+       LIMIT 1`,
       [uploadId],
     );
     return result.rows[0]
@@ -1908,8 +2418,10 @@ export class PostgresMiniappRepository
         spot,
         route: {
           kind: "UNAVAILABLE",
+          travelMode: null,
           originLabel: null,
           distanceKm: null,
+          durationMinutes: null,
           driveMinutes: null,
           walkingMinutes: null,
           lastRoad: "待核验",
@@ -2491,9 +3003,7 @@ export class PostgresMiniappRepository
       if (!claims.length || claims.length !== input.confirmedClaims.length)
         throw new Error("contribution_merge_claims_invalid");
       const allowedClaims = new Set<AdminContributionEvidenceClaim>(
-        submission.topics.flatMap(
-          (topic) => CONTRIBUTION_TOPIC_CLAIMS[topic],
-        ),
+        contributionAllowedMergeClaims(normalizedSubmission),
       );
       if (claims.some((claim) => !allowedClaims.has(claim)))
         throw new Error("contribution_merge_claim_not_reported");
@@ -2503,11 +3013,29 @@ export class PostgresMiniappRepository
           !submission.media.some((media) => media.state === "ATTACHED"))
       )
         throw new Error("contribution_merge_media_evidence_missing");
+      const acceptedMediaIds = new Set<string>();
+      if (claims.includes("SITE_MEDIA_PROVENANCE")) {
+        const mediaIds = submission.media
+          .filter((media) => media.state === "ATTACHED")
+          .map((media) => media.uploadId);
+        const reviewed = await client.query<{ upload_id: string }>(
+          `SELECT upload_id FROM contribution_media_uploads
+            WHERE upload_id = ANY($1::text[]) AND review_state = 'ACCEPTED'
+           UNION ALL
+           SELECT upload_id FROM formal_feedback_media_uploads
+            WHERE upload_id = ANY($1::text[]) AND review_state = 'ACCEPTED'`,
+          [mediaIds],
+        );
+        for (const row of reviewed.rows) acceptedMediaIds.add(row.upload_id);
+        if (acceptedMediaIds.size !== mediaIds.length)
+          throw new Error("contribution_merge_media_not_accepted");
+      }
 
-      const observedAtMs = submission.observedAt
-        ? Date.parse(submission.observedAt)
-        : Number.NaN;
       const now = new Date();
+      const nowIso = now.toISOString();
+      const evidenceObservedAt = submission.observedAt ??
+        (submission.kind === "CORRECTION" || submission.kind === "NEW_SPOT_PROPOSAL" ? nowIso : null);
+      const observedAtMs = evidenceObservedAt ? Date.parse(evidenceObservedAt) : Number.NaN;
       if (
         !Number.isFinite(observedAtMs) ||
         observedAtMs > now.getTime() + 5 * 60_000 ||
@@ -2517,7 +3045,6 @@ export class PostgresMiniappRepository
       const validTo = new Date(
         observedAtMs + CORE_FIELD_EVIDENCE_MAX_AGE_MS,
       ).toISOString();
-      const nowIso = now.toISOString();
 
       const selected = await client.query<{
         payload: SpotSummary;
@@ -2541,6 +3068,7 @@ export class PostgresMiniappRepository
         throw new Error("spot_revision_conflict");
       if (submission.spotId && submission.spotId !== input.spotId)
         throw new Error("contribution_merge_spot_mismatch");
+      assertNewSpotContributionTarget(normalizedSubmission, current.payload);
 
       const source: SourceSummary = {
         id: `contribution-source:${submission.submissionId}`,
@@ -2554,7 +3082,7 @@ export class PostgresMiniappRepository
         licenseUrl: "",
         publishedAt: null,
         retrievedAt: submission.updatedAt,
-        validFrom: submission.observedAt,
+        validFrom: evidenceObservedAt,
         validTo,
         state: "FRESH",
         confidence: null,
@@ -2577,20 +3105,137 @@ export class PostgresMiniappRepository
         sourceType: "OPERATOR",
         sourceId: source.id,
         mediaIds,
-        observedAt: submission.observedAt,
+        observedAt: evidenceObservedAt,
         verifiedAt: nowIso,
         validTo,
         confidence: null,
       }));
       const evidenceIds = new Set(evidence.map((item) => item.evidenceId));
+      const resolvedProposal = contributionResolvedProposal(normalizedSubmission);
+      const mergedFormalFacts = { ...(current.detail.formalFacts ?? {}) } as Record<string, string | null>;
+      const mergedFormalFieldKeys = new Set<string>();
+      for (const [field, value] of Object.entries(resolvedProposal?.fields ?? {})) {
+        const topic = FORMAL_FIELD_TOPIC[field as keyof typeof FORMAL_FIELD_TOPIC];
+        if (topic && CONTRIBUTION_TOPIC_CLAIMS[topic].some(claim => claims.includes(claim))) {
+          mergedFormalFacts[field] = value.trim() || null;
+          mergedFormalFieldKeys.add(field);
+        }
+      }
+      const nextRoute = clone(current.detail.route);
+      const nextAccessAndSafety = clone(current.detail.accessAndSafety);
+      let nextFacilities = current.detail.spot.facilities.map(clone);
+      const upsertFacility = (
+        type: FacilityEvidence["type"],
+        patch: Partial<Pick<FacilityEvidence, "status" | "summary" | "detail">>,
+      ) => {
+        const index = nextFacilities.findIndex((facility) => facility.type === type);
+        if (index >= 0) {
+          nextFacilities[index] = {
+            ...nextFacilities[index]!,
+            ...patch,
+            verifiedAt: nowIso,
+            source,
+          };
+          return;
+        }
+        nextFacilities = [
+          ...nextFacilities,
+          {
+            type,
+            status: patch.status ?? "UNKNOWN",
+            summary: patch.summary ?? "待核验",
+            detail: patch.detail ?? "",
+            distanceM: null,
+            openingHours: null,
+            usageCondition: null,
+            verifiedAt: nowIso,
+            confidence: null,
+            source,
+          },
+        ];
+      };
+      if (mergedFormalFieldKeys.has("road")) nextRoute.lastRoad = mergedFormalFacts.road ?? "";
+      if (mergedFormalFieldKeys.has("parkingNote")) nextRoute.parkingGuidance = mergedFormalFacts.parkingNote ?? "";
+      if (mergedFormalFieldKeys.has("openness")) nextAccessAndSafety.openness = formalOpenness(mergedFormalFacts.openness ?? null);
+      if (mergedFormalFieldKeys.has("access")) nextAccessAndSafety.legalAccess = formalLegalAccess(mergedFormalFacts.access ?? null);
+      if (mergedFormalFieldKeys.has("accessNote")) nextAccessAndSafety.restrictions = mergedFormalFacts.accessNote ? [mergedFormalFacts.accessNote] : [];
+      if (mergedFormalFieldKeys.has("safety")) nextAccessAndSafety.guidance = mergedFormalFacts.safety ? [mergedFormalFacts.safety] : [];
+      if (mergedFormalFieldKeys.has("parking")) upsertFacility("PARKING", {
+        status: formalFacilityStatus(mergedFormalFacts.parking ?? null),
+        summary: mergedFormalFacts.parking ?? "停车情况待核验",
+      });
+      if (mergedFormalFieldKeys.has("parkingNote")) upsertFacility("PARKING", { detail: mergedFormalFacts.parkingNote ?? "" });
+      if (mergedFormalFieldKeys.has("toilet")) upsertFacility("TOILET", {
+        status: formalFacilityStatus(mergedFormalFacts.toilet ?? null),
+        summary: mergedFormalFacts.toilet ?? "洗手间情况待核验",
+      });
+      if (mergedFormalFieldKeys.has("toiletNote")) upsertFacility("TOILET", { detail: mergedFormalFacts.toiletNote ?? "" });
+      if (mergedFormalFieldKeys.has("platform")) upsertFacility("PLATFORM", { detail: mergedFormalFacts.platform ?? "" });
+      if (mergedFormalFieldKeys.has("signal")) upsertFacility("SIGNAL", { detail: mergedFormalFacts.signal ?? "" });
+      if (mergedFormalFieldKeys.has("camping")) upsertFacility("CAMPING", { detail: mergedFormalFacts.camping ?? "" });
+      const formalMediaKind = new Map<string, "parking" | "toilet" | "site">();
+      for (const [kind, ids] of Object.entries(resolvedProposal?.media ?? {}))
+        for (const id of ids ?? []) formalMediaKind.set(id, kind as "parking" | "toilet" | "site");
+      const mergedFormalMedia = { ...(current.detail.formalMedia ?? {}) };
+      if (claims.includes("SITE_MEDIA_PROVENANCE") && resolvedProposal) {
+        const existingCanonicalMedia = new Set([
+          ...current.detail.spot.media.map((media) => media.id),
+          ...Object.values(current.detail.formalMedia ?? {}).flatMap((ids) => ids ?? []),
+        ]);
+        for (const [kind, ids] of Object.entries(resolvedProposal.media)) {
+          const proposed = ids ?? [];
+          if (proposed.some((id) => !existingCanonicalMedia.has(id) && !acceptedMediaIds.has(id)))
+            throw new Error("contribution_merge_media_not_accepted");
+          mergedFormalMedia[kind as "parking" | "toilet" | "site"] = [...proposed];
+        }
+        for (const uploadId of acceptedMediaIds) {
+          const kind = formalMediaKind.get(uploadId);
+          if (!kind) continue;
+          const copied = await client.query(
+            `INSERT INTO spot_formal_reference_media(
+               upload_id, spot_id, kind, object_key, mime_type, source_submission_id, payload
+             )
+             SELECT upload_id, $2, $3, object_key, mime_type, $4, payload
+               FROM (
+                 SELECT upload_id, object_key, mime_type, payload
+                   FROM formal_feedback_media_uploads
+                  WHERE upload_id = $1 AND review_state = 'ACCEPTED' AND object_key IS NOT NULL
+                 UNION ALL
+                 SELECT upload_id, object_key, mime_type, payload
+                   FROM contribution_media_uploads
+                  WHERE upload_id = $1 AND review_state = 'ACCEPTED' AND object_key IS NOT NULL
+               ) accepted_media
+              LIMIT 1
+             ON CONFLICT (upload_id) DO NOTHING`,
+            [uploadId, input.spotId, kind, submission.submissionId],
+          );
+          if (!copied.rowCount) {
+            const existing = await client.query<{ spot_id: string; kind: string }>(
+              "SELECT spot_id,kind FROM spot_formal_reference_media WHERE upload_id=$1",
+              [uploadId],
+            );
+            if (existing.rows[0]?.spot_id !== input.spotId || existing.rows[0]?.kind !== kind)
+              throw new Error("contribution_merge_media_canonical_conflict");
+          }
+        }
+      }
       const nextSpot: SpotSummary = {
         ...clone(current.payload),
+        ...(Object.prototype.hasOwnProperty.call(mergedFormalFacts, "name") && mergedFormalFacts.name
+          ? { name: mergedFormalFacts.name }
+          : {}),
+        ...(Object.prototype.hasOwnProperty.call(mergedFormalFacts, "address") && mergedFormalFacts.address !== null
+          ? { address: mergedFormalFacts.address }
+          : {}),
+        facilities: nextFacilities,
         status: "DATA_INSUFFICIENT",
         lastVerifiedAt: nowIso,
       };
       const nextDetail: SpotDetail = {
         ...clone(current.detail),
         spot: nextSpot,
+        route: nextRoute,
+        accessAndSafety: nextAccessAndSafety,
         evidence: [
           ...current.detail.evidence
             .filter((item) => !evidenceIds.has(item.evidenceId))
@@ -2603,6 +3248,8 @@ export class PostgresMiniappRepository
             .map(clone),
           source,
         ],
+        ...(resolvedProposal ? { formalFacts: mergedFormalFacts } : {}),
+        ...(resolvedProposal ? { formalMedia: mergedFormalMedia } : {}),
       };
       const assessment = evaluateSpotCompleteness({
         detail: nextDetail,
@@ -2611,6 +3258,7 @@ export class PostgresMiniappRepository
       });
       const mergedSubmission: ContributionSubmission = {
         ...normalizedSubmission,
+        ...(normalizedSubmission.kind === "NEW_SPOT_PROPOSAL" ? { spotId: input.spotId } : {}),
         state: normalizedSubmission.state,
         submissionState: normalizedSubmission.submissionState,
         mergeState: "MERGED",
@@ -2740,9 +3388,9 @@ export class PostgresMiniappRepository
       await client.query(
         `UPDATE user_submissions
             SET payload = $2, revision = $3, merge_state = 'MERGED',
-                publication_impact = $4, updated_at = $5
+                publication_impact = $4, updated_at = $5, spot_id = $6
           WHERE submission_id = $1`,
-        [review.subject_id, mergedSubmission, mergedSubmission.revision, mergedSubmission.publicationImpact, nowIso],
+        [review.subject_id, mergedSubmission, mergedSubmission.revision, mergedSubmission.publicationImpact, nowIso, mergedSubmission.spotId],
       );
       await this.#insertContributionRevision(client, mergedSubmission, input.actorId);
       await client.query(
@@ -2896,17 +3544,19 @@ export class PostgresMiniappRepository
         const base = normalizeContributionSubmission(result.rows[0].payload);
         const submissionState =
           input.resolution === "APPROVED" ? "ACCEPTED" : input.resolution;
+        const review = {
+          resolution: input.resolution,
+          reason: input.reason,
+          reviewedAt,
+        } as const;
         contribution = {
           ...base,
+          ...reviewLatestContributionAttempt(base, review),
           state: input.resolution,
           submissionState,
           revision: result.rows[0].revision + 1,
           updatedAt: reviewedAt,
-          review: {
-            resolution: input.resolution,
-            reason: input.reason,
-            reviewedAt,
-          },
+          review,
           statusHistory: [
             ...base.statusHistory,
             contributionEvent(
@@ -3175,10 +3825,21 @@ export class PostgresMiniappRepository
       rights_confirmed: boolean;
     }>(
       `SELECT m.upload_id, m.submission_id, m.state, m.mime_type, m.byte_size,
-              m.sha256, m.review_state, m.review_reason, s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed
+              m.sha256, m.review_state, m.review_reason,
+              s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed
          FROM contribution_media_uploads m
          JOIN user_submissions s USING (submission_id)
-        WHERE m.upload_id = $1`,
+        WHERE m.upload_id = $1
+       UNION ALL
+       SELECT m.upload_id, m.submission_id, m.state, m.mime_type,
+              NULLIF(m.payload->>'byteSize', '')::integer AS byte_size,
+              NULLIF(m.payload->>'sha256', '') AS sha256,
+              m.review_state, m.review_reason,
+              s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed
+         FROM formal_feedback_media_uploads m
+         JOIN user_submissions s USING (submission_id)
+        WHERE m.upload_id = $1
+       LIMIT 1`,
       [uploadId],
     );
     return result.rows[0] ? toMediaReviewView(result.rows[0]) : null;
@@ -3236,11 +3897,17 @@ export class PostgresMiniappRepository
         throw new Error("contribution_revision_conflict");
       const base = normalizeContributionSubmission(current.payload);
       const now = new Date().toISOString();
+      const review = {
+        resolution: "CHANGES_REQUESTED",
+        reason: input.reason,
+        reviewedAt: now,
+      } as const;
       const next: ContributionSubmission = {
         ...base,
+        ...reviewLatestContributionAttempt(base, review),
         state: "CHANGES_REQUESTED",
         submissionState: "CHANGES_REQUESTED",
-        review: { resolution: "CHANGES_REQUESTED", reason: input.reason, reviewedAt: now },
+        review,
         revision: current.revision + 1,
         updatedAt: now,
         statusHistory: [
@@ -3326,6 +3993,7 @@ export class PostgresMiniappRepository
       );
       if (replay) return replay;
       const result = await client.query<{
+        media_table: "LEGACY" | "FORMAL";
         upload_id: ContributionUploadId;
         submission_id: ContributionId;
         state: ContributionMediaUpload["state"];
@@ -3338,7 +4006,7 @@ export class PostgresMiniappRepository
         payload: ContributionSubmission;
         revision: number;
       }>(
-        `SELECT m.upload_id, m.submission_id, m.state, m.mime_type, m.byte_size,
+        `SELECT 'LEGACY'::text AS media_table, m.upload_id, m.submission_id, m.state, m.mime_type, m.byte_size,
                 m.sha256, m.review_state, m.review_reason,
                 s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed,
                 s.payload, s.revision
@@ -3348,7 +4016,23 @@ export class PostgresMiniappRepository
           FOR UPDATE OF m, s`,
         [input.uploadId],
       );
-      const current = result.rows[0];
+      let current = result.rows[0];
+      if (!current) {
+        const formalResult = await client.query<typeof result.rows[number]>(
+          `SELECT 'FORMAL'::text AS media_table, m.upload_id, m.submission_id, m.state, m.mime_type,
+                  NULLIF(m.payload->>'byteSize', '')::integer AS byte_size,
+                  NULLIF(m.payload->>'sha256', '') AS sha256,
+                  m.review_state, m.review_reason,
+                  s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed,
+                  s.payload, s.revision
+             FROM formal_feedback_media_uploads m
+             JOIN user_submissions s USING (submission_id)
+            WHERE m.upload_id = $1
+            FOR UPDATE OF m, s`,
+          [input.uploadId],
+        );
+        current = formalResult.rows[0];
+      }
       if (!current) throw new Error("contribution_upload_not_found");
       if (input.caseId) {
         const caseResult = await client.query(
@@ -3380,9 +4064,12 @@ export class PostgresMiniappRepository
           contributionEvent("PUBLICATION", null, `MEDIA_${input.decision}`, input.reason, "OPERATOR"),
         ],
       };
+      const mediaTable = current.media_table === "FORMAL"
+        ? "formal_feedback_media_uploads"
+        : "contribution_media_uploads";
       await client.query(
-        `UPDATE contribution_media_uploads
-            SET review_state = $2, review_reason = $3, reviewed_by = $4, reviewed_at = $5,
+        `UPDATE ${mediaTable}
+            SET review_state = $2, review_reason = $3, reviewed_by = $4, reviewed_at = $5::timestamptz,
                 payload = payload || jsonb_build_object(
                   'reviewState', $2::text, 'reviewReason', $3::text,
                   'reviewedBy', $4::text, 'reviewedAt', $5::text
@@ -3408,27 +4095,11 @@ export class PostgresMiniappRepository
          VALUES ($1, $2, 'MEDIA_REVIEW', 'CONTRIBUTION_MEDIA', $3, $4, $5, $6)`,
         [randomUUID(), input.actorId, input.uploadId, input.requestId, { reviewState: current.review_state }, { reviewState: input.decision }],
       );
-      const readbackRow = await client.query<{
-        upload_id: ContributionUploadId;
-        submission_id: ContributionId;
-        state: ContributionMediaUpload["state"];
-        mime_type: ContributionMediaUpload["mimeType"];
-        byte_size: number | null;
-        sha256: string | null;
-        review_state: string;
-        review_reason: string | null;
-        rights_confirmed: boolean;
-      }>(
-        `SELECT m.upload_id, m.submission_id, m.state, m.mime_type, m.byte_size,
-                m.sha256, m.review_state, m.review_reason,
-                s.payload->>'rightsConfirmed' = 'true' AS rights_confirmed
-           FROM contribution_media_uploads m
-           JOIN user_submissions s USING (submission_id)
-          WHERE m.upload_id = $1`,
-        [input.uploadId],
-      );
-      const readback = readbackRow.rows[0] ? toMediaReviewView(readbackRow.rows[0]) : null;
-      if (!readback) throw new Error("contribution_media_readback_missing");
+      const readback = toMediaReviewView({
+        ...current,
+        review_state: input.decision,
+        review_reason: input.reason,
+      });
       return this.#commitAdminResult(client, {
         operation: "media.review",
         scopeId: input.actorId,
@@ -3483,13 +4154,11 @@ export class PostgresMiniappRepository
       throw new Error("spot_revision_conflict");
     const requestedClaims = input.confirmedClaims.length
       ? input.confirmedClaims
-      : submission.topics.flatMap((topic) => CONTRIBUTION_TOPIC_CLAIMS[topic]);
+      : contributionAllowedMergeClaims(submission);
     const claims = [...new Set(requestedClaims)];
     if (!claims.length || claims.length !== requestedClaims.length)
       throw new Error("contribution_merge_claims_invalid");
-    const allowedClaims = new Set<string>(
-      submission.topics.flatMap((topic) => CONTRIBUTION_TOPIC_CLAIMS[topic]),
-    );
+    const allowedClaims = new Set<string>(contributionAllowedMergeClaims(submission));
     if (claims.some((claim) => !allowedClaims.has(claim)))
       throw new Error("contribution_merge_claim_not_reported");
     const sourceIds = [`contribution-source:${submission.submissionId}`];
@@ -3818,6 +4487,45 @@ export class PostgresMiniappRepository
          VALUES ($1, $2, $3, $4, $5, $6)`,
         [randomUUID(), input.spotId, current.status, nextStatus, input.reason, input.actorId],
       );
+      if (input.action === "PUBLISH") {
+        const publishedAt = new Date().toISOString();
+        const contributions = await client.query<{
+          submission_id: ContributionId;
+          payload: ContributionSubmission;
+        }>(
+          `SELECT submission_id, payload
+             FROM user_submissions
+            WHERE spot_id = $1
+              AND submission_state = 'ACCEPTED'
+              AND merge_state = 'MERGED'
+              AND payload->>'kind' = 'NEW_SPOT_PROPOSAL'
+            FOR UPDATE`,
+          [input.spotId],
+        );
+        for (const row of contributions.rows) {
+          const published = publishMergedNewSpotContribution(
+            row.payload,
+            input.spotId,
+            publishedAt,
+            input.reason,
+          );
+          if (!published) continue;
+          await client.query(
+            `UPDATE user_submissions
+                SET payload = $2, revision = $3,
+                    publication_impact = 'SPOT_PUBLISHED', updated_at = $4
+              WHERE submission_id = $1`,
+            [row.submission_id, published, published.revision, publishedAt],
+          );
+          await this.#insertContributionRevision(client, published, input.actorId);
+          await client.query(
+            `UPDATE moderation_cases
+                SET payload = jsonb_set(payload, '{submission}', $2::jsonb, true)
+              WHERE subject_type = 'USER_CONTRIBUTION' AND subject_id = $1`,
+            [row.submission_id, JSON.stringify(published)],
+          );
+        }
+      }
       await client.query(
         `INSERT INTO audit_logs(audit_id, actor_id, action, subject_type, subject_id, request_id, before_payload, after_payload)
          VALUES ($1, $2, $3, 'SPOT', $4, $5, $6, $7)`,

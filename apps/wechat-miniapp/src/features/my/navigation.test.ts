@@ -37,3 +37,11 @@ test("My serializes competing entries and permits retry after native navigation 
   assert.equal(urls.length, 2);
   assert.deepEqual(dismissed, ["mine"]);
 });
+
+test("My root exposes only the adopted plan, contribution, and settings destinations", () => {
+  const source = readFileSync(new URL("./my-library-page.tsx", import.meta.url), "utf8");
+  assert.match(source, /data-control="my-plan-entry"|<MyPlanCard/u);
+  assert.match(source, /data-control="my-contribution-entry"/u);
+  assert.match(source, /data-control="my-settings-action"/u);
+  assert.doesNotMatch(source, /openEvents|天象事件目录|routine-entry--events/u);
+});

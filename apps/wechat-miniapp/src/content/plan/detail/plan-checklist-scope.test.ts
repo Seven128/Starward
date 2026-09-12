@@ -13,29 +13,34 @@ test("checklist keys isolate exact account and plan identities", () => {
   assert.equal(planChecklistBelongsTo("starward:plan-checklist:one", "a"), false);
   assert.equal(planChecklistBelongsTo("starward:plan-checklist:v2:bad", "a"), false);
 });
-test("actual checklist action rejects stale owners and does not run during plan mutations", () => {
-  const ast = ts.createSourceFile("plan.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+test("server checklist action rejects stale owners, serializes mutations and ignores late account results", async () => {
+  const ast = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let handler = "";
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && node.name.getText(ast) === "toggleChecklistItem") handler = `const ${node.getText(ast)};`;
+    if (ts.isVariableDeclaration(node) && node.name.getText(ast) === "toggleReminderItem") handler = `const ${node.getText(ast)};`;
     ts.forEachChild(node, visit);
   };
   visit(ast); assert.ok(handler);
   for (const scenario of ["same", "changed", "deferred-change", "busy"]) {
     let owner: string | null = scenario === "changed" ? null : "a";
-    let value = { route: false };
-    const writes: string[] = [];
-    const toggle = vm.runInNewContext(ts.transpileModule(handler + "\ntoggleChecklistItem;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-      scopedDraftUserId: () => owner, mutationBusy: { current: scenario === "busy" }, activePlanId: "one", planChecklistStorageKey,
-      setChecklist: (update: (input: typeof value) => typeof value) => { if (scenario === "deferred-change") owner = null; value = update(value); },
-      Taro: { setStorageSync: (key: string) => writes.push(key) },
+    let requests = 0, refreshes = 0;
+    const lock = { current: scenario === "busy" };
+    const toggle = vm.runInNewContext(ts.transpileModule(handler + "\ntoggleReminderItem;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      scopedDraftUserId: () => owner, mutationBusy: lock, activePlan: { planId: "one", revision: 3 },
+      setChecklistSaving: () => {},
+      setPlanChecklistCompletion: async (account: string, plan: string, payload: { completed: boolean; expectedRevision: number }) => {
+        requests++; assert.equal(account, "a"); assert.equal(plan, "one");
+        assert.equal(payload.completed, true); assert.equal(payload.expectedRevision, 3);
+        if (scenario === "deferred-change") owner = null;
+      },
+      planQuery: { refetch: async () => { refreshes++; } },
     });
-    toggle("route");
-    assert.equal(value.route, scenario === "same");
-    assert.deepEqual(writes, scenario === "same" ? [planChecklistStorageKey("one", "a")] : []);
+    await toggle("group", "item", true);
+    assert.equal(requests, scenario === "same" || scenario === "deferred-change" ? 1 : 0);
+    assert.equal(refreshes, scenario === "same" ? 1 : 0);
+    assert.equal(lock.current, scenario === "busy");
   }
 });
-
 test("legacy preparation progress migrates only after server ownership is established and scoped data wins", () => {
   const values = new Map<string, unknown>([["starward:plan-checklist:one", { route: true, conditions: true, unknown: "excluded" }]]);
   const storage = { getStorageSync: (key: string) => values.get(key), setStorageSync: (key: string, value: unknown) => { values.set(key, value); }, removeStorageSync: (key: string) => { values.delete(key); } };

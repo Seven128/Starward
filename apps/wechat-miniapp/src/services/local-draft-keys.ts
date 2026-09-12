@@ -23,15 +23,16 @@ export function contributionDraftBelongsTo(key: string, userId: string): boolean
   } catch { return false; }
 }
 
-export function planDraftKey(userId: string | null, planId: string | null): string | null {
-  return userId ? PLAN_DRAFT_PREFIX + JSON.stringify([userId, planId]) : null;
+export function planDraftKey(userId: string | null, planId: string | null, newSpotId: string | null = null): string | null {
+  return userId ? PLAN_DRAFT_PREFIX + JSON.stringify(planId === null && newSpotId ? [userId, null, newSpotId] : [userId, planId]) : null;
 }
 
 export function planDraftBelongsTo(key: string, userId: string): boolean {
   if (!key.startsWith(PLAN_DRAFT_PREFIX)) return false;
   try {
     const value: unknown = JSON.parse(key.slice(PLAN_DRAFT_PREFIX.length));
-    return Array.isArray(value) && value.length === 2 && value[0] === userId &&
-      (value[1] === null || typeof value[1] === "string");
+    return Array.isArray(value) && value[0] === userId &&
+      ((value.length === 2 && (value[1] === null || typeof value[1] === "string")) ||
+       (value.length === 3 && value[1] === null && typeof value[2] === "string"));
   } catch { return false; }
 }

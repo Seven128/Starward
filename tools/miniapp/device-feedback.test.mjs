@@ -185,6 +185,60 @@ test("development start waits for confirmed phone delivery before binding a sess
   assert.match(bound.phoneHandoff, /fresh screenshot/u);
 });
 
+test("physical-device generation rejects a compiled loopback API origin before official delivery", async (t) => {
+  const source = await fixture(t);
+  await writeFile(
+    path.join(source, "weapp", "pages", "index", "index.js"),
+    'Page({data:{api:"http://127.0.0.1:8787"}});\n',
+  );
+  const official = officialDriver();
+  await assert.rejects(
+    main(["start", "--project", source], {
+      official,
+      snapshotOptions: { settleMilliseconds: 0 },
+      emit: () => {},
+    }),
+    /phone_loopback_origin_compiled/u,
+  );
+  assert.equal(official.calls.length, 0);
+});
+
+test("physical-device generation rejects a malformed compiled API origin before official delivery", async (t) => {
+  const source = await fixture(t);
+  await writeFile(
+    path.join(source, "weapp", "pages", "index", "index.js"),
+    'wx.request({url:"h".replace(/\\/+$/,"")+path});\n',
+  );
+  const official = officialDriver();
+  await assert.rejects(
+    main(["start", "--project", source], {
+      official,
+      snapshotOptions: { settleMilliseconds: 0 },
+      emit: () => {},
+    }),
+    /phone_api_origin_invalid/u,
+  );
+  assert.equal(official.calls.length, 0);
+});
+
+test("physical-device generation rejects Taro experimental CompileMode artifacts before official delivery", async (t) => {
+  const source = await fixture(t);
+  await writeFile(
+    path.join(source, "weapp", "common-templates.wxml"),
+    '<template name="f3"></template>\n',
+  );
+  const official = officialDriver();
+  await assert.rejects(
+    main(["start", "--project", source], {
+      official,
+      snapshotOptions: { settleMilliseconds: 0 },
+      emit: () => {},
+    }),
+    /experimental_compile_mode_artifact/u,
+  );
+  assert.equal(official.calls.length, 0);
+});
+
 test("prepared generation is output-only and keeps every tab-bar asset resolvable", async (t) => {
   const { directory: source, configPath, app } = await outputOnlyFixture(t);
   const sourceConfigBytes = await readFile(configPath);

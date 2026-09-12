@@ -1,10 +1,18 @@
 import type {
   AccountDeletionReceipt,
+  AccountAvatarMetadata,
+  AccountAvatarMimeType,
+  AccountProfileRecord,
   AdminMutationResult,
   ApiEnvelope,
+  ContributionFormalBaseline,
   ContributionId,
   ContributionMediaUpload,
   ContributionSubmission,
+  ContributionFormalSubmitRequest,
+  ContributionFormalSubmitResult,
+  ContributionFormalUploadIntent,
+  ContributionFormalMediaUpload,
   ContributionUploadId,
   DataState,
   ImportDraft,
@@ -20,6 +28,7 @@ import type {
   ObservationContext,
   ProfileLink,
   RouteOverview,
+  RouteTravelMode,
   SkyReport,
   SourceSummary,
   SpotDetail,
@@ -122,6 +131,9 @@ export interface RoutePort {
   estimate(input: {
     origin: Wgs84Point;
     destination: Wgs84Point;
+    travelMode?: RouteTravelMode;
+    departureLocalDate?: string;
+    departureLocalTime?: string;
     signal?: AbortSignal;
   }): Promise<ProviderResult<RouteOverview>>;
 }
@@ -182,7 +194,7 @@ export interface MediaObjectStorePort {
   put(input: {
     objectKey: string;
     bytes: Uint8Array;
-    mimeType: ContributionMediaUpload["mimeType"];
+    mimeType: ContributionMediaUpload["mimeType"] | AccountAvatarMimeType;
   }): Promise<void>;
   read(objectKey: string): Promise<Uint8Array | null>;
   delete(objectKey: string): Promise<void>;
@@ -207,6 +219,7 @@ export interface MiniappRepositoryPort {
   searchSpotCandidates(query: string): Promise<readonly SpotSummary[]>;
   getSpot(spotId: SpotId): Promise<SpotSummary | null>;
   getDetail(spotId: SpotId): Promise<SpotDetail | null>;
+  getContributionFormalBaseline(spotId: SpotId): Promise<ContributionFormalBaseline | null>;
   ensureUser(userId: UserId): Promise<void>;
   findOrCreateWechatUser(identityDigest: string): Promise<UserId>;
   createSession(input: {
@@ -219,6 +232,10 @@ export interface MiniappRepositoryPort {
     userId: UserId,
     idempotencyKey: string,
   ): Promise<AccountDeletionReceipt>;
+  getAccountProfile(userId: UserId): Promise<AccountProfileRecord>;
+  saveAccountNickname(userId: UserId, nickname: string, expectedRevision: number, idempotencyKey: string): Promise<AccountProfileRecord>;
+  getAccountAvatarObject(userId: UserId): Promise<({ objectKey: string } & AccountAvatarMetadata) | null>;
+  saveAccountAvatar(userId: UserId, avatar: AccountAvatarMetadata & { objectKey: string; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string): Promise<{ profile: AccountProfileRecord; previousObjectKey: string | null }>;
   getPreferences(userId: UserId): Promise<UserPreferencesRecord>;
   savePreferences(
     userId: UserId,
@@ -234,6 +251,7 @@ export interface MiniappRepositoryPort {
     idempotencyKey: string,
   ): Promise<void>;
   listPlans(userId: UserId): Promise<readonly ObservationPlan[]>;
+  listPlanReminderSchedules(userId: UserId): Promise<readonly import("./plan-reminder-schedule.ts").StoredPlanReminderSchedule[]>;
   getPlanSaveReceipt(userId: UserId, planId: string, idempotencyKey: string): Promise<ObservationPlan | null>;
   savePlan(
     userId: UserId,
@@ -295,6 +313,16 @@ export interface MiniappRepositoryPort {
     expectedRevision: number,
     idempotencyKey: string,
   ): Promise<ContributionSubmission>;
+  submitFormalContribution(
+    userId: UserId,
+    input: ContributionFormalSubmitRequest,
+    idempotencyKey: string,
+  ): Promise<ContributionFormalSubmitResult>;
+  saveFormalUploadIntent(userId: UserId, intent: ContributionFormalUploadIntent, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
+  createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
+  completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
+  removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
+  getFormalUploadIntent(userId: UserId, intentId: string): Promise<ContributionFormalUploadIntent | null>;
   expireContributionUploads(now: string): Promise<readonly string[]>;
   removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission>;
   acknowledgeContributionMediaDeletion(objectKeys: readonly string[]): Promise<void>;

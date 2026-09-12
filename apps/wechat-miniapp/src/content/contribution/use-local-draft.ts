@@ -4,11 +4,11 @@ import { currentDraftUserId } from "@/services/api-client";
 import { contributionDraftKey } from "@/services/local-draft-keys";
 import { parseLocalContributionDraft, type LocalContributionDraft } from "./local-draft";
 
-export function useLocalContributionDraft(value: LocalContributionDraft, routeSpotId: string, suspended: boolean) {
+export function useLocalContributionDraft(value: LocalContributionDraft, routeSpotId: string, suspended: boolean, persistenceEnabled = true) {
   const owner = useRef(currentDraftUserId());
   const currentOwner = currentDraftUserId();
   if (!owner.current && currentOwner) owner.current = currentOwner;
-  const key = owner.current === currentOwner ? contributionDraftKey(currentOwner, routeSpotId || null) : null;
+  const key = persistenceEnabled && owner.current === currentOwner ? contributionDraftKey(currentOwner, routeSpotId || null) : null;
   const loaded = useRef<string | null>(null);
   const initial = useRef(JSON.stringify(value));
   const saved = useRef<string | null>(null);
@@ -23,7 +23,8 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
     if (!item.key || item.suspended || recoveryRef.current || loaded.current !== item.key || currentDraftUserId() !== owner.current) return;
     const input = item.value;
     try {
-      const hasContent = input.detail || input.candidateName || input.latitude || input.longitude || input.baseSubmissionId;
+      const hasContent = input.detail || input.candidateName || input.latitude || input.longitude ||
+        Object.keys(input.candidateProfile?.fields ?? {}).length || input.baseSubmissionId;
       if (JSON.stringify(input) === saved.current || (!hasContent && JSON.stringify(input) === initial.current)) Taro.removeStorageSync(item.key);
       else Taro.setStorageSync(item.key, input);
       if (reportError) setStorageError(false);
@@ -46,19 +47,20 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
   useEffect(() => () => persist(false), []);
 
   const clear = () => {
-    if (!key || currentDraftUserId() !== owner.current) return false;
+    if (!key) { recoveryRef.current = null; setRecovery(null); return true; }
+    if (currentDraftUserId() !== owner.current) return false;
     try { Taro.removeStorageSync(key); } catch { setStorageError(true); return false; }
     recoveryRef.current = null;
     setRecovery(null);
     return true;
   };
   const markSaved = (snapshot: LocalContributionDraft) => {
-    if (!key || currentDraftUserId() !== owner.current) return;
     saved.current = JSON.stringify(snapshot);
+    if (!key || currentDraftUserId() !== owner.current) return;
     clear();
   };
   const advanceSavedRevision = (submissionId: string, revision: number) => {
-    if (!key || currentDraftUserId() !== owner.current || !saved.current) return;
+    if (currentDraftUserId() !== owner.current || !saved.current) return;
     const baseline = JSON.parse(saved.current) as LocalContributionDraft;
     if (baseline.baseSubmissionId !== submissionId || revision < (baseline.baseRevision ?? 0)) return;
     saved.current = JSON.stringify({ ...baseline, baseRevision: revision });

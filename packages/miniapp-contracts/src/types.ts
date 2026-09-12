@@ -162,6 +162,7 @@ export interface ObservationContextResolveRequest {
 
 export interface ObservationContextUpdateRequest {
   expectedRevision: number;
+  localDate?: string;
   selectedAt?: string;
   cloudLayer?: ObservationContext["weatherView"]["cloudLayer"];
   eventInstanceId?: string | null;
@@ -353,10 +354,14 @@ export interface GuideArticle {
   )[];
 }
 
+export type RouteTravelMode = "DRIVING" | "TRANSIT" | "WALKING";
+
 export interface RouteOverview {
   kind: "ROUTE_ESTIMATE" | "STRAIGHT_LINE_ONLY" | "UNAVAILABLE";
+  travelMode: RouteTravelMode | null;
   originLabel: string | null;
   distanceKm: number | null;
+  durationMinutes: number | null;
   driveMinutes: number | null;
   walkingMinutes: number | null;
   lastRoad: string;
@@ -438,6 +443,32 @@ export interface SpotDetail {
   siteMediaState: SiteMediaState;
   evidence: readonly FactEvidence[];
   dataDisclosure: readonly SourceSummary[];
+  /** Canonical contributor-editable copy that has passed moderation. Older
+   * revisions may omit it and are projected from their structured fields. */
+  formalFacts?: Readonly<Partial<{
+    address: string | null;
+    name: string | null;
+    openness: string | null;
+    hours: string | null;
+    access: string | null;
+    accessNote: string | null;
+    road: string | null;
+    safety: string | null;
+    parking: string | null;
+    parkingNote: string | null;
+    toilet: string | null;
+    toiletNote: string | null;
+    platform: string | null;
+    horizon: string | null;
+    light: string | null;
+    signal: string | null;
+    camping: string | null;
+    contact: string | null;
+    detail: string | null;
+  }>>;
+  /** Moderated reference photos shown by the formal-feedback editor. They are
+   * distinct from representative public media, whose provenance gate is stricter. */
+  formalMedia?: Readonly<Partial<Record<import("./contribution-feedback.ts").ContributionMediaKind, readonly string[]>>>;
 }
 
 export interface SpotSkyContext {
@@ -544,6 +575,8 @@ export interface HourlySkyRow {
   visibilityKm: number | null;
   moonAltitudeDeg: number | null;
   moonIllumination: number | null;
+  moonPhase: MoonPhaseKey | null;
+  moonPhaseAngleDeg: number | null;
   darkness: "DAY" | "TWILIGHT" | "ASTRONOMICAL_NIGHT";
   opportunityScore: number | null;
   opportunityConfidence: number | null;
@@ -593,6 +626,26 @@ export interface WeatherEvidenceSummary {
   modelRuns: readonly WeatherModelRunEvidence[];
 }
 
+export type MoonPhaseKey =
+  | "NEW"
+  | "WAXING_CRESCENT"
+  | "FIRST_QUARTER"
+  | "WAXING_GIBBOUS"
+  | "FULL"
+  | "WANING_GIBBOUS"
+  | "LAST_QUARTER"
+  | "WANING_CRESCENT";
+
+export interface LunarFacts {
+  phase: MoonPhaseKey | null;
+  phaseAngleDeg: number | null;
+  illumination: number | null;
+  altitudeDeg: number | null;
+  moonriseAt: string | null;
+  moonsetAt: string | null;
+  source: SourceSummary;
+}
+
 /**
  * A catalog row exposed to the Mini Program sky renderer.
  *
@@ -604,8 +657,13 @@ export interface WeatherEvidenceSummary {
  */
 export interface SkySceneCatalogEntry {
   sourceId: string;
-  gMagnitude: number;
-  bpRp: number | null;
+  /** Stable namespace-bound identity; independent from pack order/version. */
+  objectRef: string;
+  displayName: string | null;
+  magnitude: number;
+  magnitudeBand: "V";
+  colorIndex: number | null;
+  colorIndexBand: "B-V";
 }
 
 /**
@@ -633,8 +691,74 @@ export interface SkySceneCatalog {
   catalogVersion: string;
   catalogHash: string;
   magnitudeLimit: number;
-  source: SourceSummary;
+  sources: readonly SourceSummary[];
   entries: readonly SkySceneCatalogEntry[];
+}
+
+export interface DeepSkySceneCatalogEntry {
+  objectRef: string;
+  displayName: string;
+  kind: "GALAXY" | "NEBULA";
+  aliases: readonly string[];
+  magnitude: number | null;
+  magnitudeBand: "V" | null;
+  majorAxisArcmin: number | null;
+  minorAxisArcmin: number | null;
+  positionAngleDeg: number | null;
+}
+
+/** Center plus two ICRS tangent-plane samples for native image registration. */
+export type DeepSkyScenePoint = readonly [
+  catalogIndex: number,
+  azimuthDeg: number,
+  altitudeDeg: number,
+  northAzimuthDeg: number,
+  northAltitudeDeg: number,
+  eastAzimuthDeg: number,
+  eastAltitudeDeg: number,
+];
+
+export interface DeepSkySceneFrame {
+  at: string;
+  state: "AVAILABLE" | "UNAVAILABLE";
+  points: readonly DeepSkyScenePoint[] | null;
+}
+
+export interface DeepSkySceneCatalog {
+  catalogVersion: string;
+  catalogHash: string;
+  frame: "ICRS J2000";
+  sources: readonly SourceSummary[];
+  entries: readonly DeepSkySceneCatalogEntry[];
+}
+
+export interface DeepSkyScene {
+  state: "AVAILABLE" | "UNAVAILABLE";
+  catalog: DeepSkySceneCatalog | null;
+  frames: readonly DeepSkySceneFrame[];
+  unavailableReason: string | null;
+}
+
+export type CelestialObjectKind = "STAR" | "PLANET" | "GALAXY" | "NEBULA" | "MILKY_WAY";
+
+export interface CelestialObjectFact {
+  label: string;
+  value: string;
+  unit: string | null;
+}
+
+export interface CelestialObjectInformation {
+  reference: string;
+  kind: CelestialObjectKind;
+  displayName: string;
+  catalogId: string;
+  aliases: readonly string[];
+  introduction: string | null;
+  facts: readonly CelestialObjectFact[];
+  contentState: "READY" | "BASIC_ONLY";
+  contentRevision: string;
+  sources: readonly SourceSummary[];
+  limitations: readonly string[];
 }
 
 /**
@@ -647,6 +771,8 @@ export interface SkyScene {
   catalog: SkySceneCatalog | null;
   frames: readonly SkySceneFrame[];
   unavailableReason: string | null;
+  /** Added compatibly while older cached scenes age out. */
+  deepSky?: DeepSkyScene | null;
 }
 
 export interface SkyReport {
@@ -657,6 +783,7 @@ export interface SkyReport {
   hourly: readonly HourlySkyRow[];
   milkyWayDirection: string;
   moonSummary: string;
+  lunarFacts: LunarFacts;
   compass: {
     state: "UNAVAILABLE" | "LOW_ACCURACY" | "READY";
     manualOffsetDeg: number;
@@ -687,6 +814,13 @@ export interface UserPreferences {
 }
 
 export interface ObservationPlan {
+  reminders?: readonly import("./plan-reminders.ts").PlanReminder[];
+  /** Absent only on records awaiting the observing-interval migration. Never infer an end. */
+  timing?: import("./plan.ts").PlanTiming;
+  /** Absent only on records awaiting the departure-arrangement migration. */
+  travel?: import("./plan.ts").PlanTravel;
+  /** Explicit catalog occurrences selected for this plan; absent on legacy records. */
+  eventOccurrenceIds?: readonly string[];
   planId: PlanId;
   spotId: SpotId;
   localDate: string;
@@ -837,6 +971,8 @@ export interface ContributionCandidateLocation {
 
 export interface ContributionMediaUpload {
   uploadId: ContributionUploadId;
+  /** Required for new-place proposals so each photo remains in its adopted section. */
+  kind?: import("./contribution-feedback.ts").ContributionMediaKind;
   state: "PENDING" | "UPLOADED" | "ATTACHED" | "EXPIRED";
   originalName: string;
   mimeType: "image/jpeg" | "image/png";
@@ -864,6 +1000,31 @@ export interface ContributionStatusHistoryEntry {
   occurredAt: string;
 }
 
+export interface ContributionAttemptSnapshot {
+  kind: ContributionKind;
+  spotId: SpotId | null;
+  spotNameSnapshot: string | null;
+  candidateLocation: ContributionCandidateLocation | null;
+  observedAt: string | null;
+  topics: readonly ContributionTopic[];
+  detail: string;
+  rightsConfirmed: boolean;
+  preciseLocationConsent: boolean;
+  media: readonly ContributionMediaUpload[];
+  candidateProfile?: import("./contribution-feedback.ts").ContributionFormalProposal;
+  formalFeedback?: import("./contribution-feedback.ts").ContributionFormalFeedbackSnapshot;
+}
+
+/** One immutable submission; edits made after review remain on the parent aggregate. */
+export interface ContributionAttempt {
+  attemptId: string;
+  attemptNo: number;
+  baseRevision: number;
+  submittedAt: string;
+  snapshot: ContributionAttemptSnapshot;
+  review: ContributionReview | null;
+}
+
 export interface ContributionSubmission {
   submissionId: ContributionId;
   kind: ContributionKind;
@@ -876,15 +1037,19 @@ export interface ContributionSubmission {
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
   media: readonly ContributionMediaUpload[];
+  candidateProfile?: import("./contribution-feedback.ts").ContributionFormalProposal;
   state: ContributionState;
   submissionState: ContributionSubmissionState;
   mergeState: ContributionMergeState;
   publicationImpact: ContributionPublicationImpact;
   statusHistory: readonly ContributionStatusHistoryEntry[];
+  attempts: readonly ContributionAttempt[];
+  workingCopyFromAttemptId: string | null;
   revision: number;
   createdAt: string;
   updatedAt: string;
   review: ContributionReview | null;
+  formalFeedback?: import("./contribution-feedback.ts").ContributionFormalFeedbackSnapshot;
 }
 
 export type AdminRole =
@@ -908,7 +1073,14 @@ export type AdminOperation =
   | "UNPUBLISH"
   | "REPLACE"
   | "RETIRE"
-  | "AUDIT_READ";
+  | "AUDIT_READ"
+  | "EVENT_CATALOG_READ"
+  | "EVENT_CATALOG_IMPORT"
+  | "EVENT_CATALOG_REVIEW"
+  | "EVENT_CATALOG_PUBLISH"
+  | "EVENT_CATALOG_ROLLBACK"
+  | "EVENT_CATALOG_SOURCE_MANAGE"
+  | "EVENT_CATALOG_RERUN";
 
 export interface OperationReceipt<T = unknown> {
   receiptId: OperationReceiptId;

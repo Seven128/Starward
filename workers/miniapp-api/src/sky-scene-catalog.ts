@@ -3,6 +3,7 @@ import {
   SKY_SCENE_MAX_CATALOG_ENTRIES,
   SKY_SCENE_MAX_SERIALIZED_BYTES,
   type SkyScene,
+  type DeepSkyScene,
   type SkySceneFrame,
   type SkyScenePoint,
   type SpotSummary,
@@ -14,6 +15,7 @@ import {
   type SkyCatalogProvider,
   type SkyCatalogSnapshot,
 } from "./sky-scene-catalog-provider.ts";
+import { buildDeepSkyScene } from "./deep-sky-scene-provider.ts";
 
 export {
   createGaiaDr3SkyCatalogProvider,
@@ -28,6 +30,7 @@ export { createTestSkyCatalogProvider } from "./sky-scene-test-provider.ts";
 function unavailableScene(
   hourlyAt: readonly string[],
   reason: string,
+  deepSky?: DeepSkyScene,
 ): SkyScene {
   return {
     state: "UNAVAILABLE",
@@ -38,6 +41,7 @@ function unavailableScene(
       points: null,
     })),
     unavailableReason: reason,
+    ...(deepSky ? { deepSky } : {}),
   };
 }
 
@@ -85,50 +89,56 @@ export function buildSkyScene(input: {
 }): SkyScene {
   if (input.hourlyAt.length === 0)
     return unavailableScene(input.hourlyAt, "NO_TIME_SLICES");
+  const deepSky = buildDeepSkyScene(input.hourlyAt, input.spot);
   let catalog: SkyCatalogSnapshot;
   try {
     catalog = input.provider.load();
   } catch {
-    return unavailableScene(input.hourlyAt, "CATALOG_UNAVAILABLE");
+    return unavailableScene(input.hourlyAt, "CATALOG_UNAVAILABLE", deepSky);
   }
   if (
     Array.isArray(catalog?.entries) &&
     catalog.entries.length > SKY_SCENE_MAX_CATALOG_ENTRIES
   )
-    return unavailableScene(input.hourlyAt, "CATALOG_LIMIT_INVALID");
+    return unavailableScene(input.hourlyAt, "CATALOG_LIMIT_INVALID", deepSky);
   if (!validSkyCatalogSnapshot(catalog))
-    return unavailableScene(input.hourlyAt, "CATALOG_INVALID");
+    return unavailableScene(input.hourlyAt, "CATALOG_INVALID", deepSky);
   let frames: SkySceneFrame[] | null;
   try {
     frames = buildFrames(input.provider, catalog, input.hourlyAt, input.spot);
   } catch {
-    return unavailableScene(input.hourlyAt, "SCENE_PROJECTION_UNAVAILABLE");
+    return unavailableScene(input.hourlyAt, "SCENE_PROJECTION_UNAVAILABLE", deepSky);
   }
   if (!frames)
-    return unavailableScene(input.hourlyAt, "SCENE_PROJECTION_INVALID");
+    return unavailableScene(input.hourlyAt, "SCENE_PROJECTION_INVALID", deepSky);
   const scene: SkyScene = {
     state: "AVAILABLE",
     catalog: {
       catalogVersion: catalog.catalogVersion,
       catalogHash: catalog.catalogHash,
       magnitudeLimit: catalog.magnitudeLimit,
-      source: catalog.source,
-      entries: catalog.entries.map(({ sourceId, gMagnitude, bpRp }) => ({
+      sources: catalog.sources,
+      entries: catalog.entries.map(({ sourceId, objectRef, displayName, magnitude, magnitudeBand, colorIndex, colorIndexBand }) => ({
         sourceId,
-        gMagnitude,
-        bpRp,
+        objectRef,
+        displayName,
+        magnitude,
+        magnitudeBand,
+        colorIndex,
+        colorIndexBand,
       })),
     },
     frames,
     unavailableReason: null,
+    deepSky,
   };
   const bytes = new TextEncoder().encode(JSON.stringify(scene)).byteLength;
   if (bytes >= SKY_SCENE_MAX_SERIALIZED_BYTES)
-    return unavailableScene(input.hourlyAt, "SCENE_SERIALIZED_SIZE_LIMIT");
+    return unavailableScene(input.hourlyAt, "SCENE_SERIALIZED_SIZE_LIMIT", deepSky);
   try {
     assertSkyScene(scene, input.hourlyAt);
     return scene;
   } catch {
-    return unavailableScene(input.hourlyAt, "SCENE_CONTRACT_INVALID");
+    return unavailableScene(input.hourlyAt, "SCENE_CONTRACT_INVALID", deepSky);
   }
 }

@@ -1,0 +1,3 @@
+# My adopted icon provenance
+
+`settings.svg`, `pencil.svg`, `account-user.svg`, and `my-plan-suv.svg` are extracted from `docs/design-resources/wechat-miniapp/my/adopted/my-page/preview/index.html` under the current `my/ADOPTED.md` scope. The adopted source retains editable design ownership. The SUV retains its original gradients, geometry and left-facing transform. Monochrome SVGs use `currentColor` in source and the existing `tools/miniapp/generate-mode-icons.mjs` for runtime theme variants. Production extraction is not a new design adoption. SUV night/observation rendering still requires the corresponding runtime theme verification.

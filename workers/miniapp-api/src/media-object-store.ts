@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { crc32, inflateSync } from "node:zlib";
-import type { ContributionMediaUpload } from "@starward/miniapp-contracts";
+import type { AccountAvatarMimeType, ContributionMediaUpload } from "@starward/miniapp-contracts";
 import type { MediaObjectStorePort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
@@ -195,8 +195,59 @@ export function sanitizeContributionImage(
 }
 
 function assertObjectKey(value: string) {
-  if (!/^contributions\/[a-f0-9]{24}\/[a-zA-Z0-9_-]{10,160}\.(?:jpg|png)$/u.test(value))
+  if (!/^(?:contributions|profiles)\/[a-f0-9]{24}\/[a-zA-Z0-9_-]{10,160}\.(?:jpg|png|webp)$/u.test(value))
     throw new Error("media_object_key_invalid");
+}
+
+export function sanitizeAccountAvatarImage(bytes: Uint8Array, mimeType: AccountAvatarMimeType) {
+  if (mimeType !== "image/webp") return sanitizeContributionImage(bytes, mimeType);
+  const input = Buffer.from(bytes);
+  if (input.length < 20 || input.toString("ascii", 0, 4) !== "RIFF" || input.toString("ascii", 8, 12) !== "WEBP" || input.readUInt32LE(4) + 8 !== input.length)
+    throw new Error("account_avatar_signature_invalid");
+  let offset = 12;
+  let imageChunks = 0;
+  let dimensionsSeen = false;
+  const output: Buffer[] = [];
+  while (offset < input.length) {
+    if (offset + 8 > input.length) throw new Error("account_avatar_webp_invalid");
+    const type = input.toString("ascii", offset, offset + 4);
+    const length = input.readUInt32LE(offset + 4);
+    const end = offset + 8 + length + (length % 2);
+    if (end > input.length) throw new Error("account_avatar_webp_invalid");
+    if (type === "ANIM" || type === "ANMF") throw new Error("account_avatar_animated_invalid");
+    const payload = offset + 8;
+    if (type === "VP8X") {
+      if (length !== 10) throw new Error("account_avatar_webp_invalid");
+      const width = 1 + input.readUIntLE(payload + 4, 3);
+      const height = 1 + input.readUIntLE(payload + 7, 3);
+      if (width * height > 24_000_000) throw new Error("contribution_media_dimensions_invalid");
+      dimensionsSeen = true;
+      const chunk = Buffer.from(input.subarray(offset, end));
+      chunk[8] = chunk[8]! & ~0x0c;
+      output.push(chunk);
+    } else if (type === "VP8 ") {
+      imageChunks++;
+      if (length < 10 || !input.subarray(payload + 3, payload + 6).equals(Buffer.from([0x9d, 0x01, 0x2a]))) throw new Error("account_avatar_webp_invalid");
+      const width = input.readUInt16LE(payload + 6) & 0x3fff;
+      const height = input.readUInt16LE(payload + 8) & 0x3fff;
+      if (!width || !height || width * height > 24_000_000) throw new Error("contribution_media_dimensions_invalid");
+      dimensionsSeen = true; output.push(input.subarray(offset, end));
+    } else if (type === "VP8L") {
+      imageChunks++;
+      if (length < 5 || input[payload] !== 0x2f) throw new Error("account_avatar_webp_invalid");
+      const bits = input.readUInt32LE(payload + 1);
+      const width = 1 + (bits & 0x3fff);
+      const height = 1 + ((bits >>> 14) & 0x3fff);
+      if (width * height > 24_000_000) throw new Error("contribution_media_dimensions_invalid");
+      dimensionsSeen = true; output.push(input.subarray(offset, end));
+    } else if (!["EXIF", "XMP "].includes(type)) output.push(input.subarray(offset, end));
+    offset = end;
+  }
+  if (imageChunks !== 1 || !dimensionsSeen) throw new Error("account_avatar_webp_invalid");
+  const body = Buffer.concat(output);
+  const header = Buffer.alloc(12);
+  header.write("RIFF", 0, "ascii"); header.writeUInt32LE(body.length + 4, 4); header.write("WEBP", 8, "ascii");
+  return Buffer.concat([header, body]);
 }
 
 export class DisabledMediaObjectStore implements MediaObjectStorePort {

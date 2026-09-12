@@ -1,6 +1,10 @@
+import { createAccountProfileClient } from "./account-profile-client";
+import { createPlanChecklistClient } from "./plan-checklist-client";
+import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
 import { clearPlanSaveRecovery, createPlanSaveRetry, planSaveBelongsTo } from "./plan-save-retry";
 import { planChecklistBelongsTo } from "../content/plan/detail/plan-checklist";
+import { planEventSelectionBelongsTo } from "../content/plan/detail/plan-event-selection";
 import { importLocalDraftBelongsTo } from "../content/import/local-draft";
 import { clearImportSaveRecovery, createImportSaveRetry, importSaveBelongsTo } from "./import-save-retry";
 import { contributionDraftBelongsTo, planDraftBelongsTo, profileDraftBelongsTo } from "./local-draft-keys";
@@ -13,6 +17,10 @@ import {
   type ApiError,
   type AuthSessionData,
   type ContributionDraftRequest,
+  type ContributionFormalSubmitRequest,
+  type ContributionFormalUploadIntentRequest,
+  type ContributionFormalUploadSessionRequest,
+  type ContributionFormalUploadCompleteRequest,
   type ContributionId,
   type ContributionUpdateRequest,
   type ContributionUploadCompleteRequest,
@@ -30,6 +38,7 @@ import {
   type ObservationContextUpdateRequest,
   type ObservationPlan,
   type PlatformKind,
+  type RouteTravelMode,
   type SpotRankingPreferences,
   type SpotId,
   type UserPreferences,
@@ -65,7 +74,7 @@ const reportDeviceFailure = __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__
     }))
   : undefined;
 
-type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 type AuthPolicy = "NONE" | "OPTIONAL" | "REQUIRED";
 type AnyEnvelope = ApiEnvelope<unknown>;
 
@@ -420,6 +429,7 @@ async function request<T>(
               return;
             }
             if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("http", undefined, response.statusCode);
+            recordAcceptanceDiagnostic(key, "failure", `http_${response.statusCode}`);
             if (isApiError(response.data)) {
               reject(new MiniappApiError(response.data, response.statusCode));
               return;
@@ -489,81 +499,19 @@ async function invalidateAfter(mutation: MiniappMutationKind) {
   );
 }
 
-type OperationData<K extends MiniappApiOperationId> =
-  MiniappApiResponse<K>["data"];
+const requestOperation = createAuthenticatedOperationRequester({ resolveSession, readStoredSession, clearStoredSession, request,
+  isPermissionDenied: error => error instanceof MiniappApiError && error.code === "PERMISSION_DENIED",
+});
 
-function operationPath(
-  operationId: MiniappApiOperationId,
-  pathParams: Readonly<Record<string, string>> = {},
-  query = "",
-) {
-  let value: string = MINIAPP_API_OPERATIONS[operationId].path;
-  for (const [key, replacement] of Object.entries(pathParams))
-    value = value.replace(
-      "{" + key + "}",
-      encodeURIComponent(replacement),
-    );
-  if (/\{[^}]+\}/u.test(value))
-    throw new Error(
-      "miniapp_sdk_path_parameter_missing:" + operationId,
-    );
-  const path = MINIAPP_API_BASE_PATH + value;
-  return query ? path + "?" + query : path;
-}
-
-async function requestOperation<K extends MiniappApiOperationId>(
-  key: string,
-  operationId: K,
-  options: {
-    pathParams?: Readonly<Record<string, string>>;
-    query?: string;
-    body?: MiniappApiRequest<K>;
-    idempotencyKey?: string;
-    signal?: AbortSignal;
-    auth?: AuthPolicy;
-    reauthenticationCode?: string;
-    cache?: boolean;
-  } = {},
-  retried = false,
-  expectedUserId?: string,
-): Promise<MiniappApiResponse<K>> {
-  const policy = options.auth ?? "NONE";
-  const session = await resolveSession(policy);
-  if (expectedUserId && session?.userId !== expectedUserId) {
-    throw new Error("账户已变化，请重新打开页面后再操作。");
-  }
-  try {
-    return (await request<OperationData<K>>(
-      key,
-      operationPath(operationId, options.pathParams, options.query),
-      {
-        method: MINIAPP_API_OPERATIONS[operationId].method,
-        ...(options.body === undefined ? {} : { body: options.body }),
-        ...(options.idempotencyKey
-          ? { idempotencyKey: options.idempotencyKey }
-          : {}),
-        ...(options.signal ? { signal: options.signal } : {}),
-        ...(session ? { session } : {}),
-        ...(options.reauthenticationCode ? { reauthenticationCode: options.reauthenticationCode } : {}),
-        ...(options.cache === undefined ? {} : { cache: options.cache }),
-      },
-    )) as MiniappApiResponse<K>;
-  } catch (error) {
-    if (
-      !retried &&
-      !options.reauthenticationCode &&
-      policy !== "NONE" &&
-      error instanceof MiniappApiError &&
-      error.code === "PERMISSION_DENIED"
-    ) {
-      const currentSession = readStoredSession();
-      if (currentSession && currentSession.userId !== session?.userId) throw error;
-      clearStoredSession();
-      return requestOperation(key, operationId, options, true, session?.userId);
-    }
-    throw error;
-  }
-}
+export const { getAccountProfile, saveAccountNickname, getAccountAvatar, saveAccountAvatar } = createAccountProfileClient({
+  request: requestOperation,
+  currentUser: currentDraftUserId,
+  makeKey: () => idempotencyKey("account-nickname"),
+  invalidate: async () => {
+    invalidateApiCache("account-profile");
+    await miniappQueryClient.invalidateQueries({ queryKey: ["account-profile"] });
+  },
+});
 
 async function ensureSession(force = false): Promise<AuthSessionData> {
   if (!force) {
@@ -691,16 +639,31 @@ export async function updateObservationContext(
   input: Omit<ObservationContextUpdateRequest, "expectedRevision">,
   signal?: AbortSignal,
 ) {
-  const result = await requestOperation(
-    "observation-context:" + context.contextId,
-    "observationContextPatch",
-    {
-      pathParams: { contextId: context.contextId },
-      body: { ...input, expectedRevision: context.revision },
-      idempotencyKey: idempotencyKey("observation-context"),
-      ...(signal ? { signal } : {}),
-    },
-  );
+  const update = (current: ObservationContext) => requestOperation(
+      "observation-context:" + current.contextId,
+      "observationContextPut",
+      {
+        pathParams: { contextId: current.contextId },
+        body: { ...input, expectedRevision: current.revision },
+        idempotencyKey: idempotencyKey("observation-context"),
+        ...(signal ? { signal } : {}),
+      },
+    );
+  let result;
+  try {
+    result = await update(context);
+  } catch (error) {
+    if (
+      !(error instanceof MiniappApiError) ||
+      (error.code !== "NOT_FOUND" && error.code !== "STALE_REJECTED")
+    )
+      throw error;
+    // A persisted context ID is only a recovery hint. The server may have
+    // restarted or the context may have expired between the page restore and
+    // this user action, so rebuild the same context and apply the edit once.
+    const recovered = await restoreObservationContext(context, signal);
+    result = await update(recovered.data);
+  }
   invalidateApiCache("map-scene");
   invalidateApiCache("spot-overview");
   invalidateApiCache("spot-sky");
@@ -725,9 +688,21 @@ export function estimateSpotRoute(
   contextId: ObservationContextId,
   spotId: SpotId,
   signal?: AbortSignal,
+  travelMode: RouteTravelMode = "DRIVING",
+  departure?: { localDate: string; localTime: string },
 ) {
   return requestOperation("route-estimate:" + spotId, "routeEstimatePost", {
-    body: { contextId, spotId },
+    body: {
+      contextId,
+      spotId,
+      travelMode,
+      ...(departure
+        ? {
+            departureLocalDate: departure.localDate,
+            departureLocalTime: departure.localTime,
+          }
+        : {}),
+    },
     ...(signal ? { signal } : {}),
   });
 }
@@ -806,18 +781,70 @@ export function getSpotSite(spotId: string, signal?: AbortSignal) {
   });
 }
 
+export function getSpotContributionMedia(spotId: string, uploadId: ContributionUploadId) {
+  return requestOperation(`spot-contribution-media:${spotId}:${uploadId}`, "spotContributionMediaGet", {
+    pathParams: { spotId, uploadId },
+  });
+}
+
+export function getContributionFormalBaseline(spotId: string, signal?: AbortSignal) {
+  return requestOperation("contribution-baseline:" + spotId, "spotContributionBaselineGet", {
+    pathParams: { spotId },
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export function getAstronomicalEvents(signal?: AbortSignal) {
+  return requestOperation("astronomical-events", "astronomicalEventsGet", {
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export function getAstronomicalEvent(
+  occurrenceId: string,
+  signal?: AbortSignal,
+  contextId?: string,
+) {
+  return requestOperation(`astronomical-event:${occurrenceId}:${contextId ?? "catalog"}`, "astronomicalEventGet", {
+    pathParams: { occurrenceId },
+    ...(contextId ? { query: "contextId=" + encodeURIComponent(contextId) } : {}),
+    ...(signal ? { signal } : {}),
+  });
+}
+
 export function getSkyReport(
   spotId: string,
   contextId: string,
   signal?: AbortSignal,
 ) {
-  if (!spotId.startsWith("spot:"))
-    throw new Error("night_requires_formal_spot_id");
+  if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
+    throw new Error("night_location_identity_invalid");
   return requestOperation("spot-sky:" + spotId, "spotSkyGet", {
+    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId),
     ...(signal ? { signal } : {}),
   });
+}
+
+export function getCelestialObjectInformation(
+  reference: string,
+  signal?: AbortSignal,
+) {
+  if (!/^(?:HIP:\d{1,6}|M:(?:[1-9]|[1-9]\d|10\d|110))$/u.test(reference))
+    throw new Error("celestial_object_reference_invalid");
+  return requestOperation("celestial-object:" + reference, "celestialObjectGet", {
+    pathParams: { reference },
+    query: "locale=zh-CN",
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export function deepSkyImageUrl(reference: string, level: "OVERVIEW" | "MEDIUM" | "DETAIL") {
+  if (!/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference))
+    throw new Error("deep_sky_image_reference_invalid");
+  return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
+    "/celestial-objects/" + encodeURIComponent(reference) + "/image?level=" + level;
 }
 
 export function getFavorites(signal?: AbortSignal) {
@@ -898,7 +925,7 @@ export async function deleteAccount() {
   let localCleanupComplete = !localAccountReset || clearStoredSession();
   try {
     for (const key of Taro.getStorageInfoSync().keys) {
-      if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
+      if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planEventSelectionBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
       try { Taro.removeStorageSync(key); } catch { localCleanupComplete = false; }
     }
   } catch { localCleanupComplete = false; }
@@ -959,6 +986,17 @@ export async function getPlans(signal?: AbortSignal, expectedUserId?: string) {
 const retryPlanSave = createPlanSaveRetry(Taro, () => idempotencyKey("plan-save"),
   error => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
 
+export const setPlanChecklistCompletion = createPlanChecklistClient({
+  request: requestOperation, currentUser: currentDraftUserId,
+  makeKey: () => idempotencyKey("plan-checklist"),
+  confirmed: async (owner, plan) => {
+    miniappQueryClient.setQueryData<MiniappApiResponse<"plansGet">>(["plans", owner], previous => previous ? {
+      ...previous, data: { ...previous.data, plans: previous.data.plans.map(item => item.planId === plan.planId && item.revision <= plan.revision ? plan : item) },
+    } : previous);
+    await invalidateAfter("PLAN");
+  },
+});
+
 export function clearObservationPlanSaveRecovery(expectedUserId: string) {
   if (currentDraftUserId() !== expectedUserId) throw new Error("账号已变化，请重新打开计划。");
   clearPlanSaveRecovery(Taro, expectedUserId);
@@ -987,6 +1025,10 @@ export async function saveObservationPlan(
         observationContextId: original.observationContextId as ObservationContext["contextId"],
         localDate: original.localDate,
         localTime: original.localTime,
+        ...(original.timing ? { timing: original.timing } : {}),
+        ...(original.travel ? { travel: original.travel } : {}),
+        ...(original.reminders === undefined ? {} : { reminders: original.reminders }),
+        ...(original.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: original.eventOccurrenceIds }),
         notes: original.notes,
         expectedRevision: original.expectedRevision,
       },
@@ -1224,6 +1266,48 @@ export async function createContributionDraft(
   await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
   return result;
   });
+}
+
+export async function submitFormalContribution(input: ContributionFormalSubmitRequest) {
+  const response = await requestOperation("formal-contribution-submit", "formalContributionSubmitPost", {
+    body: input,
+    auth: "REQUIRED",
+    idempotencyKey: idempotencyKey("formal-contribution-submit"),
+  });
+  invalidateApiCache("contributions");
+  await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
+  return response;
+}
+
+export async function getContributionMedia(
+  submissionId: ContributionId,
+  uploadId: ContributionUploadId,
+  signal?: AbortSignal,
+  expectedUserId?: string,
+) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  const result = await requestOperation(`contribution-media:${submissionId}:${uploadId}`, "contributionMediaGet", {
+    pathParams: { submissionId, uploadId },
+    auth: "REQUIRED",
+    ...(signal ? { signal } : {}),
+  }, false, owner);
+  if (currentDraftUserId() !== owner)
+    throw new Error("账号已变化，请重新打开页面读取提交照片。");
+  return result;
+}
+
+export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest) {
+  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-intent") });
+}
+export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest) {
+  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload") });
+}
+export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest) {
+  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-complete") });
+}
+export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number) {
+  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-remove") });
 }
 
 const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contribution-update"));

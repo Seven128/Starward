@@ -30,6 +30,8 @@ export function eraseContributionContent(value: ContributionSubmission, erasedAt
       actorType: event.actorType,
       occurredAt: event.occurredAt,
     })),
+    attempts: [],
+    workingCopyFromAttemptId: null,
     revision: value.revision,
     createdAt: value.createdAt,
     updatedAt: value.updatedAt,

@@ -8,7 +8,7 @@ Tips:
 1. 建议开启持久化缓存功能，能有效提升二次编译速度，详情请参考: https://docs.taro.zone/docs/config-detail#cache。
 
 
-提示  appid     wx2e43b8498cb45da7
+提示  appid     [appid]
 生成  工具配置  E:\dev\Starward\apps\wechat-miniapp\dist\weapp-check/project.config.json
 启动  开发者工具-项目目录  E:\dev\Starward\apps\wechat-miniapp\dist\weapp-check
 

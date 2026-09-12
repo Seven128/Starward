@@ -17,15 +17,13 @@ import {
   buildTestSpotDetail,
 } from "./catalog.ts";
 
-test("the current filter schema has the exact ordered 10+8 population", () => {
-  assert.equal(FILTER_OPTIONS.length, 18);
-  assert.equal(new Set(FILTER_OPTIONS.map((item) => item.label)).size, 18);
+test("the current filter schema has the exact ordered 16-option population", () => {
+  assert.equal(FILTER_OPTIONS.length, 16);
+  assert.equal(new Set(FILTER_OPTIONS.map((item) => item.label)).size, 16);
   assert.deepEqual(
     FILTER_OPTIONS.map((item) => item.label),
     [
-      "今晚推荐",
-      "最佳窗口时长",
-      "距离/驾车时间",
+      "驾车范围",
       "光害",
       "少云",
       "停车",
@@ -43,13 +41,23 @@ test("the current filter schema has the exact ordered 10+8 population", () => {
       "最近核验时间",
     ],
   );
-  assert.equal(
-    FILTER_OPTIONS.filter((item) => item.tier === "FIRST_LEVEL").length,
-    10,
+  assert.deepEqual(
+    [...new Set(FILTER_OPTIONS.map((item) => item.category))].sort(),
+    ["ARRIVAL", "FACILITIES", "FRESHNESS", "OBSERVATION", "PLACE"],
   );
-  assert.equal(
-    FILTER_OPTIONS.filter((item) => item.tier === "ADVANCED").length,
-    8,
+});
+
+test("driving range belongs to filter state and enforces mode-specific bounds", () => {
+  assert.equal(EMPTY_FILTER_STATE.drivingRange.mode, "TIME");
+  assert.equal(EMPTY_FILTER_STATE.drivingRange.maxMinutes, 180);
+  assert.doesNotThrow(() => assertFilterState(EMPTY_FILTER_STATE));
+  assert.throws(
+    () => assertFilterState({ ...EMPTY_FILTER_STATE, drivingRange: { mode: "TIME", maxMinutes: 29, maxDistanceKm: 100 } }),
+    /driving_range_invalid:max_minutes/u,
+  );
+  assert.throws(
+    () => assertFilterState({ ...EMPTY_FILTER_STATE, drivingRange: { mode: "DISTANCE", maxMinutes: 180, maxDistanceKm: 1001 } }),
+    /driving_range_invalid:max_distance_km/u,
   );
 });
 
@@ -161,4 +169,14 @@ test("complete fixture parking guidance agrees with its available facility while
     if (spot.facilities.find(item => item.type === "PARKING")?.status === "UNKNOWN")
       assert.match(buildTestSpotDetail(spot.spotId)!.route.parkingGuidance, /停车状态未知/);
   }
+});
+
+test("complete formal fixture exercises the adopted multi-image gallery and facility-photo mapping", () => {
+  const complete = buildTestSpotDetail("spot:test-published")!;
+  assert.equal(complete.spot.media.length, 3);
+  assert.equal(new Set(complete.spot.media.map((item) => item.id)).size, 3);
+  assert.ok(complete.spot.media.every((item) => item.isSiteSpecific));
+  assert.deepEqual(complete.formalMedia?.site, complete.spot.media.map((item) => item.id));
+  assert.deepEqual(complete.formalMedia?.parking, [complete.spot.media[1]!.id]);
+  assert.deepEqual(complete.formalMedia?.toilet, [complete.spot.media[2]!.id]);
 });

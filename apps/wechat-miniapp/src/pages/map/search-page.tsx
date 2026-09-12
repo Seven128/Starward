@@ -8,11 +8,16 @@ import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import {
   FILTER_GROUPS,
   FILTER_OPTIONS,
+  countAppliedFilters,
+  drivingRangeLabel,
   type DarkSkyCandidateRef,
+  type FilterCategoryId,
+  type FilterGroupKey,
   type FilterOptionId,
   type OrdinaryPlaceRef,
   type PageState,
   type SpotSummary,
+  type SpotFilterEvidence,
 } from "@starward/miniapp-contracts";
 import { NotificationRegion } from "@/components/notification";
 import {
@@ -21,6 +26,8 @@ import {
 } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { SelectedCardStar } from "@/components/selected-card-star";
+import { FilterSheet } from "@/components/filter-sheet";
+import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
@@ -41,8 +48,12 @@ function localDateForNow(timezone = "Asia/Shanghai") {
 }
 
 function currentTimezoneHint(): "Asia/Shanghai" | "Asia/Hong_Kong" {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return timezone === "Asia/Hong_Kong" ? timezone : "Asia/Shanghai";
+  try {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return timezone === "Asia/Hong_Kong" ? timezone : "Asia/Shanghai";
+  } catch {
+    return "Asia/Shanghai";
+  }
 }
 
 function isRenderableMedia(media: SpotSummary["media"][number]) {
@@ -85,8 +96,6 @@ function optionIsSelected(
 }
 
 const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
-  tonightRecommended: "conditions",
-  bestWindowDuration: "conditions",
   distanceDriveTime: "location",
   lightPollution: "horizon",
   lessCloud: "conditions",
@@ -104,12 +113,16 @@ const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
   openSkyDirection: "horizon",
   lastVerifiedAt: "info",
 };
+const FILTER_LABEL_BY_GROUP = Object.fromEntries(
+  FILTER_GROUPS.map((group) => [group.key, group.title]),
+) as Readonly<Record<FilterGroupKey, string>>;
 
 export function MapSearchSurface() {
-  const { safeTop } = nativeNavigationInsets();
+  const { statusBarHeight, safeTop } = nativeNavigationInsets();
   const themeClass = useThemeClass();
   const finderQuery = useAppStore((state) => state.finderQuery);
   const committedFilters = useAppStore((state) => state.committedFilters);
+  const filterSheetOpen = useAppStore((state) => state.filterSheetOpen);
   const observationContext = useAppStore((state) => state.observationContext);
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
   const preferences = useAppStore((state) => state.preferences);
@@ -121,9 +134,11 @@ export function MapSearchSurface() {
   const setViewport = useAppStore((state) => state.setViewport);
   const setObservationContext = useAppStore((state) => state.setObservationContext);
   const selectSpot = useAppStore((state) => state.selectSpot);
+  const requestSpotOpen = useAppStore((state) => state.requestSpotOpen);
   const addSearchHistory = useAppStore((state) => state.addSearchHistory);
   const clearSearchHistory = useAppStore((state) => state.clearSearchHistory);
   const cancelFilters = useAppStore((state) => state.cancelFilters);
+  const openFilters = useAppStore((state) => state.openFilters);
   const toggleDraftFilter = useAppStore((state) => state.toggleDraftFilter);
   const applyFilters = useAppStore((state) => state.applyFilters);
   const notify = useAppStore((state) => state.notify);
@@ -134,6 +149,7 @@ export function MapSearchSurface() {
   const [pageVisible, setPageVisible] = useState(true);
   const [debouncedQuery, setDebouncedQuery] = useState(finderQuery.trim());
   const [announcement, setAnnouncement] = useState("");
+  const [filterCategory, setFilterCategory] = useState<FilterCategoryId>("OBSERVATION");
   const selectionVersion = useRef(0);
 
   useDidShow(() => setPageVisible(true));
@@ -209,6 +225,7 @@ export function MapSearchSurface() {
       activeContext?.contextFingerprint,
       activeContext?.revision,
       committedFilters,
+      debouncedQuery,
       Number(viewport.center.latitude.toFixed(4)),
       Number(viewport.center.longitude.toFixed(4)),
       viewport.zoom,
@@ -224,8 +241,8 @@ export function MapSearchSurface() {
       getMapScene(
         activeContext!.contextId,
         committedFilters,
-        "",
-        viewport,
+        debouncedQuery,
+        debouncedQuery ? undefined : viewport,
         {
           defaultPlace: preferences.defaultPlace,
           experience: preferences.experience,
@@ -250,13 +267,22 @@ export function MapSearchSurface() {
   });
 
   const sceneSpots = scene.data?.data.spots ?? [];
-  const formalSpots = debouncedQuery
-    ? placeSearch.data?.data.formalSpots ?? []
-    : sceneSpots;
+  const formalSpots = sceneSpots;
   const wanted = formalSpots.filter((spot) => favoriteIds.includes(spot.spotId));
   const other = formalSpots.filter((spot) => !favoriteIds.includes(spot.spotId));
   const candidates = placeSearch.data?.data.candidates ?? [];
   const ordinaryPlaces = placeSearch.data?.data.ordinaryPlaces ?? [];
+  const activeFilterGroups = FILTER_GROUPS
+    .map((group) => group.key)
+    .filter((group) => committedFilters[group].length > 0);
+  const incompleteActiveCoverage = activeFilterGroups
+    .map((group) => ({ group, capability: scene.data?.data.filterCapabilities.byGroup[group] }))
+    .filter((item) => item.capability && item.capability.state !== "AVAILABLE");
+  const hasUnknownIncludedSpot = formalSpots.some((spot) =>
+    activeFilterGroups.some(
+      (group) => scene.data?.data.filterEvidence?.[spot.spotId]?.[group].state === "UNKNOWN",
+    ),
+  );
   const searchState: PageState = contextQuery.isError
     ? isPermissionError(contextQuery.error)
       ? "PERMISSION_DENIED"
@@ -305,7 +331,7 @@ export function MapSearchSurface() {
     // Keep the shared query in the retained Map instance so its next scene
     // response contains the same formal object before the panel opens.
     setFinderQuery(spot.name);
-    selectSpot(spot.spotId);
+    requestSpotOpen(spot.spotId);
     setViewport({ center: spot.gcj02, zoom: Math.max(12, viewport.zoom) });
     if (finderQuery.trim()) addSearchHistory(finderQuery);
     setSuggestionsOpen(false);
@@ -365,6 +391,11 @@ export function MapSearchSurface() {
   const commitFilter = (optionId: FilterOptionId) => {
     const option = FILTER_OPTIONS.find((item) => item.id === optionId);
     if (!option) return;
+    if (option.id === "distanceDriveTime") {
+      setFilterCategory("ARRIVAL");
+      openFilters();
+      return;
+    }
     cancelFilters();
     toggleDraftFilter(option.id);
     applyFilters();
@@ -378,21 +409,27 @@ export function MapSearchSurface() {
   return (
     <View
       className={`${themeClass} spot-search-page`}
-      style={(safeTop === undefined ? {} : { "--search-safe-top": `${safeTop}px` }) as CSSProperties}
+      style={{
+        ...(statusBarHeight === undefined ? {} : { "--search-title-top": `${statusBarHeight}px` }),
+        ...(safeTop === undefined ? {} : { "--search-safe-top": `${safeTop}px` }),
+      } as CSSProperties}
       data-miniapp-production-root
       data-route="spot-search"
       data-delivery-target={__DELIVERY_TARGET__}
       onClick={blurSearch}
     >
       <FloatingNotificationHost />
+      <NativeBackBoundary active={filterSheetOpen} onBack={cancelFilters} />
       <View className="spot-search-shell" data-control="spot-search-shell">
+        <View className="spot-search-title-row">
+          <Text className="spot-search-title">今晚去观星</Text>
+        </View>
         <View
           className="spot-search-field"
           data-control="spot-search-field"
           onClick={(event) => event.stopPropagation()}
         >
           <Button
-            compileMode
             className="spot-search-field__leading focus-ring"
             ariaLabel={focused ? "返回地图" : "聚焦搜索"}
             onClick={() => {
@@ -477,8 +514,12 @@ export function MapSearchSurface() {
         ) : null}
 
         <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="筛选与正式观星点结果" onClick={(event) => { event.stopPropagation(); blurSearch(); }}>
-        <View
+        <View className="spot-search-filter-row">
+        <ScrollView
           className="spot-search-filter-scroll"
+          scrollX
+          enhanced
+          showScrollbar={false}
           aria-label="可立即提交的筛选选项"
           onClick={(event) => event.stopPropagation()}
         >
@@ -489,12 +530,10 @@ export function MapSearchSurface() {
               const selected = optionIsSelected(committedFilters, option.id, option.group);
               return (
                 <Button
-                  compileMode
                   key={option.id}
                   className={`spot-search-filter-choice${selected ? " spot-search-filter-choice--selected" : ""}`}
                   data-control="spot-search-filter-choice"
-                  disabled={disabled}
-                  aria-pressed={selected}
+                  disabled={disabled && !selected && option.id !== "distanceDriveTime"}
                   ariaLabel={`${option.label}${disabled ? "，当前不可用" : selected ? "，已应用" : ""}`}
                   onClick={() => commitFilter(option.id)}
                 >
@@ -502,7 +541,7 @@ export function MapSearchSurface() {
                     name={FILTER_ICON_BY_ID[option.id]}
                     className="spot-search-filter-choice__prefix"
                   />
-                  <Text>{option.label}</Text>
+                  <Text>{option.id === "distanceDriveTime" && selected ? drivingRangeLabel(committedFilters.drivingRange) : option.label}</Text>
                   {selected ? (
                     <SelectedCardStar className="spot-search-filter-choice__selected-ornament" />
                   ) : null}
@@ -510,6 +549,11 @@ export function MapSearchSurface() {
               );
             })}
           </View>
+        </ScrollView>
+        <Button className={`spot-search-filter-open${filterSheetOpen ? " spot-search-filter-open--active" : ""}`} data-control="spot-search-filter-open" ariaLabel={`打开全部筛选，已选${countAppliedFilters(committedFilters)}项`} onClick={() => { setFilterCategory("OBSERVATION"); openFilters(); }}>
+          <View className="spot-search-filter-open__face"><SemanticIcon name="filter" /></View>
+          {countAppliedFilters(committedFilters) ? <Text>{countAppliedFilters(committedFilters)}</Text> : null}
+        </Button>
         </View>
 
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
@@ -531,10 +575,21 @@ export function MapSearchSurface() {
               onRecover={() => void leaveSearch()}
             />
           ) : null}
+          {incompleteActiveCoverage.length ? (
+            <View className="spot-search-filter-evidence" role="status" aria-live="polite">
+              <Text className="type-caption">
+                {incompleteActiveCoverage.map(({ group, capability }) => `${FILTER_LABEL_BY_GROUP[group]}：${capability!.reason}`).join("；")}
+              </Text>
+              <View className="spot-search-filter-evidence__actions">
+                <Button onClick={() => { setFilterCategory("OBSERVATION"); openFilters(); }}>调整筛选</Button>
+                <Button onClick={() => void scene.refetch()}>重试资料</Button>
+              </View>
+            </View>
+          ) : null}
         </View>
 
           <View className="spot-search-result-summary">
-            <Text className="type-caption">{formalSpots.length} 个正式观星点</Text>
+            <Text className="type-caption">{formalSpots.length} 个{hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点</Text>
           </View>
           <View className="spot-search-partition">
             <Button className="spot-search-partition__toggle" aria-expanded={wantedOpen} onClick={() => setWantedOpen((value) => !value)}>
@@ -543,7 +598,7 @@ export function MapSearchSurface() {
               <SemanticIcon name={wantedOpen ? "chevron-up" : "chevron-down"} />
             </Button>
             {wantedOpen ? (
-              wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text>
+              wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={scene.data?.data.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text>
             ) : null}
           </View>
           <View className="spot-search-partition">
@@ -553,27 +608,32 @@ export function MapSearchSurface() {
               <SemanticIcon name={otherOpen ? "chevron-up" : "chevron-down"} />
             </Button>
             {otherOpen ? (
-              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">没有找到匹配的观星点。</Text>
+              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={scene.data?.data.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">没有其他符合或待核验的观星点。</Text>
             ) : null}
           </View>
         </ScrollView>
       </View>
+      {filterSheetOpen ? <FilterSheet {...(scene.data ? { capabilities: scene.data.data.filterCapabilities.byGroup } : {})} initialCategory={filterCategory} /> : null}
       <View className="sr-live" role="status" aria-live="polite"><Text>{announcement}</Text></View>
     </View>
   );
 }
 
-function SearchResultCard({ spot, onSelect }: { spot: SpotSummary; onSelect: () => void }) {
+function SearchResultCard({ spot, evidence, activeGroups, onSelect }: { spot: SpotSummary; evidence: SpotFilterEvidence | undefined; activeGroups: readonly FilterGroupKey[]; onSelect: () => void }) {
   const media = spot.media.filter(isRenderableMedia)[0];
   const isTestSpot = __MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && spot.spotId === "spot:test-published";
-  return (
-    <Button compileMode className={`spot-search-result-card${media ? " spot-search-result-card--with-media" : ""}`} data-control="spot-search-result-card" onClick={onSelect} ariaLabel={`选择${spot.name}`}>
-      {media ? <Image className="spot-search-result-card__media" src={media.thumbnailPath || media.localPath} mode="aspectFill" lazyLoad ariaLabel={media.alt || `${spot.name}现场照片`} /> : null}
-      <View className="spot-search-result-card__copy">
-        <Text className="spot-search-result-card__title">{spot.name}</Text>
-        <Text className="type-caption">{spot.region || "区域暂无数据"}{isTestSpot ? " · 测试数据" : ""}</Text>
-        {!isTestSpot && spot.address ? <Text className="type-caption">{spot.address}</Text> : null}
+  const mediaSrc = media ? media.thumbnailPath || media.localPath : null;
+  const address = !isTestSpot ? spot.address : null;
+  const unknown = activeGroups.filter((group) => evidence?.[group].state === "UNKNOWN");
+  return <View className="spot-search-result-entry">
+    <Button className={`spot-identity-card${mediaSrc ? " spot-identity-card--with-media" : ""}`} data-control="spot-search-result-card" onClick={onSelect} ariaLabel={`选择${spot.name}${unknown.length ? `，${unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}资料待核验` : ""}`}>
+      {mediaSrc ? <Image className="spot-identity-card__media" src={mediaSrc} mode="aspectFill" lazyLoad ariaLabel={media?.alt || `${spot.name}现场照片`} /> : null}
+      <View className="spot-identity-card__copy">
+        <Text className="spot-identity-card__region">{`${spot.region || "区域暂无数据"}${isTestSpot ? " · 测试数据" : ""}`}</Text>
+        <Text className="spot-identity-card__title">{spot.name}</Text>
+        {address ? <View className="spot-identity-card__address"><SemanticIcon name="location" /><Text className="spot-identity-card__address-text">{address}</Text></View> : null}
       </View>
     </Button>
-  );
+    {unknown.length ? <Text className="spot-search-result-entry__evidence type-caption">待核验：{unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}</Text> : null}
+  </View>;
 }

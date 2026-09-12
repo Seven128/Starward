@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { nearestPanelExtent, panelReleaseVelocity, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry } from "./panel-snap";
+import { nearestPanelExtent, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry } from "./panel-snap";
+
+test("system Back steps through panel extents before closing the small panel", () => {
+  assert.equal(previousPanelExtent("large"), "medium");
+  assert.equal(previousPanelExtent("medium"), "small");
+  assert.equal(previousPanelExtent("small"), null);
+});
 
 test("native panel anchors validate ordering and project actual distances", () => {
   const geometry = readPanelSnapGeometry([480, 240, 360, 700].map(height => ({ height })))!;

@@ -1,12 +1,12 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro from "@tarojs/taro";
-import { ScrollView, Text, View } from "@tarojs/components";
+import Taro, { useDidHide } from "@tarojs/taro";
+import { ScrollView, View } from "@tarojs/components";
 import type { DisplayMode } from "@starward/miniapp-contracts";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
-import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
+import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
@@ -18,9 +18,10 @@ import {
 import { useAppStore } from "@/state/app-store";
 import {
   SettingsControls,
-  SettingsAccountActions,
+  SettingsDataActions,
+  type SettingsSheetKind,
 } from "./settings-sections";
-import { PreferenceFields } from "./preference-fields";
+import { SettingsSheet, type OpenSettingsSheet } from "./settings-sheet";
 import "./index.scss";
 
 function writeJsonFile(filePath: string, data: string) {
@@ -46,7 +47,10 @@ export default function SettingsPage() {
     (state) => state.resetAfterAccountDeletion,
   );
   const notify = useAppStore((state) => state.notify);
-  const [dataAction, setDataAction] = useState<"EXPORT" | "DELETE" | null>(null);
+  const [dataAction, setDataAction] = useState<"CACHE" | "EXPORT" | "DELETE" | null>(null);
+  const [sheet, setSheet] = useState<OpenSettingsSheet | null>(null);
+  const [sheetClosing, setSheetClosing] = useState(false);
+  const sheetCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accountActionPending = useRef(false);
   const [modeGestureCaptured, setModeGestureCaptured] = useState(false);
   const {
@@ -55,18 +59,13 @@ export default function SettingsPage() {
     status: preferenceSyncStatus,
   } = usePreferencesSync();
 
-  const syncPreferencesManually = async () => {
-    if (!(await syncNow())) return;
-    notify({
-      owner: "settings",
-      placement: "floating",
-      tone: "success",
-      title: "偏好已同步",
-      body: "已保存到当前账户。",
-      dismissible: true,
-      dedupeKey: "settings-preferences-manual-sync",
-    });
-  };
+  useEffect(() => () => { if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current); }, []);
+  useDidHide(() => {
+    if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
+    sheetCloseTimer.current = null;
+    setSheetClosing(false);
+    setSheet(null);
+  });
 
   const selectDisplayMode = (next: DisplayMode) => {
     if (next === "OBSERVATION") {
@@ -129,6 +128,30 @@ export default function SettingsPage() {
     } finally {
       accountActionPending.current = false;
       setDataAction(null);
+      setSheet(null);
+    }
+  };
+
+  const clearCache = async () => {
+    if (accountActionPending.current) return;
+    accountActionPending.current = true;
+    setDataAction("CACHE");
+    try {
+      const [, stateSaved] = await Promise.all([clearTemporaryApiCache(), clearLocalCache()]);
+      if (!stateSaved) throw new Error("local_state_cleanup_incomplete");
+      notify({ owner: "settings", placement: "floating", tone: "success",
+        title: "临时缓存已清除",
+        body: "本地地图、筛选、搜索与夜空临时缓存已清除；远端数据和草稿保持不变。",
+        dismissible: true, dedupeKey: "settings-cache-cleared" });
+    } catch {
+      notify({ owner: "settings", placement: "inline", tone: "warning",
+        title: "临时缓存尚未清完",
+        body: "当前地图状态已重置，但本地存储清理失败。请稍后重试，或通过微信清理本小程序的数据。",
+        dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
+    } finally {
+      accountActionPending.current = false;
+      setDataAction(null);
+      setSheet(null);
     }
   };
 
@@ -139,21 +162,6 @@ export default function SettingsPage() {
     let accountDeleted = false;
     let localCleanupComplete = true;
     try {
-      const first = await Taro.showModal({
-        title: "删除账户？",
-        content:
-          "将撤销微信身份关联和全部会话，并删除偏好、收藏、计划、主页链接、导入草稿与投稿媒体。去身份化审核、合并、发布和审计证据会按完整性要求保留。",
-        confirmText: "继续",
-        confirmColor: "#B53A3A",
-      });
-      if (!first.confirm) return;
-      const final = await Taro.showModal({
-        title: "最后确认",
-        content: "此操作不可撤销。删除后再次使用会创建一个全新账户。",
-        confirmText: "删除账户",
-        confirmColor: "#B53A3A",
-      });
-      if (!final.confirm) return;
       const response = await deleteAccountThroughApi();
       accountDeleted = true;
       localCleanupComplete = response.localCleanupComplete;
@@ -195,7 +203,25 @@ export default function SettingsPage() {
     } finally {
       accountActionPending.current = false;
       setDataAction(null);
+      setSheet(null);
     }
+  };
+
+  const openSheet = (kind: SettingsSheetKind) => {
+    if (accountActionPending.current) return;
+    if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
+    sheetCloseTimer.current = null;
+    setSheetClosing(false);
+    setSheet(kind);
+  };
+  const closeSheet = () => {
+    if (accountActionPending.current || !sheet || sheetClosing) return;
+    setSheetClosing(true);
+    sheetCloseTimer.current = setTimeout(() => {
+      sheetCloseTimer.current = null;
+      setSheet(null);
+      setSheetClosing(false);
+    }, preferences.reducedMotion ? 0 : 180);
   };
 
   return (
@@ -205,11 +231,17 @@ export default function SettingsPage() {
       data-od-id="my-settings"
     >
       <FloatingNotificationHost />
+      <NativeBackBoundary active={Boolean(sheet)} onBack={closeSheet} />
       <CustomNav
         title="设置"
         back
         backOdId="my-settings-back-action"
         backFallbackTab="/pages/my/index"
+        beforeBack={() => {
+          if (!sheet || accountActionPending.current) return !accountActionPending.current;
+          closeSheet();
+          return false;
+        }}
       />
       <ScrollView
         scrollY={!modeGestureCaptured}
@@ -250,64 +282,21 @@ export default function SettingsPage() {
             updatePreference={updatePreference}
             selectDisplayMode={selectDisplayMode}
             onModeGestureCapture={setModeGestureCaptured}
+            openSheet={openSheet}
           />
 
-          <SettingsAccountActions
-            dataAction={dataAction}
-            downloadAccountData={downloadAccountData}
-            deleteAccount={deleteAccount}
-          />
-
-          <PreferenceFields
-            preferences={preferences}
-            updatePreference={updatePreference}
-          />
-
-          <View className="settings-card settings-maintenance card">
-            <Text className="type-section">本机维护</Text>
-            <View className="settings-card--actions">
-              <SoftButton
-                label="立即同步当前账户偏好"
-                onClick={() => void syncPreferencesManually()}
-              >
-                同步账户偏好
-              </SoftButton>
-              <SoftButton
-                label="清除本地地图、筛选、搜索和夜空缓存"
-                onClick={() =>
-                  void Taro.showModal({
-                    title: "清除本地数据？",
-                    content:
-                      "将清除本机地图视口、筛选、搜索记录与夜空临时缓存；收藏、计划、主页链接和导入草稿不会被删除。",
-                    confirmText: "清除",
-                    confirmColor: "#B53A3A",
-                  }).then(async (result) => {
-                    if (!result.confirm) return;
-                    const cacheCleanup = clearTemporaryApiCache();
-                    const stateCleanup = clearLocalCache();
-                    try {
-                      const [, stateSaved] = await Promise.all([cacheCleanup, stateCleanup]);
-                      if (!stateSaved) throw new Error("local_state_cleanup_incomplete");
-                      notify({ owner: "settings", placement: "floating", tone: "success",
-                        title: "临时缓存已清除",
-                        body: "本地地图、筛选、搜索与夜空临时缓存已清除；持久化收藏、计划、主页链接和导入草稿保持不变。",
-                        dismissible: true, dedupeKey: "settings-cache-cleared" });
-                    }
-                    catch {
-                      notify({ owner: "settings", placement: "inline", tone: "warning",
-                        title: "临时缓存尚未清完",
-                        body: "当前地图状态已重置，但本地存储清理失败。请稍后重试，或通过微信清理本小程序的数据。",
-                        dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
-                    }
-                  })
-                }
-              >
-                清除临时缓存
-              </SoftButton>
-            </View>
-          </View>
+          <SettingsDataActions dataAction={dataAction} openSheet={openSheet} />
         </View>
       </ScrollView>
+      {sheet ? <SettingsSheet sheet={sheet} locationPreference={preferences.locationPreference}
+        closing={sheetClosing}
+        busy={dataAction !== null}
+        close={closeSheet}
+        selectLocation={(value) => { updatePreference("locationPreference", value); closeSheet(); }}
+        advanceDelete={() => setSheet("DELETE_FINAL")}
+        confirmCache={() => void clearCache()}
+        confirmExport={() => void downloadAccountData()}
+        confirmDelete={() => void deleteAccount()} /> : null}
     </View>
   );
 }

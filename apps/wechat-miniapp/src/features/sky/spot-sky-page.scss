@@ -494,6 +494,7 @@
 }
 
 .sky-target-row {
+  width: 100%;
   min-width: 0;
   min-height: 72rpx;
   display: flex;
@@ -502,7 +503,15 @@
   gap: 12rpx;
   padding: 10rpx 0;
   border-bottom: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  line-height: inherit;
 }
+
+.sky-target-row::after { border: 0; }
+.sky-target-row:active { background: var(--surface-subtle); }
 
 .sky-target-row:last-child {
   border-bottom: 0;
@@ -791,6 +800,28 @@
   color: var(--text-primary);
 }
 
+/* Current adopted Cloud Stargazing references keep the actual sky deep and
+ * dark in both ordinary app modes without changing the global mode owner. */
+.theme-day.sky-orientation-page,
+.theme-night.sky-orientation-page {
+  --canvas: #080d17;
+  --surface: #111b2a;
+  --surface-subtle: #172334;
+  --surface-elevated: #132033;
+  --text-primary: #dce4ef;
+  --text-secondary: #93a4bb;
+  --text-tertiary: #7f90a8;
+  --text-muted: #7f90a8;
+  --border: #29374b;
+  --border-strong: #536782;
+  --primary: #8fa7c6;
+  --primary-pressed: #aabcca;
+  --on-primary: #080d17;
+  --accent-warm: #cfc19a;
+  --focus: #aabcca;
+  --pressed-overlay: rgba(143, 167, 198, .14);
+}
+
 .sky-orientation-canvas {
   position: absolute;
   z-index: 0;
@@ -839,6 +870,47 @@
   background: var(--canvas);
 }
 
+.sky-zoom-status {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--sky-controls-top) + 8rpx);
+  right: 18rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: var(--text-secondary);
+  font-size: 18rpx;
+  line-height: 28rpx;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1Px 8Px var(--canvas);
+  pointer-events: none;
+}
+
+.sky-image-status {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--sky-controls-top) + 48rpx);
+  right: 18rpx;
+  max-width: 62vw;
+  color: var(--text-secondary);
+  font-size: 18rpx;
+  line-height: 28rpx;
+  text-align: right;
+  text-shadow: 0 1Px 8Px var(--canvas);
+}
+
+.sky-image-status button {
+  min-height: var(--target-min);
+  padding: 8rpx 12rpx;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 18rpx;
+  line-height: 28rpx;
+}
+
+.sky-image-status button::after { border: 0; }
+
 /* DOM labels sit above the canvas so long target names and windows remain
  * readable to users and assistive technologies. The canvas itself carries
  * marks only; this layer is intentionally compact and unshadowed. */
@@ -857,9 +929,14 @@
   border-radius: 8rpx;
   background: rgba(255, 255, 255, 0.92);
   color: var(--text-primary);
-  pointer-events: none;
+  pointer-events: auto;
   overflow-wrap: anywhere;
+  text-align: left;
+  line-height: inherit;
 }
+
+.sky-orientation-target-label::after { border: 0; }
+.sky-orientation-target-label:active { opacity: .72; }
 
 .sky-orientation-target-label--event {
   border-color: var(--accent-warm);
@@ -909,6 +986,27 @@
   background: rgba(17, 0, 0, 0.96);
 }
 
+.sky-orientation-catalog-label {
+  position: absolute;
+  z-index: 2;
+  min-height: 44rpx;
+  margin: 0;
+  padding: 2rpx 6rpx;
+  display: flex;
+  align-items: center;
+  gap: 5rpx;
+  transform: translate(5rpx, -50%);
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  text-shadow: 0 1Px 8Px var(--canvas);
+}
+.sky-orientation-catalog-label::after { border: 0; }
+.sky-orientation-catalog-label__mark { width: 5rpx; height: 5rpx; flex: 0 0 auto; border-radius: 999rpx; background: currentColor; }
+.sky-orientation-catalog-label:active { opacity: .62; }
+
 .sky-orientation-back-layer {
   position: absolute;
   z-index: 14;
@@ -926,15 +1024,15 @@
   height: var(--target-min);
   min-height: var(--target-min);
   padding: 0;
-  border-color: var(--border);
+  border-color: transparent;
   border-radius: 999rpx;
-  background: var(--surface);
+  background: transparent;
   color: var(--text-primary);
   pointer-events: auto;
 }
 
 .sky-orientation-back.soft-button:active {
-  background: var(--surface-subtle);
+  background: rgba(17, 27, 42, .72);
 }
 
 .sky-orientation-back-layer .sky-orientation-back__icon {
@@ -973,86 +1071,133 @@
 .sky-orientation-details {
   position: absolute;
   z-index: 9;
-  top: 42%;
-  right: 32rpx;
-  left: 32rpx;
+  right: 18Px;
+  left: 18Px;
   width: auto;
-  height: calc(58% - env(safe-area-inset-bottom) - 204rpx - var(--target-min) - 24Px);
+}
+
+.sky-orientation-details--recovery {
+  top: auto;
+  bottom: calc(max(24Px, env(safe-area-inset-bottom)) + 183Px);
+  height: auto;
+  max-height: calc(100vh - var(--sky-controls-top) - 227Px);
+}
+
+.sky-orientation-details--list {
+  top: calc(var(--sky-controls-top) + var(--target-min) + 64Px);
+  bottom: calc(max(24Px, env(safe-area-inset-bottom)) + 196Px);
+  height: auto;
 }
 
 .sky-orientation-recovery {
   position: relative;
   box-sizing: border-box;
   transform: none;
-  padding: 24rpx;
-  display: grid;
-  grid-template-columns: var(--icon-large) minmax(0, 1fr);
+  max-width: 354Px;
+  margin: 0 auto;
+  padding: 20Px 22Px 12Px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16rpx;
-  border: 1rpx solid var(--border);
-  border-radius: 20rpx;
-  background: var(--surface);
+  gap: 0;
+  border: 1Px solid rgba(83, 108, 140, .22);
+  border-radius: 18Px;
+  background: rgba(17, 27, 42, .95);
   color: var(--text-primary);
 }
 
 .sky-orientation-recovery__icon {
-  width: var(--icon-large);
-  height: var(--icon-large);
+  width: 45Px;
+  height: 45Px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14rpx;
+  border: 1Px solid var(--border-strong);
+  border-radius: 999Px;
   background: var(--surface-subtle);
 }
 
 .sky-orientation-recovery__icon .semantic-icon {
-  width: var(--icon-medium);
-  height: var(--icon-medium);
+  width: 24Px;
+  height: 24Px;
 }
 
 .sky-orientation-recovery__copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 0;
+  margin: 15Px 0 19Px;
+  text-align: center;
 }
 
 .sky-orientation-recovery__title {
   color: var(--text-primary);
-  font-size: var(--type-body-secondary-size);
-  line-height: var(--type-body-secondary-line);
-  font-weight: 650;
+  font-size: 15Px;
+  line-height: 22Px;
+  font-weight: 500;
+  letter-spacing: .5Px;
 }
 
 .sky-orientation-recovery__detail {
   color: var(--text-secondary);
-  font-size: var(--type-body-secondary-size);
-  line-height: var(--type-body-secondary-line);
+  margin-top: 10Px;
+  font-size: 11Px;
+  line-height: 20Px;
 }
 
 .sky-orientation-recovery__actions {
-  grid-column: 2;
+  width: 100%;
   min-width: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8rpx;
+  gap: 0;
 }
 
 .sky-orientation-recovery__actions .soft-button {
-  min-width: var(--target-min);
-  min-height: var(--target-min);
-  padding: 10rpx 16rpx;
-  border-radius: 999rpx;
-  font-size: var(--type-action-size);
-  line-height: var(--type-action-line);
+  width: 100%;
+  min-height: 42Px;
+  padding: 8Px 14Px;
+  border-radius: 9Px;
+  font-size: 12Px;
+  line-height: 18Px;
+}
+
+.theme-day .sky-orientation-recovery__primary.soft-button,
+.theme-night .sky-orientation-recovery__primary.soft-button {
+  border-color: rgba(143, 167, 198, .29);
+  background: #354A63;
+  color: #E3EBF4;
+}
+
+.sky-orientation-recovery__actions .sky-orientation-recovery__defer.soft-button {
+  width: auto;
+  min-width: 70Px;
+  min-height: 40Px;
+  padding: 8Px 14Px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11Px;
+}
+
+.theme-observation .sky-orientation-recovery {
+  border-color: #5B1712;
+  background: rgba(17, 0, 0, .96);
+}
+
+.theme-observation .sky-orientation-recovery__primary.soft-button {
+  border-color: #5B1712;
+  background: #240000;
+  color: #FF6B58;
 }
 
 .sky-orientation-object-toggle {
   position: absolute;
   z-index: 8;
   top: auto;
-  bottom: calc(env(safe-area-inset-bottom) + 204rpx);
+  bottom: calc(env(safe-area-inset-bottom) + 278rpx);
   right: 16rpx;
   left: auto;
   pointer-events: auto;
@@ -1134,6 +1279,38 @@
 .sky-orientation-object-list__scroll .sky-target-row {
   min-height: var(--target-min);
 }
+
+.sky-orientation-object-list__catalog {
+  margin-top: 18rpx;
+  padding-top: 14rpx;
+  display: flex;
+  flex-direction: column;
+  border-top: 1rpx solid var(--border);
+}
+.sky-orientation-object-list__catalog-title { padding: 0 0 10rpx; color: var(--text-secondary); font-size: var(--type-metadata-size); line-height: var(--type-metadata-line); }
+.sky-catalog-row,
+.sky-catalog-row__more {
+  width: 100%;
+  min-height: var(--target-min);
+  margin: 0;
+  padding: 10rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  border: 0;
+  border-bottom: 1rpx solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
+  text-align: left;
+}
+.sky-catalog-row::after,
+.sky-catalog-row__more::after { border: 0; }
+.sky-catalog-row text:last-child { flex: 0 0 auto; color: var(--text-secondary); font-size: var(--type-metadata-size); }
+.sky-catalog-row__more { justify-content: center; color: var(--primary); border-bottom: 0; }
 .large-text .sky-target-row {
   flex-direction: column;
   align-items: flex-start;
@@ -1221,6 +1398,209 @@
   pointer-events: none;
 }
 
+.sky-orientation-context {
+  min-height: 76rpx;
+  padding: 0 24rpx 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6rpx;
+  color: var(--text-primary);
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 1Px 8Px var(--canvas);
+}
+
+.sky-orientation-context__place {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sky-orientation-context__date {
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.sky-object-modal {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(24rpx, env(safe-area-inset-top)) 44rpx max(24rpx, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.sky-object-modal__backdrop {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(0, 0, 0, .56);
+}
+
+.sky-object-modal__backdrop::after { border: 0; }
+
+.sky-object-modal__panel {
+  z-index: 1;
+  width: min(100%, 584rpx);
+  max-height: min(72vh, 780rpx);
+  border-radius: 32rpx;
+  background: rgba(13, 21, 33, .94);
+  color: #edf5ff;
+}
+
+.theme-observation .sky-object-modal__panel {
+  background: rgba(17, 0, 0, .96);
+  color: var(--text-primary);
+}
+
+.sky-object-modal__header {
+  min-height: var(--target-min);
+  padding: 20rpx 20rpx 12rpx 28rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.sky-object-modal__identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.sky-object-modal__title {
+  font-size: 28rpx;
+  line-height: 40rpx;
+  font-weight: 650;
+}
+
+.sky-object-modal__kind,
+.sky-object-modal__basic {
+  padding: 4rpx 10rpx;
+  border: 1rpx solid rgba(180, 195, 214, .32);
+  border-radius: 6rpx;
+  color: #b4c3d6;
+  font-size: 20rpx;
+  line-height: 28rpx;
+}
+
+.theme-observation .sky-object-modal__kind,
+.theme-observation .sky-object-modal__basic { color: var(--text-secondary); border-color: var(--border); }
+
+.sky-object-modal__close {
+  width: var(--target-min);
+  min-width: var(--target-min);
+  height: var(--target-min);
+  min-height: var(--target-min);
+  margin: -12rpx -10rpx 0 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999rpx;
+  background: transparent;
+  color: inherit;
+}
+
+.sky-object-modal__close::after { border: 0; }
+.sky-object-modal__close:active { background: rgba(255, 255, 255, .1); }
+.sky-object-modal__close .semantic-icon { width: 34rpx; height: 34rpx; }
+
+.sky-object-modal__body {
+  max-height: calc(min(72vh, 780rpx) - 96rpx);
+  box-sizing: border-box;
+  padding: 0 28rpx 28rpx;
+}
+
+.sky-object-modal__basic,
+.sky-object-modal__reason,
+.sky-object-modal__aliases,
+.sky-object-modal__context,
+.sky-object-modal__limitation,
+.sky-object-modal__source { display: block; }
+
+.sky-object-modal__basic { width: max-content; max-width: 100%; margin-bottom: 16rpx; box-sizing: border-box; }
+.sky-object-modal__reason { font-size: 22rpx; line-height: 36rpx; }
+.sky-object-modal__aliases { margin-top: 12rpx; color: #b4c3d6; font-size: 20rpx; line-height: 30rpx; }
+.theme-observation .sky-object-modal__aliases { color: var(--text-secondary); }
+
+.sky-object-modal__facts {
+  margin: 20rpx 0;
+  padding: 18rpx 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1rpx solid rgba(180, 195, 214, .18);
+  border-bottom: 1rpx solid rgba(180, 195, 214, .18);
+}
+
+.sky-object-modal__facts > view { display: flex; flex-direction: column; gap: 6rpx; }
+.sky-object-modal__facts > view > text:first-child { color: #b4c3d6; font-size: 20rpx; line-height: 28rpx; }
+.sky-object-modal__facts > view > text:last-child { font-size: 28rpx; line-height: 38rpx; font-variant-numeric: tabular-nums; }
+.theme-observation .sky-object-modal__facts > view > text:first-child { color: var(--text-secondary); }
+.sky-object-modal__context,
+.sky-object-modal__limitation,
+.sky-object-modal__source { margin-top: 14rpx; color: #b4c3d6; font-size: 20rpx; line-height: 32rpx; }
+.theme-observation .sky-object-modal__context,
+.theme-observation .sky-object-modal__limitation,
+.theme-observation .sky-object-modal__source { color: var(--text-secondary); }
+
+.sky-object-choice {
+  position: absolute;
+  z-index: 29;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100% - 88rpx), 520rpx);
+  box-sizing: border-box;
+  padding: 22rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  transform: translate(-50%, -50%);
+  border: 1rpx solid rgba(180, 195, 214, .28);
+  border-radius: 24rpx;
+  background: rgba(13, 21, 33, .92);
+  color: #edf5ff;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, .34);
+}
+
+.sky-object-choice__title { padding: 4rpx 10rpx 12rpx; font-size: 24rpx; line-height: 34rpx; font-weight: 650; }
+.sky-object-choice__row,
+.sky-object-choice__cancel { margin: 0; border: 0; color: inherit; }
+.sky-object-choice__row::after,
+.sky-object-choice__cancel::after { border: 0; }
+.sky-object-choice__row {
+  min-height: var(--target-min);
+  padding: 12rpx 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, .08);
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+.sky-object-choice__row text:last-child { color: #b4c3d6; font-size: 18rpx; white-space: nowrap; }
+.sky-object-choice__cancel { min-height: var(--target-min); background: transparent; font-size: 22rpx; }
+.theme-observation .sky-object-choice { background: rgba(17, 0, 0, .96); color: var(--text-primary); border-color: var(--border); }
+
 .sky-orientation-time-ruler {
   position: relative;
   width: 100%;
@@ -1231,13 +1611,13 @@
   padding: 0;
   border: 0;
   border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(8, 13, 23, .72);
   color: var(--text-primary);
   pointer-events: auto;
 }
 
 .theme-night .sky-orientation-time-ruler {
-  background: rgba(24, 26, 23, 0.94);
+  background: rgba(8, 13, 23, .72);
 }
 
 .theme-observation .sky-orientation-time-ruler {
@@ -1517,7 +1897,12 @@
   }
 
   .sky-orientation-recovery {
-    padding: 14rpx;
+    padding: 12Px 18Px 6Px;
+  }
+
+  .sky-orientation-recovery__icon {
+    width: 36Px;
+    height: 36Px;
   }
 
   .sky-orientation-object-toggle {

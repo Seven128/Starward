@@ -1,5 +1,7 @@
+import type { AccountAvatarData, AccountAvatarSaveRequest, AccountProfileRecord } from "./account-profile.ts";
 import type { FeatureFlags } from "./feature-flags.ts";
 import type { FilterGroupKey, FilterState } from "./filters.ts";
+import type { ContributionFormalProposal } from "./contribution-feedback.ts";
 import type { PreferenceRankingDisclosure, SpotRankingPreferences } from "./ranking.ts";
 import type {
   AccessAndSafetyState,
@@ -28,7 +30,9 @@ import type {
   ObservationContextUpdateRequest,
   PlatformKind,
   ProfileLink,
+  RepresentativeMedia,
   RouteOverview,
+  RouteTravelMode,
   SkyReport,
   SiteMediaState,
   SpotDetail,
@@ -36,6 +40,7 @@ import type {
   SpotSummary,
   SourceSummary,
   AuthSessionData,
+  CelestialObjectInformation,
   WechatLoginRequest,
   UserId,
 } from "./types.ts";
@@ -47,6 +52,10 @@ export type MapLayerKind =
   | "LIGHT_POLLUTION"
   | "CLOUD"
   | "OPPORTUNITY";
+
+export type CelestialObjectInformationData = CelestialObjectInformation;
+/** Binary JPEG body; this route intentionally does not use ApiEnvelope at runtime. */
+export type CelestialObjectImageData = Uint8Array;
 
 export type MapProjectionState =
   | "FRESH"
@@ -98,10 +107,23 @@ export interface MapSpotEvaluation extends MapSpotTimeSignal {
   distanceKm: number | null;
   driveMinutes: number | null;
   distanceKind: "ROUTE" | "STRAIGHT_LINE" | "UNAVAILABLE";
+  lunarFacts: import("./types.ts").LunarFacts;
 }
+
+export type FilterMatchState = "MATCH" | "NO_MATCH" | "UNKNOWN";
+
+export interface FilterCandidateEvidence {
+  state: FilterMatchState;
+  reason: string;
+}
+
+export type SpotFilterEvidence = Readonly<
+  Record<FilterGroupKey, FilterCandidateEvidence>
+>;
 
 export interface MapSceneTimeFrame {
   atUtc: string;
+  moonPhase: import("./types.ts").MoonPhaseKey | null;
   spotSignals: Readonly<Record<string, MapSpotTimeSignal>>;
   dynamicLayer: {
     kind: "CLOUD" | "OPPORTUNITY";
@@ -145,6 +167,10 @@ export interface MapSceneRequest {
 export interface RouteEstimateRequest {
   contextId: ObservationContext["contextId"];
   spotId: SpotSummary["spotId"];
+  /** Omitted by older clients and Map consumers, which continue to mean driving. */
+  travelMode?: RouteTravelMode;
+  departureLocalDate?: string;
+  departureLocalTime?: string;
 }
 
 export type RouteEstimateData = RouteOverview;
@@ -153,6 +179,8 @@ export interface MapSceneData {
   context: ObservationContext;
   spots: readonly SpotSummary[];
   evaluations: Readonly<Record<string, MapSpotEvaluation>>;
+  /** Server-owned, selected-time evidence for each returned formal spot. */
+  filterEvidence: Readonly<Record<string, SpotFilterEvidence>>;
   favoriteSpotIds: readonly SpotSummary["spotId"][] | null;
   preferenceRanking: PreferenceRankingDisclosure;
   filterCapabilities: {
@@ -242,6 +270,7 @@ export interface SpotGuidesData {
 
 export interface SpotSiteData {
   spotId: string;
+  media: readonly RepresentativeMedia[];
   facilities: readonly FacilityEvidence[];
   accessAndSafety: AccessAndSafetyState;
   siteMediaState: SiteMediaState;
@@ -250,6 +279,7 @@ export interface SpotSiteData {
 }
 
 export interface UserLibraryData {
+  planSpots?: readonly Pick<SpotSummary, "spotId" | "name">[];
   favoriteSpots: readonly SpotSummary[];
   plans: readonly ObservationPlan[];
   profileLinks: readonly ProfileLink[];
@@ -258,7 +288,85 @@ export interface UserLibraryData {
 }
 
 export interface PlansData {
+  planSpots?: readonly Pick<SpotSummary, "spotId" | "name">[];
   plans: readonly ObservationPlan[];
+  reminderNotifications: readonly import("./plan-reminders.ts").PlanReminderNotificationStatus[];
+}
+
+export interface AstronomicalEventBase {
+  occurrenceId: string;
+  eventId: string;
+  code: string;
+  displayName: string;
+  activeStartDate: string;
+  activeEndDate: string;
+  peakDate: string;
+  peakAtUtc: string | null;
+}
+
+export interface MeteorShowerOccurrence extends AstronomicalEventBase {
+  kind: "METEOR_SHOWER";
+  iauNumber: number;
+  radiantRightAscensionDeg: number;
+  radiantDeclinationDeg: number;
+  velocityKmPerSecond: number;
+  populationIndex: number;
+  nominalPeakZhr: number;
+}
+
+export interface EclipseOccurrence extends AstronomicalEventBase {
+  kind: "LUNAR_ECLIPSE" | "SOLAR_ECLIPSE";
+  eclipseKind: "PENUMBRAL" | "PARTIAL" | "ANNULAR" | "TOTAL";
+  obscuration: number | null;
+  phaseTimesUtc: Readonly<Partial<Record<
+    "PENUMBRAL_BEGIN" | "PARTIAL_BEGIN" | "TOTAL_BEGIN" | "PEAK" |
+    "TOTAL_END" | "PARTIAL_END" | "PENUMBRAL_END",
+    string
+  >>>;
+}
+
+export type AstronomicalEventOccurrence = MeteorShowerOccurrence | EclipseOccurrence;
+
+export interface AstronomicalEventLocalPhase {
+  key: "PENUMBRAL_BEGIN" | "PARTIAL_BEGIN" | "TOTAL_BEGIN" | "PEAK" |
+    "TOTAL_END" | "PARTIAL_END" | "PENUMBRAL_END";
+  atUtc: string;
+  localDateTime: string;
+  altitudeDeg: number;
+}
+
+export interface AstronomicalEventLocalVisibility {
+  state: "AVAILABLE" | "NOT_VISIBLE" | "UNAVAILABLE";
+  reason: string;
+  locationName?: string;
+  timezone?: string;
+  localDate?: string;
+  bestWindowStartUtc?: string | null;
+  bestWindowEndUtc?: string | null;
+  bestAtUtc?: string | null;
+  bestWindowStartLocal?: string | null;
+  bestWindowEndLocal?: string | null;
+  bestAtLocal?: string | null;
+  bestAltitudeDeg?: number | null;
+  bestAzimuthDeg?: number | null;
+  moonIllumination?: number | null;
+  phases?: readonly AstronomicalEventLocalPhase[];
+  constraints?: readonly string[];
+  algorithmVersion?: string;
+}
+
+export interface AstronomicalEventsData {
+  catalogVersion: string;
+  coverage: "REVIEWED_2026_METEOR_AND_ECLIPSE_EVENTS";
+  events: readonly AstronomicalEventOccurrence[];
+  sources: readonly SourceSummary[];
+}
+
+export interface AstronomicalEventDetailData {
+  catalogVersion: string;
+  event: AstronomicalEventOccurrence;
+  localVisibility: AstronomicalEventLocalVisibility;
+  source: SourceSummary;
 }
 
 export interface ProfileLinksData {
@@ -272,11 +380,14 @@ export interface FavoriteMutationRequest {
 }
 
 export interface PlanSaveRequest {
+  reminders?: readonly import("./plan-reminders.ts").PlanReminder[];
+  timing?: import("./plan.ts").PlanTiming;
   spotId: ObservationPlan["spotId"];
   observationContextId: ObservationContext["contextId"];
   localDate: string;
   localTime: string;
   notes: string;
+  eventOccurrenceIds?: readonly string[];
   expectedRevision: number | null;
 }
 
@@ -289,6 +400,7 @@ export interface AccountDataExportData {
   schemaVersion: "starward-account-data-export-v1";
   generatedAt: string;
   account: { userId: UserId };
+  profile: AccountProfileRecord;
   preferences: UserPreferencesRecord;
   favoriteSpotIds: readonly SpotId[];
   plans: readonly ObservationPlan[];
@@ -358,6 +470,7 @@ export interface ContributionDraftRequest {
   detail: string;
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
+  candidateProfile?: ContributionFormalProposal;
 }
 
 export interface ContributionUpdateRequest extends ContributionDraftRequest {
@@ -367,6 +480,18 @@ export interface ContributionUpdateRequest extends ContributionDraftRequest {
 export interface ContributionSubmitRequest {
   expectedRevision: number;
 }
+
+export interface ContributionMediaData {
+  mimeType: ContributionMediaUpload["mimeType"];
+  dataBase64: string;
+}
+
+export type {
+  ContributionFormalSubmitRequest, ContributionFormalSubmitResult,
+  ContributionFormalUploadIntent, ContributionFormalUploadIntentRequest,
+  ContributionFormalUploadSessionRequest, ContributionFormalUploadCompleteRequest,
+  ContributionFormalUploadRemoveRequest,
+} from "./contribution-feedback.ts";
 
 export interface AdminCaseDecisionRequest {
   resolution: "ACCEPTED" | "APPROVED" | "REJECTED" | "CHANGES_REQUESTED";
@@ -415,6 +540,7 @@ export interface AdminRetireRequest extends AdminLifecycleRequest {
 }
 
 export interface ContributionUploadSessionRequest {
+  kind?: import("./contribution-feedback.ts").ContributionMediaKind;
   originalName: string;
   mimeType: ContributionMediaUpload["mimeType"];
   byteSize: number;

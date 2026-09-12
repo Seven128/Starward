@@ -11,6 +11,7 @@ import type {
   ContributionSubmissionState,
   ContributionStatusHistoryEntry,
   ContributionTopic,
+  ContributionFormalProposal,
 } from "@starward/miniapp-contracts";
 
 export const TOPICS: ReadonlyArray<{
@@ -195,6 +196,7 @@ export interface ContributionFormValues {
   detail: string;
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
+  candidateProfile: ContributionFormalProposal;
 }
 
 export function safeParam(value: string | undefined) {
@@ -220,34 +222,23 @@ export function buildDraftInput(
   const candidate = values.kind === "NEW_SPOT_PROPOSAL";
   const parsedLatitude = parseCoordinateInput(values.latitude);
   const parsedLongitude = parseCoordinateInput(values.longitude);
-  if (candidate && (!values.candidateName.trim() || !values.candidateRegion.trim())) {
-    announce("error", "资料未保存", "请填写地点名称和地区；本页输入保持不变。");
-    return null;
-  }
-  if (
-    candidate &&
-    (!Number.isFinite(parsedLatitude) ||
-      !Number.isFinite(parsedLongitude) ||
-      Math.abs(parsedLatitude) > 90 ||
-      Math.abs(parsedLongitude) > 180 ||
-      (parsedLatitude === 0 && parsedLongitude === 0))
-  ) {
-    announce("error", "资料未保存", "请填写有效的纬度和经度；不会后台持续定位。");
-    return null;
-  }
+  const validCandidateLocation = candidate && values.candidateName.trim() &&
+    values.candidateRegion.trim() && Number.isFinite(parsedLatitude) &&
+    Number.isFinite(parsedLongitude) && Math.abs(parsedLatitude) <= 90 &&
+    Math.abs(parsedLongitude) <= 180 && !(parsedLatitude === 0 && parsedLongitude === 0);
   if (!candidate && !values.hasFormalSpot) {
     announce("error", "缺少观星点", "请从正式观星点详情进入现场反馈或纠错。");
     return null;
   }
   const observed = parseObservationInput(values.date, values.time);
-  if (values.kind !== "CORRECTION" && !observed) {
+  if (values.kind !== "CORRECTION" && !candidate && !observed) {
     announce("error", "资料未保存", "请填写有效的现场日期和时间（北京时间）；本页输入保持不变。");
     return null;
   }
   return {
     kind: values.kind,
     spotId: candidate ? null : values.routeSpotId,
-    candidateLocation: candidate
+    candidateLocation: validCandidateLocation
       ? {
           displayName: values.candidateName.trim(),
           region: values.candidateRegion.trim(),
@@ -258,11 +249,12 @@ export function buildDraftInput(
           },
         }
       : null,
-    observedAt: values.kind === "CORRECTION" ? null : observed,
+    observedAt: values.kind === "CORRECTION" || candidate ? null : observed,
     topics: values.topics,
     detail: values.detail,
     rightsConfirmed: values.rightsConfirmed,
     preciseLocationConsent: candidate && values.preciseLocationConsent,
+    ...(candidate ? { candidateProfile: values.candidateProfile } : {}),
   };
 }
 

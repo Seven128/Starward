@@ -110,7 +110,6 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     },
     mini: {
       compile: { include: sharedSourceInclude },
-      experimental: { compileMode: true },
       postcss: {
         pxtransform: { enable: true, config: {} },
         cssModules: {

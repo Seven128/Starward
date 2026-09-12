@@ -23,6 +23,7 @@ test("navigation clears both native status bar and capsule across device widths"
         getMenuButtonBoundingClientRect: () => ({ bottom }),
       });
       assert.equal(result.statusBarHeight, statusBarHeight);
+      assert.equal(result.capsuleBottom, bottom);
       assert.equal(result.safeTop, Math.max(bottom + 4, statusBarHeight + windowWidth * 96 / 750));
     }
   }
@@ -31,7 +32,7 @@ test("navigation clears both native status bar and capsule across device widths"
 test("missing or invalid native metrics preserve CSS fallbacks independently", () => {
   const missing = () => { throw new Error("unavailable"); };
   assert.deepEqual({ ...nativeNavigationInsets({ getWindowInfo: missing, getMenuButtonBoundingClientRect: missing }) },
-    { statusBarHeight: undefined, safeTop: undefined });
+    { statusBarHeight: undefined, capsuleBottom: undefined, safeTop: undefined });
   assert.equal(nativeNavigationInsets({ getWindowInfo: missing,
     getMenuButtonBoundingClientRect: () => ({ bottom: 92 }) }).safeTop, 96);
   assert.equal(nativeNavigationInsets({ getWindowInfo: () => ({ windowWidth: 375, statusBarHeight: 44 }),
@@ -59,4 +60,14 @@ test("title clearance follows the actual capsule edge and rejects unavailable ge
   }
   assert.equal(nativeMenuClearancePx({ getWindowInfo: () => { throw new Error("unavailable"); },
     getMenuButtonBoundingClientRect: () => ({ left: 230 }) }), undefined);
+});
+
+test("map consumers can use safeTop as the conservative search-field inset", () => {
+  const metrics = nativeNavigationInsets({
+    getWindowInfo: () => ({ windowWidth: 390, statusBarHeight: 20 }),
+    getMenuButtonBoundingClientRect: () => ({ bottom: 44 }),
+  });
+  assert.equal(metrics.capsuleBottom, 44);
+  assert.equal(metrics.safeTop, 69.92);
+  assert.ok(metrics.safeTop! > metrics.capsuleBottom! + 4);
 });

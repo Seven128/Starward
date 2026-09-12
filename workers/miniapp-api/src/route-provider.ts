@@ -1,5 +1,6 @@
 import type {
   RouteOverview,
+  RouteTravelMode,
   SourceSummary,
   Wgs84Point,
 } from "@starward/miniapp-contracts";
@@ -7,13 +8,25 @@ import { createMapCoordinateView } from "@starward/coordinate-system";
 import type { ProviderResult, RoutePort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
+interface AmapStep {
+  road_name?: string;
+  instruction?: string;
+  cost?: { duration?: string };
+}
+
 interface AmapPath {
   distance?: string;
   cost?: { duration?: string };
-  steps?: Array<{
-    road_name?: string;
-    instruction?: string;
-    cost?: { duration?: string };
+  steps?: AmapStep[];
+}
+
+interface AmapTransit {
+  distance?: string;
+  cost?: { duration?: string };
+  segments?: Array<{
+    walking?: { steps?: AmapStep[] };
+    bus?: { buslines?: Array<{ name?: string }> };
+    railway?: { name?: string };
   }>;
 }
 
@@ -21,7 +34,13 @@ interface AmapPayload {
   status?: string;
   info?: string;
   infocode?: string;
-  route?: { paths?: AmapPath[] };
+  route?: { paths?: AmapPath[]; transits?: AmapTransit[] };
+}
+
+interface AmapReverseGeocodePayload {
+  status?: string;
+  infocode?: string;
+  regeocode?: { addressComponent?: { citycode?: string } };
 }
 
 function point(value: Wgs84Point) {
@@ -42,14 +61,16 @@ function number(value: unknown) {
 
 function source(input: {
   retrievedAt: string;
+  mode: RouteTravelMode;
   state: SourceSummary["state"];
   limitations: readonly string[];
 }): SourceSummary {
+  const modeLabel = input.mode === "DRIVING" ? "驾车" : input.mode === "TRANSIT" ? "公交" : "步行";
   return {
-    id: `route:amap-v5:${input.retrievedAt}`,
+    id: `route:amap-v5:${input.mode.toLowerCase()}:${input.retrievedAt}`,
     kind: "THIRD_PARTY_ROUTE",
     provider: "高德地图开放平台",
-    title: "驾车路线规划结果",
+    title: `${modeLabel}路线规划结果`,
     sourceUrl: "https://lbs.amap.com/api/webservice/guide/api/newroute",
     license: "高德开放平台网页服务条款",
     licenseUrl: "https://lbs.amap.com/pages/product/webservice/",
@@ -67,21 +88,24 @@ function source(input: {
   };
 }
 
-function unavailable(errorCode: string): ProviderResult<RouteOverview> {
+function unavailable(errorCode: string, mode: RouteTravelMode = "DRIVING"): ProviderResult<RouteOverview> {
   const retrievedAt = new Date().toISOString();
   const dataSource = source({
     retrievedAt,
+    mode,
     state: "UNAVAILABLE",
     limitations: [
-      "当前请求未获得可验证的驾车路线；具体技术原因已记录用于诊断",
-      "未返回真实路线时不以直线距离冒充驾车距离或时间",
+      "当前请求未获得可验证的路线；具体技术原因已记录用于诊断",
+      "未返回真实路线时不以直线距离冒充道路距离或时间",
     ],
   });
   return {
     value: {
       kind: "UNAVAILABLE",
+      travelMode: mode,
       originLabel: null,
       distanceKm: null,
+      durationMinutes: null,
       driveMinutes: null,
       walkingMinutes: null,
       lastRoad: "路线服务当前不可用",
@@ -108,16 +132,37 @@ export class AmapRouteAdapter implements RoutePort {
   async estimate(
     input: Parameters<RoutePort["estimate"]>[0],
   ): Promise<ProviderResult<RouteOverview>> {
-    const url = new URL("https://restapi.amap.com/v5/direction/driving");
-    url.search = new URLSearchParams({
+    const mode = input.travelMode ?? "DRIVING";
+    const endpoint = mode === "DRIVING"
+      ? "driving"
+      : mode === "WALKING"
+        ? "walking"
+        : "transit/integrated";
+    const url = new URL(`https://restapi.amap.com/v5/direction/${endpoint}`);
+    const parameters: Record<string, string> = {
       key: this.webServiceKey,
       origin: point(input.origin),
       destination: point(input.destination),
-      strategy: "32",
       show_fields: "cost,navi",
       output: "json",
-    }).toString();
+    };
+    if (mode === "DRIVING") parameters.strategy = "32";
+    if (mode === "WALKING") parameters.isindoor = "0";
     try {
+      if (mode === "TRANSIT") {
+        const [city1, city2] = await Promise.all([
+          this.#cityCode(parameters.origin, input.signal),
+          this.#cityCode(parameters.destination, input.signal),
+        ]);
+        parameters.city1 = city1;
+        parameters.city2 = city2;
+        parameters.strategy = "0";
+        parameters.nightflag = "1";
+        if (input.departureLocalDate) parameters.date = input.departureLocalDate;
+        if (input.departureLocalTime)
+          parameters.time = input.departureLocalTime.replace(":", "-");
+      }
+      url.search = new URLSearchParams(parameters).toString();
       const response = await this.transport(url, {
         headers: { accept: "application/json" },
         ...(input.signal ? { signal: input.signal } : {}),
@@ -128,40 +173,60 @@ export class AmapRouteAdapter implements RoutePort {
       const payload = (await response.json()) as AmapPayload;
       if (payload.status !== "1" || payload.infocode !== "10000")
         throw new Error(`amap_rejected_${payload.infocode ?? "unknown"}`);
-      const path = payload.route?.paths?.[0];
-      if (!path) throw new Error("amap_route_empty");
-      const distanceM = number(path.distance);
+      const route = mode === "TRANSIT"
+        ? payload.route?.transits?.[0]
+        : payload.route?.paths?.[0];
+      if (!route) throw new Error("amap_route_empty");
+      const distanceM = number(route.distance);
       const durationSeconds =
-        number(path.cost?.duration) ??
-        number(
-          path.steps?.reduce(
-            (sum, step) => sum + (number(step.cost?.duration) ?? 0),
-            0,
-          ),
-        );
+        number(route.cost?.duration) ??
+        ("steps" in route
+          ? number(
+              route.steps?.reduce(
+                (sum, step) => sum + (number(step.cost?.duration) ?? 0),
+                0,
+              ),
+            )
+          : null);
       if (distanceM === null || durationSeconds === null)
         throw new Error("amap_route_measurement_invalid");
-      const lastRoad = [...(path.steps ?? [])]
+      const steps = "steps" in route ? route.steps ?? [] : [];
+      const transitName = "segments" in route
+        ? route.segments
+            ?.flatMap((segment) => [
+              ...(segment.bus?.buslines ?? []).map((line) => line.name?.trim()),
+              segment.railway?.name?.trim(),
+            ])
+            .find(Boolean)
+        : null;
+      const lastRoad = [...steps]
         .reverse()
         .map((step) => step.road_name?.trim() || step.instruction?.trim())
         .find(Boolean);
+      const durationMinutes = Math.max(1, Math.round(durationSeconds / 60));
       const retrievedAt = new Date().toISOString();
+      const modeLabel = mode === "DRIVING" ? "驾车" : mode === "TRANSIT" ? "公交" : "步行";
       const dataSource = source({
         retrievedAt,
+        mode,
         state: "FRESH",
         limitations: [
-          "驾车时间是当前路线规划估算，不等同于实际到达时间",
-          "停车与末段现场条件仍以点位核验证据为准",
+          `${modeLabel}时间是当前路线规划估算，不等同于实际到达时间`,
+          mode === "TRANSIT"
+            ? "班次、停运和夜间运营状态可能变化，出发前仍需复核"
+            : "末段现场条件仍以点位核验证据为准",
         ],
       });
       const value: RouteOverview = {
         kind: "ROUTE_ESTIMATE",
+        travelMode: mode,
         originLabel: null,
         distanceKm: Math.round((distanceM / 1_000) * 10) / 10,
-        driveMinutes: Math.max(1, Math.round(durationSeconds / 60)),
-        walkingMinutes: null,
-        lastRoad: lastRoad || "路线已返回，但未包含末段道路名称",
-        parkingGuidance: "停车以点位已核验场地信息为准",
+        durationMinutes,
+        driveMinutes: mode === "DRIVING" ? durationMinutes : null,
+        walkingMinutes: mode === "WALKING" ? durationMinutes : null,
+        lastRoad: transitName || lastRoad || `${modeLabel}路线已返回`,
+        parkingGuidance: mode === "DRIVING" ? "停车以点位已核验场地信息为准" : "到达后仍需核验末段步行与场地开放情况",
         state: "FRESH",
         source: dataSource,
       };
@@ -175,8 +240,32 @@ export class AmapRouteAdapter implements RoutePort {
       if (input.signal?.aborted) throw error;
       return unavailable(
         error instanceof Error ? error.message : "amap_unknown_failure",
+        mode,
       );
     }
+  }
+
+  async #cityCode(location: string, signal?: AbortSignal) {
+    const url = new URL("https://restapi.amap.com/v3/geocode/regeo");
+    url.search = new URLSearchParams({
+      key: this.webServiceKey,
+      location,
+      extensions: "base",
+      output: "json",
+    }).toString();
+    const response = await this.transport(url, {
+      headers: { accept: "application/json" },
+      ...(signal ? { signal } : {}),
+    });
+    if (!response.ok) throw new Error(`amap_city_http_${response.status}`);
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("json")) throw new Error("amap_city_non_json_response");
+    const payload = (await response.json()) as AmapReverseGeocodePayload;
+    if (payload.status !== "1" || payload.infocode !== "10000")
+      throw new Error(`amap_city_rejected_${payload.infocode ?? "unknown"}`);
+    const cityCode = payload.regeocode?.addressComponent?.citycode?.trim();
+    if (!cityCode) throw new Error("amap_city_code_missing");
+    return cityCode;
   }
 }
 

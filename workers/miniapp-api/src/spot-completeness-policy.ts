@@ -1,30 +1,15 @@
 import { createHash } from "node:crypto";
 import type {
   FactEvidence,
-  FacilityType,
   SourceSummary,
   SpotDetail,
 } from "@starward/miniapp-contracts";
 
-const FACILITY_TYPES: readonly FacilityType[] = [
-  "PARKING",
-  "TOILET",
-  "PLATFORM",
-  "CHARGING",
-  "CAMPING",
-  "ROAD",
-  "WALKING",
-  "SIGNAL",
-];
-
 const REQUIRED_CLAIMS = [
   "SPOT_COORDINATE",
-  "ACCESS_LAST_ROAD",
-  "ACCESS_PARKING",
   "ACCESS_OPENNESS",
   "ACCESS_LEGAL_ENTRY",
   "SAFETY_NIGHT",
-  "HORIZON_PROFILE",
 ] as const;
 
 const MAX_CORE_EVIDENCE_AGE_MS = 30 * 24 * 60 * 60 * 1_000;
@@ -130,13 +115,6 @@ function evidenceUsable(
   return evidence.validTo === null || (validTo !== null && validTo >= nowMs);
 }
 
-function meaningfulOperationalText(value: string) {
-  return (
-    isText(value, 1_000) &&
-    !/(未知|暂无|待核验|不确定|unknown|unavailable|todo)/iu.test(value)
-  );
-}
-
 export function evaluateSpotCompleteness(input: {
   detail: SpotDetail;
   review: PublicationReview;
@@ -183,37 +161,19 @@ export function evaluateSpotCompleteness(input: {
     ...input.detail.dataDisclosure,
   ];
   const sourceById = new Map(sources.map((source) => [source.id, source]));
-  const invalidSourceIds = [...sourceById.values()]
-    .filter((source) => !sourceUsable(source, nowMs))
-    .map((source) => source.id);
+  // Missing optional enrichment is not a second publication threshold.
+  // Core claims still need a usable source, not just a registered source ID.
+  const usableSourceIds = new Set(
+    [...sourceById.values()]
+      .filter((source) => sourceUsable(source, nowMs))
+      .map((source) => source.id),
+  );
+  const invalidSourceIds = sourceUsable(spot.source, nowMs) ? [] : [spot.source.id];
   if (invalidSourceIds.length)
     add(
       "source_provenance_invalid",
       "spot.sources",
       `存在不可发布的来源：${invalidSourceIds.join(", ")}`,
-    );
-
-  const light = spot.lightPollution;
-  if (
-    light.state !== "ESTIMATED" ||
-    light.productBand == null ||
-    light.radiance == null ||
-    !Number.isFinite(light.radiance.median) ||
-    !Number.isFinite(light.radiance.p10) ||
-    !Number.isFinite(light.radiance.p90) ||
-    light.radiance.p10 > light.radiance.median ||
-    light.radiance.median > light.radiance.p90 ||
-    light.radiance.unit !== "nW/cm²/sr" ||
-    light.minimumCloudFreeObservations == null ||
-    light.minimumCloudFreeObservations < 1 ||
-    light.datasetVersion === "UNAVAILABLE" ||
-    !meaningfulOperationalText(light.method) ||
-    !meaningfulOperationalText(light.precision)
-  )
-    add(
-      "light_pollution_estimate_incomplete",
-      "spot.lightPollution",
-      "正式点必须具有版本化、带覆盖次数和来源的卫星夜光估算；不得以精确 Bortle 或现场 SQM 冒充。",
     );
 
   const evidenceIds = new Set<string>();
@@ -228,7 +188,8 @@ export function evaluateSpotCompleteness(input: {
     evidenceIds.add(evidence.evidenceId);
   }
   const usableEvidence = evidenceRecords.filter((evidence) =>
-    evidenceUsable(evidence, new Set(sourceById.keys()), nowMs),
+    evidence.subjectId === spot.spotId &&
+    evidenceUsable(evidence, usableSourceIds, nowMs),
   );
   const satisfiedClaims = new Set(usableEvidence.map((evidence) => evidence.claim));
   for (const claim of REQUIRED_CLAIMS)
@@ -239,79 +200,24 @@ export function evaluateSpotCompleteness(input: {
         `缺少当前有效且已确认的 ${claim} 证据。`,
       );
 
-  const facilityTypes = spot.facilities.map((facility) => facility.type);
-  const facilityTypeSet = new Set(facilityTypes);
-  if (
-    spot.facilities.length !== FACILITY_TYPES.length ||
-    facilityTypeSet.size !== FACILITY_TYPES.length ||
-    FACILITY_TYPES.some((type) => !facilityTypeSet.has(type))
-  )
-    add(
-      "facility_closure_incomplete",
-      "spot.facilities",
-      "停车、厕所、平台、充电、露营、道路、徒步和信号必须各有且仅有一条状态。",
-    );
-  for (const facility of spot.facilities) {
-    if (
-      !isText(facility.summary, 500) ||
-      !isText(facility.detail, 1_000) ||
-      timestamp(facility.verifiedAt) === null ||
-      !sourceUsable(facility.source, nowMs)
-    )
-      add(
-        "facility_evidence_invalid",
-        `spot.facilities.${facility.type}`,
-        `${facility.type} 缺少状态说明、核验时间或可追溯来源。`,
-      );
-  }
-  if (spot.facilities.every((facility) => facility.status === "UNKNOWN"))
-    add(
-      "facility_all_unknown",
-      "spot.facilities",
-      "八项设施不能全部以 UNKNOWN 通过发布门。",
-    );
-  const road = spot.facilities.find((facility) => facility.type === "ROAD");
-  const parking = spot.facilities.find(
-    (facility) => facility.type === "PARKING",
-  );
-  if (
-    !road ||
-    road.status === "UNKNOWN" ||
-    !meaningfulOperationalText(input.detail.route.lastRoad)
-  )
-    add(
-      "access_last_road_incomplete",
-      "spot.access.road",
-      "末段道路必须具有已核验状态和可执行说明。",
-    );
-  if (
-    !parking ||
-    parking.status === "UNKNOWN" ||
-    !meaningfulOperationalText(input.detail.route.parkingGuidance)
-  )
-    add(
-      "parking_incomplete",
-      "spot.access.parking",
-      "停车必须具有已核验状态和可执行说明。",
-    );
-
   const access = input.detail.accessAndSafety ?? {
     openness: "UNKNOWN", legalAccess: "UNKNOWN", nightSafety: "UNKNOWN",
     explicitDanger: null, restrictions: [], guidance: [],
   };
-  if (access.openness === "UNKNOWN")
+  if (!["OPEN", "CONDITIONAL", "CLOSED"].includes(access.openness))
     add(
       "openness_unknown",
       "spot.accessAndSafety.openness",
       "开放状态必须经过核验。",
     );
-  if (access.legalAccess === "UNKNOWN")
+  if (!["PERMITTED", "CONDITIONAL", "PROHIBITED"].includes(access.legalAccess))
     add(
       "legal_access_unknown",
       "spot.accessAndSafety.legalAccess",
       "合法进入条件必须经过核验。",
     );
-  if (access.nightSafety === "UNKNOWN" || access.explicitDanger === null)
+  if (!["NO_KNOWN_HAZARD", "CAUTION", "DANGER"].includes(access.nightSafety) ||
+    typeof access.explicitDanger !== "boolean")
     add(
       "night_safety_unknown",
       "spot.accessAndSafety.nightSafety",
@@ -339,25 +245,6 @@ export function evaluateSpotCompleteness(input: {
       "关闭、禁止进入或明确危险的地点不能保持 PUBLISHED。",
     );
 
-  if (
-    spot.obstructionPercent === null ||
-    !Number.isFinite(spot.obstructionPercent) ||
-    spot.obstructionPercent < 0 ||
-    spot.obstructionPercent > 100 ||
-    spot.clearDirections.length === 0
-  )
-    add(
-      "horizon_incomplete",
-      "spot.horizon",
-      "遮挡比例和至少一个开阔方向必须具有现场证据。",
-    );
-
-  if (input.detail.siteMediaState == null || input.detail.siteMediaState === "UNKNOWN")
-    add(
-      "site_media_state_unknown",
-      "spot.siteMediaState",
-      "必须明确现场媒体已核验，或明确没有已核验现场媒体。",
-    );
   if (input.detail.siteMediaState === "SITE_MEDIA_VERIFIED") {
     const siteMedia = spot.media.filter((media) => media.isSiteSpecific);
     if (
@@ -382,13 +269,13 @@ export function evaluateSpotCompleteness(input: {
       );
   }
   if (
-    input.detail.siteMediaState === "NO_SITE_MEDIA_VERIFIED" &&
+    input.detail.siteMediaState !== "SITE_MEDIA_VERIFIED" &&
     spot.media.some((media) => media.isSiteSpecific)
   )
     add(
       "site_media_state_conflict",
       "spot.siteMediaState",
-      "无现场媒体声明与当前媒体标记冲突。",
+      "现场媒体标记必须与已核验的媒体声明一致。",
     );
 
   const lastVerifiedAt = timestamp(spot.lastVerifiedAt);

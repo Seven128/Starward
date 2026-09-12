@@ -1,3 +1,5 @@
+import { localParts, zonedLocalToUtc } from "@starward/miniapp-contracts";
+export { zonedLocalToUtc } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
 import type {
   ObservationContext,
@@ -6,10 +8,7 @@ import type {
   ObservationContextUpdateRequest,
   SpotId,
 } from "@starward/miniapp-contracts";
-import {
-  activeMeteorEvents,
-  meteorEventByOccurrenceId,
-} from "./meteor-event-catalog.ts";
+import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import type { CachePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
@@ -54,70 +53,6 @@ function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
-function localParts(date: Date, timezone: string) {
-  const values = Object.fromEntries(
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-    })
-      .formatToParts(date)
-      .map((part) => [part.type, part.value]),
-  );
-  return {
-    year: Number(values.year),
-    month: Number(values.month),
-    day: Number(values.day),
-    hour: Number(values.hour),
-    minute: Number(values.minute),
-    second: Number(values.second),
-  };
-}
-
-/** Converts a finite local wall-clock value through the platform IANA rules.
- * Two passes handle offset changes without assuming China-only fixed offsets. */
-export function zonedLocalToUtc(input: {
-  localDate: string;
-  localTime: string;
-  timezone: string;
-}): string {
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(input.localDate))
-    throw new Error("observation_local_date_invalid");
-  if (!/^\d{2}:\d{2}$/u.test(input.localTime))
-    throw new Error("observation_local_time_invalid");
-  const [year, month, day] = input.localDate.split("-").map(Number);
-  const [hour, minute] = input.localTime.split(":").map(Number);
-  const wall = Date.UTC(year!, month! - 1, day!, hour!, minute!, 0);
-  let candidate = wall;
-  for (let index = 0; index < 3; index += 1) {
-    const seen = localParts(new Date(candidate), input.timezone);
-    const seenWall = Date.UTC(
-      seen.year,
-      seen.month - 1,
-      seen.day,
-      seen.hour,
-      seen.minute,
-      seen.second,
-    );
-    candidate -= seenWall - wall;
-  }
-  const verified = localParts(new Date(candidate), input.timezone);
-  if (
-    verified.year !== year ||
-    verified.month !== month ||
-    verified.day !== day ||
-    verified.hour !== hour ||
-    verified.minute !== minute
-  )
-    throw new Error("observation_local_time_nonexistent_or_ambiguous");
-  return new Date(candidate).toISOString();
-}
-
 function nextLocalDate(localDate: string): string {
   const [year, month, day] = localDate.split("-").map(Number);
   return new Date(Date.UTC(year!, month! - 1, day! + 1))
@@ -142,12 +77,13 @@ function assertSelectedAt(
 function assertEventSelection(
   eventInstanceId: string | null | undefined,
   localDate: string,
+  catalog: AstronomicalEventCatalogOwner,
 ) {
   if (!eventInstanceId) return;
-  const event = meteorEventByOccurrenceId(eventInstanceId);
+  const event = catalog.find(eventInstanceId);
   if (
     !event ||
-    !activeMeteorEvents(localDate).some(
+    !catalog.active(localDate).some(
       (candidate) => candidate.occurrenceId === event.occurrenceId,
     )
   )
@@ -159,6 +95,7 @@ export class ObservationContextService {
     private readonly repository: MiniappRepositoryPort,
     private readonly cache: CachePort,
     private readonly config: MiniappRuntimeConfig,
+    private readonly eventCatalog: AstronomicalEventCatalogOwner = new AstronomicalEventCatalogOwner(),
   ) {}
 
   async resolve(input: ObservationContextResolveRequest) {
@@ -213,7 +150,7 @@ export class ObservationContextService {
           timezone: resolvedLocation.timezone,
         });
     assertSelectedAt(selectedAtUtc, nightStartUtc, nightEndUtc);
-    assertEventSelection(input.eventInstanceId, input.localDate);
+    assertEventSelection(input.eventInstanceId, input.localDate, this.eventCatalog);
     const now = new Date();
     const fingerprintInput = {
       location: resolvedLocation.location,
@@ -233,7 +170,7 @@ export class ObservationContextService {
         opportunity: this.config.opportunityRuleVersion,
         tripDecision: this.config.tripDecisionRuleVersion,
         darkSky: this.config.darkSkyDatasetVersion,
-        eventCatalog: this.config.eventCatalogVersion,
+        eventCatalog: this.eventCatalog.snapshot().catalogVersion,
       },
     };
     const context: ObservationContext = {
@@ -275,13 +212,27 @@ export class ObservationContextService {
     const current = await this.get(contextId);
     if (current.revision !== input.expectedRevision)
       throw new Error("observation_context_conflict");
+    const localDate = input.localDate ?? current.localDate;
+    const nightStartUtc = zonedLocalToUtc({
+      localDate,
+      localTime: "12:00",
+      timezone: current.timezone,
+    });
+    const nightEndUtc = zonedLocalToUtc({
+      localDate: nextLocalDate(localDate),
+      localTime: "12:00",
+      timezone: current.timezone,
+    });
     const selectedAtUtc = input.selectedAt
       ? new Date(input.selectedAt).toISOString()
       : current.selectedAtUtc;
-    assertSelectedAt(selectedAtUtc, current.nightStartUtc, current.nightEndUtc);
+    assertSelectedAt(selectedAtUtc, nightStartUtc, nightEndUtc);
     const next: ObservationContext = {
       ...current,
       revision: current.revision + 1,
+      localDate,
+      nightStartUtc,
+      nightEndUtc,
       selectedAtUtc,
       eventInstanceId:
         input.eventInstanceId === undefined
@@ -292,7 +243,7 @@ export class ObservationContextService {
         cloudLayer: input.cloudLayer ?? current.weatherView.cloudLayer,
       },
     };
-    assertEventSelection(next.eventInstanceId, next.localDate);
+    assertEventSelection(next.eventInstanceId, next.localDate, this.eventCatalog);
     const nextFingerprint = digest({
       location: next.location,
       routeOrigin: next.routeOrigin,

@@ -31,7 +31,7 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
   visit(source);
   assert.equal(declarations.length, names.size);
   assert.match(text, /"map-observation-context",\s*mapResetVersion/u);
-  let version = 0, calls = 0;
+  let version = 0, calls = 0, mapPointSelections = 0;
   const contexts: object[] = [], viewports: object[] = [], notifications: object[] = [];
   const timers = new Map<number, () => void>();
   let timerId = 0;
@@ -43,10 +43,11 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
     currentTimezoneHint: () => "UTC", localDateForNow: () => "2026-08-29",
     resolveObservationContext: () => { calls++; return typeof response === "function" ? response() : response; },
     isMiniappRequestCancelled,
+    leaveSelectedLocationForMapPoint: () => { mapPointSelections++; },
     setObservationContext: (context: object) => contexts.push(context),
     setViewport: (viewport: object) => viewports.push(viewport),
     notify: (notification: object) => notifications.push(notification), errorMessage: () => "synthetic error",
-    userMapRegionEnd, regionTimer: { current: null },
+    userMapRegionEnd, regionTimer: { current: null }, candidateCameraGuard: { current: null },
     clearTimeout: (id: number) => timers.delete(id),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
   }, { timeout: 1000 }) as {
@@ -54,7 +55,8 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
     onRegionChange(event: object): void;
   };
   return { ...functions, contexts, viewports, notifications, reset: () => { version++; },
-    fireTimers: () => { const pending = [...timers.values()]; timers.clear(); pending.forEach((callback) => callback()); }, get calls() { return calls; } };
+    fireTimers: () => { const pending = [...timers.values()]; timers.clear(); pending.forEach((callback) => callback()); },
+    get calls() { return calls; }, get mapPointSelections() { return mapPointSelections; } };
 }
 
 test("actual map-point resolver discards success and error superseded by default reset", async () => {
@@ -67,6 +69,7 @@ test("actual map-point resolver discards success and error superseded by default
     else response.reject(new Error("synthetic late failure"));
     assert.equal(await pending, null);
     assert.equal(map.contexts.length, 0);
+    assert.equal(map.mapPointSelections, 0);
   }
 });
 
@@ -75,6 +78,7 @@ test("actual current map-point result still commits and current failures still r
   const map = mapRuntime(Promise.resolve({ data: context }));
   assert.equal(await map.resolveMapPoint(center, "MAP_VIEWPORT"), context);
   assert.deepEqual(map.contexts, [context]);
+  assert.equal(map.mapPointSelections, 1);
   const failed = mapRuntime(Promise.reject(new Error("synthetic current failure")));
   await assert.rejects(failed.resolveMapPoint(center, "MAP_VIEWPORT"), /synthetic current failure/);
 });
@@ -91,6 +95,7 @@ test("a replaced map request is silent and cannot overwrite the current context"
   assert.equal(await observed, null);
   transport.calls[0]!.success({ statusCode: 200, data: transport.response });
   assert.deepEqual(map.contexts, [context]);
+  assert.equal(map.mapPointSelections, 1);
   assert.deepEqual(map.notifications, []);
 });
 

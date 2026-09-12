@@ -17,12 +17,22 @@ const ROLE_OPERATIONS: Record<AdminRole, readonly AdminOperation[]> = {
     "REPLACE",
     "RETIRE",
     "AUDIT_READ",
+    "EVENT_CATALOG_READ",
+    "EVENT_CATALOG_IMPORT",
+    "EVENT_CATALOG_REVIEW",
+    "EVENT_CATALOG_PUBLISH",
+    "EVENT_CATALOG_ROLLBACK",
+    "EVENT_CATALOG_SOURCE_MANAGE",
+    "EVENT_CATALOG_RERUN",
   ],
   MODERATOR: [
     "QUEUE_READ",
     "CASE_READ",
     "CASE_REVIEW",
     "MERGE_PREVIEW",
+    "EVENT_CATALOG_READ",
+    "EVENT_CATALOG_IMPORT",
+    "EVENT_CATALOG_REVIEW",
   ],
   MEDIA_REVIEWER: ["MEDIA_READ", "MEDIA_REVIEW"],
   PUBLISHER: [
@@ -34,8 +44,11 @@ const ROLE_OPERATIONS: Record<AdminRole, readonly AdminOperation[]> = {
     "UNPUBLISH",
     "REPLACE",
     "RETIRE",
+    "EVENT_CATALOG_READ",
+    "EVENT_CATALOG_PUBLISH",
+    "EVENT_CATALOG_ROLLBACK",
   ],
-  AUDITOR: ["QUEUE_READ", "CASE_READ", "MEDIA_READ", "AUDIT_READ"],
+  AUDITOR: ["QUEUE_READ", "CASE_READ", "MEDIA_READ", "AUDIT_READ", "EVENT_CATALOG_READ"],
 };
 
 export function assertAdminToken(provided: string | undefined) {

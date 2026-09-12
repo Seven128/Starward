@@ -35,6 +35,7 @@ const CONTRIBUTION_EVIDENCE_CLAIMS = new Set<AdminContributionEvidenceClaim>([
   "ACCESS_LEGAL_ENTRY",
   "SAFETY_NIGHT",
   "HORIZON_PROFILE",
+  "SPOT_DETAILS",
   "SITE_MEDIA_PROVENANCE",
 ]);
 

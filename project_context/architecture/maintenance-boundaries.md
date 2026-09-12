@@ -30,7 +30,7 @@ Revisit when: Extract observation-context, Finder and viewport-selection control
 
 Owner: wechat-miniapp-maintainers. Tracking: WECHAT-MINIAPP-MOD-006.
 
-The BFF client owns transport and generated endpoint projection. `response-cache.ts` now owns bounded response persistence, representation identity and storage cleanup; `request-lifecycle.ts` owns request cancellation. Identity recovery remains in the client, so transport-family and identity-recovery extraction are still bounded debt.
+The BFF client composes transport and account session storage/login. `response-cache.ts` owns bounded response persistence, representation identity and storage cleanup; `request-lifecycle.ts` owns request cancellation. `authenticated-operation.ts` owns generated endpoint projection and account-bound permission-retry orchestration through injected transport/session functions; all existing endpoints use it. `account-profile-client.ts` owns profile read/write intent, same-runtime retry and pre/post request account fences. Native request transport and session establishment remain in the client and should be inspected before materially extending those policies.
 
 Revisit when: Review the existing response-cache and request-lifecycle adapters, then extract the affected remaining transport or identity-recovery responsibility before adding another endpoint family or transport policy. Do not create a second cache owner.
 
@@ -46,7 +46,7 @@ Revisit when: Partition catalog data by domain before adding or materially chang
 
 Owner: miniapp-contract-maintainers. Tracking: WECHAT-MINIAPP-MOD-001.
 
-The current implementation still co-locates the legacy 10+8 vocabulary and predicates. The confirmed Mini Program contract now has 16 conditions and an explicit driving-duration parameter; current intended meaning is owned by the Map/Search Screen Contract. This is a migration boundary, not an obligation to retain 18 options. No current Mini Program/BFF caller of shared filterSpots was found in the 2026-09-09 audit.
+The current implementation co-locates the 16-condition vocabulary, compact static predicates and the committed time/distance driving-range parameter. Map/Search owns the five-category editing interaction; the BFF owns dynamic and route-backed evaluation. The retired 10+8 vocabulary and recommendation filters were removed in the 2026-09-10 migration. No current Mini Program/BFF caller of shared `filterSpots` was found in the 2026-09-09 audit.
 
 Revisit when: Separate filter vocabulary from predicate evaluation before adding or changing a filter dimension.
 
@@ -198,9 +198,17 @@ Revisit when: Extract event-target projection and decision-input assembly before
 
 Owner: miniapp-api-maintainers. Tracking: WECHAT-MINIAPP-MOD-009.
 
-The reviewed IAU and IMO occurrence population plus its attributable historical activity profile are kept together for atomic provenance review; data partitions remain immutable reference content rather than a selectable product version.
+The reviewed IAU and IMO seed population plus its attributable historical activity profile remain immutable reference content. Selectable published occurrence versions are now owned by `astronomical-event-catalog-owner.ts`; this file continues to own the source-specific historical activity curves used by meteor projection.
 
-Revisit when: Partition reviewed occurrence data from profile projection before adding another event catalog authority or materially revising the population.
+Revisit when: A second activity-profile authority or materially different activity model requires source-specific profile versioning.
+
+## workers/miniapp-api/src/astronomical-event-catalog-owner.ts
+
+Owner: miniapp-api-maintainers. Tracking: WECHAT-MINIAPP-MOD-009.
+
+This is the single active astronomical-event catalog responsibility for built-in fallback, bounded package validation, source-specific candidate diff/review policy, publication history and the synchronous snapshot consumed by public reads, plans, Observation Context and astronomy caches. PostgreSQL storage and atomic publication remain behind its dedicated store; source adapters produce its documented package instead of creating another runtime catalog.
+
+Revisit when: A new event family changes the public occurrence schema, or a source needs a parser whose validation and critical-change policy cannot be expressed by the current package boundary.
 
 ## workers/miniapp-api/src/observation-context-service.ts
 

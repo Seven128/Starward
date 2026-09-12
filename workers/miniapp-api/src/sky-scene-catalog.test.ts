@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { GAIA_DR3_PROJECTION_ALGORITHM } from "@starward/astronomy-core";
+import { HIPPARCOS_PROJECTION_ALGORITHM } from "@starward/astronomy-core";
 import {
   SKY_SCENE_MAX_CATALOG_ENTRIES,
   skySceneSerializedBytes,
@@ -38,16 +38,16 @@ const source: SourceSummary = {
 
 function snapshot(
   entries = [
-    { sourceId: "gaia:1", gMagnitude: 1.1, bpRp: 0.1, raHours: 1, decDeg: 20 },
-    { sourceId: "gaia:2", gMagnitude: 4.9, bpRp: 1.2, raHours: 10, decDeg: -5 },
-    { sourceId: "gaia:3", gMagnitude: 5.5, bpRp: null, raHours: 18, decDeg: 45 },
+    { sourceId: "HIP:1", objectRef: "HIP:1", displayName: "Alpha", magnitude: 1.1, magnitudeBand: "V" as const, colorIndex: 0.1, colorIndexBand: "B-V" as const, raHours: 1, decDeg: 20 },
+    { sourceId: "HIP:2", objectRef: "HIP:2", displayName: null, magnitude: 4.9, magnitudeBand: "V" as const, colorIndex: 1.2, colorIndexBand: "B-V" as const, raHours: 10, decDeg: -5 },
+    { sourceId: "HIP:3", objectRef: "HIP:3", displayName: null, magnitude: 5, magnitudeBand: "V" as const, colorIndex: null, colorIndexBand: "B-V" as const, raHours: 18, decDeg: 45 },
   ],
 ): SkyCatalogSnapshot {
   return {
     catalogVersion: "gaia-dr3-test-v1",
     catalogHash: "b".repeat(64),
     magnitudeLimit: 5.5,
-    source,
+    sources: [source, { ...source, id: "names-test", kind: "OFFICIAL_REFERENCE" }],
     entries,
   };
 }
@@ -97,10 +97,10 @@ test("BFF scene has one deterministic frame per real hourly slice and positions 
     first.frames[0]?.points?.map((point) => point[0]),
     [0, 1, 2],
   );
-  assert.equal(first.catalog?.entries[0]?.sourceId, "gaia:1");
-  assert.equal(first.catalog?.entries[0]?.gMagnitude, 1.1);
-  assert.equal(first.catalog?.entries[0]?.bpRp, 0.1);
-  assert.equal(first.catalog?.source.id, source.id);
+  assert.equal(first.catalog?.entries[0]?.sourceId, "HIP:1");
+  assert.equal(first.catalog?.entries[0]?.magnitude, 1.1);
+  assert.equal(first.catalog?.entries[0]?.colorIndex, 0.1);
+  assert.equal(first.catalog?.sources[0]?.id, source.id);
   assert.equal(first.catalog?.catalogVersion, "gaia-dr3-test-v1");
   assert.equal(first.catalog?.catalogHash, "b".repeat(64));
   assert.ok(skySceneSerializedBytes(first) < 1_048_576);
@@ -133,8 +133,8 @@ test("missing, malformed, duplicate and oversized catalogs fail closed without f
 
   const duplicate = providerFor(
     snapshot([
-      { sourceId: "gaia:1", gMagnitude: 1, bpRp: 0, raHours: 1, decDeg: 1 },
-      { sourceId: "gaia:1", gMagnitude: 2, bpRp: 0, raHours: 2, decDeg: 2 },
+      { sourceId: "HIP:1", objectRef: "HIP:1", displayName: null, magnitude: 1, magnitudeBand: "V", colorIndex: 0, colorIndexBand: "B-V", raHours: 1, decDeg: 1 },
+      { sourceId: "HIP:1", objectRef: "HIP:1", displayName: null, magnitude: 2, magnitudeBand: "V", colorIndex: 0, colorIndexBand: "B-V", raHours: 2, decDeg: 2 },
     ]),
   );
   const duplicateScene = buildSkyScene({ provider: duplicate, hourlyAt, spot });
@@ -145,7 +145,7 @@ test("missing, malformed, duplicate and oversized catalogs fail closed without f
     ...source,
     limitations: ["x".repeat(1_100_000)],
   };
-  const oversized = providerFor({ ...snapshot(), source: oversizedSource });
+  const oversized = providerFor({ ...snapshot(), sources: [oversizedSource, source] });
   const oversizedScene = buildSkyScene({ provider: oversized, hourlyAt, spot });
   assert.equal(oversizedScene.state, "UNAVAILABLE");
   assert.equal(oversizedScene.unavailableReason, "SCENE_SERIALIZED_SIZE_LIMIT");
@@ -153,9 +153,13 @@ test("missing, malformed, duplicate and oversized catalogs fail closed without f
 
 test("catalog and scene limits admit exactly 2048 rows but never a 2049th", () => {
   const entries = Array.from({ length: SKY_SCENE_MAX_CATALOG_ENTRIES }, (_, index) => ({
-    sourceId: `gaia:${index}`,
-    gMagnitude: 5.5,
-    bpRp: null,
+    sourceId: `HIP:${index + 1}`,
+    objectRef: `HIP:${index + 1}`,
+    displayName: null,
+    magnitude: 5,
+    magnitudeBand: "V" as const,
+    colorIndex: null,
+    colorIndexBand: "B-V" as const,
     raHours: (index % 24) + 0.001,
     decDeg: -89 + (index % 179),
   }));
@@ -177,7 +181,7 @@ test("catalog and scene limits admit exactly 2048 rows but never a 2049th", () =
   assert.ok(skySceneSerializedBytes(accepted) < 1_048_576);
 
   const rejected = buildSkyScene({
-    provider: providerFor(snapshot([...entries, { ...entries[0]!, sourceId: "gaia:overflow" }])),
+    provider: providerFor(snapshot([...entries, { ...entries[0]!, sourceId: "HIP:999999", objectRef: "HIP:999999" }])),
     hourlyAt,
     spot,
   });
@@ -188,7 +192,7 @@ test("catalog and scene limits admit exactly 2048 rows but never a 2049th", () =
 test("real catalog cache identity binds projection algorithm as well as asset bytes", () => {
   const provider = createGaiaDr3SkyCatalogProvider();
   const catalog = provider.load();
-  assert.equal(provider.cacheKey(), `${catalog.catalogVersion}:${catalog.catalogHash}:${GAIA_DR3_PROJECTION_ALGORITHM}`);
+  assert.equal(provider.cacheKey(), `${catalog.catalogVersion}:${catalog.catalogHash}:${HIPPARCOS_PROJECTION_ALGORITHM}`);
   assert.notEqual(provider.cacheKey(), `${catalog.catalogVersion}:${catalog.catalogHash}`);
 });
 
@@ -237,7 +241,7 @@ test("SkyReport cache identity changes when catalog version/hash changes", async
   }
 });
 
-test("the formal Gaia DR3 pack projects every real hourly slice under 1 MiB", () => {
+test("the formal Hipparcos pack projects every real hourly slice under 1 MiB", () => {
   const provider = createGaiaDr3SkyCatalogProvider();
   const calculation = calculateMiniappNightSky({
     latitude: TEST_PUBLISHED_SPOT.wgs84.latitude,
@@ -257,9 +261,11 @@ test("the formal Gaia DR3 pack projects every real hourly slice under 1 MiB", ()
     },
   });
   assert.equal(scene.state, "AVAILABLE");
-  assert.equal(scene.catalog?.catalogVersion, "gaia-dr3-bright-stars.v1");
+  assert.equal(scene.catalog?.catalogVersion, "hipparcos-bright-stars.v1");
   assert.match(scene.catalog?.catalogHash ?? "", /^[a-f0-9]{64}$/u);
-  assert.equal(scene.catalog?.entries.length, SKY_SCENE_MAX_CATALOG_ENTRIES);
+  assert.equal(scene.catalog?.entries.length, 1_627);
+  for (const [reference, name] of [["HIP:32349", "Sirius"], ["HIP:91262", "Vega"], ["HIP:11767", "Polaris"]] as const)
+    assert.equal(scene.catalog?.entries.find((entry) => entry.objectRef === reference)?.displayName, name);
   assert.equal(scene.frames.length, calculation.samples.length);
   assert.ok(scene.frames.every((frame) => (frame.points?.length ?? 0) > 0));
   assert.ok(skySceneSerializedBytes(scene) < 1_048_576);

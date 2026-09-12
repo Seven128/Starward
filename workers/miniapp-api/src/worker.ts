@@ -62,6 +62,7 @@ if (replayIndex >= 0) {
   const runCycle = async () => {
     try {
       await runtime.enqueueOperationalSweep();
+      await runtime.enqueueEventCatalogSweep();
       await runtime.dispatchBatch();
       await heartbeat.write("ready");
     } catch (error) {

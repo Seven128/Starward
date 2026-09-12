@@ -49,6 +49,23 @@ function reportInput(rightsConfirmed = false): ContributionDraftRequest {
   };
 }
 
+function newSpotInput(
+  overrides: Partial<ContributionDraftRequest> = {},
+): ContributionDraftRequest {
+  return {
+    kind: "NEW_SPOT_PROPOSAL",
+    spotId: null,
+    candidateLocation: null,
+    observedAt: null,
+    topics: [],
+    detail: "",
+    rightsConfirmed: false,
+    preciseLocationConsent: false,
+    candidateProfile: { fields: {}, media: {} },
+    ...overrides,
+  };
+}
+
 async function identity(service: ReturnType<typeof createTestMiniappService>, suffix: string) {
   return (
     await service.login({ code: `local:contribution-${suffix.padEnd(12, "x")}` })
@@ -64,6 +81,10 @@ test("account erasure keeps structural evidence but excludes private and future 
       ...draft,
       detail: "PRIVATE_REPORT_TEXT",
       candidateLocation: { name: "PRIVATE_NAME", latitude: 22.123456, longitude: 113.654321 } as never,
+      candidateProfile: {
+        fields: { name: "PRIVATE_CANDIDATE_NAME", address: "PRIVATE_CANDIDATE_ADDRESS" },
+        media: { site: ["PRIVATE_CANDIDATE_UPLOAD"] },
+      },
       media: [{ originalName: "PRIVATE_PHOTO", objectKey: "PRIVATE_KEY" }] as never,
       futurePrivateField: "PRIVATE_FUTURE_FIELD",
       review: { resolution: "APPROVED" as const, reason: "PRIVATE_REASON", reviewedAt: draft.createdAt },
@@ -71,6 +92,14 @@ test("account erasure keeps structural evidence but excludes private and future 
         eventId: "event:review", axis: "SUBMISSION" as const, from: "DRAFT", to: "PENDING_REVIEW",
         reason: "PRIVATE_HISTORY", actorType: "USER" as const, occurredAt: draft.createdAt,
         extra: "PRIVATE_NESTED_FUTURE_FIELD",
+      }],
+      attempts: [{
+        attemptId: "attempt:private",
+        attemptNo: 1,
+        baseRevision: draft.revision,
+        submittedAt: draft.createdAt,
+        snapshot: { ...draft, detail: "PRIVATE_ATTEMPT", media: [] },
+        review: { resolution: "REJECTED" as const, reason: "PRIVATE_ATTEMPT_REASON", reviewedAt: draft.createdAt },
       }],
     };
     const snapshot = structuredClone(original);
@@ -108,6 +137,146 @@ test("draft save response-loss retry replays the original revision without an ex
   } finally {
     await service.onModuleDestroy();
   }
+});
+
+test("formal feedback submits atomically without creating an editable draft", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "formal-atomic");
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    const input = {
+      kind: "CORRECTION" as const,
+      baseline,
+      proposal: { fields: { hours: "19:00—次日05:00" }, media: {} },
+      observedAt: null,
+      rightsConfirmed: false,
+    };
+    assert.equal((await service.listContributions(userId)).data.submissions.length, 0);
+    const first = await service.submitFormalContribution(userId, input, "formal:atomic");
+    assert.equal(first.data.state, "SUBMITTED");
+    if (first.data.state !== "SUBMITTED") return;
+    assert.equal(first.data.submission.submissionState, "PENDING_REVIEW");
+    assert.equal(first.data.submission.attempts.length, 1);
+    assert.deepEqual(first.data.submission.attempts[0]?.snapshot.formalFeedback?.baseline, baseline);
+    assert.equal((await service.listContributions(userId)).data.submissions.some(item => item.submissionState === "DRAFT"), false);
+    const replay = await service.submitFormalContribution(userId, input, "formal:atomic");
+    assert.deepEqual(replay.data, first.data);
+    assert.equal(replay.etag, first.etag);
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("formal feedback enforces one pending subject and rejects a forged baseline", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "formal-unique");
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    await assert.rejects(
+      service.submitFormalContribution(userId, {
+        kind: "CORRECTION", baseline: { ...baseline, fields: { ...baseline.fields, name: "伪造名称" } },
+        proposal: { fields: { hours: "19:00—次日05:00" }, media: {} }, observedAt: null, rightsConfirmed: false,
+      }, "formal:forged"),
+      /contribution_baseline_snapshot_invalid/u,
+    );
+    await service.submitFormalContribution(userId, {
+      kind: "CORRECTION", baseline,
+      proposal: { fields: { hours: "19:00—次日05:00" }, media: {} }, observedAt: null, rightsConfirmed: false,
+    }, "formal:first");
+    await assert.rejects(
+      service.submitFormalContribution(userId, {
+        kind: "FIELD_REPORT", baseline,
+        proposal: { fields: { safety: "临水台阶，夜间需照明" }, media: {} }, observedAt: "2026-08-22T14:30:00.000Z", rightsConfirmed: false,
+      }, "formal:second"),
+      /contribution_formal_pending_exists/u,
+    );
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("formal feedback media uses a short-lived intent without creating a draft", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "formal-media");
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    let intent = (await service.createFormalUploadIntent(userId, { spotId: baseline.spotId, baselineRevision: baseline.revision }, "formal-media:intent")).data;
+    assert.equal((await service.listContributions(userId)).data.submissions.length, 0);
+    const raw = privateMetadataPng();
+    intent = (await service.createFormalUpload(userId, intent.intentId, { kind: "site", originalName: "site.png", mimeType: "image/png", byteSize: raw.length, expectedRevision: intent.revision }, "formal-media:create")).data;
+    const upload = intent.uploads[0]!;
+    intent = (await service.completeFormalUpload(userId, intent.intentId, upload.uploadId, { dataBase64: raw.toString("base64") }, "formal-media:complete")).data;
+    assert.equal(intent.uploads[0]?.state, "UPLOADED");
+    assert.equal((await service.listContributions(userId)).data.submissions.length, 0);
+    const submitted = await service.submitFormalContribution(userId, {
+      kind: "CORRECTION", baseline,
+      proposal: { fields: {}, media: { site: [...baseline.media.site, upload.uploadId] } },
+      observedAt: null, rightsConfirmed: true,
+      uploadIntentId: intent.intentId, expectedUploadIntentRevision: intent.revision,
+    }, "formal-media:submit");
+    assert.equal(submitted.data.state, "SUBMITTED");
+    if (submitted.data.state === "SUBMITTED") {
+      assert.equal(submitted.data.submission.media[0]?.state, "ATTACHED");
+      assert.equal(submitted.data.submission.attempts[0]?.snapshot.media[0]?.uploadId, upload.uploadId);
+      const ownMedia = await service.getContributionMedia(userId, submitted.data.submission.submissionId, upload.uploadId);
+      assert.equal(ownMedia.data.mimeType, "image/png");
+      const stranger = await identity(service, "formal-media-stranger");
+      await assert.rejects(service.getContributionMedia(stranger, submitted.data.submission.submissionId, upload.uploadId), /contribution_upload_not_found/u);
+
+      const reviewedAt = "2026-09-01T08:00:00.000Z";
+      const rejected = {
+        ...submitted.data.submission,
+        state: "CHANGES_REQUESTED" as const,
+        submissionState: "CHANGES_REQUESTED" as const,
+        revision: submitted.data.submission.revision + 1,
+        review: { resolution: "CHANGES_REQUESTED" as const, reason: "请补充现场说明", reviewedAt },
+        attempts: submitted.data.submission.attempts.map(attempt => ({ ...attempt, review: { resolution: "CHANGES_REQUESTED" as const, reason: "请补充现场说明", reviewedAt } })),
+        workingCopyFromAttemptId: submitted.data.submission.attempts[0]!.attemptId,
+      };
+      await service.repository.saveContributionDraft(userId, rejected, submitted.data.submission.revision, "formal-media:review-fixture");
+      const resubmitted = await service.submitFormalContribution(userId, {
+        kind: "CORRECTION", baseline,
+        proposal: { fields: { detail: "补充了现场说明" }, media: { site: [...baseline.media.site, upload.uploadId] } },
+        observedAt: null, rightsConfirmed: true,
+        submissionId: rejected.submissionId, expectedSubmissionRevision: rejected.revision,
+      }, "formal-media:resubmit");
+      assert.equal(resubmitted.data.state, "SUBMITTED");
+      if (resubmitted.data.state === "SUBMITTED") {
+        assert.equal(resubmitted.data.submission.media[0]?.uploadId, upload.uploadId);
+        assert.equal(resubmitted.data.submission.attempts.length, 2);
+      }
+    }
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("expired formal feedback media is marked expired and its private object deletion is retryable", async () => {
+  class FailingOnceStore extends MemoryMediaObjectStore {
+    attempts = 0;
+    override async delete(key: string) {
+      this.attempts++;
+      if (this.attempts === 1) throw new Error("temporary formal media deletion failure");
+      return super.delete(key);
+    }
+  }
+  const mediaStore = new FailingOnceStore();
+  const service = createTestMiniappService({ mediaStore });
+  try {
+    const userId = await identity(service, "formal-media-expiry");
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    let intent = (await service.createFormalUploadIntent(userId, { spotId: baseline.spotId, baselineRevision: baseline.revision }, "formal-expiry:intent")).data;
+    const bytes = privateMetadataPng();
+    intent = (await service.createFormalUpload(userId, intent.intentId, { kind: "site", originalName: "site.png", mimeType: "image/png", byteSize: bytes.length, expectedRevision: intent.revision }, "formal-expiry:create")).data;
+    const upload = intent.uploads[0]!;
+    intent = (await service.completeFormalUpload(userId, intent.intentId, upload.uploadId, { dataBase64: bytes.toString("base64") }, "formal-expiry:complete")).data;
+    const object = await service.repository.getContributionUploadObject(upload.uploadId);
+    assert.ok(object);
+    const expiredAt = new Date(Date.parse(intent.expiresAt) + 1).toISOString();
+    const keys = await service.repository.expireContributionUploads(expiredAt);
+    assert.deepEqual(keys, [object.objectKey]);
+    const expired = await service.repository.getFormalUploadIntent(userId, intent.intentId);
+    assert.equal(expired?.uploads[0]?.state, "EXPIRED");
+    await assert.rejects(service.contributions.cleanupExpiredUploads(), /temporary formal media deletion failure/);
+    assert.ok(await mediaStore.read(object.objectKey));
+    assert.equal(await service.contributions.cleanupExpiredUploads(), 1);
+    assert.equal(await mediaStore.read(object.objectKey), null);
+    assert.equal(await service.contributions.cleanupExpiredUploads(), 0);
+  } finally { await service.onModuleDestroy(); }
 });
 
 test("field reports remain identity-scoped and pending review cannot change a formal spot", async () => {
@@ -155,6 +324,182 @@ test("first-time submission still validates incomplete draft evidence before wri
     assert.equal(records[0]?.state, "DRAFT");
     assert.equal(records[0]?.revision, created.data.revision);
   } finally { await service.onModuleDestroy(); }
+});
+
+test("new-place drafts preserve partial structured content and validate completeness only on submit", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "candidate-draft");
+    const created = (await service.createContributionDraft(
+      userId,
+      newSpotInput({
+        candidateProfile: {
+          fields: { name: "山顶候选点", parkingNote: "入口附近可临停" },
+          media: {},
+        },
+      }),
+      "candidate:create-partial",
+    )).data;
+    assert.equal(created.candidateLocation, null);
+    assert.deepEqual(created.candidateProfile, {
+      fields: { name: "山顶候选点", parkingNote: "入口附近可临停" },
+      media: {},
+    });
+    await assert.rejects(
+      service.submitContribution(userId, created.submissionId, created.revision, "candidate:submit-partial"),
+      /contribution_candidate_submission_incomplete/u,
+    );
+
+    const completed = (await service.updateContributionDraft(
+      userId,
+      created.submissionId,
+      {
+        ...newSpotInput({
+          candidateLocation: {
+            displayName: "山顶候选点",
+            region: "广东省深圳市盐田区",
+            wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 },
+          },
+          preciseLocationConsent: true,
+          candidateProfile: {
+            fields: {
+              name: "山顶候选点",
+              address: "广东省深圳市盐田区山顶步道",
+              openness: "有条件开放",
+              detail: "东南方向视野较开阔。",
+            },
+            media: {},
+          },
+        }),
+        expectedRevision: created.revision,
+      },
+      "candidate:update-complete",
+    )).data;
+    const submitted = (await service.submitContribution(
+      userId,
+      completed.submissionId,
+      completed.revision,
+      "candidate:submit-complete",
+    )).data;
+    assert.equal(submitted.state, "PENDING_REVIEW");
+    assert.deepEqual(submitted.attempts[0]?.snapshot.candidateProfile, completed.candidateProfile);
+
+    const mutableCopy = structuredClone(completed.candidateProfile!) as {
+      fields: Record<string, string>;
+    };
+    mutableCopy.fields.name = "被篡改的名字";
+    assert.equal(submitted.attempts[0]?.snapshot.candidateProfile?.fields.name, "山顶候选点");
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("new-place structured content rejects unknown fields, invalid choices, and oversized media groups", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "candidate-invalid");
+    await assert.rejects(
+      service.createContributionDraft(userId, newSpotInput({
+        candidateProfile: { fields: { hiddenPrivateField: "secret" } as never, media: {} },
+      }), "candidate:invalid-field"),
+      /contribution_formal_field_invalid/u,
+    );
+    await assert.rejects(
+      service.createContributionDraft(userId, newSpotInput({
+        candidateProfile: { fields: { openness: "偶尔" }, media: {} },
+      }), "candidate:invalid-choice"),
+      /contribution_formal_choice_invalid/u,
+    );
+    await assert.rejects(
+      service.createContributionDraft(userId, newSpotInput({
+        candidateProfile: { fields: {}, media: { site: ["a", "b", "c", "d"] } },
+      }), "candidate:invalid-media"),
+      /contribution_formal_media_invalid/u,
+    );
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("new-place photos retain their adopted section with three independent slots per group", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "candidate-media");
+    let draft = (await service.createContributionDraft(
+      userId,
+      newSpotInput({ rightsConfirmed: true }),
+      "candidate-media:create",
+    )).data;
+    const file = { originalName: "photo.png", mimeType: "image/png" as const, byteSize: privateMetadataPng().length };
+    await assert.rejects(
+      service.createContributionUpload(userId, draft.submissionId, { ...file, expectedRevision: draft.revision }, "candidate-media:no-kind"),
+      /contribution_media_kind_required/u,
+    );
+    for (let index = 0; index < 3; index++) {
+      draft = (await service.createContributionUpload(userId, draft.submissionId, {
+        ...file, kind: "site", expectedRevision: draft.revision,
+      }, `candidate-media:site:${index}`)).data;
+    }
+    assert.deepEqual(draft.candidateProfile?.media.site, draft.media.map((media) => media.uploadId));
+    await assert.rejects(
+      service.createContributionUpload(userId, draft.submissionId, {
+        ...file, kind: "site", expectedRevision: draft.revision,
+      }, "candidate-media:site:fourth"),
+      /contribution_media_kind_count_invalid/u,
+    );
+    draft = (await service.createContributionUpload(userId, draft.submissionId, {
+      ...file, kind: "parking", expectedRevision: draft.revision,
+    }, "candidate-media:parking:first")).data;
+    const parking = draft.media.find((media) => media.kind === "parking")!;
+    assert.deepEqual(draft.candidateProfile?.media.parking, [parking.uploadId]);
+    const removed = (await service.removeContributionUpload(
+      userId, draft.submissionId, parking.uploadId, draft.revision, "candidate-media:parking:remove",
+    )).data;
+    assert.deepEqual(removed.candidateProfile?.media.parking, []);
+    assert.equal(removed.media.some((media) => media.uploadId === parking.uploadId), false);
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("a reviewed contribution keeps its frozen attempt while resubmission appends a new one", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "resubmit");
+    const draft = (await service.createContributionDraft(userId, reportInput(), "resubmit:create")).data;
+    const submitted = (await service.submitContribution(userId, draft.submissionId, draft.revision, "resubmit:first")).data;
+    assert.equal(submitted.attempts.length, 1);
+    assert.equal(submitted.attempts[0]?.snapshot.detail, reportInput().detail);
+
+    const reviewedAt = "2026-08-23T08:00:00.000Z";
+    const reason = "请补充返程道路的最新情况";
+    const rejected = {
+      ...submitted,
+      state: "CHANGES_REQUESTED" as const,
+      submissionState: "CHANGES_REQUESTED" as const,
+      review: { resolution: "CHANGES_REQUESTED" as const, reason, reviewedAt },
+      attempts: submitted.attempts.map((attempt, index) => index === 0
+        ? { ...attempt, review: { resolution: "CHANGES_REQUESTED" as const, reason, reviewedAt } }
+        : attempt),
+      workingCopyFromAttemptId: submitted.attempts[0]!.attemptId,
+      revision: submitted.revision + 1,
+      updatedAt: reviewedAt,
+    };
+    await service.repository.saveContributionDraft(userId, rejected, submitted.revision, "resubmit:review-fixture");
+
+    const revisedDetail = "补充核对：返程道路仍可通行，但最后两公里没有路灯，建议结伴并准备头灯。";
+    const working = (await service.updateContributionDraft(userId, draft.submissionId, {
+      ...reportInput(), detail: revisedDetail, expectedRevision: rejected.revision,
+    }, "resubmit:update")).data;
+    assert.equal(working.submissionState, "CHANGES_REQUESTED");
+    assert.equal(working.workingCopyFromAttemptId, submitted.attempts[0]!.attemptId);
+    assert.equal(working.attempts[0]?.snapshot.detail, reportInput().detail);
+
+    const resubmitted = (await service.submitContribution(userId, draft.submissionId, working.revision, "resubmit:second")).data;
+    assert.equal(resubmitted.submissionState, "PENDING_REVIEW");
+    assert.equal(resubmitted.attempts.length, 2);
+    assert.equal(resubmitted.attempts[0]?.snapshot.detail, reportInput().detail);
+    assert.equal(resubmitted.attempts[0]?.review?.reason, reason);
+    assert.equal(resubmitted.attempts[1]?.snapshot.detail, revisedDetail);
+    assert.equal(resubmitted.attempts[1]?.review, null);
+    assert.equal(resubmitted.workingCopyFromAttemptId, null);
+  } finally {
+    await service.onModuleDestroy();
+  }
 });
 
 test("bounded media upload strips private PNG metadata before review", async (context) => {

@@ -10,6 +10,7 @@ import {
   applyFilterDraft,
   beginFilterDraft,
   cancelFilterDraft,
+  clearFilterDraft,
   enterObservationMode,
   exitObservationMode,
   restorePriorMode,
@@ -17,6 +18,7 @@ import {
   revertFilterDraft,
   toggleFavoriteRelation,
   toggleFilterDraft,
+  updateDraftDrivingRange,
 } from "./app-transitions";
 
 test("filter draft is discarded on cancel and committed only on apply", () => {
@@ -40,6 +42,21 @@ test("filter draft is discarded on cancel and committed only on apply", () => {
     "lightPollution",
   ]);
   assert.equal(applied.filterSheetOpen, false);
+});
+
+test("filter draft keeps both driving limits through mode changes and clear restores defaults", () => {
+  const opened = beginFilterDraft(EMPTY_FILTER_STATE);
+  const ranged = updateDraftDrivingRange(opened.draftFilters, {
+    mode: "DISTANCE",
+    maxMinutes: 180,
+    maxDistanceKm: 240,
+  });
+  const enabled = toggleFilterDraft(ranged.draftFilters, "distanceDriveTime");
+  const cleared = clearFilterDraft(enabled.draftFilters);
+  assert.deepEqual(cleared.draftFilters.DISTANCE_DRIVE_TIME, []);
+  assert.deepEqual(cleared.draftFilters.drivingRange, EMPTY_FILTER_STATE.drivingRange);
+  const applied = applyFilterDraft(enabled.draftFilters);
+  assert.deepEqual(applied.committedFilters.drivingRange, ranged.draftFilters.drivingRange);
 });
 
 test("observation mode restores the exact prior day or night mode", () => {

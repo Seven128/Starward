@@ -13,6 +13,11 @@ import { PostgresMiniappRepository } from "./postgres-repository.ts";
 import { createTestRuntimeConfig } from "./runtime-config.ts";
 import { insertExplicitTestSpot } from "./test-fixtures/infrastructure-spot.ts";
 import { DeterministicWeatherTestAdapter } from "./test-fixtures/deterministic-weather-adapter.ts";
+import {
+  AstronomicalEventCatalogOwner,
+  EVENT_CATALOG_SCHEMA_VERSION,
+} from "./astronomical-event-catalog-owner.ts";
+import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.ts";
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
 const redisUrl = process.env.REDIS_URL?.trim();
@@ -47,6 +52,68 @@ test(
       await new PostgresMiniappRepository(databaseUrl).initialize({
         migrate: true,
       });
+    const eventSourceId = `source:integration-events-${runId}`;
+    const eventCatalogVersion = `integration-events-${runId}`;
+    const eventStore = new PostgresAstronomicalEventCatalogStore(firstRepository.pool);
+    await eventStore.upsertSourceConfig({
+      sourceId: eventSourceId,
+      provider: "隔离事件目录集成测试",
+      endpoint: "https://example.com/starward-event-catalog.json",
+      enabled: true,
+      parserVersion: "integration-parser-1",
+      schemaVersion: EVENT_CATALOG_SCHEMA_VERSION,
+      autoPublishEligible: true,
+      approvedBaselineVersion: "builtin-reviewed-2026.1",
+      termsUrl: "https://example.com/terms",
+      coverage: "隔离数据库事务测试，不构成生产天象资料",
+    }, "admin:integration");
+    const eventOwner = await new AstronomicalEventCatalogOwner(eventStore).initialize();
+    const eventBaseline = eventOwner.snapshot();
+    const firstEvent = eventBaseline.events[0]!;
+    const integratedEventName = `${firstEvent.displayName}（数据库集成）`;
+    const eventImport = await eventOwner.importCandidate({
+      sourceId: eventSourceId,
+      trigger: "SCHEDULED",
+      actorId: "admin:scheduled-ingestion",
+      package: {
+        ...eventBaseline,
+        catalogVersion: eventCatalogVersion,
+        parserVersion: "integration-parser-1",
+        events: eventBaseline.events.map(event => event.occurrenceId === firstEvent.occurrenceId
+          ? { ...event, displayName: integratedEventName }
+          : event),
+      },
+    });
+    assert.equal(eventImport.state, "AUTO_PUBLISH_ELIGIBLE");
+    const eventPublication = await eventOwner.publishCandidate({
+      candidateId: eventImport.candidate!.candidateId,
+      actorId: "admin:integration",
+      reason: "验证事件目录原子发布与重启读回",
+    });
+    assert.equal(eventPublication.catalogVersion, eventCatalogVersion);
+    const reloadedEventOwner = await new AstronomicalEventCatalogOwner(eventStore).initialize();
+    assert.equal(reloadedEventOwner.find(firstEvent.occurrenceId)?.displayName, integratedEventName);
+    const eventAudit = await firstRepository.pool.query<{ action: string }>(
+      `SELECT action FROM audit_logs
+        WHERE subject_type='ASTRONOMICAL_EVENT_CATALOG' AND subject_id=$1
+        ORDER BY occurred_at DESC LIMIT 1`,
+      [eventCatalogVersion],
+    );
+    assert.equal(eventAudit.rows[0]?.action, "EVENT_CATALOG_PUBLISH");
+    const eventRollback = await reloadedEventOwner.rollback({
+      catalogVersion: eventBaseline.catalogVersion,
+      actorId: "admin:integration",
+      reason: "验证内置基线回滚创建追加版本",
+    });
+    assert.match(eventRollback.catalogVersion, new RegExp(`^${eventBaseline.catalogVersion.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\.rollback\\.`));
+    assert.equal(reloadedEventOwner.find(firstEvent.occurrenceId)?.displayName, firstEvent.displayName);
+    await assert.rejects(
+      firstRepository.pool.query(
+        "UPDATE astronomical_event_catalog_publications SET reason='tampered' WHERE catalog_version=$1",
+        [eventCatalogVersion],
+      ),
+      /event_catalog_publication_immutable/u,
+    );
     const candidate = await firstRepository.adminCreateSpotCandidate({
       actorId: "admin:integration",
       requestId: `candidate:${runId}`,
@@ -104,6 +171,10 @@ test(
       /spot_publication_completeness_invalid/u,
     );
     const spot = await insertExplicitTestSpot(firstRepository);
+    const newPlaceTarget = await insertExplicitTestSpot(firstRepository, {
+      spotId: `spot:integration-new-place-${runId}`,
+      status: "DATA_INSUFFICIENT",
+    });
     await firstRepository.close();
 
     const first = await MiniappService.createFromEnvironment();
@@ -115,6 +186,12 @@ test(
         const secondIdentity = (
           await first.login({ code: "local:integration-second-" + runId })
         ).data;
+        const nicknameInput = { nickname: "数据库昵称", expectedRevision: 1 };
+        const nicknameSaves = await Promise.all([0, 1].map(() => first.saveAccountNickname(firstIdentity.userId, nicknameInput, "infra:nickname:" + runId)));
+        assert.deepEqual(nicknameSaves[0]!.data, nicknameSaves[1]!.data);
+        assert.equal(nicknameSaves[0]!.data.revision, 2);
+        await assert.rejects(first.saveAccountNickname(firstIdentity.userId, { ...nicknameInput, nickname: "过期修改" }, "infra:nickname:stale:" + runId), /revision_conflict/);
+        assert.equal((await first.getAccountProfile(secondIdentity.userId)).data.nickname, null);
         const profileInput = { platform: "OTHER" as const, displayName: "Isolated profile replay", url: "https://example.com/profile-replay", visibility: "PRIVATE" as const, sortOrder: 0 };
         const profile = await first.saveProfileLink(firstIdentity.userId, profileInput, `infra:profile:${runId}`);
         const replayedProfile = await first.saveProfileLink(firstIdentity.userId, profileInput, `infra:profile:${runId}`);
@@ -159,20 +236,113 @@ test(
           localDate: "2026-08-06",
         });
         const planInput = {
+            reminders: [{ reminderId: "r-one", title: "设备", hoursBeforeDeparture: 0.5, notifyOnWechat: false, items: [{ itemId: "battery", text: "备用电池", completed: true }] }],
             planId: ("plan:" + runId) as never,
             spotId: spot.spotId,
             observationContextId: planOrigin.data.contextId,
             localDate: "2026-08-06",
             localTime: "23:40",
+            timing: { endLocalDate: "2026-08-07", endLocalTime: "03:00", departureLocalDate: "2026-08-06", departureLocalTime: "20:00" },
+            eventOccurrenceIds: ["event-occurrence:007-per:2026"],
             notes: "restart readback",
             expectedRevision: null,
           };
         const planSaves = await Promise.all(Array.from({ length: 3 }, () =>
           first.savePlan(firstIdentity.userId, planInput, "infra:plan:" + runId)));
         for (const result of planSaves) assert.deepEqual(result.data, planSaves[0]!.data);
+        assert.deepEqual(planSaves[0]!.data.eventOccurrenceIds, ["event-occurrence:007-per:2026"]);
         await assert.rejects(first.savePlan(firstIdentity.userId,
           { ...planInput, notes: "must not overwrite an existing plan" }, "infra:plan:duplicate-create:" + runId), /plan_revision_conflict/);
         assert.deepEqual((await first.repository.listPlans(firstIdentity.userId))[0], planSaves[0]!.data);
+        const completionInput = { reminderId: "r-one", itemId: "battery", completed: false, expectedRevision: planSaves[0]!.data.revision };
+        const completionSaves = await Promise.all(Array.from({ length: 3 }, () => first.setPlanChecklistCompletion(firstIdentity.userId, planInput.planId, completionInput, "infra:checklist:" + runId)));
+        for (const result of completionSaves) assert.deepEqual(result.data, completionSaves[0]!.data);
+        assert.equal(completionSaves[0]!.data.revision, completionInput.expectedRevision + 1);
+        assert.equal(completionSaves[0]!.data.reminders?.[0]?.items[0]?.completed, false);
+        assert.deepEqual(completionSaves[0]!.data.contextSnapshot, planSaves[0]!.data.contextSnapshot);
+        await assert.rejects(first.setPlanChecklistCompletion(firstIdentity.userId, planInput.planId, { ...completionInput, completed: true }, "infra:checklist:" + runId), /idempotency_conflict/);
+        assert.ok(first.repository instanceof PostgresMiniappRepository);
+        const newPlaceRepository = first.repository;
+        const newPlaceDraft = await first.createContributionDraft(firstIdentity.userId, {
+          kind: "NEW_SPOT_PROPOSAL",
+          spotId: null,
+          candidateLocation: {
+            displayName: "隔离新地点候选",
+            region: "隔离测试区域",
+            wgs84: newPlaceTarget.wgs84,
+          },
+          observedAt: null,
+          topics: [],
+          detail: "隔离数据库新地点审核、合并和发布事务测试。",
+          rightsConfirmed: false,
+          preciseLocationConsent: true,
+          candidateProfile: {
+            fields: {
+              name: "隔离新地点正式名称",
+              address: "隔离测试区域的结构化地址",
+              openness: "开放",
+              access: "允许进入",
+              road: "隔离测试末段道路说明",
+              safety: "隔离测试夜间安全说明",
+            },
+            media: {},
+          },
+        }, `infra:new-place-draft:${runId}`);
+        const newPlaceSubmitted = await first.submitContribution(
+          firstIdentity.userId,
+          newPlaceDraft.data.submissionId,
+          newPlaceDraft.data.revision,
+          `infra:new-place-submit:${runId}`,
+        );
+        const newPlaceCaseId = `moderation:${newPlaceSubmitted.data.submissionId}`;
+        await newPlaceRepository.adminResolveModeration({
+          caseId: newPlaceCaseId,
+          resolution: "APPROVED",
+          reason: "隔离测试核对新地点结构化字段与坐标",
+          actorId: "admin:integration",
+          requestId: `new-place-review:${runId}`,
+          expectedRevision: newPlaceSubmitted.data.revision,
+        });
+        const targetBeforeMerge = (await newPlaceRepository.adminListSpots()).find(row => row.spot_id === newPlaceTarget.spotId);
+        assert.ok(targetBeforeMerge);
+        const newPlaceMerged = await newPlaceRepository.adminMergeContributionEvidence({
+          caseId: newPlaceCaseId,
+          spotId: newPlaceTarget.spotId,
+          confirmedClaims: ["SPOT_DETAILS", "ACCESS_OPENNESS", "ACCESS_LEGAL_ENTRY", "ACCESS_LAST_ROAD", "SAFETY_NIGHT"],
+          reason: "隔离测试把已核对的新地点资料合并到同坐标规范候选",
+          actorId: "admin:integration",
+          requestId: `new-place-merge:${runId}`,
+          expectedSubmissionRevision: newPlaceSubmitted.data.revision + 1,
+          expectedSpotRevision: targetBeforeMerge.version,
+          idempotencyKey: `new-place-merge:${runId}`,
+        });
+        assert.equal(newPlaceMerged.contribution.spotId, newPlaceTarget.spotId);
+        assert.equal(newPlaceMerged.contribution.mergeState, "MERGED");
+        const targetAfterMerge = (await newPlaceRepository.adminListSpots()).find(row => row.spot_id === newPlaceTarget.spotId);
+        assert.ok(targetAfterMerge);
+        const newPlaceAssessment = await newPlaceRepository.adminAssessPublication({
+          spotId: newPlaceTarget.spotId,
+          expectedSpotRevision: targetAfterMerge.version,
+          reason: "隔离测试新地点发布前独立重评估",
+          actorId: "admin:integration",
+          requestId: `new-place-assess:${runId}`,
+          idempotencyKey: `new-place-assess:${runId}`,
+        });
+        assert.equal(newPlaceAssessment.result.complete, true);
+        await newPlaceRepository.adminChangeSpotLifecycle({
+          spotId: newPlaceTarget.spotId,
+          action: "PUBLISH",
+          expectedSpotRevision: targetAfterMerge.version,
+          assessmentDigest: newPlaceAssessment.result.assessmentDigest,
+          reason: "隔离测试显式发布新地点并推进贡献状态",
+          actorId: "admin:integration",
+          requestId: `new-place-publish:${runId}`,
+          idempotencyKey: `new-place-publish:${runId}`,
+        });
+        const newPlacePublished = (await first.listContributions(firstIdentity.userId)).data.submissions.find(item => item.submissionId === newPlaceSubmitted.data.submissionId);
+        assert.equal(newPlacePublished?.publicationImpact, "SPOT_PUBLISHED");
+        assert.equal(newPlacePublished?.spotId, newPlaceTarget.spotId);
+        assert.equal((await first.repository.getSpot(newPlaceTarget.spotId))?.name, "隔离新地点正式名称");
         const draft = await first.createContributionDraft(
           firstIdentity.userId,
           {
@@ -294,7 +464,31 @@ test(
           "infra:contribution-submit:" + runId,
         );
         assert.equal(submitted.data.state, "PENDING_REVIEW");
+        assert.equal(submitted.data.attempts.length, 1);
         assert.deepEqual((await first.submitContribution(firstIdentity.userId, draft.data.submissionId, completed.revision, "infra:contribution-submit:" + runId)).data, submitted.data);
+        const caseId = `moderation:${submitted.data.submissionId}`;
+        const requested = await first.repository.adminRequestContributionChanges({
+          caseId,
+          reason: "请补充复核后的返程道路情况",
+          expectedRevision: submitted.data.revision,
+          actorId: "admin:integration",
+          requestId: `contribution-request-changes:${runId}`,
+          idempotencyKey: `contribution-request-changes:${runId}`,
+        });
+        const rejected = requested.readback.submission!;
+        assert.equal(rejected.attempts[0]?.review?.resolution, "CHANGES_REQUESTED");
+        const revised = await first.updateContributionDraft(firstIdentity.userId, submitted.data.submissionId, {
+          kind: "FIELD_REPORT", spotId: spot.spotId, candidateLocation: null,
+          observedAt: draft.data.observedAt, topics: ["NIGHT_SAFETY", "LAST_ROAD"],
+          detail: "隔离数据库现场反馈已补充：返程道路可以通行，但末段没有照明，需要结伴并携带头灯。",
+          rightsConfirmed: true, preciseLocationConsent: false,
+          expectedRevision: rejected.revision,
+        }, `infra:contribution-revise:${runId}`);
+        const resubmitted = await first.submitContribution(firstIdentity.userId, submitted.data.submissionId, revised.data.revision, `infra:contribution-resubmit:${runId}`);
+        assert.equal(resubmitted.data.attempts.length, 2);
+        assert.equal(resubmitted.data.attempts[0]?.snapshot.detail, submitted.data.detail);
+        assert.equal(resubmitted.data.attempts[1]?.snapshot.detail, revised.data.detail);
+        assert.equal(resubmitted.data.review, null);
         assert.deepEqual(
           (await first.listContributions(secondIdentity.userId)).data
             .submissions,
@@ -302,13 +496,13 @@ test(
         );
         const beforeReview = await first.repository.getSpot(spot.spotId);
         assert.equal(beforeReview?.status, "PUBLISHED");
-        const caseId = `moderation:${submitted.data.submissionId}`;
         await first.repository.adminResolveModeration({
           caseId,
           resolution: "APPROVED",
           reason: "集成测试管理员确认该现场材料可进入规范事实合并",
           actorId: "admin:integration",
           requestId: `contribution-review:${runId}`,
+          expectedRevision: resubmitted.data.revision,
         });
         assert.equal(
           (await first.repository.getSpot(spot.spotId))?.status,
@@ -372,6 +566,110 @@ test(
           idempotencyKey: `contribution-republish:${runId}`,
         });
         assert.equal(republished.result.status, "PUBLISHED");
+        const formalBaseline = (await first.getContributionFormalBaseline(spot.spotId)).data;
+        const formalIntent = await first.repository.saveFormalUploadIntent(secondIdentity.userId, {
+          intentId: `formal-upload-intent:${randomUUID()}`, spotId: spot.spotId,
+          baselineRevision: formalBaseline.revision, uploads: [], revision: 1,
+          createdAt: new Date().toISOString(), expiresAt: new Date(Date.now()+20*60_000).toISOString(),
+        }, `infra:formal-intent:${runId}`);
+        const formalUpload = {
+          uploadId: `upload:${randomUUID()}` as never, kind: "site" as const, state: "PENDING" as const,
+          originalName: "formal-site.png", mimeType: "image/png" as const, declaredByteSize: 32,
+          byteSize: null, sha256: null, createdAt: new Date().toISOString(), expiresAt: formalIntent.expiresAt, uploadedAt: null,
+        };
+        const formalWithSlot = await first.repository.createFormalContributionUpload(secondIdentity.userId, formalIntent.intentId, formalUpload, formalIntent.revision, `infra:formal-upload:${runId}`);
+        const formalObjectKey = `contributions/${"d".repeat(24)}/${String(formalUpload.uploadId).replace(/^upload:/u, "")}.png`;
+        const formalReady = await first.repository.completeFormalContributionUpload(secondIdentity.userId, formalIntent.intentId, formalUpload.uploadId, {
+          byteSize: 32, sha256: "d".repeat(64), objectKey: formalObjectKey, uploadedAt: new Date().toISOString(),
+        }, `infra:formal-complete:${runId}`);
+        const formalSubmitted = await first.submitFormalContribution(secondIdentity.userId, {
+          kind: "CORRECTION", baseline: formalBaseline,
+          proposal: { fields: {
+            hours: "19:00—次日05:00",
+            road: "北侧停车区进入，末段步行 80 米",
+            accessNote: "",
+            safety: "临水边缘无护栏，夜间需要结伴",
+            parking: "季节性开放",
+            parkingNote: "入口外 80 米，雨季关闭",
+            toilet: "季节性开放",
+            toiletNote: "冬季关闭",
+            platform: "硬化平台，可摆放三脚架",
+            signal: "4G 信号较弱",
+            camping: "仅可临时停留，不可过夜",
+          }, media: { site: [...formalBaseline.media.site, formalUpload.uploadId] } },
+          observedAt: null, rightsConfirmed: true, uploadIntentId: formalReady.intentId, expectedUploadIntentRevision: formalReady.revision,
+        }, `infra:formal-submit:${runId}`);
+        assert.equal(formalSubmitted.data.state, "SUBMITTED");
+        const formalContributionId = formalSubmitted.data.state === "SUBMITTED" ? formalSubmitted.data.submission.submissionId : null;
+        if (formalSubmitted.data.state !== "SUBMITTED") throw new Error("formal_submission_missing");
+        const formalCaseId = `moderation:${formalSubmitted.data.submission.submissionId}`;
+        assert.equal((await first.repository.adminGetMediaReview(formalUpload.uploadId))?.submissionId, formalContributionId);
+        const formalMediaReviewed = await first.repository.adminReviewContributionMedia({
+          uploadId: formalUpload.uploadId, caseId: formalCaseId, decision: "ACCEPTED",
+          reason: "正式反馈现场照片内容与授权均已核验",
+          expectedRevision: formalSubmitted.data.submission.revision,
+          actorId: "admin:integration", requestId: `formal-media-review:${runId}`,
+          idempotencyKey: `formal-media-review:${runId}`,
+        });
+        assert.equal(formalMediaReviewed.result.decision, "ACCEPTED");
+        const formalApproved = await first.repository.adminResolveModeration({
+          caseId: formalCaseId, resolution: "APPROVED",
+          reason: "集成测试核准开放时段纠错",
+          actorId: "admin:integration", requestId: `formal-review:${runId}`,
+          expectedRevision: formalMediaReviewed.receipt.resultingRevision!,
+        });
+        const formalMerged = await first.repository.adminMergeContributionEvidence({
+          caseId: formalCaseId, spotId: spot.spotId,
+          confirmedClaims: ["ACCESS_OPENNESS", "ACCESS_LAST_ROAD", "ACCESS_LEGAL_ENTRY", "SAFETY_NIGHT", "ACCESS_PARKING", "FACILITY_STATUS", "SITE_MEDIA_PROVENANCE"],
+          reason: "将审核通过的正式字段写入规范地点修订",
+          actorId: "admin:integration", requestId: `formal-merge:${runId}`,
+          expectedSubmissionRevision: formalApproved.result.submission!.revision,
+          expectedSpotRevision: formalBaseline.revision,
+          idempotencyKey: `formal-merge:${runId}`,
+        });
+        assert.equal(formalMerged.detail.formalFacts?.hours, "19:00—次日05:00");
+        assert.equal(formalMerged.detail.route.lastRoad, "北侧停车区进入，末段步行 80 米");
+        assert.deepEqual(formalMerged.detail.accessAndSafety.restrictions, []);
+        assert.deepEqual(formalMerged.detail.accessAndSafety.guidance, ["临水边缘无护栏，夜间需要结伴"]);
+        assert.equal(formalMerged.detail.spot.facilities.find(item => item.type === "PARKING")?.status, "SEASONAL");
+        assert.equal(formalMerged.detail.spot.facilities.find(item => item.type === "TOILET")?.detail, "冬季关闭");
+        assert.equal(formalMerged.detail.spot.facilities.find(item => item.type === "SIGNAL")?.detail, "4G 信号较弱");
+        assert.equal(formalMerged.detail.spot.facilities.find(item => item.type === "CAMPING")?.detail, "仅可临时停留，不可过夜");
+        assert.equal(formalMerged.detail.formalMedia?.site?.includes(formalUpload.uploadId), true);
+        const formalMergedRow = (await first.repository.adminListSpots()).find(row => row.spot_id === spot.spotId)!;
+        const formalAssessment = await first.repository.adminAssessPublication({
+          spotId: spot.spotId, expectedSpotRevision: formalMergedRow.version,
+          reason: "正式字段合并后重新评估",
+          actorId: "admin:integration", requestId: `formal-assess:${runId}`, idempotencyKey: `formal-assess:${runId}`,
+        });
+        await first.repository.adminChangeSpotLifecycle({
+          spotId: spot.spotId, action: "PUBLISH", expectedSpotRevision: formalMergedRow.version,
+          assessmentDigest: formalAssessment.result.assessmentDigest,
+          reason: "正式字段合并后重新发布测试点",
+          actorId: "admin:integration", requestId: `formal-republish:${runId}`, idempotencyKey: `formal-republish:${runId}`,
+        });
+        const mergedFormalBaseline = (await first.getContributionFormalBaseline(spot.spotId)).data;
+        assert.equal(mergedFormalBaseline.fields.hours, "19:00—次日05:00");
+        assert.equal(mergedFormalBaseline.media.site.includes(formalUpload.uploadId), true);
+        const expiryIntent = await first.repository.saveFormalUploadIntent(firstIdentity.userId, {
+          intentId: `formal-upload-intent:${randomUUID()}`, spotId: spot.spotId,
+          baselineRevision: formalBaseline.revision, uploads: [], revision: 1,
+          createdAt: new Date().toISOString(), expiresAt: new Date(Date.now()+20*60_000).toISOString(),
+        }, `infra:formal-expiry-intent:${runId}`);
+        const expiryUpload = {
+          ...formalUpload,
+          uploadId: `upload:${randomUUID()}` as never,
+          expiresAt: expiryIntent.expiresAt,
+        };
+        const expirySlot = await first.repository.createFormalContributionUpload(firstIdentity.userId, expiryIntent.intentId, expiryUpload, expiryIntent.revision, `infra:formal-expiry-upload:${runId}`);
+        const expiryObjectKey = `contributions/${"e".repeat(24)}/${String(expiryUpload.uploadId).replace(/^upload:/u, "")}.png`;
+        await first.repository.completeFormalContributionUpload(firstIdentity.userId, expiryIntent.intentId, expiryUpload.uploadId, {
+          byteSize: 32, sha256: "e".repeat(64), objectKey: expiryObjectKey, uploadedAt: new Date().toISOString(),
+        }, `infra:formal-expiry-complete:${runId}`);
+        assert.deepEqual(await first.repository.expireContributionUploads(new Date(Date.parse(expirySlot.expiresAt)+1).toISOString()), [expiryObjectKey]);
+        assert.equal((await first.repository.getFormalUploadIntent(firstIdentity.userId, expiryIntent.intentId))?.uploads[0]?.state, "EXPIRED");
+        await first.repository.acknowledgeContributionMediaDeletion([expiryObjectKey]);
+        assert.deepEqual(await first.repository.expireContributionUploads(new Date(Date.parse(expirySlot.expiresAt)+2).toISOString()), []);
         return {
           firstIdentity,
           secondIdentity,
@@ -379,11 +677,16 @@ test(
           profile: profile.data,
           planInput,
           planReceipt: planSaves[0]!.data,
+          completionInput,
+          completionReceipt: completionSaves[0]!.data,
           saved,
           contributionId: submitted.data.submissionId,
           importId: imported.importDraftId,
           firstImportReceipt: importReceipts[0]!,
           proposalId,
+          formalContributionId,
+          formalUploadId: formalUpload.uploadId,
+          formalObjectKey,
         };
       } finally {
         await first.onModuleDestroy();
@@ -393,11 +696,19 @@ test(
 
     const restarted = await MiniappService.createFromEnvironment();
     try {
+      const persistedNickname = (await restarted.getAccountProfile(firstIdentity.userId)).data;
+      assert.equal(persistedNickname.nickname, "数据库昵称");
+      assert.equal(persistedNickname.revision, 2);
+      assert.deepEqual((await restarted.saveAccountNickname(firstIdentity.userId,
+        { nickname: "数据库昵称", expectedRevision: 1 }, "infra:nickname:" + runId)).data, persistedNickname);
       const originalContextGet = restarted.observationContexts.get;
       restarted.observationContexts.get = async () => { throw new Error("context_unavailable_for_replay_test"); };
       try {
         const replay = await restarted.savePlan(firstIdentity.userId, firstRun.planInput, "infra:plan:" + runId);
         assert.deepEqual(replay.data, firstRun.planReceipt);
+        assert.deepEqual((await restarted.repository.listPlans(firstIdentity.userId))[0], firstRun.completionReceipt);
+        assert.deepEqual(firstRun.completionReceipt.eventOccurrenceIds, ["event-occurrence:007-per:2026"]);
+        assert.deepEqual((await restarted.setPlanChecklistCompletion(firstIdentity.userId, firstRun.planInput.planId, firstRun.completionInput, "infra:checklist:" + runId)).data, firstRun.completionReceipt);
         assert.equal((await restarted.repository.listPlans(firstIdentity.userId)).length, 1);
         await assert.rejects(restarted.savePlan(secondIdentity.userId, firstRun.planInput, "infra:plan:" + runId), /context_unavailable_for_replay_test/);
         await assert.rejects(restarted.savePlan(firstIdentity.userId, firstRun.planInput, "infra:plan:new:" + runId), /context_unavailable_for_replay_test/);
@@ -439,11 +750,18 @@ test(
         (await restarted.getPlans(firstIdentity.userId)).data.plans[0]?.notes,
         "restart readback",
       );
+      assert.deepEqual(
+        (await restarted.getPlans(firstIdentity.userId)).data.plans[0]?.eventOccurrenceIds,
+        ["event-occurrence:007-per:2026"],
+      );
       const contributions = await restarted.listContributions(
         firstIdentity.userId,
       );
       assert.equal(contributions.data.submissions[0]?.submissionId, contributionId);
       assert.equal(contributions.data.submissions[0]?.state, "APPROVED");
+      const formalContributions = await restarted.listContributions(secondIdentity.userId);
+      assert.equal(formalContributions.data.submissions[0]?.submissionId, firstRun.formalContributionId);
+      assert.equal(formalContributions.data.submissions[0]?.attempts[0]?.snapshot.media[0]?.state, "ATTACHED");
       const exported = await restarted.exportAccountData(firstIdentity.userId);
       assert.equal(
         exported.data.schemaVersion,
@@ -515,6 +833,21 @@ test(
       const replay = await restarted.deleteAccount(firstIdentity.userId,
         { confirmation: "DELETE_ACCOUNT" }, "infra:account-delete:" + runId);
       assert.deepEqual(replay.data, deletion.data);
+      const formalOwnerDeletion = await restarted.deleteAccount(secondIdentity.userId,
+        { confirmation: "DELETE_ACCOUNT" }, "infra:account-delete:formal-owner:" + runId);
+      assert.equal(formalOwnerDeletion.data.accountState, "DELETED");
+      const canonicalFormalMedia = await pool.query<{ object_key: string }>(
+        "SELECT object_key FROM spot_formal_reference_media WHERE upload_id=$1 AND spot_id=$2",
+        [firstRun.formalUploadId, spot.spotId]);
+      assert.equal(canonicalFormalMedia.rows[0]?.object_key, firstRun.formalObjectKey);
+      const wronglyQueuedCanonicalMedia = await pool.query(
+        "SELECT 1 FROM account_deletion_media_queue WHERE object_key=$1",
+        [firstRun.formalObjectKey]);
+      assert.equal(wronglyQueuedCanonicalMedia.rowCount, 0);
+      await assert.rejects(
+        restarted.getSpotContributionMedia(spot.spotId, firstRun.formalUploadId),
+        /contribution_media_object_missing/,
+      );
       const postgis = await restarted.repository.pool.query<{
         version: string;
       }>("SELECT postgis_version() AS version");

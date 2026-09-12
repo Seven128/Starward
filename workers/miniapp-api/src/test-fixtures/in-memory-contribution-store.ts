@@ -1,12 +1,22 @@
 import { randomUUID } from "node:crypto";
-import { assertContributionSubmittable, MAX_CONTRIBUTION_MEDIA } from "../contribution-validation.ts";
+import { assertContributionSubmittable, assertContributionUploadFits } from "../contribution-validation.ts";
 import type {
   ContributionId,
   ContributionMediaUpload,
   ContributionSubmission,
+  ContributionFormalBaseline,
+  ContributionFormalSubmitRequest,
+  ContributionFormalSubmitResult,
   ContributionUploadId,
   UserId,
 } from "@starward/miniapp-contracts";
+import {
+  appendContributionAttempt,
+  appendCandidateProfileMedia,
+  isContributionEditable,
+  removeCandidateProfileMedia,
+} from "../contribution-attempts.ts";
+import { buildFormalContributionResult } from "../formal-contribution-submission.ts";
 
 export class InMemoryContributionStore {
   #records = new Map<
@@ -89,17 +99,19 @@ export class InMemoryContributionStore {
     if (!current) throw new Error("contribution_not_found");
     if (current.revision !== expectedRevision)
       throw new Error("contribution_revision_conflict");
-    if (current.state !== "DRAFT") throw new Error("contribution_not_editable");
+    if (!isContributionEditable(current.state)) throw new Error("contribution_not_editable");
     if (!current.rightsConfirmed) throw new Error("contribution_media_rights_required");
     const replaced = replaceUploadId ? current.media.find((item) => item.uploadId === replaceUploadId) : undefined;
     if (replaceUploadId && (!replaced || replaced.state !== "EXPIRED")) throw new Error("contribution_upload_replacement_invalid");
-    if (!replaced && current.media.length >= MAX_CONTRIBUTION_MEDIA) throw new Error("contribution_media_count_invalid");
+    assertContributionUploadFits(current, upload, replaced);
+    const candidateProfile = appendCandidateProfileMedia(current, upload, replaced);
     const next = {
       ...structuredClone(current),
       media: replaced ? current.media.map((item) => structuredClone(item.uploadId === replaceUploadId ? upload : item)) : [
         ...current.media.map((item) => structuredClone(item)),
         structuredClone(upload),
       ],
+      ...(candidateProfile ? { candidateProfile } : {}),
       revision: current.revision + 1,
       updatedAt: new Date().toISOString(),
     };
@@ -173,8 +185,10 @@ export class InMemoryContributionStore {
     assertContributionSubmittable(current);
     const next = {
       ...structuredClone(current),
+      ...appendContributionAttempt(current, now),
       state: "PENDING_REVIEW" as const,
       submissionState: "PENDING_REVIEW" as const,
+      review: null,
       mergeState: "NOT_STARTED" as const,
       publicationImpact: "NONE" as const,
       statusHistory: [
@@ -208,18 +222,41 @@ export class InMemoryContributionStore {
     const records = this.#records.get(userId)!;
     const current = records.get(submissionId);
     if (!current) throw new Error("contribution_not_found");
-    if (current.state !== "DRAFT") throw new Error("contribution_not_editable");
+    if (!isContributionEditable(current.state)) throw new Error("contribution_not_editable");
     if (current.revision !== expectedRevision) throw new Error("contribution_revision_conflict");
     const upload = current.media.find((item) => item.uploadId === uploadId);
     if (!upload) throw new Error("contribution_upload_not_found");
     if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
-    const next = { ...structuredClone(current), media: current.media.filter((item) => item.uploadId !== uploadId).map((item) => structuredClone(item)), revision: current.revision + 1, updatedAt: new Date().toISOString() };
+    const candidateProfile = removeCandidateProfileMedia(current, upload);
+    const next = { ...structuredClone(current), media: current.media.filter((item) => item.uploadId !== uploadId).map((item) => structuredClone(item)), ...(candidateProfile ? { candidateProfile } : {}), revision: current.revision + 1, updatedAt: new Date().toISOString() };
     const object = this.#objects.get(uploadId);
     if (object) this.#pendingDeletion.add(object.objectKey);
     this.#objects.delete(uploadId);
     records.set(submissionId, next);
     this.#remember(userId, idempotencyKey, next);
     return structuredClone(next);
+  }
+
+  submitFormal(userId: UserId, request: ContributionFormalSubmitRequest, currentBaseline: ContributionFormalBaseline, idempotencyKey: string, uploads: readonly ContributionMediaUpload[] = []): ContributionFormalSubmitResult {
+    this.ensureUser(userId);
+    const replay = this.#replay<ContributionFormalSubmitResult>(userId, idempotencyKey);
+    if (replay) return structuredClone(replay);
+    const records = this.#records.get(userId)!;
+    const existing = request.submissionId ? records.get(request.submissionId) : null;
+    if (request.submissionId) {
+      if (!existing) throw new Error("contribution_not_found");
+      if (!isContributionEditable(existing.state)) throw new Error("contribution_not_editable");
+      if (existing.revision !== request.expectedSubmissionRevision) throw new Error("contribution_revision_conflict");
+      if (existing.spotId !== request.baseline.spotId || existing.kind === "NEW_SPOT_PROPOSAL") throw new Error("contribution_resubmit_identity_invalid");
+    }
+    const duplicate = [...records.values()].find(value =>
+      value.submissionState === "PENDING_REVIEW" && value.spotId === request.baseline.spotId && value.submissionId !== request.submissionId,
+    );
+    if (duplicate) throw new Error("contribution_formal_pending_exists");
+    const result = buildFormalContributionResult({ request, currentBaseline, existing: existing ?? null, uploads });
+    if (result.state === "SUBMITTED") records.set(result.submission.submissionId, structuredClone(result.submission));
+    this.#remember(userId, idempotencyKey, result);
+    return structuredClone(result);
   }
 
   expireUploads(now: string) {

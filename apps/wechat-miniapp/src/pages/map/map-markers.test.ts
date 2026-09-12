@@ -15,6 +15,8 @@ test("zoomed-in markers preserve formal spot identity and supplied GCJ coordinat
   assert.equal(groups[1]!.latitude, 22.62);
   assert.equal(groups[1]!.longitude, 114.52);
   assert.deepEqual(groups.map((group) => group.id), [1, 2]);
+  const marker = markerItems(groups, "a", "DAY")[0]!;
+  assert.equal("label" in marker, false);
 });
 
 test("a clustered marker retains every spot and selects when any member is selected", () => {
@@ -24,7 +26,8 @@ test("a clustered marker retains every spot and selects when any member is selec
   assert.deepEqual(groups[0]!.spots, spots);
   assert.ok(Math.abs(groups[0]!.latitude - 22.62) < 1e-10);
   const marker = markerItems(groups, "b", "OBSERVATION")[0]!;
-  assert.equal(marker.iconPath, "/assets/icons/spot-marker-selected-observation.png");
+  assert.equal(marker.iconPath, "/assets/icons/formal-spot-marker-selected-observation.png");
+  assert.ok(marker.label);
   assert.equal(marker.label.content, "2");
   assert.match(marker.callout!.content, /2 个正式观星点/);
   assert.match(marker.ariaLabel, /聚合标记/);
@@ -36,6 +39,8 @@ test("native labels retain readable data type and respond to the shared 200% pre
   for (const mode of ["DAY", "NIGHT", "OBSERVATION"] as const) {
     const regular = markerItems(groups, "b", mode)[0]!;
     const large = markerItems(groups, "b", mode, true)[0]!;
+    assert.ok(regular.label);
+    assert.ok(large.label);
     assert.equal(regular.label.fontSize, 18);
     assert.equal(large.label.fontSize, 36);
     assert.equal(large.callout!.fontSize, 24);
@@ -44,6 +49,7 @@ test("native labels retain readable data type and respond to the shared 200% pre
     assert.equal(large.iconPath, regular.iconPath);
   }
   const red = markerItems(groups, "b", "OBSERVATION")[0]!;
+  assert.ok(red.label);
   assert.equal(red.label.color.toLowerCase(), "#ff6b58");
   assert.equal(red.label.bgColor.toLowerCase(), "#190000");
 });

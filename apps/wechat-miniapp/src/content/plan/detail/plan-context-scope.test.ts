@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-const ast = ts.createSourceFile("plan.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+const ast = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 function findText(predicate: (node: ts.Node) => boolean) {
   let found = "";
   const visit = (node: ts.Node) => { if (predicate(node)) found = node.getText(ast); ts.forEachChild(node, visit); };
@@ -18,7 +18,7 @@ test("context restoration binds its response to the editor owner and rejects lat
   for (const changed of [false, true]) {
     let owner: string | null = "a", calls = 0;
     const restore = vm.runInNewContext(compile(callback), {
-      scopedDraftUserId: () => owner, planOwner: "a", planSnapshot: null, observationContext: { contextId: "before" },
+      scopedDraftUserId: () => owner, planOwner: "a", planSnapshot: null, requestedSpotId: null, observationContext: { contextId: "before" },
       useAppStore: { getState: () => ({ observationContext: { contextId: "before" } }) },
       restoreObservationContext: async () => { calls++; if (changed) owner = null; return { data: { contextId: "restored" } }; },
     });
@@ -29,17 +29,26 @@ test("context restoration binds its response to the editor owner and rejects lat
     assert.equal(calls, 1);
   }
 });
-test("only a matching context receipt can update the shared observation context", () => {
-  const call = findText(node => ts.isCallExpression(node) && node.expression.getText(ast) === "useEffect" && node.arguments[0]?.getText(ast).includes("contextQuery.data?.owner") === true);
-  const parsed = ts.createSourceFile("effect.ts", call, ts.ScriptTarget.Latest, true);
-  const expression = (parsed.statements[0] as ts.ExpressionStatement).expression as ts.CallExpression;
-  for (const owner of ["a", "b", null]) {
-    let updates = 0;
-    const apply = vm.runInNewContext(compile(expression.arguments[0]!.getText(parsed)), {
-      scopedDraftUserId: () => owner, contextQuery: { data: { owner: "a", expectedContext: {} } }, activeContext: {},
-      useAppStore: { getState: () => ({ observationContext: {} }) },
-      canApplyContextRestore: () => true, sameContextVersion: () => false, setObservationContext: () => { updates++; },
-    });
-    apply(); assert.equal(updates, owner === "a" ? 1 : 0);
-  }
+test("plan context restoration remains local and never commits to the opener map", async () => {
+  const property = findText(node => ts.isPropertyAssignment(node) && node.name.getText(ast) === "queryFn" && node.getText(ast).includes("requestingOwner"));
+  let writes = 0;
+  const mapContext = { contextId: "map-before", selectedAtUtc: "2026-09-09T12:00:00Z" };
+  const restore = vm.runInNewContext(compile(property.slice(property.indexOf(":") + 1)), {
+    scopedDraftUserId: () => "a", planOwner: "a", planSnapshot: null, requestedSpotId: null,
+    observationContext: mapContext,
+    useAppStore: { getState: () => ({ observationContext: mapContext, setObservationContext: () => { writes++; } }) },
+    setObservationContext: () => { writes++; },
+    restoreObservationContext: async () => ({ data: { contextId: "plan-local" } }),
+  });
+  const result = await restore();
+  assert.equal(result.data.contextId, "plan-local");
+  assert.equal(mapContext.contextId, "map-before");
+  assert.equal(writes, 0);
+  const commits: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && /setObservationContext$/.test(node.expression.getText(ast))) commits.push(node.getText(ast));
+    ts.forEachChild(node, visit);
+  };
+  visit(ast);
+  assert.deepEqual(commits, []);
 });

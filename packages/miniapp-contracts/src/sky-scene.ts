@@ -1,6 +1,8 @@
 import type {
   SkyScene,
   SkySceneCatalogEntry,
+  DeepSkyScene,
+  DeepSkyScenePoint,
   SkySceneFrame,
   SkyScenePoint,
   SkyTarget,
@@ -11,6 +13,7 @@ import type {
 export const SKY_SCENE_MAX_CATALOG_ENTRIES = 2_048;
 export const SKY_SCENE_MAX_MAGNITUDE_LIMIT = 5.5;
 export const SKY_SCENE_MAX_SERIALIZED_BYTES = 1_048_576;
+export const DEEP_SKY_SCENE_MAX_CATALOG_ENTRIES = 128;
 
 const SHA256 = /^[a-f0-9]{64}$/u;
 
@@ -26,9 +29,15 @@ function assertEntry(entry: SkySceneCatalogEntry, index: number): void {
   if (!entry || typeof entry !== "object") fail(`catalog_entry_${index}`);
   if (typeof entry.sourceId !== "string" || !entry.sourceId.trim())
     fail(`catalog_entry_${index}:source_id`);
-  if (!finite(entry.gMagnitude) || entry.gMagnitude > SKY_SCENE_MAX_MAGNITUDE_LIMIT)
+  if (typeof entry.objectRef !== "string" || !/^HIP:\d{1,6}$/u.test(entry.objectRef))
+    fail(`catalog_entry_${index}:object_ref`);
+  if (entry.displayName !== null && (typeof entry.displayName !== "string" || !entry.displayName.trim()))
+    fail(`catalog_entry_${index}:display_name`);
+  if (!finite(entry.magnitude) || entry.magnitude > SKY_SCENE_MAX_MAGNITUDE_LIMIT)
     fail(`catalog_entry_${index}:g_magnitude`);
-  if (entry.bpRp !== null && !finite(entry.bpRp))
+  if (entry.magnitudeBand !== "V" || entry.colorIndexBand !== "B-V")
+    fail(`catalog_entry_${index}:photometry_band`);
+  if (entry.colorIndex !== null && !finite(entry.colorIndex))
     fail(`catalog_entry_${index}:bp_rp`);
 }
 
@@ -75,6 +84,48 @@ function assertFrame(
   );
 }
 
+function assertDeepSky(scene: DeepSkyScene, hourlyAt: readonly string[]) {
+  if (!scene || typeof scene !== "object" || !Array.isArray(scene.frames) || scene.frames.length !== hourlyAt.length)
+    fail("deep_sky_root");
+  if (scene.state === "UNAVAILABLE") {
+    if (scene.catalog !== null || typeof scene.unavailableReason !== "string" || !scene.unavailableReason.trim() ||
+      scene.frames.some((frame, index) => frame.at !== hourlyAt[index] || frame.state !== "UNAVAILABLE" || frame.points !== null))
+      fail("deep_sky_unavailable");
+    return;
+  }
+  if (scene.state !== "AVAILABLE" || !scene.catalog || scene.unavailableReason !== null)
+    fail("deep_sky_available");
+  const catalog = scene.catalog;
+  if (!catalog.catalogVersion.trim() || !SHA256.test(catalog.catalogHash) || catalog.frame !== "ICRS J2000" ||
+    !Array.isArray(catalog.sources) || catalog.sources.length === 0 || !Array.isArray(catalog.entries) ||
+    catalog.entries.length === 0 || catalog.entries.length > DEEP_SKY_SCENE_MAX_CATALOG_ENTRIES)
+    fail("deep_sky_catalog");
+  const references = new Set<string>();
+  catalog.entries.forEach((entry, index) => {
+    if (!entry || !/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(entry.objectRef) || references.has(entry.objectRef) ||
+      !entry.displayName.trim() || (entry.kind !== "GALAXY" && entry.kind !== "NEBULA") ||
+      !Array.isArray(entry.aliases) || entry.aliases.some((alias: unknown) => typeof alias !== "string" || !alias.trim()) ||
+      (entry.magnitudeBand !== "V" && entry.magnitudeBand !== null)) fail(`deep_sky_entry_${index}`);
+    references.add(entry.objectRef);
+    for (const value of [entry.magnitude, entry.majorAxisArcmin, entry.minorAxisArcmin, entry.positionAngleDeg])
+      if (value !== null && !finite(value)) fail(`deep_sky_entry_${index}_measurement`);
+  });
+  scene.frames.forEach((frame, frameIndex) => {
+    if (!frame || frame.at !== hourlyAt[frameIndex] || frame.state !== "AVAILABLE" || !Array.isArray(frame.points))
+      fail(`deep_sky_frame_${frameIndex}`);
+    const seen = new Set<number>();
+    frame.points.forEach((point: DeepSkyScenePoint, pointIndex: number) => {
+      if (!Array.isArray(point) || point.length !== 7 || !Number.isInteger(point[0]) || point[0] < 0 ||
+        point[0] >= catalog.entries.length || seen.has(point[0])) fail(`deep_sky_point_${frameIndex}_${pointIndex}`);
+      seen.add(point[0]);
+      for (const [offset, value] of point.slice(1).entries()) {
+        if (!finite(value) || (offset % 2 === 0 ? value < 0 || value >= 360 : value < -90 || value > 90))
+          fail(`deep_sky_point_${frameIndex}_${pointIndex}_coordinate`);
+      }
+    });
+  });
+}
+
 /**
  * Validate the public scene shape and its relationship to the report's real
  * hourly slices.  The BFF calls this at its boundary; clients can use it in
@@ -91,6 +142,8 @@ export function assertSkyScene(
     if (expectedAt === undefined) fail("hourly_index");
     assertFrame(frame, expectedAt, scene.catalog?.entries.length ?? 0, index);
   });
+  if (scene.deepSky !== undefined && scene.deepSky !== null)
+    assertDeepSky(scene.deepSky, hourlyAt);
 
   if (scene.state === "AVAILABLE") {
     if (!scene.catalog) fail("available_catalog_missing");
@@ -106,6 +159,8 @@ export function assertSkyScene(
       scene.catalog.magnitudeLimit > SKY_SCENE_MAX_MAGNITUDE_LIMIT
     )
       fail("catalog_identity");
+    if (!Array.isArray(scene.catalog.sources) || scene.catalog.sources.length === 0)
+      fail("catalog_sources");
     const ids = new Set<string>();
     scene.catalog.entries.forEach((entry, index) => {
       assertEntry(entry, index);

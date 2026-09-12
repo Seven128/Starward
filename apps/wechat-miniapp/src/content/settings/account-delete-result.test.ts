@@ -10,9 +10,9 @@ test('server deletion success clears the session before result UI and is never r
  for(const failure of ['api','result-modal','navigation','none','account-switched','cleanup-native','cleanup-state','account-switched-cleanup','cleanup-navigation']){
   const calls:string[]=[],notices:any[]=[];let modals=0;const resultBodies:string[]=[];
   const run=vm.runInNewContext(ts.transpileModule(declaration+'\ndeleteAccount;',{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,{
-   accountActionPending:{current:false},dataAction:null,setDataAction(){},deleteAccountThroughApi:async()=>{calls.push('api');if(failure==='api')throw Error('api');return{data:{mediaCleanupState:'QUEUED'},localAccountReset:!failure.startsWith('account-switched'),localCleanupComplete:!failure.includes('cleanup') || failure==='cleanup-state'};},
+   accountActionPending:{current:false},dataAction:null,setDataAction(){},setSheet(){},deleteAccountThroughApi:async()=>{calls.push('api');if(failure==='api')throw Error('api');return{data:{mediaCleanupState:'QUEUED'},localAccountReset:!failure.startsWith('account-switched'),localCleanupComplete:!failure.includes('cleanup') || failure==='cleanup-state'};},
    resetAfterAccountDeletion:()=>{calls.push('reset');return failure!=='cleanup-state';},notify:(n:unknown)=>notices.push(n),errorMessage:()=> '失败',
-   Taro:{showModal:async(options:{content:string})=>{modals++;if(modals===3){calls.push('result');resultBodies.push(options.content);if(failure==='result-modal')throw Error('modal');}return{confirm:true};},reLaunch:async()=>{calls.push('navigate');if(failure.includes('navigation'))throw Error('navigation');}},
+   Taro:{showModal:async(options:{content:string})=>{modals++;calls.push('result');resultBodies.push(options.content);if(failure==='result-modal')throw Error('modal');return{confirm:true};},reLaunch:async()=>{calls.push('navigate');if(failure.includes('navigation'))throw Error('navigation');}},
   });
   await run();
   if(failure==='api'){assert.deepEqual(calls,['api']);assert.equal(notices[0].title,'账户未删除');}

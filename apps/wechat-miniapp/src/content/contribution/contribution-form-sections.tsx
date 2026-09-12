@@ -155,8 +155,9 @@ export function ContributionLocationSection({
       data-control="contribution-location-consent"
     >
       <Text className="type-section">建议地点</Text>
+      <ContributionCandidateAddressControl form={form} commands={commands} />
       <View className="form-group">
-        <Text className="type-label">地点名称</Text>
+        <Text className="type-label">地点名称 <Text className="contribution-required">*</Text></Text>
         <Input disabled={form.commandBusy}
           className="field contribution-candidate-name"
           data-od-id="contribution-candidate-name"
@@ -170,21 +171,24 @@ export function ContributionLocationSection({
           <FieldError>请填写地点名称。</FieldError>
         ) : null}
       </View>
-      <View className="form-group">
-        <Text className="type-label">地区</Text>
-        <Input disabled={form.commandBusy}
-          className="field contribution-candidate-region"
-          data-od-id="contribution-candidate-region"
-          focus={form.validationField === "contribution-candidate-region"}
-          value={form.candidateRegion}
-          maxlength={120}
-          placeholder="城市 / 区域"
-          onInput={(event) => form.setCandidateRegion(event.detail.value)}
-        />
-        {form.validationField === "contribution-candidate-region" ? (
-          <FieldError>请填写地区。</FieldError>
-        ) : null}
-      </View>
+      <ContributionCandidateCoordinateConsent form={form} commands={commands} />
+    </View>
+  );
+}
+
+export function ContributionCandidateAddressControl({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {
+  return <View className="contribution-document-address contribution-address-group" data-field="address">
+    <Text className="formal-feedback-field__label">地点地址 <Text className="formal-feedback-required">*</Text></Text>
+    <Button disabled={form.commandBusy} className="contribution-address-picker focus-ring" aria-label="搜索地址，确定观星位置" onClick={() => void commands.chooseCandidateLocation()}>
+      <Text className={form.candidateFields.address ? "" : "contribution-placeholder"}>{form.candidatePlaceLabel || form.candidateFields.address || "搜索地址，确定观星位置"}</Text>
+      <Text aria-hidden="true">⌖</Text>
+    </Button>
+    {form.validationField === "contribution-candidate-address" ? <FieldError>请先搜索并确定地点地址。</FieldError> : null}
+  </View>;
+}
+
+export function ContributionCandidateCoordinateConsent({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {
+  return <View className="contribution-candidate-coordinate-consent" data-od-id="contribution-location-consent" data-control="contribution-location-consent">
       <View className="contribution-coordinate-grid">
         <CoordinateField disabled={form.commandBusy}
           label="纬度"
@@ -211,14 +215,14 @@ export function ContributionLocationSection({
       </SoftButton>
       <ToggleField disabled={form.commandBusy} id="contribution-coordinate-consent" label="同意提交该精确坐标" description="审核前不公开；敏感地点可转为模糊或隐藏坐标" checked={form.preciseLocationConsent} onChange={form.setPreciseLocationConsent} stateLabels={{ checked: "已同意", unchecked: "未同意" }} />
       {form.validationField === "contribution-candidate-latitude" ||
-      form.validationField === "contribution-candidate-longitude" ? (
+      form.validationField === "contribution-candidate-longitude" ||
+      form.validationField === "contribution-candidate-coordinate" ? (
         <FieldError>请输入有效的纬度和经度。</FieldError>
       ) : null}
       {form.validationField === "contribution-location-consent" ? (
         <FieldError>提交新增地点前需要明确同意提交该坐标。</FieldError>
       ) : null}
-    </View>
-  );
+    </View>;
 }
 
 function CoordinateField({
@@ -242,8 +246,8 @@ function CoordinateField({
     <View className="form-group">
       <Text className="type-label">{label}</Text>
       <Input disabled={disabled}
+        id={odId}
         className={`field ${odId}`}
-        data-od-id={odId}
         focus={focus}
         type="digit"
         value={value}

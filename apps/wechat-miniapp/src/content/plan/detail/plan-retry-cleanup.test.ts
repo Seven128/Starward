@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 
 test("plan recovery cleanup requires review, a successful refresh and the same mounted account", async () => {
-  const ast = ts.createSourceFile("plan.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const ast = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let text = "";
   const visit = (node: ts.Node) => { if (ts.isVariableDeclaration(node) && node.name.getText(ast) === "clearSaveRecovery") text = `const ${node.getText(ast)};`; ts.forEachChild(node, visit); };
   visit(ast); assert.ok(text);

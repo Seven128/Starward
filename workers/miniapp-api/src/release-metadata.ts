@@ -105,10 +105,13 @@ export function loadHttpDeploymentConfig(
 
 export function fastifyDeploymentOptions(http: ReturnType<typeof loadHttpDeploymentConfig>) {
   return Object.freeze({
-    bodyLimit: 2_000_000,
-    connectionTimeout: 10_000,
-    requestTimeout: 15_000,
-    handlerTimeout: 30_000,
+    bodyLimit: 14_000_000,
+    // NASA SkyView can take more than ten seconds on a cold render. The
+    // provider itself aborts at 30 s, so the HTTP boundary must remain open
+    // long enough to return that bounded result instead of resetting clients.
+    connectionTimeout: 35_000,
+    requestTimeout: 35_000,
+    handlerTimeout: 35_000,
     keepAliveTimeout: 10_000,
     maxRequestsPerSocket: 1_000,
     forceCloseConnections: "idle" as const,

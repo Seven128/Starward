@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { calendarDateInTimezone, clockTimeInTimezone } from "../../utils/zoned-date";
 
 type Element = { type: string; props: Record<string, any>; children: Element[] };
 test("map and panel clocks keep midnight in 00–23 hours on the correct date", () => {
@@ -10,7 +11,10 @@ test("map and panel clocks keep midnight in 00–23 hours on the correct date", 
     const source = ts.createSourceFile("clock.tsx", readFileSync(new URL(path!, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const declaration = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === name);
     assert.ok(declaration);
-    const format = vm.runInNewContext(ts.transpileModule(declaration.getText(source) + `\n${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText) as (value: string, timezone: string, compact?: boolean) => string;
+    const format = vm.runInNewContext(
+      ts.transpileModule(declaration.getText(source) + `\n${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText,
+      { calendarDateInTimezone, clockTimeInTimezone },
+    ) as (value: string, timezone: string, compact?: boolean) => string;
     assert.match(format("2026-09-06T16:30:00Z", "Asia/Shanghai", true), /00:30/);
     assert.match(format("2026-09-06T16:00:00Z", "Asia/Shanghai", true), /00:00/);
     assert.match(format("2026-09-06T15:30:00Z", "Asia/Shanghai", true), /23:30/);
@@ -32,7 +36,7 @@ function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z") {
     useDidHide: (callback: () => void) => { hide = callback; },
     useState: (value: unknown) => [value, () => {}],
     useRef: (value: unknown) => ({ current: value }), nearestMapTimeFrameIndex: () => 0,
-    MINIAPP_DESIGN: { geometry: { "target-min": 44 } },
+    calendarDateInTimezone, clockTimeInTimezone,
   });
   const previews: number[] = [], commits: number[] = [];
   let cancelled = 0;
@@ -107,6 +111,26 @@ test("a completed user scroll commits once", () => {
   ruler.scroll.onScrollEnd(event);
   ruler.scroll.onScrollEnd(event);
   assert.deepEqual(ruler.commits, [1]);
+});
+
+test("the adopted ruler keeps the 66px cadence and omits a duplicate nonempty heading", () => {
+  const source = readFileSync(new URL("./time-ruler.tsx", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("./index.scss", import.meta.url), "utf8");
+  assert.match(source, /const RULER_STEP = 66;/);
+  assert.match(styles, /\.map-layer-sheet--cloud\s*\{[^}]*height:\s*262Px;/s);
+  assert.match(styles, /\.map-layer-sheet--light\s*\{[^}]*height:\s*120Px;/s);
+  assert.match(styles, /\.map-time-ruler__slice\s*\{[^}]*width:\s*66Px;/s);
+  const ruler = render();
+  assert.equal(ruler.root.props.className, "map-time-ruler");
+  assert.equal(
+    ruler.root.children.some((child) => child?.props?.className === "map-time-ruler__heading"),
+    false,
+  );
+  const track = ruler.root.children.find((child) => child?.type === "scroll")!.children[0]!;
+  assert.equal(
+    track.children.every((slice) => slice.children.some((child) => child?.type === "text")),
+    true,
+  );
 });
 
 test("hide, unmount and changed ruler inputs cancel pending preview", () => {

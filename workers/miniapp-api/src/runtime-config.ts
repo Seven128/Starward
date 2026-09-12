@@ -3,7 +3,7 @@ import {
   assertFeatureFlagClosure,
   type FeatureFlags,
 } from "@starward/miniapp-contracts";
-import { METEOR_EVENT_CATALOG_VERSION } from "./meteor-event-catalog.ts";
+import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog.ts";
 
 export type ReleaseProfile = "LOCAL" | "TRIAL" | "COMMERCIAL";
 export type StorageMode = "MEMORY_TEST" | "POSTGRES";
@@ -53,6 +53,7 @@ export interface MiniappRuntimeConfig {
   };
   trialRegion: string;
   eventCatalogVersion: string;
+  eventCatalogCheckIntervalDays: number;
   darkSkyDatasetVersion: string;
   skyCatalogVersion: string;
   astronomyAlgorithmVersion: string;
@@ -89,6 +90,14 @@ function qweatherForecastHours(
       `runtime_config_invalid:QWEATHER_FORECAST_HOURS:${selected}`,
     );
   return Number(selected) as QWeatherForecastHours;
+}
+
+function boundedInteger(name: string, fallback: number, minimum: number, maximum: number) {
+  const raw = value(name);
+  const selected = raw === null ? fallback : Number(raw);
+  if (!Number.isInteger(selected) || selected < minimum || selected > maximum)
+    throw new Error(`runtime_config_invalid:${name}:${raw}`);
+  return selected;
 }
 
 function selectedFlags(input: {
@@ -183,7 +192,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   const darkSkyDatasetVersion =
     value("MINIAPP_DARK_SKY_DATASET_VERSION") ?? "UNAVAILABLE";
   const eventCatalogVersion =
-    value("MINIAPP_EVENT_CATALOG_VERSION") ?? METEOR_EVENT_CATALOG_VERSION;
+    value("MINIAPP_EVENT_CATALOG_VERSION") ?? ASTRONOMICAL_EVENT_CATALOG_VERSION;
 
   if (storageMode === "POSTGRES" && !databaseUrl)
     throw new Error("runtime_config_invalid:postgres_database_url_required");
@@ -236,7 +245,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     process.env.MINIAPP_ACCEPTANCE_MODE !== "1"
   )
     throw new Error("runtime_config_invalid:local_auth_not_allowed");
-  if (eventCatalogVersion !== METEOR_EVENT_CATALOG_VERSION)
+  if (eventCatalogVersion !== ASTRONOMICAL_EVENT_CATALOG_VERSION)
     throw new Error("runtime_config_invalid:event_catalog_not_installed");
   if (releaseProfile !== "LOCAL" && mediaStorageMode === "LOCAL_FILESYSTEM")
     throw new Error("runtime_config_invalid:local_media_storage_local_only");
@@ -264,6 +273,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     wechat,
     trialRegion: value("MINIAPP_TRIAL_REGION") ?? "GREATER_BAY_AREA_3H",
     eventCatalogVersion,
+    eventCatalogCheckIntervalDays: boundedInteger("MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS", 7, 1, 30),
     darkSkyDatasetVersion,
     skyCatalogVersion:
       value("MINIAPP_SKY_CATALOG_VERSION") ?? "iau-bright-targets-2026.1",
@@ -314,7 +324,8 @@ export function createTestRuntimeConfig(
     amapWebServiceKey: null,
     wechat: { appId: null, appSecret: null, sessionSecret: "test-only-session-secret-not-for-release" },
     trialRegion: "TEST",
-    eventCatalogVersion: METEOR_EVENT_CATALOG_VERSION,
+    eventCatalogVersion: ASTRONOMICAL_EVENT_CATALOG_VERSION,
+    eventCatalogCheckIntervalDays: 7,
     darkSkyDatasetVersion: "test-dark-sky",
     skyCatalogVersion: "test-sky-catalog",
     astronomyAlgorithmVersion: "test-astronomy",

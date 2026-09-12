@@ -28,7 +28,10 @@ for (const operation of schema.operations) {
   if (!/^[a-z][A-Za-z0-9]+$/u.test(operation.id) || ids.has(operation.id))
     throw new Error(`miniapp_sdk_operation_id_invalid:${operation.id}`);
   ids.add(operation.id);
-  if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(operation.method))
+  // wx.request does not support PATCH. Keep the public Mini Program manifest
+  // inside the target runtime's transport vocabulary so generated clients
+  // cannot pass browser/Node checks and then fail before dispatch on device.
+  if (!["GET", "POST", "PUT", "DELETE"].includes(operation.method))
     throw new Error(`miniapp_sdk_method_invalid:${operation.id}`);
   if (!/^\/[A-Za-z0-9_/{}/-]*$/u.test(operation.path))
     throw new Error(`miniapp_sdk_path_invalid:${operation.id}`);

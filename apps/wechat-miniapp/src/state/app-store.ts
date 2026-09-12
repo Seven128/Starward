@@ -4,6 +4,7 @@ import {
   DEFAULT_USER_PREFERENCES,
   cloneFilterState,
   type DisplayMode,
+  type DrivingRangeParameter,
   type FilterState,
   type ObservationContext,
   type ObservationPlan,
@@ -17,6 +18,7 @@ import {
   applyFilterDraft,
   beginFilterDraft,
   cancelFilterDraft,
+  clearFilterDraft,
   enterObservationMode,
   exitObservationMode,
   restorePriorMode,
@@ -25,6 +27,7 @@ import {
   setDisplayMode,
   toggleFavoriteRelation,
   toggleFilterDraft,
+  updateDraftDrivingRange,
 } from "./app-transitions";
 import {
   dismissNotification as removeNotification,
@@ -94,6 +97,7 @@ interface AppState extends PersistedState {
   filterSheetOpen: boolean;
   locationState: LocationState;
   mapResetVersion: number;
+  spotOpenRequestVersion: number;
   notifications: NotificationRecord[];
   sourceLift: SourceLiftRuntimeState;
   hydrate(): void;
@@ -125,11 +129,14 @@ interface AppState extends PersistedState {
     options?: { restoreMap?: boolean; discardFilterDraft?: boolean },
   ): void;
   selectSpot(spotId: SpotId | null): void;
+  requestSpotOpen(spotId: SpotId): void;
   openFilters(): void;
   toggleDraftFilter(optionId: string): void;
+  setDraftDrivingRange(parameter: DrivingRangeParameter): void;
+  clearDraftFilters(): void;
   revertFilters(): void;
   cancelFilters(): void;
-  applyFilters(): void;
+  applyFilters(parameter?: DrivingRangeParameter): void;
   setLocationState(state: AppState["locationState"]): void;
   addSearchHistory(query: string): void;
   clearSearchHistory(): void;
@@ -333,6 +340,7 @@ export const useAppStore = create<AppState>((set, get) => {
     filterSheetOpen: false,
     locationState: "DEFAULT_REGION",
     mapResetVersion: 0,
+    spotOpenRequestVersion: 0,
     notifications: [],
     sourceLift: {
       owner: null,
@@ -551,11 +559,23 @@ export const useAppStore = create<AppState>((set, get) => {
     selectSpot(spotId) {
       commit({ selectedSpotId: spotId });
     },
+    requestSpotOpen(spotId) {
+      commit((state) => ({
+        selectedSpotId: spotId,
+        spotOpenRequestVersion: state.spotOpenRequestVersion + 1,
+      }));
+    },
     openFilters() {
       set((state) => beginFilterDraft(state.committedFilters));
     },
     toggleDraftFilter(optionId) {
       set((state) => toggleFilterDraft(state.draftFilters, optionId));
+    },
+    setDraftDrivingRange(parameter) {
+      set((state) => updateDraftDrivingRange(state.draftFilters, parameter));
+    },
+    clearDraftFilters() {
+      set((state) => clearFilterDraft(state.draftFilters));
     },
     revertFilters() {
       set((state) => revertFilterDraft(state.filterSnapshot));
@@ -563,8 +583,12 @@ export const useAppStore = create<AppState>((set, get) => {
     cancelFilters() {
       set((state) => cancelFilterDraft(state.committedFilters));
     },
-    applyFilters() {
-      commit((state) => applyFilterDraft(state.draftFilters));
+    applyFilters(parameter) {
+      commit((state) => applyFilterDraft(
+        parameter
+          ? updateDraftDrivingRange(state.draftFilters, parameter).draftFilters
+          : state.draftFilters,
+      ));
     },
     setLocationState(locationState) {
       set({ locationState });
@@ -655,6 +679,7 @@ export const useAppStore = create<AppState>((set, get) => {
         plans: [],
         filterSheetOpen: false,
         locationState: "DEFAULT_REGION",
+        spotOpenRequestVersion: 0,
         notifications: [],
         sourceLift: {
           owner: null,
@@ -681,6 +706,7 @@ export function resetAppStoreForAcceptance(): PersistedState {
     filterSnapshot: cloneFilterState(next.committedFilters),
     filterSheetOpen: false,
     locationState: "DEFAULT_REGION",
+    spotOpenRequestVersion: 0,
     notifications: [],
     sourceLift: {
       owner: null,

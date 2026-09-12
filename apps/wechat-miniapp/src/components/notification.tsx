@@ -33,7 +33,7 @@ export function NotificationComponent({
   return (
     <View
       className={`notification notification--${notification.placement} notification--${notification.tone}`}
-      data-od-id={`notification-${notification.placement}`}
+      id={`notification-${notification.placement}`}
       role={notification.tone === "error" ? "alert" : "status"}
       aria-live={notification.tone === "error" ? "assertive" : "polite"}
       aria-atomic="true"
@@ -79,7 +79,6 @@ export function NotificationComponent({
       ) : null}
       {notification.dismissible && onDismiss ? (
         <Button
-          compileMode
           className="notification__dismiss focus-ring"
           data-od-id="notification-dismiss"
           ariaLabel={`关闭通知：${notification.title}`}

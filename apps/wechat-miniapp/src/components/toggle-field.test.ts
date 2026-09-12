@@ -25,7 +25,7 @@ test("a setting is one controlled full-row action with an explicit accessible st
   assert.match(String(off.props.ariaLabel), /已关闭.*开启/);
   (off.props.onClick as () => void)();
   assert.deepEqual(changes, [true]);
-  assert.equal(off.props["aria-pressed"], false, "selection remains owned by the preference store");
+  assert.equal(off.props["aria-pressed"], undefined, "compile mode must not emit Taro's invalid NaN pressed state");
   const on = render(true, false, changes);
   (on.props.onClick as () => void)();
   assert.deepEqual(changes, [true, false]);

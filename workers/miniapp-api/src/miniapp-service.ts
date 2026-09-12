@@ -1,3 +1,12 @@
+import {
+  PLAN_NOTES_MAX_LENGTH,
+  parsePlanEventOccurrenceIds,
+  parsePlanReminders,
+  parsePlanTravel,
+  normalizeAccountNickname,
+  type AccountAvatarSaveRequest,
+  type AccountNicknameSaveRequest,
+} from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
 import {
   type AccountDataExportData,
@@ -7,6 +16,10 @@ import {
   viewportRadiusKm,
   type ApiEnvelope,
   type ContributionDraftRequest,
+  type ContributionFormalSubmitRequest,
+  type ContributionFormalUploadIntentRequest,
+  type ContributionFormalUploadSessionRequest,
+  type ContributionFormalUploadCompleteRequest,
   type ContributionId,
   type ContributionUpdateRequest,
   type ContributionUploadCompleteRequest,
@@ -38,6 +51,7 @@ import {
   type SearchData,
   type SourceSummary,
   type SpotDetail,
+  type SpotFilterEvidence,
   type SpotId,
   type SpotRankingPreferences,
   type SpotSummary,
@@ -51,10 +65,13 @@ import {
   gcj02ToWgs84,
   wgs84ToGcj02,
 } from "@starward/coordinate-system";
+import { CelestialObjectInformationService } from "./celestial-object-information.ts";
+import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 import { AstronomyService, type AstronomyDecisionReport } from "./astronomy-service.ts";
 import type { SkyCatalogProvider } from "./sky-scene-catalog.ts";
 import { AuthService } from "./auth-service.ts";
 import { MemoryCache, RedisCache } from "./cache.ts";
+import { resolvePlanTiming } from "./plan-timing.ts";
 import {
   ObservationContextService,
   zonedLocalToUtc,
@@ -73,11 +90,18 @@ import { ContributionService } from "./contribution-service.ts";
 import {
   createMediaObjectStore,
   DisabledMediaObjectStore,
+  sanitizeAccountAvatarImage,
 } from "./media-object-store.ts";
+import { decodeContributionBase64 } from "./contribution-validation.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
 import { MemoryOutbox, MemoryTelemetry, ProviderRuntime } from "./runtime.ts";
 import { createRoutePort } from "./route-provider.ts";
 import { createPlaceSearchPort } from "./place-provider.ts";
+import {
+  evaluateSpotFilterEvidence,
+  passesActiveFilters,
+  summarizeFilterCoverage,
+} from "./filter-evaluation.ts";
 import {
   loadRuntimeConfig,
   type MiniappRuntimeConfig,
@@ -88,7 +112,16 @@ import {
   validateExternalUrl,
 } from "./security.ts";
 import { createWeatherPort } from "./weather-provider.ts";
+import { derivePlanReminderSchedules, publicReminderStatus } from "./plan-reminder-schedule.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
+import {
+  AstronomicalEventCatalogOwner,
+} from "./astronomical-event-catalog-owner.ts";
+import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.ts";
+import {
+  projectEclipseAtLocation,
+  projectMeteorShowerAtLocation,
+} from "./astronomy-engine-adapter.ts";
 
 function hash(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -350,58 +383,8 @@ function moonImpact(
   return "MEDIUM";
 }
 
-function hasFacility(spot: SpotSummary, type: string) {
-  return spot.facilities.some(
-    (facility) => facility.type === type && facility.status === "AVAILABLE",
-  );
-}
-
 function activeFilter(filters: FilterState, group: FilterGroupKey) {
   return filters[group].length > 0;
-}
-
-function matchesFilters(input: {
-  spot: SpotSummary;
-  evaluation: MapSpotEvaluation;
-  filters: FilterState;
-  preferences?: SpotRankingPreferences;
-}) {
-  const { spot, evaluation, filters } = input;
-  const recentBoundary = Date.now() - 180 * 24 * 60 * 60 * 1_000;
-  const predicates: Readonly<Record<FilterGroupKey, boolean>> = {
-    TONIGHT_RECOMMENDED: evaluation.recommendation === "RECOMMENDED",
-    BEST_WINDOW_DURATION:
-      evaluation.bestWindowMinutes !== null &&
-      evaluation.bestWindowMinutes >= 120,
-    DISTANCE_DRIVE_TIME:
-      evaluation.driveMinutes !== null &&
-      evaluation.driveMinutes <= (input.preferences?.maxDriveMinutes ?? 180),
-    LIGHT_POLLUTION:
-      spot.lightPollution.productBand === "VERY_LOW" ||
-      spot.lightPollution.productBand === "LOW",
-    LESS_CLOUD:
-      evaluation.cloudPercent !== null && evaluation.cloudPercent <= 45,
-    PARKING: hasFacility(spot, "PARKING"),
-    RESTROOM: hasFacility(spot, "TOILET"),
-    DRIVE_UP_ACCESS: spot.accessTags.includes("DRIVE_TO"),
-    PHOTO_FOREGROUND: spot.media.some((media) => media.isSiteSpecific),
-    CAMPING_OVERNIGHT_PARKING: hasFacility(spot, "CAMPING"),
-    SPECIFIC_CELESTIAL_EVENT: evaluation.activeEventIds.length > 0,
-    LOW_CLOUD_THRESHOLD:
-      evaluation.lowCloudPercent !== null &&
-      evaluation.lowCloudPercent <= 30,
-    MOON_IMPACT: evaluation.moonImpact === "LOW",
-    HIKING_DIFFICULTY: spot.accessTags.includes("NO_HIKE"),
-    SIGNAL: hasFacility(spot, "SIGNAL"),
-    CHARGING: hasFacility(spot, "CHARGING"),
-    OPEN_SKY_DIRECTION: spot.clearDirections.length > 0,
-    LAST_VERIFIED_AT:
-      spot.lastVerifiedAt !== null &&
-      Date.parse(spot.lastVerifiedAt) >= recentBoundary,
-  };
-  return FILTER_GROUP_KEYS.every(
-    (group) => !activeFilter(filters, group) || predicates[group],
-  );
 }
 
 function cell(
@@ -705,12 +688,15 @@ function layerFor(input: {
 export class MiniappService {
   readonly repository: MiniappRepositoryPort;
   readonly astronomy: AstronomyService;
+  readonly celestialObjects = new CelestialObjectInformationService();
+  readonly deepSkyImages = new DeepSkyImageryService();
   readonly telemetry: TelemetryPort;
   readonly cache: CachePort;
   readonly config: MiniappRuntimeConfig;
   readonly auth: AuthService;
   readonly observationContexts: ObservationContextService;
   readonly contributions: ContributionService;
+  readonly eventCatalog: AstronomicalEventCatalogOwner;
   readonly route: RoutePort;
   readonly placeSearch: PlaceSearchPort;
   readonly providers = new ProviderRuntime();
@@ -726,6 +712,7 @@ export class MiniappService {
     cache?: CachePort;
     mediaStore?: MediaObjectStorePort;
     skyCatalog?: SkyCatalogProvider;
+    eventCatalog?: AstronomicalEventCatalogOwner;
   }) {
     this.repository = input.repository;
     this.config = input.config;
@@ -733,17 +720,21 @@ export class MiniappService {
     this.placeSearch = input.placeSearch ?? createPlaceSearchPort(input.config);
     this.telemetry = input.telemetry ?? new MemoryTelemetry();
     this.cache = input.cache ?? new MemoryCache();
+    this.eventCatalog = input.eventCatalog ?? new AstronomicalEventCatalogOwner();
     this.astronomy = new AstronomyService(
       input.weather,
       this.repository,
       this.config,
       input.skyCatalog,
+      Date.now,
+      this.eventCatalog,
     );
     this.auth = new AuthService(this.repository, this.config);
     this.observationContexts = new ObservationContextService(
       this.repository,
       this.cache,
       this.config,
+      this.eventCatalog,
     );
     this.contributions = new ContributionService(
       this.repository,
@@ -770,6 +761,11 @@ export class MiniappService {
           config.cachePrefix,
         ).initialize()
       : new MemoryCache();
+    const eventCatalog = await new AstronomicalEventCatalogOwner(
+      repository instanceof PostgresMiniappRepository
+        ? new PostgresAstronomicalEventCatalogStore(repository.pool)
+        : undefined,
+    ).initialize();
     return new MiniappService({
       repository,
       cache,
@@ -782,6 +778,7 @@ export class MiniappService {
       route: createRoutePort(config),
       placeSearch: createPlaceSearchPort(config),
       mediaStore: createMediaObjectStore(config),
+      eventCatalog,
     });
   }
 
@@ -860,7 +857,12 @@ export class MiniappService {
     });
   }
 
-  async #routeEstimate(origin: Wgs84Point, destination: Wgs84Point) {
+  async #routeEstimate(
+    origin: Wgs84Point,
+    destination: Wgs84Point,
+    travelMode: NonNullable<RouteEstimateRequest["travelMode"]> = "DRIVING",
+    departure?: { localDate?: string; localTime?: string },
+  ) {
     const cacheKey =
       "route:" +
       hash({
@@ -870,6 +872,9 @@ export class MiniappService {
           destination.latitude.toFixed(5),
           destination.longitude.toFixed(5),
         ],
+        travelMode,
+        departureLocalDate: departure?.localDate ?? null,
+        departureLocalTime: departure?.localTime ?? null,
       });
     const cached = await this.cache.get<
       Awaited<ReturnType<RoutePort["estimate"]>>
@@ -884,6 +889,9 @@ export class MiniappService {
       const result = await this.route.estimate({
         origin,
         destination,
+        travelMode,
+        ...(departure?.localDate ? { departureLocalDate: departure.localDate } : {}),
+        ...(departure?.localTime ? { departureLocalTime: departure.localTime } : {}),
         signal: controller.signal,
       });
       await this.cache.set(
@@ -955,6 +963,71 @@ export class MiniappService {
       "FRESH",
       [],
       routeEnabled ? [] : ["路线能力不可用时只提供明确的外部地图回退。"],
+    );
+  }
+
+  getAstronomicalEvents() {
+    const catalog = this.eventCatalog.snapshot();
+    const sources = catalog.sources;
+    return envelope(
+      {
+        catalogVersion: catalog.catalogVersion,
+        coverage: catalog.coverage,
+        events: catalog.events,
+        sources,
+      },
+      "FRESH",
+      sources,
+      ["当前目录覆盖已核对的 2026 年主要夜间流星雨和锁定算法计算的日食、月食，不代表全部天象。"],
+    );
+  }
+
+  async getAstronomicalEvent(occurrenceId: string, contextId?: string) {
+    const event = this.eventCatalog.find(occurrenceId);
+    if (!event) throw new Error("astronomical_event_not_found");
+    const source = this.eventCatalog.sourceFor(event);
+    let localVisibility: import("@starward/miniapp-contracts").AstronomicalEventLocalVisibility = {
+      state: "UNAVAILABLE",
+      reason: "尚未选择可用的观测地点与日期；目录事件不代表用户所在地可见。",
+    };
+    let context: ObservationContext | null = null;
+    if (contextId) {
+      context = await this.observationContexts.get(contextId);
+      const spot = context.location.kind === "FORMAL_SPOT"
+        ? await this.repository.getSpot(context.location.spotId)
+        : null;
+      if (context.location.kind === "FORMAL_SPOT" && !spot)
+        throw new Error("formal_spot_not_found");
+      const wgs84 = context.location.kind === "FORMAL_SPOT"
+        ? spot!.wgs84
+        : context.location.wgs84;
+      const projectionInput = {
+        latitude: wgs84.latitude,
+        longitude: wgs84.longitude,
+        elevationM: context.location.kind === "FORMAL_SPOT" ? (spot!.altitudeM ?? 0) : 0,
+        timezone: context.timezone,
+        localDate: context.localDate,
+        nightStartUtc: context.nightStartUtc,
+        nightEndUtc: context.nightEndUtc,
+        locationName: context.location.kind === "FORMAL_SPOT" ? spot!.name : context.location.displayName,
+      };
+      localVisibility = event.kind === "METEOR_SHOWER"
+        ? projectMeteorShowerAtLocation(event, projectionInput)
+        : projectEclipseAtLocation(event, projectionInput);
+    }
+    return envelope(
+      {
+        catalogVersion: this.eventCatalog.snapshot().catalogVersion,
+        event,
+        localVisibility,
+        source,
+      },
+      source.state,
+      [source],
+      event.kind === "METEOR_SHOWER"
+        ? ["目录峰值和 ZHR 是全球参考资料，不是用户所在地的可见数量。"]
+        : ["食甚时刻和地点投影是锁定算法计算结果；天气与真实地平遮挡仍需另行判断。"],
+      context ? { validAt: context.selectedAtUtc, contextRevision: context.revision } : undefined,
     );
   }
 
@@ -1032,7 +1105,9 @@ export class MiniappService {
       : viewportSpots;
     const reports: Record<string, ApiEnvelope<AstronomyDecisionReport>> = {};
     const evaluations: Record<string, MapSpotEvaluation> = {};
+    const filterEvidence: Record<string, SpotFilterEvidence> = {};
     const routeSources: SourceSummary[] = [];
+    const evaluatedAtMs = Date.now();
     const routeOrigin =
       context.location.kind === "MAP_POINT"
         ? context.location.wgs84
@@ -1058,7 +1133,8 @@ export class MiniappService {
                   eventInstanceId: context.eventInstanceId,
                   targetProfile: context.targetProfile,
                 });
-          const report = await this.astronomy.computeDecision(spotContext, undefined, undefined, weatherDeadlineAt);
+          const detail = await this.repository.getDetail(spot.spotId);
+          const report = await this.astronomy.computeDecision(spotContext, detail ?? undefined, undefined, weatherDeadlineAt);
           reports[spot.spotId] = report;
           const timeSignal = timeSignalFor(
             spot.spotId,
@@ -1086,9 +1162,10 @@ export class MiniappService {
             routeResult.value?.kind === "ROUTE_ESTIMATE"
               ? routeResult.value
               : null;
-          evaluations[spot.spotId] = {
+          const spotEvaluation: MapSpotEvaluation = {
             ...timeSignal,
             spotId: spot.spotId,
+            lunarFacts: report.data.lunarFacts,
             recommendation: report.data.decision.recommendation,
             bestWindowMinutes: windowMinutes(
               report.data.decision.skyOpportunity.primaryWindow,
@@ -1109,17 +1186,21 @@ export class MiniappService {
                 : "STRAIGHT_LINE",
             state: projectionState(report.dataState),
           };
+          evaluations[spot.spotId] = spotEvaluation;
+          filterEvidence[spot.spotId] = evaluateSpotFilterEvidence({
+            spot,
+            detail,
+            evaluation: spotEvaluation,
+            filters,
+            eventCoverageKnown: Boolean(report.data.context.eventCatalogVersion.trim()),
+            evaluatedAtMs,
+          });
         }),
       );
     }
 
     const filtered = queryMatched.filter((spot) =>
-      matchesFilters({
-        spot,
-        evaluation: evaluations[spot.spotId]!,
-        filters,
-        ...(input.preferences ? { preferences: input.preferences } : {}),
-      }),
+      passesActiveFilters(filterEvidence[spot.spotId]!, filters),
     );
     const ranked = rankSpotsByPreferences(filtered, input.preferences);
     const favoriteSpotIds = input.userId
@@ -1127,16 +1208,10 @@ export class MiniappService {
       : null;
     // Validate current publication facts and weather before reusing the map
     // representation. Context UUID alone cannot establish evidence freshness.
-    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations,
+    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence,
       revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
     if (cached) return cached;
-    const anyWeather = Object.values(evaluations).some(
-      (evaluation) => evaluation.cloudPercent !== null,
-    );
-    const anyEvents = Object.values(evaluations).some(
-      (evaluation) => evaluation.activeEventIds.length > 0,
-    );
     const routeCount = Object.values(evaluations).filter(
       (evaluation) => evaluation.driveMinutes !== null,
     ).length;
@@ -1173,9 +1248,10 @@ export class MiniappService {
               ? ("REMOVE_DRIVE_TIME_FILTER" as const)
               : ("NONE" as const),
         };
+    const allFilterEvidence = queryMatched.map((spot) => filterEvidence[spot.spotId]!);
     const byGroup = Object.fromEntries(
       FILTER_GROUP_KEYS.map((group) => {
-        if (group === "DISTANCE_DRIVE_TIME")
+        if (group === "DISTANCE_DRIVE_TIME" && !routeExplicitlyRequested)
           return [
             group,
             {
@@ -1183,40 +1259,7 @@ export class MiniappService {
               reason: routeCapability.reason,
             },
           ];
-        if (
-          [
-            "TONIGHT_RECOMMENDED",
-            "BEST_WINDOW_DURATION",
-            "LESS_CLOUD",
-            "LOW_CLOUD_THRESHOLD",
-          ].includes(group)
-        )
-          return [
-            group,
-            {
-              state: anyWeather ? ("AVAILABLE" as const) : ("UNAVAILABLE" as const),
-              reason: anyWeather
-                ? "基于当前 Observation Context 的真实预报与计算结果"
-                : "当前没有可用的真实天气数据",
-            },
-          ];
-        if (group === "SPECIFIC_CELESTIAL_EVENT")
-          return [
-            group,
-            {
-              state: anyEvents ? ("AVAILABLE" as const) : ("UNAVAILABLE" as const),
-              reason: anyEvents
-                ? "当前观测夜存在已加载事件"
-                : "当前事件目录没有适用事件，不能假造匹配",
-            },
-          ];
-        return [
-          group,
-          {
-            state: "AVAILABLE" as const,
-            reason: "基于正式点已发布且可追溯的字段",
-          },
-        ];
+        return [group, summarizeFilterCoverage(allFilterEvidence, group)];
       }),
     ) as MapSceneData["filterCapabilities"]["byGroup"];
     const population: FormalSpotPopulation = {
@@ -1256,8 +1299,18 @@ export class MiniappService {
         return evaluation ? [[spot.spotId, evaluation] as const] : [];
       }),
     );
+    const visibleFilterEvidence = Object.fromEntries(
+      ranked.spots.flatMap((spot) => {
+        const evidence = filterEvidence[spot.spotId];
+        return evidence ? [[spot.spotId, evidence] as const] : [];
+      }),
+    );
     const timeFrames: MapSceneTimeFrame[] = mapFrameTimes(context).map(
       (atUtc) => {
+        const lunarRow = Object.values(reports)
+          .map((report) => nearestHourly(report.data, atUtc))
+          .find((row) => row?.moonPhase != null);
+        const moonPhase = lunarRow?.moonPhase ?? null;
         const spotSignals = Object.fromEntries(
           ranked.spots.flatMap((spot) => {
             const report = reports[spot.spotId];
@@ -1267,7 +1320,7 @@ export class MiniappService {
           }),
         );
         if (layerKind !== "CLOUD" && layerKind !== "OPPORTUNITY")
-          return { atUtc, spotSignals, dynamicLayer: null };
+          return { atUtc, moonPhase, spotSignals, dynamicLayer: null };
         const frameLayer = layerFor({
           kind: layerKind,
           cloudLayer,
@@ -1281,6 +1334,7 @@ export class MiniappService {
         });
         return {
           atUtc,
+          moonPhase,
           spotSignals,
           dynamicLayer: {
             kind: layerKind,
@@ -1305,6 +1359,7 @@ export class MiniappService {
         context,
         spots: ranked.spots,
         evaluations: visibleEvaluations,
+        filterEvidence: visibleFilterEvidence,
         favoriteSpotIds,
         preferenceRanking: ranked.disclosure,
         filterCapabilities: {
@@ -1460,8 +1515,10 @@ export class MiniappService {
       : null;
     const route: SpotDetail["route"] = {
       kind: straightDistanceKm === null ? "UNAVAILABLE" : "STRAIGHT_LINE_ONLY",
+      travelMode: null,
       originLabel: context.routeOrigin?.displayName ?? null,
       distanceKm: straightDistanceKm,
+      durationMinutes: null,
       driveMinutes: null,
       walkingMinutes: null,
       lastRoad: detail.route.lastRoad,
@@ -1518,12 +1575,27 @@ export class MiniappService {
     const result = await this.#routeEstimate(
       context.routeOrigin.wgs84,
       detail.spot.wgs84,
+      input.travelMode ?? "DRIVING",
+      {
+        ...(input.departureLocalDate
+          ? { localDate: input.departureLocalDate }
+          : {}),
+        ...(input.departureLocalTime
+          ? { localTime: input.departureLocalTime }
+          : {}),
+      },
     );
     const route: SpotDetail["route"] = {
       ...(result.value ?? detail.route),
       originLabel: context.routeOrigin.displayName,
-      lastRoad: detail.route.lastRoad,
-      parkingGuidance: detail.route.parkingGuidance,
+      lastRoad:
+        (input.travelMode ?? "DRIVING") === "DRIVING"
+          ? detail.route.lastRoad
+          : result.value?.lastRoad ?? detail.route.lastRoad,
+      parkingGuidance:
+        (input.travelMode ?? "DRIVING") === "DRIVING"
+          ? detail.route.parkingGuidance
+          : result.value?.parkingGuidance ?? detail.route.parkingGuidance,
     };
     const sources = uniqueSources([detail.route.source, result.source]);
     return envelope(
@@ -1564,6 +1636,7 @@ export class MiniappService {
     return envelope(
       {
         spotId: detail.spot.spotId,
+        media: detail.spot.media,
         facilities: detail.spot.facilities,
         accessAndSafety: detail.accessAndSafety,
         siteMediaState: detail.siteMediaState,
@@ -1578,16 +1651,145 @@ export class MiniappService {
     );
   }
 
-  async getSky(spotId: string, contextId: string) {
-    if (!spotId.startsWith("spot:"))
-      throw new Error("night_requires_formal_spot_id");
+  async getContributionFormalBaseline(spotId: string) {
+    const id = spotId as SpotId;
+    const [baseline, spot] = await Promise.all([
+      this.repository.getContributionFormalBaseline(id),
+      this.repository.getSpot(id),
+    ]);
+    if (!baseline || !spot) throw new Error("formal_spot_not_found");
+    return envelope(
+      baseline,
+      "FRESH",
+      [spot.source],
+      ["该快照只用于本次反馈差异与并发核对；正式资料在审核合并前不会改变。"],
+    );
+  }
+
+  async getSky(spotId: string, contextId: string, userId?: UserId | null) {
     const context = await this.observationContexts.get(contextId);
+    if (spotId.startsWith("contribution:")) {
+      if (!userId) throw new Error("authentication_required");
+      const submission = await this.contributions.getForOwner(userId, spotId as ContributionId);
+      if (
+        submission.kind !== "NEW_SPOT_PROPOSAL" ||
+        !["PENDING_REVIEW", "ACCEPTED"].includes(submission.submissionState) ||
+        submission.publicationImpact === "SPOT_PUBLISHED" ||
+        !submission.preciseLocationConsent ||
+        !submission.candidateLocation ||
+        context.location.kind !== "MAP_POINT"
+      ) throw new Error("proposal_sky_context_invalid");
+      const expected = submission.candidateLocation.wgs84;
+      if (Math.abs(context.location.wgs84.latitude - expected.latitude) > 0.000001 ||
+          Math.abs(context.location.wgs84.longitude - expected.longitude) > 0.000001)
+        throw new Error("proposal_sky_context_mismatch");
+      return this.astronomy.computeCandidate(
+        context,
+        this.#candidateSkyDetail(submission, context.timezone),
+        submission.submissionId,
+      );
+    }
+    if (!spotId.startsWith("spot:")) throw new Error("night_location_identity_invalid");
     if (
       context.location.kind !== "FORMAL_SPOT" ||
       context.location.spotId !== spotId
     )
       throw new Error("spot_context_mismatch");
     return this.astronomy.compute(context);
+  }
+
+  #candidateSkyDetail(submission: import("@starward/miniapp-contracts").ContributionSubmission, timezone: string): SpotDetail {
+    if (!submission.candidateLocation) throw new Error("proposal_location_required");
+    const now = new Date().toISOString();
+    const fields = submission.candidateProfile?.fields ?? {};
+    const source: SourceSummary = {
+      id: `proposal-source:${submission.submissionId}`,
+      kind: "USER_FIELD_REPORT",
+      provider: "账号私有审核中提案",
+      title: "尚未审核的用户提交资料",
+      sourceUrl: "",
+      license: "Private pending submission",
+      licenseUrl: "",
+      publishedAt: null,
+      retrievedAt: now,
+      validFrom: null,
+      validTo: null,
+      state: "PARTIAL",
+      confidence: null,
+      precision: "用户选定坐标；场地事实未审核",
+      limitations: ["仅供提交者查看", "不构成正式点或出行事实"],
+    };
+    const point = submission.candidateLocation.wgs84;
+    const converted = wgs84ToGcj02({ lat: point.latitude, lon: point.longitude, system: "WGS84" });
+    const facility = (type: import("@starward/miniapp-contracts").FacilityType, raw: string | undefined, summary = "") => ({
+      type,
+      status: raw === "有" ? "AVAILABLE" as const : raw === "没有" ? "UNAVAILABLE" as const : raw === "季节性开放" ? "SEASONAL" as const : "UNKNOWN" as const,
+      summary,
+      detail: summary,
+      distanceM: null,
+      openingHours: null,
+      usageCondition: null,
+      verifiedAt: null,
+      confidence: null,
+      source,
+    });
+    const openness = fields.openness === "开放" ? "OPEN" as const : fields.openness === "有条件开放" ? "CONDITIONAL" as const : fields.openness === "不开放" ? "CLOSED" as const : "UNKNOWN" as const;
+    const legalAccess = fields.access === "允许进入" ? "PERMITTED" as const : fields.access === "需预约或其他条件" ? "CONDITIONAL" as const : fields.access === "禁止进入" ? "PROHIBITED" as const : "UNKNOWN" as const;
+    const spot: SpotSummary = {
+      spotId: submission.submissionId as unknown as SpotId,
+      name: fields.name?.trim() || submission.candidateLocation.displayName,
+      region: submission.candidateLocation.region,
+      address: fields.address?.trim() || submission.candidateLocation.region,
+      timezone: timezone === "Asia/Hong_Kong" ? "Asia/Hong_Kong" : "Asia/Shanghai",
+      wgs84: { ...point },
+      gcj02: { system: "GCJ02", latitude: converted.lat, longitude: converted.lon, derivedFrom: "WGS84", transformVersion: "gcj02-standard-v1" },
+      altitudeM: null,
+      status: "PUBLISHED",
+      visibilityPolicy: "HIDDEN",
+      source,
+      lastVerifiedAt: null,
+      lightPollution: { levelAtMost: null, productBand: null, radiance: null, minimumCloudFreeObservations: null,
+        calibratedSkyClass: false, label: "暂无数据", method: "not-evaluated", datasetVersion: "unavailable",
+        dataDate: "", precision: "未对审核中点位生成正式夜光事实", state: "UNAVAILABLE", source },
+      obstructionPercent: null,
+      clearDirections: [],
+      accessTags: [],
+      facilities: [
+        facility("PARKING", fields.parking, fields.parkingNote),
+        facility("TOILET", fields.toilet, fields.toiletNote),
+        facility("PLATFORM", fields.platform),
+        facility("SIGNAL", fields.signal),
+        facility("CAMPING", fields.camping),
+      ],
+      media: [],
+    };
+    const unknownFactor = { code: "pending-proposal-unverified", label: "场地事实尚未审核", severity: "BLOCKER" as const,
+      detail: "仅计算天体与动态天气；开放、合法进入和夜间安全仍未知。", sourceIds: [source.id] };
+    return {
+      spot,
+      route: { kind: "UNAVAILABLE", travelMode: null, originLabel: null, distanceKm: null, durationMinutes: null,
+        driveMinutes: null, walkingMinutes: null, lastRoad: fields.road ?? "", parkingGuidance: fields.parkingNote ?? "", state: "UNAVAILABLE", source },
+      decision: { recommendation: "DATA_INSUFFICIENT", label: "场地事实尚未审核",
+        skyOpportunity: { status: "INSUFFICIENT_DATA", label: "场地事实尚未审核", primaryWindow: null, backupWindow: null,
+          windows: [], suitableFor: [], factors: [unknownFactor], confidence: null, freshness: "PARTIAL", ruleVersion: "pending-proposal-v1", inputDigest: submission.submissionId },
+        factors: [unknownFactor], confidence: null, freshness: "PARTIAL", ruleVersion: "pending-proposal-v1", inputDigest: submission.submissionId },
+      guides: [],
+      accessAndSafety: { openness, legalAccess, nightSafety: "UNKNOWN", explicitDanger: null,
+        restrictions: [], guidance: [fields.accessNote, fields.safety].filter((item): item is string => Boolean(item?.trim())) },
+      siteMediaState: "UNKNOWN",
+      evidence: [],
+      dataDisclosure: [source],
+      formalFacts: fields,
+      formalMedia: submission.candidateProfile?.media ?? {},
+    };
+  }
+
+  getCelestialObject(reference: string, locale = "zh-CN") {
+    return this.celestialObjects.get(reference, locale);
+  }
+
+  getDeepSkyImage(reference: string, level = "MEDIUM") {
+    return this.deepSkyImages.get(reference, level);
   }
 
   async getFavorites(userId: UserId) {
@@ -1607,6 +1809,11 @@ export class MiniappService {
     );
   }
 
+  private async planSpotLabels(plans: readonly ObservationPlan[]) {
+    return (await Promise.all([...new Set(plans.map(plan => plan.spotId))].map(spotId => this.repository.getSpot(spotId))))
+      .flatMap(spot => spot ? [{ spotId: spot.spotId, name: spot.name }] : []);
+  }
+
   async getUserLibrary(userId: UserId) {
     const [favorites, plans, profileLinks, preferences, imports] =
       await Promise.all([
@@ -1616,8 +1823,10 @@ export class MiniappService {
         this.repository.getPreferences(userId),
         this.repository.listImportDrafts(userId),
       ]);
+    const planSpots = await this.planSpotLabels(plans);
     return envelope(
       {
+        planSpots,
         favoriteSpots: favorites.data.favorites,
         plans,
         profileLinks,
@@ -1628,6 +1837,59 @@ export class MiniappService {
       favorites.sources,
       ["动态摘要失败不会删除或隐藏收藏关系。"],
     );
+  }
+
+  async getAccountProfile(userId: UserId) {
+    return envelope(await this.repository.getAccountProfile(userId), "FRESH", []);
+  }
+
+  async saveAccountNickname(userId: UserId, input: AccountNicknameSaveRequest, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    const nickname = normalizeAccountNickname(input?.nickname);
+    if (!Number.isSafeInteger(input.expectedRevision) || input.expectedRevision < 1) throw new Error("account_profile_revision_invalid");
+    return envelope(await this.repository.saveAccountNickname(userId, nickname, input.expectedRevision, "account.nickname:" + idempotencyKey), "FRESH", []);
+  }
+
+  async getAccountAvatar(userId: UserId) {
+    const avatar = await this.repository.getAccountAvatarObject(userId);
+    if (!avatar) throw new Error("account_avatar_not_found");
+    const bytes = await this.contributions.mediaStore.read(avatar.objectKey);
+    if (!bytes) throw new Error("account_avatar_object_missing");
+    return envelope({ version: avatar.version, mimeType: avatar.mimeType, zoom: avatar.zoom, dataBase64: Buffer.from(bytes).toString("base64") }, "FRESH", []);
+  }
+
+  async saveAccountAvatar(userId: UserId, input: AccountAvatarSaveRequest, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!this.contributions.mediaStore.enabled) throw new Error("media_upload_capability_disabled");
+    if (!input || !["image/jpeg", "image/png", "image/webp"].includes(input.mimeType)) throw new Error("account_avatar_mime_invalid");
+    if (!Number.isSafeInteger(input.expectedRevision) || input.expectedRevision < 1) throw new Error("account_profile_revision_invalid");
+    if (!Number.isFinite(input.zoom) || input.zoom < 1 || input.zoom > 2.5) throw new Error("account_avatar_zoom_invalid");
+    if (!Number.isSafeInteger(input.declaredByteSize) || input.declaredByteSize < 1 || input.declaredByteSize > 10_000_000) throw new Error("account_avatar_size_invalid");
+    const raw = decodeContributionBase64(input.dataBase64, 10_000_000);
+    if (raw.length !== input.declaredByteSize) throw new Error("account_avatar_size_mismatch");
+    const sanitized = sanitizeAccountAvatarImage(raw, input.mimeType);
+    const sha256 = createHash("sha256").update(sanitized).digest("hex");
+    const scope = createHash("sha256").update(userId).digest("hex").slice(0, 24);
+    const objectId = createHash("sha256").update("account.avatar:" + idempotencyKey).digest("hex").slice(0, 32);
+    const extension = input.mimeType === "image/jpeg" ? "jpg" : input.mimeType === "image/png" ? "png" : "webp";
+    const objectKey = `profiles/${scope}/${objectId}.${extension}`;
+    let wrote = false;
+    const existing = await this.contributions.mediaStore.read(objectKey);
+    if (existing) {
+      const existingHash = createHash("sha256").update(existing).digest("hex");
+      if (existingHash !== sha256) throw new Error("account_profile_idempotency_conflict");
+    } else {
+      await this.contributions.mediaStore.put({ objectKey, bytes: sanitized, mimeType: input.mimeType });
+      wrote = true;
+    }
+    try {
+      const saved = await this.repository.saveAccountAvatar(userId, { objectKey, version: sha256, mimeType: input.mimeType, zoom: Math.round(input.zoom * 100) / 100, byteSize: sanitized.length, sha256 }, input.expectedRevision, "account.avatar:" + idempotencyKey);
+      if (saved.previousObjectKey && saved.previousObjectKey !== objectKey) await this.contributions.mediaStore.delete(saved.previousObjectKey);
+      return envelope(saved.profile, "FRESH", []);
+    } catch (error) {
+      if (wrote) await this.contributions.mediaStore.delete(objectKey);
+      throw error;
+    }
   }
 
   async getPreferences(userId: UserId) {
@@ -1680,6 +1942,7 @@ export class MiniappService {
       schemaVersion: "starward-account-data-export-v1",
       generatedAt,
       account: { userId },
+      profile: await this.repository.getAccountProfile(userId),
       preferences,
       favoriteSpotIds,
       plans,
@@ -1742,12 +2005,24 @@ export class MiniappService {
   async getPlans(userId: UserId) {
     const cacheKey = "plans:" + hash(userId).slice(0, 24);
     const cached =
-      await this.cache.get<ApiEnvelope<{ plans: readonly ObservationPlan[] }>>(
+      await this.cache.get<ApiEnvelope<import("@starward/miniapp-contracts").PlansData>>(
         cacheKey,
       );
     if (cached) return cached;
+    const plans = await this.repository.listPlans(userId);
+    const storedSchedules = await this.repository.listPlanReminderSchedules(userId);
+    const schedules = plans.flatMap(plan => {
+      const derived = derivePlanReminderSchedules(userId, plan);
+      return derived.map(row => storedSchedules.find(stored => stored.planId === row.planId && stored.reminderId === row.reminderId && stored.scheduleVersion === row.scheduleVersion) ?? row);
+    });
     const result = envelope(
-      { plans: await this.repository.listPlans(userId) },
+      {
+        plans,
+        planSpots: await this.planSpotLabels(plans),
+        // A template and encrypted delivery identity are both deliberately absent
+        // until the AppID's approved subscription template is configured.
+        reminderNotifications: schedules.map(row => publicReminderStatus(row, false)),
+      },
       "FRESH",
       [],
     );
@@ -1774,6 +2049,7 @@ export class MiniappService {
       !/^\d{2}:\d{2}$/u.test(input.localTime)
     )
       throw new Error("invalid_local_observation_time");
+    if (typeof input.notes !== "string" || input.notes.length > PLAN_NOTES_MAX_LENGTH) throw new Error("invalid_plan_notes");
     const spot = await this.repository.getSpot(input.spotId);
     if (!spot || spot.status === "DATA_INSUFFICIENT")
       throw new Error("formal_spot_not_found");
@@ -1782,6 +2058,26 @@ export class MiniappService {
       localTime: input.localTime,
       timezone: spot.timezone,
     });
+    const existingPlan = (await this.repository.listPlans(userId)).find(plan => plan.planId === input.planId);
+    let eventOccurrenceIds: string[] | undefined;
+    try {
+      if (input.eventOccurrenceIds !== undefined)
+        eventOccurrenceIds = parsePlanEventOccurrenceIds(input.eventOccurrenceIds);
+    } catch { throw new Error("plan_event_occurrence_invalid"); }
+    if (eventOccurrenceIds?.some(id => !this.eventCatalog.find(id)))
+      throw new Error("plan_event_occurrence_invalid");
+    if (eventOccurrenceIds === undefined && existingPlan?.eventOccurrenceIds?.length)
+      throw new Error("plan_event_occurrences_required");
+    if (input.timing !== undefined) {
+      resolvePlanTiming({ ...input, timezone: spot.timezone, timing: input.timing });
+    } else if (existingPlan?.timing) {
+      // An older editor must not silently erase an interval it cannot represent.
+      throw new Error("plan_timing_required");
+    }
+    const reminders = input.reminders === undefined ? undefined : parsePlanReminders(input.reminders);
+    if (reminders === undefined && existingPlan?.reminders?.length) throw new Error("plan_reminders_required");
+    const travel = input.travel === undefined ? undefined : parsePlanTravel(input.travel);
+    if (travel === undefined && existingPlan?.travel) throw new Error("plan_travel_required");
     const sourceContext = await this.observationContexts.get(
       input.observationContextId,
     );
@@ -1807,6 +2103,9 @@ export class MiniappService {
       userId,
       {
         ...planInput,
+        ...(reminders === undefined ? {} : { reminders }),
+        ...(travel === undefined ? {} : { travel }),
+        ...(eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds }),
         contextSnapshot: {
           schemaVersion: "observation-context-snapshot-v2",
           contextId: context.contextId,
@@ -1837,6 +2136,38 @@ export class MiniappService {
       "plans:" + hash(userId).slice(0, 24),
     );
     return envelope(plan, "FRESH", []);
+  }
+
+  async setPlanChecklistCompletion(
+    userId: UserId, planId: string,
+    input: import("@starward/miniapp-contracts").PlanChecklistCompletionRequest,
+    idempotencyKey: string,
+  ) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!input || typeof input.completed !== "boolean" || !Number.isSafeInteger(input.expectedRevision) || input.expectedRevision < 1 ||
+      ![input.reminderId, input.itemId].every(value => typeof value === "string" && /^[A-Za-z0-9:_-]{1,128}$/u.test(value))) throw new Error("plan_checklist_input_invalid");
+    // Idempotency belongs to this account, plan and item, independently of full-plan saves.
+    const key = `plan.checklist:${hash([planId, input.reminderId, input.itemId]).slice(0, 32)}:${idempotencyKey}`;
+    const validateReceipt = (receipt: ObservationPlan) => {
+      const item = receipt.reminders?.find(group => group.reminderId === input.reminderId)?.items.find(value => value.itemId === input.itemId);
+      if (item?.completed !== input.completed || receipt.revision !== input.expectedRevision + 1) throw new Error("idempotency_conflict");
+      return receipt;
+    };
+    const receipt = await this.repository.getPlanSaveReceipt(userId, planId, key);
+    if (receipt) {
+      validateReceipt(receipt);
+      await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
+      return envelope(receipt, "FRESH", []);
+    }
+    const current = (await this.repository.listPlans(userId)).find(plan => plan.planId === planId);
+    if (!current) throw new Error("plan_not_found");
+    if (current.revision !== input.expectedRevision) throw new Error("plan_revision_conflict");
+    if (!current.reminders?.some(group => group.reminderId === input.reminderId && group.items.some(item => item.itemId === input.itemId))) throw new Error("plan_checklist_item_not_found");
+    const reminders = current.reminders.map(group => group.reminderId === input.reminderId
+      ? { ...group, items: group.items.map(item => item.itemId === input.itemId ? { ...item, completed: input.completed } : item) } : group);
+    const saved = validateReceipt(await this.repository.savePlan(userId, { ...current, reminders }, input.expectedRevision, key));
+    await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
+    return envelope(saved, "FRESH", []);
   }
 
   async deletePlan(
@@ -2108,6 +2439,14 @@ export class MiniappService {
     );
   }
 
+  async getContributionMedia(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId) {
+    return envelope(await this.contributions.readForOwner(userId, submissionId, uploadId), "FRESH", []);
+  }
+
+  async getSpotContributionMedia(spotId: SpotId, uploadId: ContributionUploadId) {
+    return envelope(await this.contributions.readForPublishedSpot(spotId, uploadId), "FRESH", []);
+  }
+
   async createContributionDraft(
     userId: UserId,
     input: ContributionDraftRequest,
@@ -2121,6 +2460,15 @@ export class MiniappService {
       ["草稿尚未进入审核，也不会改变正式观星点。"],
     );
   }
+
+  async submitFormalContribution(userId: UserId, input: ContributionFormalSubmitRequest, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    return envelope(await this.contributions.submitFormal(userId, input, idempotencyKey), "FRESH", []);
+  }
+  async createFormalUploadIntent(userId: UserId, input: ContributionFormalUploadIntentRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.createFormalUploadIntent(userId,input,idempotencyKey),"FRESH",[]); }
+  async createFormalUpload(userId: UserId, intentId: string, input: ContributionFormalUploadSessionRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.createFormalUpload(userId,intentId,input,idempotencyKey),"FRESH",[]); }
+  async completeFormalUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, input: ContributionFormalUploadCompleteRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.completeFormalUpload(userId,intentId,uploadId,input,idempotencyKey),"FRESH",[]); }
+  async removeFormalUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.removeFormalUpload(userId,intentId,uploadId,expectedRevision,idempotencyKey),"FRESH",[]); }
 
   async updateContributionDraft(
     userId: UserId,

@@ -6,7 +6,7 @@ import ts from "typescript";
 import { clearPlanDraft } from "./plan-draft";
 
 function runtime(afterDelete?: () => void) {
-  const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let declaration = "";
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.name.getText(source) === "remove") declaration = `const ${node.getText(source)};`;

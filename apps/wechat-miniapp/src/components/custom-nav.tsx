@@ -14,6 +14,9 @@ export function CustomNav({
   backFallbackTab = "/pages/map/index",
   odId,
   right,
+  beforeBack,
+  onBackAuthorized,
+  onBackFailure,
 }: {
   title: string;
   subtitle?: string | undefined;
@@ -22,6 +25,9 @@ export function CustomNav({
   backFallbackTab?: "/pages/map/index" | "/pages/my/index" | undefined;
   odId?: string | undefined;
   right?: React.ReactNode | undefined;
+  beforeBack?: (() => boolean | Promise<boolean>) | undefined;
+  onBackAuthorized?: (() => void | Promise<void>) | undefined;
+  onBackFailure?: (() => void | Promise<void>) | undefined;
 }) {
   const statusBarHeight = nativeStatusBarHeightPx();
   const menuClearance = nativeMenuClearancePx();
@@ -40,6 +46,8 @@ export function CustomNav({
       // An unavailable page stack is equivalent to an unprovable back target.
     }
     try {
+      if (beforeBack && !(await beforeBack())) return;
+      await onBackAuthorized?.();
       if (hasPriorPage) {
         try {
           await Taro.navigateBack();
@@ -50,7 +58,11 @@ export function CustomNav({
         await fallback();
       }
     } catch {
-      setBackError(true);
+      try {
+        await onBackFailure?.();
+      } finally {
+        setBackError(true);
+      }
     } finally {
       navigationBusy.current = false;
     }

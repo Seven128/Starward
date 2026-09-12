@@ -1,4 +1,6 @@
 @use "./styles/tokens.scss";
+@use "./components/liquid-glass-surface.scss";
+@use "./components/spot-identity-card.scss";
 
 page {
   width: 100%;

@@ -117,7 +117,7 @@ export function SourceLiftFocusLayer({
           />
           <View
             className="source-lift-composition"
-            data-od-id={
+            id={
               variant === "panelOnly"
                 ? "spot-finder-sheet"
                 : "map-analysis-focus-panel"

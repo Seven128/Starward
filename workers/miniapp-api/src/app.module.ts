@@ -2,6 +2,7 @@ import { Module, type Type } from "@nestjs/common";
 import { AdminController } from "./admin.controller.ts";
 import { AdminOperationsController } from "./admin-operations.controller.ts";
 import { AdminPublicationController } from "./admin-publication.controller.ts";
+import { AdminEventCatalogController } from "./admin-event-catalog.controller.ts";
 import { AcceptanceController } from "./acceptance.controller.ts";
 import { MiniappController } from "./controller.ts";
 import { HealthController, RELEASE_METADATA } from "./health.controller.ts";
@@ -13,6 +14,7 @@ const controllers: Type<unknown>[] = [
   AdminController,
   AdminOperationsController,
   AdminPublicationController,
+  AdminEventCatalogController,
   HealthController,
 ];
 if (process.env.MINIAPP_ACCEPTANCE_MODE === "1")

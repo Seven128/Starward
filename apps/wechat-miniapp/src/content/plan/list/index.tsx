@@ -1,0 +1,76 @@
+import { FloatingNotificationHost } from "@/components/notification";
+import Taro, { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
+import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
+import { Button, ScrollView, Text, View } from "@tarojs/components";
+import { useEffect, useId, useRef, useState } from "react";
+import { CustomNav } from "@/components/custom-nav";
+import { SemanticIcon } from "@/components/semantic-asset";
+import { StatusPanel } from "@/components/status-panel";
+import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useThemeClass } from "@/hooks/use-theme";
+import { currentDraftUserId, getPlans } from "@/services/api-client";
+import { planEndLabel, planListEntries, type PlanPartition } from "./plan-list-model";
+import { planTravelModeLabel } from "../detail/plan-travel-fields";
+import "./index.scss";
+
+export default function PlanListPage() {
+  const spotId = spotIdFromPlanRoute(useRouter().params.spotId);
+  const themeClass = useThemeClass(), mount = useId();
+  const [, refreshIdentity] = useState(0);
+  const [partition, setPartition] = useState<PlanPartition>("upcoming");
+  const [now, setNow] = useState(() => new Date());
+  const [navigationError, setNavigationError] = useState(false);
+  const [scrollTop, setScrollTop] = useState(0);
+  const scrollPositions = useRef({ upcoming: 0, past: 0 });
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null), navigating = useRef(false);
+  const owner = currentDraftUserId();
+  const query = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mount}`],
+    queryFn: signal => getPlans(signal, owner ?? undefined), staleTime: 15_000 });
+  const stop = () => { if (timer.current !== null) clearInterval(timer.current); timer.current = null; };
+  useDidShow(() => {
+    refreshIdentity(v => v + 1); setNow(new Date()); stop();
+    timer.current = setInterval(() => setNow(new Date()), 30_000);
+    void query.refetch();
+  });
+  useDidHide(stop); useEffect(() => stop, []);
+  const entries = planListEntries((query.data?.data.plans ?? []).filter(plan => !spotId || plan.spotId === spotId), now, partition);
+  const choosePartition = (next: PlanPartition) => { setPartition(next); setScrollTop(scrollPositions.current[next]); };
+  useEffect(() => { scrollPositions.current = { upcoming: 0, past: 0 }; setScrollTop(0); setPartition("upcoming"); }, [owner]);
+  const open = async (url: string) => {
+    if (navigating.current) return;
+    navigating.current = true; setNavigationError(false);
+    try { await Taro.navigateTo({ url }); } catch { setNavigationError(true); }
+    finally { navigating.current = false; }
+  };
+  return <View className={`${themeClass} plan-list-page`}>
+    <FloatingNotificationHost />
+    <CustomNav title="观星计划" back backFallbackTab="/pages/my/index" />
+    <ScrollView scrollY scrollTop={scrollTop} onScroll={event => { scrollPositions.current[partition] = event.detail.scrollTop; setScrollTop(event.detail.scrollTop); }} className="plan-list-scroll" showScrollbar={false} enhanced>
+      <View className="plan-list-content">
+        <View className="plan-list-filters" role="group" aria-label="计划时间分区">
+          <Button aria-pressed={partition === "upcoming"} onClick={() => choosePartition("upcoming")}>接下来</Button>
+          <Button aria-pressed={partition === "past"} onClick={() => choosePartition("past")}>过往</Button>
+          <Button className="plan-list-new" onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>＋ 新建</Button>
+        </View>
+        {query.isError || query.refreshError ? <StatusPanel state={query.data ? "STALE" : "ERROR"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
+        {query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
+        {navigationError ? <View role="alert"><Text>页面暂未打开，请再次点击。</Text></View> : null}
+        {entries.map((entry, index) => {
+          const { plan } = entry;
+          const group = `${plan.localDate}|${plan.contextSnapshot.timezone}`;
+          const previous = entries[index - 1];
+          const grouped = previous && `${previous.plan.localDate}|${previous.plan.contextSnapshot.timezone}` === group;
+          return <View key={plan.planId}>
+            {!grouped ? <Text className="plan-list-date">{entry.invalid ? "时间待确认" : `${plan.localDate} · ${plan.contextSnapshot.timezone}`}</Text> : null}
+            <Button className="plan-list-row" onClick={() => void open(`/content/plan/detail/index?planId=${encodeURIComponent(plan.planId)}`)}>
+              <View className="plan-list-row__heading"><Text>{query.data?.data.planSpots?.find(spot => spot.spotId === plan.spotId)?.name ?? "点位资料暂不可用"}</Text><SemanticIcon name="chevron-right" /></View>
+              <Text className="plan-list-row__time">{entry.invalid ? "请打开计划核对时间" : `${plan.localTime} — ${planEndLabel(plan)} · ${plan.travel ? planTravelModeLabel(plan.travel.mode) : "交通方式待补充"}${entry.ongoing ? " · 进行中" : ""}`}</Text>
+              <Text className="plan-list-row__meta">{plan.timing ? `出发 ${plan.timing.departureLocalDate} ${plan.timing.departureLocalTime}` : "出发时间未填写"}　·　{plan.reminders?.length ?? 0} 个个人提醒</Text>
+            </Button>
+          </View>;
+        })}
+        {query.data && !query.isError && !query.refreshError && !entries.length ? <Text className="plan-list-empty">{partition === "past" ? "还没有过往计划" : "还没有接下来的观星计划"}</Text> : null}
+      </View>
+    </ScrollView>
+  </View>;
+}

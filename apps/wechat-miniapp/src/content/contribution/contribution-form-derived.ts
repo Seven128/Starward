@@ -11,6 +11,7 @@ import type {
   ContributionHistoryFilter,
   ContributionPhase,
 } from "./use-contribution-form";
+export { findMatchingContributionDraft } from "./draft-selection";
 
 export function initialContributionSelection(hasFormalSpot: boolean): {
   kind: ContributionKind;
@@ -19,23 +20,6 @@ export function initialContributionSelection(hasFormalSpot: boolean): {
   return hasFormalSpot
     ? { kind: "FIELD_REPORT", topics: ["NIGHT_SAFETY"] }
     : { kind: "NEW_SPOT_PROPOSAL", topics: ["OTHER"] };
-}
-
-export function findMatchingContributionDraft(
-  submissions: readonly ContributionSubmission[],
-  hasFormalSpot: boolean,
-  boundSpotId: string,
-  kind: ContributionKind,
-) {
-  const expectedSpotId = hasFormalSpot ? boundSpotId : null;
-  return (
-    submissions.find(
-      (item) =>
-        contributionSubmissionState(item) === "DRAFT" &&
-        item.spotId === expectedSpotId &&
-        item.kind === kind,
-    ) ?? null
-  );
 }
 
 export function filterContributionHistory(

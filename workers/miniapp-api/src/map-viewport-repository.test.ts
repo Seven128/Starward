@@ -6,6 +6,7 @@ import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts"
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
 import { insertExplicitTestSpot } from "./test-fixtures/infrastructure-spot.ts";
+import { evaluateSpotCompleteness } from "./spot-completeness-policy.ts";
 
 test("viewport fetches radius candidates directly while preserving complete population metadata and search", async () => {
   const outside: SpotSummary = { ...structuredClone(TEST_PUBLISHED_SPOT), spotId: "spot:outside" as SpotId,
@@ -55,6 +56,34 @@ test("PostGIS radius, compact population and detail all enforce current publicat
     const initial = await read();
     assert.deepEqual(initial.radius.map((row) => row.spotId), [spot.spotId]);
     assert.deepEqual(initial.population.map((row) => row.spotId), [spot.spotId]);
+    // A core-verified place remains discoverable before optional enrichment.
+    // Exercise every PostgreSQL read projection, not only the pure assessor.
+    assert.ok(initial.detail);
+    const minimal = structuredClone(initial.detail);
+    minimal.spot.facilities = [];
+    minimal.spot.media = [];
+    minimal.spot.obstructionPercent = null;
+    minimal.spot.clearDirections = [];
+    minimal.spot.lightPollution = { ...minimal.spot.lightPollution,
+      state: "UNAVAILABLE", radiance: null, productBand: null,
+      datasetVersion: "UNAVAILABLE", minimumCloudFreeObservations: null,
+    };
+    minimal.siteMediaState = "UNKNOWN";
+    minimal.route = { ...minimal.route, lastRoad: "未知", parkingGuidance: "未知" };
+    minimal.evidence = minimal.evidence.filter((item) =>
+      ["SPOT_COORDINATE", "ACCESS_OPENNESS", "ACCESS_LEGAL_ENTRY", "SAFETY_NIGHT"].includes(item.claim));
+    const core = evaluateSpotCompleteness({ detail: minimal,
+      review: { actorId: "admin:integration", reason: "验证核心资料发布后的数据库查询" } });
+    assert.equal(core.complete, true, JSON.stringify(core.issues));
+    await repository.pool.query("UPDATE spots SET payload = $2 WHERE spot_id = $1", [spot.spotId, minimal.spot]);
+    await repository.pool.query("UPDATE spot_overview_read_models SET payload = $2 WHERE spot_id = $1", [spot.spotId, minimal]);
+    await repository.pool.query("UPDATE spot_publication_assessments SET assessment_digest = $2, payload = $3 WHERE spot_id = $1",
+      [spot.spotId, core.assessmentDigest, core]);
+    const coreRead = await read();
+    for (const rows of [coreRead.radius, coreRead.all, coreRead.population])
+      assert.deepEqual(rows.map((row) => row.spotId), [spot.spotId]);
+    assert.equal(coreRead.detail?.spot.lightPollution.state, "UNAVAILABLE");
+    assert.deepEqual(coreRead.detail?.spot.facilities, []);
     assert.equal((await repository.listSpotsInRadius({ ...spot.wgs84, longitude: spot.wgs84.longitude + 1 }, 1)).length, 0);
     const cases = [
       ["UPDATE spots SET visibility_policy = 'HIDDEN' WHERE spot_id = $1", "UPDATE spots SET visibility_policy = 'PUBLIC_EXACT' WHERE spot_id = $1"],

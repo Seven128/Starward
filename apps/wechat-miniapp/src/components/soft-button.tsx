@@ -17,13 +17,12 @@ export function SoftButton({
 }>) {
   return (
     <Button
-      compileMode
       className={`soft-button soft-button--${variant} focus-ring${
         disabled ? " soft-button--disabled" : ""
       } ${className}`}
       ariaLabel={label}
-      {...(disabled ? { disabled: true } : {})}
-      onClick={() => onClick?.()}
+      disabled={disabled}
+      onClick={() => { if (!disabled) onClick?.(); }}
     >
       {typeof children === "string" || typeof children === "number" ? (
         <Text>{children}</Text>

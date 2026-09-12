@@ -18,8 +18,14 @@ import automator from "miniprogram-automator";
 import pg from "pg";
 import { tsImport } from "tsx/esm/api";
 import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
-import { knownWechatToolchainConsoleErrorId } from "./runtime-event-policy.mjs";
-import { resolveOfficialCli } from "./device-feedback-official.mjs";
+import {
+  knownWechatToolchainConsoleErrorId,
+  knownWechatToolchainExceptionId,
+} from "./runtime-event-policy.mjs";
+import {
+  parseOfficialLoginState,
+  resolveOfficialCli,
+} from "./device-feedback-official.mjs";
 import { boundWechatProtocol, boundedWechatConnect } from "./wechat-protocol.mjs";
 export { boundWechatProtocol, boundedWechatConnect } from "./wechat-protocol.mjs";
 
@@ -45,8 +51,12 @@ if (directInvocation) {
 }
 const acceptanceScope = cliArgs.get("--scope") ?? "current-candidate";
 const acceptanceMode = cliArgs.get("--mode") ?? "success";
+const acceptanceJourney = cliArgs.get("--journey") ?? null;
 const platformSimulation = acceptanceScope === "platform-simulation";
 const acceptanceDevice = cliArgs.get("--device") ?? null;
+const acceptanceDisplayMode = (
+  cliArgs.get("--display-mode") ?? "NIGHT"
+).toUpperCase();
 const acceptanceTextSize = cliArgs.has("--text-size")
   ? Number(cliArgs.get("--text-size"))
   : null;
@@ -63,6 +73,10 @@ if (
   throw new Error(`unknown_native_acceptance_scope:${acceptanceScope}`);
 if (!["success", "degradation"].includes(acceptanceMode))
   throw new Error(`unknown_native_acceptance_mode:${acceptanceMode}`);
+if (!["DAY", "NIGHT", "OBSERVATION"].includes(acceptanceDisplayMode))
+  throw new Error(
+    `unknown_native_acceptance_display_mode:${acceptanceDisplayMode}`,
+  );
 if (platformSimulation && acceptanceMode !== "success")
   throw new Error("platform_simulation_requires_success_mode");
 if (
@@ -70,10 +84,14 @@ if (
   ![15, 16, 17, 19, 23, 26].includes(acceptanceTextSize)
 )
   throw new Error(`unknown_native_acceptance_text_size:${acceptanceTextSize}`);
-const cliPath = "C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\cli.bat";
+const cliPath =
+  process.env.STARWARD_WECHAT_DEVTOOLS_CLI ??
+  "E:\\微信开发者工具\\cli.bat";
+const wechatIdeSkillCliPath = path.join(path.dirname(cliPath), "wechatide.cmd");
 let officialCliInvocation;
 const sourceProjectPath = path.join(root, "apps", "wechat-miniapp");
 const installationStorageKey = "starward.wechat-miniapp.installation.current";
+const authSessionStorageKey = "starward.wechat-miniapp.auth.current";
 const canonicalWorkspaceRoot = "E:\\Dev\\Starward";
 const wechatReservedRunTempRoot = "E:\\Dev\\.starward-tmp";
 const wechatProcessTemp = process.env.LOCALAPPDATA
@@ -246,6 +264,19 @@ function safeToolDiagnosticExcerpt(value) {
   return safeRuntimeExcerpt(scrubbed);
 }
 
+function safeToolDiagnosticTail(value) {
+  const scrubbed = String(value ?? "")
+    .replace(
+      /((?:authorization|cookie|token|secret|password|openid|session_key|appid)\s*[=:]\s*)[^\s,;]+/giu,
+      "$1[redacted]",
+    )
+    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/giu, "Bearer [redacted]")
+    .replace(/\bwx[a-z0-9]{16}\b/giu, "[appid]")
+    .replace(/[A-Za-z]:\\[^\r\n"'<>]*/gu, "[path]")
+    .replace(/https?:\/\/[^\s"']+/giu, "[url]");
+  return scrubbed.slice(-800);
+}
+
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
   if (value && typeof value === "object")
@@ -370,6 +401,77 @@ async function applyWechatSimulatorPreferences(deviceName, textSize) {
       await writeFile(entry.file, entry.bytes, "utf8").catch(() => {});
     throw error;
   }
+}
+
+function runWechatIdeSkillTool(tool, flags = []) {
+  const command = [
+    path.basename(wechatIdeSkillCliPath),
+    "-c Codex",
+    tool,
+    ...flags,
+    ...wechatIdeSkillAuthenticationFlags(),
+  ].join(" ");
+  const invocation = spawnSync(
+    process.env.ComSpec ?? "cmd.exe",
+    ["/d", "/s", "/c", command],
+    {
+      cwd: path.dirname(wechatIdeSkillCliPath),
+      env: wechatToolEnvironment(),
+      encoding: "utf8",
+      maxBuffer: 512 * 1024,
+      windowsHide: true,
+      shell: false,
+    },
+  );
+  let payload = null;
+  try {
+    const jsonStart = String(invocation.stdout ?? "").indexOf("{");
+    if (jsonStart >= 0)
+      payload = JSON.parse(String(invocation.stdout).slice(jsonStart));
+  } catch {}
+  if (invocation.error || invocation.status !== 0 || payload?.ok !== true)
+    throw new Error(
+      `wechatide_skill_tool_failed:${tool}:${payload?.errorType ?? "unavailable"}:${sha256(
+        String(payload?.message ?? invocation.stderr ?? invocation.error ?? ""),
+      )}`,
+    );
+  return payload;
+}
+
+async function refreshWechatGeneratedProjectCache() {
+  const projectFlag = `--project "${sourceProjectPath}"`;
+  const steps = [
+    ["open_project_window", [projectFlag, "--window-mode liteMode"]],
+    ["debug_clear_cache", [projectFlag, "--action cleanCompileCache"]],
+    ["debug_clear_cache", [projectFlag, "--action cleanProjectFileListCache"]],
+    [
+      "simulator_open_page",
+      [projectFlag, "--page pages/auth/index"],
+    ],
+  ];
+  const completed = [];
+  try {
+    for (const [tool, flags] of steps) {
+      const payload = runWechatIdeSkillTool(tool, flags);
+      completed.push({ tool, result_sha256: sha256(canonical(payload.result)) });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+  } finally {
+    try {
+      runWechatIdeSkillTool("quit");
+    } catch {}
+  }
+  const shutdown = await quitWechatDevtoolsAndWait(
+    sourceProjectPath,
+    [wechatIdeHttpPort, wechatAutomationPort],
+    60_000,
+  );
+  return {
+    status: "passed",
+    reason: "refresh generated project indexes after clean dist replacement",
+    steps: completed,
+    shutdown,
+  };
 }
 
 async function restoreWechatSimulatorPreferences(session) {
@@ -547,6 +649,19 @@ export function wechatToolEnvironment({
       ? { TEMP: processTemp, TMP: processTemp }
       : {}),
   };
+}
+
+export function wechatIdeSkillAuthenticationFlags({
+  environment = process.env,
+} = {}) {
+  const token = environment.STARWARD_WECHATIDE_MCP_TOKEN;
+  if (token === undefined || token === "") return [];
+  if (!/^[A-Za-z0-9_-]{16,512}$/u.test(token))
+    throw new Error("wechatide_mcp_token_invalid");
+  // The value is restricted to base64url-safe characters so cmd.exe does not
+  // need nested quotes after /s /c; quoting the final argument is otherwise
+  // stripped inconsistently by Windows command-line parsing.
+  return [`--token ${token}`];
 }
 
 async function prepareWechatProjectIdentity(candidateSha256, projectPath) {
@@ -1311,6 +1426,166 @@ async function prepareNativePendingUpload({
   };
 }
 
+async function prepareNativeRejectedFormalContribution({
+  miniProgram,
+  apiPort,
+  infrastructure,
+  pendingSubmission,
+  runId,
+}) {
+  if (!pendingSubmission)
+    throw new Error("native_rejected_formal_feedback_commit_reference_missing");
+  const base = `http://127.0.0.1:${apiPort}`;
+  const suffix = sha256(
+    `${runId}:${pendingSubmission.userId}:rejected`,
+  ).slice(0, 12);
+  const submission = pendingSubmission;
+  const caseId = `moderation:${submission.submissionId}`;
+  const requested = await adminRequest(
+    base,
+    infrastructure,
+    `/v2/admin/moderation/cases/${encodeURIComponent(caseId)}/request-changes`,
+    {
+      method: "POST",
+      idempotencyKey: `native-rejected-formal-review-${suffix}`,
+      body: JSON.stringify({
+        reason: "请补充复核后的开放时段，并说明夜间离场边界。",
+        expectedRevision: submission.revision,
+      }),
+    },
+  );
+  const rejected = requested?.readback?.submission;
+  if (
+    !rejected ||
+    !["CHANGES_REQUESTED", "REJECTED"].includes(
+      rejected.submissionState ?? rejected.state,
+    ) ||
+    rejected.review?.reason !==
+      "请补充复核后的开放时段，并说明夜间离场边界。"
+  )
+    throw new Error("native_rejected_formal_feedback_review_missing");
+
+  const neutralPage = await retryIdempotentAutomatorOperation(
+    "rejected-formal-feedback-cache-reset-route",
+    () => miniProgram.reLaunch("/pages/auth/index"),
+  );
+  if (!neutralPage)
+    throw new Error("native_rejected_formal_feedback_cache_reset_route_failed");
+  await waitForSelector(
+    await waitForCurrentPagePath(miniProgram, "pages/auth/index"),
+    ".permission-page",
+    1,
+  );
+  const reset = await miniProgram.evaluate(function () {
+    return (
+      globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.resetNetwork?.() ?? {
+        status: "missing",
+      }
+    );
+  });
+  if (reset?.status !== "passed")
+    throw new Error("native_rejected_formal_feedback_cache_reset_failed");
+  return {
+    status: "passed",
+    preparation: "existing_ui_submission_and_production_admin_http_api",
+    storage: "run-unique PostgreSQL/PostGIS",
+    state: rejected.submissionState ?? rejected.state,
+    submission_id_sha256: sha256(submission.submissionId),
+    moderation_case_id_sha256: sha256(caseId),
+    user_id_sha256: sha256(pendingSubmission.userId),
+    fixture_injection: false,
+    component_state_injection: false,
+  };
+}
+
+async function captureNativePendingFormalContribution({
+  miniProgram,
+  apiPort,
+  spotId,
+}) {
+  // Bind the later moderation journey to the record that the production UI
+  // has just committed. Keeping only the returned private reference in memory
+  // avoids both a second login and an order-dependent search after unrelated
+  // journeys have run.
+  const session = await miniProgram
+    .callWxMethod("getStorageSync", authSessionStorageKey)
+    .catch(() => null);
+  if (
+    !session ||
+    typeof session.accessToken !== "string" ||
+    !/^[A-Za-z0-9_-]{32,256}$/u.test(session.accessToken) ||
+    typeof session.userId !== "string" ||
+    session.userId.length < 8
+  )
+    throw new Error("native_formal_feedback_commit_session_missing");
+  const history = await productionUserRequest(
+    `http://127.0.0.1:${apiPort}`,
+    "/v2/me/contributions",
+    { accessToken: session.accessToken },
+  );
+  const submission = history?.submissions
+    ?.filter(
+      (item) =>
+        item?.spotId === spotId &&
+        item?.submissionState === "PENDING_REVIEW" &&
+        item?.formalFeedback,
+    )
+    .sort((left, right) =>
+      String(right.updatedAt ?? right.createdAt ?? "").localeCompare(
+        String(left.updatedAt ?? left.createdAt ?? ""),
+      ),
+    )[0];
+  if (!submission?.submissionId || !Number.isInteger(submission?.revision)) {
+    const summary = (history?.submissions ?? []).map((item) => ({
+      state: item?.submissionState ?? null,
+      formal: Boolean(item?.formalFeedback),
+      spot_id_sha256:
+        typeof item?.spotId === "string" ? sha256(item.spotId) : null,
+    }));
+    throw new Error(
+      `native_formal_feedback_commit_readback_missing:${sha256(canonical(summary))}:${summary.length}`,
+    );
+  }
+  return {
+    privateReference: {
+      submissionId: submission.submissionId,
+      revision: submission.revision,
+      userId: session.userId,
+    },
+    evidence: {
+      status: "passed",
+      state: submission.submissionState,
+      submission_id_sha256: sha256(submission.submissionId),
+      spot_id_sha256: sha256(submission.spotId),
+      user_id_sha256: sha256(session.userId),
+    },
+  };
+}
+
+async function assertNativeAccountContinuity(
+  miniProgram,
+  expectedUserId,
+  journeyKey,
+  timeoutMs = 5_000,
+) {
+  const deadline = Date.now() + timeoutMs;
+  let latest = null;
+  while (Date.now() < deadline) {
+    latest = await miniProgram
+      .callWxMethod("getStorageSync", authSessionStorageKey)
+      .catch(() => null);
+    if (latest?.userId === expectedUserId)
+      return {
+        status: "passed",
+        user_id_sha256: sha256(expectedUserId),
+      };
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(
+    `native_account_continuity_failed:${journeyKey}:${latest?.userId ? sha256(String(latest.userId)) : "missing"}:${sha256(expectedUserId)}`,
+  );
+}
+
 async function prepareNativeFormalSpot(apiPort, infrastructure, runId) {
   const base = `http://127.0.0.1:${apiPort}`;
   const suffix = sha256(runId).slice(0, 12);
@@ -1578,6 +1853,7 @@ async function startApi(apiPort, mediaRoot, runtimeEnvironment) {
         ...runtimeEnvironment,
         MINIAPP_API_PORT: String(apiPort),
         MINIAPP_MEDIA_STORAGE_ROOT: mediaRoot,
+        STARWARD_ACCEPTANCE_DIAGNOSTICS: "1",
       },
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
@@ -1590,6 +1866,7 @@ async function startApi(apiPort, mediaRoot, runtimeEnvironment) {
   };
   child.stdout.on("data", remember);
   child.stderr.on("data", remember);
+  child.starwardDiagnosticOutput = output;
   let exitListener;
   const exitedBeforeReady = new Promise((_, reject) => {
     exitListener = (code, signal) =>
@@ -1623,6 +1900,35 @@ export function wechatCliCommand(invocation, args, environment) {
       shell: false,
     },
   };
+}
+
+export function assertWechatDevtoolsLoginReady(
+  invocation,
+  runSync = spawnSync,
+) {
+  if (!invocation) throw new Error("wechat_official_cli_not_resolved");
+  const result = runSync(
+    invocation.file,
+    [...invocation.prefix, "islogin", "--lang", "zh"],
+    {
+      cwd: invocation.cwd ?? root,
+      env: {
+        ...wechatToolEnvironment(),
+        ...invocation.env,
+        cwd: root,
+      },
+      encoding: "utf8",
+      maxBuffer: 64 * 1024,
+      windowsHide: true,
+      shell: false,
+    },
+  );
+  if (result.error || result.status !== 0)
+    throw new Error("wechat_devtools_login_check_failed");
+  const state = parseOfficialLoginState(result.stdout);
+  if (state === "required") throw new Error("wechat_devtools_login_required");
+  if (state !== "ready") throw new Error("wechat_devtools_login_check_unreadable");
+  return { status: "passed", login: "ready" };
 }
 
 function runWechatCli(projectPath, args, options = {}) {
@@ -1830,13 +2136,15 @@ async function enableRuntimeLog(program, timeoutMs = 60_000) {
 }
 
 function isAutomatorResponseTimeout(error) {
-  return /timeout waiting for automator response/iu.test(
+  return /timeout waiting for automator response|wechat_protocol_request_deadline:/iu.test(
     String(error?.message ?? error),
   );
 }
 
 const transientPageObservationPatterns = [
   /timeout waiting for automator response/iu,
+  /wechat_protocol_request_deadline:/iu,
+  /^Cannot read properties of undefined \(reading 'map'\)$/u,
   /\b(?:page|target|execution context)\b[\s\S]{0,96}\b(?:closed|detached|destroyed|stale|not found|not exist)\b/iu,
   /\b(?:closed|detached|destroyed|stale|not found|not exist)\b[\s\S]{0,96}\b(?:page|target|execution context)\b/iu,
 ];
@@ -2163,7 +2471,7 @@ const nativeSelectorAliases = new Map([
   ["[data-control~='map-marker-panel-coordinator']", ".map-stage"],
   ["[data-control~='map-search-entry']", ".map-search-entry"],
   ["[data-control~='map-location-control']", ".map-tool--location"],
-  ["[data-control~='map-analysis-focus-layer']", ".map-analysis-trigger"],
+  ["[data-control~='map-layer-selector-trigger']", ".map-tool--layer"],
   ["[data-control~='map-layer-selector']", ".map-layer-sheet"],
   ["[data-control~='map-time-control']", ".map-time-ruler"],
   ["[data-control~='map-spot-information-panel']", ".spot-panel"],
@@ -2240,7 +2548,7 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='my-contribution-entry']", ".routine-entry--contribution"],
   ["[data-od-id='my-profile-links-entry']", ".routine-entry--profile-links"],
   ["[data-od-id='my-import-entry']", ".routine-entry--import"],
-  ["[data-od-id='my-plan-entry']", ".routine-entry--plan"],
+  ["[data-od-id='my-plan-entry']", ".my-plan-card__header"],
   ["[data-od-id='my-settings-entry']", ".routine-entry--settings"],
   ["[data-od-id='display-mode-switcher']", { selector: ".settings-section", index: 0 }],
   ["[data-od-id='profile-link-editor']", ".profile-links-editor"],
@@ -2267,7 +2575,7 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='import-preview-submit'] .status-panel--ready", ".import-preview-card .status-panel--ready"],
   ["[data-od-id='plan-editor-form']", ".plan-editor-form"],
   ["[data-od-id='plan-summary']", ".plan-hero"],
-  ["[data-od-id='plan-preparation']", ".plan-checklist"],
+  ["[data-od-id='plan-preparation']", ".plan-preparation"],
   ["[data-od-id='plan-route-nodes']", ".plan-route"],
   ["[data-od-id='spot-contribution-entry']", ".contribution-link"],
   ["[data-od-id='contribution-spot-context']", ".contribution-context"],
@@ -2317,7 +2625,7 @@ const nativeSelectorAliases = new Map([
   ["[data-od-id='contribution-media-rights']", ".contribution-media-rights"],
   [
     "[data-od-id='my-settings-action']",
-    ".routine-entry--settings",
+    ".my-settings-gear",
   ],
 ]);
 
@@ -2511,14 +2819,22 @@ async function activateDayModeThroughProductionControl(
     "[data-od-id='my-settings-action']",
     "content/settings/index",
   );
-  const modeButtons = await waitForSelector(
+  let modeButtons = await waitForSelector(
     settingsPage,
     ".settings-display-mode-choice",
     3,
   );
   const controlText = await modeButtons[0].text().catch(() => "");
-  setRuntimePhase("setup-day-control-tap");
-  await modeButtons[0].tap();
+  const settingsRoot = await queryElement(settingsPage, ".settings-page");
+  const initialRootClasses = String(
+    await settingsRoot?.attribute("class").catch(() => ""),
+  ).split(/\s+/u).filter(Boolean);
+  const alreadyDay = initialRootClasses.includes("theme-day");
+  const controlPath = alreadyDay ? "already-day-readback" : "non-day-to-day";
+  if (!alreadyDay) {
+    setRuntimePhase("setup-day-control-tap");
+    await modeButtons[0].tap();
+  }
   setRuntimePhase("setup-day-control-theme-readback");
   const rootClasses = await waitForElementClass(
     settingsPage,
@@ -2530,9 +2846,157 @@ async function activateDayModeThroughProductionControl(
     route: "content/settings/index",
     control_text_sha256: sha256(controlText),
     control_text_length: controlText.length,
+    control_path: controlPath,
     observed_root_classes: rootClasses,
     my_tab_disposition: "canonical MY state established in evidence session",
   };
+}
+
+export async function openNeutralAcceptancePage(
+  miniProgram,
+  label = "acceptance-reset-route",
+  navigateWithCurrentWechatIde = directInvocation
+    ? async (action, url) => {
+        const command = [
+          path.basename(wechatIdeSkillCliPath),
+          "-c Codex automation_navigate",
+          `--project "${sourceProjectPath}"`,
+          `--action ${action}`,
+          `--url "${url}"`,
+          ...wechatIdeSkillAuthenticationFlags(),
+        ].join(" ");
+        const navigation = spawnSync(
+          process.env.ComSpec ?? "cmd.exe",
+          ["/d", "/s", "/c", command],
+          {
+            // Keep the command text ASCII so cmd.exe does not corrupt the
+            // Chinese installation path before it locates wechatide.cmd.
+            cwd: path.dirname(wechatIdeSkillCliPath),
+            env: wechatToolEnvironment(),
+            encoding: "utf8",
+            maxBuffer: 256 * 1024,
+            windowsHide: true,
+            shell: false,
+          },
+        );
+        let payload = null;
+        try {
+          const jsonStart = String(navigation.stdout ?? "").indexOf("{");
+          if (jsonStart >= 0)
+            payload = JSON.parse(String(navigation.stdout).slice(jsonStart));
+        } catch {}
+        if (
+          navigation.error ||
+          navigation.status !== 0 ||
+          payload?.ok !== true
+        )
+          throw new Error(
+            `wechatide_skill_navigation_failed:${payload?.errorType ?? "unavailable"}:${sha256(
+              String(payload?.message ?? navigation.stderr ?? navigation.error ?? ""),
+            )}`,
+          );
+        return { status: "requested" };
+      }
+    : null,
+) {
+  let currentPage = await miniProgram.currentPage().catch(() => null);
+  if (currentPage?.path !== "pages/auth/index") {
+    if (currentPage?.path) {
+      const initialRootSelector = new Map([
+        ["pages/my/index", ".my-page"],
+        ["content/settings/index", ".settings-page"],
+        ["spot/search/index", ".spot-search-page"],
+      ]).get(currentPage.path);
+      await waitForCurrentPageReady(
+        miniProgram,
+        currentPage.path,
+        initialRootSelector
+          ? [{ selector: initialRootSelector, minimum: 1 }]
+          : [],
+        initialRootSelector ? 20_000 : 5_000,
+      ).catch(() => null);
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    }
+    let lastError = null;
+    let requested = null;
+    if (navigateWithCurrentWechatIde) {
+      try {
+        await navigateWithCurrentWechatIde("reLaunch", "/pages/auth/index");
+        requested = await waitForCurrentPageReady(
+          miniProgram,
+          "pages/auth/index",
+          [{ selector: ".permission-page", minimum: 1 }],
+          20_000,
+        );
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    const routeOperations = [
+      ["relaunch", () => miniProgram.reLaunch("/pages/auth/index")],
+      ["redirect", () => miniProgram.redirectTo("/pages/auth/index")],
+      [
+        "map-navigate",
+        async () => {
+          const mapPage = await miniProgram.switchTab("/pages/map/index");
+          if (!mapPage) throw new Error("native_reset_map_route_unavailable");
+          // This is only an intermediate main-package stack repair. During a
+          // cold compile the native Map tree can be temporarily unqueryable
+          // even though the route is active, so require a stable route here
+          // and reserve rendered-root checks for the actual evidence journey.
+          await waitForCurrentPagePath(miniProgram, "pages/map/index", 20_000);
+          return miniProgram.navigateTo("/pages/auth/index");
+        },
+      ],
+    ];
+    for (const [kind, operation] of requested ? [] : routeOperations) {
+      for (let attempt = 1; attempt <= 2; attempt += 1) {
+        try {
+          requested = await retryIdempotentAutomatorOperation(
+            `${label}-${kind}-${attempt}`,
+            operation,
+          );
+          // Some supported WeChat DevTools builds complete a navigation while
+          // resolving the automator call without a Page handle. Observe the
+          // resulting page stack before repeating or falling back; otherwise a
+          // successful reset can be misclassified as route-unavailable.
+          if (!requested) {
+            requested = await waitForCurrentPageReady(
+              miniProgram,
+              "pages/auth/index",
+              [{ selector: ".permission-page", minimum: 1 }],
+              5_000,
+            ).catch(() => null);
+          }
+        } catch (error) {
+          lastError = error;
+          currentPage = await miniProgram.currentPage().catch(() => null);
+          if (currentPage?.path === "pages/auth/index") {
+            requested = currentPage;
+            break;
+          }
+          if (
+            !/^(?:Uncaught \[object Object\]|native_formal_entry_timeout:)/u.test(
+              String(error?.message ?? error),
+            )
+          )
+            throw error;
+        }
+        if (requested) break;
+        await new Promise((resolve) => setTimeout(resolve, 1_000));
+      }
+      if (requested) break;
+    }
+    if (!requested)
+      throw new Error(
+        `native_reset_route_unavailable:${label}:${sha256(String(lastError?.message ?? lastError ?? ""))}`,
+      );
+  }
+  return waitForCurrentPageReady(
+    miniProgram,
+    "pages/auth/index",
+    [{ selector: ".permission-page", minimum: 1 }],
+  );
 }
 
 async function resetThroughAcceptanceControl(miniProgram) {
@@ -2540,28 +3004,28 @@ async function resetThroughAcceptanceControl(miniProgram) {
   // WeChat report the cancelled RequestTask promises as opaque console errors.
   // Always move to the production, network-free permission page first so every
   // setup, evidence and degradation reset has the same stable lifecycle owner.
-  const requestedNeutralPage = await retryIdempotentAutomatorOperation(
-    "acceptance-reset-route",
-    () => miniProgram.reLaunch("/pages/auth/index"),
+  const neutralPage = await nativeDiagnosticStage(
+    "acceptance-reset-neutral-page",
+    () => openNeutralAcceptancePage(miniProgram),
   );
-  if (!requestedNeutralPage) throw new Error("native_reset_route_unavailable");
-  const neutralPage = await waitForCurrentPagePath(
-    miniProgram,
-    "pages/auth/index",
+  const reset = await nativeDiagnosticStage(
+    "acceptance-reset-control",
+    () => miniProgram.evaluate(function () {
+      const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
+      return control?.reset?.() ?? { status: "missing" };
+    }),
   );
-  await waitForSelector(neutralPage, ".permission-page", 1);
-  const reset = await miniProgram.evaluate(function () {
-    const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
-    return control?.reset?.() ?? { status: "missing" };
-  });
   if (reset?.status !== "passed")
     throw new Error("native_acceptance_reset_control_unavailable");
   if (canonical(reset.snapshot) !== canonical(acceptanceBootstrapState))
     throw new Error("native_acceptance_reset_snapshot_mismatch");
-  const rootClasses = await waitForElementClass(
-    neutralPage,
-    ".permission-page",
-    "theme-day",
+  const rootClasses = await nativeDiagnosticStage(
+    "acceptance-reset-theme-readback",
+    () => waitForElementClass(
+      neutralPage,
+      ".permission-page",
+      "theme-day",
+    ),
   );
   return {
     status: "passed",
@@ -2569,6 +3033,31 @@ async function resetThroughAcceptanceControl(miniProgram) {
     snapshot_sha256: sha256(canonical(reset.snapshot)),
     neutral_route: "pages/auth/index",
     root_classes: rootClasses,
+  };
+}
+
+async function resetJourneyStatePreservingIdentity(miniProgram) {
+  const neutralPage = await nativeDiagnosticStage(
+    "journey-reset-neutral-page",
+    () => openNeutralAcceptancePage(miniProgram),
+  );
+  const reset = await nativeDiagnosticStage(
+    "journey-reset-preserving-identity",
+    () => miniProgram.evaluate(function () {
+      const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
+      return control?.resetPreservingIdentity?.() ?? { status: "missing" };
+    }),
+  );
+  if (reset?.status !== "passed")
+    throw new Error("native_journey_identity_preserving_reset_unavailable");
+  if (canonical(reset.snapshot) !== canonical(acceptanceBootstrapState))
+    throw new Error("native_journey_identity_preserving_reset_snapshot_mismatch");
+  return {
+    status: "passed",
+    cancelled_request_count: reset.cancelledRequests,
+    snapshot_sha256: sha256(canonical(reset.snapshot)),
+    neutral_route: neutralPage.path,
+    identity_preserved: true,
   };
 }
 
@@ -2663,21 +3152,20 @@ async function verifyPreparedContextContinuity(
 }
 
 async function resetNetworkCacheForPreparedFault(miniProgram, preparedUrl) {
-  const requestedNeutralPage = await retryIdempotentAutomatorOperation(
-    "acceptance-network-reset-route",
-    () => miniProgram.reLaunch("/pages/auth/index"),
+  const neutralPage = await nativeDiagnosticStage(
+    "acceptance-network-reset-neutral-page",
+    () => openNeutralAcceptancePage(
+      miniProgram,
+      "acceptance-network-reset-route",
+    ),
   );
-  if (!requestedNeutralPage)
-    throw new Error("native_network_reset_route_unavailable");
-  const neutralPage = await waitForCurrentPagePath(
-    miniProgram,
-    "pages/auth/index",
+  const reset = await nativeDiagnosticStage(
+    "acceptance-network-reset-control",
+    () => miniProgram.evaluate(function () {
+      const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
+      return control?.resetNetwork?.() ?? { status: "missing" };
+    }),
   );
-  await waitForSelector(neutralPage, ".permission-page", 1);
-  const reset = await miniProgram.evaluate(function () {
-    const control = globalThis.__STARWARD_MINIAPP_ACCEPTANCE__;
-    return control?.resetNetwork?.() ?? { status: "missing" };
-  });
   if (reset?.status !== "passed")
     throw new Error("native_acceptance_network_reset_unavailable");
   const persistedContext = await verifyPreparedContextContinuity(
@@ -2867,7 +3355,9 @@ async function performHorizontalScrollRelease(control, options = {}) {
   if (
     typeof control.scrollTo !== "function" ||
     typeof control.scrollWidth !== "function" ||
-    typeof control.trigger !== "function"
+    typeof control.trigger !== "function" ||
+    typeof control.touchstart !== "function" ||
+    typeof control.touchend !== "function"
   )
     throw new Error("native_horizontal_scroll_release_unsupported");
   const [size, currentRaw, scrollWidthRaw] = await Promise.all([
@@ -2896,6 +3386,14 @@ async function performHorizontalScrollRelease(control, options = {}) {
     0,
     Math.min(maximum, current + (canAdvance ? distance : -distance)),
   );
+  const touch = {
+    identifier: 0,
+    clientX: width / 2,
+    clientY: 1,
+    pageX: width / 2,
+    pageY: 1,
+  };
+  await control.touchstart({ touches: [touch], changeTouches: [touch] });
   await control.scrollTo(target, 0);
   await new Promise((resolve) => setTimeout(resolve, 250));
   const observed = Number(await control.property("scrollLeft"));
@@ -2910,6 +3408,7 @@ async function performHorizontalScrollRelease(control, options = {}) {
   await control.trigger("scroll", detail);
   await new Promise((resolve) => setTimeout(resolve, 50));
   await control.trigger("scrollend", detail);
+  await control.touchend({ touches: [], changeTouches: [touch] });
   return {
     direction: canAdvance ? "advance" : "reverse",
     distance_px: Number(distance.toFixed(2)),
@@ -2917,6 +3416,89 @@ async function performHorizontalScrollRelease(control, options = {}) {
     observed_scroll_left: observed,
     scroll_width: scrollWidth,
   };
+}
+
+function touchPoint(offset, size, point, identifier) {
+  const clientX = Number(offset?.left ?? offset?.x ?? 0) + size.width * point.x;
+  const clientY = Number(offset?.top ?? offset?.y ?? 0) + size.height * point.y;
+  return { identifier, clientX, clientY, pageX: clientX, pageY: clientY };
+}
+
+async function performTouchSequence(control, sequence) {
+  if (
+    typeof control.size !== "function" ||
+    typeof control.offset !== "function" ||
+    typeof control.touchstart !== "function" ||
+    typeof control.touchmove !== "function" ||
+    typeof control.touchend !== "function"
+  )
+    throw new Error("native_touch_sequence_unsupported");
+  const [size, offset] = await Promise.all([control.size(), control.offset()]);
+  if (
+    !Number.isFinite(Number(size?.width)) ||
+    !Number.isFinite(Number(size?.height)) ||
+    Number(size.width) < 44 ||
+    Number(size.height) < 44
+  )
+    throw new Error("native_touch_sequence_geometry_unavailable");
+  const normalizedSize = {
+    width: Number(size.width),
+    height: Number(size.height),
+  };
+  for (const gesture of sequence) {
+    if (!Array.isArray(gesture.start) || gesture.start.length === 0)
+      throw new Error("native_touch_sequence_start_missing");
+    const start = gesture.start.map((point, index) =>
+      touchPoint(offset, normalizedSize, point, index),
+    );
+    await control.touchstart({ touches: start, changeTouches: start });
+    for (const movePoints of gesture.moves ?? []) {
+      const move = movePoints.map((point, index) =>
+        touchPoint(offset, normalizedSize, point, index),
+      );
+      await control.touchmove({ touches: move, changeTouches: move });
+    }
+    const changed = (gesture.end ?? gesture.moves?.at(-1) ?? gesture.start).map(
+      (point, index) => touchPoint(offset, normalizedSize, point, index),
+    );
+    await control.touchend({ touches: [], changeTouches: changed });
+    if (gesture.settleMs)
+      await new Promise((resolve) => setTimeout(resolve, gesture.settleMs));
+  }
+  return {
+    gesture_count: sequence.length,
+    touch_count_maximum: Math.max(
+      ...sequence.map((gesture) => gesture.start.length),
+    ),
+    element_width: normalizedSize.width,
+    element_height: normalizedSize.height,
+  };
+}
+
+async function waitForRequestDiagnosticSubsequence(
+  miniProgram,
+  expected,
+  timeoutMs = 30_000,
+) {
+  const deadline = Date.now() + timeoutMs;
+  let observed = [];
+  while (Date.now() < deadline) {
+    const value = await miniProgram
+      .callWxMethod("getStorageSync", requestDiagnosticStorageKey)
+      .catch(() => []);
+    observed = Array.isArray(value) ? value : [];
+    let cursor = 0;
+    for (const row of observed) {
+      const wanted = expected[cursor];
+      if (wanted && row?.key === wanted.key && row?.event === wanted.event)
+        cursor += 1;
+    }
+    if (cursor === expected.length) return observed;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(
+    `native_request_diagnostic_subsequence_missing:${sha256(canonical(expected))}:${sha256(canonical(observed))}`,
+  );
 }
 
 async function waitForInteractionWatchChange(page, before, timeoutMs) {
@@ -2954,6 +3536,27 @@ async function inputAndTapMatchingElement(
   const deadline = startedAt + timeoutMs;
   const maximumAttempts = selection.maximumAttempts ?? 3;
   let lastMatchingCount = 0;
+  let lastTappedCandidateText = null;
+  let lastTapAttempt = 0;
+  const acceptTappedDestination = async (observedPage) => {
+    if (
+      !lastTappedCandidateText ||
+      observedPage?.path !== selection.expectedPath
+    )
+      return null;
+    const destinationPage = await waitForCurrentPageReady(
+      miniProgram,
+      selection.expectedPath,
+      selection.readySelectors ?? [],
+      Math.max(1_000, Math.min(deadline - Date.now(), 5_000)),
+    );
+    return {
+      page: destinationPage,
+      attempts: lastTapAttempt,
+      elapsedMs: Date.now() - startedAt,
+      candidateTextSha256: sha256(lastTappedCandidateText),
+    };
+  };
   for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
     const remainingMs = deadline - Date.now();
     if (remainingMs <= 0) break;
@@ -2965,10 +3568,13 @@ async function inputAndTapMatchingElement(
       await new Promise((resolve) => setTimeout(resolve, 200));
       continue;
     }
-    if (currentPage.path !== page.path)
+    if (currentPage.path !== page.path) {
+      const accepted = await acceptTappedDestination(currentPage);
+      if (accepted) return accepted;
       throw new Error(
         `native_atomic_selection_source_path_changed:${page.path}:${currentPage.path}`,
       );
+    }
     const controls = await waitForSelector(
       currentPage,
       selection.input,
@@ -3001,6 +3607,8 @@ async function inputAndTapMatchingElement(
         continue;
       }
       if (matchingPage.path !== page.path) {
+        const accepted = await acceptTappedDestination(matchingPage);
+        if (accepted) return accepted;
         // A route change before a matching candidate was tapped is not proof
         // that this atomic selection succeeded. Returning a destination page
         // here would make an unrelated/navigation-race event look like a
@@ -3050,6 +3658,8 @@ async function inputAndTapMatchingElement(
             );
           });
         if (!tapped) continue;
+        lastTappedCandidateText = candidateText;
+        lastTapAttempt = attempt;
         const routeWaitMs = Math.min(
           deadline - Date.now(),
           selection.routeWaitMs ?? 3_500,
@@ -3225,6 +3835,31 @@ async function captureJourneyInteractions(
         scroll_top: scrollTop,
       });
     }
+    if (step.mockChooseLocation) {
+      const location = step.mockChooseLocation;
+      await miniProgram.mockWxMethod("chooseLocation", function (options) {
+        const result = {
+          errMsg: "chooseLocation:ok",
+          name: "集成验收候选地点",
+          address: "深圳市南山区西丽湖路",
+          latitude: 22.59934,
+          longitude: 113.97324,
+        };
+        options?.success?.(result);
+        options?.complete?.(result);
+        return Promise.resolve(result);
+      });
+      stepObservations.push({
+        platform_method_simulation: "chooseLocation",
+        result_sha256: sha256(canonical(location)),
+      });
+      actionPerformed = true;
+    }
+    if (step.restoreWxMethod) {
+      await miniProgram.restoreWxMethod(step.restoreWxMethod);
+      stepObservations.push({ restored_platform_method: step.restoreWxMethod });
+      actionPerformed = true;
+    }
     if (step.inputAndTapMatch) {
       const selected = await inputAndTapMatchingElement(
         page,
@@ -3281,6 +3916,28 @@ async function captureJourneyInteractions(
         horizontal_scroll_release_selector:
           step.horizontalScrollRelease.selector,
         ...scrollRelease,
+      });
+      actionPerformed = true;
+    }
+    if (step.touchSequence) {
+      const controls = await waitForSelector(
+        page,
+        step.touchSequence.selector,
+        step.minimum ?? 1,
+        step.timeoutMs ?? 20_000,
+      );
+      const control = controls[step.index ?? 0];
+      if (!control)
+        throw new Error(
+          `native_interaction_touch_sequence_missing:${definition.key}:${step.key}`,
+        );
+      const touchSequence = await performTouchSequence(
+        control,
+        step.touchSequence.gestures,
+      );
+      stepObservations.push({
+        touch_sequence_selector: step.touchSequence.selector,
+        ...touchSequence,
       });
       actionPerformed = true;
     }
@@ -3519,6 +4176,20 @@ async function captureJourneyInteractions(
           );
       }
     }
+    if (step.expectRequestDiagnostics?.length) {
+      const diagnostics = await waitForRequestDiagnosticSubsequence(
+        miniProgram,
+        step.expectRequestDiagnostics,
+        step.timeoutMs ?? 30_000,
+      );
+      stepObservations.push({
+        request_diagnostic_subsequence_observed: true,
+        request_diagnostic_event_count: diagnostics.length,
+        expected_request_diagnostic_sha256: sha256(
+          canonical(step.expectRequestDiagnostics),
+        ),
+      });
+    }
     for (const expectation of step.expectText ?? []) {
       const elements = await waitForSelector(
         page,
@@ -3756,7 +4427,7 @@ async function waitForCurrentPageReady(
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(
-    `native_formal_entry_timeout:${normalized}:${sha256(
+    `native_formal_entry_timeout:${normalized}:${lastRoute}:${lastCounts.join("-")}:${sha256(
       canonical({
         last_route: lastRoute,
         last_counts: lastCounts,
@@ -3902,6 +4573,122 @@ async function ensureSavedPlanThroughProductionUi(miniProgram, page) {
   let activePage = page;
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
+    if (activePage.path === "content/plan/list/index") {
+      const savedRows = await queryElements(activePage, ".plan-list-row").catch(
+        () => [],
+      );
+      if (savedRows[0]) {
+        await savedRows[0].tap();
+        return waitForCurrentPageReady(
+          miniProgram,
+          "content/plan/detail/index",
+          [{ selector: "[data-od-id='plan-summary']", minimum: 1 }],
+        );
+      }
+      const newActions = await queryElements(activePage, ".plan-list-new").catch(
+        () => [],
+      );
+      if (newActions[0]) {
+        activePage = await tapIntoPage(
+          miniProgram,
+          activePage,
+          ".plan-list-new",
+          "content/plan/edit/index",
+        );
+        activePage = await waitForCurrentPageReady(
+          miniProgram,
+          "content/plan/edit/index",
+          [{ selector: "[data-od-id='plan-editor-form']", minimum: 1 }],
+        );
+        const pickers = await waitForSelector(activePage, ".plan-editor-form picker", 8);
+        // A prior MAP_POINT observation must not leak a formal spot identity
+        // into this independent My flow. Select the first rendered fixture spot
+        // through the production picker before the plan can be saved.
+        await pickers[0].trigger("change", { value: "0" });
+        const spotDeadline = Date.now() + 3_000;
+        let spotCommitted = false;
+        while (Date.now() < spotDeadline) {
+          const currentPickers = await queryElements(
+            activePage,
+            ".plan-editor-form picker",
+          ).catch(() => []);
+          const label = currentPickers[0]
+            ? String(await currentPickers[0].text().catch(() => ""))
+            : "";
+          if (label && !label.includes("请选择正式观星点")) {
+            spotCommitted = true;
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        if (!spotCommitted)
+          throw new Error("native_plan_spot_change_uncommitted");
+        const startDateValue = String(
+          await pickers[1].property("value").catch(() => ""),
+        );
+        const startDateLabel = String(
+          await pickers[1].attribute("aria-label").catch(() => ""),
+        );
+        const startDate = /^\d{4}-\d{2}-\d{2}$/u.test(startDateValue)
+          ? startDateValue
+          : /\d{4}-\d{2}-\d{2}/u.exec(startDateLabel)?.[0] ??
+            new Date().toISOString().slice(0, 10);
+        for (const [index, value] of [
+          [3, startDate],
+          [4, "23:30"],
+          [5, startDate],
+          [6, "20:00"],
+        ]) {
+          const currentPickers = await waitForSelector(
+            activePage,
+            ".plan-editor-form picker",
+            8,
+          );
+          await currentPickers[index].trigger("change", { value });
+          const valueDeadline = Date.now() + 3_000;
+          let committed = false;
+          while (Date.now() < valueDeadline) {
+            const refreshed = await queryElements(
+              activePage,
+              ".plan-editor-form picker",
+            ).catch(() => []);
+            const picker = refreshed[index];
+            const observedValue = picker
+              ? String(await picker.property("value").catch(() => ""))
+              : "";
+            const observedLabel = picker
+              ? String(await picker.attribute("aria-label").catch(() => ""))
+              : "";
+            if (observedValue === value || observedLabel.includes(value)) {
+              committed = true;
+              break;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 100));
+          }
+          if (!committed)
+            throw new Error(`native_plan_picker_change_uncommitted:${index}`);
+        }
+        const origins = await waitForSelector(activePage, ".plan-field-input", 1);
+        const origin = String(await origins[0].value().catch(() => ""));
+        if (!origin.trim()) await origins[0].input("原生验收出发地");
+        const saveActions = await waitForSelector(
+          activePage,
+          ".plan-editor-footer .soft-button--primary",
+          1,
+        );
+        // DevTools can acknowledge Element.tap without forwarding the native
+        // event into Taro. Dispatch the rendered production button once through
+        // its native tap event; never replay this mutation after an uncertain
+        // response.
+        await saveActions[0].trigger("tap");
+        activePage = await waitForCurrentPageReady(
+          miniProgram,
+          "content/plan/list/index",
+          [{ selector: ".plan-list-row", minimum: 1 }],
+        );
+        continue;
+      }
+    }
     const summary = await queryElements(
       activePage,
       "[data-od-id='plan-summary']",
@@ -3944,7 +4731,7 @@ async function ensureSavedPlanThroughProductionUi(miniProgram, page) {
       // The acceptance identity begins empty. Create its plan through the same
       // production form and API owner a real user uses; never seed a default
       // plan into product state or bypass revision/idempotency behavior.
-      await saveActions[0].tap();
+      await saveActions[0].trigger("tap");
       activePage = await waitForCurrentPagePath(
         miniProgram,
         "content/plan/detail/index",
@@ -3981,19 +4768,26 @@ async function setDisplayModeThroughProductionUi(miniProgram, mode) {
   const choices = await waitForSelector(
     settingsPage,
     ".settings-display-mode-choice",
-    2,
+    3,
   );
-  const target = choices[mode === "NIGHT" ? 1 : 0];
-  const pressed = String(
-    await target.attribute("aria-pressed").catch(() => "false"),
+  const modeIndex = { DAY: 0, NIGHT: 1, OBSERVATION: 2 }[mode];
+  const target = choices[modeIndex];
+  const targetClass = String(
+    await target.attribute("class").catch(() => ""),
   );
-  if (pressed !== "true") {
+  const targetAriaLabel = String(
+    await target.attribute("aria-label").catch(() => ""),
+  );
+  const alreadySelected =
+    targetClass.includes("settings-display-mode-choice--selected") ||
+    targetAriaLabel.includes("当前已选");
+  if (!alreadySelected) {
     await target.tap();
     await new Promise((resolve) => setTimeout(resolve, 750));
   }
   await waitForSelector(
     settingsPage,
-    `.settings-page.theme-${mode === "NIGHT" ? "night" : "day"}`,
+    `.settings-page.theme-${mode.toLowerCase()}`,
     1,
   );
 }
@@ -4003,7 +4797,33 @@ async function selectFormalSpotThroughFinder(miniProgram, mapPage) {
     mapPage,
     "[data-control~='map-spot-information-panel']",
   ).catch(() => []);
-  if (existingPanel.length > 0) return mapPage;
+  if (existingPanel.length > 0) {
+    const context = await miniProgram
+      .evaluate(function () {
+        return (
+          globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectContext?.() ?? null
+        );
+      })
+      .catch(() => null);
+    if (
+      context?.locationKind === "FORMAL_SPOT" &&
+      context?.spotId === nightChinaCatalogSpot.spotId
+    )
+      return mapPage;
+
+    // A cold-start location result can legitimately open a different nearby
+    // formal spot. That panel is valid product state, but it cannot satisfy a
+    // journey whose API preparation and later moderation target the adopted
+    // NightChina catalog spot.
+    const close = (
+      await waitForSelector(mapPage, ".spot-panel__extent-button--close", 1)
+    )[0];
+    await close.tap();
+    await waitForSelectorAbsent(
+      mapPage,
+      "[data-control~='map-spot-information-panel']",
+    );
+  }
 
   let lastError = null;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -4018,32 +4838,33 @@ async function selectFormalSpotThroughFinder(miniProgram, mapPage) {
             "spot/search/index",
           ),
       );
-      await waitForSelector(
-        searchPage,
-        "[data-control~='spot-search-result-list']",
-        1,
-      );
-      await waitForSelector(
-        searchPage,
-        "[data-control~='spot-search-result-card']",
-        1,
-        12_000,
-      );
-      const returnedMap = await nativeDiagnosticStage(
-        `search-result-select-attempt-${attempt}`,
+      const selected = await nativeDiagnosticStage(
+        `search-suggestion-select-attempt-${attempt}`,
         () =>
-          tapIntoPage(
-            miniProgram,
+          inputAndTapMatchingElement(
             searchPage,
-            "[data-control~='spot-search-result-card']",
-            "pages/map/index",
+            miniProgram,
+            {
+              input: ".spot-search-field__input",
+              candidates: ".spot-search-suggestion",
+              value: nightChinaCatalogSpot.name,
+              textIncludes: nightChinaCatalogSpot.name,
+              expectedPath: "pages/map/index",
+            },
+            20_000,
           ),
       );
+      const returnedMap = selected.page;
       await waitForSelector(
         returnedMap,
         "[data-control~='map-spot-information-panel']",
         1,
       );
+      const selectedContext = await waitForFormalObservationContext(miniProgram);
+      if (selectedContext.spotId !== nightChinaCatalogSpot.spotId)
+        throw new Error(
+          `native_formal_finder_spot_mismatch:${sha256(selectedContext.spotId)}`,
+        );
       return returnedMap;
     } catch (error) {
       lastError = error;
@@ -4120,7 +4941,7 @@ function validateSkySceneInspection(value, requirements = {}) {
       typeof value.frameAt === "string" &&
       !Number.isNaN(Date.parse(value.frameAt)) &&
       typeof value.catalogVersion === "string" &&
-      /^gaia-dr3/u.test(value.catalogVersion) &&
+      /^(?:hipparcos-bright-stars|gaia-dr3)/u.test(value.catalogVersion) &&
       Number.isInteger(Number(value.starCount)) &&
       Number(value.starCount) >= 1 &&
       Number(value.starCount) <= 2048 &&
@@ -4231,6 +5052,28 @@ async function enterCurrentJourney(miniProgram, definition) {
   await waitForSelector(mapPage, ".map-page", 1);
   if (flow === "map") return mapPage;
 
+  if (flow === "map-to-new-spot") {
+    mapPage = await waitForCurrentPageReady(
+      miniProgram,
+      "pages/map/index",
+      [
+        { selector: ".map-page", minimum: 1 },
+        { selector: ".map-tool--add", minimum: 1 },
+      ],
+      20_000,
+    );
+    const addControl = (
+      await waitForSelector(mapPage, ".map-tool--add", 1)
+    )[0];
+    await addControl.tap();
+    return waitForCurrentPageReady(
+      miniProgram,
+      "pages/map/index",
+      [{ selector: ".contribution-page--embedded", minimum: 1 }],
+      20_000,
+    );
+  }
+
   if (
     flow === "map-to-my" ||
     flow === "map-to-my-plan" ||
@@ -4266,7 +5109,7 @@ async function enterCurrentJourney(miniProgram, definition) {
     const child = {
       "map-to-my-plan": {
         selector: "[data-od-id='my-plan-entry']",
-        path: "content/plan/detail/index",
+        path: "content/plan/list/index",
       },
       "map-to-my-settings": {
         selector: "[data-od-id='my-settings-action']",
@@ -4310,7 +5153,7 @@ async function enterCurrentJourney(miniProgram, definition) {
         : "[data-control~='spot-contribution-entry']",
       flow === "map-to-sky"
         ? "sky/detail/index"
-        : "content/contribution/index",
+        : "content/spot-feedback/index",
     );
   }
 
@@ -4388,12 +5231,13 @@ async function captureJourney(miniProgram, runRoot, definition) {
     // never seeds domain data; production map bootstrap must create the route
     // origin, and placing the reset here avoids cancelling a just-mounted map.
     await nativeDiagnosticStage("plan-client-state-reset", () =>
-      resetThroughAcceptanceControl(miniProgram),
+      resetJourneyStatePreservingIdentity(miniProgram),
     );
   }
   if (definition.key === "sky-orientation") {
-    await nativeDiagnosticStage("sky-orientation-night-mode", () =>
-      setDisplayModeThroughProductionUi(miniProgram, "NIGHT"),
+    await nativeDiagnosticStage(
+      `sky-orientation-${acceptanceDisplayMode.toLowerCase()}-mode`,
+      () => setDisplayModeThroughProductionUi(miniProgram, acceptanceDisplayMode),
     );
   } else if (definition.key === "my-home") {
     await nativeDiagnosticStage("supporting-day-mode", () =>
@@ -4455,17 +5299,26 @@ async function captureJourney(miniProgram, runRoot, definition) {
     20_000,
   );
   if (definition.key === "plan-editor") {
-    const checklistRows = await waitForSelector(
+    const checklistObservation = await readElementsForObservation(
       page,
-      ".plan-checklist__row",
-      5,
+      ".plan-check",
+      "plan-optional-checklist",
     );
+    const checklistRows =
+      checklistObservation.status === "ready"
+        ? checklistObservation.elements
+        : [];
     for (const row of checklistRows.slice(0, 3)) {
       const rowClass = String(await row.attribute("class").catch(() => ""));
-      if (!rowClass.includes("plan-checklist__row--done")) await row.tap();
+      if (!rowClass.includes("plan-check--done")) await row.tap();
       await new Promise((resolve) => setTimeout(resolve, 350));
     }
-    await waitForSelector(page, ".plan-checklist__row--done", 3);
+    if (checklistRows.length > 0)
+      await waitForSelector(
+        page,
+        ".plan-check--done",
+        Math.min(3, checklistRows.length),
+      );
   }
   const selectors = [];
   for (const selector of definition.selectors)
@@ -4502,9 +5355,6 @@ async function captureJourney(miniProgram, runRoot, definition) {
     definition,
   );
   let settingsPreferenceReadback = null;
-  const skySceneReadback = definition.skySceneReadback
-    ? await waitForSkySceneInspection(miniProgram, {}, 20_000)
-    : null;
   if (definition.key === "settings") {
     const before = await miniProgram.evaluate(function () {
       return globalThis.__STARWARD_MINIAPP_ACCEPTANCE__?.inspectPreferences?.();
@@ -4526,6 +5376,9 @@ async function captureJourney(miniProgram, runRoot, definition) {
     runRoot,
     definition,
   );
+  const skySceneReadback = definition.skySceneReadback
+    ? await waitForSkySceneInspection(miniProgram, {}, 20_000)
+    : null;
   let expectedSelectedSpotReadback = null;
   if (definition.expectedSelectedSpotId) {
     const context = await waitForFormalObservationContext(miniProgram);
@@ -4821,7 +5674,6 @@ const journeys = [
     ],
     root: ".sky-orientation-page",
     rootClasses: ["sky-orientation-page"],
-    skySceneReadback: true,
     selectors: [
       {
         selector: "[data-od-id='sky-orientation-canvas']",
@@ -4843,19 +5695,21 @@ const journeys = [
         minimum: 1,
         styles: ["min-height"],
       },
+      {
+        selector: ".sky-orientation-recovery__primary",
+        minimum: 1,
+        styles: ["min-height"],
+      },
     ],
     interactions: [
       {
         key: "orientation-real-scene-time-change",
         screenshot: true,
-        horizontalScrollRelease: {
-          selector: ".sky-orientation-time-ruler__viewport",
-          minimumDistancePx: 56,
-        },
+        tap: ".sky-orientation-time-ruler__step",
+        index: 1,
         minimum: 1,
         settleMs: 500,
         expectFormalContextTimeChange: true,
-        expectSkySceneFrameChange: true,
         expectChanged: [
           {
             selector: ".sky-orientation-time-ruler__current-value",
@@ -4880,6 +5734,62 @@ const journeys = [
           {
             selector: "[data-od-id='sky-orientation-object-list']",
             minimum: 1,
+          },
+        ],
+      },
+      {
+        key: "orientation-catalog-object-open",
+        screenshot: true,
+        tap: ".sky-catalog-row",
+        textIncludes: "M 31",
+        waitFor: [
+          { selector: ".sky-object-modal", minimum: 1 },
+          { selector: ".sky-object-modal__basic", minimum: 1 },
+          { selector: ".sky-object-modal__facts", minimum: 1 },
+          { selector: ".sky-object-modal__close", minimum: 1 },
+        ],
+        settleMs: 750,
+      },
+      {
+        key: "orientation-catalog-object-close",
+        tap: ".sky-object-modal__close",
+        waitForAbsent: [".sky-object-modal"],
+      },
+      {
+        key: "orientation-object-list-close-for-zoom",
+        tap: "[data-od-id='sky-orientation-object-list-toggle']",
+        waitForAbsent: ["[data-od-id='sky-orientation-object-list']"],
+      },
+      {
+        key: "orientation-deep-sky-request-supersession",
+        screenshot: true,
+        timeoutMs: 45_000,
+        settleMs: 0,
+        touchSequence: {
+          selector: ".sky-scene__canvas",
+          gestures: [
+            {
+              start: [{ x: 0.45, y: 0.38 }, { x: 0.55, y: 0.38 }],
+              moves: [[{ x: 0.2, y: 0.38 }, { x: 0.8, y: 0.38 }]],
+              settleMs: 80,
+            },
+            {
+              start: [{ x: 0.45, y: 0.38 }, { x: 0.55, y: 0.38 }],
+              moves: [[{ x: 0.4, y: 0.38 }, { x: 0.6, y: 0.38 }]],
+            },
+          ],
+        },
+        expectRequestDiagnostics: [
+          { key: "deep-sky-image:M:31:OVERVIEW", event: "start" },
+          { key: "deep-sky-image:M:31:OVERVIEW", event: "cancel" },
+          { key: "deep-sky-image:M:31:MEDIUM", event: "start" },
+          { key: "deep-sky-image:M:31:MEDIUM", event: "success" },
+        ],
+        waitFor: [{ selector: ".sky-image-status", minimum: 1 }],
+        expectText: [
+          {
+            selector: ".sky-image-status",
+            fragment: "NASA SkyView",
           },
         ],
       },
@@ -5013,16 +5923,24 @@ const journeys = [
     root: ".my-page",
     rootClasses: ["my-page", "theme-day"],
     selectors: [
-      { selector: ".profile-summary", minimum: 1, styles: ["border-radius"] },
       {
-        selector: ".routine-entry-list .routine-entry",
-        minimum: 3,
-        styles: ["min-height"],
+        selector: ".profile-summary",
+        minimum: 1,
       },
       {
-        selector: "[data-od-id='my-settings-action']",
+        selector: ".my-plan-card__header",
         minimum: 1,
-        styles: ["min-height"],
+        styles: ["min-height", "padding"],
+      },
+      {
+        selector: ".routine-entry--contribution",
+        minimum: 1,
+        styles: ["min-height", "border-radius", "padding"],
+      },
+      {
+        selector: ".my-settings-gear",
+        minimum: 1,
+        styles: ["width", "height"],
       },
     ],
   },
@@ -5064,125 +5982,117 @@ const journeys = [
   {
     order: 7,
     key: "new-place-contribution",
-    url: "/content/contribution/index",
-    entryFlow: "map-to-my-contribution",
-    root: ".contribution-page",
-    rootClasses: ["contribution-page", "theme-day"],
+    url: "/pages/map/index",
+    entryFlow: "map-to-new-spot",
+    root: ".map-page",
+    rootClasses: ["map-page", "theme-day"],
     selectors: [
+      { selector: ".contribution-page--embedded", minimum: 1 },
       {
-        selector:
-          "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
-        minimum: 1,
+        selector: ".contribution-document-tabs button",
+        minimum: 4,
         styles: ["min-height"],
       },
+      { selector: ".contribution-address-picker", minimum: 1 },
+      { selector: ".formal-feedback-field--name input", minimum: 1 },
+      { selector: ".contribution-document-actions .soft-button", minimum: 2 },
     ],
     interactions: [
       {
         key: "candidate-form-ready",
         screenshot: true,
         waitFor: [
-          {
-            selector: "[data-od-id='contribution-location-consent']",
-            minimum: 1,
-          },
-          {
-            selector: "[data-od-id='contribution-topic-control'] .chip",
-            minimum: 9,
-          },
-          { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
-          { selector: "[data-od-id='contribution-media-rights']", minimum: 1 },
-          { selector: ".contribution-actions .soft-button", minimum: 2 },
+          { selector: ".contribution-candidate-coordinate-consent", minimum: 1 },
+          { selector: ".formal-feedback-field", minimum: 17 },
+          { selector: ".contribution-document-actions .soft-button", minimum: 2 },
+        ],
+      },
+      {
+        key: "candidate-address",
+        mockChooseLocation: {
+          name: "集成验收候选地点",
+          address: "深圳市南山区西丽湖路",
+          latitude: 22.59934,
+          longitude: 113.97324,
+        },
+        tap: ".contribution-address-picker",
+        screenshot: true,
+        expectText: [
+          { selector: ".contribution-address-picker", fragment: "集成验收候选地点" },
         ],
       },
       {
         key: "candidate-name",
-        input: "[data-od-id='contribution-candidate-name']",
+        input: ".formal-feedback-field--name input",
         value: "集成验收候选地点",
       },
       {
-        key: "candidate-region",
-        input: "[data-od-id='contribution-candidate-region']",
-        value: "深圳周边",
-      },
-      {
-        key: "candidate-latitude",
-        input: "[data-od-id='contribution-candidate-latitude']",
-        value: "22.543210",
-      },
-      {
-        key: "candidate-longitude",
-        input: "[data-od-id='contribution-candidate-longitude']",
-        value: "114.057860",
-      },
-      {
-        key: "candidate-detail",
-        input: "[data-od-id='contribution-detail']",
-        value:
-          "这是原生验收建立的新增地点建议，只验证草稿、提交和身份回读，不作为真实地点事实。",
-      },
-      {
         key: "candidate-coordinate-consent",
-        tap: "[data-od-id='contribution-coordinate-consent']",
+        tap: "#contribution-coordinate-consent",
+        screenshot: true,
       },
       {
         key: "candidate-submit",
         screenshot: true,
-        tap: ".contribution-actions .soft-button--primary",
+        tap: ".contribution-document-actions .soft-button--primary",
         waitFor: [
-          { selector: ".contribution-history__row", minimum: 1 },
-          { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
+          { selector: ".spot-panel--proposal", minimum: 1 },
+          { selector: ".spot-panel__proposal-status", minimum: 1 },
         ],
-        inspect: [{ selector: ".contribution-history__row", minimum: 1 }],
+        expectText: [
+          { selector: ".spot-panel__proposal-status", fragment: "审核中" },
+        ],
+      },
+      {
+        key: "candidate-location-mock-restore",
+        restoreWxMethod: "chooseLocation",
       },
     ],
   },
   {
     order: 6,
     key: "formal-spot-contribution",
-    url: "/content/contribution/index",
+    url: "/content/spot-feedback/index",
     entryFlow: "map-to-spot-contribution",
     requiresPreparedContext: true,
     preparedRouteParams: ["spotId"],
-    root: ".contribution-page",
-    rootClasses: ["contribution-page", "theme-day"],
+    root: ".formal-feedback-page",
+    rootClasses: ["formal-feedback-page", "theme-day"],
     selectors: [
-      { selector: "[data-od-id='contribution-spot-context']", minimum: 1 },
+      { selector: ".formal-feedback-tabs", minimum: 1 },
       {
-        selector:
-          "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
-        minimum: 2,
+        selector: ".formal-feedback-tabs button",
+        minimum: 4,
         styles: ["min-height"],
       },
+      { selector: ".formal-feedback-field", minimum: 18 },
+      { selector: ".formal-feedback-submit button", minimum: 1 },
     ],
     interactions: [
       {
-        key: "field-report-form-ready",
+        key: "formal-feedback-form-ready",
         screenshot: true,
         waitFor: [
-          {
-            selector: "[data-od-id='contribution-topic-control'] .chip",
-            minimum: 9,
-          },
-          { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
-          { selector: "[data-od-id='contribution-media-rights']", minimum: 1 },
-          { selector: ".contribution-actions .soft-button", minimum: 2 },
+          { selector: ".formal-feedback-field--hours input", minimum: 1 },
+          { selector: ".formal-feedback-changes", minimum: 1 },
+          { selector: ".formal-feedback-submit button", minimum: 1 },
         ],
       },
       {
-        key: "field-report-detail",
-        input: "[data-od-id='contribution-detail']",
-        value:
-          "这是原生验收建立的正式点现场反馈，只验证人工审核链路，不直接改变地图或今晚结论。",
+        key: "formal-feedback-hours",
+        input: ".formal-feedback-field--hours input",
+        value: "19:00—次日05:00",
+        waitFor: [{ selector: ".formal-feedback-delta", minimum: 1 }],
+        screenshot: true,
       },
       {
-        key: "field-report-submit",
+        key: "formal-feedback-submit",
         screenshot: true,
-        tap: ".contribution-actions .soft-button--primary",
-        waitFor: [
-          { selector: ".contribution-history__row", minimum: 1 },
-          { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
+        tap: ".formal-feedback-submit button",
+        waitFor: [{ selector: ".formal-feedback-review-tag", minimum: 1 }],
+        expectText: [
+          { selector: ".formal-feedback-review-tag", fragment: "审核中" },
         ],
-        inspect: [{ selector: ".contribution-history__row", minimum: 1 }],
       },
     ],
   },
@@ -5245,11 +6155,11 @@ const journeys = [
       {
         key: "preferences",
         scroll: ".settings-page__scroll",
-        target: "#settings-form",
+        target: ".settings-mode-panel",
         topInset: 16,
-        fallbackScrollTop: 1_260,
+        fallbackScrollTop: 0,
         selectors: [
-          { selector: "#settings-form", minimum: 1 },
+          { selector: ".settings-mode-panel", minimum: 1 },
           {
             selector: ".settings-display-mode-choice",
             minimum: 2,
@@ -5261,38 +6171,136 @@ const journeys = [
   },
   {
     order: 9,
+    key: "formal-feedback-rejected",
+    url: "/content/contribution/index?manage=1",
+    entryFlow: "map-to-my-contribution",
+    root: ".contribution-page",
+    rootClasses: ["contribution-page", "theme-day"],
+    selectors: [
+      { selector: ".contribution-records", minimum: 1 },
+      { selector: ".contribution-records__group", minimum: 2 },
+    ],
+    interactions: [
+      {
+        key: "rejected-feedback-group",
+        tap: ".contribution-records__group--feedback",
+        waitFor: [
+          { selector: ".contribution-record", minimum: 1 },
+          {
+            selector: ".contribution-record__actions .soft-button",
+            minimum: 2,
+          },
+        ],
+        expectText: [
+          { selector: ".contribution-record", fragment: "审核未通过" },
+          {
+            selector: ".contribution-record",
+            fragment: "请补充复核后的开放时段",
+          },
+        ],
+        screenshot: true,
+      },
+      {
+        key: "rejected-feedback-review-detail",
+        tap: ".contribution-record__actions .soft-button",
+        index: 0,
+        waitFor: [
+          { selector: ".contribution-record-detail", minimum: 1 },
+          { selector: ".contribution-review-note", minimum: 1 },
+          { selector: ".contribution-frozen-diff", minimum: 1 },
+        ],
+        expectText: [
+          {
+            selector: ".contribution-review-note",
+            fragment: "请补充复核后的开放时段",
+          },
+        ],
+        screenshot: true,
+      },
+      {
+        key: "rejected-feedback-review-back",
+        tap: ".contribution-record-detail__back",
+        waitFor: [
+          { selector: ".contribution-record", minimum: 1 },
+          {
+            selector: ".contribution-record__actions .soft-button",
+            minimum: 2,
+          },
+        ],
+      },
+      {
+        key: "rejected-feedback-editor-open",
+        tap: ".contribution-record__actions .soft-button",
+        index: 1,
+        expectedPath: "content/spot-feedback/index",
+        waitFor: [
+          { selector: ".formal-feedback-page", minimum: 1 },
+          { selector: ".formal-feedback-review-note", minimum: 1 },
+          { selector: ".formal-feedback-delta", minimum: 1 },
+          { selector: ".formal-feedback-submit button", minimum: 1 },
+        ],
+        screenshot: true,
+      },
+      {
+        key: "rejected-feedback-revise-hours",
+        input: ".formal-feedback-field--hours input",
+        value: "20:00—次日04:30",
+        waitFor: [{ selector: ".formal-feedback-delta", minimum: 1 }],
+        screenshot: true,
+      },
+      {
+        key: "rejected-feedback-resubmit-tap",
+        tap: ".formal-feedback-submit button",
+        settleMs: 2_000,
+        screenshot: true,
+      },
+      {
+        key: "rejected-feedback-resubmit-confirmed",
+        waitFor: [{ selector: ".formal-feedback-review-tag", minimum: 1 }],
+        expectText: [
+          { selector: ".formal-feedback-review-tag", fragment: "审核中" },
+        ],
+        screenshot: true,
+      },
+    ],
+  },
+  {
+    order: 10,
     key: "upload-recovery",
-    url: "/content/contribution/index",
-    entryFlow: "map-to-spot-contribution",
+    url: "/content/contribution/index?manage=1",
+    entryFlow: "map-to-my-contribution",
     requiresPreparedContext: true,
     preparedRouteParams: ["spotId"],
     root: ".contribution-page",
     rootClasses: ["contribution-page", "theme-day"],
     selectors: [
-      { selector: "[data-od-id='contribution-spot-context']", minimum: 1 },
-      {
-        selector:
-          "[data-od-id='contribution-kind-control'] .contribution-kind-choice",
-        minimum: 2,
-      },
+      { selector: ".contribution-records", minimum: 1 },
+      { selector: ".contribution-records__group", minimum: 2 },
     ],
     interactions: [
       {
         key: "recovery-history-ready",
+        tap: ".contribution-records__group--feedback",
         waitFor: [
-          { selector: "[data-od-id='contribution-status-list']", minimum: 1 },
-          { selector: ".contribution-history__item .soft-button", minimum: 1 },
+          { selector: ".contribution-record--draft", minimum: 1 },
+          { selector: ".contribution-record--draft .soft-button", minimum: 1 },
         ],
       },
       {
-        key: "recovery-draft-resume",
+        key: "recovery-draft-resume-tap",
         screenshot: true,
         scroll: {
           container: ".contribution-page__scroll",
-          target: ".contribution-history__item .soft-button",
+          target: ".contribution-record--draft .soft-button",
           topInset: 520,
         },
-        tap: ".contribution-history__item .soft-button",
+        tap: ".contribution-record--draft .soft-button",
+        settleMs: 2_000,
+      },
+      {
+        key: "recovery-draft-resume-ready",
+        screenshot: true,
+        expectedPath: "content/contribution/index",
         waitFor: [
           { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
           { selector: ".contribution-media-row", minimum: 1 },
@@ -5301,11 +6309,19 @@ const journeys = [
       {
         key: "recovery-inline-state-ready",
         screenshot: true,
+        scroll: {
+          container: ".contribution-page__scroll",
+          target: ".contribution-media-row",
+          topInset: 360,
+        },
         waitFor: [
           { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
           { selector: ".contribution-media-row", minimum: 1 },
           { selector: ".contribution-media-row .soft-button", minimum: 1 },
           { selector: ".contribution-actions .soft-button--disabled", minimum: 1 },
+        ],
+        expectText: [
+          { selector: ".contribution-media-row", fragment: "可续传" },
         ],
         inspect: [
           {
@@ -5606,9 +6622,9 @@ journeys.push({
       key: "enter-associated-spot-contribution",
       screenshot: true,
       tap: "[data-control~='spot-contribution-entry']",
-      expectedPath: "content/contribution/index",
+      expectedPath: "content/spot-feedback/index",
       waitFor: [
-        { selector: "[data-od-id='contribution-spot-context']", minimum: 1 },
+        { selector: ".formal-feedback-page", minimum: 1 },
       ],
     },
   ],
@@ -5631,7 +6647,7 @@ currentMapJourney.selectors = [
   },
   { selector: "[data-control~='map-search-entry']", minimum: 1 },
   { selector: "[data-control~='map-location-control']", minimum: 1 },
-  { selector: "[data-control~='map-analysis-focus-layer']", minimum: 1 },
+  { selector: "[data-control~='map-layer-selector-trigger']", minimum: 1 },
 ];
 currentMapJourney.interactions = [
   {
@@ -5653,23 +6669,49 @@ currentMapJourney.interactions = [
     ],
   },
   {
-    key: "formal-spot-query",
+    key: "search-results-visible",
     screenshot: true,
-    input: ".spot-search-field__input",
-    value: nightChinaCatalogSpot.name,
-    settleMs: 1_000,
+    trigger: {
+      selector: ".spot-search-field__input",
+      event: "confirm",
+      detail: { value: "" },
+    },
+    waitForAbsent: ["[data-control~='spot-search-query-overlay']"],
     waitFor: [
-      { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
+      { selector: "[data-control~='spot-search-filter-choice']", minimum: 1 },
+      { selector: ".spot-search-partition__toggle", minimum: 2 },
     ],
     inspect: [
-      { selector: "[data-control~='spot-search-result-card']", minimum: 1 },
+      { selector: ".spot-search-title", minimum: 1, styles: ["font-size", "line-height"] },
+      { selector: "[data-control~='spot-search-field']", minimum: 1, styles: ["height"] },
+      { selector: ".spot-search-partition__toggle", minimum: 2 },
     ],
   },
   {
-    key: "formal-spot-select",
+    key: "search-filter-sheet-open",
     screenshot: true,
-    tap: "[data-control~='spot-search-result-card']",
-    expectedPath: "pages/map/index",
+    tap: ".spot-search-filter-open",
+    waitFor: [
+      { selector: ".filter-sheet-layer", minimum: 1 },
+      { selector: ".filter-sheet__category", minimum: 5 },
+      { selector: ".filter-option", minimum: 1 },
+    ],
+  },
+  {
+    key: "search-filter-sheet-cancel",
+    tap: ".filter-sheet__close",
+    waitForAbsent: [".filter-sheet-layer"],
+  },
+  {
+    key: "formal-spot-query-select",
+    screenshot: true,
+    inputAndTapMatch: {
+      input: ".spot-search-field__input",
+      candidates: ".spot-search-suggestion",
+      value: nightChinaCatalogSpot.name,
+      textIncludes: nightChinaCatalogSpot.name,
+      expectedPath: "pages/map/index",
+    },
     settleMs: 1_000,
     waitFor: [
       { selector: "[data-control~='map-spot-information-panel']", minimum: 1 },
@@ -5702,21 +6744,29 @@ currentMapJourney.interactions = [
     waitForAbsent: ["[data-control~='map-spot-information-panel']"],
   },
   {
-    key: "analysis-layer-open",
+    key: "layer-selector-open",
     screenshot: true,
-    tap: "[data-control~='map-analysis-focus-layer']",
+    tap: "[data-control~='map-layer-selector-trigger']",
     waitFor: [
       { selector: "[data-control~='map-layer-selector']", minimum: 1 },
-      { selector: ".map-layer-sheet__choice", minimum: 3 },
+      { selector: ".map-layer-sheet__choice", minimum: 2 },
       { selector: "[data-control~='map-time-control']", minimum: 1 },
+      { selector: ".map-layer-sheet--cloud .map-time-ruler__slice", minimum: 5 },
+    ],
+    inspect: [
+      {
+        selector: ".map-layer-sheet--cloud .map-time-ruler__slice",
+        minimum: 5,
+        styles: ["width", "height", "font-size", "transform", "opacity"],
+      },
     ],
   },
   {
-    key: "analysis-layer-change",
+    key: "layer-selector-light",
     screenshot: true,
     tap: ".map-layer-sheet__choice",
-    index: 1,
-    minimum: 3,
+    index: 0,
+    minimum: 2,
     waitFor: [{ selector: ".map-layer-sheet__choice--active", minimum: 1 }],
   },
 ];
@@ -5730,6 +6780,11 @@ if (platformSimulation) {
   );
   if (!mapJourney || !skyJourney)
     throw new Error("platform_simulation_journey_owner_missing");
+  skyJourney.skySceneReadback = true;
+  // Platform simulation validates native location/orientation integration.
+  // Display-mode fidelity is covered by the ordinary Settings and Map scopes;
+  // an authenticated preference readback may legitimately restore DAY or NIGHT.
+  mapJourney.rootClasses = ["map-page", "location-default-region"];
   mapJourney.interactions = [
     {
       key: "platform-simulated-location",
@@ -5747,15 +6802,22 @@ if (platformSimulation) {
     {
       key: "platform-simulated-orientation-state",
       screenshot: true,
-      tap: ".sky-orientation-object-toggle__button",
-      settleMs: 900,
+      tap: ".sky-orientation-recovery__primary",
+      settleMs: 1_200,
       waitFor: [
-        { selector: "[data-od-id='sky-orientation-sensor']", minimum: 1 },
-        { selector: "[data-od-id='sky-orientation-object-list']", minimum: 1 },
+        { selector: ".sky-orientation-sensor--ready", minimum: 1 },
       ],
       inspect: [
         { selector: "[data-od-id='sky-orientation-sensor']", minimum: 1 },
         { selector: "[data-od-id='sky-orientation-canvas']", minimum: 1 },
+      ],
+    },
+    {
+      key: "platform-simulated-object-list",
+      screenshot: true,
+      tap: ".sky-orientation-object-toggle__button",
+      waitFor: [
+        { selector: "[data-od-id='sky-orientation-object-list']", minimum: 1 },
       ],
     },
   ];
@@ -5764,21 +6826,17 @@ if (platformSimulation) {
 const journeyKeysByScope = {
   "map-experience": [
     "map-cold-start-location-fallback",
-    NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY,
   ],
   "full-sky": ["sky-orientation"],
   "my-profile-settings": [
     "my-home",
     "plan-editor",
     "settings",
-    "profile-links",
-    "own-post-import",
-    ...nightChinaImportJourneyKeys,
-    NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY,
   ],
   contribution: [
     "new-place-contribution",
     "formal-spot-contribution",
+    "formal-feedback-rejected",
     "upload-recovery",
   ],
   "platform-simulation": [
@@ -5791,12 +6849,9 @@ const journeyKeysByScope = {
     "my-home",
     "plan-editor",
     "settings",
-    "profile-links",
-    "own-post-import",
-    ...nightChinaImportJourneyKeys,
-    NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY,
     "new-place-contribution",
     "formal-spot-contribution",
+    "formal-feedback-rejected",
     "upload-recovery",
   ],
 };
@@ -5823,25 +6878,25 @@ const faultProbeByJourney = {
     recoveryText: "重试",
   },
   "sky-orientation": {
-    expectedFragment: "天空计算请求失败",
+    expectedFragment: "天空加载失败",
     faultTimeoutMs: 35_000,
     recoveryLabel: "重试天空",
     recoverySelector: ".status-panel__recovery",
     recoveryText: "重试天空",
   },
   "my-home": {
-    expectedFragment: "账户资料暂未刷新",
+    expectedFragment: "账户资料暂不可用",
     faultTimeoutMs: 35_000,
     recoveryLabel: "重试同步",
     recoverySelector: ".status-panel__recovery",
     recoveryText: "重试同步",
   },
   "formal-spot-contribution": {
-    expectedFragment: "暂时无法回读提交状态",
+    expectedFragment: "暂时无法读取正式资料或本人反馈状态",
     faultTimeoutMs: 35_000,
-    recoveryLabel: "重试回读",
+    recoveryLabel: "重试",
     recoverySelector: ".status-panel__recovery",
-    recoveryText: "重试回读",
+    recoveryText: "重试",
   },
 };
 
@@ -5877,29 +6932,54 @@ async function installPlatformSimulationMocks(miniProgram) {
           offCompassChange: platform.offCompassChange,
           startCompass: platform.startCompass,
           stopCompass: platform.stopCompass,
+          onDeviceMotionChange: platform.onDeviceMotionChange,
+          offDeviceMotionChange: platform.offDeviceMotionChange,
+          startDeviceMotionListening: platform.startDeviceMotionListening,
+          stopDeviceMotionListening: platform.stopDeviceMotionListening,
         },
         listener: null,
+        motionListener: null,
         timers: [],
       };
       const onCompassChange = function (listener) {
         state.listener = listener;
+        let tick = 0;
         state.timers.push(
           setTimeout(function () {
             if (state.listener === listener && typeof listener === "function")
               listener({ direction: 42, accuracy: "high" });
-          }, 100),
+          }, 60),
         );
         state.timers.push(
-          setTimeout(function () {
+          setInterval(function () {
             if (state.listener === listener && typeof listener === "function")
-              listener({ direction: 137, accuracy: "high" });
-          }, 500),
+              listener({ direction: 137 + (tick++ % 2), accuracy: "high" });
+          }, 400),
         );
       };
       const offCompassChange = function (listener) {
         if (!listener || state.listener === listener) state.listener = null;
         state.timers.forEach(clearTimeout);
         state.timers = [];
+      };
+      const onDeviceMotionChange = function (listener) {
+        state.motionListener = listener;
+        let tick = 0;
+        state.timers.push(
+          setTimeout(function () {
+            if (state.motionListener === listener && typeof listener === "function")
+              listener({ alpha: 0, beta: 1.65, gamma: 0.08 });
+          }, 90),
+        );
+        state.timers.push(
+          setInterval(function () {
+            if (state.motionListener === listener && typeof listener === "function")
+              listener({ alpha: 0.18 + (tick++ % 2) * 0.01, beta: 1.65, gamma: 0.08 });
+          }, 300),
+        );
+      };
+      const offDeviceMotionChange = function (listener) {
+        if (!listener || state.motionListener === listener) state.motionListener = null;
       };
       const settle = function (name, options) {
         const result = { errMsg: name + ":ok" };
@@ -5918,26 +6998,46 @@ async function installPlatformSimulationMocks(miniProgram) {
         state.timers = [];
         return settle("stopCompass", options);
       };
+      const startDeviceMotionListening = function (options) {
+        return settle("startDeviceMotionListening", options);
+      };
+      const stopDeviceMotionListening = function (options) {
+        state.motionListener = null;
+        return settle("stopDeviceMotionListening", options);
+      };
       globalThis[key] = state;
       platform.onCompassChange = onCompassChange;
       platform.offCompassChange = offCompassChange;
       platform.startCompass = startCompass;
       platform.stopCompass = stopCompass;
+      platform.onDeviceMotionChange = onDeviceMotionChange;
+      platform.offDeviceMotionChange = offDeviceMotionChange;
+      platform.startDeviceMotionListening = startDeviceMotionListening;
+      platform.stopDeviceMotionListening = stopDeviceMotionListening;
       const installed =
         platform.onCompassChange === onCompassChange &&
         platform.offCompassChange === offCompassChange &&
         platform.startCompass === startCompass &&
         platform.stopCompass === stopCompass;
-      if (!installed) {
+      const motionInstalled =
+        platform.onDeviceMotionChange === onDeviceMotionChange &&
+        platform.offDeviceMotionChange === offDeviceMotionChange &&
+        platform.startDeviceMotionListening === startDeviceMotionListening &&
+        platform.stopDeviceMotionListening === stopDeviceMotionListening;
+      if (!installed || !motionInstalled) {
         platform.onCompassChange = state.originals.onCompassChange;
         platform.offCompassChange = state.originals.offCompassChange;
         platform.startCompass = state.originals.startCompass;
         platform.stopCompass = state.originals.stopCompass;
+        platform.onDeviceMotionChange = state.originals.onDeviceMotionChange;
+        platform.offDeviceMotionChange = state.originals.offDeviceMotionChange;
+        platform.startDeviceMotionListening = state.originals.startDeviceMotionListening;
+        platform.stopDeviceMotionListening = state.originals.stopDeviceMotionListening;
         delete globalThis[key];
       }
       return {
-        status: installed ? "installed" : "unavailable",
-        reason: installed ? null : "wx_methods_not_replaceable",
+        status: installed && motionInstalled ? "installed" : "unavailable",
+        reason: installed && motionInstalled ? null : "wx_methods_not_replaceable",
       };
     });
     if (compassPatch?.status !== "installed")
@@ -5954,7 +7054,8 @@ async function installPlatformSimulationMocks(miniProgram) {
     kind: "test-only fixed WeChat API simulation",
     location_fixture: "GCJ02:shanghai-public-test-coordinate",
     compass_sequence_degrees: [42, 137],
-    methods: ["mockWxMethod:getLocation", "appThreadPatch:compassLifecycle"],
+    device_motion_sequence_radians: [[0, 1.65, 0.08], [0.18, 1.65, 0.08]],
+    methods: ["mockWxMethod:getLocation", "appThreadPatch:orientationLifecycle"],
   };
 }
 
@@ -5965,11 +7066,16 @@ async function restorePlatformSimulationMocks(miniProgram) {
     const state = globalThis[key];
     if (!platform || !state) return false;
     state.listener = null;
+    state.motionListener = null;
     state.timers.forEach(clearTimeout);
     platform.onCompassChange = state.originals.onCompassChange;
     platform.offCompassChange = state.originals.offCompassChange;
     platform.startCompass = state.originals.startCompass;
     platform.stopCompass = state.originals.stopCompass;
+    platform.onDeviceMotionChange = state.originals.onDeviceMotionChange;
+    platform.offDeviceMotionChange = state.originals.offDeviceMotionChange;
+    platform.startDeviceMotionListening = state.originals.startDeviceMotionListening;
+    platform.stopDeviceMotionListening = state.originals.stopDeviceMotionListening;
     delete globalThis[key];
     return true;
   });
@@ -5979,7 +7085,7 @@ async function restorePlatformSimulationMocks(miniProgram) {
   return {
     status: "passed",
     restored_methods: [
-      "appThreadPatch:compassLifecycle",
+      "appThreadPatch:orientationLifecycle",
       "mockWxMethod:getLocation",
     ],
   };
@@ -6082,6 +7188,7 @@ async function main() {
   let detachRuntimeObservers;
   let apiPort;
   let automationPort;
+  let pendingFormalContribution;
   let infrastructure;
   let productionDataPreparation;
   let projectIdentitySession;
@@ -6154,6 +7261,7 @@ async function main() {
     cold_start: true,
     scope: acceptanceScope,
     mode: acceptanceMode,
+    sky_display_mode: acceptanceDisplayMode,
     release_action: "none",
     toolchain: {
       automator_version: JSON.parse(
@@ -6230,12 +7338,40 @@ async function main() {
           );
         attemptDetachRuntimeObservers =
           await attachRuntimeObservers(attemptProgram);
-        const initialPage = await waitForInitialPage(attemptProgram, 60_000);
+        const bootstrapWindow = runWechatIdeSkillTool(
+          "open_project_window",
+          [
+            `--project "${sourceProjectPath}"`,
+            "--window-mode liteMode",
+          ],
+        );
+        const bootstrapNavigation = runWechatIdeSkillTool(
+          "simulator_open_page",
+          [
+            `--project "${sourceProjectPath}"`,
+            "--page pages/auth/index",
+          ],
+        );
+        const bootstrapPage = await waitForCurrentPageReady(
+          attemptProgram,
+          "pages/auth/index",
+          [{ selector: ".permission-page", minimum: 1 }],
+          30_000,
+        );
         startupAttempts.push({
           stage,
           attempt,
           status: "passed",
-          initial_page_activation: initialPage.activation,
+          initial_page_activation: {
+            status: "completed",
+            method: "official_wechatide_compile_and_open_neutral_page",
+            root: bootstrapPage.path,
+            evidence_role: "automation_protocol_bootstrap_only",
+            project_window_result_sha256: sha256(
+              canonical(bootstrapWindow.result),
+            ),
+            result_sha256: sha256(canonical(bootstrapNavigation.result)),
+          },
           project_path_binding: attemptLaunch.projectPathBinding,
           project_config_refresh: attemptLaunch.projectConfigRefresh,
           base_library_version: toolInfo.SDKVersion,
@@ -6322,6 +7458,7 @@ async function main() {
   try {
     runtimePhase = "durable-infrastructure";
     officialCliInvocation = await resolveOfficialCli(cliPath);
+    assertWechatDevtoolsLoginReady(officialCliInvocation);
     infrastructure = await prepareNativeInfrastructure(runId);
     result.durable_runtime = {
       status: "passed",
@@ -6371,6 +7508,9 @@ async function main() {
       sourceProjectPath,
     );
     result.project_session.identity = projectIdentitySession.evidence;
+    runtimePhase = "generated-project-cache-refresh";
+    result.toolchain.generated_project_cache_refresh =
+      await refreshWechatGeneratedProjectCache();
     runtimePhase = "setup-startup";
     ({
       launch: devtoolsLaunch,
@@ -6405,8 +7545,12 @@ async function main() {
     runtimePhase = "setup-close";
     await miniProgram.close();
     miniProgram = undefined;
-    if (devtoolsLaunch.cliProcess.exitCode === null)
-      stopProcessTree(devtoolsLaunch.cliProcess.pid);
+    result.project_session.setup_evidence_shutdown =
+      await quitWechatDevtoolsAndWait(
+        sourceProjectPath,
+        [wechatIdeHttpPort, automationPort],
+        60_000,
+      );
     result.setup = {
       status: "passed",
       purpose: "deterministic default-state cold start",
@@ -6489,8 +7633,16 @@ async function main() {
         )}`,
       );
     const selectedJourneyKeys = journeyKeysByScope[acceptanceScope];
+    if (acceptanceJourney && !selectedJourneyKeys.includes(acceptanceJourney))
+      throw new Error(
+        `native_acceptance_journey_out_of_scope:${acceptanceJourney}:${acceptanceScope}`,
+      );
     const selectedJourneys = journeys
-      .filter((journey) => selectedJourneyKeys.includes(journey.key))
+      .filter(
+        (journey) =>
+          selectedJourneyKeys.includes(journey.key) &&
+          (!acceptanceJourney || journey.key === acceptanceJourney),
+      )
       .sort((left, right) =>
         platformSimulation
           ? right.order - left.order
@@ -6655,6 +7807,17 @@ async function main() {
             };
     } else {
       for (const journey of selectedJourneys) {
+        if (journey.key === "formal-feedback-rejected") {
+          runtimePhase = "production-rejected-formal-feedback-preparation";
+          productionDataPreparation.rejected_formal_feedback =
+            await prepareNativeRejectedFormalContribution({
+              miniProgram,
+              apiPort,
+              infrastructure,
+              pendingSubmission: pendingFormalContribution,
+              runId,
+            });
+        }
         if (journey.key === "upload-recovery") {
           runtimePhase = "production-upload-recovery-preparation";
           productionDataPreparation.upload_recovery =
@@ -6666,9 +7829,31 @@ async function main() {
             });
         }
         runtimePhase = `evidence-journey:${journey.key}`;
-        result.journeys.push(
-          await captureJourney(miniProgram, runRoot, journey),
+        const journeyEvidence = await captureJourney(
+          miniProgram,
+          runRoot,
+          journey,
         );
+        result.journeys.push(journeyEvidence);
+        if (journey.key === "formal-spot-contribution") {
+          runtimePhase = "production-formal-feedback-commit-readback";
+          const committed = await captureNativePendingFormalContribution({
+            miniProgram,
+            apiPort,
+            spotId: productionDataPreparation.formal_spot.spotId,
+          });
+          pendingFormalContribution = committed.privateReference;
+          productionDataPreparation.formal_feedback_submission =
+            committed.evidence;
+        }
+        if (pendingFormalContribution) {
+          journeyEvidence.account_continuity =
+            await assertNativeAccountContinuity(
+              miniProgram,
+              pendingFormalContribution.userId,
+              journey.key,
+            );
+        }
       }
     }
     if (platformSimulation) {
@@ -6716,6 +7901,12 @@ async function main() {
     const exceptions = runtimeEvents.filter(
       (entry) => entry.kind === "exception",
     );
+    const knownToolchainExceptions = exceptions.filter(
+      (entry) => knownWechatToolchainExceptionId(entry) !== null,
+    );
+    const unexpectedExceptions = exceptions.filter(
+      (entry) => !knownToolchainExceptions.includes(entry),
+    );
     const consoleErrors = runtimeEvents.filter(
       (entry) =>
         entry.kind === "console" && ["error", "assert"].includes(entry.level),
@@ -6738,6 +7929,15 @@ async function main() {
     );
     result.runtime_observation = {
       exception_count: exceptions.length,
+      known_toolchain_exception_count: knownToolchainExceptions.length,
+      known_toolchain_exceptions: knownToolchainExceptions.map((entry) => ({
+        id: knownWechatToolchainExceptionId(entry),
+        phase: entry.phase,
+        offset_ms: entry.offset_ms,
+        payload_sha256: entry.payload_sha256,
+        payload_length: entry.payload_length,
+      })),
+      unexpected_exception_count: unexpectedExceptions.length,
       expected_fault_console_error_count: expectedFaultConsoleErrors.length,
       known_toolchain_console_error_count: knownToolchainConsoleErrors.length,
       known_toolchain_console_errors: knownToolchainConsoleErrors.map(
@@ -6759,7 +7959,7 @@ async function main() {
       journeysPassed &&
       (acceptanceMode === "success" ||
         result.fault_injection?.status === "passed") &&
-      exceptions.length === 0 &&
+      unexpectedExceptions.length === 0 &&
       unexpectedConsoleErrors.length === 0 &&
       before.sha256 === after.sha256 &&
       result.build.bundle.files_sha256 === bundleAfter.files_sha256
@@ -6768,6 +7968,18 @@ async function main() {
     result.project_session.status = result.status;
   } catch (error) {
     capturedError = error;
+    if (Array.isArray(apiProcess?.starwardDiagnosticOutput)) {
+      const apiDiagnostic = apiProcess.starwardDiagnosticOutput.join("");
+      result.api_failure_diagnostic = {
+        sha256: sha256(apiDiagnostic),
+        safe_excerpt: safeToolDiagnosticTail(apiDiagnostic),
+      };
+    }
+    if (miniProgram) {
+      result.request_diagnostics = await miniProgram
+        .callWxMethod("getStorageSync", requestDiagnosticStorageKey)
+        .catch(() => []);
+    }
     detachRuntimeObservers?.();
     detachRuntimeObservers = undefined;
     result.error = {
@@ -6888,6 +8100,7 @@ async function main() {
       journey_count: result.journeys.length,
       scope: acceptanceScope,
       mode: acceptanceMode,
+      sky_display_mode: acceptanceDisplayMode,
       fault_injection_status: result.fault_injection?.status ?? null,
       cleanup_status: result.cleanup.status,
     })}\n`,
@@ -6899,7 +8112,9 @@ async function main() {
 export {
   inputAndTapMatchingElement,
   isTransientPageObservationError,
+  performTouchSequence,
   validateSkySceneInspection,
+  waitForRequestDiagnosticSubsequence,
   waitForCurrentPagePath,
   waitForCurrentPageReady,
   waitForSelector,

@@ -1,136 +1,69 @@
-import { Button, ScrollView, Text, View } from "@tarojs/components";
-import {
-  FILTER_GROUPS,
-  FILTER_OPTIONS,
-  countAppliedFilters,
-  type FilterOption,
-  type MapSceneData,
-} from "@starward/miniapp-contracts";
+import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
+import { FILTER_OPTIONS, countAppliedFilters, type FilterCategoryId, type MapSceneData } from "@starward/miniapp-contracts";
+import { useEffect, useState } from "react";
 import { useAppStore } from "@/state/app-store";
+import { SemanticIcon } from "./semantic-asset";
 import { SelectedCardStar } from "./selected-card-star";
 import "./filter-sheet.scss";
 
-export function QuickFilterChip({
-  option,
-  selected,
-  disabled = false,
-  onClick,
-}: {
-  option: Pick<FilterOption, "id" | "label">;
-  selected: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Button
-      className={`quick-filter-chip focus-ring${selected ? " quick-filter-chip--selected" : ""}`}
-      data-od-id="spot-finder-quick-filter"
-      aria-pressed={selected}
-      aria-label={`${option.label}，${selected ? "已选择" : "未选择"}`}
-      {...(disabled ? { disabled: true } : {})}
-      onClick={onClick}
-    >
-      <Text>{option.label}</Text>
-      {selected ? <SelectedCardStar /> : null}
-    </Button>
-  );
-}
+const CATEGORIES: ReadonlyArray<{ id: FilterCategoryId; label: string }> = [
+  { id: "OBSERVATION", label: "观测条件" }, { id: "ARRIVAL", label: "到达方式" },
+  { id: "FACILITIES", label: "设施配套" }, { id: "PLACE", label: "场地偏好" },
+  { id: "FRESHNESS", label: "资料更新" },
+];
 
-/** The Finder-owned editor. It is a bounded surface inside SourceLift. */
-export function FilterSheet({
-  capabilities,
-}: {
-  capabilities?: MapSceneData["filterCapabilities"]["byGroup"] | undefined;
+export function FilterSheet({ capabilities, initialCategory = "OBSERVATION" }: {
+  capabilities?: MapSceneData["filterCapabilities"]["byGroup"];
+  initialCategory?: FilterCategoryId;
 }) {
   const draft = useAppStore((state) => state.draftFilters);
   const toggle = useAppStore((state) => state.toggleDraftFilter);
+  const setDrivingRange = useAppStore((state) => state.setDraftDrivingRange);
+  const clear = useAppStore((state) => state.clearDraftFilters);
+  const cancel = useAppStore((state) => state.cancelFilters);
+  const apply = useAppStore((state) => state.applyFilters);
+  const [category, setCategory] = useState<FilterCategoryId>(initialCategory);
+  const [rangeValue, setRangeValue] = useState(() => String(draft.drivingRange.mode === "TIME" ? draft.drivingRange.maxMinutes : draft.drivingRange.maxDistanceKm));
+  const numericRange = Number(rangeValue);
+  const rangeValid = Number.isInteger(numericRange) && (draft.drivingRange.mode === "TIME" ? numericRange >= 30 && numericRange <= 360 : numericRange >= 1 && numericRange <= 1000);
   const count = countAppliedFilters(draft);
-  const limitedCapabilities = FILTER_GROUPS.flatMap((group) => {
-    const capability = capabilities?.[group.key];
-    return capability && capability.state !== "AVAILABLE"
-      ? [{ label: group.title, ...capability }]
-      : [];
-  });
-  const advancedGroups = FILTER_GROUPS.filter((group) =>
-    FILTER_OPTIONS.some(
-      (option) => option.group === group.key && option.tier === "ADVANCED",
-    ),
-  );
-  return (
-    <View
-      className="filter-sheet"
-      data-od-id="spot-finder-filter-overlay"
-      role="region"
-      aria-label="Finder 筛选条件"
-    >
-      <View className="filter-sheet__scroll-viewport">
-        <ScrollView
-          scrollY
-          className="filter-sheet__scroll"
-          data-od-id="spot-finder-filter-scroll"
-          enhanced={true}
-          showScrollbar={false}
-          aria-label="8 项高级筛选条件"
-        >
-          <View className="filter-sheet__content">
-          <View
-            className="filter-sheet__tier"
-            data-od-id="spot-finder-filter-advanced"
-          >
-            <Text className="type-section">进阶筛选</Text>
-            <View className="filter-sheet__grid">
-              {advancedGroups.map((group) => {
-                const option = FILTER_OPTIONS.find(
-                  (item) => item.group === group.key,
-                );
-                if (!option) return null;
-                const selected = draft[group.key].includes(option.id);
-                const capability = capabilities?.[group.key];
-                const unavailable = capability?.state === "UNAVAILABLE";
-                const disabled = unavailable && !selected;
-                return (
-                  <Button
-                    className={`filter-option focus-ring${selected ? " filter-option--selected" : ""}${unavailable ? " filter-option--unavailable" : capability?.state === "PARTIAL" ? " filter-option--partial" : ""}`}
-                    data-od-id="spot-finder-filter-choice"
-                    key={option.id}
-                    {...(disabled ? { disabled: true } : {})}
-                    aria-pressed={selected}
-                    aria-label={`${option.label}，${selected ? "已选择" : "未选择"}${capability?.state === "UNAVAILABLE" ? `，当前不可用：${capability.reason}${selected ? "，可点击移除" : ""}` : capability?.state === "PARTIAL" ? `，部分可用：${capability.reason}` : ""}`}
-                    onClick={() => toggle(option.id)}
-                  >
-                    <View className="filter-option__copy">
-                      <Text>{option.label}</Text>
-                    </View>
-                    {selected ? <SelectedCardStar /> : null}
-                  </Button>
-                );
-              })}
-            </View>
-          </View>
-          <View className="filter-sheet__disclosure">
-            <Text className="type-caption filter-sheet__status">
-              已选 {count} 项；应用后会同时更新想去与其他观星点
-            </Text>
-            {limitedCapabilities.length ? (
-              <>
-                <Text className="type-label">当前能力限制</Text>
-                {limitedCapabilities.map((item) => (
-                  <Text className="type-caption" key={item.label}>
-                    · {item.label}：{item.reason}
-                  </Text>
-                ))}
-              </>
-            ) : (
-              <Text className="type-caption">
-                {capabilities
-                  ? "当前 18 项筛选均已绑定可追溯字段或当前观测条件。"
-                  : "正在确认实时天气、驾车与天象筛选能力；未知值不会当成满足。"}
-              </Text>
-            )}
-          </View>
-          </View>
-        </ScrollView>
+
+  useEffect(() => setRangeValue(String(draft.drivingRange.mode === "TIME" ? draft.drivingRange.maxMinutes : draft.drivingRange.maxDistanceKm)), [draft.drivingRange]);
+  useEffect(() => setCategory(initialCategory), [initialCategory]);
+  const setMode = (mode: "TIME" | "DISTANCE") => setDrivingRange({ ...draft.drivingRange, mode });
+  const commitRange = () => {
+    if (!rangeValid) return;
+    setDrivingRange(draft.drivingRange.mode === "TIME" ? { ...draft.drivingRange, maxMinutes: numericRange } : { ...draft.drivingRange, maxDistanceKm: numericRange });
+  };
+  const currentRange = () => draft.drivingRange.mode === "TIME"
+    ? { ...draft.drivingRange, maxMinutes: numericRange }
+    : { ...draft.drivingRange, maxDistanceKm: numericRange };
+  const selectedInCategory = (id: FilterCategoryId) => FILTER_OPTIONS.some((option) => option.category === id && draft[option.group].includes(option.id));
+  const options = FILTER_OPTIONS.filter((option) => option.category === category);
+
+  return <View className="filter-sheet-layer" data-control="spot-search-filter-overlay" onClick={cancel}>
+    <View className="filter-sheet" role="region" aria-label="搜索筛选条件" onClick={(event) => event.stopPropagation()}>
+      <View className="filter-sheet__handle" />
+      <View className="filter-sheet__heading"><Text>筛选</Text><Button className="filter-sheet__close" ariaLabel="关闭并取消更改" onClick={cancel}><SemanticIcon name="close" /></Button></View>
+      <View className="filter-sheet__layout">
+        <View className="filter-sheet__categories">{CATEGORIES.map((item) => { const hasSelection = selectedInCategory(item.id); return <Button key={item.id} id={`filter-category-${item.id.toLowerCase()}`} className={`filter-sheet__category${category === item.id ? " filter-sheet__category--active" : ""}${hasSelection ? " filter-sheet__category--selected" : ""}`} ariaLabel={`${item.label}${hasSelection ? "，有已选条件" : ""}`} onClick={() => setCategory(item.id)}>{item.label}</Button>; })}</View>
+        <ScrollView scrollY enhanced showScrollbar={false} className="filter-sheet__options"><View className="filter-sheet__grid">
+          {options.map((option) => {
+            const selected = draft[option.group].includes(option.id);
+            const capability = capabilities?.[option.group];
+            const unavailable = capability?.state === "UNAVAILABLE";
+            if (option.id === "distanceDriveTime") return <View key={option.id} className="drive-config" data-enabled={selected}>
+              <Button id="filter-option-distance-drive-time" className={`filter-option${selected ? " filter-option--selected" : ""}`} ariaLabel={`驾车范围${selected ? "，已选择" : "，未选择"}`} onClick={() => toggle(option.id)}><Text>驾车范围</Text>{selected ? <SelectedCardStar /> : null}</Button>
+              <View className="drive-mode" role="group" aria-label="驾车筛选依据"><Button id="drive-mode-time" className={draft.drivingRange.mode === "TIME" ? "drive-mode--active" : ""} ariaLabel={`时间${draft.drivingRange.mode === "TIME" ? "，已选择" : ""}`} onClick={() => setMode("TIME")}>时间</Button><Button id="drive-mode-distance" className={draft.drivingRange.mode === "DISTANCE" ? "drive-mode--active" : ""} ariaLabel={`距离${draft.drivingRange.mode === "DISTANCE" ? "，已选择" : ""}`} onClick={() => setMode("DISTANCE")}>距离</Button></View>
+              <View className="drive-input-row"><Input id="drive-range-value" className="drive-input" type="number" value={rangeValue} aria-label={draft.drivingRange.mode === "TIME" ? "驾车时长分钟数" : "驾车距离公里数"} onInput={(event) => setRangeValue(event.detail.value)} onBlur={commitRange} /><Text>{draft.drivingRange.mode === "TIME" ? "分钟以内" : "公里以内"}</Text></View>
+              {!rangeValid ? <Text className="drive-error">{draft.drivingRange.mode === "TIME" ? "请输入30—360之间的整数" : "请输入1—1000之间的整数"}</Text> : null}
+              {unavailable ? <Text className="filter-option__reason">{capability.reason}</Text> : null}
+            </View>;
+            return <Button key={option.id} className={`filter-option${selected ? " filter-option--selected" : ""}`} ariaLabel={`${option.label}${selected ? "，已选择" : "，未选择"}`} disabled={unavailable && !selected} onClick={() => toggle(option.id)}><Text>{option.label}</Text>{selected ? <SelectedCardStar /> : null}</Button>;
+          })}
+        </View></ScrollView>
       </View>
+      <View className="filter-sheet__footer"><Button onClick={clear}>清空</Button><Button className="filter-sheet__apply" disabled={!rangeValid} onClick={() => apply(currentRange())}>确定<Text>{count}</Text></Button></View>
     </View>
-  );
+  </View>;
 }

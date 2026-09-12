@@ -5,8 +5,29 @@ import {
   calculateMiniappNightSky,
   calculateSolarLongitudeJ2000,
   calculateTargetHorizontalAt,
+  moonPhaseKey,
   type MiniappAstronomyTarget,
 } from "./astronomy-engine-adapter.ts";
+
+test("continuous phase angles map to all eight semantic lunar states", () => {
+  assert.deepEqual(
+    [0, 45, 90, 135, 180, 225, 270, 315].map(moonPhaseKey),
+    [
+      "NEW",
+      "WAXING_CRESCENT",
+      "FIRST_QUARTER",
+      "WAXING_GIBBOUS",
+      "FULL",
+      "WANING_GIBBOUS",
+      "LAST_QUARTER",
+      "WANING_CRESCENT",
+    ],
+  );
+  assert.equal(moonPhaseKey(337.49), "WANING_CRESCENT");
+  assert.equal(moonPhaseKey(337.5), "NEW");
+  assert.equal(moonPhaseKey(-45), "WANING_CRESCENT");
+  assert.throws(() => moonPhaseKey(Number.NaN), /moon_phase_angle_invalid/u);
+});
 
 function angularDistance(left: number, right: number) {
   return Math.abs(((left - right + 540) % 360) - 180);
@@ -148,6 +169,8 @@ test("an exact off-grid or daylight instant is calculated without replacing regu
     1,
   );
   const selected = exact.samples.find((sample) => sample.at === selectedAt)!;
+  assert.ok(selected.moonPhaseAngleDeg >= 0 && selected.moonPhaseAngleDeg < 360);
+  assert.equal(selected.moonPhase, moonPhaseKey(selected.moonPhaseAngleDeg));
   const selectedMoon = calculateTargetHorizontalAt({
     latitude: 23.1291,
     longitude: 113.2644,

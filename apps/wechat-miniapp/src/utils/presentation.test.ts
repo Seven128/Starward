@@ -68,7 +68,7 @@ test("locale ordering cannot corrupt Map and Plan protocol dates", () => {
   });
   for (const [path, name] of [
     ["../pages/map/index.tsx", "localDateForNow"],
-    ["../content/plan/detail/index.tsx", "today"],
+    ["../content/plan/detail/plan-editor-page.tsx", "today"],
   ]) {
     const source = ts.createSourceFile(path!, readFileSync(new URL(path!, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const fn = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === name);
@@ -87,4 +87,45 @@ test("missing or nonnumeric date parts fail instead of submitting an invalid cal
     const serialize = zonedDateWithFormatter(function () { return { formatToParts: () => parts }; });
     assert.throws(() => serialize(new Date(), "Asia/Shanghai"), /calendar_date_parts_unavailable/u);
   }
+});
+
+test("modern supported zones survive an Android runtime without Intl formatToParts", () => {
+  const serialize = zonedDateWithFormatter(function () { return {}; });
+  assert.equal(serialize(new Date("2026-09-11T16:05:00Z"), "Asia/Shanghai"), "2026-09-12");
+  assert.equal(serialize(new Date("2026-09-11T16:05:00Z"), "Asia/Hong_Kong"), "2026-09-12");
+  assert.throws(() => serialize(new Date("1991-08-31T15:30:00Z"), "Asia/Shanghai"), /intl_unavailable/u);
+  assert.throws(() => serialize(new Date(), "Europe/London"), /intl_unavailable/u);
+});
+
+test("Sky route timezone validation uses the observation-date compatibility path", () => {
+  const source = readFileSync(
+    new URL("../features/sky/spot-sky-page.tsx", import.meta.url),
+    "utf8",
+  );
+  const ast = ts.createSourceFile(
+    "spot-sky-page.tsx",
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
+  const fn = ast.statements.find(
+    (node) => ts.isFunctionDeclaration(node) && node.name?.text === "validTimezone",
+  );
+  assert.ok(fn, "Sky route timezone validator must exist");
+  const validate = vm.runInNewContext(
+    ts.transpileModule(`${fn.getText(ast)}\nvalidTimezone;`, {
+      compilerOptions: { target: ts.ScriptTarget.ES2020 },
+    }).outputText,
+    {
+      observationNightForInstant: (_at: string, timezone: string) => {
+        if (timezone !== "Asia/Shanghai") throw new RangeError("unsupported");
+        return "2026-01-01";
+      },
+    },
+    { timeout: 1000 },
+  ) as (timezone: string) => boolean;
+  assert.equal(validate("Asia/Shanghai"), true);
+  assert.equal(validate("Europe/Unsupported"), false);
+  assert.equal(validate(""), false);
 });

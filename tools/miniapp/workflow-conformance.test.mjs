@@ -18,8 +18,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import {
   knownWechatToolchainConsoleErrorId,
+  knownWechatToolchainExceptionId,
   WECHAT_AUTOMATOR_OPAQUE_ERROR_ENVELOPE_V1,
+  WECHAT_TRANSIENT_NOT_FOUND_EXCEPTION_V1,
 } from "./runtime-event-policy.mjs";
+import { inspectCandidate } from "./inspect-production.mjs";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -71,7 +74,7 @@ function mismatchedJsonValue(value) {
   return `${String(value)}\u0000i21-mismatch`;
 }
 
-test("NightChina import corpus is balanced, traceable, rights-safe, and reaches a real formal-spot panel journey", async () => {
+test("retained NightChina import corpus stays balanced, traceable and rights-safe outside current navigation", async () => {
   const fixture = await json(
     "tools",
     "miniapp",
@@ -84,18 +87,14 @@ test("NightChina import corpus is balanced, traceable, rights-safe, and reaches 
     "src",
     "catalog.ts",
   );
-  const [runner, importPage, mapPage] = await Promise.all([
-    text("tools", "miniapp", "run-wechat-devtools-session.mjs"),
-    text(
-      "apps",
-      "wechat-miniapp",
-      "src",
-      "content",
-      "import",
-      "index.tsx",
-    ),
-    text("apps", "wechat-miniapp", "src", "pages", "map", "index.tsx"),
-  ]);
+  const importPage = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "content",
+    "import",
+    "index.tsx",
+  );
   assert.equal(fixture.schemaVersion, "starward-nightchina-import-cases-v1");
   assert.equal(fixture.cases.length, 10);
   assert.equal(
@@ -141,29 +140,7 @@ test("NightChina import corpus is balanced, traceable, rights-safe, and reaches 
       .filter((item) => item !== formalCases[0])
       .every((item) => item.expectedAssociation.kind === "new_place_proposal"),
   );
-  assert.match(runner, /nightchina-import-cases\.json/u);
-  assert.match(runner, /tsImport/u);
-  assert.match(runner, /nightChinaCatalogSpot/u);
-  assert.match(runner, /identitySource/u);
-  assert.match(runner, /acceptanceSource/u);
-  assert.match(runner, /dataDisclosure: \[identitySource, acceptanceSource\]/u);
-  assert.doesNotMatch(runner, /const spotId = `spot:native-acceptance-/u);
-  assert.match(runner, /orderedNightChinaImportCases\.map/u);
-  assert.match(runner, /nightchina-post-import-formal-spot-panel/u);
-  assert.match(runner, /submit-manual-review-boundary/u);
-  assert.match(runner, /expectedSelectedSpotId/u);
-  assert.match(runner, /textIncludes: nightChinaFormalCase\.expectedAssociation\.spotName/u);
-  assert.doesNotMatch(runner, /key: "search-associated-formal-spot"/u);
-  assert.match(runner, /inputAndTapMatch:\s*\{/u);
-  assert.match(runner, /input: "\.spot-search-field__input"/u);
-  assert.match(runner, /candidates: "\.spot-search-suggestion"/u);
-  assert.match(runner, /native_interaction_text_control_missing/u);
-  assert.match(
-    mapPage,
-    /\["dataRevision", spotDetail\.decision\.inputDigest\]/u,
-  );
-  assert.doesNotMatch(runner, /fetch\([^\n]*nightchina\.net/iu);
-  assert.match(importPage, /data-od-id=\{`import-platform-\$\{item\.key\.toLowerCase\(\)\}`\}/u);
+  assert.match(importPage, /id=\{`import-platform-\$\{item\.key\.toLowerCase\(\)\}`\}/u);
   for (const id of [
     "import-source-url",
     "import-rights-confirmation",
@@ -184,9 +161,95 @@ test("NightChina import corpus is balanced, traceable, rights-safe, and reaches 
       const component = id === "import-rights-confirmation" ? "ToggleField" : "FormalSpotField";
       const file = component === "ToggleField" ? "toggle-field.tsx" : "formal-spot-field.tsx";
       assert.match(importPage, new RegExp(`<${component}\\s+id="${id}"`, "u"), id);
-      assert.match(await text("apps", "wechat-miniapp", "src", "components", file), /data-od-id=\{id\}/u);
+      assert.match(await text("apps", "wechat-miniapp", "src", "components", file), /id=\{id\}/u);
     } else assert.match(importPage, new RegExp(`data-od-id="${id}"`, "u"), id);
   }
+});
+
+test("production inspection and native scopes follow the current registered route topology", async () => {
+  const expectedRoutes = [
+    "pages/map/index",
+    "pages/my/index",
+    "pages/auth/index",
+    "spot/search/index",
+    "spot/guides/index",
+    "spot/field/index",
+    "spot/plan/index",
+    "spot/data-source/index",
+    "sky/detail/index",
+    "content/article/detail/index",
+    "content/plan/detail/index",
+    "content/plan/list/index",
+    "content/plan/edit/index",
+    "content/event/list/index",
+    "content/event/detail/index",
+    "content/contribution/index",
+    "content/spot-feedback/index",
+    "content/settings/index",
+  ];
+  const inspection = await inspectCandidate();
+  assert.deepEqual(inspection.routes, expectedRoutes);
+  assert.equal(inspection.checks.native_project, true);
+  assert.equal(inspection.checks.filter_population, true);
+  assert.equal(inspection.checks.route_files, true);
+
+  const runner = await text(
+    "tools",
+    "miniapp",
+    "run-wechat-devtools-session.mjs",
+  );
+  const scopeStart = runner.indexOf("const journeyKeysByScope = {");
+  const scopeEnd = runner.indexOf("const faultJourneysByScope = {", scopeStart);
+  assert.ok(scopeStart >= 0 && scopeEnd > scopeStart);
+  const activeScopes = runner.slice(scopeStart, scopeEnd);
+  assert.doesNotMatch(
+    activeScopes,
+    /profile-links|own-post-import|nightChinaImportJourneyKeys|NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY/u,
+  );
+});
+
+test("compile-mode controls avoid dynamic hyphenated attributes that WXML evaluates as subtraction", async () => {
+  const sourceRoot = at("apps", "wechat-miniapp", "src");
+  const entries = await readdir(sourceRoot, { recursive: true });
+  const offenders = [];
+  for (const entry of entries.filter((value) => value.endsWith(".tsx"))) {
+    const source = await readFile(path.join(sourceRoot, entry), "utf8");
+    for (const openingTag of source.matchAll(/<[A-Z][A-Za-z]*\b(?=[^>]*\bcompileMode\b)[^>]*>/gsu)) {
+      if (/(?:data-[\w-]+|aria-[\w-]+)=\{/u.test(openingTag[0])) {
+        offenders.push(`${entry}: ${openingTag[0].replace(/\s+/gu, " ")}`);
+      }
+    }
+  }
+  assert.deepEqual(offenders, []);
+});
+
+test("dynamic runtime selectors use native ids instead of omitted data attributes", async () => {
+  const sourceRoot = at("apps", "wechat-miniapp", "src");
+  const entries = await readdir(sourceRoot, { recursive: true });
+  const offenders = [];
+  for (const entry of entries.filter((value) => value.endsWith(".tsx"))) {
+    const source = await readFile(path.join(sourceRoot, entry), "utf8");
+    if (/data-od-id=\{/u.test(source)) offenders.push(entry);
+  }
+  assert.deepEqual(offenders, []);
+});
+
+test("Map keeps one presentation back boundary while the adopted new-spot editor owns explicit exits", async () => {
+  const mapPage = await text(
+    "apps",
+    "wechat-miniapp",
+    "src",
+    "pages",
+    "map",
+    "index.tsx",
+  );
+  assert.match(mapPage, /import \{[\s\S]*?PageContainer,[\s\S]*?\} from "@tarojs\/components"/u);
+  assert.equal((mapPage.match(/<PageContainer\b/gu) ?? []).length, 1);
+  assert.match(mapPage, /<PageContainer[\s\S]*?show=\{mapPresentationBackBoundaryVisible\}[\s\S]*?overlay=\{false\}[\s\S]*?closeOnSlideDown=\{false\}[\s\S]*?onAfterLeave=\{handleMapPresentationSystemBack\}/u);
+  assert.doesNotMatch(mapPage, /<PageContainer[\s\S]*?show=\{bottomPresentation === "spot-editor"\}/u);
+  assert.match(mapPage, /<ContributionEditor[\s\S]*?embedded[\s\S]*?onLeaveGuardChange=[\s\S]*?onClose=\{closeSpotEditor\}/u);
+  assert.match(mapPage, /confirmEditorLeave[\s\S]*?editorLeaveGuard\.current/u);
+  assert.match(mapPage, /onClose=\{closeSpotEditor\}/u);
 });
 
 test("native runtime policy recognizes only the exact opaque DevTools envelope", () => {
@@ -209,6 +272,31 @@ test("native runtime policy recognizes only the exact opaque DevTools envelope",
   ]) {
     assert.equal(
       knownWechatToolchainConsoleErrorId({ ...event, [field]: value }),
+      null,
+      field,
+    );
+  }
+});
+
+test("native runtime policy isolates the recoverable WeChat startup not-found exception", () => {
+  const known = WECHAT_TRANSIENT_NOT_FOUND_EXCEPTION_V1;
+  const event = {
+    kind: "exception",
+    phase: known.phase,
+    safe_excerpt: `{\"message\":\"${known.message}\"}`,
+  };
+  assert.equal(knownWechatToolchainExceptionId(event), known.id);
+  assert.equal(
+    knownWechatToolchainExceptionId({ ...event, phase: "setup-startup" }),
+    known.id,
+  );
+  for (const [field, value] of [
+    ["kind", "console"],
+    ["phase", "evidence-journey:my-home"],
+    ["safe_excerpt", '{"message":"application failure"}'],
+  ]) {
+    assert.equal(
+      knownWechatToolchainExceptionId({ ...event, [field]: value }),
       null,
       field,
     );
@@ -367,9 +455,22 @@ test("generated mode icons exactly match their checked manifest", async () => {
     manifest.authorityTarget,
     "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
   );
-  assert.equal(manifest.assets.length, 33);
+  assert.equal(manifest.assets.length, 54);
   const modeColors = { day: "#282b29", night: "#f5f3ec", observation: "#ff6b58" };
-  for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images"]) {
+  for (const name of [
+    "chevron-right",
+    "download",
+    "trash-2",
+    "wifi-off",
+    "images",
+    "account-user",
+    "pencil",
+    "settings",
+    "share",
+    "eye",
+    "bulb",
+    "cloud",
+  ]) {
     const source = await readFile(path.join(iconRoot, `${name}.svg`), "utf8");
     for (const [mode, color] of Object.entries(modeColors)) {
       const assetName = `${name}-${mode}.svg`;
@@ -477,7 +578,17 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "observed_ide_http_ports",
     "waitForWechatIdeClosed",
     "wechat_devtools_ide_did_not_close",
+    "result.project_session.setup_evidence_shutdown",
+    "refreshWechatGeneratedProjectCache",
+    '"--action cleanCompileCache"',
+    '"--action cleanProjectFileListCache"',
+    '"--page pages/auth/index"',
+    'method: "official_wechatide_compile_and_open_neutral_page"',
+    'const bootstrapPage = await waitForCurrentPageReady(',
     "resolveOfficialCli(cliPath)",
+    "assertWechatDevtoolsLoginReady(officialCliInvocation)",
+    '"E:\\\\微信开发者工具\\\\cli.bat"',
+    '"[data-od-id=\'my-settings-action\']",\n    ".my-settings-gear"',
     "cwd: invocation.cwd ?? root",
     "cwd: root",
     "prepareWechatProjectIdentity",
@@ -528,19 +639,20 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "async function queryElements(page, selector)",
     "const nativeSelectorAliases = new Map([",
     `["[data-od-id='default-formal-markers']", "#spot-map"]`,
-    `["[data-od-id='my-profile-links-entry']", ".routine-entry--profile-links"]`,
-    `["[data-od-id='my-import-entry']", ".routine-entry--import"]`,
-    `["[data-od-id='profile-link-editor']", ".profile-links-editor"]`,
     `["[data-od-id='display-mode-switcher']", { selector: ".settings-section", index: 0 }]`,
-    `["[data-od-id='import-platform-other']", { selector: ".import-platform-grid .chip", index: 3 }]`,
-    `["[data-od-id='import-source-note']", { selector: ".import-draft-card input", index: 1 }]`,
-    `["[data-od-id='import-submit-review'] .soft-button", ".import-preview-card .soft-button--primary"]`,
-    'fragment: "正式地点创建仍由后续审核/发布流程决定"',
     'key: "candidate-form-ready"',
-    'key: "field-report-form-ready"',
-    '{ selector: ".contribution-actions .soft-button", minimum: 2 }',
-    'tap: ".contribution-actions .soft-button--primary"',
+    'key: "formal-feedback-form-ready"',
+    'url: "/content/spot-feedback/index"',
+    'selector: ".formal-feedback-tabs button"',
+    'key: "formal-feedback-submit"',
+    '{ selector: ".contribution-document-actions .soft-button", minimum: 2 }',
+    'tap: ".contribution-document-actions .soft-button--primary"',
+    'entryFlow: "map-to-new-spot"',
+    'platform_method_simulation: "chooseLocation"',
     'key: "recovery-history-ready"',
+    'selector: ".contribution-record--draft"',
+    'tap: ".contribution-record--draft .soft-button"',
+    'key: "recovery-draft-resume-ready"',
     'key: "recovery-inline-state-ready"',
     'preparedRouteParams: ["spotId"]',
     'const routeRequiresContextId = route.searchParams.has("contextId")',
@@ -581,18 +693,27 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     '"[data-control~=\'spot-search-result-list\']"',
     '"[data-control~=\'spot-search-result-card\']"',
     '"[data-control~=\'map-spot-information-panel\']"',
-    '".routine-entry-list .routine-entry"',
+    'selector: ".profile-summary"',
+    'selector: ".my-plan-card__header"',
+    'selector: ".routine-entry--contribution"',
+    'selector: ".my-settings-gear"',
+    '["[data-od-id=\'plan-preparation\']", ".plan-preparation"]',
+    '"plan-optional-checklist"',
+    'Math.min(3, checklistRows.length)',
+    'targetClass.includes("settings-display-mode-choice--selected")',
+    'targetAriaLabel.includes("当前已选")',
     "await currentPageUrl(",
     "faultJourney.preparedRouteParams",
     "native_prepared_route_parameter_missing",
     "bff_process_unavailable_then_restarted_matrix",
-    'expectedFragment: "天空计算请求失败"',
+    'expectedFragment: "天空加载失败"',
+    'expectedFragment: "账户资料暂不可用"',
     "const recoveryControl = await waitForRecoveryControl(page, probe);\n  await restartApi();\n  await recoveryControl.control.tap();",
     'control.attribute("aria-label")',
     "const observedLabel = controlText.trim() || ariaLabel.trim();",
     "miniapp_api_exited_before_ready",
     "captureJourneyViewports",
-    'target: "#settings-form"',
+    'target: ".settings-mode-panel"',
     'selector: "[data-od-id=\'sky-orientation-canvas\']"',
     'release_action: "none"',
     'rootClasses: ["map-page", "theme-day", "location-default-region"]',
@@ -606,12 +727,10 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "inspectSkyScene",
     "validateSkySceneInspection",
     "Number(value.starCount) <= 2048",
-    "skySceneReadback: true",
+    "skyJourney.skySceneReadback = true",
     'key: "orientation-real-scene-time-change"',
-    "performHorizontalScrollRelease",
-    "native_interaction_horizontal_scroll_release_missing",
-    "horizontal_scroll_release_selector",
-    'selector: ".sky-orientation-time-ruler__viewport"',
+    'tap: ".sky-orientation-time-ruler__step"',
+    "index: 1",
     "waitForInteractionWatchChange",
     "change_wait_ms",
     "expectFormalContextTimeChange",
@@ -658,7 +777,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     "waitForFormalContextSpotId",
     "native_interaction_formal_context_mismatch",
     'key: "spot-panel-astronomy-section"',
-    'key: "formal-spot-query"',
+    'key: "formal-spot-query-select"',
     'value: nightChinaCatalogSpot.name',
     'tap: ".spot-panel__section-tab"',
     "minimum: 2",
@@ -682,8 +801,11 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'runtimePhase = "evidence-reset-before-control"',
     "expectedFaultConsoleErrors",
     "knownToolchainConsoleErrors",
+    "knownToolchainExceptions",
     "known_toolchain_console_error_count",
+    "known_toolchain_exception_count",
     "knownWechatToolchainConsoleErrorId",
+    "knownWechatToolchainExceptionId",
     "degradation_probe_resets",
     "degradation_probe_session_restarts",
     "degradation-probe-session-restart",
@@ -755,8 +877,13 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   );
   assert.ok(
     runner.indexOf("await attachRuntimeObservers(attemptProgram)") <
-      runner.indexOf("await waitForInitialPage(attemptProgram, 60_000)"),
+      runner.indexOf('const bootstrapNavigation = runWechatIdeSkillTool('),
     "runtime log activation must precede setup and initial-page observation",
+  );
+  assert.ok(
+    runner.indexOf('const bootstrapWindow = runWechatIdeSkillTool(') <
+      runner.indexOf('const bootstrapNavigation = runWechatIdeSkillTool('),
+    "the structured IDE must bind the physical project window before compiling the neutral page",
   );
   assert.ok(
     runner.indexOf(
@@ -938,6 +1065,8 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   assert.match(nativeRunner, /MINIAPP_MEDIA_STORAGE_ROOT: mediaRoot/u);
   assert.match(nativeRunner, /media_store_cleanup: mediaStoreCleanup/u);
   assert.match(nativeRunner, /durable_runtime_cleanup: durableRuntimeCleanup/u);
+  assert.match(nativeRunner, /\[data-control~='map-layer-selector-trigger'\]/u);
+  assert.doesNotMatch(nativeRunner, /map-analysis-focus-layer/u);
   assert.match(app, /miniappQueryClient\.clear\(\)/u);
   assert.match(app, /resetNetwork\(\)/u);
   assert.match(store, /resetAppStoreForAcceptance/u);
@@ -980,12 +1109,11 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   );
   assert.match(
     mapPage,
-    /aria-label="刷新当前区域"[\s\S]*?<SemanticIcon name="refresh" \/>/u,
-    "the refresh action must remain explicit and semantically labelled",
+    /data-control="map-layer-selector-trigger"[\s\S]*?<SemanticIcon name="layers" \/>/u,
+    "the compact map-edge layer action must retain its semantic glyph",
   );
+  assert.doesNotMatch(mapPage, /aria-label="刷新当前区域"/u);
   assert.deepEqual(seed.committedFilters, {
-    TONIGHT_RECOMMENDED: [],
-    BEST_WINDOW_DURATION: [],
     DISTANCE_DRIVE_TIME: [],
     LIGHT_POLLUTION: [],
     LESS_CLOUD: [],
@@ -1002,6 +1130,11 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
     CHARGING: [],
     OPEN_SKY_DIRECTION: [],
     LAST_VERIFIED_AT: [],
+    drivingRange: {
+      mode: "TIME",
+      maxMinutes: 180,
+      maxDistanceKm: 100,
+    },
   });
 });
 
@@ -1099,7 +1232,8 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   const mapStyles = await text("apps", "wechat-miniapp", "src", "pages", "map", "index.scss");
   assert.match(map, /data-control="map-search-entry"/u);
   assert.match(map, /data-control="map-location-control"/u);
-  assert.match(map, /data-control="map-analysis-focus-layer"/u);
+  assert.match(map, /data-control="map-layer-selector-trigger"/u);
+  assert.doesNotMatch(map, /className=\{[\s\S]*map-analysis-trigger/u);
   assert.match(
     mapStyles,
     /\.map-search-anchor\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 24rpx\);/su,
@@ -1107,10 +1241,6 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(
     mapStyles,
     /\.map-top-tools\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 136rpx\);/su,
-  );
-  assert.match(
-    mapStyles,
-    /\.map-analysis-trigger\s*\{[^}]*top: calc\(env\(safe-area-inset-top\) \+ 236rpx\);/su,
   );
   assert.match(
     mapStyles,
@@ -1138,11 +1268,12 @@ test("Settings keeps orientation permission per-use without fabricating a global
     "settings",
     "settings-sections.tsx",
   );
-  const orientationStart = settings.indexOf("方位天空");
-  const orientationEnd = settings.indexOf("精确位置投稿", orientationStart);
+  const orientationStart = settings.indexOf('id="settings-direction"');
+  const orientationEnd = settings.indexOf('id="settings-precise-location"', orientationStart);
   assert.ok(orientationStart >= 0 && orientationEnd > orientationStart);
   const orientationRow = settings.slice(orientationStart, orientationEnd);
-  assert.match(orientationRow, /settings-state-pill">按页使用/u);
+  assert.match(orientationRow, /label="方位天空"/u);
+  assert.match(orientationRow, /value="按页使用"/u);
   assert.doesNotMatch(orientationRow, /navigateTo|pages\/auth|SoftButton/u);
 });
 

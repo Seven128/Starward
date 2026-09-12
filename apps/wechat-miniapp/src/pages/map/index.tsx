@@ -2,7 +2,9 @@ import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
 import { panelSpringFrames } from "./panel-spring";
 import { markerGroups, markerItems } from "./map-markers";
-import { panelReleaseVelocity, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
+import { privateContributionMarkerItems, privateContributionMarkers } from "./private-contribution-markers";
+import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
+import { panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { canApplyContextRestore } from "./context-restore";
 import { FloatingNotificationHost } from "@/components/notification";
@@ -10,16 +12,17 @@ import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import {
   Button,
   Map,
+  PageContainer,
   Text,
   View,
 } from "@tarojs/components";
 import type { BaseEventOrig, MapProps } from "@tarojs/components";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { gcj02ToWgs84 } from "@starward/coordinate-system";
+import { gcj02ToWgs84, wgs84ToGcj02 } from "@starward/coordinate-system";
 import {
   type DisplayMode,
-  type MapLayerKind,
+  type ContributionSubmission,
   type SpotSummary,
 } from "@starward/miniapp-contracts";
 import { NotificationRegion } from "@/components/notification";
@@ -30,13 +33,16 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
+  currentDraftUserId,
   getMapScene,
+  getSkyReport,
   getSpotOverview,
   resolveObservationContext,
   restoreObservationContext,
   updateObservationContext,
 } from "@/services/api-client";
 import { useAppStore, type AnalysisOverlay } from "@/state/app-store";
+import { useContributionHistory } from "@/hooks/use-contribution-history";
 import {
   nearestMapTimeFrameIndex,
   mapTimeFrameAt,
@@ -44,33 +50,57 @@ import {
   projectMapEvaluations,
 } from "./map-time-frame";
 import "./index.scss";
-import { calendarDateInTimezone } from "@/utils/zoned-date";
+import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { requestOneShotLocation } from "@/services/one-shot-location";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { userMapRegionEnd } from "./map-region-event";
 import { MapTimeRuler } from "./time-ruler";
+import { ObservationDateControl } from "@/components/observation-date-control";
+import {
+  civilDateForInstant,
+  instantForCivilDate,
+  observationDateOptions,
+} from "@/components/observation-date";
 import {
   SpotInformationPanel,
   type SpotPanelExtent,
 } from "./spot-panel";
+import { projectSpotPanelResource } from "./spot-panel-resource-projection";
+import { mediaIsRenderable } from "./spot-panel-media";
+import { PendingProposalPanel } from "./pending-proposal-panel";
+import { privateContributionSelectionTransition } from "./private-contribution-transition";
+import {
+  layerSheetOverlay,
+  mapLayerKindForOverlay,
+} from "./map-layer-selection";
+import { cameraCenterForVisibleMapTarget } from "./map-camera";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
   return calendarDateInTimezone(new Date(), timezone);
 }
 
 function currentTimezoneHint(): "Asia/Shanghai" | "Asia/Hong_Kong" {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return timezone === "Asia/Hong_Kong" ? timezone : "Asia/Shanghai";
+  try {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return timezone === "Asia/Hong_Kong" ? timezone : "Asia/Shanghai";
+  } catch {
+    return "Asia/Shanghai";
+  }
 }
 
 function formatContextTime(value: string, timezone: string) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    timeZone: timezone,
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+  try {
+    return new Intl.DateTimeFormat("zh-CN", {
+      timeZone: timezone,
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value));
+  } catch {
+    const date = calendarDateInTimezone(new Date(value), timezone);
+    return `${date.slice(5, 7)}月${date.slice(8, 10)}日 ${clockTimeInTimezone(new Date(value), timezone)}`;
+  }
 }
 
 function isPermissionError(error: unknown) {
@@ -87,13 +117,6 @@ function isOfflineError(error: unknown) {
   return /network|offline|timeout|超时|网络/i.test(value);
 }
 
-function layerForOverlay(overlay: AnalysisOverlay): MapLayerKind {
-  if (overlay === "LIGHT") return "LIGHT_POLLUTION";
-  if (overlay === "TOTAL_CLOUD") return "CLOUD";
-  if (overlay === "OPPORTUNITY") return "OPPORTUNITY";
-  return "NORMAL";
-}
-
 interface NativeLayerPolygon {
   points: readonly { latitude: number; longitude: number }[];
   strokeColor: string;
@@ -102,7 +125,8 @@ interface NativeLayerPolygon {
   zIndex: number;
 }
 
-type BottomPresentation = "none" | "spot-panel" | "layer-sheet";
+type BottomPresentation = "none" | "spot-panel" | "layer-sheet" | "spot-editor";
+const SPOT_EDITOR_TOP_PX = 230;
 
 const PANEL_POSITION: Record<SpotPanelExtent, number> = {
   small: 0,
@@ -131,9 +155,9 @@ function layerProjectionFingerprint(polygons: readonly NativeLayerPolygon[]) {
 
 const overlayLabels: Record<AnalysisOverlay, string> = {
   NONE: "无叠加",
-  LIGHT: "光害",
-  TOTAL_CLOUD: "总云量",
-  OPPORTUNITY: "今晚观测条件",
+  LIGHT: "光污染",
+  TOTAL_CLOUD: "云量",
+  OPPORTUNITY: "云量",
 };
 
 export default function MapPage() {
@@ -148,6 +172,7 @@ export default function MapPage() {
   const preferences = useAppStore((state) => state.preferences);
   const viewport = useAppStore((state) => state.viewport);
   const selectedSpotId = useAppStore((state) => state.selectedSpotId);
+  const spotOpenRequestVersion = useAppStore((state) => state.spotOpenRequestVersion);
   const locationState = useAppStore((state) => state.locationState);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
   const setObservationContext = useAppStore(
@@ -164,6 +189,7 @@ export default function MapPage() {
   const [mapRuntimeError, setMapRuntimeError] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [timeSaving, setTimeSaving] = useState(false);
+  const [layerDatePickerOpen, setLayerDatePickerOpen] = useState(false);
   const timeRequestBusy = useRef(false);
   const [pageVisible, setPageVisible] = useState(true);
   const navigationEpoch = useRef(0);
@@ -174,7 +200,16 @@ export default function MapPage() {
   // sheet are mutually exclusive derived modes, never parallel booleans.
   const [bottomPresentation, setBottomPresentation] =
     useState<BottomPresentation>("none");
+  const bottomPresentationRef = useRef<BottomPresentation>("none");
+  bottomPresentationRef.current = bottomPresentation;
+  const [mapPresentationBackBoundaryVisible, setMapPresentationBackBoundaryVisible] = useState(false);
+  const mapPresentationBackBoundaryRearm = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [spotEditorTarget, setSpotEditorTarget] = useState<{ forceNew: boolean; submissionId?: string }>({ forceNew: true });
+  const editorLeaveGuard = useRef<ContributionLeaveGuard | null>(null);
+  const editorLeaveRequest = useRef<Promise<boolean> | null>(null);
   const [panelExtent, setPanelExtent] = useState<SpotPanelExtent>("medium");
+  const panelExtentRef = useRef<SpotPanelExtent>("medium");
+  panelExtentRef.current = panelExtent;
   const [panelPhase, setPanelPhase] = useState<"idle" | "closing">("idle");
   const [panelDragOffset, setPanelDragOffset] = useState(0);
   const [panelDragging, setPanelDragging] = useState(false);
@@ -188,6 +223,27 @@ export default function MapPage() {
   useEffect(() => () => { springRequest.current += 1; panelSpring.current.cancel(); }, []);
   const [selectedFallback, setSelectedFallback] =
     useState<SpotSummary | null>(null);
+  const currentContributionOwner = currentDraftUserId();
+  const [selectedProposalState, setSelectedProposalState] = useState<{
+    owner: string;
+    submission: ContributionSubmission;
+  } | null>(null);
+  const selectedProposal = selectedProposalState?.owner === currentContributionOwner
+    ? selectedProposalState.submission
+    : null;
+  const setSelectedProposal = useCallback((submission: ContributionSubmission | null) => {
+    const owner = currentDraftUserId();
+    setSelectedProposalState(submission && owner ? { owner, submission } : null);
+  }, []);
+  const selectedProposalRef = useRef<typeof selectedProposal>(null);
+  useEffect(() => { selectedProposalRef.current = selectedProposal; }, [selectedProposal]);
+  useEffect(() => {
+    if (!selectedProposalState || selectedProposal) return;
+    setSelectedProposalState(null);
+    if (bottomPresentation === "spot-panel") setBottomPresentation("none");
+    selectSpot(null);
+    setSelectedFallback(null);
+  }, [currentContributionOwner]);
   const [panelPreviewFrameIndex, setPanelPreviewFrameIndex] = useState(0);
   const [timePreviewing, setTimePreviewing] = useState(false);
   const panelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -206,7 +262,9 @@ export default function MapPage() {
     released: boolean;
   } | null>(null);
   const lastHandledSelectedId = useRef<string | null>(null);
+  const lastHandledSpotOpenVersion = useRef(0);
   const detailRequestGeneration = useRef(0);
+  const privateTransitionGeneration = useRef(0);
   useEffect(() => () => { detailRequestGeneration.current += 1; }, []);
   const extentBeforeLayer = useRef<{
     extent: SpotPanelExtent;
@@ -327,7 +385,7 @@ export default function MapPage() {
           equipment: preferences.equipment,
           capturePreference: preferences.capturePreference,
         },
-        layerForOverlay(analysisOverlay),
+        mapLayerKindForOverlay(analysisOverlay),
         activeContext!.weatherView.cloudLayer,
         signal,
       ),
@@ -340,6 +398,10 @@ export default function MapPage() {
     if (ids) useAppStore.getState().replaceFavoriteIds(ids);
   }, [scene.data?.data.favoriteSpotIds]);
 
+  useEffect(() => {
+    if (analysisOverlay === "OPPORTUNITY") setAnalysisOverlay("TOTAL_CLOUD");
+  }, [analysisOverlay, setAnalysisOverlay]);
+
   useEffect(
     () => () => {
       if (regionTimer.current) clearTimeout(regionTimer.current);
@@ -349,6 +411,80 @@ export default function MapPage() {
   );
 
   const spots = scene.data?.data.spots ?? [];
+  const contributionHistory = useContributionHistory();
+  const privateMarkers = useMemo(
+    () => privateContributionMarkers(contributionHistory.data?.data.submissions ?? []),
+    [contributionHistory.data?.data.submissions],
+  );
+  const [candidatePreview, setCandidatePreview] = useState<ContributionCandidatePreview | null>(null);
+  const candidateSelectionVersion = useRef(0);
+  const candidateCameraGuard = useRef<{
+    exactPoint: { latitude: number; longitude: number };
+    expiresAt: number;
+  } | null>(null);
+  const handleCandidateChange = useCallback((candidate: ContributionCandidatePreview | null) => {
+    setCandidatePreview(candidate);
+    if (!candidate || candidate.selectionVersion <= candidateSelectionVersion.current) return;
+    candidateSelectionVersion.current = candidate.selectionVersion;
+    const point = wgs84ToGcj02({
+      lat: candidate.latitude,
+      lon: candidate.longitude,
+      system: "WGS84",
+    });
+    const zoom = Math.max(useAppStore.getState().viewport.zoom, 14);
+    let center = { latitude: point.lat, longitude: point.lon };
+    try {
+      const windowInfo = Taro.getWindowInfo();
+      center = cameraCenterForVisibleMapTarget(
+        center,
+        windowInfo.windowHeight,
+        SPOT_EDITOR_TOP_PX,
+        zoom,
+      );
+    } catch {
+      // The exact-point center remains a safe fallback when window metrics fail.
+    }
+    candidateCameraGuard.current = {
+      exactPoint: { latitude: point.lat, longitude: point.lon },
+      expiresAt: Date.now() + 1_000,
+    };
+    setViewport({
+      center,
+      zoom,
+    });
+  }, []);
+  const candidateMarker = useMemo(() => {
+    if (!candidatePreview) return null;
+    const point = wgs84ToGcj02({
+      lat: candidatePreview.latitude,
+      lon: candidatePreview.longitude,
+      system: "WGS84",
+    });
+    return {
+      id: 99_999,
+      latitude: point.lat,
+      longitude: point.lon,
+      iconPath: "/assets/icons/draft-marker.png",
+      width: 32,
+      height: 36,
+      anchor: { x: 0.5, y: 1 },
+      alpha: 0.96,
+      label: {
+        content: candidatePreview.name,
+        color: "#30343a",
+        fontSize: preferences.largeText ? 20 : 10,
+        bgColor: "#ffffff",
+        borderColor: "#9aa1a9",
+        borderWidth: 1,
+        borderRadius: 10,
+        padding: 5,
+        anchorX: 0,
+        anchorY: -40,
+        textAlign: "center" as const,
+      },
+      ariaLabel: `${candidatePreview.name}，当前候选位置`,
+    };
+  }, [candidatePreview, preferences.largeText]);
   const selectedFromScene =
     spots.find((spot) => spot.spotId === selectedSpotId) ?? null;
   const selected =
@@ -374,10 +510,11 @@ export default function MapPage() {
     () => markerGroups(spots, viewport.zoom),
     [spots, viewport.zoom],
   );
-  const markerList = useMemo(
-    () => markerItems(groupedMarkers, selectedSpotId, mode, preferences.largeText),
-    [groupedMarkers, mode, selectedSpotId, preferences.largeText],
-  );
+  const markerList = useMemo(() => [
+    ...markerItems(groupedMarkers, selectedSpotId, mode, preferences.largeText),
+    ...privateContributionMarkerItems(privateMarkers, 100_000, mode, preferences.largeText),
+    ...(bottomPresentation === "spot-editor" && candidateMarker ? [candidateMarker] : []),
+  ], [bottomPresentation, candidateMarker, groupedMarkers, mode, preferences.largeText, privateMarkers, selectedSpotId]);
   const projectedPolygonSource = useMemo(
     () =>
       scene.data?.data.layer
@@ -424,7 +561,42 @@ export default function MapPage() {
     enabled: bottomPresentation === "spot-panel" && detailContextReady,
     staleTime: 60_000,
   });
+  const spotSky = useResourceQuery({
+    queryKey: [
+      "spot-sky",
+      selected?.spotId,
+      activeContext?.contextId,
+      activeContext?.contextFingerprint,
+      activeContext?.revision,
+      activeContext?.localDate,
+    ],
+    queryFn: (signal) =>
+      getSkyReport(selected!.spotId, activeContext!.contextId, signal),
+    enabled: bottomPresentation === "spot-panel" && detailContextReady,
+    staleTime: 60_000,
+  });
   const spotDetail = detailContextReady && selected && spotOverview.data && spotOverview.data.data.spot.spotId === selected.spotId ? spotOverview.data.data : null;
+  const spotOverviewProjection = projectSpotPanelResource(detailContextReady, {
+    isPending: spotOverview.isPending,
+    error: spotOverview.error,
+    refreshError: spotOverview.refreshError,
+    dataState: spotOverview.data?.dataState,
+  });
+  const spotSkyProjection = projectSpotPanelResource(detailContextReady, {
+    isPending: spotSky.isPending,
+    error: spotSky.error,
+    refreshError: spotSky.refreshError,
+    dataState: spotSky.data?.dataState,
+  });
+  const spotSkyReport = detailContextReady && selected && activeContext && spotSky.data &&
+    spotSky.data.data.context.spotId === selected.spotId &&
+    spotSky.data.data.context.contextId === activeContext.contextId &&
+    spotSky.data.data.context.contextFingerprint === activeContext.contextFingerprint &&
+    spotSky.data.data.context.contextRevision === activeContext.revision &&
+    spotSky.data.data.context.localDate === activeContext.localDate &&
+    spotSky.data.data.context.timezone === activeContext.timezone
+      ? spotSky.data.data
+      : null;
   const pageState = bootstrapContext.isError
     ? isPermissionError(bootstrapContext.error)
       ? "PERMISSION_DENIED"
@@ -445,20 +617,28 @@ export default function MapPage() {
   const contextTimeLabel = activeContext
     ? formatContextTime(activeContext.selectedAtUtc, activeContext.timezone)
     : bootstrapContext.isError ? "解析失败" : "正在解析";
-  const layerObjectiveValue =
-    analysisOverlay === "LIGHT"
-      ? selected?.lightPollution.state === "ESTIMATED"
-        ? selected.lightPollution.label
-        : "暂无数据"
-      : analysisOverlay === "TOTAL_CLOUD"
-        ? selectedEvaluation?.cloudPercent === null || !selectedEvaluation
-          ? "暂无数据"
-          : `总云 ${selectedEvaluation.cloudPercent}%`
-        : analysisOverlay === "OPPORTUNITY"
-          ? selectedEvaluation?.opportunityScore === null || !selectedEvaluation
-            ? "暂无数据"
-            : selectedEvaluation.opportunityLabel || "暂无数据"
-          : "暂无数据";
+  const mapDateOptions = useMemo(
+    () => observationDateOptions(new Date(), activeContext?.timezone ?? currentTimezoneHint()),
+    [activeContext?.timezone],
+  );
+  const selectedMapCivilDate = activeContext
+    ? civilDateForInstant(activeContext.selectedAtUtc, activeContext.timezone)
+    : localDateForNow();
+  const mapTodayCivilDate = mapDateOptions[7] ?? selectedMapCivilDate;
+  const visibleLayer = layerSheetOverlay(analysisOverlay);
+
+  const leaveSelectedLocationForMapPoint = () => {
+    extentBeforeLayer.current = null;
+    if (bottomPresentationRef.current === "spot-panel") {
+      closeSpotPanel();
+      return;
+    }
+    detailRequestGeneration.current += 1;
+    privateTransitionGeneration.current += 1;
+    selectSpot(null);
+    setSelectedFallback(null);
+    setSelectedProposal(null);
+  };
 
   const resolveMapPoint = async (
     center: { latitude: number; longitude: number },
@@ -495,10 +675,32 @@ export default function MapPage() {
     });
     if (!response || useAppStore.getState().mapResetVersion !== resetVersion) return null;
     setObservationContext(response.data);
+    leaveSelectedLocationForMapPoint();
     return response.data;
   };
 
+  const confirmEditorLeave = async () => {
+    if (bottomPresentation !== "spot-editor") return true;
+    if (editorLeaveRequest.current) return editorLeaveRequest.current;
+    const guard = editorLeaveGuard.current;
+    if (!guard) return false;
+    const request = guard();
+    editorLeaveRequest.current = request;
+    try {
+      return await request;
+    } finally {
+      if (editorLeaveRequest.current === request) editorLeaveRequest.current = null;
+    }
+  };
+
+  const closeSpotEditor = () => {
+    editorLeaveGuard.current = null;
+    setCandidatePreview(null);
+    setBottomPresentation("none");
+  };
+
   const openDetail = async (spot: SpotSummary) => {
+    privateTransitionGeneration.current += 1;
     const requestGeneration = ++detailRequestGeneration.current;
     const isCurrentRequest = () =>
       requestGeneration === detailRequestGeneration.current &&
@@ -511,6 +713,7 @@ export default function MapPage() {
     setPanelExtent("medium");
     setPanelDragOffset(0);
     setSelectedFallback(spot);
+    setSelectedProposal(null);
     selectSpot(spot.spotId);
     setBottomPresentation("spot-panel");
     markerTapAt.current = Date.now();
@@ -551,14 +754,36 @@ export default function MapPage() {
     }
   };
 
-  const onMarkerTap = (
+  const onMarkerTap = async (
     event: BaseEventOrig<MapProps.onMarkerTapEventDetail>,
   ) => {
     const markerId = Number(event.detail.markerId);
+    if (Number.isInteger(markerId) && markerId >= 100_000) {
+      const entry = privateMarkers[markerId - 100_000];
+      if (!entry) return;
+      if (!(await confirmEditorLeave())) return;
+      privateTransitionGeneration.current += 1;
+      editorLeaveGuard.current = null;
+      setCandidatePreview(null);
+      markerTapAt.current = Date.now();
+      selectSpot(null);
+      setSelectedFallback(null);
+      setSelectedProposal(entry.submission);
+      setPanelExtent("medium");
+      setPanelPhase("idle");
+      setBottomPresentation("spot-panel");
+      setViewport({ center: { latitude: entry.latitude, longitude: entry.longitude }, zoom: Math.max(viewport.zoom, 9) });
+      setAnnouncement(`已选择${entry.submission.candidateProfile?.fields.name ?? entry.submission.candidateLocation?.displayName ?? (entry.state === "DRAFT" ? "草稿观星点" : "审核中观星点")}。`);
+      return;
+    }
     const group = Number.isInteger(markerId)
       ? groupedMarkers.find((item) => item.id === markerId)
       : undefined;
     if (!group) return;
+    if (!(await confirmEditorLeave())) return;
+    privateTransitionGeneration.current += 1;
+    editorLeaveGuard.current = null;
+    setCandidatePreview(null);
     markerTapAt.current = Date.now();
     if (group.spots.length > 1) {
       setViewport({
@@ -571,10 +796,11 @@ export default function MapPage() {
       return;
     }
     const spot = group.spots[0]!;
-    void openDetail(spot);
+    await openDetail(spot);
   };
 
   const openLayerSheet = () => {
+    privateTransitionGeneration.current += 1;
     if (panelCloseTimer.current) {
       clearTimeout(panelCloseTimer.current);
       panelCloseTimer.current = null;
@@ -599,6 +825,9 @@ export default function MapPage() {
       bottomPresentation === "spot-panel"
         ? { extent: panelExtent, selectedSpotId }
         : null;
+    if (analysisOverlay === "NONE" || analysisOverlay === "OPPORTUNITY") {
+      setAnalysisOverlay("TOTAL_CLOUD");
+    }
     setBottomPresentation("layer-sheet");
   };
 
@@ -617,6 +846,7 @@ export default function MapPage() {
   };
 
   const closeSpotPanel = () => {
+    privateTransitionGeneration.current += 1;
     if (panelCloseTimer.current) clearTimeout(panelCloseTimer.current);
     setPanelPhase("closing");
     panelCloseTimer.current = setTimeout(() => {
@@ -627,6 +857,7 @@ export default function MapPage() {
       setPanelDragOffset(0);
       selectSpot(null);
       setSelectedFallback(null);
+      setSelectedProposal(null);
     }, 220);
   };
 
@@ -801,6 +1032,15 @@ export default function MapPage() {
   ) => {
     const region = userMapRegionEnd(event);
     if (!region) return;
+    const candidateGuard = candidateCameraGuard.current;
+    if (candidateGuard && Date.now() <= candidateGuard.expiresAt) {
+      const { exactPoint } = candidateGuard;
+      if (
+        Math.abs(region.center.latitude - exactPoint.latitude) < 0.00001 &&
+        Math.abs(region.center.longitude - exactPoint.longitude) < 0.00001
+      ) return;
+    }
+    candidateCameraGuard.current = null;
     if (regionTimer.current) clearTimeout(regionTimer.current);
     const resetVersion = useAppStore.getState().mapResetVersion;
     regionTimer.current = setTimeout(() => {
@@ -950,6 +1190,116 @@ export default function MapPage() {
         body: `${errorMessage(error)}。仍使用已确认的观测时刻。`,
         dismissible: true,
         dedupeKey: "map-time-update-failed",
+      });
+    } finally {
+      timeRequestBusy.current = false;
+      setTimeSaving(false);
+    }
+  };
+
+  const handleMapPresentationSystemBack = () => {
+    setMapPresentationBackBoundaryVisible(false);
+    const presentation = bottomPresentationRef.current;
+    if (presentation === "layer-sheet") {
+      closeLayerSheet();
+      return;
+    }
+    if (presentation !== "spot-panel") return;
+    const previousExtent = previousPanelExtent(panelExtentRef.current);
+    if (previousExtent) {
+      setPanelExtent(previousExtent);
+      if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
+      mapPresentationBackBoundaryRearm.current = setTimeout(() => {
+        mapPresentationBackBoundaryRearm.current = null;
+        if (bottomPresentationRef.current === "spot-panel") {
+          setMapPresentationBackBoundaryVisible(true);
+        }
+      }, 0);
+      return;
+    }
+    closeSpotPanel();
+  };
+
+  useEffect(() => {
+    setMapPresentationBackBoundaryVisible(
+      bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet",
+    );
+  }, [bottomPresentation]);
+
+  useEffect(() => () => {
+    if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedProposal || !contributionHistory.data) return;
+    const transition = privateContributionSelectionTransition(
+      selectedProposal,
+      contributionHistory.data.data.submissions,
+    );
+    if (transition.kind === "PRIVATE") {
+      if (transition.submission !== selectedProposal) setSelectedProposal(transition.submission);
+      return;
+    }
+    if (transition.kind === "NONE") return;
+    const generation = ++privateTransitionGeneration.current;
+    setSelectedProposal(null);
+    if (transition.kind === "REMOVE") {
+      setBottomPresentation("none");
+      setAnnouncement("当前账号已无法查看这个私有观星点。");
+      return;
+    }
+    void (async () => {
+      const currentSpot = spots.find((spot) => spot.spotId === transition.spotId);
+      const refreshed = currentSpot ? undefined : await scene.refetch().catch(() => undefined);
+      if (generation !== privateTransitionGeneration.current) return;
+      const formal = currentSpot ?? refreshed?.data.spots.find((spot) => spot.spotId === transition.spotId);
+      if (!formal) {
+        setBottomPresentation("none");
+        notify({ owner: "map", placement: "inline", tone: "warning", title: "正式观星点正在同步", body: "发布回执已确认，地图资料暂未刷新。请稍后重试。", dismissible: true, dedupeKey: `proposal-published:${transition.spotId}` });
+        return;
+      }
+      await openDetail(formal);
+    })();
+  }, [contributionHistory.data, selectedProposal]);
+
+  const commitMapDate = async (nextDate: string) => {
+    if (!activeContext || timeRequestBusy.current || nextDate === selectedMapCivilDate) return;
+    const requestSelection = useAppStore.getState().selectedSpotId;
+    const requestGeneration = detailRequestGeneration.current;
+    const isCurrentDateRequest = () => {
+      const current = useAppStore.getState();
+      return current.mapResetVersion === mapResetVersion &&
+        current.selectedSpotId === requestSelection &&
+        detailRequestGeneration.current === requestGeneration &&
+        current.observationContext?.contextId === activeContext.contextId &&
+        current.observationContext.revision === activeContext.revision &&
+        current.observationContext.contextFingerprint === activeContext.contextFingerprint;
+    };
+    if (!isCurrentDateRequest()) return;
+    setTimePreviewing(false);
+    timeRequestBusy.current = true;
+    setTimeSaving(true);
+    try {
+      const next = instantForCivilDate(nextDate, activeContext.selectedAtUtc, activeContext.timezone);
+      const response = await updateObservationContext(activeContext, {
+        localDate: next.localDate,
+        selectedAt: next.selectedAt,
+        eventInstanceId: null,
+      });
+      if (!isCurrentDateRequest()) return;
+      setObservationContext(response.data);
+      setPanelPreviewFrameIndex(0);
+      setAnnouncement(`观测日期已更新为${formatContextTime(response.data.selectedAtUtc, response.data.timezone)}。`);
+    } catch (error) {
+      if (!isCurrentDateRequest() || isMiniappRequestCancelled(error)) return;
+      notify({
+        owner: "map",
+        placement: "inline",
+        tone: "error",
+        title: "观测日期未保存",
+        body: `${errorMessage(error)}。仍使用已确认的日期和时间。`,
+        dismissible: true,
+        dedupeKey: "map-date-update-failed",
       });
     } finally {
       timeRequestBusy.current = false;
@@ -1111,10 +1461,45 @@ export default function MapPage() {
     void openMapPage(`/sky/detail/index?${params}`, "云观星", "sky");
   };
 
+  const onProposalCloud = async (submission: import("@starward/miniapp-contracts").ContributionSubmission) => {
+    const location = submission.candidateLocation;
+    if (!location || !submission.preciseLocationConsent) {
+      notify({ owner: "map", placement: "inline", tone: "warning", title: "观测位置不可用", body: "该审核中点位没有可用于本账号云观星的精确坐标。", dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
+      return;
+    }
+    const operation = ++navigationEpoch.current;
+    try {
+      const current = useAppStore.getState().observationContext;
+      const response = await resolveObservationContext({
+        location: { kind: "MAP_POINT", displayName: submission.candidateProfile?.fields.name ?? location.displayName,
+          wgs84: location.wgs84, source: "MAP_VIEWPORT", timezoneHint: currentTimezoneHint() },
+        localDate: current?.localDate ?? localDateForNow(),
+        selectedAt: current?.selectedAtUtc ?? null,
+        eventInstanceId: current?.eventInstanceId ?? null,
+        targetProfile: current?.targetProfile ?? "DAILY",
+      });
+      if (operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId) return;
+      setObservationContext(response.data);
+      const params = [
+        ["spotId", submission.submissionId],
+        ["locationName", submission.candidateProfile?.fields.name ?? location.displayName],
+        ["contextId", response.data.contextId],
+        ["date", response.data.localDate],
+        ["selectedAt", response.data.selectedAtUtc],
+        ["timezone", response.data.timezone],
+        ["dataRevision", `proposal:${submission.revision}`],
+      ].map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join("&");
+      await openMapPage(`/sky/detail/index?${params}`, "云观星", "proposal-sky");
+    } catch (error) {
+      if (operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId || isMiniappRequestCancelled(error)) return;
+      notify({ owner: "map", placement: "inline", tone: "warning", title: "观测信息暂不可用", body: `${errorMessage(error)}。提案和当前地图状态已保留。`, dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
+    }
+  };
+
   const onPanelContribution = () => {
     if (!selected) return;
     void openMapPage(
-      `/content/contribution/index?spotId=${encodeURIComponent(selected.spotId)}&spotName=${encodeURIComponent(selected.name)}`,
+      `/content/spot-feedback/index?spotId=${encodeURIComponent(selected.spotId)}&spotName=${encodeURIComponent(selected.name)}`,
       "反馈页面",
       "contribution",
     );
@@ -1128,18 +1513,26 @@ export default function MapPage() {
       }
       return;
     }
-    if (lastHandledSelectedId.current === selectedSpotId || !selected) return;
+    const explicitOpenRequested =
+      lastHandledSpotOpenVersion.current !== spotOpenRequestVersion;
+    if ((!explicitOpenRequested && lastHandledSelectedId.current === selectedSpotId) || !selected) return;
     lastHandledSelectedId.current = selectedSpotId;
+    lastHandledSpotOpenVersion.current = spotOpenRequestVersion;
     if (
       bottomPresentation !== "spot-panel" ||
       !detailContextReady ||
       activeContext?.location.kind !== "FORMAL_SPOT" ||
       activeContext.location.spotId !== selectedSpotId
     ) {
-      setPanelExtent("medium");
-      setPanelPhase("idle");
-      setBottomPresentation("spot-panel");
-      void openDetail(selected);
+      void (async () => {
+        if (!(await confirmEditorLeave())) return;
+        editorLeaveGuard.current = null;
+        setCandidatePreview(null);
+        setPanelExtent("medium");
+        setPanelPhase("idle");
+        setBottomPresentation("spot-panel");
+        await openDetail(selected);
+      })();
     }
   }, [
     activeContext,
@@ -1148,17 +1541,14 @@ export default function MapPage() {
     pageVisible,
     selected,
     selectedSpotId,
+    spotOpenRequestVersion,
   ]);
 
   const panelHasMedia = Boolean(
     bottomPresentation === "spot-panel" &&
-      selected?.media.some(
-        (media) =>
-          media.state !== "EXPIRED" &&
-          media.state !== "UNAVAILABLE" &&
-          media.state !== "SAMPLE_DATA" &&
-          Boolean(media.license.trim()) &&
-          Boolean(media.thumbnailPath.trim() || media.localPath.trim()),
+      !selectedProposal &&
+      selected?.media.some((media) =>
+        mediaIsRenderable(media, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
       ),
   );
   const panelPosition =
@@ -1176,7 +1566,16 @@ export default function MapPage() {
       : 1;
   const panelChromeHidden =
     bottomPresentation === "spot-panel" && panelChromeOpacity <= 0.08;
-  let panelMediaMaxHeightRpx = 420;
+  const {
+    statusBarHeight: mapStatusBarHeight,
+    capsuleBottom: mapCapsuleBottom,
+    safeTop: mapSafeTop,
+  } = nativeNavigationInsets();
+  // The adopted 390 px composition keeps the large-extent gallery at about
+  // 156 px.  Do not let tall simulator/device viewports turn it into a hero
+  // image and push the spot identity below the first screen.
+  const panelMediaMaxHeightRpx = 300;
+  let embeddedEditorHeightPx: number | undefined;
   try {
     const windowInfo = Taro.getWindowInfo();
     if (
@@ -1185,13 +1584,9 @@ export default function MapPage() {
       Number.isFinite(windowInfo.windowHeight) &&
       windowInfo.windowHeight > 0
     ) {
-      panelMediaMaxHeightRpx = Math.min(
-        420,
-        Math.max(
-          300,
-          (27 * windowInfo.windowHeight * 750) /
-            (100 * windowInfo.windowWidth),
-        ),
+      embeddedEditorHeightPx = Math.max(
+        320,
+        windowInfo.windowHeight - SPOT_EDITOR_TOP_PX,
       );
     }
   } catch {
@@ -1201,9 +1596,16 @@ export default function MapPage() {
     panelMediaMaxHeightRpx * panelMediaReveal,
   );
   const panelHandleBandHeightRpx = Math.round(40 * (1 - panelMediaReveal));
-  const { safeTop: mapSafeTop } = nativeNavigationInsets();
   const mapPresentationStyle = {
-    ...(mapSafeTop === undefined ? {} : { "--map-search-top": `${mapSafeTop}px` }),
+    ...(mapStatusBarHeight === undefined ? {} : {
+      "--map-title-top": `${mapStatusBarHeight + 4}px`,
+    }),
+    ...(mapCapsuleBottom === undefined && mapSafeTop === undefined ? {} : {
+      // safeTop is the conservative maximum of capsule clearance and the
+      // device-width navigation band. Using capsuleBottom alone lets older
+      // simulator metrics place the search field inside the native capsule.
+      "--map-search-top": `${mapSafeTop ?? mapCapsuleBottom! + 4}px`,
+    }),
     "--map-chrome-opacity": String(panelChromeOpacity),
     "--panel-media-reveal": String(panelMediaReveal),
     "--panel-media-height": `${panelMediaHeightRpx}rpx`,
@@ -1223,7 +1625,8 @@ export default function MapPage() {
           ? ` map-page--panel-${panelExtent}`
           : "") +
         (panelMediaReveal > 0 ? " map-page--panel-media-visible" : "") +
-        (panelChromeHidden ? " map-page--panel-chrome-hidden" : "")
+        (panelChromeHidden ? " map-page--panel-chrome-hidden" : "") +
+        (bottomPresentation === "spot-editor" ? " map-page--spot-editor" : "")
       }
       style={mapPresentationStyle}
       data-miniapp-production-root
@@ -1231,13 +1634,25 @@ export default function MapPage() {
       data-delivery-target={__DELIVERY_TARGET__}
     >
       <FloatingNotificationHost />
+      <PageContainer
+        show={mapPresentationBackBoundaryVisible}
+        duration={1}
+        zIndex={1}
+        overlay={false}
+        position="bottom"
+        round={false}
+        closeOnSlideDown={false}
+        customStyle="width:1px;height:1px;min-height:0;overflow:hidden;background:transparent;pointer-events:none;"
+        onAfterLeave={handleMapPresentationSystemBack}
+      >
+        <View aria-hidden="true" />
+      </PageContainer>
       <View className="map-workspace">
         <View
           className="map-stage"
           data-control="map-marker-panel-coordinator"
         >
           <Map
-            compileMode
             id="spot-map"
             className="native-map"
             latitude={viewport.center.latitude}
@@ -1268,9 +1683,12 @@ export default function MapPage() {
             aria-label="正式观星点地图；搜索提供等价可访问结果"
           />
 
+          <View className="map-app-title" aria-hidden="true">
+            <Text>今晚去观星</Text>
+          </View>
+
           <View className="map-search-anchor">
             <Button
-              compileMode
               className="map-search-entry focus-ring"
               data-control="map-search-entry"
               ariaLabel={
@@ -1302,35 +1720,30 @@ export default function MapPage() {
               <SemanticIcon name="location" />
             </Button>
             <Button
-              className="map-tool focus-ring"
-              aria-label="刷新当前区域"
+              className={`map-tool map-tool--layer focus-ring${bottomPresentation === "layer-sheet" ? " map-tool--layer-active" : ""}`}
+              data-control="map-layer-selector-trigger"
+              aria-label={`打开地图图层，当前${overlayLabels[analysisOverlay]}`}
+              aria-pressed={bottomPresentation === "layer-sheet"}
               onClick={(event) => {
                 event.stopPropagation();
-                void refreshMap();
+                openLayerSheet();
               }}
             >
-              <SemanticIcon name="refresh" />
+              <SemanticIcon name="layers" />
+            </Button>
+            <Button
+              className="map-tool map-tool--add focus-ring"
+              data-control="map-add-spot"
+              aria-label="新增观星点"
+              onClick={(event) => {
+                event.stopPropagation();
+                setSpotEditorTarget({ forceNew: true });
+                setBottomPresentation("spot-editor");
+              }}
+            >
+              <Text className="map-tool__plus" aria-hidden>＋</Text>
             </Button>
           </View>
-
-          <Button
-            className={
-              "map-analysis-trigger focus-ring" +
-              (bottomPresentation === "layer-sheet"
-                ? " map-analysis-trigger--active"
-                : "")
-            }
-            data-control="map-analysis-focus-layer"
-            aria-label={`打开地图分析图层，当前${overlayLabels[analysisOverlay]}`}
-            aria-pressed={bottomPresentation === "layer-sheet"}
-            onClick={(event) => {
-              event.stopPropagation();
-              openLayerSheet();
-            }}
-          >
-            <SemanticIcon name="conditions" />
-            <Text>{overlayLabels[analysisOverlay]}</Text>
-          </Button>
 
           <View className="map-feedback-column">
             <NotificationRegion owner="map" placement="inline" />
@@ -1388,7 +1801,46 @@ export default function MapPage() {
             ) : null}
           </View>
 
-          {bottomPresentation === "spot-panel" && selected ? (
+          {bottomPresentation === "spot-editor" ? (
+            <View
+              className="map-spot-editor-layer"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <ContributionEditor
+                embedded
+                {...(embeddedEditorHeightPx === undefined ? {} : { embeddedHeightPx: embeddedEditorHeightPx })}
+                forceNew={spotEditorTarget.forceNew}
+                {...(spotEditorTarget.submissionId
+                  ? { submissionId: spotEditorTarget.submissionId }
+                  : {})}
+                onCandidateChange={handleCandidateChange}
+                onLeaveGuardChange={(guard) => { editorLeaveGuard.current = guard; }}
+                onClose={closeSpotEditor}
+                onSubmitted={(submission) => {
+                  const marker = privateContributionMarkers([submission])[0];
+                  if (marker) {
+                    setViewport({
+                      center: {
+                        latitude: marker.latitude,
+                        longitude: marker.longitude,
+                      },
+                      zoom: Math.max(viewport.zoom, 9),
+                    });
+                  }
+                  selectSpot(null);
+                  setSelectedFallback(null);
+                  setSelectedProposal(submission);
+                  setPanelExtent("medium");
+                  setPanelPhase("idle");
+                  setBottomPresentation("spot-panel");
+                  setCandidatePreview(null);
+                  void contributionHistory.refetch().catch(() => undefined);
+                }}
+              />
+            </View>
+          ) : null}
+
+          {bottomPresentation === "spot-panel" && (selected || selectedProposal) ? (
             <View
               className={`map-panel-layer${panelSettling ? " map-panel-layer--settling" : ""}${panelDragging ? " map-panel-layer--dragging" : ""}`}
               style={
@@ -1399,22 +1851,46 @@ export default function MapPage() {
               }
               onClick={(event) => event.stopPropagation()}
             >
-              <SpotInformationPanel
+              {selectedProposal ? <PendingProposalPanel
+                submission={selectedProposal}
+                variant={selectedProposal.submissionState === "PENDING_REVIEW" || selectedProposal.submissionState === "ACCEPTED" ? "PENDING" : "DRAFT"}
+                extent={panelExtent}
+                phase={panelPhase}
+                onExtent={onPanelExtent}
+                onClose={closeSpotPanel}
+                onCloud={() => void onProposalCloud(selectedProposal)}
+                onEdit={() => {
+                  setSpotEditorTarget({ forceNew: false, submissionId: selectedProposal.submissionId });
+                  setBottomPresentation("spot-editor");
+                }}
+                onHandleTouchStart={onHandleTouchStart}
+                onHandleTouchMove={onHandleTouchMove}
+                onHandleTouchEnd={onHandleTouchEnd}
+                onHandleTouchCancel={onHandleTouchCancel}
+              /> : selected ? <SpotInformationPanel
                 settling={panelSettling}
                 springMotion={panelCssMotion}
                 visible={pageVisible}
                 spot={selected}
                 detail={spotDetail}
-                detailPending={spotOverview.isPending}
-                detailError={spotOverview.error ?? spotOverview.refreshError}
-                detailStale={spotOverview.data?.dataState === "STALE_USABLE"}
+                detailPending={spotOverviewProjection.pending}
+                detailError={spotOverviewProjection.error}
+                detailStale={spotOverviewProjection.stale}
                 extent={panelExtent}
                 phase={panelPhase}
                 favorite={favoriteIds.includes(selected.spotId)}
                 context={activeContext}
-                evaluation={selectedEvaluation}
+                astronomyAt={projectedAt}
+                skyReport={spotSkyReport}
+                skyPending={spotSkyProjection.pending}
+                skyError={spotSkyProjection.error}
+                skyStale={spotSkyProjection.stale}
                 timeFrames={timeFrames}
                 timeSaving={timeSaving}
+                dateOptions={mapDateOptions}
+                selectedDate={selectedMapCivilDate}
+                todayDate={mapTodayCivilDate}
+                onDateCommit={(date) => void commitMapDate(date)}
                 onTimePreview={(index) => {
                   setPanelPreviewFrameIndex(index);
                   setTimePreviewing(true);
@@ -1428,13 +1904,14 @@ export default function MapPage() {
                 onExtent={onPanelExtent}
                 onClose={closeSpotPanel}
                 onRecover={() => void spotOverview.refetch()}
+                onSkyRecover={() => void spotSky.refetch()}
                 onFavorite={() => void toggleFavorite(selected.spotId)}
                 onShare={() => void onPanelShare()}
                 onCloud={onPanelCloud}
                 onNavigate={() => void onPanelNavigate()}
                 onContribution={onPanelContribution}
                 onEvidence={onPanelEvidence}
-              />
+              /> : null}
             </View>
           ) : null}
 
@@ -1444,61 +1921,52 @@ export default function MapPage() {
               onClick={(event) => event.stopPropagation()}
             >
               <View
-                className="map-layer-sheet"
+                className={`map-layer-sheet map-layer-sheet--${visibleLayer === "LIGHT" ? "light" : "cloud"}`}
                 data-control="map-layer-selector"
                 role="dialog"
-                aria-label="地图分析图层"
+                aria-label="地图图层"
               >
-                <View className="map-layer-sheet__summary">
-                  <Text className="type-label">地图分析</Text>
-                  <Text className="type-caption">
-                    {contextTimeLabel} · {overlayLabels[analysisOverlay]} · {layerObjectiveValue}
+                <View className="map-layer-sheet__content">
+                {visibleLayer === "TOTAL_CLOUD" ? (
+                  <>
+                    <ObservationDateControl
+                      dates={mapDateOptions}
+                      selectedDate={selectedMapCivilDate}
+                      today={mapTodayCivilDate}
+                      open={layerDatePickerOpen}
+                      busy={!activeContext || timeSaving}
+                      onOpenChange={(open) => {
+                        if (open) setTimePreviewing(false);
+                        setLayerDatePickerOpen(open);
+                      }}
+                      onSelect={(date) => {
+                        setLayerDatePickerOpen(false);
+                        setTimePreviewing(false);
+                        void commitMapDate(date);
+                      }}
+                    />
+                    <MapTimeRuler
+                      frames={timeFrames}
+                      selectedAt={activeContext?.selectedAtUtc ?? ""}
+                      timezone={activeContext?.timezone ?? "Asia/Shanghai"}
+                      disabled={!activeContext || !timeFrames.length || timeSaving}
+                      onPreview={(index) => {
+                        setPanelPreviewFrameIndex(index);
+                        setTimePreviewing(true);
+                      }}
+                      onCommit={(index) => void commitMapTime(index)}
+                      onCancel={() => setTimePreviewing(false)}
+                    />
+                    <Text className="map-layer-sheet__source-note type-caption">
+                      云量预报 · 仅覆盖有效数据区域
+                    </Text>
+                  </>
+                ) : (
+                  <Text className="map-layer-sheet__source-note type-caption">
+                    年度夜光估算 · 不随观测时间变化
                   </Text>
-                </View>
-                <View
-                  className="map-layer-sheet__choices"
-                  role="radiogroup"
-                  aria-label="分析图层选择"
-                >
-                  {(["LIGHT", "TOTAL_CLOUD", "OPPORTUNITY"] as const).map(
-                    (overlay) => (
-                      <Button
-                        key={overlay}
-                        className={
-                          "map-layer-sheet__choice" +
-                          (analysisOverlay === overlay
-                            ? " map-layer-sheet__choice--active"
-                            : "")
-                        }
-                        disabled={
-                          !activeContext || scene.isPending || timeSaving
-                        }
-                        aria-checked={analysisOverlay === overlay}
-                        aria-pressed={analysisOverlay === overlay}
-                        aria-label={
-                          overlayLabels[overlay] +
-                          (analysisOverlay === overlay ? "，已选择" : "")
-                        }
-                        onClick={() => {
-                          setAnalysisOverlay(overlay);
-                          setAnnouncement(
-                            `已选择${overlayLabels[overlay]}。`,
-                          );
-                        }}
-                      >
-                        <Text>{overlayLabels[overlay]}</Text>
-                        <Text className="type-caption">
-                          {overlay === "LIGHT"
-                            ? "版本化夜光估算"
-                            : overlay === "TOTAL_CLOUD"
-                              ? "当前观测时刻"
-                              : "当前观测窗口"}
-                        </Text>
-                      </Button>
-                    ),
-                  )}
-                </View>
-                {analysisOverlay !== "NONE" && scene.data?.data.layer?.legend.length ? (
+                )}
+                {scene.data?.data.layer?.legend.length ? (
                   <View className="map-layer-sheet__legend" aria-label="当前图层图例">
                     {scene.data.data.layer.legend.slice(0, 4).map((item) => (
                       <View className="map-layer-sheet__legend-item" key={`${item.label}-${item.range}`}>
@@ -1507,25 +1975,43 @@ export default function MapPage() {
                           style={{ backgroundColor: item.color }}
                           aria-hidden="true"
                         />
-                        <Text className="type-caption">{item.label} · {item.range}</Text>
+                        <Text className="type-caption">
+                          {visibleLayer === "LIGHT"
+                            ? item.label
+                            : `${item.label} · ${item.range}`}
+                        </Text>
                       </View>
                     ))}
                   </View>
                 ) : null}
-                <MapTimeRuler
-                  frames={timeFrames}
-                  selectedAt={activeContext?.selectedAtUtc ?? ""}
-                  timezone={activeContext?.timezone ?? "Asia/Shanghai"}
-                  disabled={
-                    !activeContext || !timeFrames.length || timeSaving
-                  }
-                  onPreview={(index) => {
-                    setPanelPreviewFrameIndex(index);
-                    setTimePreviewing(true);
-                  }}
-                  onCommit={(index) => void commitMapTime(index)}
-                  onCancel={() => setTimePreviewing(false)}
-                />
+                </View>
+                <View className="map-layer-sheet__choices" role="radiogroup" aria-label="地图图层选择">
+                  {(["LIGHT", "TOTAL_CLOUD"] as const).map((overlay) => {
+                    const selectedLayer = visibleLayer === overlay;
+                    return (
+                      <Button
+                        key={overlay}
+                        className={`map-layer-sheet__choice${selectedLayer ? " map-layer-sheet__choice--active" : ""}`}
+                        disabled={!activeContext || scene.isPending || timeSaving}
+                        aria-label={`${overlayLabels[overlay]}${selectedLayer ? "，已选择" : ""}`}
+                        onClick={() => {
+                          if (overlay === "LIGHT") setLayerDatePickerOpen(false);
+                          setAnalysisOverlay(overlay);
+                          setAnnouncement(`已选择${overlayLabels[overlay]}。`);
+                        }}
+                      >
+                        <SemanticIcon name={overlay === "LIGHT" ? "bulb" : "cloud"} />
+                        <View className="map-layer-sheet__choice-copy">
+                          <Text className="map-layer-sheet__choice-title">{overlayLabels[overlay]}</Text>
+                          <Text className="type-caption">
+                            {overlay === "LIGHT" ? "夜光年度估算" : "选定时刻气象"}
+                          </Text>
+                        </View>
+                        {selectedLayer ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : null}
+                      </Button>
+                    );
+                  })}
+                </View>
               </View>
             </View>
           ) : null}

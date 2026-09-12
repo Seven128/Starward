@@ -11,6 +11,7 @@ import { MiniappController } from "./controller.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
+import { calendarDateInTimezone, clockTimeInTimezone } from "../../../apps/wechat-miniapp/src/utils/zoned-date.ts";
 
 test("HTTP context and map preserve an off-cadence selected instant", async () => {
   const service = createTestMiniappService();
@@ -45,6 +46,7 @@ test("HTTP context and map preserve an off-cadence selected instant", async () =
       React: { createElement: (type: string, props: object, ...children: unknown[]) => ({ type, props, children: children.flat() }) },
       useState: (value: unknown) => [value, () => {}], useRef: (value: unknown) => ({ current: value }),
       useEffect() {}, useDidHide() {}, MINIAPP_DESIGN: { geometry: { "target-min": 44 } },
+      calendarDateInTimezone, clockTimeInTimezone,
     });
     const committed: number[] = [];
     const tree = component({ frames: scene.timeFrames, selectedAt: scene.context.selectedAtUtc, timezone: scene.context.timezone, disabled: false, onPreview() {}, onCommit: (index: number) => committed.push(index), onCancel() {} });

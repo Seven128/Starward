@@ -22,6 +22,13 @@ import {
   safeParam,
 } from "./contribution-model";
 import {
+  emptySpotDocumentValues,
+  spotDocumentProposal,
+  spotDocumentValuesFromProposal,
+  type SpotDocumentValues,
+} from "../spot-document";
+import type { ContributionFormalFieldKey } from "@starward/miniapp-contracts";
+import {
   contributionNeedsRecovery,
   countPendingContributions,
   currentContributionMedia,
@@ -37,10 +44,12 @@ export type ContributionHistoryFilter =
   | "PENDING"
   | "CHANGES_REQUESTED";
 
-export function useContributionForm() {
+export function useContributionForm(overrides: { forceNew?: boolean; requestedSubmissionId?: string; disableLocalPersistence?: boolean } = {}) {
   const router = useRouter();
   const initialSpotId = safeParam(router.params.spotId);
   const initialSpotName = safeParam(router.params.spotName);
+  const requestedSubmissionId = overrides.requestedSubmissionId ?? safeParam(router.params.submissionId);
+  const forceNew = overrides.forceNew ?? router.params.new === "1";
   const [boundSpotId, setBoundSpotId] = useState(initialSpotId);
   const [boundSpotName, setBoundSpotName] = useState(initialSpotName);
   const hasFormalSpot = boundSpotId.startsWith("spot:");
@@ -74,8 +83,13 @@ export function useContributionForm() {
   const [preciseLocationConsent, setPreciseLocationConsent] = useState(false);
   const [candidateName, setCandidateName] = useState("");
   const [candidateRegion, setCandidateRegion] = useState("");
+  const [candidatePlaceLabel, setCandidatePlaceLabel] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [candidateSelectionVersion, setCandidateSelectionVersion] = useState(0);
+  const [candidateFields, setCandidateFields] = useState<SpotDocumentValues>(emptySpotDocumentValues);
+  const [candidateMedia, setCandidateMedia] = useState<NonNullable<ContributionSubmission["candidateProfile"]>["media"]>({});
+  const [candidateMediaPreviews, setCandidateMediaPreviews] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [commandBusy, setCommandBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -108,15 +122,18 @@ export function useContributionForm() {
         hasFormalSpot,
         boundSpotId,
         kind,
+        requestedSubmissionId,
+        forceNew,
       ),
-    [boundSpotId, hasFormalSpot, kind, submissions],
+    [boundSpotId, forceNew, hasFormalSpot, kind, requestedSubmissionId, submissions],
   );
 
   const localDraft = useLocalContributionDraft({
     schema: 1, baseSubmissionId: draft?.submissionId ?? null, baseRevision: draft?.revision ?? null,
     spotId: boundSpotId, spotName: boundSpotName, kind, topics, date, time, detail,
     candidateName, candidateRegion, latitude, longitude, rightsConfirmed, preciseLocationConsent,
-  }, initialSpotId, Boolean(pendingSubmission) || Boolean(draft && contributionSubmissionState(draft) !== "DRAFT"));
+    candidateProfile: spotDocumentProposal(candidateFields, candidateMedia),
+  }, initialSpotId, Boolean(pendingSubmission) || Boolean(draft && !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(draft))), !overrides.disableLocalPersistence);
 
   const announce = (
     tone: "error" | "warning" | "info" | "success",
@@ -142,38 +159,7 @@ export function useContributionForm() {
       announce("error", "缺少观星点", "请搜索并选择正式观星点，或改选新地点。 ");
       return null;
     }
-    if (kind === "NEW_SPOT_PROPOSAL") {
-      if (!candidateName.trim()) {
-        setValidationField("contribution-candidate-name");
-        announce("error", "资料未保存", "请填写地点名称；本页输入保持不变。 ");
-        return null;
-      }
-      if (!candidateRegion.trim()) {
-        setValidationField("contribution-candidate-region");
-        announce("error", "资料未保存", "请填写地区；本页输入保持不变。 ");
-        return null;
-      }
-      const parsedLatitude = parseCoordinateInput(latitude);
-      const parsedLongitude = parseCoordinateInput(longitude);
-      const latitudeInvalid =
-        !Number.isFinite(parsedLatitude) || Math.abs(parsedLatitude) > 90;
-      const longitudeInvalid =
-        !Number.isFinite(parsedLongitude) || Math.abs(parsedLongitude) > 180;
-      if (
-        latitudeInvalid ||
-        longitudeInvalid ||
-        (parsedLatitude === 0 && parsedLongitude === 0)
-      ) {
-        setValidationField(
-          latitudeInvalid
-            ? "contribution-candidate-latitude"
-            : "contribution-candidate-longitude",
-        );
-        announce("error", "资料未保存", "请填写有效的纬度和经度；不会后台持续定位。 ");
-        return null;
-      }
-    }
-    if (kind !== "CORRECTION" && !parseObservationInput(date, time)) {
+    if (kind !== "CORRECTION" && kind !== "NEW_SPOT_PROPOSAL" && !parseObservationInput(date, time)) {
       setValidationField("contribution-observed-at");
       announce("error", "资料未保存", "请填写有效的现场日期和时间（北京时间）；本页输入保持不变。");
       return null;
@@ -193,6 +179,7 @@ export function useContributionForm() {
         detail,
         rightsConfirmed,
         preciseLocationConsent,
+        candidateProfile: spotDocumentProposal(candidateFields, candidateMedia),
       },
       announce,
     );
@@ -214,6 +201,7 @@ export function useContributionForm() {
       latitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.latitude) : latitude,
       longitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.longitude) : longitude,
       rightsConfirmed: submission.rightsConfirmed, preciseLocationConsent: submission.preciseLocationConsent,
+      ...(submission.candidateProfile ? { candidateProfile: submission.candidateProfile } : {}),
     });
     setDraft(submission);
     setPendingSubmission(null);
@@ -225,6 +213,14 @@ export function useContributionForm() {
     setDetail(submission.detail);
     setRightsConfirmed(submission.rightsConfirmed);
     setPreciseLocationConsent(submission.preciseLocationConsent);
+    const nextCandidateFields = spotDocumentValuesFromProposal(submission.candidateProfile);
+    if (!nextCandidateFields.name && submission.candidateLocation?.displayName)
+      nextCandidateFields.name = submission.candidateLocation.displayName;
+    if (!nextCandidateFields.address && submission.candidateLocation?.region)
+      nextCandidateFields.address = submission.candidateLocation.region;
+    setCandidateFields(nextCandidateFields);
+    setCandidateMedia(submission.candidateProfile?.media ?? {});
+    setCandidateMediaPreviews({});
     if (submission.observedAt) {
       const observed = new Date(submission.observedAt);
       setDate(calendarDateInTimezone(observed, "Asia/Shanghai"));
@@ -233,11 +229,20 @@ export function useContributionForm() {
     if (submission.candidateLocation) {
       setCandidateName(submission.candidateLocation.displayName);
       setCandidateRegion(submission.candidateLocation.region);
+      setCandidatePlaceLabel(submission.candidateLocation.displayName);
       setLatitude(String(submission.candidateLocation.wgs84.latitude));
       setLongitude(String(submission.candidateLocation.wgs84.longitude));
     }
     setPhase(nextPhase);
   };
+
+  const appliedRequestedDraft = useRef("");
+  useEffect(() => {
+    if (!requestedSubmissionId || !matchingDraft || draft || localDraft.recovery) return;
+    if (appliedRequestedDraft.current === matchingDraft.submissionId) return;
+    appliedRequestedDraft.current = matchingDraft.submissionId;
+    applyDraft(matchingDraft);
+  }, [draft, localDraft.recovery, matchingDraft, requestedSubmissionId]);
 
   const restoreLocalDraft = async () => {
     const local = localDraft.recovery;
@@ -249,7 +254,7 @@ export function useContributionForm() {
       if (local.baseSubmissionId) {
         const response = await getContributions(undefined, owner);
         server = response.data.submissions.find((item) => item.submissionId === local.baseSubmissionId) ?? null;
-        if (!server || contributionSubmissionState(server) !== "DRAFT") {
+        if (!server || !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(server))) {
           announce("warning", "请先核对投稿状态", "对应草稿已提交或不再可编辑。本机输入仍保留，请先查看近期反馈。");
           return;
         }
@@ -260,8 +265,14 @@ export function useContributionForm() {
       setBoundSpotId(local.spotId); setBoundSpotName(local.spotName);
       setKind(local.kind); setTopics(local.topics); setDate(local.date); setTime(local.time);
       setDetail(local.detail); setCandidateName(local.candidateName); setCandidateRegion(local.candidateRegion);
+      setCandidatePlaceLabel(local.candidateName);
       setLatitude(local.latitude); setLongitude(local.longitude);
       setRightsConfirmed(local.rightsConfirmed); setPreciseLocationConsent(local.preciseLocationConsent);
+      const restoredCandidateFields = spotDocumentValuesFromProposal(local.candidateProfile);
+      if (!restoredCandidateFields.name) restoredCandidateFields.name = local.candidateName;
+      if (!restoredCandidateFields.address) restoredCandidateFields.address = local.candidateRegion;
+      setCandidateFields(restoredCandidateFields);
+      setCandidateMedia(local.candidateProfile?.media ?? {});
       setPhase("FORM"); localDraft.accept();
       announce("info", "已恢复本机输入", "尚未自动保存到服务端或提交审核，请核对后继续。");
     } catch {
@@ -316,10 +327,13 @@ export function useContributionForm() {
     submissionRecovery,
     restorePendingSubmission,
     localRecovery: localDraft.recovery,
+    hasUnsavedChanges: localDraft.hasUnsavedChanges,
     localStorageError: localDraft.storageError,
     restoreLocalDraft,
     discardLocalDraft: localDraft.clear,
     inheritedSpot: initialSpotId.startsWith("spot:"),
+    forceNew,
+    requestedSubmissionId,
     routeSpotId: boundSpotId,
     routeSpotName: boundSpotName,
     setRouteSpotId: setBoundSpotId,
@@ -346,8 +360,13 @@ export function useContributionForm() {
     preciseLocationConsent,
     candidateName,
     candidateRegion,
+    candidatePlaceLabel,
     latitude,
     longitude,
+    candidateSelectionVersion,
+    candidateFields,
+    candidateMedia,
+    candidateMediaPreviews,
     saving,
     commandBusy: commandBusy || Boolean(pendingSubmission) || Boolean(localDraft.recovery),
     submissionCommandBusy: commandBusy,
@@ -379,6 +398,7 @@ export function useContributionForm() {
     applyMediaDraft: (submission: ContributionSubmission) => {
       localDraft.advanceSavedRevision(submission.submissionId, submission.revision);
       setDraft(submission);
+      setCandidateMedia(submission.candidateProfile?.media ?? {});
     },
     selectKind,
     toggleTopic,
@@ -387,10 +407,49 @@ export function useContributionForm() {
     setDetail,
     setRightsConfirmed,
     setPreciseLocationConsent,
-    setCandidateName,
-    setCandidateRegion,
+    setCandidateName: (value: string) => {
+      setCandidateName(value);
+      setCandidateFields((current) => ({ ...current, name: value }));
+    },
+    setCandidateRegion: (value: string) => {
+      setCandidateRegion(value);
+      setCandidateFields((current) => ({ ...current, address: value }));
+    },
+    setCandidateField: (key: ContributionFormalFieldKey, value: string) => {
+      setCandidateFields((current) => ({ ...current, [key]: value }));
+      if (key === "name") setCandidateName(value);
+      if (key === "address") setCandidateRegion(value);
+    },
+    setCandidateMediaPreview: (uploadId: string, path: string) =>
+      setCandidateMediaPreviews((current) => ({ ...current, [uploadId]: path })),
+    removeCandidateMediaPreview: (uploadId: string) =>
+      setCandidateMediaPreviews((current) => {
+        const next = { ...current };
+        delete next[uploadId];
+        return next;
+      }),
     setLatitude,
     setLongitude,
+    selectCandidateLocation: (selection: {
+      name: string;
+      address: string;
+      latitude: number;
+      longitude: number;
+    }) => {
+      const suggestedName = selection.name.trim();
+      const suggestedAddress = selection.address.trim() || suggestedName;
+      setCandidatePlaceLabel(suggestedName || suggestedAddress);
+      if (suggestedName) setCandidateName((current) => current.trim() ? current : suggestedName);
+      if (suggestedAddress) setCandidateRegion(suggestedAddress);
+      setCandidateFields((current) => ({
+        ...current,
+        name: current.name.trim() ? current.name : suggestedName,
+        address: suggestedAddress || current.address,
+      }));
+      setLatitude(selection.latitude.toFixed(6));
+      setLongitude(selection.longitude.toFixed(6));
+      setCandidateSelectionVersion((version) => version + 1);
+    },
     setSaving,
     setUploading,
     setSubmitting,

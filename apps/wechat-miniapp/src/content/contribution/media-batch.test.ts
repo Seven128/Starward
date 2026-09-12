@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { MEDIA_RIGHTS_MODAL } from "./media-rights-modal";
 
 test("batch validation precedes draft writes and valid files use consecutive receipts", async () => {
   const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -30,4 +31,13 @@ test("batch validation precedes draft writes and valid files use consecutive rec
   assert.deepEqual(await run([10], 0, true), ["error"]);
   assert.deepEqual(await run([]), []);
   assert.deepEqual(await run([100, 200, 300]), ["save", "upload:1", "upload:3", "upload:5", "read", "success"]);
+});
+
+test("categorized media consent keeps native modal actions within WeChat's four-character limit", async () => {
+  assert.ok([...MEDIA_RIGHTS_MODAL.confirmText].length <= 4);
+  assert.ok([...MEDIA_RIGHTS_MODAL.cancelText].length <= 4);
+  for (const relativePath of ["./use-contribution-commands.ts", "../spot-feedback/index.tsx"]) {
+    const source = readFileSync(new URL(relativePath, import.meta.url), "utf8");
+    assert.match(source, /Taro\.showModal\(MEDIA_RIGHTS_MODAL\)/u);
+  }
 });

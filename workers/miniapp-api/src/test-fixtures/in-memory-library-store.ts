@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   DEFAULT_USER_PREFERENCES,
+  type AccountProfileRecord,
   type ImportDraft,
   type ObservationPlan,
   type PlanId,
@@ -16,6 +17,7 @@ export class InMemoryLibraryStore {
   #plans = new Map<UserId, Map<string, ObservationPlan>>();
   #links = new Map<UserId, Map<string, ProfileLink>>();
   #imports = new Map<UserId, Map<string, ImportDraft>>();
+  #profiles = new Map<UserId, AccountProfileRecord>();
   #preferences = new Map<UserId, UserPreferencesRecord>();
   #idempotency = new Map<string, unknown>();
 
@@ -25,6 +27,7 @@ export class InMemoryLibraryStore {
     this.#links.clear();
     this.#imports.clear();
     this.#preferences.clear();
+    this.#profiles.clear();
     this.#idempotency.clear();
   }
 
@@ -34,6 +37,7 @@ export class InMemoryLibraryStore {
     this.#links.delete(userId);
     this.#imports.delete(userId);
     this.#preferences.delete(userId);
+    this.#profiles.delete(userId);
     for (const key of this.#idempotency.keys())
       if (key.startsWith(`${userId}|`)) this.#idempotency.delete(key);
   }
@@ -41,6 +45,7 @@ export class InMemoryLibraryStore {
   ensureUser(userId: UserId) {
     if (this.#favorites.has(userId)) return;
     this.#favorites.set(userId, new Set());
+    this.#profiles.set(userId, { nickname: null, avatar: null, revision: 1, updatedAt: new Date().toISOString() });
     this.#plans.set(userId, new Map());
     this.#links.set(userId, new Map());
     this.#imports.set(userId, new Map());
@@ -49,6 +54,42 @@ export class InMemoryLibraryStore {
       revision: 1,
       updatedAt: new Date().toISOString(),
     });
+  }
+
+  getAccountProfile(userId: UserId) {
+    this.ensureUser(userId);
+    return structuredClone(this.#profiles.get(userId)!);
+  }
+
+  saveAccountNickname(userId: UserId, nickname: string, expectedRevision: number, idempotencyKey: string) {
+    this.ensureUser(userId);
+    const replay = this.#replay<AccountProfileRecord>(userId, idempotencyKey);
+    if (replay) {
+      if (replay.nickname !== nickname || replay.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
+      return structuredClone(replay);
+    }
+    const current = this.#profiles.get(userId)!;
+    if (current.revision !== expectedRevision) throw new Error("account_profile_revision_conflict");
+    const saved = { nickname, avatar: current.avatar, revision: current.revision + 1, updatedAt: new Date().toISOString() };
+    this.#profiles.set(userId, saved);
+    this.#remember(userId, idempotencyKey, saved);
+    return structuredClone(saved);
+  }
+
+  saveAccountAvatar(userId: UserId, avatar: NonNullable<AccountProfileRecord["avatar"]>, expectedRevision: number, idempotencyKey: string) {
+    this.ensureUser(userId);
+    const replay = this.#replay<{ profile: AccountProfileRecord; previousObjectKey: string | null }>(userId, idempotencyKey);
+    if (replay) {
+      if (replay.profile.avatar?.version !== avatar.version || replay.profile.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
+      return structuredClone(replay);
+    }
+    const current = this.#profiles.get(userId)!;
+    if (current.revision !== expectedRevision) throw new Error("account_profile_revision_conflict");
+    const profile = { ...current, avatar: structuredClone(avatar), revision: expectedRevision + 1, updatedAt: new Date().toISOString() };
+    const result = { profile, previousObjectKey: current.avatar ? `memory:${current.avatar.version}` : null };
+    this.#profiles.set(userId, profile);
+    this.#remember(userId, idempotencyKey, result);
+    return structuredClone(result);
   }
 
   getPreferences(userId: UserId) {
