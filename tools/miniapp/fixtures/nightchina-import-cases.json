@@ -1,7 +1,7 @@
 {
   "schemaVersion": "starward-nightchina-import-cases-v1",
   "retrievedAt": "2026-09-04",
-  "purpose": "Fixed development-test inputs for the Profile Import journey and the post-import formal-spot information panel journey.",
+  "purpose": "Fixed development-test inputs for the Profile Import journey, real WEAPP new-place proposal lifecycle, and the post-import formal-spot information panel journey.",
   "copyrightPolicy": {
     "articleText": "Store only a short paraphrase plus source identity; do not copy article bodies.",
     "sourcePhotos": "Rights are unconfirmed, so source photos are not copied, downloaded, uploaded, or represented as reusable.",
@@ -15,7 +15,9 @@
       "title": "粤北夏夜引",
       "sourceUrl": "https://nightchina.net/2026/07/25/%E7%B2%A4%E5%8C%97%E5%A4%8F%E5%A4%9C%E5%BC%95/",
       "reportedLocation": "广东省清远市阳山县江英古道附近",
+      "proposalName": "江英古道附近观星点",
       "reportedCaptureDate": "2026-07-11",
+      "reportedCoordinate": { "latitude": 24.472619, "longitude": 112.83783, "basis": "NightChina location marker 1760" },
       "importText": "来源页面描述了粤北阳山江英古道附近的夏季夜空拍摄；地点、日期与现场条件仍需在导入草稿中逐项核验。",
       "rightsDisposition": "unconfirmed_source_photo_not_reused",
       "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
@@ -26,7 +28,9 @@
       "title": "星映梯田月映云",
       "sourceUrl": "https://nightchina.net/2022/07/15/%E6%98%9F%E6%98%A0%E6%A2%AF%E7%94%B0%E6%9C%88%E6%98%A0%E4%BA%91/",
       "reportedLocation": "广东省清远市连山县欧家梯田",
+      "proposalName": "欧家梯田观星点",
       "reportedCaptureDate": "2022-07-10",
+      "reportedCoordinate": { "latitude": 24.737912, "longitude": 112.188476, "basis": "NightChina location marker 1274" },
       "importText": "来源页面记录了清远欧家梯田的星空与月云场景；导入只建立可编辑草稿，不确认道路、设施或观测质量。",
       "rightsDisposition": "unconfirmed_source_photo_not_reused",
       "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
@@ -68,9 +72,11 @@
       "regionBucket": "guangdong",
       "title": "银河与云海相遇",
       "sourceUrl": "https://nightchina.net/2024/04/29/%E9%93%B6%E6%B2%B3%E4%B8%8E%E4%BA%91%E6%B5%B7%E7%9B%B8%E9%81%87/",
-      "reportedLocation": "广东省清远市连州市八戒山",
+      "reportedLocation": "广东省清远市连州市八界山",
+      "proposalName": "八界山观星点",
       "reportedCaptureDate": "2024-03-12",
-      "importText": "来源页面记录连州八戒山的银河与云海；该地点在当前目录没有精确正式点，必须走独立地点提案。",
+      "reportedCoordinate": { "latitude": 24.660153, "longitude": 112.524534, "basis": "NightChina location marker 1491" },
+      "importText": "来源页面记录连州八界山的银河与云海；该地点在当前目录没有精确正式点，必须走独立地点提案。",
       "rightsDisposition": "unconfirmed_source_photo_not_reused",
       "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }
     },
@@ -113,7 +119,9 @@
       "title": "星河画卷",
       "sourceUrl": "https://nightchina.net/2023/10/08/%E6%98%9F%E6%B2%B3%E7%94%BB%E5%8D%B7/",
       "reportedLocation": "河北省张家口市冰山梁",
+      "proposalName": "冰山梁观星点",
       "reportedCaptureDate": "2023-09-09",
+      "reportedCoordinate": { "latitude": 41.306798, "longitude": 115.795408, "basis": "NightChina location marker 654" },
       "importText": "来源页面记录张家口冰山梁的星空；测试应走新地点提案并保留来源追溯。",
       "rightsDisposition": "unconfirmed_source_photo_not_reused",
       "expectedAssociation": { "kind": "new_place_proposal", "reason": "catalog_has_no_exact_formal_spot" }

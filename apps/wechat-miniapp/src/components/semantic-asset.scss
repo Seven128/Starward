@@ -14,17 +14,20 @@
   object-fit: contain;
 }
 
-.semantic-icon--b::before,
-.semantic-icon--b::after {
-  display: none;
-}
-
 .semantic-icon::before,
 .semantic-icon::after {
   position: absolute;
   display: block;
   content: "";
   box-sizing: border-box;
+}
+
+// DAY bitmap assets fully own their pixels. Keep this rule after the shared
+// fallback layer so legacy glyph classes cannot restore pseudo-element paint.
+.semantic-icon.semantic-icon--b::before,
+.semantic-icon.semantic-icon--b::after {
+  content: none;
+  display: none;
 }
 
 .semantic-icon--source {

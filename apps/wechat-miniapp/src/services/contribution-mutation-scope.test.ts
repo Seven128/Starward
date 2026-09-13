@@ -6,7 +6,7 @@ import ts from "typescript";
 
 test("all feedback mutations keep the initiating owner across session and receipt waits", async () => {
   const source = ts.createSourceFile("api.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-  for (const name of ["createContributionDraft", "updateContributionDraft", "createContributionUpload", "completeContributionUpload", "removeContributionUpload", "submitContribution"]) {
+  for (const name of ["createContributionDraft", "updateContributionDraft", "withdrawContributionDraft", "createContributionUpload", "completeContributionUpload", "removeContributionUpload", "submitContribution"]) {
     const node = source.statements.find(item => ts.isFunctionDeclaration(item) && item.name?.text === name);
     assert.ok(node);
     for (const phase of ["same", "session", "receipt"]) {
@@ -16,7 +16,7 @@ test("all feedback mutations keep the initiating owner across session and receip
       const operation = vm.runInNewContext(ts.transpileModule(node.getText(source).replace(/^export /, "") + `\n${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
         currentDraftUserId: () => owner,
         ensureSession: async () => { if (phase === "session") owner = "b"; return { userId: owner }; },
-        retryContributionCreate: retry, retryContributionUpdate: retry, retryContributionUpload: retry, retryContributionRemoval: retry, retryContributionSubmit: retry,
+        retryContributionCreate: retry, retryContributionUpdate: retry, retryContributionWithdraw: retry, retryContributionUpload: retry, retryContributionRemoval: retry, retryContributionSubmit: retry,
         idempotencyKey: () => "key",
         requestOperation: async (_key: unknown, _op: unknown, _input: unknown, _retry: unknown, expected: string) => {
           requests++; assert.equal(expected, "a"); if (phase === "receipt") owner = "b"; return receipt;

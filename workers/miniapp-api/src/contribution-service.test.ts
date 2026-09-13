@@ -139,6 +139,38 @@ test("draft save response-loss retry replays the original revision without an ex
   }
 });
 
+test("draft withdrawal is owner-scoped, revision-safe, idempotent, and rejects submitted records", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "withdraw");
+    const otherId = await identity(service, "withdraw-other");
+    const draft = (await service.createContributionDraft(userId, newSpotInput(), "withdraw:create")).data;
+    await assert.rejects(
+      service.withdrawContributionDraft(otherId, draft.submissionId, draft.revision, "withdraw:other"),
+      /contribution_not_found/,
+    );
+    await assert.rejects(
+      service.withdrawContributionDraft(userId, draft.submissionId, draft.revision + 1, "withdraw:stale"),
+      /contribution_revision_conflict/,
+    );
+    const withdrawn = await service.withdrawContributionDraft(userId, draft.submissionId, draft.revision, "withdraw:commit");
+    assert.equal(withdrawn.data.submissionState, "WITHDRAWN");
+    assert.equal(withdrawn.data.revision, draft.revision + 1);
+    assert.equal(withdrawn.data.statusHistory.at(-1)?.to, "WITHDRAWN");
+    const replay = await service.withdrawContributionDraft(userId, draft.submissionId, draft.revision, "withdraw:commit");
+    assert.deepEqual(replay.data, withdrawn.data);
+
+    const submittedDraft = (await service.createContributionDraft(userId, reportInput(), "withdraw:submitted:create")).data;
+    const submitted = await service.submitContribution(userId, submittedDraft.submissionId, submittedDraft.revision, "withdraw:submitted:submit");
+    await assert.rejects(
+      service.withdrawContributionDraft(userId, submittedDraft.submissionId, submitted.data.revision, "withdraw:submitted:reject"),
+      /contribution_not_editable/,
+    );
+  } finally {
+    await service.onModuleDestroy();
+  }
+});
+
 test("formal feedback submits atomically without creating an editable draft", async () => {
   const service = createTestMiniappService();
   try {

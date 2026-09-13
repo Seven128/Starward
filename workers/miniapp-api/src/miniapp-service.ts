@@ -2569,6 +2569,28 @@ export class MiniappService {
     );
   }
 
+  async withdrawContributionDraft(
+    userId: UserId,
+    submissionId: ContributionId,
+    expectedRevision: number,
+    idempotencyKey: string,
+  ) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!Number.isInteger(expectedRevision) || expectedRevision < 1)
+      throw new Error("contribution_revision_invalid");
+    return envelope(
+      await this.contributions.withdrawDraft(
+        userId,
+        submissionId,
+        expectedRevision,
+        idempotencyKey,
+      ),
+      "FRESH",
+      [],
+      ["草稿已撤回，不会进入审核；未提交媒体已安排清理。"],
+    );
+  }
+
   async createContributionUpload(
     userId: UserId,
     submissionId: ContributionId,

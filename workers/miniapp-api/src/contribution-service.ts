@@ -248,6 +248,22 @@ export class ContributionService {
     return submission;
   }
 
+  async withdrawDraft(
+    userId: UserId,
+    submissionId: ContributionId,
+    expectedRevision: number,
+    idempotencyKey: string,
+  ) {
+    const submission = await this.repository.withdrawContributionDraft(
+      userId,
+      submissionId,
+      expectedRevision,
+      idempotencyKey,
+    );
+    await this.cleanupExpiredUploads();
+    return submission;
+  }
+
   async getForOwner(userId: UserId, submissionId: ContributionId) {
     const submission = await this.repository.getContribution(userId, submissionId);
     if (!submission) throw new Error("contribution_not_found");

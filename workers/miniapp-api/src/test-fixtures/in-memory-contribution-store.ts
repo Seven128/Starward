@@ -237,6 +237,49 @@ export class InMemoryContributionStore {
     return structuredClone(next);
   }
 
+  withdrawDraft(
+    userId: UserId,
+    submissionId: ContributionId,
+    expectedRevision: number,
+    idempotencyKey: string,
+  ) {
+    this.ensureUser(userId);
+    const replay = this.#replay<ContributionSubmission>(userId, idempotencyKey);
+    if (replay) return structuredClone(replay);
+    const records = this.#records.get(userId)!;
+    const current = records.get(submissionId);
+    if (!current) throw new Error("contribution_not_found");
+    if (current.state !== "DRAFT") throw new Error("contribution_not_editable");
+    if (current.revision !== expectedRevision)
+      throw new Error("contribution_revision_conflict");
+    const now = new Date().toISOString();
+    for (const upload of current.media) {
+      const object = this.#objects.get(upload.uploadId);
+      if (object) this.#pendingDeletion.add(object.objectKey);
+      this.#objects.delete(upload.uploadId);
+    }
+    const next: ContributionSubmission = {
+      ...structuredClone(current),
+      state: "WITHDRAWN",
+      submissionState: "WITHDRAWN",
+      media: current.media.map((item) => ({ ...structuredClone(item), state: "EXPIRED" as const })),
+      statusHistory: [...current.statusHistory, {
+        eventId: `contribution-event:${randomUUID()}`,
+        axis: "SUBMISSION",
+        from: "DRAFT",
+        to: "WITHDRAWN",
+        reason: "用户删除草稿",
+        actorType: "USER",
+        occurredAt: now,
+      }],
+      revision: current.revision + 1,
+      updatedAt: now,
+    };
+    records.set(submissionId, next);
+    this.#remember(userId, idempotencyKey, next);
+    return structuredClone(next);
+  }
+
   submitFormal(userId: UserId, request: ContributionFormalSubmitRequest, currentBaseline: ContributionFormalBaseline, idempotencyKey: string, uploads: readonly ContributionMediaUpload[] = []): ContributionFormalSubmitResult {
     this.ensureUser(userId);
     const replay = this.#replay<ContributionFormalSubmitResult>(userId, idempotencyKey);

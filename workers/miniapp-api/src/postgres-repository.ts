@@ -1586,6 +1586,87 @@ export class PostgresMiniappRepository
     });
   }
 
+  async withdrawContributionDraft(
+    userId: UserId,
+    submissionId: ContributionId,
+    expectedRevision: number,
+    idempotencyKey: string,
+  ): Promise<ContributionSubmission> {
+    return this.#transaction(async (client) => {
+      const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
+      if (replay) return clone(replay);
+      const result = await client.query<{
+        user_id: string;
+        state: string;
+        revision: number;
+        payload: ContributionSubmission;
+      }>(
+        "SELECT user_id, state, revision, payload FROM user_submissions WHERE submission_id = $1 FOR UPDATE",
+        [submissionId],
+      );
+      const current = result.rows[0];
+      if (!current || current.user_id !== userId)
+        throw new Error("contribution_not_found");
+      if (current.state !== "DRAFT")
+        throw new Error("contribution_not_editable");
+      if (current.revision !== expectedRevision)
+        throw new Error("contribution_revision_conflict");
+      const normalized = normalizeContributionSubmission(current.payload);
+      const now = new Date().toISOString();
+      const next: ContributionSubmission = {
+        ...normalized,
+        state: "WITHDRAWN",
+        submissionState: "WITHDRAWN",
+        media: normalized.media.map((item) => ({ ...clone(item), state: "EXPIRED" as const })),
+        statusHistory: [
+          ...normalized.statusHistory,
+          contributionEvent("SUBMISSION", "DRAFT", "WITHDRAWN", "用户删除草稿", "USER"),
+        ],
+        revision: current.revision + 1,
+        updatedAt: now,
+      };
+      await client.query(
+        `UPDATE contribution_media_uploads
+            SET state = 'EXPIRED', expires_at = $3,
+                payload = payload || jsonb_build_object('state', 'EXPIRED')
+          WHERE submission_id = $1 AND user_id = $2 AND state <> 'ATTACHED'`,
+        [submissionId, userId, now],
+      );
+      await client.query(
+        `UPDATE user_submissions
+            SET state = 'WITHDRAWN', payload = $3, revision = $4, updated_at = $5
+          WHERE submission_id = $1 AND user_id = $2`,
+        [submissionId, userId, next, next.revision, now],
+      );
+      await client.query(
+        `INSERT INTO contribution_revisions(
+           revision_id, submission_id, revision_no, submission_state,
+           merge_state, publication_impact, payload, payload_digest, actor_id
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [
+          `contribution-revision:${submissionId}:${next.revision}`,
+          submissionId,
+          next.revision,
+          next.submissionState,
+          next.mergeState,
+          next.publicationImpact,
+          next,
+          digest(next),
+          userId,
+        ],
+      );
+      await this.#recordMutation(client, {
+        idempotencyKey,
+        operation: "contribution-draft.withdraw",
+        response: next,
+        eventType: "ContributionDraftWithdrawn",
+        scopeId: userId,
+        payload: { userId, submissionId, revision: next.revision },
+      });
+      return clone(next);
+    });
+  }
+
   async createContributionUpload(
     userId: UserId,
     submissionId: ContributionId,

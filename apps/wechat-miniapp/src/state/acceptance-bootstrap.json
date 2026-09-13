@@ -29,6 +29,7 @@
   "finderQuery": "",
   "observationContext": null,
   "analysisOverlay": "NONE",
+  "terrainEnabled": false,
   "committedFilters": {
     "DISTANCE_DRIVE_TIME": [],
     "LIGHT_POLLUTION": [],

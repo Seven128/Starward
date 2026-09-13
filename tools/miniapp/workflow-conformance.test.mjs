@@ -22,7 +22,11 @@ import {
   WECHAT_AUTOMATOR_OPAQUE_ERROR_ENVELOPE_V1,
   WECHAT_TRANSIENT_NOT_FOUND_EXCEPTION_V1,
 } from "./runtime-event-policy.mjs";
-import { inspectCandidate } from "./inspect-production.mjs";
+import {
+  inspectCandidate,
+  packageBudgetWithinLimits,
+  summarizePackageBytes,
+} from "./inspect-production.mjs";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -192,6 +196,9 @@ test("production inspection and native scopes follow the current registered rout
   assert.equal(inspection.checks.native_project, true);
   assert.equal(inspection.checks.filter_population, true);
   assert.equal(inspection.checks.route_files, true);
+  assert.equal(inspection.checks.package_budget, true);
+  assert.equal(inspection.package_limits.per_package_bytes, 2 * 1024 * 1024);
+  assert.equal(inspection.package_limits.aggregate_bytes, 20 * 1024 * 1024);
 
   const runner = await text(
     "tools",
@@ -206,6 +213,17 @@ test("production inspection and native scopes follow the current registered rout
     activeScopes,
     /profile-links|own-post-import|nightChinaImportJourneyKeys|NIGHTCHINA_POST_IMPORT_SPOT_JOURNEY/u,
   );
+});
+
+test("production package governance checks every package and the aggregate independently", () => {
+  const packages = summarizePackageBytes([
+    { file: "pages/map/index.js", size: 1_900_000 },
+    { file: "content/plan/index.js", size: 1_100_000 },
+    { file: "sky/detail/index.js", size: 900_000 },
+  ], [{ root: "content" }, { root: "sky" }]);
+  assert.equal(packageBudgetWithinLimits(packages, 3_900_000), true);
+  assert.equal(packageBudgetWithinLimits({ ...packages, content: { bytes: 2_097_153, source_map_bytes: 0 } }, 4_897_153), false);
+  assert.equal(packageBudgetWithinLimits(packages, 20 * 1024 * 1024 + 1), false);
 });
 
 test("compile-mode controls avoid dynamic hyphenated attributes that WXML evaluates as subtraction", async () => {
@@ -650,9 +668,9 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'entryFlow: "map-to-new-spot"',
     'platform_method_simulation: "chooseLocation"',
     'key: "recovery-history-ready"',
-    'selector: ".contribution-record--draft"',
-    'tap: ".contribution-record--draft .soft-button"',
-    'key: "recovery-draft-resume-ready"',
+    'selector: ".contribution-record--draft.contribution-record--field-report"',
+    'tap: ".contribution-record--draft.contribution-record--field-report .soft-button"',
+    'deferExpectedPathUntilWaitFor: true',
     'key: "recovery-inline-state-ready"',
     'preparedRouteParams: ["spotId"]',
     'const routeRequiresContextId = route.searchParams.has("contextId")',
@@ -877,12 +895,12 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   );
   assert.ok(
     runner.indexOf("await attachRuntimeObservers(attemptProgram)") <
-      runner.indexOf('const bootstrapNavigation = runWechatIdeSkillTool('),
+      runner.indexOf("const bootstrapNavigation ="),
     "runtime log activation must precede setup and initial-page observation",
   );
   assert.ok(
-    runner.indexOf('const bootstrapWindow = runWechatIdeSkillTool(') <
-      runner.indexOf('const bootstrapNavigation = runWechatIdeSkillTool('),
+    runner.indexOf("const bootstrapWindow =") <
+      runner.indexOf("const bootstrapNavigation ="),
     "the structured IDE must bind the physical project window before compiling the neutral page",
   );
   assert.ok(
@@ -893,8 +911,18 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
   );
   assert.match(
     runner,
-    /key: "spot-panel-astronomy-section",\s*screenshot: true,\s*tap: "\.spot-panel__section-tab",\s*index: 1,\s*minimum: 2,/su,
-    "the astronomy interaction must match the two-section production panel",
+    /key: "spot-panel-astronomy-section",\s*screenshot: true,\s*tap: "\.spot-panel__section-tab",\s*index: 2,\s*minimum: 3,/su,
+    "the astronomy interaction must select the third section in the production panel",
+  );
+  assert.match(
+    runner,
+    /key: "event-modal-browse-open",[\s\S]*?key: "event-modal-browse-detail",[\s\S]*?key: "event-modal-browse-back",[\s\S]*?key: "event-modal-browse-close",/u,
+    "map evidence must exercise the shared event modal list/detail/back/close lifecycle",
+  );
+  assert.match(
+    runner,
+    /key: "plan-open-editor",[\s\S]*?key: "plan-event-modal-open",[\s\S]*?key: "plan-event-detail",[\s\S]*?key: "plan-event-select",[\s\S]*?key: "plan-event-confirm",/u,
+    "plan evidence must cover the real editor and temporary single-event selection",
   );
   assert.match(
     runner,

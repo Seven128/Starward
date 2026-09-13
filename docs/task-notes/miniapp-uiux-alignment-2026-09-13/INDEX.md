@@ -1,5 +1,7 @@
 # 本轮实施恢复索引
 
+**2026-09-13 19:18 当前恢复点：** 已知图标叠加、Map active 方块及共享事件 Modal 视觉漂移均已修复。最终 current-candidate success 16/16 与 degradation 4/4 绑定 SHA256 `364254241faec1c65766a81b6cc513ebb2b29470b5069abcb0beba809e245c0c`；Android 普通预览 generation 2 绑定 `c4b333b2d29dd57c3cb1b40d2adedab4242f7a9f100404030515963c4bc4d11b`，已真实扫码、服务 200、观察事件 list/detail、地形、active 圆形、My 与投稿入口。先读 `progress.md` 顶部最终记录；V05 和列明设备/外部条件仍未验证。
+
 **新对话从[继续开发说明](CONTINUE.md)开始：先实际跑通人工卡点，继承无人值守操作授权，再恢复完整产品修复。** 本次交接未重跑设备预检。
 
 **当前结论已更正：原“完整完成”撤回。** 用户真机反馈及源码复查发现新旧图标叠加和地图工具active方形背景；产品修复按用户要求暂停，当前仅处理交付质量治理。恢复时先读`progress.md`和`coverage.md`顶部更正，不能沿用历史Goal complete作为产品验收。治理修改与实证见[治理续修](../../../.codex/work-items/development-quality-drift-2026-09-12/follow-up-2026-09-13.md)。

@@ -2616,9 +2616,11 @@
   color: #94a3b8;
 }
 .map-tool--layer-active {
+  color: #526aa0;
+}
+.map-tool--layer-active::before {
   border-color: #c8d5ef;
   background: #eef4ff;
-  color: #526aa0;
 }
 .map-page.map-page--panel-large .map-search-anchor,
 .map-page.map-page--panel-large .map-top-tools,

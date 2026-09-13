@@ -54,6 +54,7 @@ export const MINIAPP_API_OPERATIONS = {
   formalContributionUploadDelete: { method: "DELETE", path: "/me/formal-contribution-upload-intents/{intentId}/uploads/{uploadId}" },
   contributionPost: { method: "POST", path: "/me/contributions" },
   contributionPut: { method: "PUT", path: "/me/contributions/{submissionId}" },
+  contributionDelete: { method: "DELETE", path: "/me/contributions/{submissionId}" },
   contributionUploadPost: { method: "POST", path: "/me/contributions/{submissionId}/media-uploads" },
   contributionUploadPut: { method: "PUT", path: "/me/contributions/{submissionId}/media-uploads/{uploadId}" },
   contributionUploadDelete: { method: "DELETE", path: "/me/contributions/{submissionId}/media-uploads/{uploadId}" },
@@ -113,6 +114,7 @@ export interface MiniappApiOperationTypes {
   formalContributionUploadDelete: { request: ContributionFormalUploadRemoveRequest; response: ApiEnvelope<ContributionFormalUploadIntent> };
   contributionPost: { request: ContributionDraftRequest; response: ApiEnvelope<ContributionSubmission> };
   contributionPut: { request: ContributionUpdateRequest; response: ApiEnvelope<ContributionSubmission> };
+  contributionDelete: { request: ContributionSubmitRequest; response: ApiEnvelope<ContributionSubmission> };
   contributionUploadPost: { request: ContributionUploadSessionRequest; response: ApiEnvelope<ContributionSubmission> };
   contributionUploadPut: { request: ContributionUploadCompleteRequest; response: ApiEnvelope<ContributionSubmission> };
   contributionUploadDelete: { request: ContributionUploadRemoveRequest; response: ApiEnvelope<ContributionSubmission> };

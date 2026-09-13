@@ -263,7 +263,11 @@ export function MapSearchSurface() {
     queryKey: ["spot-search", debouncedQuery],
     queryFn: (signal) => searchPlaces(debouncedQuery, signal),
     enabled: pageVisible && debouncedQuery.length > 0,
-    staleTime: 5 * 60_000,
+    // Publication and moderation can change a formal result while this Mini
+    // Program session stays alive. A newly opened search route must therefore
+    // revalidate the query instead of presenting a five-minute-old formal
+    // identity as current.
+    staleTime: 0,
   });
 
   const sceneSpots = scene.data?.data.spots ?? [];

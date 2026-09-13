@@ -287,6 +287,12 @@ export interface MiniappRepositoryPort {
     expectedRevision: number | null,
     idempotencyKey: string,
   ): Promise<ContributionSubmission>;
+  withdrawContributionDraft(
+    userId: UserId,
+    submissionId: ContributionId,
+    expectedRevision: number,
+    idempotencyKey: string,
+  ): Promise<ContributionSubmission>;
   createContributionUpload(
     userId: UserId,
     submissionId: ContributionId,

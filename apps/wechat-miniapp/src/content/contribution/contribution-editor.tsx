@@ -146,7 +146,7 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
     <ScrollView scrollY scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
       <View className={`contribution-content${isNewSpotDocument ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
         {managesRecords ? <ContributionRecords form={form} /> : <>
-          {form.localRecovery ? <View className="contribution-card card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void form.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
+          {form.localRecovery ? <View className="contribution-card contribution-local-recovery card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void form.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
           {form.localStorageError ? <StatusPanel state="ERROR" detail="本机输入暂时无法保存，请先保留本页。" /> : null}
           {!embedded && !isNewSpotDocument ? <View id="feedback-context"><ContributionContextSection form={form} /></View> : null}
           {isNewSpotDocument ? <View className="formal-feedback-body contribution-document-body" id="feedback-location">
@@ -167,12 +167,12 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
             <View id="feedback-location"><ContributionLocationSection form={form} commands={commands} /></View>
             <View id="feedback-media"><ContributionMediaSection form={form} commands={commands} /></View>
           </>}
-          {!isNewSpotDocument ? <ContributionActions form={form} commands={commands} /> : null}
+          {!isNewSpotDocument ? <ContributionActions form={form} commands={commands} onWithdrawn={() => embedded ? onClose?.() : void Taro.navigateBack()} /> : null}
           {!embedded ? <ContributionHistory form={form} onResume={() => setResumeAttempt(value => value + 1)} /> : null}
         </>}
       </View>
     </ScrollView>
-    {isNewSpotDocument ? <View className="contribution-document-actions safe-bottom"><ContributionActions form={form} commands={commands} /></View> : null}
+    {isNewSpotDocument ? <View className="contribution-document-actions safe-bottom"><ContributionActions form={form} commands={commands} onWithdrawn={() => embedded ? onClose?.() : void Taro.navigateBack()} /></View> : null}
   </View>;
 }
 

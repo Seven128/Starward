@@ -605,6 +605,21 @@ export class MiniappController {
     );
   }
 
+  @Delete("me/contributions/:submissionId")
+  async withdrawContribution(
+    @Param("submissionId") submissionId: string,
+    @Body() body: ContributionSubmitRequest,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.withdrawContributionDraft(
+      await this.service.auth.requirePrincipal(authorization),
+      decodeURIComponent(submissionId) as ContributionId,
+      body.expectedRevision,
+      idempotencyKey,
+    );
+  }
+
   @Post("me/contributions/:submissionId/media-uploads")
   async createContributionUpload(
     @Param("submissionId") submissionId: string,

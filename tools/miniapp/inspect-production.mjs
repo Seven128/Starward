@@ -35,6 +35,15 @@ export function summarizePackageBytes(files, subPackages = []) {
   return packages;
 }
 
+export function packageBudgetWithinLimits(
+  packages,
+  totalBytes,
+  { perPackageBytes = 2 * 1024 * 1024, aggregateBytes = 20 * 1024 * 1024 } = {},
+) {
+  return totalBytes > 0 && totalBytes <= aggregateBytes &&
+    Object.values(packages).every(({ bytes }) => bytes <= perPackageBytes);
+}
+
 export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/dist/weapp" } = {}) {
   const expectedRoutes = [
     "pages/map/index",
@@ -112,6 +121,19 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     ),
   ];
   const routeCount = routes.length;
+  const packages = summarizePackageBytes(
+    sizes.map(({ file, size }) => ({
+      file: path.relative(repositoryPath(bundleDirectory), repositoryPath(file)),
+      size,
+    })),
+    appConfig?.subPackages ?? [],
+  );
+  const packageByteLimit = 2 * 1024 * 1024;
+  const aggregateByteLimit = 20 * 1024 * 1024;
+  const packageBudgetPassed = packageBudgetWithinLimits(packages, totalBytes, {
+    perPackageBytes: packageByteLimit,
+    aggregateBytes: aggregateByteLimit,
+  });
   const routeTopologyMatches =
     routes.length === expectedRoutes.length &&
     routes.every((route, index) => route === expectedRoutes[index]);
@@ -184,7 +206,7 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
       appStore.includes('locationState: "DEFAULT_REGION"'),
     response_cache_entity_identity:
       cachePolicy.includes("responseCacheKey") && cachePolicy.includes("path"),
-    package_budget: totalBytes > 0 && totalBytes < 2 * 1024 * 1024,
+    package_budget: packageBudgetPassed,
     route_files:
       routeTopologyMatches &&
       expectedRoutes.every((route) =>
@@ -202,9 +224,13 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     spot_ids: spotIds,
     filter_ids: filterIds,
     weapp_total_bytes: totalBytes,
-    packages: summarizePackageBytes(sizes.map(({ file, size }) => ({ file: path.relative(repositoryPath(bundleDirectory), repositoryPath(file)), size })), appConfig?.subPackages ?? []),
+    packages,
+    package_limits: {
+      per_package_bytes: packageByteLimit,
+      aggregate_bytes: aggregateByteLimit,
+    },
     bundle_directory: bundleDirectory,
-    package_measurement: "Raw local output including any source maps; conservative aggregate budget, not DevTools upload package size. Use a non-watch build for candidate inspection.",
+    package_measurement: "Raw local output including source maps. Each main/subpackage is checked against 2 MiB and their aggregate against 20 MiB; DevTools remains the upload-package authority.",
   };
 }
 

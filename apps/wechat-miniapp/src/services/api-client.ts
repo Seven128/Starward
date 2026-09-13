@@ -1382,6 +1382,37 @@ export async function updateContributionDraft(
   });
 }
 
+const retryContributionWithdraw = createMutationRetry(() => idempotencyKey("contribution-withdraw"));
+
+export async function withdrawContributionDraft(
+  submissionId: ContributionId,
+  expectedRevision: number,
+) {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && session.userId !== initiatingOwner)
+    throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionWithdraw(session.userId, { submissionId, expectedRevision }, async (retryKey) => {
+    const result = await requestOperation(
+      "contribution-withdraw:" + submissionId,
+      "contributionDelete",
+      {
+        auth: "REQUIRED",
+        pathParams: { submissionId },
+        body: { expectedRevision },
+        idempotencyKey: retryKey,
+      },
+      false,
+      session.userId,
+    );
+    if (currentDraftUserId() !== session.userId)
+      throw new Error("账号已变化，请回到原账号核对反馈结果。");
+    invalidateApiCache("contributions");
+    await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
+    return result;
+  });
+}
+
 const retryContributionUpload = createMutationRetry(() => idempotencyKey("contribution-upload-create"));
 
 export async function createContributionUpload(

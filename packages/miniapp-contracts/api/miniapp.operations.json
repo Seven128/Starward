@@ -53,6 +53,7 @@
     { "id": "formalContributionUploadDelete", "method": "DELETE", "path": "/me/formal-contribution-upload-intents/{intentId}/uploads/{uploadId}", "requestType": "ContributionFormalUploadRemoveRequest", "responseType": "ContributionFormalUploadIntent" },
     { "id": "contributionPost", "method": "POST", "path": "/me/contributions", "requestType": "ContributionDraftRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionPut", "method": "PUT", "path": "/me/contributions/{submissionId}", "requestType": "ContributionUpdateRequest", "responseType": "ContributionSubmission" },
+    { "id": "contributionDelete", "method": "DELETE", "path": "/me/contributions/{submissionId}", "requestType": "ContributionSubmitRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionUploadPost", "method": "POST", "path": "/me/contributions/{submissionId}/media-uploads", "requestType": "ContributionUploadSessionRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionUploadPut", "method": "PUT", "path": "/me/contributions/{submissionId}/media-uploads/{uploadId}", "requestType": "ContributionUploadCompleteRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionUploadDelete", "method": "DELETE", "path": "/me/contributions/{submissionId}/media-uploads/{uploadId}", "requestType": "ContributionUploadRemoveRequest", "responseType": "ContributionSubmission" },

@@ -313,9 +313,11 @@ function uploadExpiryText(
 export function ContributionActions({
   form,
   commands,
+  onWithdrawn,
 }: {
   form: ContributionForm;
   commands: ContributionCommands;
+  onWithdrawn?: () => void;
 }) {
   const disabled = form.commandBusy;
   return (
@@ -349,6 +351,13 @@ export function ContributionActions({
       >
         {form.saving ? "保存中…" : "保存草稿"}
       </SoftButton>
+      {form.draft && contributionSubmissionState(form.draft) === "DRAFT" ? <SoftButton
+        label="删除当前草稿"
+        disabled={disabled}
+        onClick={() => void commands.withdrawDraft().then((withdrawn) => { if (withdrawn) onWithdrawn?.(); })}
+      >
+        删除草稿
+      </SoftButton> : null}
       <SoftButton
         variant="primary"
         label={form.pendingSubmission ? "确认上次提交结果" : "提交人工审核"}

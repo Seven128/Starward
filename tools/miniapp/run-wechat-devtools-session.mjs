@@ -66,6 +66,7 @@ if (
     "full-sky",
     "my-profile-settings",
     "contribution",
+    "nightchina-lifecycle",
     "platform-simulation",
     "current-candidate",
   ].includes(acceptanceScope)
@@ -144,6 +145,10 @@ const { TEST_SPOTS: catalogSpots } = await tsImport(
   new URL("../../packages/miniapp-contracts/src/catalog.ts", import.meta.url).href,
   import.meta.url,
 );
+const { wgs84ToGcj02 } = await tsImport(
+  new URL("../../packages/coordinate-system/src/index.ts", import.meta.url).href,
+  import.meta.url,
+);
 const nightChinaCatalogSpot = catalogSpots.find(
   (spot) =>
     spot.spotId ===
@@ -158,6 +163,10 @@ if (
 const wechatAutomationPort = 9420;
 const wechatIdeHttpPort = 23977;
 const wechatAcceptanceSdkVersion = "3.17.1";
+function reportNativeProgress(stage, detail = {}) {
+  if (!directInvocation) return;
+  process.stdout.write(`${JSON.stringify({ progress: stage, at: new Date().toISOString(), ...detail })}\n`);
+}
 const devtoolsPortStableWindowMs = 5_000;
 const nativeAcceptanceBaseEnvironment = Object.freeze({
   MINIAPP_RELEASE_PROFILE: "LOCAL",
@@ -439,6 +448,38 @@ function runWechatIdeSkillTool(tool, flags = []) {
 }
 
 async function refreshWechatGeneratedProjectCache() {
+  if (!process.env.STARWARD_WECHATIDE_MCP_TOKEN) {
+    const command = wechatCliCommand(
+      officialCliInvocation,
+      ["open", "--project", sourceProjectPath, "--trust-project"],
+      wechatToolEnvironment(),
+    );
+    const opened = spawnSync(command.file, command.args, {
+      ...command.options,
+      encoding: "utf8",
+      maxBuffer: 512 * 1024,
+      timeout: 60_000,
+    });
+    if (opened.error || opened.status !== 0)
+      throw new Error(
+        `wechat_official_cache_refresh_failed:${opened.status ?? "unavailable"}:${sha256(
+          String(opened.stderr ?? opened.error ?? ""),
+        )}`,
+      );
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    const shutdown = await quitWechatDevtoolsAndWait(
+      sourceProjectPath,
+      [wechatIdeHttpPort, wechatAutomationPort],
+      60_000,
+    );
+    return {
+      status: "passed",
+      reason:
+        "official DevTools open refreshed generated project indexes; the optional wechatide MCP CLI token was unavailable to this child process",
+      steps: [{ tool: "official-open", result_sha256: sha256(String(opened.stdout ?? "")) }],
+      shutdown,
+    };
+  }
   const projectFlag = `--project "${sourceProjectPath}"`;
   const steps = [
     ["open_project_window", [projectFlag, "--window-mode liteMode"]],
@@ -1559,6 +1600,295 @@ async function captureNativePendingFormalContribution({
       spot_id_sha256: sha256(submission.spotId),
       user_id_sha256: sha256(session.userId),
     },
+  };
+}
+
+async function captureNightChinaProposal({ miniProgram, apiPort, item, expectedStates }) {
+  const session = await miniProgram.callWxMethod("getStorageSync", authSessionStorageKey).catch(() => null);
+  if (!session?.accessToken || !session?.userId)
+    throw new Error("nightchina_weapp_session_missing");
+  const history = await productionUserRequest(
+    `http://127.0.0.1:${apiPort}`,
+    "/v2/me/contributions",
+    { accessToken: session.accessToken },
+  );
+  const submission = history?.submissions
+    ?.filter((candidate) => candidate.kind === "NEW_SPOT_PROPOSAL" && candidate.candidateLocation?.displayName === item.proposalName)
+    .sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)))[0];
+  const state = submission?.submissionState ?? submission?.state;
+  if (!submission?.submissionId || !expectedStates.includes(state))
+    throw new Error(`nightchina_weapp_submission_missing:${item.key}:${state ?? "missing"}`);
+  const coordinate = submission.candidateLocation?.wgs84;
+  if (
+    !coordinate ||
+    Math.abs(coordinate.latitude - item.reportedCoordinate.latitude) > 0.000001 ||
+    Math.abs(coordinate.longitude - item.reportedCoordinate.longitude) > 0.000001
+  )
+    throw new Error(`nightchina_weapp_coordinate_mismatch:${item.key}`);
+  const submittedDetail = submission.candidateProfile?.fields?.detail ?? submission.detail ?? "";
+  if (!submittedDetail.includes(item.sourceUrl) || !submittedDetail.includes("未由该页面核实"))
+    throw new Error(`nightchina_weapp_source_boundary_missing:${item.key}`);
+  return {
+    privateReference: {
+      submissionId: submission.submissionId,
+      revision: submission.revision,
+      userId: session.userId,
+      accessToken: session.accessToken,
+      submission,
+    },
+    evidence: {
+      status: "passed",
+      source_key: item.key,
+      state,
+      submission_id_sha256: sha256(submission.submissionId),
+      user_id_sha256: sha256(session.userId),
+      source_url_sha256: sha256(item.sourceUrl),
+      source_coordinate_sha256: sha256(canonical(item.reportedCoordinate)),
+      observed_coordinate_sha256: sha256(canonical(coordinate)),
+      actual_weapp_form: true,
+      direct_database_or_user_api_creation: false,
+      source_photo_reused: false,
+    },
+  };
+}
+
+async function requestNightChinaProposalChanges({ apiPort, infrastructure, reference, item, runId }) {
+  const caseId = `moderation:${reference.submissionId}`;
+  const result = await adminRequest(
+    `http://127.0.0.1:${apiPort}`,
+    infrastructure,
+    `/v2/admin/moderation/cases/${encodeURIComponent(caseId)}/request-changes`,
+    {
+      method: "POST",
+      idempotencyKey: `nightchina-request-changes-${sha256(`${runId}:${item.key}`).slice(0, 16)}`,
+      body: JSON.stringify({
+        reason: "请补充来源边界：拍摄记录不能证明当前开放、可达或夜间安全。",
+        expectedRevision: reference.revision,
+      }),
+    },
+  );
+  const submission = result?.readback?.submission;
+  if (submission?.submissionState !== "CHANGES_REQUESTED")
+    throw new Error("nightchina_request_changes_readback_missing");
+  return {
+    privateReference: { ...reference, revision: submission.revision, submission },
+    evidence: {
+      status: "passed",
+      state: submission.submissionState,
+      submission_id_sha256: sha256(submission.submissionId),
+      moderation_case_id_sha256: sha256(caseId),
+      reason_sha256: sha256(submission.review?.reason ?? ""),
+    },
+  };
+}
+
+async function approveMergePublishNightChinaProposal({ apiPort, infrastructure, reference, item, runId }) {
+  const base = `http://127.0.0.1:${apiPort}`;
+  const suffix = sha256(`${runId}:${item.key}`).slice(0, 16);
+  const caseId = `moderation:${reference.submissionId}`;
+  const resolved = await adminRequest(base, infrastructure, `/v2/admin/moderation/cases/${encodeURIComponent(caseId)}/resolve`, {
+    method: "POST",
+    idempotencyKey: `nightchina-approve-${suffix}`,
+    body: JSON.stringify({ resolution: "APPROVED", reason: "隔离开发环境审核：来源边界已明确。", expectedRevision: reference.revision }),
+  });
+  const approved = resolved?.readback?.submission;
+  if (approved?.submissionState !== "ACCEPTED")
+    throw new Error("nightchina_approval_readback_missing");
+  const spotId = `spot:native-nightchina-${item.key}-${suffix}`;
+  const now = new Date().toISOString();
+  const source = {
+    id: `source:nightchina-${suffix}`,
+    kind: "HISTORICAL_RECORD",
+    provider: "夜空中国",
+    title: item.title,
+    sourceUrl: item.sourceUrl,
+    license: "来源版权未确认；仅保存短摘要与链接，不复用图片",
+    licenseUrl: "",
+    publishedAt: `${item.reportedCaptureDate}T00:00:00.000Z`,
+    retrievedAt: now,
+    validFrom: null,
+    validTo: null,
+    state: "STALE",
+    confidence: 0.6,
+    precision: item.reportedCoordinate.basis,
+    limitations: ["只证明来源页面标注的拍摄地点与日期", "不证明当前开放、通行、安全、设施或观测质量"],
+  };
+  await adminRequest(base, infrastructure, "/v2/admin/spots", {
+    method: "POST",
+    body: JSON.stringify({
+      spotId,
+      name: item.proposalName,
+      region: item.reportedLocation,
+      address: item.reportedLocation,
+      timezone: "Asia/Shanghai",
+      latitude: item.reportedCoordinate.latitude,
+      longitude: item.reportedCoordinate.longitude,
+      altitudeM: null,
+      visibilityPolicy: "PUBLIC_EXACT",
+      source,
+      reason: "把真实 WEAPP 表单提交绑定到本次运行隔离的 canonical 候选，随后验证 merge 与 publication gate。",
+    }),
+  });
+  let dashboard = await adminRequest(base, infrastructure, "/v2/admin/dashboard");
+  let spot = dashboard.spots.find((candidate) => candidate.spot_id === spotId);
+  if (!spot) throw new Error("nightchina_canonical_candidate_missing");
+  const merged = await adminRequest(base, infrastructure, `/v2/admin/moderation/cases/${encodeURIComponent(caseId)}/merge`, {
+    method: "POST",
+    idempotencyKey: `nightchina-merge-${suffix}`,
+    body: JSON.stringify({
+      spotId,
+      confirmedClaims: ["SPOT_DETAILS"],
+      reason: "合并用户在真实 WEAPP 表单提交的名称、地址、来源边界与无图路径。",
+      expectedSubmissionRevision: approved.revision,
+      expectedSpotRevision: Number(spot.version),
+    }),
+  });
+  if (merged?.readback?.submission?.mergeState !== "MERGED")
+    throw new Error("nightchina_merge_readback_missing");
+  const verification = {
+    id: `source:native-verification-${suffix}`,
+    kind: "OFFICIAL_VERIFICATION",
+    provider: "Starward 隔离生命周期验收",
+    title: "隔离数据库 publication gate 测试记录",
+    sourceUrl: "",
+    license: "Project-owned automated acceptance record",
+    licenseUrl: "",
+    publishedAt: now,
+    retrievedAt: now,
+    validFrom: now,
+    validTo: null,
+    state: "FRESH",
+    confidence: 1,
+    precision: "仅验证产品门禁与状态流，不陈述真实地点条件",
+    limitations: ["运行结束销毁", "不得用于现实出行判断"],
+  };
+  const facilityTypes = ["PARKING", "TOILET", "PLATFORM", "CHARGING", "CAMPING", "ROAD", "WALKING", "SIGNAL"];
+  const claims = ["SPOT_COORDINATE", "ACCESS_LAST_ROAD", "ACCESS_PARKING", "ACCESS_OPENNESS", "ACCESS_LEGAL_ENTRY", "SAFETY_NIGHT", "HORIZON_PROFILE"];
+  await adminRequest(base, infrastructure, `/v2/admin/spots/${encodeURIComponent(spotId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      reason: "以明确标记的隔离测试事实覆盖 publication gate；不提升夜空中国来源的现实可信度。",
+      lastVerifiedAt: now,
+      lightPollution: { levelAtMost: 4, productBand: "LOW", radiance: { median: 0.8, p10: 0.5, p90: 1.2, unit: "nW/cm²/sr" }, minimumCloudFreeObservations: 12, calibratedSkyClass: false, label: "隔离验收低光带", method: "隔离门禁测试", datasetVersion: `native-${suffix}`, dataDate: now.slice(0, 10), precision: verification.precision, state: "ESTIMATED", source: verification },
+      obstructionPercent: 20,
+      clearDirections: ["ALL"],
+      accessTags: ["DRIVE_TO", "NO_HIKE"],
+      facilities: facilityTypes.map((type) => ({ type, status: ["PARKING", "PLATFORM", "ROAD", "SIGNAL"].includes(type) ? "AVAILABLE" : "UNAVAILABLE", summary: "隔离生命周期测试值", detail: `隔离 lifecycle 覆盖：${type}`, distanceM: type === "PARKING" ? 80 : null, openingHours: null, usageCondition: verification.precision, verifiedAt: now, confidence: 1, source: verification })),
+      route: { kind: "STRAIGHT_LINE_ONLY", originLabel: "隔离测试中心", distanceKm: null, driveMinutes: null, walkingMinutes: null, lastRoad: "隔离测试道路字段", parkingGuidance: "隔离测试停车字段", state: "FRESH", source: verification },
+      accessAndSafety: { openness: "OPEN", legalAccess: "PERMITTED", nightSafety: "CAUTION", explicitDanger: false, restrictions: [verification.precision], guidance: ["本记录运行后销毁"] },
+      siteMediaState: "NO_SITE_MEDIA_VERIFIED",
+      evidence: claims.map((claim, index) => ({ evidenceId: `evidence:${suffix}:${index + 1}`, subjectType: claim === "SPOT_COORDINATE" ? "SPOT" : claim === "SAFETY_NIGHT" ? "SAFETY" : claim === "HORIZON_PROFILE" ? "HORIZON" : "ACCESS", subjectId: spotId, claim, state: "CONFIRMED", sourceType: "OPERATOR", sourceId: verification.id, mediaIds: [], observedAt: now, verifiedAt: now, validTo: null, confidence: 1 })),
+      dataDisclosure: [source, verification],
+    }),
+  });
+  dashboard = await adminRequest(base, infrastructure, "/v2/admin/dashboard");
+  spot = dashboard.spots.find((candidate) => candidate.spot_id === spotId);
+  const assessment = await adminRequest(base, infrastructure, `/v2/admin/spots/${encodeURIComponent(spotId)}/publication-assessments`, {
+    method: "POST",
+    idempotencyKey: `nightchina-assess-${suffix}`,
+    body: JSON.stringify({ reason: "验证 isolated lifecycle publication gate", expectedRevision: Number(spot.version) }),
+  });
+  const assessmentDigest = assessment?.assessmentDigest ?? assessment?.readback?.assessmentDigest;
+  if (!assessment?.readback?.complete || !assessmentDigest)
+    throw new Error("nightchina_publication_assessment_incomplete");
+  await adminRequest(base, infrastructure, `/v2/admin/spots/${encodeURIComponent(spotId)}/publish`, {
+    method: "POST",
+    idempotencyKey: `nightchina-publish-${suffix}`,
+    body: JSON.stringify({ reason: "发布到本次运行隔离数据库以验证公开回读", expectedRevision: Number(spot.version), assessmentDigest }),
+  });
+  const history = await productionUserRequest(base, "/v2/me/contributions", { accessToken: reference.accessToken });
+  const publishedSubmission = history?.submissions?.find((candidate) => candidate.submissionId === reference.submissionId);
+  if (publishedSubmission?.publicationImpact !== "SPOT_PUBLISHED")
+    throw new Error("nightchina_user_publication_readback_missing");
+  return {
+    privateReference: { ...reference, revision: publishedSubmission.revision, submission: publishedSubmission, spotId },
+    evidence: {
+      status: "passed",
+      state: publishedSubmission.submissionState,
+      merge_state: publishedSubmission.mergeState,
+      publication_impact: publishedSubmission.publicationImpact,
+      submission_id_sha256: sha256(reference.submissionId),
+      spot_id_sha256: sha256(spotId),
+      source_url_sha256: sha256(item.sourceUrl),
+      isolated_storage: true,
+    },
+  };
+}
+
+async function verifyNightChinaUnpublishRecovery({ miniProgram, apiPort, infrastructure, reference, item, runId, runRoot }) {
+  const base = `http://127.0.0.1:${apiPort}`;
+  const suffix = sha256(`${runId}:${item.key}:unpublish`).slice(0, 16);
+  let dashboard = await adminRequest(base, infrastructure, "/v2/admin/dashboard");
+  let spot = dashboard.spots.find((candidate) => candidate.spot_id === reference.spotId);
+  if (spot?.status !== "PUBLISHED") throw new Error("nightchina_unpublish_source_not_published");
+  const unpublished = await adminRequest(base, infrastructure, `/v2/admin/spots/${encodeURIComponent(reference.spotId)}/unpublish`, {
+    method: "POST",
+    idempotencyKey: `nightchina-unpublish-${suffix}`,
+    body: JSON.stringify({ reason: "隔离生命周期下架与恢复验证", expectedSpotRevision: Number(spot.version) }),
+  });
+  if (unpublished?.readback?.status === "PUBLISHED")
+    throw new Error("nightchina_unpublish_readback_failed");
+  const openSearch = async (label) => {
+    const mapPage = await retryIdempotentAutomatorOperation(`${label}:map`, () => miniProgram.reLaunch("/pages/map/index"));
+    await waitForSelector(mapPage, "[data-control~='map-search-entry']", 1);
+    await (await waitForSelector(mapPage, "[data-control~='map-search-entry']", 1))[0].tap();
+    const searchPage = await waitForCurrentPageReady(miniProgram, "spot/search/index", [{ selector: ".spot-search-field__input", minimum: 1 }], 20_000);
+    const input = (await waitForSelector(searchPage, ".spot-search-field__input", 1))[0];
+    await input.input(item.proposalName);
+    return searchPage;
+  };
+  const waitForFormalVisibility = async (searchPage, expected, timeoutMs = 20_000) => {
+    const deadline = Date.now() + timeoutMs;
+    let texts = [];
+    while (Date.now() < deadline) {
+      const rows = await queryElements(searchPage, ".spot-search-suggestion");
+      texts = await Promise.all(rows.map((row) => row.text().catch(() => "")));
+      const index = texts.findIndex((value) => value.includes(item.proposalName) && !value.includes("资料待核验") && !value.includes("普通地点"));
+      if ((index >= 0) === expected) return { rows, texts, index };
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    throw new Error(expected ? "nightchina_republished_formal_missing_in_weapp_search" : "nightchina_unpublished_formal_still_visible_in_weapp_search");
+  };
+  let searchPage = await openSearch("nightchina-unpublished-search");
+  await waitForFormalVisibility(searchPage, false);
+  const unavailableScreenshot = path.join(runRoot, "nightchina-unpublished-search.png");
+  await miniProgram.screenshot({ path: unavailableScreenshot });
+
+  dashboard = await adminRequest(base, infrastructure, "/v2/admin/dashboard");
+  spot = dashboard.spots.find((candidate) => candidate.spot_id === reference.spotId);
+  const assessment = await adminRequest(base, infrastructure, `/v2/admin/spots/${encodeURIComponent(reference.spotId)}/publication-assessments`, {
+    method: "POST",
+    idempotencyKey: `nightchina-recovery-assess-${suffix}`,
+    body: JSON.stringify({ reason: "下架后重新评估隔离记录以验证恢复", expectedRevision: Number(spot.version) }),
+  });
+  const digest = assessment?.assessmentDigest ?? assessment?.readback?.assessmentDigest;
+  if (!assessment?.readback?.complete || !digest) throw new Error("nightchina_recovery_assessment_failed");
+  await adminRequest(base, infrastructure, `/v2/admin/spots/${encodeURIComponent(reference.spotId)}/publish`, {
+    method: "POST",
+    idempotencyKey: `nightchina-republish-${suffix}`,
+    body: JSON.stringify({ reason: "恢复本次运行隔离公开记录", expectedRevision: Number(spot.version), assessmentDigest: digest }),
+  });
+  searchPage = await openSearch("nightchina-republished-search");
+  const { rows: recoveredRows, index: formalIndex } = await waitForFormalVisibility(searchPage, true);
+  await recoveredRows[formalIndex].tap();
+  const mapPage = await waitForCurrentPageReady(miniProgram, "pages/map/index", [{ selector: "[data-control~='map-spot-information-panel']", minimum: 1 }], 20_000);
+  const title = (await waitForSelector(mapPage, ".spot-panel__title", 1))[0];
+  if (!(await title.text()).includes(item.proposalName))
+    throw new Error("nightchina_republished_panel_identity_mismatch");
+  const recoveredContext = await waitForFormalObservationContext(miniProgram);
+  if (recoveredContext.spotId !== reference.spotId)
+    throw new Error("nightchina_republished_context_identity_mismatch");
+  const recoveredScreenshot = path.join(runRoot, "nightchina-republished-map-panel.png");
+  await miniProgram.screenshot({ path: recoveredScreenshot });
+  return {
+    status: "passed",
+    unpublish_status: unpublished.readback.status,
+    unpublished_weapp_formal_search_absent: true,
+    recovery_status: "PUBLISHED",
+    recovered_weapp_search_and_map_panel: true,
+    spot_id_sha256: sha256(reference.spotId),
+    unpublished_screenshot: path.relative(root, unavailableScreenshot).replaceAll("\\", "/"),
+    recovered_screenshot: path.relative(root, recoveredScreenshot).replaceAll("\\", "/"),
   };
 }
 
@@ -2855,7 +3185,7 @@ async function activateDayModeThroughProductionControl(
 export async function openNeutralAcceptancePage(
   miniProgram,
   label = "acceptance-reset-route",
-  navigateWithCurrentWechatIde = directInvocation
+  navigateWithCurrentWechatIde = directInvocation && process.env.STARWARD_WECHATIDE_MCP_TOKEN
     ? async (action, url) => {
         const command = [
           path.basename(wechatIdeSkillCliPath),
@@ -3837,21 +4167,37 @@ async function captureJourneyInteractions(
     }
     if (step.mockChooseLocation) {
       const location = step.mockChooseLocation;
-      await miniProgram.mockWxMethod("chooseLocation", function (options) {
-        const result = {
-          errMsg: "chooseLocation:ok",
-          name: "集成验收候选地点",
-          address: "深圳市南山区西丽湖路",
-          latitude: 22.59934,
-          longitude: 113.97324,
-        };
-        options?.success?.(result);
-        options?.complete?.(result);
-        return Promise.resolve(result);
+      const serialized = JSON.stringify({
+        errMsg: "chooseLocation:ok",
+        name: location.name,
+        address: location.address,
+        latitude: location.latitude,
+        longitude: location.longitude,
       });
+      await miniProgram.mockWxMethod(
+        "chooseLocation",
+        new Function("options", `const result=${serialized}; options?.success?.(result); options?.complete?.(result); return Promise.resolve(result);`),
+      );
       stepObservations.push({
         platform_method_simulation: "chooseLocation",
         result_sha256: sha256(canonical(location)),
+      });
+      actionPerformed = true;
+    }
+    if (step.mockShowModal) {
+      const result = {
+        errMsg: "showModal:ok",
+        confirm: Boolean(step.mockShowModal.confirm),
+        cancel: !step.mockShowModal.confirm,
+      };
+      const serialized = JSON.stringify(result);
+      await miniProgram.mockWxMethod(
+        "showModal",
+        new Function("options", `const result=${serialized}; options?.success?.(result); options?.complete?.(result); return Promise.resolve(result);`),
+      );
+      stepObservations.push({
+        platform_method_simulation: "showModal",
+        confirmed: result.confirm,
       });
       actionPerformed = true;
     }
@@ -3941,25 +4287,72 @@ async function captureJourneyInteractions(
       });
       actionPerformed = true;
     }
+    if (step.optionalTap) {
+      const observation = await readElementsForObservation(
+        page,
+        step.optionalTap.selector,
+        `interaction-optional-tap:${definition.key}:${step.key}`,
+      );
+      if (observation.status === "transient")
+        throw new Error(
+          `native_interaction_optional_tap_unobservable:${definition.key}:${step.key}`,
+        );
+      const control = observation.elements[step.optionalTap.index ?? 0];
+      stepObservations.push({
+        optional_tap_selector: step.optionalTap.selector,
+        optional_tap_present: Boolean(control),
+      });
+      if (control) {
+        await control.tap();
+        actionPerformed = true;
+      }
+    }
     if (step.tap) {
-      const controls = await waitForSelector(
+      let controls = await waitForSelector(
         page,
         step.tap,
         step.minimum ?? 1,
         step.timeoutMs ?? 20_000,
       );
-      const controlIndex = await resolveInteractionTapIndex(
+      let controlIndex = await resolveInteractionTapIndex(
         controls,
         step,
         definition,
         stepObservations,
       );
-      const control = controls[controlIndex];
+      let control = controls[controlIndex];
       if (!control)
         throw new Error(
           `native_interaction_control_missing:${definition.key}:${step.key}`,
         );
-      await control.tap();
+      const enabledDeadline = Date.now() + (step.timeoutMs ?? 20_000);
+      while (true) {
+        const disabled = await control.property("disabled").catch(() => false);
+        if (disabled !== true && disabled !== "true") break;
+        if (Date.now() >= enabledDeadline)
+          throw new Error(
+            `native_interaction_enabled_control_timeout:${definition.key}:${step.key}:${step.tap}`,
+          );
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        controls = await waitForSelector(page, step.tap, step.minimum ?? 1, 2_000);
+        controlIndex = await resolveInteractionTapIndex(
+          controls,
+          step,
+          definition,
+          null,
+        );
+        control = controls[controlIndex];
+        if (!control)
+          throw new Error(
+            `native_interaction_control_missing:${definition.key}:${step.key}:enabled-wait`,
+          );
+      }
+      if (step.triggerTapEvent) {
+        await control.trigger("tap");
+        stepObservations.push({ triggered_bound_tap_event: true });
+      } else {
+        await control.tap();
+      }
       actionPerformed = true;
     }
     if (step.trigger) {
@@ -4005,7 +4398,7 @@ async function captureJourneyInteractions(
       await control.trigger(step.trigger.event, triggerDetail);
       actionPerformed = true;
     }
-    if (step.expectedPath) {
+    if (step.expectedPath && !step.deferExpectedPathUntilWaitFor) {
       try {
         page = await waitForCurrentPageReady(
           miniProgram,
@@ -4124,15 +4517,55 @@ async function captureJourneyInteractions(
     }
     if (step.waitFor?.length) {
       const ready = step.expectedPath
-        ? await waitForCurrentPageReady(
-            miniProgram,
-            step.expectedPath,
-            step.waitFor,
-            step.timeoutMs ?? 20_000,
-          ).then((currentPage) => {
-            page = currentPage;
-            return true;
-          })
+        ? await (async () => {
+            try {
+              page = await waitForCurrentPageReady(
+                miniProgram,
+                step.expectedPath,
+                step.waitFor,
+                step.timeoutMs ?? 20_000,
+              );
+              return true;
+            } catch (error) {
+              if (
+                !step.deferExpectedPathUntilWaitFor ||
+                !step.tap ||
+                !String(error?.message ?? error).startsWith(
+                  "native_formal_entry_timeout:",
+                )
+              )
+                throw error;
+              const currentPage = await readPageForObservation(
+                miniProgram,
+                `interaction-deferred-route-retry:${step.expectedPath}`,
+              );
+              const freshControls = await waitForSelector(
+                currentPage,
+                step.tap,
+                step.minimum ?? 1,
+                step.timeoutMs ?? 20_000,
+              );
+              const freshControlIndex = await resolveInteractionTapIndex(
+                freshControls,
+                step,
+                definition,
+                null,
+              );
+              const freshControl = freshControls[freshControlIndex];
+              if (!freshControl) throw error;
+              await freshControl.trigger("tap");
+              await new Promise((resolve) =>
+                setTimeout(resolve, step.settleMs ?? 350),
+              );
+              page = await waitForCurrentPageReady(
+                miniProgram,
+                step.expectedPath,
+                step.waitFor,
+                step.timeoutMs ?? 20_000,
+              );
+              return true;
+            }
+          })()
         : await waitForSelectorSet(
             page,
             step.waitFor,
@@ -6122,6 +6555,71 @@ const journeys = [
         styles: ["min-height"],
       },
     ],
+    interactions: [
+      {
+        key: "plan-open-editor",
+        screenshot: true,
+        tap: ".plan-actions .soft-button",
+        index: 1,
+        minimum: 2,
+        expectedPath: "content/plan/edit/index",
+        waitFor: [
+          { selector: "[data-od-id='plan-editor-form']", minimum: 1 },
+          { selector: ".plan-editor-footer .soft-button", minimum: 2 },
+        ],
+      },
+      {
+        key: "plan-event-picker-visible",
+        screenshot: true,
+        scroll: {
+          container: ".plan-editor__scroll",
+          target: ".plan-event-picker",
+          topInset: 180,
+        },
+        waitFor: [{ selector: ".plan-event-picker", minimum: 1 }],
+      },
+      {
+        key: "plan-event-modal-open",
+        screenshot: true,
+        tap: ".plan-event-picker",
+        triggerTapEvent: true,
+        waitFor: [
+          { selector: ".event-modal", minimum: 1 },
+          { selector: ".event-modal__radio", minimum: 1 },
+          { selector: ".event-modal__row-main", minimum: 1 },
+          { selector: ".event-modal__confirm", minimum: 1 },
+        ],
+      },
+      {
+        key: "plan-event-detail",
+        screenshot: true,
+        tap: ".event-modal__row-main",
+        waitFor: [{ selector: ".event-modal__pages--detail", minimum: 1 }],
+      },
+      {
+        key: "plan-event-back",
+        tap: ".event-modal__icon-button",
+        index: 0,
+        minimum: 2,
+        waitFor: [{ selector: ".event-modal__radio", minimum: 1 }],
+        waitForAbsent: [".event-modal__pages--detail"],
+      },
+      {
+        key: "plan-event-select",
+        screenshot: true,
+        tap: ".event-modal__radio",
+        expectChanged: [
+          { selector: ".event-modal__radio", kind: "attribute", name: "class", minimum: 1 },
+        ],
+      },
+      {
+        key: "plan-event-confirm",
+        screenshot: true,
+        tap: ".event-modal__confirm",
+        waitFor: [{ selector: ".plan-event-selection", minimum: 1 }],
+        waitForAbsent: [".event-modal"],
+      },
+    ],
   },
   {
     order: 8,
@@ -6183,7 +6681,9 @@ const journeys = [
     interactions: [
       {
         key: "rejected-feedback-group",
-        tap: ".contribution-records__group--feedback",
+        tap: ".contribution-records__group",
+        index: 1,
+        minimum: 2,
         waitFor: [
           { selector: ".contribution-record", minimum: 1 },
           {
@@ -6280,10 +6780,12 @@ const journeys = [
     interactions: [
       {
         key: "recovery-history-ready",
-        tap: ".contribution-records__group--feedback",
+        tap: ".contribution-records__group",
+        index: 1,
+        minimum: 2,
         waitFor: [
-          { selector: ".contribution-record--draft", minimum: 1 },
-          { selector: ".contribution-record--draft .soft-button", minimum: 1 },
+          { selector: ".contribution-record--draft.contribution-record--field-report", minimum: 1 },
+          { selector: ".contribution-record--draft.contribution-record--field-report .soft-button", minimum: 1 },
         ],
       },
       {
@@ -6291,20 +6793,25 @@ const journeys = [
         screenshot: true,
         scroll: {
           container: ".contribution-page__scroll",
-          target: ".contribution-record--draft .soft-button",
+          target: ".contribution-record--draft.contribution-record--field-report .soft-button",
           topInset: 520,
         },
-        tap: ".contribution-record--draft .soft-button",
+        tap: ".contribution-record--draft.contribution-record--field-report .soft-button",
+        expectedPath: "content/contribution/index",
+        deferExpectedPathUntilWaitFor: true,
+        waitFor: [
+          { selector: ".contribution-actions", minimum: 1 },
+        ],
         settleMs: 2_000,
       },
       {
-        key: "recovery-draft-resume-ready",
-        screenshot: true,
-        expectedPath: "content/contribution/index",
+        key: "recovery-local-copy-restore",
+        optionalTap: { selector: ".contribution-local-recovery .soft-button", index: 0 },
         waitFor: [
           { selector: "[data-od-id='contribution-media-upload']", minimum: 1 },
           { selector: ".contribution-media-row", minimum: 1 },
         ],
+        screenshot: true,
       },
       {
         key: "recovery-inline-state-ready",
@@ -6442,6 +6949,287 @@ function nightChinaImportInteractions(item) {
     },
   ];
 }
+
+const nightChinaProposalCases = nightChinaImportCorpus.cases.filter(
+  (item) => item.reportedCoordinate && item.proposalName,
+);
+if (nightChinaProposalCases.length !== 4)
+  throw new Error("nightchina_weapp_proposal_cases_invalid");
+
+function nightChinaProposalDetail(item, suffix = "") {
+  return `${item.importText} 拍摄日期：${item.reportedCaptureDate}。来源：${item.sourceUrl}。开放、夜间进入、道路、安全与设施均未由该页面核实；本记录仅用于隔离开发测试。${suffix}`;
+}
+
+function nightChinaProposalInteractions(item, disposition) {
+  const display = wgs84ToGcj02({
+    lat: item.reportedCoordinate.latitude,
+    lon: item.reportedCoordinate.longitude,
+    system: "WGS84",
+  });
+  return [
+    {
+      key: `${item.key}-form-ready`,
+      waitFor: [
+        { selector: ".contribution-address-picker", minimum: 1 },
+        { selector: ".formal-feedback-field--name input", minimum: 1 },
+        { selector: ".formal-feedback-textarea", minimum: 1 },
+      ],
+      screenshot: true,
+    },
+    {
+      key: `${item.key}-choose-source-location`,
+      mockChooseLocation: {
+        name: item.proposalName,
+        address: item.reportedLocation,
+        latitude: display.lat,
+        longitude: display.lon,
+      },
+      tap: ".contribution-address-picker",
+      expectText: [
+        { selector: ".contribution-address-picker", fragment: item.proposalName },
+      ],
+      screenshot: true,
+    },
+    {
+      key: `${item.key}-restore-location-boundary`,
+      restoreWxMethod: "chooseLocation",
+    },
+    {
+      key: `${item.key}-name`,
+      input: ".formal-feedback-field--name input",
+      value: item.proposalName,
+    },
+    {
+      key: `${item.key}-source-and-unknowns`,
+      input: ".formal-feedback-textarea",
+      value: nightChinaProposalDetail(item),
+    },
+    {
+      key: `${item.key}-coordinate-consent`,
+      tap: "#contribution-coordinate-consent",
+    },
+    disposition === "draft"
+      ? {
+          key: `${item.key}-save-draft`,
+          tap: ".contribution-document-actions .soft-button",
+          index: 0,
+          waitFor: [{ selector: ".contribution-editor-save-state", minimum: 1 }],
+          expectText: [{ selector: ".contribution-editor-save-state", fragment: "已保存" }],
+          screenshot: true,
+          settleMs: 900,
+        }
+      : {
+          key: `${item.key}-submit`,
+          tap: ".contribution-document-actions .soft-button--primary",
+          waitFor: [
+            { selector: ".spot-panel--proposal", minimum: 1 },
+            { selector: ".spot-panel__proposal-status", minimum: 1 },
+          ],
+          expectText: [{ selector: ".spot-panel__proposal-status", fragment: "审核中" }],
+          screenshot: true,
+          settleMs: 1_000,
+        },
+  ];
+}
+
+const nightChinaDraftCase = nightChinaProposalCases[0];
+const nightChinaSubmittedCases = nightChinaProposalCases.slice(1);
+journeys.push({
+  order: 11,
+  key: "nightchina-proposal-draft-save",
+  url: "/pages/map/index",
+  entryFlow: "map-to-new-spot",
+  root: ".map-page",
+  rootClasses: ["map-page", "theme-day"],
+  selectors: [
+    { selector: ".contribution-page--embedded", minimum: 1 },
+    { selector: ".contribution-document-actions .soft-button", minimum: 2 },
+  ],
+  injectedFixture: {
+    source_url_sha256: sha256(nightChinaDraftCase.sourceUrl),
+    source_coordinate_sha256: sha256(canonical(nightChinaDraftCase.reportedCoordinate)),
+    source_photo_reused: false,
+  },
+  interactions: nightChinaProposalInteractions(nightChinaDraftCase, "draft"),
+});
+journeys.push({
+  order: 12,
+  key: "nightchina-proposal-draft-reopen-delete",
+  url: "/content/contribution/index?manage=1",
+  entryFlow: "map-to-my-contribution",
+  root: ".contribution-page",
+  rootClasses: ["contribution-page", "theme-day"],
+  selectors: [
+    { selector: ".contribution-record--draft.contribution-record--new-spot-proposal", minimum: 1 },
+    { selector: ".contribution-record--draft.contribution-record--new-spot-proposal .soft-button", minimum: 1 },
+  ],
+  interactions: [
+    {
+      key: "nightchina-draft-reopen",
+      scroll: {
+        container: ".contribution-page__scroll",
+        target: ".contribution-record--draft.contribution-record--new-spot-proposal .soft-button",
+        topInset: 520,
+      },
+      tap: ".contribution-record--draft.contribution-record--new-spot-proposal .soft-button",
+      triggerTapEvent: true,
+      index: 0,
+      expectedPath: "content/contribution/index",
+      deferExpectedPathUntilWaitFor: true,
+      waitFor: [{ selector: ".contribution-document-actions", minimum: 1 }],
+      screenshot: true,
+    },
+    {
+      key: "nightchina-discard-unrelated-local-recovery",
+      optionalTap: { selector: ".contribution-local-recovery .soft-button", index: 1 },
+      waitFor: [
+        { selector: ".formal-feedback-textarea", minimum: 1 },
+        { selector: ".contribution-document-actions .soft-button", minimum: 3 },
+      ],
+      screenshot: true,
+    },
+    {
+      key: "nightchina-draft-edit",
+      input: ".formal-feedback-textarea",
+      value: nightChinaProposalDetail(nightChinaDraftCase, " 已退出并重开后修改。"),
+    },
+    {
+      key: "nightchina-draft-save-edited",
+      tap: ".contribution-document-actions .soft-button",
+      index: 0,
+      waitFor: [{ selector: ".notification--success", minimum: 1 }],
+      expectText: [{ selector: ".notification--success", fragment: "草稿已保存" }],
+      screenshot: true,
+      settleMs: 900,
+    },
+    {
+      key: "nightchina-draft-delete-cancel-boundary",
+      mockShowModal: { confirm: false },
+      tap: ".contribution-document-actions .soft-button",
+      textIncludes: "删除草稿",
+      waitFor: [{ selector: ".contribution-page", minimum: 1 }],
+      screenshot: true,
+    },
+    {
+      key: "nightchina-draft-delete-confirm",
+      mockShowModal: { confirm: true },
+      tap: ".contribution-document-actions .soft-button",
+      textIncludes: "删除草稿",
+      expectedPath: "content/contribution/index",
+      deferExpectedPathUntilWaitFor: true,
+      waitFor: [{ selector: ".contribution-records", minimum: 1 }],
+      screenshot: true,
+      settleMs: 1_000,
+    },
+    { key: "nightchina-modal-boundary-restore", restoreWxMethod: "showModal" },
+  ],
+});
+journeys.push(
+  ...nightChinaSubmittedCases.map((item, index) => ({
+    order: 13 + index,
+    key: `nightchina-proposal-submit-${item.key}`,
+    url: "/pages/map/index",
+    entryFlow: "map-to-new-spot",
+    root: ".map-page",
+    rootClasses: ["map-page", "theme-day"],
+    selectors: [
+      { selector: ".contribution-page--embedded", minimum: 1 },
+      { selector: ".contribution-document-actions .soft-button", minimum: 2 },
+    ],
+    nightChinaProposalCase: item,
+    injectedFixture: {
+      source_url_sha256: sha256(item.sourceUrl),
+      source_coordinate_sha256: sha256(canonical(item.reportedCoordinate)),
+      source_photo_reused: false,
+      product_form: "production WEAPP new-place proposal",
+    },
+    interactions: nightChinaProposalInteractions(item, "submit"),
+  })),
+);
+journeys.push({
+  order: 13.5,
+  key: "nightchina-proposal-revise-rejected",
+  url: "/content/contribution/index?manage=1",
+  entryFlow: "map-to-my-contribution",
+  root: ".contribution-page",
+  rootClasses: ["contribution-page", "theme-day"],
+  selectors: [
+    { selector: ".contribution-record", minimum: 1 },
+    { selector: ".contribution-record__actions .soft-button", minimum: 2 },
+  ],
+  interactions: [
+    {
+      key: "nightchina-rejected-reason-visible",
+      expectText: [
+        { selector: ".contribution-record", fragment: "审核未通过" },
+        { selector: ".contribution-record", fragment: "请补充来源边界" },
+      ],
+      screenshot: true,
+    },
+    {
+      key: "nightchina-rejected-open-editor",
+      tap: ".contribution-record__actions .soft-button",
+      index: 1,
+      expectedPath: "content/contribution/index",
+      waitFor: [
+        { selector: ".formal-feedback-textarea", minimum: 1 },
+        { selector: ".contribution-actions .soft-button--primary", minimum: 1 },
+      ],
+      screenshot: true,
+    },
+    {
+      key: "nightchina-rejected-revise",
+      input: ".formal-feedback-textarea",
+      value: nightChinaProposalDetail(nightChinaSubmittedCases[0], " 已按审核意见补充：来源只证明拍摄地点和日期，不证明当前开放、可达或安全。"),
+    },
+    {
+      key: "nightchina-rejected-explicit-resubmit",
+      tap: ".contribution-actions .soft-button--primary",
+      waitFor: [{ selector: ".notification--success", minimum: 1 }],
+      expectText: [{ selector: ".notification--success", fragment: "已提交审核" }],
+      screenshot: true,
+      settleMs: 1_000,
+    },
+  ],
+});
+journeys.push({
+  order: 13.7,
+  key: "nightchina-proposal-public-search-map-display",
+  url: "/pages/map/index",
+  root: ".map-page",
+  rootClasses: ["map-page", "theme-day"],
+  selectors: [
+    { selector: "[data-control~='map-search-entry']", minimum: 1 },
+    { selector: "[data-control~='map-marker-panel-coordinator']", minimum: 1 },
+  ],
+  interactions: [
+    {
+      key: "nightchina-public-open-search",
+      tap: "[data-control~='map-search-entry']",
+      expectedPath: "spot/search/index",
+      waitFor: [{ selector: ".spot-search-field__input", minimum: 1 }],
+    },
+    {
+      key: "nightchina-public-select-formal",
+      inputAndTapMatch: {
+        input: ".spot-search-field__input",
+        value: nightChinaSubmittedCases[0].proposalName,
+        candidates: ".spot-search-suggestion",
+        textIncludes: nightChinaSubmittedCases[0].proposalName,
+        expectedPath: "pages/map/index",
+        maximumAttempts: 3,
+      },
+      expectedPath: "pages/map/index",
+      waitFor: [
+        { selector: "[data-control~='map-spot-information-panel']", minimum: 1 },
+        { selector: ".spot-panel__title", minimum: 1 },
+      ],
+      expectText: [{ selector: ".spot-panel__title", fragment: nightChinaSubmittedCases[0].proposalName }],
+      screenshot: true,
+      settleMs: 1_000,
+    },
+  ],
+});
 
 const orderedNightChinaImportCases = [
   ...nightChinaImportCorpus.cases.filter(
@@ -6584,8 +7372,8 @@ journeys.push({
     {
       key: "inspect-astronomy-section",
       tap: ".spot-panel__section-tab",
-      index: 1,
-      minimum: 2,
+      index: 2,
+      minimum: 3,
       waitFor: [
         { selector: "[data-control~='sky-professional-matrix']", minimum: 1 },
         { selector: "[data-control~='sky-target-list']", minimum: 1 },
@@ -6727,8 +7515,8 @@ currentMapJourney.interactions = [
     key: "spot-panel-astronomy-section",
     screenshot: true,
     tap: ".spot-panel__section-tab",
-    index: 1,
-    minimum: 2,
+    index: 2,
+    minimum: 3,
     expectChanged: [
       { selector: ".spot-panel__section-tab--active", kind: "text", minimum: 1 },
     ],
@@ -6742,6 +7530,38 @@ currentMapJourney.interactions = [
     key: "spot-panel-close",
     tap: ".spot-panel__extent-button--close",
     waitForAbsent: ["[data-control~='map-spot-information-panel']"],
+  },
+  {
+    key: "event-modal-browse-open",
+    screenshot: true,
+    tap: ".map-tool--event",
+    triggerTapEvent: true,
+    waitFor: [
+      { selector: ".event-modal", minimum: 1 },
+      { selector: ".event-modal__row-main", minimum: 1 },
+    ],
+  },
+  {
+    key: "event-modal-browse-detail",
+    screenshot: true,
+    tap: ".event-modal__row-main",
+    waitFor: [{ selector: ".event-modal__pages--detail", minimum: 1 }],
+  },
+  {
+    key: "event-modal-browse-back",
+    screenshot: true,
+    tap: ".event-modal__icon-button",
+    index: 0,
+    minimum: 2,
+    waitFor: [{ selector: ".event-modal__row-main", minimum: 1 }],
+    waitForAbsent: [".event-modal__pages--detail"],
+  },
+  {
+    key: "event-modal-browse-close",
+    tap: ".event-modal__icon-button",
+    index: 0,
+    minimum: 1,
+    waitForAbsent: [".event-modal"],
   },
   {
     key: "layer-selector-open",
@@ -6838,6 +7658,20 @@ const journeyKeysByScope = {
     "formal-spot-contribution",
     "formal-feedback-rejected",
     "upload-recovery",
+    "nightchina-proposal-draft-save",
+    "nightchina-proposal-draft-reopen-delete",
+    `nightchina-proposal-submit-${nightChinaSubmittedCases[0].key}`,
+    "nightchina-proposal-revise-rejected",
+    "nightchina-proposal-public-search-map-display",
+    ...nightChinaSubmittedCases.slice(1).map((item) => `nightchina-proposal-submit-${item.key}`),
+  ],
+  "nightchina-lifecycle": [
+    "nightchina-proposal-draft-save",
+    "nightchina-proposal-draft-reopen-delete",
+    `nightchina-proposal-submit-${nightChinaSubmittedCases[0].key}`,
+    "nightchina-proposal-revise-rejected",
+    "nightchina-proposal-public-search-map-display",
+    ...nightChinaSubmittedCases.slice(1).map((item) => `nightchina-proposal-submit-${item.key}`),
   ],
   "platform-simulation": [
     "map-cold-start-location-fallback",
@@ -6853,6 +7687,12 @@ const journeyKeysByScope = {
     "formal-spot-contribution",
     "formal-feedback-rejected",
     "upload-recovery",
+    "nightchina-proposal-draft-save",
+    "nightchina-proposal-draft-reopen-delete",
+    `nightchina-proposal-submit-${nightChinaSubmittedCases[0].key}`,
+    "nightchina-proposal-revise-rejected",
+    "nightchina-proposal-public-search-map-display",
+    ...nightChinaSubmittedCases.slice(1).map((item) => `nightchina-proposal-submit-${item.key}`),
   ],
 };
 
@@ -6861,6 +7701,7 @@ const faultJourneysByScope = {
   "full-sky": ["sky-orientation"],
   "my-profile-settings": ["my-home"],
   contribution: ["formal-spot-contribution"],
+  "nightchina-lifecycle": [],
   "current-candidate": [
     "map-cold-start-location-fallback",
     "sky-orientation",
@@ -7173,6 +8014,7 @@ async function main() {
     runId,
   );
   await mkdir(runRoot, { recursive: true });
+  reportNativeProgress("run-started", { run_id: runId, scope: acceptanceScope, mode: acceptanceMode });
   const privateMediaRoot = path.join(runRoot, "private-media");
   const startedAt = new Date().toISOString();
   await writeJson(currentEvidencePath, {
@@ -7195,6 +8037,7 @@ async function main() {
   let apiPort;
   let automationPort;
   let pendingFormalContribution;
+  const nightChinaProposalReferences = new Map();
   let infrastructure;
   let productionDataPreparation;
   let projectIdentitySession;
@@ -7351,20 +8194,25 @@ async function main() {
           );
         attemptDetachRuntimeObservers =
           await attachRuntimeObservers(attemptProgram);
-        const bootstrapWindow = runWechatIdeSkillTool(
+        const bootstrapWindow = process.env.STARWARD_WECHATIDE_MCP_TOKEN
+          ? runWechatIdeSkillTool(
           "open_project_window",
           [
             `--project "${sourceProjectPath}"`,
             "--window-mode liteMode",
           ],
-        );
-        const bootstrapNavigation = runWechatIdeSkillTool(
+        ) : { result: { status: "covered_by_official_auto_launch" } };
+        const bootstrapNavigation = process.env.STARWARD_WECHATIDE_MCP_TOKEN
+          ? runWechatIdeSkillTool(
           "simulator_open_page",
           [
             `--project "${sourceProjectPath}"`,
             "--page pages/auth/index",
           ],
-        );
+        ) : { result: await retryIdempotentAutomatorOperation(
+          `startup-neutral-page-${stage}-${attempt}`,
+          () => attemptProgram.reLaunch("/pages/auth/index"),
+        ) };
         const bootstrapPage = await waitForCurrentPageReady(
           attemptProgram,
           "pages/auth/index",
@@ -7473,6 +8321,7 @@ async function main() {
     officialCliInvocation = await resolveOfficialCli(cliPath);
     assertWechatDevtoolsLoginReady(officialCliInvocation);
     infrastructure = await prepareNativeInfrastructure(runId);
+    reportNativeProgress("isolated-infrastructure-ready", { run_id: runId });
     result.durable_runtime = {
       status: "passed",
       storage: "run-unique PostgreSQL/PostGIS",
@@ -7502,6 +8351,7 @@ async function main() {
       apiPort,
       infrastructure.environment,
     );
+    reportNativeProgress("candidate-built", { run_id: runId, candidate_sha256: result.build?.candidate_sha256 ?? null });
     apiProcess = await startApi(
       apiPort,
       privateMediaRoot,
@@ -7515,6 +8365,15 @@ async function main() {
         runId,
       ),
       upload_recovery: null,
+      nightchina_lifecycle: {
+        status: "pending",
+        sources: nightChinaProposalCases.map((item) => ({
+          key: item.key,
+          source_url_sha256: sha256(item.sourceUrl),
+          source_coordinate_sha256: sha256(canonical(item.reportedCoordinate)),
+        })),
+        steps: [],
+      },
     };
     projectIdentitySession = await prepareWechatProjectIdentity(
       before.sha256,
@@ -7590,6 +8449,7 @@ async function main() {
       detachRuntimeObservers,
       toolInfo: devtoolsToolInfo,
     } = await openObservedSession("evidence"));
+    reportNativeProgress("evidence-session-ready", { run_id: runId });
     if (sha256(canonical(devtoolsToolInfo)) !== setupToolIdentity)
       throw new Error("wechat_tool_identity_changed_between_session_stages");
     runtimePhase = "evidence-reset-before-control";
@@ -7820,6 +8680,7 @@ async function main() {
             };
     } else {
       for (const journey of selectedJourneys) {
+        reportNativeProgress("journey-started", { run_id: runId, journey: journey.key });
         if (journey.key === "formal-feedback-rejected") {
           runtimePhase = "production-rejected-formal-feedback-preparation";
           productionDataPreparation.rejected_formal_feedback =
@@ -7848,6 +8709,7 @@ async function main() {
           journey,
         );
         result.journeys.push(journeyEvidence);
+        reportNativeProgress("journey-captured", { run_id: runId, journey: journey.key });
         if (journey.key === "formal-spot-contribution") {
           runtimePhase = "production-formal-feedback-commit-readback";
           const committed = await captureNativePendingFormalContribution({
@@ -7859,6 +8721,118 @@ async function main() {
           productionDataPreparation.formal_feedback_submission =
             committed.evidence;
         }
+        if (journey.key === "nightchina-proposal-draft-save") {
+          runtimePhase = "nightchina-draft-save-readback";
+          const captured = await captureNightChinaProposal({
+            miniProgram,
+            apiPort,
+            item: nightChinaDraftCase,
+            expectedStates: ["DRAFT"],
+          });
+          nightChinaProposalReferences.set(nightChinaDraftCase.key, captured.privateReference);
+          productionDataPreparation.nightchina_lifecycle.steps.push({
+            action: "draft_saved",
+            ...captured.evidence,
+          });
+        }
+        if (journey.key === "nightchina-proposal-draft-reopen-delete") {
+          runtimePhase = "nightchina-draft-withdraw-readback";
+          const captured = await captureNightChinaProposal({
+            miniProgram,
+            apiPort,
+            item: nightChinaDraftCase,
+            expectedStates: ["WITHDRAWN"],
+          });
+          nightChinaProposalReferences.set(nightChinaDraftCase.key, captured.privateReference);
+          productionDataPreparation.nightchina_lifecycle.steps.push({
+            action: "draft_reopened_edited_delete_cancelled_then_withdrawn",
+            ...captured.evidence,
+          });
+        }
+        const submittedNightChinaCase = journey.nightChinaProposalCase;
+        if (submittedNightChinaCase) {
+          runtimePhase = `nightchina-submission-readback:${submittedNightChinaCase.key}`;
+          const captured = await captureNightChinaProposal({
+            miniProgram,
+            apiPort,
+            item: submittedNightChinaCase,
+            expectedStates: ["PENDING_REVIEW"],
+          });
+          nightChinaProposalReferences.set(submittedNightChinaCase.key, captured.privateReference);
+          productionDataPreparation.nightchina_lifecycle.steps.push({
+            action: "submitted_for_review",
+            ...captured.evidence,
+          });
+          if (submittedNightChinaCase.key === nightChinaSubmittedCases[0].key) {
+            runtimePhase = "nightchina-request-changes";
+            const rejected = await requestNightChinaProposalChanges({
+              apiPort,
+              infrastructure,
+              reference: captured.privateReference,
+              item: submittedNightChinaCase,
+              runId,
+            });
+            nightChinaProposalReferences.set(submittedNightChinaCase.key, rejected.privateReference);
+            productionDataPreparation.nightchina_lifecycle.steps.push({
+              action: "changes_requested",
+              ...rejected.evidence,
+            });
+          }
+        }
+        if (journey.key === "nightchina-proposal-revise-rejected") {
+          runtimePhase = "nightchina-resubmission-readback";
+          const captured = await captureNightChinaProposal({
+            miniProgram,
+            apiPort,
+            item: nightChinaSubmittedCases[0],
+            expectedStates: ["PENDING_REVIEW"],
+          });
+          productionDataPreparation.nightchina_lifecycle.steps.push({
+            action: "revised_and_resubmitted",
+            ...captured.evidence,
+          });
+          runtimePhase = "nightchina-approve-merge-publish";
+          const completed = await approveMergePublishNightChinaProposal({
+            apiPort,
+            infrastructure,
+            reference: captured.privateReference,
+            item: nightChinaSubmittedCases[0],
+            runId,
+          });
+          nightChinaProposalReferences.set(nightChinaSubmittedCases[0].key, completed.privateReference);
+          productionDataPreparation.nightchina_lifecycle.steps.push({
+            action: "approved_merged_and_published",
+            ...completed.evidence,
+          });
+        }
+        if (journey.key === "nightchina-proposal-public-search-map-display") {
+          runtimePhase = "nightchina-public-search-map-identity-readback";
+          const reference = nightChinaProposalReferences.get(nightChinaSubmittedCases[0].key);
+          if (!reference?.spotId) throw new Error("nightchina_public_reference_missing");
+          const context = await waitForFormalObservationContext(miniProgram);
+          if (context.spotId !== reference.spotId)
+            throw new Error("nightchina_public_context_identity_mismatch");
+          productionDataPreparation.nightchina_lifecycle.steps.push({
+            action: "public_search_map_and_spot_display",
+            status: "passed",
+            spot_id_sha256: sha256(reference.spotId),
+            context_id_sha256: sha256(context.contextId),
+          });
+          runtimePhase = "nightchina-unpublish-and-recovery";
+          const lifecycle = await verifyNightChinaUnpublishRecovery({
+            miniProgram,
+            apiPort,
+            infrastructure,
+            reference,
+            item: nightChinaSubmittedCases[0],
+            runId,
+            runRoot,
+          });
+          productionDataPreparation.nightchina_lifecycle.steps.push({
+            action: "unpublished_user_absence_then_republished_user_recovery",
+            ...lifecycle,
+          });
+        }
         if (pendingFormalContribution) {
           journeyEvidence.account_continuity =
             await assertNativeAccountContinuity(
@@ -7867,6 +8841,11 @@ async function main() {
               journey.key,
             );
         }
+      }
+      if (selectedJourneyKeys.some((key) => key.startsWith("nightchina-proposal-"))) {
+        productionDataPreparation.nightchina_lifecycle.status = "passed";
+        productionDataPreparation.nightchina_lifecycle.actual_weapp_point_count = nightChinaProposalCases.length;
+        productionDataPreparation.nightchina_lifecycle.source_photos_reused = 0;
       }
     }
     if (platformSimulation) {

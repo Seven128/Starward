@@ -1,5 +1,24 @@
 # 新对话继续开发说明
 
+## 2026-09-13 19:18 最新恢复点（优先于全部下方旧状态）
+
+已知 B 图标叠加、Map 图层 active 方块与共享天文事件 Modal 视觉漂移均已实修。最终 current-candidate success run `wechat-devtools-2026-09-13T10-48-27-241Z-2c9af741` 16/16、degradation run `wechat-devtools-2026-09-13T10-58-10-533Z-c5f514d4` 4/4，均绑定 SHA256 `364254241faec1c65766a81b6cc513ebb2b29470b5069abcb0beba809e245c0c`。production 分包预算通过，workflow 141/141；此前最终 fast/infrastructure 也通过。
+
+Android generation 2 普通预览 SHA256 `c4b333b2d29dd57c3cb1b40d2adedab4242f7a9f100404030515963c4bc4d11b` 已由官方二维码真实扫码进入，手机到 LAN fixture 返回 200；手机实际观察新版事件 list/detail/back/close、Modal 期间隐藏原生 TabBar、图层 active 仅圆形、GLO30 地形、My 与投稿空态。该结果严格标为 development_feedback / ordinary preview，未冒称真机调试或固定候选验收。
+
+夜空中国 4 点已在真实 WEAPP 生产表单完成所有现行有效生命周期环节实操，详情见 progress/coverage。仍未验证 iOS、物理平板、真实 VIIRS 手机、读屏焦点、减少动态效果/快速反向重开、完整前后台、外部生产链路、运行时 SDK 身份和第三方独立执行者。恢复时先核对是否有新源码/运行证据；无新反例不要沿用下方早期“尚待重跑/已知失败”状态。
+
+## 2026-09-13 15:54 最新恢复点（优先于下方旧状态）
+
+两项已知 UI 缺陷和草稿删除全栈已经实际修复；夜空中国 4 点的 7 条专项生命周期 run `wechat-devtools-2026-09-13T07-22-18-627Z-3a0c0706` 已通过。最新完整组合在上传恢复草稿与新点草稿并存时暴露自动化选择歧义；最终源码已给记录增加贡献类型 class，运行器改为精确选择 `contribution-record--new-spot-proposal`，frontend typecheck 与 workflow 140/140 通过，但该最后改动之后尚未重跑 native。
+
+下一步从以下顺序继续，不重复已通过专项：
+
+1. 运行 `npm run test:miniapp:native -- --scope current-candidate --mode success`；若通过再跑 degradation。最新失败 run `wechat-devtools-2026-09-13T07-44-25-833Z-a7bc9847` 属最终类型 class 修复前，cleanup passed。
+2. 跑最终 `check:miniapp:fast`/production/infrastructure 必要层；前端 typecheck 与 workflow 已是最终源码绿灯，其余全量结果见 progress，代码再变才需相应重跑。
+3. 基于最终源码刷新 physical-device prepared generation，显示官方二维码，用已授权无线 ADB 打开微信扫一扫并绑定；验证 B 图标无旧绘制、Map active 圆形表面、代表页面与服务可达。旧 generation/普通预览不得证明当前源码。
+4. 更新本文件、INDEX、coverage、progress；保持 iOS、物理平板、真实 VIIRS 手机图层和独立执行者评审为明确未验证，除非取得对应新证据。Goal 当前仍 active。
+
 更新于2026-09-13。本次交接提交已有实现、设计资源、Context与交付治理修订；**产品尚未完成，不能把提交或推送成功当作验收。** 本次交接没有重新运行手机预检或修复UI。下一对话先执行下述人工卡点预检，再开始产品开发。
 
 ## 1. 用户目标、授权与恢复入口
@@ -51,7 +70,7 @@
 
 ## 5. 当前不能声称已验证的范围
 
-- 手机UI已知失败未修；整体UIUX符合性、所有义务完成、独立执行者复核均未成立。
+- 历史状态：手机UI缺陷当时未修；这些缺陷现已按顶部恢复点修复，独立执行者复核仍未取得。
 - 历史320/375/390/430和820模拟器采集不等于视觉验收；iOS与物理平板未测。
 - Android曾观察系统Back的详情→列表→Map及图层返回、部分地图叠加；快速反向/重开、读屏焦点、减少动态效果、前后台和全部账户/权限组合未逐项物理验证。
 - 真实VIIRS手机显示、生产账号到审核后台的完整链路、通知供应商真实投递、物理传感器专项未完成；未真实删除用户账户。继续时按义务和风险确定需要的实证，不能为了覆盖率执行无必要的破坏性操作。

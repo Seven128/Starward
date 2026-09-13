@@ -22,6 +22,7 @@ import {
   MiniappApiError,
   submitContribution,
   updateContributionDraft,
+  withdrawContributionDraft,
 } from "@/services/api-client";
 import {
   contributionSubmissionState,
@@ -437,6 +438,30 @@ function createRemoveMedia(form: ContributionForm, assertAccount: () => void) {
   };
 }
 
+function createWithdrawDraft(form: ContributionForm, assertAccount: () => void) {
+  return async () => {
+    const draft = form.draft;
+    if (!draft || contributionSubmissionState(draft) !== "DRAFT") return false;
+    const confirmation = await Taro.showModal({
+      title: "删除这份草稿？",
+      content: "草稿将从可编辑列表移除，未提交的照片会被清理。此操作不能恢复。",
+      confirmText: "删除草稿",
+      confirmColor: "#b3261e",
+    });
+    if (!confirmation.confirm) return false;
+    assertAccount();
+    const response = await withdrawContributionDraft(draft.submissionId, draft.revision);
+    assertAccount();
+    if (contributionSubmissionState(response.data) !== "WITHDRAWN")
+      throw new Error("服务端尚未确认草稿已删除");
+    form.discardLocalDraft();
+    await form.history.refetch().catch(() => undefined);
+    assertAccount();
+    form.announce("success", "草稿已删除", "这份草稿不会进入审核，未提交照片已安排清理。");
+    return true;
+  };
+}
+
 function createChooseCandidateLocation(form: ContributionForm, assertAccount: () => void) {
   return async () => {
     try {
@@ -490,6 +515,7 @@ export function useContributionCommands(form: ContributionForm) {
     addMedia: guard(createAddMedia(form, saveDraft, assertAccount)),
     retryMedia: guard(createRetryMedia(form, assertAccount)),
     removeMedia: guard(createRemoveMedia(form, assertAccount)),
+    withdrawDraft: guard(createWithdrawDraft(form, assertAccount)),
     submit: guard(createSubmit(form, saveDraft, assertAccount), true),
   };
 }

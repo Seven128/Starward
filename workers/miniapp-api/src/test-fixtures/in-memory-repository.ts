@@ -322,6 +322,19 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       idempotencyKey,
     );
   }
+  async withdrawContributionDraft(
+    userId: UserId,
+    submissionId: ContributionId,
+    expectedRevision: number,
+    idempotencyKey: string,
+  ) {
+    return this.#contributions.withdrawDraft(
+      userId,
+      submissionId,
+      expectedRevision,
+      idempotencyKey,
+    );
+  }
   async createContributionUpload(
     userId: UserId,
     submissionId: ContributionId,
