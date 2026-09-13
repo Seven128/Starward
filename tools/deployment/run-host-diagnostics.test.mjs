@@ -3,7 +3,8 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } 
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
-import { diagnoseHost } from "./run-host-diagnostics.mjs";
+import { diagnoseHost, diagnosticSucceeded } from "./run-host-diagnostics.mjs";
+import { runtimeScript } from "./runtime-diagnostics.mjs";
 
 const env = {
   SSH_HOST: "host.example.invalid", SSH_PORT: "22", SSH_USER: "operator",
@@ -79,4 +80,20 @@ test("failure reports never expose SSH errors, remote paths, credentials or unso
     directory = dirname(args[1]); throw new Error(env.SSH_PRIVATE_KEY);
   }), { status: "failed", code: "diagnostic_execution_failed" });
   assert.equal(existsSync(directory), false);
+});
+
+test("runtime mode sends only the fixed staging probe and arbitrary modes cannot execute", () => {
+  const report = { status: "observed", runtimeEnvironment: "staging", configState: "failed", databaseState: "failed", revision: null, healthStatus: null };
+  const result = diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "runtime" }, (_command, _args, options) => {
+    assert.equal(options.input, runtimeScript);
+    return { status: 0, stdout: JSON.stringify({ ...report, secret: env.SSH_PRIVATE_KEY }) };
+  });
+  assert.deepEqual(result, report);
+  assert.deepEqual(diagnoseHost({ ...protectedEnv(), DIAGNOSTIC_MODE: "anything else" }, () => assert.fail("must not execute")), { status: "failed", code: "diagnostic_configuration_invalid" });
+});
+
+test("a completed observation cannot make an unavailable readiness endpoint green", () => {
+  const report = { status: "observed", runtimeEnvironment: "staging", configState: "ready", databaseState: "ready", healthStatus: 200 };
+  assert.equal(diagnosticSucceeded(report), true);
+  for (const healthStatus of [null, 503]) assert.equal(diagnosticSucceeded({ ...report, healthStatus }), false);
 });

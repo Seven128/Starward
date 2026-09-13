@@ -3,15 +3,18 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runtimeScript, sanitizeRuntimeReport } from "./runtime-diagnostics.mjs";
 
 const preflight = readFileSync(new URL("../../infrastructure/deployment/host-preflight.sh", import.meta.url), "utf8");
-const failureCodes = new Set([...preflight.matchAll(/host_preflight_[a-z0-9_]+/gu)].map(([code]) => code));
+const failureCodes = new Set([...`${preflight}\n${runtimeScript}`.matchAll(/(?:host_preflight|runtime_diagnostic)_[a-z0-9_]+/gu)].map(([code]) => code));
 const connectionKeys = ["SSH_HOST", "SSH_PORT", "SSH_USER", "REMOTE_INBOX", "REMOTE_RELEASE_ROOT", "REMOTE_CANDIDATE_ROOT", "REMOTE_BASE_DEPLOY_ENV"];
 
-// The only remote program is the existing read-only preflight. No command input,
-// remote file, container environment, credential export or deployment operation.
+// Only these repository-owned read-only programs may run. No arbitrary command,
+// remote file, container environment export, credential export or deployment.
 export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir()) {
   const invalid = { status: "failed", code: "diagnostic_configuration_invalid" };
+  const mode = env.DIAGNOSTIC_MODE ?? "host";
+  if (!["host", "runtime"].includes(mode)) return invalid;
   try {
     const connection = JSON.parse(env.SSH_CONNECTION ?? "");
     if (!connection || Array.isArray(connection) || typeof connection !== "object" ||
@@ -39,13 +42,14 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
       "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=10", "-o", "ServerAliveCountMax=2",
       "-p", env.SSH_PORT, `${env.SSH_USER}@${env.SSH_HOST}`,
       `sh -s -- ${paths.map((value) => `'${value}'`).join(" ")}`,
-    ], { input: preflight, encoding: "utf8", timeout: 60_000, maxBuffer: 64 * 1024, env: childEnv, windowsHide: true });
+    ], { input: mode === "runtime" ? runtimeScript : preflight, encoding: "utf8", timeout: 60_000, maxBuffer: 64 * 1024, env: childEnv, windowsHide: true });
     if (result.error || result.signal) return { status: "failed", code: "diagnostic_transport_interrupted" };
     if (result.status !== 0) {
       const code = String(result.stderr ?? "").trim().split(":")[0];
       return { status: "failed", code: result.status === 65 && failureCodes.has(code) ? code : "diagnostic_ssh_failed" };
     }
     const report = JSON.parse(result.stdout);
+    if (mode === "runtime") return sanitizeRuntimeReport(report);
     if (report.status !== "ready" || report.os !== "ubuntu-24.04" || report.architecture !== "x86_64" ||
         !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u.test(report.checkedAt) ||
         !["cpu", "memoryKiB", "availableDiskKiB"].every((name) => Number.isSafeInteger(report[name]) && report[name] > 0) ||
@@ -62,8 +66,12 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
   }
 }
 
+export function diagnosticSucceeded(report) {
+  return report.status === "ready" || (report.status === "observed" && report.runtimeEnvironment === "staging" && report.configState === "ready" && report.databaseState === "ready" && report.healthStatus === 200);
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const report = diagnoseHost(process.env);
   console.log(JSON.stringify(report));
-  process.exitCode = report.status === "ready" ? 0 : 1;
+  process.exitCode = diagnosticSucceeded(report) ? 0 : 1;
 }
