@@ -1,4 +1,5 @@
 import { operatorPreviewProviderSimulationProgram } from "./operator-preview-provider-simulation.mjs";
+import { imageryRuntimeProbe } from "./imagery-runtime-probe.mjs";
 
 // Fixed staging API inspection. This function is sent over SSH stdin, then Docker
 // stdin, and runs as the existing API container's node user. It writes no files.
@@ -83,6 +84,15 @@ STARWARD_FIXED_RUNTIME_PROBE
 }
 
 export const runtimeScript = stagingApiScript(`(${apiRuntimeProbe.toString()})().then(report => console.log(JSON.stringify(report))).catch(() => { console.log('{"status":"failed"}'); process.exitCode=1; });`);
+
+export const imageryScript = stagingApiScript(`
+const deadlineAt = Date.now() + 50000;
+const watchdog = setTimeout(() => { process.stderr.write('runtime_diagnostic_deadline_exceeded\\n'); process.exit(65); }, 50000);
+const observation = await (${apiRuntimeProbe.toString()})();
+if (observation.runtimeEnvironment !== 'staging' || observation.databaseState !== 'ready' || observation.configState !== 'ready' || observation.healthStatus !== 200 || observation.migrationCount < 18) throw new Error('diagnostic_imagery_lane_invalid');
+const result = await (${imageryRuntimeProbe.toString()})(process.env, undefined, undefined, deadlineAt);
+process.stdout.write(JSON.stringify(result) + '\\n', () => { clearTimeout(watchdog); process.exit(0); });
+`);
 
 // Reuse the existing operator-preview program only after a current read-only
 // observation proves that this is its expressly supported empty-population lane.
