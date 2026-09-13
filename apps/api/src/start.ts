@@ -78,7 +78,7 @@ function source(model: string) {
 }
 
 const primaryWeather = source("gfs_seamless");
-const forecast = new ForecastQueryService({ primary: primaryWeather, comparison: source("ecmwf_ifs025") });
+const forecast = new ForecastQueryService({ primary: primaryWeather, comparison: primaryWeather.withModels(["ecmwf_ifs025"]) });
 const forecastRuntime = await createForecastRuntime({
   dataDir: process.env.STARWARD_DATA_DIR ?? join(tmpdir(), "starward-api-runtime"),
   releaseProfile: { id: "individual-personal-trial", externalServicesBudgetCny: 200, productionTrafficAllowed: false },

@@ -12,6 +12,8 @@ import {
   type MiniappRuntimeConfig,
 } from "./runtime-config.ts";
 import { createWeatherPort } from "./weather-provider.ts";
+import { createVendorUsageTransport } from "./vendor-usage.ts";
+import { PostgresVendorUsageStore, readVendorUsageBudget } from "./postgres-vendor-usage.ts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.ts";
 
@@ -118,11 +120,14 @@ export class OutboxWorkerRuntime {
   readonly observationContexts: ObservationContextService;
   readonly astronomy: AstronomyService;
   readonly eventCatalog: AstronomicalEventCatalogOwner;
+  private readonly usageStore: PostgresVendorUsageStore;
 
   constructor(options: OutboxWorkerOptions) {
     this.config = options.runtimeConfig ?? loadRuntimeConfig();
     this.repository = new PostgresMiniappRepository(options.databaseUrl);
-    this.weather = options.weather ?? createWeatherPort(this.config);
+    this.usageStore = new PostgresVendorUsageStore(options.databaseUrl);
+    this.weather = options.weather ?? createWeatherPort(this.config,
+      createVendorUsageTransport(this.usageStore));
     this.mediaStore = createMediaObjectStore(this.config);
     this.eventCatalog = new AstronomicalEventCatalogOwner(
       new PostgresAstronomicalEventCatalogStore(this.repository.pool),
@@ -348,6 +353,7 @@ export class OutboxWorkerRuntime {
 
   async close() {
     await this.worker.close();
+    await this.usageStore.close();
     await this.queue.close();
     await this.pool.end();
     await this.repository.close();
@@ -411,6 +417,11 @@ export class OutboxWorkerRuntime {
         let availableCount = 0;
         let unavailableCount = 0;
         let hourlyCount = 0;
+        // This job publishes a rolling forecast, not a selected observing night.
+        // Keep morning hours even though interactive queries use noon-to-noon.
+        const weatherStart = Math.floor(Date.now() / 3_600_000) * 3_600_000;
+        const windowUtc = { start: new Date(weatherStart).toISOString(),
+          end: new Date(weatherStart + 24 * 3_600_000).toISOString() };
         for (const spot of spots.rows) {
           const date = localDate(spot.timezone);
           const weather = await this.weather.getHourly({
@@ -421,6 +432,7 @@ export class OutboxWorkerRuntime {
             },
             localDate: date,
             timezone: spot.timezone,
+            windowUtc,
           });
           const rows = weather.value ?? [];
           const validFrom = rows[0]?.at ?? new Date().toISOString();
@@ -453,6 +465,7 @@ export class OutboxWorkerRuntime {
                 sources: weather.sources,
                 errorCode: weather.errorCode,
                 providerKey: this.weather.key,
+                windowUtc,
                 warningState: weather.warningState,
                 alerts: weather.alerts,
                 timelineRole: weather.timelineRole,
@@ -899,24 +912,12 @@ export class OutboxWorkerRuntime {
         break;
       }
       case "COST": {
-        const usage = await client.query<{
-          projected: string;
-          calls: string;
-        }>(`SELECT
-          coalesce(sum(estimated_cost_cny), 0)::text AS projected,
-          count(*)::text AS calls
-          FROM vendor_call_usage`);
-        const projectedMonthlyCny = Number(usage.rows[0]!.projected);
-        if (projectedMonthlyCny > 300)
+        const budget = await readVendorUsageBudget(this.repository.pool);
+        if (budget.knownEstimatedCostCny !== null && budget.knownEstimatedCostCny > budget.hardMonthlyMax)
           throw new Error("provider_budget_hard_limit_exceeded");
         outcome = {
-          resultState: "WITHIN_BUDGET",
-          resultPayload: {
-            calls: Number(usage.rows[0]!.calls),
-            projectedMonthlyCny,
-            normalTargetCny: [0, 100],
-            hardMaximumCny: 300,
-          },
+          resultState: "UNASSESSED",
+          resultPayload: budget,
         };
         break;
       }

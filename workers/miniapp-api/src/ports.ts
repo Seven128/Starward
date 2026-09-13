@@ -122,6 +122,9 @@ export interface WeatherPort {
     point: Wgs84Point;
     localDate: string;
     timezone: string;
+    /** Explicit UTC range for rolling background forecasts; end is exclusive.
+     * Without it the requested date means the local noon-to-noon observation night. */
+    windowUtc?: { start: string; end: string };
     signal?: AbortSignal;
   }): Promise<WeatherEvidenceResult>;
 }

@@ -277,8 +277,8 @@ export class DisabledRouteAdapter implements RoutePort {
   }
 }
 
-export function createRoutePort(config: MiniappRuntimeConfig): RoutePort {
+export function createRoutePort(config: MiniappRuntimeConfig, transport: typeof fetch = fetch): RoutePort {
   return config.routeProvider === "AMAP"
-    ? new AmapRouteAdapter(config.amapWebServiceKey!)
+    ? new AmapRouteAdapter(config.amapWebServiceKey!, transport)
     : new DisabledRouteAdapter();
 }

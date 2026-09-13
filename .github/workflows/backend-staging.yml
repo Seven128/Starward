@@ -67,13 +67,6 @@ jobs:
     env:
       REVISION: ${{ github.event.workflow_run.head_sha || github.sha }}
       DEPLOYMENT_LANE: ${{ vars.STARWARD_STAGING_LANE || 'domain' }}
-      SSH_HOST: ${{ vars.STARWARD_SSH_HOST }}
-      SSH_PORT: ${{ vars.STARWARD_SSH_PORT }}
-      SSH_USER: ${{ vars.STARWARD_SSH_USER }}
-      REMOTE_INBOX: ${{ vars.STARWARD_REMOTE_INBOX }}
-      REMOTE_RELEASE_ROOT: ${{ vars.STARWARD_REMOTE_RELEASE_ROOT }}
-      REMOTE_BASE_DEPLOY_ENV: ${{ vars.STARWARD_REMOTE_BASE_DEPLOY_ENV }}
-      REMOTE_CANDIDATE_ROOT: ${{ vars.STARWARD_REMOTE_CANDIDATE_ROOT }}
       REGISTRY_HOST: ${{ vars.STARWARD_REGISTRY_HOST }}
       REGISTRY_USERNAME: ${{ vars.STARWARD_REGISTRY_USERNAME }}
       IMAGE_REPOSITORY: ${{ vars.STARWARD_IMAGE_REPOSITORY }}
@@ -86,6 +79,10 @@ jobs:
         with:
           node-version: "24"
           cache: npm
+      - name: Load protected staging connection
+        env:
+          SSH_CONNECTION: ${{ secrets.STARWARD_DIAGNOSTIC_CONNECTION }}
+        run: node tools/deployment/load-actions-connection.mjs
       - name: Validate deployment configuration inputs
         shell: bash
         run: |
@@ -206,3 +203,7 @@ jobs:
           ssh "${ssh_options[@]}" "$target" \
             "sh -s -- '$remote_archive' '$remote_request' '$REMOTE_RELEASE_ROOT' '$REVISION' '$ARCHIVE_SHA256'" \
             < infrastructure/deployment/run-remote-promotion.sh
+      - name: Remove temporary SSH inputs
+        if: ${{ always() }}
+        shell: bash
+        run: rm -f -- "$RUNNER_TEMP/starward_ssh_key" "$RUNNER_TEMP/starward_known_hosts"

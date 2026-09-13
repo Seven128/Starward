@@ -40,6 +40,7 @@ export class OpenMeteoHttpClient {
   private readonly baseUrl: URL;
   private readonly airQualityBaseUrl: URL;
   private readonly now: () => Date;
+  private airQualityRequests = new Map<string, Promise<OpenMeteoAirQualityPayload>>();
 
   constructor(private readonly options: OpenMeteoHttpClientOptions) {
     if (options.endpointClass === "commercial" && !options.apiKey) throw new Error("open_meteo_commercial_api_key_required");
@@ -49,6 +50,26 @@ export class OpenMeteoHttpClient {
     assertHttpsHost(this.baseUrl, ["api.open-meteo.com", "customer-api.open-meteo.com"]);
     assertHttpsHost(this.airQualityBaseUrl, ["air-quality-api.open-meteo.com", "customer-air-quality-api.open-meteo.com"]);
     this.now = options.now ?? (() => new Date());
+  }
+
+  /** Model siblings keep the same transport/entitlement but share the one AQ
+   * request that has no weather-model parameter. Settled responses are not kept. */
+  withModels(models: string[]): OpenMeteoHttpClient {
+    const sibling = new OpenMeteoHttpClient({ ...this.options, models: [...models] });
+    sibling.airQualityRequests = this.airQualityRequests;
+    return sibling;
+  }
+
+  private loadAirQuality(url: URL, init: RequestInit): Promise<OpenMeteoAirQualityPayload> {
+    // The provider's default horizon starts on its current UTC day. A request
+    // crossing midnight must not reuse yesterday's still-pending horizon.
+    const key = `${this.now().toISOString().slice(0, 10)}:${url.href}`;
+    const pending = this.airQualityRequests.get(key);
+    if (pending) return pending;
+    const request = requestJson<OpenMeteoAirQualityPayload>({ provider: "open-meteo-air-quality", url, init, transport: this.options.transport })
+      .finally(() => this.airQualityRequests.delete(key));
+    this.airQualityRequests.set(key, request);
+    return request;
   }
 
   async load(input: { latitude: number; longitude: number; runId: string; issuedAt: string; expiresAt: string }) {
@@ -79,7 +100,7 @@ export class OpenMeteoHttpClient {
     const init = { headers: { accept: "application/json", "accept-encoding": "gzip" } } satisfies RequestInit;
     const [payload, airQuality] = await Promise.all([
       requestJson<OpenMeteoPayload>({ provider: "open-meteo", url, init, transport: this.options.transport }),
-      requestJson<OpenMeteoAirQualityPayload>({ provider: "open-meteo-air-quality", url: airQualityUrl, init, transport: this.options.transport })
+      this.loadAirQuality(airQualityUrl, init)
         .catch(() => undefined),
     ]);
     return normalizeOpenMeteo({

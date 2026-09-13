@@ -70,6 +70,7 @@ import {
   listMigrationVersions,
   runPostgresMigrations,
 } from "./migration-runner.ts";
+import { readVendorUsageCosts } from "./postgres-vendor-usage.ts";
 
 const { Pool } = pg;
 const root = path.resolve(
@@ -3735,10 +3736,7 @@ export class PostgresMiniappRepository
       this.pool.query(
         "SELECT provider, state, failure_code, checked_at, payload FROM provider_health_checks ORDER BY provider",
       ),
-      this.pool.query(`SELECT provider, capability,
-        count(*)::integer AS calls,
-        coalesce(sum(estimated_cost_cny), 0)::text AS estimated_cost_cny
-        FROM vendor_call_usage GROUP BY provider, capability ORDER BY provider, capability`),
+      readVendorUsageCosts(this.pool),
       this.pool.query(
         "SELECT snapshot_id, spot_id, local_date, rule_version, input_digest, source_snapshot_ids, payload, generated_at FROM tonight_decision_snapshots ORDER BY generated_at DESC LIMIT 100",
       ),
@@ -3755,7 +3753,7 @@ export class PostgresMiniappRepository
     return {
       dataSources: sources.rows,
       providerHealth: health.rows,
-      costs: costs.rows,
+      costs,
       decisions: [
         ...opportunities.rows.map((row) => ({
           conclusion: "SKY_OPPORTUNITY",

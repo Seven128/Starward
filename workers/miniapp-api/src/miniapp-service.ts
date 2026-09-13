@@ -96,7 +96,9 @@ import {
 } from "./media-object-store.ts";
 import { decodeContributionBase64 } from "./contribution-validation.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
-import { MemoryOutbox, MemoryTelemetry, ProviderRuntime } from "./runtime.ts";
+import { MemoryOutbox, MemoryTelemetry } from "./runtime.ts";
+import { createVendorUsageTransport, MINIAPP_VENDOR_BUDGET_CNY } from "./vendor-usage.ts";
+import { PostgresVendorUsageStore, readVendorUsageBudget } from "./postgres-vendor-usage.ts";
 import { createRoutePort } from "./route-provider.ts";
 import { createPlaceSearchPort } from "./place-provider.ts";
 import {
@@ -693,7 +695,7 @@ export class MiniappService {
   readonly repository: MiniappRepositoryPort;
   readonly astronomy: AstronomyService;
   readonly celestialObjects = new CelestialObjectInformationService();
-  readonly deepSkyImages = new DeepSkyImageryService();
+  readonly deepSkyImages: DeepSkyImageryService;
   readonly telemetry: TelemetryPort;
   readonly cache: CachePort;
   readonly config: MiniappRuntimeConfig;
@@ -703,8 +705,8 @@ export class MiniappService {
   readonly eventCatalog: AstronomicalEventCatalogOwner;
   readonly route: RoutePort;
   readonly placeSearch: PlaceSearchPort;
-  readonly providers = new ProviderRuntime();
   readonly outbox = new MemoryOutbox();
+  private readonly usageStore: PostgresVendorUsageStore | undefined;
 
   constructor(input: {
     repository: MiniappRepositoryPort;
@@ -717,9 +719,13 @@ export class MiniappService {
     mediaStore?: MediaObjectStorePort;
     skyCatalog?: SkyCatalogProvider;
     eventCatalog?: AstronomicalEventCatalogOwner;
+    deepSkyImages?: DeepSkyImageryService;
+    usageStore?: PostgresVendorUsageStore;
   }) {
     this.repository = input.repository;
     this.config = input.config;
+    this.deepSkyImages = input.deepSkyImages ?? new DeepSkyImageryService();
+    this.usageStore = input.usageStore;
     this.route = input.route;
     this.placeSearch = input.placeSearch ?? createPlaceSearchPort(input.config);
     this.telemetry = input.telemetry ?? new MemoryTelemetry();
@@ -770,6 +776,8 @@ export class MiniappService {
         ? new PostgresAstronomicalEventCatalogStore(repository.pool)
         : undefined,
     ).initialize();
+    const usageStore = repository instanceof PostgresMiniappRepository ? new PostgresVendorUsageStore(config.databaseUrl!) : undefined;
+    const transport = usageStore ? createVendorUsageTransport(usageStore) : fetch;
     return new MiniappService({
       repository,
       cache,
@@ -778,15 +786,18 @@ export class MiniappService {
         ? new (
             await import("./test-fixtures/deterministic-weather-adapter.ts")
           ).DeterministicWeatherTestAdapter()
-        : createWeatherPort(config),
-      route: createRoutePort(config),
-      placeSearch: createPlaceSearchPort(config),
+        : createWeatherPort(config, transport),
+      route: createRoutePort(config, transport),
+      placeSearch: createPlaceSearchPort(config, transport),
+      deepSkyImages: new DeepSkyImageryService(transport),
+      ...(usageStore ? { usageStore } : {}),
       mediaStore: createMediaObjectStore(config),
       eventCatalog,
     });
   }
 
   async onModuleDestroy() {
+    await this.usageStore?.close();
     await this.repository.close();
     this.astronomy.clearCaches();
     await this.cache.close();
@@ -2659,11 +2670,17 @@ export class MiniappService {
     );
   }
 
+  async budgetSnapshot() {
+    return this.repository instanceof PostgresMiniappRepository
+      ? readVendorUsageBudget(this.repository.pool)
+      : { product: "MINIAPP", currency: "CNY", hardMonthlyMax: MINIAPP_VENDOR_BUDGET_CNY, state: "UNASSESSED", projectedMonthlyCny: null, coverage: "MEMORY_TEST_NOT_METERED" };
+  }
+
   async operationsSnapshot() {
     return envelope(
       {
         capabilities: this.getCapabilities().data,
-        budget: this.providers.budget.snapshot(),
+        budget: await this.budgetSnapshot(),
         repository: await this.repository.operationsSnapshot(),
         cache: await this.cache.operationsSnapshot(),
         outbox:

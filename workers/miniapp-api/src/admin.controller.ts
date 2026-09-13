@@ -589,7 +589,7 @@ export class AdminController {
     const context = this.#context(token, actor);
     return envelope({
       usage: (await context.repository.adminOperations()).costs,
-      budget: this.service.providers.budget.snapshot(),
+      budget: await this.service.budgetSnapshot(),
     });
   }
 

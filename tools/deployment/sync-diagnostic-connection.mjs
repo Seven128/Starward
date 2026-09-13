@@ -1,7 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { connectionKeys, parseDeploymentConnection } from "./deployment-connection.mjs";
 
-// Refresh only the diagnostic metadata mirror, never an SSH/private runtime key.
+// Refresh the staging release/diagnostic metadata mirror, never a private key.
 // GH stdout/stderr and the packet stay in memory, including on failure.
 const cwd = fileURLToPath(new URL("../../", import.meta.url));
 const childEnv = { ...process.env };
@@ -17,12 +18,12 @@ try {
   const result = JSON.parse(variables.stdout);
   if (result.total_count > 100 || !Array.isArray(result.variables)) throw new Error();
   const packet = {};
-  for (const name of ["SSH_HOST", "SSH_PORT", "SSH_USER", "REMOTE_INBOX", "REMOTE_RELEASE_ROOT", "REMOTE_CANDIDATE_ROOT", "REMOTE_BASE_DEPLOY_ENV"]) {
+  for (const name of connectionKeys) {
     const value = result.variables.find((entry) => entry.name === `STARWARD_${name}`)?.value;
     if (typeof value !== "string" || value.length === 0) throw new Error();
     packet[name] = value;
   }
-  const stored = spawnSync("gh", ["secret", "set", "STARWARD_DIAGNOSTIC_CONNECTION", "--env", "staging"], { ...options, input: JSON.stringify(packet) });
+  const stored = spawnSync("gh", ["secret", "set", "STARWARD_DIAGNOSTIC_CONNECTION", "--env", "staging"], { ...options, input: JSON.stringify(parseDeploymentConnection(JSON.stringify(packet))) });
   if (stored.error || stored.status !== 0) throw new Error();
   status = "updated";
 } catch { /* Never surface gh errors: they may contain private connection values. */ }

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
+import { createServer } from "node:http";
 import test from "node:test";
 import type { ContributionSubmission, ImportDraft } from "@starward/miniapp-contracts";
 import { eraseContributionContent } from "./account-data-erasure.ts";
@@ -13,11 +14,14 @@ import { PostgresMiniappRepository } from "./postgres-repository.ts";
 import { createTestRuntimeConfig } from "./runtime-config.ts";
 import { insertExplicitTestSpot } from "./test-fixtures/infrastructure-spot.ts";
 import { DeterministicWeatherTestAdapter } from "./test-fixtures/deterministic-weather-adapter.ts";
+import type { WeatherPort } from "./ports.ts";
 import {
   AstronomicalEventCatalogOwner,
   EVENT_CATALOG_SCHEMA_VERSION,
 } from "./astronomical-event-catalog-owner.ts";
 import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.ts";
+import { PostgresVendorUsageStore, readVendorUsageBudget, readVendorUsageCosts } from "./postgres-vendor-usage.ts";
+import { createVendorUsageTransport } from "./vendor-usage.ts";
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
 const redisUrl = process.env.REDIS_URL?.trim();
@@ -859,21 +863,55 @@ test(
     const queueName =
       process.env.MINIAPP_QUEUE_NAME ??
       "starward-miniapp-integration-" + runId;
+    const publicationWindows: { start: string; end: string }[] = [];
+    const fixtureWeather = new DeterministicWeatherTestAdapter();
+    const publicationWeather: WeatherPort = {
+      key: "rolling-publication-fixture",
+      async getHourly(input) {
+        const result = await fixtureWeather.getHourly(input);
+        if (!input.windowUtc) return result; // unrelated astronomy job
+        publicationWindows.push(input.windowUtc);
+        const start = Date.parse(input.windowUtc.start);
+        assert.equal(Date.parse(input.windowUtc.end) - start, 24 * 3_600_000);
+        assert.equal(start % 3_600_000, 0);
+        assert.ok(Math.abs(Date.now() - start) < 3_600_000);
+        return { ...result, value: Array.from({ length: 24 }, (_, index) => ({
+          ...result.value![0]!, at: new Date(start + index * 3_600_000).toISOString(), cloudPercent: 70 + index,
+        })) };
+      },
+    };
     const options = {
       databaseUrl,
       redisUrl,
       queueName,
       runtimeConfig: config,
-      weather: new DeterministicWeatherTestAdapter(),
+      weather: publicationWeather,
     };
     const snapshot = await runOutboxOnce(options);
     assert.equal(snapshot.pending, 0);
     assert.equal(snapshot.dead_letter, 0, JSON.stringify(snapshot.dead_letters));
     assert.ok(snapshot.scheduled >= OPERATIONAL_JOB_KINDS.length);
     assert.ok(snapshot.effects >= OPERATIONAL_JOB_KINDS.length);
+    assert.ok(publicationWindows.length > 0, "WEATHER must supply its rolling window instead of borrowing the selected-night default");
 
     const runtime = new OutboxWorkerRuntime(options);
     try {
+      const costOutcome = await runtime.pool.query<{ result_state: string; result_payload: { projectedMonthlyCny: number | null; hardMonthlyMax: number } }>(
+        "SELECT result_state, result_payload FROM job_executions WHERE job_kind='COST' AND state='COMPLETE' ORDER BY completed_at DESC LIMIT 1");
+      assert.equal(costOutcome.rows[0]?.result_state, "UNASSESSED", "a completed COST job cannot certify an unpriced or empty ledger as within budget");
+      assert.equal(costOutcome.rows[0]?.result_payload.projectedMonthlyCny, null);
+      assert.equal(costOutcome.rows[0]?.result_payload.hardMonthlyMax, 350);
+      const published = await runtime.pool.query<{ run_id: string; payload: { windowUtc: { start: string; end: string } } }>(
+        "SELECT run_id, payload FROM weather_runs WHERE payload->>'providerKey' = $1 ORDER BY valid_from DESC LIMIT 1",
+        [publicationWeather.key]);
+      assert.deepEqual(published.rows[0]?.payload.windowUtc, publicationWindows[0]);
+      const publishedHours = await runtime.pool.query<{ observed_at: Date; payload: { cloudPercent: number } }>(
+        "SELECT observed_at, payload FROM weather_hourly WHERE run_id = $1 ORDER BY observed_at", [published.rows[0]!.run_id]);
+      assert.equal(publishedHours.rows.length, 24);
+      assert.equal(publishedHours.rows[0]!.observed_at.toISOString(), publicationWindows[0]!.start);
+      assert.equal(publishedHours.rows.at(-1)!.observed_at.toISOString(),
+        new Date(Date.parse(publicationWindows[0]!.end) - 3_600_000).toISOString());
+      assert.deepEqual(publishedHours.rows.map(row => row.payload.cloudPercent), Array.from({ length: 24 }, (_, index) => 70 + index));
       const effects = await runtime.pool.query<{
         weather_runs: string;
         astronomy_nights: string;
@@ -903,3 +941,90 @@ test(
     }
   },
 );
+
+test("provider attempts commit before HTTP, survive caller rollback and use the Shanghai calendar month", { skip: !databaseUrl }, async () => {
+  assert.ok(databaseUrl);
+  const repository = await new PostgresMiniappRepository(databaseUrl).initialize({ migrate: true });
+  const store = new PostgresVendorUsageStore(databaseUrl);
+  const requestIds: string[] = [];
+  const server = createServer(async (_request, response) => {
+    const recorded = await repository.pool.query("SELECT status FROM vendor_call_usage WHERE request_id=$1", [requestIds.at(-1)]);
+    response.writeHead(recorded.rows[0]?.status === "PENDING" ? 200 : 500, { "content-type": "application/json" });
+    response.end(JSON.stringify({ value: 42 }));
+  });
+  await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+  const business = await repository.pool.connect();
+  try {
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const fetchMetered = createVendorUsageTransport({
+      async begin(attempt) { requestIds.push(attempt.requestId); await store.begin(attempt); },
+      finish: (id, outcome) => store.finish(id, outcome),
+    }, (_url, init) => fetch(`http://127.0.0.1:${address.port}/fixture`, init));
+    await business.query("BEGIN");
+    const response = await fetchMetered("https://test.qweatherapi.com/weather/v1/hourly/23.13/113.26?hours=24", {
+      headers: { authorization: "Bearer fixture-not-a-user-credential" },
+    });
+    assert.equal(response.status, 200, "the independent connection must see a committed PENDING row before the request");
+    assert.deepEqual(await response.json(), { value: 42 });
+    await business.query("ROLLBACK");
+    const persisted = await repository.pool.query("SELECT * FROM vendor_call_usage WHERE request_id=$1", [requestIds[0]]);
+    assert.equal(persisted.rows[0]?.status, "HTTP_RESPONSE");
+    assert.equal(persisted.rows[0]?.http_status, 200);
+    assert.equal(persisted.rows[0]?.estimated_cost_cny, null);
+    assert.doesNotMatch(JSON.stringify(persisted.rows), /23\.13|113\.26|fixture-not-a-user-credential/);
+
+    // Break only this isolated test database's idle meter connection. The API
+    // process must survive the asynchronous pg pool error and reconnect.
+    const terminated = await repository.pool.query(`SELECT pg_terminate_backend(pid) AS terminated FROM pg_stat_activity
+      WHERE datname=current_database() AND application_name='starward-miniapp-vendor-usage' AND state='idle'`);
+    assert.ok(terminated.rows.some(row => row.terminated === true));
+    await new Promise(resolve => setTimeout(resolve, 50));
+    assert.equal((await fetchMetered("https://test.qweatherapi.com/weather/v1/hourly/23.13/113.26")).status, 200);
+    const reconnected = await repository.pool.query("SELECT status FROM vendor_call_usage WHERE request_id=$1", [requestIds.at(-1)]);
+    assert.equal(reconnected.rows[0]?.status, "HTTP_RESPONSE");
+
+    // The source of these four synthetic rows is explicit and confined to the
+    // runner-owned test DB. Legacy zero or any legacy estimate remains unverified.
+    const provider = `TEST_MONTH_${randomUUID()}`;
+    await repository.pool.query(`INSERT INTO vendor_call_usage
+      (provider,operation,capability,status,latency_ms,estimated_cost_cny,occurred_at)
+      SELECT $1,'BOUNDARY','TEST','LEGACY',0,amount,at FROM (VALUES
+        ((date_trunc('month',now() AT TIME ZONE 'Asia/Shanghai') AT TIME ZONE 'Asia/Shanghai') - interval '1 millisecond',987),
+        ((date_trunc('month',now() AT TIME ZONE 'Asia/Shanghai') AT TIME ZONE 'Asia/Shanghai'),0),
+        (((date_trunc('month',now() AT TIME ZONE 'Asia/Shanghai') + interval '1 month') AT TIME ZONE 'Asia/Shanghai') - interval '1 millisecond',2),
+        (((date_trunc('month',now() AT TIME ZONE 'Asia/Shanghai') + interval '1 month') AT TIME ZONE 'Asia/Shanghai'),654)
+      ) AS boundary(at,amount)`, [provider]);
+    const costs = (await readVendorUsageCosts(repository.pool)).find(row => row.provider === provider)!;
+    assert.equal(costs.recorded_attempts, 2);
+    assert.equal(costs.unpriced_attempts, 2);
+    assert.equal(costs.unknown_outcomes, 2);
+    assert.equal(costs.estimated_cost_cny, null);
+    const adminCosts = (await repository.adminOperations()).costs.find(row => row.provider === provider)!;
+    assert.equal(adminCosts.recorded_attempts, 2);
+    const budget = await readVendorUsageBudget(repository.pool);
+    assert.equal(budget.state, "UNASSESSED");
+    assert.equal(budget.projectedMonthlyCny, null);
+    assert.equal(budget.hardMonthlyMax, 350);
+
+    // A blocked INSERT must time out without allowing a late external send.
+    await business.query("BEGIN");
+    await business.query("LOCK TABLE vendor_call_usage IN ACCESS EXCLUSIVE MODE");
+    let sent = false;
+    const blocked = createVendorUsageTransport(store, async () => { sent = true; return new Response("{}"); });
+    const before = Date.now();
+    await assert.rejects(blocked("https://test.qweatherapi.com/weather/v1/hourly/23.13/113.26"), /record_unavailable/);
+    assert.ok(Date.now() - before < 2_000);
+    assert.equal(sent, false);
+    await business.query("ROLLBACK");
+    await new Promise(resolve => setTimeout(resolve, 30));
+    assert.equal(sent, false);
+  } finally {
+    await business.query("ROLLBACK");
+    business.release();
+    server.closeAllConnections();
+    await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    await store.close();
+    await repository.close();
+  }
+});

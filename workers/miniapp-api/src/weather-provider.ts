@@ -1,5 +1,6 @@
 import { createHash, createPrivateKey, sign } from "node:crypto";
 import { wgs84ToGcj02 } from "@starward/coordinate-system";
+import { observationNightBounds } from "@starward/miniapp-contracts";
 import type { DataState, SourceSummary } from "@starward/miniapp-contracts";
 import type {
   CanonicalWeatherAlert,
@@ -13,7 +14,8 @@ import type {
   MiniappRuntimeConfig,
   OpenMeteoEvidenceMode,
 } from "./runtime-config.ts";
-import { WEATHER_DEADLINES, withDeadline } from "./provider-deadline.ts";
+import { WEATHER_DEADLINES, waitForCaller, withDeadline } from "./provider-deadline.ts";
+import { ComputationCache } from "./computation-cache.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -220,10 +222,13 @@ function normalizedAt(value: string): string {
   return parsed.toISOString();
 }
 
-function nextLocalDate(localDate: string): string {
-  const next = new Date(`${localDate}T00:00:00.000Z`);
-  next.setUTCDate(next.getUTCDate() + 1);
-  return next.toISOString().slice(0, 10);
+function weatherWindow(input: Parameters<WeatherPort["getHourly"]>[0]) {
+  const night = observationNightBounds(input);
+  const start = Date.parse(input.windowUtc?.start ?? night.nightStartUtc);
+  const end = Date.parse(input.windowUtc?.end ?? night.nightEndUtc);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end)
+    throw new Error("weather_window_invalid");
+  return { start, end };
 }
 
 function stateFromRows(rows: readonly CanonicalWeatherHour[]): DataState {
@@ -273,7 +278,11 @@ function openMeteoHourlyValue(
   model: string,
   index: number,
 ): unknown {
-  return hourly[`${variable}_${model}`]?.[index] ?? hourly[variable]?.[index];
+  const key = `${variable}_${model}`;
+  if (Object.hasOwn(hourly, key)) return hourly[key]?.[index];
+  // A generic response can describe Best Match only. Reusing it for every
+  // named model fabricates identical independent evidence and confidence.
+  return model === "best_match" ? hourly[variable]?.[index] : undefined;
 }
 
 export class OpenMeteoWeatherAdapter implements WeatherPort {
@@ -285,6 +294,7 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
     private readonly transport: typeof fetch = fetch,
     private readonly mode: OpenMeteoEvidenceMode = config.openMeteoEvidenceMode,
     private readonly deadlineMs: number = WEATHER_DEADLINES.requestMs,
+    private readonly now: () => Date = () => new Date(),
   ) {
     const commercial = mode === "OPEN_METEO_COMMERCIAL";
     this.key = commercial
@@ -301,7 +311,18 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
     input: Parameters<WeatherPort["getHourly"]>[0],
   ): Promise<OpenMeteoEvidenceResult> {
     const url = new URL(this.endpoint);
-    const fetchedAt = new Date().toISOString();
+    const fetchedAt = this.now().toISOString();
+    const window = weatherWindow(input);
+    // Open-Meteo admits at most today + 15 UTC dates. Request only the
+    // supported intersection, so the final night's real hours survive.
+    const horizonEnd = new Date(`${fetchedAt.slice(0, 10)}T00:00:00.000Z`);
+    horizonEnd.setUTCDate(horizonEnd.getUTCDate() + 16);
+    const endExclusive = Math.min(window.end, horizonEnd.getTime());
+    if (window.start >= endExclusive) {
+      input.signal?.throwIfAborted();
+      return { ...unavailableWeatherResult(this.key, "open_meteo_outside_forecast_range"), modelSourceByKey: {} };
+    }
+    const horizonClipped = endExclusive < window.end;
     url.search = new URLSearchParams({
       latitude: input.point.latitude.toFixed(5),
       longitude: input.point.longitude.toFixed(5),
@@ -324,8 +345,8 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
       models: OPEN_METEO_MODEL_SPECS.map((entry) => entry.key).join(","),
       timezone: "GMT",
       wind_speed_unit: "kmh",
-      start_date: input.localDate,
-      end_date: nextLocalDate(input.localDate),
+      start_hour: new Date(window.start).toISOString().slice(0, 16),
+      end_hour: new Date(endExclusive - 3_600_000).toISOString().slice(0, 16),
       cell_selection: "land",
       ...(this.config.openMeteoApiKey
         ? { apikey: this.config.openMeteoApiKey }
@@ -349,7 +370,7 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
       const modelSourceByKey: Record<string, SourceSummary> = {};
       const modelRuns: WeatherModelRunSummary[] = [];
       for (const spec of OPEN_METEO_MODEL_SPECS) {
-        const available = payload.hourly.time.some(
+        const availableIndices = payload.hourly.time.flatMap(
           (_, index) =>
             percent(
               openMeteoHourlyValue(
@@ -358,9 +379,13 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
                 spec.key,
                 index,
               ),
-            ) !== null,
+            ) !== null ? [index] : [],
         );
-        const state: DataState = available ? "FRESH" : "UNAVAILABLE";
+        const available = availableIndices.length > 0;
+        const partial = horizonClipped || availableIndices.length !== payload.hourly.time.length ||
+          availableIndices.some(index => ["cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"].some(variable =>
+            percent(openMeteoHourlyValue(payload.hourly, variable, spec.key, index)) === null));
+        const state: DataState = !available ? "UNAVAILABLE" : partial ? "PARTIAL" : "FRESH";
         const sourceId = `weather:open-meteo:${spec.key}:${digest({
           point: input.point,
           time: payload.hourly.time,
@@ -381,9 +406,9 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
           license: "CC BY 4.0",
           licenseUrl: "https://open-meteo.com/en/license",
           retrievedAt: fetchedAt,
-          validFrom: available ? normalizedAt(payload.hourly.time[0]!) : null,
+          validFrom: available ? normalizedAt(payload.hourly.time[availableIndices[0]!]!) : null,
           validTo: available
-            ? normalizedAt(payload.hourly.time.at(-1)!)
+            ? normalizedAt(payload.hourly.time[availableIndices.at(-1)!]!)
             : null,
           state,
           precision:
@@ -395,6 +420,7 @@ export class OpenMeteoWeatherAdapter implements WeatherPort {
               ? "当前仅限所有者个人非商业试用，不允许商业发布"
               : "商业端点仍受当前合同、配额与模型覆盖边界约束",
             "数值模式预报不是现场观测；模型差异只改变置信度和解释",
+            ...(partial ? ["部分请求时段或分层云字段缺测；有效期仅描述已返回的模型数据"] : []),
             ...spec.interpolatedVariables,
           ],
         });
@@ -712,18 +738,48 @@ interface QWeatherForecastResult
   modelRun: WeatherModelRunSummary | null;
 }
 
+const QWEATHER_CACHE = Object.freeze({ entries: 128, forecastMs: 30 * 60_000, alertMs: 5 * 60_000, partialMs: 60_000, failureMs: 5_000 });
+
+// Dates/windows do not change either current QWeather endpoint's upstream
+// request. Identity follows its actual rounded GCJ-02 point and configuration.
+function qweatherSourceKey(config: MiniappRuntimeConfig, input: Parameters<WeatherPort["getHourly"]>[0]): string {
+  const point = qweatherRequestPoint(input);
+  return digest([config.qweather, point.latitude.toFixed(2), point.longitude.toFixed(2)]);
+}
+
+function qweatherSourceExpiry(result: ProviderResult<unknown>, now: number, ttlMs: number): number {
+  if (result.state === "UNAVAILABLE" || result.state === "EXPIRED") return now + QWEATHER_CACHE.failureMs;
+  const retrievedAt = Date.parse(result.source.retrievedAt);
+  const validTo = Date.parse(result.source.validTo ?? "");
+  return Math.min(retrievedAt + (result.state === "PARTIAL" ? QWEATHER_CACHE.partialMs : ttlMs),
+    Number.isFinite(validTo) ? validTo : now);
+}
+
 export class QWeatherForecastAdapter {
   readonly key: string;
+  private readonly cache: ComputationCache<QWeatherForecastResult>;
 
   constructor(
     private readonly config: MiniappRuntimeConfig,
     private readonly transport: typeof fetch = fetch,
     private readonly deadlineMs: number = WEATHER_DEADLINES.requestMs,
+    private readonly now: () => number = Date.now,
   ) {
     this.key = `qweather-weather-v1-hourly-${config.qweather.forecastHours}h`;
+    this.cache = new ComputationCache(QWEATHER_CACHE.entries, now);
   }
 
   async getHourly(
+    input: Parameters<WeatherPort["getHourly"]>[0],
+  ): Promise<QWeatherForecastResult> {
+    input.signal?.throwIfAborted();
+    const { signal, ...sharedInput } = input;
+    return waitForCaller(this.cache.get(qweatherSourceKey(this.config, input),
+      () => this.fetchHourly(sharedInput),
+      result => qweatherSourceExpiry(result, this.now(), QWEATHER_CACHE.forecastMs)), signal);
+  }
+
+  private async fetchHourly(
     input: Parameters<WeatherPort["getHourly"]>[0],
   ): Promise<QWeatherForecastResult> {
     const host = this.config.qweather.apiHost;
@@ -766,7 +822,7 @@ export class QWeatherForecastAdapter {
       );
       if (!payload.hours?.length)
         throw new Error("qweather_rejected:empty");
-      const fetchedAt = new Date().toISOString();
+      const fetchedAt = new Date(this.now()).toISOString();
       const sourceId = `weather:qweather-weather-v1-hourly:${digest({
         point,
         forecastHours,
@@ -914,14 +970,28 @@ function materialAlert(input: {
 
 export class QWeatherAlertAdapter {
   readonly key = "qweather-current-official-alert";
+  private readonly cache: ComputationCache<ProviderResult<readonly CanonicalWeatherAlert[]>>;
 
   constructor(
     private readonly config: MiniappRuntimeConfig,
     private readonly transport: typeof fetch = fetch,
     private readonly deadlineMs: number = WEATHER_DEADLINES.requestMs,
-  ) {}
+    private readonly now: () => number = Date.now,
+  ) {
+    this.cache = new ComputationCache(QWEATHER_CACHE.entries, now);
+  }
 
   async getAlerts(
+    input: Parameters<WeatherPort["getHourly"]>[0],
+  ): Promise<ProviderResult<readonly CanonicalWeatherAlert[]>> {
+    input.signal?.throwIfAborted();
+    const { signal, ...sharedInput } = input;
+    return waitForCaller(this.cache.get(qweatherSourceKey(this.config, input),
+      () => this.fetchAlerts(sharedInput),
+      result => qweatherSourceExpiry(result, this.now(), QWEATHER_CACHE.alertMs)), signal);
+  }
+
+  private async fetchAlerts(
     input: Parameters<WeatherPort["getHourly"]>[0],
   ): Promise<ProviderResult<readonly CanonicalWeatherAlert[]>> {
     const host = this.config.qweather.apiHost;
@@ -959,7 +1029,7 @@ export class QWeatherAlertAdapter {
       );
       if (!payload.metadata)
         throw new Error("qweather_alert_metadata_missing");
-      const fetchedAt = new Date().toISOString();
+      const fetchedAt = new Date(this.now()).toISOString();
       const sourceId = `weather:qweather-alert:${payload.metadata.tag ?? digest(payload.alerts ?? [])}`;
       const now = Date.parse(fetchedAt);
       const alerts = (payload.alerts ?? []).map((entry, index) => {
@@ -1004,16 +1074,16 @@ export class QWeatherAlertAdapter {
         id: sourceId,
         retrievedAt: fetchedAt,
         validFrom: earliestIssuedAt,
-        validTo:
-          alerts
-            .map((alert) => alert.expiresAt)
-            .filter((value): value is string => value !== null)
-            .sort((left, right) => Date.parse(right) - Date.parse(left))[0] ??
-          new Date(now + 20 * 60 * 1_000).toISOString(),
+        // Feed freshness is independent from an individual alert's lifetime.
+        // Force another read at the earliest future expiry so cached ACTIVE
+        // status cannot survive that transition; past alerts do not loop reads.
+        validTo: new Date(Math.min(now + QWEATHER_CACHE.alertMs, ...alerts
+          .map(alert => Date.parse(alert.expiresAt ?? ""))
+          .filter(expiry => Number.isFinite(expiry) && expiry > now))).toISOString(),
         state: "FRESH",
         limitations: [
           ...(payload.metadata.attributions?.filter(Boolean) ?? []),
-          "预警接口按 20 分钟理想刷新；用户出发前仍应查看发布机构的最新通知",
+          "预警接口最多缓存 5 分钟并在预警到期时提前刷新；用户出发前仍应查看发布机构的最新通知",
         ],
       });
       return {
@@ -1124,14 +1194,17 @@ export class QWeatherCompositeAdapter implements WeatherPort {
   async getHourly(
     input: Parameters<WeatherPort["getHourly"]>[0],
   ): Promise<WeatherEvidenceResult> {
+    const window = weatherWindow(input);
     const [primary, warning, evidence] = await Promise.all([
       this.forecast.getHourly(input),
       this.alerts.getAlerts(input),
       this.evidence.getHourly(input),
     ]);
-    const primaryRows = primary.value ?? [];
-    const evidenceRows = evidence.value ?? [];
-    const fallback = !primaryRows.length && evidenceRows.length > 0;
+    const inWindow = (row: CanonicalWeatherHour) => Date.parse(row.at) >= window.start && Date.parse(row.at) < window.end;
+    const primaryRows = (primary.value ?? []).filter(inWindow);
+    const evidenceRows = (evidence.value ?? []).filter(inWindow);
+    const fallbackRows = evidenceRows.filter(row => !nearestWeather(primaryRows, row.at));
+    const fallback = fallbackRows.length > 0;
     if (!primaryRows.length && !evidenceRows.length)
       return unavailableWeatherResult("天气组合", "all_weather_timelines_unavailable", [
         primary.source,
@@ -1140,9 +1213,9 @@ export class QWeatherCompositeAdapter implements WeatherPort {
       ]);
 
     const activeAlerts = warning.value ?? [];
-    const baseRows = fallback ? evidenceRows : primaryRows;
+    const baseRows = [...primaryRows, ...fallbackRows].sort((left, right) => Date.parse(left.at) - Date.parse(right.at));
     const rows: CanonicalWeatherHour[] = baseRows.map((base) => {
-      const supplement = fallback ? base : nearestWeather(evidenceRows, base.at);
+      const supplement = nearestWeather(evidenceRows, base.at);
       const applicableAlerts = activeAlerts.filter((alert) => alertAppliesAt(alert, base.at));
       const risks = applicableAlerts.map(alertRisk);
       return {
@@ -1195,8 +1268,8 @@ export class QWeatherCompositeAdapter implements WeatherPort {
         ]),
       };
     });
-    const evidenceState = evidence.value ? stateFromRows(evidenceRows) : "UNAVAILABLE";
-    const timelineState = fallback ? evidence.state : primary.state;
+    const evidenceState = stateFromRows(rows);
+    const timelineState = primaryRows.length ? primary.state : evidence.state;
     const state = combineStates({
       timeline: timelineState,
       warning: warning.state,
@@ -1210,7 +1283,9 @@ export class QWeatherCompositeAdapter implements WeatherPort {
     ]);
     const warnings = [
       ...(fallback
-        ? ["和风天气主时间线不可用；当前明确使用 Open-Meteo Best Match 备源。"]
+        ? [primaryRows.length
+          ? "和风天气未覆盖所选窗口的部分时段；这些小时明确使用 Open-Meteo Best Match 备源，其余小时仍保留和风天气主源。"
+          : "和风天气未覆盖所选窗口或主时间线不可用；当前明确使用 Open-Meteo Best Match 备源。"]
         : []),
       ...(warning.state !== "FRESH"
         ? ["官方预警当前不可用；正式点出行建议必须保持数据不足。"]
@@ -1222,7 +1297,7 @@ export class QWeatherCompositeAdapter implements WeatherPort {
     return {
       value: rows,
       state,
-      source: fallback ? evidence.source : primary.source,
+      source: primaryRows.length ? primary.source : evidence.source,
       sources,
       errorCode: null,
       warningState: warning.state,
@@ -1237,8 +1312,8 @@ export class QWeatherCompositeAdapter implements WeatherPort {
   }
 }
 
-export function createWeatherPort(config: MiniappRuntimeConfig): WeatherPort {
+export function createWeatherPort(config: MiniappRuntimeConfig, transport: typeof fetch = fetch): WeatherPort {
   return config.weatherProvider === "QWEATHER"
-    ? new QWeatherCompositeAdapter(config)
-    : new OpenMeteoWeatherAdapter(config, fetch, config.openMeteoEvidenceMode);
+    ? new QWeatherCompositeAdapter(config, transport)
+    : new OpenMeteoWeatherAdapter(config, transport, config.openMeteoEvidenceMode);
 }

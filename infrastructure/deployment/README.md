@@ -9,7 +9,7 @@ running.
 
 当前采用 GitHub Actions（流水线与日志）+ TCR（镜像）+ 单机 Docker
 Compose（运行环境）。不安装 Jenkins/Kubernetes/发布面板，不增加付费服务。
-这个交付只验收发布部署，不把手机权限、全功能真机测试或正式上线作为完成条件。
+发布命令只验证部署链路；当前 A 方案还要求实际产品与手机验证，由对应验证 owner 继续完成，不能以发布成功代替。
 IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名、证书、备案和产品验收条件没有取消。
 
 当前已启用 `main` → Product CI → TCR → IP 内测服务器的自动链路，并完成一次真实
@@ -18,7 +18,7 @@ IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名�
 本文或本地 HEAD 推断。下面的手动 GitHub 入口已实现，但尚未单独演练；服务器侧
 `check`、`backup`、`deploy` 及失败后修正配置重发已实际运行。
 
-- **改代码**：在开发分支提交，PR 的 Product CI 检查发布产物；设计资源和
+- **改代码**：按仓库约定默认在 `main` 工作；提交前检查候选变更和目标，Product CI 检查发布产物；设计资源和
   Context/Harness 是独立治理流程，不被打包为运行服务。
 - **发布**：合并到 `main` 后，Product CI 成功才触发 `Backend staging release`。
   它构建发布镜像、推送 TCR、解析不可变摘要，经 SSH 部署指定的环境。
@@ -32,6 +32,7 @@ IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名�
   staging。`STARWARD_REMOTE_BASE_DEPLOY_ENV` 必须指向该模式的服务器私有基础配置。
   开关必须在仓库级（job 条件执行时还读不到环境变量）；其余目标配置和凭证仍放在
   GitHub `staging` Environment，不在源码仓库，也不复制一份环境级同名开关。
+- **连接元数据**：部署前及连接变量变化后运行 `node tools/deployment/sync-diagnostic-connection.mjs`，在内存中把七项现有连接变量刷新到 `STARWARD_DIAGNOSTIC_CONNECTION` Secret；这个既有镜像同时供 staging 发布和诊断使用，不含私钥。发布工作流只接收 Secret packet，先逐项注册日志遮盖再导出后续步骤变量，避免 Actions 提前打印普通 job 环境中的连接值。
 
 服务器上的统一入口（从对应版本的控制代码目录执行；路径来自服务器私有配置）：
 

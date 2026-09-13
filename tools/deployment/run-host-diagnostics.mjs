@@ -4,10 +4,10 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runtimeScript, providerScript, sanitizeRuntimeReport, sanitizeProviderSimulationReport } from "./runtime-diagnostics.mjs";
+import { connectionKeys, parseDeploymentConnection } from "./deployment-connection.mjs";
 
 const preflight = readFileSync(new URL("../../infrastructure/deployment/host-preflight.sh", import.meta.url), "utf8");
 const failureCodes = new Set([...`${preflight}\n${runtimeScript}`.matchAll(/(?:host_preflight|runtime_diagnostic)_[a-z0-9_]+/gu)].map(([code]) => code));
-const connectionKeys = ["SSH_HOST", "SSH_PORT", "SSH_USER", "REMOTE_INBOX", "REMOTE_RELEASE_ROOT", "REMOTE_CANDIDATE_ROOT", "REMOTE_BASE_DEPLOY_ENV"];
 
 // Only these repository-owned read-only programs may run. No arbitrary command,
 // remote file, container environment export, credential export or deployment.
@@ -16,17 +16,10 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
   const mode = env.DIAGNOSTIC_MODE ?? "host";
   if (!["host", "runtime", "providers"].includes(mode)) return invalid;
   try {
-    const connection = JSON.parse(env.SSH_CONNECTION ?? "");
-    if (!connection || Array.isArray(connection) || typeof connection !== "object" ||
-        connectionKeys.some((name) => typeof connection[name] !== "string")) return invalid;
-    env = { ...env, ...Object.fromEntries(connectionKeys.map((name) => [name, connection[name]])) };
+    env = { ...env, ...parseDeploymentConnection(env.SSH_CONNECTION ?? "") };
   } catch { return invalid; }
-  if (!/^[A-Za-z0-9][A-Za-z0-9.-]*$/u.test(env.SSH_HOST ?? "") ||
-      !/^[A-Za-z0-9_][A-Za-z0-9._-]*$/u.test(env.SSH_USER ?? "") ||
-      !/^\d{1,5}$/u.test(env.SSH_PORT ?? "") || Number(env.SSH_PORT) < 1 || Number(env.SSH_PORT) > 65535 ||
-      !env.SSH_PRIVATE_KEY || !env.SSH_KNOWN_HOSTS) return invalid;
+  if (!env.SSH_PRIVATE_KEY || !env.SSH_KNOWN_HOSTS) return invalid;
   const paths = connectionKeys.slice(3).map((key) => env[key]);
-  if (paths.some((value) => !/^\/[A-Za-z0-9._/-]+$/u.test(value ?? "") || value.split("/").includes(".."))) return invalid;
   let directory;
   try {
     directory = mkdtempSync(join(temporaryRoot, "starward-diagnostic-"));

@@ -101,3 +101,15 @@ export function zonedLocalToUtc(input: {
     throw new Error("observation_local_time_nonexistent_or_ambiguous");
   return new Date(candidate).toISOString();
 }
+
+/** The observation date owns local noon through the following local noon.
+ * Convert both boundaries separately: a DST night need not last 24 hours. */
+export function observationNightBounds(input: { localDate: string; timezone: string }) {
+  const nightStartUtc = zonedLocalToUtc({ ...input, localTime: "12:00" });
+  const next = new Date(`${input.localDate}T00:00:00.000Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
+  const nightEndUtc = zonedLocalToUtc({
+    localDate: next.toISOString().slice(0, 10), timezone: input.timezone, localTime: "12:00",
+  });
+  return { nightStartUtc, nightEndUtc };
+}

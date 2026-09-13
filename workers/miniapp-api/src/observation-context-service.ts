@@ -1,4 +1,4 @@
-import { localParts, zonedLocalToUtc } from "@starward/miniapp-contracts";
+import { localParts, observationNightBounds, zonedLocalToUtc } from "@starward/miniapp-contracts";
 export { zonedLocalToUtc } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
 import type {
@@ -51,13 +51,6 @@ function timezoneForTrialPoint(
 
 function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
-}
-
-function nextLocalDate(localDate: string): string {
-  const [year, month, day] = localDate.split("-").map(Number);
-  return new Date(Date.UTC(year!, month! - 1, day! + 1))
-    .toISOString()
-    .slice(0, 10);
 }
 
 function assertSelectedAt(
@@ -132,15 +125,8 @@ export class ObservationContextService {
           ),
         )
       : resolvedLocation.ttlSeconds;
-    const nightStartUtc = zonedLocalToUtc({
-      localDate: input.localDate,
-      localTime: "12:00",
-      timezone: resolvedLocation.timezone,
-    });
-    const nightEndUtc = zonedLocalToUtc({
-      localDate: nextLocalDate(input.localDate),
-      localTime: "12:00",
-      timezone: resolvedLocation.timezone,
+    const { nightStartUtc, nightEndUtc } = observationNightBounds({
+      localDate: input.localDate, timezone: resolvedLocation.timezone,
     });
     const selectedAtUtc = input.selectedAt
       ? new Date(input.selectedAt).toISOString()
@@ -213,16 +199,7 @@ export class ObservationContextService {
     if (current.revision !== input.expectedRevision)
       throw new Error("observation_context_conflict");
     const localDate = input.localDate ?? current.localDate;
-    const nightStartUtc = zonedLocalToUtc({
-      localDate,
-      localTime: "12:00",
-      timezone: current.timezone,
-    });
-    const nightEndUtc = zonedLocalToUtc({
-      localDate: nextLocalDate(localDate),
-      localTime: "12:00",
-      timezone: current.timezone,
-    });
+    const { nightStartUtc, nightEndUtc } = observationNightBounds({ localDate, timezone: current.timezone });
     const selectedAtUtc = input.selectedAt
       ? new Date(input.selectedAt).toISOString()
       : current.selectedAtUtc;

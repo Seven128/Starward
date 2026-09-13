@@ -167,6 +167,137 @@ test("Open-Meteo adapter requests explicit model evidence and never selects the 
   assert.equal(result.warningState, "UNAVAILABLE");
 });
 
+test("Open-Meteo requests the local noon-to-noon observation window, including a DST change", async () => {
+  const requests: URL[] = [];
+  const adapter = new OpenMeteoWeatherAdapter(createTestRuntimeConfig(), async input => {
+    requests.push(new URL(input.toString()));
+    return response(openMeteoPayload());
+  }, undefined, undefined, () => new Date("2026-10-30T12:00:00Z"));
+  await adapter.getHourly({ ...weatherInput, localDate: "2026-10-31", timezone: "America/New_York" });
+  assert.equal(requests[0]!.searchParams.get("start_hour"), "2026-10-31T16:00");
+  assert.equal(requests[0]!.searchParams.get("end_hour"), "2026-11-01T16:00");
+  assert.equal(requests[0]!.searchParams.get("timezone"), "GMT");
+});
+
+test("Open-Meteo preserves available hours on the last forecast night instead of rejecting the entire request", async () => {
+  let calls = 0;
+  const adapter = new OpenMeteoWeatherAdapter(createTestRuntimeConfig(), async input => {
+    calls += 1;
+    const params = new URL(input.toString()).searchParams;
+    const end = params.get("end_hour") ?? `${params.get("end_date")}T23:00`;
+    if (end > "2026-08-23T23:00") return response({ error: "outside_forecast_range" }, 400);
+    const payload = openMeteoPayload();
+    payload.hourly.time = Array.from({ length: 20 }, (_, index) => `2026-08-23T${String(index + 4).padStart(2, "0")}:00`);
+    for (const [key, values] of Object.entries(payload.hourly)) {
+      if (key !== "time") (payload.hourly as Record<string, unknown[]>)[key] = Array(20).fill(values[0]);
+    }
+    return response(payload);
+  }, undefined, undefined, () => new Date("2026-08-08T12:00:00Z"));
+  const lastNight = await adapter.getHourly(weatherInput);
+  assert.equal(lastNight.errorCode, null);
+  assert.equal(lastNight.value?.length, 20);
+  assert.equal(lastNight.value?.at(-1)?.at, "2026-08-23T23:00:00.000Z");
+  assert.equal(lastNight.source.state, "PARTIAL");
+  const outside = await adapter.getHourly({ ...weatherInput, localDate: "2026-08-24" });
+  assert.equal(outside.state, "UNAVAILABLE");
+  assert.equal(outside.errorCode, "open_meteo_outside_forecast_range");
+  assert.equal(calls, 1, "an entirely unsupported night must not repeatedly call the provider");
+});
+
+test("Open-Meteo model validity follows non-missing cloud hours rather than the response envelope", async () => {
+  const payload = openMeteoPayload();
+  payload.hourly.time = ["2026-08-23T12:00", "2026-08-23T13:00", "2026-08-23T14:00"];
+  for (const [key, values] of Object.entries(payload.hourly)) {
+    if (key !== "time") (payload.hourly as Record<string, unknown[]>)[key] = Array(3).fill(values[0]);
+  }
+  for (const key of ["cloud_cover", "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"]) {
+    (payload.hourly as Record<string, unknown[]>)[`${key}_icon_seamless`] = [null, 10, null];
+  }
+  const adapter = new OpenMeteoWeatherAdapter(createTestRuntimeConfig(), async () => response(payload));
+  const result = await adapter.getHourly(weatherInput);
+  const icon = result.modelRuns.find(run => run.modelKey === "icon_seamless")!;
+  assert.equal(icon.state, "PARTIAL");
+  assert.equal(icon.validFrom, "2026-08-23T13:00:00.000Z");
+  assert.equal(icon.validTo, "2026-08-23T13:00:00.000Z");
+  assert.equal(result.sources.find(source => source.id === icon.sourceId)?.state, "PARTIAL");
+  assert.equal(result.value?.[0]?.evidenceSourceIds.includes(icon.sourceId), false);
+});
+
+test("unlabelled Open-Meteo fields cannot manufacture agreement from absent comparison models", async () => {
+  const original = openMeteoPayload();
+  const hourly: Record<string, unknown[]> = { time: original.hourly.time };
+  for (const [key, values] of Object.entries(original.hourly)) {
+    if (key.endsWith("_best_match")) hourly[key.replace(/_best_match$/u, "")] = values;
+  }
+  const adapter = new OpenMeteoWeatherAdapter(createTestRuntimeConfig(), async () => response({ ...original, hourly }));
+  const result = await adapter.getHourly(weatherInput);
+  assert.equal(result.value?.[0]?.cloudPercent, 10);
+  assert.equal(result.value?.[0]?.modelConsistency, null);
+  assert.equal(result.value?.[0]?.modelConsistencyLabel, "UNAVAILABLE");
+  assert.ok(result.modelRuns.filter(run => run.modelKey !== "best_match").every(run => run.state === "UNAVAILABLE"));
+});
+
+test("QWeather composition fills only missing requested hours with explicit fallback and preserves primary values", async () => {
+  const adapter = new QWeatherCompositeAdapter(deadlineConfig(), async input => {
+    const url = new URL(input.toString());
+    if (url.pathname.startsWith("/weather/v1/")) return response(deadlinePayload("primary"));
+    if (url.pathname.startsWith("/weatheralert/")) return response(deadlinePayload("alerts"));
+    const payload = openMeteoPayload();
+    payload.hourly.time = ["2026-08-23T13:00", "2026-08-23T14:00"];
+    for (const [key, values] of Object.entries(payload.hourly)) {
+      if (key !== "time") (payload.hourly as Record<string, unknown[]>)[key] = [values[0], values[0]];
+    }
+    return response(payload);
+  });
+  const result = await adapter.getHourly(weatherInput);
+  assert.deepEqual(result.value?.map(row => [row.at, row.cloudPercent]), [
+    ["2026-08-23T13:00:00.000Z", 70], ["2026-08-23T14:00:00.000Z", 10],
+  ]);
+  assert.equal(result.timelineRole, "PRIMARY_FALLBACK");
+  assert.equal(result.state, "PARTIAL");
+  assert.ok(result.warnings.some(warning => warning.includes("部分时段")));
+});
+
+test("QWeather current hours outside the selected night cannot mask a usable future fallback", async () => {
+  const adapter = new QWeatherCompositeAdapter(deadlineConfig(), async input => {
+    const url = new URL(input.toString());
+    if (url.pathname.startsWith("/weather/v1/")) return response(deadlinePayload("primary"));
+    if (url.pathname.startsWith("/weatheralert/")) return response(deadlinePayload("alerts"));
+    const payload = openMeteoPayload();
+    payload.hourly.time = ["2026-08-24T13:00"];
+    return response(payload);
+  });
+  const result = await adapter.getHourly({ ...weatherInput, localDate: "2026-08-24" });
+  assert.equal(result.value?.length, 1);
+  assert.equal(result.value?.[0]?.at, "2026-08-24T13:00:00.000Z");
+  assert.equal(result.value?.[0]?.cloudPercent, 10);
+  assert.equal(result.timelineRole, "PRIMARY_FALLBACK");
+});
+
+test("a rolling weather publication window preserves morning hours and reports missing delivered evidence", async () => {
+  let observedWindow: URL | undefined;
+  const adapter = new QWeatherCompositeAdapter(deadlineConfig(), async input => {
+    const url = new URL(input.toString());
+    if (url.pathname.startsWith("/weather/v1/")) {
+      const payload = deadlinePayload("primary") as { hours: Record<string, unknown>[] };
+      payload.hours.unshift({ ...payload.hours[0], forecastTime: "2026-08-23T01:00:00Z" });
+      return response(payload);
+    }
+    if (url.pathname.startsWith("/weatheralert/")) return response(deadlinePayload("alerts"));
+    observedWindow = url;
+    return response(openMeteoPayload());
+  });
+  const result = await adapter.getHourly({ ...weatherInput, windowUtc: {
+    start: "2026-08-23T00:00:00.000Z", end: "2026-08-24T00:00:00.000Z",
+  } });
+  assert.equal(observedWindow?.searchParams.get("start_hour"), "2026-08-23T00:00");
+  assert.equal(observedWindow?.searchParams.get("end_hour"), "2026-08-23T23:00");
+  assert.equal(result.value?.[0]?.at, "2026-08-23T01:00:00.000Z");
+  assert.equal(result.value?.[0]?.lowCloudPercent, null);
+  assert.equal(result.state, "PARTIAL");
+  assert.ok(result.warnings.length);
+});
+
 test("QWeather composition keeps the Weather API v1 timeline primary, adds layered cloud and applies official alerts", async () => {
   const requested: URL[] = [];
   const config = createTestRuntimeConfig({

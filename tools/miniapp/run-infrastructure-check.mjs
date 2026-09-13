@@ -487,6 +487,14 @@ try {
     const audits = await auditsResponse.json();
     if (!auditsResponse.ok || audits.data.length < 2)
       throw new Error("admin_audit_missing");
+    const costsResponse = await fetch(`${base}/v2/admin/costs`, { headers });
+    const costs = await costsResponse.json();
+    const boundaryUsage = costs.data?.usage?.find(row => row.provider.startsWith("TEST_MONTH_"));
+    if (!costsResponse.ok || costs.data?.budget?.state !== "UNASSESSED" ||
+      costs.data.budget.projectedMonthlyCny !== null || costs.data.budget.hardMonthlyMax !== 350 ||
+      boundaryUsage?.recorded_attempts !== 2 || boundaryUsage.unpriced_attempts !== 2 ||
+      boundaryUsage.estimated_cost_cny !== null)
+      throw new Error("admin_cost_month_or_unknown_amount_invalid");
     apiChecks = {
       conditional_etag_304: "passed",
       isolated_local_identity: "passed",
@@ -499,6 +507,7 @@ try {
       rbac_denial: "passed",
       population: dashboard.data.spots.length,
       audited_status_roundtrip: "passed",
+      provider_cost_month_and_unknown_amount: "passed",
     };
     stage("api-http:complete");
   } finally {

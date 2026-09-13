@@ -205,8 +205,9 @@ export class DisabledPlaceSearchAdapter implements PlaceSearchPort {
 
 export function createPlaceSearchPort(
   config: MiniappRuntimeConfig,
+  transport: typeof fetch = fetch,
 ): PlaceSearchPort {
   return config.placeSearchProvider === "AMAP"
-    ? new AmapPlaceSearchAdapter(config.amapWebServiceKey!)
+    ? new AmapPlaceSearchAdapter(config.amapWebServiceKey!, transport)
     : new DisabledPlaceSearchAdapter();
 }
