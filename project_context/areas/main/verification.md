@@ -31,6 +31,7 @@ This on-demand Context is the entry point for Starward verification. It records 
 - Do not treat static preview appearance, Context prose, or a command exit code as proof of live weather, routing, deployment, or human acceptance.
 - Do not treat a fixed user/time/place/result, process-local repository, success label/evidence card, metadata-only upload, manifest-only offline pack, declaration-only native adapter, or prewritten trace/restore report as proof that a business loop ran.
 - Fixtures may isolate uncontrollable providers or device APIs in automated tests, but they must be injected behind the same production adapter and cannot replace the production route, state transition, sink write, restart readback, or failure behavior.
+- For data-dependent capabilities, distinguish a controlled positive path, failure/recovery behavior, and usability in the intended delivery environment. Select checks from the promised effect, including a representative supported input whose required data is actually available; a suite containing only safe empty/fallback cases leaves the capability unverified. Inspect assertions, not just test names: suppressing the effect or keeping old content must not still establish success. Existing fixtures/provider simulations retain their limited scope; a missing live prerequisite is addressed within authorization or reported as the concrete remaining dependency, not waived because the simulated path passed.
 
 ## Expected Signals
 

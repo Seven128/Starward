@@ -22,9 +22,10 @@ Use this project Skill to translate Starward's durable design contract into impl
 
 ### 1. Establish The Interaction Contract
 
-For each changed control or transition, identify:
+For each changed control or transition, reuse its existing contract and identify only the dimensions the change can affect. A local text or accessible-name repair does not reopen unchanged interaction, platform or hardware decisions:
 
 - owner screen/component and user task;
+- the result the user must be able to perceive or use after the action, including which data/state owner supplies it and how to distinguish it from the prior result;
 - trigger and commit point;
 - pressed, dragging, settling, completed, cancelled, disabled, loading, success, warning, and failure states that apply;
 - gesture competition with scrolling, maps, system back, navigation, or another recognizer;
@@ -33,7 +34,7 @@ For each changed control or transition, identify:
 - planning, night, red-light, reduced-motion, reduced-transparency, text-scaling, and screen-reader variants;
 - iOS/Android differences and a shared product invariant.
 
-Do not start from animation values. Start from the task, state transition, and recovery behavior.
+Do not start from animation values. Start from the task, state transition, and recovery behavior. Selection records user intent; asynchronous data readiness and the applied result are separate facts. Derive their presentation from the existing state owners so a selected control cannot silently stand in for a failed, empty or unapplied result. Keep genuine zero values distinct from missing coverage; failure feedback explains the concrete unavailable result and a useful recovery without implying success.
 
 ### 2. Find The Shared Owner And Select Target Primitives
 
@@ -108,6 +109,8 @@ Select verification for the changed contract, affected consumers and target runt
 
 Use AGENTS.md's mechanism-based sampling and completion rules. The list below supplies relevant dimensions, not a requirement to test every combination. Before spreading a shared change, inspect its composed result in an actual target-runtime consumer, including inherited styles, native defaults and any displaced rendering. Consumers with different overrides, renderers or lifecycle owners need their own representative observation; repeating identical pages adds little evidence.
 
+When a change affects data results or their presentation state, establish a representative supported input through the existing owners, perform the named user action and inspect the resulting content in the target renderer. Also exercise the applicable missing/failure path and recovery; a permanently empty but honest UI does not establish the positive capability. Check which result is current after a switch, cancellation or late response. Identify controls by the intended action and verify its effect at the consuming surface: selected styling, a success message, an internal fingerprint or a native call returning success cannot establish that the user received the result. Use a controlled input when needed to distinguish expected change from legitimate invariance; apply this within the changed contract rather than requiring a universal screenshot matrix.
+
 Put the adopted reference and actual frame into the reviewer's visual context under comparable state, viewport and scroll conditions. Inspect the changed region and surrounding composition, then exercise the state transitions this change can affect. Read the whole presented frame for visible discrepancies even when the immediate test concerns navigation or data. A class change is not a rendered state, and a still frame does not establish a transition; use a short sequence/recording where needed. Reuse captures that answer several obligations, batch fixes, and recollect only affected evidence. Repair a shared mismatch before expansion. Keep unexplained differences open rather than inventing tolerances or adopting current output as its own reference. Independent review at high-impact reuse/delivery follows AGENTS.md; self-review must be identified as such.
 
 - tap/press-in/press-out/cancel and rapid repeat;
@@ -125,7 +128,7 @@ Do not claim a fluid interaction from static screenshots, unit tests alone, simu
 
 ## Review Output
 
-When reviewing or handing off work, report:
+When reviewing or handing off work, report the applicable items below, scaled to the change. For a local repair, describe the actual change, relevant checks and remaining gaps; omit unchanged dimensions rather than filling a fixed template:
 
 - upstream rules applied;
 - interaction states and invariants implemented;
