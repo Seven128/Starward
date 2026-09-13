@@ -44,7 +44,7 @@ const generatedAssets = new Map();
 const tokens = readDesignTokens(await readFile(path.join(root, "DESIGN.md"), "utf8"));
 const themedSvgNames = [];
 for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images", "account-user", "pencil", "settings", "share", "eye", "bulb", "cloud"]) {
-  const source = await readFile(path.join(iconRoot, `${name}.svg`), "utf8");
+  const source = (await readFile(path.join(iconRoot, `${name}.svg`), "utf8")).replace(/\r\n?/gu, "\n");
   if (!source.includes('stroke="currentColor"')) throw new Error(`source_icon_stroke_missing:${name}`);
   for (const mode of ["day", "night", "observation"]) {
     const target = `${name}-${mode}.svg`;

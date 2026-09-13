@@ -23,7 +23,6 @@ import {
   WECHAT_TRANSIENT_NOT_FOUND_EXCEPTION_V1,
 } from "./runtime-event-policy.mjs";
 import {
-  inspectCandidate,
   packageBudgetWithinLimits,
   summarizePackageBytes,
 } from "./inspect-production.mjs";
@@ -170,36 +169,7 @@ test("retained NightChina import corpus stays balanced, traceable and rights-saf
   }
 });
 
-test("production inspection and native scopes follow the current registered route topology", async () => {
-  const expectedRoutes = [
-    "pages/map/index",
-    "pages/my/index",
-    "pages/auth/index",
-    "spot/search/index",
-    "spot/guides/index",
-    "spot/field/index",
-    "spot/plan/index",
-    "spot/data-source/index",
-    "sky/detail/index",
-    "content/article/detail/index",
-    "content/plan/detail/index",
-    "content/plan/list/index",
-    "content/plan/edit/index",
-    "content/event/list/index",
-    "content/event/detail/index",
-    "content/contribution/index",
-    "content/spot-feedback/index",
-    "content/settings/index",
-  ];
-  const inspection = await inspectCandidate();
-  assert.deepEqual(inspection.routes, expectedRoutes);
-  assert.equal(inspection.checks.native_project, true);
-  assert.equal(inspection.checks.filter_population, true);
-  assert.equal(inspection.checks.route_files, true);
-  assert.equal(inspection.checks.package_budget, true);
-  assert.equal(inspection.package_limits.per_package_bytes, 2 * 1024 * 1024);
-  assert.equal(inspection.package_limits.aggregate_bytes, 20 * 1024 * 1024);
-
+test("native verification scopes follow the current registered route topology", async () => {
   const runner = await text(
     "tools",
     "miniapp",

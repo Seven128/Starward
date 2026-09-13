@@ -115,6 +115,7 @@ jobs:
           npm run test:miniapp:release
           npm run test:miniapp:platform
           npm run miniapp:bundle -- --lane ci --api-origin https://api.starward-ci.invalid --source-revision "$REVISION"
+          node --test tools/miniapp/built-candidate.test.mjs
           npm run test:miniapp:infrastructure
       - name: Build and publish the immutable release image
         id: image

@@ -52,6 +52,9 @@ jobs:
       - name: Build nondeployable WEAPP CI bundle
         if: steps.scope.outputs.product == 'true'
         run: npm run miniapp:bundle -- --lane ci --api-origin https://api.starward-ci.invalid --source-revision "$GITHUB_SHA"
+      - name: Inspect built WEAPP candidate
+        if: steps.scope.outputs.product == 'true'
+        run: node --test tools/miniapp/built-candidate.test.mjs
       - name: Run isolated infrastructure checks
         if: steps.scope.outputs.product == 'true'
         run: npm run test:miniapp:infrastructure

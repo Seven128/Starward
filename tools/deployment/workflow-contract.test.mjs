@@ -62,6 +62,13 @@ test("manual staging rechecks product CI and selects an explicit protected lane"
   assert.match(source, /--lane "\$DEPLOYMENT_LANE"/u);
   assert.match(source, /npm run test:miniapp:infrastructure/u);
   assert.match(source, /npm run miniapp:bundle -- --lane ci/u);
+  for (const pipeline of [source, await workflow("product-ci.yml")]) {
+    const build = pipeline.indexOf("npm run miniapp:bundle -- --lane ci");
+    const inspect = pipeline.indexOf("node --test tools/miniapp/built-candidate.test.mjs");
+    const infrastructure = pipeline.indexOf("npm run test:miniapp:infrastructure");
+    assert.ok(build >= 0 && build < inspect && inspect < infrastructure,
+      "actual bundle inspection must run after build in automatic and manual product paths");
+  }
   assert.match(source, /cancel-in-progress: false/u);
   assert.match(source, /--sort=name --mtime=@0/u);
   assert.match(source, /\$GITHUB_RUN_ID-\$GITHUB_RUN_ATTEMPT\/deploy\.env/u);

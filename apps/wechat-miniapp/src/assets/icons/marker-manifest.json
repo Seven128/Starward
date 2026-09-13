@@ -31,15 +31,15 @@
     },
     {
       "path": "chevron-right-day.svg",
-      "sha256": "091bdee31888417aa71431993994751e989cc886fdee0cb49c572b3acc01d93a"
+      "sha256": "ec1ee898b63df70a17866172c48b0a30fa2e71af646e9da3234231b11b1164e7"
     },
     {
       "path": "chevron-right-night.svg",
-      "sha256": "473762f671dc48231d16d83ae622969ccdb15b79e964dac612fe496d770361e1"
+      "sha256": "5353b0bcf78364bac733d4700062fc19a6ae22043cec14f1bda5c82d2a1f2d95"
     },
     {
       "path": "chevron-right-observation.svg",
-      "sha256": "267f50d2be2a892e5200a2f2eb6d0bcb760bb8210cd71ae2849d8b3fddf2b8a7"
+      "sha256": "a534459a36a21a4148c2ed3c9e94cb8f2b262e6363adbc9637da119338564dfe"
     },
     {
       "path": "cloud-day.svg",
@@ -55,15 +55,15 @@
     },
     {
       "path": "download-day.svg",
-      "sha256": "47cb717cca6a56cef3cc7d46049d1182f0c52ca260ae8393f7f5ec6180d1bf63"
+      "sha256": "a084e4cf1fa7024ae9f72b4f99e2ea1e1c6338a40c178c0449367d141bdd047e"
     },
     {
       "path": "download-night.svg",
-      "sha256": "e50c8726774d7e7d26cb35cbc358f87da25e1866ff76f8bff3c125a7a8cdbd51"
+      "sha256": "8a728c5696db32333ea43da9a096c800bcbfc8a3f261e488077d4d9712fd5694"
     },
     {
       "path": "download-observation.svg",
-      "sha256": "70d314cbfcf85f03b42b7e9e0609a0ff8b9fa60928555e396b06740a08178785"
+      "sha256": "c45edeb7df48e1971577602916aa365c07dadc5cb6c945316f970212b7df6491"
     },
     {
       "path": "eye-day.svg",
@@ -103,15 +103,15 @@
     },
     {
       "path": "images-day.svg",
-      "sha256": "e959c8751d059176cd043deea5005c9a78eda2677372fd5a9919c25b3179b94d"
+      "sha256": "2459b1b616d596d15f27b46ce42ebb9ee067e05524c1120544ee2d44ca96c2b8"
     },
     {
       "path": "images-night.svg",
-      "sha256": "0c04acd50b830ba6c71b8f39705e8498380595b09377da8bcff2a42226f1ac02"
+      "sha256": "37ff4f1812e7972350d350d6b23e94703b71a81421ed0bdc125ea781b359051b"
     },
     {
       "path": "images-observation.svg",
-      "sha256": "fec2ee988233cadf00b404869c7bdaa6d7008e0b119f60e9504519a9153afe53"
+      "sha256": "093c7047ed9105005bdbbf42c4ac4c4a5ef5f13ec402778915bf7a02e84deb69"
     },
     {
       "path": "pencil-day.svg",
@@ -199,27 +199,27 @@
     },
     {
       "path": "trash-2-day.svg",
-      "sha256": "582a8ad0858645752a19b3a8707b098d1186fb42d509cf5c5000b08526d42c49"
+      "sha256": "263bddc4f7ef2758ae9f72ff9ab33513ab9127c91e56dc316fcf9908a3e6b111"
     },
     {
       "path": "trash-2-night.svg",
-      "sha256": "9919781c66657a26b1c913134b65a5d4ec4eb810a38e3e64d5fb781eecee02d6"
+      "sha256": "358005cbd93c691beb5b6ec16825979ebc0dea481075a5059dda74125a7769d2"
     },
     {
       "path": "trash-2-observation.svg",
-      "sha256": "792a5fcb46f7c6ec86eb398fcf98a9d003fae9c1a6616807758eed9ffa5a472f"
+      "sha256": "8ce3b70c1b8270183c9c5594606a12e3ffe4f942237d24883f3dd7613fdbdd19"
     },
     {
       "path": "wifi-off-day.svg",
-      "sha256": "3919fe0bbeeb2bd74069d2344ca516f270f9628bc4cd834566c9ef2105e62830"
+      "sha256": "7935ed4fe742ab3e7e7d11162e93eac5baaea3c47b6f3e261e0afed8636d8e41"
     },
     {
       "path": "wifi-off-night.svg",
-      "sha256": "84e5231bc74be824d389198cf89bab0b9069ffff3bb08e9b937932e3d70d4f19"
+      "sha256": "a96d90f418a6586293f66af8f9078cc08cd4bc6b8ffff61381e3ab63f3eab8b5"
     },
     {
       "path": "wifi-off-observation.svg",
-      "sha256": "fb8b7b45d6d8fbc3c570c1d2309777729d6aea460b07583a153d870609fd440b"
+      "sha256": "449e8d084c92ec3ec27a757f092c5998a14025d47e90eb64af6c4642d8ab169f"
     }
   ]
 }
