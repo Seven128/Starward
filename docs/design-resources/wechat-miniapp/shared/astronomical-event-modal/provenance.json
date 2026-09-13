@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-13",
+  "generator": "Stitch (browser, 均衡)",
+  "localRefinement": "Codex HTML/CSS/JS; adopted B PNGs reused; no production implementation",
+  "exports": [],
+  "currentRevision": {
+    "method": "Incremental modification of complete adopted Map/Plan sources",
+    "status": "adopted by user on 2026-09-13",
+    "map": "map/revisions/three-requirements-2026-09-13/source-diff.json",
+    "plan": "plan/revisions/three-requirements-2026-09-13/source-diff.json",
+    "sharedModuleSha256": "6dc7c632e62c4ca386002152c51137c7e0353d31b8d1d4b3b8e99fc0d0bbd602",
+    "sharedStyleSha256": "1a7790e06d4051d8c36f5800da4d0997406e3f8319e9100f3e0fb50ca724a917",
+    "sharedTabSource": "shared/tabs",
+    "iconApplicationReview": "shared/icons/application-review.md",
+    "stitchSync": "Synchronized exact reference images and current rules to both existing projects; five rejected screens deleted; see stitch-sync.md. Static references, not executable shared components.",
+    "sharedResourceHashes": {
+      "shared/tabs/selection.js": "12cc7a2a5c2e3a72e884083ba060059200d899258616e0370a883eefb0f1ccbd",
+      "shared/tabs/selection.css": "fdaec326a951bd6bc8c8f6d737693d8e278e6d61e3f5b86d25d0d5927e64d59b",
+      "shared/icons/material-preview.mjs": "c6fcc3b918c962ad4c88ed51981bfdef996b4bf42fbc17fb86137386f79f5369"
+    },
+    "adoptionScope": "Final incremental daytime Map/Plan/Terrain/Event Modal + shared Tabs; production not implemented"
+  },
+  "removedExploration": "Rejected generated hosts/exports removed at adoption; current editable sources and live dependencies retained."
+}

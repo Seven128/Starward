@@ -1,0 +1,20 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const root='E:/Dev/Starward/docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256',edit=path.join(root,'editable/spot-marker-selected');
+const final='C:/Users/777/Desktop/icons-mobile-256-final-2026-09-13',local='C:/Users/777/Desktop/地图图标-本地合成完成';
+const records=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'))),proof=JSON.parse(fs.readFileSync(path.join(edit,'composition.json')));
+if(records.some(r=>r.id==='spot-marker'&&r.state==='selected'))throw Error('Selected already present');
+fs.copyFileSync(path.join(local,'spot-marker--day--selected-256.png'),path.join(root,'assets/spot-marker--day--selected.png'));
+records.push({id:'spot-marker',state:'selected',status:'adopted',sourceFile:'spot-marker--day--selected.png',sourceRoot:edit,sourceWidth:1254,sourceHeight:1254,sourceSha256:proof.masterSha256,derivation:{method:'local-pixel-composition',editable:'editable/spot-marker-selected/README.md',proof:'editable/spot-marker-selected/composition.json'},outputs:{256:{file:'assets/spot-marker--day--selected.png',bytes:proof.output256.bytes,sha256:proof.output256.sha256,losslessPngRoundtrip:true}}});
+if(records.length!==71||new Set(records.map(r=>r.id+'/'+r.state)).size!==71)throw Error('Coverage mismatch');
+fs.mkdirSync(path.join(final,'assets'),{recursive:true});
+for(const r of records){const file=path.join(root,r.outputs[256].file);if(sha(fs.readFileSync(file))!==r.outputs[256].sha256||sha(fs.readFileSync(path.join(r.sourceRoot,r.sourceFile)))!==r.sourceSha256)throw Error('Hash mismatch');fs.copyFileSync(file,path.join(final,r.outputs[256].file));}
+fs.writeFileSync(path.join(root,'manifest.json'),JSON.stringify(records,null,2));
+fs.writeFileSync(path.join(final,'manifest.json'),JSON.stringify(records.map(r=>({...r,status:'adopted'})),null,2));
+fs.writeFileSync(path.join(final,'manifest.csv'),['id,state,file,bytes,sha256',...records.map(r=>[r.id,r.state,r.outputs[256].file,r.outputs[256].bytes,r.outputs[256].sha256].join(','))].join('\r\n'));
+for(const mode of ['light','dark'])fs.copyFileSync(path.join(local,`preview-${mode}.png`),path.join(root,`reference/marker-final-${mode}.png`));
+const bytes=records.reduce((s,r)=>s+r.outputs[256].bytes,0);
+const readme=`# 最新B行日间图标 · 256px定稿资源\n\n71份独立全彩透明PNG，合计${bytes} bytes。包含62种基础图标及已要求的9份状态/动画补充，日间本轮清单无待返修项。assets可按manifest中的语义与状态引用；不按文件顺序猜用途。\n\n地图selected使用本地代码复制default主体并仅添加三条光线。1254px和256px的主体RGBA均与default一致，避免状态切换缩小或位移。已检查小尺寸明暗底、原图/输出哈希与PNG编码回读。高清原图、旧版本和栅格分件均保留，未改生产代码；实际地图交互、动效和真机效果仍需接入验证。夜间/红光主题未纳入此日间包。\n\nLanczos3缩至256px后全彩PNG无损编码；未量化调色板。缩小分辨率本身不是相对高清母版无损。\n`;
+fs.writeFileSync(path.join(final,'README.md'),readme);fs.writeFileSync(path.join(local,'README.md'),'# 地图selected已修正\n\n1254px高清母版和256px均已导出，主体与普通态逐像素一致。请用此版本替代先前selected。完整日间包：'+final+'。独立光线覆盖层与可重建分件见仓库editable/spot-marker-selected。\n');
+fs.copyFileSync(path.join(edit,'rays-overlay-256.png'),path.join(local,'rays-overlay-256.png'));
+console.log(JSON.stringify({count:records.length,bytes,final}));

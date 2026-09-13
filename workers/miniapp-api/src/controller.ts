@@ -33,6 +33,7 @@ import {
   type SpotId,
   type ImportStage,
   type MapLayerKind,
+  type TerrainOverlayRequest,
   type ObservationContext,
   type ObservationContextResolveRequest,
   type ObservationContextUpdateRequest,
@@ -229,6 +230,32 @@ export class MiniappController {
       ...(parsedPreferences ? { preferences: parsedPreferences } : {}),
       ...(userId ? { userId } : {}),
     });
+  }
+
+  @Get("terrain/overlay")
+  terrainOverlay(
+    @Query("purpose") purpose?: string,
+    @Query("centerLat") centerLat?: string,
+    @Query("centerLng") centerLng?: string,
+    @Query("radiusKm") radiusKm?: string,
+  ) {
+    const latitude = Number(centerLat);
+    const longitude = Number(centerLng);
+    const radius = Number(radiusKm);
+    if ((purpose !== "MAP" && purpose !== "SPOT") || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180 || !Number.isFinite(radius) || radius < 2 || radius > 50)
+      throw new Error("terrain_overlay_request_invalid");
+    const request: TerrainOverlayRequest = { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
+    return this.service.getTerrainOverlay(request);
+  }
+
+  @Get("terrain/assets/:file")
+  async terrainAsset(@Param("file") file: string, @Res() reply: FastifyReply) {
+    const asset = await this.service.getTerrainAsset(decodeURIComponent(file));
+    reply.header("content-type", "image/png")
+      .header("cache-control", "public, max-age=604800, immutable")
+      .header("x-content-type-options", "nosniff")
+      .header("x-starward-terrain-publication", asset.publicationId)
+      .send(asset.bytes);
   }
 
   @Get("places/search")

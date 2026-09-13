@@ -9,11 +9,11 @@
 `run.json`：`schema:1`、`runId`、`repository`（绝对路径）、`researchHead`、`executionHead`、`startedAt`、`model:{id,effort,source}`、`versions:{codex,node,runtime}`、`runtime:{path,status,fileKey}`、`usage:{inputTokens,outputTokens,reason}`、`sourceFiles:[{path,sha256}]`（仓库相对）、`failures:[]`、`manualInterventions`（不可取得时 null）。不采集密码/cookie/账号私人内容。
 
 `resources.json`：`schema:1`、`assets:[{id,path,sha256,source,license}]`、`boards:[]`。
-每个 board：`id, candidateId, page(map|my|probe|components), state, mode(day|night|observation), width,height, scale(1|2), round(0|1|2), revision, fileKey,nodeId, screenshot:{path,sha256,revision}, snapshot:{path,sha256,revision}, controls:[key], assetIds:[], codeOwners:[仓库相对路径]`。原始图 round=0 永久保留；最终轮由候选 page/state/mode/width 的最高 round 派生。
+每个 board：`id, candidateId, page(map|my|probe|components), state, mode(day|night|observation), width,height, scale(1|2), round(0|1|2), revision, fileKey,nodeId, screenshot:{path,sha256,revision}, snapshot:{path,sha256,revision}, controls:[key], assetIds:[], codeOwners:[仓库相对路径]`。实验期间临时保留原始图 round=0；最终轮由候选 page/state/mode/width 的最高 round 派生，最高轮次不等于用户采用。开发前定稿按[资源生命周期](../../../../project_context/context-maintenance.md#design-resource-lifecycle)仅留当前采用资源及必要依赖，不永久保留原始图或未采用board。
 
 真实快照：`{schema:1, origin:'figma-plugin-api', fileKey, revision, capturedAt, root:{id,type,name,width,height,visible,children,...}}`。节点包括 `x,y,characters,fontName,fontSize,layoutMode,controlKey,codeOwner,reactions`（存在时）。产品检查要求按 `resources.json` 同级的 `requirements.json` 条件规则定义 `page/state/mode` 对应必需 controls，不能靠作者随意省略 board.controls 通过。规则是测试输入，需从当前合同预先冻结；不证明静态所画行为已在 WEAPP 执行。
 
-修改后递增 revision，同轮更新结构/PNG，旧文件留在原 round。hash 证明本地文件一致，不证明外部真实性；实际工具运行日志与回看仍是必要证据。修改共享组件需报告受影响实例；仅改我的文案时核对地图导出/节点未变。无 `.fig` 则明确未导出。
+修改后递增 revision，同轮更新结构/PNG，实验进行时旧文件临时留在原 round，定稿后随废案清理。hash 证明本地文件一致，不证明外部真实性；实际工具运行日志与回看仍是必要证据。修改共享组件需报告受影响实例；仅改我的文案时核对地图导出/节点未变。无 `.fig` 则明确未导出。
 
 ## 比较页
 

@@ -1,0 +1,86 @@
+[
+  {
+    "index": 1,
+    "file": "spot-marker--day--default.png",
+    "bytes": 956572,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1046342,
+    "partialPixels": 525004,
+    "opaquePixels": 1170,
+    "bounds": [
+      172,
+      145,
+      1082,
+      1119
+    ],
+    "edgePixels": 0,
+    "sha256": "c4717cc5f17303dbb37597933bacda4e7f33d977ffff0a7f86e77d5938af9c15"
+  },
+  {
+    "index": 2,
+    "file": "spot-marker--day--draft.png",
+    "bytes": 955276,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1047627,
+    "partialPixels": 524121,
+    "opaquePixels": 768,
+    "bounds": [
+      173,
+      145,
+      1081,
+      1118
+    ],
+    "edgePixels": 0,
+    "sha256": "a7be47cff82b494686da99fa1957a216a8d7cd98a7c2991f135c6c102ce55ba1"
+  },
+  {
+    "index": 3,
+    "file": "spot-marker--day--pending.png",
+    "bytes": 1034087,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1007804,
+    "partialPixels": 563427,
+    "opaquePixels": 1285,
+    "bounds": [
+      175,
+      148,
+      1126,
+      1120
+    ],
+    "edgePixels": 0,
+    "sha256": "63210a9de46d7cca91db6ef4266aa91e4193e75db3621c54f7c4da169e536866"
+  },
+  {
+    "index": 4,
+    "file": "spot-marker--day--selected.png",
+    "bytes": 877419,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1114572,
+    "partialPixels": 456669,
+    "opaquePixels": 1275,
+    "bounds": [
+      210,
+      81,
+      1045,
+      1133
+    ],
+    "edgePixels": 0,
+    "sha256": "3795f3a213eb20b5dcb25390ae08f2c86e5587e5b6a9ebb5c722176c81a91cc1"
+  }
+]

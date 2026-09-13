@@ -80,6 +80,7 @@ export interface PersistedState {
   finderQuery: string;
   observationContext: ObservationContext | null;
   analysisOverlay: AnalysisOverlay;
+  terrainEnabled: boolean;
   committedFilters: FilterState;
   selectedSpotId: SpotId | null;
   searchHistory: string[];
@@ -118,6 +119,7 @@ interface AppState extends PersistedState {
   setFinderQuery(query: string): void;
   setObservationContext(context: ObservationContext | null): void;
   setAnalysisOverlay(overlay: AnalysisOverlay): void;
+  setTerrainEnabled(enabled: boolean): void;
   openSourceLift(owner: SourceLiftOwner): void;
   focusSourceLift(owner: SourceLiftOwner): void;
   closeSourceLift(
@@ -188,6 +190,7 @@ function persisted(state: AppState): PersistedState {
     finderQuery: state.finderQuery,
     observationContext: durableContext,
     analysisOverlay: state.analysisOverlay,
+    terrainEnabled: state.terrainEnabled,
     committedFilters: state.committedFilters,
     selectedSpotId: state.selectedSpotId,
     searchHistory: state.searchHistory,
@@ -330,6 +333,7 @@ export const useAppStore = create<AppState>((set, get) => {
       BOOTSTRAP_STATE.observationContext,
     ),
     analysisOverlay: BOOTSTRAP_STATE.analysisOverlay ?? "NONE",
+    terrainEnabled: BOOTSTRAP_STATE.terrainEnabled ?? false,
     committedFilters: BOOTSTRAP_FILTERS,
     draftFilters: cloneFilterState(BOOTSTRAP_FILTERS),
     filterSnapshot: cloneFilterState(BOOTSTRAP_FILTERS),
@@ -371,6 +375,7 @@ export const useAppStore = create<AppState>((set, get) => {
           saved.observationContext,
         ),
         analysisOverlay: saved.analysisOverlay ?? "NONE",
+        terrainEnabled: saved.terrainEnabled ?? false,
         committedFilters: cloneFilterState(
           saved.committedFilters ?? EMPTY_FILTER_STATE,
         ),
@@ -455,6 +460,7 @@ export const useAppStore = create<AppState>((set, get) => {
         finderQuery: "",
         observationContext: null,
         analysisOverlay: "NONE",
+        terrainEnabled: false,
         selectedSpotId: null,
         locationState: "DEFAULT_REGION",
         mapResetVersion: state.mapResetVersion + 1,
@@ -485,6 +491,9 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     setAnalysisOverlay(analysisOverlay) {
       commit({ analysisOverlay });
+    },
+    setTerrainEnabled(terrainEnabled) {
+      commit({ terrainEnabled });
     },
     openSourceLift(owner) {
       set((state) => ({
@@ -636,6 +645,7 @@ export const useAppStore = create<AppState>((set, get) => {
         finderQuery: "",
         observationContext: null,
         analysisOverlay: "NONE",
+        terrainEnabled: false,
         committedFilters: EMPTY_FILTER_STATE,
         draftFilters: EMPTY_FILTER_STATE,
         filterSnapshot: EMPTY_FILTER_STATE,
@@ -670,6 +680,7 @@ export const useAppStore = create<AppState>((set, get) => {
         finderQuery: "",
         observationContext: null,
         analysisOverlay: "NONE",
+        terrainEnabled: false,
         committedFilters: cloneFilterState(EMPTY_FILTER_STATE),
         draftFilters: cloneFilterState(EMPTY_FILTER_STATE),
         filterSnapshot: cloneFilterState(EMPTY_FILTER_STATE),

@@ -9,6 +9,16 @@
   line-height: 1;
 }
 
+.semantic-icon--b {
+  display: inline-block;
+  object-fit: contain;
+}
+
+.semantic-icon--b::before,
+.semantic-icon--b::after {
+  display: none;
+}
+
 .semantic-icon::before,
 .semantic-icon::after {
   position: absolute;

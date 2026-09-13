@@ -1,0 +1,127 @@
+apps/wechat-miniapp/src\app.config.ts:52:        iconPath: "assets/icons/tab-map.png",
+apps/wechat-miniapp/src\app.config.ts:53:        selectedIconPath: "assets/icons/tab-map-selected.png",
+apps/wechat-miniapp/src\app.config.ts:58:        iconPath: "assets/icons/tab-my.png",
+apps/wechat-miniapp/src\app.config.ts:59:        selectedIconPath: "assets/icons/tab-my-selected.png",
+apps/wechat-miniapp/src\components\custom-nav.tsx:5:import { SemanticIcon } from "./semantic-asset";
+apps/wechat-miniapp/src\components\custom-nav.tsx:88:                <SemanticIcon
+apps/wechat-miniapp/src\components\moon-phase.tsx:44:      src={`/assets/moon/phase-${definition.index}.svg`}
+apps/wechat-miniapp/src\components\toggle-field.tsx:2:import { SemanticIcon, type SemanticIconName } from "./semantic-asset";
+apps/wechat-miniapp/src\components\toggle-field.tsx:14:  icon?: SemanticIconName;
+apps/wechat-miniapp/src\components\toggle-field.tsx:29:        <SemanticIcon name={icon} />
+apps/wechat-miniapp/src\components\filter-sheet.tsx:5:import { SemanticIcon } from "./semantic-asset";
+apps/wechat-miniapp/src\components\filter-sheet.tsx:47:      <View className="filter-sheet__heading"><Text>筛选</Text><Button className="filter-sheet__close" ariaLabel="关闭并取消更改" onClick={cancel}><SemanticIcon name="close" /></Button></View>
+apps/wechat-miniapp/src\components\spot-card.tsx:9:import { SemanticIcon } from "./semantic-asset";
+apps/wechat-miniapp/src\components\spot-card.tsx:155:              <SemanticIcon name="chevron-right" />
+apps/wechat-miniapp/src\components\spot-card.tsx:211:          <SemanticIcon
+apps/wechat-miniapp/src\pages\map\index.tsx:29:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\pages\map\index.tsx:467:      iconPath: "/assets/icons/draft-marker.png",
+apps/wechat-miniapp/src\pages\map\index.tsx:1704:              <SemanticIcon name="search" />
+apps/wechat-miniapp/src\pages\map\index.tsx:1720:              <SemanticIcon name="location" />
+apps/wechat-miniapp/src\pages\map\index.tsx:1732:              <SemanticIcon name="layers" />
+apps/wechat-miniapp/src\pages\map\index.tsx:2003:                        <SemanticIcon name={overlay === "LIGHT" ? "bulb" : "cloud"} />
+apps/wechat-miniapp/src\pages\map\index.tsx:2010:                        {selectedLayer ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : null}
+apps/wechat-miniapp/src\pages\map\map-markers.ts:9:    regular: "/assets/icons/formal-spot-marker.png",
+apps/wechat-miniapp/src\pages\map\map-markers.ts:10:    selected: "/assets/icons/formal-spot-marker-selected.png",
+apps/wechat-miniapp/src\pages\map\map-markers.ts:13:    regular: "/assets/icons/formal-spot-marker-night.png",
+apps/wechat-miniapp/src\pages\map\map-markers.ts:14:    selected: "/assets/icons/formal-spot-marker-selected-night.png",
+apps/wechat-miniapp/src\pages\map\map-markers.ts:17:    regular: "/assets/icons/formal-spot-marker-observation.png",
+apps/wechat-miniapp/src\pages\map\map-markers.ts:18:    selected: "/assets/icons/formal-spot-marker-selected-observation.png",
+apps/wechat-miniapp/src\pages\map\map-markers.test.ts:29:  assert.equal(marker.iconPath, "/assets/icons/formal-spot-marker-selected-observation.png");
+apps/wechat-miniapp/src\features\spot\spot-detail-page.tsx:12:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\features\spot\spot-detail-page.tsx:632:                    <SemanticIcon name="chevron-right" />
+apps/wechat-miniapp/src\theme\native-chrome.ts:34:        iconPath: `assets/icons/tab-map${theme.suffix}.png`,
+apps/wechat-miniapp/src\theme\native-chrome.ts:35:        selectedIconPath: `assets/icons/tab-map-selected${theme.suffix}.png`,
+apps/wechat-miniapp/src\theme\native-chrome.ts:39:        iconPath: `assets/icons/tab-my${theme.suffix}.png`,
+apps/wechat-miniapp/src\theme\native-chrome.ts:40:        selectedIconPath: `assets/icons/tab-my-selected${theme.suffix}.png`,
+apps/wechat-miniapp/src\components\selected-card-star.tsx:18:      src={`/assets/ornaments/selected-card-star-${MODE_FILE[mode]}.svg`}
+apps/wechat-miniapp/src\theme\native-chrome.test.ts:54:      assert.equal(icons[index]!.values.iconPath, `assets/icons/tab-${name}${suffix}.png`);
+apps/wechat-miniapp/src\theme\native-chrome.test.ts:55:      assert.equal(icons[index]!.values.selectedIconPath, `assets/icons/tab-${name}-selected${suffix}.png`);
+apps/wechat-miniapp/src\features\sky\spot-sky-page.tsx:20:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\features\sky\spot-sky-page.tsx:282:        <SemanticIcon name="horizon" decorative />
+apps/wechat-miniapp/src\features\sky\spot-sky-page.tsx:413:            <SemanticIcon name="close" decorative />
+apps/wechat-miniapp/src\features\sky\spot-sky-page.tsx:466:            <SemanticIcon name="close" decorative />
+apps/wechat-miniapp/src\features\sky\spot-sky-page.tsx:1160:      <SemanticIcon
+apps/wechat-miniapp/src\features\sky\spot-sky-page.tsx:2492:              <SemanticIcon
+apps/wechat-miniapp/src\features\sky\spot-sky-page.tsx:2520:              <SemanticIcon name="compass" decorative />
+apps/wechat-miniapp/src\components\semantic-asset.tsx:6:export type SemanticAssetSubject =
+apps/wechat-miniapp/src\components\semantic-asset.tsx:16:export type SemanticIconName =
+apps/wechat-miniapp/src\components\semantic-asset.tsx:49:const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
+apps/wechat-miniapp/src\components\semantic-asset.tsx:50:  settings: "/assets/icons/settings.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:51:  pencil: "/assets/icons/pencil.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:52:  "account-user": "/assets/icons/account-user.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:53:  "arrow-left": "/assets/icons/arrow-left.png",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:54:  "chevron-right": "/assets/icons/chevron-right.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:55:  download: "/assets/icons/download.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:56:  share: "/assets/icons/share.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:57:  eye: "/assets/icons/eye.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:58:  bulb: "/assets/icons/bulb.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:59:  cloud: "/assets/icons/cloud.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:60:  trash: "/assets/icons/trash-2.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:61:  "wifi-off": "/assets/icons/wifi-off.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:62:  images: "/assets/icons/images.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:63:  filter: "/assets/icons/filter.svg",
+apps/wechat-miniapp/src\components\semantic-asset.tsx:72:export function SemanticAsset({
+apps/wechat-miniapp/src\components\semantic-asset.tsx:78:  subject: SemanticAssetSubject;
+apps/wechat-miniapp/src\components\semantic-asset.tsx:86:      src={`/assets/semantic/${subject}-${MODE_FILE[mode]}.svg`}
+apps/wechat-miniapp/src\components\semantic-asset.tsx:97:export function SemanticIcon({
+apps/wechat-miniapp/src\components\semantic-asset.tsx:103:  name: SemanticIconName;
+apps/wechat-miniapp/src\components\semantic-asset.tsx:109:  const source = name === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[name];
+apps/wechat-miniapp/src\components\semantic-asset.tsx:122:              ? "/assets/icons/arrow-left.png"
+apps/wechat-miniapp/src\components\semantic-asset.tsx:123:              : "/assets/icons/arrow-left-light.png"
+apps/wechat-miniapp/src\features\my\my-plan-card.tsx:3:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\features\my\my-plan-card.tsx:20:      <View className="my-plan-card__title"><Image src="/assets/icons/my-plan-suv.svg" className="my-plan-card__suv" mode="aspectFit" aria-hidden /><Text>观星计划</Text></View><SemanticIcon name="chevron-right" />
+apps/wechat-miniapp/src\features\my\my-plan-card.tsx:33:      <SemanticIcon name="chevron-right" />
+apps/wechat-miniapp/src\features\my\my-nickname.tsx:1:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\features\my\my-nickname.tsx:65:      <SemanticIcon name="pencil" />
+apps/wechat-miniapp/src\pages\map\private-contribution-markers.ts:62:      iconPath: pending ? "/assets/icons/proposal-marker.png" : "/assets/icons/draft-marker.png",
+apps/wechat-miniapp/src\features\my\my-library-page.tsx:9:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\features\my\my-library-page.tsx:154:              <Button className="my-settings-gear focus-ring" data-od-id="my-settings-action" data-control="my-settings-action" aria-label="打开设置" onClick={openSettings}><SemanticIcon name="settings" /></Button>
+apps/wechat-miniapp/src\features\my\my-library-page.tsx:169:                  <SemanticIcon name="images" />
+apps/wechat-miniapp/src\features\my\my-library-page.tsx:178:                  <SemanticIcon name="chevron-right" />
+apps/wechat-miniapp/src\features\my\my-avatar.tsx:5:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\features\my\my-avatar.tsx:73:      {savedSrc ? <Image className="profile-summary__avatar-image" src={savedSrc} mode="aspectFill" style={{ transform: `scale(${saved!.zoom})` }} /> : <SemanticIcon name="account-user" />}
+apps/wechat-miniapp/src\pages\map\pending-proposal-panel.tsx:4:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\pages\map\pending-proposal-panel.tsx:78:          onClick={() => onExtent(extent === "large" ? "medium" : "small")}><SemanticIcon name="chevron-down" /></Button>
+apps/wechat-miniapp/src\pages\map\pending-proposal-panel.tsx:81:          onClick={() => onExtent(extent === "small" ? "medium" : "large")}><SemanticIcon name="chevron-up" /></Button>
+apps/wechat-miniapp/src\pages\map\pending-proposal-panel.tsx:83:          onClick={onClose}><SemanticIcon name="close" /></Button>
+apps/wechat-miniapp/src\pages\map\pending-proposal-panel.tsx:139:              ariaLabel={`编辑${model.name}`} onClick={() => onEdit?.()}><SemanticIcon name="pencil" /><Text>编辑观星点</Text></Button>
+apps/wechat-miniapp/src\pages\map\pending-proposal-panel.tsx:141:              ariaLabel={`打开${model.name}云观星`} onClick={() => onCloud?.()}><SemanticIcon name="star" /><Text>云观星</Text></Button>}
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:16:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:377:          <SemanticIcon name="chevron-down" />
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:385:          <SemanticIcon name="chevron-up" />
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:392:          <SemanticIcon name="close" />
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:508:                  <SemanticIcon name="compass" />
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:514:              <View><SemanticIcon name="clock" /><Text>开放时间</Text></View>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:646:                <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">云层</Text></View>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:654:                <View className="spot-panel__evidence-title"><SemanticIcon name="sun" /><Text className="type-label">温湿</Text></View>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:662:                <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">风与能见度</Text></View>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:670:                <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">降水</Text></View>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:679:              <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">卫星夜光估算</Text></View>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:684:              <View className="spot-panel__evidence-title"><SemanticIcon name="star" /><Text className="type-label">当前目标</Text></View>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:765:        <Button className="spot-media-viewer__close" ariaLabel="关闭现场照片查看器" onClick={() => setViewerIndex(null)}><SemanticIcon name="close" /></Button>
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:797:            <SemanticIcon name="eye" />
+apps/wechat-miniapp/src\pages\map\spot-panel.tsx:801:            <SemanticIcon name="share" />
+apps/wechat-miniapp/src\content\settings\settings-sheet.tsx:1:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\content\settings\settings-sheet.tsx:65:          <SemanticIcon name="close" />
+apps/wechat-miniapp/src\content\settings\settings-sheet.tsx:77:            {selected ? <SemanticIcon name="check" /> : null}
+apps/wechat-miniapp/src\content\settings\settings-sections.tsx:2:import { SemanticIcon, type SemanticIconName } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\content\settings\settings-sections.tsx:33:  icon: SemanticIconName;
+apps/wechat-miniapp/src\content\settings\settings-sections.tsx:43:      <SemanticIcon name={icon} />
+apps/wechat-miniapp/src\content\settings\settings-sections.tsx:52:        <SemanticIcon name="chevron-right" />
+apps/wechat-miniapp/src\pages\map\search-page.tsx:24:  SemanticIcon,
+apps/wechat-miniapp/src\pages\map\search-page.tsx:25:  type SemanticIconName,
+apps/wechat-miniapp/src\pages\map\search-page.tsx:98:const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
+apps/wechat-miniapp/src\pages\map\search-page.tsx:443:            <SemanticIcon name={focused ? "arrow-left" : "search"} />
+apps/wechat-miniapp/src\pages\map\search-page.tsx:540:                  <SemanticIcon
+apps/wechat-miniapp/src\pages\map\search-page.tsx:554:          <View className="spot-search-filter-open__face"><SemanticIcon name="filter" /></View>
+apps/wechat-miniapp/src\pages\map\search-page.tsx:598:              <SemanticIcon name={wantedOpen ? "chevron-up" : "chevron-down"} />
+apps/wechat-miniapp/src\pages\map\search-page.tsx:608:              <SemanticIcon name={otherOpen ? "chevron-up" : "chevron-down"} />
+apps/wechat-miniapp/src\pages\map\search-page.tsx:634:        {address ? <View className="spot-identity-card__address"><SemanticIcon name="location" /><Text className="spot-identity-card__address-text">{address}</Text></View> : null}
+apps/wechat-miniapp/src\content\contribution\contribution-media-history.tsx:4:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\content\contribution\contribution-media-history.tsx:51:            <SemanticIcon name="images" />
+apps/wechat-miniapp/src\content\contribution\contribution-media-history.tsx:139:            <SemanticIcon name="wifi-off" label="上传待处理" decorative={false} />
+apps/wechat-miniapp/src\content\contribution\contribution-media-history.tsx:181:                    <SemanticIcon name="images" label="现场图片" decorative={false} />
+apps/wechat-miniapp/src\content\settings\display-mode-control.tsx:5:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\content\settings\display-mode-control.tsx:112:            <SemanticIcon name={item === "DAY" ? "sun" : item === "NIGHT" ? "moon" : "star"} />
+apps/wechat-miniapp/src\content\plan\list\index.tsx:7:import { SemanticIcon } from "@/components/semantic-asset";
+apps/wechat-miniapp/src\content\plan\list\index.tsx:66:              <View className="plan-list-row__heading"><Text>{query.data?.data.planSpots?.find(spot => spot.spotId === plan.spotId)?.name ?? "点位资料暂不可用"}</Text><SemanticIcon name="chevron-right" /></View>

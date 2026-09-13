@@ -24,9 +24,11 @@ import {
   type DisplayMode,
   type ContributionSubmission,
   type SpotSummary,
+  viewportRadiusKm,
 } from "@starward/miniapp-contracts";
 import { NotificationRegion } from "@/components/notification";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { AstronomicalEventModal, type AstronomicalEventModalHandle } from "@/components/astronomical-event-modal";
 import { StatusPanel } from "@/components/status-panel";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useResourceQuery } from "@/hooks/use-resource-query";
@@ -43,6 +45,7 @@ import {
 } from "@/services/api-client";
 import { useAppStore, type AnalysisOverlay } from "@/state/app-store";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
+import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
 import {
   nearestMapTimeFrameIndex,
   mapTimeFrameAt,
@@ -102,6 +105,8 @@ function formatContextTime(value: string, timezone: string) {
     return `${date.slice(5, 7)}月${date.slice(8, 10)}日 ${clockTimeInTimezone(new Date(value), timezone)}`;
   }
 }
+
+const TERRAIN_GROUND_OVERLAY_ID = 91301;
 
 function isPermissionError(error: unknown) {
   return (
@@ -169,6 +174,7 @@ export default function MapPage() {
     (state) => state.observationContext,
   );
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
+  const terrainEnabled = useAppStore((state) => state.terrainEnabled);
   const preferences = useAppStore((state) => state.preferences);
   const viewport = useAppStore((state) => state.viewport);
   const selectedSpotId = useAppStore((state) => state.selectedSpotId);
@@ -179,6 +185,7 @@ export default function MapPage() {
     (state) => state.setObservationContext,
   );
   const setAnalysisOverlay = useAppStore((state) => state.setAnalysisOverlay);
+  const setTerrainEnabled = useAppStore((state) => state.setTerrainEnabled);
   const setViewport = useAppStore((state) => state.setViewport);
   const mapResetVersion = useAppStore((state) => state.mapResetVersion);
   const selectSpot = useAppStore((state) => state.selectSpot);
@@ -190,6 +197,10 @@ export default function MapPage() {
   const [announcement, setAnnouncement] = useState("");
   const [timeSaving, setTimeSaving] = useState(false);
   const [layerDatePickerOpen, setLayerDatePickerOpen] = useState(false);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const eventModalOpenRef = useRef(false);
+  const eventModalRef = useRef<AstronomicalEventModalHandle | null>(null);
+  eventModalOpenRef.current = eventModalOpen;
   const timeRequestBusy = useRef(false);
   const [pageVisible, setPageVisible] = useState(true);
   const navigationEpoch = useRef(0);
@@ -464,7 +475,7 @@ export default function MapPage() {
       id: 99_999,
       latitude: point.lat,
       longitude: point.lon,
-      iconPath: "/assets/icons/draft-marker.png",
+      iconPath: mode === "DAY" ? "/assets/b-icons/spot-marker--day--draft.png" : "/assets/icons/draft-marker.png",
       width: 32,
       height: 36,
       anchor: { x: 0.5, y: 1 },
@@ -484,7 +495,7 @@ export default function MapPage() {
       },
       ariaLabel: `${candidatePreview.name}，当前候选位置`,
     };
-  }, [candidatePreview, preferences.largeText]);
+  }, [candidatePreview, mode, preferences.largeText]);
   const selectedFromScene =
     spots.find((spot) => spot.spotId === selectedSpotId) ?? null;
   const selected =
@@ -561,6 +572,62 @@ export default function MapPage() {
     enabled: bottomPresentation === "spot-panel" && detailContextReady,
     staleTime: 60_000,
   });
+  const mapTerrainRadiusKm = Math.min(50, Math.max(2, viewportRadiusKm(viewport.zoom)));
+  const terrain = useTerrainOverlay({
+    purpose: "MAP",
+    center: {
+      system: "GCJ02",
+      latitude: viewport.center.latitude,
+      longitude: viewport.center.longitude,
+    },
+    radiusKm: mapTerrainRadiusKm,
+  }, pageVisible && terrainEnabled);
+  const terrainGroundOverlay = useMemo(() => {
+    const data = terrain.data?.data;
+    const bounds = data?.imageBoundsGcj02;
+    if (!pageVisible || !terrainEnabled || !terrain.imagePath || !bounds || data?.state === "UNAVAILABLE") return null;
+    return {
+      src: terrain.imagePath,
+      bounds: {
+        southwest: { latitude: bounds.south, longitude: bounds.west },
+        northeast: { latitude: bounds.north, longitude: bounds.east },
+      },
+      opacity: 0.62,
+      zIndex: 0,
+    };
+  }, [pageVisible, terrain.data?.data, terrain.imagePath, terrainEnabled]);
+  const terrainOverlayQueue = useRef<Promise<void>>(Promise.resolve());
+  const terrainOverlayInstalled = useRef(false);
+  const terrainOverlayGeneration = useRef(0);
+  useEffect(() => {
+    const generation = ++terrainOverlayGeneration.current;
+    terrainOverlayQueue.current = terrainOverlayQueue.current.catch(() => undefined).then(async () => {
+      const context = Taro.createMapContext("spot-map");
+      if (!terrainGroundOverlay) {
+        if (terrainOverlayInstalled.current) {
+          await context.removeGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID });
+          terrainOverlayInstalled.current = false;
+        }
+        return;
+      }
+      if (terrainOverlayInstalled.current) {
+        await context.updateGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID, ...terrainGroundOverlay, visible: true });
+      } else {
+        await context.addGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID, ...terrainGroundOverlay, visible: true });
+        terrainOverlayInstalled.current = true;
+      }
+    }).catch(() => {
+      if (terrainOverlayGeneration.current === generation) setAnnouncement("原生地图未能加载地形叠加，可关闭后重试。");
+    });
+  }, [terrainGroundOverlay]);
+  useEffect(() => () => {
+    ++terrainOverlayGeneration.current;
+    terrainOverlayQueue.current = terrainOverlayQueue.current.catch(() => undefined).then(async () => {
+      if (!terrainOverlayInstalled.current) return;
+      await Taro.createMapContext("spot-map").removeGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID });
+      terrainOverlayInstalled.current = false;
+    }).catch(() => undefined);
+  }, []);
   const spotSky = useResourceQuery({
     queryKey: [
       "spot-sky",
@@ -1199,6 +1266,17 @@ export default function MapPage() {
 
   const handleMapPresentationSystemBack = () => {
     setMapPresentationBackBoundaryVisible(false);
+    if (eventModalOpenRef.current) {
+      const remainsOpen = eventModalRef.current?.back() ?? false;
+      if (remainsOpen) {
+        if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
+        mapPresentationBackBoundaryRearm.current = setTimeout(() => {
+          mapPresentationBackBoundaryRearm.current = null;
+          if (eventModalOpenRef.current) setMapPresentationBackBoundaryVisible(true);
+        }, 0);
+      }
+      return;
+    }
     const presentation = bottomPresentationRef.current;
     if (presentation === "layer-sheet") {
       closeLayerSheet();
@@ -1221,10 +1299,12 @@ export default function MapPage() {
   };
 
   useEffect(() => {
-    setMapPresentationBackBoundaryVisible(
-      bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet",
-    );
-  }, [bottomPresentation]);
+    setMapPresentationBackBoundaryVisible(false);
+    const shouldArm = eventModalOpen || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet";
+    if (!shouldArm) return;
+    const timer = setTimeout(() => setMapPresentationBackBoundaryVisible(true), 32);
+    return () => clearTimeout(timer);
+  }, [bottomPresentation, eventModalOpen]);
 
   useEffect(() => () => {
     if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
@@ -1637,15 +1717,17 @@ export default function MapPage() {
       <PageContainer
         show={mapPresentationBackBoundaryVisible}
         duration={1}
-        zIndex={1}
+        zIndex={1200}
         overlay={false}
-        position="bottom"
+        position="center"
         round={false}
         closeOnSlideDown={false}
-        customStyle="width:1px;height:1px;min-height:0;overflow:hidden;background:transparent;pointer-events:none;"
-        onAfterLeave={handleMapPresentationSystemBack}
+        customStyle="width:100vw;height:100vh;min-height:100vh;overflow:visible;background:transparent;pointer-events:none;"
+        onBeforeLeave={handleMapPresentationSystemBack}
       >
-        <View aria-hidden="true" />
+        {eventModalOpen ? <AstronomicalEventModal ref={eventModalRef} open mode="browse"
+          context={observationContext} onClose={() => setEventModalOpen(false)}
+          nativeBackBoundary={false} portal={false} /> : <View aria-hidden="true" />}
       </PageContainer>
       <View className="map-workspace">
         <View
@@ -1722,7 +1804,7 @@ export default function MapPage() {
             <Button
               className={`map-tool map-tool--layer focus-ring${bottomPresentation === "layer-sheet" ? " map-tool--layer-active" : ""}`}
               data-control="map-layer-selector-trigger"
-              aria-label={`打开地图图层，当前${overlayLabels[analysisOverlay]}`}
+              aria-label={`打开地图图层，当前${terrainEnabled ? "地形开启，" : "地形关闭，"}${overlayLabels[analysisOverlay]}`}
               aria-pressed={bottomPresentation === "layer-sheet"}
               onClick={(event) => {
                 event.stopPropagation();
@@ -1743,6 +1825,16 @@ export default function MapPage() {
             >
               <Text className="map-tool__plus" aria-hidden>＋</Text>
             </Button>
+            {bottomPresentation === "none" ? <Button
+              className="map-tool map-tool--event focus-ring"
+              data-control="map-astronomical-event-entry"
+              aria-label="浏览天文事件"
+              onClick={(event) => {
+                event.stopPropagation();
+                setLayerDatePickerOpen(false);
+                setEventModalOpen(true);
+              }}
+            ><SemanticIcon name="meteor" /></Button> : null}
           </View>
 
           <View className="map-feedback-column">
@@ -1985,7 +2077,29 @@ export default function MapPage() {
                   </View>
                 ) : null}
                 </View>
-                <View className="map-layer-sheet__choices" role="radiogroup" aria-label="地图图层选择">
+                <View className="map-layer-sheet__terrain-choice" aria-label="地形叠加选择">
+                  <Button
+                    className={`map-layer-sheet__choice map-layer-sheet__choice--terrain${terrainEnabled ? " map-layer-sheet__choice--active" : ""}`}
+                    aria-checked={terrainEnabled}
+                    aria-label={`地形${terrainEnabled ? "，已开启" : "，已关闭"}`}
+                    onClick={() => {
+                      const next = !terrainEnabled;
+                      setTerrainEnabled(next);
+                      setAnnouncement(next ? "正在加载有来源的地形叠加。" : "已关闭地形叠加。");
+                    }}
+                  >
+                    <SemanticIcon name="terrain" />
+                    <View className="map-layer-sheet__choice-copy">
+                      <Text className="map-layer-sheet__choice-title">地形</Text>
+                      <Text className="type-caption">高程派生阴影 · 可与下方图层组合</Text>
+                    </View>
+                    {terrainEnabled ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : null}
+                  </Button>
+                  {terrainEnabled ? <Text className={`map-layer-sheet__terrain-state${terrain.isError || terrain.imageError || terrain.data?.data.state === "UNAVAILABLE" ? " map-layer-sheet__terrain-state--error" : ""}`}>
+                    {terrain.isPending || terrain.imagePending ? "正在读取地形覆盖…" : terrain.isError || terrain.imageError ? "地形加载失败，可关闭后重试。" : terrain.data?.data.state === "UNAVAILABLE" ? terrain.data.data.coverageLabel : terrain.data ? `${terrain.data.data.datasetVersion} · ${terrain.data.data.coverageLabel}` : ""}
+                  </Text> : null}
+                </View>
+                <View className="map-layer-sheet__choices" role="radiogroup" aria-label="观测叠加选择">
                   {(["LIGHT", "TOTAL_CLOUD"] as const).map((overlay) => {
                     const selectedLayer = visibleLayer === overlay;
                     return (

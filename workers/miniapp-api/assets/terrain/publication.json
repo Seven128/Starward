@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "starward-terrain-publication-v1",
+  "publicationId": "terrain:glo30:greater-bay-area:2021:v2",
+  "dataset": "Copernicus DEM GLO-30 Public AWS COG 2021",
+  "sourceProvider": "Copernicus Programme / AWS Open Data",
+  "license": "Copernicus DEM licence",
+  "sourceResolution": "1 arc-second (approximately 30 m)",
+  "derivedResolutionM": 110.7,
+  "derivedAt": "2026-09-12T23:16:30Z",
+  "coordinateSystem": "GCJ02",
+  "transformVersion": "starward-wgs84-gcj02-grid-v1",
+  "centerWgs84": {
+    "latitude": 22.55,
+    "longitude": 114.25
+  },
+  "centerGcj02": {
+    "latitude": 22.54713501196655,
+    "longitude": 114.25482324884929
+  },
+  "maximumRadiusKm": 85.0,
+  "boundsGcj02": {
+    "west": 113.42804782209605,
+    "south": 21.783570513224184,
+    "east": 115.08159867560254,
+    "north": 23.310699510708915
+  },
+  "elevationM": {
+    "minimum": -69.7,
+    "maximum": 1268.4
+  },
+  "validPixelPercent": 99.34,
+  "image": {
+    "file": "glo30-greater-bay-area-85km.png",
+    "sha256": "5e1a3b6f4bdc827cd720c643f2ea4c3eb6876af9cf6f163c6cffb1f5c8678654",
+    "byteSize": 1874610,
+    "width": 1536,
+    "height": 1536
+  },
+  "sources": [
+    {
+      "tileId": "Copernicus_DSM_COG_10_N21_00_E113_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N21_00_E113_00_DEM/Copernicus_DSM_COG_10_N21_00_E113_00_DEM.tif",
+      "sha256": "fc6dde5ef7e8e7a86a7ae3e338c0b2e1c4281808a60c4c03aa5327a6f272a7ed",
+      "byteSize": 921724,
+      "etag": null
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N21_00_E114_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N21_00_E114_00_DEM/Copernicus_DSM_COG_10_N21_00_E114_00_DEM.tif",
+      "sha256": "47d6a28ec2783970a73b9178d67d9d97223883fd06b6cee193cdba4021899126",
+      "byteSize": 177841,
+      "etag": null
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N22_00_E113_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N22_00_E113_00_DEM/Copernicus_DSM_COG_10_N22_00_E113_00_DEM.tif",
+      "sha256": "074e13244e6da6745bcf76150fdc6e06f774140a7aac796785922fce962eacbb",
+      "byteSize": 36641041,
+      "etag": null
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N22_00_E114_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N22_00_E114_00_DEM/Copernicus_DSM_COG_10_N22_00_E114_00_DEM.tif",
+      "sha256": "b950ab75642d6684fe08c82b6aa3bb087c1d35acd229ef0e6e6586e1b0868fa3",
+      "byteSize": 25030462,
+      "etag": null
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N22_00_E115_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N22_00_E115_00_DEM/Copernicus_DSM_COG_10_N22_00_E115_00_DEM.tif",
+      "sha256": "450f8a0131aefaca7612202ff6446fb3b794c9df5b5ec8e166e53ff1be270c80",
+      "byteSize": 11027283,
+      "etag": null
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N23_00_E113_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N23_00_E113_00_DEM/Copernicus_DSM_COG_10_N23_00_E113_00_DEM.tif",
+      "sha256": "6e9ee894d599979e7094f528e62112e0c7f707783cda40a70d2b7ef23c3daca3",
+      "byteSize": 50998992,
+      "etag": null
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N23_00_E114_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N23_00_E114_00_DEM/Copernicus_DSM_COG_10_N23_00_E114_00_DEM.tif",
+      "sha256": "0a06e2bf9e69fb3fca0a14aa26dffbf5407f98d0428a781d1c719a7a8a0b6e6a",
+      "byteSize": 49353809,
+      "etag": null
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N23_00_E115_00_DEM",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N23_00_E115_00_DEM/Copernicus_DSM_COG_10_N23_00_E115_00_DEM.tif",
+      "sha256": "c2e9ec8785d381de161f21eee80c1e9317435366b6cdac7e8c1e6b3218b592ae",
+      "byteSize": 49718591,
+      "etag": null
+    }
+  ],
+  "unavailableSourceTiles": [
+    "Copernicus_DSM_COG_10_N21_00_E115_00_DEM"
+  ],
+  "limitations": [
+    "覆盖仅限清单中的大湾区中心点周边 85 km；范围外返回不可用。",
+    "呈现为高程派生山体阴影，不包含近处树木、围墙、临时灯或逐方向遮挡角。",
+    "源产品采样间隔不等于逐点垂直误差或拍摄方向精度。"
+  ]
+}

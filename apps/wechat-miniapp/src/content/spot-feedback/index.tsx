@@ -18,6 +18,7 @@ import {
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost, NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
+import { SelectionTabs } from "@/components/selection-tabs";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import { completeFormalContributionUpload, createFormalContributionUpload, createFormalUploadIntent, errorMessage, getContributionFormalBaseline, getContributionMedia, getContributions, getSpotContributionMedia, getSpotSite, removeFormalContributionUpload, submitFormalContribution } from "@/services/api-client";
@@ -254,10 +255,13 @@ export default function FormalFeedbackEditor() {
   return <View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     <FloatingNotificationHost />
     <CustomNav title={`${baseline?.fields.name ?? (spotName || "观星点")}反馈页`} back beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
-    <View className="formal-feedback-tabs" role="tablist" aria-label="反馈章节">
-      {CHAPTERS.map(([key, label]) => <Button key={key} className={chapter === key ? "is-active" : ""} aria-pressed={chapter === key} onClick={() => jump(key)}>{label}</Button>)}
-      <View className="formal-feedback-tabs__line" style={{ left: `${CHAPTERS.findIndex(item => item[0] === chapter) * 25}%` }} />
-    </View>
+    <SelectionTabs className="formal-feedback-tabs"
+      items={CHAPTERS.map(([id, label]) => ({ id, label }))}
+      activeId={chapter}
+      label="反馈章节"
+      onSelect={jump}
+      activeItemClassName="is-active"
+      indicatorClassName="formal-feedback-tabs__line" />
     <ScrollView scrollY scrollIntoView={`formal-feedback-${chapter}`} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
       <View className="formal-feedback-body safe-bottom">
         <NotificationRegion owner="contribution" placement="inline" />

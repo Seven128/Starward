@@ -6,6 +6,7 @@ import { parseCoordinateInput } from "./coordinate-input";
 import { NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
+import { SelectionTabs } from "@/components/selection-tabs";
 import { CustomNav } from "@/components/custom-nav";
 import { useThemeClass } from "@/hooks/use-theme";
 import { contributionValidationAnchor } from "./validation-anchor";
@@ -133,10 +134,15 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
   };
   return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
     {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text><Text className="contribution-editor-save-state">{savedState}</Text><Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : form.hasFormalSpot ? "现场反馈与纠错" : title} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
-    {isNewSpotDocument ? <View className="formal-feedback-tabs contribution-document-tabs" role="tablist" aria-label="新增地点章节">
-      {SPOT_DOCUMENT_CHAPTERS.map(([key, label]) => <Button key={key} className={documentChapter === key ? "is-active" : ""} aria-pressed={documentChapter === key} onClick={() => jumpDocumentChapter(key)}>{label}</Button>)}
-      <View className="formal-feedback-tabs__line" style={{ left: `${SPOT_DOCUMENT_CHAPTERS.findIndex(item => item[0] === documentChapter) * 25}%` }} />
-    </View> : null}
+    {isNewSpotDocument ? <SelectionTabs
+      className="formal-feedback-tabs contribution-document-tabs"
+      items={SPOT_DOCUMENT_CHAPTERS.map(([id, label]) => ({ id, label }))}
+      activeId={documentChapter}
+      label="新增地点章节"
+      onSelect={jumpDocumentChapter}
+      activeItemClassName="is-active"
+      indicatorClassName="formal-feedback-tabs__line"
+    /> : null}
     <ScrollView scrollY scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
       <View className={`contribution-content${isNewSpotDocument ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
         {managesRecords ? <ContributionRecords form={form} /> : <>

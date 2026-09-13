@@ -576,6 +576,12 @@ test("identity-bound data cannot leak between users", async () => {
       expectedRevision: savedPlan.data.revision,
     }, "plan:first:unknown-event:01"), /plan_event_occurrence_invalid/);
     await assert.rejects(service.savePlan(first.userId, {
+      planId: savedPlan.data.planId, spotId, observationContextId: planOrigin.data.contextId,
+      localDate: "2026-08-06", localTime: "23:00", timing: savedPlan.data.timing!, travel: savedPlan.data.travel,
+      reminders: savedPlan.data.reminders!, eventOccurrenceIds: ["event-occurrence:007-per:2026", "event-occurrence:006-lyr:2026"], notes: savedPlan.data.notes,
+      expectedRevision: savedPlan.data.revision,
+    }, "plan:first:new-multi-event:01"), /plan_event_occurrence_single_selection_required/);
+    await assert.rejects(service.savePlan(first.userId, {
       planId: "plan:notes-too-long" as never, spotId,
       observationContextId: planOrigin.data.contextId,
       localDate: "2026-08-06", localTime: "23:00",

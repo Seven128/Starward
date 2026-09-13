@@ -42,3 +42,11 @@ tmp/project-efficiency-android-20260908/*.apk
 .codex/work-items/project-efficiency-2026-09-08/R7-label-final.log
 .codex/work-items/project-efficiency-2026-09-08/R7-lock-cache-probe.log
 .codex/work-items/project-efficiency-2026-09-08/R7-source-cache-probe.log
+
+# Local downloads, device transports, QR codes and raw captures are not source.
+# Only explicitly reviewed, non-private defect evidence is shared below.
+/output/*
+!/output/miniapp-uiux-alignment-2026-09-13/
+/output/miniapp-uiux-alignment-2026-09-13/*
+!/output/miniapp-uiux-alignment-2026-09-13/phone-current-layer-before-back.png
+!/output/miniapp-uiux-alignment-2026-09-13/phone-final-clean-event-list.png

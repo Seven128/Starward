@@ -126,3 +126,47 @@ test("current source authorities outside DESIGN directories are admitted explici
   assert.equal(note.references[0].path, "docs/source.md");
   await assert.rejects(createReviewNotes({ ...options, authorityPaths: ["../elsewhere.md"] }), /outside_repository/u);
 });
+
+test("a structurally valid mixed review surfaces unresolved work despite recorded passes", async (t) => {
+  const { options } = await fixture(t);
+  const note = reviewed(await createReviewNotes({ ...options, evidencePaths: ["trace.txt"] }), "passed");
+  for (const verdict of ["failed", "unverified", "not_comparable"]) {
+    note.observations.push({
+      ...note.observations[0], claim: `boundary ${verdict}`, verdict,
+      next_action: `resolve ${verdict}`,
+    });
+  }
+  const result = await inspectReviewNotes({ ...options, review: note });
+  assert.equal(result.record_validity, "valid");
+  assert.deepEqual(result.follow_up, note.observations.slice(1).map(({ claim, verdict, next_action }) => ({
+    reason: "unresolved_observation", claim, verdict, next_action,
+  })));
+  assert.deepEqual(result.reviewer, note.reviewer);
+  assert.equal(result.product_acceptance, "not_assessed_by_tool");
+});
+
+test("unreviewed and stale passed notes retain explicit follow-up without rewriting history", async (t) => {
+  const { options, repositoryRoot } = await fixture(t);
+  const record = await createReviewNotes({ ...options, evidencePaths: ["trace.txt"], sessionPath: "session.json" });
+  const initial = await inspectReviewNotes({ ...options, review: record });
+  assert.ok(initial.follow_up.some((item) => item.reason === "no_recorded_review"));
+  const note = reviewed(record, "passed");
+  await writeFile(path.join(repositoryRoot, "trace.txt"), "replaced observation");
+  await writeFile(path.join(repositoryRoot, "module.ts"), "changed implementation");
+  const stale = await inspectReviewNotes({ ...options, review: note });
+  assert.ok(stale.follow_up.some((item) => item.reason === "bound_inputs_changed"));
+  assert.ok(stale.follow_up.some((item) => item.reason === "recorded_candidate_different"));
+  assert.equal(stale.recorded_observations[0].verdict, "passed");
+  assert.equal(stale.product_acceptance, "not_assessed_by_tool");
+});
+
+test("no recorded follow-up never certifies complete scope, review independence or acceptance", async (t) => {
+  const { options } = await fixture(t);
+  const note = reviewed(await createReviewNotes({ ...options, evidencePaths: ["trace.txt"] }), "passed");
+  note.reviewer.method = "Author self-review";
+  const result = await inspectReviewNotes({ ...options, review: note });
+  assert.deepEqual(result.follow_up, []);
+  assert.equal(result.reviewer.method, "Author self-review");
+  assert.equal(result.candidate_applicability.state, "undetermined");
+  assert.equal(result.product_acceptance, "not_assessed_by_tool");
+});

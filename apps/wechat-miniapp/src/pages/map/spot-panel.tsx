@@ -14,6 +14,7 @@ import { useAppStore } from "@/state/app-store";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { FavoriteStar } from "@/components/selected-card-star";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { SelectionTabs } from "@/components/selection-tabs";
 import { StatusPanel } from "@/components/status-panel";
 import { MapTimeRuler } from "./time-ruler";
 import { ObservationDateControl } from "@/components/observation-date-control";
@@ -27,12 +28,14 @@ import {
 } from "./spot-panel-astronomy";
 import { mediaIsRenderable } from "./spot-panel-media";
 import { spotRouteSummary } from "./spot-panel-route-summary";
+import { SpotTerrainOverview } from "./spot-terrain-overview";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
 export type SpotPanelPhase = "idle" | "closing";
 
 const PANEL_SECTIONS = [
   { id: "spot-panel-overview", label: "基本信息" },
+  { id: "spot-panel-terrain", label: "地形" },
   { id: "spot-panel-astronomy", label: "天文" },
 ] as const;
 const SECTION_NAV_REVEAL_PX = 44;
@@ -232,6 +235,7 @@ export function SpotInformationPanel({
   const [sectionRequest, setSectionRequest] = useState<{ id: string; spotId: string } | null>(null);
   const handledSectionRequest = useRef<typeof sectionRequest>(null);
   const [scrollAnchor, setScrollAnchor] = useState("");
+  const terrainOffset = useRef<number | null>(null);
   const astronomyOffset = useRef<number | null>(null);
   const lastScroll = useRef({ spotId: spot.spotId, top: 0 });
   const wasVisible = useRef(visible);
@@ -280,6 +284,7 @@ export function SpotInformationPanel({
     setSectionRequest({ id: "spot-panel-document-start", spotId: spot.spotId });
   }, [spot.spotId]);
   useEffect(() => {
+    terrainOffset.current = null;
     astronomyOffset.current = null;
     if (extent === "small" || settling) return;
     let cancelled = false;
@@ -288,17 +293,19 @@ export function SpotInformationPanel({
       if (cancelled) return;
       const query = Taro.createSelectorQuery();
       query.select("#spot-panel-scroll").boundingClientRect();
+      query.select("#spot-panel-terrain").boundingClientRect();
       query.select("#spot-panel-astronomy").boundingClientRect();
       query.select("#spot-panel-scroll").scrollOffset();
       query.exec(results => {
         if (cancelled) return;
-        const [viewport, astronomy, scroll] = results as [{ top?: number; height?: number }?, { top?: number }?, { scrollTop?: number }?];
-        if (!Number.isFinite(viewport?.top) || !Number.isFinite(astronomy?.top) || !Number.isFinite(scroll?.scrollTop)) return;
+        const [viewport, terrain, astronomy, scroll] = results as [{ top?: number; height?: number }?, { top?: number }?, { top?: number }?, { scrollTop?: number }?];
+        if (!Number.isFinite(viewport?.top) || !Number.isFinite(terrain?.top) || !Number.isFinite(astronomy?.top) || !Number.isFinite(scroll?.scrollTop)) return;
+        terrainOffset.current = terrain!.top! - viewport!.top! + scroll!.scrollTop!;
         astronomyOffset.current = astronomy!.top! - viewport!.top! + scroll!.scrollTop!;
-        setSection(scroll!.scrollTop! >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : "spot-panel-overview");
+        setSection(scroll!.scrollTop! >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : scroll!.scrollTop! >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
       });
     }, 200);
-    return () => { clearTimeout(measurementTimer); cancelled = true; astronomyOffset.current = null; };
+    return () => { clearTimeout(measurementTimer); cancelled = true; terrainOffset.current = null; astronomyOffset.current = null; };
   }, [spot.spotId, detail, extent, settling, largeText, layoutVersion]);
   useEffect(() => {
     setScrollAnchor("");
@@ -433,8 +440,8 @@ export function SpotInformationPanel({
                 setLayoutVersion(value => value + 1);
               }, 80);
             }
-            if (extent === "small" || astronomyOffset.current === null) return;
-            setSection(top >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : "spot-panel-overview");
+            if (extent === "small" || terrainOffset.current === null || astronomyOffset.current === null) return;
+            setSection(top >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : top >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
           }}
           type="custom"
           enhanced
@@ -566,6 +573,10 @@ export function SpotInformationPanel({
                 <Text>更多场地信息</Text><Text>平台、信号与现场指引　⌄</Text>
               </Button> : null}
             </View>
+          </View>
+          <View id="spot-panel-terrain" className="spot-panel__section spot-panel__section--terrain" ariaLabel="地形">
+            <Text className="type-section">地形</Text>
+            <SpotTerrainOverview spot={effectiveSpot} visible={visible} />
           </View>
           <View id="spot-panel-astronomy-anchor" className="spot-panel__astronomy-anchor" aria-hidden="true" />
           <View id="spot-panel-astronomy" className="spot-panel__section" ariaLabel="天文">
@@ -705,34 +716,23 @@ export function SpotInformationPanel({
           </View>
           </Block>
         </ScrollView>
-        <View
-          className={`spot-panel__section-rail${section === "spot-panel-astronomy" ? " spot-panel__section-rail--visible" : ""}`}
-          data-control="map-spot-panel-section-nav"
-          role="group"
-          ariaLabel="定位点位信息章节"
-        >
-          {PANEL_SECTIONS.map((item) => (
-            <Button
-              key={item.id}
-              className={`spot-panel__section-tab${section === item.id ? " spot-panel__section-tab--active" : ""}`}
-              data-section={item.id}
-              aria-pressed={section === item.id}
-              ariaLabel={`查看${item.label}`}
-              onClick={() => {
-                setSection(item.id);
-                setSectionRequest({
-                  id: item.id === "spot-panel-astronomy"
-                    ? "spot-panel-astronomy-anchor"
-                    : item.id,
-                  spotId: spot.spotId,
-                });
-                onExtent("large");
-              }}
-            >
-              <Text>{item.label}</Text>
-            </Button>
-          ))}
-        </View>
+        <SelectionTabs
+          className={`spot-panel__section-rail${section !== "spot-panel-overview" ? " spot-panel__section-rail--visible" : ""}`}
+          items={PANEL_SECTIONS}
+          activeId={section}
+          label="定位点位信息章节"
+          controlId="map-spot-panel-section-nav"
+          itemClassName="spot-panel__section-tab"
+          activeItemClassName="spot-panel__section-tab--active"
+          onSelect={(id) => {
+            setSection(id);
+            setSectionRequest({
+              id: id === "spot-panel-astronomy" ? "spot-panel-astronomy-anchor" : id,
+              spotId: spot.spotId,
+            });
+            onExtent("large");
+          }}
+        />
       </View>
 
       {viewerIndex !== null && media[viewerIndex] ? <View

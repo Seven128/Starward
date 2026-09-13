@@ -49,14 +49,14 @@ export default defineAppConfig({
       {
         pagePath: "pages/map/index",
         text: "地图",
-        iconPath: "assets/icons/tab-map.png",
-        selectedIconPath: "assets/icons/tab-map-selected.png",
+        iconPath: "assets/b-icons/weapp-tabbar/map--day--default.png",
+        selectedIconPath: "assets/b-icons/weapp-tabbar/map--day--selected.png",
       },
       {
         pagePath: "pages/my/index",
         text: "我的",
-        iconPath: "assets/icons/tab-my.png",
-        selectedIconPath: "assets/icons/tab-my-selected.png",
+        iconPath: "assets/b-icons/weapp-tabbar/account-user--day--default.png",
+        selectedIconPath: "assets/b-icons/weapp-tabbar/account-user--day--selected.png",
       },
     ],
   },

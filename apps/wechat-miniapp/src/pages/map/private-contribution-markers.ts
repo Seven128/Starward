@@ -59,7 +59,13 @@ export function privateContributionMarkerItems(
       id: firstId + index,
       latitude: entry.latitude,
       longitude: entry.longitude,
-      iconPath: pending ? "/assets/icons/proposal-marker.png" : "/assets/icons/draft-marker.png",
+      iconPath: mode === "DAY"
+        ? pending
+          ? "/assets/b-icons/spot-marker--day--pending.png"
+          : "/assets/b-icons/spot-marker--day--draft.png"
+        : pending
+          ? "/assets/icons/proposal-marker.png"
+          : "/assets/icons/draft-marker.png",
       width: pending ? 40 : 32,
       height: pending ? 45 : 36,
       anchor: { x: 0.5, y: 1 },

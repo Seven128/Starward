@@ -38,6 +38,8 @@ Before a new page, use its task, current principles and applicable confirmed pre
 
 ## Design concepts and scope
 
+2026-09-12 小程序全局图标审美反馈：现有图标太呆板，希望统一采用拟物、偏可爱且元素克制的方向，覆盖功能图标与具象素材；可爱不等于给每个对象附加装饰。用户随后明确选择 Web GPT 加磨砂质感后最新对比图的B行，作为整套生成的唯一风格参考；不再重启A/B/C探索。2026-09-13用户进一步采用256px日间透明图标，兼顾手机/平板常用尺寸的清晰度和包体；经用户授权本地合成地图selected后，已核对采用71份日间资源（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态）；同主体状态复用原始像素并独立叠加装饰，避免重画引入几何漂移，接入后的四态切换未验收，用户要求持续提供具体返修提示词直至符合要求。来源与缺口统一见共享图标owner；夜间/红光未交付，资源采用不等于生产替换已完成。表达、参考与资产责任见 DESIGN.md 小程序「字体与图标」。
+
 These concepts describe different kinds of decisions. A useful design resource can contain examples of all of them; its adoption does not make every detail a general principle.
 
 | Concept | Definition and applicability | Example / owner |

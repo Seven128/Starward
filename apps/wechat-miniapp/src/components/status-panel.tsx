@@ -1,7 +1,6 @@
 import { View, Text } from "@tarojs/components";
 import type { PageState } from "@starward/miniapp-contracts";
 import { SoftButton } from "./soft-button";
-import "./status-panel.scss";
 
 const TITLES: Record<PageState, string> = {
   INITIAL: "准备加载",

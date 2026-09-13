@@ -3,6 +3,7 @@ import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { CONTRIBUTION_FORMAL_FIELD_KEYS } from "@starward/miniapp-contracts";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
+import { SelectionTabs } from "@/components/selection-tabs";
 import { displayBeijingTimestamp } from "@/utils/zoned-date";
 import { useState } from "react";
 import Taro from "@tarojs/taro";
@@ -79,10 +80,9 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
     : ([['ALL', '全部'], ['PENDING', '审核中'], ['APPROVED', '已通过'], ['REJECTED', '未通过']] as const);
 
   return <View className="contribution-records" data-control="contribution-records">
-    <View className="contribution-records__groups" role="tablist" aria-label="记录类型">
-      <Button data-control="contribution-group-creation" className={`contribution-records__group contribution-records__group--creation${group === "CREATION" ? " contribution-records__group--active" : ""}`} ariaLabel="创建的观星点" aria-pressed={group === "CREATION"} onClick={() => setGroup("CREATION")}>创建的观星点</Button>
-      <Button data-control="contribution-group-feedback" className={`contribution-records__group contribution-records__group--feedback${group === "FEEDBACK" ? " contribution-records__group--active" : ""}`} ariaLabel="反馈编辑" aria-pressed={group === "FEEDBACK"} onClick={() => setGroup("FEEDBACK")}>反馈编辑</Button>
-    </View>
+    <SelectionTabs className="contribution-records__groups" semantics="tabs" label="记录类型"
+      items={[{ id: "CREATION", label: "创建的观星点", controlId: "contribution-group-creation" }, { id: "FEEDBACK", label: "反馈编辑", controlId: "contribution-group-feedback" }] as const}
+      activeId={group} onSelect={setGroup} itemClassName="contribution-records__group" activeItemClassName="contribution-records__group--active" />
     <View className="contribution-records__filters" aria-label="状态筛选">
       {filters.map(([key, label]) => <Button key={key} className={`chip focus-ring${activeFilter === key ? " chip--selected" : ""}`} aria-pressed={activeFilter === key} onClick={() => group === "CREATION" ? setCreationFilter(key as CreationFilter) : setFeedbackFilter(key as FeedbackFilter)}>{label}</Button>)}
     </View>

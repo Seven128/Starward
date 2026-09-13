@@ -28,7 +28,7 @@
 
 基础跳转目标必须是同页另一顶层Frame。此Scripter的静态page访问可写 instance.reactions；错误的嵌套目标曾令setReactionsAsync挂起。脚本停止后检查部分写入。Auto Layout先resize再设primaryAxisSizingMode=AUTO，否则resize可能将容器锁成1px；仅节点存在不能证明内容可见。检查器会考虑祖先裁切，仍须查看真实导出。
 
-图片创建后先等待 Image.getSizeAsync；成功不保证首次PNG已有像素。本次地图和照片均曾出现节点IMAGE正确而首次导出空白。保留失败图，核对同root指纹未变，再做一次同设计补导并回看，单记技术导出而不混为设计修订。SVG可能已有写死的fill/stroke，只替换currentColor不能保证主题正确；从实际向量读回颜色与选中填充。
+图片创建后先等待 Image.getSizeAsync；成功不保证首次PNG已有像素。本次地图和照片均曾出现节点IMAGE正确而首次导出空白。排查期间临时保留失败图，核对同root指纹未变，再做一次同设计补导并回看，单记技术导出而不混为设计修订；定稿后按资源生命周期清理失败导出。SVG可能已有写死的fill/stroke，只替换currentColor不能保证主题正确；从实际向量读回颜色与选中填充。
 
 快照保留实际overflowDirection、绝对边界和实例mainComponentId。视口外的控件不自动判缺失，也不能仅靠名为“scroll”的容器证明可达；区分完整可见、滚动后可达的结构条件、仍需真实运行验证。缩窄medium后若只露按钮残片，按同一文档合法裁切修复，不能缩字号或擅自启用正文滚动。
 

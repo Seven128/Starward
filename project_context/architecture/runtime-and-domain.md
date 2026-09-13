@@ -73,6 +73,41 @@ Overseas-only automatic retrieval is possible only if a separately configured co
 
 The current implementation extends the code-shipped reviewed catalog with one shared catalog owner, PostgreSQL migration `017_astronomical_event_catalog_pipeline`, authenticated source/import/review/publish/rollback operations and the existing BullMQ worker. The worker uses a configurable bounded interval (seven days by default), conditional HTTPS retrieval, the shared package validator/diff policy and existing retry/dead-letter replay. Public event reads, plan identity validation, Observation Context fingerprints and astronomy report cache inputs all read the active catalog version; an unavailable source retains the reviewed built-in baseline or last published version. No domestic source adapter or overseas collector is configured by default, so automated freshness still depends on an operator-approved reachable structured source.
 
+### Shared astronomical-event modal implementation boundary
+
+2026-09-13生产实现已落在Mini Program共享`AstronomicalEventModal`与event host责任：地图独立事件入口与计划关联选择消费同一组件，mode是`browse | select-one`，契约见[共享交互owner](../areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md#shared-astronomical-event-modal)。Map/Plan注入上下文、初始单项值与确认/关闭回调；shared层不导入页面或直接保存计划。
+
+- 复用`content/event/event-model.ts`的日期分组/事件类型、`getAstronomicalEvents`及既有详情API、`useResourceQuery`缓存和取消机制。把当前`content/event/list|detail`的可复用展示与查询协调提取到event责任，再让modal消费；不要在Map复制目录或建立另一个服务端事件库。browse不调用当前列表中的私人`getPlans`关系查询，也不请求登录来浏览公开目录。
+- 外壳动画由共享modal适配器拥有opening/open/closing阶段，退出完成后再撤销RootPortal与NativeBackBoundary、恢复焦点；重复确认只回调一次，重开取消旧动画/完成回调并从当前opacity/scale接管。减少动态效果移除缩放与位移。Web原型使用WAAPI与dialog顶层验证生命周期，不能直接作为WEAPP API方案，需在真实两入口验证。
+- 一个modal会话持有`mode/contextSnapshot/listState/activeOccurrenceId/detailState/draftSelection`，计划草稿与服务端计划仍是另外两层已存在的事实。目录按catalog版本缓存，详情按occurrenceId+地点/时刻+catalog版本隔离；关闭/返回/换事件/换账户取消请求并校验响应归属。浏览地点/日期只修改modal副本；select-one使用计划既定上下文，不能改计划日期来迁就事件。
+- 复用已存在`components/native-back-boundary.tsx`的`NativeBackBoundary`及Taro `RootPortal`挂载，提供一个可重入native Back层；详情Back改内部视图，列表Back关闭。保留单一可见modal树及其固定外壳，内部两视图通过transform/opacity过渡，失活视图不接受触控/辅助焦点。不要用多个`PageContainer`模拟内部页面栈，也不使用原生`showModal`承载复杂卡片。真实原生Map上方合成、遮罩拦截、系统Back重入和前后台恢复必须在目标WEAPP验证，Web CSS的z-index不能作证明。
+- 地图原`none | spot-panel | layer-sheet | spot-editor`保持底部内容责任；新增route-owned事件覆盖层，打开前记录可恢复呈现并屏蔽底层。dirty编辑表单不得因打开/关闭事件丢失；图层和事件的用户可操作modal不能同时激活。先检查现有Map控制器/视野责任，按maintenance-boundaries把新增覆盖层协调放在独立feature/controller中，避免继续把事件状态写进Map巨型页面。
+- 当前计划`eventOccurrenceIds`与parser允许多项（编辑页追加后截取最多8项），`plan-event-selection.ts`通过临时storage从子路由回传。新modal内确认用受owner约束的直接回调，结束该入口的跨路由邮箱；旧兼容入口只在确需支持既有链接时映射到同modal，不保留第二套可导航列表产品。计划详情/编辑及地图的所有既有事件调用方须一起迁移。
+- 新建/显式改选的计划事件字段最多0或1项，客户端及服务端共用校验；为避免破坏历史多关联，兼容读原数组，未显式修改事件的更新保留旧集合。显式替换才收敛单项，不能在读取、浏览、取消或保存其他字段时自动截断历史数据。目录删除/版本变动不能静默删除用户关联；显示失效资料并允许显式移除/重选。计划保存仍由现有aggregate、revision及幂等owner执行。
+- 代表性实施证据：browse完全无选择/写计划/私人关系请求；select-one取消不改草稿、确认最多一项；详情返回还原列表滚动；快速返回/改选无晚响应串位；旧多项计划保留；Map相机/点位/底层呈现不丢；Back不穿透；深链重用而非新建页面。按现有数据边界做必要回归，并做真实小程序两入口交互检查。
+
+### Mini Program B-matte icon integration boundary
+
+2026-09-13图标是本轮完整需求的第二部分，采用范围及语义责任见[共享图标owner](../areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md#shared-icon-resource)。生产`semantic-asset.tsx`保持唯一语义入口并已把DAY消费者和地图状态迁移到B批资源；NIGHT/OBSERVATION继续使用原合法主题资产。
+
+- 沿用该SemanticIcon/Asset入口及当前marker资源责任，按71份采用manifest建立语义/状态映射并迁移真实消费者；新增meteor/terrain等语义在唯一入口扩展，页面不能自行引入第二套素材目录。PNG由本地构建打包，交付前核对主包/分包实际归属与重复拷贝，不能把整套高清母版或图集放进小程序。
+- 256×256透明PNG是唯一采用母版并留在设计资源来源位置。微信构建按真实包消费者复制224×224页面运行时派生，原生Tab复制192×192派生；两者均由母版Lanczos缩小、保留完整画布和RGBA，不量化、抠图或逐枚裁边。图片源分辨率不是控件布局尺寸；沿用原可见尺寸、内边距、至少44px命中区域与程序化标签。
+- 地图四态统一画布、主体位置及原marker锚点；default/selected切换不以整体包围盒重新居中。draft/pending身份语义独立于正式点选中。想去保留既有一圈旋转/进入退出/可中断与减少动态效果，星头、尾迹、卫星分件由原动画owner分别驱动；PNG支持透明度、平移、缩放、旋转/交叉渐隐，不声称单张图可任意路径变形。
+- day资源采用不扩展到night/observation。严格暖红主题继续使用原合法资产/呈现直到有合规变体，不能直接套彩色PNG或整屏滤镜；真实月相、数据图形及地图供应商标识也不由装饰性图标替换。
+- 代表性验证覆盖小尺寸清晰度、透明边缘、导航非颜色状态、四态锚点、想去反复中断、不同消费者/主题以及实际打包体积。静态71份约2.11MiB的清单不等于最终主包大小；Web替换和素材像素检查不证明WEAPP渲染、动效或真机质量。
+
+### Mini Program terrain and directional-light evidence
+
+2026-09-13用户确认以可获得数据为范围。产品主图与分项未知状态由[地形owner](../areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)维护。当前实现发布一份大湾区中心85 km的Copernicus DEM GLO-30实样及其来源/哈希/覆盖manifest，并经BFF、客户端缓存与原生MapContext叠加消费；这不构成任意地点覆盖或20%误差承诺。
+
+- 本轮用户撤回方向/仰角分析展示要求。当前能力收敛为高程模型地形影像和既有年度光污染栅格的地理叠加；不再把点位地平线预计算、逐方位profile接口、控制山体距离和图外角度读数列为本轮交付前置。此前r.horizon与误差传播研究作为可再评估的历史选项保留在研究资料，不静默新增无消费者的计算服务。
+- 当前发布脚本从Copernicus DEM GLO-30 Public AWS COG读取8个SHA256绑定源瓦片，执行WGS84→GCJ-02采样并生成hillshade/高程色带RGBA；1536²发布图派生地面间隔约110.7m、有效覆盖99.34%，海洋缺瓦片保留透明缺测。SRTM仍是覆盖/比较候选。复用data-pipelines、审计和BFF查询owner；高程模型分辨率不保证近处障碍完整，公开可下载也不代表无限免费API或任意再分发。
+- 当前查询围绕地点坐标、视野范围、影像/夜光发布版本和分项availability/provenance；产品统一名称“光污染”，数据仍保留VIIRS年度辐亮度/覆盖真实语义，不转换为未经验证的SQM、天空辉光或实时污染。UI来源说明与产品术语分别维护，不另起“地表灯光/周边灯光”功能名。
+- 半径拖动轴的呈现状态由点位地形组件持有，2–50 km默认5 km，近距离段采用非线性刻度分配；显示值、距离圈和比例尺共享同一个实际半径。浏览器当前采用对数映射、读数取一位小数。输入即时更新本地呈现，真实影像请求需有界复用、合并/取消及响应版本校验，不能每帧独立请求或在快速缩放后显示旧范围。此值不改变Map相机、地点、日期或计划。
+- 点位图固定北向/中心，以已有影像与Canvas/SVG等价机制绘制；不新增可漫游Map实例或方向手势。地形与光污染各有可见状态和图例，全部关闭仍保留方位/距离参照；覆盖掩膜来自各自真实来源，不由山脊背阴推断。两项状态不接管主地图LIGHT/TOTAL_CLOUD单选。
+- 主地图继续现有底图、WGS84→GCJ02边界及合法标识；地形使用WEAPP `MapContext.addGroundOverlay/updateGroundOverlay/removeGroundOverlay`串行维护单一有界影像，隐藏/卸载时清理，未堆数千polygons或换Web地图引擎。Taro声明式`groundOverlays`只支持支付宝，不能作为WEAPP实现。真机已观察到发布地形矩形与原生marker共同合成；更广覆盖、内存压力、长时前后台及多设备性能仍需后续样本。
+- 检查关注坐标配准、地形与光污染图例/单位、年度版本、分项缺测、尺度准确性、快速缩放晚响应隔离及数据许可。发布manifest、BFF边界和客户端缓存/取消已有回归，真实Android WEAPP已观察原生地形叠加；VIIRS只在既有PostgreSQL真实格网可用时返回。当前无样点保证所有值误差<20%，单一真机和大湾区样本不证明任意地点、多设备性能或逐点精度。
+
 ### Plan expansion: observing interval, events and reminder checklists
 
 The Mini Program plan responsibility is defined by [观星计划](../areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#观星计划出行与观测的组织职责). Extend the existing authenticated plan owner rather than put a separate plan store in Map or My. Observing start/end, departure time, departure origin, travel mode, explicit event-occurrence associations and user-authored reminder groups are persisted choices; provider route/astronomy snapshots are contextual evidence and cannot overwrite them. The route adapter supplies driving, walking and public-transit evidence through the same server-only AMap v5 owner. A saved result may be shown only when its restored Context origin matches the saved plan origin and its route mode; transit additionally binds the saved departure date/time and resolves AMap's required endpoint city codes server-side. Older clients and Map driving-range consumers omit mode and remain explicitly driving. Event association accepts only identities in the reviewed server catalog and does not move an existing draft's date or place. Reminder limits, travel fields, event identities and item ownership must be validated at the server boundary in addition to the client. Scheduled messages need account-scoped authorization, versioned schedule identity, cancellation/rescheduling and idempotent dispatch; saving a plan is not proof of platform authorization or delivery.
@@ -157,3 +192,13 @@ Use the actual underlying composition for transmission/refraction, never a scree
 Selection is staged, not deferred until whole-page implementation. The current production slice is the readable translucent/fallback path; official WEAPP simulator evidence covers both consumers and long celestial content, but does not establish native backdrop transmission, optical refraction, device performance or Android/iOS parity. The HTML candidate explores profile-derived SVG displacement, informed by [Kube's optical reconstruction](https://kube.io/blog/liquid-glass-css-svg/). This is a visual/mechanism reference, not an Apple implementation or WEAPP dependency. SVG backdrop filtering is not presumed portable. A shader route is a conditional alternative only if the actual scene can supply a supported texture/composition input; a Web demo that generates its own background does not satisfy live page sampling. DOM-capture libraries such as [ybouane/liquidglass](https://github.com/ybouane/liquidglass) are not a direct fit for the current no-copy composition boundary. Do not add Expo/Skia/CanvasKit or a DOM-capture pipeline solely to imitate a showcase.
 
 Before integrating the production material broadly, compare the remaining supported path with the readable fallback in a small WEAPP slice containing both actual consumers on iOS and Android. Use matched viewport, backdrop and content: inspect transmission/curved-edge displacement and text contrast over bright, dark and changing backgrounds; record frame-time distribution, dropped frames, memory and repeated-open/close behavior on named representative devices. Include sky movement, My scrolling, long text, warm red, reduced transparency/motion, background/foreground restoration and rendering failure. Set acceptable performance budgets against the existing scene before selection, then carry the result and decisive tradeoffs here. A successful HTML preview, API syntax check or a single static screenshot does not select the renderer. If no path fits, expose the explicit fallback and the remaining visual gap; do not rename it as equivalent refraction. Device experimentation is later implementation work, outside the current Context/design-resource scope.
+
+### Shared Tab visual selection boundary
+
+公共Tab/章节激活反馈由生产`SelectionTabs`共享呈现单元消费当前项，文字结构与13px→视觉15px、220ms缩放参数不在页面各写一份；观星点章节、贡献编辑、正式反馈和贡献记录等真实Tab消费者已迁移。Tab列表的业务选择、同文档滚动、焦点、指示器位置仍归原消费者owner。不要为文字放大引入第二个selected state，也不改变章节导航为切换内容树。缩放仅作用文字，不影响44px触控区域和相邻位置；反向切换接管当前样式，减少动态效果直接呈现。设计源`shared/tabs/selection.js|css`是采用参考，不是第二生产实现。
+
+### Mini Program alignment and completion boundary
+
+本轮整体对齐要求由[Screen Contract](../areas/main/screen-contracts/wechat-miniapp.md#整体uiux与context对齐补开发)持有。实现时从现有页面/共享组件/状态协调器、miniapp-contracts、miniapp-api及既有数据管道追踪真实调用和职责，先辨明已有、偏离与缺失，再在原owner补齐。复用语义图标/资源映射、公共时间控件、Map单一呈现与Observation Context、事件目录/条件查询、计划聚合与贡献身份边界；不要将浏览器iframe原型当作生产架构，或新增第二套页面、存储、选中状态、天文算法与图标体系。公共Tab和Modal的共享呈现/交互必须覆盖实际消费者，业务提交仍属于计划/地图等原owner。
+
+地形数据处理/叠加已按真实来源、坐标转换、缺测、版本/缓存与请求取消接入现有数据适配层；当前发布范围和运行限制按上节记录，示意格网未进入生产。历史多关联计划按既定兼容编辑策略处理，不得为了单选无提示删除历史关联。继续检查代码依赖方向、状态生命周期、跨子包组件可加载性与最终小程序体积；低层模块不得导入feature/page。产品规则、架构边界与具体代码实现分别核实，局部源/原型通过不等于整体对齐。必要的重构以当前共享职责为限，不能借整体检查重新设计已采用UI。

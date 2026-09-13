@@ -6,8 +6,8 @@ const MAP_MARKER_ICONS: Record<
   { regular: string; selected: string }
 > = {
   DAY: {
-    regular: "/assets/icons/formal-spot-marker.png",
-    selected: "/assets/icons/formal-spot-marker-selected.png",
+    regular: "/assets/b-icons/spot-marker--day--default.png",
+    selected: "/assets/b-icons/spot-marker--day--selected.png",
   },
   NIGHT: {
     regular: "/assets/icons/formal-spot-marker-night.png",

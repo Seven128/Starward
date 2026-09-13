@@ -1,0 +1,30 @@
+const {chromium}=require('C:/Users/777/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path');
+(async()=>{
+const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+const dir=path.resolve('output/playwright/three-requirements-2026-09-13');await fs.mkdir(dir,{recursive:true});
+const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const root='http://127.0.0.1:4178/shared/astronomical-event-modal/preview.html';
+const shot=async name=>{await page.screenshot({path:path.join(dir,name+'.png')});};
+const settle=()=>page.waitForTimeout(340);
+await page.goto(root+'?view=map');await page.getByRole('button',{name:'天文事件',exact:true}).click();
+assert.equal(await page.locator('dialog input[type=radio]').count(),0);assert.equal(await page.locator('.event-footer').isVisible(),false);await shot('map-browse');
+await page.getByRole('button',{name:'查看小熊座流星雨',exact:true}).scrollIntoViewIfNeeded();const before=await page.locator('.event-list').evaluate(e=>e.scrollTop);const url=page.url();
+await page.getByRole('button',{name:'查看小熊座流星雨',exact:true}).click();await settle();assert.equal(page.url(),url);assert.equal(await page.locator('dialog[open]').count(),1);await shot('detail');
+await page.getByRole('textbox',{name:'事件观测日期'}).fill('2026-12-20');
+await page.keyboard.press('Escape');await settle();assert.equal(await page.locator('dialog[open]').count(),1);assert.equal(await page.locator('.event-list').evaluate(e=>e.scrollTop),before);
+await page.getByRole('button',{name:'查看小熊座流星雨',exact:true}).click();await settle();assert.equal(await page.getByRole('textbox',{name:'事件观测日期'}).inputValue(),'2026-12-20');await page.keyboard.press('Escape');await settle();
+await page.keyboard.press('Escape');assert.equal(await page.locator('dialog[open]').count(),0);assert.equal(await page.locator('#map-events').evaluate(e=>e===document.activeElement),true);
+await page.goto(root+'?view=plan');await page.getByRole('textbox',{name:'观测备注'}).fill('保留我的未保存输入');await page.locator('#choose-plan-event').click();
+await page.getByRole('radio',{name:'选择十月天龙座流星雨',exact:true}).check();await page.getByRole('radio',{name:'选择猎户座流星雨',exact:true}).check();assert.equal(await page.locator('dialog input:checked').count(),1);await shot('plan-single');
+await page.getByRole('button',{name:'关闭天文事件'}).click();assert.equal(await page.locator('#selected-event').textContent(),'未关联');assert.equal(await page.getByRole('textbox',{name:'观测备注'}).inputValue(),'保留我的未保存输入');
+await page.locator('#choose-plan-event').click();await page.getByRole('button',{name:'查看十月天龙座流星雨',exact:true}).click();await settle();await page.getByRole('button',{name:'选择此事件',exact:true}).click();await settle();assert.equal(await page.locator('#selected-event').textContent(),'未关联');await page.getByRole('button',{name:'确认选择：十月天龙座流星雨',exact:true}).click();assert.equal(await page.locator('#selected-event').textContent(),'十月天龙座流星雨');
+await page.locator('#choose-plan-event').click();await page.getByRole('button',{name:'清除选择'}).click();await page.getByRole('button',{name:'确认不关联'}).click();assert.equal(await page.locator('#selected-event').textContent(),'未关联');
+await page.goto(root+'?view=map&state=list-error');await page.locator('#map-events').click();await page.getByRole('button',{name:'重试',exact:true}).click();assert.equal(await page.getByRole('button',{name:'查看猎户座流星雨',exact:true}).count(),1);
+await page.goto(root+'?view=terrain');await settle();await shot('terrain');await page.getByRole('slider',{name:'查看方向'}).fill('225');assert.equal(await page.locator('#direction-angle').textContent(),'暂无数据');
+await page.goto(root+'?view=layers');await shot('layers');await page.locator('#terrain-toggle').uncheck();assert.equal(await page.locator('.relief-overlay').isVisible(),false);assert.equal(await page.locator('.light-overlay').isVisible(),true);await page.locator('#terrain-toggle').check();await page.locator('input[value=TOTAL_CLOUD]').check();assert.equal(await page.locator('.relief-overlay').isVisible(),true);assert.equal(await page.locator('.light-overlay').isVisible(),false);
+const sizes=[];for(const size of [{width:320,height:740},{width:768,height:1024}]){await page.setViewportSize(size);await page.goto(root+'?view=plan');await page.locator('#choose-plan-event').click();await shot('plan-'+size.width);const geometry=await page.locator('dialog').evaluate(e=>({x:e.getBoundingClientRect().x,right:e.getBoundingClientRect().right,height:e.getBoundingClientRect().height,scrollWidth:e.scrollWidth,clientWidth:e.clientWidth}));assert.ok(geometry.x>=11&&geometry.right<=size.width-11);assert.ok(geometry.scrollWidth<=geometry.clientWidth+1);sizes.push({size,geometry});}
+await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.event-track').evaluate(e=>getComputedStyle(e).transitionDuration),'0s');
+assert.deepEqual(errors,[]);await fs.writeFile(path.join(dir,'verification.json'),JSON.stringify({checkedAt:new Date().toISOString(),checks:['browse-no-selection','same-dialog-no-route','list-scroll-restored','Back-detail-list-close-focus','single-selection-replaces','cancel-preserves-form','confirm-only-writes-draft','clear-selection','retry-list','terrain-no-data','independent-layer-toggle','320-and-768-layout','reduced-motion'],sizes,errors},null,2));
+console.log('PASS: design interactions, 320/390/768 layout and screenshot capture. '+dir);await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

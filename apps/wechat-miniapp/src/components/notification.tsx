@@ -4,7 +4,6 @@ import { Button, Text, View } from "@tarojs/components";
 import type { NotificationRecord } from "@/state/notification";
 import { selectNotification } from "@/state/notification";
 import { useAppStore } from "@/state/app-store";
-import "./notification.scss";
 
 const ICON: Readonly<Record<NotificationRecord["tone"], string>> = {
   error: "!",

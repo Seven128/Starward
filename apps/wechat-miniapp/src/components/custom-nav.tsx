@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { nativeStatusBarHeightPx, nativeMenuClearancePx, nativeNavigationInsets } from "@/theme/native-metrics";
 import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
-import "./custom-nav.scss";
 
 export function CustomNav({
   title,

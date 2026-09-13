@@ -10,4 +10,10 @@ for (const probe of probes) {
   for (const marker of probe.all_of ?? []) assert(source.includes(marker), `${probe.key}: missing ${marker}`);
   for (const marker of probe.none_of ?? []) assert(!source.includes(marker), `${probe.key}: forbidden ${marker}`);
 }
-console.log(JSON.stringify({ status: "passed", production_probes: probes.length, limitation: "Source checks only; runtime behavior requires separate verification." }));
+console.log(JSON.stringify({
+  status: "passed",
+  check_kind: "source_patterns",
+  source_probes: probes.length,
+  product_conformance: "unverified",
+  limitation: "Only source-pattern assertions passed. Rendered appearance, interaction and business outcomes were not evaluated.",
+}));

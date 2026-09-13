@@ -1,5 +1,9 @@
 # Development quality and implementation-drift work item
 
+## 2026-09-13 follow-up
+
+The later Mini Program delivery escaped visible shared-rendering defects despite the rules below. Its overall completion claim is withdrawn. Current follow-up changes, cost boundaries and actual checks are in [follow-up-2026-09-13.md](follow-up-2026-09-13.md); historical governance completion does not prove current product quality.
+
 ## Second revision — completed, supersedes the earlier completion claim
 
 The user authorized implementation of the GPT-6 review corrections. The first revision below is historical: its 141 green tests prove record rules, not that the drift workflow works.

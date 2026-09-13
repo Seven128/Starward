@@ -1,0 +1,77 @@
+{
+  "schema_version": "starward-miniapp-review-notes-v2",
+  "scope": "交付质量治理：复核既有真机图像及当前源码；不是新候选验收。只声明观察到的差异，未重新扫码、修改UI或证明历史图像与当前构建等价。",
+  "references": [
+    {
+      "path": "docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/assets/close--day--default.png",
+      "sha256": "1bc2766cc3a695968d0ea77b8e73d9595145e499d2319919828296323db63f51"
+    },
+    {
+      "path": "docs/requirements/miniapp-uiux-alignment-2026-09-13.md",
+      "sha256": "1e9b4648d0838b6f15b9152edba2b8214ca6b7ddf132edca386c987038865288"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "apps/wechat-miniapp/src/components/semantic-asset.scss",
+      "sha256": "bd59a7e53fa080bc5fea96d77e1d140f06768f6f28122ed45f5714e96a570fb9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/pages/map/index.scss",
+      "sha256": "c9ec4aaccf4cfbca999a36d3e01ac21680917d4f59a1e7d8c40fd0ab6bd65896"
+    },
+    {
+      "path": "output/miniapp-uiux-alignment-2026-09-13/phone-current-layer-before-back.png",
+      "sha256": "cc6bfc563a599b45ac095d4d2f26705b333072aeb90f4bed9c7ce985a8856601"
+    },
+    {
+      "path": "output/miniapp-uiux-alignment-2026-09-13/phone-final-clean-event-list.png",
+      "sha256": "7637889fff0eb72f216b3f6022248e56a5baf4000dab37d886fc093da7b12989"
+    }
+  ],
+  "session": null,
+  "reviewer": {
+    "identity": "Codex（原作者自查）",
+    "method": "实际查看采用的关闭PNG与既有手机截图，并检查共享样式覆盖；不是独立执行者审查，不以此前完成报告作为通过依据。",
+    "reviewed_at": "2026-09-13T05:12:45.160Z"
+  },
+  "observations": [
+    {
+      "claim": "采用B图标应替代旧日间图标绘制，而非叠加",
+      "verdict": "failed",
+      "observed": "采用关闭PNG只有红色立体X，既有手机Modal截图的X上还有蓝色细线。当前源码中B类隐藏伪元素被后面的同优先级display:block覆盖；用户报告与这个共享机制一致。此观察不证明所有图标类型均受影响。",
+      "reference_paths": [
+        "docs/requirements/miniapp-uiux-alignment-2026-09-13.md",
+        "docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/assets/close--day--default.png"
+      ],
+      "evidence_paths": [
+        "output/miniapp-uiux-alignment-2026-09-13/phone-final-clean-event-list.png",
+        "apps/wechat-miniapp/src/components/semantic-asset.scss"
+      ],
+      "next_action": "UI修复恢复后，收敛共享绘制路径；按有无旧伪元素/消费者覆盖/主题等实际机制选代表检查，不逐页穷举。"
+    },
+    {
+      "claim": "地图工具选中反馈应符合采用的控件表面边界",
+      "verdict": "failed",
+      "observed": "既有图层打开截图可见圆形按钮外的大浅色方块；当前样式将active背景写到无圆角的外层命中区。用户明确指出该差异不符合采用设计。未观察按下到释放的连续序列，不宣称完整动效诊断。",
+      "reference_paths": [
+        "docs/requirements/miniapp-uiux-alignment-2026-09-13.md"
+      ],
+      "evidence_paths": [
+        "output/miniapp-uiux-alignment-2026-09-13/phone-current-layer-before-back.png",
+        "apps/wechat-miniapp/src/pages/map/index.scss"
+      ],
+      "next_action": "UI修复恢复后，核对视觉表面与命中区的职责及native pressed默认值，检查当前WEAPP默认/按下/选中对应状态。"
+    },
+    {
+      "claim": "整体UIUX交付可宣称完成",
+      "verdict": "unverified",
+      "observed": "存在上述已知失败，既有自动化和截图不足以证明全产品符合采用资源；没有独立执行者复核，也没有本轮新候选会话。",
+      "reference_paths": [
+        "docs/requirements/miniapp-uiux-alignment-2026-09-13.md"
+      ],
+      "evidence_paths": [],
+      "next_action": "保持交付未完成，修复已知差异后对受影响机制及消费者复核；缺少的必要证据单列，不能用总体完成加限制附录覆盖。"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+[
+  {
+    "id": "spot-marker",
+    "state": "default",
+    "status": "adopted",
+    "sourceRoot": "C:/Users/777/Desktop/地图图标返修3-核对",
+    "sourceFile": "spot-marker--day--default.png",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "c4717cc5f17303dbb37597933bacda4e7f33d977ffff0a7f86e77d5938af9c15",
+    "blueBodyBounds": [
+      173,
+      145,
+      1082,
+      1119
+    ],
+    "outputs": {
+      "256": {
+        "file": "png-256/spot-marker--day--default.png",
+        "bytes": 38887,
+        "sha256": "ccc1ca248daa06e144aa560ea330b06e2b553ac193e61ca07409eea09a477916",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "spot-marker",
+    "state": "selected",
+    "status": "needs-family-alignment",
+    "sourceRoot": "C:/Users/777/Desktop/地图图标返修3-核对",
+    "sourceFile": "spot-marker--day--selected.png",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "3795f3a213eb20b5dcb25390ae08f2c86e5587e5b6a9ebb5c722176c81a91cc1",
+    "blueBodyBounds": [
+      211,
+      239,
+      1044,
+      1132
+    ],
+    "outputs": {
+      "256": {
+        "file": "png-256/spot-marker--day--selected.png",
+        "bytes": 38865,
+        "sha256": "a7b1fad0e66862fedc53ee562177812c21c860c15699e41f6a172eb2f503731a",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "spot-marker",
+    "state": "draft",
+    "status": "adopted",
+    "sourceRoot": "C:/Users/777/Desktop/地图图标返修3-核对",
+    "sourceFile": "spot-marker--day--draft.png",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "a7be47cff82b494686da99fa1957a216a8d7cd98a7c2991f135c6c102ce55ba1",
+    "blueBodyBounds": null,
+    "outputs": {
+      "256": {
+        "file": "png-256/spot-marker--day--draft.png",
+        "bytes": 37522,
+        "sha256": "1fdcce8fe69fe182302926bf5da6bc3fec33d5ba9c4010b1b495ab378743217a",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "spot-marker",
+    "state": "pending",
+    "status": "adopted",
+    "sourceRoot": "C:/Users/777/Desktop/地图图标返修3-核对",
+    "sourceFile": "spot-marker--day--pending.png",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "63210a9de46d7cca91db6ef4266aa91e4193e75db3621c54f7c4da169e536866",
+    "blueBodyBounds": null,
+    "outputs": {
+      "256": {
+        "file": "png-256/spot-marker--day--pending.png",
+        "bytes": 44385,
+        "sha256": "d31f77352f6ea6d1d0bd3b721523f6b69983dd4595c567d66e100d030de1cc44",
+        "losslessPngRoundtrip": true
+      }
+    }
+  }
+]

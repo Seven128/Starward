@@ -245,7 +245,7 @@ test("Map keeps one presentation back boundary while the adopted new-spot editor
   );
   assert.match(mapPage, /import \{[\s\S]*?PageContainer,[\s\S]*?\} from "@tarojs\/components"/u);
   assert.equal((mapPage.match(/<PageContainer\b/gu) ?? []).length, 1);
-  assert.match(mapPage, /<PageContainer[\s\S]*?show=\{mapPresentationBackBoundaryVisible\}[\s\S]*?overlay=\{false\}[\s\S]*?closeOnSlideDown=\{false\}[\s\S]*?onAfterLeave=\{handleMapPresentationSystemBack\}/u);
+  assert.match(mapPage, /<PageContainer[\s\S]*?show=\{mapPresentationBackBoundaryVisible\}[\s\S]*?overlay=\{false\}[\s\S]*?closeOnSlideDown=\{false\}[\s\S]*?onBeforeLeave=\{handleMapPresentationSystemBack\}/u);
   assert.doesNotMatch(mapPage, /<PageContainer[\s\S]*?show=\{bottomPresentation === "spot-editor"\}/u);
   assert.match(mapPage, /<ContributionEditor[\s\S]*?embedded[\s\S]*?onLeaveGuardChange=[\s\S]*?onClose=\{closeSpotEditor\}/u);
   assert.match(mapPage, /confirmEditorLeave[\s\S]*?editorLeaveGuard\.current/u);

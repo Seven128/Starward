@@ -34,7 +34,7 @@ test("each actual themed page branch mounts one floating host outside its scroll
     "pages/map/index", "pages/map/search-page", "pages/auth/index", "features/my/my-library-page",
     "features/sky/spot-sky-page", "features/spot/spot-detail-page", "spot/data-source/index",
     "content/article/detail/index", "content/plan/detail/plan-editor-page", "content/plan/list/index", "content/contribution/index",
-    "content/event/list/index", "content/event/detail/index",
+    "content/event/modal-host-page",
     "content/settings/index", "content/profile/links/index", "content/import/index",
   ];
   for (const owner of owners) {

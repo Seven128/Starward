@@ -116,15 +116,37 @@ export async function inspectReviewNotes({ review, repositoryRoot = defaultRoot 
   const changed = await changedFiles(repositoryRoot, [
     ...review.references, ...review.evidence, ...(review.session ? [review.session] : []),
   ]);
+  const applicability = await candidateApplicability(repositoryRoot, review.session, changed);
+  // Surface actions from existing facts; this is not a completeness detector.
+  // An omitted obligation or a false reviewer judgment cannot be inferred here.
+  const followUp = review.observations
+    .filter((item) => item.verdict !== "passed")
+    .map(({ claim, verdict, next_action }) => ({
+      reason: "unresolved_observation", claim, verdict, next_action,
+    }));
+  if (!review.observations.length) followUp.push({
+    reason: "no_recorded_review",
+    next_action: "Compare the relevant requirements and actual outputs before recording a conclusion.",
+  });
+  if (changed.length) followUp.push({
+    reason: "bound_inputs_changed", paths: changed,
+    next_action: "Revisit conclusions depending on changed inputs; retain unrelated applicable observations.",
+  });
+  if (applicability.state === "different") followUp.push({
+    reason: "recorded_candidate_different", paths: applicability.changed_files,
+    next_action: "Obtain current evidence for affected conclusions; historical passes do not apply automatically.",
+  });
   return {
     record_validity: "valid",
     review_state: review.observations.length ? "reviewed" : "unreviewed",
+    reviewer: review.reviewer,
+    follow_up: followUp,
     bound_inputs: { state: changed.length ? "changed" : "unchanged", changed_files: changed },
-    candidate_applicability: await candidateApplicability(repositoryRoot, review.session, changed),
+    candidate_applicability: applicability,
     scope: review.scope,
     recorded_observations: review.observations,
     product_acceptance: "not_assessed_by_tool",
-    limitation: "File integrity and recorded judgments do not establish adoption, review quality, coverage, current build equivalence or product acceptance.",
+    limitation: "Follow-up lists only recorded gaps and detected file drift; an empty list is not completion. File integrity and reviewer declarations do not establish adoption, review quality or independence, coverage, current build equivalence or product acceptance.",
   };
 }
 
@@ -136,6 +158,7 @@ async function main(args) {
       "prepare --scope <review scope> --authority <file> [--authority <file>] [--evidence <file>] [--session <json>] --output <new json>\n" +
       "inspect --review <json>\n" +
       "Add reviewer {identity, method, reviewed_at} and observations {claim, verdict, observed, reference_paths, evidence_paths, next_action}.\n" +
+      "inspect exposes the declared reviewer and follow_up for unresolved observations or changed inputs. Empty follow_up does not mean complete coverage or acceptance.\n" +
       "inspect exits 0 for a valid record, including failed/unverified/historical judgments; it never certifies product acceptance.\n",
     );
     return;

@@ -1,0 +1,4 @@
+/* Shared Tab emphasis. Consumer retains selection, navigation, focus and hit geometry. */
+.starward-tab-label{display:inline-block;transform:scale(1);transform-origin:center;transition:transform 220ms cubic-bezier(.2,.7,.2,1),color 180ms;will-change:transform}
+.starward-tabs [aria-current=location]>.starward-tab-label,.starward-tabs [role=tab][aria-selected=true]>.starward-tab-label{transform:scale(1.153846)}
+@media(prefers-reduced-motion:reduce){.starward-tab-label{transition:none}}

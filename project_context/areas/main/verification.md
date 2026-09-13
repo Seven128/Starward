@@ -26,6 +26,7 @@ This on-demand Context is the entry point for Starward verification. It records 
 
 ## Universal Evidence Boundary
 
+- Cross-product check selection and completion decisions follow [Project-local Implementation Decisions](../../../AGENTS.md#project-local-implementation-decisions): trace changed responsibilities, sample meaningful implementation differences, and expand on findings. Reuse existing evidence and targeted checks; no per-page scenario catalogue, additional report or quality score is required. UI output, business outcomes and architecture effects need observations at their respective owners, not a common source-marker proxy.
 - The repository-root `npm test` currently validates Context only. Product code uses the owning workspace tests and applicable runtime checks; neither the root alias nor a single workspace test proves the full product.
 - Do not treat static preview appearance, Context prose, or a command exit code as proof of live weather, routing, deployment, or human acceptance.
 - Do not treat a fixed user/time/place/result, process-local repository, success label/evidence card, metadata-only upload, manifest-only offline pack, declaration-only native adapter, or prewritten trace/restore report as proof that a business loop ran.

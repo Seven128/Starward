@@ -3,6 +3,7 @@ import type { ObservationPlan, SpotSummary } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { myPlanTimeLabel, selectPlanEntry } from "./plan-entry";
 import "./my-plan-card.scss";
+import { useAppStore } from "@/state/app-store";
 
 export function MyPlanCard({ plans, spots, now, loading, unavailable, onOpen, onOpenAll }: {
   plans: readonly ObservationPlan[];
@@ -14,10 +15,11 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, onOpen, on
   onOpenAll(): void;
 }) {
   const { entries, hasMore } = selectPlanEntry(plans, now);
+  const mode = useAppStore((state) => state.mode);
   return <View className="liquid-glass-surface my-plan-card" role="group" aria-label="观星计划" data-material="liquid-glass">
     <Button className="my-plan-card__header focus-ring" onClick={onOpenAll}
       aria-label="打开全部观星计划" data-control="my-plan-entry" data-od-id="my-plan-entry">
-      <View className="my-plan-card__title"><Image src="/assets/icons/my-plan-suv.svg" className="my-plan-card__suv" mode="aspectFit" aria-hidden /><Text>观星计划</Text></View><SemanticIcon name="chevron-right" />
+      <View className="my-plan-card__title">{mode === "DAY" ? <Image src="/assets/b-icons/plan-suv--day--default.png" className="my-plan-card__suv" mode="aspectFit" aria-hidden /> : <SemanticIcon name="star" className="my-plan-card__suv" />}<Text>观星计划</Text></View><SemanticIcon name="chevron-right" />
     </Button>
     {entries.map(({ plan, ongoing }) => <Button className="my-plan-card__row focus-ring" key={plan.planId}
       onClick={() => onOpen(plan)} aria-label={`打开${spots.find((spot) => spot.spotId === plan.spotId)?.name ?? "观星点"}的计划`}>

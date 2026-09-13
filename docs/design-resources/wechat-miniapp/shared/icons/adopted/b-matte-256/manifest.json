@@ -1,0 +1,1365 @@
+[
+  {
+    "id": "temperature",
+    "state": "default",
+    "sourceFile": "07ffdba9-889b-4dfb-acc1-a8182b617d63.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "e487c51c818bf007f1be0115be6d91c331d2d8f112f785dff09b75b528068236",
+    "outputs": {
+      "256": {
+        "file": "assets/temperature--day--default.png",
+        "bytes": 25129,
+        "sha256": "f9559b9f708f7dad9c28776fb2ee3222056e8973e8bd69181ad5b60ad641e612",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "plan-suv",
+    "state": "default",
+    "sourceFile": "082e5fdd-3e92-43f3-86ed-ec586c4ba183.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "8f09ea6cce5d4f1fd949abaa043bea18553ab7fdae1c8628fe2906605b8b3e00",
+    "outputs": {
+      "256": {
+        "file": "assets/plan-suv--day--default.png",
+        "bytes": 40810,
+        "sha256": "f59754d948718bc1bf100ea4afcad20ece05164a39279000f81ca978d3e7c57e",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "check",
+    "state": "default",
+    "sourceFile": "094a96dc-2c83-42e8-a7ed-77140fd490b9.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "98079aa70fd96e6c605adb16ee9b04878d4d8c1ebee2272b667c2a2ffbfaf667",
+    "outputs": {
+      "256": {
+        "file": "assets/check--day--default.png",
+        "bytes": 17504,
+        "sha256": "666dbd0c324724bced84f96f5191868954ca967c338841ebc59bc25e41dfb81d",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "save",
+    "state": "default",
+    "sourceFile": "0c5ce3f8-1265-4179-ac4e-77bccee8a63c.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "0a86eb2d078101666330b4aa46e58f65fd09da14564562a106346de0f5a1caa7",
+    "outputs": {
+      "256": {
+        "file": "assets/save--day--default.png",
+        "bytes": 38665,
+        "sha256": "493e97342fa1eef4ace55e656e960071c1e9ba1d2e6766eaa6076ecf274742ab",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "layers",
+    "state": "default",
+    "sourceFile": "0dc98f5a-75ce-4e0e-a857-989045ea46d5.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "ff11fb185e6a426a30d1b644096a7c0b55760c0c3ab51daa8e599fd2c5c1408f",
+    "outputs": {
+      "256": {
+        "file": "assets/layers--day--default.png",
+        "bytes": 30362,
+        "sha256": "7332e8d5d39e027e3fce375e8b0654d8eef0f6f2e70292cab2008deb86e2ea76",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "low-cloud",
+    "state": "default",
+    "sourceFile": "0f9846a1-b8ca-4709-bb29-8cd06af099ef.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "64212232a6644e80a9f8ed893d529609fe19321f22c629bf9745b68dbc1a2fd9",
+    "outputs": {
+      "256": {
+        "file": "assets/low-cloud--day--default.png",
+        "bytes": 24181,
+        "sha256": "ee88db75804ed31f716ef8e164fc8585db1ceebc2cce2721c9002fb24b9c5e0e",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "note",
+    "state": "default",
+    "sourceFile": "14dd3a80-3171-4439-80a2-4b974b10265a.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "de442eb6d34d4ebf32e2c8d2951db0d983994434510ee82c51f8e014b05e4071",
+    "outputs": {
+      "256": {
+        "file": "assets/note--day--default.png",
+        "bytes": 39622,
+        "sha256": "5132a65d8852a9dadc7b32a1c3bbf825d5daeaffe9aebba3c949982463090b7a",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "backpack",
+    "state": "default",
+    "sourceFile": "1fd49faf-5cdc-45cd-9746-3c5effb6bbaf.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "3665f24900bfc374d2ddd4405abc043f8231b1d052b8abfb6b6bc811df1a10a6",
+    "outputs": {
+      "256": {
+        "file": "assets/backpack--day--default.png",
+        "bytes": 33086,
+        "sha256": "3a6e3cede028bc5706aac5e31b35a98868cdd4babe196c8a3a453478c7588c28",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "clock",
+    "state": "default",
+    "sourceFile": "20531cad-6eba-444c-a8ce-f4a33d1fe491.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "f270c1fc975e1a5ecfcc114dc5eecc21d6a090826b0cd174db3dad035bff2b7b",
+    "outputs": {
+      "256": {
+        "file": "assets/clock--day--default.png",
+        "bytes": 47739,
+        "sha256": "ff6265a3b08e68848947fb8f50837037790153aa8377b36af52ba06954360a20",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "warning",
+    "state": "default",
+    "sourceFile": "274bfbf3-d49a-42f9-933e-aec42a994842.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "d8cd250319ae253a6f3f7f9f6507559b336c788df186845b1feb84c3fb14d105",
+    "outputs": {
+      "256": {
+        "file": "assets/warning--day--default.png",
+        "bytes": 25106,
+        "sha256": "c8200d188937559948f277afee6418b21b426fd9765969c38b90c05279a342ee",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "droplet",
+    "state": "default",
+    "sourceFile": "2f36e4fd-9753-4ccb-8df2-63e5b32309df.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "972998ff960406a568a33bb9e0179d4927f80b6dcd22d1e7b4391d94afbc6e81",
+    "outputs": {
+      "256": {
+        "file": "assets/droplet--day--default.png",
+        "bytes": 26026,
+        "sha256": "384ac3bf70464743988c4e97025e18c3253854f4ef40c9f25d86f9032fdab2a7",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "four-point-star",
+    "state": "default",
+    "sourceFile": "3042ef4f-56fb-4184-9a7c-74a24c0044ac.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "eae9df25114b09bb4e2cbff52a23e760ddb18c11ddf736e4e1ea702f17a461d2",
+    "outputs": {
+      "256": {
+        "file": "assets/four-point-star--day--default.png",
+        "bytes": 19496,
+        "sha256": "3a199fda030566209b22960f73a9082a96fa27a318047575a2b8a5863643e0a4",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "chevron-down",
+    "state": "default",
+    "sourceFile": "30742702-5c8e-4f1f-a0c1-1c98abbc0f65.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "1caa88a2a78f22615b38f5ee94fb77d01e47e6d6e017f472468682c6b7a8749c",
+    "outputs": {
+      "256": {
+        "file": "assets/chevron-down--day--default.png",
+        "bytes": 16217,
+        "sha256": "7543ea4d51c54b1d711d819380c5a3830bec81d696bc54241052c03419b2ba91",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "bell",
+    "state": "default",
+    "sourceFile": "410951dd-55f1-4790-b4a0-704e4de956a7.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "492970a8da06d8b9910430f8458d48201064cb0d3b54b9368627d25841d5b025",
+    "outputs": {
+      "256": {
+        "file": "assets/bell--day--default.png",
+        "bytes": 32157,
+        "sha256": "cddb2279b2311765334e35504c8a51df5acb6a3471392b69df2928bc17d6f7d6",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "calendar",
+    "state": "default",
+    "sourceFile": "44228ac7-c9ea-4bde-9096-527be9435271.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "98fc6e61f386578045b92c0ee50fa34b67e4c08fb4556bf6d8f2768910cb409f",
+    "outputs": {
+      "256": {
+        "file": "assets/calendar--day--default.png",
+        "bytes": 39713,
+        "sha256": "739fc102ef7658ac0c43170f3bfda4b5192861b6d35e1e5889864c500b5de5cd",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "meteor",
+    "state": "default",
+    "sourceFile": "46d9f8ef-6ebf-498d-a732-3f956e057147.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "077bf5a46139c9c7b712ba43a312cd03105c8142e1425b6c39fa5a4fb6ef5526",
+    "outputs": {
+      "256": {
+        "file": "assets/meteor--day--default.png",
+        "bytes": 32813,
+        "sha256": "33fd3c69667b4513bd914805e1b8b27825750874c561c6c6253a66c9ad9a59ce",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "undo",
+    "state": "default",
+    "sourceFile": "4bba838b-f0f4-4315-8369-c22ad23480c2.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "a6b7579496a9e879ab79c66fcfa12dcfc6f48fcca11bb39fc8084d01ad7a65a7",
+    "outputs": {
+      "256": {
+        "file": "assets/undo--day--default.png",
+        "bytes": 32246,
+        "sha256": "1b46e71dee7be3b793f31e1dac21f103e4ace7507eac184018c183a61eede4cb",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "terrain",
+    "state": "default",
+    "sourceFile": "53c5b51f-4298-45d5-be45-78fcaec7792f.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "c2acc5e33d7d4e375a2f0d1504bbbd45e6db92a35c6bc24c9bf6f76cab9a601c",
+    "outputs": {
+      "256": {
+        "file": "assets/terrain--day--default.png",
+        "bytes": 24308,
+        "sha256": "ae40eff5393a49690ac32b1a6daedcbf8788f4a103c71398e6c3b624a2c80e21",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "verified",
+    "state": "default",
+    "sourceFile": "5b22010c-7e12-40ac-af08-69409b12eb7b.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "f7495edfa13f323a834e3e5ca2695915be7f6ea4539705f6e194ebe6b9e99e59",
+    "outputs": {
+      "256": {
+        "file": "assets/verified--day--default.png",
+        "bytes": 31151,
+        "sha256": "91ecf0a8f92c22578beadb82edd39e628dc0563d1ac4c1c4d9254033c7caccee",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "add",
+    "state": "default",
+    "sourceFile": "5f509c6b-53ff-40e3-b8de-62e48f03720d.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "2549c9ea32866159ddc8cf323b304be0ce3b38cd0b1bfc37f3d2ed3401a3e146",
+    "outputs": {
+      "256": {
+        "file": "assets/add--day--default.png",
+        "bytes": 28446,
+        "sha256": "11f487636eae28f622025281a40e00f91a2907805691ec6618b0c2a9b09714fd",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "favorite-star",
+    "state": "selected",
+    "sourceFile": "5f96b4bf-6137-4c39-b226-5d09a733e95f.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "b7dbc7766f64f8c6f812f926a0a117e89936722ac73547d7b7b8afb32980c1be",
+    "outputs": {
+      "256": {
+        "file": "assets/favorite-star--day--selected.png",
+        "bytes": 30571,
+        "sha256": "616c63e736eb4e789e7686b6ff6c03cf364cb6c506ebff83c985717003c0459c",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "binoculars",
+    "state": "default",
+    "sourceFile": "6330fe7f-f306-467c-a9c7-2256a724003c.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "57cd9f3febdbcd62f65e9c999eaac326a174d7b27e44eca2c37fa990034e33a3",
+    "outputs": {
+      "256": {
+        "file": "assets/binoculars--day--default.png",
+        "bytes": 31885,
+        "sha256": "6833cd0bff47feeaf157859f1fc780ef7f6d423fc74bef868a0b3f08a3a64de1",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "camera",
+    "state": "default",
+    "sourceFile": "6720eaa8-f029-419a-b6c1-585a6880ce9b.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "c29ce031f20005abd0d6b71d5715121632901be96f5979abb42f07c66fb9b26a",
+    "outputs": {
+      "256": {
+        "file": "assets/camera--day--default.png",
+        "bytes": 46246,
+        "sha256": "378529ecfd3819f3d728822d039a9300bffcb551464217d126ac75de60ddce49",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "place-pin",
+    "state": "default",
+    "sourceFile": "6d1221ae-bbd6-49ac-b107-b35d6024c98b.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "9c936e9a443384b893cfe1df3913bab0e73e21aa942c315fde5900b714862df4",
+    "outputs": {
+      "256": {
+        "file": "assets/place-pin--day--default.png",
+        "bytes": 34595,
+        "sha256": "54a7f53585eb791cc173684e37d342f1271d3ec8a2763baa19d748d2a3aa9f3d",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "trash",
+    "state": "default",
+    "sourceFile": "6f695031-e2be-408f-bbd2-94dd9bf270c1.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "329ba44a80f99dd76c5fa9699b156d8b7341ceffff7b0728afdbef4b76edb190",
+    "outputs": {
+      "256": {
+        "file": "assets/trash--day--default.png",
+        "bytes": 37791,
+        "sha256": "2c17641fe1880582c02db3145c998859cab21729ced890e8e492bddeebd70af1",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "search",
+    "state": "default",
+    "sourceFile": "7249c31f-2251-4d7b-a54f-b54430bcd2ae.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "2747450df1f8a41b54512e5cf25eefb590adb097569f1981902d42339c6efc9f",
+    "outputs": {
+      "256": {
+        "file": "assets/search--day--default.png",
+        "bytes": 32739,
+        "sha256": "daebaf07b4a190ab8051496bce985419f31dae052ac6ab23aaccdcf03ce45633",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "download",
+    "state": "default",
+    "sourceFile": "77f73286-26e1-4ba0-99b0-1142da916cd6.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "f6751e3ba9c965f71f67516d030ab121fd2ba8d94a86bd155988b2f13c5b733a",
+    "outputs": {
+      "256": {
+        "file": "assets/download--day--default.png",
+        "bytes": 35508,
+        "sha256": "ee067722c2978d4a29cc21efaaa3115f2e590cba1bb8efd7c401200930120946",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "eye",
+    "state": "default",
+    "sourceFile": "7daee788-d3a5-4342-9efe-c1fe3d6c0ec4.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "762f136bea6fed9ba121f94504cb4c209a776792df3a659d9fd1dbbedfcb29e5",
+    "outputs": {
+      "256": {
+        "file": "assets/eye--day--default.png",
+        "bytes": 22729,
+        "sha256": "a6acf38feaccd63814335714f41c8aa00bdf80b8e8ecc717d62b2c82318e8157",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "map",
+    "state": "default",
+    "sourceFile": "80b17076-5cad-4c3d-82e5-d2dd0b89c247.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "27f051ca6facc42287f1ea8c951dde776f4c2f25cd09c914db51f3bd5d75efe4",
+    "outputs": {
+      "256": {
+        "file": "assets/map--day--default.png",
+        "bytes": 40729,
+        "sha256": "e0aa59a46c19213e294b3583182b6222e0a87b6caf309515cb05f0dee2bf25ae",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "bulb",
+    "state": "default",
+    "sourceFile": "8324397a-c258-41b8-a841-72d3462a3066.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "5e8084c86224c1cd97eb3677ede9be936cbee317f72f615c2e07de318330fcb2",
+    "outputs": {
+      "256": {
+        "file": "assets/bulb--day--default.png",
+        "bytes": 24754,
+        "sha256": "f03bc6e4cc91eabff89f3c537ea746b206fcc761732829812cf12da061e271f7",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "checklist",
+    "state": "default",
+    "sourceFile": "857bfcb2-3301-4307-9f7f-7248fe72ea75.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "24e67d503fe7f7c51dcd2914e1528d613121b561e3b33176e3a5f3e8f2f6ee52",
+    "outputs": {
+      "256": {
+        "file": "assets/checklist--day--default.png",
+        "bytes": 39296,
+        "sha256": "8c24abc0dfd43090293aeef99c054da0e2f80672b7bc6894c84c54fe51e1cec0",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "close",
+    "state": "default",
+    "sourceFile": "86751192-ce88-4776-b92b-3cc45d048974.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "8c736079fa0eedc2a90f3229af81a6fae3f5fcede9c0bf7bb4be34dfbc2d9e21",
+    "outputs": {
+      "256": {
+        "file": "assets/close--day--default.png",
+        "bytes": 26442,
+        "sha256": "1bc2766cc3a695968d0ea77b8e73d9595145e499d2319919828296323db63f51",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "horizon",
+    "state": "default",
+    "sourceFile": "89647430-7e7e-42ae-905b-d7947f26b0ef.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "eb4abaa8641f498a2804c47b302e1d09f54853f1cbfda9249c305332e254058e",
+    "outputs": {
+      "256": {
+        "file": "assets/horizon--day--default.png",
+        "bytes": 21630,
+        "sha256": "b564b5efcc9261378db9a8a04de6168e47d7e4dbba8fd6a844eaf72ec841d5d3",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "chevron-right",
+    "state": "default",
+    "sourceFile": "8ac3d094-3bd0-4cb9-863c-55ac4b9293f6.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "b169ad0c20dd66570dbbf1aa591810ec466ee25f4ab301a0f9ffb0604ed52db5",
+    "outputs": {
+      "256": {
+        "file": "assets/chevron-right--day--default.png",
+        "bytes": 13171,
+        "sha256": "15c5c21390424649a0fc1a9669ea798fc462f512f2d606feca6ba35b1e4cea76",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "refresh",
+    "state": "default",
+    "sourceFile": "90d9c5bc-8679-4e25-8ea9-cc4ee0930ca8.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "3342256f39c8a979f0176b6d9ecb2273e4828c3b43a82219227d80d53203e3b5",
+    "outputs": {
+      "256": {
+        "file": "assets/refresh--day--default.png",
+        "bytes": 39695,
+        "sha256": "922aedf99b5d860599148e2db6a6de965e9eea48a1d0aa926712515d6f13dace",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "cloud",
+    "state": "default",
+    "sourceFile": "a6b522b7-d381-408a-9d5a-f697f3013d46.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "2af1a23242482ecee7a35c8b35ff9d56404f39893a3b961ab2b74948cf4b33cf",
+    "outputs": {
+      "256": {
+        "file": "assets/cloud--day--default.png",
+        "bytes": 29482,
+        "sha256": "18f5de8160fb9675f6a28137b60277816bf66a8cee07d54830eda030ec9209ba",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "more",
+    "state": "default",
+    "sourceFile": "a9e9a5df-5b3e-475c-8fab-e73abc44d06a.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "73c3727a9fa487836319d4d973a2a7053503cd970617fdc32592557497940474",
+    "outputs": {
+      "256": {
+        "file": "assets/more--day--default.png",
+        "bytes": 10791,
+        "sha256": "8ca7181533902308043a600f1c0b1925dbd5268a83d42f50fecfcc85473c9d39",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "telescope",
+    "state": "default",
+    "sourceFile": "aa8abc4f-cab2-4b6d-b7ae-1d00404a39d7.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "d42e0e405bfcac4f0cd0aa2ea5497502ca0024bb82d02c7f56fe67ad931a4f78",
+    "outputs": {
+      "256": {
+        "file": "assets/telescope--day--default.png",
+        "bytes": 34815,
+        "sha256": "e2638918543194bfcfae95bad895a565a70dd32252dc8b3742f858e71bc8fc83",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "location",
+    "state": "default",
+    "sourceFile": "affaa275-5b35-4cb5-a722-dcb3d6987200.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "baf4bf93080503d1c4ceb096a7d196829c0988beb4fd10eed9d3acaf8b26ba7f",
+    "outputs": {
+      "256": {
+        "file": "assets/location--day--default.png",
+        "bytes": 31001,
+        "sha256": "7b2e63e06ae6f323307239e330e180ad5ff5a50d25fec6a305e8a1c71991e68b",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "arrow-left",
+    "state": "default",
+    "sourceFile": "b6a16be6-6829-43bf-a403-13803c4c8d97.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "d5c579e69cfe6e14c1e5b66aa22b371e40d5682098c5b35e3aaef2e8e71c3343",
+    "outputs": {
+      "256": {
+        "file": "assets/arrow-left--day--default.png",
+        "bytes": 24774,
+        "sha256": "d3cd4ccf18fcd1d728988113fdaee0f5b4e793dd5fd713dc43096749cb521a11",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "moon",
+    "state": "default",
+    "sourceFile": "b7252a56-ce0f-469e-8d30-c38d39d2b5b3.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "d950bc0ea476f6630ccd8bfd4b427c1c3ed7f24d12f9096279bb412beb2182a7",
+    "outputs": {
+      "256": {
+        "file": "assets/moon--day--default.png",
+        "bytes": 27560,
+        "sha256": "97d513bf65d8cda8800790f97e0262f94e2628e5830baa905121f8f41d231790",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "navigation",
+    "state": "default",
+    "sourceFile": "b9b3e565-39ef-45d4-be39-325aa0083064.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "c9a7434545804a6d15ad55962d0b5ab1cc810fc6d0324fd4d9fb6a27243670a8",
+    "outputs": {
+      "256": {
+        "file": "assets/navigation--day--default.png",
+        "bytes": 30472,
+        "sha256": "b85c0bb5ae831627111d8e11a159b4c959430be079ad52f491b3042e82fb923a",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "chevron-up",
+    "state": "default",
+    "sourceFile": "c3e663ab-ebad-47b0-aa12-735fad527ce8.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "979022eaae92c3cb2174c26d4432e62dfacfa207502f30fb6e69cbcb913ea76f",
+    "outputs": {
+      "256": {
+        "file": "assets/chevron-up--day--default.png",
+        "bytes": 12651,
+        "sha256": "efc9fa120025b6b1d19014a7be0c0354d03619da6fbcc708f2e65cdb30b6f750",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "images",
+    "state": "default",
+    "sourceFile": "ce5bb4b2-89ef-470f-9e92-e0efe40277cf.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "8beff003341cfbb5a80529b6c0bbca181840ece3b53c72b439c8f2a587787a5e",
+    "outputs": {
+      "256": {
+        "file": "assets/images--day--default.png",
+        "bytes": 44218,
+        "sha256": "754fe24edb534c168cb88a5c1fdccd0bd5dbbf95aac038d25cc81152af49687b",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "info",
+    "state": "default",
+    "sourceFile": "d8486efc-11f1-43b1-8840-ac276862d72d.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "e0e3d4d7d928200edb0cbd98916caf2b664a58a638919774785a84cd027e2255",
+    "outputs": {
+      "256": {
+        "file": "assets/info--day--default.png",
+        "bytes": 32232,
+        "sha256": "88253c03f839c1e3e3313402743006f90d99ef4856b60f297b65f28ecf5840c8",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "filter",
+    "state": "default",
+    "sourceFile": "e06f7285-6c30-4512-81c1-f1ae3c1d46d3.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "5a55087e4c1353c0b04b78c231971532a2e18db2239a156b3b8f344419e8451e",
+    "outputs": {
+      "256": {
+        "file": "assets/filter--day--default.png",
+        "bytes": 31247,
+        "sha256": "c8e6f4801cfbc1f6cff58ff1e5373725f3aaa57219c493cdbb299e0921649ddc",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "settings",
+    "state": "default",
+    "sourceFile": "e0861e1d-87bc-45b8-a97b-b4578612edd9.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "8caf8b6a81a1e3cd5a66cd24a7052f71723aacbd52ab1407e7901457cb7a1834",
+    "outputs": {
+      "256": {
+        "file": "assets/settings--day--default.png",
+        "bytes": 42482,
+        "sha256": "0374815308e883ea7ee67c216163f44b3e0fad2a2ea529f9325c1f49ec17a646",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "bell-off",
+    "state": "default",
+    "sourceFile": "e1d2e13a-3d79-4556-b48d-a618a5138b57.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "ee679b3a3d96f2dfa2783f975a97237364c87aebdb6681b36aee14bd501461a9",
+    "outputs": {
+      "256": {
+        "file": "assets/bell-off--day--default.png",
+        "bytes": 33235,
+        "sha256": "8bbcab8448f56bb4eb3cd4d97b49da468a4f4f26ce7b8380c2850e6983c00f61",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "compass",
+    "state": "default",
+    "sourceFile": "e5b8365a-8089-4879-8c74-547e76ba5889.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "4479b75515cd2edc052d26bc5625df46722f9e90611cb2509b38c3952eaee4c8",
+    "outputs": {
+      "256": {
+        "file": "assets/compass--day--default.png",
+        "bytes": 41958,
+        "sha256": "5f0e5c4a5e1f197d3ee1f91dcc8980363684127d24a42ede71831fbf76c36d8c",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "account-user",
+    "state": "default",
+    "sourceFile": "e996b2ff-e1ce-45de-bcf0-5e99dbc1f4ce.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "c8b718a4d63aa907201cb38bfa121147dd79293be97f28716c5be80a4a0050eb",
+    "outputs": {
+      "256": {
+        "file": "assets/account-user--day--default.png",
+        "bytes": 28397,
+        "sha256": "d34b7cadaf223874c9c48d5ad50f7fe013dda59975fb3d1c99778f4f86a32e65",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "pencil",
+    "state": "default",
+    "sourceFile": "f262277e-211c-4b7b-85f5-e432723b44c0.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "eb84553ac2e67d20b9a5518b5262240b796bb06d1e09e3f7ff7577b23daf8187",
+    "outputs": {
+      "256": {
+        "file": "assets/pencil--day--default.png",
+        "bytes": 31503,
+        "sha256": "c025a4a925b0953ef39ba7511c5e0bd20fd6e2c966928e794b63f0b27c1fba38",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "sun",
+    "state": "default",
+    "sourceFile": "fe03b13d-f054-4417-ae2d-74fa4dfe04b1.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "602d78edebba64f5dcdaf3f7ef34e3834e051e14328ce9ce61f61fd051e14737",
+    "outputs": {
+      "256": {
+        "file": "assets/sun--day--default.png",
+        "bytes": 34061,
+        "sha256": "d6def03ad98d4e5540ff80e8699098cbbc5cc5e0f646d40ca14e3ee9b6c66b17",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "wind",
+    "state": "default",
+    "sourceFile": "fe5ca763-a095-4be6-9900-91583d71f619.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "53a29a43ddba83fbcd16b7a098777f1e50e3237a26c79aca8b3aef6c665a7e70",
+    "outputs": {
+      "256": {
+        "file": "assets/wind--day--default.png",
+        "bytes": 25639,
+        "sha256": "65f74fcdc3430e427e08f32280f0eb2cd05a062083cc96f6d2d0ec4ea727caa1",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "share",
+    "state": "default",
+    "sourceFile": "fece4213-fcf8-4c7a-8752-a412425f0a40.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "fbd2980f56d22f073247f3afbb0716547543927463517d6c9eb5144c1d866cb9",
+    "outputs": {
+      "256": {
+        "file": "assets/share--day--default.png",
+        "bytes": 22531,
+        "sha256": "dbf85572bdf510e68838589b32b292e6ae52b64d1728ac0153a299481f8358f8",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "wifi-off",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "3d0327d1-5c8e-4ceb-be14-22d951b82a18.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "2f43fe4e5f7b570e7a6a9463e737662faa7bac09712a8cdd784ba17b49f70bd8",
+    "outputs": {
+      "256": {
+        "file": "assets/wifi-off--day--default.png",
+        "bytes": 38396,
+        "sha256": "c90223fb53d66fd267b6ff626d288414a6d6cec1937a49fe19c1492dcd83f601",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.6500143356027803
+      },
+      "96": {
+        "rgbRmse255": 0.5947214420483546
+      },
+      "144": {
+        "rgbRmse255": 0.6358830568191202
+      },
+      "192": {
+        "rgbRmse255": 0.6369395566003312
+      }
+    }
+  },
+  {
+    "id": "walking",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "5b9bf4d1-990e-41ad-ae3e-bf9bae4af61f.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "4a198be30488a37030142e9d2d67228a656d3ba74dad8444c1129aa57576e636",
+    "outputs": {
+      "256": {
+        "file": "assets/walking--day--default.png",
+        "bytes": 29602,
+        "sha256": "e6b14a529c84f593ce5493c541394a65d677b1c78d44be66ff886bea38183bf3",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.6533844360933923
+      },
+      "96": {
+        "rgbRmse255": 0.6053845652626315
+      },
+      "144": {
+        "rgbRmse255": 0.6117581011333142
+      },
+      "192": {
+        "rgbRmse255": 0.5855077273217144
+      }
+    }
+  },
+  {
+    "id": "restroom",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "611d9b03-5c4d-4b0a-bcc8-d6972674dce5.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "3215c40460408123b55750ffe11d87bfeb906eb52c5a342c08aeec8353103b27",
+    "outputs": {
+      "256": {
+        "file": "assets/restroom--day--default.png",
+        "bytes": 34986,
+        "sha256": "fdc8ef01c1771b1858800c77b86d61dbb03fdc40e68eb4cc12cc8a51c82487fa",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.7547398080885386
+      },
+      "96": {
+        "rgbRmse255": 0.6548345198063279
+      },
+      "144": {
+        "rgbRmse255": 0.7098671238965061
+      },
+      "192": {
+        "rgbRmse255": 0.674925408214974
+      }
+    }
+  },
+  {
+    "id": "parking",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "71d84a80-b69a-4618-822c-4dbb785b27d3.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "e5da54c7f099b99fe9d3af7571c03496de9b22f763602f42045aa9a28b2d7802",
+    "outputs": {
+      "256": {
+        "file": "assets/parking--day--default.png",
+        "bytes": 27929,
+        "sha256": "f7a64619c2e1bd3020e6f6d96da3e092b89478bb776743a59fad44a8b8377351",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.6990403828465372
+      },
+      "96": {
+        "rgbRmse255": 0.6808418165786324
+      },
+      "144": {
+        "rgbRmse255": 0.6914986836139876
+      },
+      "192": {
+        "rgbRmse255": 0.7322398226544292
+      }
+    }
+  },
+  {
+    "id": "favorite-star",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "91460c96-5222-40ab-808a-be1396b5ccb8.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "b8d262aadfef4b3a90781f6d43f76415ce4161753ea6e016d19919195687c0f6",
+    "outputs": {
+      "256": {
+        "file": "assets/favorite-star--day--default.png",
+        "bytes": 27821,
+        "sha256": "2ff92301a61b21393469a37643b1f0ccce55ba657d846dd62f123780838d7857",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.5773046504275623
+      },
+      "96": {
+        "rgbRmse255": 0.5470239480361749
+      },
+      "144": {
+        "rgbRmse255": 0.5629814646529996
+      },
+      "192": {
+        "rgbRmse255": 0.6279406329751008
+      }
+    }
+  },
+  {
+    "id": "tent",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "aeb1bd0b-2e01-4b89-aac6-6b3ec664a25a.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "94749cf09bcdd8471824ac5429ce3c915dcaced26c4acfbc08724c523b7c5364",
+    "outputs": {
+      "256": {
+        "file": "assets/tent--day--default.png",
+        "bytes": 29166,
+        "sha256": "0b99791f0364cba2ce82b04684992d6fa4f889283f77b93eb91ba81e913aa367",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.6244922147294552
+      },
+      "96": {
+        "rgbRmse255": 0.5474975970118121
+      },
+      "144": {
+        "rgbRmse255": 0.5968075511483135
+      },
+      "192": {
+        "rgbRmse255": 0.5398799852015145
+      }
+    }
+  },
+  {
+    "id": "charging",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "b9b0542c-30d0-4ad3-a06a-fb93df88bb3c.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "d26599d8fb584b981a760716440f7150a715f95922961790d3177950b57fdad1",
+    "outputs": {
+      "256": {
+        "file": "assets/charging--day--default.png",
+        "bytes": 30196,
+        "sha256": "0787814588ca4bbb30a36deb88ace5f89c6306179ee4c3f48c05eda7a9beb29e",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.7260847493210686
+      },
+      "96": {
+        "rgbRmse255": 0.6349767569108388
+      },
+      "144": {
+        "rgbRmse255": 0.6672064874849486
+      },
+      "192": {
+        "rgbRmse255": 0.6421932256988699
+      }
+    }
+  },
+  {
+    "id": "transit",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "bc130700-a62e-4c86-94fa-c535429c9135.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "19f3c3484798803f20d2256cb157bec9b1c4a1e10fcbe6e874a80ab20833f9b0",
+    "outputs": {
+      "256": {
+        "file": "assets/transit--day--default.png",
+        "bytes": 45937,
+        "sha256": "4a67766f1ecaa123aef4e19689d915bb888e65d8df443e50c81589ad58ab829d",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.944742091040563
+      },
+      "96": {
+        "rgbRmse255": 0.8282521666856966
+      },
+      "144": {
+        "rgbRmse255": 0.878743216617681
+      },
+      "192": {
+        "rgbRmse255": 0.7422405588593654
+      }
+    }
+  },
+  {
+    "id": "signal",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "de19cc0b-430b-4c3e-ad82-b7056281351c.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "e46311e4bd07e26c08f9496d29cf179a584694164960acfce8cef0cb1ba975f4",
+    "outputs": {
+      "256": {
+        "file": "assets/signal--day--default.png",
+        "bytes": 32951,
+        "sha256": "3692f6a23f473c779cde91b47e652b3ef4169ed5dc2622a395f1cba9a313823a",
+        "losslessPngRoundtrip": true
+      }
+    },
+    "displayComparison": {
+      "72": {
+        "rgbRmse255": 0.7086778533369645
+      },
+      "96": {
+        "rgbRmse255": 0.6391445965457649
+      },
+      "144": {
+        "rgbRmse255": 0.6892318407273613
+      },
+      "192": {
+        "rgbRmse255": 0.7102757115527771
+      }
+    }
+  },
+  {
+    "id": "favorite-satellite",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "022d5655-d42c-4de0-a51c-ddfc858d7949.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充/补充2",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "6dcaa532fb6e1a6586dca284119fcb85c79215073dd3661caa4b75458a469012",
+    "outputs": {
+      "256": {
+        "file": "assets/favorite-satellite--day--default.png",
+        "bytes": 10638,
+        "sha256": "a9f76e0c859b6ead31e68179f4457338312f1d581d416f42dfe0afce93074ec3",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "favorite-trail",
+    "state": "default",
+    "status": "adopted",
+    "sourceFile": "6364b50e-8aa0-424e-829b-e7ec7150f02c.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充/补充2",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "ad28ccf0dc4b58c78af0fc18c3385110b87692cb3915c1da08efcd6789769de3",
+    "outputs": {
+      "256": {
+        "file": "assets/favorite-trail--day--default.png",
+        "bytes": 17864,
+        "sha256": "6f0f08a089dca1dcd2348aa0ce2b072f9139d27f7625f12ace727c51c8e33e21",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "account-user",
+    "state": "selected",
+    "status": "adopted",
+    "sourceFile": "b8f5905f-8d22-42ed-9812-39792cff5b66.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充/补充2",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "65d40f3dcbff0385338c2882c2771b28a25ccb2e7c86dda08f51e45fcf8d943f",
+    "outputs": {
+      "256": {
+        "file": "assets/account-user--day--selected.png",
+        "bytes": 30358,
+        "sha256": "11021c4a99cca5e0afc08247ded9dd28d25c9cb7d2aede6cd83625cebcf0b1f9",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "map",
+    "state": "selected",
+    "status": "adopted",
+    "sourceFile": "eaf4ff34-fe3a-4352-996a-98e4ede962d7.png",
+    "sourceRoot": "C:/Users/777/Desktop/icons/补充/补充2",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "b45e543a98224f403487c7901b37185bf3ecc54d610757e426ea8968c5bc1e02",
+    "outputs": {
+      "256": {
+        "file": "assets/map--day--selected.png",
+        "bytes": 46063,
+        "sha256": "ffc61d496895d74016e3b387c535e42e4ead9d64a383ddfa76fc73cd5f3dab8d",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "spot-marker",
+    "state": "default",
+    "status": "adopted",
+    "sourceRoot": "C:/Users/777/Desktop/地图图标返修3-核对",
+    "sourceFile": "spot-marker--day--default.png",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "c4717cc5f17303dbb37597933bacda4e7f33d977ffff0a7f86e77d5938af9c15",
+    "blueBodyBounds": [
+      173,
+      145,
+      1082,
+      1119
+    ],
+    "outputs": {
+      "256": {
+        "file": "assets/spot-marker--day--default.png",
+        "bytes": 38887,
+        "sha256": "ccc1ca248daa06e144aa560ea330b06e2b553ac193e61ca07409eea09a477916",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "spot-marker",
+    "state": "draft",
+    "status": "adopted",
+    "sourceRoot": "C:/Users/777/Desktop/地图图标返修3-核对",
+    "sourceFile": "spot-marker--day--draft.png",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "a7be47cff82b494686da99fa1957a216a8d7cd98a7c2991f135c6c102ce55ba1",
+    "blueBodyBounds": null,
+    "outputs": {
+      "256": {
+        "file": "assets/spot-marker--day--draft.png",
+        "bytes": 37522,
+        "sha256": "1fdcce8fe69fe182302926bf5da6bc3fec33d5ba9c4010b1b495ab378743217a",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "spot-marker",
+    "state": "pending",
+    "status": "adopted",
+    "sourceRoot": "C:/Users/777/Desktop/地图图标返修3-核对",
+    "sourceFile": "spot-marker--day--pending.png",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "63210a9de46d7cca91db6ef4266aa91e4193e75db3621c54f7c4da169e536866",
+    "blueBodyBounds": null,
+    "outputs": {
+      "256": {
+        "file": "assets/spot-marker--day--pending.png",
+        "bytes": 44385,
+        "sha256": "d31f77352f6ea6d1d0bd3b721523f6b69983dd4595c567d66e100d030de1cc44",
+        "losslessPngRoundtrip": true
+      }
+    }
+  },
+  {
+    "id": "spot-marker",
+    "state": "selected",
+    "status": "adopted",
+    "sourceFile": "spot-marker--day--selected.png",
+    "sourceRoot": "E:\\Dev\\Starward\\docs\\design-resources\\wechat-miniapp\\shared\\icons\\adopted\\b-matte-256\\editable\\spot-marker-selected",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "sourceSha256": "f0790bb90cc92651ee503a27da919bd26f73bd590517856a70f865fe549cd324",
+    "derivation": {
+      "method": "local-pixel-composition",
+      "editable": "editable/spot-marker-selected/README.md",
+      "proof": "editable/spot-marker-selected/composition.json"
+    },
+    "outputs": {
+      "256": {
+        "file": "assets/spot-marker--day--selected.png",
+        "bytes": 41814,
+        "sha256": "67498597c2a4ee410c6b38299132c92ee9c90637d3c7751a2ee4c5aebacd7b96",
+        "losslessPngRoundtrip": true
+      }
+    }
+  }
+]

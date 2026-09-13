@@ -1,0 +1,104 @@
+{
+  "status": "adopted-2026-09-13",
+  "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview",
+  "files": [
+    {
+      "file": "additions.css",
+      "baseline": null,
+      "baselineSha256": null,
+      "currentSha256": "2725beefca6b04f33b671720d33b36a7e48d421243e5a2093ed8095ca2c43362",
+      "change": "added"
+    },
+    {
+      "file": "baseline.json",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/baseline.json",
+      "baselineSha256": "60af052de194053fb80b9f8c2682f73bc914766cf71e2a64221bd3d00be34d5e",
+      "currentSha256": "60af052de194053fb80b9f8c2682f73bc914766cf71e2a64221bd3d00be34d5e",
+      "change": "unchanged"
+    },
+    {
+      "file": "chapters.js",
+      "baseline": null,
+      "baselineSha256": null,
+      "currentSha256": "aff64fd6b40ea2aef0731cb917b5ab46af0c501f095823c2a2086470c1e0b466",
+      "change": "added"
+    },
+    {
+      "file": "editor.mjs",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/editor.mjs",
+      "baselineSha256": "ccb35809f50ce82ae39683cbee98554bab1a2c131548a6a25305999465d26926",
+      "currentSha256": "3c80e09c124d16dc92f9766a744ae628b60adf8283efdd08c92082120bec3ba7",
+      "change": "modified"
+    },
+    {
+      "file": "icons.js",
+      "baseline": null,
+      "baselineSha256": null,
+      "currentSha256": "c34d09ace15abbd7f3e857f8927c1f72d0c207a7a83abb1f9ccb26cb92a873ab",
+      "change": "added"
+    },
+    {
+      "file": "index.html",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/index.html",
+      "baselineSha256": "9f5703276d8d792839231388f47c46a7c75a6a3d4aa3124f387bd643eb79ae29",
+      "currentSha256": "950154557583c248a15f7e1f86074d5e93c912d8c96821728539445aa89e18a7",
+      "change": "modified"
+    },
+    {
+      "file": "layers.html",
+      "baseline": null,
+      "baselineSha256": null,
+      "currentSha256": "598570fef1d73173b069152c2429401a620f8d0ccb748a0ed611bf9058548f60",
+      "change": "added"
+    },
+    {
+      "file": "layers.js",
+      "baseline": null,
+      "baselineSha256": null,
+      "currentSha256": "632f9813f556512d19ea002ee7e26c524abb3e05a2f6580c4ea308f939f8bd5d",
+      "change": "added"
+    },
+    {
+      "file": "map.mjs",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/map.mjs",
+      "baselineSha256": "51c51c082fee4c75321e6639d1ea5b532cb0476e103ffb25637b55051dacadcc",
+      "currentSha256": "3a520933ab06bff3119592739130ec5b68a675e9f5ccd6b4abc85cbebba259d6",
+      "change": "modified"
+    },
+    {
+      "file": "panel-gestures.js",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/panel-gestures.js",
+      "baselineSha256": "6acb45f5af5c98999a6c9b8dcd02d9013e8091fa7f9d0702302c34e71658a49b",
+      "currentSha256": "6acb45f5af5c98999a6c9b8dcd02d9013e8091fa7f9d0702302c34e71658a49b",
+      "change": "unchanged"
+    },
+    {
+      "file": "panel.html",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/panel.html",
+      "baselineSha256": "895bd804e4f55c55823c9f64a9e8db11ac3d0ae785303e8ef0f12eedaaa6ae0f",
+      "currentSha256": "ccc1a5e3d16a9d453a8eea9f2c5c798bb9ed2f88a865ec7cc2fdff741b11def0",
+      "change": "modified"
+    },
+    {
+      "file": "revision.css",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/revision.css",
+      "baselineSha256": "7ca50be618ce54d3f094ca18f7ddf850c6d44bf8141430a66e615e8d67b92c2d",
+      "currentSha256": "07cbf7b7bbf9da895d5e0bc29f03cfe63ed8d6fa54da38a42f6094e90de8434b",
+      "change": "modified"
+    },
+    {
+      "file": "session.mjs",
+      "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/session.mjs",
+      "baselineSha256": "eef3dd56ec4b3984d7514e5ce980508a964c41b6aac958e9773e0cea8a236ef1",
+      "currentSha256": "eef3dd56ec4b3984d7514e5ce980508a964c41b6aac958e9773e0cea8a236ef1",
+      "change": "unchanged"
+    },
+    {
+      "file": "terrain.js",
+      "baseline": null,
+      "baselineSha256": null,
+      "currentSha256": "55c3349e8b4dc1571fd14fedc92cf7c5fc253563787bda094c35e866b3c1f0d7",
+      "change": "added"
+    }
+  ]
+}

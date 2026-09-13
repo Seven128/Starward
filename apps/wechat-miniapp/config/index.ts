@@ -13,6 +13,106 @@ const sharedSourceInclude = [
   path.resolve(repoRoot, "packages/coordinate-system/src"),
 ];
 
+const adoptedBRuntimeIconRoot = path.resolve(
+  repoRoot,
+  "docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-runtime/assets",
+);
+const adoptedBTabBarIconRoot = path.resolve(
+  repoRoot,
+  "docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-tabbar/assets",
+);
+const bTabBarIconFiles = [
+  "map--day--default.png", "map--day--selected.png",
+  "account-user--day--default.png", "account-user--day--selected.png",
+] as const;
+const retainedLegacyIconFiles = [
+  "account-user-night.svg", "account-user-observation.svg",
+  "arrow-left-light.png", "bulb-night.svg", "bulb-observation.svg",
+  "chevron-right-night.svg", "chevron-right-observation.svg",
+  "cloud-night.svg", "cloud-observation.svg", "download-night.svg",
+  "download-observation.svg", "draft-marker.png", "eye-night.svg",
+  "eye-observation.svg", "filter-night.svg", "filter-observation.svg",
+  "formal-spot-marker-night.png", "formal-spot-marker-observation.png",
+  "formal-spot-marker-selected-night.png", "formal-spot-marker-selected-observation.png",
+  "images-night.svg", "images-observation.svg", "pencil-night.svg",
+  "pencil-observation.svg", "proposal-marker.png", "settings-night.svg",
+  "settings-observation.svg", "share-night.svg", "share-observation.svg",
+  "tab-map-night.png", "tab-map-observation.png", "tab-map-selected-night.png",
+  "tab-map-selected-observation.png", "tab-my-night.png", "tab-my-observation.png",
+  "tab-my-selected-night.png", "tab-my-selected-observation.png",
+  "trash-2-night.svg", "trash-2-observation.svg", "wifi-off-night.svg",
+  "wifi-off-observation.svg",
+] as const;
+const bIconFiles = {
+  main: [
+    "account-user--day--default.png", "account-user--day--selected.png",
+    "arrow-left--day--default.png", "check--day--default.png",
+    "chevron-down--day--default.png", "chevron-right--day--default.png",
+    "chevron-up--day--default.png", "close--day--default.png",
+    "cloud--day--default.png", "compass--day--default.png",
+    "eye--day--default.png", "filter--day--default.png",
+    "four-point-star--day--default.png", "horizon--day--default.png",
+    "images--day--default.png", "layers--day--default.png",
+    "low-cloud--day--default.png", "bulb--day--default.png",
+    "location--day--default.png", "map--day--default.png",
+    "map--day--selected.png", "meteor--day--default.png", "moon--day--default.png",
+    "pencil--day--default.png", "plan-suv--day--default.png",
+    "search--day--default.png", "settings--day--default.png",
+    "share--day--default.png", "spot-marker--day--default.png",
+    "spot-marker--day--draft.png", "spot-marker--day--pending.png",
+    "spot-marker--day--selected.png", "sun--day--default.png",
+    "terrain--day--default.png", "clock--day--default.png",
+  ],
+  content: [
+    "account-user--day--default.png", "arrow-left--day--default.png",
+    "bell--day--default.png", "bell-off--day--default.png",
+    "calendar--day--default.png", "check--day--default.png",
+    "checklist--day--default.png", "chevron-right--day--default.png",
+    "close--day--default.png", "compass--day--default.png",
+    "download--day--default.png", "four-point-star--day--default.png",
+    "horizon--day--default.png", "images--day--default.png",
+    "info--day--default.png", "location--day--default.png",
+    "low-cloud--day--default.png", "moon--day--default.png",
+    "meteor--day--default.png", "note--day--default.png",
+    "pencil--day--default.png", "plan-suv--day--default.png",
+    "refresh--day--default.png", "save--day--default.png",
+    "sun--day--default.png", "trash--day--default.png",
+    "wifi-off--day--default.png",
+  ],
+  spot: [
+    "arrow-left--day--default.png", "chevron-right--day--default.png",
+    "chevron-down--day--default.png", "chevron-up--day--default.png",
+    "close--day--default.png", "compass--day--default.png",
+    "filter--day--default.png", "horizon--day--default.png",
+    "images--day--default.png", "info--day--default.png",
+    "location--day--default.png", "low-cloud--day--default.png",
+    "search--day--default.png", "wifi-off--day--default.png",
+  ],
+  sky: [
+    "arrow-left--day--default.png", "close--day--default.png",
+    "compass--day--default.png", "horizon--day--default.png",
+  ],
+} as const;
+
+function adoptedBIconCopyPatterns(outputRoot: string) {
+  return [
+    ...Object.entries(bIconFiles).flatMap(([packageName, files]) => files.map((file) => ({
+    from: path.resolve(adoptedBRuntimeIconRoot, file),
+    to: path.resolve(
+      here,
+      "..",
+      outputRoot,
+      packageName === "main" ? "assets/b-icons" : `${packageName}/assets/b-icons`,
+      file,
+    ),
+    }))),
+    ...bTabBarIconFiles.map((file) => ({
+      from: path.resolve(adoptedBTabBarIconRoot, file),
+      to: path.resolve(here, "..", outputRoot, "assets/b-icons/weapp-tabbar", file),
+    })),
+  ];
+}
+
 function operatorPreviewToken() {
   const selected = process.env.MINIAPP_OPERATOR_PREVIEW_TOKEN?.trim() ?? "";
   if (selected && !/^[A-Za-z0-9_-]{43,128}$/u.test(selected))
@@ -101,10 +201,19 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     },
     copy: {
       patterns: [
+        ...["moon", "ornaments"].map((directory) => ({
+          from: path.resolve(here, "../src/assets", directory),
+          to: path.resolve(here, "..", outputRoot, "assets", directory),
+        })),
+        ...retainedLegacyIconFiles.map((file) => ({
+          from: path.resolve(here, "../src/assets/icons", file),
+          to: path.resolve(here, "..", outputRoot, "assets/icons", file),
+        })),
         {
-          from: path.resolve(here, "../src/assets"),
-          to: path.resolve(here, "..", outputRoot, "assets"),
+          from: path.resolve(here, "../src/assets/media"),
+          to: path.resolve(here, "..", outputRoot, "sky/assets/media"),
         },
+        ...adoptedBIconCopyPatterns(outputRoot),
       ],
       options: {},
     },

@@ -1,0 +1,359 @@
+[
+  {
+    "index": 1,
+    "file": "2f3c8bef-1a46-459e-b214-be111a251342.png",
+    "bytes": 785217,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1060512,
+    "partialPixels": 511349,
+    "opaquePixels": 655,
+    "bounds": [
+      180,
+      154,
+      1074,
+      1110
+    ],
+    "edgePixels": 0,
+    "sha256": "9b2ed6f1ab68c64a061de055bcd1a377af711fb5013a7efcdcb2c43470224ada"
+  },
+  {
+    "index": 2,
+    "file": "3d0327d1-5c8e-4ceb-be14-22d951b82a18.png",
+    "bytes": 699215,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1161049,
+    "partialPixels": 409941,
+    "opaquePixels": 1526,
+    "bounds": [
+      169,
+      231,
+      1085,
+      1055
+    ],
+    "edgePixels": 0,
+    "sha256": "2f43fe4e5f7b570e7a6a9463e737662faa7bac09712a8cdd784ba17b49f70bd8"
+  },
+  {
+    "index": 3,
+    "file": "4911991a-c3f3-4751-8c38-6cbf47134b13.png",
+    "bytes": 901117,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 929597,
+    "partialPixels": 641182,
+    "opaquePixels": 1737,
+    "bounds": [
+      146,
+      254,
+      1111,
+      1035
+    ],
+    "edgePixels": 0,
+    "sha256": "8eeae03cb3db87e4d97cb0e1b588f5e734e8177253d689316d29a05d68643bc1"
+  },
+  {
+    "index": 4,
+    "file": "56cbf841-b372-421a-b483-6f1339da467e.png",
+    "bytes": 372899,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1331894,
+    "partialPixels": 239537,
+    "opaquePixels": 1085,
+    "bounds": [
+      111,
+      436,
+      1143,
+      858
+    ],
+    "edgePixels": 0,
+    "sha256": "6b077ba68ab082c2a5362012e05afb37688e25f151178bca7b1ca808db73f36d"
+  },
+  {
+    "index": 5,
+    "file": "5b9bf4d1-990e-41ad-ae3e-bf9bae4af61f.png",
+    "bytes": 572137,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1210391,
+    "partialPixels": 360663,
+    "opaquePixels": 1462,
+    "bounds": [
+      313,
+      135,
+      948,
+      1118
+    ],
+    "edgePixels": 0,
+    "sha256": "4a198be30488a37030142e9d2d67228a656d3ba74dad8444c1129aa57576e636"
+  },
+  {
+    "index": 6,
+    "file": "5fb741c3-5a9b-407b-b09f-b02894902846.png",
+    "bytes": 840079,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1022700,
+    "partialPixels": 549293,
+    "opaquePixels": 523,
+    "bounds": [
+      189,
+      144,
+      1092,
+      1107
+    ],
+    "edgePixels": 0,
+    "sha256": "53ca7ad157c9efdf014f9aa58c30cc8925aaf843f4711890cddddc1b83e7b8d5"
+  },
+  {
+    "index": 7,
+    "file": "611d9b03-5c4d-4b0a-bcc8-d6972674dce5.png",
+    "bytes": 730508,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1120771,
+    "partialPixels": 449936,
+    "opaquePixels": 1809,
+    "bounds": [
+      169,
+      243,
+      1086,
+      1022
+    ],
+    "edgePixels": 0,
+    "sha256": "3215c40460408123b55750ffe11d87bfeb906eb52c5a342c08aeec8353103b27"
+  },
+  {
+    "index": 8,
+    "file": "71d84a80-b69a-4618-822c-4dbb785b27d3.png",
+    "bytes": 630006,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1084046,
+    "partialPixels": 487922,
+    "opaquePixels": 548,
+    "bounds": [
+      265,
+      194,
+      1024,
+      1073
+    ],
+    "edgePixels": 0,
+    "sha256": "e5da54c7f099b99fe9d3af7571c03496de9b22f763602f42045aa9a28b2d7802"
+  },
+  {
+    "index": 9,
+    "file": "89c5b043-3229-4e2b-94d7-d62c1f464a9a.png",
+    "bytes": 773458,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1031208,
+    "partialPixels": 540744,
+    "opaquePixels": 564,
+    "bounds": [
+      161,
+      143,
+      1093,
+      1110
+    ],
+    "edgePixels": 0,
+    "sha256": "5ec293d447c1ddfa61b0c45b6dd9a19aedb38b70708bf87ede965f991111ab22"
+  },
+  {
+    "index": 10,
+    "file": "91460c96-5222-40ab-808a-be1396b5ccb8.png",
+    "bytes": 509603,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1283166,
+    "partialPixels": 288089,
+    "opaquePixels": 1261,
+    "bounds": [
+      187,
+      201,
+      1067,
+      1033
+    ],
+    "edgePixels": 0,
+    "sha256": "b8d262aadfef4b3a90781f6d43f76415ce4161753ea6e016d19919195687c0f6"
+  },
+  {
+    "index": 11,
+    "file": "aeb1bd0b-2e01-4b89-aac6-6b3ec664a25a.png",
+    "bytes": 630862,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1181657,
+    "partialPixels": 390218,
+    "opaquePixels": 641,
+    "bounds": [
+      195,
+      357,
+      1077,
+      987
+    ],
+    "edgePixels": 0,
+    "sha256": "94749cf09bcdd8471824ac5429ce3c915dcaced26c4acfbc08724c523b7c5364"
+  },
+  {
+    "index": 12,
+    "file": "b9b0542c-30d0-4ad3-a06a-fb93df88bb3c.png",
+    "bytes": 649587,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1104305,
+    "partialPixels": 467369,
+    "opaquePixels": 842,
+    "bounds": [
+      257,
+      154,
+      995,
+      1113
+    ],
+    "edgePixels": 0,
+    "sha256": "d26599d8fb584b981a760716440f7150a715f95922961790d3177950b57fdad1"
+  },
+  {
+    "index": 13,
+    "file": "b9b1160c-bcb9-4aac-bbd7-46265b42052e.png",
+    "bytes": 390299,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1339298,
+    "partialPixels": 232524,
+    "opaquePixels": 694,
+    "bounds": [
+      259,
+      395,
+      1011,
+      888
+    ],
+    "edgePixels": 0,
+    "sha256": "8542de35b5493d5d62c6508411c08c0a800b7528551d50cdeac578f9c4263896"
+  },
+  {
+    "index": 14,
+    "file": "bc130700-a62e-4c86-94fa-c535429c9135.png",
+    "bytes": 985099,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 901622,
+    "partialPixels": 669540,
+    "opaquePixels": 1354,
+    "bounds": [
+      98,
+      293,
+      1187,
+      1061
+    ],
+    "edgePixels": 0,
+    "sha256": "19f3c3484798803f20d2256cb157bec9b1c4a1e10fcbe6e874a80ab20833f9b0"
+  },
+  {
+    "index": 15,
+    "file": "de19cc0b-430b-4c3e-ad82-b7056281351c.png",
+    "bytes": 859570,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1054133,
+    "partialPixels": 516847,
+    "opaquePixels": 1536,
+    "bounds": [
+      106,
+      238,
+      1149,
+      1018
+    ],
+    "edgePixels": 0,
+    "sha256": "e46311e4bd07e26c08f9496d29cf179a584694164960acfce8cef0cb1ba975f4"
+  },
+  {
+    "index": 16,
+    "file": "f98f5ba1-85c3-4bad-b858-0757226da26f.png",
+    "bytes": 729375,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1119971,
+    "partialPixels": 451791,
+    "opaquePixels": 754,
+    "bounds": [
+      218,
+      83,
+      1036,
+      1151
+    ],
+    "edgePixels": 0,
+    "sha256": "897511dfdb2981c1b46c6e7380e987783760d77f0afc073e26e1fb7a7db7c792"
+  },
+  {
+    "index": 17,
+    "file": "fa3841db-2829-41ae-b813-0724923fb5b0.png",
+    "bytes": 569502,
+    "width": 1254,
+    "height": 1254,
+    "space": "srgb",
+    "hasProfile": false,
+    "hasAlpha": true,
+    "transparentPixels": 1146066,
+    "partialPixels": 425988,
+    "opaquePixels": 462,
+    "bounds": [
+      262,
+      226,
+      992,
+      1061
+    ],
+    "edgePixels": 0,
+    "sha256": "d1c1f373bfe3e9b493d729c3825214a914e54b38ac3aea60f3b8b07e38836fc3"
+  }
+]

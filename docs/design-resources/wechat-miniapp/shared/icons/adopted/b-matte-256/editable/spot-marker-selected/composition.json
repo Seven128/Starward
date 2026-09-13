@@ -1,0 +1,76 @@
+{
+  "method": "Copy exact default RGBA; extract three connected ray components; resize only rays with Lanczos3; copy into empty alpha pixels.",
+  "width": 1254,
+  "height": 1254,
+  "baseSource": {
+    "path": "C:\\Users\\777\\Desktop\\地图图标返修3-核对\\spot-marker--day--default.png",
+    "sha256": "c4717cc5f17303dbb37597933bacda4e7f33d977ffff0a7f86e77d5938af9c15"
+  },
+  "raySource": {
+    "path": "C:\\Users\\777\\Desktop\\地图图标返修3-核对\\spot-marker--day--selected.png",
+    "sha256": "3795f3a213eb20b5dcb25390ae08f2c86e5587e5b6a9ebb5c722176c81a91cc1"
+  },
+  "layers": [
+    {
+      "name": "left",
+      "sourceBounds": [
+        265,
+        247,
+        400,
+        369
+      ],
+      "sourceConnectedPixels": 10442,
+      "scale": 0.72,
+      "left": 285,
+      "top": 165,
+      "width": 100,
+      "height": 91
+    },
+    {
+      "name": "top",
+      "sourceBounds": [
+        580,
+        79,
+        673,
+        223
+      ],
+      "sourceConnectedPixels": 10547,
+      "scale": 0.62,
+      "left": 597,
+      "top": 19,
+      "width": 60,
+      "height": 92
+    },
+    {
+      "name": "right",
+      "sourceBounds": [
+        855,
+        246,
+        989,
+        369
+      ],
+      "sourceConnectedPixels": 10522,
+      "scale": 0.72,
+      "left": 870,
+      "top": 165,
+      "width": 99,
+      "height": 91
+    }
+  ],
+  "basePixels": 526174,
+  "changedBasePixels": 0,
+  "changedOutsideDecoration": 0,
+  "addedPixels": 15042,
+  "output256": {
+    "bytes": 41814,
+    "sha256": "67498597c2a4ee410c6b38299132c92ee9c90637d3c7751a2ee4c5aebacd7b96",
+    "rasterDifferences": 847,
+    "outsideRayRegions": 0
+  },
+  "masterSha256": "f0790bb90cc92651ee503a27da919bd26f73bd590517856a70f865fe549cd324",
+  "sourceHashesUnchanged": true,
+  "regression": {
+    "originalWrongChangedBasePixels": 525789,
+    "fixed256ChangedVisibleBasePixels": 0
+  }
+}

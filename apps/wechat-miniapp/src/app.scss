@@ -1,6 +1,13 @@
 @use "./styles/tokens.scss";
+@use "./components/semantic-asset.scss";
+@use "./components/status-panel.scss";
+@use "./components/notification.scss";
+@use "./components/custom-nav.scss";
+@use "./components/astronomical-event-modal.scss";
 @use "./components/liquid-glass-surface.scss";
 @use "./components/spot-identity-card.scss";
+@use "./components/selection-tabs.scss";
+@use "./pages/map/spot-terrain-overview.scss";
 
 page {
   width: 100%;

@@ -26,6 +26,7 @@
 ### On-Demand Component Detail
 
 - [Cloud, Mini Program, BFF, data, decision, publication, contribution and identity components](architecture/runtime-and-domain.md)
+- 本轮小程序扩展：[共享天文事件Modal与单选迁移](architecture/runtime-and-domain.md#shared-astronomical-event-modal-implementation-boundary)、[地形/光污染数据与地图叠加](architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence)。以及[B行256px图标接入](architecture/runtime-and-domain.md#mini-program-b-matte-icon-integration-boundary)。上述三项与[整体UIUX及Context对齐补开发](areas/main/screen-contracts/wechat-miniapp.md#整体uiux与context对齐补开发)属于同一完整需求的实施边界；公共Tab视觉反馈已由共享组件迁移，生产代码、契约和数据发布边界已落地，当前验证范围及未覆盖设备/生命周期条件由任务证据记录。
 - [Mobile feedback, Android assurance, runtime carriers and account-erasure lifecycle](architecture/assurance-and-lifecycle.md)
 
 These two registered nodes continue this Component Map. Read the node whose owner or boundary is affected; read both when a change crosses runtime/domain and assurance/lifecycle.

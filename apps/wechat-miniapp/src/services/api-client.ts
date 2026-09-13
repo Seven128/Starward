@@ -41,6 +41,7 @@ import {
   type RouteTravelMode,
   type SpotRankingPreferences,
   type SpotId,
+  type TerrainOverlayRequest,
   type UserPreferences,
 } from "@starward/miniapp-contracts";
 import { localFailureMessage } from "@/utils/presentation";
@@ -744,6 +745,49 @@ export function getMapScene(
     auth: "OPTIONAL",
     query: params,
     ...(signal ? { signal } : {}),
+  });
+}
+
+export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal) {
+  const query = [
+    `purpose=${input.purpose}`,
+    `centerLat=${input.center.latitude.toFixed(7)}`,
+    `centerLng=${input.center.longitude.toFixed(7)}`,
+    `radiusKm=${input.radiusKm.toFixed(1)}`,
+  ].join("&");
+  return requestOperation(`terrain:${input.purpose}`, "terrainOverlayGet", {
+    query,
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export function terrainAssetUrl(relativePath: string) {
+  if (!/^\/v2\/terrain\/assets\/[A-Za-z0-9][A-Za-z0-9.-]*\.png$/u.test(relativePath))
+    throw new Error("terrain_asset_path_invalid");
+  return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + relativePath;
+}
+
+export function downloadTerrainAsset(relativePath: string, signal?: AbortSignal): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new MiniappRequestCancelled("superseded"));
+      return;
+    }
+    const task = Taro.downloadFile({
+      url: terrainAssetUrl(relativePath),
+      success(result) {
+        cleanup();
+        if (result.statusCode >= 200 && result.statusCode < 300 && result.tempFilePath) resolve(result.tempFilePath);
+        else reject(new Error(`terrain_asset_download_failed:${result.statusCode}`));
+      },
+      fail(error) {
+        cleanup();
+        reject(signal?.aborted ? new MiniappRequestCancelled("superseded") : new Error(error.errMsg || "terrain_asset_download_failed"));
+      },
+    });
+    const abort = () => task.abort();
+    const cleanup = () => signal?.removeEventListener("abort", abort);
+    signal?.addEventListener("abort", abort, { once: true });
   });
 }
 

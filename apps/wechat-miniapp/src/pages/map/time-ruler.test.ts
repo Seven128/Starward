@@ -117,8 +117,8 @@ test("the adopted ruler keeps the 66px cadence and omits a duplicate nonempty he
   const source = readFileSync(new URL("./time-ruler.tsx", import.meta.url), "utf8");
   const styles = readFileSync(new URL("./index.scss", import.meta.url), "utf8");
   assert.match(source, /const RULER_STEP = 66;/);
-  assert.match(styles, /\.map-layer-sheet--cloud\s*\{[^}]*height:\s*262Px;/s);
-  assert.match(styles, /\.map-layer-sheet--light\s*\{[^}]*height:\s*120Px;/s);
+  assert.match(styles, /\.map-layer-sheet--cloud\s*\{[^}]*min-height:\s*352Px;/s);
+  assert.match(styles, /\.map-layer-sheet--light\s*\{[^}]*min-height:\s*210Px;/s);
   assert.match(styles, /\.map-time-ruler__slice\s*\{[^}]*width:\s*66Px;/s);
   const ruler = render();
   assert.equal(ruler.root.props.className, "map-time-ruler");

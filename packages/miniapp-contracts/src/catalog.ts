@@ -59,8 +59,8 @@ function osmSource(seed: OsmSpotSeed): SourceSummary {
 const MEDIA: readonly RepresentativeMedia[] = Object.freeze([
   {
     id: "media-representative-orion",
-    localPath: "/assets/media/orion-constellation.jpg",
-    thumbnailPath: "/assets/media/orion-constellation.jpg",
+    localPath: "/sky/assets/media/orion-constellation.jpg",
+    thumbnailPath: "/sky/assets/media/orion-constellation.jpg",
     alt: "相机拍摄的猎户座与夜空星点，非当前点位现场证明",
     caption: "猎户座星空代表实拍 · 非当前点位现场照片",
     photographer: "Taavi Niittee",
@@ -76,8 +76,8 @@ const MEDIA: readonly RepresentativeMedia[] = Object.freeze([
   },
   {
     id: "media-representative-milky-way",
-    localPath: "/assets/media/milky-way-night-sky.jpg",
-    thumbnailPath: "/assets/media/milky-way-night-sky.jpg",
+    localPath: "/sky/assets/media/milky-way-night-sky.jpg",
+    thumbnailPath: "/sky/assets/media/milky-way-night-sky.jpg",
     alt: "真实银河夜空照片，非当前点位现场证明",
     caption: "银河夜空代表实拍 · 非当前点位现场照片",
     photographer: "Guillaume guillaume",
@@ -93,8 +93,8 @@ const MEDIA: readonly RepresentativeMedia[] = Object.freeze([
   },
   {
     id: "media-representative-star-trails",
-    localPath: "/assets/media/star-trails.jpg",
-    thumbnailPath: "/assets/media/star-trails.jpg",
+    localPath: "/sky/assets/media/star-trails.jpg",
+    thumbnailPath: "/sky/assets/media/star-trails.jpg",
     alt: "真实星轨照片，非当前点位现场证明",
     caption: "星轨代表实拍 · 非当前点位现场照片",
     photographer: "hannahisabelnic",

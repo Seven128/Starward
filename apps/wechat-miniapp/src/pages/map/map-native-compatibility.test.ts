@@ -21,9 +21,21 @@ test("the native Map page stays outside Taro experimental local compile mode", (
 test("the Map root installs a native Back boundary for its non-modal bottom presentations", () => {
   const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   assert.match(source, /show=\{mapPresentationBackBoundaryVisible\}/u);
-  assert.match(source, /onAfterLeave=\{handleMapPresentationSystemBack\}/u);
+    assert.match(source, /onBeforeLeave=\{handleMapPresentationSystemBack\}/u);
   assert.match(source, /setMapPresentationBackBoundaryVisible\(false\)[\s\S]*?setTimeout\([\s\S]*?setMapPresentationBackBoundaryVisible\(true\)/u);
   assert.doesNotMatch(source, /map-presentation-back-\$\{/u);
+});
+
+test("terrain uses the WEAPP MapContext ground-overlay lifecycle", () => {
+  const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
+  const mapElement = source.match(/<Map\b[\s\S]*?\/>/u)?.[0] ?? "";
+  assert.doesNotMatch(mapElement, /\bgroundOverlays=/u, "the component prop is not a WEAPP ground-overlay API");
+  assert.match(source, /Taro\.createMapContext\("spot-map"\)/u);
+  assert.match(source, /\.addGroundOverlay\(/u);
+  assert.match(source, /\.updateGroundOverlay\(/u);
+  assert.match(source, /\.removeGroundOverlay\(/u);
+  assert.match(source, /southwest:[\s\S]*?bounds\.south[\s\S]*?bounds\.west/u);
+  assert.match(source, /northeast:[\s\S]*?bounds\.north[\s\S]*?bounds\.east/u);
 });
 
 test("the Mini Program does not opt into Taro experimental CompileMode", () => {

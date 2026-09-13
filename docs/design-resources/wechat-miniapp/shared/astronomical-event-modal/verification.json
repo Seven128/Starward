@@ -1,0 +1,99 @@
+{
+  "date": "2026-09-13",
+  "scope": "Incremental full adopted hosts; browser design prototype only",
+  "passed": [
+    "original basic/astronomy text retained",
+    "real pointer drag large-small-large",
+    "three chapters",
+    "facility photo opens",
+    "map browse and nested Escape preserves host",
+    "terrain plus LIGHT",
+    "plan original reminders and input retained",
+    "single-select cancel/confirm/save",
+    "saved checklist and browse detail",
+    "320/390/768 layouts",
+    "actual detail viewport translation (regression failed before CSS scope repair)",
+    "review entry routing and combined-layer preset",
+    "site media extent controls"
+  ],
+  "errors": [],
+  "failed": [],
+  "scripts": [
+    ".codex/work-items/three-requirements-2026-09-13/check-repair.cjs",
+    ".codex/work-items/three-requirements-2026-09-13/check-review.cjs",
+    ".codex/work-items/three-requirements-2026-09-13/check-tabs-icons.cjs"
+  ],
+  "exclusions": [
+    "production APIs and persisted database",
+    "historical multi-association migration",
+    "WEAPP native map overlays and system Back",
+    "iOS/Android device motion/accessibility",
+    "terrain precision and provider integration"
+  ],
+  "tabsAndIcons": {
+    "scope": "browser design resources",
+    "passed": [
+      "shared identical tab labels",
+      "active enlarges and previous shrinks through intermediate frames",
+      "tab anchors remain stationary",
+      "astronomy calendar and category icons replaced",
+      "layer calendar shares same adapter",
+      "plan reference and reminders use B icons",
+      "phase data images retained"
+    ],
+    "remainingPanelSvg": [
+      {
+        "parent": "flex items-center space-x-1.5",
+        "id": "",
+        "label": null
+      },
+      {
+        "parent": "flex items-center space-x-1.5",
+        "id": "",
+        "label": null
+      },
+      {
+        "parent": "",
+        "id": "",
+        "label": null
+      },
+      {
+        "parent": "terrain-box",
+        "id": "",
+        "label": "北向上地形与光污染示意图，包含东南西北、距离圈和比例尺"
+      },
+      {
+        "parent": "",
+        "id": "",
+        "label": null
+      },
+      {
+        "parent": "star-stage action-foreground",
+        "id": "",
+        "label": null
+      }
+    ],
+    "errors": [],
+    "failed": []
+  },
+  "finalAdoptionCheck": {
+    "date": "2026-09-13",
+    "contextManifest": "passed",
+    "markdownLinks": {
+      "documents": 12,
+      "broken": 0
+    },
+    "iconManifest": {
+      "count": 71,
+      "bytes": 2216122,
+      "sha256": "all match"
+    },
+    "browserScripts": {
+      "check-repair.cjs": "passed",
+      "check-simple-terrain.cjs": "passed",
+      "check-tabs-icons.cjs": "passed"
+    },
+    "stitch": "After reloading both projects: 10 current reference/specification nodes persisted; 5 rejected screen titles absent from canvas.",
+    "scope": "Design resources and Context only; no current production correctness claim"
+  }
+}

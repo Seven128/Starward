@@ -8,6 +8,8 @@
     { "id": "observationContextGet", "method": "GET", "path": "/observation-contexts/{contextId}", "requestType": "void", "responseType": "ObservationContextData" },
     { "id": "observationContextPut", "method": "PUT", "path": "/observation-contexts/{contextId}", "requestType": "ObservationContextUpdateBody", "responseType": "ObservationContextUpdateData" },
     { "id": "mapSceneGet", "method": "GET", "path": "/map/scene", "requestType": "MapSceneRequest", "responseType": "MapSceneData" },
+    { "id": "terrainOverlayGet", "method": "GET", "path": "/terrain/overlay", "requestType": "TerrainOverlayRequest", "responseType": "TerrainOverlayData" },
+    { "id": "terrainAssetGet", "method": "GET", "path": "/terrain/assets/{file}", "requestType": "void", "responseType": "TerrainAssetData" },
     { "id": "routeEstimatePost", "method": "POST", "path": "/routes/estimate", "requestType": "RouteEstimateRequest", "responseType": "RouteEstimateData" },
     { "id": "astronomicalEventsGet", "method": "GET", "path": "/astronomical-events", "requestType": "void", "responseType": "AstronomicalEventsData" },
     { "id": "astronomicalEventGet", "method": "GET", "path": "/astronomical-events/{occurrenceId}", "requestType": "void", "responseType": "AstronomicalEventDetailData" },

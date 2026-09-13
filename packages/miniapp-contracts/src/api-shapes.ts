@@ -86,6 +86,54 @@ export interface MapLayerData {
   source: SourceSummary | null;
 }
 
+export type TerrainProjectionState = "AVAILABLE" | "PARTIAL" | "UNAVAILABLE";
+
+export interface TerrainOverlayRequest {
+  purpose: "MAP" | "SPOT";
+  center: { system: "GCJ02"; latitude: number; longitude: number };
+  radiusKm: number;
+}
+
+export interface TerrainLightCell {
+  id: string;
+  boundsGcj02: { west: number; south: number; east: number; north: number };
+  color: string;
+  label: string;
+  radiance: number;
+  unit: "nW/cm²/sr";
+}
+
+export interface TerrainOverlayData {
+  state: TerrainProjectionState;
+  purpose: TerrainOverlayRequest["purpose"];
+  requestedRadiusKm: number;
+  effectiveRadiusKm: number | null;
+  centerGcj02: TerrainOverlayRequest["center"];
+  publicationId: string | null;
+  datasetVersion: string | null;
+  sourceProvider: string | null;
+  sourceResolution: string | null;
+  derivedResolutionM: number | null;
+  derivedAt: string | null;
+  coordinateTransformVersion: string | null;
+  imageUrl: string | null;
+  imageBoundsGcj02: { west: number; south: number; east: number; north: number } | null;
+  elevationM: { minimum: number; maximum: number } | null;
+  coverageLabel: string;
+  limitations: readonly string[];
+  lightPollution: {
+    state: TerrainProjectionState;
+    datasetVersion: string;
+    cells: readonly TerrainLightCell[];
+    legend: readonly { label: string; color: string }[];
+    source: SourceSummary | null;
+    coverageLabel: string;
+  };
+}
+
+/** Binary PNG body; this route intentionally does not use ApiEnvelope at runtime. */
+export type TerrainAssetData = Uint8Array;
+
 export interface MapSpotTimeSignal {
   spotId: SpotSummary["spotId"];
   cloudPercent: number | null;

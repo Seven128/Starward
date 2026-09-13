@@ -28,7 +28,7 @@ function chromeHarness(failure?: { errMsg: string }, initialRoute = "pages/map/i
   return { sync, calls };
 }
 
-test("native chrome uses the selected Field Signal palette and existing mode icons", async () => {
+test("native chrome uses the selected Field Signal palette and adopted day icons", async () => {
   const expected = {
     DAY: ["#FFFFFF", "#5E655F", "#4859B8", "#FFFFFF", ""],
     NIGHT: ["#11120F", "#989E94", "#D1D7FF", "#181A17", "-night"],
@@ -51,8 +51,9 @@ test("native chrome uses the selected Field Signal palette and existing mode ico
     assert.equal(icons.length, 2);
     for (const [index, name] of ["map", "my"].entries()) {
       assert.equal(icons[index]!.values.index, index);
-      assert.equal(icons[index]!.values.iconPath, `assets/icons/tab-${name}${suffix}.png`);
-      assert.equal(icons[index]!.values.selectedIconPath, `assets/icons/tab-${name}-selected${suffix}.png`);
+      const dayName = name === "map" ? "map" : "account-user";
+      assert.equal(icons[index]!.values.iconPath, mode === "DAY" ? `assets/b-icons/weapp-tabbar/${dayName}--day--default.png` : `assets/icons/tab-${name}${suffix}.png`);
+      assert.equal(icons[index]!.values.selectedIconPath, mode === "DAY" ? `assets/b-icons/weapp-tabbar/${dayName}--day--selected.png` : `assets/icons/tab-${name}-selected${suffix}.png`);
     }
   }
 });

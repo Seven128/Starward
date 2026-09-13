@@ -62,6 +62,7 @@ COPY --from=build --chown=node:node /app/packages/miniapp-contracts/package.json
 COPY --from=build --chown=node:node /app/packages/miniapp-contracts/dist ./packages/miniapp-contracts/dist
 COPY --from=build --chown=node:node /app/workers/miniapp-api/package.json ./workers/miniapp-api/package.json
 COPY --from=build --chown=node:node /app/workers/miniapp-api/dist ./workers/miniapp-api/dist
+COPY --from=build --chown=node:node /app/workers/miniapp-api/assets ./workers/miniapp-api/assets
 COPY --chown=node:node database/miniapp/migrations ./database/miniapp/migrations
 
 USER node

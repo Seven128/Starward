@@ -1,0 +1,32 @@
+ M .agents/skills/starward-design-resource/SKILL.md
+ M .agents/skills/starward-design-resource/references/delivery-and-review.md
+ M .agents/skills/starward-design-resource/references/design-method.md
+ M .agents/skills/starward-design-resource/references/figma-runtime.md
+ M .agents/skills/starward-design-resource/references/stitch-route.md
+ M DESIGN.md
+ M docs/design-resources/wechat-miniapp/events/ADOPTED.md
+ M docs/design-resources/wechat-miniapp/map/ADOPTED.md
+ M docs/design-resources/wechat-miniapp/plan/ADOPTED.md
+ M project_context/architecture.md
+ M project_context/architecture/runtime-and-domain.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp/information-design.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp/surfaces-and-controls.md
+ M project_context/context-maintenance.md
+ M project_context/global.md
+ M project_context/product-profile.md
+?? .codex/work-items/icon-audit-2026-09-13/
+?? .codex/work-items/three-requirements-2026-09-13/
+?? docs/design-resources/wechat-miniapp/map/revisions/
+?? docs/design-resources/wechat-miniapp/map/terrain-2026-09-13/
+?? docs/design-resources/wechat-miniapp/plan/event-modal-2026-09-13/
+?? docs/design-resources/wechat-miniapp/plan/revisions/
+?? docs/design-resources/wechat-miniapp/shared/astronomical-event-modal/
+?? docs/design-resources/wechat-miniapp/shared/icons/
+?? docs/design-resources/wechat-miniapp/shared/tabs/
+?? docs/design-resources/wechat-miniapp/terrain-icon-exploration-2026-09-12/
+?? docs/requirements/
+?? output/

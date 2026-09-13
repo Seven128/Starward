@@ -55,6 +55,8 @@ import {
   type SpotId,
   type SpotRankingPreferences,
   type SpotSummary,
+  type TerrainOverlayData,
+  type TerrainOverlayRequest,
   type UserId,
   type UserPreferences,
   type Wgs84Point,
@@ -113,6 +115,8 @@ import {
 } from "./security.ts";
 import { createWeatherPort } from "./weather-provider.ts";
 import { derivePlanReminderSchedules, publicReminderStatus } from "./plan-reminder-schedule.ts";
+import { readFile } from "node:fs/promises";
+import { terrainImageUrl, terrainPublication, terrainRequestIsCovered, terrainUnavailable } from "./terrain-publication.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 import {
   AstronomicalEventCatalogOwner,
@@ -1029,6 +1033,78 @@ export class MiniappService {
         : ["食甚时刻和地点投影是锁定算法计算结果；天气与真实地平遮挡仍需另行判断。"],
       context ? { validAt: context.selectedAtUtc, contextRevision: context.revision } : undefined,
     );
+  }
+
+  async getTerrainOverlay(input: TerrainOverlayRequest): Promise<ApiEnvelope<TerrainOverlayData>> {
+    const publication = await terrainPublication();
+    if (!terrainRequestIsCovered(publication, input))
+      return envelope(terrainUnavailable(input, "当前中心与半径超出已发布的深圳东部 GLO-30 地形覆盖。"), "UNAVAILABLE", [], ["范围外不会补成平地；移动到已覆盖区域后重试。"]);
+    const centerWgs84 = gcj02ToWgs84({
+      lat: input.center.latitude,
+      lon: input.center.longitude,
+      system: "GCJ-02",
+    });
+    const darkSkyCells = this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
+      ? await this.repository.listDarkSkyGridCells({
+          datasetVersion: this.config.darkSkyDatasetVersion,
+          center: { system: "WGS84", latitude: centerWgs84.lat, longitude: centerWgs84.lon },
+          radiusKm: input.radiusKm,
+        })
+      : [];
+    const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
+      VERY_LOW: "#87714A99", LOW: "#A1845299", MODERATE: "#BE9B6199", HIGH: "#D1B57799", VERY_HIGH: "#E0C99899",
+    };
+    const lightCells = darkSkyCells.map((cell) => {
+      const southWest = wgs84ToGcj02({ lat: cell.boundsWgs84.south, lon: cell.boundsWgs84.west, system: "WGS84" });
+      const northEast = wgs84ToGcj02({ lat: cell.boundsWgs84.north, lon: cell.boundsWgs84.east, system: "WGS84" });
+      return {
+        id: cell.cellId,
+        boundsGcj02: { west: southWest.lon, south: southWest.lat, east: northEast.lon, north: northEast.lat },
+        color: colors[cell.productBand],
+        label: cell.label,
+        radiance: cell.radiance.median,
+        unit: cell.radiance.unit,
+      };
+    });
+    const source = darkSkyCells[0]?.source ?? null;
+    const data: TerrainOverlayData = {
+      state: publication.validPixelPercent < 99.9 ? "PARTIAL" : "AVAILABLE",
+      purpose: input.purpose,
+      requestedRadiusKm: input.radiusKm,
+      effectiveRadiusKm: input.radiusKm,
+      centerGcj02: input.center,
+      publicationId: publication.publicationId,
+      datasetVersion: publication.dataset,
+      sourceProvider: publication.sourceProvider,
+      sourceResolution: publication.sourceResolution,
+      derivedResolutionM: publication.derivedResolutionM,
+      derivedAt: publication.derivedAt,
+      coordinateTransformVersion: publication.transformVersion,
+      imageUrl: `/v2/terrain/assets/${encodeURIComponent(publication.image.file)}`,
+      imageBoundsGcj02: publication.boundsGcj02,
+      elevationM: publication.elevationM,
+      coverageLabel: `已发布中心周边 ${publication.maximumRadiusKm.toFixed(0)} km，当前查看 ${input.radiusKm.toFixed(1)} km。`,
+      limitations: publication.limitations,
+      lightPollution: {
+        state: lightCells.length ? "PARTIAL" : "UNAVAILABLE",
+        datasetVersion: lightCells.length ? darkSkyCells[0]!.datasetVersion : this.config.darkSkyDatasetVersion,
+        cells: lightCells,
+        legend: lightCells.length ? [
+          { label: "相对较低", color: "#87714A" },
+          { label: "相对中等", color: "#BE9B61" },
+          { label: "相对较高", color: "#E0C998" },
+        ] : [],
+        source,
+        coverageLabel: lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : "当前范围没有已发布的年度卫星夜光网格。",
+      },
+    };
+    return envelope(data, data.state === "AVAILABLE" ? "FRESH" : "PARTIAL", source ? [source] : [], publication.limitations);
+  }
+
+  async getTerrainAsset(file: string) {
+    const publication = await terrainPublication();
+    if (file !== publication.image.file) throw new Error("terrain_asset_not_found");
+    return { bytes: await readFile(terrainImageUrl(file)), publicationId: publication.publicationId };
   }
 
   async getMapScene(input: {
@@ -2066,6 +2142,9 @@ export class MiniappService {
     } catch { throw new Error("plan_event_occurrence_invalid"); }
     if (eventOccurrenceIds?.some(id => !this.eventCatalog.find(id)))
       throw new Error("plan_event_occurrence_invalid");
+    if (eventOccurrenceIds && eventOccurrenceIds.length > 1 &&
+        JSON.stringify(eventOccurrenceIds) !== JSON.stringify(existingPlan?.eventOccurrenceIds ?? []))
+      throw new Error("plan_event_occurrence_single_selection_required");
     if (eventOccurrenceIds === undefined && existingPlan?.eventOccurrenceIds?.length)
       throw new Error("plan_event_occurrences_required");
     if (input.timing !== undefined) {

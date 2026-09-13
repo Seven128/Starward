@@ -607,7 +607,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - 数字采用等宽数字 `font-variant-numeric: tabular-nums`；时间轴每列共享宽度。
 - 导航与分类标题使用中文系统字体、自然字距，不使用 tracked uppercase 或等宽行政标签。
 - 长中文按钮和字段标签需验证；允许换行，不以缩小字号维持单行。紧凑密度不得通过裁切、灰到不可读或全局机械缩放实现。
-- 图标使用单一线性家族：22/24/28rpx 三档，默认 3rpx 描边；圆端点、圆连接，不混用填充图标集。实现通过项目 `SemanticIcon` adapter 本地化一小组 ISC 许可 Lucide path；产品专用天文几何与 rounded star 走同一资产管线。可见图标与 88rpx target 分离，不为命中面积同步放大图形。不得引入完整第二 UI 系统或运行时远程图标。
+- 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](docs/design-resources/wechat-miniapp/terrain-icon-exploration-2026-09-12/reference/user-latest-b-selection.png)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前完整生成输入见 [最新B行资源需求](docs/design-resources/wechat-miniapp/terrain-icon-exploration-2026-09-12/web-gpt-full-icon-brief-b.md)。2026-09-13用户已采用[共享图标入口](docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的224px页面派生和192px原生Tab派生以满足包体限制。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
 
 ### 4. 间距、密度、占用率与几何
@@ -713,8 +713,8 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 | 角色 | 采用表达（逻辑px，具体级联值以采用源文件为准） |
 | --- | --- |
 | 字体尺度 | 保持原B紧凑尺度；地点名18px，地区/事实正文12px；不因三档高度不同整体缩放 |
-| 面板 | 同一保留文档、全宽白色紧凑身份区；无顶部图片时三档均保留顶部圆角；large有全幅顶部图片时沿用图片构图；最终档位基准及安全区映射见采用包 |
-| 章节 | 首屏隐藏，天文边界出现；一级同文档定位、短圆头渐变滑动指示；第二章起标题位于卡片外 |
+| 面板 | 同一保留文档、全宽白色紧凑身份区；small/medium保留顶部圆角；large无论身份或有无图片均全宽方角，内部卡片不受影响；最终档位基准及安全区映射见采用包 |
+| 章节 | 首屏隐藏，地形边界出现；一级同文档定位、短圆头渐变滑动指示；第二章起标题位于卡片外 |
 | 设施 | 停车/洗手间上下各一张无框无阴影照片卡，开放时间为文字；仅图片虚化/局部遮罩，无图为纯色事实卡 |
 | 天文 | 全宽白色圆角模块，相关数据紧凑分组；内层底#FBFBFC、无框，月相亮黄/灰 |
 | 导航 | 右向且居中的纯箭头，无文字/边框/背景；具名且完整44px命中区 |
@@ -746,13 +746,13 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.3 Spot Information Panel
 
-- Panel 是 Map-parallel non-modal owner，状态为hidden + small/medium/large三个visible extents。三档具体高度/圆角/安全区构图以§5A.0采用资源为准，不恢复旧56vh或不同字号尺度。Large填满平台顶部chrome与Map/My主导航之间的可用区域，不覆盖或替换主导航；无顶部图片时small/medium/large均保留顶部两角；large全幅图片按图片构图，无外阴影。
+- Panel 是 Map-parallel non-modal owner，状态为hidden + small/medium/large三个visible extents。三档具体高度/圆角/安全区构图以§5A.0采用资源为准，不恢复旧56vh或不同字号尺度。Large填满平台顶部chrome与Map/My主导航之间的可用区域，不覆盖或替换主导航；small/medium保留顶部两角；large不论有无顶部图片均全宽方角，无外阴影。
 - 三档始终挂载同一份、同序、同identity的客观document：有效media→地点identity→route/access/facility/safety→guides/field/source→卡片外天文标题→日期/时间尺→月相/气象/夜光/目标/来源。Small/Medium只是较短viewport裁剪；Large才启用唯一隐藏scrollbar chrome的internal vertical scroll。禁止按extent分别渲染、remount、重新排序或重复mapping。唯一presentation例外是合法media：small/medium不占media，medium→large时才在document顶部连续拉出；无图从不渲染media node/placeholder/空档。
 - Handle 保留短细圆头提示，整条面板宽度的紧凑白色 identity-header band 为拖动热区，触控高度至少44逻辑px。名称上移并可进入热区下部，不靠额外空白撑开；操作按钮不与热区重叠。Band 跟随同一document滚动，绝不fixed/sticky在panel可视区；有图时位于相册之后，无图时为首区。滚出视口后无替代热区，靠系统/平台Back或可用的edge-back返回档位；滚回真实header才恢复拖动。Pointer down仅改变press反馈，未过方向/距离阈值的tap为no-op。
 - Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。中/大档除实际可见header band以外的Panel body/content/media或泛化viewport top-edge均不发起extent drag。小档裁切正文上拖展开到中档，下拖在小档硬边界不动、不关闭；中/大档正文均可滚动。
 - Panel top/media/content size必须在每个direct-manipulation帧按live extent、safe area与actual media presence计算。有合法media时`mediaReveal=clamp((p-.50)/.28,0,1)`，clip-height从0到`clamp(300rpx,27dvh,420rpx)`，image从`translateY(-18rpx) scale(1.02)`到0/1；无图没有media phase。
 - 只有panel top接近screen top才淡出Map chrome：`chromeFade=1-clamp((p-.82)/.12,0,1)`。Search、Location与Layer trigger共享该phase，opacity≤.08才移除hit/semantics；反向先恢复chrome，再收media。不得在图片刚拉出时提前隐藏chrome。
-- Large采用全宽中性白色圆角模块与共享文字内距。章节导航遵循6.11：基本信息首屏隐藏，到天文章节出现并吸顶；仅一层同文档锚点，不恢复旧侧边rail。
+- Large采用全宽中性白色圆角模块与共享文字内距。章节导航遵循6.11：基本信息首屏隐藏，到地形章节出现并吸顶；仅一层同文档锚点，不恢复旧侧边rail。
 - Bottom action bar沿用§5A.0的三档采用资源几何，顺序想去/云观星/分享；可见区域与44px命中区分别处理。Favorite星形由既有语义图标owner承接已采用矢量，不建立第二套关系状态。
 - 只有handle hit region内的vertical panel drag从live position跟手；whole panel body/content/media不启动extent drag。Curved ruler的horizontal gesture获胜后panel不得抢占。Release使用nearest snap + velocity和bounded spring，≤280ms；tap handle为no-op。
 
@@ -762,7 +762,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - Map analytical layer 使用 solid canvas/surface 与 dividers，不用 glass/card wall。Sheet overlay不remount或移动地图；同一物理地图、camera、selection与scroll coordinates保持连续。
 - App-owned legend 只随 active analytical overlay 出现，使用 `radius-band` solid strip、`1rpx border` 与 label/value/shape；一次只有一个 layer legend。
 - Day/Night 使用当前 roles；Night 不用 glow/neon。Observation 中 app-owned Search、marker、panel、rail、legend、loading、focus 和过渡只用 closed black/warm-red roles。不能主题化的 native/provider surface 必须在进入前提供 safe cancel/return 或 non-field alternative。
-- `map-layer-selector`由紧凑Map-edge trigger与内容驱动高度bottom-sheet presentation组成，不新增第二Control key。Trigger active与地图定位/新增加号统一使用亮色边框和微弱柔雾阴影，缓慢呼吸且几何不变；减少动态效果时保持静态。无drag handle、`x`、Close row、多extent暗示或“关闭图层”。只列`光污染/云量`两张等宽、整卡可点的abstract image-backed单选卡；selected用极浅fill、inner boundary和checked state。有效选择即时切层，无额外确认；重复选择当前项保持选中，不产生全未选或叠加两层状态。“观测机会”已从小程序地图图层选择和对应摘要/图例中移除，原因是此处保留可直接理解的客观图层。原`332rpx + safe-bottom`主体不能裁切新共用日期时间组件；总云量高度须容纳正常字级、日期栏和独立44px触控区域；光污染使用紧凑高度及年度数据说明。底部选择卡与导航保持原位，顶边从当前呈现高度平滑伸缩，快速反向直接重定向，减少动态效果时直接切换；圆角由外层裁切保证白色子组件不溢出。日间采用稿由Map ADOPTED的layer-selector包给出：顶角18px且外层裁切，390×844视口下云量/光污染高度分别276px/134px，内容字号放大时按内容扩展，不硬裁切。
+- `map-layer-selector`由紧凑Map-edge trigger与内容驱动高度bottom-sheet presentation组成，不新增第二Control key。Trigger active与地图定位/新增加号统一使用亮色边框和微弱柔雾阴影，缓慢呼吸且几何不变；减少动态效果时保持静态。无drag handle、`x`、Close row、多extent暗示或“关闭图层”。只列`光污染/云量`两张等宽、整卡可点的abstract image-backed单选卡；selected用极浅fill、inner boundary和checked state。有效选择即时切层，无额外确认；重复选择当前项保持选中，不产生全未选或叠加两层状态。“观测机会”已从小程序地图图层选择和对应摘要/图例中移除，原因是此处保留可直接理解的客观图层。原`332rpx + safe-bottom`主体不能裁切新共用日期时间组件；总云量高度须容纳正常字级、日期栏和独立44px触控区域；光污染使用紧凑高度及年度数据说明。底部选择卡与导航保持原位，顶边从当前呈现高度平滑伸缩，快速反向直接重定向，减少动态效果时直接切换；圆角由外层裁切保证白色子组件不溢出。2026-09-13本轮图层修订为全宽方角单一外壳，取代历史顶角18px，不在圆角背后叠白色方框；高度基线仍由Map ADOPTED的layer-selector包给出，390×844视口下云量/光污染高度分别276px/134px，内容字号放大时按内容扩展，不硬裁切。
 - Map只有一个`bottomPresentation = none | spot-panel | layer-sheet | spot-editor` coordinator。打开layer直接把spot presentation retarget为layer；panel hit/semantics/active在所有权切换时清除，只有旧视觉可完成退出，selected identity与previous extent保留为恢复历史。Layer open时marker/result intent直接把同一owner retarget为新spot medium，不先恢复旧panel。关闭layer只在没有更新intent时恢复prior extent。Editor未保存离开遵循Screen Contract的先确认后提交；取消保留输入、媒体、候选位置、相机和原上下文。任一时刻只有一个底部交互owner，不以并列active flag绕过协调器。
 - Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/layer/selection 的局部状态已是反馈，不另弹 floating notification，也不展示操作教程或实现说明。
 - `320/375/390/430` 标准字号与 safe area 必须适配。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
@@ -793,6 +793,10 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - [计划采用资源](docs/design-resources/wechat-miniapp/plan/ADOPTED.md)确定列表、详情和编辑构图：观测时段与参考靠前，出行安排按时间串联，之后为关联事件、用户提醒清单和备注。蓝灰正文、浅灰信息区、暖金小图标；不把 My 的玻璃材质扩散至普通页面。
 - [事件采用资源](docs/design-resources/wechat-miniapp/events/ADOPTED.md)以月份分组、日期票签和轻灰卡呈现具体年度记录。详情保留微立体暖金流星、活动日期轴、地点/日期联动、真实观测条件和来源。删除通用科普及准备建议填充段落，不编造天文或天气数值。
 - 事件列表和详情共享同一具体记录身份；日期选择点轻滑，地点/来源弹层进退，按压反馈克制；减少动态效果取消位移。返回实际来源，不固定回 My。计划关联不覆盖用户既定日期与地点。
+
+2026-09-13用户修订上述事件承载方式：地图工具组增加采用B材质的小流星入口，打开较大的居中白色modal；列表仍按月份竖排日期票签卡片，点击主体后列表向左、详情从右进入同一外壳，返回反向。头部和外壳稳定，内容各自滚动并保留位置；移动端避开胶囊及安全区，平板居中限宽，不做全屏独立路由或下拉关闭抽屉。地图仅浏览；计划编辑复用同壳同卡，独立44px单选热区与固定确认区，选中用实心圆点及文字等价表达，关闭取消临时选择。确切事务与Back规则只由[共享事件owner](project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md#shared-astronomical-event-modal)拥有。
+
+地形加入观星点同一连续文档，形成基本信息/地形/天文同级文字导航。按本轮反馈采用真北向上的方形俯视地形图，标注东南西北/距离圈/比例尺，上方仅保留带刻度/即时数值的半径拖动轴；去掉下方角度轴、方向线、角度及分析文案。图层名称统一“地形/光污染”，两项用B图标、轻填色与边界、独立勾选反馈精修，保留各自图例。光污染在图上半透明叠加，卫星估算含义放入数据来源；图形保留科学几何，不能用拟物山景代替数据。地图地形独立复选，可叠加当前光污染或云量单选层；分离图例、缺测及时间语义。当前数据边界由[地形owner](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)拥有。
 
 ### 6. 领域组件合同
 
@@ -894,9 +898,9 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 6.11 Stargazing Spot Information Panel
 
-- **Anatomy**：随document滚出的全宽紧凑白色header drag zone、三档裁剪同一retained non-modal document、medium→large presence-driven licensed media、客观`基本信息 → 天文信息`顺序、到天文边界才出现的轻量横向吸顶 `基本信息/天文` 章节导航、short fixed `想去/云观星/分享` action bar。
+- **Anatomy**：随document滚出的全宽紧凑白色header drag zone、三档裁剪同一retained non-modal document、medium→large presence-driven licensed media、客观`基本信息 → 地形 → 天文`顺序、到地形边界才出现的轻量横向吸顶 `基本信息/地形/天文` 章节导航、short fixed `想去/云观星/分享` action bar。
 - **Variants**：hidden、small、medium、large、dragging、settling、loading、partial、stale、error；hidden 与 visible extent 分开建模。
-- **Geometry**：复用本文件 Map / Search / Spot Information 合同中的三档高度、圆角、把手和导航边界，不维护第二组尺寸。章节导航默认仅一级，基本信息首屏隐藏，滚到天文章节边界后出现并吸顶；靠左排列，不加图标、填色或等分整行。单一选中线短、稍厚、圆端，局部渐变按最新配色方向确认，切换时连续滑动且可反向打断；文字保持可读中性深色，不再要求绿色。点击定位同一文档并扣除导航高度，滚动回写章节；出现/隐藏不改正文几何。点击区域满足当前44px触控下限，正文模块为全宽白色圆角卡，卡内保留文字内距；同类指标以细线/对齐组织，可尝试一个极浅中性内层共同区域辅助比较，不给每个标量套彩色小卡。全小程序章节标题遵循 information-design：第一项可省略重复大标题，第二项及之后必须在内容起点显示章节标题，吸顶导航不替代它；章节标题统一在卡片外，地图“天文”位于日期时间首卡上方。动作栏使用当前令牌与共用动作规则。
+- **Geometry**：复用本文件 Map / Search / Spot Information 合同中的三档高度、圆角、把手和导航边界，不维护第二组尺寸。章节导航默认仅一级，基本信息首屏隐藏，滚到地形章节边界后出现并吸顶；靠左排列，不加图标、填色或等分整行。单一选中线短、稍厚、圆端，局部渐变按最新配色方向确认，切换时连续滑动且可反向打断；文字保持可读中性深色，不再要求绿色。点击定位同一文档并扣除导航高度，滚动回写章节；出现/隐藏不改正文几何。点击区域满足当前44px触控下限，正文模块为全宽白色圆角卡，卡内保留文字内距；同类指标以细线/对齐组织，可尝试一个极浅中性内层共同区域辅助比较，不给每个标量套彩色小卡。全小程序章节标题遵循 information-design：第一项可省略重复大标题，第二项及之后必须在内容起点显示章节标题，吸顶导航不替代它；章节标题统一在卡片外，地图“天文”位于日期时间首卡上方。动作栏使用当前令牌与共用动作规则。
 - **Transition**：`mediaReveal=clamp((p-.50)/.28,0,1)`先拉出top media；`chromeFade=1-clamp((p-.82)/.12,0,1)`后淡出Search/Location/Layer trigger。Reverse先恢复chrome再收media。No-media没有media phase；紧凑白色header band位于真实document顶部，有图时在相册之后，随正文滚动而非悬浮。Panel vertical drag、medium/large content scroll与horizontal ruler通过direction-lock独占手势。
 - **A11y / composition**：large左边缘`32rpx`右滑或handle下拉执行Back语义的large→medium；named extent controls提供等价路径。中/大档仅实际可见的全宽紧凑header band发起extent drag；正文滚动。小档正文上拖展开至中档，下拖在硬边界不动、不关闭。Small/medium/large不切换内容树，只裁剪同一document。普通missing值显示`暂无数据`但domain state不合并。不得恢复独立Spot Detail/Spot Night、切换独立内容树的tabs、推荐窗口、第二地图、nested full-height sheet或duplicate actions。
 
@@ -966,6 +970,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 #### 7.7 Choice Bar / View Switcher
 
 - **Anatomy**：2–4 个短 label、共享轨道、单一可移动 selected indicator、对应 value 或 panel。
+- **公共Tab激活反馈（2026-09-13）**：同组基础字号一致，active文字轻微放大，失活同步缩回；当前共享资源以13px→视觉15px、220ms transform实现。文字与命中区域分离，布局及指示器锚点稳定，反向/快速切换接管当前值；reduced motion直接切换。这是公共Tab及同文档章节文字导航规则，不是仅观星点页面补丁；公共责任及消费者见[Shared Tab owner](project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md#shared-tab-selection-feedback)。
 - **Semantic subtypes**：Tabs 组织相关内容/视图并使用 `tablist/tab/tabpanel`；Segmented 选择局部值或紧密相关子视图并使用 radio 等价语义。二者共享布局与移动指示器 primitive，不共享业务职责。
 - **Geometry / motion**：visible `56rpx`、11–12/15–17，单元target≥`88rpx`；指示器以transform在等分轨道间移动，160ms standard、可中断；reduced motion立即切换。
 - **A11y / composition**：点击与方向键/Home/End 同步 `aria-selected` 或等价 checked 状态、tabindex 与 panel；状态不只靠颜色。
@@ -1035,7 +1040,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 - **Anatomy**：title、body、actions；只有可拖动sheet/panel另有handle、停靠边与安全区。
 - **Variants / states**：dialog confirm、sheet task、hidden/small/medium/full-screen-large/dragging/settling/loading/error。Map spot information panel使用三档visible extent；Search不使用Sheet；layer selector使用随所选图层内容伸缩的单一sheet且无drag/multi-extent暗示。
-- **Geometry**：dialog radius24rpx；无顶部图片的三档spot panel保留顶部圆角（沿small/medium的采用几何）；有全幅顶部图片的page-like large才允许radius0；fixed layer sheet top radius28rpx；只在真实浮层使用elevation-2；动作遵守ordinary/final梯级。所有内部scroll owner隐藏scrollbar chrome。
+- **Geometry**：dialog radius24rpx；spot panel small/medium沿用圆角，large无论有无图片均radius0且全宽；本轮Map layer sheet采用全宽方角外壳；只在真实浮层使用elevation-2；动作遵守ordinary/final梯级。所有内部scroll owner隐藏scrollbar chrome。
 - **A11y / composition**：Modal dialog使用focus trap；map-parallel non-modal panel不trap map semantic alternatives。Escape/返回按owning disclosure/extent逐级关闭并返回触发点；large另有左边缘Back gesture。Spot panel只有具名handle hit region可发起extent drag，tap handle为no-op；Layer sheet无handle/`x`/off row，与spot panel共用一个mutually-exclusive bottom-presentation owner并恢复此前panel extent。
 - **Do not**：不把常规分组画成 sheet/dialog；不新增产品路线；不在浮层中堆卡或并列多个主动作。
 
@@ -1089,7 +1094,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 ### 11. 当前系统边界
 
 - 本节只描述一个当前 Mini Program 视觉系统，不在 handbook、candidate 或产品 UI 中维护 old/new 双轨或显示版本标签。
-- 当前视觉范围覆盖五个Mini Program Product Surfaces，以及stationary Map/Search field、compact suggestions/单行横滑筛选与二级弹层/stable disclosure/leading-readable image results、one-enum互斥image-backed layer selector、marker-to-medium one-document panel、presence-driven media/compact handle band、flush centered section rail/short action rail、objective basic-plus-astronomy facts、raised draggable arrowless Taro-ScrollView-backed Curved Time Ruler、one animated three-state display-mode track、headerless Full-Sky、colored-icon existing-duty My hub、compact cell-based Contribution intake、reuse-first library/component/adaptation binding和bounded Favorite ritual；provider/basemap/tile/native-map appearance仍不属于本系统。Surface用于界定页面职责；当前实施范围由用户需求及所属Screen Contract确定。
+- 当前视觉范围覆盖五个Mini Program Product Surfaces，以及stationary Map/Search field、compact suggestions/单行横滑筛选与二级弹层/stable disclosure/leading-readable image results、one-enum互斥image-backed layer selector、marker-to-medium one-document panel、presence-driven media/compact handle band、flush centered section rail/short action rail、objective basic/terrain/astronomy facts、raised draggable arrowless Taro-ScrollView-backed Curved Time Ruler、one animated three-state display-mode track、headerless Full-Sky、colored-icon existing-duty My hub、compact cell-based Contribution intake、reuse-first library/component/adaptation binding和bounded Favorite ritual；provider/basemap/tile/native-map appearance仍不属于本系统。Surface用于界定页面职责；当前实施范围由用户需求及所属Screen Contract确定。
 - 产品路线、Surface/Control ownership、interaction state、评分算法、数据来源、权限、安全、原生 App 与 owner-operations 权威均不因本视觉系统改变。
 
 ### 12. 实现与验证
@@ -1124,3 +1129,7 @@ Search 筛选可见底板、图标与留白略收紧，保持至少44px互不重
 2026-09-09 material correction: My plan card and celestial information use the same shared liquid-glass resource. Preserve the actual backdrop through a low-alpha center; use restrained edge refraction and reflection instead of a heavy frosted or opaque panel. Light/dark are theme parameters. Celestial modal is compact (current candidate max-width294px), and its typography is subordinate to the sky; font readability and increased-text settings remain verification requirements. Driving range is an ordinary small bordered numeric input, without a separate decorative base or oversized metric. Exact current candidate geometry lives in its resource.
 
 2026-09-09 glass refinement: within the My/Sky shared-material scope, translucency is only one attribute. Seek smooth curved-edge lensing, directional fine highlights and restrained depth on both bright and dark real backgrounds; keep foreground type clear. A uniform bright outline or stronger blur alone does not meet this direction. Exact experimental values remain in the candidate; no Apple parity or target-device acceptance is implied.
+
+2026-09-13 Modal动效修订：地图/计划共享天文事件Modal外壳淡入放大、淡出缩小，遮罩同步；内部列表/详情仍水平切换。关闭完成前保留模态拦截，取消/重开从当前视觉接管，减少动态效果免除缩放位移。参数与生命周期只在共享owner及当前资源维护。
+
+2026-09-13完整需求修订边界：地形、B行图标与事件Modal基于现有采用页面增量更新，最终资源已获用户确认采用。沿用完整观星点文档和三档拖动/照片/底部动作、完整计划表单及提醒流程；不得以展示新增功能为由换成删减的宿主。新增地形章节和事件承载之外不重构信息架构，图标只替换材质与对应状态。公共Tab激活缩放属于共享规则，非地形页特例。本轮另包含整体UIUX校验、Context对齐与补开发；产品范围、当前资源与验证边界见[本轮Screen Contract](project_context/areas/main/screen-contracts/wechat-miniapp.md#design-and-implementation-boundary)。

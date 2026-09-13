@@ -44,10 +44,10 @@ import { PlanTimingFields, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel } from "./plan-travel-fields";
 import { checkPlanArrival } from "./plan-arrival";
 import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
-import { consumePlanEventSelection, type PlanEventSelection } from "./plan-event-selection";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { planContextIdentity, PlanSaveRecoveryError } from "@/services/plan-save-retry";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
+import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
 import "./index.scss";
 
 function today(timezone = "Asia/Shanghai") {
@@ -64,8 +64,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   try { decodedEventDate = decodeURIComponent(router.params.eventDate ?? ""); } catch { decodedEventDate = ""; }
   const requestedEventOccurrenceId = /^event-occurrence:[a-z0-9-]+:\d{4}$/u.test(decodedEventOccurrenceId) ? decodedEventOccurrenceId : null;
   const requestedEventDate = /^\d{4}-\d{2}-\d{2}$/u.test(decodedEventDate) ? decodedEventDate : null;
-  const withRequestedEvent = (ids: readonly string[]) => requestedEventOccurrenceId && !ids.includes(requestedEventOccurrenceId)
-    ? [...ids, requestedEventOccurrenceId] : ids;
+  const withRequestedEvent = (ids: readonly string[]) => requestedEventOccurrenceId
+    ? [requestedEventOccurrenceId] : ids;
   const mountId = useId();
   const [, refreshIdentity] = useState(0);
   useDidShow(() => refreshIdentity((value) => value + 1));
@@ -244,14 +244,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const [eventOccurrenceIds, setEventOccurrenceIds] = useState<readonly string[]>(
     withRequestedEvent(restoredDraft?.eventOccurrenceIds ?? existing?.eventOccurrenceIds ?? []),
   );
-  const [pendingEventSelection, setPendingEventSelection] = useState<PlanEventSelection | null>(null);
-  const eventReturnTarget = activePlanId ? `plan:${activePlanId}` : `new:${requestedSpotId ?? ""}`;
-  useDidShow(() => {
-    const owner = scopedDraftUserId();
-    if (!owner) return;
-    const selection = consumePlanEventSelection(Taro, owner, eventReturnTarget);
-    if (selection) setPendingEventSelection(selection);
-  });
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [eventDetailId, setEventDetailId] = useState<string | null>(null);
   const eventsQuery = useResourceQuery({
     queryKey: ["astronomical-events"],
     queryFn: getAstronomicalEvents,
@@ -535,15 +529,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     }
     catch { setDraftStorageFailed(true); announce("warning", "草稿暂未保存在本机", "当前输入仍在页面中，请保存成功后再离开。"); }
   };
-  useEffect(() => {
-    if (!pendingEventSelection) return;
-    const next = eventOccurrenceIds.includes(pendingEventSelection.occurrenceId)
-      ? eventOccurrenceIds
-      : [...eventOccurrenceIds, pendingEventSelection.occurrenceId].slice(0, 8);
-    retainDraft({ eventOccurrenceIds: next });
-    setEventOccurrenceIds(next);
-    setPendingEventSelection(null);
-  }, [pendingEventSelection]);
   const save = async () => {
     if (mutationBusy.current) return;
     if (conflictPlan) {
@@ -788,6 +773,15 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       data-control="plan-editor"
     >
       <FloatingNotificationHost />
+      <AstronomicalEventModal open={eventModalOpen} mode={editing ? "select-one" : "browse"}
+        context={activeContext} initialOccurrenceIds={eventOccurrenceIds} initialDetailId={eventDetailId}
+        onClose={() => { setEventModalOpen(false); setEventDetailId(null); }}
+        {...(editing ? { onConfirm: (occurrenceId: string | null) => {
+          const next = occurrenceId ? [occurrenceId] : [];
+          retainDraft({ eventOccurrenceIds: next });
+          setEventOccurrenceIds(next);
+          setEventModalOpen(false);
+        }} : {})} />
       <CustomNav
         title={dedicatedEditor ? (activePlanId && !newPlanRequested.current ? "编辑观星计划" : "新建观星计划") : "观星计划"}
         beforeBack={beforeLeavingEditor}
@@ -913,7 +907,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">◌</Text>天文事件</Text></View>
               {(activePlan.eventOccurrenceIds ?? []).map(id => {
                 const event = eventCatalog.find(item => item.occurrenceId === id);
-                return <Button key={id} className="plan-event-row" onClick={() => void Taro.navigateTo({ url: `/content/event/detail/index?occurrenceId=${encodeURIComponent(id)}` })}>
+                return <Button key={id} className="plan-event-row" onClick={() => { setEventDetailId(id); setEventModalOpen(true); }}>
                   <Text>{event?.displayName ?? "事件资料暂不可用"}</Text>
                   <Text className="type-caption">{event ? `峰值参考 ${event.peakDate}` : id}</Text>
                 </Button>;
@@ -1217,20 +1211,16 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 const event = eventCatalog.find(item => item.occurrenceId === id);
                 return <View key={id} className="plan-event-selection">
                   <View><Text>{event?.displayName ?? "事件资料暂不可用"}</Text><Text className="type-caption">{event ? `峰值参考 ${event.peakDate}` : id}</Text></View>
-                  <SoftButton disabled={saving || deleting} label={`移除${event?.displayName ?? "天象事件"}`} onClick={() => {
-                    const next = eventOccurrenceIds.filter(item => item !== id);
-                    retainDraft({ eventOccurrenceIds: next }); setEventOccurrenceIds(next);
-                  }}>移除</SoftButton>
                 </View>;
               })}
               {eventsQuery.isError ? <StatusPanel state="ERROR" detail="事件目录暂不可用；已选择的事件标识仍保留。" recoveryLabel="重试" onRecover={() => void eventsQuery.refetch()} /> : null}
               <SoftButton className="plan-event-picker" disabled={saving || deleting} label="打开天象事件目录" onClick={() => {
                 retainDraft({ eventOccurrenceIds });
-                void Taro.navigateTo({ url: `/content/event/list/index?returnTarget=${encodeURIComponent(eventReturnTarget)}${activePlanId ? `&planId=${encodeURIComponent(activePlanId)}` : ""}` })
-                  .catch(() => announce("warning", "事件目录暂未打开", "计划草稿已保留，请重试。"));
+                setEventDetailId(null);
+                setEventModalOpen(true);
               }}>{eventOccurrenceIds.length ? `已关联 ${eventOccurrenceIds.length} 个 ›` : "选择事件 ›"}</SoftButton>
             </View>
-            <Text className="plan-form-footnote">事件目录只提供年度参考；本地可见性仍需结合地点和时间计算。</Text>
+            <Text className="plan-form-footnote">事件目录只提供年度参考；历史多关联会原样保留，确认新选择或清除后改为最多一个。</Text>
             <View className="plan-editor-form__heading">
               <Text className="type-section">自己的提醒清单</Text>
             </View>

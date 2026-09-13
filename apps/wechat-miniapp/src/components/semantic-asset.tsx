@@ -1,7 +1,7 @@
 import { Image, View } from "@tarojs/components";
+import Taro from "@tarojs/taro";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { useAppStore } from "@/state/app-store";
-import "./semantic-asset.scss";
 
 export type SemanticAssetSubject =
   | "four-point-star"
@@ -44,7 +44,36 @@ export type SemanticIconName =
   | "sun"
   | "clock"
   | "moon"
+  | "meteor"
+  | "terrain"
   | "star";
+
+export type SemanticIconState = "default" | "selected" | "draft" | "pending";
+
+const B_ICON_ID: Record<SemanticIconName, string> = {
+  settings: "settings", pencil: "pencil", "account-user": "account-user",
+  "arrow-left": "arrow-left", search: "search", filter: "filter",
+  "chevron-right": "chevron-right", "chevron-down": "chevron-down",
+  "chevron-up": "chevron-up", close: "close", location: "location",
+  layers: "layers", refresh: "refresh", conditions: "low-cloud", info: "info",
+  compass: "compass", horizon: "horizon", undo: "undo", check: "check",
+  download: "download", share: "share", eye: "eye", bulb: "bulb",
+  cloud: "cloud", trash: "trash", "wifi-off": "wifi-off", images: "images",
+  sun: "sun", clock: "clock", moon: "moon", meteor: "meteor",
+  terrain: "terrain", star: "four-point-star",
+};
+
+function packageAssetPrefix() {
+  const route = Taro.getCurrentPages().at(-1)?.route ?? "";
+  if (route.startsWith("content/")) return "/content";
+  if (route.startsWith("spot/")) return "/spot";
+  if (route.startsWith("sky/")) return "/sky";
+  return "";
+}
+
+export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState = "default") {
+  return `${packageAssetPrefix()}/assets/b-icons/${B_ICON_ID[name]}--day--${state}.png`;
+}
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   settings: "/assets/icons/settings.svg",
@@ -99,13 +128,27 @@ export function SemanticIcon({
   label,
   decorative = true,
   className = "",
+  state = "default",
 }: {
   name: SemanticIconName;
   label?: string;
   decorative?: boolean;
   className?: string;
+  state?: SemanticIconState;
 }) {
   const mode = useAppStore((state) => state.mode);
+  if (mode === "DAY") {
+    return (
+      <Image
+        className={`semantic-icon semantic-icon--b semantic-icon--${name} ${className}`}
+        src={adoptedBIconPath(name, state)}
+        mode="aspectFit"
+        {...(decorative
+          ? { "aria-hidden": true }
+          : { role: "img", "aria-label": label ?? name })}
+      />
+    );
+  }
   const source = name === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[name];
   if (name === "arrow-left") {
     return (
@@ -118,9 +161,7 @@ export function SemanticIcon({
         {mode !== "OBSERVATION" ? <Image
           className="semantic-icon__arrow-source"
           src={
-            mode === "DAY"
-              ? "/assets/icons/arrow-left.png"
-              : "/assets/icons/arrow-left-light.png"
+            "/assets/icons/arrow-left-light.png"
           }
           mode="aspectFit"
           aria-hidden

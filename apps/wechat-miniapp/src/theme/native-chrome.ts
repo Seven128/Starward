@@ -31,13 +31,13 @@ export async function syncNativeChrome(mode: DisplayMode) {
     await Promise.all([
       Taro.setTabBarItem({
         index: 0,
-        iconPath: `assets/icons/tab-map${theme.suffix}.png`,
-        selectedIconPath: `assets/icons/tab-map-selected${theme.suffix}.png`,
+        iconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/map--day--default.png" : `assets/icons/tab-map${theme.suffix}.png`,
+        selectedIconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/map--day--selected.png" : `assets/icons/tab-map-selected${theme.suffix}.png`,
       }),
       Taro.setTabBarItem({
         index: 1,
-        iconPath: `assets/icons/tab-my${theme.suffix}.png`,
-        selectedIconPath: `assets/icons/tab-my-selected${theme.suffix}.png`,
+        iconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/account-user--day--default.png" : `assets/icons/tab-my${theme.suffix}.png`,
+        selectedIconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/account-user--day--selected.png" : `assets/icons/tab-my-selected${theme.suffix}.png`,
       }),
     ]).catch((error: unknown) => {
       // Native dispatch can outlive the route check above when navigation wins

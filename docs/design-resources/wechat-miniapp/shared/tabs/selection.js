@@ -1,0 +1,2 @@
+// Shared visual anatomy for Tabs and same-document chapter navigation; no new state owner.
+window.StarwardTabs={prepare(root,items,labels){root.classList.add('starward-tabs');items.forEach((item,i)=>{const label=document.createElement('span');label.className='starward-tab-label';label.textContent=labels[i];label.style.setProperty('font-size','13px','important');label.style.setProperty('font-weight','400','important');item.replaceChildren(label);});}};

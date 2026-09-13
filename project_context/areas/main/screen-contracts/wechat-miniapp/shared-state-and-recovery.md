@@ -2,6 +2,35 @@
 
 This on-demand subdomain node normatively continues shared manipulation, accessibility, Settings, import, notification and recovery invariants across Mini Program Surfaces.
 
+## Shared icon resource
+
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md" -->
+
+2026-09-13用户采用[最新B行256px图标](../../../../../docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md)中已核对的71份日间资源（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态）；selected经本地合成保留default主体像素，仅添加独立光线。这个共享家族已由`apps/wechat-miniapp/src/components/semantic-asset.tsx`及地图marker/原生Tab责任迁移到Map/Search、观星点信息、Sky控件、My/Settings、计划/事件、贡献/反馈等真实DAY消费者；不按页面另起素材映射。微信包从256px唯一母版生成保持完整画布与RGBA的224px页面派生和192px原生Tab派生，满足主包及单图限制；状态、数据和交互仍留在原组件owner。允许已有语义的尺寸/状态变体，不能混淆普通地点针与正式观星点针、静态流星与想去动画分件、月亮入口与真实月相。NIGHT/OBSERVATION未提供B主题资源，继续使用原合法主题且不伪装齐全；44px命中区、焦点、按压、选中语义与现有动效不被图标材质覆盖。真实月相照明图、时间尺月相、地形科学图、系统状态栏/微信胶囊和控件勾选几何保留数据/平台责任，不拿静态月亮或装饰PNG替代。当前消费者和验证边界见[图标应用检查](../../../../../docs/design-resources/wechat-miniapp/shared/icons/application-review.md)。
+
+## Shared Tab selection feedback
+
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/tabs/README.md" -->
+
+本轮公共Tab与下方共享事件Modal的最终完整增量资源已于2026-09-13获用户确认采用。生产已由`SelectionTabs`和`AstronomicalEventModal`统一承载并迁移现有消费者；模拟器覆盖两种Modal模式及Tab消费者，Android WEAPP已实测Map浏览、list/detail两级系统Back与关闭恢复。iOS、物理平板、减少动态效果、快速反向/重开和前后台生命周期仍需对应真实运行证据。Stitch精确参考、当前源与本轮废案清理见[同步记录](../../../../../docs/design-resources/wechat-miniapp/shared/astronomical-event-modal/stitch-sync.md)。
+
+用户明确此为公共Tab规则：所有同家族消费者同组基础字号一致，active项轻微放大，上一项同步缩回，快速切换从当前视觉接管。文字缩放不改变命中区、相邻项布局与指示器中心；减少动态效果直接切换。公共资源由[Tabs](../../../../../docs/design-resources/wechat-miniapp/shared/tabs/README.md)维护统一文字结构及动效，现消费者为观星点章节导航（含Plan中的同组件）与地图新增/反馈表单章节导航。滚动定位/路由/选中/焦点仍归各消费者owner，公共层只消费aria-current/aria-selected；章节继续是同文档导航。后续生产实现复用公共Tab/章节文字反馈，不能各页复制字号逻辑；筛选、多选、三态模式和主路由导航不自动归入本家族。
+
+## Shared astronomical-event modal
+
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/events/ADOPTED.md" -->
+
+2026-09-13用户要求天文事件从独立列表/详情路由改为一个大型modal，供地图与观星计划共用。具体外壳、卡片及状态资源由[事件唯一入口](../../../../../docs/design-resources/wechat-miniapp/events/ADOPTED.md)维护；地图入口和计划数据责任仍属于[Map/Plan owner](map-and-finder.md)。这是同一个产品组件的两种mode，不能按入口复制两套列表、详情或事件查询。
+
+- `astronomical-event-modal`的模式为`browse | select-one`，内容层为`list | detail(occurrenceId)`。地图小流星入口始终browse：无radio、选中标记、确认、关联/加入计划动作，也不为浏览查询私人计划关系。计划选择入口为select-one，最多一个暂存occurrenceId，允许清除为无事件。
+- 两模式卡片主体均进入详情；select-one另有明确的单选控件和独立44px热区，避免点击卡片查看资料时意外选中。详情的“选择此事件”暂存该ID并回列表，最后“确认选择”才写回调用者计划草稿；radio、清除及查看详情均不保存计划。列表/详情共享同一临时选择，不按月份或筛选保存多个选中项。
+- 外壳进入采用淡入配合轻微放大，退出反向淡出缩小，遮罩同步。当前资源进入240ms、退出180ms、缩放.97→1，减少动态效果移除缩放/位移并即时完成。关闭完成前保留遮罩、焦点与返回拦截；快速关闭/重开接管当前视觉，过期完成回调不能关闭新会话，确认不能重复提交。此责任同时覆盖browse和select-one，不改变下方页面或计划草稿。
+- 列表向左退出、详情由右进入；返回反向。固定modal外壳、标题栏/关闭位置及调用者背景保持稳定，详情拥有自己的竖向滚动，列表仍保留月份、筛选、滚动位置和原卡片焦点。切换是内部视图变换，不刷新页面、不navigateTo、不重挂整个modal，也不把所有详情叠成多个弹窗。快速返回/改选接管当前过渡，不排队；减少动态效果用短淡化/即时切换。
+- 详情的标题栏返回、系统Back/支持的平台返回手势先回列表；在列表时才关闭modal。右上关闭和有效遮罩点击从任何内页关闭整个modal并取消未确认选择。焦点/触控/无障碍限制在当前可交互层；关闭后恢复实际触发控件及底层位置，不能穿透点击地图或关闭底层计划。支持可见按钮作为手势替代。
+- 手机使用避开微信胶囊、安全区的大尺寸弹窗，保留少量外侧留白；平板限制阅读宽度、居中并保持卡片单列，不机械放大字体/图标。头部固定，内容滚动，select-one确认区固定在弹窗内安全区。默认不以整块内容拖拽关闭，避免与卡片竖向滚动争抢。
+- 打开地图modal时保持物理Map、相机、选点、观察时间和原bottomPresentation，临时屏蔽底层操作；关闭原样恢复。它是route-owned modal覆盖层，不是新的BottomSheet extent，也不新增第五种地图底部内容。计划同理保持未保存表单和观察时段。账户/计划owner改变时取消旧选择会话，晚响应不能写入另一账户/计划或重开弹窗。
+- 事件目录、详情和地点投影分别保留loading/error/partial/stale/unavailable/真实空结果；进入详情先显示选定身份再加载，不闪回上一事件的资料。网络失败保留列表及可返回路径，失败/未获取不冒充无事件。详情查询使用modal-local上下文副本，不能更改地图的全局日期/地点或计划既定安排。太阳事件安全说明继续适用。
+
 ## Shared observation-time resource
 
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/observation-time/README.md" -->
@@ -35,7 +64,7 @@ The [shared date/calendar/ruler resource](../../../../../docs/design-resources/w
 ## Responsive, Density, Motion And Accessibility Contract
 
 - Current scope is standard font at 320/375/390/430 logical-pixel widths and applicable safe areas; large-font/200% work is paused by the owner. DESIGN.md owns exact typography, geometry and token conversion, and information-design.md owns density methods. Visible surfaces may be compact while actionable hit areas remain at least 44 logical pixels; 88rpx is not equivalent across widths. Do not shrink text or enlarge every content row to achieve either density or hit-target compliance.
-- Map contains only its floating Search entry, map controls and the single current bottom presentation. Search activation keeps the field's exact visual geometry and rendered text stationary while compact suggestions/filter/results reveal beneath it. The panel retains one objective document tree across small, medium and large, using extent only as a crop; valid media is pulled out first during medium-to-large, then Search/location/layer chrome fades only near the screen top. The compact white handle/title band sits after any valid site media and scrolls away with the document. There is no fixed replacement handle after scrolling. Basic-information/astronomy use one lightweight chapter navigation that appears only at the astronomy boundary to locate the same document; the lower action pill uses the smaller current geometry. Ordinary unavailable values display `暂无数据` without collapsing distinct recovery states.
+- Map contains only its floating Search entry, map controls and the single current bottom presentation. Search activation keeps the field's exact visual geometry and rendered text stationary while compact suggestions/filter/results reveal beneath it. The panel retains one objective document tree across small, medium and large, using extent only as a crop; valid media is pulled out first during medium-to-large, then Search/location/layer chrome fades only near the screen top. The compact white handle/title band sits after any valid site media and scrolls away with the document. There is no fixed replacement handle after scrolling. Basic-information/terrain/astronomy use one lightweight chapter navigation that appears at the terrain boundary to locate the same document; the lower action pill uses the smaller current geometry. Ordinary unavailable values display `暂无数据` without collapsing distinct recovery states.
 - Every actionable control has a programmatic name/role/state and non-color feedback. `spot-search-filter-choice` uses a compact visible capsule inside the stable DESIGN-defined hit region of at least 44 logical pixels. Prefix icon and label remain in ordinary flow; selected fill/boundary, ornament and checked state do not move text or change geometry. The adopted daytime Search resource supplies the small star and blue selected treatment; the previous large overlapping pale-yellow ornament applies only to unrepresented themes. Selection and deselection start from live presentation, with short opacity/color changes under reduced motion. The horizontal strip and filter sheet share the single committed owner and terminal-choice semantics; the sheet-local draft, confirm/cancel and focus return follow [Map and Search](map-and-finder.md). Observation retains its existing geometry and maps every role into the closed warm-red palette rather than preserving yellow.
 - Every mobile scroll owner hides vertical and horizontal scrollbar chrome without disabling touch, wheel, keyboard, programmatic or screen-reader reachability. Page-level horizontal scrolling is forbidden except an explicitly owned row, matrix or curved time ruler. The ruler is raised, has no visible arrow controls, retains the DESIGN-defined manipulation lane, and must translate its real track under horizontal touch/pointer drag before snapping to a real cadence slice. Programmatic step alternatives remain available without arrow chrome.
 - Contribution uses the same density hierarchy: simple fields use compact divider-backed label/value rows with appropriate interactive hit areas; complex fields use top-label groups, and long content reflows without clipping. The only persistent spacing is between real groups; helper/error text, upload recovery and location/rights explanations exist only when applicable and never reserve empty height. Media reduces from three to two columns where needed, the keyboard cannot cover the focused field or sole submit, and page-level horizontal scrolling remains forbidden.
