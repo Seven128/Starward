@@ -6,7 +6,7 @@ on:
       mode:
         description: Fixed read-only check
         type: choice
-        options: [host, runtime]
+        options: [host, runtime, providers]
         default: host
         required: true
 

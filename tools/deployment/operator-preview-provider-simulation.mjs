@@ -41,8 +41,10 @@ const context = await contexts.resolve({
   location: { kind: "FORMAL_SPOT", spotId: TEST_PUBLISHED_SPOT.spotId },
   localDate,
 });
+const weatherPort = createWeatherPort(config);
+let providerEvidence;
 const report = await new AstronomyService(
-  createWeatherPort(config),
+  { key: weatherPort.key, async getHourly(input) { providerEvidence = await weatherPort.getHourly(input); return providerEvidence; } },
   repository,
   config,
 ).compute(context);
@@ -65,7 +67,14 @@ process.stdout.write(JSON.stringify({
   evidenceScope: "ISOLATED_TEST_SIMULATION",
   productPopulation: "FORMAL_POPULATION_MISSING",
   hourlyCount: report.data.hourly.length,
+  composedTotalCloudHours: providerEvidence?.value?.filter(hour => typeof hour.cloudPercent === "number" && Number.isFinite(hour.cloudPercent)).length ?? 0,
   weather: { provider: weather.provider, state: weather.state },
   astronomy: { provider: astronomy.provider, state: astronomy.state },
+  openMeteo: {
+    state: providerEvidence?.sources.find(source => source.provider === "Open-Meteo")?.state ?? "UNAVAILABLE",
+    modelCount: providerEvidence?.modelRuns.filter(run => run.provider === "Open-Meteo" && ["FRESH", "PARTIAL", "STALE_USABLE"].includes(run.state)).length ?? 0,
+    layeredCloudHours: providerEvidence?.value?.filter(hour => [hour.lowCloudPercent, hour.midCloudPercent, hour.highCloudPercent].every(value => typeof value === "number" && Number.isFinite(value))).length ?? 0,
+  },
+  alerts: { state: providerEvidence?.warningState ?? "UNAVAILABLE", count: providerEvidence?.alerts.length ?? 0 },
 }) + "\n");
 `;

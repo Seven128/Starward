@@ -1,3 +1,5 @@
+import { operatorPreviewProviderSimulationProgram } from "./operator-preview-provider-simulation.mjs";
+
 // Fixed staging API inspection. This function is sent over SSH stdin, then Docker
 // stdin, and runs as the existing API container's node user. It writes no files.
 export async function apiRuntimeProbe(env = process.env, load = (name) => import(name), request = fetch) {
@@ -65,7 +67,9 @@ export async function apiRuntimeProbe(env = process.env, load = (name) => import
   return report;
 }
 
-export const runtimeScript = `#!/bin/sh
+function stagingApiScript(program) {
+  if (program.includes("STARWARD_FIXED_RUNTIME_PROBE")) throw new Error("diagnostic_program_delimiter_invalid");
+  return `#!/bin/sh
 set -eu
 fail() { printf '%s\\n' "$1" >&2; exit 65; }
 container=$(docker ps -q --filter label=com.docker.compose.project=starward-staging --filter label=com.docker.compose.service=api) || fail runtime_diagnostic_container_unavailable
@@ -73,9 +77,36 @@ case "$container" in ''|*[!a-f0-9]*) fail runtime_diagnostic_container_ambiguous
 identity=$(docker inspect --format '{{.Config.User}}|{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.service"}}|{{.State.Running}}' "$container") || fail runtime_diagnostic_identity_failed
 [ "$identity" = 'node|starward-staging|api|true' ] || fail runtime_diagnostic_identity_mismatch
 docker exec -i "$container" node --conditions=production --input-type=module <<'STARWARD_FIXED_RUNTIME_PROBE'
-(${apiRuntimeProbe.toString()})().then(report => console.log(JSON.stringify(report))).catch(() => { console.log('{"status":"failed"}'); process.exitCode=1; });
+${program}
 STARWARD_FIXED_RUNTIME_PROBE
 `;
+}
+
+export const runtimeScript = stagingApiScript(`(${apiRuntimeProbe.toString()})().then(report => console.log(JSON.stringify(report))).catch(() => { console.log('{"status":"failed"}'); process.exitCode=1; });`);
+
+// Reuse the existing operator-preview program only after a current read-only
+// observation proves that this is its expressly supported empty-population lane.
+export const providerScript = stagingApiScript(`
+const observation = await (${apiRuntimeProbe.toString()})();
+if (observation.runtimeEnvironment !== 'staging' || observation.databaseState !== 'ready' || observation.configState !== 'ready' || observation.healthStatus !== 200 || observation.spotsQualifiedNonFixture !== 0) throw new Error('diagnostic_simulation_lane_invalid');
+process.env.STARWARD_PROVIDER_SMOKE_LOCAL_DATE = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+${operatorPreviewProviderSimulationProgram}
+`);
+
+export function sanitizeProviderSimulationReport(report) {
+  if (report?.status !== "passed" || report.evidenceScope !== "ISOLATED_TEST_SIMULATION" || report.productPopulation !== "FORMAL_POPULATION_MISSING" ||
+      !Number.isInteger(report.hourlyCount) || report.hourlyCount < 1 || report.hourlyCount > 384 ||
+      report.weather?.provider !== "和风天气" || !["FRESH", "PARTIAL", "STALE_USABLE"].includes(report.weather.state) ||
+      report.astronomy?.provider !== "Astronomy Engine" || report.astronomy.state !== "FRESH" ||
+      !["FRESH", "PARTIAL", "STALE_USABLE", "EXPIRED", "UNAVAILABLE", "ESTIMATED"].includes(report.openMeteo?.state) ||
+      !["FRESH", "PARTIAL", "STALE_USABLE", "EXPIRED", "UNAVAILABLE", "ESTIMATED"].includes(report.alerts?.state) ||
+      ![report.composedTotalCloudHours, report.openMeteo?.modelCount, report.openMeteo?.layeredCloudHours, report.alerts?.count].every(count => Number.isSafeInteger(count) && count >= 0 && count <= 1000)) throw new Error("diagnostic_simulation_response_invalid");
+  return { status: "passed", evidenceScope: "ISOLATED_TEST_SIMULATION", productPopulation: "FORMAL_POPULATION_MISSING", hourlyCount: report.hourlyCount,
+    composedTotalCloudHours: report.composedTotalCloudHours,
+    weather: { provider: "和风天气", state: report.weather.state }, astronomy: { provider: "Astronomy Engine", state: "FRESH" },
+    openMeteo: { state: report.openMeteo.state, modelCount: report.openMeteo.modelCount, layeredCloudHours: report.openMeteo.layeredCloudHours },
+    alerts: { state: report.alerts.state, count: report.alerts.count } };
+}
 
 const enums = {
   status: ["observed"], runtimeEnvironment: ["staging", "invalid"], configState: ["ready", "failed"], databaseState: ["ready", "failed"],
