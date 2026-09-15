@@ -6,7 +6,7 @@ test("public astronomical event reads expose the reviewed catalog without invent
   const service = createTestMiniappService();
   try {
     const list = service.getAstronomicalEvents();
-    assert.equal(list.data.coverage, "REVIEWED_2026_METEOR_AND_ECLIPSE_EVENTS");
+    assert.equal(list.data.coverage, "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES");
     assert.ok(list.data.events.length > 0);
     assert.equal(list.data.events.filter(event => event.kind === "LUNAR_ECLIPSE").length, 2);
     assert.equal(list.data.events.filter(event => event.kind === "SOLAR_ECLIPSE").length, 2);

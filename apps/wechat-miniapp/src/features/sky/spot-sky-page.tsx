@@ -1,3 +1,6 @@
+import { WeatherAlerts } from "@/components/weather-alerts";
+import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
+import { productSourceNames } from "@/utils/source-presentation";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, {
   useDidHide,
@@ -8,6 +11,8 @@ import Taro, {
 } from "@tarojs/taro";
 import { Button, Canvas, ScrollView, Text, View } from "@tarojs/components";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createSkyContextSession } from "./sky-context-session";
+import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import {
   type DisplayMode,
@@ -51,29 +56,22 @@ import {
   type AcceptanceSkySceneInspectionOwner,
 } from "@/services/acceptance-diagnostics";
 import { useAppStore } from "@/state/app-store";
+import { useSkyOrientation } from "./use-sky-orientation";
 import {
-  type DeviceMotionEvent,
-  createCompassLifecycle,
-} from "./compass-lifecycle";
-import {
-  calibrateSkyHeadingOffset,
-  createSkyViewBasis,
   projectSkyDirection,
-  resolveSkyHeading,
+  type SkyViewBasis,
 } from "./sky-view-projection";
+import type { DeviceOrientationFrame } from "./device-orientation-view";
+import { dragSkyView, INITIAL_MANUAL_SKY_VIEW } from "./sky-manual-view";
 import { exactSkyTimeFrame } from "./sky-time-frame";
-import { createPoseFramePublisher, createSkyCanvasLifecycle } from "./sky-canvas-lifecycle";
+import { createSkyCanvasLifecycle } from "./sky-canvas-lifecycle";
 import {
   isUnambiguousTapGesture,
   pickPaintedSkyObjects,
   type PaintedSkyObject,
   type SkyPickSnapshot,
 } from "./sky-object-picking";
-import {
-  deepSkyImageFieldDegrees,
-  deepSkyImageLevelForFov,
-  pinchFieldOfView,
-} from "./sky-zoom";
+import { deepSkyImageLevelForFov, pinchFieldOfView } from "./sky-zoom";
 import {
   startDeepSkyImageRequest,
   type DeepSkyImageAsset,
@@ -86,10 +84,12 @@ const CANVAS_ID = "spot-night-sky-scene";
 const SKY_VERTICAL_FOV_DEG = 45;
 
 interface SkyCanvasFrame {
+  orientationRevision: number;
   data: SkyReport | undefined;
   frameAt: string | undefined;
   heading: number | null;
   pose: DevicePose | null;
+  manualBasis: SkyViewBasis | null;
   mode: DisplayMode;
   verticalFovDeg: number;
   deepSkyImage: SkyCanvasImageAsset | null;
@@ -384,9 +384,7 @@ function SkyTargetInformation({
   onClose: () => void;
 }) {
   const altitude = target.altitudeDeg === null ? "暂无数据" : `${target.altitudeDeg}°`;
-  const source = [target.source.provider, target.source.title]
-    .filter(Boolean)
-    .join(" · ");
+  const source = productSourceNames([target.source]);
   return (
     <View className="sky-object-modal" data-control="sky-object-modal">
       <Button
@@ -426,7 +424,7 @@ function SkyTargetInformation({
           <Text className="sky-object-modal__limitation">
             方位与仰角属于上述地点和时刻；现场山体、建筑、云层与光害可能遮挡。
           </Text>
-          <Text className="sky-object-modal__source">来源 · {source || "暂无可用来源说明"}</Text>
+          {source ? <Text className="sky-object-modal__source">来源 · {source}</Text> : null}
         </ScrollView>
       </View>
     </View>
@@ -444,6 +442,7 @@ function SkyCatalogInformation({
   knownKind: PaintedSkyObject["kind"];
   onClose: () => void;
 }) {
+  const notify = useAppStore((state) => state.notify);
   const information = useResourceQuery({
     queryKey: ["celestial-object-information", reference, "zh-CN"],
     queryFn: (signal) => getCelestialObjectInformation(reference, signal),
@@ -453,6 +452,13 @@ function SkyCatalogInformation({
   const title = data?.displayName ?? knownName;
   const resolvedKind = data?.kind ?? knownKind;
   const kindLabel = resolvedKind === "GALAXY" ? "星系" : resolvedKind === "NEBULA" ? "星云" : resolvedKind === "PLANET" ? "行星" : "恒星";
+  const failed = information.isError || Boolean(information.refreshError) ||
+    information.data?.dataState === "STALE_USABLE" || information.data?.dataState === "UNAVAILABLE";
+  useEffect(() => {
+    if (!failed) return;
+    notify({ owner: "spot-night", placement: "floating", tone: "info", title: "天体资料数据异常",
+      body: `${title}的资料暂时无法完整读取，可在信息面板中重试。`, dedupeKey: `sky-object-information:${reference}` });
+  }, [failed, notify, reference, title]);
   return (
     <View className="sky-object-modal" data-control="sky-object-modal" data-object-reference={reference}>
       <Button className="sky-object-modal__backdrop" ariaLabel="关闭天体信息" onClick={onClose} />
@@ -469,7 +475,7 @@ function SkyCatalogInformation({
         <ScrollView scrollY enhanced type="custom" showScrollbar={false} className="sky-object-modal__body">
           {information.isPending ? <StatusPanel state="LOADING" detail={`正在读取${title}的资料…`} /> : null}
           {information.isError ? (
-            <StatusPanel state="ERROR" detail={errorMessage(information.error)} recoveryLabel="重试资料" onRecover={() => void information.refetch()} />
+            <StatusPanel state="EMPTY" detail={errorMessage(information.error)} recoveryLabel="重试资料" onRecover={() => void information.refetch()} />
           ) : null}
           {data ? (
             <>
@@ -484,9 +490,9 @@ function SkyCatalogInformation({
                 ))}
               </View>
               {data.limitations.map((limitation) => <Text className="sky-object-modal__limitation" key={limitation}>{limitation}</Text>)}
-              <Text className="sky-object-modal__source">
-                来源 · {data.sources.map((source) => source.provider).join(" · ")}
-              </Text>
+              {productSourceNames(data.sources) ? <Text className="sky-object-modal__source">
+                来源 · {productSourceNames(data.sources)}
+              </Text> : null}
             </>
           ) : null}
         </ScrollView>
@@ -509,45 +515,13 @@ function extractDegrees(direction: string) {
     : null;
 }
 
-type LocalCompassState =
-  | "PERMISSION_REQUIRED"
-  | "DENIED"
-  | "CALIBRATING"
-  | "READY"
-  | "LOW_ACCURACY"
-  | "STALE"
-  | "UNAVAILABLE";
-
 function normalizeDegrees(value: number) {
   return ((value % 360) + 360) % 360;
 }
 
-function compassAccuracyState(
-  accuracy: number | string,
-): Exclude<LocalCompassState, "PERMISSION_REQUIRED" | "DENIED" | "CALIBRATING" | "STALE"> {
-  if (typeof accuracy === "number") {
-    if (!Number.isFinite(accuracy) || accuracy < 0) return "UNAVAILABLE";
-    return accuracy <= 20 ? "READY" : "LOW_ACCURACY";
-  }
-  const normalized = accuracy.toLowerCase();
-  if (normalized === "high" || normalized === "medium") return "READY";
-  if (normalized === "low") return "LOW_ACCURACY";
-  return "UNAVAILABLE";
-}
-
 type CompassAccuracy = number | string | null;
 
-interface CompassTelemetry {
-  accuracy: CompassAccuracy;
-  sampledAt: number | null;
-}
-
-interface DevicePose {
-  alphaDeg: number;
-  betaDeg: number;
-  gammaDeg: number;
-  sampledAt: number;
-}
+type DevicePose = DeviceOrientationFrame;
 
 interface SkyTargetProjection {
   x: number;
@@ -564,9 +538,9 @@ function projectHorizontalPoint(
   width: number,
   height: number,
   verticalFovDeg = SKY_VERTICAL_FOV_DEG,
+  manualBasis: SkyViewBasis | null = null,
 ): SkyTargetProjection | null {
-  if (heading === null || !pose) return null;
-  const basis = createSkyViewBasis(heading, pose.betaDeg, pose.gammaDeg);
+  const basis = manualBasis ?? pose?.basis ?? null;
   return basis
     ? projectSkyDirection(azimuthDeg, altitudeDeg, basis, width, height, verticalFovDeg)
     : null;
@@ -579,6 +553,7 @@ function projectSkyTarget(
   width: number,
   height: number,
   verticalFovDeg = SKY_VERTICAL_FOV_DEG,
+  manualBasis: SkyViewBasis | null = null,
 ): SkyTargetProjection | null {
   const degrees = extractDegrees(target.direction);
   if (degrees === null || target.altitudeDeg === null) return null;
@@ -592,6 +567,7 @@ function projectSkyTarget(
     width,
     height,
     verticalFovDeg,
+    manualBasis,
   );
 }
 
@@ -906,6 +882,7 @@ function drawSkyScene(
   completed?: () => void,
   verticalFovDeg = SKY_VERTICAL_FOV_DEG,
   deepSkyImage: SkyCanvasImageAsset | null = null,
+  manualBasis: SkyViewBasis | null = null,
 ) {
   const palette =
     mode === "OBSERVATION"
@@ -932,9 +909,7 @@ function drawSkyScene(
         };
   context.fillStyle = palette.canvas;
   context.fillRect(0, 0, width, height);
-  const basis = heading !== null && pose
-    ? createSkyViewBasis(heading, pose.betaDeg, pose.gammaDeg)
-    : null;
+  const basis = manualBasis ?? pose?.basis ?? null;
   // Missing pose has no invented North-facing view. Recovery/list semantics
   // remain available outside this canvas until a trusted stream is present.
   if (!data || !basis) {
@@ -958,7 +933,7 @@ function drawSkyScene(
         const scale = deepSkyImage.fieldDegrees / 0.1;
         context.save();
         context.globalAlpha = 0.58;
-        // SkyView JPEGs are north-up/east-left. The two server-projected
+        // Published AllWISE W3 JPEGs are north-up/east-left. The two server-projected
         // tangent samples bind the bitmap to the same camera as stars.
         context.transform(
           -(east.x - center.x) * scale,
@@ -1064,7 +1039,7 @@ function drawSkyScene(
 
   const targetFrame = exactSkyTimeFrame(data.targetFrames, frameAt);
   (targetFrame?.targets ?? []).forEach((target) => {
-    const projection = projectSkyTarget(target, heading, pose, width, height, verticalFovDeg);
+    const projection = projectSkyTarget(target, heading, pose, width, height, verticalFovDeg, manualBasis);
     if (!projection) return;
     const isEvent =
       target.type === "METEOR_SHOWER" ||
@@ -1075,7 +1050,7 @@ function drawSkyScene(
       : isEvent
         ? palette.event
         : palette.target;
-    context.globalAlpha = heading === null ? 0.72 : 1;
+    context.globalAlpha = 1;
     context.fillStyle = mark;
     context.beginPath();
     context.arc(
@@ -1128,7 +1103,7 @@ function ContextError({ onBack }: { onBack: () => void }) {
   return (
     <View className="page-inset sky-context-error">
       <StatusPanel
-        state="ERROR"
+        state="EMPTY"
         detail="观测信息不完整，请返回地图选择观星点，再打开云观星。"
         recoveryLabel="返回地图"
         onRecover={onBack}
@@ -1200,6 +1175,25 @@ export function SpotSkyPage() {
     ],
   );
   const storedContext = useAppStore((state) => state.observationContext);
+  const [pageVisible, setPageVisible] = useState(true);
+  const contextSession = useMemo(
+    () => createSkyContextSession(routeContext.contextId, () => useAppStore.getState()),
+    [routeContext.contextId],
+  );
+  useEffect(() => {
+    contextSession.show();
+    return () => contextSession.hide();
+  }, [contextSession]);
+  useDidHide(() => {
+    contextSession.hide();
+    setPageVisible(false);
+    setTimeSaving(false);
+    setPreviewIndex(null);
+  });
+  useDidShow(() => {
+    contextSession.show();
+    setPageVisible(true);
+  });
   const setObservationContext = useAppStore(
     (state) => state.setObservationContext,
   );
@@ -1216,28 +1210,30 @@ export function SpotSkyPage() {
   const skyLayoutStyle = {
     ...(navigationInsets.safeTop !== undefined ? { "--sky-controls-top": `${navigationInsets.safeTop}px` } : {}),
   } as CSSProperties;
+  const contextLookupEnabled = pageVisible && contextSession.canLookup() &&
+    routeContext.contextId.startsWith("ctx:") && storedContext?.contextId !== routeContext.contextId;
   const contextLookup = useResourceQuery({
     queryKey: ["observation-context", routeContext.contextId],
     queryFn: (signal) =>
       getObservationContext(routeContext.contextId, signal),
-    enabled:
-      routeContext.contextId.startsWith("ctx:") &&
-      storedContext?.contextId !== routeContext.contextId,
+    enabled: contextLookupEnabled,
     staleTime: 30_000,
   });
   const activeContext: ObservationContext | null =
-    storedContext?.contextId === routeContext.contextId
+    storedContext?.contextId === contextSession.contextId
       ? storedContext
-      : (contextLookup.data?.data ?? null);
+      : null;
 
   useEffect(() => {
     if (
-      contextLookup.data?.data &&
-      storedContext?.contextId !== contextLookup.data.data.contextId
+      pageVisible && contextLookup.data?.data &&
+      contextSession.acceptLookup(contextLookup.data.data)
     )
       setObservationContext(contextLookup.data.data);
   }, [
     contextLookup.data?.data,
+    contextSession,
+    pageVisible,
     setObservationContext,
     storedContext?.contextId,
   ]);
@@ -1257,7 +1253,7 @@ export function SpotSkyPage() {
       routeContext.localDate &&
     Boolean(routeContext.dataRevision) &&
     activeContext &&
-    activeContext.contextId === routeContext.contextId &&
+    activeContext.contextId === contextSession.contextId &&
     contextLocationMatches &&
     activeContext.timezone === routeContext.timezone &&
     (activeContext.revision > 1 ||
@@ -1279,7 +1275,7 @@ export function SpotSkyPage() {
         activeContext?.contextId ?? routeContext.contextId,
         signal,
       ),
-    enabled: contextComplete && !proposalRoute,
+    enabled: pageVisible && contextComplete && !proposalRoute,
     staleTime: 30_000,
   });
   const report = useResourceQuery({
@@ -1298,54 +1294,24 @@ export function SpotSkyPage() {
         activeContext?.contextId ?? routeContext.contextId,
         signal,
       ),
-    enabled: contextComplete,
+    enabled: pageVisible && contextComplete,
+    staleTime: 0,
+    refetchInterval: WEATHER_ALERT_REFRESH_MS,
   });
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-  const [compassHeading, setCompassHeading] = useState<number | null>(null);
-  const [compassState, setCompassState] =
-    useState<LocalCompassState>("PERMISSION_REQUIRED");
-  const [compassReason, setCompassReasonState] =
-    useState("允许后仅在本页前台读取设备方向，不记录连续姿态轨迹");
-  const [compassTelemetry, setCompassTelemetry] = useState<CompassTelemetry>({
-    accuracy: null,
-    sampledAt: null,
-  });
+  const [manualBasis, setManualBasis] = useState<SkyViewBasis | null>(null);
+  const manualBasisRef = useRef<SkyViewBasis | null>(null);
+  const [followRequested, setFollowRequested] = useState(false);
+  const orientation = useSkyOrientation();
+  const orientationController = orientation.controller;
+  const { state: compassState, reason: compassReason, telemetry: compassTelemetry,
+    pose: devicePose, alignment } = orientation.snapshot;
+  const alignmentEditing = alignment.mode === "editing";
+  const alignmentRequired = alignment.mode === "needs-alignment";
   const [compassNow, setCompassNow] = useState(() => Date.now());
-  // Keep the reason setter as the single presentation boundary used by the
-  // extracted compass callbacks. The optional telemetry payload lets the
-  // route expose accuracy and sample age without creating a second sensor
-  // owner; old callback tests can continue to provide a one-argument stub.
-  const setCompassReason = useCallback(
-    (reason: string, telemetry?: CompassTelemetry | null) => {
-      setCompassReasonState(reason);
-      if (telemetry === null) {
-        setCompassTelemetry({ accuracy: null, sampledAt: null });
-      } else if (telemetry) {
-        setCompassTelemetry(previous => previous.accuracy === telemetry.accuracy &&
-          Math.floor((previous.sampledAt ?? 0) / 1000) === Math.floor((telemetry.sampledAt ?? 0) / 1000) ? previous : telemetry);
-      }
-    },
-    [],
-  );
-  const compassLifecycle = useMemo(
-    () => createCompassLifecycle(Taro, { requireDeviceMotion: true }),
-    [],
-  );
-  const lastCompassHeadingRef = useRef<number | null>(null);
-  const compassHeadingRef = useRef<number | null>(null);
-  const compassQualityRef = useRef<LocalCompassState | null>(null);
-  const [devicePose, publishDevicePose] = useState<DevicePose | null>(null);
-  const poseFrames = useMemo(() => createPoseFramePublisher<DevicePose>(publishDevicePose), []);
-  const setDevicePose = useCallback((pose: DevicePose | null) => poseFrames.set(pose), [poseFrames]);
-  const devicePoseRef = useRef<DevicePose | null>(null);
-  const motionOffsetRef = useRef<number | null>(null);
-  const compassStaleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-  const motionStaleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-  const compassResumeRef = useRef(false);
+  const startCompass = orientationController.start;
+  const stopCompass = orientationController.stop;
+  const compassLifecycle = orientationController;
   const canvasDrawRevisionRef = useRef(0);
   const paintedSkyObjectsRef = useRef<SkyPickSnapshot | null>(null);
   const canvasNodeRef = useRef<SkyCanvasNode | null>(null);
@@ -1374,21 +1340,30 @@ export function SpotSkyPage() {
       setCanvasNodeRevision((revision) => revision + 1);
       return context;
     },
-    paint: (context, frame, size, done) => drawSkyScene(
-      context, frame.data, frame.frameAt, frame.heading, frame.pose,
-      size.width, size.height, frame.mode,
-      (snapshot) => { paintedSkyObjectsRef.current = snapshot; },
-      done,
-      frame.verticalFovDeg,
-      frame.deepSkyImage,
-    ),
+    paint: (context, frame, size, done) => {
+      // A queued pre-calibration frame must not move the newly locked scene
+      // while React's coalesced presentation is catching up with the control.
+      const live = orientationController.snapshot();
+      const locked = manualBasisRef.current === null &&
+        (frame.orientationRevision !== live.presentationRevision ||
+          live.alignment.mode === "editing" || live.alignment.mode === "needs-alignment");
+      const basis = locked ? live.alignment.view : frame.manualBasis ?? frame.pose?.basis ?? null;
+      drawSkyScene(context, frame.data, frame.frameAt, frame.heading, frame.pose,
+        size.width, size.height, frame.mode,
+        (snapshot) => {
+          paintedSkyObjectsRef.current = snapshot;
+          if (frame.sceneReady) orientation.presented.current = basis;
+        }, done, frame.verticalFovDeg, frame.deepSkyImage, basis);
+    },
     sameScene: (completed, latest) => completed.data === latest.data && completed.frameAt === latest.frameAt &&
       completed.mode === latest.mode && completed.verticalFovDeg === latest.verticalFovDeg &&
       completed.deepSkyImage?.tempFilePath === latest.deepSkyImage?.tempFilePath &&
       completed.owner === latest.owner && completed.inspection.spotId === latest.inspection.spotId,
     presented: (frame, size) => {
       setCanvasSize(previous => previous.width === size.width && previous.height === size.height ? previous : size);
-      if (frame.sceneReady) canvasDrawRevisionRef.current++;
+      if (frame.sceneReady) {
+        canvasDrawRevisionRef.current++;
+      }
       publishAcceptanceSkySceneInspection(frame.owner, { ...frame.inspection, state: frame.sceneReady ? "READY" : "UNAVAILABLE", drawRevision: canvasDrawRevisionRef.current });
       setCanvasError(null);
     },
@@ -1421,7 +1396,14 @@ export function SpotSkyPage() {
     cancelled: boolean;
     pinchStartDistance: number | null;
     pinchStartFov: number;
+    startBasis: SkyViewBasis;
+    dragged: boolean;
+    edge: boolean;
+    startedManual: boolean;
+    startedFollowing: boolean;
+    initialFov: number;
   } | null>(null);
+  const cancelSkyGestureRef = useRef(() => { skyTapRef.current = null; });
 
   const data = report.data?.data;
   const contextMatches = Boolean(
@@ -1465,7 +1447,6 @@ export function SpotSkyPage() {
       asset: {
         reference: selectedDeepSkyEntry.objectRef,
         level: desiredDeepSkyImageLevel,
-        fieldDegrees: deepSkyImageFieldDegrees(selectedDeepSkyEntry.majorAxisArcmin, desiredDeepSkyImageLevel),
         tempFilePath: imagePath,
       },
       url: deepSkyImageUrl(selectedDeepSkyEntry.objectRef, desiredDeepSkyImageLevel),
@@ -1507,6 +1488,12 @@ export function SpotSkyPage() {
       image.onerror = null;
     };
   }, [canvasNodeRevision, deepSkyImageAsset]);
+  useEffect(() => {
+    if (deepSkyImageState !== "ERROR" || !selectedDeepSkyEntry) return;
+    notify({ owner: "spot-night", placement: "floating", tone: "info", title: "深空影像数据异常",
+      body: `${selectedDeepSkyEntry.displayName}的巡天影像暂时无法读取，可在天空图中重试。`,
+      dedupeKey: `deep-sky-image:${selectedDeepSkyEntry.objectRef}` });
+  }, [deepSkyImageState, notify, selectedDeepSkyEntry]);
   const committedAt = activeContext?.selectedAtUtc ?? routeContext.selectedAt;
   const committedRow = exactSkyTimeFrame(reportData?.hourly, committedAt);
   const committedIndex = committedRow
@@ -1529,279 +1516,31 @@ export function SpotSkyPage() {
     [routeContext.timezone],
   );
   const todayCivilDate = dateOptions[7] ?? selectedCivilDate;
-  const sensorHeadingForScene =
-    compassState === "READY" &&
-    compassHeading !== null &&
-    devicePose !== null &&
-    motionOffsetRef.current !== null
-      ? resolveSkyHeading(motionOffsetRef.current, devicePose.alphaDeg)
-      : null;
-
-  const stopCompass = useCallback(() => {
-    if (compassStaleTimerRef.current) {
-      clearTimeout(compassStaleTimerRef.current);
-      compassStaleTimerRef.current = null;
-    }
-    if (motionStaleTimerRef.current) {
-      clearTimeout(motionStaleTimerRef.current);
-      motionStaleTimerRef.current = null;
-    }
-    void compassLifecycle.stop();
-    lastCompassHeadingRef.current = null;
-    compassHeadingRef.current = null;
-    compassQualityRef.current = "PERMISSION_REQUIRED";
-    devicePoseRef.current = null;
-    motionOffsetRef.current = null;
-    setDevicePose(null);
-    setCompassHeading(null);
-    setCompassState("PERMISSION_REQUIRED");
-    setCompassReason(
-      "允许后仅在本页前台读取设备方向，不记录连续姿态轨迹",
-      null,
-    );
-  }, [compassLifecycle, setDevicePose]);
-
-  const startCompass = useCallback(async () => {
-    if (compassLifecycle.active) return;
-    setCompassState("CALIBRATING");
-    compassQualityRef.current = "CALIBRATING";
-    setCompassReason("正在校准设备方向");
-    const motionListener = (event: DeviceMotionEvent) => {
-      const alpha = Number(event.alpha);
-      const beta = Number(event.beta);
-      const gamma = Number(event.gamma);
-      if (
-        !Number.isFinite(alpha) ||
-        !Number.isFinite(beta) ||
-        !Number.isFinite(gamma) ||
-        Math.abs(beta) > Math.PI ||
-        Math.abs(gamma) > Math.PI / 2
-      ) {
-        if (motionStaleTimerRef.current) {
-          clearTimeout(motionStaleTimerRef.current);
-          motionStaleTimerRef.current = null;
-        }
-        compassQualityRef.current = "UNAVAILABLE";
-        devicePoseRef.current = null;
-        motionOffsetRef.current = null;
-        lastCompassHeadingRef.current = null;
-        setDevicePose(null);
-        setCompassHeading(null);
-        setCompassState("UNAVAILABLE");
-        setCompassReason(
-          "设备方向暂不可用，请校准后重试",
-          null,
-        );
-        return;
-      }
-
-      const pose: DevicePose = {
-        alphaDeg: normalizeDegrees((alpha * 180) / Math.PI),
-        betaDeg: (beta * 180) / Math.PI,
-        gammaDeg: (gamma * 180) / Math.PI,
-        sampledAt: Date.now(),
-      };
-      devicePoseRef.current = pose;
-      setDevicePose(pose);
-      if (
-        compassHeadingRef.current !== null &&
-        motionOffsetRef.current === null
-      ) {
-        // Calibrate the device-motion alpha stream against the absolute
-        // compass once per foreground session; subsequent alpha changes are
-        // the continuous orientation signal.
-        motionOffsetRef.current = calibrateSkyHeadingOffset(
-          compassHeadingRef.current, pose.alphaDeg,
-        );
-      }
-      if (compassQualityRef.current === "LOW_ACCURACY") {
-        setCompassState("LOW_ACCURACY");
-      } else if (compassQualityRef.current === "READY") {
-        setCompassState("READY");
-      } else if (
-        compassQualityRef.current === null ||
-        compassQualityRef.current === "PERMISSION_REQUIRED" ||
-        compassQualityRef.current === "CALIBRATING"
-      ) {
-        setCompassState("CALIBRATING");
-      }
-      if (motionStaleTimerRef.current) {
-        clearTimeout(motionStaleTimerRef.current);
-      }
-      motionStaleTimerRef.current = setTimeout(() => {
-        if (!compassLifecycle.isCurrentMotion(motionListener)) return;
-        motionStaleTimerRef.current = null;
-        devicePoseRef.current = null;
-        motionOffsetRef.current = null;
-        lastCompassHeadingRef.current = null;
-        setDevicePose(null);
-        setCompassHeading(null);
-        if (
-          compassQualityRef.current === "UNAVAILABLE" ||
-          compassQualityRef.current === "DENIED"
-        ) return;
-        compassQualityRef.current = "STALE";
-        setCompassState("STALE");
-        setCompassReason("设备姿态数据已暂时中断，请保持方向传感器可用");
-      }, 1500);
-    };
-
-    const listener: Parameters<typeof Taro.onCompassChange>[0] = (event) => {
-      const nextState = compassAccuracyState(event.accuracy);
-      const direction = Number(event.direction);
-      if (
-        nextState === "UNAVAILABLE" ||
-        !Number.isFinite(direction) ||
-        direction < 0 ||
-        direction > 360
-      ) {
-        compassQualityRef.current = "UNAVAILABLE";
-        compassHeadingRef.current = null;
-        lastCompassHeadingRef.current = null;
-        devicePoseRef.current = null;
-        motionOffsetRef.current = null;
-        setDevicePose(null);
-        setCompassState("UNAVAILABLE");
-        setCompassReason(
-          "设备没有提供可信方向，天空图不会伪造目标位置",
-          null,
-        );
-        setCompassHeading(null);
-        if (compassStaleTimerRef.current) {
-          clearTimeout(compassStaleTimerRef.current);
-          compassStaleTimerRef.current = null;
-        }
-        if (motionStaleTimerRef.current) {
-          clearTimeout(motionStaleTimerRef.current);
-          motionStaleTimerRef.current = null;
-        }
-        return;
-      }
-      const normalized = normalizeDegrees(direction);
-      compassQualityRef.current = nextState;
-      compassHeadingRef.current = normalized;
-      if (
-        devicePoseRef.current !== null &&
-        motionOffsetRef.current === null
-      ) {
-        motionOffsetRef.current = calibrateSkyHeadingOffset(
-          normalized, devicePoseRef.current.alphaDeg,
-        );
-      }
-      const previous = lastCompassHeadingRef.current;
-      const delta =
-        previous === null
-          ? 360
-          : Math.min(
-              Math.abs(normalized - previous),
-              360 - Math.abs(normalized - previous),
-            );
-      if (delta >= 1) {
-        lastCompassHeadingRef.current = normalized;
-        setCompassHeading(normalized);
-      }
-      setCompassState(nextState);
-      setCompassReason(
-        nextState === "LOW_ACCURACY"
-          ? "设备方向精度较低，目标列表仍可用"
-          : devicePoseRef.current === null
-            ? "正在读取设备姿态"
-            : "设备方向已连接，天空图随设备朝向更新",
-        {
-          accuracy: event.accuracy,
-          sampledAt: Date.now(),
-        },
-      );
-      if (compassStaleTimerRef.current) {
-        clearTimeout(compassStaleTimerRef.current);
-      }
-      compassStaleTimerRef.current = setTimeout(() => {
-        if (
-          !compassLifecycle.isCurrent(listener) ||
-          !compassLifecycle.isCurrentMotion(motionListener)
-        ) return;
-        compassStaleTimerRef.current = null;
-        compassHeadingRef.current = null;
-        lastCompassHeadingRef.current = null;
-        motionOffsetRef.current = null;
-        devicePoseRef.current = null;
-        setDevicePose(null);
-        setCompassHeading(null);
-        setCompassState("STALE");
-        compassQualityRef.current = "STALE";
-        setCompassReason(
-          "方向数据已暂时中断，请保持设备方向传感器可用",
-        );
-      }, 1500);
-    };
-
-    await compassLifecycle.start(listener, (error) => {
-      if (compassStaleTimerRef.current) {
-        clearTimeout(compassStaleTimerRef.current);
-        compassStaleTimerRef.current = null;
-      }
-      if (motionStaleTimerRef.current) {
-        clearTimeout(motionStaleTimerRef.current);
-        motionStaleTimerRef.current = null;
-      }
-      lastCompassHeadingRef.current = null;
-      compassHeadingRef.current = null;
-      compassQualityRef.current = "UNAVAILABLE";
-      devicePoseRef.current = null;
-      motionOffsetRef.current = null;
-      setDevicePose(null);
-      setCompassHeading(null);
-      const message =
-        error instanceof Error
-          ? error.message.toLowerCase()
-          : error && typeof error === "object" && "errMsg" in error
-            ? String((error as { errMsg?: unknown }).errMsg ?? "").toLowerCase()
-            : String(error ?? "").toLowerCase();
-      const permissionDenied =
-        message.includes("auth") ||
-        message.includes("permission") ||
-        message.includes("deny") ||
-        message.includes("authorize");
-      setCompassState(permissionDenied ? "DENIED" : "UNAVAILABLE");
-      compassQualityRef.current = permissionDenied ? "DENIED" : "UNAVAILABLE";
-      setCompassReason(
-        permissionDenied
-          ? "未获得设备方向权限，天空图不会伪造 heading"
-          : "设备没有可用的方向传感器，目标列表仍可用",
-        null,
-      );
-    }, motionListener);
-  }, [compassLifecycle, setDevicePose]);
-
-  const hasCompassSample = compassTelemetry.sampledAt !== null;
+  const sensorHeadingForScene = devicePose?.headingDeg ?? null;
+  const sensorBasis = devicePose?.basis ?? null;
+  const currentViewBasis = manualBasis ?? sensorBasis;
   useEffect(() => {
-    if (!hasCompassSample) return;
+    if (followRequested && alignment.ready && sensorBasis) {
+      manualBasisRef.current = null;
+      setManualBasis(null);
+      setFollowRequested(false);
+    }
+  }, [followRequested, alignment.ready, sensorBasis]);
+  useEffect(() => {
+    if (compassTelemetry.sampledAt === null && devicePose === null) return;
     const timer = setInterval(() => setCompassNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [hasCompassSample]);
-
-  const hideCompass = useCallback(() => {
-    // Backgrounding tears down native listeners, but preserves an explicit
-    // user intent so the stream can be reacquired on foreground. Route exit
-    // below clears this intent and therefore never restarts unexpectedly.
-    compassResumeRef.current = compassLifecycle.active || compassState === "CALIBRATING";
-    stopCompass();
-  }, [compassLifecycle, compassState, stopCompass]);
-
-  const showCompass = useCallback(() => {
-    if (!compassResumeRef.current) return;
-    compassResumeRef.current = false;
-    void startCompass();
-  }, [startCompass]);
-
-  useEffect(() => {
-    return () => {
-      compassResumeRef.current = false;
-      poseFrames.dispose();
-      canvasLifecycle.dispose();
-      stopCompass();
-    };
-  }, [canvasLifecycle, poseFrames, stopCompass]);
+  }, [compassTelemetry.sampledAt !== null, devicePose !== null]);
+  const hideCompass = orientationController.hide;
+  const showCompass = orientationController.show;
+  const enterManualView = (basis: SkyViewBasis = currentViewBasis ?? INITIAL_MANUAL_SKY_VIEW) => {
+    if (orientationController.snapshot().alignment.mode === "editing") return;
+    setFollowRequested(false);
+    manualBasisRef.current = basis;
+    setManualBasis(basis);
+    orientationController.stopFollowing();
+  };
+  useEffect(() => () => canvasLifecycle.dispose(), [canvasLifecycle]);
 
   useEffect(() => {
     const owner = acquireAcceptanceSkySceneInspection();
@@ -1833,21 +1572,23 @@ export function SpotSkyPage() {
     const owner = skySceneInspectionOwnerRef.current;
     const canvasData = report.data?.dataState === "EXPIRED" || report.data?.dataState === "UNAVAILABLE" || report.isError ? undefined : reportData;
     // Native refs clear synchronously on hide/denial, before React's next commit.
-    const pose = devicePoseRef.current === null ? null : devicePose;
+    const pose = devicePose;
     const heading = pose === null ? null : sensorHeadingForScene;
-    const sceneReady = Boolean(heading !== null && pose !== null && canvasData?.skyScene.state === "AVAILABLE" &&
+    const selectedManualBasis = manualBasisRef.current === null ? null : manualBasis;
+    const sceneReady = Boolean((selectedManualBasis || pose?.basis) && canvasData?.skyScene.state === "AVAILABLE" &&
       canvasFrameInfo.catalog && canvasFrameInfo.targetFrame && canvasFrameInfo.frame?.state === "AVAILABLE" && canvasFrameInfo.frame.points);
     publishAcceptanceSkySceneInspection(owner, { ...canvasFrameInfo.inspection, state: "PENDING", drawRevision: canvasDrawRevisionRef.current });
-    canvasLifecycle.request({ data: canvasData, frameAt: row?.at, heading, pose, mode,
+    canvasLifecycle.request({ orientationRevision: orientation.snapshot.presentationRevision,
+      data: canvasData, frameAt: row?.at, heading, pose, manualBasis: selectedManualBasis, mode,
       verticalFovDeg, deepSkyImage: mode === "OBSERVATION" ? null : canvasDeepSkyImage,
       sceneReady, owner, inspection: canvasFrameInfo.inspection },
-      !canvasData || heading === null || previousCanvasModeRef.current !== mode);
+      !canvasData || (!selectedManualBasis && pose === null) || previousCanvasModeRef.current !== mode);
     previousCanvasModeRef.current = mode;
-  }, [canvasLifecycle, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, sensorHeadingForScene, devicePose, verticalFovDeg, canvasDeepSkyImage]);
+  }, [canvasLifecycle, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, sensorHeadingForScene, sensorBasis, devicePose, manualBasis, verticalFovDeg, canvasDeepSkyImage, orientation.snapshot.presentationRevision]);
 
   useReady(() => { canvasLifecycle.setMounted(Boolean(contextComplete && activeContext)); canvasLifecycle.ready(); draw(); });
   useResize(() => { canvasLifecycle.resize(); draw(); });
-  useDidHide(() => { canvasLifecycle.hide(); hideCompass(); });
+  useDidHide(() => { cancelSkyGestureRef.current(); canvasLifecycle.hide(); hideCompass(); });
   useDidShow(() => { canvasLifecycle.show(); showCompass(); draw(); });
   useEffect(() => {
     canvasLifecycle.setMounted(Boolean(contextComplete && activeContext));
@@ -1860,31 +1601,33 @@ export function SpotSkyPage() {
     setPreviewIndex(null);
     setOrientationObjectListOpen(false);
   }, [committedAt, routeContext.localDate, routeContext.spotId]);
+  useEffect(() => {
+    cancelSkyGestureRef.current();
+  }, [row?.at, canvasSize.width, canvasSize.height, mode, selectedCatalogObject, selectedTargetId, orientationObjectListOpen, datePickerOpen]);
 
   useEffect(() => {
     const dataState = report.data?.dataState;
-    if (!contextComplete || !dataState) return;
+    if (!contextComplete || !pageVisible || report.isFetching) return;
     const base = {
       owner: "spot-night",
-      placement: "inline" as const,
-      dismissible: true,
+      placement: "floating" as const,
     };
-    if (dataState === "UNAVAILABLE" || dataState === "EXPIRED") {
+    if (report.isError || report.refreshError || dataState === "UNAVAILABLE" || dataState === "EXPIRED") {
       notify({
         ...base,
-        tone: "warning",
-        title: "夜空数据不可用",
+        tone: "info",
+        title: "云观星数据异常",
         body: "网络恢复后可重试，观测地点与时刻已保留。",
         dedupeKey: `spot-night-unavailable:${routeContext.spotId}:${routeContext.localDate}`,
       });
-    } else if (dataState !== "FRESH") {
+    } else if (dataState === "STALE_USABLE") {
       notify({
         ...base,
-        tone: "warning",
-        title: "夜空数据需要留意",
+        tone: "info",
+        title: "云观星数据异常",
         body:
           report.data?.warnings.join(" ") ||
-          "当前结果存在陈旧或资料不完整状态，请先查看来源与限制。",
+          "当前显示上次取得的资料，可在页面中重试。",
         dedupeKey: `spot-night-state:${routeContext.spotId}:${routeContext.localDate}:${dataState}`,
       });
     }
@@ -1893,30 +1636,13 @@ export function SpotSkyPage() {
     notify,
     report.data?.dataState,
     report.data?.warnings,
+    report.isError,
+    report.refreshError,
+    report.isFetching,
+    pageVisible,
     routeContext.localDate,
     routeContext.spotId,
   ]);
-
-  useEffect(() => {
-    const activeMaterialAlerts =
-      reportData?.weatherEvidence.alerts.filter(
-        (alert) => alert.status === "ACTIVE" && alert.material,
-      ) ?? [];
-    if (!activeMaterialAlerts.length) return;
-    const first = activeMaterialAlerts[0]!;
-    notify({
-      owner: "spot-night",
-      placement: "inline",
-      tone: "error",
-      title: first.headline,
-      body:
-        activeMaterialAlerts.length === 1
-          ? `${first.description} 当前正式点出行建议已被官方天气预警阻断。`
-          : `${first.description} 另有 ${activeMaterialAlerts.length - 1} 条有效官方预警；当前正式点出行建议已阻断。`,
-      dismissible: false,
-      dedupeKey: `spot-night-alert:${activeMaterialAlerts.map((alert) => alert.id).join(":")}`,
-    });
-  }, [notify, reportData?.weatherEvidence.alerts]);
 
   useEffect(() => {
     if (!canvasError) return;
@@ -1932,7 +1658,7 @@ export function SpotSkyPage() {
   }, [canvasError, notify, routeContext.spotId]);
 
   const commitIndex = async (nextIndex: number) => {
-    if (!reportData?.hourly.length || !activeContext || timeSaving) return;
+    if (orientationController.snapshot().alignment.mode === "editing" || !reportData?.hourly.length || !activeContext || timeSaving) return;
     const safeIndex = clampIndex(nextIndex, reportData.hourly.length);
     const nextRow = reportData.hourly[safeIndex];
     if (!nextRow) return;
@@ -1940,14 +1666,18 @@ export function SpotSkyPage() {
       setPreviewIndex(null);
       return;
     }
+    const request = contextSession.begin(activeContext);
+    if (!request) return;
     setTimeSaving(true);
     try {
       const response = await updateObservationContext(activeContext, {
         selectedAt: nextRow.at,
       });
+      if (!contextSession.accept(request, response.data)) return;
       setObservationContext(response.data);
       setPreviewIndex(null);
     } catch (error) {
+      if (!contextSession.isCurrent(request) || isMiniappRequestCancelled(error)) return;
       setPreviewIndex(null);
       notify({
         owner: "spot-night",
@@ -1959,12 +1689,14 @@ export function SpotSkyPage() {
         dedupeKey: "spot-night-time-update-failed",
       });
     } finally {
-      setTimeSaving(false);
+      if (contextSession.finish(request)) setTimeSaving(false);
     }
   };
 
   const commitCivilDate = async (nextDate: string) => {
-    if (!activeContext || timeSaving || nextDate === selectedCivilDate) return;
+    if (orientationController.snapshot().alignment.mode === "editing" || !activeContext || timeSaving || nextDate === selectedCivilDate) return;
+    const request = contextSession.begin(activeContext);
+    if (!request) return;
     setPreviewIndex(null);
     setTimeSaving(true);
     try {
@@ -1978,9 +1710,11 @@ export function SpotSkyPage() {
         selectedAt: next.selectedAt,
         eventInstanceId: null,
       });
+      if (!contextSession.accept(request, response.data)) return;
       setObservationContext(response.data);
       setDatePickerOpen(false);
     } catch (error) {
+      if (!contextSession.isCurrent(request) || isMiniappRequestCancelled(error)) return;
       notify({
         owner: "spot-night",
         placement: "inline",
@@ -1991,11 +1725,12 @@ export function SpotSkyPage() {
         dedupeKey: "spot-night-date-update-failed",
       });
     } finally {
-      setTimeSaving(false);
+      if (contextSession.finish(request)) setTimeSaving(false);
     }
   };
 
   const onPreview = (value: number) => {
+    if (orientationController.snapshot().alignment.mode === "editing") return;
     if (!reportData?.hourly.length) return;
     setPreviewIndex(clampIndex(value, reportData.hourly.length));
   };
@@ -2022,7 +1757,7 @@ export function SpotSkyPage() {
     );
   };
 
-  if (!activeContext && contextLookup.isPending)
+  if (!activeContext && contextLookupEnabled && contextLookup.isPending)
     return (
       <View
         className={`${presentationClass} sky-orientation-page sky-orientation-state-page`}
@@ -2074,16 +1809,8 @@ export function SpotSkyPage() {
   const spotName = proposalRoute
     ? routeContext.locationName || "审核中观星点"
     : overview.data?.data.spot.name ?? "此观星点";
-  const compassIsReady =
-    compassState === "READY" &&
-    compassHeading !== null &&
-    devicePose !== null &&
-    motionOffsetRef.current !== null;
-  // A compass can report before device-motion delivers its first pose. Keep
-  // the internal compass state for callback compatibility, but present this
-  // combined state as calibrating until both real streams are trustworthy.
-  const orientationSensorState =
-    compassState === "READY" && !compassIsReady ? "CALIBRATING" : compassState;
+  const compassIsReady = alignment.ready && !alignmentRequired && devicePose !== null;
+  const orientationSensorState = compassState;
   const compassRecovery =
     orientationSensorState === "DENIED"
       ? {
@@ -2093,8 +1820,8 @@ export function SpotSkyPage() {
         }
       : orientationSensorState === "UNAVAILABLE"
         ? {
-            title: "设备没有可用方向传感器",
-            detail: "方位投影暂不可用；天体列表继续可用，可重试设备方向。",
+            title: "设备方向暂不可用",
+            detail: "方位投影暂不可用；天体列表与手动视角继续可用，可重试设备方向。",
             action: "重试方向",
           }
         : orientationSensorState === "STALE"
@@ -2105,14 +1832,14 @@ export function SpotSkyPage() {
             }
           : orientationSensorState === "CALIBRATING"
             ? {
-                title: "正在校准设备方向",
-                detail: "保持手机平稳；获得可信方向后才恢复方位投影。",
-                action: "重新校准",
+                title: "正在读取设备方向",
+                detail: compassReason,
+                action: "正在连接",
               }
             : orientationSensorState === "LOW_ACCURACY"
               ? {
                   title: "方向精度较低",
-                  detail: "方位投影已暂停；天体列表继续可用，请重新校准。",
+                  detail: "天空仍跟随手机方向，但方位可能存在偏差；可重新校准。",
                   action: "重新校准",
                 }
               : {
@@ -2125,10 +1852,7 @@ export function SpotSkyPage() {
       stopCompass();
       void Taro.openSetting()
         .catch(() => undefined)
-        .finally(() => {
-          setCompassState("PERMISSION_REQUIRED");
-          setCompassReason("权限设置返回后，可再次允许设备方向");
-        });
+        .finally(() => { /* A new explicit tap retries after returning from settings. */ });
       return;
     }
     stopCompass();
@@ -2151,8 +1875,8 @@ export function SpotSkyPage() {
   const selectedTarget = selectedTargetId
     ? orientationTargets.find((target) => target.targetId === selectedTargetId) ?? null
     : null;
-  const orientationHeading = compassIsReady
-    ? `${Math.round(sensorHeadingForScene ?? compassHeading ?? 0)}°`
+  const orientationHeading = compassIsReady && sensorHeadingForScene !== null
+    ? `${Math.round(sensorHeadingForScene)}°`
     : "未提供";
   const visibleOrientationTargets = orientationTargets.flatMap((target) => {
     const projection = projectSkyTarget(
@@ -2162,6 +1886,7 @@ export function SpotSkyPage() {
       canvasSize.width,
       canvasSize.height,
       verticalFovDeg,
+      manualBasis,
     );
     return projection ? [{ target, projection }] : [];
   });
@@ -2196,19 +1921,19 @@ export function SpotSkyPage() {
     const catalog = reportData?.skyScene.catalog;
     const frame = exactSkyTimeFrame(reportData?.skyScene.frames, row?.at);
     if (!catalog || frame?.state !== "AVAILABLE" || !frame.points ||
-      sensorHeadingForScene === null || !devicePose || canvasSize.width <= 0 || canvasSize.height <= 0)
+      !currentViewBasis || canvasSize.width <= 0 || canvasSize.height <= 0)
       return [];
     const starCandidates: PaintedSkyObject[] = frame.points.flatMap(([catalogIndex, azimuth, altitude]) => {
       const entry = catalog.entries[catalogIndex];
       if (!entry?.displayName || entry.magnitude > 2.5) return [];
-      const projection = projectHorizontalPoint(azimuth, altitude, sensorHeadingForScene, devicePose, canvasSize.width, canvasSize.height, verticalFovDeg);
+      const projection = projectHorizontalPoint(azimuth, altitude, sensorHeadingForScene, devicePose, canvasSize.width, canvasSize.height, verticalFovDeg, manualBasis);
       return projection ? [{ reference: entry.objectRef, displayName: entry.displayName, kind: "STAR" as const, magnitude: entry.magnitude, x: projection.x, y: projection.y }] : [];
     });
     const deepCatalog = reportData?.skyScene.deepSky?.catalog;
     const deepFrame = exactSkyTimeFrame(reportData?.skyScene.deepSky?.frames, row?.at);
     const deepCandidates: PaintedSkyObject[] = !deepCatalog || deepFrame?.state !== "AVAILABLE" || !deepFrame.points ? [] : deepFrame.points.flatMap(([catalogIndex, azimuth, altitude]) => {
       const entry = deepCatalog.entries[catalogIndex];
-      const projection = entry ? projectHorizontalPoint(azimuth, altitude, sensorHeadingForScene, devicePose, canvasSize.width, canvasSize.height, verticalFovDeg) : null;
+      const projection = entry ? projectHorizontalPoint(azimuth, altitude, sensorHeadingForScene, devicePose, canvasSize.width, canvasSize.height, verticalFovDeg, manualBasis) : null;
       return entry && projection ? [{ reference: entry.objectRef, displayName: entry.displayName, kind: entry.kind,
         magnitude: entry.magnitude, x: projection.x, y: projection.y }] : [];
     });
@@ -2282,9 +2007,17 @@ export function SpotSkyPage() {
       activeSkySceneFrame.points,
   );
   const onSkyTouchStart = (event: unknown) => {
+    if (orientationController.snapshot().alignment.mode === "editing" || !skySceneReady || selectedCatalogObject || selectedTargetId || orientationObjectListOpen || datePickerOpen || timeSaving) return;
     const point = skyTouchPoint(event);
     const count = (event as SkyTouchLike).touches?.length ?? 0;
     const pinchDistance = skyTouchDistance(event);
+    if (skyTapRef.current) {
+      skyTapRef.current.maximumTouches = Math.max(count, skyTapRef.current.maximumTouches);
+      if (count > 2) { cancelSkyGestureRef.current(); return; }
+      skyTapRef.current.pinchStartDistance = pinchDistance;
+      skyTapRef.current.pinchStartFov = verticalFovDeg;
+      return;
+    }
     skyTapRef.current = point ? {
       startX: point.x,
       startY: point.y,
@@ -2294,29 +2027,60 @@ export function SpotSkyPage() {
       cancelled: false,
       pinchStartDistance: pinchDistance,
       pinchStartFov: verticalFovDeg,
+      startBasis: currentViewBasis ?? INITIAL_MANUAL_SKY_VIEW,
+      dragged: false,
+      edge: point.x < 16 || point.x > canvasSize.width - 16,
+      startedManual: Boolean(manualBasis),
+      startedFollowing: followRequested || (!manualBasis && (compassLifecycle.active || sensorBasis !== null)),
+      initialFov: verticalFovDeg,
     } : null;
   };
   const onSkyTouchMove = (event: unknown) => {
     const gesture = skyTapRef.current;
     const point = skyTouchPoint(event);
-    if (!gesture || !point) return;
+    if (orientationController.snapshot().alignment.mode === "editing" || !gesture || !point || gesture.edge || gesture.cancelled) return;
     gesture.maximumTouches = Math.max(gesture.maximumTouches, (event as SkyTouchLike).touches?.length ?? 0);
     const pinchDistance = skyTouchDistance(event);
-    if (gesture.pinchStartDistance !== null && pinchDistance !== null) {
+    if (pinchDistance !== null && gesture.pinchStartDistance === null) {
+      gesture.pinchStartDistance = pinchDistance;
+      gesture.pinchStartFov = verticalFovDeg;
+    } else if (gesture.pinchStartDistance !== null && pinchDistance !== null) {
       setVerticalFovDeg(pinchFieldOfView(gesture.pinchStartFov, gesture.pinchStartDistance, pinchDistance));
     }
     gesture.travelPx = Math.max(gesture.travelPx, Math.hypot(point.x - gesture.startX, point.y - gesture.startY));
+    if (gesture.maximumTouches === 1 && gesture.travelPx > 6) {
+      const next = dragSkyView(gesture.startBasis, { x: gesture.startX, y: gesture.startY }, point,
+        canvasSize.width, canvasSize.height, gesture.pinchStartFov);
+      if (!gesture.dragged) { enterManualView(next); gesture.dragged = true; }
+      else { manualBasisRef.current = next; setManualBasis(next); }
+    }
   };
   const onSkyTouchCancel = () => {
-    if (skyTapRef.current) skyTapRef.current.cancelled = true;
+    const gesture = skyTapRef.current;
     skyTapRef.current = null;
+    if (!gesture) return;
+    if (gesture.dragged) {
+      const restored = gesture.startedManual || gesture.startedFollowing ? gesture.startBasis : null;
+      manualBasisRef.current = restored;
+      setManualBasis(restored);
+      if (gesture.startedFollowing) {
+        // Resume the original user intent only with a fresh usable pose.
+        setFollowRequested(true);
+        stopCompass();
+        void startCompass();
+      }
+    }
+    setVerticalFovDeg(gesture.initialFov);
   };
+  cancelSkyGestureRef.current = onSkyTouchCancel;
   const onSkyTouchEnd = (event: unknown) => {
+    if (orientationController.snapshot().alignment.mode === "editing" || (event as SkyTouchLike).touches?.length) return;
     const gesture = skyTapRef.current;
     skyTapRef.current = null;
     const point = skyTouchPoint(event, true);
+    if (gesture && point) gesture.travelPx = Math.max(gesture.travelPx, Math.hypot(point.x - gesture.startX, point.y - gesture.startY));
     const identity = skyPickIdentity(reportData);
-    if (!gesture || !point || !row || !identity.catalogVersion || !isUnambiguousTapGesture(gesture)) return;
+    if (!gesture || gesture.dragged || gesture.edge || !point || !row || !identity.catalogVersion || !isUnambiguousTapGesture(gesture)) return;
     const choices = pickPaintedSkyObjects(paintedSkyObjectsRef.current, {
       x: point.x,
       y: point.y,
@@ -2337,7 +2101,7 @@ export function SpotSkyPage() {
       ? activeSkySceneFrame.points.filter((point) => point[2] > 0).length
       : 0;
   const skySceneAccessibleProvenance = skySceneReady
-    ? `，星表版本 ${reportData?.skyScene.catalog?.catalogVersion ?? "未知"}，场景时刻 ${activeSkySceneFrame?.at ?? "未知"}`
+    ? `，场景时刻 ${activeSkySceneFrame?.at ?? "未知"}`
     : "";
   return (
     <View
@@ -2365,7 +2129,7 @@ export function SpotSkyPage() {
           data-sky-scene-frame-at={activeSkySceneFrame?.at ?? ""}
           role="img"
           aria-busy={orientationDataStatus?.state === "LOADING"}
-          aria-label={`${spotName}的方位高度天空图，垂直视场 ${verticalFovDeg.toFixed(1)} 度，${skySceneReady ? `${skySceneStarCount} 颗真实亮星目录对象` : "真实星表场景不可用"}${skySceneAccessibleProvenance}，${orientationTargetFrame ? `${orientationTargets.length} 个真实目标` : "当前没有可证明天空结果"}，${compassIsReady ? "已使用实时设备姿态" : "当前设备姿态不可用，暂停方位投影"}，当前观测时刻 ${rowTime}`}
+          aria-label={`${spotName}的方位高度天空图，垂直视场 ${verticalFovDeg.toFixed(1)} 度，${skySceneReady ? `${skySceneStarCount} 颗真实亮星目录对象` : "真实星表场景不可用"}${skySceneAccessibleProvenance}，${orientationTargetFrame ? `${orientationTargets.length} 个真实目标` : "当前没有可证明天空结果"}，${manualBasis ? "手动视角，不代表手机朝向" : alignmentEditing ? "画面锁定，正在对齐" : alignmentRequired ? "方向参照中断，保留原视图" : compassIsReady ? "已使用实时设备姿态" : "当前设备姿态不可用，暂停方位投影"}，当前观测时刻 ${rowTime}`}
         >
           <Canvas
             type="2d"
@@ -2393,9 +2157,9 @@ export function SpotSkyPage() {
               ) : deepSkyImageState === "LOADING" ? (
                 <Text>正在载入 {selectedDeepSkyEntry.displayName} 巡天影像…</Text>
               ) : deepSkyImageState === "ERROR" ? (
-                <Button onClick={() => setDeepSkyImageRetry((value) => value + 1)}>影像载入失败 · 重试</Button>
+                <Button onClick={() => { setCanvasDeepSkyImage(null); setDeepSkyImageAsset(null); setDeepSkyImageRetry((value) => value + 1); }}>影像载入失败 · 重试</Button>
               ) : deepSkyImageAsset ? (
-                <Text>NASA SkyView · WISE 12 μm · 处理后红外影像</Text>
+                <Text>NASA/IPAC IRSA · AllWISE W3 12 μm · 处理后红外影像</Text>
               ) : null}
             </View>
           ) : null}
@@ -2462,9 +2226,41 @@ export function SpotSkyPage() {
 
         <View className="sky-orientation-notification" data-od-id="sky-orientation-notification">
           <NotificationRegion owner="spot-night" placement="inline" />
+          <ScrollView scrollY className="sky-weather-alerts" showScrollbar={false}>
+            <WeatherAlerts evidence={reportData?.weatherEvidence} timezone={routeContext.timezone}
+              active={pageVisible && contextComplete} refreshing={report.isFetching} scopeKey={routeContext.spotId}
+              reportHandlesFailure={report.data?.dataState === "UNAVAILABLE" || report.data?.dataState === "EXPIRED"}
+              refreshFailed={Boolean(report.refreshError) || report.data?.dataState === "STALE_USABLE"} onRecover={() => void report.refetch()} />
+          </ScrollView>
         </View>
 
         <OrientationQuietBack onBack={goBack} label="返回" />
+        <View className="sky-view-mode">
+          {manualBasis ? <Text className="type-caption">手动视角</Text> : null}
+          <Button disabled={alignmentEditing} className="sky-view-mode__button focus-ring" aria-label={followRequested ? "取消恢复手机跟随，保留手动视角" : manualBasis ? "恢复手机方向跟随" : "切换手动拖动模式"}
+            onClick={() => {
+              skyTapRef.current = null;
+              if (!manualBasis || followRequested) enterManualView();
+              else { setFollowRequested(true); recoverCompass(); }
+            }}>{followRequested ? "取消跟随" : manualBasis ? "跟随手机" : "拖动模式"}</Button>
+          {manualBasis && followRequested ? <Text className="sky-view-mode__status type-caption">{compassIsReady ? "正在恢复跟随" : `${compassRecovery.title}，保留手动视角`}</Text> : null}
+          {!manualBasis && (alignment.ready || alignmentRequired || alignmentEditing) ? (
+            alignmentEditing ? <>
+              <Text className="sky-view-mode__status type-caption">画面已锁定。移动手机与真实星空对齐后确定。</Text>
+              <Button className="sky-view-mode__button focus-ring" onClick={() => orientationController.cancel()}>取消</Button>
+              <Button className="sky-view-mode__button focus-ring" disabled={!alignment.ready}
+                onClick={() => orientationController.commit()}>确定</Button>
+            </> : <>
+              <Button className="sky-view-mode__button focus-ring"
+                disabled={!alignment.ready || timeSaving || isPreviewing || datePickerOpen || !skySceneReady}
+                onClick={() => { if (contextSession.busy) return; skyTapRef.current = null; orientationController.begin(); }}>重新校准</Button>
+              {alignmentRequired ? <Text className="sky-view-mode__status type-caption">方向参照已中断，保留原视图，请重新校准。</Text> : null}
+              {alignmentRequired && !alignment.ready ? <Button className="sky-view-mode__button focus-ring"
+                onClick={recoverCompass}>重新连接</Button> : null}
+            </>
+          ) : null}
+          {!manualBasis && orientationSensorState === "LOW_ACCURACY" ? <Text className="sky-view-mode__status type-caption">方向精度较低，方位可能存在偏差</Text> : null}
+        </View>
 
         <View
           className={`sky-orientation-sensor sky-orientation-sensor--${orientationSensorState.toLowerCase()}`}
@@ -2500,7 +2296,7 @@ export function SpotSkyPage() {
           </View>
         )}
 
-        {!compassIsReady || orientationObjectListOpen ? (
+        {(!manualBasis && !alignmentRequired && !alignmentEditing && !compassIsReady) || orientationObjectListOpen ? (
         <ScrollView
           scrollY
           enhanced
@@ -2508,7 +2304,7 @@ export function SpotSkyPage() {
           className={`sky-orientation-details sky-orientation-details--${orientationObjectListOpen ? "list" : "recovery"}`}
           aria-label={orientationObjectListOpen ? "天体列表" : "方向状态"}
         >
-        {!compassIsReady && !orientationObjectListOpen ? (
+        {!manualBasis && !alignmentRequired && !alignmentEditing && !compassIsReady && !orientationObjectListOpen ? (
           <View
             className="sky-orientation-recovery"
             data-control="sky-orientation-recovery"
@@ -2540,10 +2336,10 @@ export function SpotSkyPage() {
               <SoftButton
                 variant="ghost"
                 className="sky-orientation-recovery__defer"
-                label="稍后启用方向，先查看天体列表"
-                onClick={() => setOrientationObjectListOpen(true)}
+                label="使用手动拖动查看天空"
+                onClick={() => enterManualView()}
               >
-                稍后
+                手动查看
               </SoftButton>
             </View>
           </View>
@@ -2682,8 +2478,9 @@ export function SpotSkyPage() {
             selectedDate={selectedCivilDate}
             today={todayCivilDate}
             open={datePickerOpen}
-            busy={timeSaving}
+            busy={timeSaving || alignmentEditing}
             onOpenChange={(open) => {
+              if (orientationController.snapshot().alignment.mode === "editing") return;
               if (open) setPreviewIndex(null);
               setDatePickerOpen(open);
             }}
@@ -2695,7 +2492,7 @@ export function SpotSkyPage() {
             committedIndex={committedIndex}
             timezone={routeContext.timezone}
             isPreviewing={isPreviewing}
-            saving={timeSaving}
+            saving={timeSaving || alignmentEditing}
             reducedMotion={reducedMotion}
             onPreview={onPreview}
             onCommit={(index) => void commitIndex(index)}

@@ -1,0 +1,110 @@
+{
+  "target": "https://www.pitravel.cn/plan/journey/7685320728933093603?source=miniapp",
+  "date": "2026-09-14",
+  "timezone": "Asia/Shanghai",
+  "capture": "Connected Chrome; CDP Network events and getResponseBody, loaded-script source inspection. First navigation preceded Network.enable; early event buffers were truncated. After manual login, one browser-cache-disabled refresh captured the successful journey and route responses. Cache setting restored afterwards.",
+  "mapRequestSamples": [
+    {
+      "seq": 563,
+      "event": "Network.requestWillBeSent",
+      "id": "12760.175",
+      "url": "https://webapi.amap.com/maps?[QUERY_VALUES_OMITTED]",
+      "method": "GET",
+      "type": "Script"
+    },
+    {
+      "seq": 755,
+      "event": "Network.responseReceived",
+      "id": "12760.175",
+      "url": "https://webapi.amap.com/maps?[QUERY_VALUES_OMITTED]",
+      "status": 304,
+      "type": "Script",
+      "fromDiskCache": false,
+      "fromServiceWorker": false
+    },
+    {
+      "seq": 763,
+      "event": "Network.requestWillBeSent",
+      "id": "12760.205",
+      "url": "https://restapi.amap.com/v3/log/init?[QUERY_VALUES_OMITTED]",
+      "method": "GET",
+      "type": "Script"
+    },
+    {
+      "seq": 841,
+      "event": "Network.responseReceived",
+      "id": "12760.205",
+      "url": "https://restapi.amap.com/v3/log/init?[QUERY_VALUES_OMITTED]",
+      "status": 200,
+      "type": "Script",
+      "fromDiskCache": false,
+      "fromServiceWorker": false
+    }
+  ],
+  "keyRequests": [
+    {
+      "method": "POST",
+      "url": "https://www.pitravel.cn/api/slytherin/v1/pcweb/journey/detail",
+      "requestId": "12760.690",
+      "body": {
+        "journey_id": "7685320728933093603",
+        "is_map_view": false
+      },
+      "responseEvidence": "E06-journey-points.json"
+    },
+    {
+      "requestId": "12760.738",
+      "timeUTC": "2026-09-14T10:09:33.880Z",
+      "method": "POST",
+      "url": "https://www.pitravel.cn/api/slytherin/v1/web/route",
+      "body": {
+        "routeRequest": [
+          {
+            "originPoiId": "POI_A_顺宝花园",
+            "destinationPoiId": "POI_B_顺峰山公园",
+            "travelType": 0
+          }
+        ],
+        "realTime": 1
+      }
+    },
+    {
+      "requestId": "12760.978",
+      "timeUTC": "2026-09-14T10:11:09.801Z",
+      "method": "POST",
+      "url": "https://www.pitravel.cn/api/slytherin/v1/web/route",
+      "body": {
+        "routeRequest": [
+          {
+            "originPoiId": "POI_A_顺宝花园",
+            "destinationPoiId": "POI_B_顺峰山公园",
+            "travelType": 1
+          },
+          {
+            "originPoiId": "POI_A_顺宝花园",
+            "destinationPoiId": "POI_B_顺峰山公园",
+            "travelType": 2
+          },
+          {
+            "originPoiId": "POI_A_顺宝花园",
+            "destinationPoiId": "POI_B_顺峰山公园",
+            "travelType": 0
+          },
+          {
+            "originPoiId": "POI_A_顺宝花园",
+            "destinationPoiId": "POI_B_顺峰山公园",
+            "travelType": 3
+          }
+        ],
+        "realTime": 1
+      }
+    }
+  ],
+  "limitations": [
+    "Not a complete HAR; unrelated requests deliberately omitted.",
+    "WebSocket event inspection was subject to buffer gaps; absence is not established.",
+    "Cache-disabled refresh does not bypass or disprove server-side caching.",
+    "No full storage/cookie/account export.",
+    "No inference that every script containing AMap.Driving executed for this pair."
+  ]
+}

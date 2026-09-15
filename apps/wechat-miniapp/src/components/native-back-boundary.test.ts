@@ -30,7 +30,7 @@ test("the astronomical event modal keeps its native Back layer outside the visib
   assert.match(modal, /nativeBackBoundary \? <NativeBackBoundary active onBack=\{requestClose\} \/> : null/u);
   assert.doesNotMatch(modal, /<RootPortal>\s*<NativeBackBoundary/u);
   const map = source("../pages/map/index.tsx");
-  assert.match(map, /eventModalOpen \|\| bottomPresentation === "spot-panel"/u);
+  assert.match(map, /eventModalOpen \|\| eventModalPresent \|\| bottomPresentation === "spot-panel"/u);
   assert.match(map, /eventModalRef\.current\?\.back\(\)/u);
   assert.match(map, /nativeBackBoundary=\{false\}/u);
 });

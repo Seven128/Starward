@@ -28,8 +28,8 @@ export async function insertExplicitTestSpot(
     validTo: null,
     state: "FRESH",
     confidence: 1,
-    precision: "仅验证正式数据门禁、事务和恢复；不陈述真实地点事实",
-    limitations: ["只存在于每次创建并销毁的隔离测试数据库"],
+    precision: "隔离测试数据",
+    limitations: [],
   };
   const fixtureDetail = buildTestSpotDetail(TEST_PUBLISHED_SPOT.spotId)!;
   const detail = structuredClone(fixtureDetail);

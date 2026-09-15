@@ -1,4 +1,5 @@
 import { FloatingNotificationHost } from "@/components/notification";
+import { choosePlatformLocation } from "@/services/platform-location";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import type { CSSProperties } from "react";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
@@ -9,7 +10,6 @@ import {
   FILTER_GROUPS,
   FILTER_OPTIONS,
   countAppliedFilters,
-  drivingRangeLabel,
   type DarkSkyCandidateRef,
   type FilterCategoryId,
   type FilterGroupKey,
@@ -40,7 +40,7 @@ import {
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
-import { canApplyContextRestore } from "./context-restore";
+import { canApplyContextRestore } from "@/services/observation-context-version";
 import "./search-page.scss";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
@@ -96,7 +96,6 @@ function optionIsSelected(
 }
 
 const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
-  distanceDriveTime: "location",
   lightPollution: "horizon",
   lessCloud: "conditions",
   parking: "location",
@@ -105,7 +104,6 @@ const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
   photoForeground: "images",
   campingOvernightParking: "location",
   specificCelestialEvent: "horizon",
-  lowCloudThreshold: "conditions",
   moonImpact: "conditions",
   hikingDifficulty: "compass",
   signal: "wifi-off",
@@ -151,9 +149,10 @@ export function MapSearchSurface() {
   const [announcement, setAnnouncement] = useState("");
   const [filterCategory, setFilterCategory] = useState<FilterCategoryId>("OBSERVATION");
   const selectionVersion = useRef(0);
+  const nativeSelectionPending = useRef<number | null>(null);
 
   useDidShow(() => setPageVisible(true));
-  useDidHide(() => { selectionVersion.current++; setPageVisible(false); });
+  useDidHide(() => { if (!nativeSelectionPending.current) selectionVersion.current++; setPageVisible(false); });
   useEffect(() => () => { selectionVersion.current++; }, []);
 
   useEffect(() => {
@@ -304,6 +303,27 @@ export function MapSearchSurface() {
             : scene.data?.dataState === "PARTIAL" || placeSearch.data?.dataState === "PARTIAL"
               ? "PARTIAL"
               : "READY";
+  useEffect(() => {
+    if (!pageVisible) return;
+    const requestError = contextQuery.error ?? contextQuery.refreshError ?? scene.error ?? scene.refreshError ?? placeSearch.error ?? placeSearch.refreshError;
+    const staleFallback = contextQuery.data?.dataState === "STALE_USABLE" || scene.data?.dataState === "STALE_USABLE" || placeSearch.data?.dataState === "STALE_USABLE";
+    if ((!requestError && !staleFallback) || (requestError && isPermissionError(requestError))) return;
+    notify({ owner: "search", placement: "floating", tone: "info",
+      title: "搜索数据异常", body: "地点与观星点结果暂时无法更新，可在页面中重试。",
+      dedupeKey: "search-resource-failed" });
+  }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible,
+    placeSearch.data?.dataState, placeSearch.error, placeSearch.refreshError, scene.data?.dataState,
+    scene.error, scene.refreshError]);
+  const staleSearchResource = Boolean(
+    contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE" ||
+    scene.refreshError || scene.data?.dataState === "STALE_USABLE" ||
+    placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE",
+  );
+  const retryStaleSearchResource = () => {
+    if (contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE") void contextQuery.refetch();
+    else if (scene.refreshError || scene.data?.dataState === "STALE_USABLE") void scene.refetch();
+    else void placeSearch.refetch();
+  };
 
   const blurSearch = () => {
     setFocused(false);
@@ -344,7 +364,7 @@ export function MapSearchSurface() {
   };
 
   const moveMapReference = async (
-    result: OrdinaryPlaceRef | DarkSkyCandidateRef,
+    result: Pick<OrdinaryPlaceRef | DarkSkyCandidateRef, "location" | "label">,
   ) => {
     const version = ++selectionVersion.current;
     setSuggestionsOpen(false);
@@ -352,11 +372,7 @@ export function MapSearchSurface() {
       latitude: result.location.latitude,
       longitude: result.location.longitude,
     };
-    selectSpot(null);
-    setViewport({ center, zoom: Math.max(12, viewport.zoom) });
-    if (finderQuery.trim()) addSearchHistory(finderQuery);
     try {
-      if (activeContext) {
         const point = gcj02ToWgs84({
           lat: center.latitude,
           lon: center.longitude,
@@ -374,32 +390,54 @@ export function MapSearchSurface() {
             source: "MAP_VIEWPORT",
             timezoneHint: currentTimezoneHint(),
           },
-          localDate: activeContext.localDate,
-          selectedAt: activeContext.selectedAtUtc,
-          eventInstanceId: activeContext.eventInstanceId,
-          targetProfile: activeContext.targetProfile,
+          localDate: activeContext?.localDate ?? localDateForNow(currentTimezoneHint()),
+          ...(activeContext ? {
+            selectedAt: activeContext.selectedAtUtc,
+            eventInstanceId: activeContext.eventInstanceId,
+            targetProfile: activeContext.targetProfile,
+          } : {}),
         });
         if (version !== selectionVersion.current) return;
         setObservationContext(response.data);
-      }
       if (version !== selectionVersion.current) return;
+      selectSpot(null);
+      setViewport({ center, zoom: Math.max(12, viewport.zoom) });
+      if (finderQuery.trim()) addSearchHistory(finderQuery);
+      setFinderQuery("");
       setAnnouncement(`地图已移动到${result.label}；正在查找附近正式观星点。`);
       await leaveSearch();
     } catch (error) {
       if (version !== selectionVersion.current) return;
       if (isMiniappRequestCancelled(error)) return;
-      notify({ owner: "search", placement: "inline", tone: "warning", title: "地图已移动，动态条件未更新", body: `${errorMessage(error)}。当前地点不会被当作正式观星点或生成今晚结论。`, dismissible: true, dedupeKey: "search-map-reference-context-failed" });
+      notify({ owner: "search", placement: "floating", tone: "warning", title: "地点未切换", body: "地点资料暂未更新，原地点与搜索结果已保留，请重试。", dismissible: true, dedupeKey: "search-map-reference-context-failed" });
     }
+  };
+
+  const chooseMapLocation = async () => {
+    if (nativeSelectionPending.current) return;
+    const version = ++selectionVersion.current;
+    nativeSelectionPending.current = version;
+    const ownerPage = Taro.getCurrentPages().at(-1);
+    const current = () => version === selectionVersion.current && Taro.getCurrentPages().at(-1) === ownerPage;
+    try {
+      const selected = await choosePlatformLocation({ isCurrent: current, center: viewport.center });
+      if (!selected || !current()) return;
+      nativeSelectionPending.current = null;
+      await moveMapReference({
+        label: selected.label,
+        location: selected.location,
+      });
+    } catch (error) {
+      if (!current() || /cancel/iu.test(errorMessage(error))) return;
+      notify({ owner: "search", placement: "floating", tone: "warning", title: "地点未选择",
+        body: "微信选点暂不可用，请稍后重试。原有地点和搜索结果已保留。",
+        dismissible: true, dedupeKey: "search-native-location-failed" });
+    } finally { if (nativeSelectionPending.current === version) nativeSelectionPending.current = null; }
   };
 
   const commitFilter = (optionId: FilterOptionId) => {
     const option = FILTER_OPTIONS.find((item) => item.id === optionId);
     if (!option) return;
-    if (option.id === "distanceDriveTime") {
-      setFilterCategory("ARRIVAL");
-      openFilters();
-      return;
-    }
     cancelFilters();
     toggleDraftFilter(option.id);
     applyFilters();
@@ -409,6 +447,10 @@ export function MapSearchSurface() {
   const historyRows = searchHistory.length
     ? searchHistory
     : placeSearch.data?.data.history.map((item) => item.label) ?? [];
+  const nativeLocationEntry = <Button className="spot-search-platform-location focus-ring" data-control="search-platform-location"
+    ariaLabel="在微信地图选择地点并查找附近观星点" onClick={() => void chooseMapLocation()}>
+    在微信地图选地点 <Text aria-hidden="true">→</Text>
+  </Button>;
 
   return (
     <View
@@ -450,9 +492,9 @@ export function MapSearchSurface() {
             className="spot-search-field__input"
             value={finderQuery}
             focus={focused}
-            placeholder="搜地点 / 区域 / 观星点"
+            placeholder="搜观星点 / 所在区域"
             confirmType="search"
-            aria-label="搜索正式观星点、城市或普通地点"
+            aria-label="搜索自有观星点或所在区域"
             onInput={(event) => {
               setFinderQuery(event.detail.value);
               setFocused(true);
@@ -467,6 +509,7 @@ export function MapSearchSurface() {
           />
         </View>
 
+        {!suggestionsOpen ? nativeLocationEntry : null}
         {suggestionsOpen ? (
           <ScrollView
             className="spot-search-query-overlay"
@@ -477,6 +520,7 @@ export function MapSearchSurface() {
             aria-label="搜索历史与地点结果"
             onClick={(event) => event.stopPropagation()}
           >
+            {nativeLocationEntry}
             {debouncedQuery ? (
               <View className="spot-search-suggestions">
                 {placeSearch.data?.data.formalSpots.map((spot) => (
@@ -537,7 +581,7 @@ export function MapSearchSurface() {
                   key={option.id}
                   className={`spot-search-filter-choice${selected ? " spot-search-filter-choice--selected" : ""}`}
                   data-control="spot-search-filter-choice"
-                  disabled={disabled && !selected && option.id !== "distanceDriveTime"}
+                  disabled={disabled && !selected}
                   ariaLabel={`${option.label}${disabled ? "，当前不可用" : selected ? "，已应用" : ""}`}
                   onClick={() => commitFilter(option.id)}
                 >
@@ -545,7 +589,7 @@ export function MapSearchSurface() {
                     name={FILTER_ICON_BY_ID[option.id]}
                     className="spot-search-filter-choice__prefix"
                   />
-                  <Text>{option.id === "distanceDriveTime" && selected ? drivingRangeLabel(committedFilters.drivingRange) : option.label}</Text>
+                  <Text>{option.label}</Text>
                   {selected ? (
                     <SelectedCardStar className="spot-search-filter-choice__selected-ornament" />
                   ) : null}
@@ -562,7 +606,9 @@ export function MapSearchSurface() {
 
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
-          {searchState !== "READY" ? (
+          {staleSearchResource ? <StatusPanel state="STALE" detail="部分搜索资料尚未确认最新状态，当前结果仍会保留。"
+            recoveryLabel="重新获取" onRecover={retryStaleSearchResource} /> : null}
+          {searchState !== "READY" && !(searchState === "STALE" && staleSearchResource) ? (
             <StatusPanel
               state={searchState}
               detail={
@@ -625,15 +671,14 @@ export function MapSearchSurface() {
 
 function SearchResultCard({ spot, evidence, activeGroups, onSelect }: { spot: SpotSummary; evidence: SpotFilterEvidence | undefined; activeGroups: readonly FilterGroupKey[]; onSelect: () => void }) {
   const media = spot.media.filter(isRenderableMedia)[0];
-  const isTestSpot = __MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && spot.spotId === "spot:test-published";
   const mediaSrc = media ? media.thumbnailPath || media.localPath : null;
-  const address = !isTestSpot ? spot.address : null;
+  const address = spot.address;
   const unknown = activeGroups.filter((group) => evidence?.[group].state === "UNKNOWN");
   return <View className="spot-search-result-entry">
     <Button className={`spot-identity-card${mediaSrc ? " spot-identity-card--with-media" : ""}`} data-control="spot-search-result-card" onClick={onSelect} ariaLabel={`选择${spot.name}${unknown.length ? `，${unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}资料待核验` : ""}`}>
       {mediaSrc ? <Image className="spot-identity-card__media" src={mediaSrc} mode="aspectFill" lazyLoad ariaLabel={media?.alt || `${spot.name}现场照片`} /> : null}
       <View className="spot-identity-card__copy">
-        <Text className="spot-identity-card__region">{`${spot.region || "区域暂无数据"}${isTestSpot ? " · 测试数据" : ""}`}</Text>
+        <Text className="spot-identity-card__region">{spot.region || "区域暂无数据"}</Text>
         <Text className="spot-identity-card__title">{spot.name}</Text>
         {address ? <View className="spot-identity-card__address"><SemanticIcon name="location" /><Text className="spot-identity-card__address-text">{address}</Text></View> : null}
       </View>

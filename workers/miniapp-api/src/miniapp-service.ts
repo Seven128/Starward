@@ -8,6 +8,7 @@ import {
   type AccountNicknameSaveRequest,
 } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
+import { observationFrameTimes } from "./observation-time-axis.ts";
 import {
   type AccountDataExportData,
   type AccountDeletionRequest,
@@ -116,12 +117,16 @@ import {
   validateExternalUrl,
 } from "./security.ts";
 import { createWeatherPort } from "./weather-provider.ts";
+import { QWeatherRecentWeatherAdapter, type RecentWeatherPort } from "./recent-weather-provider.ts";
+import { QWeatherAirQualityAdapter, type AirQualityPort } from "./air-quality-provider.ts";
+import { SpotEnvironmentService } from "./spot-environment-service.ts";
 import { derivePlanReminderSchedules, publicReminderStatus } from "./plan-reminder-schedule.ts";
 import { readFile } from "node:fs/promises";
-import { terrainImageUrl, terrainPublication, terrainRequestIsCovered, terrainUnavailable } from "./terrain-publication.ts";
+import { terrainImageUrl, terrainPublication, terrainPublicationSource, terrainRequestIsCovered, terrainUnavailable, validateTerrainAsset } from "./terrain-publication.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 import {
   AstronomicalEventCatalogOwner,
+  eventCatalogSourceFor,
 } from "./astronomical-event-catalog-owner.ts";
 import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.ts";
 import {
@@ -304,17 +309,9 @@ function windowMinutes(
   return window?.durationMinutes ?? null;
 }
 
-function nearestHourly(report: AstronomyDecisionReport, selectedAt: string) {
+function exactHourly(report: AstronomyDecisionReport, selectedAt: string) {
   const selected = Date.parse(selectedAt);
-  return report.hourly.reduce<(typeof report.hourly)[number] | null>(
-    (nearest, row) =>
-      nearest === null ||
-      Math.abs(Date.parse(row.at) - selected) <
-        Math.abs(Date.parse(nearest.at) - selected)
-        ? row
-        : nearest,
-    null,
-  );
+  return report.hourly.find(row => Date.parse(row.at) === selected) ?? null;
 }
 
 function projectionState(state: DataState): MapSpotTimeSignal["state"] {
@@ -325,7 +322,7 @@ function projectionState(state: DataState): MapSpotTimeSignal["state"] {
 }
 
 function selectedTimeOpportunityLabel(
-  row: ReturnType<typeof nearestHourly>,
+  row: ReturnType<typeof exactHourly>,
 ) {
   if (!row || row.opportunityScore === null) return "当前时段数据不足";
   if (row.opportunityBlockers.length) return "当前时段有明确风险";
@@ -339,13 +336,11 @@ function timeSignalFor(
   report: AstronomyDecisionReport,
   selectedAtUtc: string,
 ): MapSpotTimeSignal {
-  const row = nearestHourly(report, selectedAtUtc);
+  const row = exactHourly(report, selectedAtUtc);
   return {
     spotId,
+    weatherAt: row?.weatherAt ?? null,
     cloudPercent: row?.cloudPercent ?? null,
-    lowCloudPercent: row?.lowCloudPercent ?? null,
-    midCloudPercent: row?.midCloudPercent ?? null,
-    highCloudPercent: row?.highCloudPercent ?? null,
     moonImpact: moonImpact(row),
     opportunityScore: row?.opportunityScore ?? null,
     opportunityConfidence: row?.opportunityConfidence ?? null,
@@ -355,28 +350,8 @@ function timeSignalFor(
   };
 }
 
-const MAP_FRAME_CADENCE_MS = 30 * 60 * 1_000;
-const MAX_MAP_TIME_FRAMES = 49;
-
-function mapFrameTimes(context: ObservationContext) {
-  const start = Date.parse(context.nightStartUtc);
-  const end = Date.parse(context.nightEndUtc);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start)
-    throw new Error("map_time_axis_invalid");
-  const count = Math.ceil((end - start) / MAP_FRAME_CADENCE_MS);
-  if (count > MAX_MAP_TIME_FRAMES)
-    throw new Error("map_time_frame_limit_exceeded");
-  const times = Array.from({ length: count }, (_, index) => start + index * MAP_FRAME_CADENCE_MS);
-  const selected = Date.parse(context.selectedAtUtc);
-  if (Number.isFinite(selected) && selected >= start && selected < end && !times.includes(selected))
-    times.push(selected);
-  if (times.length > MAX_MAP_TIME_FRAMES)
-    throw new Error("map_time_frame_limit_exceeded");
-  return times.sort((a, b) => a - b).map((time) => new Date(time).toISOString());
-}
-
 function moonImpact(
-  row: ReturnType<typeof nearestHourly>,
+  row: ReturnType<typeof exactHourly>,
 ): MapSpotEvaluation["moonImpact"] {
   if (
     !row ||
@@ -437,7 +412,6 @@ function layerFor(input: {
   evaluations: Readonly<Record<string, MapSpotEvaluation>>;
   config: MiniappRuntimeConfig;
   darkSkyCells: readonly DarkSkyGridCellRecord[];
-  allowTestSpotCellFallback: boolean;
 }): MapLayerData {
   if (input.kind === "NORMAL")
     return {
@@ -454,11 +428,11 @@ function layerFor(input: {
   if (input.kind === "LIGHT_POLLUTION") {
     if (input.darkSkyCells.length) {
       const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
-        VERY_LOW: "#87714ACC",
-        LOW: "#A18452CC",
-        MODERATE: "#BE9B61CC",
-        HIGH: "#D1B577CC",
-        VERY_HIGH: "#E0C998CC",
+        VERY_LOW: "#87714A66",
+        LOW: "#A1845266",
+        MODERATE: "#BE9B6166",
+        HIGH: "#D1B57766",
+        VERY_HIGH: "#E0C99866",
       };
       const source = input.darkSkyCells[0]!.source;
       return {
@@ -499,61 +473,16 @@ function layerFor(input: {
         source,
       };
     }
-    if (!input.allowTestSpotCellFallback)
-      return {
-        kind: input.kind,
-        cloudLayer: null,
-        polygons: [],
-        legend: [],
-        validAt: null,
-        datasetVersion: input.config.darkSkyDatasetVersion,
-        precision: "当前视野没有可用的已发布卫星夜光网格",
-        state: "UNAVAILABLE",
-        source: null,
-      };
-    const eligible = input.spots.filter(
-      (spot) =>
-        spot.lightPollution.state !== "UNAVAILABLE" &&
-        spot.lightPollution.productBand !== null &&
-        spot.lightPollution.radiance !== null,
-    );
-    const source = eligible[0]?.lightPollution.source ?? null;
     return {
       kind: input.kind,
       cloudLayer: null,
-      polygons: eligible.map((spot) => {
-        const band = spot.lightPollution.productBand!;
-        const colors: Record<typeof band, string> = {
-          VERY_LOW: "#87714ACC",
-          LOW: "#A18452CC",
-          MODERATE: "#BE9B61CC",
-          HIGH: "#D1B577CC",
-          VERY_HIGH: "#E0C998CC",
-        };
-        return cell(spot, {
-          id: "light:" + spot.spotId,
-          color: colors[band],
-          value: spot.lightPollution.radiance!.median,
-          label: spot.lightPollution.label,
-          state: "PARTIAL",
-        });
-      }),
-      legend: [
-        { label: "相对较低", color: "#87714A", range: "试点区夜光低值" },
-        { label: "相对中等", color: "#BE9B61", range: "试点区夜光中值" },
-        { label: "相对较高", color: "#E0C998", range: "试点区夜光高值" },
-      ],
-      validAt: source?.validFrom ?? null,
-      datasetVersion:
-        source === null
-          ? input.config.darkSkyDatasetVersion
-          : eligible[0]!.lightPollution.datasetVersion,
-      precision:
-        source === null
-          ? "当前区域没有可用的已发布光害数据"
-          : "按正式点有来源的卫星夜光相对区间绘制有界单元；不是 Bortle、SQM 或现场实测",
-      state: eligible.length ? "PARTIAL" : "UNAVAILABLE",
-      source,
+      polygons: [],
+      legend: [],
+      validAt: null,
+      datasetVersion: input.config.darkSkyDatasetVersion,
+      precision: "当前视野没有可用的已发布卫星夜光网格",
+      state: "UNAVAILABLE",
+      source: null,
     };
   }
   const reportEntries = input.spots
@@ -573,11 +502,8 @@ function layerFor(input: {
     );
   if (input.kind === "CLOUD") {
     const cloudValue = (report: AstronomyDecisionReport) => {
-      const row = nearestHourly(report, input.selectedAtUtc);
+      const row = exactHourly(report, input.selectedAtUtc);
       if (!row) return null;
-      if (input.cloudLayer === "LOW") return row.lowCloudPercent;
-      if (input.cloudLayer === "MID") return row.midCloudPercent;
-      if (input.cloudLayer === "HIGH") return row.highCloudPercent;
       return row.cloudPercent;
     };
     const available = reportEntries
@@ -631,7 +557,7 @@ function layerFor(input: {
       .find((item) => item.kind === "PRODUCT_CALCULATION") ?? null;
   const projected = reportEntries.map((entry) => ({
     ...entry,
-    row: nearestHourly(entry.report.data, input.selectedAtUtc),
+    row: exactHourly(entry.report.data, input.selectedAtUtc),
   }));
   const available = projected.filter(
     (entry) => entry.row?.opportunityScore !== null && entry.row !== null,
@@ -705,6 +631,7 @@ export class MiniappService {
   readonly eventCatalog: AstronomicalEventCatalogOwner;
   readonly route: RoutePort;
   readonly placeSearch: PlaceSearchPort;
+  readonly spotEnvironment: SpotEnvironmentService;
   readonly outbox = new MemoryOutbox();
   private readonly usageStore: PostgresVendorUsageStore | undefined;
 
@@ -712,6 +639,8 @@ export class MiniappService {
     repository: MiniappRepositoryPort;
     config: MiniappRuntimeConfig;
     weather: WeatherPort;
+    recentWeather?: RecentWeatherPort;
+    airQuality?: AirQualityPort;
     route: RoutePort;
     placeSearch?: PlaceSearchPort;
     telemetry?: TelemetryPort;
@@ -724,6 +653,9 @@ export class MiniappService {
   }) {
     this.repository = input.repository;
     this.config = input.config;
+    this.spotEnvironment = new SpotEnvironmentService(input.repository,
+      input.recentWeather ?? new QWeatherRecentWeatherAdapter(input.config),
+      input.airQuality ?? new QWeatherAirQualityAdapter(input.config));
     this.deepSkyImages = input.deepSkyImages ?? new DeepSkyImageryService();
     this.usageStore = input.usageStore;
     this.route = input.route;
@@ -788,8 +720,12 @@ export class MiniappService {
           ).DeterministicWeatherTestAdapter()
         : createWeatherPort(config, transport),
       route: createRoutePort(config, transport),
+      recentWeather: developmentFixtureMode
+        ? new (await import("./test-fixtures/deterministic-recent-weather-adapter.ts")).DeterministicRecentWeatherAdapter()
+        : new QWeatherRecentWeatherAdapter(config, transport),
+      airQuality: new QWeatherAirQualityAdapter(config, transport),
       placeSearch: createPlaceSearchPort(config, transport),
-      deepSkyImages: new DeepSkyImageryService(transport),
+      deepSkyImages: new DeepSkyImageryService(),
       ...(usageStore ? { usageStore } : {}),
       mediaStore: createMediaObjectStore(config),
       eventCatalog,
@@ -872,54 +808,6 @@ export class MiniappService {
     });
   }
 
-  async #routeEstimate(
-    origin: Wgs84Point,
-    destination: Wgs84Point,
-    travelMode: NonNullable<RouteEstimateRequest["travelMode"]> = "DRIVING",
-    departure?: { localDate?: string; localTime?: string },
-  ) {
-    const cacheKey =
-      "route:" +
-      hash({
-        provider: this.route.key,
-        origin: [origin.latitude.toFixed(5), origin.longitude.toFixed(5)],
-        destination: [
-          destination.latitude.toFixed(5),
-          destination.longitude.toFixed(5),
-        ],
-        travelMode,
-        departureLocalDate: departure?.localDate ?? null,
-        departureLocalTime: departure?.localTime ?? null,
-      });
-    const cached = await this.cache.get<
-      Awaited<ReturnType<RoutePort["estimate"]>>
-    >(cacheKey);
-    if (cached) return cached;
-    const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort("route_provider_timeout"),
-      8_000,
-    );
-    try {
-      const result = await this.route.estimate({
-        origin,
-        destination,
-        travelMode,
-        ...(departure?.localDate ? { departureLocalDate: departure.localDate } : {}),
-        ...(departure?.localTime ? { departureLocalTime: departure.localTime } : {}),
-        signal: controller.signal,
-      });
-      await this.cache.set(
-        cacheKey,
-        result,
-        result.state === "FRESH" ? 30 * 60 : 60,
-      );
-      return result;
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
-
   async updateObservationContext(
     contextId: string,
     input: ObservationContextUpdateRequest,
@@ -935,8 +823,8 @@ export class MiniappService {
   }
 
   getCapabilities() {
-    const routeEnabled = this.config.routeProvider === "AMAP";
-    const placeSearchEnabled = this.config.placeSearchProvider === "AMAP";
+    const routeEnabled = false;
+    const placeSearchEnabled = false;
     const realWeatherEnabled = this.config.features.REAL_WEATHER_ENABLED;
     return envelope(
       {
@@ -952,13 +840,13 @@ export class MiniappService {
           externalMapFallback: true as const,
           reason: routeEnabled
             ? "已配置路线供应商；具体结果仍以每次响应状态为准"
-            : "未配置具备当前许可和密钥的路线供应商",
+            : "手动安排出行，通过微信地图确认路线",
         },
         placeSearch: {
           enabled: placeSearchEnabled,
           reason: placeSearchEnabled
             ? "已配置普通地点搜索；结果只用于移动地图和查找附近正式观星点"
-            : "未配置具备当前许可、配额和密钥的普通地点搜索供应商",
+            : "搜索自有正式观星点；普通地点通过微信平台选点",
         },
         weatherProvider: {
           enabled: realWeatherEnabled,
@@ -988,19 +876,23 @@ export class MiniappService {
       {
         catalogVersion: catalog.catalogVersion,
         coverage: catalog.coverage,
-        events: catalog.events,
+        events: catalog.events.map(({ article: _article, ...event }) => event),
         sources,
       },
       "FRESH",
       sources,
-      ["当前目录覆盖已核对的 2026 年主要夜间流星雨和锁定算法计算的日食、月食，不代表全部天象。"],
+      [catalog.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES"
+        ? "当前目录包含常年流星雨监测参考与计算的日月食；常年参考不预测当年精确极大或特殊爆发。"
+        : "当前目录包含来源已核对的年度事件与计算的日月食，不代表全部天象。"],
     );
   }
 
   async getAstronomicalEvent(occurrenceId: string, contextId?: string) {
-    const event = this.eventCatalog.find(occurrenceId);
+    const catalog = this.eventCatalog.snapshot();
+    const event = catalog.events.find(event => event.occurrenceId === occurrenceId);
     if (!event) throw new Error("astronomical_event_not_found");
-    const source = this.eventCatalog.sourceFor(event);
+    const source = eventCatalogSourceFor(catalog, event);
+    const articleSource = event.article ? catalog.sources.find(source => source.id === event.article!.sourceId) : undefined;
     let localVisibility: import("@starward/miniapp-contracts").AstronomicalEventLocalVisibility = {
       state: "UNAVAILABLE",
       reason: "尚未选择可用的观测地点与日期；目录事件不代表用户所在地可见。",
@@ -1032,36 +924,41 @@ export class MiniappService {
     }
     return envelope(
       {
-        catalogVersion: this.eventCatalog.snapshot().catalogVersion,
+        catalogVersion: catalog.catalogVersion,
         event,
         localVisibility,
         source,
+        ...(articleSource ? { articleSource } : {}),
       },
       source.state,
-      [source],
+      [source, ...(articleSource ? [articleSource] : [])],
       event.kind === "METEOR_SHOWER"
-        ? ["目录峰值和 ZHR 是全球参考资料，不是用户所在地的可见数量。"]
+        ? [event.annualReference ? "常年参考不是当年极大预报；方向仅在历史资料覆盖时段内提供，缺失流量不估算可见数量。" : "年度峰值和流量是来源参考资料，不是用户所在地的可见数量。"]
         : ["食甚时刻和地点投影是锁定算法计算结果；天气与真实地平遮挡仍需另行判断。"],
       context ? { validAt: context.selectedAtUtc, contextRevision: context.revision } : undefined,
     );
   }
 
   async getTerrainOverlay(input: TerrainOverlayRequest): Promise<ApiEnvelope<TerrainOverlayData>> {
-    const publication = await terrainPublication();
-    if (!terrainRequestIsCovered(publication, input))
-      return envelope(terrainUnavailable(input, "当前中心与半径超出已发布的深圳东部 GLO-30 地形覆盖。"), "UNAVAILABLE", [], ["范围外不会补成平地；移动到已覆盖区域后重试。"]);
     const centerWgs84 = gcj02ToWgs84({
       lat: input.center.latitude,
       lon: input.center.longitude,
       system: "GCJ-02",
     });
-    const darkSkyCells = this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
-      ? await this.repository.listDarkSkyGridCells({
+    const [terrainRead, lightRead] = await Promise.allSettled([
+      terrainPublication(),
+      this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
+      ? this.repository.listDarkSkyGridCells({
           datasetVersion: this.config.darkSkyDatasetVersion,
           center: { system: "WGS84", latitude: centerWgs84.lat, longitude: centerWgs84.lon },
           radiusKm: input.radiusKm,
         })
-      : [];
+      : Promise.resolve([]),
+    ]);
+    const publication = terrainRead.status === "fulfilled" ? terrainRead.value : null;
+    const terrainCovered = publication !== null && terrainRequestIsCovered(publication, input);
+    const terrainSource = terrainCovered ? terrainPublicationSource(publication) : null;
+    const darkSkyCells = lightRead.status === "fulfilled" ? lightRead.value : [];
     const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
       VERY_LOW: "#87714A99", LOW: "#A1845299", MODERATE: "#BE9B6199", HIGH: "#D1B57799", VERY_HIGH: "#E0C99899",
     };
@@ -1079,6 +976,7 @@ export class MiniappService {
     });
     const source = darkSkyCells[0]?.source ?? null;
     const data: TerrainOverlayData = {
+      ...(terrainCovered ? {
       state: publication.validPixelPercent < 99.9 ? "PARTIAL" : "AVAILABLE",
       purpose: input.purpose,
       requestedRadiusKm: input.radiusKm,
@@ -1096,8 +994,12 @@ export class MiniappService {
       elevationM: publication.elevationM,
       coverageLabel: `已发布中心周边 ${publication.maximumRadiusKm.toFixed(0)} km，当前查看 ${input.radiusKm.toFixed(1)} km。`,
       limitations: publication.limitations,
+      source: terrainSource,
+      } : terrainUnavailable(input, publication ? "当前地区暂无已发布的地形数据。" : "地形数据读取失败，请重试。")),
+      ...(terrainRead.status === "rejected" ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
       lightPollution: {
         state: lightCells.length ? "PARTIAL" : "UNAVAILABLE",
+        ...(lightRead.status === "rejected" ? { failureCode: "LIGHT_READ_FAILED" as const } : {}),
         datasetVersion: lightCells.length ? darkSkyCells[0]!.datasetVersion : this.config.darkSkyDatasetVersion,
         cells: lightCells,
         legend: lightCells.length ? [
@@ -1106,16 +1008,18 @@ export class MiniappService {
           { label: "相对较高", color: "#E0C998" },
         ] : [],
         source,
-        coverageLabel: lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : "当前范围没有已发布的年度卫星夜光网格。",
+        coverageLabel: lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : lightRead.status === "rejected" ? "光污染数据读取失败，请重试。" : "当前范围没有已发布的年度卫星夜光网格。",
       },
     };
-    return envelope(data, data.state === "AVAILABLE" ? "FRESH" : "PARTIAL", source ? [source] : [], publication.limitations);
+    return envelope(data, data.state === "UNAVAILABLE" && lightCells.length === 0 ? "UNAVAILABLE" : "PARTIAL", [terrainSource, source].filter((item): item is SourceSummary => item !== null),
+      [...data.limitations, ...(lightRead.status === "rejected" ? [data.lightPollution.coverageLabel] : [])]);
   }
 
   async getTerrainAsset(file: string) {
     const publication = await terrainPublication();
     if (file !== publication.image.file) throw new Error("terrain_asset_not_found");
-    return { bytes: await readFile(terrainImageUrl(file)), publicationId: publication.publicationId };
+    const bytes = await readFile(terrainImageUrl(file));
+    return { bytes: validateTerrainAsset(bytes, publication), publicationId: publication.publicationId };
   }
 
   async getMapScene(input: {
@@ -1135,7 +1039,7 @@ export class MiniappService {
     const context = await this.observationContexts.get(input.contextId);
     const filters = input.filters ?? EMPTY_FILTER_STATE;
     const layerKind = input.layer ?? "NORMAL";
-    const cloudLayer = input.cloudLayer ?? context.weatherView.cloudLayer;
+    const cloudLayer = "TOTAL" as const;
     let cacheKey =
       "map:" +
       context.contextFingerprint.slice(0, 16) +
@@ -1193,14 +1097,11 @@ export class MiniappService {
     const reports: Record<string, ApiEnvelope<AstronomyDecisionReport>> = {};
     const evaluations: Record<string, MapSpotEvaluation> = {};
     const filterEvidence: Record<string, SpotFilterEvidence> = {};
-    const routeSources: SourceSummary[] = [];
     const evaluatedAtMs = Date.now();
     const routeOrigin =
       context.location.kind === "MAP_POINT"
         ? context.location.wgs84
         : context.routeOrigin?.wgs84 ?? null;
-    const routeExplicitlyRequested =
-      filters.DISTANCE_DRIVE_TIME.length > 0;
     for (let start = 0; start < queryMatched.length; start += 4) {
       const batch = queryMatched.slice(start, start + 4);
       await Promise.all(
@@ -1228,13 +1129,6 @@ export class MiniappService {
             report.data,
             context.selectedAtUtc,
           );
-          const routeResult =
-            routeExplicitlyRequested &&
-            routeOrigin &&
-            this.config.routeProvider === "AMAP"
-              ? await this.#routeEstimate(routeOrigin, spot.wgs84)
-              : null;
-          if (routeResult) routeSources.push(routeResult.source);
           const straightDistanceKm = routeOrigin
             ? distanceMeters(
                 { lat: routeOrigin.latitude, lon: routeOrigin.longitude },
@@ -1244,11 +1138,6 @@ export class MiniappService {
                 },
               ) / 1_000
             : null;
-          const route =
-            routeResult?.state === "FRESH" &&
-            routeResult.value?.kind === "ROUTE_ESTIMATE"
-              ? routeResult.value
-              : null;
           const spotEvaluation: MapSpotEvaluation = {
             ...timeSignal,
             spotId: spot.spotId,
@@ -1264,11 +1153,9 @@ export class MiniappService {
                   target.type === "CONJUNCTION",
               )
               .map((target) => target.targetId),
-            distanceKm: route?.distanceKm ?? straightDistanceKm,
-            driveMinutes: route?.driveMinutes ?? null,
-            distanceKind: route
-              ? "ROUTE"
-              : straightDistanceKm === null
+            distanceKm: straightDistanceKm,
+            driveMinutes: null,
+            distanceKind: straightDistanceKm === null
                 ? "UNAVAILABLE"
                 : "STRAIGHT_LINE",
             state: projectionState(report.dataState),
@@ -1299,53 +1186,10 @@ export class MiniappService {
       revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
     if (cached) return cached;
-    const routeCount = Object.values(evaluations).filter(
-      (evaluation) => evaluation.driveMinutes !== null,
-    ).length;
-    const routeCapability = !routeExplicitlyRequested
-      ? {
-          state:
-            routeOrigin && this.config.routeProvider === "AMAP"
-              ? ("AVAILABLE" as const)
-              : ("UNAVAILABLE" as const),
-          reason:
-            routeOrigin && this.config.routeProvider === "AMAP"
-              ? "选择距离/驾车时间筛选后，才会按当前起点请求真实路线"
-              : "当前没有可用路线起点或已配置的路线供应商",
-          recovery:
-            routeOrigin && this.config.routeProvider === "AMAP"
-              ? ("NONE" as const)
-              : ("REMOVE_DRIVE_TIME_FILTER" as const),
-        }
-      : {
-          state:
-            routeCount === 0
-              ? ("UNAVAILABLE" as const)
-              : routeCount === queryMatched.length
-                ? ("AVAILABLE" as const)
-                : ("PARTIAL" as const),
-          reason:
-            routeCount === 0
-              ? "当前请求没有真实路线结果；直线距离会明确标注且不参与驾车时间筛选"
-              : routeCount === queryMatched.length
-                ? "基于当前地图起点和高德路线规划结果"
-                : `当前 ${queryMatched.length} 个结果中有 ${routeCount} 个具备真实驾车路线`,
-          recovery:
-            routeCount === 0
-              ? ("REMOVE_DRIVE_TIME_FILTER" as const)
-              : ("NONE" as const),
-        };
+    const routeCapability = { state: "UNAVAILABLE" as const, reason: "道路距离与行程时长未接入；距离仅供直线参考", recovery: "NONE" as const };
     const allFilterEvidence = queryMatched.map((spot) => filterEvidence[spot.spotId]!);
     const byGroup = Object.fromEntries(
       FILTER_GROUP_KEYS.map((group) => {
-        if (group === "DISTANCE_DRIVE_TIME" && !routeExplicitlyRequested)
-          return [
-            group,
-            {
-              state: routeCapability.state,
-              reason: routeCapability.reason,
-            },
-          ];
         return [group, summarizeFilterCoverage(allFilterEvidence, group)];
       }),
     ) as MapSceneData["filterCapabilities"]["byGroup"];
@@ -1378,7 +1222,6 @@ export class MiniappService {
       evaluations,
       config: this.config,
       darkSkyCells,
-      allowTestSpotCellFallback: this.repository.kind === "memory",
     });
     const visibleEvaluations = Object.fromEntries(
       ranked.spots.flatMap((spot) => {
@@ -1392,10 +1235,10 @@ export class MiniappService {
         return evidence ? [[spot.spotId, evidence] as const] : [];
       }),
     );
-    const timeFrames: MapSceneTimeFrame[] = mapFrameTimes(context).map(
+    const timeFrames: MapSceneTimeFrame[] = observationFrameTimes(context).map(
       (atUtc) => {
         const lunarRow = Object.values(reports)
-          .map((report) => nearestHourly(report.data, atUtc))
+          .map((report) => exactHourly(report.data, atUtc))
           .find((row) => row?.moonPhase != null);
         const moonPhase = lunarRow?.moonPhase ?? null;
         const spotSignals = Object.fromEntries(
@@ -1417,7 +1260,6 @@ export class MiniappService {
           evaluations,
           config: this.config,
           darkSkyCells: [],
-          allowTestSpotCellFallback: false,
         });
         return {
           atUtc,
@@ -1438,7 +1280,6 @@ export class MiniappService {
     const sources = uniqueSources([
       ...allCandidates.map((spot) => spot.source),
       ...Object.values(reports).flatMap((report) => report.sources),
-      ...routeSources,
       ...(layer.source ? [layer.source] : []),
     ]);
     const result = envelope<MapSceneData>(
@@ -1523,18 +1364,7 @@ export class MiniappService {
             .includes(normalized.toLocaleLowerCase("zh-CN")),
         )
       : [];
-    const [candidateSpots, ordinaryResult] = normalized
-      ? await Promise.all([
-          this.repository.searchSpotCandidates(normalized),
-          this.placeSearch.search({
-            query: normalized,
-            ...(region.trim() ? { region: region.trim().slice(0, 80) } : {}),
-          }),
-        ])
-      : [
-          [] as readonly SpotSummary[],
-          null,
-        ];
+    const candidateSpots = normalized ? await this.repository.searchSpotCandidates(normalized) : [];
     const candidates: DarkSkyCandidateRef[] = candidateSpots.map((spot) => ({
       candidateId: "candidate:" + hash(spot.spotId).slice(0, 20),
       label: spot.name,
@@ -1548,12 +1378,10 @@ export class MiniappService {
       dataState: "PARTIAL",
       source: spot.source,
     }));
-    const ordinaryPlaces = ordinaryResult?.value ?? [];
-    const providerUnavailable = ordinaryResult?.state === "UNAVAILABLE";
+    const ordinaryPlaces: SearchData["ordinaryPlaces"] = [];
     const sources = uniqueSources([
       ...formalSpots.map((spot) => spot.source),
       ...candidates.map((candidate) => candidate.source),
-      ...(ordinaryResult ? [ordinaryResult.source] : []),
     ]);
     const data: SearchData = {
       formalSpots,
@@ -1565,11 +1393,9 @@ export class MiniappService {
     };
     return envelope(
       data,
-      providerUnavailable ? "PARTIAL" : "FRESH",
+      "FRESH",
       sources,
-      providerUnavailable
-        ? ["普通地点搜索当前不可用；没有生成伪地点。正式观星点与待核验地点结果仍保持独立。"]
-        : [],
+      [],
     );
   }
 
@@ -1631,7 +1457,7 @@ export class MiniappService {
       [
         ...sky.warnings,
         context.routeOrigin
-          ? "当前先显示直线距离；仅在你点击“去这里”时请求真实路线。"
+          ? "当前显示直线距离；点击“去这里”通过微信地图确认到达方式。"
           : "当前详情没有地图起点，无法计算距离或路线；请从地图点位气泡进入。",
         "攻略和场地信息将在你打开对应栏目时加载。",
       ],
@@ -1659,19 +1485,7 @@ export class MiniappService {
     const detail = await this.repository.getDetail(input.spotId);
     if (!detail || detail.spot.status === "DATA_INSUFFICIENT")
       throw new Error("formal_spot_not_found");
-    const result = await this.#routeEstimate(
-      context.routeOrigin.wgs84,
-      detail.spot.wgs84,
-      input.travelMode ?? "DRIVING",
-      {
-        ...(input.departureLocalDate
-          ? { localDate: input.departureLocalDate }
-          : {}),
-        ...(input.departureLocalTime
-          ? { localTime: input.departureLocalTime }
-          : {}),
-      },
-    );
+    const result = await createRoutePort(this.config).estimate({ origin: context.routeOrigin.wgs84, destination: detail.spot.wgs84 });
     const route: SpotDetail["route"] = {
       ...(result.value ?? detail.route),
       originLabel: context.routeOrigin.displayName,
@@ -1709,6 +1523,16 @@ export class MiniappService {
     );
   }
 
+  async getSpotRecentWeather(spotId: string) {
+    const result = await this.spotEnvironment.recent(spotId);
+    return envelope(result.data, result.state, result.sources, result.warnings);
+  }
+
+  async getSpotAirQuality(spotId: string) {
+    const result = await this.spotEnvironment.air(spotId);
+    return envelope(result.data, result.state, result.sources, result.warnings);
+  }
+
   async getSpotSite(spotId: string) {
     const detail = await this.repository.getDetail(spotId as SpotId);
     if (!detail) throw new Error("formal_spot_not_found");
@@ -1727,6 +1551,7 @@ export class MiniappService {
         facilities: detail.spot.facilities,
         accessAndSafety: detail.accessAndSafety,
         siteMediaState: detail.siteMediaState,
+        arrival: { lastRoad: detail.route.lastRoad, parkingGuidance: detail.route.parkingGuidance, source: detail.route.source },
         evidence: detail.evidence,
         sources: detail.dataDisclosure,
       },
@@ -2166,15 +1991,24 @@ export class MiniappService {
     }
     const reminders = input.reminders === undefined ? undefined : parsePlanReminders(input.reminders);
     if (reminders === undefined && existingPlan?.reminders?.length) throw new Error("plan_reminders_required");
-    const travel = input.travel === undefined ? undefined : parsePlanTravel(input.travel);
+    let travel = input.travel === undefined ? undefined : parsePlanTravel(input.travel);
     if (travel === undefined && existingPlan?.travel) throw new Error("plan_travel_required");
+    // Legacy editors may change mode/notes without knowing this field. Preserve the
+    // saved point only while the origin text remains identical; explicit null clears it.
+    if (travel && travel.originLocation === undefined && existingPlan?.travel?.originLocation !== undefined) {
+      travel = { ...travel, originLocation: travel.origin === existingPlan.travel.origin
+        ? existingPlan.travel.originLocation : null };
+    }
     const sourceContext = await this.observationContexts.get(
       input.observationContextId,
     );
-    const routeOriginContextId =
+    let routeOriginContextId =
       sourceContext.location.kind === "MAP_POINT"
         ? sourceContext.contextId
         : sourceContext.routeOrigin?.contextId ?? null;
+    // Explicit plan origins belong to the private plan, not a public browsing
+    // Context or its regional/timezone coverage. Avoid duplicating their coordinates.
+    if (travel?.originLocation !== undefined) routeOriginContextId = null;
     const context = await this.observationContexts.resolve({
       location: { kind: "FORMAL_SPOT", spotId: input.spotId },
       routeOriginContextId,

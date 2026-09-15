@@ -1,0 +1,8 @@
+.forecast-coverage { color: var(--text-secondary); margin: 4Px 0 10Px; }
+.forecast-coverage__heading { display: flex; align-items: center; gap: 4Px; }
+.forecast-coverage__help { display: flex; align-items: center; justify-content: center; width: 44Px; min-height: 44Px; margin: 0; padding: 0; background: transparent; color: var(--text-secondary); }
+.forecast-coverage__help text { width: 17Px; height: 17Px; line-height: 17Px; border: 1Px solid currentColor; border-radius: 50%; font-size: 12Px; }
+.forecast-coverage__help::after, .forecast-coverage__close::after { border: 0; }
+.forecast-coverage__range { display: block; line-height: 1.7; }
+.forecast-coverage__explanation { padding: 10Px 12Px; margin-top: 6Px; background: var(--surface-subtle); border-radius: 8Px; }
+.forecast-coverage__close { min-height: 44Px; margin: 4Px 0 0; padding: 0; background: transparent; color: var(--primary); font-size: var(--type-action-size); text-align: left; }

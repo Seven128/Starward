@@ -46,7 +46,7 @@ function updateMoonPanel(i){const day=window.designDays[selectedDay],row=fixture
  document.querySelectorAll('[data-time]').forEach((b,j)=>{const r=fixtureRows[j];b.querySelector('.tick-moon').src='moon/phase-'+r.phase+'.svg?v=5b';b.setAttribute('aria-label',(r.next?'次日 ':'')+r.at+'，'+r.phaseName+'，照明'+r.illum+'%');});
  const beyondWeather=day.offset===15&&row.next;
  if(beyondWeather)weather.querySelectorAll('dd').forEach(e=>{e.textContent='暂无数据';e.classList.add('missing');});
- weatherSource.innerHTML='<span>'+(beyondWeather?'该时段超出天气覆盖 · 月相仍可查看':day.offset<0?'Open-Meteo · 历史天气':day.offset>2?'Open-Meteo · 预报更新18:00':'预报更新18:00 · 模型一致性高')+'<br>天体位置按所选时刻计算</span>';
+ weatherSource.innerHTML='<span>'+(beyondWeather?'该时段无预报数据 · 月相仍可查看':day.offset<0?'历史预报不作为现场记录':day.offset>2?'和风天气 · 以实际返回时段为准':'和风天气 · 实际返回时段')+' <button type="button" aria-label="说明天气数据范围">?</button><br>天体位置按所选时刻计算</span>';
 }
 window.spotObservationTime=window.StarwardObservationTime.mount(timeline,{days:window.designDays,dayIndex:selectedDay,index:selectedSlice,moonSource:row=>'moon/phase-'+row.phase+'.svg?v=5b',onChange:selection=>{selectedDay=selection.dayIndex;fixtureRows=selection.day.hours;updateFacts(selection.index);}});
 updateFacts(selectedSlice);paint(height);trackChapter();

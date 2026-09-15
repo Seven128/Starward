@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { loadHipparcosBrightStarCatalog, positionHipparcosCatalog } from "@starward/astronomy-core";
+import { loadBsc5pBrightStarCatalog, positionBsc5pCatalog } from "@starward/astronomy-core/bsc5p-catalog";
 import {
   normalizeOwnerPositions,
   type SkyCatalogProvider,
@@ -7,7 +7,7 @@ import {
 } from "./sky-scene-catalog-provider.ts";
 
 export function createTestSkyCatalogProvider(): SkyCatalogProvider {
-  const owner = loadHipparcosBrightStarCatalog();
+  const owner = loadBsc5pBrightStarCatalog();
   const entries = owner.rows.slice(0, 3).map((entry) => ({
     sourceId: entry.sourceId,
     objectRef: entry.sourceId,
@@ -23,14 +23,14 @@ export function createTestSkyCatalogProvider(): SkyCatalogProvider {
     .update(JSON.stringify(entries))
     .digest("hex");
   const catalog: SkyCatalogSnapshot = {
-    catalogVersion: "test-gaia-dr3-catalog-v1",
+    catalogVersion: "test-bsc5p-catalog-v1",
     catalogHash,
     magnitudeLimit: 5.5,
     sources: [{
-      id: "test:gaia-dr3-catalog",
+      id: "test:bsc5p-catalog",
       kind: "TEST_FIXTURE",
       provider: "Starward deterministic test fixture",
-      title: "Test-only Gaia-compatible star catalog",
+      title: "Test-only BSC5P-compatible star catalog",
       sourceUrl: "https://example.invalid/starward-test-catalog",
       license: "TEST_ONLY",
       licenseUrl: "https://example.invalid/starward-test-catalog/license",
@@ -50,7 +50,7 @@ export function createTestSkyCatalogProvider(): SkyCatalogProvider {
     load: () => catalog,
     position: (input) =>
       normalizeOwnerPositions(
-        positionHipparcosCatalog({
+        positionBsc5pCatalog({
           at: input.at,
           latitude: input.latitude,
           longitude: input.longitude,

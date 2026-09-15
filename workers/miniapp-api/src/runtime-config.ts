@@ -8,16 +8,10 @@ import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog
 export type ReleaseProfile = "LOCAL" | "TRIAL" | "COMMERCIAL";
 export type StorageMode = "MEMORY_TEST" | "POSTGRES";
 export type AuthMode = "LOCAL_TEST" | "WECHAT";
-export type WeatherProviderMode =
-  | "OPEN_METEO_NONCOMMERCIAL"
-  | "OPEN_METEO_COMMERCIAL"
-  | "QWEATHER";
-export type OpenMeteoEvidenceMode =
-  | "OPEN_METEO_NONCOMMERCIAL"
-  | "OPEN_METEO_COMMERCIAL";
-export type QWeatherForecastHours = 24 | 72;
-export type RouteProviderMode = "AMAP" | "DISABLED";
-export type PlaceSearchProviderMode = "AMAP" | "DISABLED";
+export type WeatherProviderMode = "QWEATHER";
+export type QWeatherForecastHours = number;
+export type RouteProviderMode = "DISABLED";
+export type PlaceSearchProviderMode = "DISABLED";
 export type MediaStorageMode = "LOCAL_FILESYSTEM" | "DISABLED";
 
 export interface MiniappRuntimeConfig {
@@ -25,7 +19,6 @@ export interface MiniappRuntimeConfig {
   storageMode: StorageMode;
   authMode: AuthMode;
   weatherProvider: WeatherProviderMode;
-  openMeteoEvidenceMode: OpenMeteoEvidenceMode;
   routeProvider: RouteProviderMode;
   placeSearchProvider: PlaceSearchProviderMode;
   mediaStorage: {
@@ -37,7 +30,6 @@ export interface MiniappRuntimeConfig {
   redisUrl: string | null;
   cachePrefix: string;
   autoMigrate: boolean;
-  openMeteoApiKey: string | null;
   qweather: {
     apiHost: string | null;
     credentialId: string | null;
@@ -45,7 +37,6 @@ export interface MiniappRuntimeConfig {
     privateKeyPem: string | null;
     forecastHours: QWeatherForecastHours;
   };
-  amapWebServiceKey: string | null;
   wechat: {
     appId: string | null;
     appSecret: string | null;
@@ -79,17 +70,8 @@ function oneOf<T extends string>(
   return selected as T;
 }
 
-function qweatherForecastHours(
-  releaseProfile: ReleaseProfile,
-): QWeatherForecastHours {
-  const selected =
-    value("QWEATHER_FORECAST_HOURS") ??
-    (releaseProfile === "TRIAL" ? "24" : "72");
-  if (selected !== "24" && selected !== "72")
-    throw new Error(
-      `runtime_config_invalid:QWEATHER_FORECAST_HOURS:${selected}`,
-    );
-  return Number(selected) as QWeatherForecastHours;
+function qweatherForecastHours(): QWeatherForecastHours {
+  return boundedInteger("QWEATHER_FORECAST_HOURS", 240, 1, 240);
 }
 
 function boundedInteger(name: string, fallback: number, minimum: number, maximum: number) {
@@ -142,28 +124,20 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   const weatherProvider = oneOf(
     "MINIAPP_WEATHER_PROVIDER",
     value("MINIAPP_WEATHER_PROVIDER"),
-    ["OPEN_METEO_NONCOMMERCIAL", "OPEN_METEO_COMMERCIAL", "QWEATHER"] as const,
-    releaseProfile === "LOCAL" ? "OPEN_METEO_NONCOMMERCIAL" : "QWEATHER",
-  );
-  const openMeteoEvidenceMode = oneOf(
-    "MINIAPP_OPEN_METEO_EVIDENCE_MODE",
-    value("MINIAPP_OPEN_METEO_EVIDENCE_MODE"),
-    ["OPEN_METEO_NONCOMMERCIAL", "OPEN_METEO_COMMERCIAL"] as const,
-    weatherProvider === "OPEN_METEO_COMMERCIAL" || releaseProfile !== "LOCAL"
-      ? "OPEN_METEO_COMMERCIAL"
-      : "OPEN_METEO_NONCOMMERCIAL",
+    ["QWEATHER"] as const,
+    "QWEATHER",
   );
   const routeProvider = oneOf(
     "MINIAPP_ROUTE_PROVIDER",
     value("MINIAPP_ROUTE_PROVIDER"),
-    ["AMAP", "DISABLED"] as const,
-    value("AMAP_WEB_SERVICE_KEY") ? "AMAP" : "DISABLED",
+    ["DISABLED"] as const,
+    "DISABLED",
   );
   const placeSearchProvider = oneOf(
     "MINIAPP_PLACE_SEARCH_PROVIDER",
     value("MINIAPP_PLACE_SEARCH_PROVIDER"),
-    ["AMAP", "DISABLED"] as const,
-    value("AMAP_WEB_SERVICE_KEY") ? "AMAP" : "DISABLED",
+    ["DISABLED"] as const,
+    "DISABLED",
   );
   const mediaStorageMode = oneOf(
     "MINIAPP_MEDIA_STORAGE_MODE",
@@ -175,15 +149,13 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     value("MINIAPP_MEDIA_STORAGE_ROOT") ?? "tmp/miniapp-media";
   const databaseUrl = value("DATABASE_URL");
   const redisUrl = value("REDIS_URL");
-  const openMeteoApiKey = value("OPEN_METEO_API_KEY");
   const qweather = {
     apiHost: value("QWEATHER_API_HOST"),
     credentialId: value("QWEATHER_CREDENTIAL_ID"),
     projectId: value("QWEATHER_PROJECT_ID"),
     privateKeyPem: value("QWEATHER_PRIVATE_KEY_PEM")?.replace(/\\n/gu, "\n") ?? null,
-    forecastHours: qweatherForecastHours(releaseProfile),
+    forecastHours: qweatherForecastHours(),
   };
-  const amapWebServiceKey = value("AMAP_WEB_SERVICE_KEY");
   const wechat = {
     appId: value("WECHAT_MINIAPP_APP_ID"),
     appSecret: value("WECHAT_MINIAPP_APP_SECRET"),
@@ -211,29 +183,10 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   )
     throw new Error("runtime_config_invalid:fixture_lane_local_memory_only");
   if (
-    (weatherProvider === "OPEN_METEO_NONCOMMERCIAL" ||
-      openMeteoEvidenceMode === "OPEN_METEO_NONCOMMERCIAL") &&
-    releaseProfile === "COMMERCIAL"
-  )
-    throw new Error(
-      "runtime_config_invalid:noncommercial_weather_commercial_forbidden",
-    );
-  if (
-    (weatherProvider === "OPEN_METEO_COMMERCIAL" ||
-      openMeteoEvidenceMode === "OPEN_METEO_COMMERCIAL") &&
-    !openMeteoApiKey
-  )
-    throw new Error("runtime_config_invalid:open_meteo_commercial_key_required");
-  if (
-    weatherProvider === "QWEATHER" &&
+    releaseProfile !== "LOCAL" &&
     Object.values(qweather).some((part) => !part)
   )
     throw new Error("runtime_config_invalid:qweather_credentials_required");
-  if (
-    (routeProvider === "AMAP" || placeSearchProvider === "AMAP") &&
-    !amapWebServiceKey
-  )
-    throw new Error("runtime_config_invalid:amap_key_required");
   if (
     authMode === "WECHAT" &&
     (!wechat.appId || !wechat.appSecret || wechat.sessionSecret.length < 32)
@@ -255,7 +208,6 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     storageMode,
     authMode,
     weatherProvider,
-    openMeteoEvidenceMode,
     routeProvider,
     placeSearchProvider,
     mediaStorage: {
@@ -267,9 +219,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     redisUrl,
     cachePrefix: value("MINIAPP_CACHE_PREFIX") ?? "starward:miniapp:current:",
     autoMigrate: process.env.MINIAPP_AUTO_MIGRATE === "1",
-    openMeteoApiKey,
     qweather,
-    amapWebServiceKey,
     wechat,
     trialRegion: value("MINIAPP_TRIAL_REGION") ?? "GREATER_BAY_AREA_3H",
     eventCatalogVersion,
@@ -280,13 +230,13 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     astronomyAlgorithmVersion:
       value("MINIAPP_ASTRONOMY_ALGORITHM_VERSION") ?? "astronomy-engine-2.1.19",
     opportunityRuleVersion:
-      value("MINIAPP_OPPORTUNITY_RULE_VERSION") ?? "sky-opportunity-1",
+      value("MINIAPP_OPPORTUNITY_RULE_VERSION") ?? "sky-opportunity-qweather-total-2",
     tripDecisionRuleVersion:
       value("MINIAPP_TRIP_DECISION_RULE_VERSION") ?? "trip-decision-1",
     features: selectedFlags({
       authMode,
       realWeatherEnabled: true,
-      layeredCloudEnabled: true,
+      layeredCloudEnabled: false,
       routeProvider,
       lightDatasetVersion: darkSkyDatasetVersion,
     }),
@@ -300,8 +250,7 @@ export function createTestRuntimeConfig(
     releaseProfile: "LOCAL",
     storageMode: "MEMORY_TEST",
     authMode: "LOCAL_TEST",
-    weatherProvider: "OPEN_METEO_NONCOMMERCIAL",
-    openMeteoEvidenceMode: "OPEN_METEO_NONCOMMERCIAL",
+    weatherProvider: "QWEATHER",
     routeProvider: "DISABLED",
     placeSearchProvider: "DISABLED",
     mediaStorage: {
@@ -313,15 +262,13 @@ export function createTestRuntimeConfig(
     redisUrl: null,
     cachePrefix: "starward:miniapp:test:",
     autoMigrate: false,
-    openMeteoApiKey: null,
     qweather: {
       apiHost: null,
       credentialId: null,
       projectId: null,
       privateKeyPem: null,
-      forecastHours: 72,
+      forecastHours: 240,
     },
-    amapWebServiceKey: null,
     wechat: { appId: null, appSecret: null, sessionSecret: "test-only-session-secret-not-for-release" },
     trialRegion: "TEST",
     eventCatalogVersion: ASTRONOMICAL_EVENT_CATALOG_VERSION,

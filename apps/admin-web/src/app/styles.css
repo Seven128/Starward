@@ -387,6 +387,13 @@ textarea:focus-visible {
 }
 
 .table-card,
+.event-catalog-workspace .surface-card { margin-bottom: 20px; }
+.event-catalog-workspace { min-width: 0; overflow-wrap: anywhere; }
+.event-catalog-workspace .notice { margin-bottom: 20px; }
+.event-catalog-workspace .queue-table small { display: block; overflow-wrap: anywhere; }
+.event-catalog-candidate { padding: 16px 0; border-bottom: 1px solid var(--border, #e4e6eb); overflow-wrap: anywhere; }
+.event-catalog-json { max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.event-catalog-workspace details { margin: 16px 0; }
 .surface-card {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -682,7 +689,8 @@ textarea:focus-visible {
   display: grid;
   gap: 2px;
 }
-.text-area {
+.text-area,
+.event-catalog-workspace .field-block > textarea {
   width: 100%;
   min-height: 104px;
   resize: vertical;
@@ -696,7 +704,9 @@ textarea:focus-visible {
 .text-area::placeholder {
   color: var(--ink-faint);
 }
-.select-control {
+.select-control,
+.event-catalog-workspace .field-block > input:not([type="checkbox"]),
+.event-catalog-workspace .field-block > select {
   min-height: 44px;
   padding: 9px 30px 9px 11px;
   border: 1px solid var(--line-strong);
@@ -1680,4 +1690,12 @@ textarea:focus-visible {
   .operations-app.is-authenticated .ops-main {
     padding: 22px 18px 48px;
   }
+}
+.event-article-fields { min-width: 0; border: 0; padding: 0; margin: 0; }
+.event-article-fields legend { padding: 0; margin: 0 0 12px; }
+.event-article-url { overflow-wrap: anywhere; }
+.event-catalog-workspace .field-block > input:not([type="checkbox"]),
+.event-catalog-workspace .field-block > select,
+.event-catalog-workspace .field-block > textarea {
+  width: 100%; min-width: 0;
 }

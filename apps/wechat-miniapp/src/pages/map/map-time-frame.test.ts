@@ -7,6 +7,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import {
   nearestMapTimeFrameIndex,
+  cloudTimeFrameChoices,
   mapTimeFrameAt,
   projectedLayerPolygons,
   projectMapEvaluations,
@@ -14,6 +15,7 @@ import {
 
 const baseEvaluation: MapSpotEvaluation = {
   spotId: "spot:test" as MapSpotEvaluation["spotId"],
+  weatherAt: "2026-08-23T12:00:00.000Z",
   lunarFacts: {
     phase: "WANING_CRESCENT",
     phaseAngleDeg: 315,
@@ -42,9 +44,6 @@ const baseEvaluation: MapSpotEvaluation = {
   recommendation: "CONSIDER",
   bestWindowMinutes: 90,
   cloudPercent: 60,
-  lowCloudPercent: 30,
-  midCloudPercent: 20,
-  highCloudPercent: 10,
   moonImpact: "LOW",
   opportunityScore: 50,
   opportunityConfidence: 0.7,
@@ -56,6 +55,28 @@ const baseEvaluation: MapSpotEvaluation = {
   distanceKind: "ROUTE",
   state: "FRESH",
 };
+
+test("weather-only choices skip missing hours without changing the original time index", () => {
+  const make = (hour: number, cloudPercent: number | null, state: MapSpotEvaluation["state"] = "FRESH") => ({
+    atUtc: `2026-09-15T${hour}:00:00Z`, moonPhase: null, dynamicLayer: null,
+    spotSignals: { [baseEvaluation.spotId]: { ...baseEvaluation, weatherAt: `2026-09-15T${hour}:00:00Z`, cloudPercent, state } },
+  });
+  const source = [make(12, null), make(13, 0), make(14, null), make(15, 40), make(16, 60, "UNAVAILABLE")];
+  const choices = cloudTimeFrameChoices(source);
+  assert.deepEqual(choices.map(choice => choice.sourceIndex), [1, 3]);
+  assert.equal(source[choices[1]!.sourceIndex], choices[1]!.frame);
+  assert.equal(choices[1]!.frame.atUtc, "2026-09-15T15:00:00Z");
+  assert.equal(source.length, 5, "astronomy retains its complete axis");
+  assert.deepEqual(cloudTimeFrameChoices([]), []);
+});
+
+test("unavailable weather clears only weather-derived signals, retaining independently calculated moon impact", () => {
+  const signal = { ...baseEvaluation, state: "UNAVAILABLE" as const, moonImpact: "HIGH" as const, cloudPercent: 45 };
+  const frame = { atUtc: "2026-09-15T13:30:00Z", moonPhase: null, dynamicLayer: null, spotSignals: { [baseEvaluation.spotId]: signal } };
+  const projected = projectMapEvaluations({ [baseEvaluation.spotId]: baseEvaluation }, frame)[baseEvaluation.spotId]!;
+  assert.equal(projected.moonImpact, "HIGH"); assert.equal(projected.cloudPercent, null); assert.equal(projected.weatherAt, null);
+  assert.equal(projected.opportunityScore, null); assert.equal(projected.opportunityEligible, false);
+});
 
 const frames: readonly MapSceneTimeFrame[] = [
   {
@@ -70,10 +91,8 @@ const frames: readonly MapSceneTimeFrame[] = [
     spotSignals: {
       "spot:test": {
         spotId: baseEvaluation.spotId,
+        weatherAt: "2026-08-23T12:00:00.000Z",
         cloudPercent: 18,
-        lowCloudPercent: 8,
-        midCloudPercent: 6,
-        highCloudPercent: 4,
         moonImpact: "HIGH",
         opportunityScore: 82,
         opportunityConfidence: 0.86,
@@ -140,7 +159,6 @@ test("missing or mismatched time signals cannot retain another time's conditions
   for (const frame of [frames[0]!, { ...frames[1]!, spotSignals: { "spot:test": { ...frames[1]!.spotSignals["spot:test"]!, spotId: "spot:other" as MapSpotEvaluation["spotId"] } } }]) {
     const value = projectMapEvaluations({ "spot:test": baseEvaluation }, frame)["spot:test"]!;
     assert.equal(value.cloudPercent, null);
-    assert.equal(value.lowCloudPercent, null);
     assert.equal(value.moonImpact, "UNKNOWN");
     assert.equal(value.opportunityScore, null);
     assert.equal(value.opportunityEligible, false);

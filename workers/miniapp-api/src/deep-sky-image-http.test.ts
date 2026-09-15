@@ -19,7 +19,7 @@ test("deep-sky image HTTP route preserves JPEG bytes and cache-safe ASCII header
       return {
         bytes: Buffer.from(jpeg),
         contentType: "image/jpeg",
-        sourceLabel: "NASA SkyView - WISE 12um",
+        sourceLabel: "NASA/IPAC IRSA - AllWISE W3 12um",
         fieldDegrees: 0.6,
       };
     },
@@ -47,7 +47,7 @@ test("deep-sky image HTTP route preserves JPEG bytes and cache-safe ASCII header
     assert.equal(response.headers["x-content-type-options"], "nosniff");
     assert.equal(
       response.headers["x-starward-image-source"],
-      "NASA SkyView - WISE 12um",
+      "NASA/IPAC IRSA - AllWISE W3 12um",
     );
     assert.equal(response.headers["x-starward-image-field-degrees"], "0.6");
     assert.deepEqual(response.rawPayload, jpeg);

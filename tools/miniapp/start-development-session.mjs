@@ -2,6 +2,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { access, realpath, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { nodeEnvironment } from "../run-node.cjs";
 import { resolveOfficialCli } from "./device-feedback-official.mjs";
 import { canListen, developmentOptions, startDevelopmentAutomation } from "./development-automation.mjs";
 
@@ -57,7 +58,7 @@ function startNpm(script, env) {
   if (stopping) throw new Error("development_session_stopped");
   return spawn(process.execPath, [npmCli, "run", script], {
     cwd: root,
-    env: { ...process.env, ...env },
+    env: nodeEnvironment(process.execPath, { ...process.env, ...env }),
     stdio: "inherit",
     windowsHide: true,
   });

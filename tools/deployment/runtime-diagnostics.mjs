@@ -19,13 +19,14 @@ export async function apiRuntimeProbe(env = process.env, load = (name) => import
   try {
     const { loadRuntimeConfig } = await load("file:///app/workers/miniapp-api/dist/runtime-config.js");
     config = loadRuntimeConfig();
-    const fields = ["releaseProfile", "storageMode", "authMode", "weatherProvider", "openMeteoEvidenceMode", "routeProvider", "placeSearchProvider"];
-    if (!fields.every((key) => typeof config?.[key] === "string") || ![24, 72].includes(config?.qweather?.forecastHours) || typeof config.darkSkyDatasetVersion !== "string") throw new Error();
+    const fields = ["releaseProfile", "storageMode", "authMode", "weatherProvider", "routeProvider", "placeSearchProvider"];
+    const hours = config?.qweather?.forecastHours;
+    if (!fields.every((key) => typeof config?.[key] === "string") || config.weatherProvider !== "QWEATHER" || !Number.isInteger(hours) || hours < 1 || hours > 240 || typeof config.darkSkyDatasetVersion !== "string") throw new Error();
     for (const key of fields) report[key] = config[key];
     report.forecastHours = config.qweather.forecastHours;
     report.darkSkyConfigured = config.darkSkyDatasetVersion !== "UNAVAILABLE";
     report.qweatherConfigured = !!(config.qweather.apiHost && config.qweather.credentialId && config.qweather.projectId && config.qweather.privateKeyPem);
-    report.amapConfigured = !!config.amapWebServiceKey;
+
     report.configState = "ready";
   } catch { config = undefined; /* Runtime validation may mention a secret value: discard errors. */ }
   let client;
@@ -108,21 +109,18 @@ export function sanitizeProviderSimulationReport(report) {
       !Number.isInteger(report.hourlyCount) || report.hourlyCount < 1 || report.hourlyCount > 384 ||
       report.weather?.provider !== "和风天气" || !["FRESH", "PARTIAL", "STALE_USABLE"].includes(report.weather.state) ||
       report.astronomy?.provider !== "Astronomy Engine" || report.astronomy.state !== "FRESH" ||
-      !["FRESH", "PARTIAL", "STALE_USABLE", "EXPIRED", "UNAVAILABLE", "ESTIMATED"].includes(report.openMeteo?.state) ||
       !["FRESH", "PARTIAL", "STALE_USABLE", "EXPIRED", "UNAVAILABLE", "ESTIMATED"].includes(report.alerts?.state) ||
-      ![report.composedTotalCloudHours, report.openMeteo?.modelCount, report.openMeteo?.layeredCloudHours, report.alerts?.count].every(count => Number.isSafeInteger(count) && count >= 0 && count <= 1000)) throw new Error("diagnostic_simulation_response_invalid");
+      ![report.composedTotalCloudHours, report.alerts?.count].every(count => Number.isSafeInteger(count) && count >= 0 && count <= 1000)) throw new Error("diagnostic_simulation_response_invalid");
   return { status: "passed", evidenceScope: "ISOLATED_TEST_SIMULATION", productPopulation: "FORMAL_POPULATION_MISSING", hourlyCount: report.hourlyCount,
     composedTotalCloudHours: report.composedTotalCloudHours,
     weather: { provider: "和风天气", state: report.weather.state }, astronomy: { provider: "Astronomy Engine", state: "FRESH" },
-    openMeteo: { state: report.openMeteo.state, modelCount: report.openMeteo.modelCount, layeredCloudHours: report.openMeteo.layeredCloudHours },
     alerts: { state: report.alerts.state, count: report.alerts.count } };
 }
 
 const enums = {
   status: ["observed"], runtimeEnvironment: ["staging", "invalid"], configState: ["ready", "failed"], databaseState: ["ready", "failed"],
   releaseProfile: ["LOCAL", "TRIAL", "COMMERCIAL"], storageMode: ["MEMORY_TEST", "POSTGRES"], authMode: ["LOCAL_TEST", "WECHAT"],
-  weatherProvider: ["QWEATHER", "OPEN_METEO_NONCOMMERCIAL", "OPEN_METEO_COMMERCIAL"],
-  openMeteoEvidenceMode: ["OPEN_METEO_NONCOMMERCIAL", "OPEN_METEO_COMMERCIAL"], routeProvider: ["AMAP", "DISABLED"], placeSearchProvider: ["AMAP", "DISABLED"],
+  weatherProvider: ["QWEATHER"], routeProvider: ["DISABLED"], placeSearchProvider: ["DISABLED"],
 };
 const counts = ["migrationCount", "spotsTotal", "spotsPublicStatuses", "spotsQualifiedNonFixture", "assessmentsTotal", "assessmentsExpired", "darkSkyPublishedVersions", "darkSkyPublishedCells", "darkSkySelectedCells", "vendorUsageRows", "vendorUsageCurrentMonthRows"];
 
@@ -141,7 +139,7 @@ export function sanitizeRuntimeReport(report) {
     if (!Number.isSafeInteger(report[name]) || report[name] < 0) throw new Error("runtime_report_invalid");
     clean[name] = report[name];
   }
-  for (const name of ["databaseReadOnly", "darkSkyConfigured", "qweatherConfigured", "amapConfigured"]) if (report[name] !== undefined) {
+  for (const name of ["databaseReadOnly", "darkSkyConfigured", "qweatherConfigured"]) if (report[name] !== undefined) {
     if (typeof report[name] !== "boolean") throw new Error("runtime_report_invalid");
     clean[name] = report[name];
   }
@@ -150,10 +148,10 @@ export function sanitizeRuntimeReport(report) {
   if (report.healthStatus !== null && (!Number.isInteger(report.healthStatus) || report.healthStatus < 100 || report.healthStatus > 599)) throw new Error("runtime_report_invalid");
   clean.healthStatus = report.healthStatus;
   if (report.forecastHours !== undefined) {
-    if (![24, 72].includes(report.forecastHours)) throw new Error("runtime_report_invalid");
+    if (!Number.isInteger(report.forecastHours) || report.forecastHours < 1 || report.forecastHours > 240) throw new Error("runtime_report_invalid");
     clean.forecastHours = report.forecastHours;
   }
   if (clean.databaseState === "ready" && (clean.databaseReadOnly !== true || counts.some((name) => clean[name] === undefined && (name !== "darkSkySelectedCells" || clean.configState === "ready")))) throw new Error("runtime_report_invalid");
-  if (clean.configState === "ready" && [...Object.keys(enums).filter((name) => !["status", "runtimeEnvironment", "configState", "databaseState"].includes(name)), "forecastHours", "darkSkyConfigured", "qweatherConfigured", "amapConfigured"].some((name) => clean[name] === undefined)) throw new Error("runtime_report_invalid");
+  if (clean.configState === "ready" && [...Object.keys(enums).filter((name) => !["status", "runtimeEnvironment", "configState", "databaseState"].includes(name)), "forecastHours", "darkSkyConfigured", "qweatherConfigured"].some((name) => clean[name] === undefined)) throw new Error("runtime_report_invalid");
   return clean;
 }

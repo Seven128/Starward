@@ -18,7 +18,6 @@ import {
   revertFilterDraft,
   toggleFavoriteRelation,
   toggleFilterDraft,
-  updateDraftDrivingRange,
 } from "./app-transitions";
 
 test("filter draft is discarded on cancel and committed only on apply", () => {
@@ -44,21 +43,18 @@ test("filter draft is discarded on cancel and committed only on apply", () => {
   assert.equal(applied.filterSheetOpen, false);
 });
 
-test("filter draft keeps both driving limits through mode changes and clear restores defaults", () => {
-  const opened = beginFilterDraft(EMPTY_FILTER_STATE);
-  const ranged = updateDraftDrivingRange(opened.draftFilters, {
-    mode: "DISTANCE",
-    maxMinutes: 180,
-    maxDistanceKm: 240,
-  });
-  const enabled = toggleFilterDraft(ranged.draftFilters, "distanceDriveTime");
-  const cleared = clearFilterDraft(enabled.draftFilters);
-  assert.deepEqual(cleared.draftFilters.DISTANCE_DRIVE_TIME, []);
-  assert.deepEqual(cleared.draftFilters.drivingRange, EMPTY_FILTER_STATE.drivingRange);
-  const applied = applyFilterDraft(enabled.draftFilters);
-  assert.deepEqual(applied.committedFilters.drivingRange, ranged.draftFilters.drivingRange);
+test("legacy filters migrate without losing retained selections or re-enabling retired dimensions", () => {
+  const legacy = { ...EMPTY_FILTER_STATE, PARKING: ["parking"], LESS_CLOUD: ["lessCloud"],
+    DISTANCE_DRIVE_TIME: ["distanceDriveTime"], LOW_CLOUD_THRESHOLD: ["lowCloudThreshold"],
+    drivingRange: { mode: "TIME", maxMinutes: 180, maxDistanceKm: 100 } };
+  const opened = beginFilterDraft(legacy);
+  assert.deepEqual(opened.draftFilters.PARKING, ["parking"]);
+  assert.deepEqual(opened.draftFilters.LESS_CLOUD, ["lessCloud"]);
+  assert.equal("drivingRange" in opened.draftFilters, false);
+  assert.equal("DISTANCE_DRIVE_TIME" in opened.draftFilters, false);
+  assert.equal("LOW_CLOUD_THRESHOLD" in opened.draftFilters, false);
+  assert.deepEqual(clearFilterDraft(opened.draftFilters).draftFilters, EMPTY_FILTER_STATE);
 });
-
 test("observation mode restores the exact prior day or night mode", () => {
   const entered = enterObservationMode("NIGHT");
   assert.equal(entered.mode, "OBSERVATION");

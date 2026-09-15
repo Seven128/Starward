@@ -67,7 +67,7 @@ Android/runtime-carrier and current-candidate verification detail continues in [
 
 ## Open Risks
 
-- Official-source research and the current personal-trial profile establish qualifying free-first choices and the product-scoped ceilings in product-profile.md (native App CNY 200/month; Mini Program CNY 350/calendar month excluding application/database IaaS), but purchases, commercial contracts, public redistribution, production accounts/traffic, representative devices, outdoor validation, legal/store approval, and production provider promotion remain future gates.
+- Official-source research and the current personal-trial profile establish qualifying free-first choices and the product-scoped ceilings in product-profile.md (native App CNY 200/month; Mini Program uses the separately adopted external-capability cost scenario), but purchases, commercial contracts, public redistribution, production accounts/traffic, representative devices, outdoor validation, legal/store approval, and production provider promotion remain future gates.
 - A corrective audit found fixed responses, process-local repositories, metadata-only side effects, and declaration-only native boundaries in existing scaffolding. They must be replaced by durable production loops before any Outcome can be accepted.
 - Windows-hosted delivery may not by itself establish the physical WeChat observations required by the current acceptance matrix, nor real provider, coordinate-authorization or real WeChat-identity facts. Those rows remain explicit pending external validations; they cannot be omitted or replaced by project pass/verdict rows, and the Goal cannot close while any required confirmation is pending.
 

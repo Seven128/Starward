@@ -9,6 +9,17 @@ import {
   type MiniappAstronomyTarget,
 } from "./astronomy-engine-adapter.ts";
 
+test("requested daytime positions remain available when no astronomical dusk exists", () => {
+  const at = "2026-06-21T12:00:00.000Z";
+  const result = calculateMiniappNightSky({ latitude: 70, longitude: 20, elevationM: 0, timezone: "Europe/Oslo",
+    nightDate: "2026-06-21", target: "jupiter", additionalTimes: [at, at] });
+  assert.equal(result.astronomicalDusk, null);
+  const rows = result.samples.filter(row => row.at === at);
+  assert.equal(rows.length, 1);
+  assert.ok(rows[0]!.sunAltitudeDeg > 0);
+  assert.ok(Number.isFinite(rows[0]!.moonAltitudeDeg));
+});
+
 test("continuous phase angles map to all eight semantic lunar states", () => {
   assert.deepEqual(
     [0, 45, 90, 135, 180, 225, 270, 315].map(moonPhaseKey),
@@ -242,5 +253,8 @@ test("no-rise/set and extreme-latitude cases fail closed without invented sample
   });
   assert.equal(midnightSun.astronomicalDusk, polar.expected.astronomicalDusk);
   assert.equal(midnightSun.astronomicalDawn, polar.expected.astronomicalDawn);
-  assert.equal(midnightSun.samples.length, polar.expected.sampleCount);
+  assert.equal(midnightSun.samples.length, 1, "requested positions do not require an astronomical-night window");
+  assert.equal(midnightSun.samples[0]!.at, "2026-06-21T12:00:00.000Z");
+  const withoutRequestedPosition = calculateMiniappNightSky({ ...polar.observer, timezone: "Europe/Oslo", nightDate: "2026-06-21", target: "moon", cadenceMinutes: 60 });
+  assert.equal(withoutRequestedPosition.samples.length, polar.expected.sampleCount);
 });

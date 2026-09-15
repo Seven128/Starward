@@ -102,3 +102,38 @@ test("different actual request points and independently configured adapters rema
   await second.getHourly(input);
   assert.equal(calls, 3);
 });
+
+test("a single current forecast hour remains cacheable until its coverage end", async () => {
+  let calls = 0;
+  const now = Date.parse("2026-09-14T13:30:00Z");
+  const selected = config();
+  selected.qweather.forecastHours = 1;
+  const adapter = new QWeatherForecastAdapter(selected, async () => { calls++; return json(forecast(0.7)); }, 1000, () => now);
+  const first = await adapter.getHourly(input);
+  const second = await adapter.getHourly(input);
+  assert.equal(first.source.validTo, "2026-09-14T14:00:00.000Z");
+  assert.equal(second.value?.[0]?.cloudPercent, 70);
+  assert.equal(calls, 1);
+});
+
+test("only explicit zero-result is a successful empty warning feed", async () => {
+  for (const payload of [{ metadata: {} }, { metadata: { zeroResult: false }, alerts: [] },
+    { metadata: { zeroResult: true }, alerts: [{}] }, { metadata: { zeroResult: false }, alerts: [{}] }]) {
+    const adapter = new QWeatherAlertAdapter(config(), async () => json(payload), 1000, () => start);
+    const result = await adapter.getAlerts(input);
+    assert.equal(result.state, "UNAVAILABLE", JSON.stringify(payload));
+    assert.equal(result.value, null);
+  }
+  const adapter = new QWeatherAlertAdapter(config(), async () => json({ metadata: { zeroResult: true } }), 1000, () => start);
+  assert.deepEqual((await adapter.getAlerts(input)).value, []);
+});
+
+test("unrecognized alert severity cannot certify a complete non-material warning feed", async () => {
+  const payload = warning(start + 60_000);
+  payload.alerts[0]!.severity = "unsupported-value";
+  const adapter = new QWeatherAlertAdapter(config(), async () => json(payload), 1000, () => start);
+  const result = await adapter.getAlerts(input);
+  assert.equal(result.state, "PARTIAL");
+  assert.equal(result.value?.[0]?.severity, "unknown");
+  assert.equal(result.value?.length, 1);
+});

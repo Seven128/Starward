@@ -1,411 +1,93 @@
-import type {
-  MeteorActivityEvidence,
-  MeteorActivityStage,
-  SourceSummary,
-} from "@starward/miniapp-contracts";
+import type { MeteorActivityEvidence, MeteorShowerOccurrence, SourceSummary } from "@starward/miniapp-contracts";
+import { calculateAnnualSolarReferenceAt } from "./astronomy-engine-adapter.ts";
+import referenceData from "./data/gmn-annual-reference.ts";
 
-export const METEOR_EVENT_CATALOG_VERSION = "iau-imo-reviewed-2026.1";
-export const METEOR_ACTIVITY_PROFILE_VERSION =
-  "nasa-meo-double-exponential-perseids-2017.1";
+export const METEOR_EVENT_CATALOG_VERSION = "gmn-annual-2022-2023.20260914.1";
+export const METEOR_ACTIVITY_PROFILE_VERSION = "gmn-no-reviewed-activity-profile";
+export type MeteorEventOccurrence = MeteorShowerOccurrence;
+const SOURCE_ID = `meteor-catalog:${METEOR_EVENT_CATALOG_VERSION}`;
 
-export interface MeteorEventOccurrence {
-  occurrenceId: string;
-  eventId: string;
-  iauNumber: number;
-  code: string;
-  displayName: string;
-  activeStartDate: string;
-  activeEndDate: string;
-  peakDate: string;
-  radiantRightAscensionDeg: number;
-  radiantDeclinationDeg: number;
-  velocityKmPerSecond: number;
-  populationIndex: number;
-  nominalPeakZhr: number;
-}
-
-interface DoubleExponentialComponent {
-  peakSolarLongitudeDeg: number;
-  peakReferenceZhr: number;
-  risingExponentPerDeg: number;
-  fallingExponentPerDeg: number;
-}
-
-interface MeteorActivityProfile {
-  profileId: string;
-  occurrenceId: string;
-  sampleStartSolarLongitudeDeg: number;
-  sampleEndSolarLongitudeDeg: number;
-  components: readonly DoubleExponentialComponent[];
-}
-
-const PERSEIDS_PROFILE: MeteorActivityProfile = Object.freeze({
-  profileId: "activity-profile:007-per:nasa-meo-2017",
-  occurrenceId: "event-occurrence:007-per:2026",
-  sampleStartSolarLongitudeDeg: 115,
-  sampleEndSolarLongitudeDeg: 153,
-  components: Object.freeze([
-    Object.freeze({
-      peakSolarLongitudeDeg: 140.05,
-      peakReferenceZhr: 80,
-      risingExponentPerDeg: 0.35,
-      fallingExponentPerDeg: 0.35,
-    }),
-    Object.freeze({
-      peakSolarLongitudeDeg: 140.05,
-      peakReferenceZhr: 23,
-      risingExponentPerDeg: 0.05,
-      fallingExponentPerDeg: 0.092,
-    }),
-  ]),
-});
-
-const ACTIVITY_PROFILES = Object.freeze([PERSEIDS_PROFILE]);
-
-function signedSolarLongitudeDelta(value: number, peak: number): number {
-  return ((value - peak + 540) % 360) - 180;
-}
-
-function componentActivity(
-  component: DoubleExponentialComponent,
-  solarLongitudeDeg: number,
-): number {
-  const delta = signedSolarLongitudeDelta(
-    solarLongitudeDeg,
-    component.peakSolarLongitudeDeg,
-  );
-  const exponent =
-    delta <= 0
-      ? component.risingExponentPerDeg * delta
-      : -component.fallingExponentPerDeg * delta;
-  return component.peakReferenceZhr * 10 ** exponent;
-}
-
-function relativeProfileActivity(
-  profile: MeteorActivityProfile,
-  solarLongitudeDeg: number,
-): number {
-  const value = profile.components.reduce(
-    (sum, component) => sum + componentActivity(component, solarLongitudeDeg),
-    0,
-  );
-  const peak = profile.components.reduce(
-    (sum, component) => sum + component.peakReferenceZhr,
-    0,
-  );
-  return Math.max(0, Math.min(1, value / peak));
-}
-
-function activityStage(relativeActivity: number): MeteorActivityStage {
-  if (relativeActivity >= 0.8) return "NEAR_PEAK";
-  if (relativeActivity >= 0.45) return "STRONG";
-  if (relativeActivity >= 0.15) return "MODERATE";
-  return "WEAK";
-}
-
-export function meteorActivityProfileSource(localDate: string): SourceSummary {
-  return {
-    id: `meteor-activity:${METEOR_ACTIVITY_PROFILE_VERSION}`,
-    kind: "HISTORICAL_RECORD",
-    provider: "NASA Meteoroid Environment Office",
-    title: "Meteor Shower Forecasting for Spacecraft Operations · Perseids activity profile",
-    sourceUrl: "https://ntrs.nasa.gov/citations/20170004446",
-    license: "NASA NTRS public use permitted; numeric model facts used with attribution",
-    licenseUrl: "https://www.nasa.gov/nasa-brand-center/images-and-media/",
-    publishedAt: "2017-04-18T00:00:00.000Z",
-    retrievedAt: new Date().toISOString(),
-    validFrom: `${localDate.slice(0, 4)}-01-01T00:00:00.000Z`,
-    validTo: `${localDate.slice(0, 4)}-12-31T23:59:59.999Z`,
-    state: "FRESH",
-    confidence: 0.78,
-    precision:
-      "历史/雷达资料拟合的双指数相对活动形状；太阳黄经 J2000；不代表当年实时活动",
-    limitations: [
-      "原模型用于近地空间流星环境预报，产品只采用其英仙座历史活动形状",
-      "曲线不是 2026 年实时观测，也不是用户每小时可见数量",
-      "全球参考峰窗仍以当前年度 IMO 目录为准",
-    ],
-  };
-}
-
+/** The acquired GMN table/trajectories do not provide a reviewed activity curve.
+ * Never attach the retired NASA 2017 Perseids shape to a new GMN occurrence. */
 export function meteorActivityAt(
-  occurrenceId: string,
-  solarLongitudeDeg: number,
-  localDate: string,
+  _occurrenceId: string, _solarLongitudeDeg: number, _localDate: string,
 ): MeteorActivityEvidence | null {
-  const profile = ACTIVITY_PROFILES.find(
-    (candidate) => candidate.occurrenceId === occurrenceId,
-  );
-  if (!profile) return null;
-  const relativeActivity = relativeProfileActivity(profile, solarLongitudeDeg);
-  const samples = [];
-  for (
-    let longitude = profile.sampleStartSolarLongitudeDeg;
-    longitude <= profile.sampleEndSolarLongitudeDeg;
-    longitude += 1
-  )
-    samples.push({
-      solarLongitudeDeg: longitude,
-      relativeActivity: relativeProfileActivity(profile, longitude),
-    });
-  return {
-    profileId: profile.profileId,
-    profileKind: "HISTORICAL_FIT",
-    profileVersion: METEOR_ACTIVITY_PROFILE_VERSION,
-    axis: "SOLAR_LONGITUDE_J2000",
-    unit: "RELATIVE_ACTIVITY",
-    referencePeakSolarLongitudeDeg:
-      profile.components[0]!.peakSolarLongitudeDeg,
-    currentSolarLongitudeDeg: solarLongitudeDeg,
-    relativeActivity,
-    stage: activityStage(relativeActivity),
-    samples,
-    source: meteorActivityProfileSource(localDate),
-    limitations: meteorActivityProfileSource(localDate).limitations,
-  };
+  return null;
 }
 
-/**
- * Current release subset of the IMO 2026 Working List of Visual Meteor
- * Showers. It intentionally contains the principal nighttime showers needed
- * by the trial journey, not radio/daytime-only populations. Dates, peak
- * radiants, velocity, population index and reference ZHR are copied as facts;
- * no live rate or user-visible count is inferred from them.
- */
-export const METEOR_EVENTS_2026: readonly MeteorEventOccurrence[] = Object.freeze([
-  {
-    occurrenceId: "event-occurrence:010-qua:2026",
-    eventId: "meteor-shower:010-qua",
-    iauNumber: 10,
-    code: "QUA",
-    displayName: "象限仪座流星雨",
-    activeStartDate: "2025-12-28",
-    activeEndDate: "2026-01-12",
-    peakDate: "2026-01-03",
-    radiantRightAscensionDeg: 230,
-    radiantDeclinationDeg: 49,
-    velocityKmPerSecond: 41,
-    populationIndex: 2.1,
-    nominalPeakZhr: 80,
-  },
-  {
-    occurrenceId: "event-occurrence:006-lyr:2026",
-    eventId: "meteor-shower:006-lyr",
-    iauNumber: 6,
-    code: "LYR",
-    displayName: "四月天琴座流星雨",
-    activeStartDate: "2026-04-14",
-    activeEndDate: "2026-04-30",
-    peakDate: "2026-04-22",
-    radiantRightAscensionDeg: 271,
-    radiantDeclinationDeg: 34,
-    velocityKmPerSecond: 49,
-    populationIndex: 2.1,
-    nominalPeakZhr: 18,
-  },
-  {
-    occurrenceId: "event-occurrence:031-eta:2026",
-    eventId: "meteor-shower:031-eta",
-    iauNumber: 31,
-    code: "ETA",
-    displayName: "宝瓶座η流星雨",
-    activeStartDate: "2026-04-19",
-    activeEndDate: "2026-05-28",
-    peakDate: "2026-05-06",
-    radiantRightAscensionDeg: 338,
-    radiantDeclinationDeg: -1,
-    velocityKmPerSecond: 66,
-    populationIndex: 2.4,
-    nominalPeakZhr: 50,
-  },
-  {
-    occurrenceId: "event-occurrence:005-sda:2026",
-    eventId: "meteor-shower:005-sda",
-    iauNumber: 5,
-    code: "SDA",
-    displayName: "南宝瓶座δ流星雨",
-    activeStartDate: "2026-07-12",
-    activeEndDate: "2026-08-23",
-    peakDate: "2026-07-31",
-    radiantRightAscensionDeg: 340,
-    radiantDeclinationDeg: -16,
-    velocityKmPerSecond: 41,
-    populationIndex: 2.5,
-    nominalPeakZhr: 25,
-  },
-  {
-    occurrenceId: "event-occurrence:001-cap:2026",
-    eventId: "meteor-shower:001-cap",
-    iauNumber: 1,
-    code: "CAP",
-    displayName: "摩羯座α流星雨",
-    activeStartDate: "2026-07-03",
-    activeEndDate: "2026-08-15",
-    peakDate: "2026-07-31",
-    radiantRightAscensionDeg: 307,
-    radiantDeclinationDeg: -10,
-    velocityKmPerSecond: 23,
-    populationIndex: 2.5,
-    nominalPeakZhr: 5,
-  },
-  {
-    occurrenceId: "event-occurrence:007-per:2026",
-    eventId: "meteor-shower:007-per",
-    iauNumber: 7,
-    code: "PER",
-    displayName: "英仙座流星雨",
-    activeStartDate: "2026-07-17",
-    activeEndDate: "2026-08-24",
-    peakDate: "2026-08-13",
-    radiantRightAscensionDeg: 48,
-    radiantDeclinationDeg: 58,
-    velocityKmPerSecond: 59,
-    populationIndex: 2.2,
-    nominalPeakZhr: 100,
-  },
-  {
-    occurrenceId: "event-occurrence:206-aur:2026",
-    eventId: "meteor-shower:206-aur",
-    iauNumber: 206,
-    code: "AUR",
-    displayName: "御夫座流星雨",
-    activeStartDate: "2026-08-28",
-    activeEndDate: "2026-09-05",
-    peakDate: "2026-09-01",
-    radiantRightAscensionDeg: 91,
-    radiantDeclinationDeg: 39,
-    velocityKmPerSecond: 66,
-    populationIndex: 2.5,
-    nominalPeakZhr: 6,
-  },
-  {
-    occurrenceId: "event-occurrence:208-spe:2026",
-    eventId: "meteor-shower:208-spe",
-    iauNumber: 208,
-    code: "SPE",
-    displayName: "九月英仙座ε流星雨",
-    activeStartDate: "2026-09-05",
-    activeEndDate: "2026-09-21",
-    peakDate: "2026-09-09",
-    radiantRightAscensionDeg: 48,
-    radiantDeclinationDeg: 40,
-    velocityKmPerSecond: 64,
-    populationIndex: 2.5,
-    nominalPeakZhr: 8,
-  },
-  {
-    occurrenceId: "event-occurrence:009-dra:2026",
-    eventId: "meteor-shower:009-dra",
-    iauNumber: 9,
-    code: "DRA",
-    displayName: "十月天龙座流星雨",
-    activeStartDate: "2026-10-06",
-    activeEndDate: "2026-10-10",
-    peakDate: "2026-10-09",
-    radiantRightAscensionDeg: 262,
-    radiantDeclinationDeg: 54,
-    velocityKmPerSecond: 20,
-    populationIndex: 2.6,
-    nominalPeakZhr: 5,
-  },
-  {
-    occurrenceId: "event-occurrence:008-ori:2026",
-    eventId: "meteor-shower:008-ori",
-    iauNumber: 8,
-    code: "ORI",
-    displayName: "猎户座流星雨",
-    activeStartDate: "2026-10-02",
-    activeEndDate: "2026-11-07",
-    peakDate: "2026-10-21",
-    radiantRightAscensionDeg: 95,
-    radiantDeclinationDeg: 16,
-    velocityKmPerSecond: 66,
-    populationIndex: 2.5,
-    nominalPeakZhr: 20,
-  },
-  {
-    occurrenceId: "event-occurrence:013-leo:2026",
-    eventId: "meteor-shower:013-leo",
-    iauNumber: 13,
-    code: "LEO",
-    displayName: "狮子座流星雨",
-    activeStartDate: "2026-11-06",
-    activeEndDate: "2026-11-30",
-    peakDate: "2026-11-17",
-    radiantRightAscensionDeg: 152,
-    radiantDeclinationDeg: 22,
-    velocityKmPerSecond: 71,
-    populationIndex: 2.5,
-    nominalPeakZhr: 15,
-  },
-  {
-    occurrenceId: "event-occurrence:004-gem:2026",
-    eventId: "meteor-shower:004-gem",
-    iauNumber: 4,
-    code: "GEM",
-    displayName: "双子座流星雨",
-    activeStartDate: "2026-12-04",
-    activeEndDate: "2026-12-20",
-    peakDate: "2026-12-14",
-    radiantRightAscensionDeg: 112,
-    radiantDeclinationDeg: 33,
-    velocityKmPerSecond: 35,
-    populationIndex: 2.6,
-    nominalPeakZhr: 150,
-  },
-  {
-    occurrenceId: "event-occurrence:015-urs:2026",
-    eventId: "meteor-shower:015-urs",
-    iauNumber: 15,
-    code: "URS",
-    displayName: "小熊座流星雨",
-    activeStartDate: "2026-12-17",
-    activeEndDate: "2026-12-26",
-    peakDate: "2026-12-22",
-    radiantRightAscensionDeg: 217,
-    radiantDeclinationDeg: 76,
-    velocityKmPerSecond: 33,
-    populationIndex: 2.8,
-    nominalPeakZhr: 10,
-  },
-]);
+export function meteorReferencesForYear(year: number): readonly MeteorShowerOccurrence[] {
+  return referenceData.showers.map((row): MeteorShowerOccurrence => {
+    const referenceAt = calculateAnnualSolarReferenceAt(year, row.solarLongitudeReferenceDeg);
+    let startAt = calculateAnnualSolarReferenceAt(year, row.solarLongitudeStartDeg);
+    let endAt = calculateAnnualSolarReferenceAt(year, row.solarLongitudeEndDeg);
+    if (startAt > referenceAt) startAt = calculateAnnualSolarReferenceAt(year - 1, row.solarLongitudeStartDeg);
+    if (endAt < referenceAt) endAt = calculateAnnualSolarReferenceAt(year + 1, row.solarLongitudeEndDeg);
+    const fit = row.radiantReference;
+    const radiantDrift = fit.state === "CANDIDATE" ? {
+      frame: fit.frame,
+      referenceSolarLongitudeDeg: fit.referenceSolarLongitudeDeg,
+      sunCenteredLongitudeDeg: fit.sunCenteredLongitudeDeg,
+      latitudeDeg: fit.latitudeDeg,
+      longitudeDriftDegPerDeg: fit.longitudeDriftDegPerDeg,
+      latitudeDriftDegPerDeg: fit.latitudeDriftDegPerDeg,
+      validSolarOffsetMinDeg: fit.validSolarOffsetMinDeg,
+      validSolarOffsetMaxDeg: fit.validSolarOffsetMaxDeg,
+    } : null;
+    const identity = `${String(row.iauNumber).padStart(3, "0")}-${row.code.toLowerCase()}`;
+    return {
+      kind: "METEOR_SHOWER", occurrenceId: `event-occurrence:${identity}:${year}`,
+      eventId: `meteor-shower:${identity}`, iauNumber: row.iauNumber, code: row.code,
+      displayName: row.displayName, activeStartDate: startAt.slice(0, 10), activeEndDate: endAt.slice(0, 10),
+      peakDate: referenceAt.slice(0, 10), peakAtUtc: null, sourceId: SOURCE_ID,
+      radiantRightAscensionDeg: null, radiantDeclinationDeg: null,
+      velocityKmPerSecond: fit.state === "CANDIDATE" ? fit.velocityKmPerSecond : null,
+      populationIndex: row.populationIndex, nominalPeakZhr: null,
+      annualReference: {
+        kind: "GMN_ANNUAL_MONITORING_REFERENCE", dateTimezone: "UTC",
+        solarLongitudeStartDeg: row.solarLongitudeStartDeg,
+        solarLongitudeReferenceDeg: row.solarLongitudeReferenceDeg,
+        solarLongitudeEndDeg: row.solarLongitudeEndDeg, radiantDrift,
+      },
+    };
+  });
+}
+
+// Existing release and plan IDs remain stable; these are newly derived annual
+// references, not the displaced IMO annual forecast values.
+export const METEOR_EVENTS_2026 = Object.freeze(meteorReferencesForYear(2026));
 
 export function activeMeteorEvents(localDate: string) {
-  return METEOR_EVENTS_2026.filter(
-    (event) =>
-      localDate >= event.activeStartDate && localDate <= event.activeEndDate,
-  );
+  return METEOR_EVENTS_2026.filter(event => meteorReferenceOverlapsLocalDate(event, localDate));
+}
+
+/** Candidate inclusion only: local observing nights may overlap adjacent UTC
+ * calendar dates. Exact solar/fit coverage is enforced by the geometry owner. */
+export function meteorReferenceOverlapsLocalDate(event: MeteorShowerOccurrence, localDate: string) {
+  const padding = event.annualReference ? 86_400_000 : 0;
+  const date = Date.parse(localDate);
+  return date >= Date.parse(event.activeStartDate) - padding && date <= Date.parse(event.activeEndDate) + padding;
 }
 
 export function meteorEventByOccurrenceId(occurrenceId: string) {
-  return METEOR_EVENTS_2026.find(
-    (event) => event.occurrenceId === occurrenceId,
-  ) ?? null;
+  return METEOR_EVENTS_2026.find(event => event.occurrenceId === occurrenceId) ?? null;
 }
 
-export function meteorCatalogSource(
-  localDate: string,
-  state: SourceSummary["state"] = "FRESH",
-): SourceSummary {
+export function meteorCatalogSource(localDate: string, state: SourceSummary["state"] = "FRESH"): SourceSummary {
   return {
-    id: `meteor-catalog:${METEOR_EVENT_CATALOG_VERSION}`,
-    kind: "OFFICIAL_REFERENCE",
-    provider: "International Meteor Organization",
-    title: "2026 Meteor Shower Calendar · Working List of Visual Meteor Showers",
-    sourceUrl: "https://www.imo.net/files/meteor-shower/cal2026.pdf",
-    license: "事实引用并注明来源；不主张原文或版式再分发权",
-    licenseUrl: "https://www.imo.net/resources/calendar/",
-    publishedAt: "2025-06-30T00:00:00.000Z",
-    retrievedAt: new Date().toISOString(),
+    id: SOURCE_ID, kind: "HISTORICAL_RECORD", provider: "Global Meteor Network",
+    title: "GMN 常年监测参考与 2022–2023 历史辐射方向",
+    sourceUrl: "https://globalmeteornetwork.org/flux/", license: "CC BY 4.0 · Starward 按历史轨迹分箱整理并拟合方向",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    publishedAt: "2026-09-14T14:20:18.453Z", retrievedAt: "2026-09-14T21:22:00.000Z",
     validFrom: `${localDate.slice(0, 4)}-01-01T00:00:00.000Z`,
-    validTo: `${localDate.slice(0, 4)}-12-31T23:59:59.999Z`,
-    state,
-    confidence: 0.9,
-    precision: "活动始末、峰值日期和峰值辐射点；不包含实时活动率或现场可见数量",
+    validTo: `${localDate.slice(0, 4)}-12-31T23:59:59.999Z`, state, confidence: null,
+    precision: "太阳黄经 J2000；UTC 日期为常年监测参考，不是当年精确极大预报",
     limitations: [
-      "ZHR 是理想条件下辐射点位于天顶时的参考率，不是用户实际可见数量",
-      "峰值辐射点未应用逐日漂移，仅用于方向引导",
-      "目录资料以 IMO 后续更新和 WGN 修订为准",
+      "监测窗口不是完整物理活动边界；常年参考不预测当年特殊爆发或现场可见数量",
+      "方向只在实际历史样本支持的时段内提供；缺少可审阅的流量值与活动曲线时保持暂无数据",
+      "轨迹原始资料：https://globalmeteornetwork.org/data/traj_summary_data/",
+      "GMN 数据收集获 NASA Meteoroid Environment Office 与 Western Meteor Physics Group 协议 80NSSC21M0073 的部分支持",
+      "研究出处：Vida 等，MNRAS 506(2021) 5046–5074；515(2022) 2322–2339",
     ],
   };
 }

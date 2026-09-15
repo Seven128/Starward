@@ -32,7 +32,7 @@ async function completedFeedback(t) {
   const project = fixtureOutput.values[0].project;
   t.after(() => fixtureMain(["stop", "--project", project], { emit: () => {} }));
   const output = collect();
-  await main(["start", "--project", project], {
+  await main(["start", "--project", project, "--delivery", "auto"], {
     official: { autoPreview: async () => {} },
     snapshotOptions: { settleMilliseconds: 0 },
     emit: output.emit,
@@ -96,6 +96,7 @@ test("official subprocess failures and timeouts are bounded and redact child out
 });
 
 test("argument allowlists block passthrough and require explicit manual confirmation", () => {
+  assert.throws(() => parseArguments(["start", "--project", "x", "--delivery", "guess"]), /delivery_invalid/u);
   assert.throws(() => parseArguments(["exec", "--command", "private"]), /action_invalid/u);
   assert.throws(() => parseArguments(["doctor", "--serial", "private"]), /argument_invalid/u);
   assert.throws(() => parseArguments(["start"]), /argument_missing/u);

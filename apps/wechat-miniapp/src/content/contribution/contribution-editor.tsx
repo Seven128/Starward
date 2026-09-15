@@ -145,6 +145,11 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
     /> : null}
     <ScrollView scrollY scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
       <View className={`contribution-content${isNewSpotDocument ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
+        {form.capabilities.isError || form.capabilities.refreshError || form.capabilities.data?.dataState === "STALE_USABLE" ? (
+          <StatusPanel state={form.capabilities.isError ? "EMPTY" : "STALE"}
+            detail="投稿能力状态暂时无法更新；当前输入仍会保留。"
+            recoveryLabel="重新获取" onRecover={() => void form.capabilities.refetch()} />
+        ) : null}
         {managesRecords ? <ContributionRecords form={form} /> : <>
           {form.localRecovery ? <View className="contribution-card contribution-local-recovery card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void form.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
           {form.localStorageError ? <StatusPanel state="ERROR" detail="本机输入暂时无法保存，请先保留本页。" /> : null}

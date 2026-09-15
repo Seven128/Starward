@@ -9,8 +9,8 @@
 .spot-terrain__image { position:absolute; max-width:none; max-height:none; }
 .spot-terrain__light-cell { position:absolute; z-index:2; border:1rpx solid rgba(255,255,255,.38); }
 .spot-terrain__ring { position:absolute; z-index:3; left:50%; top:50%; border:2rpx dashed rgba(77,104,91,.34); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; }
-.spot-terrain__ring--outer { width:82%; height:82%; }
-.spot-terrain__ring--inner { width:42%; height:42%; }
+.spot-terrain__ring--outer { width:calc(100% - 4rpx); height:calc(100% - 4rpx); }
+.spot-terrain__ring--inner { width:50%; height:50%; }
 .spot-terrain__direction { position:absolute; z-index:5; padding:2rpx 6rpx; border-radius:4rpx; background:rgba(255,255,255,.82); color:#506d73; font-size:22rpx; line-height:1.25; }
 .spot-terrain__direction--north { top:10rpx; left:50%; transform:translateX(-50%); }
 .spot-terrain__direction--east { right:10rpx; top:50%; transform:translateY(-50%); }
@@ -18,7 +18,9 @@
 .spot-terrain__direction--west { left:10rpx; top:50%; transform:translateY(-50%); }
 .spot-terrain__center { position:absolute; z-index:6; left:50%; top:50%; width:44rpx; height:52rpx; transform:translate(-50%,-70%); }
 .spot-terrain__scale { position:absolute; z-index:5; left:40rpx; bottom:32rpx; color:#506d73; font-size:20rpx; text-align:center; }
-.spot-terrain__scale > view { width:100rpx; height:10rpx; border:0 solid currentColor; border-width:0 3rpx 3rpx; }
+.spot-terrain__scale { left:0; right:0; width:100%; text-align:left; }
+.spot-terrain__scale > view { height:10rpx; margin-left:40rpx; border:0 solid currentColor; border-width:0 3rpx 3rpx; }
+.spot-terrain__scale > text { margin-left:40rpx; }
 .spot-terrain__empty { position:absolute; z-index:4; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12rpx; padding:40rpx; background:repeating-linear-gradient(135deg,#edf0ec 0,#edf0ec 12rpx,#e4e9e4 12rpx,#e4e9e4 24rpx); color:var(--text-secondary); text-align:center; }
 .spot-terrain__empty button { min-height:72rpx; padding:0 28rpx; border:1rpx solid var(--border); border-radius:36rpx; background:var(--surface); }
 .spot-terrain__empty--error { color:var(--danger); }

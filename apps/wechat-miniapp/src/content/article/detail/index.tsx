@@ -1,5 +1,5 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import { useRouter } from "@tarojs/taro";
+import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Image, ScrollView, Text, View } from "@tarojs/components";
 import { articleMedia } from "@/features/spot/guide-media";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
@@ -20,6 +20,7 @@ import {
   formatDisplayDate,
 } from "@/utils/presentation";
 import "./index.scss";
+import { useEffect, useState } from "react";
 
 const FACILITY_LABEL: Readonly<Record<FacilityType, string>> = {
   PARKING: "停车",
@@ -47,6 +48,10 @@ export default function ArticlePage() {
   const contextId = safe(router.params.contextId);
   const articleId = safe(router.params.articleId);
   const context = useAppStore((state) => state.observationContext);
+  const notify = useAppStore((state) => state.notify);
+  const [pageVisible, setPageVisible] = useState(true);
+  useDidShow(() => setPageVisible(true));
+  useDidHide(() => setPageVisible(false));
   const validRoute =
     spotId.startsWith("spot:") &&
     context?.contextId === contextId &&
@@ -56,12 +61,12 @@ export default function ArticlePage() {
   const guides = useResourceQuery({
     queryKey: ["spot-guides", spotId],
     queryFn: (signal) => getSpotGuides(spotId, signal),
-    enabled: validRoute,
+    enabled: validRoute && pageVisible,
   });
   const overview = useResourceQuery({
     queryKey: ["spot-overview", spotId, contextId, context?.contextFingerprint, context?.revision],
     queryFn: (signal) => getSpotOverview(spotId, contextId, signal),
-    enabled: validRoute,
+    enabled: validRoute && pageVisible,
   });
   const detail = validRoute && overview.data?.data.spot.spotId === spotId ? overview.data.data : undefined;
   const article = guides.data?.data.guides.find(
@@ -70,10 +75,23 @@ export default function ArticlePage() {
   const site = useResourceQuery({
     queryKey: ["spot-site", spotId],
     queryFn: (signal) => getSpotSite(spotId, signal),
-    enabled: validRoute && Boolean(article?.blocks.some((block) => block.type === "facility_ref")),
+    enabled: validRoute && pageVisible && Boolean(article?.blocks.some((block) => block.type === "facility_ref")),
   });
+  useEffect(() => {
+    if (!pageVisible || !validRoute) return;
+    const failed = guides.isError || guides.refreshError || guides.data?.dataState === "STALE_USABLE"
+      ? ["攻略数据异常", "攻略正文暂时无法更新，可在页面中重试。", "guides"]
+      : overview.isError || overview.refreshError || overview.data?.dataState === "STALE_USABLE"
+        ? ["地点数据异常", "地点与媒体资料暂时无法更新，攻略正文仍会保留。", "overview"]
+        : site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE"
+          ? ["设施数据异常", "攻略引用的设施资料暂时无法更新，可在对应内容中重试。", "site"]
+          : null;
+    if (!failed) return;
+    notify({ owner: "article", placement: "floating", tone: "info",
+      title: failed[0]!, body: failed[1]!, dedupeKey: `article-resource-failed:${articleId}:${failed[2]}` });
+  }, [articleId, guides.data?.dataState, guides.isError, guides.refreshError, notify, overview.data?.dataState,
+    overview.isError, overview.refreshError, pageVisible, site.data?.dataState, site.isError, site.refreshError, validRoute]);
   const loading = guides.isPending && !article;
-  const testSpot = __MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && spotId === "spot:test-published";
 
   return (
     <View className={themeClass + " article-page"}>
@@ -87,14 +105,14 @@ export default function ArticlePage() {
       <View className="article-content page-inset safe-bottom">
         {!validRoute ? (
           <StatusPanel
-            state="ERROR"
+            state="EMPTY"
             detail="请从正式观星点详情中的攻略入口打开本文。"
           />
         ) : loading ? (
           <StatusPanel state="LOADING" detail="正在加载攻略。" />
         ) : !article ? (
           <StatusPanel
-            state="ERROR"
+            state="EMPTY"
             detail="攻略暂不可用，请重试。"
             recoveryLabel="重试攻略"
             onRecover={() => void guides.refetch()}
@@ -128,7 +146,7 @@ export default function ArticlePage() {
               const facility = block.type === "facility_ref" ? site.data?.data.facilities.find((item) => item.type === block.facilityType) : undefined;
               return block.type === "paragraph" ? (
                 <Text className="article-paragraph type-article" key={index}>
-                  {testSpot ? block.text.replace(/^本内容仅为测试夹具，不证明当前点位开放或安全。/, "") : block.text}
+                  {block.text}
                 </Text>
               ) : block.type === "tip" ? (
                 <View className="article-tip card" key={index}>
@@ -146,7 +164,7 @@ export default function ArticlePage() {
                         aria-label={media.alt}
                       />
                       <Text className="type-caption">
-                        {testSpot && block.caption === "仅用于验证本点位媒体门禁" ? "测试图片" : block.caption} · {media.photographer} · {media.license}
+                        {block.caption} · {media.photographer} · {media.license}
                       </Text>
                       {!media.isSiteSpecific ? (
                         <Text className="status-tag status-tag--warning">
@@ -167,8 +185,8 @@ export default function ArticlePage() {
                     {FACILITY_LABEL[block.facilityType]}
                   </Text> : null}
                   {site.isPending ? <StatusPanel state="LOADING" detail="正在读取设施记录。" />
-                    : site.isError ? <StatusPanel state="ERROR" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
-                    : facility ? <FacilityEvidenceDetails evidence={facility} title={FACILITY_LABEL[block.facilityType]} showDescription={!(testSpot && (facility.detail || facility.summary || "").startsWith("仅证明自动化测试"))} />
+                    : site.isError ? <StatusPanel state="EMPTY" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
+                    : facility ? <FacilityEvidenceDetails evidence={facility} title={FACILITY_LABEL[block.facilityType]} />
                     : <StatusPanel state="EMPTY" detail="暂无该设施的核验记录，不代表设施可用。" />}
                 </View>
               );

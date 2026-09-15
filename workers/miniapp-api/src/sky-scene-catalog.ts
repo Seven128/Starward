@@ -18,7 +18,7 @@ import {
 import { buildDeepSkyScene } from "./deep-sky-scene-provider.ts";
 
 export {
-  createGaiaDr3SkyCatalogProvider,
+  createBsc5pSkyCatalogProvider,
   type SkyCatalogEntry,
   type SkyCatalogPosition,
   type SkyCatalogPositionInput,

@@ -105,15 +105,19 @@ test("official login parsing tolerates current CLI progress output", () => {
   assert.equal(parseOfficialLoginState("progress only"), "unknown");
 });
 
-test("official CLI prefers the bundled Node entry over leftover Electron files", async (t) => {
+test("official CLI rejects a legacy NW installation instead of starting its bundled Node", async (t) => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "starward-wechat-node-cli-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   for (const name of ["cli.bat", "node.exe", "cli.js", "微信开发者工具.exe"])
     await writeFile(path.join(directory, name), "fixture");
-  const invocation = await resolveOfficialCli(path.join(directory, "cli.bat"), {});
-  assert.equal(invocation.file, await realpath(path.join(directory, "node.exe")));
-  assert.deepEqual(invocation.prefix, [await realpath(path.join(directory, "cli.js"))]);
-  assert.equal(invocation.env, undefined);
+  await mkdir(path.join(directory, "code", "package.nw"), { recursive: true });
+  await writeFile(path.join(directory, "code", "package.nw", "package.json"), "{}");
+  for (const name of ["cli.bat", "cli.js", "微信开发者工具.exe"])
+    await assert.rejects(resolveOfficialCli(path.join(directory, name), {}), /official_cli_unavailable/);
+  const nested = path.join(directory, "code", "package.nw", "js", "common", "cli", "index.js");
+  await mkdir(path.dirname(nested), { recursive: true });
+  await writeFile(nested, "fixture");
+  await assert.rejects(resolveOfficialCli(nested, {}), /official_cli_unavailable/);
 });
 
 test("official CLI resolves the current Electron installation layout", async (t) => {
@@ -147,6 +151,11 @@ test("official CLI resolves the current Electron installation layout", async (t)
   assert.equal(invocation.cwd, await realpath(directory));
   assert.equal(invocation.env.cwd, process.cwd());
   assert.equal(invocation.env.ELECTRON_RUN_AS_NODE, "1");
+  const fallbackEnvironment = { PATH: directory };
+  assert.equal((await resolveOfficialCli(undefined, fallbackEnvironment)).file, await realpath(executable));
+  await assert.rejects(resolveOfficialCli(path.join(directory, "missing.bat"), fallbackEnvironment), /official_cli_unavailable/);
+  await assert.rejects(resolveOfficialCli(undefined, { ...fallbackEnvironment,
+    STARWARD_WECHAT_DEVTOOLS_CLI: path.join(directory, "missing.bat") }), /official_cli_unavailable/);
 });
 
 test("official driver forwards installation cwd and Electron environment", async () => {
@@ -181,7 +190,7 @@ async function manualRun(t) {
   const source = await fixture(t);
   const official = officialDriver();
   const output = collect();
-  await main(["start", "--project", source], {
+  await main(["start", "--project", source, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     emit: output.emit,
@@ -190,6 +199,72 @@ async function manualRun(t) {
   t.after(() => rm(run.feedbackRun, { recursive: true, force: true }));
   return { source, official, run };
 }
+
+test("default start and refresh generate QR without pushing to the IDE account", async (t) => {
+  const source = await fixture(t);
+  const official = officialDriver({ automaticFailure: false });
+  let pushes = 0;
+  official.autoPreview = async () => { pushes += 1; };
+  const output = collect();
+  const dependencies = { official, snapshotOptions: { settleMilliseconds: 0 }, emit: output.emit };
+  await main(["start", "--project", source], dependencies);
+  const first = output.values[0];
+  t.after(() => stopFeedbackRun(first.feedbackRun));
+  assert.equal(first.officialInvocation, "qr_ready");
+  await access(first.qrCode);
+  assert.equal(pushes, 0);
+  await main(["refresh", "--feedback", first.feedbackRun, "--delivery", "auto"], dependencies);
+  assert.equal(output.values[1].officialInvocation, "completed");
+  assert.equal(pushes, 1);
+  await main(["refresh", "--feedback", first.feedbackRun], dependencies);
+  const third = output.values[2];
+  assert.equal(third.officialInvocation, "qr_ready");
+  assert.equal(third.candidateIdentity.generation, 3);
+  assert.equal(pushes, 1, "refresh must not inherit the previous automatic delivery choice");
+  assert.equal(official.calls.length, 2);
+  await access(third.qrCode);
+  await assert.rejects(access(first.qrCode));
+  assert.ok(third.unverified.includes("phone_visible_generation"));
+});
+
+test("failed default QR delivery preserves the candidate without falling back to an account push", async (t) => {
+  const source = await fixture(t);
+  const output = collect();
+  let pushes = 0;
+  const official = {
+    autoPreview: async () => { pushes += 1; },
+    preview: async () => { throw new Error("device_feedback_official_timeout"); },
+  };
+  await main(["start", "--project", source, "--delivery", "qr"], {
+    official, snapshotOptions: { settleMilliseconds: 0 }, emit: output.emit,
+  });
+  const run = output.values[0];
+  t.after(() => stopFeedbackRun(run.feedbackRun));
+  assert.equal(run.officialInvocation, "manual_required");
+  assert.equal(run.officialBoundary, "timeout");
+  assert.equal(pushes, 0);
+  await access(run.preparedProject);
+  assert.equal(run.qrCode, undefined);
+});
+
+test("default QR start and refresh reject configuration drift instead of claiming a stable manual handoff", async (t) => {
+  const source = await fixture(t);
+  const official = officialDriver();
+  official.preview = async (project) => {
+    const configPath = path.join(project, "project.config.json");
+    const config = JSON.parse(await readFile(configPath, "utf8"));
+    config.setting = { urlCheck: false };
+    await writeFile(configPath, JSON.stringify(config));
+  };
+  const output = collect();
+  const dependencies = { official, snapshotOptions: { settleMilliseconds: 0 }, emit: output.emit };
+  await assert.rejects(main(["start", "--project", source], dependencies), /generation_config_changed_start_new_preview/u);
+  assert.equal(output.values.length, 0);
+  const { run } = await manualRun(t);
+  await assert.rejects(main(["refresh", "--feedback", run.feedbackRun], dependencies), /generation_config_changed_start_new_preview/u);
+  assert.equal(output.values.length, 0);
+  await assert.rejects(main(["bind", "--feedback", run.feedbackRun, "--confirm", "official_update_completed"], dependencies));
+});
 
 test("ordinary preview tolerates formatting-only config normalization and owns its QR", async (t) => {
   const { official, run } = await manualRun(t);
@@ -232,7 +307,7 @@ test("ordinary preview after auto-preview waits for explicit phone binding", asy
   const source = await fixture(t);
   const official = officialDriver({ automaticFailure: false });
   const started = collect();
-  await main(["start", "--project", source], {
+  await main(["start", "--project", source, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     emit: started.emit,
@@ -305,7 +380,7 @@ test("refresh reports deferred stale-generation cleanup without hiding the new g
     'Page({data:{label:"B"}});\n',
   );
   const refreshed = collect();
-  await main(["refresh", "--feedback", run.feedbackRun], {
+  await main(["refresh", "--feedback", run.feedbackRun, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     removeOwnedGeneration: async () => false,
@@ -323,7 +398,7 @@ test("refresh reports deferred stale-generation cleanup without hiding the new g
     'Page({data:{label:"C"}});\n',
   );
   const refreshedAgain = collect();
-  await main(["refresh", "--feedback", run.feedbackRun], {
+  await main(["refresh", "--feedback", run.feedbackRun, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     removeOwnedGeneration: async () => true,

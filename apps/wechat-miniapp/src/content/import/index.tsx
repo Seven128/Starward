@@ -675,7 +675,7 @@ export default function ImportPage() {
                   </Button>
                 </View>
                 {association === "FORMAL" ? (
-                  <FormalSpotField id="import-formal-spot-id" key={draft.importDraftId} value={formalSpotId} contextId={contextId} disabled={!canEdit || action !== null} onChange={value => { keepEdit({ formalSpotId: value }); setFormalSpotId(value); }} />
+                  <FormalSpotField id="import-formal-spot-id" notificationOwner="import" key={draft.importDraftId} value={formalSpotId} contextId={contextId} disabled={!canEdit || action !== null} onChange={value => { keepEdit({ formalSpotId: value }); setFormalSpotId(value); }} />
                 ) : null}
                 <SoftButton label="保存关联选择" disabled={action !== null || !canEdit} onClick={() => void saveCurrent()}>
                   {action === "SAVE" ? "保存中…" : "保存关联选择"}

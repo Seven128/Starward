@@ -8,7 +8,6 @@ export type FilterCategoryId =
   | "FRESHNESS";
 
 export type FilterGroupKey =
-  | "DISTANCE_DRIVE_TIME"
   | "LIGHT_POLLUTION"
   | "LESS_CLOUD"
   | "PARKING"
@@ -17,7 +16,6 @@ export type FilterGroupKey =
   | "PHOTO_FOREGROUND"
   | "CAMPING_OVERNIGHT_PARKING"
   | "SPECIFIC_CELESTIAL_EVENT"
-  | "LOW_CLOUD_THRESHOLD"
   | "MOON_IMPACT"
   | "HIKING_DIFFICULTY"
   | "SIGNAL"
@@ -26,7 +24,6 @@ export type FilterGroupKey =
   | "LAST_VERIFIED_AT";
 
 export type FilterOptionId =
-  | "distanceDriveTime"
   | "lightPollution"
   | "lessCloud"
   | "parking"
@@ -35,7 +32,6 @@ export type FilterOptionId =
   | "photoForeground"
   | "campingOvernightParking"
   | "specificCelestialEvent"
-  | "lowCloudThreshold"
   | "moonImpact"
   | "hikingDifficulty"
   | "signal"
@@ -64,20 +60,11 @@ const facility = (spot: SpotSummary, type: string) =>
 const dynamicUnavailable = () => false;
 
 /**
- * The current product has one flat, ordered 16-option taxonomy. Options whose
+ * The current product has one flat, ordered 14-option taxonomy. Options whose
  * SpotSummary cannot truthfully answer a time/provider-dependent predicate
  * return no match instead of manufacturing a favourable value.
  */
 export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
-  {
-    id: "distanceDriveTime",
-    label: "驾车范围",
-    group: "DISTANCE_DRIVE_TIME",
-    category: "ARRIVAL",
-    mode: "CANCELABLE_SINGLE",
-    evidence: "DYNAMIC_CONTEXT",
-    test: dynamicUnavailable,
-  },
   {
     id: "lightPollution",
     label: "光害",
@@ -145,15 +132,6 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
     id: "specificCelestialEvent",
     label: "特定天象",
     group: "SPECIFIC_CELESTIAL_EVENT",
-    category: "OBSERVATION",
-    mode: "CANCELABLE_SINGLE",
-    evidence: "DYNAMIC_CONTEXT",
-    test: dynamicUnavailable,
-  },
-  {
-    id: "lowCloudThreshold",
-    label: "低云阈值",
-    group: "LOW_CLOUD_THRESHOLD",
     category: "OBSERVATION",
     mode: "CANCELABLE_SINGLE",
     evidence: "DYNAMIC_CONTEXT",
@@ -231,27 +209,12 @@ export const FILTER_GROUPS: ReadonlyArray<{
   }),
 );
 
-export interface DrivingRangeParameter {
-  readonly mode: "TIME" | "DISTANCE";
-  readonly maxMinutes: number;
-  readonly maxDistanceKm: number;
-}
-
-export const DEFAULT_DRIVING_RANGE: DrivingRangeParameter = Object.freeze({
-  mode: "TIME",
-  maxMinutes: 180,
-  maxDistanceKm: 100,
-});
-
-export type FilterState = Readonly<Record<FilterGroupKey, readonly string[]>> & {
-  readonly drivingRange: DrivingRangeParameter;
-};
+export type FilterState = Readonly<Record<FilterGroupKey, readonly string[]>>;
 
 export const EMPTY_FILTER_STATE: FilterState = Object.freeze(
   Object.fromEntries(
     [
       ...FILTER_GROUPS.map(({ key }) => [key, Object.freeze([])]),
-      ["drivingRange", DEFAULT_DRIVING_RANGE],
     ],
   ) as unknown as FilterState,
 );
@@ -262,7 +225,7 @@ export function assertFilterState(
   if (typeof value !== "object" || value === null || Array.isArray(value))
     throw new Error("filter_state_invalid:not_object");
   const record = value as Record<string, unknown>;
-  const expectedKeys = [...FILTER_GROUPS.map((group) => group.key), "drivingRange"].sort();
+  const expectedKeys = FILTER_GROUPS.map((group) => group.key).sort();
   const actualKeys = Object.keys(record).sort();
   if (
     actualKeys.length !== expectedKeys.length ||
@@ -288,50 +251,14 @@ export function assertFilterState(
     if (selected.some((id) => !allowed.has(id as FilterOptionId)))
       throw new Error(`filter_state_invalid:${group.key}:unknown_option`);
   }
-  assertDrivingRangeParameter(record.drivingRange);
-}
-
-export function assertDrivingRangeParameter(
-  value: unknown,
-): asserts value is DrivingRangeParameter {
-  if (typeof value !== "object" || value === null || Array.isArray(value))
-    throw new Error("driving_range_invalid:not_object");
-  const candidate = value as Record<string, unknown>;
-  if (candidate.mode !== "TIME" && candidate.mode !== "DISTANCE")
-    throw new Error("driving_range_invalid:mode");
-  if (
-    !Number.isInteger(candidate.maxMinutes) ||
-    (candidate.maxMinutes as number) < 30 ||
-    (candidate.maxMinutes as number) > 360
-  ) throw new Error("driving_range_invalid:max_minutes");
-  if (
-    !Number.isInteger(candidate.maxDistanceKm) ||
-    (candidate.maxDistanceKm as number) < 1 ||
-    (candidate.maxDistanceKm as number) > 1000
-  ) throw new Error("driving_range_invalid:max_distance_km");
 }
 
 export function cloneFilterState(state: FilterState): FilterState {
   return Object.fromEntries(
     [
       ...FILTER_GROUPS.map(({ key }) => [key, [...(state[key] ?? [])]]),
-      ["drivingRange", { ...(state.drivingRange ?? DEFAULT_DRIVING_RANGE) }],
     ],
   ) as unknown as FilterState;
-}
-
-export function setDrivingRangeParameter(
-  state: FilterState,
-  parameter: DrivingRangeParameter,
-): FilterState {
-  assertDrivingRangeParameter(parameter);
-  return { ...cloneFilterState(state), drivingRange: { ...parameter } };
-}
-
-export function drivingRangeLabel(parameter: DrivingRangeParameter): string {
-  return parameter.mode === "TIME"
-    ? `驾车${parameter.maxMinutes}分钟内`
-    : `驾车${parameter.maxDistanceKm}公里内`;
 }
 
 export function toggleFilter(
@@ -343,7 +270,7 @@ export function toggleFilter(
   const next = cloneFilterState(state) as unknown as Record<
     FilterGroupKey,
     string[]
-  > & { drivingRange: DrivingRangeParameter };
+  >;
   const selected = next[option.group];
   next[option.group] = selected.includes(optionId) ? [] : [optionId];
   return next as FilterState;
@@ -367,8 +294,8 @@ export function filterSpots(
 }
 
 if (
-  FILTER_OPTIONS.length !== 16 ||
-  new Set(FILTER_OPTIONS.map((item) => item.id)).size !== 16
+  FILTER_OPTIONS.length !== 14 ||
+  new Set(FILTER_OPTIONS.map((item) => item.id)).size !== 14
 ) {
-  throw new Error("filter_schema_must_be_exact_ordered_16");
+  throw new Error("filter_schema_must_be_exact_ordered_14");
 }

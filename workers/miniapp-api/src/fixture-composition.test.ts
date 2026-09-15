@@ -41,6 +41,10 @@ test("explicit development fixture mode composes deterministic weather at the ex
         .filter((source) => source.provider.includes("天气"))
         .every((source) => source.state === "SAMPLE_DATA"),
     );
+    const history = await service.getSpotRecentWeather(TEST_PUBLISHED_SPOT.spotId);
+    assert.equal(history.dataState, "SAMPLE_DATA");
+    assert.equal(history.sources[0]!.kind, "TEST_FIXTURE");
+    assert.equal(history.data.days.length, 2);
   } finally {
     await service?.onModuleDestroy();
     for (const [name, value] of Object.entries({

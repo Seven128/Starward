@@ -1942,3 +1942,27 @@
     background: var(--surface);
   }
 }
+.sky-view-mode {
+  position: absolute;
+  z-index: 8;
+  bottom: calc(env(safe-area-inset-bottom) + 278rpx);
+  left: 16rpx;
+  max-width: calc(100% - 140Px);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4Px;
+  color: var(--text-primary);
+}
+.sky-view-mode__button {
+  min-height: 44Px;
+  margin: 0;
+  padding: 0 12Px;
+  border-radius: 999Px;
+  font-size: var(--type-action-size);
+  color: var(--text-primary);
+  background: var(--surface);
+}
+.sky-view-mode__status { flex-basis: 100%; }
+
+.sky-weather-alerts { max-height: 30vh; }

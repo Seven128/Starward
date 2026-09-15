@@ -488,6 +488,30 @@ def _cell_bounds(transform: Any, row_start: int, row_end: int, col_start: int, c
     )
 
 
+def _valid_rectangles(mask: np.ndarray, stride: int) -> Iterable[tuple[int, int, int, int]]:
+    """Merge identical valid row runs, never extending a rectangle across a hole."""
+    height, width = mask.shape
+    for row in range(0, height, stride):
+        for column in range(0, width, stride):
+            row_end, column_end = min(height, row + stride), min(width, column + stride)
+            block = mask[row:row_end, column:column_end]
+            if bool(np.all(block)):
+                yield row, row_end, column, column_end
+                continue
+            active: dict[tuple[int, int], int] = {}
+            for offset, valid_row in enumerate(block):
+                edges = np.flatnonzero(np.diff(np.pad(valid_row.astype(np.int8), (1, 1))))
+                runs = {(column + int(start), column + int(end))
+                        for start, end in zip(edges[::2], edges[1::2])}
+                current_row = row + offset
+                for span in sorted(active.keys() - runs):
+                    yield active.pop(span), current_row, *span
+                for span in runs:
+                    active.setdefault(span, current_row)
+            for span in sorted(active):
+                yield active[span], row_end, *span
+
+
 def build_cells(
     selection: RasterSelection,
     manifest: PublicationManifest,
@@ -495,58 +519,51 @@ def build_cells(
     thresholds: Sequence[float],
 ) -> list[dict[str, Any]]:
     mask = valid_mask(selection, manifest.minimum_coverage)
-    height, width = selection.radiance.shape
     cells: list[dict[str, Any]] = []
-    for row in range(0, height, manifest.grid_stride):
-        for column in range(0, width, manifest.grid_stride):
-            row_end = min(height, row + manifest.grid_stride)
-            column_end = min(width, column + manifest.grid_stride)
-            selected = mask[row:row_end, column:column_end]
-            if not bool(np.any(selected)):
-                continue
-            radiance = np.asarray(
-                selection.radiance.data[row:row_end, column:column_end], dtype="float64"
-            )[selected]
-            coverage = np.asarray(
-                selection.coverage.data[row:row_end, column:column_end], dtype="float64"
-            )[selected]
-            median, p10, p90 = _statistics(radiance)
-            band = band_for_value(median, thresholds)
-            west, south, east, north = _cell_bounds(
-                selection.transform, row, row_end, column, column_end, manifest.aoi
-            )
-            if not (west < east and south < north):
-                continue
-            cell_id = f"r{row:06d}-c{column:06d}"
-            cells.append(
-                {
-                    "cellId": cell_id,
-                    "datasetVersion": manifest.dataset_version,
-                    "productBand": band,
-                    "label": LABELS[band],
-                    "radiance": {
-                        "median": round(median, 6),
-                        "p10": round(p10, 6),
-                        "p90": round(p90, 6),
-                        "unit": RADIANCE_UNIT,
-                    },
-                    "minimumCloudFreeObservations": int(np.min(coverage)),
-                    "boundsWgs84": {
-                        "west": west,
-                        "south": south,
-                        "east": east,
-                        "north": north,
-                    },
-                    "state": "ESTIMATED",
-                    "sourceId": source["id"],
-                }
+    for row, row_end, column, column_end in _valid_rectangles(mask, manifest.grid_stride):
+        radiance = np.asarray(
+            selection.radiance.data[row:row_end, column:column_end], dtype="float64"
+        ).ravel()
+        coverage = np.asarray(
+            selection.coverage.data[row:row_end, column:column_end], dtype="float64"
+        ).ravel()
+        median, p10, p90 = _statistics(radiance)
+        band = band_for_value(median, thresholds)
+        west, south, east, north = _cell_bounds(
+            selection.transform, row, row_end, column, column_end, manifest.aoi
+        )
+        if not (west < east and south < north):
+            continue
+        cell_id = f"r{row:06d}-c{column:06d}"
+        cells.append(
+            {
+                "cellId": cell_id,
+                "datasetVersion": manifest.dataset_version,
+                "productBand": band,
+                "label": LABELS[band],
+                "radiance": {
+                    "median": round(median, 6),
+                    "p10": round(p10, 6),
+                    "p90": round(p90, 6),
+                    "unit": RADIANCE_UNIT,
+                },
+                "minimumCloudFreeObservations": int(np.min(coverage)),
+                "boundsWgs84": {
+                    "west": west,
+                    "south": south,
+                    "east": east,
+                    "north": north,
+                },
+                "state": "ESTIMATED",
+                "sourceId": source["id"],
+            }
+        )
+        if len(cells) > MAX_NATIVE_GRID_CELLS:
+            raise PipelineError(
+                f"native_grid_cell_budget_exceeded:{len(cells)}>{MAX_NATIVE_GRID_CELLS}"
             )
     if not cells:
         raise PipelineError("no_publishable_grid_cells")
-    if len(cells) > MAX_NATIVE_GRID_CELLS:
-        raise PipelineError(
-            f"native_grid_cell_budget_exceeded:{len(cells)}>{MAX_NATIVE_GRID_CELLS}"
-        )
     return cells
 
 

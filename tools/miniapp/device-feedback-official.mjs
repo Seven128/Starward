@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { lstat, realpath, rm } from "node:fs/promises";
+import { access, lstat, realpath, rm } from "node:fs/promises";
 import path from "node:path";
 import { errorCode } from "./device-feedback-command.mjs";
 import {
@@ -27,9 +27,12 @@ async function physicalFile(value) {
 }
 
 export async function resolveOfficialCli(explicit, environment = process.env) {
-  const candidates = [
-    explicit,
-    environment.STARWARD_WECHAT_DEVTOOLS_CLI,
+  const selected = explicit || environment.STARWARD_WECHAT_DEVTOOLS_CLI;
+  // An explicit installation is authoritative: do not silently switch to a
+  // different, possibly retired copy when that installation is unavailable.
+  const candidates = selected ? [selected] : [
+    ...(environment.PATH ?? environment.Path ?? "").split(path.delimiter)
+      .filter(Boolean).map(directory => path.join(directory, "cli.bat")),
     environment["ProgramFiles(x86)"] &&
       path.join(environment["ProgramFiles(x86)"], "Tencent", "微信web开发者工具", "cli.bat"),
     environment.ProgramFiles &&
@@ -39,14 +42,17 @@ export async function resolveOfficialCli(explicit, environment = process.env) {
   for (const candidate of [...new Set(candidates)]) {
     try {
       const cli = await physicalFile(path.resolve(candidate));
+      if (cli.split(/[\\/]/u).some(segment => segment.toLowerCase() === "package.nw"))
+        fail("official_cli_unavailable");
+      // Explicit .exe/.js entries must not bypass retirement of the NW runtime.
+      const legacyRuntime = await access(path.join(path.dirname(cli), "code", "package.nw", "package.json"))
+        .then(() => true, error => {
+          if (error.code === "ENOENT") return false;
+          throw error;
+        });
+      if (legacyRuntime) fail("official_cli_unavailable");
       if (path.extname(cli).toLowerCase() === ".bat") {
         const directory = path.dirname(cli);
-        try {
-          return {
-            file: await physicalFile(path.join(directory, "node.exe")),
-            prefix: [await physicalFile(path.join(directory, "cli.js"))],
-          };
-        } catch {}
         return {
           file: await physicalFile(path.join(directory, "微信开发者工具.exe")),
           prefix: [

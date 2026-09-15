@@ -1,7 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPlanSaveRetry, PlanSaveRecoveryError, planSaveBelongsTo, type PlanSaveInput } from "./plan-save-retry";
+import { createPlanSaveRetry, PlanSaveRecoveryError, planSaveBelongsTo, planContextIdentity, type PlanSaveInput } from "./plan-save-retry";
+import type { ObservationContext } from "@starward/miniapp-contracts";
 const input: PlanSaveInput = { planId: "plan:first", spotId: "spot:one", observationContextId: "context:first", localDate: "2026-09-06", localTime: "22:00", notes: "my notes", expectedRevision: null, contextIdentity: "same-origin" };
+
+test("an explicit origin's lost receipt survives unrelated browsing-origin changes without creating another plan", async () => {
+  const first = { timezone: "Asia/Shanghai", location: { kind: "MAP_POINT", wgs84: { system: "WGS84", latitude: 22, longitude: 113 } } } as ObservationContext;
+  const changed = { ...first, location: { kind: "FORMAL_SPOT", spotId: "spot:one" }, routeOrigin: null } as ObservationContext;
+  for (const originLocation of [null, { source: "WECHAT_CHOOSE_LOCATION" as const, address: "所选地址", wgs84: { system: "WGS84" as const, latitude: 23, longitude: 114 } }]) {
+    const travel = { origin: "我的出发地", mode: "TRANSIT" as const, originLocation };
+    const f = fixture(); let firstKey = "";
+    await assert.rejects(f.boot()("a", { ...input, travel, contextIdentity: planContextIdentity(first, travel) }, async key => { firstKey = key; throw new Error("lost receipt"); }));
+    await f.boot()("a", { ...input, planId: "plan:regenerated", observationContextId: "context:changed", travel,
+      contextIdentity: planContextIdentity(changed, travel) }, async (key, original) => {
+      assert.equal(key, firstKey); assert.equal(original.planId, input.planId); return "saved";
+    });
+  }
+  assert.notEqual(planContextIdentity(first), planContextIdentity(changed));
+});
 
 test("interval and departure survive cold retry and distinguish a changed save intent", async () => {
   const f = fixture();
@@ -22,10 +38,15 @@ test("interval and departure survive cold retry and distinguish a changed save i
 
 test("departure origin and mode survive cold retry and identify a changed save", async () => {
   const f = fixture();
-  const travel = { origin: "深圳市福田区", mode: "TRANSIT" as const };
+  const travel = { origin: "深圳市福田区", mode: "TRANSIT" as const, originLocation: {
+    source: "WECHAT_CHOOSE_LOCATION" as const, address: "所选地址", wgs84: { system: "WGS84" as const, latitude: 22.54, longitude: 114.05 } } };
   let firstKey = "";
   await assert.rejects(f.boot()("a", { ...input, travel }, async key => { firstKey = key; throw new Error("lost"); }));
   await assert.rejects(f.boot()("a", { ...input, travel: { ...travel, mode: "WALKING" } }, async key => {
+    assert.notEqual(key, firstKey); throw new Error("lost");
+  }));
+  await assert.rejects(f.boot()("a", { ...input, travel: { ...travel, originLocation: { ...travel.originLocation,
+    wgs84: { ...travel.originLocation.wgs84, longitude: 114.15 } } } }, async key => {
     assert.notEqual(key, firstKey); throw new Error("lost");
   }));
   await f.boot()("a", { ...input, travel }, async (key, original) => {

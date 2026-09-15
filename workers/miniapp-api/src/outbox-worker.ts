@@ -913,7 +913,7 @@ export class OutboxWorkerRuntime {
       }
       case "COST": {
         const budget = await readVendorUsageBudget(this.repository.pool);
-        if (budget.knownEstimatedCostCny !== null && budget.knownEstimatedCostCny > budget.hardMonthlyMax)
+        if (budget.hardMonthlyMax !== null && budget.knownEstimatedCostCny !== null && budget.knownEstimatedCostCny > budget.hardMonthlyMax)
           throw new Error("provider_budget_hard_limit_exceeded");
         outcome = {
           resultState: "UNASSESSED",

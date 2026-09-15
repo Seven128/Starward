@@ -1,5 +1,5 @@
 import Taro from "@tarojs/taro";
-import { gcj02ToWgs84 } from "@starward/coordinate-system";
+import { choosePlatformLocation } from "@/services/platform-location";
 import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
 import { useRef } from "react";
 import { createContributionCommandLock } from "./command-lock";
@@ -466,20 +466,18 @@ function createChooseCandidateLocation(form: ContributionForm, assertAccount: ()
   return async () => {
     try {
       assertAccount();
-      const selected = await Taro.chooseLocation({});
+      const ownerPage = Taro.getCurrentPages().at(-1);
+      const selected = await choosePlatformLocation({ isCurrent: () => {
+        assertAccount();
+        return Taro.getCurrentPages().at(-1) === ownerPage;
+      } });
+      if (!selected) return;
       assertAccount();
-      if (!Number.isFinite(selected.latitude) || !Number.isFinite(selected.longitude))
-        throw new Error("所选地点没有有效坐标");
-      const point = gcj02ToWgs84({
-        lat: selected.latitude,
-        lon: selected.longitude,
-        system: "GCJ-02",
-      });
       form.selectCandidateLocation({
-        name: selected.name ?? "",
-        address: selected.address ?? "",
-        latitude: point.lat,
-        longitude: point.lon,
+        name: selected.name,
+        address: selected.address,
+        latitude: selected.wgs84.latitude,
+        longitude: selected.wgs84.longitude,
       });
     } catch (error) {
       const message = errorMessage(error);

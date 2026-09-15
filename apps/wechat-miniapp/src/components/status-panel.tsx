@@ -6,10 +6,10 @@ const TITLES: Record<PageState, string> = {
   INITIAL: "准备加载",
   LOADING: "正在加载",
   READY: "数据已就绪",
-  EMPTY: "暂无结果",
+  EMPTY: "暂无数据",
   PARTIAL: "部分数据可用",
   STALE: "正在使用过期数据",
-  ERROR: "暂时无法加载",
+  ERROR: "暂无数据",
   PERMISSION_DENIED: "权限未授予",
 };
 

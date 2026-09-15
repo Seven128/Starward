@@ -12,10 +12,23 @@ import type {
 /** Hard product limits for the catalog-backed Mini Program scene. */
 export const SKY_SCENE_MAX_CATALOG_ENTRIES = 2_048;
 export const SKY_SCENE_MAX_MAGNITUDE_LIMIT = 5.5;
-export const SKY_SCENE_MAX_SERIALIZED_BYTES = 1_048_576;
+// The full noon-to-noon axis includes 48 half-hour frames plus a selected
+// instant. Keep the full V<=5 catalog and 0.001-degree geometry. This is an
+// application memory bound, not WeChat's per-key storage or setData limit;
+// response-cache chunks native writes independently.
+export const SKY_SCENE_MAX_SERIALIZED_BYTES = 2 * 1_048_576;
 export const DEEP_SKY_SCENE_MAX_CATALOG_ENTRIES = 128;
 
 const SHA256 = /^[a-f0-9]{64}$/u;
+
+/** Mini Program BSC5P identities; HIP identifiers are aliases, never runtime keys. */
+export function isBrightStarReference(value: unknown): value is string {
+  return typeof value === "string" && /^HR:[1-9]\d{0,3}$/u.test(value) && Number(value.slice(3)) <= 9110;
+}
+
+export function isCelestialObjectReference(value: unknown): value is string {
+  return isBrightStarReference(value) || typeof value === "string" && /^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(value);
+}
 
 function fail(reason: string): never {
   throw new TypeError(`sky_scene_invalid:${reason}`);
@@ -29,7 +42,7 @@ function assertEntry(entry: SkySceneCatalogEntry, index: number): void {
   if (!entry || typeof entry !== "object") fail(`catalog_entry_${index}`);
   if (typeof entry.sourceId !== "string" || !entry.sourceId.trim())
     fail(`catalog_entry_${index}:source_id`);
-  if (typeof entry.objectRef !== "string" || !/^HIP:\d{1,6}$/u.test(entry.objectRef))
+  if (!isBrightStarReference(entry.objectRef) || entry.sourceId !== entry.objectRef)
     fail(`catalog_entry_${index}:object_ref`);
   if (entry.displayName !== null && (typeof entry.displayName !== "string" || !entry.displayName.trim()))
     fail(`catalog_entry_${index}:display_name`);

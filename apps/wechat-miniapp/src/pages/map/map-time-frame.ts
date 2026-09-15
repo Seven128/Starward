@@ -4,6 +4,13 @@ import type {
   MapSpotEvaluation,
 } from "@starward/miniapp-contracts";
 
+/** Keep original indices: filtering weather choices must not retarget astronomy or plan time. */
+export function cloudTimeFrameChoices(frames: readonly MapSceneTimeFrame[]) {
+  return frames.map((frame, sourceIndex) => ({ frame, sourceIndex })).filter(({ frame }) =>
+    Object.values(frame.spotSignals).some(signal => signal.weatherAt && signal.cloudPercent !== null &&
+      Number.isFinite(signal.cloudPercent) && signal.state !== "UNAVAILABLE"));
+}
+
 export function nearestMapTimeFrameIndex(
   frames: readonly MapSceneTimeFrame[],
   selectedAtUtc: string,
@@ -36,9 +43,12 @@ export function projectMapEvaluations(
   return Object.fromEntries(
     Object.entries(evaluations).map(([spotId, evaluation]) => {
       const signal = frame.spotSignals[spotId];
-      return [spotId, signal?.spotId === spotId && signal.state !== "UNAVAILABLE" ? { ...evaluation, ...signal } : {
+      return [spotId, signal?.spotId === spotId ? { ...evaluation, ...signal,
+        ...(signal.state === "UNAVAILABLE" ? { cloudPercent: null, weatherAt: null, opportunityScore: null,
+          opportunityConfidence: null, opportunityEligible: false } : {}),
+      } : {
         ...evaluation,
-        cloudPercent: null, lowCloudPercent: null, midCloudPercent: null, highCloudPercent: null,
+        cloudPercent: null, weatherAt: null,
         moonImpact: "UNKNOWN", opportunityScore: null, opportunityConfidence: null,
         opportunityEligible: false, opportunityLabel: "当前时段暂无数据", state: "UNAVAILABLE",
       }];

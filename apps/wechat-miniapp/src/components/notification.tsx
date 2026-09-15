@@ -1,9 +1,10 @@
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { useEffect, useState } from "react";
-import { Button, Text, View } from "@tarojs/components";
+import { useEffect, useRef, useState } from "react";
+import { Button, ScrollView, Text, View } from "@tarojs/components";
 import type { NotificationRecord } from "@/state/notification";
-import { selectNotification } from "@/state/notification";
+import { selectNotification, selectNotifications } from "@/state/notification";
 import { useAppStore } from "@/state/app-store";
+import { floatingNotificationNodeId, useFloatingNotificationVisibility } from "./notification-visibility";
 
 const ICON: Readonly<Record<NotificationRecord["tone"], string>> = {
   error: "!",
@@ -32,7 +33,7 @@ export function NotificationComponent({
   return (
     <View
       className={`notification notification--${notification.placement} notification--${notification.tone}`}
-      id={`notification-${notification.placement}`}
+      id={`notification-${notification.placement}-${notification.id}`}
       role={notification.tone === "error" ? "alert" : "status"}
       aria-live={notification.tone === "error" ? "assertive" : "polite"}
       aria-atomic="true"
@@ -76,7 +77,7 @@ export function NotificationComponent({
           <Text>{notification.action.label}</Text>
         </Button>
       ) : null}
-      {notification.dismissible && onDismiss ? (
+      {(notification.dismissible || notification.placement === "floating") && onDismiss ? (
         <Button
           className="notification__dismiss focus-ring"
           data-od-id="notification-dismiss"
@@ -90,6 +91,45 @@ export function NotificationComponent({
   );
 }
 
+// One mounted notice owns its timer. A deduplicated replacement gets a new key,
+// so cleanup cancels both expiry and exit before the replacement can be removed.
+export function FloatingNotification({ notification, onDismiss }: {
+  notification: NotificationRecord;
+  onDismiss: () => void;
+}) {
+  const nodeId = floatingNotificationNodeId(notification);
+  const visible = useFloatingNotificationVisibility(nodeId);
+  const [closing, setClosing] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const closingRef = useRef(false);
+  const dismissRef = useRef(onDismiss);
+  dismissRef.current = onDismiss;
+  const close = () => { closingRef.current = true; setClosing(true); };
+  useEffect(() => () => {
+    // Hiding during the exit animation must not resurrect a dismissed notice.
+    if (closingRef.current) dismissRef.current();
+  }, []);
+  useEffect(() => {
+    // An action may be the only available recovery; its consumer must retain it.
+    if (notification.action || closing || paused || !visible) return;
+    let cancelled = false;
+    const timer = setTimeout(() => { if (!cancelled) close(); }, 3000);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [notification.action, closing, paused, visible]);
+  useEffect(() => {
+    if (!closing) return;
+    let cancelled = false;
+    const timer = setTimeout(() => { if (!cancelled) dismissRef.current(); }, 160);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [closing]);
+  return (
+    <View id={nodeId} className={`notification-slot${closing ? " notification-slot--closing" : ""}`}
+      onTouchStart={() => setPaused(true)} onTouchEnd={() => setPaused(false)} onTouchCancel={() => setPaused(false)}>
+      <NotificationComponent notification={notification} onDismiss={close} />
+    </View>
+  );
+}
+
 export function NotificationRegion({
   owner,
   placement = "inline",
@@ -99,18 +139,22 @@ export function NotificationRegion({
 }) {
   const queue = useAppStore((state) => state.notifications);
   const dismiss = useAppStore((state) => state.dismissNotification);
+  if (placement === "floating") {
+    return <View className="notification-stack">
+      {selectNotifications(queue, placement, owner).slice(0, 3).map((notification) => (
+        <FloatingNotification
+          key={`${notification.id}-${notification.createdAt}-${notification.occurrences}`}
+          notification={notification}
+          onDismiss={() => {
+            const current = useAppStore.getState().notifications.find(item => item.id === notification.id);
+            if (current?.createdAt === notification.createdAt && current.occurrences === notification.occurrences)
+              dismiss(notification.id);
+          }}
+        />
+      ))}
+    </View>;
+  }
   const selection = selectNotification(queue, placement, owner);
-  const current = selection.current;
-  useEffect(() => {
-    if (!current || current.placement !== "floating" || current.tone !== "success" ||
-      !current.dismissible || current.action) return;
-    let cancelled = false;
-    const timer = setTimeout(() => {
-      if (!cancelled) dismiss(current.id);
-    }, 6000);
-    return () => { cancelled = true; clearTimeout(timer); };
-  }, [current?.id, current?.createdAt, current?.occurrences, current?.tone,
-    current?.placement, current?.dismissible, current?.action, dismiss]);
   if (!selection.current) return null;
   return (
     <NotificationComponent
@@ -123,12 +167,18 @@ export function NotificationRegion({
 
 export function FloatingNotificationHost() {
   const [visible, setVisible] = useState(true);
+  const firstNodeId = useAppStore(state => {
+    const first = selectNotifications(state.notifications, "floating")[0];
+    return first ? floatingNotificationNodeId(first) : "";
+  });
   useDidShow(() => setVisible(true));
   useDidHide(() => setVisible(false));
   if (!visible) return null;
   return (
     <View className="notification-host" aria-label="全局通知">
-      <NotificationRegion placement="floating" />
+      <ScrollView className="notification-host__scroll" scrollY enhanced showScrollbar={false} scrollIntoView={firstNodeId}>
+        <NotificationRegion placement="floating" />
+      </ScrollView>
     </View>
   );
 }

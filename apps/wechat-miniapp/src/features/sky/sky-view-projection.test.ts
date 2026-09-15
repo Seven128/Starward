@@ -2,10 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  calibrateSkyHeadingOffset,
   createSkyViewBasis,
   projectSkyDirection,
-  resolveSkyHeading,
   type SkyViewBasis,
   type SkyVector,
 } from "./sky-view-projection.ts";
@@ -182,14 +180,4 @@ test("invalid projection input is rejected without hidden defaults or clamping",
     ),
     null,
   );
-});
-
-test("inverse-clockwise alpha calibration wraps and resolves with the declared sign", () => {
-  assert.equal(calibrateSkyHeadingOffset(350, 20), 10);
-  assert.equal(resolveSkyHeading(10, 20), 350);
-  assert.equal(calibrateSkyHeadingOffset(10, -20), 350);
-  assert.equal(resolveSkyHeading(350, -20), 10);
-  assert.equal(resolveSkyHeading(calibrateSkyHeadingOffset(359, 359)!, 359), 359);
-  assert.equal(calibrateSkyHeadingOffset(Number.NaN, 0), null);
-  assert.equal(resolveSkyHeading(0, Number.POSITIVE_INFINITY), null);
 });

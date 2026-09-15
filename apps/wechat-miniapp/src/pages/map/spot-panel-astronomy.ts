@@ -22,11 +22,3 @@ export function windDirectionLabel(value: number | null | undefined) {
 export function darknessLabel(value: HourlySkyRow["darkness"] | undefined) {
   return value === "ASTRONOMICAL_NIGHT" ? "天文夜" : value === "TWILIGHT" ? "暮光" : value === "DAY" ? "白昼" : "暂无数据";
 }
-
-export function modelConsistencyLabel(row: HourlySkyRow | null) {
-  const label = row?.modelConsistencyLabel;
-  const primary = label === "HIGH" ? "高" : label === "MEDIUM" ? "中" : label === "LOW" ? "低" : "暂无数据";
-  return row?.modelSpreadPercent === null || row?.modelSpreadPercent === undefined
-    ? primary
-    : `${primary}（云量分歧 ${formatMetric(row.modelSpreadPercent, "%")}）`;
-}

@@ -1,0 +1,107 @@
+[
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/index.7ef56d5d.js",
+    "startOffsetZeroBased": 6140,
+    "endOffsetExclusive": 7180,
+    "label": "API endpoint declarations",
+    "code": "{withCredentials:!0}},API_LIST:{JOURNEY_DETAIL:\"/api/slytherin/v1/pcweb/journey/detail\",JOURNEY_HISTORY:\"/api/slytherin/v1/journey/versions/list\",JOURNEY_HISTORY_DETAIL:\"/api/slytherin/v1/journey/versions/detail\",JOURNEY_HISTORY_RESTORE:\"/api/slytherin/v1/journey/versions/restore\",JOURNEY_ROLLBACK:\"/api/slytherin/v1/rollback-journey\",JOURNEY_WECHAT_LINK:\"/api/slytherin/v1/convert/h5url/wx_mini_app\",JOURNEY_JOURNEY_WEATHER:\"/api/slytherin/v1/web/journey/get_weather\",JOURNEY_CHECKLIST_ITEMS:\"/api/slytherin/v1/pcweb/journey/checklist/items\",JOURNEY_CHECKLIST_ITEM_OVERWRITE:\"/api/slytherin/v1/journey/checklist/item/overwrite\",JOURNEY_NOTE_UPDATE:\"/api/slytherin/v1/journey/note/update\",POI_DETAIL:\"/api/slytherin/v1/web/poi/detail\",POI_DETAIL_MORE:\"/api/slytherin/v2/pcweb/poi/detail/more_info\",TRANSPORTATION_DETAIL:\"/api/slytherin/v1/web/transportation/detail\",JOURNEY_TRANSPORTATION_DETAIL:\"/api/slytherin/v1/journey/transportation/detail\",ROUTE:\"/api/slytherin/v1/web/route\",POI_RECOMMEND:\"/api/slytherin/v1/poi/recommend\",POI_COLLE"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/956.743d5b54.js",
+    "startOffsetZeroBased": 242200,
+    "endOffsetExclusive": 244800,
+    "label": "Route request composition by day and response assignment",
+    "code": "value),f=!0,g=!1,y=void 0;try{for(h=function(){var n=I.value;if(-1===n.dayIndex)return\"continue\";delete s[n.dayIndex],delete v[n.dayIndex];var t=(0,k.N)(e,Number(n.dayIndex),p),l=(t?[t].concat((0,c._)(n.events||[])):n.events||[]).filter(function(e){var n,t,l,a,o,r=Number(null!=(o=null!=(a=null!=(l=null!=(t=e.eventTypeV2)?t:e.event_type_v2)?l:e.eventType)?a:e.event_type)?o:0),i=null==(n=e.startPoiInfo)?void 0:n.location;return 300!==r&&!!((null==i?void 0:i.longitude)&&(null==i?void 0:i.latitude))});if(0===l.length)return\"continue\";for(var a=[],o=function(e,n){var t=arguments.length>2&&void 0!==arguments[2]?arguments[2]:1;if(e&&n&&e!==n){var l=a.find(function(l){return l.originPoiId===e&&l.destinationPoiId===n&&l.travelType===t});if(l)return l;var o={originPoiId:e,destinationPoiId:n,travelType:t};return a.push(o),o}},r=void 0,i=0;i<l.length;i++){var u=l[i],d=Number(null!=(b=null!=(M=null!=(_=null!=(h=u.eventTypeV2)?h:u.event_type_v2)?_:u.eventType)?M:u.event_type)?b:0),f=d>=200&&d<=208,g=null!=(A=null!=(N=u.routeTransportationType)?N:u.route_transportation_type)?A:1;f&&o(null==(j=u.startPoiInfo)?void 0:j.innerPoiId,null==(C=u.endPoiInfo)?void 0:C.innerPoiId,(0,w.HF)(d));var y=l[i+1];if(y){var h,_,M,b,N,A,j,C,E,D,S,x,B=o(null!=(x=null==(E=u.endPoiInfo)?void 0:E.innerPoiId)?x:null==(D=u.startPoiInfo)?void 0:D.innerPoiId,null==(S=y.startPoiInfo)?void 0:S.innerPoiId,g);0===i&&t&&(r=B)}}if(0===a.length)return\"continue\";m.push({dayIndex:n.dayIndex,routeRequest:a,startPointRoute:r})},_=u[Symbol.iterator]();!(f=(I=_.next()).done);f=!0)h()}catch(e){g=!0,y=e}finally{try{f||null==_.return||_.return()}finally{if(g)throw y}}n3.value=s,n5.value=v,n8.value=new Set(m.map(function(e){return e.dayIndex})),M=function(e){if(o===n6){var n=new Set(n8.value);n.delete(e),n8.value=n}},b=function(e){return(0,l._)(function(){var n,t,l,u,c,s,v;return(0,d.YH)(this,function(d){switch(d.label){case 0:return d.trys.push([0,2,3,4]),[4,(0,x.y_)(e.routeRequest,e0.value)];case 1:if(n=d.sent(),o!==n6)return[2];return(t=null==n?void 0:n.routeData)&&(u=(l=e.startPointRoute)?t.filter(function(e){return e.originPoiId===l.originPoiId&&e.destinationPoiId===l.destinationPoiId}):[],s=(c=l?u.length>0?u:t.slice(0,1):[]).length?t.filter(function(e){return!c.includes(e)}):t,n3.value=(0,i._)((0,r._)({},n3.value),(0,a._)({},e.dayIndex,s)),n5.value=(0,i._)((0,r._)({},n5.value),(0,a._)({},e.dayIndex,c))),[3,4];case 2:return v=d.sent(),o===n6&&console.error(\"路线获取失败 (dayIndex \".concat(e.dayIndex,\"):\"),v),[3,4];case 3:return M(e.dayIndex),[7];case 4:return[2]}})})()},N=[],A=0,C.label=1;case 1:if(!(A<m.length)||"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/453.b68f1c93.js",
+    "startOffsetZeroBased": 153585,
+    "endOffsetExclusive": 154140,
+    "label": "Meters to kilometers display",
+    "code": "rguments[1]?arguments[1]:{},n=t.precision,a=void 0===n?1:n;if(!Number.isFinite(e)||e<0)return(0,v.$t)(\"journeyDetail.unknown\",\"未知\");if(\"en\"===(0,v.JK)()){var l=3.28084*e;if(l<5e3)return(0,v.$t)(\"journeyDetail.feetUnit\",\"{n} feet\",{n:Math.round(l)});var r=(621371e-9*e).toFixed(a);return(0,v.$t)(\"journeyDetail.milesUnit\",\"{n} miles\",{n:r})}if(e<1e3)return(0,v.$t)(\"journeyDetail.metersUnit\",\"{n}米\",{n:Math.round(e)});var o=0===a?String(Math.floor(e/1e3)):(Math.round(e/100)/10).toFixed(1);return(0,v.$t)(\"journeyDetail.kilometersUnit\",\"{n}千米\",{n:o})}var p"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/453.b68f1c93.js",
+    "startOffsetZeroBased": 210130,
+    "endOffsetExclusive": 210730,
+    "label": "Transport codes and labels",
+    "code": "\"WALK\",a[a.BIKE=2]=\"BIKE\",a[a.PUBLIC=3]=\"PUBLIC\",a),eL=function(e){switch(e){case 0:return(0,v.$t)(\"components.transportCar\",\"驾车\");case 1:return(0,v.$t)(\"components.transportWalk\",\"步行\");case 2:return(0,v.$t)(\"components.transportBike\",\"骑行\");case 3:return(0,v.$t)(\"components.transportPublic\",\"公共交通\");default:return\"\"}},eS=new Map([[0,\"https://sns-poki-1251524319.cos.ap-shanghai.myqcloud.com/slytherin/[REDACTED_HEX].png\"],[1,\"https://sns-poki-1251524319.cos.ap-shanghai.myqcloud.com/slytherin/[REDACTED_HEX].png\"],[2,\"https://sns-poki-1251524319.cos.ap-shanghai.m"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/453.b68f1c93.js",
+    "startOffsetZeroBased": 212100,
+    "endOffsetExclusive": 212500,
+    "label": "Picker time formatter",
+    "code": ")||null==(t=n.startPoiInfo)?void 0:t.name)||(0,v.$t)(\"journeyDetail.endPoint\",\"终点\")});var g=function(e){var t=Math.floor(e/3600),n=Math.floor(e%3600/60),a=[];return t>0&&a.push((0,v.$t)(\"journeyDetail.hoursUnit\",\"{n}小时\",{n:t})),n>0&&a.push((0,v.$t)(\"journeyDetail.minutesUnit\",\"{n}分钟\",{n:n})),a.length>0?a.join(\"\"):(0,v.$t)(\"journeyDetail.zeroMinutes\",\"0分钟\")},M=function(e,t,n,a){if(!e||!t||!n||!a)re"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/453.b68f1c93.js",
+    "startOffsetZeroBased": 213660,
+    "endOffsetExclusive": 214500,
+    "label": "Opening picker batches four modes",
+    "code": "visible},function(t){if(t){var n,a,r,i;c.value=Number(e.currentTravelType),(0,l._)(function(){var t,n,a,l,r,o,i;return(0,s.YH)(this,function(c){switch(c.label){case 0:if(l=null==(t=j())?void 0:t.innerPoiId,r=null==(a=e.endEvent)||null==(n=a.startPoiInfo)?void 0:n.innerPoiId,!l||!r)return[2];p.value=!0,c.label=1;case 1:return c.trys.push([1,3,4,5]),o=[{originPoiId:l,destinationPoiId:r,travelType:ex.WALK},{originPoiId:l,destinationPoiId:r,travelType:ex.BIKE},{originPoiId:l,destinationPoiId:r,travelType:ex.CAR},{originPoiId:l,destinationPoiId:r,travelType:ex.PUBLIC}],[4,(0,h.oH)(o,e.journeyId)];case 2:return u.value=(null==(i=c.sent())?void 0:i.routeData)||[],[3,5];case 3:return console.error(\"获取交通方式数据失败:\",c.sent()),[3,5];case 4:return p.value=!1,[7];case 5:return[2]}})})(),b(),o.impression(\"journey_detail_traffic_picker_imp\",{star"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/453.b68f1c93.js",
+    "startOffsetZeroBased": 215900,
+    "endOffsetExclusive": 216940,
+    "label": "Selecting a different mode invokes update",
+    "code": "malizeClass)([\"picker-item\",{active:Number(c.value)===Number(t.travelType)}]),onClick:function(a){return(0,l._)(function(){var a,l,i,u;return(0,s.YH)(this,function(s){switch(s.label){case 0:if(a=Number(c.value)===Number(t.travelType))return[3,2];return[4,r()];case 1:a=!s.sent(),s.label=2;case 2:if(a)return[2];l=c.value,s.label=3;case 3:return s.trys.push([3,5,,6]),[4,(0,h.CU)({id:e.startEvent.id,journey_id:e.journeyId,event_id:e.startEvent.id,route_transportation_type:t.travelType})];case 4:return s.sent(),c.value=Number(t.travelType),I.W.success((0,v.$t)(\"components.switchTransportSuccess\",\"切换交通成功\")),o.click(\"journey_detail_traffic_select_clk\",{event_id:null==(i=e.startEvent)?void 0:i.id,selected_transport_type:t.travelType,prev_transport_type:l,distance:null==t?void 0:t.distance,duration:null==t?void 0:t.duration}),n(\"update-transport\",{travelType:t.travelType,routeItem:t}),[3,6];case 5:return console.error(\"修改交通方式失败:\",u=s.sent()),I.W.danger((null==u?void 0:u.errMsg)||(null==u?void 0:u.message)||(0,v.$t)(\"components.switch"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/453.b68f1c93.js",
+    "startOffsetZeroBased": 227031,
+    "endOffsetExclusive": 227632,
+    "label": "Card duration and straight-distance helper",
+    "code": "eI=function(e){var t=Math.floor(e/3600),n=Math.floor(e%3600/60),a=[];return t>0&&a.push((0,v.$t)(\"journeyDetail.hoursUnit\",\"{n}小时\",{n:t})),n>0&&a.push((0,v.$t)(\"journeyDetail.minutesUnit\",\"{n}分钟\",{n:n})),a.length>0?a.join(\"\"):(0,v.$t)(\"journeyDetail.zeroMinutes\",\"0分钟\")},ek=function(e,t,n,a){if(!e||!t||!n||!a)return(0,v.$t)(\"journeyDetail.unknown\",\"未知\");var l=function(e){return e*Math.PI/180},r=l(n-e),o=l(a-t),i=Math.pow(Math.sin(r/2),2)+Math.cos(l(e))*Math.cos(l(n))*Math.pow(Math.sin(o/2),2);return m(Math.round(2*Math.atan2(Math.sqrt(i),Math.sqrt(1-i))*6371e3))},ew=function(e){return(null==e?vo"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/453.b68f1c93.js",
+    "startOffsetZeroBased": 228330,
+    "endOffsetExclusive": 229250,
+    "label": "Card reads matching route distance/duration",
+    "code": "nnerPoiId,u=null==n||null==(y=n.startPoiInfo)?void 0:y.innerPoiId;if(!r||!u)return null;var c=null==(g=e.routeData)?void 0:g.find(function(e){return e.originPoiId===r&&e.destinationPoiId===u});if(!c)return null;var s=c.travelType,d=c.distance,p=c.duration,f=eS.get(s);if(p>0)b=\"\".concat(m(d),\" \").concat(eI(p));else{var y,g,h,M,I,k,w,j,b,N,_,E,D,C,x,L=null==l||null==(N=l.location)?void 0:N.latitude,S=null==l||null==(_=l.location)?void 0:_.longitude,A=null==(D=n.startPoiInfo)||null==(E=D.location)?void 0:E.latitude,T=null==(x=n.startPoiInfo)||null==(C=x.location)?void 0:C.longitude;b=(0,v.$t)(\"journeyDetail.straightDistance\",\"直线距离{dist}\",{dist:ek(L,S,A,T)})}return(0,i._)((0,o._)({},c),{travelImg:f,travelDesc:b})},eE=function(e){var t=e||eN;return t?{\"--transport-icon-mask\":'url(\"'.concat(t,'\")')}:{}},eL=function(t){!e.editable||e.previewMode||S.value||(ep(),ed.value=t)},eA=function(e){ed.value===e&&(ep(),em=se"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/370.aa6405a6.js",
+    "startOffsetZeroBased": 67200,
+    "endOffsetExclusive": 67780,
+    "label": "Route paths prepended/appended with POI coordinates; straight fallback",
+    "code": "=e[1]||y.push(e)})},M=function(){if(b.length<2){b=[];return}for(var e=0;e<b.length-1;e++){var t,a=b[e],o=b[e+1],r=!!a.fromTransport,i=a.innerPoiId&&o.innerPoiId?eD(n.dayIndex,a.innerPoiId,o.innerPoiId):null;if(null==i||null==(t=i.paths)?void 0:t.length){var u=(0,d.F7)(i.paths);if(u.length>=2){var c=[a.coord].concat((0,l._)(u),[o.coord]);_(c),ne(c,v,r,x,s,p);continue}}var f=[a.coord,o.coord];_(f),ne(f,v,r,x,s,p)}b=[]},C=(0,m.N)(R.value,Number(n.dayIndex),e.autoMapPreviousDayEnd);if((C?[C].concat((0,l._)(n.events)):n.events).forEach(function(e){var r,i=Number(null!=(A=null!=("
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/370.aa6405a6.js",
+    "startOffsetZeroBased": 38885,
+    "endOffsetExclusive": 39470,
+    "label": "Map polyline double-stroke drawing",
+    "code": "(\"mouseout\",function(){return eL(null)}))},f=new E.Polyline((0,a._)({path:e,strokeColor:(0,d.zG)(n,.2),strokeWeight:7,strokeOpacity:u,strokeStyle:\"solid\",lineJoin:\"round\",lineCap:\"round\",zIndex:i,cursor:void 0!==o?\"pointer\":\"default\"},c));s(f),v(f),N.add(f),et.value.push(f);var m=new E.Polyline((0,a._)({path:e,strokeColor:n,strokeWeight:5,strokeOpacity:u,strokeStyle:\"solid\",showDir:!0,lineJoin:\"round\",lineCap:\"round\",zIndex:i+1,cursor:void 0!==o?\"pointer\":\"default\"},c));s(m),v(m),N.add(m),et.value.push(m)}},nn=function(e,n){var t=arguments.length>2&&void 0!==arguments[2]&&argume"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/370.aa6405a6.js",
+    "startOffsetZeroBased": 68900,
+    "endOffsetExclusive": 69510,
+    "label": "Separate AMap.Driving branch for event type 202",
+    "code": "PoiInfo)?void 0:T.innerPoiId,J=Y&&W?eD(n.dayIndex,Y,W):null;if(201===i){var G=(0,d.Zq)(y,U);_(G),nt(G,v,p,s,x)}else if(202===i)_([y,U]),new E.Driving({map:null,policy:0,extensions:\"base\"}).search(new E.LngLat(y[0],y[1]),new E.LngLat(U[0],U[1]),function(e,n){var t;if(\"complete\"===e&&(null==(t=n.routes)?void 0:t.length)){var a=[];n.routes[0].steps.forEach(function(e){e.path.forEach(function(e){a.push([e.lng,e.lat])})}),na(a.length>=2?a:[y,U],v,p,s,x)}else na([y,U],v,p,s,x)});else if(203===i){var K=[y,U];_(K),no(K,v,p,s,x)}else if(null==J||null==(O=J.paths)?void 0:O.length){var Q=(0,d.F7)(J.paths);if(Q.len"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/370.aa6405a6.js",
+    "startOffsetZeroBased": 69800,
+    "endOffsetExclusive": 70570,
+    "label": "Day distance rounding; cross-day AMap branch",
+    "code": ".length>0){var I,N=Math.round(((null==(I=J.value)?void 0:I[n.dayIndex])||[]).reduce(function(e,n){return e+(n.distance||0)},0)/1e3);np(n,eO(y)||eO(h)||h[0],v,N,p,s)}k&&w&&c.push({first:k,last:w,color:v,dayIndex:n.dayIndex,dayArrayIndex:s})}}),(t||i)&&c.length>=2)for(var s=0;s<c.length-1;s++)!function(t){var a,o,r,u=c[t].last,s=c[t+1].first,v=c[t+1].color,f=c[t+1].dayIndex,p=c[t+1].dayArrayIndex,h=!!(0,m.N)(R.value,f,e.autoMapPreviousDayEnd),y=null==(o=G.value)||null==(a=o[f])?void 0:a[0],g=(null==y||null==(r=y.paths)?void 0:r.length)?(0,d.F7)(y.paths):[];if(h)return g.length>=2&&nn([u].concat((0,l._)(g),[s]),v,i,f,p);new E.Driving({map:null,policy:0,extensions:\"base\"}).search(new E.LngLat(u[0],u[1]),new E.LngLat(s[0],s[1]),function(e,t){var a;if(n===nV)if(\"com"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/370.aa6405a6.js",
+    "startOffsetZeroBased": 72565,
+    "endOffsetExclusive": 73020,
+    "label": "AMap SDK initialization with secrets redacted",
+    "code": "value&&(window.forceWebGL=!0,window._AMapSecurityConfig={securityJsCode:\"[REDACTED]\"},c().load({key:\"[REDACTED]\",version:\"2.0\",plugins:[\"AMap.Driving\"]}).then(function(n){if(ea.value&&!j){E=n,N=new n.Map(ea.value,{features:[\"bg\",\"road\",\"building\",\"point\"],resizeEnable:!0,zoomEnable:!0,scrollWheel:!e.manualZoomOnly,doubleClickZoom:!e.manualZoomOnly,touchZoom:!e.manualZoomOnly,keyboardEnable:!e.manualZoomOnly,"
+  },
+  {
+    "source": "https://fe-static.pitravel.cn/formula-static/gryffindor-website/public/resource/js/async/370.aa6405a6.js",
+    "startOffsetZeroBased": 88795,
+    "endOffsetExclusive": 89042,
+    "label": "Semicolon/comma coordinate decoder",
+    "code": "und(o*(1-n)),\")\")},d=function(e){var n=[];return e.forEach(function(e){e.split(\";\").forEach(function(e){var t=(0,a._)(e.split(\",\"),2),o=t[0],r=t[1],l=parseFloat(o),i=parseFloat(r);isNaN(l)||isNaN(i)||n.push([l,i])})}),n},s=function(e,n){var t=argu"
+  }
+]

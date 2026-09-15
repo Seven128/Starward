@@ -9,9 +9,9 @@ const snapshot: SkyPickSnapshot = {
   width: 390,
   height: 844,
   objects: [
-    { reference: "HIP:2", displayName: "HIP 2", kind: "STAR", magnitude: 2, x: 100, y: 100 },
-    { reference: "HIP:1", displayName: "Alpha", kind: "STAR", magnitude: 1, x: 100, y: 100 },
-    { reference: "HIP:3", displayName: "HIP 3", kind: "STAR", magnitude: 0, x: 200, y: 200 },
+    { reference: "HR:2", displayName: "HR 2", kind: "STAR", magnitude: 2, x: 100, y: 100 },
+    { reference: "HR:1", displayName: "Alpha", kind: "STAR", magnitude: 1, x: 100, y: 100 },
+    { reference: "HR:3", displayName: "HR 3", kind: "STAR", magnitude: 0, x: 200, y: 200 },
   ],
 };
 
@@ -19,7 +19,7 @@ test("picking uses only the exact painted catalog frame and deterministic orderi
   assert.deepEqual(pickPaintedSkyObjects(snapshot, {
     x: 101, y: 100, frameAt: snapshot.frameAt,
     catalogVersion: snapshot.catalogVersion, catalogHash: snapshot.catalogHash,
-  }).map((row) => row.reference), ["HIP:1", "HIP:2"]);
+  }).map((row) => row.reference), ["HR:1", "HR:2"]);
   assert.deepEqual(pickPaintedSkyObjects(snapshot, {
     x: 101, y: 100, frameAt: "2026-09-10T12:30:00.000Z",
     catalogVersion: snapshot.catalogVersion, catalogHash: snapshot.catalogHash,

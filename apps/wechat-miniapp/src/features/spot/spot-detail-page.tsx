@@ -1,10 +1,9 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro, { useDidHide, useRouter } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type {
   ObservationContext,
-  RouteOverview,
 } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
@@ -17,7 +16,6 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
-  estimateSpotRoute,
   getSpotGuides,
   getSpotOverview,
   getSpotSite,
@@ -95,19 +93,19 @@ function isCancelledAction(error: unknown) {
 export function SpotDetailPage({
   initialSegment,
   observationContextOverride,
+  contextRefreshError = false,
+  onContextRefresh,
 }: {
   initialSegment: SpotSegment;
   observationContextOverride?: ObservationContext;
+  contextRefreshError?: boolean;
+  onContextRefresh?: () => void;
 }) {
   const router = useRouter();
   const spotId = safeParam(router.params.spotId);
   const routeContextId = safeParam(router.params.contextId);
   const themeClass = useThemeClass();
   const segment = initialSegment;
-  const [requestedRoute, setRequestedRoute] = useState<RouteOverview | null>(
-    null,
-  );
-  const [routePending, setRoutePending] = useState(false);
   const [mapReturnFailed, setMapReturnFailed] = useState(false);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
   const { toggleFavorite } = useFavoriteMutation();
@@ -117,6 +115,7 @@ export function SpotDetailPage({
   );
   const observationContext = observationContextOverride ?? storedObservationContext;
   const navigationEpoch = useRef(0);
+  const [pageVisible, setPageVisible] = useState(true);
   const detailPagePending = useRef(false);
   const navigationScope = useRef("");
   const scope = JSON.stringify([spotId, routeContextId, observationContext?.contextFingerprint, observationContext?.revision]);
@@ -124,7 +123,8 @@ export function SpotDetailPage({
     navigationScope.current = scope;
     navigationEpoch.current += 1;
   }
-  useDidHide(() => { navigationEpoch.current += 1; setRoutePending(false); });
+  useDidShow(() => setPageVisible(true));
+  useDidHide(() => { navigationEpoch.current += 1; setPageVisible(false); });
   useEffect(() => () => { navigationEpoch.current += 1; }, []);
   const contextComplete = Boolean(
     routeContextId &&
@@ -144,17 +144,17 @@ export function SpotDetailPage({
     ],
     queryFn: (signal) =>
       getSpotOverview(spotId, routeContextId, signal),
-    enabled: validRoute,
+    enabled: validRoute && pageVisible,
   });
   const guides = useResourceQuery({
     queryKey: ["spot-guides", spotId],
     queryFn: (signal) => getSpotGuides(spotId, signal),
-    enabled: validRoute && segment === "GUIDES" && overview.data?.data.spot.spotId === spotId,
+    enabled: validRoute && pageVisible && segment === "GUIDES" && overview.data?.data.spot.spotId === spotId,
   });
   const site = useResourceQuery({
     queryKey: ["spot-site", spotId],
     queryFn: (signal) => getSpotSite(spotId, signal),
-    enabled: validRoute && segment === "SITE" && overview.data?.data.spot.spotId === spotId,
+    enabled: validRoute && pageVisible && segment === "SITE" && overview.data?.data.spot.spotId === spotId,
   });
   const detail = validRoute && overview.data?.data.spot.spotId === spotId ? overview.data.data : undefined;
   const favorite = favoriteIds.includes(spotId as (typeof favoriteIds)[number]);
@@ -170,29 +170,20 @@ export function SpotDetailPage({
   const siteMediaState =
     site.data?.data.siteMediaState ?? detail?.siteMediaState;
   useEffect(() => {
-    setRequestedRoute(null);
-    setRoutePending(false);
-  }, [spotId, routeContextId, observationContext?.contextFingerprint, observationContext?.revision]);
-  const effectiveRoute = requestedRoute ?? detail?.route;
-  const routeHeadline = effectiveRoute
-    ? effectiveRoute.kind === "ROUTE_ESTIMATE"
-      ? [
-          effectiveRoute.originLabel ? `从${effectiveRoute.originLabel}` : null,
-          effectiveRoute.driveMinutes !== null
-            ? `驾车约 ${effectiveRoute.driveMinutes} 分钟`
-            : null,
-          effectiveRoute.distanceKm !== null
-            ? `路线约 ${effectiveRoute.distanceKm} km`
-            : null,
-        ]
-          .filter(Boolean)
-          .join(" · ") || "路线结果暂不完整"
-      : effectiveRoute.kind === "STRAIGHT_LINE_ONLY"
-        ? effectiveRoute.distanceKm !== null
-          ? `直线距离约 ${effectiveRoute.distanceKm} km`
-          : "直线距离暂不可用"
-        : "路线服务暂不可用"
-    : "";
+    const failed = overview.isError
+      ? ["地点资料数据异常", "地点资料暂时无法读取，可在页面中重试。", `overview:${spotId}`]
+      : segment === "GUIDES" && guides.isError
+        ? ["攻略数据异常", "本地点的攻略暂时无法读取，可在页面中重试。", `guides:${spotId}`]
+        : segment === "SITE" && site.isError
+          ? ["场地数据异常", "场地与设施资料暂时无法读取，可在页面中重试。", `site:${spotId}`]
+          : null;
+    if (!pageVisible || !failed) return;
+    notify({ owner: "spot-detail", placement: "floating", tone: "info",
+      title: failed[0]!, body: failed[1]!, dedupeKey: `spot-detail-resource-failed:${failed[2]}` });
+  }, [guides.isError, notify, overview.isError, pageVisible, segment, site.isError, spotId]);
+  const effectiveRoute = detail?.route;
+  const routeHeadline = effectiveRoute?.kind === "STRAIGHT_LINE_ONLY" && effectiveRoute.distanceKm != null
+    ? `直线距离约 ${effectiveRoute.distanceKm} km` : "暂无数据";
 
   const returnToMap = async () => {
     if (detailPagePending.current) return;
@@ -211,7 +202,7 @@ export function SpotDetailPage({
         <CustomNav title="观星点详情" back />
         <View className="page-inset">
           <StatusPanel
-            state="ERROR"
+            state="EMPTY"
             detail={mapReturnFailed ? "地图暂未打开，请重试。" : "无法确认当前观星点，请返回地图重新选择。"}
             recoveryLabel={mapReturnFailed ? "重试返回地图" : "返回地图"}
             onRecover={() => void returnToMap()}
@@ -244,7 +235,7 @@ export function SpotDetailPage({
     if (!detail) return;
     const operation = ++navigationEpoch.current;
     const current = () => operation === navigationEpoch.current && navigationScope.current === scope;
-    setRoutePending(false);
+
     try {
     const canCopyExact = detail.spot.visibilityPolicy === "PUBLIC_EXACT";
     if (!canCopyExact) {
@@ -287,40 +278,6 @@ export function SpotDetailPage({
 
     try {
       if (tapIndex === 0) {
-        if (effectiveRoute?.originLabel) {
-          setRoutePending(true);
-          try {
-            const response = await estimateSpotRoute(
-              observationContext.contextId,
-              detail.spot.spotId,
-            );
-            if (!current()) return;
-            setRequestedRoute(response.data);
-            if (response.dataState !== "FRESH")
-              notify({
-                owner: "spot-detail",
-                placement: "inline",
-                tone: "warning",
-                title: "路线估算暂不可用",
-                body: "已保留已核验的末段道路与停车信息，并继续使用微信外部地图。",
-                dismissible: true,
-                dedupeKey: "spot-route-unavailable",
-              });
-          } catch {
-            if (!current()) return;
-            notify({
-              owner: "spot-detail",
-              placement: "inline",
-              tone: "warning",
-              title: "路线估算暂不可用",
-              body: "没有用直线距离冒充驾车路线；将继续使用微信外部地图。",
-              dismissible: true,
-              dedupeKey: "spot-route-request-failed",
-            });
-          } finally {
-            if (current()) setRoutePending(false);
-          }
-        }
         await Taro.openLocation({
           latitude: detail.spot.gcj02.latitude,
           longitude: detail.spot.gcj02.longitude,
@@ -391,6 +348,8 @@ export function SpotDetailPage({
       />
       <View className="page-inset">
         <NotificationRegion owner="spot-detail" />
+        {contextRefreshError ? <StatusPanel state="STALE" detail="计划中的地点上下文尚未确认最新状态，以下保留上次资料。"
+          recoveryLabel="重试计划地点" onRecover={onContextRefresh} /> : null}
       </View>
       {overview.isPending ? (
         <View className="page-inset">
@@ -402,7 +361,7 @@ export function SpotDetailPage({
       ) : overview.isError || !detail ? (
         <View className="page-inset">
           <StatusPanel
-            state="ERROR"
+            state="EMPTY"
             detail="地点资料暂时无法加载，请重试。"
             recoveryLabel="重试概览"
             onRecover={() => void overview.refetch()}
@@ -428,7 +387,7 @@ export function SpotDetailPage({
                 {detail.spot.region}
               </Text>
               <Text className="type-page-title">{detail.spot.name}</Text>
-              {!(__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && detail.spot.spotId === "spot:test-published") && detail.spot.address ? <Text className="type-caption">{detail.spot.address}</Text> : null}
+              {detail.spot.address ? <Text className="type-caption">{detail.spot.address}</Text> : null}
               <Text className="type-caption">
                 最近核验{" "}
                 {detail.spot.lastVerifiedAt?.slice(0, 10) ?? "暂无"}
@@ -449,10 +408,9 @@ export function SpotDetailPage({
                 className="detail-route-action focus-ring"
                 data-od-id="spot-detail-route-action"
                 aria-label={`去这里，打开${detail.spot.name}外部地图`}
-                {...(routePending ? { disabled: true } : {})}
                 onClick={openNavigation}
               >
-                <Text>{routePending ? "正在准备…" : "去这里 →"}</Text>
+                <Text>去这里 →</Text>
               </Button>
             </View>
             {effectiveRoute?.lastRoad ? <Text className="type-secondary">末段道路：{effectiveRoute.lastRoad}</Text> : null}
@@ -477,7 +435,7 @@ export function SpotDetailPage({
                     <StatusPanel state="LOADING" detail="正在加载攻略。" />
                   ) : guides.isError ? (
                     <StatusPanel
-                      state="ERROR"
+                      state="EMPTY"
                       detail="攻略暂时无法加载，请重试。"
                       recoveryLabel="重试攻略"
                       onRecover={() => void guides.refetch()}
@@ -556,7 +514,7 @@ export function SpotDetailPage({
                     />
                   ) : site.isError ? (
                     <StatusPanel
-                      state="ERROR"
+                      state="EMPTY"
                       detail="场地信息暂时无法加载，请重试。"
                       recoveryLabel="重试场地"
                       onRecover={() => void site.refetch()}
@@ -565,7 +523,7 @@ export function SpotDetailPage({
                     <>
                       {facilities.map((item) => (
                         <View className="facility-row" key={item.type}>
-                          <FacilityEvidenceDetails evidence={item} title={FACILITY_LABEL[item.type]} showSource={!sharedFacilitySource} showVerification={!sharedFacilityVerification} showDescription={!(__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ && detail.spot.spotId === "spot:test-published" && (item.detail || item.summary || "").startsWith("仅证明自动化测试"))} />
+                          <FacilityEvidenceDetails evidence={item} title={FACILITY_LABEL[item.type]} showSource={!sharedFacilitySource} showVerification={!sharedFacilityVerification} />
                         </View>
                       ))}
                       {!facilities.length ? <Text className="type-secondary">设施资料待核验</Text> : null}

@@ -39,6 +39,7 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     useAppStore: { getState: () => ({ mapResetVersion: version }) },
+    nativeMap: { isCurrent: () => true },
     gcj02ToWgs84: () => ({ lat: 20, lon: 110 }), activeContext: null,
     currentTimezoneHint: () => "UTC", localDateForNow: () => "2026-08-29",
     resolveObservationContext: () => { calls++; return typeof response === "function" ? response() : response; },

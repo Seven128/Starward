@@ -9,6 +9,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, getPlans } from "@/services/api-client";
+import { useAppStore } from "@/state/app-store";
 import { planEndLabel, planListEntries, type PlanPartition } from "./plan-list-model";
 import { planTravelModeLabel } from "../detail/plan-travel-fields";
 import "./index.scss";
@@ -20,19 +21,27 @@ export default function PlanListPage() {
   const [partition, setPartition] = useState<PlanPartition>("upcoming");
   const [now, setNow] = useState(() => new Date());
   const [navigationError, setNavigationError] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
   const [scrollTop, setScrollTop] = useState(0);
   const scrollPositions = useRef({ upcoming: 0, past: 0 });
   const timer = useRef<ReturnType<typeof setInterval> | null>(null), navigating = useRef(false);
   const owner = currentDraftUserId();
+  const notify = useAppStore((state) => state.notify);
   const query = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mount}`],
-    queryFn: signal => getPlans(signal, owner ?? undefined), staleTime: 15_000 });
+    queryFn: signal => getPlans(signal, owner ?? undefined), enabled: pageVisible, staleTime: 15_000 });
   const stop = () => { if (timer.current !== null) clearInterval(timer.current); timer.current = null; };
   useDidShow(() => {
-    refreshIdentity(v => v + 1); setNow(new Date()); stop();
+    setPageVisible(true); refreshIdentity(v => v + 1); setNow(new Date()); stop();
     timer.current = setInterval(() => setNow(new Date()), 30_000);
     void query.refetch();
   });
-  useDidHide(stop); useEffect(() => stop, []);
+  useDidHide(() => { setPageVisible(false); stop(); }); useEffect(() => stop, []);
+  useEffect(() => {
+    if (!pageVisible || (!query.isError && !query.refreshError && query.data?.dataState !== "STALE_USABLE")) return;
+    notify({ owner: "plan-list", placement: "floating", tone: "info",
+      title: "计划数据异常", body: "观星计划暂时无法同步，可在页面中重试。",
+      dedupeKey: `plan-list-failed:${owner ?? "signed-out"}` });
+  }, [notify, owner, pageVisible, query.data?.dataState, query.isError, query.refreshError]);
   const entries = planListEntries((query.data?.data.plans ?? []).filter(plan => !spotId || plan.spotId === spotId), now, partition);
   const choosePartition = (next: PlanPartition) => { setPartition(next); setScrollTop(scrollPositions.current[next]); };
   useEffect(() => { scrollPositions.current = { upcoming: 0, past: 0 }; setScrollTop(0); setPartition("upcoming"); }, [owner]);
@@ -52,7 +61,7 @@ export default function PlanListPage() {
           <Button aria-pressed={partition === "past"} onClick={() => choosePartition("past")}>过往</Button>
           <Button className="plan-list-new" onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>＋ 新建</Button>
         </View>
-        {query.isError || query.refreshError ? <StatusPanel state={query.data ? "STALE" : "ERROR"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
+        {query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE" ? <StatusPanel state={query.data ? "STALE" : "EMPTY"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
         {query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
         {navigationError ? <View role="alert"><Text>页面暂未打开，请再次点击。</Text></View> : null}
         {entries.map((entry, index) => {

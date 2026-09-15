@@ -4,6 +4,7 @@ import type {
   AstronomicalEventLocalVisibility,
   EclipseOccurrence,
   MeteorShowerOccurrence,
+  MeteorRadiantDriftModel,
   MoonPhaseKey,
 } from "@starward/miniapp-contracts";
 
@@ -19,6 +20,7 @@ const engine = require("astronomy-engine") as AstronomyEngine;
 const {
   Body,
   Equator,
+  EquatorFromVector,
   GeoVector,
   Horizon,
   Illumination,
@@ -28,6 +30,10 @@ const {
   Observer,
   RotateVector,
   Rotation_EQJ_ECL,
+  Rotation_ECL_EQJ,
+  Rotation_EQJ_EQD,
+  Spherical,
+  VectorFromSphere,
   SearchAltitude,
   SearchGlobalSolarEclipse,
   SearchLocalSolarEclipse,
@@ -39,7 +45,7 @@ export const MINIAPP_ASTRONOMY_ALGORITHM =
   "miniapp-astronomy-engine-adapter@1.1.0+astronomy-engine@2.1.19";
 
 export const MINIAPP_EVENT_PROJECTION_ALGORITHM =
-  "miniapp-event-projection@1.0.0+astronomy-engine@2.1.19";
+  "miniapp-event-projection@2.0.0+astronomy-engine@2.1.19";
 
 type EclipsePhaseKey = AstronomicalEventLocalPhase["key"];
 
@@ -131,6 +137,95 @@ export function calculateSolarLongitudeJ2000(at: string): number {
   const longitude =
     (Math.atan2(sunEclipticJ2000.y, sunEclipticJ2000.x) * 180) / Math.PI;
   return (longitude + 360) % 360;
+}
+
+function signedLongitudeDelta(value: number, reference: number) {
+  return ((value - reference + 540) % 360) - 180;
+}
+
+/**
+ * The solar-longitude crossing is a calendar anchor for recurring references.
+ * It is not a prediction of a meteor shower's maximum in the requested year.
+ * SearchSunLongitude uses the ecliptic of date, so it cannot invert this J2000
+ * quantity. Bracket the same existing J2000 ephemeris within the UTC year and
+ * bisect its first crossing. Calendar years need not span exactly 360 degrees:
+ * a missing crossing is an error, and a repeated crossing uses the first one.
+ */
+export function calculateAnnualSolarReferenceAt(year: number, solarLongitudeDeg: number): string {
+  if (!Number.isInteger(year) || year < 1900 || year > 2100 || !Number.isFinite(solarLongitudeDeg) || solarLongitudeDeg < 0 || solarLongitudeDeg >= 360)
+    throw new RangeError("meteor_annual_reference_invalid");
+  const yearStart = Date.UTC(year, 0, 1);
+  const yearEnd = Date.UTC(year + 1, 0, 1) - 1;
+  const startLongitude = calculateSolarLongitudeJ2000(new Date(yearStart).toISOString());
+  const targetTravel = (solarLongitudeDeg - startLongitude + 360) % 360;
+  if (targetTravel === 0) return new Date(yearStart).toISOString();
+  let segmentStart = yearStart;
+  let segmentLongitude = startLongitude;
+  let travel = 0;
+  while (segmentStart < yearEnd) {
+    const segmentEnd = Math.min(segmentStart + 31 * 86_400_000, yearEnd);
+    const endLongitude = calculateSolarLongitudeJ2000(new Date(segmentEnd).toISOString());
+    const nextTravel = travel + signedLongitudeDelta(endLongitude, segmentLongitude);
+    if (nextTravel >= targetTravel) {
+      let left = segmentStart;
+      let right = segmentEnd;
+      while (right - left > 1) {
+        const middle = Math.floor((left + right) / 2);
+        const middleTravel = travel + signedLongitudeDelta(calculateSolarLongitudeJ2000(new Date(middle).toISOString()), segmentLongitude);
+        if (middleTravel < targetTravel) left = middle;
+        else right = middle;
+      }
+      return new Date(right).toISOString();
+    }
+    segmentStart = segmentEnd;
+    segmentLongitude = endLongitude;
+    travel = nextTravel;
+  }
+  throw new RangeError("meteor_solar_reference_absent_in_year");
+}
+
+/** Returns equatorial-of-date coordinates for the existing horizon owner. */
+export function calculateDriftingMeteorRadiantAt(model: MeteorRadiantDriftModel, at: string) {
+  const date = new Date(at);
+  if (!Number.isFinite(date.getTime())) throw new TypeError("astronomy_instant_invalid");
+  const values = [model.referenceSolarLongitudeDeg, model.sunCenteredLongitudeDeg, model.latitudeDeg,
+    model.longitudeDriftDegPerDeg, model.latitudeDriftDegPerDeg, model.validSolarOffsetMinDeg, model.validSolarOffsetMaxDeg];
+  if (model.frame !== "SUN_CENTERED_ECLIPTIC_J2000" || !values.every(Number.isFinite) ||
+    model.referenceSolarLongitudeDeg < 0 || model.referenceSolarLongitudeDeg >= 360 ||
+    model.sunCenteredLongitudeDeg < 0 || model.sunCenteredLongitudeDeg >= 360 || Math.abs(model.latitudeDeg) > 90 ||
+    model.validSolarOffsetMinDeg > 0 || model.validSolarOffsetMaxDeg < 0 ||
+    model.validSolarOffsetMinDeg <= -180 || model.validSolarOffsetMaxDeg >= 180 ||
+    model.validSolarOffsetMinDeg >= model.validSolarOffsetMaxDeg)
+    throw new RangeError("meteor_radiant_model_invalid");
+  const solarLongitudeDeg = calculateSolarLongitudeJ2000(at);
+  const offset = signedLongitudeDelta(solarLongitudeDeg, model.referenceSolarLongitudeDeg);
+  if (offset < model.validSolarOffsetMinDeg || offset > model.validSolarOffsetMaxDeg) return null;
+  const longitude = (model.sunCenteredLongitudeDeg + model.longitudeDriftDegPerDeg * offset + solarLongitudeDeg + 720) % 360;
+  const latitude = model.latitudeDeg + model.latitudeDriftDegPerDeg * offset;
+  if (Math.abs(latitude) > 90) throw new RangeError("meteor_radiant_model_invalid");
+  const ecliptic = VectorFromSphere(new Spherical(latitude, longitude, 1), date);
+  const eqj = RotateVector(Rotation_ECL_EQJ(), ecliptic);
+  const eqd = EquatorFromVector(RotateVector(Rotation_EQJ_EQD(date), eqj));
+  return { rightAscensionDeg: eqd.ra * 15, declinationDeg: eqd.dec, solarLongitudeDeg };
+}
+
+/** One direction owner for current sky targets, night windows and event details. */
+export function calculateMeteorRadiantAt(event: MeteorShowerOccurrence, at: string) {
+  if (event.annualReference) {
+    const reference = event.annualReference;
+    if (!reference.radiantDrift) return null;
+    // Keep the occurrence's year identity; solar checks below enforce the
+    // exact within-day monitoring and measured-direction intervals.
+    const instant = Date.parse(at);
+    if (instant < Date.parse(event.activeStartDate + "T00:00:00Z") || instant >= Date.parse(event.activeEndDate + "T00:00:00Z") + 86_400_000) return null;
+    const solar = calculateSolarLongitudeJ2000(at);
+    const offset = signedLongitudeDelta(solar, reference.solarLongitudeReferenceDeg);
+    if (offset < signedLongitudeDelta(reference.solarLongitudeStartDeg, reference.solarLongitudeReferenceDeg) ||
+      offset > signedLongitudeDelta(reference.solarLongitudeEndDeg, reference.solarLongitudeReferenceDeg)) return null;
+    return calculateDriftingMeteorRadiantAt(reference.radiantDrift, at);
+  }
+  if (event.radiantRightAscensionDeg === null || event.radiantDeclinationDeg === null) return null;
+  return { rightAscensionDeg: event.radiantRightAscensionDeg, declinationDeg: event.radiantDeclinationDeg };
 }
 
 export type MiniappAstronomyTarget =
@@ -501,11 +596,11 @@ export function projectMeteorShowerAtLocation(
     localDate: input.localDate,
     algorithmVersion: MINIAPP_EVENT_PROJECTION_ALGORITHM,
     constraints: [
-      "仅计算天文黑夜与目录峰值辐射点的几何高度、方位和月光；未纳入天气、光污染及真实地平遮挡。",
-      "目录辐射点未应用逐日漂移，结果不等于现场每小时可见流星数量。",
+      "仅计算天文黑夜、辐射方向与月光；未纳入天气、光污染及真实地平遮挡。",
+      event.annualReference ? "方向采用历史样本漂移，只在资料覆盖的时段内计算；不预测当年活动率。" : "年度目录辐射点未应用逐日漂移；结果不是现场每小时可见数量。",
     ],
   };
-  if (input.localDate < event.activeStartDate || input.localDate > event.activeEndDate)
+  if (!event.annualReference && (input.localDate < event.activeStartDate || input.localDate > event.activeEndDate))
     return { ...base, state: "NOT_VISIBLE", reason: "所选日期不在这场流星雨的目录活动期内。" };
   const start = Date.parse(input.nightStartUtc);
   const end = Date.parse(input.nightEndUtc);
@@ -513,10 +608,13 @@ export function projectMeteorShowerAtLocation(
     throw new Error("astronomy_event_night_interval_invalid");
   const observer = new Observer(input.latitude, input.longitude, input.elevationM);
   const samples: Array<{ at: string; altitude: number; azimuth: number; moon: number }> = [];
+  let missingDirection = false;
   for (let at = start; at <= end; at += 15 * 60_000) {
     const date = new Date(at);
     if (horizontal(Body.Sun, date, observer).altitude > -18) continue;
-    const radiant = Horizon(date, observer, event.radiantRightAscensionDeg / 15, event.radiantDeclinationDeg, "");
+    const coordinates = calculateMeteorRadiantAt(event, date.toISOString());
+    if (!coordinates) { missingDirection = true; continue; }
+    const radiant = Horizon(date, observer, coordinates.rightAscensionDeg / 15, coordinates.declinationDeg, "");
     if (radiant.altitude <= 0) continue;
     samples.push({
       at: date.toISOString(), altitude: radiant.altitude, azimuth: radiant.azimuth,
@@ -524,13 +622,16 @@ export function projectMeteorShowerAtLocation(
     });
   }
   if (!samples.length)
-    return { ...base, state: "NOT_VISIBLE", reason: "所选夜晚没有同时满足天文黑夜且目录峰值辐射点位于地平线以上的时段。" };
+    return missingDirection || (event.annualReference && !event.annualReference.radiantDrift)
+      ? { ...base, state: "UNAVAILABLE", reason: "所选夜晚的辐射方向暂无数据，无法确定本地几何观测时段。" }
+      : { ...base, state: "NOT_VISIBLE", reason: "所选夜晚没有同时满足天文黑夜且辐射方向位于地平线以上的时段。" };
   const best = samples.reduce((left, right) => right.altitude > left.altitude ? right : left);
   return {
     ...base,
+    constraints: [...base.constraints, ...(missingDirection ? ["部分时段方向暂无数据，所示窗口仅覆盖可计算的部分。"] : [])],
     state: "AVAILABLE",
     reason: best.altitude < 15
-      ? "存在几何观测时段，但目录峰值辐射点始终较低；请结合现场地平遮挡判断。"
+      ? "存在几何观测时段，但辐射方向始终较低；请结合现场地平遮挡判断。"
       : "已按所选地点和日期计算天文黑夜中的几何观测时段。",
     bestWindowStartUtc: samples[0]!.at,
     bestWindowEndUtc: samples.at(-1)!.at,
@@ -553,6 +654,7 @@ export function projectEclipseAtLocation(
   const base = {
     locationName: input.locationName,
     timezone: input.timezone,
+    localDate: localDateTime(event.peakAtUtc!, input.timezone).slice(0, 10),
     algorithmVersion: MINIAPP_EVENT_PROJECTION_ALGORITHM,
     constraints: event.kind === "SOLAR_ECLIPSE"
       ? [
@@ -602,7 +704,7 @@ export function projectEclipseAtLocation(
   }] : []);
   const above = phases.filter(phase => phase.altitudeDeg > 0);
   if (!above.length)
-    return { ...base, state: "NOT_VISIBLE", reason: "本地食相发生时太阳位于所选地点的几何地平线以下。", phases };
+    return { ...base, localDate: localDateTime(localPeak, input.timezone).slice(0, 10), state: "NOT_VISIBLE", reason: "本地食相发生时太阳位于所选地点的几何地平线以下。", phases };
   const peakPhase = phases.find(phase => phase.key === "PEAK")!;
   return {
     ...base, state: "AVAILABLE",
@@ -682,16 +784,16 @@ export function calculateMiniappNightSky(
     ) {
       samples.push(sampleAt(new Date(millis)));
     }
-    const existing = new Set(samples.map((sample) => sample.at));
-    for (const additionalTime of input.additionalTimes ?? []) {
-      const at = new Date(additionalTime);
-      const iso = at.toISOString();
-      if (existing.has(iso)) continue;
-      samples.push(sampleAt(at));
-      existing.add(iso);
-    }
-    samples.sort((left, right) => Date.parse(left.at) - Date.parse(right.at));
   }
+  const existing = new Set(samples.map((sample) => sample.at));
+  for (const additionalTime of input.additionalTimes ?? []) {
+    const at = new Date(additionalTime);
+    const iso = at.toISOString();
+    if (existing.has(iso)) continue;
+    samples.push(sampleAt(at));
+    existing.add(iso);
+  }
+  samples.sort((left, right) => Date.parse(left.at) - Date.parse(right.at));
   const midpoint =
     dusk && dawn
       ? new Date(

@@ -145,7 +145,6 @@ function evaluateSlice(input: OpportunitySliceInput): OpportunitySliceResult {
     score: weightedGeometricMean(components),
     confidence:
       clamp01(input.dataConfidence) *
-      clamp01(input.modelConsistency) *
       completeness,
     eligible: false,
     hardBlockers: [],

@@ -65,7 +65,7 @@ export function diagnoseHost(env, execute = spawnSync, temporaryRoot = tmpdir())
 
 export function diagnosticSucceeded(report) {
   if (report.evidenceScope === "SERVER_BFF_NOT_DEVICE") return imageryProbeSucceeded(report);
-  return report.status === "ready" || (report.status === "passed" && report.composedTotalCloudHours > 0 && ["FRESH", "PARTIAL"].includes(report.openMeteo?.state) && report.openMeteo.modelCount > 0 && report.openMeteo.layeredCloudHours > 0 && report.alerts?.state === "FRESH") || (report.status === "observed" && report.runtimeEnvironment === "staging" && report.configState === "ready" && report.databaseState === "ready" && report.healthStatus === 200);
+  return report.status === "ready" || (report.status === "passed" && report.composedTotalCloudHours > 0 && ["FRESH", "PARTIAL"].includes(report.weather?.state) && report.alerts?.state === "FRESH") || (report.status === "observed" && report.runtimeEnvironment === "staging" && report.configState === "ready" && report.databaseState === "ready" && report.healthStatus === 200);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

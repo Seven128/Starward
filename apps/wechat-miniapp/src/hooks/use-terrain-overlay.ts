@@ -6,7 +6,7 @@ import { useResourceQuery } from "./use-resource-query";
 
 const downloaded = new Map<string, string>();
 
-export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean) {
+export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean, imageEnabled = enabled) {
   const identity = `${input.purpose}:${input.center.latitude.toFixed(5)}:${input.center.longitude.toFixed(5)}:${input.radiusKm.toFixed(1)}`;
   const query = useResourceQuery({
     queryKey: ["terrain-overlay", identity],
@@ -15,31 +15,48 @@ export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean
     staleTime: 24 * 60 * 60 * 1000,
   });
   const imageUrl = query.data?.data.imageUrl ?? null;
+  const imageKey = imageUrl ? `${query.data?.data.publicationId ?? ""}:${imageUrl}` : "";
+  const [imageAttempt, setImageAttempt] = useState(0);
+  const shouldReadImage = enabled && imageEnabled;
   const [imageState, setImageState] = useState<{ url: string; path: string | null; error: unknown | null }>({ url: "", path: null, error: null });
   useEffect(() => {
-    if (!enabled || !imageUrl) {
-      setImageState({ url: imageUrl ?? "", path: null, error: null });
+    if (!shouldReadImage || !imageUrl) {
+      setImageState({ url: imageKey, path: null, error: null });
       return;
     }
-    const cached = downloaded.get(imageUrl);
+    const cached = downloaded.get(imageKey);
     if (cached) {
-      setImageState({ url: imageUrl, path: cached, error: null });
+      setImageState({ url: imageKey, path: cached, error: null });
       return;
     }
     const controller = new AbortController();
-    setImageState({ url: imageUrl, path: null, error: null });
+    setImageState({ url: imageKey, path: null, error: null });
     void downloadTerrainAsset(imageUrl, controller.signal).then((path) => {
-      downloaded.set(imageUrl, path);
-      setImageState({ url: imageUrl, path, error: null });
+      if (controller.signal.aborted) return;
+      downloaded.set(imageKey, path);
+      while (downloaded.size > 8) downloaded.delete(downloaded.keys().next().value!);
+      setImageState({ url: imageKey, path, error: null });
     }).catch((error) => {
-      if (!isMiniappRequestCancelled(error)) setImageState({ url: imageUrl, path: null, error });
+      if (!controller.signal.aborted && !isMiniappRequestCancelled(error)) setImageState({ url: imageKey, path: null, error });
     });
     return () => controller.abort();
-  }, [enabled, imageUrl]);
+  }, [shouldReadImage, imageUrl, imageKey, imageAttempt]);
   return useMemo(() => ({
     ...query,
-    imagePath: imageState.url === imageUrl ? imageState.path : null,
-    imageError: imageState.url === imageUrl ? imageState.error : null,
-    imagePending: Boolean(enabled && imageUrl && imageState.url === imageUrl && !imageState.path && !imageState.error),
-  }), [enabled, imageState, imageUrl, query]);
+    imagePath: shouldReadImage && imageState.url === imageKey ? imageState.path : null,
+    imageError: shouldReadImage && imageState.url === imageKey ? imageState.error : null,
+    imagePending: Boolean(shouldReadImage && imageUrl && (imageState.url !== imageKey || (!imageState.path && !imageState.error))),
+    reportImageFailure: (error: unknown, failedPath = imageState.path) => {
+      if (downloaded.get(imageKey) === failedPath) downloaded.delete(imageKey);
+      setImageState(current => current.url === imageKey && current.path === failedPath
+        ? { url: imageKey, path: null, error } : current);
+    },
+    refetch: () => {
+      if (imageState.url === imageKey && imageState.error) {
+        downloaded.delete(imageKey);
+        setImageAttempt(value => value + 1);
+      }
+      return query.refetch();
+    },
+  }), [shouldReadImage, imageState, imageUrl, imageKey, query]);
 }

@@ -2,17 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
 
-test("stable HIP references return attributable ready and basic-only states", () => {
+test("stable HR references return attributable ready and basic-only states", () => {
   const service = new CelestialObjectInformationService();
-  const sirius = service.get("HIP:32349");
+  const sirius = service.get("HR:2491");
   assert.equal(sirius.data.displayName, "Sirius");
   assert.equal(sirius.data.contentState, "READY");
   assert.ok(sirius.data.introduction?.includes("大犬座"));
   assert.ok(sirius.data.aliases.includes("HD 48915"));
-  assert.ok(sirius.data.sources.some((source) => source.provider.includes("Hipparcos")));
+  assert.ok(sirius.data.sources.some((source) => source.provider.includes("HEASARC")));
   assert.ok(sirius.data.sources.some((source) => source.provider.includes("Star Names")));
 
-  const unnamed = service.get("HIP:30438");
+  const unnamed = service.get("HR:2326");
   assert.equal(unnamed.data.contentState, "BASIC_ONLY");
   assert.equal(unnamed.data.introduction, null);
   assert.ok(unnamed.data.limitations.some((value) => value.includes("只有目录基本资料")));
@@ -21,8 +21,8 @@ test("stable HIP references return attributable ready and basic-only states", ()
 test("large numeric-like and unknown references stay strings and fail closed", () => {
   const service = new CelestialObjectInformationService();
   assert.throws(() => service.get("2940472157174944128"), /celestial_object_reference_invalid/u);
-  assert.throws(() => service.get("HIP:999999"), /celestial_object_not_found/u);
-  assert.throws(() => service.get("HIP:32349", "en-US"), /celestial_object_locale_unsupported/u);
+  assert.throws(() => service.get("HR:1"), /celestial_object_not_found/u);
+  assert.throws(() => service.get("HR:2491", "en-US"), /celestial_object_locale_unsupported/u);
 });
 
 test("Messier galaxy and nebula references expose attributable catalog facts", () => {
@@ -46,9 +46,9 @@ test("Messier galaxy and nebula references expose attributable catalog facts", (
 
 test("same identity and locale reuse a stable content revision without sharing mutable values", () => {
   const service = new CelestialObjectInformationService();
-  const first = service.get("HIP:91262");
+  const first = service.get("HR:7001");
   first.data.aliases.length;
-  const second = service.get("HIP:91262");
+  const second = service.get("HR:7001");
   assert.equal(second.data.contentRevision, first.data.contentRevision);
   assert.notEqual(second, first);
   assert.notEqual(second.data, first.data);

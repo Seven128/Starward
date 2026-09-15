@@ -50,12 +50,6 @@ export interface ProviderResult<T> {
 export interface CanonicalWeatherHour {
   at: string;
   cloudPercent: number | null;
-  lowCloudPercent: number | null;
-  midCloudPercent: number | null;
-  highCloudPercent: number | null;
-  modelConsistency: number | null;
-  modelConsistencyLabel: "HIGH" | "MEDIUM" | "LOW" | "UNAVAILABLE";
-  modelSpreadPercent: number | null;
   precipitationMm: number | null;
   precipitationProbabilityPercent: number | null;
   windKph: number | null;
@@ -68,8 +62,6 @@ export interface CanonicalWeatherHour {
   thunderstorm: boolean;
   severeRain: boolean;
   severeWind: boolean;
-  officialSevereAlert: boolean;
-  officialAlertIds: readonly string[];
   evidenceSourceIds: readonly string[];
 }
 
@@ -110,6 +102,7 @@ export interface WeatherEvidenceResult
   extends ProviderResult<readonly CanonicalWeatherHour[]> {
   sources: readonly SourceSummary[];
   warningState: DataState;
+  warningSource?: SourceSummary;
   alerts: readonly CanonicalWeatherAlert[];
   timelineRole: "PRIMARY" | "PRIMARY_FALLBACK" | "UNAVAILABLE";
   modelRuns: readonly WeatherModelRunSummary[];

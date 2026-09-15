@@ -6,9 +6,9 @@ The former modularity configuration recorded these project-specific ownership an
 
 Owner: wechat-miniapp-maintainers. Tracking: WECHAT-MINIAPP-MOD-006.
 
-The current Spot Night surface keeps route-context validation, time selection, compass lifecycle and the selected presentation together while drift repair is verified; controller and presentation extraction remains explicit bounded debt and does not define another product version.
+Spot Night now delegates Context request ownership to `sky-context-session.ts`, native stream serialization to `compass-lifecycle.ts`, orientation/quality/recovery to `sky-orientation-controller.ts`, and session visual alignment to `direction-alignment.ts`. `use-sky-orientation.ts` coalesces presentation only; it must not throttle raw reference updates. The page still owns the shared selected-time presentation, actual canvas frame, labels and selection.
 
-Revisit when: Extract route-context and compass lifecycle owners before adding another Spot Night interaction or changing its observation-state model.
+Revisit when: A new Spot Night interaction changes time/scene ownership or introduces another presentation surface; preserve these existing controller boundaries instead of rebuilding state in the page.
 
 ## apps/wechat-miniapp/src/features/spot/spot-detail-page.tsx
 
@@ -46,7 +46,7 @@ Revisit when: Partition catalog data by domain before adding or materially chang
 
 Owner: miniapp-contract-maintainers. Tracking: WECHAT-MINIAPP-MOD-001.
 
-The current implementation co-locates the 16-condition vocabulary, compact static predicates and the committed time/distance driving-range parameter. Map/Search owns the five-category editing interaction; the BFF owns dynamic and route-backed evaluation. The retired 10+8 vocabulary and recommendation filters were removed in the 2026-09-10 migration. No current Mini Program/BFF caller of shared `filterSpots` was found in the 2026-09-09 audit.
+The current implementation co-locates the 14-condition vocabulary and compact static predicates. Map/Search owns the five-category editing interaction; the BFF owns dynamic evaluation. The external-capability adoption removes low-cloud and driving-range filters and their parameters; cloned persisted filters project only current keys. The retired 10+8 vocabulary and recommendation filters were removed in the 2026-09-10 migration. No current Mini Program/BFF caller of shared `filterSpots` was found in the 2026-09-09 audit.
 
 Revisit when: Separate filter vocabulary from predicate evaluation before adding or changing a filter dimension.
 
@@ -262,6 +262,6 @@ Revisit when: Extract blocker evaluation before adding another decision factor, 
 
 Owner: miniapp-api-maintainers. Tracking: WECHAT-MINIAPP-MOD-010.
 
-The current weather adapter keeps real-provider request, layered-cloud normalization, attribution and fail-closed error mapping together while provider parity is tested; request/normalization extraction remains bounded debt.
+The current weather adapter keeps QWeather request, total-cloud/hour normalization, official-alert composition, attribution and fail-closed error mapping together while the single-provider boundary is tested; request/normalization extraction remains bounded debt. The retained `LAYERED_CLOUD_ENABLED=false` compatibility flag cannot activate a provider or product field.
 
-Revisit when: Extract provider request and forecast normalization before adding another provider, forecast model or weather field family.
+Revisit when: Extract provider request and forecast normalization before adding another weather field family or materially changing the selected provider boundary.

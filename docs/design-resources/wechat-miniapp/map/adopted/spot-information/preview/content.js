@@ -5,7 +5,7 @@ let fixtureRows=window.designDays[7].hours;
 let selectedSlice=6;
 function value(id,n,unit=''){const el=document.getElementById(id);el.classList.toggle('missing',n===null);el.replaceChildren(document.createTextNode(n===null?'暂无数据':String(n)));if(n!==null&&unit){const u=document.createElement('span');u.textContent=unit;el.append(u);}}
 function updateFacts(i){selectedSlice=i;const row=fixtureRows[i],partial=scenario==='partial';document.getElementById('selected-time').textContent='09月07日 '+row.at;
- for(const [id,key,unit] of [['cloud-total','cloud','%'],['cloud-low','low','%'],['cloud-mid','mid','%'],['cloud-high','high','%'],['temperature','temp','°C'],['humidity','humidity','%'],['dew-point','dew','°C'],['wind','wind','km/h'],['gust','gust','km/h'],['visibility','visibility','km'],['rain','rain','mm'],['rain-chance','chance','%'],['moon-alt','moonAlt','°']])value(id,partial&&['gust','visibility'].includes(key)?null:row[key],unit);
+ for(const [id,key,unit] of [['cloud-total','cloud','%'],['temperature','temp','°C'],['humidity','humidity','%'],['dew-point','dew','°C'],['wind','wind','km/h'],['gust','gust','km/h'],['visibility','visibility','km'],['rain','rain','mm'],['rain-chance','chance','%'],['moon-alt','moonAlt','°']])value(id,partial&&['gust','visibility'].includes(key)?null:row[key],unit);
  value('moon-lit',18,'%');document.getElementById('darkness').textContent=i===0?'暮光':'天文夜';document.getElementById('target-one-alt').textContent=row.one+'°';document.getElementById('target-two-alt').textContent=row.two+'°';
  if(typeof updateMoonPanel==='function')updateMoonPanel(i);
 }

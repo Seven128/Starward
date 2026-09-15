@@ -1,0 +1,215 @@
+{
+  "capturedAt": "2026-09-14T10:14:57.509Z",
+  "initialSelectedRequest": {
+    "requestId": "12760.738",
+    "timeUTC": "2026-09-14T10:09:33.880Z",
+    "method": "POST",
+    "url": "https://www.pitravel.cn/api/slytherin/v1/web/route",
+    "body": {
+      "routeRequest": [
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 0
+        }
+      ],
+      "realTime": 1
+    }
+  },
+  "initialSelectedResponse": {
+    "code": 0,
+    "success": true,
+    "data": {
+      "routeData": [
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 0,
+          "distance": 14424,
+          "duration": 2937,
+          "paths": {
+            "segmentCount": 15,
+            "coordinateCountIncludingDuplicates": 203,
+            "firstSegment": "113.151711,22.78582;113.151926,22.786009;113.152189,22.786218;113.152393,22.78639",
+            "lastSegment": "113.278548,22.827234;113.278543,22.827111",
+            "middleSegments": "[OMITTED]",
+            "first": "113.151711,22.78582",
+            "last": "113.278543,22.827111"
+          },
+          "returnedFieldNames": [
+            "originPoiId",
+            "destinationPoiId",
+            "duration",
+            "paths",
+            "distance",
+            "travelType"
+          ]
+        }
+      ]
+    }
+  },
+  "pickerRequest": {
+    "requestId": "12760.978",
+    "timeUTC": "2026-09-14T10:11:09.801Z",
+    "method": "POST",
+    "url": "https://www.pitravel.cn/api/slytherin/v1/web/route",
+    "body": {
+      "routeRequest": [
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 1
+        },
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 2
+        },
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 0
+        },
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 3
+        }
+      ],
+      "realTime": 1
+    }
+  },
+  "pickerResponse": {
+    "code": 0,
+    "success": true,
+    "data": {
+      "routeData": [
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 1,
+          "distance": 16208,
+          "duration": 12965,
+          "paths": {
+            "segmentCount": 41,
+            "coordinateCountIncludingDuplicates": 629,
+            "firstSegment": "113.15171,22.78582;113.151628,22.785747",
+            "lastSegment": "113.286515,22.820243;113.286536,22.820204;113.286549,22.820113;113.286536,22.82003;113.286515,22.819961;113.286484,22.819896;113.286441,22.819796;113.286437,22.81977;113.286437,22.81977;113.286432,22.819722;113.286432,22.819618",
+            "middleSegments": "[OMITTED]",
+            "first": "113.15171,22.78582",
+            "last": "113.286432,22.819618"
+          },
+          "returnedFieldNames": [
+            "distance",
+            "travelType",
+            "originPoiId",
+            "destinationPoiId",
+            "duration",
+            "paths"
+          ]
+        },
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 2,
+          "distance": 16215,
+          "duration": 5243,
+          "paths": {
+            "segmentCount": 46,
+            "coordinateCountIncludingDuplicates": 617,
+            "firstSegment": "113.15171,22.78582;113.151628,22.785747",
+            "lastSegment": "113.285273,22.822721;113.285447,22.822708;113.285495,22.822682;113.285495,22.822682;113.285707,22.8225;113.285707,22.8225;113.285838,22.82237;113.285838,22.82237;113.285985,22.822201;113.286072,22.822066;113.286072,22.822066;113.286324,22.821675;113.286324,22.821675;113.286389,22.821571;113.286389,22.821571;113.286623,22.821207;113.286623,22.821207;113.286766,22.821003;113.286766,22.821003;113.286888,22.82079;113.287001,22.820538;113.287001,22.820538;113.287075,22.820295;113.287075,22.820295;113.287096,22.820182;113.287096,22.820182;113.28717,22.81974",
+            "middleSegments": "[OMITTED]",
+            "first": "113.15171,22.78582",
+            "last": "113.28717,22.81974"
+          },
+          "returnedFieldNames": [
+            "destinationPoiId",
+            "duration",
+            "paths",
+            "distance",
+            "travelType",
+            "originPoiId"
+          ]
+        },
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 0,
+          "distance": 14424,
+          "duration": 2937,
+          "paths": {
+            "segmentCount": 15,
+            "coordinateCountIncludingDuplicates": 203,
+            "firstSegment": "113.151711,22.78582;113.151926,22.786009;113.152189,22.786218;113.152393,22.78639",
+            "lastSegment": "113.278548,22.827234;113.278543,22.827111",
+            "middleSegments": "[OMITTED]",
+            "first": "113.151711,22.78582",
+            "last": "113.278543,22.827111"
+          },
+          "returnedFieldNames": [
+            "originPoiId",
+            "destinationPoiId",
+            "duration",
+            "paths",
+            "distance",
+            "travelType"
+          ]
+        },
+        {
+          "originPoiId": "POI_A_顺宝花园",
+          "destinationPoiId": "POI_B_顺峰山公园",
+          "travelType": 3,
+          "distance": 17271,
+          "duration": 4457,
+          "paths": {
+            "segmentCount": 1,
+            "coordinateCountIncludingDuplicates": 2,
+            "firstSegment": "113.1517870,22.7857470;113.2861120,22.8195890",
+            "lastSegment": "113.1517870,22.7857470;113.2861120,22.8195890",
+            "middleSegments": "[OMITTED]",
+            "first": "113.1517870,22.7857470",
+            "last": "113.2861120,22.8195890"
+          },
+          "public_transit_info": {
+            "cost": "3元",
+            "description": "步行 10分钟->公交：381路--华侨城主题公园站)(杏坛市场(齐新路)-顺峰山公园) 1小时 1分钟->步行 3分钟",
+            "stepsCount": 3,
+            "stepFieldNames": [
+              [
+                "name",
+                "type",
+                "duration",
+                "distance"
+              ],
+              [
+                "via_num",
+                "origin",
+                "destination",
+                "name",
+                "type",
+                "duration",
+                "distance"
+              ],
+              [
+                "name",
+                "type",
+                "duration",
+                "distance"
+              ]
+            ]
+          },
+          "returnedFieldNames": [
+            "destinationPoiId",
+            "duration",
+            "paths",
+            "distance",
+            "travelType",
+            "public_transit_info",
+            "originPoiId"
+          ]
+        }
+      ]
+    }
+  }
+}

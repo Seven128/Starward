@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { loadRuntimeConfig } from "./runtime-config.ts";
 
-const managedEnvironment = /^(?:NODE_ENV|DATABASE_URL|REDIS_URL|OPEN_METEO_|QWEATHER_|WECHAT_|MINIAPP_)/u;
+const managedEnvironment = /^(?:NODE_ENV|DATABASE_URL|REDIS_URL|AMAP_|OPEN_METEO_|QWEATHER_|WECHAT_|MINIAPP_)/u;
 
 function releaseEnvironment(
   profile: "TRIAL" | "COMMERCIAL",
@@ -53,66 +53,6 @@ function withEnvironment<T>(values: NodeJS.ProcessEnv, assertion: () => T): T {
   }
 }
 
-test("TRIAL accepts explicitly selected non-commercial Open-Meteo evidence", () => {
-  const config = withEnvironment(
-    releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"),
-    () => loadRuntimeConfig(),
-  );
-  assert.equal(config.releaseProfile, "TRIAL");
-  assert.equal(config.weatherProvider, "QWEATHER");
-  assert.equal(config.openMeteoEvidenceMode, "OPEN_METEO_NONCOMMERCIAL");
-  assert.equal(config.openMeteoApiKey, null);
-  assert.equal(config.qweather.forecastHours, 24);
-  assert.equal(config.eventCatalogCheckIntervalDays, 7);
-});
-
-test("COMMERCIAL rejects non-commercial Open-Meteo evidence", () => {
-  assert.throws(
-    () =>
-      withEnvironment(
-        releaseEnvironment("COMMERCIAL", "OPEN_METEO_NONCOMMERCIAL"),
-        () => loadRuntimeConfig(),
-      ),
-    /runtime_config_invalid:noncommercial_weather_commercial_forbidden/u,
-  );
-});
-
-test("COMMERCIAL requires a commercial Open-Meteo key", () => {
-  assert.throws(
-    () =>
-      withEnvironment(
-        releaseEnvironment("COMMERCIAL", "OPEN_METEO_COMMERCIAL"),
-        () => loadRuntimeConfig(),
-      ),
-    /runtime_config_invalid:open_meteo_commercial_key_required/u,
-  );
-  const config = withEnvironment(
-    releaseEnvironment(
-      "COMMERCIAL",
-      "OPEN_METEO_COMMERCIAL",
-      "commercial-open-meteo-key",
-    ),
-    () => loadRuntimeConfig(),
-  );
-  assert.equal(config.openMeteoEvidenceMode, "OPEN_METEO_COMMERCIAL");
-  assert.equal(config.openMeteoApiKey, "commercial-open-meteo-key");
-  assert.equal(config.qweather.forecastHours, 72);
-});
-
-test("QWeather forecast horizon rejects unsupported values", () => {
-  assert.throws(
-    () =>
-      withEnvironment(
-        {
-          ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"),
-          QWEATHER_FORECAST_HOURS: "48",
-        },
-        () => loadRuntimeConfig(),
-      ),
-    /runtime_config_invalid:QWEATHER_FORECAST_HOURS:48/u,
-  );
-});
-
 test("event catalog check interval is configurable within a bounded range", () => {
   const config = withEnvironment(
     { ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS: "3" },
@@ -126,4 +66,42 @@ test("event catalog check interval is configurable within a bounded range", () =
     ),
     /runtime_config_invalid:MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS:0/u,
   );
+});
+
+test("TRIAL and COMMERCIAL use QWeather alone without an Open-Meteo key", () => {
+  for (const profile of ["TRIAL", "COMMERCIAL"] as const) {
+    const config = withEnvironment(releaseEnvironment(profile, "OPEN_METEO_COMMERCIAL"), loadRuntimeConfig);
+    assert.equal(config.weatherProvider, "QWEATHER");
+    assert.equal(config.qweather.forecastHours, 240);
+    assert.equal(config.features.LAYERED_CLOUD_ENABLED, false);
+    assert.equal("openMeteoApiKey" in config, false);
+    assert.equal("openMeteoEvidenceMode" in config, false);
+  }
+});
+
+test("forecast hours support actual requested horizons from 1 through 240, rejecting invalid bounds", () => {
+  for (const hours of [1, 24, 48, 72, 168, 240]) {
+    const config = withEnvironment({ ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), QWEATHER_FORECAST_HOURS: String(hours) }, loadRuntimeConfig);
+    assert.equal(config.qweather.forecastHours, hours);
+  }
+  for (const hours of ["0", "241", "1.5", "bad"]) {
+    assert.throws(() => withEnvironment({ ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), QWEATHER_FORECAST_HOURS: hours }, loadRuntimeConfig), /runtime_config_invalid:QWEATHER_FORECAST_HOURS/);
+  }
+});
+
+test("retired provider selection fails explicitly instead of silently selecting another weather source", () => {
+  assert.throws(() => withEnvironment({ ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), MINIAPP_WEATHER_PROVIDER: "OPEN_METEO_NONCOMMERCIAL" }, loadRuntimeConfig), /runtime_config_invalid:MINIAPP_WEATHER_PROVIDER/);
+});
+
+test("a leftover map key cannot enable retired providers; explicit old selections are rejected", () => {
+  const environment: NodeJS.ProcessEnv = { ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), AMAP_WEB_SERVICE_KEY: "synthetic-old-key" };
+  delete environment.MINIAPP_ROUTE_PROVIDER;
+  delete environment.MINIAPP_PLACE_SEARCH_PROVIDER;
+  const config = withEnvironment(environment, loadRuntimeConfig);
+  assert.equal(config.routeProvider, "DISABLED");
+  assert.equal(config.placeSearchProvider, "DISABLED");
+  assert.equal("amapWebServiceKey" in config, false);
+  for (const key of ["MINIAPP_ROUTE_PROVIDER", "MINIAPP_PLACE_SEARCH_PROVIDER"]) {
+    assert.throws(() => withEnvironment({ ...environment, [key]: "AMAP" }, loadRuntimeConfig), /runtime_config_invalid:MINIAPP_/);
+  }
 });

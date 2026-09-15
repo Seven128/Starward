@@ -9,7 +9,6 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
   const page = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "ArticlePage")!;
   const result = page.body!.statements.find(ts.isReturnStatement)!;
   const loading = page.body!.statements.filter(ts.isVariableStatement).flatMap(node => [...node.declarationList.declarations]).find(node => node.name.getText(source) === "loading")!;
-  const fixtureFlag = page.body!.statements.filter(ts.isVariableStatement).flatMap(node => [...node.declarationList.declarations]).find(node => node.name.getText(source) === "testSpot")!;
   const article = options.article === false ? undefined : {
     title: "自有测试攻略", authorType: "SELF", authorName: "测试", source: {},
     blocks: [{ type: "paragraph", text: options.paragraph ?? "正文独立保留" }, ...(options.facilityState ? [{ type: "facility_ref", facilityType: "PARKING" }] : [{ type: "media", mediaId: "missing" }])],
@@ -32,7 +31,7 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
     }, FACILITY_LABEL: { PARKING: "停车" }, GUIDE_AUTHOR_LABELS: { SELF: "作者" }, formatDisplayDate: () => "未知日期",
   };
   for (const name of ["View", "Text", "ScrollView", "CustomNav", "FloatingNotificationHost", "StatusPanel", "Provenance", "FacilityEvidenceDetails"]) context[name] = name;
-  const tree = vm.runInNewContext(ts.transpileModule(`const ${loading.getText(source)}; const ${fixtureFlag.getText(source)}; (${result.expression!.getText(source)});`, {
+  const tree = vm.runInNewContext(ts.transpileModule(`const ${loading.getText(source)}; (${result.expression!.getText(source)});`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
   }).outputText, context);
   return { tree, retries };
@@ -73,15 +72,15 @@ test("failed refresh and stale envelopes retain article text with a working reco
   }
 });
 
-test("fixture copy cleanup never rewrites an ordinary article", () => {
-  const prefix = "本内容仅为测试夹具，不证明当前点位开放或安全。";
-  const paragraph = prefix + "出发前核验开放情况。";
-  for (const options of [{ fixture: false, spotId: "spot:test-published" }, { fixture: true, spotId: "spot:real" }]) {
-    assert.ok(JSON.stringify(render({ ...options, paragraph }).tree).includes(prefix));
+test("article text comes directly from content without fixture-dependent rewriting or appended explanations", () => {
+  const paragraph = "示例攻略：出发前核验开放情况。";
+  for (const fixture of [false, true]) {
+    for (const spotId of ["spot:test-published", "spot:real"]) {
+      const output = JSON.stringify(render({ fixture, spotId, paragraph }).tree);
+      assert.ok(output.includes(paragraph));
+      assert.doesNotMatch(output, /仅用于测试|不用于现实判断|测试数据说明/);
+    }
   }
-  const fixtureOutput = JSON.stringify(render({ fixture: true, spotId: "spot:test-published", paragraph }).tree);
-  assert.ok(!fixtureOutput.includes(prefix));
-  assert.ok(fixtureOutput.includes("出发前核验开放情况。"));
 });
 
 test("facility references distinguish loading, request failure and absent evidence without hiding article text", () => {

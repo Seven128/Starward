@@ -2,7 +2,7 @@ import {
   DEEP_SKY_PROJECTION_ALGORITHM,
   loadDeepSkyCatalog,
   positionDeepSkyCatalog,
-} from "@starward/astronomy-core";
+} from "@starward/astronomy-core/deep-sky-catalog";
 import type {
   DeepSkySceneCatalogEntry,
   DeepSkyScenePoint,
@@ -102,4 +102,3 @@ export function deepSkySceneCacheKey() {
     return "deep-sky-unavailable";
   }
 }
-

@@ -44,9 +44,6 @@ function fixture() {
   const evaluation = {
     spotId: spot.spotId,
     cloudPercent: 30,
-    lowCloudPercent: 20,
-    midCloudPercent: 10,
-    highCloudPercent: 5,
     moonImpact: "LOW",
     opportunityScore: null,
     opportunityConfidence: null,

@@ -2139,15 +2139,7 @@
   gap: 2Px;
   padding: 8Px 0;
 }
-.spot-panel__weather-alert {
-  display: flex;
-  flex-direction: column;
-  gap: 4Px;
-  padding: 10Px;
-  border-radius: 10Px;
-  background: var(--danger-soft, #fff0f0);
-  color: var(--text-primary);
-}
+
 .spot-panel__facility-summary {
   flex-basis: 100%;
 }
@@ -2165,26 +2157,35 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 18rpx 32rpx 22rpx;
+  padding: 0;
   border: 1rpx solid var(--border);
   border-radius: 0;
   background: var(--surface);
   box-shadow: 0 16rpx 48rpx rgba(40, 43, 41, .12);
+  transition: height 180ms ease-out;
 }
 .map-layer-sheet--cloud {
-  min-height: 352Px;
+  height: min(calc(100vh - var(--map-search-top) - 44Px), clamp(352Px, 65vh, 560Px));
+  min-height: 0;
 }
 .map-layer-sheet--light {
-  min-height: 210Px;
+  height: min(calc(100vh - var(--map-search-top) - 44Px), 260Px);
+  min-height: 0;
 }
-.map-layer-sheet__content {
+.map-layer-sheet__scroll {
+  height: 0;
   min-height: 0;
   flex: 1 1 auto;
+}
+.map-layer-sheet__content {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: flex-end;
+  box-sizing: border-box;
+  padding: 18rpx 32rpx 8Px;
 }
+.map-layer-sheet__footer { flex: 0 0 auto; box-sizing: border-box; padding: 0 32rpx 22rpx; }
+.reduced-motion .map-layer-sheet { transition: none; }
 .map-layer-sheet--cloud .map-layer-sheet__content {
   justify-content: flex-start;
 }
@@ -2576,6 +2577,10 @@
 .map-page {
   --map-search-top: calc(env(safe-area-inset-top) + 44Px);
   --map-title-top: calc(env(safe-area-inset-top) + 4Px);
+  width: 100vw;
+  max-width: 100%;
+  height: 100vh;
+  max-height: 100vh;
 }
 .map-app-title {
   position: absolute;
@@ -2646,9 +2651,14 @@
 
 .spot-panel {
   --spot-panel-inline-padding: 16Px;
-  --panel-small-height: 156Px;
-  --panel-medium-height: min(368Px, calc(100vh - 132Px));
   --panel-available-height: calc(100vh - var(--map-search-top) - 4Px);
+  // Snap rulers and the live panel share one ordered set, including short
+  // resized viewports. Otherwise height:clamp can disagree with the gesture
+  // measurements and readPanelSnapGeometry must reject every drag.
+  --panel-snap-gap: min(44Px, calc(var(--panel-available-height) / 4));
+  --panel-small-height: min(clamp(156Px, 19vh, 196Px), calc(var(--panel-available-height) - 2 * var(--panel-snap-gap)));
+  --panel-preferred-medium-height: min(calc(100vh - 132Px), clamp(368Px, 44vh, 480Px));
+  --panel-medium-height: clamp(calc(var(--panel-small-height) + var(--panel-snap-gap)), var(--panel-preferred-medium-height), calc(var(--panel-available-height) - var(--panel-snap-gap)));
   --panel-action-height: 46Px;
   border: 0;
   border-radius: 24Px 24Px 0 0;
@@ -2992,6 +3002,10 @@
   color: #64748b;
   font-size: 10Px;
 }
+.spot-panel__more-site-trailing { display: flex; align-items: center; gap: 8Px; color: var(--text-secondary); font-size: 10Px; }
+.spot-panel__more-site-trailing .semantic-icon { width: 14Px; height: 14Px; }
+.spot-panel__additional-site-content { display: flex; flex-direction: column; gap: 8Px; padding: 8Px 0 12Px; color: var(--text-secondary); }
+.spot-panel__additional-facility { display: flex; flex-direction: column; gap: 4Px; padding: 8Px 0; border-bottom: 1Px solid var(--border); }
 .spot-panel__media-strip,
 .spot-panel__media-slide {
   height: 100%;
@@ -3017,6 +3031,7 @@
   display: inline-block;
   flex: 0 0 68vw;
   width: 68vw;
+  max-width: 520Px;
   height: 100%;
   overflow: hidden;
   border-radius: 12Px;
@@ -3026,6 +3041,7 @@
 .spot-panel__media-slide:only-child {
   flex-basis: calc(100vw - 24Px);
   width: calc(100vw - 24Px);
+  max-width: 720Px;
 }
 .spot-panel__media-caption {
   right: 8Px;
@@ -3248,7 +3264,7 @@
 @media (max-width: 350px) {
   .spot-panel {
     --spot-panel-inline-padding: 14Px;
-    --panel-medium-height: min(368Px, calc(100vh - 120Px));
+    --panel-preferred-medium-height: min(368Px, calc(100vh - 120Px));
   }
   .spot-panel__action-bar {
     right: 14Px;

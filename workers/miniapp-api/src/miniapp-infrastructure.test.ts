@@ -249,12 +249,16 @@ test(
             timing: { endLocalDate: "2026-08-07", endLocalTime: "03:00", departureLocalDate: "2026-08-06", departureLocalTime: "20:00" },
             eventOccurrenceIds: ["event-occurrence:007-per:2026"],
             notes: "restart readback",
+            travel: { origin: "平台所选出发地", mode: "TRANSIT" as const, originLocation: {
+              source: "WECHAT_CHOOSE_LOCATION" as const, address: "隔离测试地址",
+              wgs84: { system: "WGS84" as const, latitude: 22.54, longitude: 114.05 } } },
             expectedRevision: null,
           };
         const planSaves = await Promise.all(Array.from({ length: 3 }, () =>
           first.savePlan(firstIdentity.userId, planInput, "infra:plan:" + runId)));
         for (const result of planSaves) assert.deepEqual(result.data, planSaves[0]!.data);
         assert.deepEqual(planSaves[0]!.data.eventOccurrenceIds, ["event-occurrence:007-per:2026"]);
+        assert.deepEqual(planSaves[0]!.data.travel, planInput.travel);
         await assert.rejects(first.savePlan(firstIdentity.userId,
           { ...planInput, notes: "must not overwrite an existing plan" }, "infra:plan:duplicate-create:" + runId), /plan_revision_conflict/);
         assert.deepEqual((await first.repository.listPlans(firstIdentity.userId))[0], planSaves[0]!.data);
@@ -887,6 +891,15 @@ test(
       runtimeConfig: config,
       weather: publicationWeather,
     };
+    // An explicit priced fixture above the retired ceiling must still produce
+    // a durable COST result. Null must not be coerced to a zero-dollar limit.
+    const costLedger = new PostgresMiniappRepository(databaseUrl);
+    try {
+      await costLedger.pool.query(`INSERT INTO vendor_call_usage
+        (provider, operation, capability, status, latency_ms, estimated_cost_cny, cost_basis)
+        VALUES ($1, 'BUDGET_REMOVAL', 'TEST', 'HTTP_RESPONSE', 0, 401, 'VERIFIED_ESTIMATE')`,
+      [`TEST_BUDGET_${runId}`]);
+    } finally { await costLedger.close(); }
     const snapshot = await runOutboxOnce(options);
     assert.equal(snapshot.pending, 0);
     assert.equal(snapshot.dead_letter, 0, JSON.stringify(snapshot.dead_letters));
@@ -896,11 +909,12 @@ test(
 
     const runtime = new OutboxWorkerRuntime(options);
     try {
-      const costOutcome = await runtime.pool.query<{ result_state: string; result_payload: { projectedMonthlyCny: number | null; hardMonthlyMax: number } }>(
+      const costOutcome = await runtime.pool.query<{ result_state: string; result_payload: { projectedMonthlyCny: number | null; hardMonthlyMax: number | null; knownEstimatedCostCny: number | null } }>(
         "SELECT result_state, result_payload FROM job_executions WHERE job_kind='COST' AND state='COMPLETE' ORDER BY completed_at DESC LIMIT 1");
       assert.equal(costOutcome.rows[0]?.result_state, "UNASSESSED", "a completed COST job cannot certify an unpriced or empty ledger as within budget");
       assert.equal(costOutcome.rows[0]?.result_payload.projectedMonthlyCny, null);
-      assert.equal(costOutcome.rows[0]?.result_payload.hardMonthlyMax, 350);
+      assert.equal(costOutcome.rows[0]?.result_payload.hardMonthlyMax, null);
+      assert.ok((costOutcome.rows[0]?.result_payload.knownEstimatedCostCny ?? 0) >= 401);
       const published = await runtime.pool.query<{ run_id: string; payload: { windowUtc: { start: string; end: string } } }>(
         "SELECT run_id, payload FROM weather_runs WHERE payload->>'providerKey' = $1 ORDER BY valid_from DESC LIMIT 1",
         [publicationWeather.key]);
@@ -1005,7 +1019,7 @@ test("provider attempts commit before HTTP, survive caller rollback and use the 
     const budget = await readVendorUsageBudget(repository.pool);
     assert.equal(budget.state, "UNASSESSED");
     assert.equal(budget.projectedMonthlyCny, null);
-    assert.equal(budget.hardMonthlyMax, 350);
+    assert.equal(budget.hardMonthlyMax, null);
 
     // A blocked INSERT must time out without allowing a late external send.
     await business.query("BEGIN");

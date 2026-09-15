@@ -1,0 +1,56 @@
+{
+  "request": {
+    "requestId": "12760.690",
+    "timeUTC": "2026-09-14T10:09:33.226Z",
+    "method": "POST",
+    "url": "https://www.pitravel.cn/api/slytherin/v1/pcweb/journey/detail",
+    "body": {
+      "journey_id": "7685320728933093603",
+      "is_map_view": false
+    }
+  },
+  "responseExcerpt": {
+    "code": 0,
+    "success": true,
+    "data": {
+      "day_plans": [
+        {
+          "day_index": 1,
+          "events": [
+            {
+              "event_type": 102,
+              "event_type_v2": 102,
+              "route_transportation_type": 0,
+              "start_poi_info": {
+                "inner_poi_id": "POI_A_顺宝花园",
+                "name": "顺宝花园",
+                "location": {
+                  "latitude": "22.7857470",
+                  "longitude": "113.1517870"
+                },
+                "coordinate_type": "GCJ02",
+                "poi_source": 0
+              }
+            },
+            {
+              "event_type": 103,
+              "event_type_v2": 103,
+              "route_transportation_type": 0,
+              "start_poi_info": {
+                "inner_poi_id": "POI_B_顺峰山公园",
+                "name": "顺峰山公园",
+                "location": {
+                  "latitude": "22.8195890",
+                  "longitude": "113.2861120"
+                },
+                "coordinate_type": "GCJ02",
+                "poi_source": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "note": "Only target two places retained. Account, author, other day data and IDs omitted."
+}

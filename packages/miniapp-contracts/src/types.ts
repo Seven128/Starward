@@ -38,6 +38,7 @@ export type SourceKind =
   | "THIRD_PARTY_ROUTE"
   | "THIRD_PARTY_PLACE"
   | "OFFICIAL_REFERENCE"
+  | "EDITORIAL_REFERENCE"
   | "PRODUCT_CALCULATION"
   | "OFFICIAL_VERIFICATION"
   | "USER_FIELD_REPORT"
@@ -548,7 +549,6 @@ export interface SkyOpportunitySliceInput {
   darkness: number;
   moonPenalty: number;
   weatherTransmission: number | null;
-  modelConsistency: number;
   lightPollution: number | null;
   horizonSuitability: number | null;
   dataConfidence: number;
@@ -557,13 +557,9 @@ export interface SkyOpportunitySliceInput {
 
 export interface HourlySkyRow {
   at: string;
+  /** Actual provider hour used here; astronomy at stays independent. Null means no matching source hour. */
+  weatherAt: string | null;
   cloudPercent: number | null;
-  lowCloudPercent: number | null;
-  midCloudPercent: number | null;
-  highCloudPercent: number | null;
-  modelConsistency: number | null;
-  modelConsistencyLabel: "HIGH" | "MEDIUM" | "LOW" | "UNAVAILABLE";
-  modelSpreadPercent: number | null;
   precipitationMm: number | null;
   precipitationProbabilityPercent: number | null;
   windKph: number | null;
@@ -622,6 +618,8 @@ export interface WeatherModelRunEvidence {
 export interface WeatherEvidenceSummary {
   timelineRole: "PRIMARY" | "PRIMARY_FALLBACK" | "UNAVAILABLE";
   warningState: DataState;
+  /** Feed freshness, independently of forecast hours and individual alert expiry. */
+  warningSource?: SourceSummary;
   alerts: readonly WeatherAlertEvidence[];
   modelRuns: readonly WeatherModelRunEvidence[];
 }

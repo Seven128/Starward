@@ -1,10 +1,10 @@
 import {
-  HIPPARCOS_PROJECTION_ALGORITHM,
-  loadHipparcosBrightStarCatalog,
-  positionHipparcosCatalog,
-  type HipparcosStarProjection,
-} from "@starward/astronomy-core";
+  BSC5P_PROJECTION_ALGORITHM,
+  loadBsc5pBrightStarCatalog,
+  positionBsc5pCatalog,
+} from "@starward/astronomy-core/bsc5p-catalog";
 import {
+  isBrightStarReference,
   SKY_SCENE_MAX_CATALOG_ENTRIES,
   SKY_SCENE_MAX_MAGNITUDE_LIMIT,
   type SkySceneCatalogEntry,
@@ -48,25 +48,25 @@ const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_ALTITUDE_DEG = 90;
 const MIN_CATALOG_MAGNITUDE = -10;
 
-export function hipparcosCatalogSources(catalog: ReturnType<typeof loadHipparcosBrightStarCatalog>): readonly SourceSummary[] {
+export function bsc5pCatalogSources(catalog: ReturnType<typeof loadBsc5pBrightStarCatalog>): readonly SourceSummary[] {
   const manifest = catalog.manifest;
   return Object.freeze<SourceSummary[]>([
       {
         id: `catalog:${catalog.catalogVersion}:${manifest.derivedAssetSha256}`,
         kind: "OPEN_DATA",
-        provider: "ESA Hipparcos / CDS VizieR",
-        title: "Hipparcos Main Catalogue bright-star subset",
-        sourceUrl: manifest.sources.hipparcos.landingUrl,
-        license: "Source-specific catalogue terms",
-        licenseUrl: manifest.sources.hipparcos.rightsUrl,
-        publishedAt: "1997-01-01T00:00:00.000Z",
+        provider: "HEASARC / NASA GSFC; Hoffleit & Warren",
+        title: "BSC5P Bright Star Catalog, 5th edition preliminary",
+        sourceUrl: manifest.sources.catalog.landingUrl,
+        license: "Public dataset; HEASARC source-specific usage policy",
+        licenseUrl: manifest.sources.catalog.usagePolicyUrl,
+        publishedAt: null,
         retrievedAt: manifest.retrievedAt,
         validFrom: null,
         validTo: null,
         state: "FRESH",
         confidence: 0.98,
-        precision: "ICRS J1991.25 astrometry with published proper motion; Johnson V and B-V photometry",
-        limitations: ["V=-2..5.0 的完整有界子集；不表示天气、地形遮挡或肉眼可见性"],
+        precision: "FK5 J2000, published proper motion in arcsec/year; original V and nullable B-V",
+        limitations: ["V=-2..5.0 的完整有界子集；不表示天气、地形遮挡或肉眼可见性", "保留目录原始测光系统及不确定标记；不统一宣称为 Johnson V", "未计视差、径向速度与大气折射；不用于专业指向校准"],
       },
       {
         id: `catalog:wgsn:${manifest.sources.names.responseSha256}`,
@@ -82,18 +82,18 @@ export function hipparcosCatalogSources(catalog: ReturnType<typeof loadHipparcos
         validTo: null,
         state: "FRESH",
         confidence: 1,
-        precision: "Proper-name to HIP identity mapping",
-        limitations: ["名称目录持续更新；当前包固定到清单哈希"],
+        precision: "Exact published HR/HD/Bayer/Flamsteed identity, preserving component digits",
+        limitations: ["名称目录持续更新；当前包固定到清单哈希", "组件身份不一致或映射不唯一时保留 HR 编号，不猜测名称"],
       },
   ]);
 }
 
-function snapshotFromOwner(catalog: ReturnType<typeof loadHipparcosBrightStarCatalog>): SkyCatalogSnapshot {
+function snapshotFromOwner(catalog: ReturnType<typeof loadBsc5pBrightStarCatalog>): SkyCatalogSnapshot {
   return Object.freeze({
     catalogVersion: catalog.catalogVersion,
     catalogHash: catalog.catalogHash,
     magnitudeLimit: catalog.magnitudeLimit,
-    sources: hipparcosCatalogSources(catalog),
+    sources: bsc5pCatalogSources(catalog),
     entries: Object.freeze(
       catalog.rows.map((entry) =>
         Object.freeze({
@@ -143,7 +143,7 @@ function validCatalogEntry(
   if (!entry || typeof entry !== "object") return false;
   if (typeof entry.sourceId !== "string" || !entry.sourceId.trim()) return false;
   if (ids.has(entry.sourceId)) return false;
-  if (!/^HIP:\d{1,6}$/u.test(entry.objectRef)) return false;
+  if (!isBrightStarReference(entry.objectRef) || entry.sourceId !== entry.objectRef) return false;
   if (!finite(entry.magnitude)) return false;
   if (entry.magnitude < MIN_CATALOG_MAGNITUDE) return false;
   if (entry.magnitude > magnitudeLimit) return false;
@@ -184,7 +184,7 @@ function normalizedPosition(
 }
 
 type OwnerPosition = Pick<
-  HipparcosStarProjection,
+  ReturnType<typeof positionBsc5pCatalog>[number],
   "sourceId" | "azimuthDeg" | "altitudeDeg" | "visible" | "obstructed"
 >;
 
@@ -197,13 +197,13 @@ export function normalizeOwnerPositions(
   const positions: SkyCatalogPosition[] = [];
   for (const row of rows) {
     if (row.visible === false || row.obstructed === true) continue;
-    if (typeof row.sourceId !== "string") throw new Error("gaia_projection_invalid");
+    if (typeof row.sourceId !== "string") throw new Error("catalog_projection_invalid");
     if (seen.has(row.sourceId) || !order.has(row.sourceId))
-      throw new Error("gaia_projection_invalid");
+      throw new Error("catalog_projection_invalid");
     if (!finite(row.azimuthDeg) || !finite(row.altitudeDeg))
-      throw new Error("gaia_projection_invalid");
+      throw new Error("catalog_projection_invalid");
     if (row.altitudeDeg < 0 || row.altitudeDeg > MAX_ALTITUDE_DEG)
-      throw new Error("gaia_projection_invalid");
+      throw new Error("catalog_projection_invalid");
     seen.add(row.sourceId);
     positions.push(
       normalizedPosition(row.sourceId, row.azimuthDeg, row.altitudeDeg),
@@ -242,16 +242,16 @@ export function normalizeScenePositions(
   return Object.freeze(positions);
 }
 
-export function createGaiaDr3SkyCatalogProvider(): SkyCatalogProvider {
+export function createBsc5pSkyCatalogProvider(): SkyCatalogProvider {
   let loaded:
-    | { owner: ReturnType<typeof loadHipparcosBrightStarCatalog>; snapshot: SkyCatalogSnapshot }
+    | { owner: ReturnType<typeof loadBsc5pBrightStarCatalog>; snapshot: SkyCatalogSnapshot }
     | undefined;
   let loadError: unknown;
   const ensureLoaded = () => {
     if (loadError) throw loadError;
     if (!loaded) {
       try {
-        const owner = loadHipparcosBrightStarCatalog();
+        const owner = loadBsc5pBrightStarCatalog();
         loaded = { owner, snapshot: snapshotFromOwner(owner) };
       } catch (error) {
         loadError = error;
@@ -267,7 +267,7 @@ export function createGaiaDr3SkyCatalogProvider(): SkyCatalogProvider {
       if (input.catalog.catalogHash !== active.snapshot.catalogHash)
         throw new Error("catalog_snapshot_mismatch");
       return normalizeOwnerPositions(
-        positionHipparcosCatalog({
+        positionBsc5pCatalog({
           at: input.at,
           latitude: input.latitude,
           longitude: input.longitude,
@@ -280,7 +280,7 @@ export function createGaiaDr3SkyCatalogProvider(): SkyCatalogProvider {
     cacheKey: () => {
       try {
         const active = ensureLoaded().snapshot;
-        return `${active.catalogVersion}:${active.catalogHash}:${HIPPARCOS_PROJECTION_ALGORITHM}`;
+        return `${active.catalogVersion}:${active.catalogHash}:${BSC5P_PROJECTION_ALGORITHM}`;
       } catch {
         return "catalog-unavailable";
       }

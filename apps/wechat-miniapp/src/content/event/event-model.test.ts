@@ -1,6 +1,26 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { compassLabel, eclipseKindLabel, eventDayLabel, eventKindLabel, eventMonthLabel, eventPlanState, groupEventsByPeakMonth, phaseLabel } from "./event-model";
+import { compassLabel, eclipseKindLabel, eventDatePresentation, eventDayLabel, eventKindLabel, eventMonthLabel, eventPlanState, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "./event-model";
+
+test("common event date presentation keeps annual references distinct from peaks and eclipses", () => {
+  const annual = eventDatePresentation({ kind: "METEOR_SHOWER", annualReference: {} } as never);
+  assert.equal(annual.ticket, "参考");
+  assert.match(annual.date, /UTC/);
+  assert.match(annual.precision, /不是当年精确极大/);
+  const reviewed = eventDatePresentation({ kind: "METEOR_SHOWER", peakAtUtc: null } as never);
+  assert.equal(reviewed.ticket, "极大");
+  assert.match(reviewed.precision, /未提供极大时分/);
+  assert.equal(eventDatePresentation({ kind: "SOLAR_ECLIPSE" } as never).ticket, "食甚");
+  assert.match(eventDatePresentation({ kind: "SOLAR_ECLIPSE" } as never).date, /北京时间/);
+});
+
+test("event date strip includes the interval after the reference and crosses month/year boundaries", () => {
+  assert.deepEqual(eventPreviewDays({ activeStartDate: "2026-12-21", activeEndDate: "2026-12-24" }).map(day => day.value),
+    ["2026-12-21", "2026-12-22", "2026-12-23", "2026-12-24"]);
+  const crossed = eventPreviewDays({ activeStartDate: "2026-12-31", activeEndDate: "2027-01-02" });
+  assert.deepEqual(crossed.map(day => day.day), ["12/31", "1/1", "1/2"]);
+  assert.equal(eventPreviewDays({ activeStartDate: "2026-07-26", activeEndDate: "2026-08-20" }).length, 26);
+});
 
 test("event catalog groups annual occurrences by peak month", () => {
   const rows = [

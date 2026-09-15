@@ -17,6 +17,8 @@
     { "id": "spotOverviewGet", "method": "GET", "path": "/spots/{spotId}/overview", "requestType": "void", "responseType": "SpotDetailData" },
     { "id": "spotGuidesGet", "method": "GET", "path": "/spots/{spotId}/guides", "requestType": "void", "responseType": "SpotGuidesData" },
     { "id": "spotSiteGet", "method": "GET", "path": "/spots/{spotId}/field", "requestType": "void", "responseType": "SpotSiteData" },
+    { "id": "spotRecentWeatherGet", "method": "GET", "path": "/spots/{spotId}/recent-weather", "requestType": "void", "responseType": "SpotRecentWeatherData" },
+    { "id": "spotAirQualityGet", "method": "GET", "path": "/spots/{spotId}/air-quality", "requestType": "void", "responseType": "SpotAirQualityData" },
     { "id": "spotContributionMediaGet", "method": "GET", "path": "/spots/{spotId}/media/{uploadId}", "requestType": "void", "responseType": "ContributionMediaData" },
     { "id": "spotContributionBaselineGet", "method": "GET", "path": "/spots/{spotId}/contribution-baseline", "requestType": "void", "responseType": "ContributionFormalBaseline" },
     { "id": "spotSkyGet", "method": "GET", "path": "/spots/{spotId}/sky", "requestType": "void", "responseType": "SkyReportData" },

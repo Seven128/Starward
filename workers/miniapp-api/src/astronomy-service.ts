@@ -13,6 +13,7 @@ import type {
 import { assertSkyTargetFrames } from "@starward/miniapp-contracts";
 import {
   calculateEquatorialHorizontalAt,
+  calculateMeteorRadiantAt,
   calculateMiniappNightSky,
   calculateSolarLongitudeJ2000,
 } from "./astronomy-engine-adapter.ts";
@@ -28,7 +29,7 @@ import {
 } from "./sky-opportunity-engine.ts";
 import {
   buildSkyScene,
-  createGaiaDr3SkyCatalogProvider,
+  createBsc5pSkyCatalogProvider,
   type SkyCatalogProvider,
 } from "./sky-scene-catalog.ts";
 import { TripDecisionEngine } from "./trip-decision-engine.ts";
@@ -45,6 +46,8 @@ import type { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog
 import { ComputationCache } from "./computation-cache.ts";
 import { WEATHER_DEADLINES, waitForCaller, withDeadline } from "./provider-deadline.ts";
 import { unavailableWeatherResult } from "./weather-provider.ts";
+import { materialAlertAt, weatherHourAt } from "./weather-hour.ts";
+import { observationFrameTimes } from "./observation-time-axis.ts";
 
 /** Map and overview consume decision evidence, not a star-scene rendering. */
 export type AstronomyDecisionReport = Omit<
@@ -152,24 +155,6 @@ function localTime(iso: string, timezone: string): string {
   }).format(new Date(iso));
 }
 
-function nearestWeather(
-  rows: readonly CanonicalWeatherHour[],
-  at: string,
-): CanonicalWeatherHour | null {
-  const target = Date.parse(at);
-  const nearest = rows.reduce<CanonicalWeatherHour | null>(
-    (current, row) =>
-      current === null ||
-      Math.abs(Date.parse(row.at) - target) < Math.abs(Date.parse(current.at) - target)
-        ? row
-        : current,
-    null,
-  );
-  return nearest && Math.abs(Date.parse(nearest.at) - target) <= 35 * 60 * 1_000
-    ? nearest
-    : null;
-}
-
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
@@ -253,7 +238,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     readonly weather: WeatherPort,
     private readonly repository: MiniappRepositoryPort,
     private readonly config: MiniappRuntimeConfig,
-    skyCatalog: SkyCatalogProvider = createGaiaDr3SkyCatalogProvider(),
+    skyCatalog: SkyCatalogProvider = createBsc5pSkyCatalogProvider(),
     private readonly now: () => number = Date.now,
     private readonly eventCatalog?: AstronomicalEventCatalogOwner,
   ) {
@@ -455,6 +440,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     weather: WeatherEvidenceResult): Promise<DecisionComputation> {
     const spot = detail.spot;
     const requests = ["jupiter", "venus", "milky-way-core"] as const;
+    const frameTimes = observationFrameTimes(context);
     const calculations = await this.calculationCache.get(digest({
       point: spot.wgs84, altitudeM: spot.altitudeM, timezone: spot.timezone,
       localDate: context.localDate, selectedAtUtc: context.selectedAtUtc,
@@ -468,7 +454,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         nightDate: context.localDate,
         target,
         cadenceMinutes: 30,
-        additionalTimes: [context.selectedAtUtc],
+        additionalTimes: frameTimes,
       }),
     ), () => this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs);
     const selectedCatalogOccurrence = context.eventInstanceId && this.eventCatalog
@@ -514,21 +500,14 @@ export class AstronomyService implements AstronomyApplicationPort {
     const hourlyBase: HourlyBaseRow[] = base.samples
       .filter(
         (sample) =>
-          Date.parse(sample.at) >= Date.parse(context.nightStartUtc) &&
-          Date.parse(sample.at) < Date.parse(context.nightEndUtc),
+          frameTimes.includes(sample.at),
       )
       .map((sample) => {
-        const matchingWeather = nearestWeather(weatherRows, sample.at);
+        const matchingWeather = weatherHourAt(weatherRows, sample.at);
         return {
           at: sample.at,
+          weatherAt: matchingWeather?.at ?? null,
           cloudPercent: matchingWeather?.cloudPercent ?? null,
-          lowCloudPercent: matchingWeather?.lowCloudPercent ?? null,
-          midCloudPercent: matchingWeather?.midCloudPercent ?? null,
-          highCloudPercent: matchingWeather?.highCloudPercent ?? null,
-          modelConsistency: matchingWeather?.modelConsistency ?? null,
-          modelConsistencyLabel:
-            matchingWeather?.modelConsistencyLabel ?? "UNAVAILABLE",
-          modelSpreadPercent: matchingWeather?.modelSpreadPercent ?? null,
           precipitationMm: matchingWeather?.precipitationMm ?? null,
           precipitationProbabilityPercent:
             matchingWeather?.precipitationProbabilityPercent ?? null,
@@ -550,7 +529,7 @@ export class AstronomyService implements AstronomyApplicationPort {
               : sample.sunAltitudeDeg < 0
                 ? "TWILIGHT"
                 : "DAY",
-          state: weather.state,
+          state: matchingWeather ? weather.state : "UNAVAILABLE",
         };
       });
     const selectedAt = new Date(context.selectedAtUtc);
@@ -652,37 +631,34 @@ export class AstronomyService implements AstronomyApplicationPort {
       selectedEvent
         ? [selectedEvent]
         : activeEvents
-            .filter((event) => event.nominalPeakZhr >= 5)
             .sort(
-              (left, right) => right.nominalPeakZhr - left.nominalPeakZhr,
+              (left, right) => Math.abs(Date.parse(left.peakDate) - Date.parse(context.localDate)) - Math.abs(Date.parse(right.peakDate) - Date.parse(context.localDate)) || left.occurrenceId.localeCompare(right.occurrenceId),
             )
             .slice(0, 3)
     ).flatMap((event) => {
-      const samples = nightSamplesFor(base).map((sample) =>
-        calculateEquatorialHorizontalAt({
+      const samples = nightSamplesFor(base).flatMap((sample) => {
+        const direction = calculateMeteorRadiantAt(event, sample.at);
+        return direction ? [calculateEquatorialHorizontalAt({
           latitude: spot.wgs84.latitude,
           longitude: spot.wgs84.longitude,
           elevationM: spot.altitudeM ?? 0,
           at: sample.at,
-          rightAscensionDeg: event.radiantRightAscensionDeg,
-          declinationDeg: event.radiantDeclinationDeg,
-        }),
-      );
+          ...direction,
+        })] : [];
+      });
       const visible = samples.filter((sample) => sample.altitudeDeg > 0);
-      if (!visible.length) return [];
-      const best = visible.reduce((highest, sample) =>
-        sample.altitudeDeg > highest.altitudeDeg ? sample : highest,
-      );
+      const best = visible.reduce<(typeof visible)[number] | null>((highest, sample) =>
+        !highest || sample.altitudeDeg > highest.altitudeDeg ? sample : highest, null);
       return [
         {
           event,
           targetId: event.occurrenceId,
           displayName: event.displayName,
-          window: {
+          window: visible.length ? {
             start: localTime(visible[0]!.at, spot.timezone),
             end: localTime(visible.at(-1)!.at, spot.timezone),
-          },
-          bestAltitudeDeg: best.altitudeDeg,
+          } : null,
+          bestAltitudeDeg: best?.altitudeDeg ?? null,
         },
       ];
     });
@@ -693,13 +669,19 @@ export class AstronomyService implements AstronomyApplicationPort {
       const instant = new Date(at);
       if (!Number.isFinite(instant.getTime()))
         throw new Error("sky_target_time_invalid");
+      const direction = calculateMeteorRadiantAt(descriptor.event, instant.toISOString());
+      const source = this.eventCatalog?.sourceFor(descriptor.event) ?? eventCatalogSource;
+      if (!direction) return {
+        targetId: descriptor.targetId, displayName: descriptor.displayName, type: "METEOR_SHOWER",
+        window: descriptor.window, direction: "暂无数据", altitudeDeg: null,
+        reason: "当前时刻的历史辐射方向暂无数据；常年事件参考仍可查看。", source, confidence: null, activity: null,
+      };
       const current = calculateEquatorialHorizontalAt({
         latitude: spot.wgs84.latitude,
         longitude: spot.wgs84.longitude,
         elevationM: spot.altitudeM ?? 0,
         at: instant.toISOString(),
-        rightAscensionDeg: descriptor.event.radiantRightAscensionDeg,
-        declinationDeg: descriptor.event.radiantDeclinationDeg,
+        ...direction,
       });
       const activity = meteorActivityAt(
         descriptor.event.occurrenceId,
@@ -715,14 +697,14 @@ export class AstronomyService implements AstronomyApplicationPort {
         altitudeDeg: Math.round(current.altitudeDeg),
         reason:
           `当前时刻 ${localTime(current.at, spot.timezone)} 的辐射点方向由地点和时间计算；` +
-          `本夜最高约 ${Math.round(descriptor.bestAltitudeDeg)}°。` +
-          `IMO 参考峰值日期为 ${descriptor.event.peakDate.slice(5)}，` +
-          `参考 ZHR ${descriptor.event.nominalPeakZhr} 只描述理想条件，不是预计可见数量。` +
+          (descriptor.bestAltitudeDeg === null ? "本夜暂无可用几何观测窗口。" : `已计算时段最高约 ${Math.round(descriptor.bestAltitudeDeg)}°。`) +
+          (descriptor.event.annualReference ? `常年参考日为 ${descriptor.event.peakDate.slice(5)}（UTC），不是当年极大预报。` : `年度参考峰值日期为 ${descriptor.event.peakDate.slice(5)}。`) +
+          (descriptor.event.nominalPeakZhr === null ? "流量参考暂无数据。" : `参考 ZHR ${descriptor.event.nominalPeakZhr} 不代表预计可见数量。`) +
           (activity
             ? `当前历史拟合相对活动为 ${Math.round(activity.relativeActivity * 100)}%，类型为历史拟合而非实时观测。`
             : "当前事件没有已审阅的活动曲线，不能推算相对峰值活动。"),
-        source: eventCatalogSource,
-        confidence: activity ? 0.8 : 0.7,
+        source,
+        confidence: descriptor.event.annualReference ? source.confidence : activity ? 0.8 : 0.7,
         activity,
       };
     };
@@ -744,16 +726,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     const scoringEvent =
       selectedEvent ??
       (context.targetProfile === "METEOR"
-        ? activeEvents
-            .filter((event) =>
-              meteorActivityAt(
-                event.occurrenceId,
-                calculateSolarLongitudeJ2000(selectedAtIso),
-                context.localDate,
-              ),
-            )
-            .sort((left, right) => right.nominalPeakZhr - left.nominalPeakZhr)[0] ??
-          null
+        ? eventDescriptors[0]?.event ?? null
         : null);
     const calculationSamples = new Map(
       calculations.map((calculation) => [
@@ -764,7 +737,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     const baseSamples = new Map(base.samples.map((sample) => [sample.at, sample]));
     const opportunitySlices: OpportunitySliceInput[] = hourlyBase.map((row) => {
       const skySample = baseSamples.get(row.at)!;
-      const matchingWeather = nearestWeather(weatherRows, row.at);
+      const matchingWeather = weatherHourAt(weatherRows, row.at);
       const profileTargets =
         context.targetProfile === "MILKY_WAY"
           ? (["milky-way-core"] as const)
@@ -781,25 +754,29 @@ export class AstronomyService implements AstronomyApplicationPort {
         ),
       );
       let targetEvidenceConfidence = 0.95;
+      let missingMeteorDirection = context.targetProfile === "METEOR" && !scoringEvent;
       if (scoringEvent) {
-        const radiant = calculateEquatorialHorizontalAt({
+        const direction = calculateMeteorRadiantAt(scoringEvent, row.at);
+        const radiant = direction ? calculateEquatorialHorizontalAt({
           latitude: spot.wgs84.latitude,
           longitude: spot.wgs84.longitude,
           elevationM: spot.altitudeM ?? 0,
           at: row.at,
-          rightAscensionDeg: scoringEvent.radiantRightAscensionDeg,
-          declinationDeg: scoringEvent.radiantDeclinationDeg,
-        });
+          ...direction,
+        }) : null;
         const activity = meteorActivityAt(
           scoringEvent.occurrenceId,
           calculateSolarLongitudeJ2000(row.at),
           context.localDate,
         );
-        targetVisibility = clamp01(radiant.altitudeDeg / 60);
+        missingMeteorDirection = radiant === null;
+        targetVisibility = radiant ? clamp01(radiant.altitudeDeg / 60) : 0;
         eventActivity = activity?.relativeActivity ?? null;
         targetEvidenceConfidence = activity ? 0.85 : 0.65;
       }
       const hardBlockers = [
+        ...(missingMeteorDirection ? ["METEOR_DIRECTION_DATA_UNAVAILABLE"] : []),
+        ...((scoringEvent || context.targetProfile === "METEOR") && eventActivity === null ? ["METEOR_ACTIVITY_DATA_UNAVAILABLE"] : []),
         ...(weather.state === "UNAVAILABLE"
           ? ["CRITICAL_WEATHER_DATA_UNAVAILABLE"]
           : weather.state === "EXPIRED"
@@ -809,7 +786,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         ...(matchingWeather?.thunderstorm ? ["THUNDERSTORM"] : []),
         ...(matchingWeather?.severeRain ? ["SEVERE_RAIN"] : []),
         ...(matchingWeather?.severeWind ? ["SEVERE_WIND"] : []),
-        ...(matchingWeather?.officialSevereAlert
+        ...(weather.alerts.some(alert => materialAlertAt(alert, row.at))
           ? ["OFFICIAL_SEVERE_WEATHER_ALERT"]
           : []),
       ];
@@ -824,9 +801,6 @@ export class AstronomyService implements AstronomyApplicationPort {
             : clamp01(skySample.moonIllumination) *
               clamp01((skySample.moonAltitudeDeg + 5) / 55),
         weatherTransmission: weatherTransmission(matchingWeather),
-        modelConsistency:
-          matchingWeather?.modelConsistency ??
-          Math.min(0.5, stateConfidence(weather.state) * 0.5),
         lightPollution:
           spot.lightPollution.productBand === null
             ? null
@@ -921,9 +895,9 @@ export class AstronomyService implements AstronomyApplicationPort {
       siteState: spotState,
       routeState: detail.route.state,
       warningState: weather.warningState,
-      officialSevereAlert: weatherRows.some(
-        (row) => row.officialSevereAlert,
-      ),
+      officialSevereAlert: weather.alerts.some(alert => alert.material && alert.status === "ACTIVE" &&
+        Date.parse(alert.effectiveAt ?? alert.issuedAt) < Date.parse(context.nightEndUtc) &&
+        (!alert.expiresAt || Date.parse(alert.expiresAt) > Date.parse(context.nightStartUtc))),
       thunderstorm: weatherRows.some((row) => row.thunderstorm),
       severeRain: weatherRows.some((row) => row.severeRain),
       severeWind: weatherRows.some((row) => row.severeWind),
@@ -1003,12 +977,13 @@ export class AstronomyService implements AstronomyApplicationPort {
       weatherEvidence: {
         timelineRole: weather.timelineRole,
         warningState: weather.warningState,
+        ...(weather.warningSource ? { warningSource: weather.warningSource } : {}),
         alerts: weather.alerts,
         modelRuns: weather.modelRuns,
       },
       sources: [
         astronomySource,
-        ...(eventTargets.length ? [eventCatalogSource] : []),
+        ...eventTargets.map(target => target.source),
         ...eventTargets.flatMap((target) =>
           target.activity ? [target.activity.source] : [],
         ),
@@ -1023,7 +998,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     const warnings = [
       ...weather.warnings,
       ...(weather.errorCode
-        ? ["天气来源当前不可用；不会用示例天气替代真实预报。"]
+        ? ["天气来源当前不可用。"]
         : []),
       ...(spotState === "PARTIAL"
         ? ["点位核验字段不完整，出行结论已降低或阻断。"]

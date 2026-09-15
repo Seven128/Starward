@@ -491,7 +491,7 @@ try {
     const costs = await costsResponse.json();
     const boundaryUsage = costs.data?.usage?.find(row => row.provider.startsWith("TEST_MONTH_"));
     if (!costsResponse.ok || costs.data?.budget?.state !== "UNASSESSED" ||
-      costs.data.budget.projectedMonthlyCny !== null || costs.data.budget.hardMonthlyMax !== 350 ||
+      costs.data.budget.projectedMonthlyCny !== null || costs.data.budget.hardMonthlyMax !== null ||
       boundaryUsage?.recorded_attempts !== 2 || boundaryUsage.unpriced_attempts !== 2 ||
       boundaryUsage.estimated_cost_cny !== null)
       throw new Error("admin_cost_month_or_unknown_amount_invalid");

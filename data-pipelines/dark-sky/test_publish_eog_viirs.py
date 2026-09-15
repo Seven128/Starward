@@ -137,6 +137,52 @@ class EogViirsPublisherTest(unittest.TestCase):
         with self.assertRaisesRegex(pipeline.PipelineError, "radiance_sha256_mismatch"):
             pipeline.prepare(self.manifest_path)
 
+    def _assert_exact_cell_coverage(self, cells: list[dict], valid: np.ndarray) -> None:
+        # Pixel centres are independent of the publisher's rectangle decomposition.
+        for row, column in np.ndindex(valid.shape):
+            longitude, latitude = self.transform * (column + 2.5, row + 2.5)
+            containing = [cell for cell in cells if
+                cell["boundsWgs84"]["west"] < longitude < cell["boundsWgs84"]["east"] and
+                cell["boundsWgs84"]["south"] < latitude < cell["boundsWgs84"]["north"]]
+            self.assertEqual(len(containing), int(valid[row, column]), (row, column))
+
+    def test_sparse_zero_radiance_preserves_missing_coverage_holes(self) -> None:
+        self.radiance.fill(0)
+        self.coverage.fill(1)
+        self.coverage[2:14:4, 2:14:4] = 12
+        self._write_raster(self.radiance_path, self.radiance, "float32")
+        self._write_raster(self.coverage_path, self.coverage, "uint16")
+        self._write_manifest()
+        _, _, _, cells = pipeline.prepare(self.manifest_path)
+        self._assert_exact_cell_coverage(cells, self.coverage[2:14, 2:14] >= 3)
+        area = sum((c["boundsWgs84"]["east"] - c["boundsWgs84"]["west"]) *
+                   (c["boundsWgs84"]["north"] - c["boundsWgs84"]["south"]) for c in cells)
+        self.assertAlmostEqual(area, 9 * 0.25 ** 2)
+        self.assertTrue(all(c["radiance"]["median"] == 0 for c in cells))
+
+    def test_mixed_blocks_keep_valid_pixels_and_exclude_invalid_radiance(self) -> None:
+        self.radiance[3:5, 3:5] = np.nan
+        self.radiance[6:9, 7] = -1
+        self.coverage[7, 2:14] = 1
+        self._write_raster(self.radiance_path, self.radiance, "float32")
+        self._write_raster(self.coverage_path, self.coverage, "uint16")
+        self._write_manifest(gridStridePixels=5)
+        _, _, _, cells = pipeline.prepare(self.manifest_path)
+        values = self.radiance[2:14, 2:14]
+        self._assert_exact_cell_coverage(cells,
+            np.isfinite(values) & (values >= 0) & (self.coverage[2:14, 2:14] >= 3))
+        self.assertEqual(len({c["cellId"] for c in cells}), len(cells))
+
+    def test_fragmentation_over_budget_is_rejected_without_filling_holes(self) -> None:
+        from unittest.mock import patch
+        self.coverage.fill(1)
+        self.coverage[2:14:2, 2:14:2] = 12
+        self._write_raster(self.coverage_path, self.coverage, "uint16")
+        self._write_manifest(gridStridePixels=12)
+        with patch.object(pipeline, "MAX_NATIVE_GRID_CELLS", 10):
+            with self.assertRaisesRegex(pipeline.PipelineError, "native_grid_cell_budget_exceeded"):
+                pipeline.prepare(self.manifest_path)
+
     def test_unknown_manifest_key_fails_closed(self) -> None:
         self._write_manifest(unverifiedShortcut=True)
 

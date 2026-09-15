@@ -6,9 +6,9 @@ import { diagnosticSucceeded } from "./run-host-diagnostics.mjs";
 
 const config = {
   releaseProfile: "TRIAL", storageMode: "POSTGRES", authMode: "WECHAT", weatherProvider: "QWEATHER",
-  openMeteoEvidenceMode: "OPEN_METEO_NONCOMMERCIAL", routeProvider: "AMAP", placeSearchProvider: "AMAP",
-  qweather: { forecastHours: 24, apiHost: "private-host", credentialId: "secret-id", projectId: "secret-project", privateKeyPem: "secret-private-key" },
-  darkSkyDatasetVersion: "UNAVAILABLE", amapWebServiceKey: "secret-amap",
+  routeProvider: "DISABLED", placeSearchProvider: "DISABLED",
+  qweather: { forecastHours: 240, apiHost: "private-host", credentialId: "secret-id", projectId: "secret-project", privateKeyPem: "secret-private-key" },
+  darkSkyDatasetVersion: "UNAVAILABLE",
 };
 const env = { STARWARD_ENVIRONMENT: "staging", STARWARD_RELEASE_REVISION: "a".repeat(40), DATABASE_URL: "secret-database-connection" };
 const counts = { migrationCount: 17, spotsTotal: 8, spotsPublicStatuses: 6, spotsQualifiedNonFixture: 2,
@@ -111,9 +111,9 @@ test("provider mode reuses the existing simulation only after checking empty for
   assert.match(source, /observation\.spotsQualifiedNonFixture !== 0/u);
   assert.match(source, /ISOLATED_TEST_SIMULATION/u);
   assert.match(source, /new AstronomyService/u);
-  const report = { status: "passed", evidenceScope: "ISOLATED_TEST_SIMULATION", productPopulation: "FORMAL_POPULATION_MISSING", hourlyCount: 24, composedTotalCloudHours: 24, weather: { provider: "和风天气", state: "FRESH" }, astronomy: { provider: "Astronomy Engine", state: "FRESH" }, openMeteo: { state: "PARTIAL", modelCount: 4, layeredCloudHours: 20 }, alerts: { state: "FRESH", count: 0 } };
+  const report = { status: "passed", evidenceScope: "ISOLATED_TEST_SIMULATION", productPopulation: "FORMAL_POPULATION_MISSING", hourlyCount: 24, composedTotalCloudHours: 24, weather: { provider: "和风天气", state: "FRESH" }, astronomy: { provider: "Astronomy Engine", state: "FRESH" }, alerts: { state: "FRESH", count: 0 } };
   assert.deepEqual(sanitizeProviderSimulationReport({ ...report, secret: "never output" }), report);
   assert.equal(diagnosticSucceeded(report), true);
-  for (const patch of [{ composedTotalCloudHours: 0 }, { openMeteo: { state: "UNAVAILABLE", modelCount: 0, layeredCloudHours: 0 } }, { alerts: { state: "UNAVAILABLE", count: 0 } }]) assert.equal(diagnosticSucceeded(sanitizeProviderSimulationReport({ ...report, ...patch })), false);
+  for (const patch of [{ composedTotalCloudHours: 0 }, { alerts: { state: "UNAVAILABLE", count: 0 } }]) assert.equal(diagnosticSucceeded(sanitizeProviderSimulationReport({ ...report, ...patch })), false);
   for (const patch of [{ hourlyCount: 0 }, { weather: { provider: "Open-Meteo", state: "FRESH" } }, { weather: { provider: "和风天气", state: "EXPIRED" } }, { evidenceScope: "PRODUCT" }]) assert.throws(() => sanitizeProviderSimulationReport({ ...report, ...patch }));
 });

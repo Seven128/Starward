@@ -1,4 +1,4 @@
-import type { RouteTravelMode } from "./types.ts";
+import type { RouteTravelMode, Wgs84Point } from "./types.ts";
 
 /** User-chosen local times in the formal spot's timezone, independent of forecasts. */
 export interface PlanTiming {
@@ -16,6 +16,8 @@ export type PlanTravelMode = RouteTravelMode;
 export interface PlanTravel {
   origin: string;
   mode: PlanTravelMode;
+  /** Omitted in legacy clients; null explicitly clears a formerly selected point. */
+  originLocation?: { source: "WECHAT_CHOOSE_LOCATION"; address: string; wgs84: Wgs84Point } | null;
 }
 
 export function parsePlanTravel(value: unknown, allowBlankOrigin = false): PlanTravel {
@@ -26,7 +28,20 @@ export function parsePlanTravel(value: unknown, allowBlankOrigin = false): PlanT
       !["DRIVING", "TRANSIT", "WALKING"].includes(String(candidate.mode))) {
     throw new Error("invalid_plan_travel");
   }
-  return { origin: candidate.origin, mode: candidate.mode as PlanTravelMode };
+  let originLocation: PlanTravel["originLocation"];
+  if (candidate.originLocation === null) originLocation = null;
+  else if (candidate.originLocation !== undefined) {
+    const point = candidate.originLocation as Partial<NonNullable<PlanTravel["originLocation"]>>;
+    if (!point || typeof point !== "object" || point.source !== "WECHAT_CHOOSE_LOCATION" ||
+        typeof point.address !== "string" || point.address.length > 500 ||
+        point.wgs84?.system !== "WGS84" || !Number.isFinite(point.wgs84.latitude) ||
+        Math.abs(point.wgs84.latitude) > 90 || !Number.isFinite(point.wgs84.longitude) ||
+        Math.abs(point.wgs84.longitude) > 180 || !candidate.origin.trim()) throw new Error("invalid_plan_travel_location");
+    originLocation = { source: "WECHAT_CHOOSE_LOCATION", address: point.address,
+      wgs84: { system: "WGS84", latitude: point.wgs84.latitude, longitude: point.wgs84.longitude } };
+  }
+  return { origin: candidate.origin, mode: candidate.mode as PlanTravelMode,
+    ...(originLocation === undefined ? {} : { originLocation }) };
 }
 
 export function parsePlanEventOccurrenceIds(value: unknown): string[] {

@@ -191,6 +191,13 @@ export class ObservationContextService {
       await this.cache.deleteByPrefix(this.#key(contextId));
       throw new Error("observation_context_expired");
     }
+    if (context.weatherView.primaryPolicy !== "QWEATHER" || context.weatherView.cloudLayer !== "TOTAL" ||
+        context.weatherView.comparisonModels.length || context.weatherView.selectedModel !== null) {
+      // The established client recovery path rebuilds the same location, origin,
+      // selected instant and event. Old supplier identities must not survive readback.
+      await this.cache.deleteByPrefix(this.#key(contextId));
+      throw new Error("observation_context_expired");
+    }
     return context;
   }
 
@@ -216,8 +223,10 @@ export class ObservationContextService {
           ? current.eventInstanceId
           : input.eventInstanceId,
       weatherView: {
-        ...current.weatherView,
-        cloudLayer: input.cloudLayer ?? current.weatherView.cloudLayer,
+        primaryPolicy: "QWEATHER",
+        comparisonModels: [],
+        selectedModel: null,
+        cloudLayer: "TOTAL",
       },
     };
     assertEventSelection(next.eventInstanceId, next.localDate, this.eventCatalog);

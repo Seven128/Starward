@@ -18,15 +18,20 @@ function memoryStore() {
 const hourlyUrl = "https://account.qweatherapi.com/weather/v1/hourly/23.13/113.26?hours=24";
 const response = (payload: unknown) => new Response(JSON.stringify(payload), { headers: { "content-type": "application/json" } });
 
-test("only bounded non-secret dimensions enter the ledger; model units are estimates", async () => {
+test("only adopted QWeather operations enter the runtime ledger", async () => {
   const memory = memoryStore();
   const fetch = createVendorUsageTransport(memory.store, async () => response({}));
-  await fetch(new Request("https://customer-api.open-meteo.com/v1/forecast?latitude=23.13&longitude=113.26&hourly=a,b,c,d,e,f,g,h,i,j,k,l,m,n&models=best_match,icon,gfs,ifs,aifs&forecast_days=16&apikey=private-test-key"));
-  assert.equal(memory.attempts[0]!.estimatedRequestUnits, 8);
-  assert.equal(memory.attempts[0]!.unitBasis, "OPEN_METEO_PUBLIC_ESTIMATE_2026_09");
+  await fetch(new Request(hourlyUrl));
+  assert.equal(memory.attempts[0]!.estimatedRequestUnits, 1);
+  assert.equal(memory.attempts[0]!.unitBasis, "HTTP_ATTEMPT");
   assert.equal(memory.outcomes[0]!.outcome.status, "HTTP_RESPONSE");
   assert.equal(memory.outcomes[0]!.outcome.httpStatus, 200);
-  assert.doesNotMatch(JSON.stringify(memory), /private-test-key|23\.13|113\.26|https:/);
+  assert.doesNotMatch(JSON.stringify(memory), /23\.13|113\.26|https:/);
+  for (const retired of [
+    "https://customer-api.open-meteo.com/v1/forecast?hourly=cloud_cover",
+    "https://restapi.amap.com/v5/place/text?keywords=spot",
+    "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl",
+  ]) assert.throws(() => describeVendorRequest(new URL(retired)), /operation_unclassified/);
   assert.throws(() => describeVendorRequest(new URL("https://unknown.example.com/private?token=secret")), /operation_unclassified/);
 });
 
@@ -82,18 +87,18 @@ test("real weather factory meters misses below source caches across observation 
       wind: { speed: { value: 2, unit: "m/s" } }, precipitation: { amount: { value: 0, unit: "mm" } }, temperature: { value: 20, unit: "°C" },
     }] });
     if (url.pathname.startsWith("/weatheralert")) return response({ metadata: { zeroResult: true }, alerts: [] });
-    return response({ utc_offset_seconds: 0, hourly: { time: [time], cloud_cover: [10] } });
+    throw new Error(`unexpected_weather_provider:${url.host}`);
   }));
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(now);
   const input = { point: { system: "WGS84" as const, latitude: 23.13, longitude: 113.26 }, timezone: "Asia/Shanghai", localDate: date };
   await Promise.all([adapter.getHourly(input), adapter.getHourly({ ...input, localDate: new Date(Date.parse(`${date}T00:00Z`) + 86_400_000).toISOString().slice(0, 10) })]);
-  assert.deepEqual(memory.attempts.map(a => a.operation).sort(), ["CURRENT_ALERTS", "FORECAST", "FORECAST", "HOURLY"]);
+  assert.deepEqual(memory.attempts.map(a => a.operation).sort(), ["CURRENT_ALERTS", "HOURLY"]);
   assert.ok(memory.outcomes.every(row => row.outcome.status === "HTTP_RESPONSE"));
 });
 
-test("real transit factory meters both city lookups and the route separately", async () => {
+test("retired route factory creates no metered city or route requests", async () => {
   const memory = memoryStore();
-  const config = createTestRuntimeConfig({ routeProvider: "AMAP", amapWebServiceKey: "test-only-secret" });
+  const config = createTestRuntimeConfig();
   const adapter = createRoutePort(config, createVendorUsageTransport(memory.store, async request => {
     const url = new URL(request.toString());
     return response(url.pathname === "/v3/geocode/regeo"
@@ -102,7 +107,7 @@ test("real transit factory meters both city lookups and the route separately", a
   }));
   const result = await adapter.estimate({ origin: { system: "WGS84", latitude: 23.13, longitude: 113.26 },
     destination: { system: "WGS84", latitude: 23.2, longitude: 113.3 }, travelMode: "TRANSIT", departureLocalDate: "2026-09-14", departureLocalTime: "19:30" });
-  assert.equal(result.value?.travelMode, "TRANSIT");
-  assert.deepEqual(memory.attempts.map(a => a.operation), ["REVERSE_GEOCODE", "REVERSE_GEOCODE", "TRANSIT"]);
+  assert.equal(result.value?.durationMinutes, null);
+  assert.deepEqual(memory.attempts.map(a => a.operation), []);
   assert.doesNotMatch(JSON.stringify(memory), /test-only-secret/);
 });

@@ -1,0 +1,105 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import vm from "node:vm";
+import ts from "typescript";
+import { recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
+import { calendarDateInTimezone } from "../utils/zoned-date";
+
+class TestDate extends Date {
+  constructor() { super("2026-09-14T20:00:00Z"); }
+  static now() { return Date.parse("2026-09-14T20:00:00Z"); }
+}
+
+function harness() {
+  const ast = ts.createSourceFile("recent.tsx", readFileSync(new URL("./recent-weather.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const fn = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "RecentWeather")!;
+  const states: unknown[] = [], dependencies: unknown[][] = [];
+  let stateIndex = 0, effectIndex = 0, pending: (() => void)[] = [];
+  let query: any, options: any, hide = () => {}, show = () => {};
+  const notifications: any[] = []; let retries = 0;
+  const notify = (value: any) => notifications.push(value);
+  const component = vm.runInNewContext(ts.transpileModule(fn.getText(ast).replace(/^export /, "") + "; RecentWeather;",
+    { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
+    useState(value: unknown) { const index = stateIndex++; if (!(index in states)) states[index] = value;
+      return [states[index], (value: any) => { states[index] = typeof value === "function" ? value(states[index]) : value; }]; },
+    useEffect(fn: () => void, deps: unknown[]) { const prev = dependencies[effectIndex];
+      if (!prev || deps.some((value, index) => value !== prev[index])) pending.push(fn); dependencies[effectIndex++] = deps; },
+    useDidHide(fn: () => void) { hide = fn; }, useDidShow(fn: () => void) { show = fn; },
+    useResourceQuery(value: any) { options = value; return query; }, useAppStore: () => notify,
+    getSpotRecentWeather() {}, recentWeatherFacts, recentWeatherImplications, Date: TestDate, calendarDateInTimezone,
+    useCalendarDay: (timezone: string) => calendarDateInTimezone(new TestDate(), timezone),
+    Button: "Button", Text: "Text", View: "View", Provenance: "Provenance", StatusPanel: "StatusPanel", SoftButton: "SoftButton",
+    React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
+  });
+  return {
+    notifications, get options() { return options; }, get retries() { return retries; }, hide: () => hide(), show: () => show(),
+    set(result: any) { query = { isPending: false, isError: false, ...result, refetch: async () => { retries++; } }; },
+    render(spotId = "spot:a", visible = true) { stateIndex = effectIndex = 0; const tree = component({ spotId, timezone: "Asia/Shanghai", visible });
+      if (!pending.length) return tree; pending.splice(0).forEach(fn => fn()); stateIndex = effectIndex = 0; return component({ spotId, timezone: "Asia/Shanghai", visible }); },
+  };
+}
+const text = (value: any): string => value == null || typeof value === "boolean" ? "" : Array.isArray(value) ? value.map(text).join("") : typeof value === "object" ? text(value.children) : String(value);
+function find(value: any, predicate: (node: any) => boolean): any {
+  return Array.isArray(value) ? value.map(child => find(child, predicate)).find(Boolean) : value && typeof value === "object"
+    ? predicate(value) ? value : find(value.children, predicate) : null;
+}
+const body = { spotId: "spot:a", region: { name: "区域甲", timezone: "Asia/Shanghai" }, asOfLocalDate: "2026-09-15", missingDates: ["2026-09-14"],
+  days: [{ localDate: "2026-09-13", precipitationMm: 12, temperatureMinC: 8, temperatureMaxC: null, conditions: ["小雨"] }], unavailableReason: "REQUEST_FAILED" };
+
+test("partial evidence is visible with dated facts, conditional relevance, question disclosure and persistent retry", () => {
+  const h = harness(); h.set({ data: { data: body, dataState: "PARTIAL", sources: [] } });
+  let tree = h.render();
+  assert.match(text(tree), /区域甲.*2026-09-15.*2026-09-13.*降水 12 mm/s);
+  assert.doesNotMatch(text(tree), /最高 0/);
+  assert.match(text(tree), /可能湿滑/);
+  assert.equal(h.notifications.length, 1);
+  find(tree, node => node.props?.["aria-label"] === "说明近期天气数据范围").props.onClick(); tree = h.render();
+  assert.match(text(tree), /不含今天.*不是点位过去48小时/);
+  assert.match(text(tree), /暂无数据：2026-09-14/);
+  find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
+  assert.equal(h.notifications.length, 1, "rerenders do not restart transient notifications");
+  h.hide(); h.render(); assert.equal(h.options.enabled, false);
+  h.set({ data: undefined, isPending: true }); tree = h.render("spot:b");
+  assert.doesNotMatch(text(tree), /区域甲|降水 12|过去48小时/);
+});
+
+test("no coverage uses the shared empty state without an exception notification; unpublished spots never query", () => {
+  const h = harness(); h.set({ data: { data: { ...body, region: null, days: [], unavailableReason: "NO_DATA" }, dataState: "UNAVAILABLE", sources: [] } });
+  const tree = h.render();
+  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.equal(h.notifications.length, 0);
+  assert.equal(h.render("contribution:private"), null);
+  assert.equal(h.options.enabled, false);
+});
+
+test("sample history uses ordinary dated facts and recovery without test explanations", () => {
+  const h = harness(); h.set({ data: { data: body, dataState: "SAMPLE_DATA", sources: [] } });
+  const tree = h.render();
+  assert.match(text(tree), /区域甲.*降水 12 mm.*可能湿滑/s);
+  assert.doesNotMatch(text(tree), /测试|验收|示例|真实天气/);
+  assert.equal(h.notifications.length, 1);
+  find(tree, node => node.type === "SoftButton").props.onClick();
+  assert.equal(h.retries, 1);
+});
+
+test("SDK cache fallback emits info without query.error, and an older day set cannot restore old recent facts", () => {
+  const h = harness(); h.set({ data: { data: { ...body, unavailableReason: null }, dataState: "STALE_USABLE", sources: [] } });
+  assert.match(text(h.render()), /资料暂未刷新/);
+  assert.equal(h.notifications.length, 1);
+  const next = harness(); next.set({ data: { data: { ...body, asOfLocalDate: "2026-09-14", unavailableReason: null }, dataState: "FRESH", sources: [] } });
+  const tree = next.render();
+  assert.doesNotMatch(text(tree), /降水 12|可能湿滑/);
+  assert.equal(next.notifications.length, 1);
+  assert.ok(find(tree, node => node.type === "SoftButton"));
+});
+
+test("a valid regional calendar day differing from the spot day never emits a false failure", () => {
+  const h = harness();
+  h.set({ data: { data: { ...body, region: { name: "区域乙", timezone: "America/New_York" },
+    asOfLocalDate: "2026-09-14", unavailableReason: null }, dataState: "FRESH", sources: [] } });
+  const tree = h.render();
+  assert.equal(h.notifications.length, 0, "the first response must be checked in its own regional timezone before effects synchronize the query clock");
+  assert.match(text(tree), /区域乙.*2026-09-14.*降水 12/s);
+  assert.equal(h.options.queryKey[2], "2026-09-14");
+});

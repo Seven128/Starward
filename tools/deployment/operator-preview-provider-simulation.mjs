@@ -70,11 +70,6 @@ process.stdout.write(JSON.stringify({
   composedTotalCloudHours: providerEvidence?.value?.filter(hour => typeof hour.cloudPercent === "number" && Number.isFinite(hour.cloudPercent)).length ?? 0,
   weather: { provider: weather.provider, state: weather.state },
   astronomy: { provider: astronomy.provider, state: astronomy.state },
-  openMeteo: {
-    state: providerEvidence?.sources.find(source => source.provider === "Open-Meteo")?.state ?? "UNAVAILABLE",
-    modelCount: providerEvidence?.modelRuns.filter(run => run.provider === "Open-Meteo" && ["FRESH", "PARTIAL", "STALE_USABLE"].includes(run.state)).length ?? 0,
-    layeredCloudHours: providerEvidence?.value?.filter(hour => [hour.lowCloudPercent, hour.midCloudPercent, hour.highCloudPercent].every(value => typeof value === "number" && Number.isFinite(value))).length ?? 0,
-  },
   alerts: { state: providerEvidence?.warningState ?? "UNAVAILABLE", count: providerEvidence?.alerts.length ?? 0 },
 }) + "\n");
 `;

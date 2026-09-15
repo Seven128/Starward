@@ -1032,7 +1032,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 - **Anatomy**：短结果、可选单一 undo/action、关闭/超时策略。
 - **Variants / states**：非当前对象可见的异步 success acknowledgement、copy/save acknowledgement、error、offline、undo；单行优先。
-- **Geometry**：消息12px/18px、动作11px/16px；动作target≥88rpx；elevation-1；避让底部安全区与sticky final action。
+- **Geometry**：消息12px/18px、动作11px/16px；动作target≥88rpx；elevation-1；位于顶部安全区与系统导航下方，竖向堆叠，不改变底部sticky final action或页面布局。
 - **A11y / composition**：status/alert 按严重度；自动消失可暂停；重复事件按 owner/dedupe key 合并；小程序不同事件可顶部紧凑叠放最多3条，白底黑字无边框，3秒自动关闭或手动关闭，上浮淡出；重要错误同时保留行内恢复路径；一个 transaction 最多一个 floating feedback。
 - **Do not**：selection、filter、expand/collapse、tab/segment、navigation、favorite success、time scrub、layer choice 和 mode state 不弹 toast/snackbar/modal，局部 visible state 就是第一反馈；重要错误不只靠 toast，不放多个动作，不遮挡主导航或最终承诺，不逐帧播报 direct manipulation。
 

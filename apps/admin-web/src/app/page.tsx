@@ -7,6 +7,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { Notice } from "./notice";
+import { EventCatalogView } from "./event-catalog-view";
 
 type ViewKey =
   | "queue"
@@ -15,6 +17,7 @@ type ViewKey =
   | "merge"
   | "publication"
   | "replacement"
+  | "events"
   | "audit";
 type LoadState =
   "idle" | "loading" | "ready" | "empty" | "partial" | "stale" | "error";
@@ -66,6 +69,7 @@ const NAV_GROUPS: Array<{
   label: string;
   items: Array<{ key: ViewKey; label: string; description: string }>;
 }> = [
+  { label: "数据资料", items: [{ key: "events", label: "天文事件", description: "上传、审核、发布和回滚事件目录" }] },
   {
     label: "投稿处理",
     items: [
@@ -566,36 +570,6 @@ function SectionHeader({
   );
 }
 
-function Notice({
-  tone = "neutral",
-  title,
-  children,
-}: {
-  tone?: Tone;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={`notice ${tone}`}
-      role={tone === "danger" ? "alert" : undefined}
-    >
-      <div className="notice-mark" aria-hidden="true">
-        {tone === "success"
-          ? "✓"
-          : tone === "danger"
-            ? "!"
-            : tone === "warning"
-              ? "·"
-              : "i"}
-      </div>
-      <div>
-        <strong>{title}</strong>
-        <p>{children}</p>
-      </div>
-    </div>
-  );
-}
 
 function EmptyState({
   title,
@@ -836,7 +810,7 @@ function QueueView({
       </div>
       {queueState === "error" ? (
         <Notice tone="danger" title="专用审核队列读取失败">
-          没有用 dashboard 的摘要或 fixture 替代专用队列；请修复队列接口后重试。
+          暂时无法读取审核队列，请稍后重试。
         </Notice>
       ) : null}
       {queueState === "partial" ? (
@@ -1543,8 +1517,7 @@ function MergeView({
       ) : null}
       {previewState === "error" ? (
         <Notice tone="danger" title="合并预览未确认">
-          没有使用 fixture 继续渲染；请修复服务端 endpoint 或当前
-          Case/revision。
+          暂时无法生成合并预览，请刷新当前投稿资料后重试。
         </Notice>
       ) : null}
       <div className="button-row">
@@ -2414,6 +2387,7 @@ function OperationsSidebar({
     "inbox" | "file" | "images" | "merge" | "clipboard" | "repeat" | "history"
   > = {
     queue: "inbox",
+    events: "file",
     case: "file",
     media: "images",
     merge: "merge",
@@ -2521,6 +2495,10 @@ export default function AdminPage() {
     label: "",
   });
   const activeRequest = useRef<AbortController | null>(null);
+  const requestEventCatalog = useCallback(<T,>(path: string, init?: RequestInit) => {
+    if (!session) return Promise.reject(new Error("请先认证。"));
+    return requestEnvelope<T>(path, session, init);
+  }, [session]);
 
   const readDashboard = useCallback(
     async (activeSession: AuthSession, signal?: AbortSignal) => {
@@ -3053,11 +3031,12 @@ export default function AdminPage() {
   };
 
   const renderView = () => {
+    if (view === "events") return <EventCatalogView request={requestEventCatalog} />;
     if (!data)
       return (
         <div className="content-error">
           <Notice tone="danger" title="真实 dashboard 尚未读取">
-            没有 API 数据时不渲染工作台 fixture。请刷新或重新认证。
+            暂无可用工作台数据，请刷新或重新认证。
           </Notice>
         </div>
       );
@@ -3244,7 +3223,6 @@ export default function AdminPage() {
       <footer className="app-footer">
         <span>Sky Canvas current Operations constraint</span>
         <span>receipt → readback required</span>
-        <span>no fixture success</span>
       </footer>
     </main>
   );

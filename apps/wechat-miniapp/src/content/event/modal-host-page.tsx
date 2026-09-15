@@ -3,7 +3,6 @@ import { View } from "@tarojs/components";
 import { useState } from "react";
 
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
-import { FloatingNotificationHost } from "@/components/notification";
 import { useThemeClass } from "@/hooks/use-theme";
 import { useAppStore } from "@/state/app-store";
 
@@ -25,7 +24,6 @@ export function EventModalHostPage({ detailRoute = false }: { detailRoute?: bool
     setTimeout(() => void Taro.navigateBack({ delta: 1 }).catch(() => Taro.switchTab({ url: "/pages/map/index" })), 180);
   };
   return <View className={`${themeClass} event-modal-host`}>
-    <FloatingNotificationHost />
     <AstronomicalEventModal open={open} mode={selectionMode ? "select-one" : "browse"}
       context={context} initialDetailId={occurrenceId}
       initialOccurrenceIds={occurrenceId ? [occurrenceId] : []}

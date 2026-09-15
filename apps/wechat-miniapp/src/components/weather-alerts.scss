@@ -1,0 +1,14 @@
+.weather-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 8Px;
+}
+.weather-alerts__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4Px;
+  padding: 10Px;
+  border-radius: 10Px;
+  background: var(--danger-soft, var(--surface));
+  color: var(--text-primary);
+}

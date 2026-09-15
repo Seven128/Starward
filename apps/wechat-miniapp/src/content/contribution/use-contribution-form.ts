@@ -10,7 +10,7 @@ import type {
   ContributionTopic,
 } from "@starward/miniapp-contracts";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { currentDraftUserId, getCapabilities, getContributions } from "@/services/api-client";
+import { currentDraftUserId, getCapabilities, getContributions, MiniappApiError } from "@/services/api-client";
 import { useLocalContributionDraft } from "./use-local-draft";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useAppStore } from "@/state/app-store";
@@ -56,12 +56,14 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
   const initialSelection = initialContributionSelection(hasFormalSpot);
   const notify = useAppStore((state) => state.notify);
   const notificationVisible = useRef(true);
+  const [pageVisible, setPageVisible] = useState(true);
   const hideNotifications = () => {
     notificationVisible.current = false;
+    setPageVisible(false);
     useAppStore.getState().clearNotifications("contribution");
   };
   useDidHide(hideNotifications);
-  useDidShow(() => { notificationVisible.current = true; });
+  useDidShow(() => { notificationVisible.current = true; setPageVisible(true); });
   useEffect(() => {
     notificationVisible.current = true;
     return hideNotifications;
@@ -101,12 +103,27 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     if (field) setValidationAttempt((attempt) => attempt + 1);
   };
 
-  const history = useContributionHistory();
+  const history = useContributionHistory(pageVisible);
   const capabilities = useResourceQuery({
     queryKey: ["capabilities"],
     queryFn: (signal) => getCapabilities(signal),
     staleTime: 60_000,
+    enabled: pageVisible,
   });
+  useEffect(() => {
+    if (!pageVisible) return;
+    const historyFailure = history.error ?? history.refreshError;
+    const historyPermissionDenied = historyFailure instanceof MiniappApiError && historyFailure.code === "PERMISSION_DENIED";
+    const failed = !historyPermissionDenied && (history.isError || history.refreshError || history.data?.dataState === "STALE_USABLE")
+      ? ["投稿记录数据异常", "创建与反馈记录暂时无法更新，可在页面中重试。", "history"]
+      : capabilities.isError || capabilities.refreshError || capabilities.data?.dataState === "STALE_USABLE"
+        ? ["投稿能力数据异常", "投稿能力状态暂时无法更新，可在页面中重试。", "capabilities"]
+        : null;
+    if (!failed) return;
+    notify({ owner: "contribution", placement: "floating", tone: "info",
+      title: failed[0]!, body: failed[1]!, dedupeKey: `contribution-resource-failed:${failed[2]}` });
+  }, [capabilities.data?.dataState, capabilities.isError, capabilities.refreshError,
+    history.data?.dataState, history.error, history.isError, history.refreshError, notify, pageVisible]);
   const submissions = history.data?.data.submissions ?? [];
   const recoveryOwner = currentDraftUserId();
   const submissionRecovery = useMemo(() => {
@@ -437,14 +454,14 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       longitude: number;
     }) => {
       const suggestedName = selection.name.trim();
-      const suggestedAddress = selection.address.trim() || suggestedName;
-      setCandidatePlaceLabel(suggestedName || suggestedAddress);
+      const suggestedAddress = selection.address.trim();
+      setCandidatePlaceLabel(suggestedName || suggestedAddress || `${selection.latitude.toFixed(4)}, ${selection.longitude.toFixed(4)}`);
       if (suggestedName) setCandidateName((current) => current.trim() ? current : suggestedName);
-      if (suggestedAddress) setCandidateRegion(suggestedAddress);
+      setCandidateRegion(suggestedAddress);
       setCandidateFields((current) => ({
         ...current,
         name: current.name.trim() ? current.name : suggestedName,
-        address: suggestedAddress || current.address,
+        address: suggestedAddress,
       }));
       setLatitude(selection.latitude.toFixed(6));
       setLongitude(selection.longitude.toFixed(6));

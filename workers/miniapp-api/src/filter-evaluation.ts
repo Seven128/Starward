@@ -61,23 +61,7 @@ export function evaluateSpotFilterEvidence(input: {
   eventCoverageKnown: boolean;
   evaluatedAtMs: number;
 }): SpotFilterEvidence {
-  const { spot, detail, evaluation, filters } = input;
-  const route = filters.drivingRange.mode === "TIME"
-    ? evaluation.driveMinutes === null
-      ? evidence("DISTANCE_DRIVE_TIME", "UNKNOWN", "没有匹配当前起点的真实驾车时长")
-      : evidence(
-          "DISTANCE_DRIVE_TIME",
-          evaluation.driveMinutes <= filters.drivingRange.maxMinutes ? "MATCH" : "NO_MATCH",
-          `真实驾车时长为 ${Math.round(evaluation.driveMinutes)} 分钟`,
-        )
-    : evaluation.distanceKind !== "ROUTE" || evaluation.distanceKm === null
-      ? evidence("DISTANCE_DRIVE_TIME", "UNKNOWN", "没有匹配当前起点的真实驾车距离")
-      : evidence(
-          "DISTANCE_DRIVE_TIME",
-          evaluation.distanceKm <= filters.drivingRange.maxDistanceKm ? "MATCH" : "NO_MATCH",
-          `真实驾车距离为 ${evaluation.distanceKm.toFixed(1)} 公里`,
-        );
-
+  const { spot, detail, evaluation } = input;
   const light = spot.lightPollution.state !== "ESTIMATED" || !usableState(spot.lightPollution.source.state) || spot.lightPollution.productBand === null
     ? evidence("LIGHT_POLLUTION", "UNKNOWN", "缺少可归属的夜光产品分级")
     : evidence(
@@ -89,9 +73,6 @@ export function evaluateSpotFilterEvidence(input: {
   const cloud = evaluation.cloudPercent === null
     ? evidence("LESS_CLOUD", "UNKNOWN", "当前观测时刻缺少总云量")
     : evidence("LESS_CLOUD", evaluation.cloudPercent <= 45 ? "MATCH" : "NO_MATCH", `当前总云量为 ${Math.round(evaluation.cloudPercent)}%`);
-  const lowCloud = evaluation.lowCloudPercent === null
-    ? evidence("LOW_CLOUD_THRESHOLD", "UNKNOWN", "当前观测时刻缺少低云量")
-    : evidence("LOW_CLOUD_THRESHOLD", evaluation.lowCloudPercent <= 30 ? "MATCH" : "NO_MATCH", `当前低云量为 ${Math.round(evaluation.lowCloudPercent)}%`);
   const moon = evaluation.moonImpact === "UNKNOWN"
     ? evidence("MOON_IMPACT", "UNKNOWN", "当前时刻缺少月亮高度或照明比例")
     : evidence("MOON_IMPACT", evaluation.moonImpact === "LOW" ? "MATCH" : "NO_MATCH", `当前月亮影响为 ${evaluation.moonImpact}`);
@@ -135,7 +116,6 @@ export function evaluateSpotFilterEvidence(input: {
         );
 
   return {
-    DISTANCE_DRIVE_TIME: route,
     LIGHT_POLLUTION: light,
     LESS_CLOUD: cloud,
     PARKING: facilityEvidence(spot, "PARKING", "PARKING"),
@@ -144,7 +124,6 @@ export function evaluateSpotFilterEvidence(input: {
     PHOTO_FOREGROUND: media,
     CAMPING_OVERNIGHT_PARKING: facilityEvidence(spot, "CAMPING", "CAMPING_OVERNIGHT_PARKING"),
     SPECIFIC_CELESTIAL_EVENT: event,
-    LOW_CLOUD_THRESHOLD: lowCloud,
     MOON_IMPACT: moon,
     HIKING_DIFFICULTY: accessEvidence("HIKING_DIFFICULTY", "NO_HIKE"),
     SIGNAL: facilityEvidence(spot, "SIGNAL", "SIGNAL"),

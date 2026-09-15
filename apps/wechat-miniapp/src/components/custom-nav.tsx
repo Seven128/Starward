@@ -106,16 +106,6 @@ export function CustomNav({
           <Text className="type-caption">暂时无法返回，请再点一次返回。</Text>
         </View>
       ) : null}
-      {__MINIAPP_DEVELOPMENT_FIXTURE_MODE__ ? (
-        <View
-          className="development-fixture-banner"
-          data-od-id="development-fixture-banner"
-          role="status"
-          aria-label="测试数据，不能用于现实判断"
-        >
-          <Text>测试数据 · 不用于现实判断</Text>
-        </View>
-      ) : null}
     </View>
   );
 }

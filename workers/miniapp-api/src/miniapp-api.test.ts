@@ -3,16 +3,17 @@ import test from "node:test";
 import {
   DEFAULT_USER_PREFERENCES,
   EMPTY_FILTER_STATE,
-  setDrivingRangeParameter,
   toggleFilter,
   type RouteOverview,
   type SourceSummary,
 } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
+import { wgs84ToGcj02 } from "@starward/coordinate-system";
 import { MiniappService } from "./miniapp-service.ts";
 import { parserGate, validateExternalUrl } from "./security.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
+import type { DarkSkyGridCellRecord } from "./ports.ts";
 import { createTestRuntimeConfig } from "./runtime-config.ts";
 import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog.ts";
 
@@ -80,7 +81,7 @@ test("map scene is context-bound and computes actual dynamic projections", async
     assert.ok(result.data.spots.length > 0);
     assert.equal(result.data.spots.length, 1);
     assert.equal(result.data.layer.kind, "CLOUD");
-    assert.equal(result.data.layer.cloudLayer, "LOW");
+    assert.equal(result.data.layer.cloudLayer, "TOTAL");
     assert.ok(result.data.layer.polygons.length > 0);
     assert.ok(
       Object.values(result.data.evaluations).every(
@@ -123,10 +124,8 @@ test("map scene is context-bound and computes actual dynamic projections", async
       "dynamic cloud frames must change a property passed to the native Map polygon",
     );
     assert.ok(Buffer.byteLength(JSON.stringify(result.data), "utf8") < 256_000);
-    assert.equal(
-      result.data.filterCapabilities.byGroup.DISTANCE_DRIVE_TIME.state,
-      "UNAVAILABLE",
-    );
+    assert.equal("DISTANCE_DRIVE_TIME" in result.data.filterCapabilities.byGroup, false);
+    assert.equal("LOW_CLOUD_THRESHOLD" in result.data.filterCapabilities.byGroup, false);
     const opportunity = await service.getMapScene({
       contextId: context.contextId,
       layer: "OPPORTUNITY",
@@ -170,14 +169,63 @@ test("map scene is context-bound and computes actual dynamic projections", async
         zoom: 12,
       },
     });
-    assert.ok(light.data.layer.polygons.length > 0);
+    assert.equal(light.data.layer.state, "UNAVAILABLE");
+    assert.deepEqual(light.data.layer.polygons, [], "point fixtures must not be expanded into a fake night-light area");
     assert.ok(light.data.timeFrames.every((item) => item.dynamicLayer === null));
   } finally {
     await service.onModuleDestroy();
   }
 });
 
-test("route provider is invoked only after an explicit route-bearing action", async () => {
+test("map light pollution draws only published grid geometry with a translucent fill", async () => {
+  const origin = TEST_PUBLISHED_SPOT;
+  const repository = new InMemoryTestRepository([origin]);
+  Object.defineProperty(repository, "kind", { value: "postgres" });
+  const grid: DarkSkyGridCellRecord = {
+    cellId: "test-published-light-cell",
+    datasetVersion: "test-dark-sky",
+    productBand: "LOW",
+    label: "测试夜光网格",
+    radiance: { median: 1, p10: 0.8, p90: 1.2, unit: "nW/cm²/sr" },
+    minimumCloudFreeObservations: 8,
+    boundsWgs84: {
+      west: origin.wgs84.longitude - 0.005,
+      south: origin.wgs84.latitude - 0.005,
+      east: origin.wgs84.longitude + 0.005,
+      north: origin.wgs84.latitude + 0.005,
+    },
+    state: "ESTIMATED",
+    source: { ...origin.source, id: "test-published-light-source", title: "测试年度夜光" },
+  };
+  Object.defineProperty(repository, "listDarkSkyGridCells", { value: async () => [grid] });
+  const service = createTestMiniappService({ repository });
+  try {
+    const context = await contextFor(service);
+    const light = await service.getMapScene({
+      contextId: context.contextId,
+      layer: "LIGHT_POLLUTION",
+      viewport: { center: origin.gcj02, zoom: 12 },
+    });
+    assert.equal(light.data.layer.state, "PARTIAL");
+    assert.equal(light.data.layer.polygons.length, 1);
+    assert.equal(light.data.layer.polygons[0]?.id, `light:${grid.cellId}`);
+    assert.match(light.data.layer.polygons[0]?.fillColor ?? "", /66$/u);
+    const expectedPoints = [
+      { lat: grid.boundsWgs84.south, lon: grid.boundsWgs84.west },
+      { lat: grid.boundsWgs84.south, lon: grid.boundsWgs84.east },
+      { lat: grid.boundsWgs84.north, lon: grid.boundsWgs84.east },
+      { lat: grid.boundsWgs84.north, lon: grid.boundsWgs84.west },
+    ].map((point) => {
+      const converted = wgs84ToGcj02({ ...point, system: "WGS84" });
+      return { latitude: converted.lat, longitude: converted.lon };
+    });
+    assert.deepEqual(light.data.layer.polygons[0]?.points, expectedPoints);
+  } finally {
+    await service.onModuleDestroy();
+  }
+});
+
+test("map, overview and the legacy route endpoint never invoke a road provider", async () => {
   let calls = 0;
   const routeSource: SourceSummary = {
     ...TEST_PUBLISHED_SPOT.source,
@@ -202,7 +250,7 @@ test("route provider is invoked only after an explicit route-bearing action", as
   };
   const service = createTestMiniappService({
     repository: new InMemoryTestRepository([TEST_PUBLISHED_SPOT]),
-    config: createTestRuntimeConfig({ routeProvider: "AMAP" }),
+    config: createTestRuntimeConfig(),
     route: {
       key: "counting-route",
       async estimate(input) {
@@ -268,44 +316,20 @@ test("route provider is invoked only after an explicit route-bearing action", as
     assert.equal(calls, 0);
     assert.equal(overview.data.route.kind, "STRAIGHT_LINE_ONLY");
 
-    const enabledRange = toggleFilter(EMPTY_FILTER_STATE, "distanceDriveTime");
-    const byTime = await service.getMapScene({
-      contextId: mapContext.contextId,
-      filters: setDrivingRangeParameter(enabledRange, {
-        mode: "TIME",
-        maxMinutes: 30,
-        maxDistanceKm: 100,
-      }),
-    });
-    assert.equal(calls, 1);
-    assert.deepEqual(byTime.data.spots.map((spot) => spot.spotId), [TEST_PUBLISHED_SPOT.spotId]);
-
-    const byDistance = await service.getMapScene({
-      contextId: mapContext.contextId,
-      filters: setDrivingRangeParameter(enabledRange, {
-        mode: "DISTANCE",
-        maxMinutes: 180,
-        maxDistanceKm: 10,
-      }),
-    });
-    assert.equal(calls, 1, "the same attributable route may be reused across range modes");
-    assert.deepEqual(byDistance.data.spots, []);
-
     const explicit = await service.estimateRoute({
       contextId: context.contextId,
       spotId: TEST_PUBLISHED_SPOT.spotId,
     });
-    assert.equal(calls, 1);
-    assert.equal(explicit.data.kind, "ROUTE_ESTIMATE");
+    assert.equal(calls, 0);
+    assert.equal(explicit.data.kind, "UNAVAILABLE");
     assert.equal(explicit.data.originLabel, "当前地图中心");
     const walking = await service.estimateRoute({
       contextId: context.contextId,
       spotId: TEST_PUBLISHED_SPOT.spotId,
       travelMode: "WALKING",
     });
-    assert.equal(calls, 2, "travel mode must be part of route cache identity");
-    assert.equal(walking.data.travelMode, "WALKING");
-    assert.equal(walking.data.durationMinutes, 180);
+    assert.equal(calls, 0);
+    assert.equal(walking.data.durationMinutes, null);
     assert.equal(walking.data.driveMinutes, null);
   } finally {
     await service.onModuleDestroy();
@@ -331,7 +355,7 @@ test("Observation Context enforces observation-night and optimistic revision", a
       })
     ).data;
     assert.equal(updated.revision, context.revision + 1);
-    assert.equal(updated.weatherView.cloudLayer, "HIGH");
+    assert.equal(updated.weatherView.cloudLayer, "TOTAL", "legacy layer input cannot revive retired layered clouds");
     const nextNight = (
       await service.updateObservationContext(context.contextId, {
         expectedRevision: updated.revision,
@@ -372,14 +396,15 @@ test("search never manufactures an ordinary place or formal spot id", async () =
     assert.deepEqual(result.data.formalSpots, []);
     assert.deepEqual(result.data.candidates, []);
     assert.deepEqual(result.data.ordinaryPlaces, []);
-    assert.equal(result.dataState, "PARTIAL");
-    assert.match(result.warnings[0] ?? "", /没有生成伪地点/u);
+    assert.equal(result.dataState, "FRESH");
+    assert.deepEqual(result.warnings, []);
   } finally {
     await service.onModuleDestroy();
   }
 });
 
-test("search keeps provider places separate from formal and candidate identities", async () => {
+test("own-spot search never invokes or exposes a retired ordinary-place provider", async () => {
+  let calls = 0;
   const source: SourceSummary = {
     ...TEST_PUBLISHED_SPOT.source,
     id: "place:test:current",
@@ -393,6 +418,7 @@ test("search keeps provider places separate from formal and candidate identities
     placeSearch: {
       key: "test-place-search",
       async search() {
+        calls++;
         return {
           value: [
             {
@@ -428,9 +454,11 @@ test("search keeps provider places separate from formal and candidate identities
     assert.equal(result.dataState, "FRESH");
     assert.equal(result.data.formalSpots.length, 0);
     assert.equal(result.data.candidates.length, 0);
-    assert.equal(result.data.ordinaryPlaces.length, 1);
-    assert.equal(result.data.ordinaryPlaces[0]?.spotId, null);
-    assert.equal(result.data.ordinaryPlaces[0]?.nightSkyAllowed, false);
+    assert.equal(result.data.ordinaryPlaces.length, 0);
+    assert.equal(calls, 0);
+    const formal = await service.search(TEST_PUBLISHED_SPOT.name);
+    assert.equal(formal.data.formalSpots[0]?.spotId, TEST_PUBLISHED_SPOT.spotId);
+    assert.equal(calls, 0);
   } finally {
     await service.onModuleDestroy();
   }
@@ -768,31 +796,31 @@ test("all active filters have an explicit evidence disposition", async () => {
     const context = await contextFor(service);
     const filters = toggleFilter(
       EMPTY_FILTER_STATE,
-      "distanceDriveTime",
+      "charging",
     );
     const result = await service.getMapScene({
       contextId: context.contextId,
       filters,
     });
-    assert.equal(result.data.spots.length, 1, "unknown route evidence remains visible for disclosure");
+    assert.equal(result.data.spots.length, 1, "unknown facility evidence remains visible for disclosure");
     assert.equal(
-      result.data.filterEvidence[result.data.spots[0]!.spotId]!.DISTANCE_DRIVE_TIME.state,
+      result.data.filterEvidence[result.data.spots[0]!.spotId]!.CHARGING.state,
       "UNKNOWN",
     );
     assert.equal(
-      result.data.filterCapabilities.byGroup.DISTANCE_DRIVE_TIME.state,
+      result.data.filterCapabilities.byGroup.CHARGING.state,
       "UNAVAILABLE",
     );
     assert.ok(
       result.warnings.some((warning) => warning.includes("当前不可用")),
     );
     assert.ok(
-      result.warnings.some((warning) => warning.includes("驾车范围")),
+      result.warnings.some((warning) => warning.includes("充电")),
       "filter warnings use the current human-facing filter title",
     );
     assert.equal(
       result.warnings.some((warning) =>
-        warning.includes("DISTANCE_DRIVE_TIME"),
+        warning.includes("CHARGING"),
       ),
       false,
       "filter enum keys are never exposed as product copy",
@@ -961,19 +989,20 @@ test("sky report preserves exact selected time and binds targets and stars to ev
       ),
       "target directions change with the frame rather than reusing committed targets",
     );
-    const activityTarget = currentTargets.find(
-      (target) => target.type === "METEOR_SHOWER" && target.activity,
+    const meteorTarget = currentTargets.find(
+      (target) => target.type === "METEOR_SHOWER",
     );
-    assert.ok(activityTarget, "an active meteor target carries activity evidence");
-    const activityValues = sky.targetFrames.flatMap((frame) =>
+    assert.ok(meteorTarget, "an active meteor target is present");
+    assert.equal(meteorTarget.activity, null,
+      "the GMN reference does not invent an unreviewed activity curve");
+    const meteorFrames = sky.targetFrames.flatMap((frame) =>
       frame.targets
-        .filter((target) => target.targetId === activityTarget.targetId)
-        .map((target) => target.activity?.currentSolarLongitudeDeg ?? null),
+        .filter((target) => target.targetId === meteorTarget.targetId),
     );
     assert.ok(
-      new Set(activityValues.filter((value): value is number => value !== null))
-        .size > 1,
-      "meteor activity is recalculated at each target frame time",
+      meteorFrames.every((target) => target.activity === null) &&
+      new Set(meteorFrames.map((target) => `${target.direction}:${target.altitudeDeg}`)).size > 1,
+      "meteor direction is recalculated while unavailable activity stays unavailable",
     );
     assert.ok(
       sky.hourly.every((row) => row.opportunityInput.at === row.at),

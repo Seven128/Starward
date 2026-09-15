@@ -17,13 +17,12 @@ import {
   buildTestSpotDetail,
 } from "./catalog.ts";
 
-test("the current filter schema has the exact ordered 16-option population", () => {
-  assert.equal(FILTER_OPTIONS.length, 16);
-  assert.equal(new Set(FILTER_OPTIONS.map((item) => item.label)).size, 16);
+test("the current filter schema has the exact ordered 14-option population", () => {
+  assert.equal(FILTER_OPTIONS.length, 14);
+  assert.equal(new Set(FILTER_OPTIONS.map((item) => item.label)).size, 14);
   assert.deepEqual(
     FILTER_OPTIONS.map((item) => item.label),
     [
-      "驾车范围",
       "光害",
       "少云",
       "停车",
@@ -32,7 +31,6 @@ test("the current filter schema has the exact ordered 16-option population", () 
       "摄影前景",
       "可露营/驻车",
       "特定天象",
-      "低云阈值",
       "月亮影响",
       "徒步难度",
       "信号",
@@ -44,20 +42,6 @@ test("the current filter schema has the exact ordered 16-option population", () 
   assert.deepEqual(
     [...new Set(FILTER_OPTIONS.map((item) => item.category))].sort(),
     ["ARRIVAL", "FACILITIES", "FRESHNESS", "OBSERVATION", "PLACE"],
-  );
-});
-
-test("driving range belongs to filter state and enforces mode-specific bounds", () => {
-  assert.equal(EMPTY_FILTER_STATE.drivingRange.mode, "TIME");
-  assert.equal(EMPTY_FILTER_STATE.drivingRange.maxMinutes, 180);
-  assert.doesNotThrow(() => assertFilterState(EMPTY_FILTER_STATE));
-  assert.throws(
-    () => assertFilterState({ ...EMPTY_FILTER_STATE, drivingRange: { mode: "TIME", maxMinutes: 29, maxDistanceKm: 100 } }),
-    /driving_range_invalid:max_minutes/u,
-  );
-  assert.throws(
-    () => assertFilterState({ ...EMPTY_FILTER_STATE, drivingRange: { mode: "DISTANCE", maxMinutes: 180, maxDistanceKm: 1001 } }),
-    /driving_range_invalid:max_distance_km/u,
   );
 });
 

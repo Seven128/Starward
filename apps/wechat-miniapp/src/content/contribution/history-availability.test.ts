@@ -26,7 +26,7 @@ test("unloaded contribution history is unknown rather than an empty result", asy
     for (const label of ["全部 —", "待审核 —", "需补充 —"]) assert.ok(page.texts.includes(label));
     assert.ok(!page.texts.includes("暂无符合当前筛选的投稿记录。"));
     assert.ok(page.panels[0]);
-    assert.equal(page.panels[0].props.state, pending ? "LOADING" : "ERROR");
+    assert.equal(page.panels[0].props.state, pending ? "LOADING" : "EMPTY");
     if (!pending) { page.panels[0].props.onRecover(); await new Promise(resolve => setImmediate(resolve)); }
   }
 });

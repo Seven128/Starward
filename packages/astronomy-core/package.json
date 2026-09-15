@@ -24,6 +24,10 @@
       "production": "./dist/src/hipparcos-catalog.js",
       "default": "./src/hipparcos-catalog.ts"
     },
+    "./bsc5p-catalog": {
+      "production": "./dist/src/bsc5p-catalog.js",
+      "default": "./src/bsc5p-catalog.ts"
+    },
     "./deep-sky-catalog": {
       "production": "./dist/src/deep-sky-catalog.js",
       "default": "./src/deep-sky-catalog.ts"

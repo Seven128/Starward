@@ -34,8 +34,8 @@ const available: SkyScene = {
     magnitudeLimit: 5.5,
     sources: [source, { ...source, id: "source-wgsn-test", kind: "OFFICIAL_REFERENCE" }],
     entries: [
-      { sourceId: "HIP:1", objectRef: "HIP:1", displayName: "Alpha", magnitude: 1.2, magnitudeBand: "V", colorIndex: 0.2, colorIndexBand: "B-V" },
-      { sourceId: "HIP:2", objectRef: "HIP:2", displayName: null, magnitude: 4.8, magnitudeBand: "V", colorIndex: null, colorIndexBand: "B-V" },
+      { sourceId: "HR:1", objectRef: "HR:1", displayName: "Alpha", magnitude: 1.2, magnitudeBand: "V", colorIndex: 0.2, colorIndexBand: "B-V" },
+      { sourceId: "HR:2", objectRef: "HR:2", displayName: null, magnitude: 4.8, magnitudeBand: "V", colorIndex: null, colorIndexBand: "B-V" },
     ],
   },
   frames: [

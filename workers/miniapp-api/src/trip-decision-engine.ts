@@ -219,9 +219,7 @@ export class TripDecisionEngine {
       NOT_RECOMMENDED: explicitRisk
         ? "存在明确风险，不建议前往"
         : "天空条件不足，不建议专程前往",
-      DATA_INSUFFICIENT: sample
-        ? "当前资料不能用于真实出行判断"
-        : "关键资料不足，暂不能判断是否适合前往",
+      DATA_INSUFFICIENT: "关键资料不足，暂不能判断是否适合前往",
     };
     return {
       recommendation,

@@ -1,14 +1,15 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import { useRouter } from "@tarojs/taro";
+import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
 import { CustomNav } from "@/components/custom-nav";
-import { Provenance, SOURCE_KIND_LABEL } from "@/components/provenance";
+import { Provenance, SOURCE_KIND_LABEL, isProductSource } from "@/components/provenance";
 import { groupSources } from "./source-groups";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import { getSpotOverview } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
+import { useEffect, useState } from "react";
 import "./data-source.scss";
 
 function safe(value?: string) {
@@ -24,20 +25,30 @@ export default function DataSourcePage() {
   const spotId = safe(router.params.spotId);
   const contextId = safe(router.params.contextId);
   const context = useAppStore((state) => state.observationContext);
+  const notify = useAppStore((state) => state.notify);
+  const [pageVisible, setPageVisible] = useState(true);
+  useDidShow(() => setPageVisible(true));
+  useDidHide(() => setPageVisible(false));
   const validRoute =
     spotId.startsWith("spot:") && context?.contextId === contextId &&
     context.location.kind === "FORMAL_SPOT" && context.location.spotId === spotId;
   const overview = useResourceQuery({
     queryKey: ["spot-overview", spotId, contextId, context?.contextFingerprint, context?.revision],
     queryFn: (signal) => getSpotOverview(spotId, contextId, signal),
-    enabled: validRoute,
+    enabled: validRoute && pageVisible,
   });
+  useEffect(() => {
+    if (!pageVisible || !validRoute || (!overview.isError && !overview.refreshError && overview.data?.dataState !== "STALE_USABLE")) return;
+    notify({ owner: "data-source", placement: "floating", tone: "info",
+      title: "来源数据异常", body: "来源与适用时间暂时无法更新，可在页面中重试。",
+      dedupeKey: `data-source-failed:${spotId}` });
+  }, [notify, overview.data?.dataState, overview.isError, overview.refreshError, pageVisible, spotId, validRoute]);
   const detail = validRoute && overview.data?.data.spot.spotId === spotId ? overview.data.data : undefined;
   const themeClass = useThemeClass();
   const sources = detail
     ? [
         ...new Map(
-          detail.dataDisclosure.map((source) => [source.id, source]),
+          detail.dataDisclosure.filter(isProductSource).map((source) => [source.id, source]),
         ).values(),
       ]
     : [];
@@ -50,14 +61,14 @@ export default function DataSourcePage() {
       <View className="sources-content page-inset safe-bottom">
         {!validRoute ? (
           <StatusPanel
-            state="ERROR"
+            state="EMPTY"
             detail="请从正式观星点详情中的来源入口打开本页。"
           />
         ) : overview.isPending ? (
           <StatusPanel state="LOADING" detail="正在加载来源与适用时间。" />
         ) : overview.isError || !detail ? (
           <StatusPanel
-            state="ERROR"
+            state="EMPTY"
             detail="来源暂时无法加载，请重试。"
             recoveryLabel="重试"
             onRecover={() => void overview.refetch()}

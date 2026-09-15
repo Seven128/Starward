@@ -422,7 +422,7 @@ export function ContributionHistory({ form, onResume }: { form: ContributionForm
         <StatusPanel state="LOADING" detail="正在加载草稿和审核状态。" />
       ) : form.history.isError ? (
         <StatusPanel
-          state={permissionDenied ? "PERMISSION_DENIED" : "ERROR"}
+          state={permissionDenied ? "PERMISSION_DENIED" : "EMPTY"}
           detail={`${
             permissionDenied
               ? "当前账户无权查看这些投稿"

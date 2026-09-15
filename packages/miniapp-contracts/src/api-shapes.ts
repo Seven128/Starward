@@ -105,6 +105,8 @@ export interface TerrainLightCell {
 
 export interface TerrainOverlayData {
   state: TerrainProjectionState;
+  /** Missing coverage has no failureCode; failures remain independently recoverable. */
+  failureCode?: "TERRAIN_READ_FAILED";
   purpose: TerrainOverlayRequest["purpose"];
   requestedRadiusKm: number;
   effectiveRadiusKm: number | null;
@@ -121,8 +123,11 @@ export interface TerrainOverlayData {
   elevationM: { minimum: number; maximum: number } | null;
   coverageLabel: string;
   limitations: readonly string[];
+  /** Source and redistribution notices for the derived terrain product. */
+  source: SourceSummary | null;
   lightPollution: {
     state: TerrainProjectionState;
+    failureCode?: "LIGHT_READ_FAILED";
     datasetVersion: string;
     cells: readonly TerrainLightCell[];
     legend: readonly { label: string; color: string }[];
@@ -136,10 +141,8 @@ export type TerrainAssetData = Uint8Array;
 
 export interface MapSpotTimeSignal {
   spotId: SpotSummary["spotId"];
+  weatherAt: string | null;
   cloudPercent: number | null;
-  lowCloudPercent: number | null;
-  midCloudPercent: number | null;
-  highCloudPercent: number | null;
   moonImpact: "LOW" | "MEDIUM" | "HIGH" | "UNKNOWN";
   opportunityScore: number | null;
   opportunityConfidence: number | null;
@@ -324,6 +327,8 @@ export interface SpotSiteData {
   siteMediaState: SiteMediaState;
   evidence: readonly FactEvidence[];
   sources: readonly SourceSummary[];
+  /** Reviewed access facts; absent only on older API versions. No road estimates. */
+  arrival?: Pick<RouteOverview, "lastRoad" | "parkingGuidance" | "source">;
 }
 
 export interface UserLibraryData {
@@ -341,6 +346,20 @@ export interface PlansData {
   reminderNotifications: readonly import("./plan-reminders.ts").PlanReminderNotificationStatus[];
 }
 
+/** Reviewed editorial text; numerical event data retains its own independent source. */
+export interface AstronomicalEventArticle {
+  title: string;
+  paragraphs: readonly string[];
+  sourceId: string;
+  originalUrl: string;
+  authorName: string | null;
+  /** Original date precision is retained, including a date without a timezone. */
+  publishedTime: string | null;
+  retrievedAt: string;
+  inputSha256: string | null;
+  parserVersion: string;
+}
+
 export interface AstronomicalEventBase {
   occurrenceId: string;
   eventId: string;
@@ -350,16 +369,43 @@ export interface AstronomicalEventBase {
   activeEndDate: string;
   peakDate: string;
   peakAtUtc: string | null;
+  /** Binds an occurrence to its exact source in the versioned catalog package. */
+  sourceId?: string;
+  /** Included only by event detail, never by the list projection. */
+  article?: AstronomicalEventArticle;
+}
+
+export interface MeteorRadiantDriftModel {
+  frame: "SUN_CENTERED_ECLIPTIC_J2000";
+  referenceSolarLongitudeDeg: number;
+  sunCenteredLongitudeDeg: number;
+  latitudeDeg: number;
+  longitudeDriftDegPerDeg: number;
+  latitudeDriftDegPerDeg: number;
+  validSolarOffsetMinDeg: number;
+  validSolarOffsetMaxDeg: number;
+}
+
+export interface MeteorAnnualReference {
+  kind: "GMN_ANNUAL_MONITORING_REFERENCE";
+  dateTimezone: "UTC";
+  solarLongitudeStartDeg: number;
+  solarLongitudeReferenceDeg: number;
+  solarLongitudeEndDeg: number;
+  /** Null means direction is unavailable; the event and date reference remain. */
+  radiantDrift: MeteorRadiantDriftModel | null;
 }
 
 export interface MeteorShowerOccurrence extends AstronomicalEventBase {
   kind: "METEOR_SHOWER";
   iauNumber: number;
-  radiantRightAscensionDeg: number;
-  radiantDeclinationDeg: number;
-  velocityKmPerSecond: number;
+  radiantRightAscensionDeg: number | null;
+  radiantDeclinationDeg: number | null;
+  velocityKmPerSecond: number | null;
   populationIndex: number;
-  nominalPeakZhr: number;
+  nominalPeakZhr: number | null;
+  /** When present, peakDate is an annual reference date, never an annual forecast. */
+  annualReference?: MeteorAnnualReference;
 }
 
 export interface EclipseOccurrence extends AstronomicalEventBase {
@@ -405,7 +451,7 @@ export interface AstronomicalEventLocalVisibility {
 
 export interface AstronomicalEventsData {
   catalogVersion: string;
-  coverage: "REVIEWED_2026_METEOR_AND_ECLIPSE_EVENTS";
+  coverage: "REVIEWED_2026_METEOR_AND_ECLIPSE_EVENTS" | "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES";
   events: readonly AstronomicalEventOccurrence[];
   sources: readonly SourceSummary[];
 }
@@ -415,6 +461,7 @@ export interface AstronomicalEventDetailData {
   event: AstronomicalEventOccurrence;
   localVisibility: AstronomicalEventLocalVisibility;
   source: SourceSummary;
+  articleSource?: SourceSummary;
 }
 
 export interface ProfileLinksData {

@@ -1033,9 +1033,7 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
   assert.match(queryClient, /installAbortControllerPolyfill\(\)/u);
   assert.match(app, /if \(__MINIAPP_ACCEPTANCE_DIAGNOSTICS__\)/u);
   assert.doesNotMatch(app, /__MINIAPP_DEVELOPMENT_FIXTURE_MODE__/u);
-  assert.match(customNav, /__MINIAPP_DEVELOPMENT_FIXTURE_MODE__/u);
-  assert.match(customNav, /测试数据 · 不用于现实判断/u);
-  assert.match(customNav, /data-od-id="development-fixture-banner"/u);
+  assert.doesNotMatch(customNav, /__MINIAPP_DEVELOPMENT_FIXTURE_MODE__|development-fixture-banner/u);
   assert.match(
     miniappConfig,
     /process\.env\.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1"/u,

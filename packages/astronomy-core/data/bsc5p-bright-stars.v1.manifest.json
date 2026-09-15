@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "bsc5p-bright-stars-manifest-v1",
+  "catalogVersion": "bsc5p-bright-stars.v1",
+  "rowCount": 1630,
+  "namedRowCount": 419,
+  "rowOrder": "Vmag ASC, HR numeric ASC",
+  "derivedAssetSha256": "0d0eb41032bd1c9478ddeb5fa9e787b1e585c8fc99cd9056c226c6bfaea61b5a",
+  "derivedAssetBytes": 507433,
+  "retrievedAt": "2026-09-14T20:04:12.032177Z",
+  "sources": {
+    "catalog": {
+      "queryUrl": "https://heasarc.gsfc.nasa.gov/xamin/vo/tap/sync?REQUEST=doQuery&LANG=ADQL&MAXREC=12000&QUERY=SELECT+hr%2Cra%2Cdec%2Cvmag%2Cvmag_code%2Cvmag_uncert%2Cbv_color%2Cbv_uncert%2Cpmra%2Cpmdec%2Chd%2Cspect_type%2Calt_name+FROM+bsc5p+WHERE+vmag+BETWEEN+-2+AND+5+ORDER+BY+vmag+ASC%2Chr+ASC",
+      "responseSha256": "64be7453acbc972402f3108bfa47e9efb25b67e5fd3935acb809ddbfe1befe97",
+      "responseBytes": 159482,
+      "landingUrl": "https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html",
+      "datasetMetadataUrl": "https://data.nasa.gov/dataset/bright-star-catalog",
+      "rightsUrl": "https://www.usa.gov/government-works",
+      "usagePolicyUrl": "https://heasarc.gsfc.nasa.gov/docs/heasarc/data_policy.html",
+      "credit": "Hoffleit & Warren (1991), Bright Star Catalog, 5th Revised Edition (Preliminary Version); HEASARC, NASA/GSFC"
+    },
+    "names": {
+      "sourceUrl": "https://exopla.net/star-names/modern-iau-star-names/",
+      "provider": "IAU Working Group on Star Names",
+      "responseSha256": "29463ff750298d7c5966565cbfd9fbafcae1dff85103e4780f7c5f5ba140ef67",
+      "responseBytes": 652326,
+      "usage": "Proper names and unambiguous published HR/HD/Bayer/Flamsteed identifiers; HIP aliases from the same IAU row"
+    }
+  },
+  "derivation": {
+    "excludedNonStellarHr": [],
+    "nonStellarExclusionList": [
+      92,
+      95,
+      182,
+      1057,
+      1841,
+      2472,
+      2496,
+      3515,
+      3671,
+      6309,
+      6515,
+      7189,
+      7539,
+      8296
+    ],
+    "properMotion": "mu_alpha_cos_delta and mu_delta, arcsec/year at FK5 J2000 epoch; no copied Hipparcos astrometry",
+    "photometry": "Source V magnitude code and uncertainty retained; H is original HR photometry, not normalized to Johnson V",
+    "names": "Exact unambiguous HR or HD, otherwise exact Bayer including component digit or Flamsteed identity; missing/component/ambiguous names are not guessed",
+    "runtimeNetwork": "forbidden"
+  }
+}

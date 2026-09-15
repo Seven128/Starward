@@ -10,7 +10,7 @@ export interface DeepSkyImageAsset {
 export interface DeepSkyImageRequestOptions {
   url: string;
   responseType: "arraybuffer";
-  success(result: { statusCode: number; data: unknown }): void;
+  success(result: { statusCode: number; data: unknown; header?: Record<string, string | number> }): void;
   fail(): void;
 }
 
@@ -22,7 +22,7 @@ export interface DeepSkyImageWriteOptions {
 }
 
 export interface DeepSkyImageRequestInput {
-  asset: DeepSkyImageAsset;
+  asset: Omit<DeepSkyImageAsset, "fieldDegrees">;
   url: string;
   request(options: DeepSkyImageRequestOptions): {
     abort?: () => void;
@@ -46,10 +46,15 @@ export function startDeepSkyImageRequest(input: DeepSkyImageRequestInput) {
     responseType: "arraybuffer",
     success: (result) => {
       if (!active) return;
+      const fieldHeader = Object.entries(result.header ?? {}).find(([name]) => name.toLowerCase() === "x-starward-image-field-degrees")?.[1];
+      const fieldDegrees = Number(fieldHeader);
       if (
         result.statusCode < 200 ||
         result.statusCode >= 300 ||
-        !(result.data instanceof ArrayBuffer)
+        !(result.data instanceof ArrayBuffer) ||
+        !Number.isFinite(fieldDegrees) ||
+        fieldDegrees <= 0 ||
+        fieldDegrees > 8
       ) {
         fail();
         return;
@@ -60,7 +65,7 @@ export function startDeepSkyImageRequest(input: DeepSkyImageRequestInput) {
         success: () => {
           if (!active) return;
           active = false;
-          input.onReady(input.asset);
+          input.onReady({ ...input.asset, fieldDegrees });
         },
         fail,
       });

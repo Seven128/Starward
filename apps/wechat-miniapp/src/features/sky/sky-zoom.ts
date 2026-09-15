@@ -19,9 +19,3 @@ export function deepSkyImageLevelForFov(fov: number): DeepSkyImageLevel | null {
   if (fov > 2.5) return "MEDIUM";
   return "DETAIL";
 }
-
-export function deepSkyImageFieldDegrees(majorAxisArcmin: number | null, level: DeepSkyImageLevel) {
-  const objectDegrees = Math.max(majorAxisArcmin ?? 10, 1) / 60;
-  const profile = level === "OVERVIEW" ? [3, 2, 8] : level === "MEDIUM" ? [1.5, 0.75, 4] : [0.6, 0.25, 2];
-  return Math.round(Math.min(profile[2]!, Math.max(profile[1]!, objectDegrees * profile[0]!)) * 1_000) / 1_000;
-}

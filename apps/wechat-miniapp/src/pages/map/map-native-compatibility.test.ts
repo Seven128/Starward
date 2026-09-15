@@ -28,12 +28,14 @@ test("the Map root installs a native Back boundary for its non-modal bottom pres
 
 test("terrain uses the WEAPP MapContext ground-overlay lifecycle", () => {
   const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
+  const coordinator = readFileSync(new URL("./terrain-ground-overlay.ts", import.meta.url), "utf8");
   const mapElement = source.match(/<Map\b[\s\S]*?\/>/u)?.[0] ?? "";
   assert.doesNotMatch(mapElement, /\bgroundOverlays=/u, "the component prop is not a WEAPP ground-overlay API");
-  assert.match(source, /Taro\.createMapContext\("spot-map"\)/u);
-  assert.match(source, /\.addGroundOverlay\(/u);
-  assert.match(source, /\.updateGroundOverlay\(/u);
-  assert.match(source, /\.removeGroundOverlay\(/u);
+  assert.match(source, /Taro\.createMapContext\(mapId\)/u);
+  assert.match(coordinator, /\.addGroundOverlay\(/u);
+  assert.match(coordinator, /\.updateGroundOverlay\(/u);
+  assert.match(coordinator, /\.removeGroundOverlay\(/u);
+  assert.match(source, /createTerrainGroundOverlayCoordinator/u);
   assert.match(source, /southwest:[\s\S]*?bounds\.south[\s\S]*?bounds\.west/u);
   assert.match(source, /northeast:[\s\S]*?bounds\.north[\s\S]*?bounds\.east/u);
 });

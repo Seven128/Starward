@@ -56,6 +56,22 @@
   justify-content: center;
   color: var(--primary);
 }
+
+.spot-search-platform-location {
+  flex: none;
+  align-self: flex-end;
+  min-height: var(--target-min);
+  padding: 0 8Px;
+  display: flex;
+  align-items: center;
+  gap: 8Px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--type-action-size);
+  line-height: var(--type-action-line);
+  border: 0;
+}
+.spot-search-platform-location::after { border: 0; }
 .spot-search-field__leading .semantic-icon {
   width: 34rpx;
   height: 34rpx;

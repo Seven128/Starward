@@ -123,7 +123,7 @@ export function MapTimeRuler({
             {selectedAt ? formatTime(selectedAt, timezone) : "时间暂无数据"}
           </Text>
         </View>
-        <Text className="type-caption">当前没有可用时间切片</Text>
+        <Text className="type-caption">暂无数据</Text>
       </View>
     );
   }

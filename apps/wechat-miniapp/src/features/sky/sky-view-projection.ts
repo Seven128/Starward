@@ -138,7 +138,7 @@ function validVector(value: unknown): value is SkyVector {
   );
 }
 
-function validBasis(value: unknown): value is SkyViewBasis {
+export function validBasis(value: unknown): value is SkyViewBasis {
   if (typeof value !== "object" || value === null) return false;
   const candidate = value as Partial<SkyViewBasis>;
   const right = candidate.right;
@@ -227,26 +227,4 @@ export function projectSkyDirection(
     degrees: normalizeDegrees(azimuthDeg),
     altitude: altitudeDeg,
   };
-}
-
-/**
- * Convert one compass reading and one inverse-clockwise alpha reading into a
- * reusable heading offset.  The alpha sign is an explicit platform boundary:
- * heading = offset - alpha (modulo 360).
- */
-export function calibrateSkyHeadingOffset(
-  compassHeadingDeg: number,
-  alphaDeg: number,
-): number | null {
-  if (!finite(compassHeadingDeg) || !finite(alphaDeg)) return null;
-  return normalizeDegrees(compassHeadingDeg + alphaDeg);
-}
-
-/** Resolve a world heading from the calibrated offset and inverse-clockwise alpha. */
-export function resolveSkyHeading(
-  offsetDeg: number,
-  alphaDeg: number,
-): number | null {
-  if (!finite(offsetDeg) || !finite(alphaDeg)) return null;
-  return normalizeDegrees(offsetDeg - alphaDeg);
 }

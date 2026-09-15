@@ -13,6 +13,7 @@ import {
   previewQrPath,
 } from "./device-feedback-preview.mjs";
 import { feedbackFail as fail } from "./device-feedback-paths.mjs";
+import { assertGenerationCurrent } from "./device-feedback-snapshot.mjs";
 import {
   createFeedbackRun,
   createStableGeneration,
@@ -95,7 +96,17 @@ async function prepareGeneration(run, options, dependencies, invalidated) {
   run.official = { disposition: "invoking", boundary: null };
   await saveFeedbackRun(run);
 
-  run.official = await invokeOfficial(generation, options, dependencies.official);
+  if (options.delivery === "auto") {
+    run.official = await invokeOfficial(generation, options, dependencies.official);
+  } else {
+    try {
+      await createOrdinaryPreview(run, options, dependencies.official);
+      run.official = { disposition: "qr_ready", boundary: null };
+    } catch (error) {
+      await assertGenerationCurrent(run);
+      run.official = { disposition: "manual_required", boundary: manualBoundary(error) };
+    }
+  }
   await saveFeedbackRun(run);
   if (previous && previous.directory !== generation.directory) {
     const cleanup = dependencies.removeOwnedGeneration ?? removeGeneration;
@@ -126,13 +137,15 @@ export async function main(
       mode: "development_feedback",
       commands: [
         "doctor [--cli <absolute official cli>]",
-        "start --project <absolute miniapp project> [--cli <path>] [--port <port>]",
-        "refresh --feedback <run> [--cli <path>] [--port <port>]",
+        "start --project <absolute miniapp project> [--delivery qr|auto] [--cli <path>] [--port <port>]",
+        "refresh --feedback <run> [--delivery qr|auto] [--cli <path>] [--port <port>]",
         "preview --feedback <run> [--cli <path>] [--port <port>]",
         "bind --feedback <run> --confirm official_update_completed",
         "stop --feedback <run>",
       ],
       evidenceMeaning: "development_only",
+      deliveryDefault: "qr",
+      automaticDeliveryRequires: "Verified matching DevTools and intended phone WeChat accounts; select --delivery auto explicitly for each generation.",
     });
     return;
   }

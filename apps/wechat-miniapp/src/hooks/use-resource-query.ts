@@ -7,6 +7,7 @@ interface QueryOptions<T> {
   queryFn: (signal: AbortSignal | undefined) => Promise<T>;
   enabled?: boolean;
   staleTime?: number;
+  refetchInterval?: number | false;
   throwOnRefetchError?: boolean;
 }
 
@@ -31,13 +32,14 @@ type QueryResult<T> = (
       isError: false;
       isPending: true;
       refetch: () => Promise<T | undefined>;
-    }) & { refreshError?: unknown };
+    }) & { refreshError?: unknown; isFetching: boolean };
 
 export function useResourceQuery<T>({
   queryKey,
   queryFn,
   enabled = true,
   staleTime = 60_000,
+  refetchInterval = false,
   throwOnRefetchError = false,
 }: QueryOptions<T>): QueryResult<T> {
   const diagnosticKey = String(queryKey[0] ?? "resource-query");
@@ -50,6 +52,7 @@ export function useResourceQuery<T>({
     },
     enabled,
     staleTime,
+    refetchInterval,
   });
   useEffect(() => {
     recordAcceptanceDiagnostic(
@@ -70,6 +73,7 @@ export function useResourceQuery<T>({
       isPending: false,
       refetch,
       refreshError: result.error ?? undefined,
+      isFetching: result.isFetching,
     };
   if (result.error !== null)
     return {
@@ -78,6 +82,7 @@ export function useResourceQuery<T>({
       isError: true,
       isPending: false,
       refetch,
+      isFetching: result.isFetching,
     };
   return {
     data: undefined,
@@ -85,5 +90,6 @@ export function useResourceQuery<T>({
     isError: false,
     isPending: true,
     refetch,
+    isFetching: result.isFetching,
   };
 }

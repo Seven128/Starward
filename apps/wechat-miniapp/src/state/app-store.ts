@@ -4,7 +4,6 @@ import {
   DEFAULT_USER_PREFERENCES,
   cloneFilterState,
   type DisplayMode,
-  type DrivingRangeParameter,
   type FilterState,
   type ObservationContext,
   type ObservationPlan,
@@ -27,7 +26,6 @@ import {
   setDisplayMode,
   toggleFavoriteRelation,
   toggleFilterDraft,
-  updateDraftDrivingRange,
 } from "./app-transitions";
 import {
   dismissNotification as removeNotification,
@@ -134,11 +132,10 @@ interface AppState extends PersistedState {
   requestSpotOpen(spotId: SpotId): void;
   openFilters(): void;
   toggleDraftFilter(optionId: string): void;
-  setDraftDrivingRange(parameter: DrivingRangeParameter): void;
   clearDraftFilters(): void;
   revertFilters(): void;
   cancelFilters(): void;
-  applyFilters(parameter?: DrivingRangeParameter): void;
+  applyFilters(): void;
   setLocationState(state: AppState["locationState"]): void;
   addSearchHistory(query: string): void;
   clearSearchHistory(): void;
@@ -287,7 +284,11 @@ function usableObservationContext(value: unknown): ObservationContext | null {
     isTimestamp(value.createdAt) &&
     isTimestamp(value.expiresAt) &&
     Date.parse(value.expiresAt) > Date.now();
-  return valid ? (value as unknown as ObservationContext) : null;
+  // A persisted Context remains a recovery hint until the server restores it.
+  // Keep its location/time/identity, but never restore retired display selections.
+  return valid ? { ...(value as unknown as ObservationContext), weatherView: {
+    primaryPolicy: "QWEATHER", comparisonModels: [], selectedModel: null, cloudLayer: "TOTAL",
+  } } : null;
 }
 
 const BOOTSTRAP_STATE = loadPersisted();
@@ -580,9 +581,6 @@ export const useAppStore = create<AppState>((set, get) => {
     toggleDraftFilter(optionId) {
       set((state) => toggleFilterDraft(state.draftFilters, optionId));
     },
-    setDraftDrivingRange(parameter) {
-      set((state) => updateDraftDrivingRange(state.draftFilters, parameter));
-    },
     clearDraftFilters() {
       set((state) => clearFilterDraft(state.draftFilters));
     },
@@ -592,12 +590,8 @@ export const useAppStore = create<AppState>((set, get) => {
     cancelFilters() {
       set((state) => cancelFilterDraft(state.committedFilters));
     },
-    applyFilters(parameter) {
-      commit((state) => applyFilterDraft(
-        parameter
-          ? updateDraftDrivingRange(state.draftFilters, parameter).draftFilters
-          : state.draftFilters,
-      ));
+    applyFilters() {
+      commit((state) => applyFilterDraft(state.draftFilters));
     },
     setLocationState(locationState) {
       set({ locationState });

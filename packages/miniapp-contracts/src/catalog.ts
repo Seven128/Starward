@@ -51,7 +51,7 @@ function osmSource(seed: OsmSpotSeed): SourceSummary {
     precision: "OpenStreetMap 元素点位或几何中心；不是入口、停车点或安全边界",
     limitations: [
       "OpenStreetMap 是开放协作数据库，名称与坐标仍需出发前复核",
-      "测试夹具中的 spot_id 仅用于验证产品流程，不表示景区许可、开放或安全背书",
+      "点位记录不表示景区许可、开放或安全背书",
     ],
   };
 }
@@ -430,7 +430,7 @@ function lightEstimate(seed: OsmSpotSeed): LightPollutionEstimate {
     | 6;
   const source: SourceSummary = {
     id: `source-light-demo-radial-${seed.id}`,
-    kind: "PRODUCT_CALCULATION",
+    kind: "TEST_FIXTURE",
     provider: "今晚去观星测试夹具估算",
     title: `${seed.name} 光害候选筛选估算`,
     sourceUrl: "",
@@ -521,7 +521,7 @@ export const TEST_PUBLISHED_SPOT: SpotSummary = Object.freeze({
   ...publishedFixtureBase,
   spotId: "spot:test-published" as SpotId,
   name: "示例观星点",
-  address: "仅用于测试，不对应真实地点",
+  address: "示例地区 · 示例位置",
   status: "PUBLISHED",
   source: publishedFixtureSource,
   lastVerifiedAt: "2026-08-06T00:00:00.000Z",
@@ -530,9 +530,9 @@ export const TEST_PUBLISHED_SPOT: SpotSummary = Object.freeze({
   accessTags: ["DRIVE_TO", "NO_HIKE"] as const,
   facilities: publishedFixtureBase.facilities.map((facility) => ({
     ...facility,
-    status: "AVAILABLE",
-    summary: "排版测试资料；不代表真实场地",
-    detail: "仅证明自动化测试可覆盖完整字段。",
+    status: facility.type === "CAMPING" ? "UNAVAILABLE" : "AVAILABLE",
+    summary: facility.type === "CAMPING" ? "不允许露营" : "示例设施记录",
+    detail: "请提前确认开放时间与使用条件。",
     verifiedAt: "2026-08-06T00:00:00.000Z",
     confidence: 1,
     source: publishedFixtureSource,
@@ -540,8 +540,8 @@ export const TEST_PUBLISHED_SPOT: SpotSummary = Object.freeze({
   media: MEDIA.map((media, index) => ({
     ...media,
     id: `media:test-published:${index + 1}`,
-    alt: `自动化测试现场媒体 ${index + 1}`,
-    caption: `仅用于验证本点位媒体门禁与多图交互 ${index + 1}`,
+    alt: `示例场地照片 ${index + 1}`,
+    caption: `示例场地照片 ${index + 1}`,
     sequence: index + 1,
     isSiteSpecific: true,
     state: "SAMPLE_DATA",
@@ -607,7 +607,7 @@ function genericGuide(spot: SpotSummary): GuideArticle {
     blocks: [
       {
         type: "paragraph",
-        text: "本内容仅为测试夹具，不证明当前点位开放或安全。出发前请核验管理方公告、天气预警与道路状态。",
+        text: "出发前请核验管理方公告、天气预警与道路状态。",
       },
       {
         type: "media",
@@ -654,25 +654,25 @@ export function buildTestSpotDetail(spotId: string): SpotDetail | null {
     ...(completeTestSpot
       ? {
           formalFacts: {
-            address: "仅用于测试，不对应真实地点",
+            address: "示例地区 · 示例位置",
             name: "示例观星点",
             openness: "限时开放",
             hours: "18:00–次日06:00",
             access: "预约进入",
-            accessNote: "排版测试说明；不代表任何地点可以进入。",
+            accessNote: "请提前预约并确认开放时间。",
             road: "末段步行约200米",
             safety: "注意台阶",
             parking: "有",
-            parkingNote: "排版测试停车资料；不代表真实场地",
+            parkingNote: "请在指定区域停车并保持通道畅通。",
             toilet: "有",
-            toiletNote: "排版测试洗手间资料；不代表真实场地",
-            platform: "排版测试平台",
-            horizon: "排版测试地平线",
+            toiletNote: "洗手间随场地开放。",
+            platform: "示例观景平台",
+            horizon: "东侧视野较开阔",
             light: null,
-            signal: "排版测试信号",
+            signal: "部分区域信号较弱",
             camping: "不允许",
             contact: null,
-            detail: "仅用于覆盖完整正式点信息组件。",
+            detail: "夜间请结伴行动，随身带走垃圾。",
           },
           formalMedia: {
             site: spot.media.map((media) => media.id),

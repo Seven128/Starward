@@ -152,7 +152,7 @@ test("development start waits for confirmed phone delivery before binding a sess
   const source = await fixture(t);
   const official = officialDriver();
   const output = collect();
-  await main(["start", "--project", source], {
+  await main(["start", "--project", source, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     emit: output.emit,
@@ -193,7 +193,7 @@ test("physical-device generation rejects a compiled loopback API origin before o
   );
   const official = officialDriver();
   await assert.rejects(
-    main(["start", "--project", source], {
+    main(["start", "--project", source, "--delivery", "auto"], {
       official,
       snapshotOptions: { settleMilliseconds: 0 },
       emit: () => {},
@@ -211,7 +211,7 @@ test("physical-device generation rejects a malformed compiled API origin before 
   );
   const official = officialDriver();
   await assert.rejects(
-    main(["start", "--project", source], {
+    main(["start", "--project", source, "--delivery", "auto"], {
       official,
       snapshotOptions: { settleMilliseconds: 0 },
       emit: () => {},
@@ -229,7 +229,7 @@ test("physical-device generation rejects Taro experimental CompileMode artifacts
   );
   const official = officialDriver();
   await assert.rejects(
-    main(["start", "--project", source], {
+    main(["start", "--project", source, "--delivery", "auto"], {
       official,
       snapshotOptions: { settleMilliseconds: 0 },
       emit: () => {},
@@ -244,7 +244,7 @@ test("prepared generation is output-only and keeps every tab-bar asset resolvabl
   const sourceConfigBytes = await readFile(configPath);
   const official = officialDriver();
   const output = collect();
-  await main(["start", "--project", source], {
+  await main(["start", "--project", source, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     emit: output.emit,
@@ -313,7 +313,7 @@ test("refresh accepts a new generation, destroys the old session and stale captu
   const source = await fixture(t, "A");
   const official = officialDriver();
   const started = collect();
-  await main(["start", "--project", source], {
+  await main(["start", "--project", source, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     emit: started.emit,
@@ -336,7 +336,7 @@ test("refresh accepts a new generation, destroys the old session and stale captu
     'Page({data:{label:"B"}});\n',
   );
   const refreshed = collect();
-  await main(["refresh", "--feedback", first.feedbackRun], {
+  await main(["refresh", "--feedback", first.feedbackRun, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     emit: refreshed.emit,
@@ -371,7 +371,7 @@ test("a half-written source is retried and only the coherent generation reaches 
   const official = officialDriver();
   const output = collect();
   let changed = false;
-  await main(["start", "--project", source], {
+  await main(["start", "--project", source, "--delivery", "auto"], {
     official,
     snapshotOptions: {
       settleMilliseconds: 0,
@@ -402,7 +402,7 @@ test("continual source drift fails boundedly and preserves the source project", 
   const source = await fixture(t, "A");
   let revision = 0;
   await assert.rejects(
-    main(["start", "--project", source], {
+    main(["start", "--project", source, "--delivery", "auto"], {
       official: officialDriver(),
       snapshotOptions: {
         attempts: 2,
@@ -426,7 +426,7 @@ test("official failure stops at a redacted manual boundary and exact confirmatio
   const source = await fixture(t);
   const official = officialDriver({ fail: true });
   const output = collect();
-  await main(["start", "--project", source], {
+  await main(["start", "--project", source, "--delivery", "auto"], {
     official,
     snapshotOptions: { settleMilliseconds: 0 },
     emit: output.emit,

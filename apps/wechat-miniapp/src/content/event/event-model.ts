@@ -16,6 +16,31 @@ export function eventKindLabel(event: AstronomicalEventOccurrence) {
   return `${event.kind === "LUNAR_ECLIPSE" ? "月食" : "日食"} · ${event.code}`;
 }
 
+export function eventDatePresentation(event: AstronomicalEventOccurrence) {
+  if (event.kind === "METEOR_SHOWER" && event.annualReference) return {
+    ticket: "参考", date: "常年参考日（UTC）", range: "监测参考期",
+    precision: "UTC 日期来自常年监测参考，不是当年精确极大或特殊爆发预报。",
+  };
+  if (event.kind !== "METEOR_SHOWER") return {
+    ticket: "食甚", date: "食甚日期（北京时间）", range: "事件期",
+    precision: "目录日期采用北京时间；食相按 UTC 时刻计算，所在地时刻与可见性见下方。",
+  };
+  return { ticket: "极大", date: "目录极大日期", range: "活动期",
+    precision: event.peakAtUtc ? "极大时刻按来源精度保存，不代表所在地可见性。" : "年度目录仅提供日期，未提供极大时分。" };
+}
+
+export function eventPreviewDays(event: Pick<AstronomicalEventOccurrence, "activeStartDate" | "activeEndDate">) {
+  const start = Date.parse(`${event.activeStartDate}T12:00:00Z`);
+  const end = Date.parse(`${event.activeEndDate}T12:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return [];
+  return Array.from({ length: Math.floor((end - start) / 86_400_000) + 1 }, (_, index) => {
+    const date = new Date(start + index * 86_400_000);
+    return { value: date.toISOString().slice(0, 10),
+      weekday: ["日", "一", "二", "三", "四", "五", "六"][date.getUTCDay()]!,
+      day: `${date.getUTCMonth() + 1}/${date.getUTCDate()}` };
+  });
+}
+
 export function eclipseKindLabel(kind: "PENUMBRAL" | "PARTIAL" | "ANNULAR" | "TOTAL") {
   return ({ PENUMBRAL: "半影", PARTIAL: "偏食", ANNULAR: "环食", TOTAL: "全食" } as const)[kind];
 }

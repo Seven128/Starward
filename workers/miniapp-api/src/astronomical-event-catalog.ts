@@ -8,6 +8,7 @@ import {
   METEOR_EVENT_CATALOG_VERSION,
   METEOR_EVENTS_2026,
   meteorCatalogSource,
+  meteorReferenceOverlapsLocalDate,
 } from "./meteor-event-catalog.ts";
 import {
   MINIAPP_EVENT_PROJECTION_ALGORITHM,
@@ -38,7 +39,7 @@ export function astronomicalEventByOccurrenceId(occurrenceId: string) {
 
 export function activeAstronomicalEvents(localDate: string) {
   return ASTRONOMICAL_EVENTS_2026.filter(event =>
-    localDate >= event.activeStartDate && localDate <= event.activeEndDate,
+    event.kind === "METEOR_SHOWER" ? meteorReferenceOverlapsLocalDate(event, localDate) : localDate >= event.activeStartDate && localDate <= event.activeEndDate,
   );
 }
 
@@ -57,7 +58,7 @@ export function eclipseCatalogSource(localDate: string): SourceSummary {
     validTo: `${localDate.slice(0, 4)}-12-31T23:59:59.999Z`,
     state: "FRESH",
     confidence: 0.99,
-    precision: `UTC 食甚与食相由 ${MINIAPP_EVENT_PROJECTION_ALGORITHM} 计算；显示到分钟`,
+    precision: `食甚与食相由 ${MINIAPP_EVENT_PROJECTION_ALGORITHM} 按 UTC 计算；目录日期采用北京时间，所在地时刻单独换算并显示到分钟`,
     limitations: [
       "全球食事件目录是锁定算法的计算结果，不是实时观测公告",
       "地点可见性必须另行结合观察者坐标、太阳或月球高度计算",

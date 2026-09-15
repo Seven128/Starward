@@ -32,10 +32,11 @@ const TONE_PRIORITY: Readonly<Record<NotificationTone, number>> = {
   info: 2,
   success: 1,
 };
+let notificationSequence = 0;
 
 function identity(intent: NotificationIntent) {
   return (
-    intent.dedupeKey ??
+    (intent.dedupeKey ? [intent.owner, intent.placement, intent.dedupeKey].join("\u001f") : undefined) ??
     [
       intent.owner,
       intent.placement,
@@ -67,7 +68,7 @@ export function enqueueNotification(
       }
     : {
         ...intent,
-        id: intent.id ?? `notification-${now}-${queue.length}`,
+        id: intent.id ?? `notification-${now}-${++notificationSequence}`,
         createdAt: now,
         occurrences: 1,
       };
@@ -89,7 +90,19 @@ export function selectNotification(
   placement: NotificationPlacement,
   owner?: string,
 ) {
-  const eligible = queue
+  const eligible = selectNotifications(queue, placement, owner);
+  return {
+    current: eligible[0] ?? null,
+    residualCount: Math.max(0, eligible.length - 1),
+  };
+}
+
+export function selectNotifications(
+  queue: readonly NotificationRecord[],
+  placement: NotificationPlacement,
+  owner?: string,
+) {
+  return queue
     .filter(
       (item) =>
         item.placement === placement &&
@@ -100,8 +113,4 @@ export function selectNotification(
         TONE_PRIORITY[right.tone] - TONE_PRIORITY[left.tone] ||
         right.createdAt - left.createdAt,
     );
-  return {
-    current: eligible[0] ?? null,
-    residualCount: Math.max(0, eligible.length - 1),
-  };
 }

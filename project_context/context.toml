@@ -1,4 +1,10 @@
 default_files = []
+
+[[context]]
+path = "project_context/external-capabilities.md"
+role = "architecture"
+read_policy = "on-demand"
+triggers = ["external capabilities", "provider selection", "外部能力", "方案选型", "供应商", "成本预期"]
 # Schema v5 optional Context routing. Only global.md is default body text.
 # Keep only near-universal recovery facts in the default path; route specialized
 # facts through registered on-demand nodes and widen reads through bounded search.

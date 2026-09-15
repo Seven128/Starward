@@ -14,8 +14,8 @@ export function parseArguments(argv) {
   const specifications = {
     help: { required: [], optional: [] },
     doctor: { required: [], optional: ["cli"] },
-    start: { required: ["project"], optional: ["cli", "port"] },
-    refresh: { required: ["feedback"], optional: ["cli", "port"] },
+    start: { required: ["project"], optional: ["cli", "port", "delivery"] },
+    refresh: { required: ["feedback"], optional: ["cli", "port", "delivery"] },
     preview: { required: ["feedback"], optional: ["cli", "port"] },
     bind: { required: ["feedback", "confirm"], optional: [] },
     stop: { required: ["feedback"], optional: [] },
@@ -46,5 +46,7 @@ export function parseArguments(argv) {
       fail("port_invalid");
     options.port = port;
   }
+  if (options.delivery !== undefined && !["qr", "auto"].includes(options.delivery))
+    fail("delivery_invalid");
   return { action, options };
 }

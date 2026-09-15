@@ -29,8 +29,8 @@ const validObservationContext = {
   eventInstanceId: null,
   targetProfile: "DAILY",
   weatherView: {
-    primaryPolicy: "synthetic-policy",
-    comparisonModels: ["synthetic-model"],
+    primaryPolicy: "QWEATHER",
+    comparisonModels: [],
     selectedModel: null,
     cloudLayer: "TOTAL",
   },
@@ -66,6 +66,16 @@ function loadStore(storage: { value: unknown; failWrites?: boolean } = { value: 
   }, { timeout: 1000 });
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
+
+test("legacy provider selections disappear on restart while the exact location and time remain recoverable", () => {
+  const legacy = { ...validObservationContext, weatherView: { primaryPolicy: "OPEN_METEO", comparisonModels: ["ecmwf"], selectedModel: "ecmwf", cloudLayer: "LOW" } };
+  const { store } = loadStore({ value: { observationContext: legacy } });
+  const restored = store.getState().observationContext!;
+  assert.ok(restored);
+  assert.equal(restored.contextId, legacy.contextId); assert.equal(restored.selectedAtUtc, legacy.selectedAtUtc);
+  assert.deepEqual(JSON.parse(JSON.stringify(restored.location)), legacy.location);
+  assert.deepEqual(JSON.parse(JSON.stringify(restored.weatherView)), { primaryPolicy: "QWEATHER", comparisonModels: [], selectedModel: null, cloudLayer: "TOTAL" });
+});
 
 test("temporary cache reset is synchronous but reports durable write success only after native completion", async () => {
   for (const failWrites of [false, true]) {

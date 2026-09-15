@@ -1,9 +1,10 @@
 import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, type PlanReminder } from "@starward/miniapp-contracts";
+import { distanceMeters } from "@starward/coordinate-system";
 import { PlanReminderEditor } from "./plan-reminder-editor";
 import { confirmPlanEditorLeave } from "./leave-editor";
 import { planChecklistStorageKey } from "./plan-checklist";
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro, { useDidShow, useRouter } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Button, Picker, ScrollView, Text, Textarea, View } from "@tarojs/components";
 import { useEffect, useId, useRef, useState } from "react";
 import {
@@ -23,7 +24,7 @@ import {
   currentDraftUserId,
   clearObservationPlanSaveRecovery,
   deleteObservationPlan,
-  estimateSpotRoute,
+  getSpotSite,
   getAstronomicalEvents,
   getMapScene,
   getPlans,
@@ -42,12 +43,12 @@ import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey as scope
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { PlanTimingFields, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel } from "./plan-travel-fields";
-import { checkPlanArrival } from "./plan-arrival";
 import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { planContextIdentity, PlanSaveRecoveryError } from "@/services/plan-save-retry";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
+import { eventDatePresentation } from "@/content/event/event-model";
 import "./index.scss";
 
 function today(timezone = "Asia/Shanghai") {
@@ -68,7 +69,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     ? [requestedEventOccurrenceId] : ids;
   const mountId = useId();
   const [, refreshIdentity] = useState(0);
-  useDidShow(() => refreshIdentity((value) => value + 1));
+  const [pageVisible, setPageVisible] = useState(true);
+  useDidShow(() => { setPageVisible(true); refreshIdentity((value) => value + 1); });
+  useDidHide(() => { setPageVisible(false); useAppStore.getState().clearNotifications("plan"); });
   const planOwner = currentDraftUserId();
   const formOwner = useRef(planOwner);
   formOwner.current ??= planOwner;
@@ -77,6 +80,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     queryFn: (signal) => getPlans(signal, planOwner ?? undefined),
     staleTime: 15_000,
     throwOnRefetchError: true,
+    enabled: pageVisible,
   });
   const plans = planQuery.data?.data.plans ?? [];
   const reminderNotifications = planQuery.data?.data.reminderNotifications ?? [];
@@ -193,7 +197,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       if (scopedDraftUserId() !== requestingOwner) throw new Error("账号已变化，请重新打开计划。");
       return { ...response, owner: requestingOwner };
     },
-    enabled: Boolean(scopedDraftUserId() && (observationContext || planSnapshot || requestedSpotId)),
+    enabled: pageVisible && Boolean(scopedDraftUserId() && (observationContext || planSnapshot || requestedSpotId)),
     staleTime: 60_000,
   });
   const activeContext = contextQuery.data?.data ?? null;
@@ -215,7 +219,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         activeContext!.weatherView.cloudLayer,
         signal,
       ),
-    enabled: Boolean(activeContext),
+    enabled: pageVisible && Boolean(activeContext),
     staleTime: 60_000,
   });
   const formalSpots = spotsQuery.data?.data.spots ?? [];
@@ -245,11 +249,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     withRequestedEvent(restoredDraft?.eventOccurrenceIds ?? existing?.eventOccurrenceIds ?? []),
   );
   const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [eventModalPresent, setEventModalPresent] = useState(false);
   const [eventDetailId, setEventDetailId] = useState<string | null>(null);
   const eventsQuery = useResourceQuery({
     queryKey: ["astronomical-events"],
     queryFn: getAstronomicalEvents,
     staleTime: 6 * 60 * 60 * 1000,
+    enabled: pageVisible,
   });
   const [saving, setSaving] = useState(false);
   const [checklistSaving, setChecklistSaving] = useState(false);
@@ -259,33 +265,18 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const mutationBusy = useRef(false);
   const planRouteOrigin = activePlan?.contextSnapshot.schemaVersion === "observation-context-snapshot-v2"
     ? activePlan.contextSnapshot.routeOrigin?.displayName ?? null : null;
-  const routeEstimateEligible = planTravelMatchesRouteOrigin(activePlan?.travel, planRouteOrigin);
-  const routeQuery = useResourceQuery({
+  const distanceOriginMatches = planTravelMatchesRouteOrigin(activePlan?.travel, planRouteOrigin);
+  const siteOverviewQuery = useResourceQuery({
     queryKey: [
-      "plan-route-estimate",
-      activeContext?.contextId,
-      activeContext?.contextFingerprint,
-      activeContext?.revision,
+      "plan-site-facts",
       selectedSpotId,
-      activePlan?.travel?.mode,
-      activePlan?.travel?.origin,
-      activePlan?.timing?.departureLocalDate,
-      activePlan?.timing?.departureLocalTime,
     ],
     queryFn: (signal) =>
-      estimateSpotRoute(
-        activeContext!.contextId,
+      getSpotSite(
         selectedSpotId!,
         signal,
-        activePlan!.travel!.mode,
-        activePlan!.timing
-          ? {
-              localDate: activePlan!.timing.departureLocalDate,
-              localTime: activePlan!.timing.departureLocalTime,
-            }
-          : undefined,
       ),
-    enabled: Boolean(activeContext && selectedSpotId && routeEstimateEligible),
+    enabled: pageVisible && Boolean(activePlan && selectedSpotId && activePlan.spotId === selectedSpotId),
     staleTime: 60_000,
   });
   const skyQuery = useResourceQuery({
@@ -298,9 +289,40 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     ],
     queryFn: (signal) =>
       getSkyReport(activePlan!.spotId, activeContext!.contextId, signal),
-    enabled: Boolean(activePlan && activeContext),
+    enabled: pageVisible && Boolean(activePlan && activeContext),
     staleTime: 60_000,
   });
+  const planEventNoticeKey = `plan-editor-resource-failed:${activePlanId ?? requestedPlanId ?? "new"}:events`;
+  useEffect(() => {
+    if (!eventModalOpen) return;
+    const state = useAppStore.getState();
+    const prior = state.notifications.find(item => item.owner === "plan" && item.placement === "floating" && item.dedupeKey === planEventNoticeKey);
+    if (prior) state.dismissNotification(prior.id);
+  }, [eventModalOpen, planEventNoticeKey]);
+  useEffect(() => {
+    if (!pageVisible) return;
+    const failed = planQuery.isError || planQuery.refreshError || planQuery.data?.dataState === "STALE_USABLE"
+      ? ["计划数据异常", "观星计划暂时无法同步，可在页面中重试。", "plans"]
+      : contextQuery.isError || contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE"
+        ? ["观测条件数据异常", "计划使用的地点与时间资料暂时无法更新，草稿仍会保留。", "context"]
+        : spotsQuery.isError || spotsQuery.refreshError || spotsQuery.data?.dataState === "STALE_USABLE"
+          ? ["地点数据异常", "正式观星点列表暂时无法更新，可在页面中重试。", "spots"]
+          : !eventModalOpen && !eventModalPresent && (eventsQuery.isError || eventsQuery.refreshError || eventsQuery.data?.dataState === "STALE_USABLE")
+            ? ["事件数据异常", "天文事件目录暂时无法更新，已选事件仍会保留。", "events"]
+            : siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
+              ? ["场地数据异常", "计划地点的场地资料暂时无法更新，可稍后重试。", "site"]
+              : skyQuery.isError || skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE"
+                ? ["天气与夜空数据异常", "计划的天气与夜空资料暂时无法更新，出发前请重新核实。", "sky"]
+                : null;
+    if (!failed) return;
+    notify({ owner: "plan", placement: "floating", tone: "info",
+      title: failed[0]!, body: failed[1]!, dedupeKey: `plan-editor-resource-failed:${activePlanId ?? requestedPlanId ?? "new"}:${failed[2]}` });
+  }, [activePlanId, contextQuery.data?.dataState, contextQuery.isError, contextQuery.refreshError,
+    eventModalOpen, eventModalPresent, eventsQuery.data?.dataState, eventsQuery.isError, eventsQuery.refreshError, notify, pageVisible,
+    planQuery.data?.dataState, planQuery.isError, planQuery.refreshError, requestedPlanId,
+    siteOverviewQuery.data?.dataState, siteOverviewQuery.isError, siteOverviewQuery.refreshError,
+    skyQuery.data?.dataState, skyQuery.isError, skyQuery.refreshError,
+    spotsQuery.data?.dataState, spotsQuery.isError, spotsQuery.refreshError]);
   const hydratedPlanId = useRef<PlanId | null>(existing?.planId ?? null);
   const hydratedDraftScope = useRef(planDraftKey(scopedDraftUserId(), initialSelection.planId));
   const appliedContextDefaults = useRef(Boolean(restoredDraft));
@@ -483,12 +505,17 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       ? "最新修改未能存入本机草稿，离开会丢失这些修改。要继续离开吗？"
       : "修改尚未保存。已存入本机草稿的内容可在下次打开时继续编辑。", confirmText: "离开", cancelText: "继续编辑" })).confirm,
   });
-  const route = routeQuery.data?.data ?? null;
+  const siteRoute = siteOverviewQuery.data?.data.arrival ?? null;
   const sky = skyQuery.data?.data ?? null;
   const eventCatalog = eventsQuery.data?.data.events ?? [];
   const selectedSpot = formalSpots.find(
     (spot) => spot.spotId === activePlan?.spotId,
   );
+  const distanceOrigin = activePlan?.travel?.originLocation?.wgs84 ??
+    (activePlan?.travel?.originLocation !== null && distanceOriginMatches ? activeContext?.routeOrigin?.wgs84 : null);
+  const straightDistanceKm = selectedSpot && distanceOrigin
+    ? distanceMeters({ lat: distanceOrigin.latitude, lon: distanceOrigin.longitude },
+      { lat: selectedSpot.wgs84.latitude, lon: selectedSpot.wgs84.longitude }) / 1000 : null;
   const timezone =
     activeContext?.timezone ?? selectedSpot?.timezone ?? "Asia/Shanghai";
   const primaryWindow = observingWindowLabel(
@@ -499,7 +526,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     sky?.decision.skyOpportunity.backupWindow,
     timezone,
   );
-  const arrivalCheck = activePlan ? checkPlanArrival(activePlan, route?.durationMinutes ?? null) : null;
   const announce = (
     tone: "error" | "warning" | "info" | "success",
     title: string,
@@ -616,7 +642,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         activeContext.contextId,
         draftBaseRevision.current,
         savingOwner,
-        planContextIdentity(activeContext),
+        planContextIdentity(activeContext, travel),
       );
       if (scopedDraftUserId() !== savingOwner) {
         announce("warning", "账户已变化", "保存请求已返回，请回到原账户核对计划；本页不会更新当前账户的数据。");
@@ -772,8 +798,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       data-od-id="my-plan"
       data-control="plan-editor"
     >
-      <FloatingNotificationHost />
-      <AstronomicalEventModal open={eventModalOpen} mode={editing ? "select-one" : "browse"}
+      {!eventModalPresent ? <FloatingNotificationHost /> : null}
+      <AstronomicalEventModal open={eventModalOpen} onPresenceChange={setEventModalPresent} mode={editing ? "select-one" : "browse"}
         context={activeContext} initialOccurrenceIds={eventOccurrenceIds} initialDetailId={eventDetailId}
         onClose={() => { setEventModalOpen(false); setEventDetailId(null); }}
         {...(editing ? { onConfirm: (occurrenceId: string | null) => {
@@ -801,10 +827,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           detail="天气与夜空数据尚未确认最新状态，当前时窗参考上次结果，出发前请重新核实。"
           recoveryLabel="重新获取天气与夜空"
           onRecover={() => void skyQuery.refetch()} /> : null}
-        {selectedSpotId && (routeQuery.refreshError || routeQuery.data?.dataState === "STALE_USABLE") ? <StatusPanel state="STALE"
-          detail="路线尚未确认最新状态，当前距离和预计时间沿用上次结果。"
-          recoveryLabel="重新获取路线"
-          onRecover={() => void routeQuery.refetch()} /> : null}
         {editing && (spotsQuery.refreshError || spotsQuery.data?.dataState === "STALE_USABLE") ? <StatusPanel state="STALE"
           detail="地点列表尚未确认最新状态，暂时显示上次列表，当前选择和输入已保留。"
           recoveryLabel="重新获取地点"
@@ -821,7 +843,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         </View>
         {planQuery.isError && !activePlan ? (
           <StatusPanel
-            state="ERROR"
+            state="EMPTY"
             detail={`计划暂时无法加载：${errorMessage(planQuery.error)}`}
             recoveryLabel="重试"
             onRecover={() => void planQuery.refetch().catch(() => {})}
@@ -909,7 +931,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 const event = eventCatalog.find(item => item.occurrenceId === id);
                 return <Button key={id} className="plan-event-row" onClick={() => { setEventDetailId(id); setEventModalOpen(true); }}>
                   <Text>{event?.displayName ?? "事件资料暂不可用"}</Text>
-                  <Text className="type-caption">{event ? `峰值参考 ${event.peakDate}` : id}</Text>
+                  <Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : id}</Text>
                 </Button>;
               })}
               {!activePlan.eventOccurrenceIds?.length ? <Text className="type-caption">尚未关联天象事件</Text> : null}
@@ -935,94 +957,39 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   {activePlan.travel ? planTravelModeLabel(activePlan.travel.mode) : "待补充"}
                 </Text>
               </View>
-              {!activePlan.travel ? (
-                <StatusPanel state="PARTIAL" detail="这条旧计划还没有出发地和交通方式；编辑后可补充。" />
-              ) : !routeEstimateEligible ? (
-                <StatusPanel state="PARTIAL"
-                  detail="已保存的出发地与当前路线起点不一致，暂不展示可能错误的路线结果。" />
-              ) : routeQuery.isPending ? (
-                <StatusPanel state="LOADING" detail="正在回读路线估算。" />
-              ) : routeQuery.isError ? (
-                <StatusPanel
-                  state="STALE"
-                  detail="路线动态暂不可用；计划、地点和检查项仍保留。"
-                  recoveryLabel="重试路线"
-                  onRecover={() => void routeQuery.refetch()}
-                />
-              ) : route ? (
-                <View className="plan-route__card">
-                  <View className="plan-route__timeline">
-                    <View className="plan-route__node">
-                      <View className="plan-route__dot" aria-hidden="true" />
-                      <View className="plan-route__node-copy">
-                        <Text className="plan-route__node-title">
-                          {activePlan.timing
-                            ? `${activePlan.timing.departureLocalDate} ${activePlan.timing.departureLocalTime} · ${activePlan.travel.origin}`
-                            : activePlan.travel.origin}
-                        </Text>
-                        <Text className="plan-route__node-detail">
-                          {route.durationMinutes != null
-                            ? `预计${planTravelModeLabel(activePlan.travel.mode)} ${route.durationMinutes} 分钟`
-                            : `${planTravelModeLabel(activePlan.travel.mode)}时间暂缺`}
-                        </Text>
-                      </View>
-                    </View>
-                    {arrivalCheck ? <View className="plan-route__node">
-                      <View className="plan-route__dot" aria-hidden="true" />
-                      <View className="plan-route__node-copy">
-                        <Text className="plan-route__node-title">预计 {arrivalCheck.arrivalLabel} 到达</Text>
-                        <Text className="plan-route__node-detail">
-                          {arrivalCheck.delayMinutes > 0
-                            ? `按当前路线将晚于观测开始约 ${arrivalCheck.delayMinutes} 分钟；仍可保留原计划。`
-                            : "按当前路线可在观测开始前到达；出发前仍需复核。"}
-                        </Text>
-                      </View>
-                    </View> : null}
-                    <View className="plan-route__node plan-route__node--summary">
-                      <View className="plan-route__dot" aria-hidden="true" />
-                      <View className="plan-route__node-copy">
-                        <Text className="plan-route__node-title">路线概览</Text>
-                        <Text className="plan-route__node-detail">
-                          {route.lastRoad || "末段道路信息暂缺"}
-                          {route.parkingGuidance
-                            ? ` · ${route.parkingGuidance}`
-                            : ""}
-                        </Text>
-                      </View>
-                      <Text className="plan-route__node-meta">
-                        {route.distanceKm != null
-                          ? `${route.distanceKm.toFixed(1)} km`
-                          : "—"}
+              <View className="plan-route__card">
+                <View className="plan-route__timeline">
+                  <View className="plan-route__node">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title">
+                        {activePlan.timing ? activePlan.timing.departureLocalDate + " " + activePlan.timing.departureLocalTime : "出发时间待补充"}
                       </Text>
-                    </View>
-                    <View className="plan-route__node">
-                      <View className="plan-route__dot" aria-hidden="true" />
-                      <View className="plan-route__node-copy">
-                        <Text className="plan-route__node-title">
-                          {activePlan.localTime} · {selectedSpot?.name ?? "正式观星点"}
-                        </Text>
-                        <Text className="plan-route__node-detail">
-                          计划观测时间；到达后仍需以现场开放与安全事实为准
-                        </Text>
-                      </View>
+                      <Text className="plan-route__node-detail">{activePlan.travel?.origin || "出发地待补充"}</Text>
                     </View>
                   </View>
-                  <Text className="plan-route__source-note">
-                    {route.kind === "UNAVAILABLE"
-                      ? "暂无可用路线；出发前请核实到达方式。"
-                      : route.kind === "STRAIGHT_LINE_ONLY"
-                        ? "当前仅有直线距离，不代表实际道路里程或用时。"
-                        : route.state === "FRESH"
-                          ? "路线结果来自当前上下文。"
-                          : "路线结果尚未确认最新状态；出发前请重新复核。"}
-                  </Text>
+                  <View className="plan-route__node plan-route__node--summary">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title">到达与停车信息</Text>
+                      <Text className="plan-route__node-detail">{siteRoute?.lastRoad || siteRoute?.parkingGuidance
+                        ? [siteRoute.lastRoad, siteRoute.parkingGuidance].filter(Boolean).join(" · ") : "暂无数据"}</Text>
+                    </View>
+                    {straightDistanceKm != null
+                      ? <Text className="plan-route__node-meta">直线 {straightDistanceKm.toFixed(1)} km</Text> : null}
+                  </View>
+                  <View className="plan-route__node">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title">{activePlan.localDate} {activePlan.localTime} · {selectedSpot?.name ?? "正式观星点"}</Text>
+                      <Text className="plan-route__node-detail">计划开始观测；到达后请核实现场开放与安全情况</Text>
+                    </View>
+                  </View>
                 </View>
-              ) : (
-                <StatusPanel
-                  state="PARTIAL"
-                  detail="暂无可用路线，请在出发前核实到达方式。"
-                />
-              )}
+                <Text className="plan-route__source-note">时间由你安排；直线距离不代表道路里程或用时。</Text>
+                {siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
+                  ? <SoftButton variant="ghost" label="重新获取场地信息" onClick={() => void siteOverviewQuery.refetch()} /> : null}
+              </View>
             </View>
             <View className="plan-section plan-notes" data-od-id="plan-notes">
               <View className="plan-section-heading"><Text className="type-section">备注</Text></View>
@@ -1086,7 +1053,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <View className="form-group plan-location-field">
               {!activeContext ? (
                 <StatusPanel
-                  state="ERROR"
+                  state="EMPTY"
                   detail="请先返回地图，让应用建立观测地点、日期与时区，再新建计划。"
                   recoveryLabel="返回地图"
                   onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
@@ -1098,7 +1065,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 />
               ) : contextQuery.isError ? (
                 <StatusPanel
-                  state="ERROR"
+                  state="EMPTY"
                   detail="观测条件暂时无法加载，计划草稿已保留。"
                   recoveryLabel="重试"
                   onRecover={() => void contextQuery.refetch()}
@@ -1107,7 +1074,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <StatusPanel state="LOADING" detail="正在加载正式观星点。" />
               ) : spotsQuery.isError ? (
                 <StatusPanel
-                  state="ERROR"
+                  state="EMPTY"
                   detail="观星点列表暂时无法加载，请重试。"
                   recoveryLabel="重试"
                   onRecover={() => void spotsQuery.refetch()}
@@ -1198,10 +1165,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <View className="plan-editor-form__heading">
               <Text className="type-section">出发安排</Text>
             </View>
-            <PlanTravelFields value={travel} disabled={saving || deleting}
+            <PlanTravelFields value={travel} disabled={saving || deleting} ownerKey={`${planOwner}:${activePlanId ?? "new"}`}
               onChange={(value) => { retainDraft({ travel: value }); setTravel(value); }} />
             <Text className="plan-form-footnote">
-              路线结果需要当前出发地与观星点匹配；{travel.mode === "TRANSIT" ? "公交会参考出发日期与时间，" : ""}估算不会改写计划时间。
+              出发地、交通方式和时间由你填写。出发前可通过微信地图核实到达方式。
             </Text>
             <View className="plan-editor-form__heading plan-editor-form__heading--row">
               <Text className="type-section">天文事件</Text>
@@ -1210,10 +1177,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               {eventOccurrenceIds.map(id => {
                 const event = eventCatalog.find(item => item.occurrenceId === id);
                 return <View key={id} className="plan-event-selection">
-                  <View><Text>{event?.displayName ?? "事件资料暂不可用"}</Text><Text className="type-caption">{event ? `峰值参考 ${event.peakDate}` : id}</Text></View>
+                  <View><Text>{event?.displayName ?? "事件资料暂不可用"}</Text><Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : id}</Text></View>
                 </View>;
               })}
-              {eventsQuery.isError ? <StatusPanel state="ERROR" detail="事件目录暂不可用；已选择的事件标识仍保留。" recoveryLabel="重试" onRecover={() => void eventsQuery.refetch()} /> : null}
+              {eventsQuery.isError || eventsQuery.refreshError || eventsQuery.data?.dataState === "STALE_USABLE" ? <StatusPanel
+                state={eventsQuery.isError ? "EMPTY" : "STALE"}
+                detail="事件目录暂不可用或尚未确认最新状态；已选择的事件标识仍保留。"
+                recoveryLabel="重试" onRecover={() => void eventsQuery.refetch()} /> : null}
               <SoftButton className="plan-event-picker" disabled={saving || deleting} label="打开天象事件目录" onClick={() => {
                 retainDraft({ eventOccurrenceIds });
                 setEventDetailId(null);

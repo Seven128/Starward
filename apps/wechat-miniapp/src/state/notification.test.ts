@@ -169,3 +169,24 @@ test("actual Settings callbacks use control state feedback and preserve unrelate
     assert.equal(selectNotification(queue, "floating", "settings").current, null);
   }
 });
+
+test("dedupe keys are scoped by owner and placement", () => {
+  const intent = { owner: "weather", placement: "floating" as const, tone: "error" as const, title: "请求失败", body: "暂无数据", dedupeKey: "request" };
+  let queue = enqueueNotification([], intent, 1);
+  queue = enqueueNotification(queue, { ...intent, owner: "terrain" }, 2);
+  queue = enqueueNotification(queue, { ...intent, placement: "inline" }, 3);
+  assert.equal(queue.length, 3);
+  queue = enqueueNotification(queue, { ...intent, body: "重试失败" }, 4);
+  assert.equal(queue.length, 3);
+  assert.equal(queue[0]!.occurrences, 2);
+});
+
+test("same-millisecond bursts retain unique dismissible identities at the queue bound", () => {
+  let queue: NotificationRecord[] = [];
+  for (let i = 0; i < 28; i++) queue = enqueueNotification(queue, {
+    owner: "weather", placement: "floating", tone: "error", title: `请求${i}失败`, body: "暂无数据",
+  }, 1000);
+  assert.equal(queue.length, 24);
+  assert.equal(new Set(queue.map(item => item.id)).size, 24);
+  assert.equal(dismissNotification(queue, queue[0]!.id).length, 23);
+});

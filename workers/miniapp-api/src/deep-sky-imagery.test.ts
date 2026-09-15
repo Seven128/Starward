@@ -1,45 +1,74 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import test from "node:test";
-import { DeepSkyImageryService, skyViewImageUrl } from "./deep-sky-imagery.ts";
+import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 
-const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
+const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
 
-test("SkyView request is pinned to numeric J2000 WISE settings and catalog identity", () => {
-  const request = skyViewImageUrl("M:31", "MEDIUM");
-  const url = new URL(request.url);
-  assert.equal(url.origin, "https://skyview.gsfc.nasa.gov");
-  assert.equal(url.searchParams.get("Survey"), "WISE 12");
-  assert.equal(url.searchParams.get("Coordinates"), "J2000");
-  assert.equal(url.searchParams.get("Projection"), "Tan");
-  assert.equal(url.searchParams.get("Scaling"), "LogLog");
-  assert.match(url.searchParams.get("Position") ?? "", /^\d+(?:\.\d+)?,-?\d/u);
-  assert.ok(request.fieldDegrees >= 0.75 && request.fieldDegrees <= 8);
-  assert.throws(() => skyViewImageUrl("HIP:32349", "MEDIUM"), /not_found/u);
+async function fixture() {
+  const root = await mkdtemp(join(tmpdir(), "starward-allwise-"));
+  await mkdir(join(root, "M-31"));
+  for (const level of ["overview", "medium", "detail"])
+    await writeFile(join(root, "M-31", `M-31-${level}.jpg`), jpeg);
+  const level = { fieldDegrees: 4, pixels: 512,
+    sha256: createHash("sha256").update(jpeg).digest("hex"), bytes: jpeg.length, validFraction: 1 };
+  const manifest = {
+    schemaVersion: "allwise-w3-deep-sky-publication-v1", publicationId: "trial",
+    catalogVersion: "opengc-messier-deep-sky.v20260501",
+    catalogSha256: "fixture",
+    source: { band: "W3", wavelengthMicrometers: 12 },
+    processing: { runtimeNetwork: "forbidden", orientation: "north-up/east-left" }, entryCount: 1,
+    entries: [{ objectRef: "M:31", center: { raDeg: 10.684791666666666, decDeg: 41.26905555555555, frame: "ICRS J2000" }, orientation: "north-up/east-left", levels: {
+      OVERVIEW: { ...level, file: "M-31/M-31-overview.jpg", pixels: 256 },
+      MEDIUM: { ...level, file: "M-31/M-31-medium.jpg" },
+      DETAIL: { ...level, file: "M-31/M-31-detail.jpg", fieldDegrees: 1.9 },
+    } }],
+  };
+  const manifestPath = join(root, "manifest.json");
+  await writeFile(manifestPath, JSON.stringify(manifest));
+  return { root, manifestPath, manifestUrl: pathToFileURL(manifestPath) };
+}
+
+test("published AllWISE service reads a verified local W3 asset without a runtime transport", async () => {
+  const { manifestUrl } = await fixture();
+  const result = await new DeepSkyImageryService(manifestUrl).get("M:31", "MEDIUM");
+  assert.deepEqual(result.bytes, jpeg);
+  assert.equal(result.fieldDegrees, 4);
+  assert.equal(result.pixelSize, 512);
+  assert.equal(result.sourceLabel, "NASA/IPAC IRSA - AllWISE W3 12um");
 });
 
-test("overview imagery keeps large Messier objects within SkyView's reliable field size", () => {
-  const request = skyViewImageUrl("M:31", "OVERVIEW");
-  assert.equal(request.fieldDegrees, 4);
-  assert.equal(request.pixelSize, 256);
+test("default publication serves representative galaxy and nebula detail assets", async () => {
+  const service = new DeepSkyImageryService();
+  const results = await Promise.all(["M:31", "M:42", "M:101"].map(reference => service.get(reference, "DETAIL")));
+  for (const result of results) {
+    assert.ok(result.bytes.length > 1_000);
+    assert.equal(result.pixelSize, 512);
+    assert.equal(result.sourceLabel, "NASA/IPAC IRSA - AllWISE W3 12um");
+  }
+  assert.equal(new Set(results.map(result => createHash("sha256").update(result.bytes).digest("hex"))).size, results.length);
 });
 
-test("image service coalesces requests, validates JPEG and returns isolated buffers", async () => {
-  let calls = 0;
-  const service = new DeepSkyImageryService(async () => {
-    calls += 1;
-    return new Response(jpeg, { status: 200, headers: { "content-type": "image/jpeg" } });
-  });
-  const [left, right] = await Promise.all([service.get("M:31"), service.get("M:31")]);
-  assert.equal(calls, 1);
-  assert.deepEqual(left.bytes, Buffer.from(jpeg));
-  assert.notEqual(left.bytes, right.bytes);
-  left.bytes[0] = 0;
-  assert.equal((await service.get("M:31")).bytes[0], 0xff);
-});
-
-test("image service rejects invalid levels and provider payloads", async () => {
-  const service = new DeepSkyImageryService(async () =>
-    new Response("not an image", { status: 200, headers: { "content-type": "text/html" } }));
+test("publication rejects missing identities, invalid levels, cross-object paths, traversal, and altered bytes", async () => {
+  const absent = await fixture();
+  const service = new DeepSkyImageryService(absent.manifestUrl);
+  await assert.rejects(service.get("M:42"), /not_published/u);
   await assert.rejects(service.get("M:31", "FULL"), /level_invalid/u);
-  await assert.rejects(service.get("M:31"), /invalid_content_type/u);
+  const traversal = await fixture();
+  const value = JSON.parse(await readFile(traversal.manifestPath, "utf8"));
+  value.entries[0].levels.MEDIUM.file = "../outside.jpg";
+  await writeFile(traversal.manifestPath, JSON.stringify(value));
+  await assert.rejects(new DeepSkyImageryService(traversal.manifestUrl).get("M:31"), /publication_invalid/u);
+  const crossed = await fixture();
+  const crossedValue = JSON.parse(await readFile(crossed.manifestPath, "utf8"));
+  crossedValue.entries[0].levels.MEDIUM.file = "M-42/M-42-medium.jpg";
+  await writeFile(crossed.manifestPath, JSON.stringify(crossedValue));
+  await assert.rejects(new DeepSkyImageryService(crossed.manifestUrl).get("M:31"), /publication_invalid/u);
+  const altered = await fixture();
+  await writeFile(join(altered.root, "M-31", "M-31-medium.jpg"), Buffer.from([0xff, 0xd8, 1, 0xff, 0xd9]));
+  await assert.rejects(new DeepSkyImageryService(altered.manifestUrl).get("M:31"), /asset_invalid/u);
 });

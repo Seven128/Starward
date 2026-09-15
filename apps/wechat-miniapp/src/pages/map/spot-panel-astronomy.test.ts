@@ -4,14 +4,11 @@ import type { HourlySkyRow } from "@starward/miniapp-contracts";
 import {
   exactSkyRow,
   formatMetric,
-  modelConsistencyLabel,
   windDirectionLabel,
 } from "./spot-panel-astronomy";
 
 const row = {
   at: "2026-09-12T13:00:00.000Z",
-  modelConsistencyLabel: "HIGH",
-  modelSpreadPercent: 0,
 } as HourlySkyRow;
 
 test("the panel uses only the exact selected SkyReport slice", () => {
@@ -25,7 +22,6 @@ test("astronomy formatting preserves measured zero and explicit unavailable valu
   assert.equal(formatMetric(9.25, " km", 1), "9.3 km");
   assert.equal(formatMetric(null, "%"), "暂无数据");
   assert.equal(formatMetric(Number.NaN, "%"), "暂无数据");
-  assert.equal(modelConsistencyLabel(row), "高（云量分歧 0%）");
 });
 
 test("wind direction wraps into the same eight named sectors", () => {

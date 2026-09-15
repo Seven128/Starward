@@ -37,7 +37,7 @@ export function deviceFailureSummary(stage: DeviceFailureStage, error?: unknown,
     `http=${typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599 ? status : "none"}`].join("\n");
 }
 
-/** One modal per JS runtime; never await it in the transport or queue more dialogs. */
+/** One sanitized report per JS runtime; never await diagnostics in the transport. */
 export function createDeviceFailureReporter(present: (content: string) => unknown) {
   let reported = false;
   return (stage: DeviceFailureStage, error?: unknown, status?: number): void => {

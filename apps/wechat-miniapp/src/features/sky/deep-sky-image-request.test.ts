@@ -13,6 +13,7 @@ const asset: DeepSkyImageAsset = {
   fieldDegrees: 4,
   tempFilePath: "/tmp/m31-medium.jpg",
 };
+const responseHeader = { "X-Starward-Image-Field-Degrees": "4" };
 
 function harness() {
   let requestOptions: DeepSkyImageRequestOptions | null = null;
@@ -23,7 +24,7 @@ function harness() {
   const ready: DeepSkyImageAsset[] = [];
   let errors = 0;
   const cancel = startDeepSkyImageRequest({
-    asset,
+    asset: { reference: asset.reference, level: asset.level, tempFilePath: asset.tempFilePath },
     url: "https://example.invalid/m31",
     request: (options) => {
       requestOptions = options;
@@ -53,7 +54,7 @@ test("selection or level changes abort and ignore every late request callback", 
   const h = harness();
   h.cancel();
   h.cancel();
-  h.request.success({ statusCode: 200, data: new ArrayBuffer(4) });
+  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
   h.request.fail();
   assert.equal(h.aborts, 1);
   assert.equal(h.cancels, 1);
@@ -65,7 +66,7 @@ test("selection or level changes abort and ignore every late request callback", 
 
 test("leaving during file persistence prevents the old asset becoming ready", () => {
   const h = harness();
-  h.request.success({ statusCode: 200, data: new ArrayBuffer(4) });
+  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
   assert.ok(h.write);
   h.cancel();
   h.write.success();
@@ -78,7 +79,7 @@ test("leaving during file persistence prevents the old asset becoming ready", ()
 
 test("only active binary success publishes while active failures remain retryable", () => {
   const success = harness();
-  success.request.success({ statusCode: 200, data: new ArrayBuffer(4) });
+  success.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
   assert.ok(success.write);
   success.write.success();
   success.cancel();
@@ -88,10 +89,10 @@ test("only active binary success publishes while active failures remain retryabl
 
   for (const finish of [
     (h: ReturnType<typeof harness>) => h.request.success({ statusCode: 503, data: new ArrayBuffer(0) }),
-    (h: ReturnType<typeof harness>) => h.request.success({ statusCode: 200, data: "not binary" }),
+    (h: ReturnType<typeof harness>) => h.request.success({ statusCode: 200, data: "not binary", header: responseHeader }),
     (h: ReturnType<typeof harness>) => h.request.fail(),
     (h: ReturnType<typeof harness>) => {
-      h.request.success({ statusCode: 200, data: new ArrayBuffer(4) });
+      h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
       assert.ok(h.write);
       h.write.fail();
     },
@@ -103,5 +104,15 @@ test("only active binary success publishes while active failures remain retryabl
     assert.equal(failure.aborts, 0);
     assert.equal(failure.cancels, 0);
     assert.deepEqual(failure.ready, []);
+  }
+});
+
+test("missing or invalid angular metadata cannot publish a misregistered image", () => {
+  for (const header of [undefined, { "x-starward-image-field-degrees": "0" }, { "x-starward-image-field-degrees": "not-a-number" }]) {
+    const h = harness();
+    h.request.success({ statusCode: 200, data: new ArrayBuffer(4), ...(header ? { header } : {}) });
+    assert.equal(h.errors, 1);
+    assert.equal(h.write, null);
+    assert.deepEqual(h.ready, []);
   }
 });

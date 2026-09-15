@@ -25,7 +25,6 @@ function slice(
     darkness: 1,
     moonPenalty: 0,
     weatherTransmission: value,
-    modelConsistency: 0.9,
     lightPollution: value,
     horizonSuitability: 1,
     dataConfidence: 0.95,
@@ -62,6 +61,16 @@ test("sky opportunity uses per-slice geometric inputs and a real continuous wind
   assert.ok((result.opportunity.primaryWindow?.averageScore ?? 0) >= 80);
   assert.ok((result.opportunity.confidence ?? 0) < 1);
   assert.equal(result.slices.every((entry) => entry.eligible), true);
+});
+
+test("single-source confidence never uses a stale multi-model comparison factor", () => {
+  const base = [0, 30, 60, 90].map(minutes => slice(minutes));
+  const low = opportunity(base.map(row => ({ ...row, modelConsistency: 0 })));
+  const high = opportunity(base.map(row => ({ ...row, modelConsistency: 1 })));
+  assert.deepEqual(low.slices, high.slices);
+  assert.deepEqual(low.opportunity.windows, high.opportunity.windows);
+  assert.equal(low.opportunity.confidence, high.opportunity.confidence);
+  assert.ok((low.opportunity.confidence ?? 0) > 0);
 });
 
 test("window extraction applies hysteresis and does not let a marginal slice open a window", () => {

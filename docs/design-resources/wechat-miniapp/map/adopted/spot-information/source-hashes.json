@@ -5,15 +5,15 @@
   },
   {
     "name": "chapters.js",
-    "sha256": "ad5a0741c8472579133f3d266ce407aefc2354e0b18b00aeaa9b30387f9ea54c"
+    "sha256": "1ec81e73a3de23d4f8822b912b14a5ec6379c1bb8c9e3335acc44269c7587791"
   },
   {
     "name": "content.css",
-    "sha256": "cdfcfc0d968a058153bae6237b553695d5c2369e91a514bcfda3c4d27e6f7a06"
+    "sha256": "ba2311b525c52bc5523874c436bf90c0773c071e514533b769692cc113b5e50a"
   },
   {
     "name": "content.js",
-    "sha256": "4f7f7188b6d99aad1a63ff1673f3edba6e9f7cc7b9cd468dbe69683936485885"
+    "sha256": "b110f5d249a20361ea0a358a0385f2c66ec0fb8c94c91fcc23eaf088f66b1419"
   },
   {
     "name": "gestures.css",
@@ -25,7 +25,7 @@
   },
   {
     "name": "index.html",
-    "sha256": "adb8321f0c3104ba50a8458c7a93459c9275bb8c34ff0bef9489f6fabd216ac7"
+    "sha256": "832f45e7118595166db3d85c4e529c9cce75383dd47e1c78fc07349b053368bb"
   },
   {
     "name": "map-reference.jpg",

@@ -20,7 +20,7 @@
       "file": "chapters.js",
       "baseline": null,
       "baselineSha256": null,
-      "currentSha256": "aff64fd6b40ea2aef0731cb917b5ab46af0c501f095823c2a2086470c1e0b466",
+      "currentSha256": "695837bddbd02f50eac908f301193aee5408eeb01b4b09cd591f2ed36409e6d8",
       "change": "added"
     },
     {
@@ -76,7 +76,7 @@
       "file": "panel.html",
       "baseline": "docs/design-resources/wechat-miniapp/map/candidates/context-audit-2026-09-09/preview/panel.html",
       "baselineSha256": "895bd804e4f55c55823c9f64a9e8db11ac3d0ae785303e8ef0f12eedaaa6ae0f",
-      "currentSha256": "ccc1a5e3d16a9d453a8eea9f2c5c798bb9ed2f88a865ec7cc2fdff741b11def0",
+      "currentSha256": "a33d8763d1dd9940ed1c4fbb21119dc52dc698fb4a1eeae7f43ec64b558a011c",
       "change": "modified"
     },
     {

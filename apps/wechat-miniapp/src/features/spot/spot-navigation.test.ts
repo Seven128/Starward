@@ -16,10 +16,6 @@ function navigation(options: { warningFails?: boolean; copyFails?: boolean; rest
   assert.ok(declaration);
   let choose!: (value: { tapIndex: number }) => void, rejectChoice!: (error: unknown) => void;
   const choice = new Promise((resolve, reject) => { choose = resolve; rejectChoice = reject; });
-  let resolveRoute!: (value: unknown) => void;
-  const route = new Promise(resolve => { resolveRoute = resolve; });
-  let started!: () => void;
-  const routeStarted = new Promise<void>(resolve => { started = resolve; });
   const epoch = { current: 0 }, calls: string[] = [];
   const open = vm.runInNewContext(ts.transpileModule(cancelDeclaration + "\n" + declaration + "\nopenNavigation;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     Error,
@@ -32,11 +28,10 @@ function navigation(options: { warningFails?: boolean; copyFails?: boolean; rest
       openLocation: async () => calls.push("open"),
       setClipboardData: async () => { calls.push("copy"); if (options.copyFails) throw new Error("clipboard failure"); },
     },
-    estimateSpotRoute: () => { calls.push("estimate"); started(); return route; },
-    setRequestedRoute: () => calls.push("write-route"), setRoutePending() {},
+    estimateSpotRoute: () => { throw new Error("Retired route provider must not be called"); },
     notify: () => calls.push("notice"),
   }) as () => Promise<void>;
-  return { open, choose, rejectChoice, resolveRoute, routeStarted, calls, invalidate: () => epoch.current++ };
+  return { open, choose, rejectChoice, calls, invalidate: () => epoch.current++ };
 }
 
 test("a late navigation choice cannot open a location after leaving its context", async () => {
@@ -45,24 +40,16 @@ test("a late navigation choice cannot open a location after leaving its context"
   assert.deepEqual(page.calls, []);
 });
 
-test("a late route estimate cannot overwrite or open the former destination", async () => {
-  const page = navigation(); const pending = page.open();
-  page.choose({ tapIndex: 0 }); await page.routeStarted;
-  page.invalidate(); page.resolveRoute({ data: {}, dataState: "FRESH" }); await pending;
-  assert.deepEqual(page.calls, ["estimate"]);
-});
-
 test("menu failure never defaults to opening the external map", async () => {
   const page = navigation(); const pending = page.open();
   page.rejectChoice(new Error("unavailable")); await pending;
   assert.deepEqual(page.calls, ["notice"]);
 });
 
-test("a current route estimate still opens the chosen destination", async () => {
+test("choosing external navigation opens the destination without any route provider", async () => {
   const page = navigation(); const pending = page.open();
-  page.choose({ tapIndex: 0 }); await page.routeStarted;
-  page.resolveRoute({ data: {}, dataState: "FRESH" }); await pending;
-  assert.deepEqual(page.calls, ["estimate", "write-route", "open"]);
+  page.choose({ tapIndex: 0 }); await pending;
+  assert.deepEqual(page.calls, ["open"]);
 });
 
 test("failed safety warning stops navigation with a handled result", async () => {

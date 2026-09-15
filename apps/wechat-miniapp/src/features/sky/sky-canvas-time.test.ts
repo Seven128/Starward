@@ -35,15 +35,18 @@ test("production frame requests preserve exact data/time and clear expired or un
   const requests: { frame: any; hidden: boolean }[] = [];
   const states: string[] = [];
   const data = { skyScene: { state: "AVAILABLE" } };
-  const pose = { alphaDeg: 0, betaDeg: 90, gammaDeg: 0, sampledAt: 1 };
+  const pose = { alphaDeg: 0, betaDeg: 90, gammaDeg: 0, headingDeg: 0,
+    basis: projection.createSkyViewBasis(0, 90, 0)!, sampledAt: 1 };
   const sandbox = vm.createContext({
+    orientation: { snapshot: { presentationRevision: 0 } },
     useCallback: (fn: unknown) => fn,
     canvasLifecycle: { request: (frame: unknown, hidden: boolean) => requests.push({ frame, hidden }) },
     canvasDrawRevisionRef: { current: 0 }, skySceneInspectionOwnerRef: { current: "test" },
     previousCanvasModeRef: { current: "NIGHT" }, devicePoseRef: { current: pose },
     reportData: data, report: { data: { dataState: "FRESH" }, isError: false },
-    row: { at: committed }, sensorHeadingForScene: 0, devicePose: pose, mode: "NIGHT",
+    row: { at: committed }, sensorHeadingForScene: 0 as number | null, sensorBasis: pose.basis as projection.SkyViewBasis | null, devicePose: pose as typeof pose | null, mode: "NIGHT",
     verticalFovDeg: 45, canvasDeepSkyImage: null,
+    manualBasis: null, manualBasisRef: { current: null },
     canvasFrameInfo: { catalog: {}, frame: { state: "AVAILABLE", points: [] }, targetFrame: {},
       inspection: { spotId: "spot:test", frameAt: committed, catalogVersion: "test", starCount: 0 } },
     publishAcceptanceSkySceneInspection: (_owner: unknown, value: { state: string }) => states.push(value.state),
@@ -56,6 +59,16 @@ test("production frame requests preserve exact data/time and clear expired or un
   assert.equal(requests.at(-1)!.frame.frameAt, committed);
   assert.equal(requests.at(-1)!.frame.sceneReady, true);
   assert.equal(requests.at(-1)!.hidden, false);
+  sandbox.sensorHeadingForScene = null;
+  sandbox.sensorBasis = { right: [1, 0, 0], up: [0, -1, 0], forward: [0, 0, 1] };
+  sandbox.devicePose = { ...pose, basis: sandbox.sensorBasis };
+  request();
+  assert.equal(requests.at(-1)!.frame.sceneReady, true, "zenith needs a valid 3D basis, not an azimuth");
+  assert.equal(requests.at(-1)!.hidden, false);
+  sandbox.sensorBasis = null; request();
+  assert.ok(requests.at(-1)!.frame.pose, "compass quality cannot erase valid full attitude or a held view");
+  assert.equal(requests.at(-1)!.hidden, false);
+  sandbox.sensorBasis = pose.basis; sandbox.devicePose = pose; sandbox.sensorHeadingForScene = 0;
   for (const state of ["EXPIRED", "UNAVAILABLE"]) {
     sandbox.report.data.dataState = state; request();
     assert.equal(requests.at(-1)!.frame.data, undefined);
@@ -64,10 +77,10 @@ test("production frame requests preserve exact data/time and clear expired or un
   }
   sandbox.report.data.dataState = "FRESH"; sandbox.report.isError = true; request();
   assert.equal(requests.at(-1)!.frame.data, undefined);
-  sandbox.report.isError = false; sandbox.devicePoseRef.current = null; request();
+  sandbox.report.isError = false; sandbox.devicePose = null; request();
   assert.equal(requests.at(-1)!.frame.pose, null);
   assert.equal(requests.at(-1)!.frame.heading, null);
-  sandbox.devicePoseRef.current = pose; sandbox.mode = "OBSERVATION"; request();
+  sandbox.devicePose = pose; sandbox.mode = "OBSERVATION"; request();
   assert.equal(requests.at(-1)!.frame.mode, "OBSERVATION");
   assert.equal(requests.at(-1)!.hidden, true, "mode change hides the previous palette until native completion");
   assert.ok(states.every(state => state === "PENDING"), "queueing a draw is not completion evidence");
@@ -84,12 +97,27 @@ const report = {
   skyScene: { state: "UNAVAILABLE", frames: [] },
 };
 
+test("explicit manual basis draws the same celestial target without fabricating device pose", () => {
+  const arcs: number[][] = [];
+  const context = new Proxy({}, { get: (_object, key) => key === "arc"
+    ? (...args: number[]) => arcs.push(args) : () => undefined });
+  const basis = projection.createSkyViewBasis(0,90,0)!;
+  exported.drawSkyScene(context, report, committed, null, null, 400,800,"NIGHT",undefined,undefined,45,null,basis);
+  assert.equal(arcs.length,1);
+  const expected = projection.projectSkyDirection(0,10,basis,400,800,45)!;
+  assert.ok(Math.abs(arcs[0]![0]!-expected.x)<1e-6 && Math.abs(arcs[0]![1]!-expected.y)<1e-6);
+  arcs.length=0;
+  exported.drawSkyScene(context, report, committed, null, null, 400,800,"NIGHT");
+  assert.equal(arcs.length,0,"no explicit manual mode and no pose must still stay unavailable");
+});
+
 function draw(data: unknown, at: string, heading: number | null = 0) {
   const arcs: number[][] = [];
   const context = new Proxy({}, { get: (_object, key) => key === "arc"
     ? (...args: number[]) => arcs.push(args) : () => undefined });
   exported.drawSkyScene(context, data, at, heading,
-    { betaDeg: 90, gammaDeg: 0, sampledAt: 1 }, 400, 800, "NIGHT");
+    { alphaDeg: 0, betaDeg: 90, gammaDeg: 0, headingDeg: 0,
+      basis: projection.createSkyViewBasis(0, 90, 0)!, sampledAt: 1 }, 400, 800, "NIGHT");
   return arcs;
 }
 
@@ -106,7 +134,11 @@ test("production sky canvas never borrows top-level targets for missing or dupli
   assert.deepEqual(draw(report, "2026-09-05T13:10:00.000Z"), []);
   assert.deepEqual(draw({ ...report, targetFrames: undefined }, committed), []);
   assert.deepEqual(draw({ ...report, targetFrames: [report.targetFrames[0], report.targetFrames[0]] }, committed), []);
-  assert.deepEqual(draw(report, committed, null), []);
+  const arcs: number[][] = [];
+  const context = new Proxy({}, { get: (_object, key) => key === "arc"
+    ? (...args: number[]) => arcs.push(args) : () => undefined });
+  exported.drawSkyScene(context, report, committed, null, null, 400, 800, "NIGHT");
+  assert.deepEqual(arcs, []);
 });
 
 test("production sky canvas uses the same instant and projection for catalog stars and targets", () => {
@@ -116,7 +148,7 @@ test("production sky canvas uses the same instant and projection for catalog sta
       catalogVersion: "hipparcos-test-v1",
       catalogHash: "a".repeat(64),
       magnitudeLimit: 5,
-      entries: [{ sourceId: "HIP:1", objectRef: "HIP:1", displayName: "Alpha", magnitude: 2, magnitudeBand: "V", colorIndex: 1, colorIndexBand: "B-V" }],
+      entries: [{ sourceId: "HR:1", objectRef: "HR:1", displayName: "Alpha", magnitude: 2, magnitudeBand: "V", colorIndex: 1, colorIndexBand: "B-V" }],
     },
     frames: [
       { at: committed, state: "AVAILABLE", points: [[0, 0, 10]] },

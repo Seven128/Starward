@@ -130,6 +130,24 @@ test("weather expiry, official-alert validity and failures retry without expirin
   } finally { await h.service.onModuleDestroy(); }
 });
 
+test("sky carries the warning feed deadline even with no alerts or forecast coverage", async () => {
+  const h = await setup();
+  try {
+    const validTo = new Date(Date.now() + 60_000).toISOString();
+    let expected: unknown;
+    h.transformWeather(weather => {
+      const warningSource = { ...weather.source, id: "official-warning-feed", kind: "OFFICIAL_REFERENCE" as const,
+        state: "FRESH" as const, validTo };
+      expected = warningSource;
+      return { ...weather, value: [], warningState: "FRESH", warningSource, alerts: [], sources: [...weather.sources, warningSource] };
+    });
+    const result = await h.astronomy.compute(h.contexts[0]!);
+    assert.deepEqual(result.data.weatherEvidence.warningSource, expected);
+    assert.deepEqual(result.data.weatherEvidence.alerts, []);
+    assert.ok(result.data.skyScene.frames.length > 0);
+  } finally { await h.service.onModuleDestroy(); }
+});
+
 test("aborting one shared weather caller does not cancel its peer or retain private context", async () => {
   const h = await setup();
   try {

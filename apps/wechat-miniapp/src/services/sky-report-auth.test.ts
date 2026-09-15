@@ -26,23 +26,23 @@ const getSkyReport = vm.runInNewContext(
       key: string,
       operation: string,
       options: Record<string, unknown>,
-    ) => ({ key, operation, options }),
+    ) => Promise.resolve({ key, operation, options }),
+    projectAdoptedSkyCatalog: (value: unknown) => value,
   },
-) as (spotId: string, contextId: string) => {
+) as (spotId: string, contextId: string) => Promise<{
   options: { auth: string };
-};
+}>;
 
-test("pending proposal sky requires owner authentication", () => {
+test("pending proposal sky requires owner authentication", async () => {
   assert.equal(
-    getSkyReport("contribution:proposal-1", "context:one").options.auth,
+    (await getSkyReport("contribution:proposal-1", "context:one")).options.auth,
     "REQUIRED",
   );
 });
 
-test("published spot sky remains publicly readable", () => {
+test("published spot sky remains publicly readable", async () => {
   assert.equal(
-    getSkyReport("spot:published-1", "context:one").options.auth,
+    (await getSkyReport("spot:published-1", "context:one")).options.auth,
     "NONE",
   );
 });
-

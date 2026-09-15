@@ -1,16 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
-import vm from "node:vm";
-import ts from "typescript";
 import {
   createCompassLifecycle,
+  orientationStartFailureDiagnostic,
   type CompassEvent,
   type CompassPort,
   type DeviceMotionEvent,
 } from "./compass-lifecycle";
-import { calibrateSkyHeadingOffset } from "./sky-view-projection";
-
 function deferred() {
   let resolve!: () => void;
   let reject!: (error: unknown) => void;
@@ -20,197 +16,6 @@ function deferred() {
 async function scheduled() {
   for (let i = 0; i < 12; i++) await Promise.resolve();
 }
-
-// Execute the production page callbacks, with only native IO and clocks replaced.
-const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(
-  new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const names = new Set(["normalizeDegrees", "compassAccuracyState", "startCompass", "stopCompass"]);
-const statements: string[] = [];
-function collect(node: ts.Node) {
-  if (ts.isFunctionDeclaration(node) && names.has(node.name?.text ?? "")) statements.push(node.getText(source));
-  if (ts.isVariableStatement(node) && node.declarationList.declarations.some(d => names.has(d.name.getText(source)))) statements.push(node.getText(source));
-  ts.forEachChild(node, collect);
-}
-collect(source);
-assert.equal(statements.length, 4);
-const callbackCode = ts.transpileModule(statements.join("\n") + "\n({startCompass,stopCompass});", {
-  compilerOptions: { target: ts.ScriptTarget.ES2020 },
-}).outputText;
-
-function harness(withMotion = false) {
-  const requests: ReturnType<typeof deferred>[] = [];
-  const listeners = new Set<(event: CompassEvent) => void>();
-  const motionListeners = new Set<(event: DeviceMotionEvent) => void>();
-  const timers = new Set<() => void>();
-  const state = { status: "PERMISSION_REQUIRED", heading: null as number | null, reason: "", nativeActive: false, stopCalls: 0 };
-  let rejectStop = false;
-  let stopGate: ReturnType<typeof deferred> | null = null;
-  const lifecycle = createCompassLifecycle({
-    ...(withMotion ? {
-      onDeviceMotionChange: (listener: (event: DeviceMotionEvent) => void) => { motionListeners.add(listener); },
-      offDeviceMotionChange: (listener: (event: DeviceMotionEvent) => void) => { motionListeners.delete(listener); },
-      startDeviceMotionListening: () => Promise.resolve(),
-      stopDeviceMotionListening: () => Promise.resolve(),
-    } : {}),
-    onCompassChange: listener => { listeners.add(listener); },
-    offCompassChange: listener => { listeners.delete(listener); },
-    startCompass: () => {
-      const request = deferred(); requests.push(request);
-      return request.promise.then(() => { state.nativeActive = true; });
-    },
-    stopCompass: async () => {
-      state.stopCalls++;
-      if (rejectStop) throw new Error("synthetic stop failure");
-      if (stopGate) await stopGate.promise;
-      state.nativeActive = false;
-    },
-  });
-  const callbacks = vm.runInNewContext(callbackCode, {
-    calibrateSkyHeadingOffset,
-    compassLifecycle: lifecycle, view: "DETAIL", Error, useCallback: (fn: unknown) => fn,
-    lastCompassHeadingRef: { current: null }, compassHeadingRef: { current: null },
-    compassQualityRef: { current: null }, devicePoseRef: { current: null },
-    motionOffsetRef: { current: null }, compassStaleTimerRef: { current: null },
-    motionStaleTimerRef: { current: null },
-    setCompassState: (value: string) => { state.status = value; },
-    setCompassHeading: (value: number | null) => { state.heading = value; },
-    setDevicePose: () => undefined,
-    setCompassReason: (value: string) => { state.reason = value; },
-    setTimeout: (callback: () => void) => { timers.add(callback); return callback; },
-    clearTimeout: (callback: () => void) => timers.delete(callback),
-  }, { timeout: 1000 }) as { startCompass(): Promise<void>; stopCompass(): void };
-  return { ...callbacks, lifecycle, requests, listeners, motionListeners, timers, state,
-    failStops(value: boolean) { rejectStop = value; },
-    deferStop() { stopGate = deferred(); return stopGate; },
-  };
-}
-
-test("same heading becomes usable again after compass timeout, motion timeout or invalid pose", async () => {
-  for (const interruption of ["compass-timeout", "motion-timeout", "invalid-pose"] as const) {
-    const h = harness(true);
-    const start = h.startCompass(); await scheduled();
-    h.requests[0]!.resolve(); await start;
-    const compass = [...h.listeners][0]!;
-    const motion = [...h.motionListeners][0]!;
-    const pose = { alpha: 0, beta: Math.PI / 2, gamma: 0 };
-    compass({ direction: 42, accuracy: 1 });
-    const compassTimeout = [...h.timers][0]!;
-    motion(pose);
-    const motionTimeout = [...h.timers].find(timer => timer !== compassTimeout)!;
-    assert.equal(h.state.heading, 42);
-    if (interruption === "compass-timeout") compassTimeout();
-    else if (interruption === "motion-timeout") motionTimeout();
-    else motion({ ...pose, beta: Number.NaN });
-    assert.equal(h.state.heading, null, interruption);
-    compass({ direction: 42, accuracy: 1 });
-    motion(pose);
-    assert.equal(h.state.status, "READY", interruption);
-    assert.equal(h.state.heading, 42, `${interruption}: identical fresh heading must not be filtered`);
-    h.stopCompass(); await scheduled();
-  }
-});
-
-test("hide during native start compensates late success without background publication", async () => {
-  const h = harness();
-  const start = h.startCompass();
-  await scheduled();
-  assert.equal(h.requests.length, 1);
-  const queued = [...h.listeners][0]!;
-  h.stopCompass();
-  queued({ direction: 42, accuracy: 1 });
-  h.requests[0]!.resolve();
-  await start;
-  assert.equal(h.state.nativeActive, false);
-  assert.equal(h.listeners.size, 0);
-  assert.equal(h.state.heading, null);
-  assert.equal(h.state.status, "PERMISSION_REQUIRED");
-  assert.equal(h.timers.size, 0);
-});
-
-test("stop clears trusted heading and rejects queued events and stale timers across retry", async () => {
-  const h = harness();
-  const start = h.startCompass(); await scheduled();
-  h.requests[0]!.resolve(); await start;
-  const oldEvent = [...h.listeners][0]!;
-  oldEvent({ direction: 42, accuracy: 1 });
-  const oldTimer = [...h.timers][0]!;
-  assert.equal(h.state.status, "READY");
-  h.stopCompass();
-  assert.equal(h.state.heading, null);
-  assert.equal(h.state.status, "PERMISSION_REQUIRED");
-  const retry = h.startCompass(); await scheduled();
-  h.requests[1]!.resolve(); await retry;
-  [...h.listeners][0]!({ direction: 137, accuracy: 1 });
-  oldEvent({ direction: 42, accuracy: 1 }); oldTimer();
-  assert.equal(h.state.heading, 137);
-  assert.equal(h.state.status, "READY");
-  assert.equal(h.timers.size, 1);
-  h.stopCompass(); await scheduled();
-  assert.equal(h.state.nativeActive, false);
-});
-
-test("old startup rejection cannot clear a replacement listener or overwrite its state", async () => {
-  const h = harness();
-  const old = h.startCompass(); await scheduled();
-  h.stopCompass();
-  const current = h.startCompass();
-  h.requests[0]!.reject(new Error("synthetic permission denied"));
-  await old; await scheduled();
-  assert.equal(h.requests.length, 2);
-  assert.equal(h.listeners.size, 1);
-  assert.equal(h.state.status, "CALIBRATING");
-  h.requests[1]!.resolve(); await current;
-  [...h.listeners][0]!({ direction: 137, accuracy: 1 });
-  assert.equal(h.state.status, "READY");
-  h.stopCompass(); await scheduled();
-  assert.equal(h.listeners.size, 0);
-  assert.equal(h.state.nativeActive, false);
-});
-
-test("replacement start waits for native stop acknowledgement and duplicate starts coalesce", async () => {
-  const h = harness();
-  const first = h.startCompass(); await scheduled();
-  const duplicate = h.startCompass();
-  assert.equal(h.requests.length, 1);
-  h.requests[0]!.resolve(); await Promise.all([first, duplicate]);
-  const gate = h.deferStop();
-  h.stopCompass();
-  const next = h.startCompass(); await scheduled();
-  assert.equal(h.requests.length, 1);
-  gate.resolve(); await scheduled();
-  assert.equal(h.requests.length, 2);
-  h.requests[1]!.resolve(); await next;
-  h.stopCompass(); await scheduled();
-});
-
-test("uncertain native release blocks a new start until cleanup succeeds", async () => {
-  const h = harness();
-  const first = h.startCompass(); await scheduled();
-  h.requests[0]!.resolve(); await first;
-  h.failStops(true);
-  assert.equal(await h.lifecycle.stop(), false);
-  await h.startCompass();
-  assert.equal(h.requests.length, 1);
-  assert.equal(h.state.status, "UNAVAILABLE");
-  h.failStops(false);
-  const next = h.startCompass(); await scheduled();
-  assert.equal(h.requests.length, 2);
-  h.requests[1]!.resolve(); await next;
-  h.stopCompass(); await scheduled();
-  assert.equal(h.state.nativeActive, false);
-});
-
-test("current startup errors retain denied/unavailable recovery without a leaked listener", async () => {
-  for (const [message, expected] of [["permission denied", "DENIED"], ["unsupported", "UNAVAILABLE"]]) {
-    const h = harness();
-    const start = h.startCompass(); await scheduled();
-    h.requests[0]!.reject(new Error(message)); await start;
-    assert.equal(h.state.status, expected);
-    assert.equal(h.state.heading, null);
-    assert.equal(h.listeners.size, 0);
-    assert.equal(h.lifecycle.active, false);
-  }
-});
 
 test("a replacement page shares native serialization and ignores the old page's late cleanup", async () => {
   const requests: ReturnType<typeof deferred>[] = [];
@@ -230,14 +35,14 @@ test("a replacement page shares native serialization and ignores the old page's 
   let oldEvents = 0, newEvents = 0;
   const first = oldPage.start(() => { oldEvents++; }, () => assert.fail("unexpected start failure"));
   await scheduled();
-  const queued = [...listeners][0]!;
+  assert.equal(listeners.size, 0, "a pending native start has no publishable listener");
   const second = newPage.start(() => { newEvents++; }, () => assert.fail("unexpected start failure"));
   const oldCleanup = oldPage.stop();
-  queued({ direction: 42, accuracy: 1 });
   assert.equal(oldPage.active, false);
   assert.equal(newPage.active, true);
   requests[0]!.resolve(); await first; await scheduled();
   assert.equal(requests.length, 2);
+  assert.equal(listeners.size, 0);
   requests[1]!.resolve(); await second; await oldCleanup;
   assert.equal(running, true);
   assert.equal(listeners.size, 1);
@@ -296,6 +101,47 @@ test("required orientation lifecycle owns compass and device-motion streams toge
   assert.equal(motionListeners.size, 0);
 });
 
+test("hide while device motion starts never begins a background compass session", async () => {
+  const compassListeners = new Set<(event: CompassEvent) => void>();
+  const motionListeners = new Set<(event: DeviceMotionEvent) => void>();
+  let motionStartOptions: Parameters<NonNullable<CompassPort["startDeviceMotionListening"]>>[0] | undefined;
+  let compassStarts = 0;
+  let compassStops = 0;
+  let motionStops = 0;
+  let failure: unknown;
+  const lifecycle = createCompassLifecycle({
+    onCompassChange(listener) { compassListeners.add(listener); },
+    offCompassChange(listener) { compassListeners.delete(listener); },
+    startCompass() { compassStarts++; return Promise.resolve(); },
+    stopCompass() { compassStops++; return Promise.resolve(); },
+    onDeviceMotionChange(listener) { motionListeners.add(listener); },
+    offDeviceMotionChange(listener) { motionListeners.delete(listener); },
+    startDeviceMotionListening(options) { motionStartOptions = options; },
+    stopDeviceMotionListening() { motionStops++; },
+  }, { requireDeviceMotion: true });
+
+  const start = lifecycle.start(
+    () => assert.fail("hidden session must not publish compass events"),
+    error => { failure = error; },
+    () => assert.fail("hidden session must not publish motion events"),
+  );
+  await scheduled();
+  assert.equal(motionListeners.size, 1);
+  assert.equal(compassStarts, 0);
+
+  const stop = lifecycle.stop();
+  motionStartOptions?.success?.();
+  await Promise.all([start, stop]);
+
+  assert.equal(failure, undefined);
+  assert.equal(compassStarts, 0, "late motion success must not start the compass after hide");
+  assert.equal(compassStops, 0);
+  assert.equal(motionStops, 1);
+  assert.equal(compassListeners.size, 0);
+  assert.equal(motionListeners.size, 0);
+  assert.equal(lifecycle.active, false);
+});
+
 test("required orientation lifecycle fails closed when device motion is unavailable", async () => {
   let compassStarts = 0;
   let failure: unknown;
@@ -314,4 +160,215 @@ test("required orientation lifecycle fails closed when device motion is unavaila
   assert.equal(compassStarts, 0);
   assert.equal(failure instanceof Error && failure.message, "device_motion_unavailable");
   assert.equal(lifecycle.active, false);
+});
+
+test("required orientation lifecycle identifies the native start stage without exposing it to product state", async () => {
+  for (const [failedStage, expectedMessage] of [
+    ["device_motion", "device_motion_start_failed:synthetic motion failure"],
+    ["compass", "compass_start_failed:synthetic compass failure"],
+  ] as const) {
+    let failure: unknown;
+    let compassStarts = 0;
+    const port: CompassPort = {
+      onCompassChange() {},
+      offCompassChange() {},
+      startCompass() {
+        compassStarts++;
+        return failedStage === "compass"
+          ? Promise.reject(new Error("synthetic compass failure"))
+          : Promise.resolve();
+      },
+      stopCompass() { return Promise.resolve(); },
+      onDeviceMotionChange() {},
+      offDeviceMotionChange() {},
+      startDeviceMotionListening(options) {
+        if (failedStage === "device_motion") options.fail?.({ errMsg: "synthetic motion failure" });
+        else options.success?.();
+      },
+      stopDeviceMotionListening() {},
+    };
+    const lifecycle = createCompassLifecycle(port, { requireDeviceMotion: true });
+    await lifecycle.start(
+      () => undefined,
+      error => { failure = error; },
+      () => undefined,
+    );
+    assert.equal(failure instanceof Error && failure.message, expectedMessage);
+    assert.equal(compassStarts, failedStage === "compass" ? 1 : 0);
+    assert.equal(lifecycle.active, false);
+  }
+});
+
+test("orientation startup diagnostics retain only bounded stage, reason and numeric code", () => {
+  assert.equal(
+    orientationStartFailureDiagnostic(new Error("compass_start_failed:startCompass:fail system permission denied errCode: 2001 private detail")),
+    "compass_start_failed:permission_denied:code_2001",
+  );
+  assert.equal(
+    orientationStartFailureDiagnostic(new Error("device_motion_start_failed:startDeviceMotionListening:fail unsupported")),
+    "device_motion_start_failed:unsupported",
+  );
+  assert.equal(
+    orientationStartFailureDiagnostic(new Error("compass_start_failed:opaque vendor text")),
+    "compass_start_failed:unknown",
+  );
+});
+
+test("explicit compass startup precedes listener registration to avoid WeChat auto-start races", async () => {
+  const order: string[] = [];
+  const lifecycle = createCompassLifecycle({
+    onCompassChange() { order.push("listen"); },
+    offCompassChange() {},
+    startCompass() { order.push("start"); return Promise.resolve(); },
+    stopCompass() { return Promise.resolve(); },
+  });
+
+  await lifecycle.start(() => undefined, error => { throw error; });
+  assert.deepEqual(order, ["start", "listen"]);
+  assert.equal(await lifecycle.stop(), true);
+});
+
+test("an implicit compass start from listener registration accepts the native already-active result", async () => {
+  const listeners = new Set<(event: CompassEvent) => void>();
+  let running = false;
+  let failure: unknown;
+  let events = 0;
+  const lifecycle = createCompassLifecycle({
+    onCompassChange(listener) {
+      listeners.add(listener);
+      running = true;
+    },
+    offCompassChange(listener) { listeners.delete(listener); },
+    startCompass() {
+      return Promise.reject(new Error("startCompass:fail compass already started"));
+    },
+    stopCompass() { running = false; return Promise.resolve(); },
+  });
+  await lifecycle.start(
+    () => { events++; },
+    error => { failure = error; },
+  );
+  assert.equal(failure, undefined);
+  assert.equal(lifecycle.active, true);
+  assert.equal(running, true);
+  [...listeners][0]!({ direction: 42, accuracy: 1 });
+  assert.equal(events, 1);
+  assert.equal(await lifecycle.stop(), true);
+  assert.equal(running, false);
+});
+
+test("native stop settles before removing the last listener, without publishing during release", async () => {
+  const compassListeners = new Set<(event: CompassEvent) => void>();
+  const motionListeners = new Set<(event: DeviceMotionEvent) => void>();
+  const stopGate = deferred();
+  const calls: string[] = [];
+  let compassRunning = false;
+  let motionRunning = false;
+  let published = 0;
+  const lifecycle = createCompassLifecycle({
+    onCompassChange(listener) { compassListeners.add(listener); },
+    offCompassChange(listener) {
+      calls.push("compass off");
+      compassListeners.delete(listener);
+      if (!compassListeners.size) compassRunning = false;
+    },
+    async startCompass() { compassRunning = true; },
+    async stopCompass() {
+      calls.push("compass stop");
+      if (!compassRunning) throw new Error("fail to disable, not enable?");
+      compassRunning = false;
+    },
+    onDeviceMotionChange(listener) { motionListeners.add(listener); },
+    offDeviceMotionChange(listener) {
+      calls.push("motion off");
+      motionListeners.delete(listener);
+      if (!motionListeners.size) motionRunning = false;
+    },
+    async startDeviceMotionListening() { motionRunning = true; },
+    async stopDeviceMotionListening() {
+      calls.push("motion stop");
+      if (!motionRunning) throw new Error("fail to disable, not enable?");
+      await stopGate.promise;
+      motionRunning = false;
+    },
+  });
+  const start = () => lifecycle.start(() => published++, error => { throw error; }, () => published++);
+  await start();
+  const stop = lifecycle.stop();
+  await scheduled();
+  for (const listener of compassListeners) listener({ direction: 20, accuracy: 5 });
+  for (const listener of motionListeners) listener({ alpha: 20, beta: 0, gamma: 0 });
+  assert.equal(published, 0, "cancelled session must reject events before native stop completes");
+  stopGate.resolve();
+  assert.equal(await stop, true, "removing the last listener first makes native stop fail");
+  assert.ok(calls.indexOf("motion stop") < calls.indexOf("motion off"));
+  assert.ok(calls.indexOf("compass stop") < calls.indexOf("compass off"));
+  assert.equal(compassListeners.size, 0);
+  assert.equal(motionListeners.size, 0);
+  await start();
+  assert.equal(lifecycle.active, true);
+  assert.equal(await lifecycle.stop(), true);
+});
+
+test("failed native stop retains its listener until retry confirms release", async () => {
+  const listeners = new Set<(event: CompassEvent) => void>();
+  let running = false;
+  let rejectNextStop = true;
+  let starts = 0;
+  let publications = 0;
+  const lifecycle = createCompassLifecycle({
+    onCompassChange(listener) { listeners.add(listener); },
+    offCompassChange(listener) {
+      listeners.delete(listener);
+      if (!listeners.size) running = false;
+    },
+    async startCompass() { starts++; running = true; },
+    async stopCompass() {
+      if (rejectNextStop) {
+        rejectNextStop = false;
+        throw new Error("temporary native stop failure");
+      }
+      if (!running) throw new Error("fail to disable, not enable?");
+      running = false;
+    },
+  });
+  const start = () => lifecycle.start(() => publications++, error => { throw error; });
+  await start();
+  assert.equal(await lifecycle.stop(), false);
+  assert.equal(listeners.size, 1, "do not disable an uncertain stream by removing its final listener");
+  for (const listener of listeners) listener({ direction: 20, accuracy: 5 });
+  assert.equal(publications, 0, "retained native listener has no publication authority");
+  await start();
+  assert.equal(starts, 2, "retry must release the previous stream and start a fresh one");
+  assert.equal(lifecycle.active, true);
+  assert.equal(listeners.size, 1);
+  assert.equal(await lifecycle.stop(), true);
+  assert.equal(listeners.size, 0);
+});
+
+test("WeChat listener registration starts the compass initially and after lifecycle stop", async () => {
+  const listeners = new Set<(event: CompassEvent) => void>();
+  let starts = 0;
+  let stops = 0;
+  let events = 0;
+  const lifecycle = createCompassLifecycle({
+    onCompassChange(listener) { listeners.add(listener); },
+    offCompassChange(listener) { listeners.delete(listener); },
+    startCompass() { starts++; return Promise.resolve(); },
+    stopCompass() { stops++; return Promise.resolve(); },
+  }, { listenerStartsCompass: true });
+
+  await lifecycle.start(() => { events++; }, error => { throw error; });
+  assert.equal(starts, 0);
+  [...listeners][0]!({ direction: 42, accuracy: 1 });
+  assert.equal(events, 1);
+  assert.equal(await lifecycle.stop(), true);
+  assert.equal(stops, 1);
+
+  await lifecycle.start(() => { events++; }, error => { throw error; });
+  assert.equal(starts, 0);
+  [...listeners][0]!({ direction: 84, accuracy: 1 });
+  assert.equal(events, 2);
+  assert.equal(await lifecycle.stop(), true);
+  assert.equal(stops, 2);
 });

@@ -82,7 +82,7 @@ export function ContributionContextSection({
             </View>
             {spotChoice === "FORMAL" ? (
               <View className="contribution-formal-spot-fields">
-              <FormalSpotField id="contribution-formal-spot-id"
+              <FormalSpotField id="contribution-formal-spot-id" notificationOwner="contribution"
                 value={form.routeSpotId} disabled={form.commandBusy}
                 knownSpot={{ spotId: form.routeSpotId, name: form.routeSpotName }}
                 onChange={(spotId, spotName) => {

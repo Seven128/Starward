@@ -1,3 +1,5 @@
+import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
+import { MapLayerSheet } from "./map-layer-sheet";
 import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
 import { panelSpringFrames } from "./panel-spring";
@@ -6,7 +8,8 @@ import { privateContributionMarkerItems, privateContributionMarkers } from "./pr
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
 import { panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
-import { canApplyContextRestore } from "./context-restore";
+import { restoreMapBootstrapContext } from "./context-restore";
+import { canApplyContextRestore } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import {
@@ -30,11 +33,15 @@ import { NotificationRegion } from "@/components/notification";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { AstronomicalEventModal, type AstronomicalEventModalHandle } from "@/components/astronomical-event-modal";
 import { StatusPanel } from "@/components/status-panel";
+import { SoftButton } from "@/components/soft-button";
+import { createTerrainGroundOverlayCoordinator, type TerrainGroundOverlayResult, type TerrainGroundOverlayContext } from "./terrain-ground-overlay";
+import { useNativeMapRecovery } from "./native-map-recovery";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
+  MiniappApiError,
   currentDraftUserId,
   getMapScene,
   getSkyReport,
@@ -48,10 +55,12 @@ import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
 import {
   nearestMapTimeFrameIndex,
+  cloudTimeFrameChoices,
   mapTimeFrameAt,
   projectedLayerPolygons,
   projectMapEvaluations,
 } from "./map-time-frame";
+import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import "./index.scss";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { requestOneShotLocation } from "@/services/one-shot-location";
@@ -167,6 +176,7 @@ const overlayLabels: Record<AnalysisOverlay, string> = {
 
 export default function MapPage() {
   const themeClass = useThemeClass();
+  const [coverageExpanded, setCoverageExpanded] = useState(false);
   const mode = useAppStore((state) => state.mode);
   const committedFilters = useAppStore((state) => state.committedFilters);
   const finderQuery = useAppStore((state) => state.finderQuery);
@@ -193,14 +203,16 @@ export default function MapPage() {
   const notify = useAppStore((state) => state.notify);
   const { toggleFavorite } = useFavoriteMutation();
   const [debouncedFinderQuery, setDebouncedFinderQuery] = useState("");
-  const [mapRuntimeError, setMapRuntimeError] = useState(false);
+  const nativeMap = useNativeMapRecovery();
+  const mapRuntimeError = nativeMap.error;
   const [announcement, setAnnouncement] = useState("");
   const [timeSaving, setTimeSaving] = useState(false);
   const [layerDatePickerOpen, setLayerDatePickerOpen] = useState(false);
   const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [eventModalPresent, setEventModalPresent] = useState(false);
   const eventModalOpenRef = useRef(false);
   const eventModalRef = useRef<AstronomicalEventModalHandle | null>(null);
-  eventModalOpenRef.current = eventModalOpen;
+  eventModalOpenRef.current = eventModalOpen || eventModalPresent;
   const timeRequestBusy = useRef(false);
   const [pageVisible, setPageVisible] = useState(true);
   const navigationEpoch = useRef(0);
@@ -304,15 +316,12 @@ export default function MapPage() {
       Number(viewport.center.longitude.toFixed(5)),
     ],
     queryFn: (signal) => {
-      if (observationContext)
-        return restoreObservationContext(observationContext, signal);
       const point = gcj02ToWgs84({
         lat: viewport.center.latitude,
         lon: viewport.center.longitude,
         system: "GCJ-02",
       });
-      return resolveObservationContext(
-        {
+      const fallback = {
           location: {
             kind: "MAP_POINT",
             displayName: "当前地图中心",
@@ -324,11 +333,19 @@ export default function MapPage() {
             source: "MAP_VIEWPORT",
             timezoneHint: currentTimezoneHint(),
           },
-          localDate: localDateForNow(),
-          targetProfile: "DAILY",
-        },
-        signal,
-      );
+          localDate: observationContext?.localDate ?? localDateForNow(),
+          selectedAt: observationContext?.selectedAtUtc ?? null,
+          eventInstanceId: observationContext?.eventInstanceId ?? null,
+          targetProfile: observationContext?.targetProfile ?? "DAILY",
+        } as const;
+      return restoreMapBootstrapContext({
+        storedContext: observationContext,
+        fallback,
+        restore: restoreObservationContext,
+        resolve: resolveObservationContext,
+        shouldFallback: (error) => error instanceof MiniappApiError && error.code === "NOT_FOUND",
+        ...(signal ? { signal } : {}),
+      });
     },
     enabled: pageVisible,
     staleTime: 60_000,
@@ -352,8 +369,20 @@ export default function MapPage() {
         currentContext.revision !== bootstrapContext.data.data.revision ||
         currentContext.contextFingerprint !==
           bootstrapContext.data.data.contextFingerprint)
-    )
+    ) {
+      const removedFormalSpot = observationContext?.location.kind === "FORMAL_SPOT" &&
+        bootstrapContext.data.data.location.kind === "MAP_POINT";
       setObservationContext(bootstrapContext.data.data);
+      if (removedFormalSpot) {
+        selectSpot(null);
+        setSelectedFallback(null);
+        setSelectedProposal(null);
+        setBottomPresentation("none");
+        notify({ owner: "map", placement: "floating", tone: "warning",
+          title: "原观星点已失效", body: "已回到当前地图中心。", dismissible: true,
+          dedupeKey: `map-removed-formal:${observationContext.contextId}` });
+      }
+    }
   }, [
     bootstrapContext.data?.data,
     observationContext,
@@ -361,6 +390,8 @@ export default function MapPage() {
     selectedSpotId,
     pageVisible,
     setObservationContext,
+    selectSpot,
+    notify,
   ]);
 
   const scene = useResourceQuery({
@@ -420,9 +451,13 @@ export default function MapPage() {
     },
     [],
   );
+  useEffect(() => {
+    if (regionTimer.current) clearTimeout(regionTimer.current);
+    regionTimer.current = null;
+  }, [nativeMap.mapId]);
 
   const spots = scene.data?.data.spots ?? [];
-  const contributionHistory = useContributionHistory();
+  const contributionHistory = useContributionHistory(pageVisible);
   const privateMarkers = useMemo(
     () => privateContributionMarkers(contributionHistory.data?.data.submissions ?? []),
     [contributionHistory.data?.data.submissions],
@@ -502,6 +537,7 @@ export default function MapPage() {
     selectedFromScene ??
     (selectedFallback?.spotId === selectedSpotId ? selectedFallback : null);
   const timeFrames = scene.data?.data.timeFrames ?? [];
+  const cloudTimeChoices = cloudTimeFrameChoices(timeFrames);
   const projectedAt = timePreviewing
     ? timeFrames[panelPreviewFrameIndex]?.atUtc ?? activeContext?.selectedAtUtc ?? ""
     : activeContext?.selectedAtUtc ?? "";
@@ -581,7 +617,16 @@ export default function MapPage() {
       longitude: viewport.center.longitude,
     },
     radiusKm: mapTerrainRadiusKm,
-  }, pageVisible && terrainEnabled);
+  }, pageVisible && (terrainEnabled || bottomPresentation === "layer-sheet"), pageVisible && terrainEnabled);
+  const [terrainNativeError, setTerrainNativeError] = useState<unknown | null>(null);
+  const [terrainNativeRetry, setTerrainNativeRetry] = useState(0);
+  const mapTerrainMissing = terrain.data?.data.state === "UNAVAILABLE" && !terrain.data.data.failureCode;
+  const mapTerrainFailed = Boolean(terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode || terrainNativeError);
+  useEffect(() => {
+    if (!pageVisible || (!terrainEnabled && !terrainNativeError) || !mapTerrainFailed) return;
+    notify({ owner: "map-terrain", placement: "floating", tone: "info", title: "地形数据异常",
+      body: "地形暂时无法显示，可在图层中重试。", dedupeKey: "map-terrain-failed" });
+  }, [pageVisible, terrainEnabled, terrainNativeError, mapTerrainFailed, notify]);
   const terrainGroundOverlay = useMemo(() => {
     const data = terrain.data?.data;
     const bounds = data?.imageBoundsGcj02;
@@ -596,38 +641,26 @@ export default function MapPage() {
       zIndex: 0,
     };
   }, [pageVisible, terrain.data?.data, terrain.imagePath, terrainEnabled]);
-  const terrainOverlayQueue = useRef<Promise<void>>(Promise.resolve());
-  const terrainOverlayInstalled = useRef(false);
-  const terrainOverlayGeneration = useRef(0);
+  const terrainOverlayResult = useRef<(result: TerrainGroundOverlayResult) => void>(() => undefined);
+  terrainOverlayResult.current = ({ error, target }) => {
+    setTerrainNativeError(error);
+    if (!error) return;
+    if (target) terrain.reportImageFailure(error, target.src);
+    setAnnouncement("地形叠加未能显示，可在图层中重试。");
+  };
+  const terrainOverlayCoordinator = useMemo(() => {
+    const mapId = nativeMap.mapId;
+    let context: TerrainGroundOverlayContext | undefined;
+    return createTerrainGroundOverlayCoordinator(
+      TERRAIN_GROUND_OVERLAY_ID,
+      () => context ??= Taro.createMapContext(mapId) as unknown as TerrainGroundOverlayContext,
+      result => { if (nativeMap.isCurrent()) terrainOverlayResult.current(result); },
+    );
+  }, [nativeMap.mapId]);
   useEffect(() => {
-    const generation = ++terrainOverlayGeneration.current;
-    terrainOverlayQueue.current = terrainOverlayQueue.current.catch(() => undefined).then(async () => {
-      const context = Taro.createMapContext("spot-map");
-      if (!terrainGroundOverlay) {
-        if (terrainOverlayInstalled.current) {
-          await context.removeGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID });
-          terrainOverlayInstalled.current = false;
-        }
-        return;
-      }
-      if (terrainOverlayInstalled.current) {
-        await context.updateGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID, ...terrainGroundOverlay, visible: true });
-      } else {
-        await context.addGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID, ...terrainGroundOverlay, visible: true });
-        terrainOverlayInstalled.current = true;
-      }
-    }).catch(() => {
-      if (terrainOverlayGeneration.current === generation) setAnnouncement("原生地图未能加载地形叠加，可关闭后重试。");
-    });
-  }, [terrainGroundOverlay]);
-  useEffect(() => () => {
-    ++terrainOverlayGeneration.current;
-    terrainOverlayQueue.current = terrainOverlayQueue.current.catch(() => undefined).then(async () => {
-      if (!terrainOverlayInstalled.current) return;
-      await Taro.createMapContext("spot-map").removeGroundOverlay({ id: TERRAIN_GROUND_OVERLAY_ID });
-      terrainOverlayInstalled.current = false;
-    }).catch(() => undefined);
-  }, []);
+    void terrainOverlayCoordinator.apply(nativeMap.pending || mapRuntimeError ? null : terrainGroundOverlay);
+  }, [terrainOverlayCoordinator, terrainGroundOverlay, terrainNativeRetry, nativeMap.pending, mapRuntimeError]);
+  useEffect(() => () => { void terrainOverlayCoordinator.dispose(); }, [terrainOverlayCoordinator]);
   const spotSky = useResourceQuery({
     queryKey: [
       "spot-sky",
@@ -639,8 +672,9 @@ export default function MapPage() {
     ],
     queryFn: (signal) =>
       getSkyReport(selected!.spotId, activeContext!.contextId, signal),
-    enabled: bottomPresentation === "spot-panel" && detailContextReady,
-    staleTime: 60_000,
+    enabled: pageVisible && bottomPresentation === "spot-panel" && detailContextReady,
+    staleTime: 0,
+    refetchInterval: WEATHER_ALERT_REFRESH_MS,
   });
   const spotDetail = detailContextReady && selected && spotOverview.data && spotOverview.data.data.spot.spotId === selected.spotId ? spotOverview.data.data : null;
   const spotOverviewProjection = projectSpotPanelResource(detailContextReady, {
@@ -655,6 +689,30 @@ export default function MapPage() {
     refreshError: spotSky.refreshError,
     dataState: spotSky.data?.dataState,
   });
+  useEffect(() => {
+    if (!pageVisible || bottomPresentation !== "spot-panel" || !selected ||
+        (!spotOverviewProjection.error && !spotOverviewProjection.stale)) return;
+    notify({
+      owner: "map",
+      placement: "floating",
+      tone: "info",
+      title: "观星点资料数据异常",
+      body: "部分地点资料暂时无法读取，可在观星点面板中重试。",
+      dedupeKey: `spot-overview-failed:${selected.spotId}`,
+    });
+  }, [bottomPresentation, notify, pageVisible, selected, spotOverviewProjection.error, spotOverviewProjection.stale]);
+  useEffect(() => {
+    if (!pageVisible || bottomPresentation !== "spot-panel" || !selected ||
+        (!spotSkyProjection.error && !spotSkyProjection.stale)) return;
+    notify({
+      owner: "map",
+      placement: "floating",
+      tone: "info",
+      title: "云观星数据异常",
+      body: "当前地点的星空资料暂时无法读取，可在观星点面板中重试。",
+      dedupeKey: `spot-sky-failed:${selected.spotId}`,
+    });
+  }, [bottomPresentation, notify, pageVisible, selected, spotSkyProjection.error, spotSkyProjection.stale]);
   const spotSkyReport = detailContextReady && selected && activeContext && spotSky.data &&
     spotSky.data.data.context.spotId === selected.spotId &&
     spotSky.data.data.context.contextId === activeContext.contextId &&
@@ -681,6 +739,24 @@ export default function MapPage() {
           : scene.data?.dataState === "PARTIAL"
             ? "PARTIAL"
             : "READY";
+  useEffect(() => {
+    if (!pageVisible || pageState !== "ERROR") return;
+    notify({
+      owner: "map",
+      placement: "floating",
+      tone: "info",
+      title: "地图数据异常",
+      body: activeContext
+        ? "观星点数据暂时无法读取，可在页面中重试。"
+        : "地图上下文暂时无法恢复，可在页面中重试。",
+      dedupeKey: activeContext ? "map-scene-cold-failed" : "map-context-cold-failed",
+    });
+  }, [activeContext, notify, pageState, pageVisible]);
+  useEffect(() => {
+    if (!pageVisible || !mapRuntimeError) return;
+    notify({ owner: "map", placement: "floating", tone: "info", title: "地图显示异常",
+      body: "地图暂时无法显示，可继续搜索观星点或重试。", dedupeKey: "map-runtime-failed" });
+  }, [mapRuntimeError, notify, pageVisible]);
   const contextTimeLabel = activeContext
     ? formatContextTime(activeContext.selectedAtUtc, activeContext.timezone)
     : bootstrapContext.isError ? "解析失败" : "正在解析";
@@ -693,6 +769,10 @@ export default function MapPage() {
     : localDateForNow();
   const mapTodayCivilDate = mapDateOptions[7] ?? selectedMapCivilDate;
   const visibleLayer = layerSheetOverlay(analysisOverlay);
+  const visibleLayerUnavailable = Boolean(
+    scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay) &&
+      scene.data.data.layer.state === "UNAVAILABLE",
+  );
 
   const leaveSelectedLocationForMapPoint = () => {
     extentBeforeLayer.current = null;
@@ -828,7 +908,7 @@ export default function MapPage() {
     if (Number.isInteger(markerId) && markerId >= 100_000) {
       const entry = privateMarkers[markerId - 100_000];
       if (!entry) return;
-      if (!(await confirmEditorLeave())) return;
+      if (!(await confirmEditorLeave()) || !nativeMap.isCurrent()) return;
       privateTransitionGeneration.current += 1;
       editorLeaveGuard.current = null;
       setCandidatePreview(null);
@@ -847,7 +927,7 @@ export default function MapPage() {
       ? groupedMarkers.find((item) => item.id === markerId)
       : undefined;
     if (!group) return;
-    if (!(await confirmEditorLeave())) return;
+    if (!(await confirmEditorLeave()) || !nativeMap.isCurrent()) return;
     privateTransitionGeneration.current += 1;
     editorLeaveGuard.current = null;
     setCandidatePreview(null);
@@ -1111,7 +1191,7 @@ export default function MapPage() {
     if (regionTimer.current) clearTimeout(regionTimer.current);
     const resetVersion = useAppStore.getState().mapResetVersion;
     regionTimer.current = setTimeout(() => {
-      if (useAppStore.getState().mapResetVersion !== resetVersion) return;
+      if (!nativeMap.isCurrent() || useAppStore.getState().mapResetVersion !== resetVersion) return;
       setViewport({
         center: region.center,
         ...(region.zoom === undefined ? {} : { zoom: region.zoom }),
@@ -1299,12 +1379,11 @@ export default function MapPage() {
   };
 
   useEffect(() => {
-    setMapPresentationBackBoundaryVisible(false);
-    const shouldArm = eventModalOpen || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet";
-    if (!shouldArm) return;
+    const shouldArm = eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet";
+    if (!shouldArm) { setMapPresentationBackBoundaryVisible(false); return; }
     const timer = setTimeout(() => setMapPresentationBackBoundaryVisible(true), 32);
     return () => clearTimeout(timer);
-  }, [bottomPresentation, eventModalOpen]);
+  }, [bottomPresentation, eventModalOpen, eventModalPresent]);
 
   useEffect(() => () => {
     if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
@@ -1713,7 +1792,7 @@ export default function MapPage() {
       data-route="map"
       data-delivery-target={__DELIVERY_TARGET__}
     >
-      <FloatingNotificationHost />
+      {!eventModalPresent ? <FloatingNotificationHost /> : null}
       <PageContainer
         show={mapPresentationBackBoundaryVisible}
         duration={1}
@@ -1725,9 +1804,9 @@ export default function MapPage() {
         customStyle="width:100vw;height:100vh;min-height:100vh;overflow:visible;background:transparent;pointer-events:none;"
         onBeforeLeave={handleMapPresentationSystemBack}
       >
-        {eventModalOpen ? <AstronomicalEventModal ref={eventModalRef} open mode="browse"
+        <AstronomicalEventModal ref={eventModalRef} open={eventModalOpen} mode="browse" onPresenceChange={setEventModalPresent}
           context={observationContext} onClose={() => setEventModalOpen(false)}
-          nativeBackBoundary={false} portal={false} /> : <View aria-hidden="true" />}
+          nativeBackBoundary={false} portal={false} />
       </PageContainer>
       <View className="map-workspace">
         <View
@@ -1735,7 +1814,8 @@ export default function MapPage() {
           data-control="map-marker-panel-coordinator"
         >
           <Map
-            id="spot-map"
+            id={nativeMap.mapId}
+            key={nativeMap.mapId}
             className="native-map"
             latitude={viewport.center.latitude}
             longitude={viewport.center.longitude}
@@ -1747,21 +1827,11 @@ export default function MapPage() {
             enableScroll
             enableRotate={false}
             enableOverlooking={false}
-            onTap={onMapTap}
-            onMarkerTap={onMarkerTap}
-            onRegionChange={onRegionChange}
-            onError={() => {
-              setMapRuntimeError(true);
-              notify({
-                owner: "map",
-                placement: "inline",
-                tone: "error",
-                title: "地图渲染失败",
-                body: "地图暂时无法显示，可继续搜索观星点。",
-                dismissible: true,
-                dedupeKey: "map-native-render-error",
-              });
-            }}
+            onTap={() => { if (nativeMap.isCurrent()) onMapTap(); }}
+            onMarkerTap={event => { if (nativeMap.isCurrent()) void onMarkerTap(event); }}
+            onRegionChange={event => { if (nativeMap.isCurrent()) onRegionChange(event); }}
+            onError={nativeMap.onError}
+            onUpdated={nativeMap.onUpdated}
             aria-label="正式观星点地图；搜索提供等价可访问结果"
           />
 
@@ -1839,12 +1909,12 @@ export default function MapPage() {
 
           <View className="map-feedback-column">
             <NotificationRegion owner="map" placement="inline" />
-            {mapRuntimeError ? (
+            {mapRuntimeError || nativeMap.pending ? (
               <StatusPanel
-                state="ERROR"
-                detail="地图暂时无法显示，可继续搜索观星点。"
-                recoveryLabel="重试地图"
-                onRecover={() => setMapRuntimeError(false)}
+                state={nativeMap.pending ? "LOADING" : "EMPTY"}
+                detail={nativeMap.pending ? "正在重新加载地图。" : "地图暂时无法显示，可继续搜索观星点。"}
+                recoveryLabel={nativeMap.pending ? undefined : "重试地图"}
+                onRecover={nativeMap.retry}
               />
             ) : null}
             {scene.refreshError ? <StatusPanel
@@ -1857,7 +1927,7 @@ export default function MapPage() {
             pageState !== "PARTIAL" &&
             pageState !== "STALE" ? (
               <StatusPanel
-                state={pageState}
+                state={pageState === "ERROR" ? "EMPTY" : pageState}
                 detail={
                   (bootstrapContext.isError
                     ? isOfflineError(bootstrapContext.error)
@@ -1962,7 +2032,7 @@ export default function MapPage() {
               /> : selected ? <SpotInformationPanel
                 settling={panelSettling}
                 springMotion={panelCssMotion}
-                visible={pageVisible}
+                visible={pageVisible && bottomPresentation === "spot-panel"}
                 spot={selected}
                 detail={spotDetail}
                 detailPending={spotOverviewProjection.pending}
@@ -1975,6 +2045,7 @@ export default function MapPage() {
                 astronomyAt={projectedAt}
                 skyReport={spotSkyReport}
                 skyPending={spotSkyProjection.pending}
+                skyRefreshing={spotSky.isFetching}
                 skyError={spotSkyProjection.error}
                 skyStale={spotSkyProjection.stale}
                 timeFrames={timeFrames}
@@ -2012,76 +2083,13 @@ export default function MapPage() {
               className="map-layer-layer"
               onClick={(event) => event.stopPropagation()}
             >
-              <View
-                className={`map-layer-sheet map-layer-sheet--${visibleLayer === "LIGHT" ? "light" : "cloud"}`}
-                data-control="map-layer-selector"
-                role="dialog"
-                aria-label="地图图层"
-              >
-                <View className="map-layer-sheet__content">
-                {visibleLayer === "TOTAL_CLOUD" ? (
-                  <>
-                    <ObservationDateControl
-                      dates={mapDateOptions}
-                      selectedDate={selectedMapCivilDate}
-                      today={mapTodayCivilDate}
-                      open={layerDatePickerOpen}
-                      busy={!activeContext || timeSaving}
-                      onOpenChange={(open) => {
-                        if (open) setTimePreviewing(false);
-                        setLayerDatePickerOpen(open);
-                      }}
-                      onSelect={(date) => {
-                        setLayerDatePickerOpen(false);
-                        setTimePreviewing(false);
-                        void commitMapDate(date);
-                      }}
-                    />
-                    <MapTimeRuler
-                      frames={timeFrames}
-                      selectedAt={activeContext?.selectedAtUtc ?? ""}
-                      timezone={activeContext?.timezone ?? "Asia/Shanghai"}
-                      disabled={!activeContext || !timeFrames.length || timeSaving}
-                      onPreview={(index) => {
-                        setPanelPreviewFrameIndex(index);
-                        setTimePreviewing(true);
-                      }}
-                      onCommit={(index) => void commitMapTime(index)}
-                      onCancel={() => setTimePreviewing(false)}
-                    />
-                    <Text className="map-layer-sheet__source-note type-caption">
-                      云量预报 · 仅覆盖有效数据区域
-                    </Text>
-                  </>
-                ) : (
-                  <Text className="map-layer-sheet__source-note type-caption">
-                    年度夜光估算 · 不随观测时间变化
-                  </Text>
-                )}
-                {scene.data?.data.layer?.legend.length ? (
-                  <View className="map-layer-sheet__legend" aria-label="当前图层图例">
-                    {scene.data.data.layer.legend.slice(0, 4).map((item) => (
-                      <View className="map-layer-sheet__legend-item" key={`${item.label}-${item.range}`}>
-                        <View
-                          className="map-layer-sheet__legend-swatch"
-                          style={{ backgroundColor: item.color }}
-                          aria-hidden="true"
-                        />
-                        <Text className="type-caption">
-                          {visibleLayer === "LIGHT"
-                            ? item.label
-                            : `${item.label} · ${item.range}`}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
-                </View>
+              <MapLayerSheet cloud={visibleLayer === "TOTAL_CLOUD"} revision={String(coverageExpanded)} footer={<>
                 <View className="map-layer-sheet__terrain-choice" aria-label="地形叠加选择">
                   <Button
-                    className={`map-layer-sheet__choice map-layer-sheet__choice--terrain${terrainEnabled ? " map-layer-sheet__choice--active" : ""}`}
-                    aria-checked={terrainEnabled}
-                    aria-label={`地形${terrainEnabled ? "，已开启" : "，已关闭"}`}
+                    className={`map-layer-sheet__choice map-layer-sheet__choice--terrain${terrainEnabled && !mapTerrainMissing ? " map-layer-sheet__choice--active" : ""}`}
+                    disabled={mapTerrainMissing}
+                    aria-checked={terrainEnabled && !mapTerrainMissing}
+                    aria-label={`地形${mapTerrainMissing ? "，当前地区暂无数据" : terrainEnabled ? "，已开启" : "，已关闭"}`}
                     onClick={() => {
                       const next = !terrainEnabled;
                       setTerrainEnabled(next);
@@ -2093,11 +2101,16 @@ export default function MapPage() {
                       <Text className="map-layer-sheet__choice-title">地形</Text>
                       <Text className="type-caption">高程派生阴影 · 可与下方图层组合</Text>
                     </View>
-                    {terrainEnabled ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : null}
+
+                    {terrainEnabled && !mapTerrainMissing ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : null}
                   </Button>
-                  {terrainEnabled ? <Text className={`map-layer-sheet__terrain-state${terrain.isError || terrain.imageError || terrain.data?.data.state === "UNAVAILABLE" ? " map-layer-sheet__terrain-state--error" : ""}`}>
-                    {terrain.isPending || terrain.imagePending ? "正在读取地形覆盖…" : terrain.isError || terrain.imageError ? "地形加载失败，可关闭后重试。" : terrain.data?.data.state === "UNAVAILABLE" ? terrain.data.data.coverageLabel : terrain.data ? `${terrain.data.data.datasetVersion} · ${terrain.data.data.coverageLabel}` : ""}
+                  {terrainEnabled || mapTerrainMissing ? <Text className="map-layer-sheet__terrain-state">
+                    {terrain.isPending || terrain.imagePending ? "正在读取地形覆盖…" : mapTerrainFailed ? "地形暂时无法显示。" : mapTerrainMissing ? "当前地区暂无地形数据。" : terrain.data ? `${terrain.data.data.datasetVersion} · ${terrain.data.data.coverageLabel}` : ""}
                   </Text> : null}
+                  {mapTerrainFailed ? <SoftButton label="重新读取地形" onClick={() => {
+                    setTerrainNativeRetry(value => value + 1);
+                    if (terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode) void terrain.refetch();
+                  }}>重试</SoftButton> : null}
                 </View>
                 <View className="map-layer-sheet__choices" role="radiogroup" aria-label="观测叠加选择">
                   {(["LIGHT", "TOTAL_CLOUD"] as const).map((overlay) => {
@@ -2126,7 +2139,77 @@ export default function MapPage() {
                     );
                   })}
                 </View>
-              </View>
+              </>}>
+
+                {visibleLayer === "TOTAL_CLOUD" ? (
+                  <>
+                    <ObservationDateControl
+                      dates={mapDateOptions}
+                      selectedDate={selectedMapCivilDate}
+                      today={mapTodayCivilDate}
+                      open={layerDatePickerOpen}
+                      busy={!activeContext || timeSaving}
+                      onOpenChange={(open) => {
+                        if (open) setTimePreviewing(false);
+                        setLayerDatePickerOpen(open);
+                      }}
+                      onSelect={(date) => {
+                        setLayerDatePickerOpen(false);
+                        setTimePreviewing(false);
+                        void commitMapDate(date);
+                      }}
+                    />
+                    <MapTimeRuler
+                      frames={cloudTimeChoices.map(choice => choice.frame)}
+                      selectedAt={activeContext?.selectedAtUtc ?? ""}
+                      timezone={activeContext?.timezone ?? "Asia/Shanghai"}
+                      disabled={!activeContext || !cloudTimeChoices.length || timeSaving}
+                      onPreview={(index) => {
+                        const choice = cloudTimeChoices[index];
+                        if (!choice) return;
+                        setPanelPreviewFrameIndex(choice.sourceIndex);
+                        setTimePreviewing(true);
+                      }}
+                      onCommit={(index) => { const choice = cloudTimeChoices[index]; if (choice) void commitMapTime(choice.sourceIndex); }}
+                      onCancel={() => setTimePreviewing(false)}
+                    />
+                    <Text className="map-layer-sheet__source-note type-caption">
+                      云量预报 · 仅覆盖有效数据区域
+                    </Text>
+                    <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" starts={cloudTimeChoices.flatMap(choice => Object.values(choice.frame.spotSignals)
+                      .flatMap(signal => signal.weatherAt && signal.cloudPercent !== null ? [signal.weatherAt] : []))}
+                      timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} />
+                  </>
+                ) : visibleLayerUnavailable ? (
+                  <StatusPanel
+                    state="EMPTY"
+                    detail="当前地区暂无光污染数据。"
+                    live={false}
+                  />
+                ) : (
+                  <Text className="map-layer-sheet__source-note type-caption">
+                    年度夜光估算 · 不随观测时间变化
+                  </Text>
+                )}
+                {scene.data?.data.layer?.legend.length ? (
+                  <View className="map-layer-sheet__legend" aria-label="当前图层图例">
+                    {scene.data.data.layer.legend.slice(0, 4).map((item) => (
+                      <View className="map-layer-sheet__legend-item" key={`${item.label}-${item.range}`}>
+                        <View
+                          className="map-layer-sheet__legend-swatch"
+                          style={{ backgroundColor: item.color }}
+                          aria-hidden="true"
+                        />
+                        <Text className="type-caption">
+                          {visibleLayer === "LIGHT"
+                            ? item.label
+                            : `${item.label} · ${item.range}`}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+              </MapLayerSheet>
             </View>
           ) : null}
         </View>

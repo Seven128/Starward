@@ -5,13 +5,15 @@ import vm from "node:vm";
 import ts from "typescript";
 
 type Element = { type: string; props: Record<string, any>; children: unknown[] };
-function render({ query = "山", debounced = query, disabled = false, failed = false, stale = false, savedId = "saved-spot", knownSpot }: {
-  query?: string; debounced?: string; disabled?: boolean; failed?: boolean; stale?: boolean; savedId?: string; knownSpot?: { spotId: string; name: string };
+function render({ query = "山", debounced = query, disabled = false, failed = false, stale = false, resultEnvelopeStale = false,
+  savedFailed = false, savedStale = false, savedId = "saved-spot", knownSpot }: {
+  query?: string; debounced?: string; disabled?: boolean; failed?: boolean; stale?: boolean; resultEnvelopeStale?: boolean;
+  savedFailed?: boolean; savedStale?: boolean; savedId?: string; knownSpot?: { spotId: string; name: string };
 } = {}) {
   const source = readFileSync(new URL("./formal-spot-field.tsx", import.meta.url), "utf8")
     .replace(/^import .*;\r?\n/gm, "").replace("export function", "function");
-  const state = [query, debounced, null];
-  let cursor = 0, retries = 0;
+  const state = [true, query, debounced, null];
+  let cursor = 0, retries = 0, savedRetries = 0;
   const changes: string[] = [];
   let enabled: boolean | undefined;
   const component = vm.runInNewContext(ts.transpileModule(source + "\nFormalSpotField;", {
@@ -19,18 +21,20 @@ function render({ query = "山", debounced = query, disabled = false, failed = f
   }).outputText, {
     Button: "button", Input: "input", Text: "text", View: "view", StatusPanel: "status",
     React: { createElement: (type: string, props: object, ...children: unknown[]) => ({ type, props, children: children.flat() }) },
-    useEffect() {}, useState: () => [state[cursor++], () => {}],
+    useEffect() {}, useDidShow() {}, useDidHide() {}, useState: () => [state[cursor++], () => {}],
+    useAppStore: (selector: (state: { notify(): void }) => unknown) => selector({ notify() {} }),
     useResourceQuery: (options: { enabled: boolean; queryKey: string[] }) => {
       if (options.queryKey[0] === "formal-spot-identity") return {
-        data: { data: { spot: { spotId: savedId, name: "已保存的山地" } } },
+        isError: savedFailed, refreshError: savedStale ? new Error("offline") : undefined, refetch: () => { savedRetries++; },
+        data: savedFailed ? undefined : { dataState: savedStale ? "STALE_USABLE" : "FRESH", data: { spot: { spotId: savedId, name: "已保存的山地" } } },
       };
       enabled = options.enabled;
       return { isError: failed, isPending: false, refreshError: stale ? new Error("offline") : undefined, refetch: () => { retries++; },
-        data: { data: { formalSpots: [{ spotId: "formal-a", name: "正式山地" }],
+        data: { dataState: resultEnvelopeStale ? "STALE_USABLE" : "FRESH", data: { formalSpots: [{ spotId: "formal-a", name: "正式山地" }],
           ordinaryPlaces: [{ name: "普通地点" }], candidates: [{ name: "候选区域" }] } } };
     },
   }) as (props: object) => Element;
-  const root = component({ value: "saved-spot", knownSpot, disabled, onChange: (id: string) => changes.push(id) });
+  const root = component({ id: "formal-spot", notificationOwner: "test", value: "saved-spot", knownSpot, disabled, onChange: (id: string) => changes.push(id) });
   const elements: Element[] = [];
   const visit = (value: unknown) => {
     if (!value || typeof value !== "object" || !("type" in value)) return;
@@ -39,7 +43,7 @@ function render({ query = "山", debounced = query, disabled = false, failed = f
     element.children.forEach(visit);
   };
   visit(root);
-  return { elements, changes, enabled, get retries() { return retries; } };
+  return { elements, changes, enabled, get retries() { return retries; }, get savedRetries() { return savedRetries; } };
 }
 
 test("the association field offers only formal results and commits their real identity", () => {
@@ -98,4 +102,18 @@ test("a matching known name survives unavailable overview without borrowing anot
   assert.match(captions("saved-spot"), /已选择：草稿地点/);
   assert.doesNotMatch(captions("another-spot"), /草稿地点/);
   assert.match(captions("another-spot"), /已保留地点关联/);
+});
+
+test("saved identity failures and stale search envelopes retain targeted recovery", () => {
+  const identity = render({ savedFailed: true, query: "" });
+  const identityPanel = identity.elements.find(element => element.type === "status" && element.props.recoveryLabel === "重新获取地点")!;
+  assert.equal(identityPanel.props.state, "EMPTY");
+  identityPanel.props.onRecover();
+  assert.equal(identity.savedRetries, 1);
+
+  const search = render({ resultEnvelopeStale: true });
+  const searchPanel = search.elements.find(element => element.type === "status" && element.props.recoveryLabel === "重试搜索")!;
+  assert.equal(searchPanel.props.state, "STALE");
+  searchPanel.props.onRecover();
+  assert.equal(search.retries, 1);
 });

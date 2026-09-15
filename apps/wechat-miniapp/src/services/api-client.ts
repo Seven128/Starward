@@ -1,4 +1,6 @@
 import { createAccountProfileClient } from "./account-profile-client";
+import { createSpotEnvironmentClient } from "./spot-environment-client";
+import { projectAdoptedSkyCatalog } from "./sky-report-catalog";
 import { createPlanChecklistClient } from "./plan-checklist-client";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
@@ -12,6 +14,7 @@ import { contributionSubmitBelongsTo, createContributionSubmitRetry } from "./co
 import { clearProfileSaveRecovery, createProfileLinkRetry, profileSaveBelongsTo } from "./profile-link-retry";
 import {
   MINIAPP_API_BASE_PATH,
+  isCelestialObjectReference,
   MINIAPP_API_OPERATIONS,
   type ApiEnvelope,
   type ApiError,
@@ -38,7 +41,6 @@ import {
   type ObservationContextUpdateRequest,
   type ObservationPlan,
   type PlatformKind,
-  type RouteTravelMode,
   type SpotRankingPreferences,
   type SpotId,
   type TerrainOverlayRequest,
@@ -70,9 +72,7 @@ const SESSION_EXPIRY_SKEW_MS = 60_000;
 
 const requests = new LatestRequestRegistry();
 const reportDeviceFailure = __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__
-  ? createDeviceFailureReporter((content) => Taro.showModal({
-      title: "仅测试：请求诊断", content, showCancel: false,
-    }))
+  ? createDeviceFailureReporter((content) => console.info(content))
   : undefined;
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
@@ -604,8 +604,9 @@ export async function restoreObservationContext(
     )
       throw error;
     let routeOriginContextId: string | null = null;
+    let recoveredRouteOrigin: Awaited<ReturnType<typeof resolveObservationContext>> | null = null;
     if (context.routeOrigin) {
-      const routeOrigin = await resolveObservationContext(
+      recoveredRouteOrigin = await resolveObservationContext(
         {
           location: {
             kind: "MAP_POINT",
@@ -624,12 +625,19 @@ export async function restoreObservationContext(
         },
         signal,
       );
-      routeOriginContextId = routeOrigin.data.contextId;
+      routeOriginContextId = recoveredRouteOrigin.data.contextId;
     }
-    return resolveObservationContext(
-      observationContextRecoveryInput(context, routeOriginContextId),
-      signal,
-    );
+    try {
+      return await resolveObservationContext(
+        observationContextRecoveryInput(context, routeOriginContextId),
+        signal,
+      );
+    } catch (recoveryError) {
+      if (context.location.kind === "FORMAL_SPOT" && recoveredRouteOrigin &&
+        recoveryError instanceof MiniappApiError && recoveryError.code === "NOT_FOUND")
+        return recoveredRouteOrigin;
+      throw recoveryError;
+    }
   }
 }
 
@@ -681,29 +689,6 @@ export function searchPlaces(
       "q=" +
       encodeURIComponent(query) +
       (region.trim() ? "&region=" + encodeURIComponent(region.trim()) : ""),
-    ...(signal ? { signal } : {}),
-  });
-}
-
-export function estimateSpotRoute(
-  contextId: ObservationContextId,
-  spotId: SpotId,
-  signal?: AbortSignal,
-  travelMode: RouteTravelMode = "DRIVING",
-  departure?: { localDate: string; localTime: string },
-) {
-  return requestOperation("route-estimate:" + spotId, "routeEstimatePost", {
-    body: {
-      contextId,
-      spotId,
-      travelMode,
-      ...(departure
-        ? {
-            departureLocalDate: departure.localDate,
-            departureLocalTime: departure.localTime,
-          }
-        : {}),
-    },
     ...(signal ? { signal } : {}),
   });
 }
@@ -825,6 +810,8 @@ export function getSpotSite(spotId: string, signal?: AbortSignal) {
   });
 }
 
+export const { getSpotRecentWeather, getSpotAirQuality } = createSpotEnvironmentClient(requestOperation);
+
 export function getSpotContributionMedia(spotId: string, uploadId: ContributionUploadId) {
   return requestOperation(`spot-contribution-media:${spotId}:${uploadId}`, "spotContributionMediaGet", {
     pathParams: { spotId, uploadId },
@@ -868,14 +855,14 @@ export function getSkyReport(
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId),
     ...(signal ? { signal } : {}),
-  });
+  }).then(projectAdoptedSkyCatalog);
 }
 
 export function getCelestialObjectInformation(
   reference: string,
   signal?: AbortSignal,
 ) {
-  if (!/^(?:HIP:\d{1,6}|M:(?:[1-9]|[1-9]\d|10\d|110))$/u.test(reference))
+  if (!isCelestialObjectReference(reference))
     throw new Error("celestial_object_reference_invalid");
   return requestOperation("celestial-object:" + reference, "celestialObjectGet", {
     pathParams: { reference },

@@ -145,7 +145,7 @@ export async function buildOpenNgcMessierDeepSkyCatalog() {
       sourceUrl: SOURCE_URL,
       landingUrl: "https://github.com/mattiaverga/OpenNGC/tree/36cb178a0f69dba8bfc03a99c10512831edf1c6b",
       license: "CC-BY-SA-4.0",
-      licenseUrl: "https://github.com/mattiaverga/OpenNGC/blob/36cb178a0f69dba8bfc03a99c10512831edf1c6b/LICENSE",
+      licenseUrl: "https://github.com/mattiaverga/OpenNGC/blob/36cb178a0f69dba8bfc03a99c10512831edf1c6b/LICENSES/CC-BY-SA-4.0.txt",
       responseSha256: hash(bytes),
       responseBytes: bytes.byteLength,
     },

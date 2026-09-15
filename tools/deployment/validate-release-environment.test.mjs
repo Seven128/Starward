@@ -25,27 +25,6 @@ test("a release environment closes identity, credentials and least-privilege lan
   });
 });
 
-test("staging selects non-commercial Open-Meteo evidence without a commercial key", async () => {
-  await withFixture(
-    { api: { MINIAPP_OPEN_METEO_EVIDENCE_MODE: "OPEN_METEO_COMMERCIAL" } },
-    async (deployPath) => {
-      await assert.rejects(
-        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
-        /release_environment_mismatch:api:MINIAPP_OPEN_METEO_EVIDENCE_MODE/u,
-      );
-    },
-  );
-  await withFixture(
-    { api: { OPEN_METEO_API_KEY: "commercial-key-not-for-staging" } },
-    async (deployPath) => {
-      await assert.rejects(
-        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
-        /release_environment_forbidden:api:OPEN_METEO_API_KEY/u,
-      );
-    },
-  );
-});
-
 test("remote release keeps QWeather as the selected primary provider", async () => {
   await withFixture(
     {
@@ -58,59 +37,6 @@ test("remote release keeps QWeather as the selected primary provider", async () 
       await assert.rejects(
         () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
         /release_environment_mismatch:api:MINIAPP_WEATHER_PROVIDER/u,
-      );
-    },
-  );
-});
-
-test("staging and production pin distinct QWeather forecast horizons", async () => {
-  await withFixture(
-    { api: { QWEATHER_FORECAST_HOURS: "72" } },
-    async (deployPath) => {
-      await assert.rejects(
-        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
-        /release_environment_mismatch:api:QWEATHER_FORECAST_HOURS/u,
-      );
-    },
-  );
-  await withFixture(
-    {
-      environment: "production",
-      api: { QWEATHER_FORECAST_HOURS: "24" },
-    },
-    async (deployPath) => {
-      await assert.rejects(
-        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
-        /release_environment_mismatch:api:QWEATHER_FORECAST_HOURS/u,
-      );
-    },
-  );
-});
-
-test("production requires commercial Open-Meteo evidence and its own key", async () => {
-  await withFixture({ environment: "production" }, async (deployPath) => {
-    const result = await validateReleaseEnvironment({ deployEnvPath: deployPath });
-    assert.equal(result.status, "valid");
-    assert.equal(result.environment, "production");
-  });
-  await withFixture(
-    {
-      environment: "production",
-      api: { MINIAPP_OPEN_METEO_EVIDENCE_MODE: "OPEN_METEO_NONCOMMERCIAL" },
-    },
-    async (deployPath) => {
-      await assert.rejects(
-        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
-        /release_environment_mismatch:api:MINIAPP_OPEN_METEO_EVIDENCE_MODE/u,
-      );
-    },
-  );
-  await withFixture(
-    { environment: "production", api: { OPEN_METEO_API_KEY: "" } },
-    async (deployPath) => {
-      await assert.rejects(
-        () => validateReleaseEnvironment({ deployEnvPath: deployPath }),
-        /release_environment_required:OPEN_METEO_API_KEY/u,
       );
     },
   );
@@ -177,4 +103,19 @@ test("public rate limiting is explicit and bounded", async () => {
       /release_environment_invalid:api:MINIAPP_RATE_LIMIT_WINDOW_MS/u,
     );
   });
+});
+
+test("both environments accept QWeather alone and bounded actual forecast hours", async () => {
+  for (const environment of ["staging", "production"]) {
+    for (const hours of ["1", "24", "48", "72", "240"]) {
+      await withFixture({ environment, api: { QWEATHER_FORECAST_HOURS: hours } }, async deployPath => {
+        assert.equal((await validateReleaseEnvironment({ deployEnvPath: deployPath })).status, "valid");
+      });
+    }
+  }
+  for (const hours of ["0", "241", "1.5", "invalid"]) {
+    await withFixture({ api: { QWEATHER_FORECAST_HOURS: hours } }, async deployPath => {
+      await assert.rejects(() => validateReleaseEnvironment({ deployEnvPath: deployPath }), /release_environment_invalid:api:QWEATHER_FORECAST_HOURS/);
+    });
+  }
 });

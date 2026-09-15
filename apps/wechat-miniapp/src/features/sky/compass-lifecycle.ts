@@ -4,8 +4,9 @@ export interface CompassEvent {
 }
 export interface DeviceMotionEvent {
   /**
-   * WeChat reports alpha/beta/gamma in radians. The page converts them at its
-   * observation boundary; this port only preserves the native values.
+   * WeChat's public contract reports radians. The page observation boundary
+   * also normalizes Android clients that emit equivalent degree ranges; this
+   * port preserves native values so that decision stays at the edge.
    */
   alpha: number;
   beta: number;
@@ -39,6 +40,9 @@ type Session = {
   listener: CompassListener;
   motionListener?: MotionListener;
   failed: (error: unknown) => void;
+  motionInterval?: DeviceMotionStartOptions["interval"];
+  compassOptional?: boolean;
+  compassUnavailable?: (error: unknown) => void;
 };
 
 function supportsDeviceMotion(port: CompassPort): boolean {
@@ -50,7 +54,7 @@ function supportsDeviceMotion(port: CompassPort): boolean {
   );
 }
 
-function startDeviceMotion(port: CompassPort): Promise<void> {
+function startDeviceMotion(port: CompassPort, interval: DeviceMotionStartOptions["interval"] = "ui"): Promise<void> {
   return new Promise((resolve, reject) => {
     let settled = false;
     const succeed = () => {
@@ -68,7 +72,7 @@ function startDeviceMotion(port: CompassPort): Promise<void> {
 
     try {
       const result = port.startDeviceMotionListening!({
-        interval: "ui",
+        interval,
         success: succeed,
         fail,
       });
@@ -84,12 +88,56 @@ function startDeviceMotion(port: CompassPort): Promise<void> {
   });
 }
 
+function orientationErrorDetail(error: unknown) {
+  return error instanceof Error
+    ? error.message
+    : error && typeof error === "object" && "errMsg" in error
+      ? String((error as { errMsg?: unknown }).errMsg ?? "")
+      : String(error ?? "");
+}
+
+function orientationStartError(stage: "device_motion" | "compass", error: unknown) {
+  const detail = orientationErrorDetail(error);
+  return new Error(`${stage}_start_failed:${detail}`);
+}
+
+function compassAlreadyActive(error: unknown) {
+  return /already|duplicate/u.test(orientationErrorDetail(error).toLowerCase());
+}
+
+export function orientationStartFailureDiagnostic(error: unknown) {
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error ?? "").toLowerCase();
+  const stage = message.startsWith("device_motion_start_failed:")
+    ? "device_motion_start_failed"
+    : message.startsWith("compass_start_failed:")
+      ? "compass_start_failed"
+      : "orientation_start_failed";
+  const reason = /permission|authorize|auth|den(?:y|ied)/u.test(message)
+    ? "permission_denied"
+    : /already|duplicate/u.test(message)
+      ? "already_active"
+      : /not support|unsupported|unavailable/u.test(message)
+        ? "unsupported"
+        : /frequen|too many/u.test(message)
+          ? "too_frequent"
+          : /system/u.test(message)
+            ? "system_error"
+            : "unknown";
+  const numericCode = message.match(/(?:err(?:or)?code\D*|code\D*)(-?\d{3,})/u)?.[1];
+  return `${stage}:${reason}${numericCode ? `:code_${numericCode}` : ""}`;
+}
+
 async function stopDeviceMotion(port: CompassPort): Promise<void> {
   await port.stopDeviceMotionListening!();
 }
 
-function nativeCoordinator(port: CompassPort, initialRequireDeviceMotion: boolean) {
+function nativeCoordinator(
+  port: CompassPort,
+  initialRequireDeviceMotion: boolean,
+  initialListenerStartsCompass: boolean,
+) {
   let requireDeviceMotion = initialRequireDeviceMotion;
+  let listenerStartsCompass = initialListenerStartsCompass;
   let desired: Session | null = null;
   let installed: { owner: object; listener: CompassListener } | null = null;
   let installedMotion: { owner: object; listener: MotionListener } | null = null;
@@ -102,24 +150,10 @@ function nativeCoordinator(port: CompassPort, initialRequireDeviceMotion: boolea
     let releaseError: unknown;
     let releaseFailed = false;
 
-    if (installedMotion) {
-      try {
-        port.offDeviceMotionChange!(installedMotion.listener);
-        installedMotion = null;
-      } catch (error) {
-        releaseFailed = true;
-        releaseError ??= error;
-      }
-    }
-    if (installed) {
-      try {
-        port.offCompassChange(installed.listener);
-        installed = null;
-      } catch (error) {
-        releaseFailed = true;
-        releaseError ??= error;
-      }
-    }
+    // Removing the last WeChat listener can disable its native stream. Stop
+    // first and await acknowledgement. A failed stop retains its listener so
+    // detachment cannot disable the stream behind the next cleanup retry.
+    // `desired` already invalidates callbacks during cancellation/replacement.
     if (motionMayBeRunning) {
       try {
         await stopDeviceMotion(port);
@@ -139,6 +173,25 @@ function nativeCoordinator(port: CompassPort, initialRequireDeviceMotion: boolea
       }
     }
 
+    if (installedMotion && !motionMayBeRunning) {
+      try {
+        port.offDeviceMotionChange!(installedMotion.listener);
+        installedMotion = null;
+      } catch (error) {
+        releaseFailed = true;
+        releaseError ??= error;
+      }
+    }
+    if (installed && !mayBeRunning) {
+      try {
+        port.offCompassChange(installed.listener);
+        installed = null;
+      } catch (error) {
+        releaseFailed = true;
+        releaseError ??= error;
+      }
+    }
+
     if (releaseFailed) {
       throw releaseError ?? new Error("orientation_release_failed");
     }
@@ -151,8 +204,9 @@ function nativeCoordinator(port: CompassPort, initialRequireDeviceMotion: boolea
   };
 
   return {
-    configure(options: { requireDeviceMotion?: boolean }) {
+    configure(options: { requireDeviceMotion?: boolean; listenerStartsCompass?: boolean }) {
       requireDeviceMotion = requireDeviceMotion || options.requireDeviceMotion === true;
+      listenerStartsCompass = listenerStartsCompass || options.listenerStartsCompass === true;
     },
     active(owner: object) {
       return desired?.owner === owner;
@@ -168,12 +222,13 @@ function nativeCoordinator(port: CompassPort, initialRequireDeviceMotion: boolea
       listener: CompassListener,
       failed: (error: unknown) => void,
       motionListener?: MotionListener,
+      sessionOptions: Pick<Session, "motionInterval" | "compassOptional" | "compassUnavailable"> = {},
     ): Promise<void> {
       if (desired?.owner === owner) return tail;
 
       const session: Session = motionListener
-        ? { owner, listener, motionListener, failed }
-        : { owner, listener, failed };
+        ? { owner, listener, motionListener, failed, ...sessionOptions }
+        : { owner, listener, failed, ...sessionOptions };
       desired = session;
       return enqueue(async () => {
         if (desired !== session) return;
@@ -189,15 +244,6 @@ function nativeCoordinator(port: CompassPort, initialRequireDeviceMotion: boolea
             throw new Error("device_motion_unavailable");
           }
 
-          installed = {
-            owner,
-            listener: (event) => {
-              if (desired === session) listener(event);
-            },
-          };
-          port.onCompassChange(installed.listener);
-          mayBeRunning = true;
-
           if (session.motionListener && supportsDeviceMotion(port)) {
             installedMotion = {
               owner,
@@ -207,10 +253,47 @@ function nativeCoordinator(port: CompassPort, initialRequireDeviceMotion: boolea
             };
             port.onDeviceMotionChange!(installedMotion.listener);
             motionMayBeRunning = true;
-            await startDeviceMotion(port);
+            try {
+              await startDeviceMotion(port, session.motionInterval);
+            } catch (error) {
+              throw orientationStartError("device_motion", error);
+            }
+            if (desired !== session) {
+              await release();
+              return;
+            }
           }
 
-          await port.startCompass();
+          if (!listenerStartsCompass) {
+            try {
+              await port.startCompass();
+            } catch (error) {
+              // Some clients report a duplicate when listener registration
+              // has already resumed the stream before the explicit restart.
+              if (!compassAlreadyActive(error)) {
+                // A valid full-attitude stream can use the compass solely
+                // for quality metadata. Its failure must not stop motion.
+                if (session.compassOptional && installedMotion && desired === session) {
+                  session.compassUnavailable?.(error);
+                  return;
+                }
+                throw orientationStartError("compass", error);
+              }
+            }
+            mayBeRunning = true;
+          }
+
+          // WeChat's listener registration can itself start the compass.  An
+          // explicit start must therefore happen first, otherwise the two
+          // starts race and some Android clients return an opaque `fail`.
+          installed = {
+            owner,
+            listener: (event) => {
+              if (desired === session) listener(event);
+            },
+          };
+          port.onCompassChange(installed.listener);
+          mayBeRunning = true;
           // Native starts have no cancellation handle; compensate after they settle.
           if (desired !== session) await release();
         } catch (error) {
@@ -254,11 +337,17 @@ const coordinators = new WeakMap<
 
 export function createCompassLifecycle(
   port: CompassPort,
-  options: { requireDeviceMotion?: boolean } = {},
+  options: { requireDeviceMotion?: boolean; listenerStartsCompass?: boolean;
+    motionInterval?: DeviceMotionStartOptions["interval"]; compassOptional?: boolean;
+    compassUnavailable?: (error: unknown) => void } = {},
 ) {
   let shared = coordinators.get(port);
   if (!shared) {
-    shared = nativeCoordinator(port, options.requireDeviceMotion === true);
+    shared = nativeCoordinator(
+      port,
+      options.requireDeviceMotion === true,
+      options.listenerStartsCompass === true,
+    );
     coordinators.set(port, shared);
   } else {
     shared.configure(options);
@@ -280,7 +369,7 @@ export function createCompassLifecycle(
       failed: (error: unknown) => void,
       motionListener?: MotionListener,
     ) {
-      return coordinator.start(owner, listener, failed, motionListener);
+      return coordinator.start(owner, listener, failed, motionListener, options);
     },
     stop() {
       return coordinator.stop(owner);

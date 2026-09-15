@@ -10,8 +10,9 @@ export class PlanSaveRecoveryError extends Error {}
 export function clearPlanSaveRecovery(storage: Storage, owner: string) { storage.removeStorageSync(storageKey(owner)); }
 
 /** Context IDs can expire; user-selected route origin and timezone define the same plan intent. */
-export function planContextIdentity(context: ObservationContext) {
-  const origin = context.location.kind === "MAP_POINT" ? context.location.wgs84 : context.routeOrigin?.wgs84;
+export function planContextIdentity(context: ObservationContext, travel?: PlanTravel) {
+  const origin = travel?.originLocation !== undefined ? null
+    : context.location.kind === "MAP_POINT" ? context.location.wgs84 : context.routeOrigin?.wgs84;
   return JSON.stringify([context.timezone, origin ? [origin.latitude, origin.longitude, origin.system] : null]);
 }
 function clean(raw: unknown): PlanSaveInput {

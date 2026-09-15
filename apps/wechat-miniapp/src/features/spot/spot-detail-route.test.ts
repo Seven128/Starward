@@ -20,7 +20,7 @@ test("spot drilldowns never display another spot receipt or start its dependent 
       const queries: { queryKey: string[]; enabled: boolean }[] = [];
       const receipt = { spot: { spotId: scenario === "other-spot" ? "spot:b" : "spot:a" } };
       const result = vm.runInNewContext(script, {
-        spotId: "spot:a", routeContextId: "ctx:current", segment,
+        spotId: "spot:a", routeContextId: "ctx:current", segment, pageVisible: true,
         observationContext: { contextId: scenario === "expired-context" ? "ctx:old" : "ctx:current", location: { kind: "FORMAL_SPOT", spotId: "spot:a" } },
         useResourceQuery: (options: { queryKey: string[]; enabled: boolean }) => {
           queries.push(options);
@@ -40,4 +40,11 @@ test("spot drilldowns never display another spot receipt or start its dependent 
       if (scenario === "expired-context") assert.equal(overviewQuery.enabled, false);
     }
   }
+});
+
+test("hidden spot drilldowns suspend every resource query", () => {
+  const source = readFileSync(new URL("./spot-detail-page.tsx", import.meta.url), "utf8");
+  assert.match(source, /enabled: validRoute && pageVisible,/);
+  assert.match(source, /enabled: validRoute && pageVisible && segment === "GUIDES"/);
+  assert.match(source, /enabled: validRoute && pageVisible && segment === "SITE"/);
 });

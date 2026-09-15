@@ -318,6 +318,16 @@ export class MiniappController {
     return this.service.getSpotSite(decodeURIComponent(spotId));
   }
 
+  @Get("spots/:spotId/recent-weather")
+  recentWeather(@Param("spotId") spotId: string) {
+    return this.service.getSpotRecentWeather(decodeURIComponent(spotId));
+  }
+
+  @Get("spots/:spotId/air-quality")
+  airQuality(@Param("spotId") spotId: string) {
+    return this.service.getSpotAirQuality(decodeURIComponent(spotId));
+  }
+
   @Get("spots/:spotId/media/:uploadId")
   spotContributionMedia(
     @Param("spotId") spotId: string,

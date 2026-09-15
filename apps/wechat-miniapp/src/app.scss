@@ -1,6 +1,7 @@
 @use "./styles/tokens.scss";
 @use "./components/semantic-asset.scss";
 @use "./components/status-panel.scss";
+@use "./components/weather-alerts.scss";
 @use "./components/notification.scss";
 @use "./components/custom-nav.scss";
 @use "./components/astronomical-event-modal.scss";
@@ -299,27 +300,6 @@ input.field {
 .status-tag--danger {
   color: var(--danger);
   border-color: var(--danger);
-}
-
-.development-fixture-banner {
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 56rpx;
-  margin-bottom: 12rpx;
-  padding: 8rpx 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2rpx solid var(--warning);
-  border-radius: 18rpx;
-  color: var(--warning);
-  background: var(--surface);
-  font-size: var(--type-body-secondary-size);
-  line-height: var(--type-body-secondary-line);
-  font-weight: var(--type-body-secondary-weight);
-  text-align: center;
-  white-space: normal;
-  pointer-events: none;
 }
 
 .reduced-motion .soft-button,

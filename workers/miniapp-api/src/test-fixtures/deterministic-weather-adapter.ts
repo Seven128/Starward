@@ -25,8 +25,8 @@ export class DeterministicWeatherTestAdapter implements WeatherPort {
     );
     const start = new Date(`${input.localDate}T10:00:00.000Z`);
     const baseCloud = 12 + (scenarioSeed % 24);
-    const value = Array.from({ length: 25 }, (_, index) => {
-      const at = new Date(start.getTime() + index * 30 * 60 * 1_000);
+    const value = Array.from({ length: 13 }, (_, index) => {
+      const at = new Date(start.getTime() + index * 60 * 60 * 1_000);
       const cloudPercent = Math.max(
         4,
         Math.min(
@@ -38,12 +38,6 @@ export class DeterministicWeatherTestAdapter implements WeatherPort {
       return {
         at: at.toISOString(),
         cloudPercent,
-        lowCloudPercent: Math.round(cloudPercent * 0.45),
-        midCloudPercent: Math.round(cloudPercent * 0.35),
-        highCloudPercent: Math.round(cloudPercent * 0.2),
-        modelConsistency: 0.86,
-        modelConsistencyLabel: "HIGH" as const,
-        modelSpreadPercent: 14,
         precipitationMm: 0,
         precipitationProbabilityPercent: 0,
         windKph,
@@ -56,8 +50,6 @@ export class DeterministicWeatherTestAdapter implements WeatherPort {
         thunderstorm: false,
         severeRain: false,
         severeWind: false,
-        officialSevereAlert: false,
-        officialAlertIds: [],
         evidenceSourceIds: [
           `source-weather-test-${input.localDate}-${scenarioSeed.toString(16)}`,
         ],
@@ -74,7 +66,7 @@ export class DeterministicWeatherTestAdapter implements WeatherPort {
       publishedAt: "2026-08-06",
       retrievedAt: new Date().toISOString(),
       validFrom: value[0]!.at,
-      validTo: value.at(-1)!.at,
+      validTo: new Date(Date.parse(value.at(-1)!.at) + 3_600_000).toISOString(),
       state: "SAMPLE_DATA",
       confidence: null,
       precision: "非实时预报；数值只用于自动化测试天气→规则→解释的产品闭环",
@@ -102,14 +94,14 @@ export class DeterministicWeatherTestAdapter implements WeatherPort {
           validFrom: source.validFrom,
           validTo: source.validTo,
           nativeSpatialResolutionKm: null,
-          nativeTemporalResolutionMinutes: 30,
-          outputTemporalResolutionMinutes: 30,
+          nativeTemporalResolutionMinutes: 60,
+          outputTemporalResolutionMinutes: 60,
           interpolatedVariables: [],
           state: "SAMPLE_DATA",
           sourceId: source.id,
         },
       ],
-      warnings: ["开发验收数据，不用于现实出行判断。"],
+      warnings: [],
     };
   }
 }

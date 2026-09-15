@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import Fastify from "fastify";
 import {
   fastifyDeploymentOptions,
   loadHttpDeploymentConfig,
@@ -40,6 +41,7 @@ test("remote HTTP config accepts only HTTPS origins and one exact trusted proxy 
   });
   assert.deepEqual(fastifyDeploymentOptions(config), {
     bodyLimit: 14_000_000,
+    routerOptions: { maxParamLength: 256 },
     connectionTimeout: 35_000,
     requestTimeout: 35_000,
     handlerTimeout: 35_000,
@@ -76,4 +78,17 @@ test("remote HTTP config accepts only HTTPS origins and one exact trusted proxy 
     }),
     /MINIAPP_TRUST_PROXY_CIDRS/u,
   );
+});
+
+test("HTTP routing admits the catalog's 160-character version and retains a bounded parameter limit", async () => {
+  const server = Fastify(fastifyDeploymentOptions({ origins: [], trustedProxyCidrs: [] }));
+  server.post<{ Params: { catalogVersion: string } }>("/rollback/:catalogVersion", async request => ({ version: request.params.catalogVersion }));
+  try {
+    const version = "v".repeat(160);
+    const accepted = await server.inject({ method: "POST", url: `/rollback/${version}` });
+    assert.equal(accepted.statusCode, 200);
+    assert.equal(accepted.json().version, version);
+    const rejected = await server.inject({ method: "POST", url: `/rollback/${"v".repeat(257)}` });
+    assert.notEqual(rejected.statusCode, 200);
+  } finally { await server.close(); }
 });

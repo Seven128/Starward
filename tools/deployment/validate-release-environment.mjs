@@ -151,34 +151,19 @@ function validateApi(api, expected, postgres, redis) {
   secret(api, "MINIAPP_ADMIN_TOKEN", 32);
   const weatherProvider = checkedValue(api, "MINIAPP_WEATHER_PROVIDER");
   equal(weatherProvider, "QWEATHER", "api:MINIAPP_WEATHER_PROVIDER");
-  equal(
-    checkedValue(api, "QWEATHER_FORECAST_HOURS"),
-    expected.environment === "production" ? "72" : "24",
-    "api:QWEATHER_FORECAST_HOURS",
-  );
+  const forecastHours = Number(checkedValue(api, "QWEATHER_FORECAST_HOURS"));
+  if (!Number.isInteger(forecastHours) || forecastHours < 1 || forecastHours > 240)
+    fail("release_environment_invalid", "api:QWEATHER_FORECAST_HOURS");
   checkedValue(api, "QWEATHER_API_HOST");
   secret(api, "QWEATHER_CREDENTIAL_ID", 8);
   secret(api, "QWEATHER_PROJECT_ID", 8);
   secret(api, "QWEATHER_PRIVATE_KEY_PEM", 40);
-  const expectedEvidenceMode =
-    expected.environment === "production"
-      ? "OPEN_METEO_COMMERCIAL"
-      : "OPEN_METEO_NONCOMMERCIAL";
-  equal(
-    checkedValue(api, "MINIAPP_OPEN_METEO_EVIDENCE_MODE"),
-    expectedEvidenceMode,
-    "api:MINIAPP_OPEN_METEO_EVIDENCE_MODE",
-  );
-  if (expectedEvidenceMode === "OPEN_METEO_COMMERCIAL") {
-    secret(api, "OPEN_METEO_API_KEY", 16);
-  } else if ("OPEN_METEO_API_KEY" in api) {
-    fail("release_environment_forbidden", "api:OPEN_METEO_API_KEY");
-  }
+  // Old evidence configuration is ignored by runtime; it supplies no capability
+  // or required credentials. Generated environments omit these retired fields.
   for (const provider of ["MINIAPP_ROUTE_PROVIDER", "MINIAPP_PLACE_SEARCH_PROVIDER"]) {
     const mode = checkedValue(api, provider);
-    if (mode !== "AMAP" && mode !== "DISABLED")
+    if (mode !== "DISABLED")
       fail("release_environment_invalid", `api:${provider}`);
-    if (mode === "AMAP") secret(api, "AMAP_WEB_SERVICE_KEY", 16);
   }
 }
 

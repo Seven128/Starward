@@ -2,6 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey } from "./plan-draft";
 
+test("selected departure metadata survives a serialized draft restart and explicit clearing", () => {
+  const draft = { selectedSpotId: null, localDate: "2026-09-15", localTime: "22:00", notes: "",
+    travel: { origin: "出发地点", mode: "DRIVING", originLocation: { source: "WECHAT_CHOOSE_LOCATION", address: "出发地址",
+      wgs84: { system: "WGS84", latitude: 22.5, longitude: 113.5 } } } };
+  assert.deepEqual(parsePlanDraft(JSON.parse(JSON.stringify(draft)))?.travel, draft.travel);
+  assert.equal(parsePlanDraft({ ...draft, travel: { ...draft.travel, origin: "改为手填", originLocation: null } })?.travel?.originLocation, null);
+  assert.equal(parsePlanDraft({ ...draft, travel: { ...draft.travel, originLocation: { ...draft.travel.originLocation, wgs84: { system: "WGS84", latitude: 95, longitude: 0 } } } }), null);
+});
+
 test("unfinished reminder edits survive restart without accepting corrupt identities", () => {
   const reminders = [{ reminderId: "reminder:1", title: " ", hoursBeforeDeparture: 0, notifyOnWechat: false,
     items: [{ itemId: "item:1", text: "", completed: true }] }];

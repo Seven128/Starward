@@ -20,6 +20,8 @@ Additional future run roots may use `%TEMP%/starward-miniapp-dev-*`, `%TEMP%/sta
 
 ## Isolation And Resource-Lifecycle Invariants
 
+- On this Windows host the current Electron DevTools installation is `E:/微信web开发者工具`; retired NW `code/package.nw` launch paths must be rejected, including explicitly configured nested scripts. An explicit invalid CLI configuration fails visibly instead of falling back to another installation. Node children inherit the selected Node executable directory through the shared `tools/run-node.cjs` environment owner. Verify the complete installed version, project root/miniprogramRoot and actual current UI before attributing runtime evidence; window titles, HEAD and build timestamps alone do not prove the adopted product is loaded. Old fixture windows are not formal-current UI evidence. Exact installed-version history, cleanup and screenshots remain task-local.
+
 - Development, Deterministic Test, DevTools Acceptance, and Device Acceptance never share a writable database, file root, outbox, Provider ledger, session secret, AppID/key, port, process owner, mutable cache, or generated-output directory. A layer for which AppID/key is not applicable records that boundary as N/A instead of borrowing another layer's credentials.
 - Each layer has a distinct environment identity and run namespace. Immutable source and read-only fixtures may be shared only by exact digest; each writable consumer receives an isolated copy or isolated service namespace.
 - A run owns its exact child-process tree, ports, temporary roots, emulator/tool/device session, and report output. Startup fails closed on an unknown listener, mismatched owner, stale descriptor, dirty non-resettable state, missing secret binding, or ambiguous project identity.

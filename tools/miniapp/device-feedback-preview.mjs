@@ -44,7 +44,7 @@ export async function removePreviewQr(generation) {
 export async function createOrdinaryPreview(run, options, injected) {
   if (
     !run.generation ||
-    !["completed", "manual_required", "qr_ready"].includes(
+    !["invoking", "completed", "manual_required", "qr_ready"].includes(
       run.official.disposition,
     )
   )

@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
-import {canApplyContextRestore} from './context-restore.ts';
+import {canApplyContextRestore} from '../../services/observation-context-version.ts';
 
 test('search recovery respects current context version, reset and page visibility',()=>{
  const source=ts.createSourceFile('search.tsx',readFileSync(new URL('./search-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);

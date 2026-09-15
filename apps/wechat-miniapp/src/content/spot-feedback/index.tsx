@@ -1,5 +1,5 @@
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
-import Taro, { useRouter } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CONTRIBUTION_FORMAL_FIELD_KEYS,
@@ -67,9 +67,12 @@ export default function FormalFeedbackEditor() {
   const submissionId = decodeURIComponent(router.params.submissionId ?? "");
   const themeClass = useThemeClass();
   const notify = useAppStore(state => state.notify);
-  const query = useResourceQuery({ queryKey: ["contribution-formal-baseline", spotId], queryFn: signal => getContributionFormalBaseline(spotId, signal), staleTime: 0 });
-  const history = useResourceQuery({ queryKey: ["contributions", "formal-feedback", spotId], queryFn: signal => getContributions(signal), enabled: Boolean(spotId), staleTime: 0 });
-  const site = useResourceQuery({ queryKey: ["spot-site", "formal-feedback", spotId], queryFn: signal => getSpotSite(spotId, signal), enabled: Boolean(spotId), staleTime: 0 });
+  const [pageVisible, setPageVisible] = useState(true);
+  useDidShow(() => setPageVisible(true));
+  useDidHide(() => setPageVisible(false));
+  const query = useResourceQuery({ queryKey: ["contribution-formal-baseline", spotId], queryFn: signal => getContributionFormalBaseline(spotId, signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
+  const history = useResourceQuery({ queryKey: ["contributions", "formal-feedback", spotId], queryFn: signal => getContributions(signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
+  const site = useResourceQuery({ queryKey: ["spot-site", "formal-feedback", spotId], queryFn: signal => getSpotSite(spotId, signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
   const [baseline, setBaseline] = useState<ContributionFormalBaseline | null>(null);
   const [values, setValues] = useState<SpotDocumentValues | null>(null);
   const [chapter, setChapter] = useState<(typeof CHAPTERS)[number][0]>("place");
@@ -88,6 +91,20 @@ export default function FormalFeedbackEditor() {
   const [activeSubmissionId, setActiveSubmissionId] = useState("");
   const [priorMedia, setPriorMedia] = useState<readonly ContributionFormalMediaUpload[]>([]);
   const [mediaSelection, setMediaSelection] = useState<FormalMediaSelection | null>(null);
+  useEffect(() => {
+    if (!pageVisible) return;
+    const failed = query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE"
+      ? ["正式资料数据异常", "当前正式地点资料暂时无法更新，可在页面中重试。", "baseline"]
+      : history.isError || history.refreshError || history.data?.dataState === "STALE_USABLE"
+        ? ["反馈记录数据异常", "本人反馈状态暂时无法更新，可在页面中重试。", "history"]
+        : site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE"
+          ? ["场地数据异常", "场地与媒体资料暂时无法更新，已填写内容仍会保留。", "site"]
+          : null;
+    if (!failed) return;
+    notify({ owner: "contribution", placement: "floating", tone: "info",
+      title: failed[0]!, body: failed[1]!, dedupeKey: `formal-feedback-resource-failed:${spotId}:${failed[2]}` });
+  }, [history.data?.dataState, history.isError, history.refreshError, notify, pageVisible, query.data?.dataState,
+    query.isError, query.refreshError, site.data?.dataState, site.isError, site.refreshError, spotId]);
   useEffect(() => {
     if (!query.data?.data || !history.data?.data || baseline) return;
     if (submissionId) {
@@ -265,7 +282,17 @@ export default function FormalFeedbackEditor() {
     <ScrollView scrollY scrollIntoView={`formal-feedback-${chapter}`} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
       <View className="formal-feedback-body safe-bottom">
         <NotificationRegion owner="contribution" placement="inline" />
-        {query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={() => { void query.refetch(); void history.refetch(); }} /> : recordError ? <StatusPanel state="ERROR" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
+        {query.refreshError || query.data?.dataState === "STALE_USABLE" ||
+        history.refreshError || history.data?.dataState === "STALE_USABLE" ||
+        site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE" ? (
+          <StatusPanel state="STALE" detail="部分正式地点或反馈资料尚未确认最新状态，当前输入仍会保留。"
+            recoveryLabel="重新获取" onRecover={() => {
+              if (query.refreshError || query.data?.dataState === "STALE_USABLE") void query.refetch();
+              else if (history.refreshError || history.data?.dataState === "STALE_USABLE") void history.refetch();
+              else void site.refetch();
+            }} />
+        ) : null}
+        {query.isError || history.isError ? <StatusPanel state="EMPTY" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={() => { void query.refetch(); void history.refetch(); }} /> : recordError ? <StatusPanel state="EMPTY" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
           {submitted ? <Text className="formal-feedback-review-tag">审核中</Text> : null}
           {reviewReason ? <View className="formal-feedback-review-note"><Text>审核意见</Text><Text>{reviewReason}</Text></View> : null}
           <SpotDocumentFields

@@ -13,6 +13,7 @@ import hashlib
 import json
 import math
 import os
+import sys
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
@@ -24,6 +25,11 @@ import rasterio
 SOURCE_ROOT = "https://copernicus-dem-30m.s3.amazonaws.com"
 DATASET_VERSION = "Copernicus DEM GLO-30 Public AWS COG 2021"
 TRANSFORM_VERSION = "starward-wgs84-gcj02-grid-v1"
+LICENSE_URL = "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM"
+DATASET_DOI = "10.5270/ESA-c5d3d65"
+ATTRIBUTION_NOTICE = "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
+MODIFIED_PRODUCT_NOTICE = "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
+DERIVATION = "Starward resampled the WGS84 DSM onto a GCJ-02 grid, then derived hillshade, elevation colour and transparent no-data pixels."
 DEFAULT_CENTER = (22.55, 114.25)
 DEFAULT_RADIUS_KM = 85.0
 
@@ -182,7 +188,12 @@ def publish(cache: Path, output: Path, size: int, center_lat: float, center_lon:
         "publicationId": "terrain:glo30:greater-bay-area:2021:v2",
         "dataset": DATASET_VERSION,
         "sourceProvider": "Copernicus Programme / AWS Open Data",
-        "license": "Copernicus DEM licence",
+        "license": "Copernicus DEM GLO-30 free worldwide licence",
+        "licenseUrl": LICENSE_URL,
+        "doi": DATASET_DOI,
+        "attributionNotice": ATTRIBUTION_NOTICE,
+        "modifiedProductNotice": MODIFIED_PRODUCT_NOTICE,
+        "derivation": DERIVATION,
         "sourceResolution": "1 arc-second (approximately 30 m)",
         "derivedResolutionM": round(pixel_metres, 1),
         "derivedAt": derived_at,
@@ -199,6 +210,8 @@ def publish(cache: Path, output: Path, size: int, center_lat: float, center_lon:
         "unavailableSourceTiles": unavailable_tiles,
         "limitations": [
             f"覆盖仅限清单中的大湾区中心点周边 {radius_km:.0f} km；范围外返回不可用。",
+            "Copernicus DEM是2011至2015年获取的数字表面模型，可能包含建筑、基础设施和植被；不是裸地数字地形模型。",
+            "透明像素是源瓦片缺失或无效数据；发布整体因此标记为部分可用。",
             "呈现为高程派生山体阴影，不包含近处树木、围墙、临时灯或逐方向遮挡角。",
             "源产品采样间隔不等于逐点垂直误差或拍摄方向精度。"
         ]
@@ -208,6 +221,8 @@ def publish(cache: Path, output: Path, size: int, center_lat: float, center_lon:
 
 
 def main() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser()
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
