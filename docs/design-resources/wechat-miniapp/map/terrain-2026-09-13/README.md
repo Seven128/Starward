@@ -2,7 +2,7 @@
 
 [交互审阅入口](../../shared/astronomical-event-modal/review.html) · [完整观星点中的地形](../revisions/three-requirements-2026-09-13/preview/panel.html?extent=large&section=terrain) · [地图图层](../../shared/astronomical-event-modal/preview.html?view=layers)
 
-用户要求已进入产品及技术Context；本次新增视觉已于2026-09-13确认采用。生产实现复用原地图组件、三档拖动、完整基本信息及天文区，加入地形同级章节、半径轴和地图复选/单选；真实Copernicus DEM GLO-30发布样本经BFF进入点位地形图，并通过WEAPP `MapContext.addGroundOverlay`进入原生主地图。服务响应同时携带来源、DOI、许可链接、派生方式和“modified Copernicus Sentinel data [2026]”修改产品声明，消费者通过统一来源组件公开展示。既有主导航、独占底部呈现与其他区域继续遵循Map当前采用入口；覆盖范围和验证限制见技术owner与任务记录。
+用户要求已进入产品及技术Context；本次新增视觉已于2026-09-13确认采用。生产实现复用原地图组件、三档拖动、完整基本信息及天文区，加入地形同级章节、半径轴和地图复选/单选；真实Copernicus DEM GLO-30发布样本经BFF进入点位地形图，并通过WEAPP `MapContext.addGroundOverlay`进入原生主地图。服务响应同时携带来源、DOI、许可链接、派生方式和Copernicus WorldDEM-30 专属加工声明（准确原文由地形发布 manifest 保存，不能套用 Sentinel 声明），消费者通过统一来源组件公开展示。既有主导航、独占底部呈现与其他区域继续遵循Map当前采用入口；覆盖范围和验证限制见技术owner与任务记录。
 
 参考：[地形390px](reference/terrain.png)、[地形+光污染](reference/layers.png)。所有地形形状、光污染强弱、查看半径和底图叠加均是设计示例，不声称来自该地点实际分析；源信息不完整的示例也不构成精度评价。
 

@@ -97,6 +97,10 @@ import {
 } from "./media-object-store.ts";
 import { decodeContributionBase64 } from "./contribution-validation.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
+import { PostgresReminderSubscriptionStore } from "./postgres-reminder-subscription-store.ts";
+import { validateReminderSubscriptionChallengeId } from "./reminder-subscription-binding.ts";
+import type { ReminderSubscriptionPrepareRequest, ReminderSubscriptionPrepareData,
+  ReminderSubscriptionReportRequest, ReminderSubscriptionReportData } from "@starward/miniapp-contracts";
 import { MemoryOutbox, MemoryTelemetry } from "./runtime.ts";
 import { createVendorUsageTransport, MINIAPP_VENDOR_BUDGET_CNY } from "./vendor-usage.ts";
 import { PostgresVendorUsageStore, readVendorUsageBudget } from "./postgres-vendor-usage.ts";
@@ -146,13 +150,20 @@ function envelope<T>(
   binding?: { validAt?: string | null; contextRevision?: number },
 ): ApiEnvelope<T> {
   const generatedAt = new Date().toISOString();
+  // Mandatory credit is part of the delivered representation even when the
+  // measurements do not change. Retrieval timestamps are not credit content.
+  const attributions = sources.flatMap((source) => source.attribution ? [{
+    name: source.attribution.name,
+    url: source.attribution.url,
+    statements: source.attribution.statements,
+  }] : []);
   return {
     apiVersion: "v2",
     data,
     dataState: state,
     generatedAt,
     validAt: binding?.validAt ?? generatedAt,
-    etag: "W/\"" + hash({ data, state }).slice(0, 24) + "\"",
+    etag: "W/\"" + hash({ data, state, ...(attributions.length ? { attributions } : {}) }).slice(0, 24) + "\"",
     sources,
     warnings,
     requestId: "request:" + randomUUID(),
@@ -620,7 +631,7 @@ function layerFor(input: {
 export class MiniappService {
   readonly repository: MiniappRepositoryPort;
   readonly astronomy: AstronomyService;
-  readonly celestialObjects = new CelestialObjectInformationService();
+  readonly celestialObjects: CelestialObjectInformationService;
   readonly deepSkyImages: DeepSkyImageryService;
   readonly telemetry: TelemetryPort;
   readonly cache: CachePort;
@@ -634,6 +645,7 @@ export class MiniappService {
   readonly spotEnvironment: SpotEnvironmentService;
   readonly outbox = new MemoryOutbox();
   private readonly usageStore: PostgresVendorUsageStore | undefined;
+  private readonly reminderSubscriptions: PostgresReminderSubscriptionStore | null;
 
   constructor(input: {
     repository: MiniappRepositoryPort;
@@ -653,10 +665,13 @@ export class MiniappService {
   }) {
     this.repository = input.repository;
     this.config = input.config;
+    this.reminderSubscriptions = input.repository instanceof PostgresMiniappRepository
+      ? new PostgresReminderSubscriptionStore(input.repository.pool) : null;
     this.spotEnvironment = new SpotEnvironmentService(input.repository,
       input.recentWeather ?? new QWeatherRecentWeatherAdapter(input.config),
       input.airQuality ?? new QWeatherAirQualityAdapter(input.config));
     this.deepSkyImages = input.deepSkyImages ?? new DeepSkyImageryService();
+    this.celestialObjects = new CelestialObjectInformationService(this.deepSkyImages);
     this.usageStore = input.usageStore;
     this.route = input.route;
     this.placeSearch = input.placeSearch ?? createPlaceSearchPort(input.config);
@@ -1034,8 +1049,8 @@ export class MiniappService {
     };
     preferences?: SpotRankingPreferences;
     userId?: UserId | null;
-  }): Promise<ApiEnvelope<MapSceneData>> {
-    const weatherDeadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs;
+  }, weatherDeadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs): Promise<ApiEnvelope<MapSceneData>> {
+    const startedAt = Date.now();
     const context = await this.observationContexts.get(input.contextId);
     const filters = input.filters ?? EMPTY_FILTER_STATE;
     const layerKind = input.layer ?? "NORMAL";
@@ -1173,6 +1188,19 @@ export class MiniappService {
       );
     }
 
+    // Excluded candidates can become UNKNOWN when their hourly evidence expires.
+    // Carry that boundary even when there are no visible rows or polygons.
+    const forecastEnds = Object.values(evaluations)
+      .map((evaluation) => Date.parse(evaluation.weatherAt ?? "") + 3_600_000)
+      .filter(Number.isFinite);
+    const forecastValidUntil = forecastEnds.length
+      ? new Date(Math.min(...forecastEnds)).toISOString() : null;
+    const deliveryBoundary = Math.min(...Object.values(reports).flatMap(report => [
+      ...report.data.hourly.map(row => Date.parse(row.weatherAt ?? "") + 3_600_000),
+      ...report.sources.map(source => Date.parse(source.validTo ?? "")),
+      ...report.data.weatherEvidence.alerts.filter(alert => alert.status === "ACTIVE")
+        .map(alert => Date.parse(alert.expiresAt ?? "")),
+    ]).filter(instant => Number.isFinite(instant) && instant > startedAt));
     const filtered = queryMatched.filter((spot) =>
       passesActiveFilters(filterEvidence[spot.spotId]!, filters),
     );
@@ -1185,7 +1213,7 @@ export class MiniappService {
     cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence,
       revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
-    if (cached) return cached;
+    if (cached) return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : cached;
     const routeCapability = { state: "UNAVAILABLE" as const, reason: "道路距离与行程时长未接入；距离仅供直线参考", recovery: "NONE" as const };
     const allFilterEvidence = queryMatched.map((spot) => filterEvidence[spot.spotId]!);
     const byGroup = Object.fromEntries(
@@ -1286,6 +1314,7 @@ export class MiniappService {
       {
         context,
         spots: ranked.spots,
+        forecastValidUntil,
         evaluations: visibleEvaluations,
         filterEvidence: visibleFilterEvidence,
         favoriteSpotIds,
@@ -1342,7 +1371,9 @@ export class MiniappService {
       layer: layerKind,
     });
     await this.cache.set(cacheKey, result, 120);
-    return result;
+    // Repository/cache waits are part of delivery too. A re-projection shares
+    // the original weather budget; it must not silently buy another deadline.
+    return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : result;
   }
 
   async search(
@@ -1700,8 +1731,8 @@ export class MiniappService {
     return this.celestialObjects.get(reference, locale);
   }
 
-  getDeepSkyImage(reference: string, level = "MEDIUM") {
-    return this.deepSkyImages.get(reference, level);
+  getDeepSkyImage(reference: string, level = "MEDIUM", publicationHash?: string) {
+    return this.deepSkyImages.get(reference, level, publicationHash);
   }
 
   async getFavorites(userId: UserId) {
@@ -1914,6 +1945,30 @@ export class MiniappService {
     return this.getFavorites(userId);
   }
 
+  private reminderSubscriptionBinding() {
+    const { appId, subscriptionTemplateId, deliveryIdentityKey } = this.config.wechat;
+    return this.config.authMode === "WECHAT" && appId && subscriptionTemplateId && deliveryIdentityKey && this.reminderSubscriptions
+      ? { appId, templateId: subscriptionTemplateId } : null;
+  }
+
+  async prepareReminderSubscription(userId: UserId, planId: string, input: ReminderSubscriptionPrepareRequest): Promise<ApiEnvelope<ReminderSubscriptionPrepareData>> {
+    if (!input || typeof input.reminderId !== "string" || !/^[A-Za-z0-9:_-]{1,128}$/u.test(input.reminderId))
+      throw new Error("reminder_subscription_request_invalid");
+    const binding = this.reminderSubscriptionBinding();
+    if (!binding) return envelope({ state: "UNAVAILABLE", reason: "NOT_CONFIGURED" }, "FRESH", []);
+    const challenge = await this.reminderSubscriptions!.prepare(userId, planId, input.reminderId, binding);
+    return envelope(challenge ? { state: "READY", ...challenge } : { state: "UNAVAILABLE", reason: "REMINDER_NOT_ELIGIBLE" }, "FRESH", []);
+  }
+
+  async reportReminderSubscription(userId: UserId, challengeId: string, input: ReminderSubscriptionReportRequest): Promise<ApiEnvelope<ReminderSubscriptionReportData>> {
+    validateReminderSubscriptionChallengeId(challengeId);
+    if (!input || !["accept", "reject", "ban", "filter"].includes(input.choice)) throw new Error("reminder_subscription_choice_invalid");
+    const binding = this.reminderSubscriptionBinding();
+    const recorded = binding ? await this.reminderSubscriptions!.record(userId, challengeId, input.choice, binding) : false;
+    if (recorded) await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
+    return envelope({ recorded }, "FRESH", []);
+  }
+
   async getPlans(userId: UserId) {
     const cacheKey = "plans:" + hash(userId).slice(0, 24);
     const cached =
@@ -1931,8 +1986,8 @@ export class MiniappService {
       {
         plans,
         planSpots: await this.planSpotLabels(plans),
-        // A template and encrypted delivery identity are both deliberately absent
-        // until the AppID's approved subscription template is configured.
+        // Optional encrypted recipient registration is not subscription authorization.
+        // The approved template, authorization flow and sender are still unavailable.
         reminderNotifications: schedules.map(row => publicReminderStatus(row, false)),
       },
       "FRESH",

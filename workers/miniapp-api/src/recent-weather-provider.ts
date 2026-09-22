@@ -3,7 +3,7 @@ import { localParts, type RecentWeatherDay, type SourceSummary, type SpotRecentW
 import type { ProviderResult } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 import { ComputationCache } from "./computation-cache.ts";
-import { fetchJson, qweatherJwt, qweatherRequestPoint } from "./qweather-client.ts";
+import { fetchJson, qweatherAttribution, qweatherInstant, qweatherJwt, qweatherRequestPoint } from "./qweather-client.ts";
 import { waitForCaller } from "./provider-deadline.ts";
 
 type Region = NonNullable<SpotRecentWeatherData["region"]>;
@@ -21,7 +21,7 @@ function record(value: unknown): RecordValue {
 function text(value: unknown) { return typeof value === "string" ? value.trim() : ""; }
 function attributions(payload: unknown): string[] {
   const refer = record(record(payload).refer);
-  return [refer.sources, refer.license].flatMap(value => Array.isArray(value) ? value.flatMap(item => text(item) ? [text(item)] : []) : []);
+  return [refer.sources, refer.license].flatMap(value => qweatherAttribution(value).statements);
 }
 function numeric(value: unknown, min: number, max: number): number | null {
   if (typeof value !== "number" && typeof value !== "string" || value === "" || typeof value === "string" && !value.trim()) return null;
@@ -40,6 +40,7 @@ function source(now: number, state: SourceSummary["state"], region: Region | nul
   return {
     id: `qweather:recent:${region?.locationId ?? "unavailable"}:${now}`, kind: "HISTORICAL_RECORD",
     provider: "和风天气", title: "近两日地区历史再分析", sourceUrl: DOC,
+    attribution: qweatherAttribution(attribution),
     license: "和风天气开发者许可", licenseUrl: "https://dev.qweather.com/docs/terms/",
     publishedAt: null, retrievedAt: new Date(now).toISOString(), validFrom: null, validTo: null,
     state, confidence: null, precision: "邻近地区历史再分析；按地区自然日，不含今天，不是点位实测",
@@ -48,7 +49,7 @@ function source(now: number, state: SourceSummary["state"], region: Region | nul
 }
 
 /** Validates the requested day before interpreting any measurements. */
-export function parseRecentWeatherDay(payload: unknown, date: string): RecentWeatherDay {
+export function parseRecentWeatherDay(payload: unknown, date: string, timezone: string): RecentWeatherDay {
   const body = record(payload);
   if (body.code === "404") throw new Error("qweather_history_no_data");
   if (body.code !== "200") throw new Error("qweather_history_response_unavailable");
@@ -61,10 +62,22 @@ export function parseRecentWeatherDay(payload: unknown, date: string): RecentWea
     temperatureMinC = null; temperatureMaxC = null;
   }
   const hours = Array.isArray(body.weatherHourly) ? body.weatherHourly : [];
-  const validHours = hours.map(record).filter(hour => text(hour.time).startsWith(`${date} `) && /^\d{4}-\d{2}-\d{2} (?:[01]\d|2[0-3]):[0-5]\d$/u.test(text(hour.time)));
+  const validHours = hours.map(record).flatMap<RecordValue & { localHour: string }>(hour => {
+    const raw = text(hour.time);
+    // Legacy values are regional wall time. ISO values carry an instant which
+    // must be interpreted in the freshly resolved region, including midnight.
+    if (/^\d{4}-\d{2}-\d{2} (?:[01]\d|2[0-3]):[0-5]\d$/u.test(raw)) {
+      return raw.startsWith(`${date} `) && qweatherInstant(`${raw.replace(" ", "T")}Z`)
+        ? [{ ...hour, localHour: raw.slice(0, 13) }] : [];
+    }
+    const instant = qweatherInstant(raw);
+    if (!instant || localDate(Date.parse(instant), timezone) !== date) return [];
+    const parts = localParts(new Date(instant), timezone);
+    return [{ ...hour, localHour: `${date} ${String(parts.hour).padStart(2, "0")}` }];
+  });
   const windSamples = validHours.flatMap(hour => {
     const speed = numeric(hour.windSpeed, 0, 500);
-    return speed === null ? [] : [{ hour: text(hour.time).slice(0, 13), speed }];
+    return speed === null ? [] : [{ hour: hour.localHour, speed }];
   });
   const sampledWindMaxKph = windSamples.length ? Math.max(...windSamples.map(sample => sample.speed)) : null;
   const sampledWindHours = new Set(windSamples.map(sample => sample.hour)).size;
@@ -78,12 +91,10 @@ export function parseRecentWeatherDay(payload: unknown, date: string): RecentWea
 }
 
 export class QWeatherRecentWeatherAdapter implements RecentWeatherPort {
-  private readonly regions: ComputationCache<Sourced<Region>>;
   private readonly days: ComputationCache<Sourced<RecentWeatherDay>>;
   private readonly results: ComputationCache<ProviderResult<RecentWeather>>;
   constructor(private readonly config: MiniappRuntimeConfig, private readonly transport: typeof fetch = fetch,
     private readonly now: () => number = Date.now, private readonly requestDeadlineMs = 3_000) {
-    this.regions = new ComputationCache(256, now);
     this.days = new ComputationCache(512, now);
     this.results = new ComputationCache(128, now);
   }
@@ -103,8 +114,9 @@ export class QWeatherRecentWeatherAdapter implements RecentWeatherPort {
     const coordinate = `${point.longitude.toFixed(2)},${point.latitude.toFixed(2)}`;
     // Minute identity prevents yesterday's date set surviving regional midnight.
     const key = createHash("sha256").update(`${coordinate}:${Math.floor(this.now() / 60_000)}`).digest("hex");
-    return waitForCaller(this.results.get(key, () => this.fetchRecent(coordinate), result =>
-      this.now() + (result.state === "UNAVAILABLE" ? 5_000 : 60_000)), input.signal);
+    // Share only active work. GeoAPI results may be used live, not retained as
+    // a geographic cache (including inside a completed weather response).
+    return waitForCaller(this.results.get(key, () => this.fetchRecent(coordinate), () => 0), input.signal);
   }
 
   private async fetchRecent(coordinate: string): Promise<ProviderResult<RecentWeather>> {
@@ -112,7 +124,7 @@ export class QWeatherRecentWeatherAdapter implements RecentWeatherPort {
     let dates: string[] = [];
     let asOfLocalDate: string | null = null;
     try {
-      const regionResult = await this.regions.get(coordinate, async () => {
+      const regionResult = await (async () => {
         const payload = record(await this.request("/geo/v2/city/lookup", { location: coordinate, number: "1" }));
         if (payload.code === "404") throw new Error("qweather_history_no_data");
         const row = record(Array.isArray(payload.location) ? payload.location[0] : null);
@@ -120,14 +132,14 @@ export class QWeatherRecentWeatherAdapter implements RecentWeatherPort {
           throw new Error("qweather_history_region_unavailable");
         new Intl.DateTimeFormat("en", { timeZone: text(row.tz) }).format(this.now());
         return { value: { locationId: text(row.id), name: [...new Set([text(row.adm1), text(row.adm2), text(row.name)].filter(Boolean))].join(" · "), timezone: text(row.tz) }, attributions: attributions(payload), retrievedAt: this.now() };
-      }, () => this.now() + 7 * 86_400_000);
+      })();
       region = regionResult.value;
       asOfLocalDate = localDate(this.now(), region.timezone);
       dates = previousDates(asOfLocalDate);
       const selectedRegion = region;
-      const rows = await Promise.allSettled(dates.map(date => this.days.get(`${selectedRegion.locationId}:${date}`, async () => {
+      const rows = await Promise.allSettled(dates.map(date => this.days.get(createHash("sha256").update(`${selectedRegion.locationId}:${selectedRegion.timezone}:${date}`).digest("hex"), async () => {
         const payload = await this.request("/v7/historical/weather", { location: selectedRegion.locationId, date: date.replaceAll("-", ""), unit: "m" });
-        return { value: parseRecentWeatherDay(payload, date), attributions: attributions(payload), retrievedAt: this.now() };
+        return { value: parseRecentWeatherDay(payload, date, selectedRegion.timezone), attributions: attributions(payload), retrievedAt: this.now() };
       }, result => this.now() + ([result.value.precipitationMm, result.value.temperatureMinC, result.value.temperatureMaxC].some(value => value === null) ? 60_000 : 6 * 60 * 60_000))));
       const found = rows.flatMap(result => result.status === "fulfilled" ? [result.value] : []);
       const days = found.map(result => result.value);

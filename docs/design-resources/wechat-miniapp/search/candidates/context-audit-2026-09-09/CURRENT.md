@@ -1,5 +1,7 @@
 # search · 本对话当前设计资源
 
+> 2026-09-22：下方 Stitch 节点记录仅是当时同步记录，所在项目已隔离，禁止作为新迭代基线。当前局部源仅在页面 ADOPTED.md 声明范围内有效；见 [Stitch 隔离状态](../../../stitch-status.md)。
+
 2026-09-09 用户要求完成最终修订后收敛本对话全部资源到对应 Context、同步 Stitch 并清理废案。本入口明确当前局部设计依据；文件夹名 candidates 保留来源路径，避免破坏现有互链，不表示仍有多个竞争版本。
 
 [当前交互资源](review.html) · [可编辑预览](preview/index.html) · [原稿与历次说明](README.md)
@@ -8,8 +10,8 @@
 
 历史原稿/被替代版本仅用于追溯，不与本入口并列指导开发。当前生产方案仍由 Context 的责任、数据与验证边界约束。
 
-## 当前视觉与 Stitch
+## 2026-09-09 视觉与 Stitch 同步记录（历史）
 
-[当前390px视觉](reference/search-current-2026-09-09.png) · [Stitch项目](https://stitch.withgoogle.com/projects/5585184579244766246)
+[当前390px视觉](reference/search-current-2026-09-09.png) · [已隔离的Stitch历史项目](https://stitch.withgoogle.com/projects/5585184579244766246)
 
-Stitch当前精确参考节点 `d3733ee8-4f3a-409d-bf20-44689c1dd290`；它是从当前本地页面输出并同步的截图，不是可编辑HTML节点。可编辑交互源以本目录preview和页面引用的共享资源为准。Stitch保留仍适用的生成底稿/其他状态，清理已替代稿8张；清理前源稿已归档在项目任务记录。
+当时同步的静态参考节点 `d3733ee8-4f3a-409d-bf20-44689c1dd290`；它是从当前本地页面输出并同步的截图，不是可编辑HTML节点。可编辑交互源以本目录preview和页面引用的共享资源为准。Stitch保留仍适用的生成底稿/其他状态，清理已替代稿8张；清理前源稿已归档在项目任务记录。

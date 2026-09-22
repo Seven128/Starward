@@ -48,9 +48,9 @@ export function isPublicArticleAddress(address: string): boolean {
 }
 
 /** Resolve once, validate every answer, and connect only to that validated answer. */
-type ArticleResolver = (hostname: string, options: LookupAllOptions) => Promise<LookupAddress[]>;
-export async function resolveArticleDestination(url: URL, resolve: ArticleResolver = lookup) {
-  const answers = await resolve(url.hostname, { all: true, verbatim: true });
+export type ArticleResolver = (hostname: string, options: LookupAllOptions, signal?: AbortSignal) => Promise<LookupAddress[]>;
+export async function resolveArticleDestination(url: URL, resolve: ArticleResolver = lookup, signal?: AbortSignal) {
+  const answers = await resolve(url.hostname, { all: true, verbatim: true }, signal);
   if (!answers.length || answers.some(answer => !isPublicArticleAddress(answer.address)))
     throw new Error("event_article_destination_not_public");
   return answers.find(answer => answer.family === 4) ?? answers[0]!;
@@ -63,7 +63,7 @@ async function readArticleHtml(url: URL, resolveDns: ArticleResolver = lookup): 
   let cancelLookup: (() => void) | undefined;
   try {
     const answer = await Promise.race([
-      resolveArticleDestination(url, resolveDns),
+      resolveArticleDestination(url, resolveDns, abort.signal),
       new Promise<never>((_, reject) => {
         cancelLookup = () => reject(new Error("event_article_timeout"));
         abort.signal.addEventListener("abort", cancelLookup, { once: true });

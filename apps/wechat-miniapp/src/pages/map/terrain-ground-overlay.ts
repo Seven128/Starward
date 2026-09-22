@@ -28,13 +28,16 @@ export function createTerrainGroundOverlayCoordinator(
   let generation = 0;
   let queue = Promise.resolve();
 
-  const apply = (target: TerrainGroundOverlayTarget | null) => {
+  const apply = (target: TerrainGroundOverlayTarget | null, intent: "display" | "suspend" = "display") => {
+    // Hidden-page cleanup does not describe the next visible presentation.
+    // Keep installed state on failure so resuming can still update/remove it.
+    if (intent === "suspend") target = null;
     const currentGeneration = ++generation;
     queue = queue.catch(() => undefined).then(async () => {
       if (currentGeneration !== generation) return;
       try {
         if (!target && !installed) {
-          onResult({ error: null, target });
+          if (intent === "display") onResult({ error: null, target });
           return;
         }
         const context = createContext();
@@ -49,9 +52,9 @@ export function createTerrainGroundOverlayCoordinator(
           await context.addGroundOverlay({ id, ...target, visible: true });
           installed = true;
         }
-        if (currentGeneration === generation) onResult({ error: null, target });
+        if (currentGeneration === generation && intent === "display") onResult({ error: null, target });
       } catch (error) {
-        if (currentGeneration === generation) onResult({ error, target });
+        if (currentGeneration === generation && intent === "display") onResult({ error, target });
       }
     });
     return queue;

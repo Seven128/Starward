@@ -20,7 +20,7 @@ function load(file: string, name: string, context: object) {
   const ast = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const code = ast.statements.filter(node => !ts.isImportDeclaration(node)).map(node => node.getText(ast).replace(/^export /, "")).join("\n");
   return vm.runInNewContext(ts.transpileModule(code + `;${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText,
-    { Date, setTimeout, clearTimeout, weatherAlertState, ...context });
+    { Date, setTimeout, clearTimeout, weatherAlertState, SourceAttribution: "SourceAttribution", ...context });
 }
 
 test("current warnings respect activation and expiry independently of available forecast hours", () => {
@@ -77,6 +77,23 @@ test("shared actual rendering removes resolved alerts, shows timestamps, and ret
   currentTime = now;
   assert.match(text(render({ ...props, reportHandlesFailure: true })), /示例|暴雨预警/,
     "missing forecast must not erase independently valid warning evidence");
+});
+
+test("warning content changes notify a measured parent on activation and expiry, without a report replacement",()=>{
+  let currentTime=now-2000,measurements=0,slot=0;
+  const deps:Array<unknown[]>=[];
+  const render=load("./weather-alerts.tsx","WeatherAlerts",{
+    React:{createElement:(type:any,props:any,...children:any[])=>({type,props,children})},Text:"Text",View:"View",StatusPanel:"StatusPanel",
+    calendarDateInTimezone,clockTimeInTimezone,useWeatherAlertClock:()=>currentTime,
+    useAppStore:(selector:any)=>selector({notify:()=>{}}),
+    useEffect:(fn:any,next:unknown[])=>{const index=slot++;if(!deps[index]||next.some((value,i)=>value!==deps[index]![i]))fn();deps[index]=next;},
+  });
+  const props={evidence:evidence(),timezone:"Asia/Shanghai",active:true,scopeKey:"spot:a",onRecover:()=>{},onContentChange:()=>measurements++};
+  const draw=()=>{slot=0;render(props);};
+  draw();assert.equal(measurements,1);
+  currentTime=now;draw();assert.equal(measurements,2,"local activation changes height");
+  currentTime=now+1000;draw();assert.equal(measurements,2,"unchanged content does not trigger a measurement on every render");
+  currentTime=now+2000;draw();assert.equal(measurements,3,"local expiry releases height without needing a new report");
 });
 
 test("mounted clock expires alerts without input, refreshes, stops on hide and resamples on show", t => {

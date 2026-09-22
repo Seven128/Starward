@@ -15,7 +15,7 @@ export default defineAppConfig({
     },
     {
       root: "sky",
-      pages: ["detail/index"],
+      pages: ["detail/index", "sources/index"],
     },
     {
       root: "content",

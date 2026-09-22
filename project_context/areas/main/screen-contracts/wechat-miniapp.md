@@ -7,6 +7,8 @@
 
 ## Design And Implementation Boundary
 
+2026-09-22用户要求隔离旧生成页面，避免后续设计误用。Stitch历史混合项目已退出当前迭代基线；资源状态与项目清单见[Stitch隔离状态](../../../../docs/design-resources/wechat-miniapp/stitch-status.md)，当前源仍经[各页唯一采用入口](../../../../docs/design-resources/wechat-miniapp/README.md)进入。隔离保留现行采用及必要依赖，不代表最新源已重新同步到Stitch，也不授权改变抽屉、Tab或现用3D图标。
+
 2026-09-13本轮是一个完整需求，包含地形、B行图标、天文事件Modal，以及整体UI/UX校验与Context对齐补开发四个部分，产品/技术Context与对应资源必须同时保持一致。变更基于现有采用页面增量完成：地图完整基本信息、三档拖动/单文档/照片查看、原天文内容，以及计划完整地点/观测时间/出发路线/提醒清单/备注/保存与返回不因局部改动而重构或删减。简化宿主不能替代完整页面作为当前资源；本轮最终增量视觉已于2026-09-13获用户确认采用，浏览器验证不代表生产完成。统一审阅及修改范围见[完整资源入口](../../../../docs/design-resources/wechat-miniapp/shared/astronomical-event-modal/README.md)。
 
 本轮owner导航：[地形同级章节与数据边界](wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)、[地图流星入口/地形叠加与计划单选](wechat-miniapp/map-and-finder.md)、[共享事件Modal与B行图标](wechat-miniapp/shared-state-and-recovery.md)。旧两章节和独立事件页面采用稿只在未修改范围继续有效；当前设计采用与生产迁移分别记录。

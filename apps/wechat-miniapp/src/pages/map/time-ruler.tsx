@@ -1,10 +1,12 @@
+import { createRulerScrollPosition } from "@/components/ruler-scroll-position";
+import { createScrollSettlement } from "@/components/scroll-settlement";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import type { BaseEventOrig, ScrollViewProps } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { MapSceneTimeFrame } from "@starward/miniapp-contracts";
 import { nearestMapTimeFrameIndex } from "./map-time-frame";
-import { useDidHide } from "@tarojs/taro";
+import { useDidHide, useDidShow } from "@tarojs/taro";
 import type { MoonPhaseKey } from "@starward/miniapp-contracts";
 import { MoonPhaseImage, moonPhaseLabel } from "@/components/moon-phase";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
@@ -68,21 +70,30 @@ export function MapTimeRuler({
     ? nearestMapTimeFrameIndex(frames, selectedAt)
     : 0;
   const [index, setIndex] = useState(initialIndex);
-  const interacting = useRef(false);
+  const [scrollLeft, setScrollLeft] = useState(initialIndex * RULER_STEP);
+  const settleCallback = useRef<(offset: number) => void>(() => {});
+  const settlementRef = useRef<ReturnType<typeof createScrollSettlement> | null>(null);
+  if (!settlementRef.current) settlementRef.current = createScrollSettlement(offset => settleCallback.current(offset));
+  const settlement = settlementRef.current;
+  const nativePosition = useRef(createRulerScrollPosition(`${control}-scroll`)).current;
   const cancelCallback = useRef(onCancel);
   cancelCallback.current = onCancel;
   const frameIdentity = frames.map((frame) => frame.atUtc).join("|");
 
   const cancelInteraction = () => {
-    const pending = interacting.current;
-    interacting.current = false;
+    const pending = settlement.active;
+    settlement.cancel();
     setIndex(initialIndex);
+    setScrollLeft(initialIndex * RULER_STEP);
+    nativePosition.move(initialIndex * RULER_STEP);
     if (pending) cancelCallback.current();
   };
-  useDidHide(cancelInteraction);
+  useDidHide(() => { cancelInteraction(); nativePosition.cancel(); });
+  useDidShow(() => nativePosition.move(initialIndex * RULER_STEP));
   useEffect(() => () => {
-    if (interacting.current) {
-      interacting.current = false;
+    nativePosition.cancel();
+    if (settlement.active) {
+      settlement.cancel();
       cancelCallback.current();
     }
   }, []);
@@ -110,6 +121,15 @@ export function MapTimeRuler({
     return clamp(Math.round(left / RULER_STEP));
   };
 
+  settleCallback.current = offset => {
+    if (disabled) return;
+    const next = clamp(Math.round(offset / RULER_STEP));
+    setScrollLeft(next * RULER_STEP);
+    nativePosition.move(next * RULER_STEP);
+    updatePreview(next);
+    onCommit(next);
+  };
+
   if (!frames.length) {
     return (
       <View
@@ -134,11 +154,12 @@ export function MapTimeRuler({
       data-control={control}
     >
       <ScrollView
+        id={`${control}-scroll`}
         className="map-time-ruler__scroll"
         scrollX={!disabled}
         enhanced
         showScrollbar={false}
-        scrollLeft={index * RULER_STEP}
+        scrollLeft={scrollLeft}
         scrollWithAnimation
         ariaLabel={`观测时间切片；当前${formatTime(selectedAt, timezone)}；点击切片可直接选择时间`}
         onTouchStart={(event) => {
@@ -146,26 +167,28 @@ export function MapTimeRuler({
             cancelInteraction();
             return;
           }
-          interacting.current = true;
+          nativePosition.cancel();
+          settlement.begin();
         }}
         onTouchMove={(event) => {
           if ((event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) cancelInteraction();
         }}
+        onTouchEnd={() => settlement.release()}
+        onDragEnd={() => settlement.release()}
         onTouchCancel={cancelInteraction}
         onScroll={(event) => {
-          if (interacting.current) updatePreview(readIndex(event));
+          if (disabled || !settlement.active) return;
+          settlement.update(Number(event.detail.scrollLeft));
+          updatePreview(readIndex(event));
         }}
-        onScrollEnd={(event) => {
-          if (disabled || !interacting.current) return;
-          interacting.current = false;
-          const next = readIndex(event);
-          updatePreview(next);
-          onCommit(next);
+        onScrollEnd={() => {
+          if (disabled || !settlement.active) return;
+          settlement.end();
         }}
       >
         <View className="map-time-ruler__track">
           {frames.map((frame, frameIndex) => {
-            const selected = interacting.current ? frameIndex === index : Date.parse(frame.atUtc) === Date.parse(selectedAt);
+            const selected = settlement.active ? frameIndex === index : Date.parse(frame.atUtc) === Date.parse(selectedAt);
             const position = rulerPosition(frameIndex - index);
             const phase = moonPhases?.[frameIndex] ?? null;
             const style = {
@@ -183,7 +206,9 @@ export function MapTimeRuler({
                 ariaLabel={`${formatTime(frame.atUtc, timezone)}${moonPhases !== undefined ? `，${moonPhaseLabel(phase)}` : ""}${selected ? "，已选择" : ""}`}
                 onClick={() => {
                   if (disabled) return;
-                  interacting.current = false;
+                  settlement.cancel();
+                  setScrollLeft(frameIndex * RULER_STEP);
+                  nativePosition.move(frameIndex * RULER_STEP);
                   updatePreview(frameIndex);
                   onCommit(frameIndex);
                 }}

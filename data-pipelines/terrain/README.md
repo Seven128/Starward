@@ -14,6 +14,12 @@ both whenever the PNG is distributed. Copernicus DEM is a digital surface
 model acquired during 2011–2015, so buildings, infrastructure and vegetation
 may be represented; it is not a bare-earth terrain model.
 
+Both viewport terrain and spot terrain consume the same publication source.
+The Map layer sheet offers its full source notice in a scrollable disclosure;
+the spot terrain view shows its own source directly. The fixed Map controls
+must remain outside the long notice. Use the WorldDEM-30 notice from this
+publication, not a generic Copernicus Sentinel modification notice.
+
 ```powershell
 python data-pipelines/terrain/publish_copernicus_dem.py `
   --cache output/terrain-source-cache `

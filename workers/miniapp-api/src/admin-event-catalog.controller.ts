@@ -7,6 +7,7 @@ import { MiniappService } from "./miniapp-service.ts";
 import { extractEventArticle, retrieveEventArticle, decodeEventArticleHtml, EVENT_ARTICLE_HTML_BYTES } from "./event-article-extraction.ts";
 import { importEventArticle, type EventArticleImport } from "./event-article-import.ts";
 import type { EventArticleRightsConfirmation } from "./event-article-policy.ts";
+import { createEventArticleResolver } from "./event-article-dns.ts";
 
 function sourceId(value: string) {
   const decoded = decodeURIComponent(value);
@@ -80,7 +81,7 @@ export class AdminEventCatalogController {
       if (body.html !== undefined) throw new Error("event_article_html_invalid");
       return envelope(extractEventArticle(decodeEventArticleHtml(body.htmlBase64), url));
     }
-    return envelope(body.html === undefined ? await retrieveEventArticle(url)
+    return envelope(body.html === undefined ? await retrieveEventArticle(url, createEventArticleResolver(this.service.config.eventArticleDnsMode))
       : extractEventArticle(requiredText(body.html, "event_article_html", EVENT_ARTICLE_HTML_BYTES), url));
   }
 

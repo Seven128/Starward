@@ -2,14 +2,20 @@ import { onlineManager, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { recordAcceptanceDiagnostic } from "@/services/acceptance-diagnostics";
 
-interface QueryOptions<T> {
+export interface QueryOptions<T> {
   queryKey: readonly unknown[];
   queryFn: (signal: AbortSignal | undefined) => Promise<T>;
   enabled?: boolean;
   staleTime?: number;
+  gcTime?: number;
   refetchInterval?: number | false;
   throwOnRefetchError?: boolean;
+  /** Integrity-validated immutable publications may use object identity as a
+   * capability; Query must not rebuild them through structural sharing. */
+  structuralSharing?: boolean;
 }
+
+type RefetchOptions = { cancelRefetch?: boolean };
 
 type QueryResult<T> = (
   | {
@@ -17,21 +23,21 @@ type QueryResult<T> = (
       error: null;
       isError: false;
       isPending: false;
-      refetch: () => Promise<T | undefined>;
+      refetch: (options?: RefetchOptions) => Promise<T | undefined>;
     }
   | {
       data: undefined;
       error: unknown;
       isError: true;
       isPending: false;
-      refetch: () => Promise<T | undefined>;
+      refetch: (options?: RefetchOptions) => Promise<T | undefined>;
     }
   | {
       data: undefined;
       error: null;
       isError: false;
       isPending: true;
-      refetch: () => Promise<T | undefined>;
+      refetch: (options?: RefetchOptions) => Promise<T | undefined>;
     }) & { refreshError?: unknown; isFetching: boolean };
 
 export function useResourceQuery<T>({
@@ -39,8 +45,10 @@ export function useResourceQuery<T>({
   queryFn,
   enabled = true,
   staleTime = 60_000,
+  gcTime,
   refetchInterval = false,
   throwOnRefetchError = false,
+  structuralSharing = true,
 }: QueryOptions<T>): QueryResult<T> {
   const diagnosticKey = String(queryKey[0] ?? "resource-query");
   const result = useQuery<T>({
@@ -52,7 +60,9 @@ export function useResourceQuery<T>({
     },
     enabled,
     staleTime,
+    ...(gcTime === undefined ? {} : { gcTime }),
     refetchInterval,
+    structuralSharing,
   });
   useEffect(() => {
     recordAcceptanceDiagnostic(
@@ -61,8 +71,8 @@ export function useResourceQuery<T>({
       `${result.status}:${result.fetchStatus}:${onlineManager.isOnline() ? "online" : "offline"}`,
     );
   }, [diagnosticKey, result.fetchStatus, result.status]);
-  const refetch = async () => {
-    const refreshed = await result.refetch({ throwOnError: throwOnRefetchError });
+  const refetch = async (options?: RefetchOptions) => {
+    const refreshed = await result.refetch({ ...options, throwOnError: throwOnRefetchError });
     return refreshed.error ? undefined : refreshed.data;
   };
   if (result.data !== undefined)

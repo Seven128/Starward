@@ -21,9 +21,9 @@ function monthGroups(dates: readonly string[]) {
   return [...groups.entries()];
 }
 
-function weekdayOffset(month: string) {
-  const [year, value] = month.split("-").map(Number);
-  return (new Date(Date.UTC(year!, value! - 1, 1)).getUTCDay() + 6) % 7;
+function weekdayOffset(firstDate: string) {
+  const [year, value, day] = firstDate.split("-").map(Number);
+  return (new Date(Date.UTC(year!, value! - 1, day!)).getUTCDay() + 6) % 7;
 }
 
 export function ObservationDateControl({
@@ -34,6 +34,7 @@ export function ObservationDateControl({
   busy,
   onOpenChange,
   onSelect,
+  nativeBackBoundary = true,
 }: {
   dates: readonly string[];
   selectedDate: string;
@@ -42,6 +43,8 @@ export function ObservationDateControl({
   busy: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (date: string) => void;
+  /** False when the parent already owns this page's single native Back layer. */
+  nativeBackBoundary?: boolean;
 }) {
   const selectedIndex = dates.indexOf(selectedDate);
   const choose = (date: string | undefined) => {
@@ -50,12 +53,12 @@ export function ObservationDateControl({
   };
   return (
     <>
-      <NativeBackBoundary
+      {nativeBackBoundary ? <NativeBackBoundary
         active={open}
         onBack={() => {
           if (!busy) onOpenChange(false);
         }}
-      />
+      /> : null}
       <View className="observation-date" data-control="observation-date-control">
         <Button
           className="observation-date__step"
@@ -103,7 +106,7 @@ export function ObservationDateControl({
                       {WEEKDAYS.map(day => <Text key={day}>{day}</Text>)}
                     </View>
                     <View className="observation-calendar__days">
-                      {Array.from({ length: weekdayOffset(month) }, (_, index) => <View key={`blank:${index}`} />)}
+                      {Array.from({ length: weekdayOffset(monthDates[0]!) }, (_, index) => <View key={`blank:${index}`} />)}
                       {monthDates.map(date => {
                         const selected = date === selectedDate;
                         return (

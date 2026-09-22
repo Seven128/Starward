@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
-import test from "node:test";
+import test, { mock } from "node:test";
 import { createTestRuntimeConfig } from "./runtime-config.ts";
 import {
   QWeatherCompositeAdapter,
   QWeatherForecastAdapter,
+  QWeatherAlertAdapter,
 } from "./weather-provider.ts";
+
+// These payloads describe this exact forecast issuance, independent of the day
+// the suite runs. Expiry behavior has explicit advancing-clock regressions.
+test.beforeEach(() => mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-08-23T12:00:00Z") }));
+test.afterEach(() => mock.timers.reset());
 
 const privateKeyPem = generateKeyPairSync("ed25519")
   .privateKey.export({ format: "pem", type: "pkcs8" })
@@ -34,6 +40,26 @@ function deadlineConfig() {
     projectId: "test-project", privateKeyPem, forecastHours: 24,
   } });
 }
+
+test("official warnings reject impossible and timezone-less source times without rewriting valid siblings", async () => {
+  const valid = { id: "valid", issuedTime: "2026-08-23T19:00:00+08:00", effectiveTime: "2026-08-23T19:30:00+08:00",
+    expireTime: "2026-08-23T21:00:00+08:00", messageType: { code: "alert" }, severity: "severe" };
+  for (const field of ["issuedTime", "effectiveTime", "onsetTime", "expireTime"]) {
+    for (const invalid of ["2026-02-30T00:00:00Z", "2026-08-23T12:00:00"]) {
+      const bad = { ...valid, id: "invalid", [field]: invalid };
+      for (const siblings of [false, true]) {
+        const adapter = new QWeatherAlertAdapter(deadlineConfig(), async () => response({ metadata: { zeroResult: false }, alerts: siblings ? [bad, valid] : [bad] }));
+        const result = await adapter.getAlerts(weatherInput);
+        assert.equal(result.state, siblings ? "PARTIAL" : "UNAVAILABLE", `${field}: ${invalid}`);
+        assert.equal(result.source.publishedAt, null, "unknown feed publication cannot become retrieval time");
+        if (siblings) {
+          assert.deepEqual(result.value?.map(row => [row.id, row.issuedAt, row.effectiveAt, row.expiresAt]),
+            [["valid", "2026-08-23T11:00:00.000Z", "2026-08-23T11:30:00.000Z", "2026-08-23T13:00:00.000Z"]]);
+        } else assert.equal(result.value, null, "invalid alert is not a successful empty feed");
+      }
+    }
+  }
+});
 
 function deadlinePayload(lane: string) {
   if (lane === "alerts") return { metadata: { tag: "clear-alert-test", zeroResult: true }, alerts: [] };
@@ -94,7 +120,7 @@ test("QWeather composition keeps the Weather API v1 timeline primary, exposes to
       return response({
         metadata: {
           tag: "forecast-tag",
-          attributions: ["https://developer.qweather.com/attribution.html"],
+          attributions: ["  Forecast © source\nhttps://www.qweather.com  "],
         },
         hours: [
           {
@@ -125,11 +151,12 @@ test("QWeather composition keeps the Weather API v1 timeline primary, exposes to
         metadata: {
           tag: "alert-tag",
           zeroResult: false,
-          attributions: ["Official authority"],
+          attributions: [" Official authority\nOriginal declaration "],
         },
         alerts: [
           {
             id: "alert-1",
+            senderName: "原发布机构",
             issuedTime: "2026-08-23T12:00:00Z",
             messageType: { code: "alert", supersedes: null },
             eventType: { name: "Thunderstorm", code: "1043" },
@@ -163,6 +190,11 @@ test("QWeather composition keeps the Weather API v1 timeline primary, exposes to
   assert.ok(row && !("officialSevereAlert" in row), "warnings remain independent from hourly forecast samples");
   assert.equal(row?.thunderstorm, false, "a warning must not rewrite the hourly forecast condition");
   assert.deepEqual(result.alerts.map(alert => alert.id), ["alert-1"]);
+  assert.equal(result.alerts[0]?.senderName, "原发布机构");
+  assert.deepEqual(result.sources.find(source => source.kind === "THIRD_PARTY_FORECAST")?.attribution,
+    { name: "和风天气", url: "https://www.qweather.com", statements: ["  Forecast © source\nhttps://www.qweather.com  "] });
+  assert.deepEqual(result.sources.find(source => source.kind === "OFFICIAL_REFERENCE")?.attribution?.statements,
+    [" Official authority\nOriginal declaration "]);
   assert.ok(result.sources.some((source) => source.kind === "OFFICIAL_REFERENCE"));
   assert.ok(
     requested.some((url) => url.pathname.startsWith("/weather/v1/hourly/")),

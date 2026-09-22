@@ -10,7 +10,7 @@ import {
 } from "./deep-sky-catalog-data.ts";
 
 export * from "./deep-sky-catalog-data.ts";
-export const DEEP_SKY_PROJECTION_ALGORITHM = "starward-fixed-icrs-projection@1.0.0+astronomy-engine@2.1.19";
+export const DEEP_SKY_PROJECTION_ALGORITHM = "starward-fixed-icrs-projection@1.0.1+astronomy-engine@2.1.19";
 
 function packHash() {
   return createHash("sha256").update(JSON.stringify(DEEP_SKY_CATALOG_PACK)).digest("hex");

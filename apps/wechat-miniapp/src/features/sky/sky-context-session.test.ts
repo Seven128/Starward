@@ -137,7 +137,7 @@ test("the actual active Context and weather query follow a successful recovered 
     pageVisible: true, WEATHER_ALERT_REFRESH_MS: 300000,
     isDate: () => true, isSelectedAt: () => true, validTimezone: () => true, observationDateFor: () => "2026-09-15",
     getSkyReport: (_spot: string, id: string) => { requests.push(id); },
-    useResourceQuery: (options: { enabled: boolean; queryFn: () => void }) => { if (options.enabled) options.queryFn(); return {}; },
+    useSkyForecastQuery: (options: { enabled: boolean; queryFn: () => void }) => { if (options.enabled) options.queryFn(); return {}; },
   });
   assert.deepEqual(requests, ["ctx:recovered"], "obsolete route/cache must neither block nor replace the new report query");
 });

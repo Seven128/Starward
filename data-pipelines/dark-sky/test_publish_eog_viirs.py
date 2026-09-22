@@ -102,6 +102,24 @@ class EogViirsPublisherTest(unittest.TestCase):
         self.assertEqual(estimate["radiance"]["unit"], pipeline.RADIANCE_UNIT)
         self.assertIn(estimate["productBand"], pipeline.BANDS)
 
+    def test_published_source_retains_eog_product_notice_and_modifications(self) -> None:
+        manifest, selection, thresholds, _ = pipeline.prepare(self.manifest_path)
+        source = pipeline._source_summary(manifest, selection.resolution_degrees)
+        notice = (
+            "This product was made utilizing Synthetic EOG-compatible annual raster data produced by the "
+            "Earth Observation Group, Payne Institute for Public Policy, Colorado School of Mines."
+        )
+        self.assertIn(notice, source["limitations"])
+        self.assertIn("Starward", " ".join(source["limitations"]))
+        self.assertIn("cloud-free", " ".join(source["limitations"]))
+        self.assertEqual(source["attribution"], {
+            "name": "Source: EOG, Colorado School of Mines.",
+            "url": "https://eogdata.mines.edu/products/vnl/",
+            "statements": [],
+        })
+        estimate = pipeline.sample_point(selection, manifest, source, thresholds, longitude=114.0, latitude=23.0)
+        self.assertEqual(estimate["source"], source, "the exported estimate carries its actual credit")
+
     def test_zero_radiance_with_sufficient_coverage_remains_valid(self) -> None:
         self.radiance.fill(0)
         self._write_raster(self.radiance_path, self.radiance, "float32")

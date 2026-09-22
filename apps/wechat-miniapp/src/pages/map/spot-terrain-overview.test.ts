@@ -16,7 +16,7 @@ function harness() {
     useState(initial: any) { const i = si++; if (!(i in states)) states[i] = initial; return [states[i], (next: any) => states[i] = typeof next === "function" ? next(states[i]) : next]; },
     useEffect(fn: () => void, values: any[]) { const i = ei++; if (!deps[i] || values.some((value, n) => value !== deps[i]![n])) pending.push(fn); deps[i] = values; },
     useTerrainOverlay: () => query,
-    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", Provenance: "Provenance",
+    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", Provenance: "Provenance", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   return { notices, get retries() { return retries; }, get imageFailures() { return imageFailures; },
@@ -38,6 +38,16 @@ test("uncovered terrain disables only terrain and cannot obscure valid light", (
   assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "地形，当前地区暂无数据" && node.props.disabled));
   assert.equal(all.some(node => node.type === "StatusPanel"), false);
   assert.equal(h.notices.length, 0); assert.doesNotMatch(text(tree), /源分辨率 null|约 null/);
+});
+
+test("night-light image carries its own credit only while that layer is shown", () => {
+  const source = { id: "night-light", attribution: { name: "Source: EOG, Colorado School of Mines.", url: "https://eogdata.mines.edu/products/vnl/", statements: [] } };
+  const h = harness(); h.set({ data: { data: { ...base, lightPollution: { ...base.lightPollution, source } } } });
+  let all = nodes(h.render());
+  assert.equal(all.find(node => node.type === "SourceAttribution").props.sources[0], source);
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启").props.onClick();
+  all = nodes(h.render());
+  assert.equal(all.some(node => node.type === "SourceAttribution"), false);
 });
 
 test("image failure preserves light, emits one notice and retains a working retry", async () => {

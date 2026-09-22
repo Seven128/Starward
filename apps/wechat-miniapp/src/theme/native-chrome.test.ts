@@ -58,6 +58,20 @@ test("native chrome uses the selected Field Signal palette and adopted day icons
   }
 });
 
+test("dark sky keeps readable native chrome in every mode without changing day Map", async () => {
+  for (const mode of ["DAY", "NIGHT", "OBSERVATION"] as const) {
+    const h = chromeHarness(undefined, "sky/detail/index");
+    await h.sync(mode);
+    const nav = h.calls.find(call => call.method === "navigation")!.values;
+    assert.equal(nav.frontColor, "#ffffff");
+    assert.equal(nav.backgroundColor, mode === "OBSERVATION" ? "#000000" : "#080D17");
+    assert.equal(h.calls.some(call => call.method === "style"), false);
+  }
+  const map = chromeHarness();
+  await map.sync("DAY");
+  assert.equal(map.calls.find(call => call.method === "navigation")!.values.frontColor, "#000000");
+});
+
 test("a child route updates its background without unsupported tab item calls", async () => {
   const h = chromeHarness({ errMsg: "setTabBarStyle:fail not TabBar page" });
   await h.sync("OBSERVATION");

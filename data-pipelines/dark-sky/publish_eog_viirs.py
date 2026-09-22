@@ -373,6 +373,13 @@ def _source_summary(manifest: PublicationManifest, resolution: tuple[float, floa
         "id": f"eog-vnl:{manifest.dataset_version}",
         "kind": "OPEN_DATA",
         "provider": SOURCE_PROVIDER,
+        # EXHIBIT 1 permits this credit for small-format images. The full
+        # product notice and actual modifications travel in the same source.
+        "attribution": {
+            "name": "Source: EOG, Colorado School of Mines.",
+            "url": SOURCE_PAGE,
+            "statements": [],
+        },
         "title": manifest.product_name,
         "sourceUrl": SOURCE_PAGE,
         "license": SOURCE_LICENSE,
@@ -385,6 +392,8 @@ def _source_summary(manifest: PublicationManifest, resolution: tuple[float, floa
         "confidence": None,
         "precision": f"Annual VNL grid {resolution_text}; formal spots use a bounded 3×3-pixel sample.",
         "limitations": [
+            f"This product was made utilizing {manifest.product_name} data produced by the Earth Observation Group, Payne Institute for Public Policy, Colorado School of Mines.",
+            "Starward selected the declared AOI, masked insufficient cloud-free coverage and invalid radiance, aggregated valid pixels into relative night-light bands, and sampled spot neighbourhoods; displayed map bounds are converted to GCJ-02.",
             "Radiance is satellite-observed upward light, not field-measured sky brightness.",
             "Relative bands are trial-AOI quantiles and are not Bortle or SQM classes.",
             "Zero radiance is accepted only where the matching cloud-free-coverage raster meets the configured threshold.",

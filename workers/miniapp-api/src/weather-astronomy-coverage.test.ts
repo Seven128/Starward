@@ -64,6 +64,12 @@ test("actual forecast holes remain empty through SkyReport and Map while celesti
     const context = (await service.resolveObservationContext({ location: { kind: "FORMAL_SPOT", spotId: TEST_PUBLISHED_SPOT.spotId },
       localDate: "2026-09-15", selectedAt: "2026-09-15T13:30:00Z" })).data;
     const report = (await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId)).data;
+    assert.equal(report.nightFacts?.startAt, context.nightStartUtc);
+    assert.equal(report.nightFacts?.endAt, context.nightEndUtc);
+    const dusk = Date.parse(report.nightFacts?.astronomicalDuskAt ?? "");
+    const dawn = Date.parse(report.nightFacts?.astronomicalDawnAt ?? "");
+    assert.ok(dusk >= Date.parse(context.nightStartUtc) && dusk < Date.parse(context.nightEndUtc));
+    assert.ok(dawn > dusk && dawn <= Date.parse(context.nightEndUtc));
     for (const time of ["13:00", "13:30", "15:00"]) {
       const row = report.hourly.find(row => Date.parse(row.at) === Date.parse(`2026-09-15T${time}:00Z`))!;
       assert.ok(row, `${time}: ${report.hourly.map(row => row.at).join(",")}`); assert.equal(row.cloudPercent, null); assert.equal(row.weatherAt, null); assert.equal(row.state, "UNAVAILABLE");

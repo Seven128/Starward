@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { NotFoundException } from "@nestjs/common";
 import { deepSkyRowByReference, loadDeepSkyCatalog } from "@starward/astronomy-core/deep-sky-catalog";
+import type { SourceSummary } from "@starward/miniapp-contracts";
 
 export type DeepSkyImageLevel = "OVERVIEW" | "MEDIUM" | "DETAIL";
 
@@ -34,8 +37,9 @@ interface DeepSkyPublication {
   publicationId: string;
   catalogVersion: string;
   catalogSha256: string;
-  source: { provider: string; dataset: string; band: "W3"; wavelengthMicrometers: 12; landingUrl: string; documentationUrl: string; doi: string; acknowledgment: string };
-  processing: { runtimeNetwork: "forbidden"; orientation: "north-up/east-left"; limitations: string[] };
+  source: { provider: string; dataset: string; band: "W3"; wavelengthMicrometers: 12; landingUrl: string; documentationUrl: string; doi: string; acknowledgment: string; acknowledgmentUrl: string; copyright: string; hipsCopyright: string; hipsProvider: string; hipsDoi: string; hipsRecordUrl: string; hipsLicense: string; hipsLicenseUrl: string };
+  distribution: { databaseLicense: string; databaseLicenseUrl: string; notice: string; catalogNotice: string; catalogUrl: string; catalogLicenseUrl: string };
+  processing: { runtimeNetwork: "forbidden"; orientation: "north-up/east-left"; service: string; serviceUrl: string; modification: string; limitations: string[] };
   entryCount: number;
   entries: PublishedEntry[];
 }
@@ -70,6 +74,12 @@ function validatePublication(value: unknown, requireComplete: boolean): DeepSkyP
       publication.source.provider !== ADOPTED_PROVIDER || publication.source.dataset !== ADOPTED_DATASET ||
       publication.source.doi !== ADOPTED_DOI || !publication.source.landingUrl.startsWith("https://irsa.ipac.caltech.edu/") ||
       !publication.source.documentationUrl.startsWith("https://irsa.ipac.caltech.edu/") || !publication.source.acknowledgment ||
+      publication.source.acknowledgmentUrl !== "https://irsa.ipac.caltech.edu/data/WISE/docs/release/AllWISE/expsup/sec1_6b.html" ||
+      publication.source.copyright !== "IPAC/NASA" || publication.source.hipsCopyright !== "CNRS/Unistra" ||
+      publication.source.hipsLicense !== "ODbL-1.0" || publication.source.hipsDoi !== "10.26093/cds/aladin/na1n-03" ||
+      publication.source.hipsLicenseUrl !== "https://opendatacommons.org/licenses/odbl/1-0/" || !publication.source.hipsProvider || !publication.source.hipsRecordUrl ||
+      publication.distribution?.databaseLicense !== "ODbL-1.0" || !publication.distribution.notice || !publication.distribution.catalogNotice ||
+      publication.processing.service !== "CDS hips2fits" || publication.processing.serviceUrl !== "https://alasky.cds.unistra.fr/hips-image-services/hips2fits" || !publication.processing.modification ||
       !Array.isArray(publication.processing.limitations) || publication.processing.limitations.length < 2 ||
       !publication.processing.limitations.some(limit => /historical/iu.test(limit)) ||
       !publication.processing.limitations.some(limit => /detector artifacts/iu.test(limit)))))
@@ -96,17 +106,50 @@ function validatePublication(value: unknown, requireComplete: boolean): DeepSkyP
 }
 
 export class DeepSkyImageryService {
-  private publicationPromise: Promise<DeepSkyPublication> | null = null;
+  private cachedPublication: DeepSkyPublication | null = null;
   private readonly requireComplete: boolean;
 
   constructor(private readonly manifestUrl: URL = DEFAULT_MANIFEST) {
     this.requireComplete = manifestUrl.href === DEFAULT_MANIFEST.href;
   }
 
-  async get(reference: string, levelInput = "MEDIUM"): Promise<DeepSkyImageResult> {
+  source(reference: string): SourceSummary | null {
+    const publication = this.publication();
+    if (!publication.entries.some(entry => entry.objectRef === reference)) return null;
+    const { source, processing } = publication;
+    // Bounded asset-only fixtures have no adopted provenance to disclose.
+    if (!source.acknowledgment || !source.acknowledgmentUrl || !source.hipsLicense || !publication.distribution?.notice || !processing.modification) return null;
+    const revision = this.publicationHash();
+    return {
+      id: `imagery:${publication.publicationId}:${revision}`, kind: "OPEN_DATA", provider: source.provider,
+      title: "AllWISE W3 12 µm 巡天影像", sourceUrl: source.landingUrl,
+      license: "ODbL-1.0（HiPS 数据库）；AllWISE 影像另附声明", licenseUrl: source.hipsLicenseUrl,
+      publishedAt: null, retrievedAt: null, validFrom: null, validTo: null,
+      state: "FRESH", confidence: null, precision: "历史 W3 12 µm 红外巡天；按目标裁切，北向上，东向左",
+      limitations: [publication.distribution.notice, `HiPS 数据库：${source.hipsRecordUrl}；许可：${source.hipsLicenseUrl}`,
+        source.acknowledgment, `AllWISE 声明：${source.acknowledgmentUrl}`,
+        `数据版权：${source.copyright}；HiPS：${source.hipsProvider}，${source.hipsCopyright}。`,
+        `Atlas 数据引用：https://doi.org/${source.doi}；HiPS：https://doi.org/${source.hipsDoi}`,
+        `影像加工：${processing.service}；${processing.serviceUrl}`,
+        processing.modification, ...processing.limitations],
+    };
+  }
+
+  manifest(publicationHash: string) {
+    if (publicationHash !== this.publicationHash()) throw new NotFoundException("deep_sky_image_publication_not_found");
+    const publication = structuredClone(this.publication());
+    return { ...publication, publicationHash, entries: publication.entries.map(entry => ({ ...entry,
+      levels: Object.fromEntries(Object.entries(entry.levels).map(([level, asset]) => [level, { ...asset,
+        downloadUrl: `/v2/celestial-objects/${encodeURIComponent(entry.objectRef)}/image?level=${level}&publicationHash=${publicationHash}`,
+      }])),
+    })) };
+  }
+
+  async get(reference: string, levelInput = "MEDIUM", publicationHash?: string): Promise<DeepSkyImageResult> {
     assertLevel(levelInput);
+    if (publicationHash && publicationHash !== this.publicationHash()) throw new NotFoundException("deep_sky_image_publication_not_found");
     if (!deepSkyRowByReference(reference)) throw new Error("deep_sky_image_not_found");
-    const publication = await this.publication();
+    const publication = this.publication();
     const entry = publication.entries.find((candidate) => candidate.objectRef === reference);
     if (!entry) throw new Error("deep_sky_image_not_published");
     const asset = entry.levels[levelInput];
@@ -123,9 +166,13 @@ export class DeepSkyImageryService {
   }
 
   private publication() {
-    this.publicationPromise ??= readFile(this.manifestUrl, "utf8")
-      .then((text) => validatePublication(JSON.parse(text), this.requireComplete))
-      .catch((error) => { this.publicationPromise = null; throw error; });
-    return this.publicationPromise;
+    // One small local metadata read serves synchronous object details and async
+    // image delivery. Invalid reads are not cached; JPEG bytes remain async.
+    this.cachedPublication ??= validatePublication(JSON.parse(readFileSync(this.manifestUrl, "utf8")), this.requireComplete);
+    return this.cachedPublication;
+  }
+
+  private publicationHash() {
+    return createHash("sha256").update(JSON.stringify(this.publication())).digest("hex");
   }
 }

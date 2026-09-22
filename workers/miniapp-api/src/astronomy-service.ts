@@ -71,7 +71,7 @@ export const ASTRONOMY_CACHE_POLICY = Object.freeze({
   reportEntries: 16,
 });
 
-function weatherExpiry(weather: WeatherEvidenceResult, now: number): number {
+function weatherExpiry(weather: WeatherEvidenceResult, now: number, acquiredAfter = now): number {
   if (!weather.value || ["UNAVAILABLE", "EXPIRED"].includes(weather.state)) return now;
   const ttl = weather.state === "PARTIAL" || weather.warningState === "UNAVAILABLE"
     ? ASTRONOMY_CACHE_POLICY.partialWeatherTtlMs
@@ -81,7 +81,15 @@ function weatherExpiry(weather: WeatherEvidenceResult, now: number): number {
     ...weather.modelRuns.map((run) => run.validTo),
     ...weather.alerts.filter((alert) => alert.status === "ACTIVE").map((alert) => alert.expiresAt),
   ].map((value) => Date.parse(value ?? "")).filter(Number.isFinite);
-  return Math.min(now + ttl, ...validity);
+  return Math.min(now + ttl, ...validity, nextWeatherBoundary(weather, acquiredAfter));
+}
+
+function nextWeatherBoundary(weather: WeatherEvidenceResult, now: number): number {
+  return Math.min(...[
+    ...(weather.value ?? []).map(row => Date.parse(row.at) + 3_600_000),
+    ...weather.sources.map(source => Date.parse(source.validTo ?? "")),
+    ...weather.alerts.filter(alert => alert.status === "ACTIVE").map(alert => Date.parse(alert.expiresAt ?? "")),
+  ].filter(end => Number.isFinite(end) && end > now));
 }
 
 const SKY_REPORT_TIME_AXIS_CACHE_VERSION = "sky-report-time-axis-v1";
@@ -227,7 +235,7 @@ function stateFor(
 
 export class AstronomyService implements AstronomyApplicationPort {
   private readonly skyCatalog: SkyCatalogProvider;
-  private readonly weatherCache: ComputationCache<WeatherEvidenceResult>;
+  private readonly weatherCache: ComputationCache<{ weather: WeatherEvidenceResult; acquiredAt: number }>;
   private readonly decisionCache: ComputationCache<DecisionComputation>;
   private readonly sceneCache: ComputationCache<SkyReport["skyScene"]>;
   private readonly calculationCache: ComputationCache<ReturnType<typeof calculateMiniappNightSky>[]>;
@@ -265,7 +273,10 @@ export class AstronomyService implements AstronomyApplicationPort {
     return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${this.skyCatalog.cacheKey()}:${deepSkySceneCacheKey()}`;
   }
 
-  private async prepare(context: ObservationContext, suppliedDetail?: SpotDetail, signal?: AbortSignal, weatherDeadlineAt?: number) {
+  private async prepare(context: ObservationContext, suppliedDetail?: SpotDetail, signal?: AbortSignal, weatherDeadlineAt?: number): Promise<{
+    computation: DecisionComputation; spot: SpotSummary; key: string; generation: number; deliveryBoundary: number; expiresAt: number;
+  }> {
+    weatherDeadlineAt ??= this.now() + WEATHER_DEADLINES.overallMs;
     const generation = this.generation;
     signal?.throwIfAborted();
     if (context.location.kind !== "FORMAL_SPOT")
@@ -280,24 +291,34 @@ export class AstronomyService implements AstronomyApplicationPort {
     signal?.throwIfAborted();
     const weatherKey = digest({ provider: this.weather.key, point: spot.wgs84,
       localDate: context.localDate, timezone: spot.timezone });
+    // The acquisition instant belongs to the shared result, not each waiter.
+    // A caller joining an in-flight request after an hour boundary must retain
+    // the same deadline as the caller that started it.
     const readWeather = () => this.weatherCache.get(weatherKey,
-      () => withDeadline((sharedSignal) => this.weather.getHourly({
-        point: spot.wgs84, localDate: context.localDate, timezone: spot.timezone, signal: sharedSignal,
-      }), WEATHER_DEADLINES.overallMs).catch((error: unknown) => unavailableWeatherResult(
-        this.weather.key, error instanceof Error && error.message === "weather_deadline_exceeded"
-          ? "weather_deadline_exceeded" : "weather_provider_failed")),
-      (value) => weatherExpiry(value, this.now()));
-    const remainingMs = weatherDeadlineAt === undefined ? WEATHER_DEADLINES.overallMs : weatherDeadlineAt - this.now();
-    const weather = remainingMs <= 0
-      ? unavailableWeatherResult(this.weather.key, "weather_deadline_exceeded")
+      async () => {
+        const acquiredAt = this.now();
+        const weather = await withDeadline((sharedSignal) => this.weather.getHourly({
+          point: spot.wgs84, localDate: context.localDate, timezone: spot.timezone, signal: sharedSignal,
+        }), WEATHER_DEADLINES.overallMs).catch((error: unknown) => unavailableWeatherResult(
+          this.weather.key, error instanceof Error && error.message === "weather_deadline_exceeded"
+            ? "weather_deadline_exceeded" : "weather_provider_failed"));
+        return { weather, acquiredAt };
+      },
+      (value) => weatherExpiry(value.weather, this.now(), value.acquiredAt));
+    const remainingMs = weatherDeadlineAt - this.now();
+    const received = remainingMs <= 0
+      ? { weather: unavailableWeatherResult(this.weather.key, "weather_deadline_exceeded"), acquiredAt: this.now() }
       : await withDeadline((waiterSignal) => waitForCaller(readWeather(), waiterSignal), remainingMs, signal)
         .catch((error: unknown) => {
           signal?.throwIfAborted();
-          return unavailableWeatherResult(this.weather.key,
+          return { weather: unavailableWeatherResult(this.weather.key,
             error instanceof Error && error.message === "weather_deadline_exceeded"
-              ? "weather_deadline_exceeded" : "weather_provider_failed");
+              ? "weather_deadline_exceeded" : "weather_provider_failed"), acquiredAt: this.now() };
         });
     if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
+    const { weather, acquiredAt } = received;
+    const deliveryBoundary = nextWeatherBoundary(weather, acquiredAt);
+    if (this.now() >= deliveryBoundary) return this.prepare(context, suppliedDetail, signal, weatherDeadlineAt);
     const effectiveInputs = {
       spot, accessAndSafety: detail.accessAndSafety, evidence: detail.evidence,
       route: detail.route, localDate: context.localDate,
@@ -329,7 +350,8 @@ export class AstronomyService implements AstronomyApplicationPort {
       () => Math.min(this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs,
         weatherExpiry(weather, this.now())));
     if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
-    return { computation, spot, key, generation, expiresAt: weatherExpiry(weather, this.now()) };
+    if (this.now() >= deliveryBoundary) return this.prepare(context, suppliedDetail, signal, weatherDeadlineAt);
+    return { computation, spot, key, generation, deliveryBoundary, expiresAt: weatherExpiry(weather, this.now()) };
   }
 
   private bindContext<T extends AstronomyDecisionReport>(data: T, context: ObservationContext): T {
@@ -343,8 +365,8 @@ export class AstronomyService implements AstronomyApplicationPort {
     return envelope(this.bindContext(structuredClone(report.data), context), report.dataState, structuredClone(report.sources), structuredClone(report.warnings));
   }
 
-  async compute(context: ObservationContext, signal?: AbortSignal): Promise<ApiEnvelope<SkyReport>> {
-    const { computation, spot, key, generation, expiresAt } = await this.prepare(context, undefined, signal);
+  async compute(context: ObservationContext, signal?: AbortSignal, weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs): Promise<ApiEnvelope<SkyReport>> {
+    const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(context, undefined, signal, weatherDeadlineAt);
     signal?.throwIfAborted();
     const representationKey = digest({ key, contextId: context.contextId,
       contextFingerprint: context.contextFingerprint, revision: context.revision });
@@ -354,6 +376,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         return this.projectReport(computation, spot, context);
       },
       (report) => report.data.skyScene.state === "AVAILABLE" ? expiresAt : this.now()), signal);
+    if (this.now() >= deliveryBoundary) return this.compute(context, signal, weatherDeadlineAt);
     return structuredClone(result);
   }
 
@@ -361,7 +384,7 @@ export class AstronomyService implements AstronomyApplicationPort {
    * The projected detail is calculation input only and never enters the formal
    * spot repository or publication cache. The returned identity remains the
    * proposal id supplied by the caller. */
-  async computeCandidate(context: ObservationContext, detail: SpotDetail, proposalId: string, signal?: AbortSignal): Promise<ApiEnvelope<SkyReport>> {
+  async computeCandidate(context: ObservationContext, detail: SpotDetail, proposalId: string, signal?: AbortSignal, weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs): Promise<ApiEnvelope<SkyReport>> {
     const calculationContext: ObservationContext = {
       ...context,
       location: {
@@ -370,7 +393,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         locationVersion: 1,
       },
     };
-    const { computation, spot, key, generation, expiresAt } = await this.prepare(calculationContext, detail, signal);
+    const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(calculationContext, detail, signal, weatherDeadlineAt);
     signal?.throwIfAborted();
     const representationKey = digest({ key, proposalId, contextId: context.contextId,
       contextFingerprint: context.contextFingerprint, revision: context.revision });
@@ -380,6 +403,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         return this.projectReport(computation, spot, calculationContext);
       },
       (report) => report.data.skyScene.state === "AVAILABLE" ? expiresAt : this.now()), signal);
+    if (this.now() >= deliveryBoundary) return this.computeCandidate(context, detail, proposalId, signal, weatherDeadlineAt);
     return structuredClone({
       ...result,
       data: {
@@ -427,8 +451,8 @@ export class AstronomyService implements AstronomyApplicationPort {
             hash: skyScene.deepSky.catalog.catalogHash,
           } : null }).slice(0, 24) },
       targetFrames, skyScene: structuredClone(skyScene), sources,
-      precachedHours: skyScene.state === "AVAILABLE" ? Math.min(8, Math.ceil(hourlyAt.length / 2)) : 0,
-      offlineReady: hourlyAt.length > 0 && skyScene.state === "AVAILABLE",
+      precachedHours: 0,
+      offlineReady: false, // Static publication presence is a client cache fact, not implied by report availability.
     }, context);
     return envelope(data, report.dataState === "FRESH" && skyScene.state === "UNAVAILABLE" ? "PARTIAL" : report.dataState,
       sources, [...report.warnings, ...(skyScene.state === "UNAVAILABLE" ? [
@@ -972,6 +996,12 @@ export class AstronomyService implements AstronomyApplicationPort {
         moonriseAt: base.moonRise,
         moonsetAt: base.moonSet,
         source: astronomySource,
+      },
+      nightFacts: {
+        startAt: context.nightStartUtc,
+        endAt: context.nightEndUtc,
+        astronomicalDuskAt: base.astronomicalDusk,
+        astronomicalDawnAt: base.astronomicalDawn,
       },
       compass: { state: "UNAVAILABLE", manualOffsetDeg: 0 },
       weatherEvidence: {

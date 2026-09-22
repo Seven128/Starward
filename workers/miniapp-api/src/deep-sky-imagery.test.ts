@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
+import { CelestialObjectInformationService } from "./celestial-object-information.ts";
 
 const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
 
@@ -71,4 +72,26 @@ test("publication rejects missing identities, invalid levels, cross-object paths
   const altered = await fixture();
   await writeFile(join(altered.root, "M-31", "M-31-medium.jpg"), Buffer.from([0xff, 0xd8, 1, 0xff, 0xd9]));
   await assert.rejects(new DeepSkyImageryService(altered.manifestUrl).get("M:31"), /asset_invalid/u);
+});
+
+test("catalog facts survive a missing image publication and recover its actual provenance without stale caching", async () => {
+  const { manifestUrl, manifestPath } = await fixture();
+  const full = JSON.parse(await readFile(new URL("../assets/deep-sky/manifest.json", import.meta.url), "utf8"));
+  const local = JSON.parse(await readFile(manifestPath, "utf8"));
+  Object.assign(local, { source: full.source, distribution: full.distribution, processing: full.processing });
+  await writeFile(manifestPath, "invalid publication");
+  const images = new DeepSkyImageryService(manifestUrl);
+  const objects = new CelestialObjectInformationService(images);
+  const before = objects.get("M:31");
+  assert.equal(before.data.kind, "GALAXY");
+  assert.ok(before.sources.some(source => source.provider.includes("OpenNGC")));
+  assert.ok(!before.sources.some(source => source.id.startsWith("imagery:")));
+  await writeFile(manifestPath, JSON.stringify(local));
+  const after = objects.get("M:31");
+  assert.ok(after.sources.some(source => source.id.startsWith("imagery:trial:")));
+  assert.notEqual(after.etag, before.etag);
+  assert.notEqual(after.data.contentRevision, before.data.contentRevision);
+  assert.deepEqual((await images.get("M:31")).bytes, jpeg);
+  assert.ok(!objects.get("M:42").sources.some(source => source.id.startsWith("imagery:")),
+    "an independently valid catalog object must not inherit another publication's image credit");
 });

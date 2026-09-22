@@ -954,7 +954,7 @@ export class OutboxWorkerRuntime {
             authorizationConnected: false,
             deliveryAttempted: false,
             reason: enabled
-              ? "Scheduling is connected; an approved AppID template and encrypted delivery identity are still required"
+              ? "Scheduling is connected; approved template mapping, subscription authorization and the sender are not connected"
               : "Notification capability is disabled by the current feature flag",
           },
         };

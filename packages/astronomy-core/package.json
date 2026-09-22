@@ -28,6 +28,18 @@
       "production": "./dist/src/bsc5p-catalog.js",
       "default": "./src/bsc5p-catalog.ts"
     },
+    "./stellar-vectors": {
+      "production": "./dist/src/stellar-vectors.js",
+      "default": "./src/stellar-vectors.ts"
+    },
+    "./sao-catalog": {
+      "production": "./dist/src/sao-catalog.js",
+      "default": "./src/sao-catalog.ts"
+    },
+    "./constellation-catalog": {
+      "production": "./dist/src/constellation-catalog.js",
+      "default": "./src/constellation-catalog.ts"
+    },
     "./deep-sky-catalog": {
       "production": "./dist/src/deep-sky-catalog.js",
       "default": "./src/deep-sky-catalog.ts"

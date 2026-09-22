@@ -30,10 +30,13 @@ export class EtagInterceptor implements NestInterceptor {
     const response = http.getResponse<{
       header(name: string, value: string): void;
       status(code: number): void;
+      getHeader(name: string): unknown;
     }>();
     return next.handle().pipe(
       map((payload: unknown) => {
         if (request.method !== "GET" || !hasEtag(payload)) return payload;
+        // A source-specific storage restriction also forbids conditional reuse.
+        if (/\bno-store\b/iu.test(String(response.getHeader("cache-control") ?? ""))) return payload;
         response.header("ETag", payload.etag);
         response.header("Cache-Control", "private, max-age=0, must-revalidate");
         response.header("Vary", "If-None-Match");

@@ -47,6 +47,8 @@ export type SourceKind =
   | "TEST_FIXTURE";
 
 export interface SourceSummary {
+  /** Mandatory credit delivered with the data, distinct from optional precision/help prose. */
+  attribution?: { name: string; url: string; statements: readonly string[] };
   id: string;
   kind: SourceKind;
   provider: string;
@@ -55,7 +57,8 @@ export interface SourceSummary {
   license: string;
   licenseUrl: string;
   publishedAt: string | null;
-  retrievedAt: string;
+  /** Actual source acquisition time; null when not recorded. Never infer from file metadata. */
+  retrievedAt: string | null;
   validFrom: string | null;
   validTo: string | null;
   state: DataState;
@@ -583,6 +586,8 @@ export interface HourlySkyRow {
 }
 
 export interface WeatherAlertEvidence {
+  /** Original issuing authority, when supplied; never infer it from a headline. */
+  senderName?: string | null;
   id: string;
   headline: string;
   description: string;
@@ -644,15 +649,7 @@ export interface LunarFacts {
   source: SourceSummary;
 }
 
-/**
- * A catalog row exposed to the Mini Program sky renderer.
- *
- * The row deliberately contains no equatorial coordinates: those are
- * astronomy-core-owned implementation data and must not become a second
- * client-side astronomy truth.  `bpRp` is Gaia DR3's measured BP-RP colour
- * index and is nullable when the source row does not carry a valid colour
- * measurement.
- */
+/** Rendering metadata decoded from the static publication; B-V retains its source band. */
 export interface SkySceneCatalogEntry {
   sourceId: string;
   /** Stable namespace-bound identity; independent from pack order/version. */
@@ -665,25 +662,15 @@ export interface SkySceneCatalogEntry {
 }
 
 /**
- * A compact, non-actionable point in one real sky-scene time slice.
- *
- * Tuple order is stable and intentionally part of the wire contract:
- * `[catalogIndex, azimuthDeg, altitudeDeg]`.  Keeping the three values
- * positional avoids repeating verbose JSON property names for every star in
- * every frame while retaining one measured position per catalog row.
+ * One locally resolved star in the exact selected time slice.
+ * The index belongs to the attached static publication. Dynamic reports carry
+ * geometry transforms instead of arrays of these points.
  */
 export type SkyScenePoint = readonly [
   catalogIndex: number,
   azimuthDeg: number,
   altitudeDeg: number,
 ];
-
-export interface SkySceneFrame {
-  /** Must equal one and only one `SkyReport.hourly[].at` value. */
-  at: string;
-  state: "AVAILABLE" | "UNAVAILABLE";
-  points: readonly SkyScenePoint[] | null;
-}
 
 export interface SkySceneCatalog {
   catalogVersion: string;
@@ -726,6 +713,8 @@ export interface DeepSkySceneCatalog {
   catalogVersion: string;
   catalogHash: string;
   frame: "ICRS J2000";
+  /** Absent on older cached scenes: retain object facts, refresh before image registration. */
+  imageRegistration?: "ICRS_TAN_NORTH_0_1_V1";
   sources: readonly SourceSummary[];
   entries: readonly DeepSkySceneCatalogEntry[];
 }
@@ -764,14 +753,8 @@ export interface CelestialObjectInformation {
  * unavailable frame per returned hourly slice and never contain a picture,
  * random points, stale coordinates or a sampled decorative substitute.
  */
-export interface SkyScene {
-  state: "AVAILABLE" | "UNAVAILABLE";
-  catalog: SkySceneCatalog | null;
-  frames: readonly SkySceneFrame[];
-  unavailableReason: string | null;
-  /** Added compatibly while older cached scenes age out. */
-  deepSky?: DeepSkyScene | null;
-}
+export type { SkyScene, SkySceneFrame, SkySceneCatalogReference } from "./stellar-scene.ts";
+import type { SkyScene } from "./stellar-scene.ts";
 
 export interface SkyReport {
   context: SpotSkyContext;
@@ -782,6 +765,13 @@ export interface SkyReport {
   milkyWayDirection: string;
   moonSummary: string;
   lunarFacts: LunarFacts;
+  /** Computed observation-night bounds; optional for older cached reports. */
+  nightFacts?: {
+    startAt: string;
+    endAt: string;
+    astronomicalDuskAt: string | null;
+    astronomicalDawnAt: string | null;
+  };
   compass: {
     state: "UNAVAILABLE" | "LOW_ACCURACY" | "READY";
     manualOffsetDeg: number;

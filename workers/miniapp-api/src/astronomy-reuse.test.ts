@@ -30,9 +30,9 @@ async function setup() {
     return weatherTransform(value);
   } };
   const catalog = createTestSkyCatalogProvider();
-  const position = catalog.position.bind(catalog);
+  const position = catalog.frame.bind(catalog);
   const cacheKey = catalog.cacheKey.bind(catalog);
-  catalog.position = (input) => { positions++; return position(input); };
+  catalog.frame = (input) => { positions++; return position(input); };
   catalog.cacheKey = () => `${cacheKey()}:${revision}`;
   const service = createTestMiniappService({ repository, weather, skyCatalog: catalog });
   const contexts: ObservationContext[] = [];

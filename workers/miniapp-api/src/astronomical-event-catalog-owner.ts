@@ -12,7 +12,7 @@ import {
 } from "./astronomical-event-catalog.ts";
 import { meteorReferenceOverlapsLocalDate } from "./meteor-event-catalog.ts";
 import { calculateAnnualSolarReferenceAt } from "./astronomy-engine-adapter.ts";
-import { validateEventArticle, eventArticleIdentity, validateArticleRights, confirmArticleRights, type EventArticleRights, type EventArticleRightsConfirmation } from "./event-article-policy.ts";
+import { validateEventArticle, validateEventArticleLicense, eventArticleIdentity, validateArticleRights, confirmArticleRights, type EventArticleRights, type EventArticleRightsConfirmation } from "./event-article-policy.ts";
 
 export const EVENT_CATALOG_SCHEMA_VERSION = "starward.astronomical-events.v1";
 export const EVENT_CATALOG_MAX_BYTES = 1_048_576;
@@ -350,6 +350,7 @@ export function validateAstronomicalEventCatalogPackage(value: unknown, options:
     if (event.article) {
       const articleSource = input.sources.find(source => source.id === event.article!.sourceId);
       if (!articleSource || articleSource.kind !== "EDITORIAL_REFERENCE" || articleSource.id === event.sourceId || articleSource.sourceUrl !== event.article.originalUrl) throw new Error("event_article_source_invalid");
+      validateEventArticleLicense(articleSource.license);
       if (!options.pendingArticleConfirmation) validateArticleRights(input.articleRights?.[event.occurrenceId], eventArticleIdentity(event.article, articleSource));
     }
     const source = event.sourceId ? input.sources.find(source => source.id === event.sourceId)
@@ -600,7 +601,7 @@ export class AstronomicalEventCatalogOwner {
       publicationId: `event-publication:${randomUUID()}`,
       catalogVersion: catalog.catalogVersion,
       candidateId,
-      package: clone(catalog),
+      package: validateAstronomicalEventCatalogPackage(catalog),
       contentSha256: hash,
       publishedAt: new Date().toISOString(),
       publishedBy: actorId,

@@ -19,10 +19,10 @@ function skyEnvelope(h: ReturnType<typeof transportHarness>, legacy = true) {
   const source = { id: "catalog:stars", kind: "OPEN_DATA" };
   const ref = legacy ? "HIP:32349" : "HR:2491";
   return { ...h.response, sources: [source, { id: "weather", kind: "PROVIDER" }],
-    data: { sources: [source], targetFrames: [{ at: "2026-09-15T12:00:00Z", targets: ["jupiter"] }],
-      hourly: [{ at: "2026-09-15T12:00:00Z", totalCloudPct: 20 }],
-      skyScene: { state: "AVAILABLE", catalog: { catalogVersion: legacy ? "hipparcos-bright-stars.v1" : "bsc5p-bright-stars.v1", sources: [source], entries: [{ sourceId: ref, objectRef: ref }] },
-        frames: [{ at: "2026-09-15T12:00:00Z", state: "AVAILABLE", points: [[0, 30, 20]] }],
+    data: { sources: [source], targetFrames: [{ at: "2026-09-15T12:00:00.000Z", targets: ["jupiter"] }],
+      hourly: [{ at: "2026-09-15T12:00:00.000Z", totalCloudPct: 20 }],
+      skyScene: { format: "stellar-scene-v2", state: "AVAILABLE", unavailableReason: null, observer: {latitude:0,longitude:0,elevationM:0}, catalog: { catalogVersion: legacy ? "hipparcos-bright-stars.v1" : "bsc5p-bright-stars.v1", sources: [source], catalogHash: "a".repeat(64), rowCount: 1630, magnitudeLimit: 5, ...(legacy ? { entries: [{ sourceId: ref, objectRef: ref }] } : {}) },
+        frames: [{ at: "2026-09-15T12:00:00.000Z", state: "AVAILABLE", ...(legacy ? { points: [[0, 30, 20]] } : { geometry: { format: "bsc5p-stellar-geometry-v1", referenceAt: "2000-01-01T12:00:00.000Z", catalogVersion: "bsc5p-bright-stars.v1", catalogHash: "a".repeat(64), at: "2026-09-15T12:00:00.000Z", observer: {latitude:0,longitude:0,elevationM:0}, julianYears:(Date.parse("2026-09-15T12:00:00.000Z")-Date.parse("2000-01-01T12:00:00Z"))/(365.25*86400000), equatorialToEnu:[1,0,0,0,1,0,0,0,1] } }) }],
         deepSky: { state: "AVAILABLE", catalog: { entries: [{ objectRef: "M:31" }] } } } } };
 }
 
@@ -38,7 +38,7 @@ test("upgraded client rejects retired star cache after restart on offline and 30
     const result = await pending;
     assert.equal(result.data.skyScene.state, "UNAVAILABLE");
     assert.equal(result.data.skyScene.catalog, null);
-    assert.equal(result.data.skyScene.frames[0].points, null);
+    assert.equal(result.data.skyScene.frames[0].geometry, null);
     assert.equal(result.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
     assert.deepEqual(result.data.hourly, data.data.hourly);
     assert.deepEqual(result.data.targetFrames, data.data.targetFrames);
@@ -66,7 +66,8 @@ test("network recovery returns selectable HR stars and retains their provenance"
   h.calls.at(-1)!.success({ statusCode: 200, data: fresh });
   const result = await pending;
   assert.equal(result.data.skyScene.state, "AVAILABLE");
-  assert.ok(isCelestialObjectReference(result.data.skyScene.catalog.entries[0].objectRef));
+  assert.equal(result.data.skyScene.catalog.rowCount, 1630);
+  assert.equal(result.data.skyScene.frames[0].geometry.catalogHash, result.data.skyScene.catalog.catalogHash);
   assert.equal(result.sources.some((item: any) => item.id === "catalog:stars"), true);
   h.queryClient.clear();
 });
@@ -79,4 +80,14 @@ test("retired-identity regression detects omission of the response projection", 
   assert.throws(() => assert.equal(wrong.data.skyScene.state, "UNAVAILABLE"));
   assert.equal(isCelestialObjectReference(wrong.data.skyScene.catalog.entries[0].objectRef), false);
   h.queryClient.clear();
+});
+
+test("malformed source rows retire only stars and keep independent content", () => {
+ const h=transportHarness(),envelope=skyEnvelope(h,true);
+ (envelope.data.skyScene.catalog as any).sources=[null];
+ const result=projectAdoptedSkyCatalog(envelope as any);
+ assert.equal(result.data.skyScene.state,"UNAVAILABLE");
+ assert.equal(result.data.hourly,envelope.data.hourly);
+ assert.equal(result.data.skyScene.deepSky,envelope.data.skyScene.deepSky);
+ h.queryClient.clear();
 });

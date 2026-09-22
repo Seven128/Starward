@@ -3,8 +3,14 @@ export interface PaintedSkyObject {
   displayName: string;
   kind: "STAR" | "GALAXY" | "NEBULA";
   magnitude: number | null;
+  magnitudeBand?: 'V'|'VISUAL';
   x: number;
   y: number;
+}
+
+export function skyObjectMagnitudeLabel(object:Pick<PaintedSkyObject,'magnitude'|'magnitudeBand'>){
+  if(object.magnitude===null)return '目录未提供视星等';
+  return `${object.magnitudeBand==='VISUAL'?'视觉星等':'V 波段视星等'} ${object.magnitude.toFixed(2)}`;
 }
 
 export interface SkyPickSnapshot {

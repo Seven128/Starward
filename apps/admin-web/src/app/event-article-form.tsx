@@ -97,9 +97,9 @@ export function EventArticleForm({ snapshot, request, disabled, mutate }: Props)
       <label className="field-block">原文日期（保留原始精度，可留空）<input value={date} maxLength={100} placeholder="例如 2026-09-15" onChange={event => { setDate(event.target.value); dirty(); }} /></label>
       <label className="field-block">正文（空行分段，也可直接粘贴）<textarea rows={12} value={body} maxLength={40000} onChange={event => { setBody(event.target.value); dirty(); }} /></label>
       <label className="field-block">展示给读者的许可名称<input value={license} maxLength={300} onChange={event => { setLicense(event.target.value); dirty(); }} /></label>
-      <label className="field-block">内部核对依据<textarea value={basis} maxLength={2000} placeholder="记录授权条款、授权凭据或自有内容依据" onChange={event => { setBasis(event.target.value); dirty(); }} /></label>
+      <label className="field-block">内部核对依据<textarea value={basis} maxLength={2000} placeholder="记录允许本产品商业使用、转载及相应改动的条款、授权凭据或自有内容依据" onChange={event => { setBasis(event.target.value); dirty(); }} /></label>
       {selected?.article ? <label className="field-block"><span><input type="checkbox" checked={remove} onChange={event => { dirty(); setRemove(event.target.checked); }} /> 从此事件移除现有文章（审核后生效）</span></label> : null}
-      <label className="field-block"><span><input type="checkbox" checked={rights} onChange={event => setRights(event.target.checked)} /> 已核对本次正文、来源、使用权限及改动范围</span></label>
+      <label className="field-block"><span><input type="checkbox" checked={rights} onChange={event => setRights(event.target.checked)} /> 已核对本次正文、来源、商业使用与转载权限及改动范围</span></label>
       <button className="control primary" disabled={stale || !occurrenceId || !rights || (!remove && (!registeredSourceId || !title.trim() || !body.trim() || !url.trim() || !license.trim() || !basis.trim()))} onClick={submit}>创建文章待审候选</button>
     </fieldset>
     {reading ? <p role="status">正在读取正文…</p> : null}

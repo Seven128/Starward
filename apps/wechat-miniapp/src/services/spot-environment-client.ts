@@ -5,7 +5,7 @@ export function createSpotEnvironmentClient(request: ReturnType<typeof createAut
   return {
     getSpotRecentWeather(spotId: string, signal?: AbortSignal) {
       return request("spot-recent-weather:" + spotId, "spotRecentWeatherGet", {
-        pathParams: { spotId }, ...(signal ? { signal } : {}),
+        pathParams: { spotId }, auth: "NONE", cache: false, ...(signal ? { signal } : {}),
       });
     },
     getSpotAirQuality(spotId: string, signal?: AbortSignal) {

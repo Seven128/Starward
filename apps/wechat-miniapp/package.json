@@ -11,6 +11,7 @@
     "test": "node ../../tools/run-node.cjs --import tsx --test src/**/*.test.ts"
   },
   "dependencies": {
+    "@starward/astronomy-core": "*",
     "@starward/miniapp-contracts": "*",
     "@tanstack/react-query": "5.90.21",
     "@tarojs/components": "4.2.1",
@@ -21,6 +22,7 @@
     "@tarojs/taro": "4.2.1",
     "quaternion": "^2.2.0",
     "react": "18.3.1",
+    "twgl.js": "7.0.0",
     "zustand": "5.0.14"
   },
   "devDependencies": {

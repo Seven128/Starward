@@ -73,6 +73,13 @@ import {
 import { readVendorUsageCosts } from "./postgres-vendor-usage.ts";
 
 const { Pool } = pg;
+// Both replacement and deletion stop scheduling without rewriting a delivery.
+// A receipt is evidence even if an older row's attempt counter is inconsistent.
+const reminderHasDeliveryEvidenceSql = `plan_reminder_schedules.attempt_count > 0
+  OR plan_reminder_schedules.state IN ('SENT', 'RESULT_UNKNOWN') OR EXISTS (
+    SELECT 1 FROM plan_reminder_delivery_attempts a
+    WHERE a.schedule_version = plan_reminder_schedules.schedule_version
+  )`;
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -720,6 +727,24 @@ export class PostgresMiniappRepository
     });
   }
 
+  async saveWechatDeliveryIdentity(input: { userId: UserId; identityDigest: string; appId: string; ciphertext: string }) {
+    const result = await this.pool.query(
+      `UPDATE wechat_identities SET delivery_app_id=$3, delivery_identity_ciphertext=$4, delivery_identity_updated_at=now()
+       WHERE user_id=$1 AND identity_digest=$2
+         AND EXISTS (SELECT 1 FROM users WHERE user_id=$1 AND state='ACTIVE')`,
+      [input.userId, input.identityDigest, input.appId, input.ciphertext],
+    );
+    if (result.rowCount !== 1) throw new Error("wechat_delivery_identity_account_unavailable");
+  }
+
+  async getWechatDeliveryIdentity(userId: UserId, appId: string): Promise<string | null> {
+    const result = await this.pool.query<{ delivery_identity_ciphertext: string }>(
+      `SELECT i.delivery_identity_ciphertext FROM wechat_identities i JOIN users u USING(user_id)
+       WHERE i.user_id=$1 AND i.delivery_app_id=$2 AND u.state='ACTIVE'`, [userId, appId],
+    );
+    return result.rows[0]?.delivery_identity_ciphertext ?? null;
+  }
+
   async createSession(input: {
     userId: UserId;
     tokenDigest: string;
@@ -807,6 +832,9 @@ export class PostgresMiniappRepository
       await client.query("DELETE FROM formal_feedback_upload_intents WHERE user_id = $1", [userId]);
       await eraseAccountContributionEvidence(client, userId);
       for (const table of [
+        "plan_reminder_delivery_attempts",
+        "plan_reminder_subscription_challenges",
+        "plan_reminder_schedules",
         "favorites",
         "observation_plans",
         "user_profile_links",
@@ -1077,7 +1105,8 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ObservationPlan> {
     return this.#transaction(async (client) => {
-      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      const account = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      if (account.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
       const replay = await this.#replay<ObservationPlan>(
         client,
         userId,
@@ -1140,12 +1169,18 @@ export class PostgresMiniappRepository
       if (!persisted.rowCount) throw new Error("plan_identity_scope_conflict");
       const schedules = derivePlanReminderSchedules(userId, saved);
       await client.query(
-        `UPDATE plan_reminder_schedules SET active = false, state = 'CANCELED',
-            reason = 'SUPERSEDED_OR_REMOVED', updated_at = now()
+        `UPDATE plan_reminder_schedules SET active = false,
+            state = CASE WHEN ${reminderHasDeliveryEvidenceSql} THEN state ELSE 'CANCELED' END,
+            reason = CASE WHEN ${reminderHasDeliveryEvidenceSql} THEN reason ELSE 'SUPERSEDED_OR_REMOVED' END, updated_at = now()
           WHERE user_id = $1 AND plan_id = $2 AND active = true
             AND NOT (schedule_version = ANY($3::text[]))`,
         [userId, saved.planId, schedules.map(row => row.scheduleVersion)],
       );
+      await client.query(`UPDATE plan_reminder_subscription_challenges c
+        SET state='CANCELED',resolved_at=clock_timestamp()
+        FROM plan_reminder_schedules s
+        WHERE c.schedule_version=s.schedule_version AND s.user_id=$1 AND s.plan_id=$2 AND NOT s.active
+          AND c.consumed_at IS NULL AND c.state IN ('REQUESTED','CLIENT_ACCEPTED')`, [userId, saved.planId]);
       for (const row of schedules) {
         await client.query(
           `INSERT INTO plan_reminder_schedules(
@@ -1154,6 +1189,12 @@ export class PostgresMiniappRepository
            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,0,true,$10)
            ON CONFLICT (schedule_version) DO UPDATE SET
              plan_revision = EXCLUDED.plan_revision,
+             state = CASE WHEN plan_reminder_schedules.state = 'CANCELED'
+               AND NOT (${reminderHasDeliveryEvidenceSql})
+               THEN EXCLUDED.state ELSE plan_reminder_schedules.state END,
+             reason = CASE WHEN plan_reminder_schedules.state = 'CANCELED'
+               AND NOT (${reminderHasDeliveryEvidenceSql})
+               THEN EXCLUDED.reason ELSE plan_reminder_schedules.reason END,
              active = true,
              updated_at = EXCLUDED.updated_at`,
           [row.scheduleVersion, row.planId, row.userId, row.reminderId, row.planRevision,
@@ -1180,13 +1221,21 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<void> {
     await this.#transaction(async (client) => {
+      const account = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      if (account.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
       if (await this.#replay(client, userId, idempotencyKey)) return;
       await client.query(
-        `UPDATE plan_reminder_schedules SET active = false, state = 'CANCELED',
-            reason = 'PLAN_DELETED', updated_at = now()
+        `UPDATE plan_reminder_schedules SET active = false,
+            state = CASE WHEN ${reminderHasDeliveryEvidenceSql} THEN state ELSE 'CANCELED' END,
+            reason = CASE WHEN ${reminderHasDeliveryEvidenceSql} THEN reason ELSE 'PLAN_DELETED' END, updated_at = now()
           WHERE plan_id = $1 AND user_id = $2 AND active = true`,
         [planId, userId],
       );
+      await client.query(`UPDATE plan_reminder_subscription_challenges c
+        SET state='CANCELED',resolved_at=clock_timestamp()
+        FROM plan_reminder_schedules s
+        WHERE c.schedule_version=s.schedule_version AND s.user_id=$1 AND s.plan_id=$2
+          AND c.consumed_at IS NULL AND c.state IN ('REQUESTED','CLIENT_ACCEPTED')`, [userId, planId]);
       await client.query(
         "DELETE FROM observation_plans WHERE plan_id = $1 AND user_id = $2",
         [planId, userId],

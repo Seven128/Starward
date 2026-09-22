@@ -9,6 +9,7 @@
  * platform's sensor values are accurate, calibrated or true-north aligned.
  */
 
+import type { SkyProjectionCenter } from "./sky-viewport";
 export type SkyVector = readonly [number, number, number];
 
 export interface SkyViewBasis {
@@ -168,12 +169,12 @@ export function validBasis(value: unknown): value is SkyViewBasis {
 }
 
 /**
- * Project one local-horizon direction through a perspective camera.
+ * Project one local-horizon direction through a stereographic camera.
  *
  * `verticalFovDeg` is deliberately required at every call so the caller must
  * own the selected view profile.  Horizontal FOV is derived from the actual
- * width/height aspect ratio.  A direction behind the phone or outside the
- * view frustum returns null; it is never clamped to an edge position.
+ * width/height aspect ratio. The antipode and directions outside the
+ * viewport return null; points are never clamped to an edge position.
  */
 export function projectSkyDirection(
   azimuthDeg: number,
@@ -182,6 +183,24 @@ export function projectSkyDirection(
   width: number,
   height: number,
   verticalFovDeg: number,
+  center?: SkyProjectionCenter,
+): SkyDirectionProjection | null {
+  const point = projectSkyDirectionUnclipped(azimuthDeg, altitudeDeg, basis, width, height, verticalFovDeg, center);
+  return point && point.x >= -1e-9 && point.x <= width+1e-9 && point.y >= -1e-9 && point.y <= height+1e-9 ? point : null;
+}
+
+/** Extended image anchors may leave the viewport while their bitmap still overlaps it.
+ * Canvas clips the resulting bitmap; the projection antipode remains rejected.
+ * Point visibility and hit testing must continue using projectSkyDirection.
+ */
+export function projectSkyDirectionUnclipped(
+  azimuthDeg: number,
+  altitudeDeg: number,
+  basis: SkyViewBasis,
+  width: number,
+  height: number,
+  verticalFovDeg: number,
+  center?: SkyProjectionCenter,
 ): SkyDirectionProjection | null {
   if (
     !finite(azimuthDeg) ||
@@ -195,7 +214,7 @@ export function projectSkyDirection(
     height <= 0 ||
     !finite(verticalFovDeg) ||
     verticalFovDeg <= 0 ||
-    verticalFovDeg >= 180
+    verticalFovDeg >= 360
   )
     return null;
 
@@ -212,13 +231,14 @@ export function projectSkyDirection(
   const cameraRight = dot(direction, basis.right);
   const cameraUp = dot(direction, basis.up);
   const cameraForward = dot(direction, basis.forward);
-  if (!(cameraForward > 0)) return null;
+  const denominator = 1 + cameraForward;
+  if (!(denominator > 1e-9)) return null;
 
-  const focalLength = height / (2 * Math.tan((verticalFovDeg * DEGREES_TO_RADIANS) / 2));
-  if (!finite(focalLength) || focalLength <= 0) return null;
-  const x = width / 2 + (focalLength * cameraRight) / cameraForward;
-  const y = height / 2 - (focalLength * cameraUp) / cameraForward;
-  if (!finite(x) || !finite(y) || x < 0 || x > width || y < 0 || y > height)
+  const scale = skyProjectionScale(height, verticalFovDeg);
+  if (scale === null) return null;
+  const x = (center?.x ?? width / 2) + (scale * cameraRight) / denominator;
+  const y = (center?.y ?? height / 2) - (scale * cameraUp) / denominator;
+  if (!finite(x) || !finite(y))
     return null;
 
   return {
@@ -227,4 +247,24 @@ export function projectSkyDirection(
     degrees: normalizeDegrees(azimuthDeg),
     altitude: altitudeDeg,
   };
+}
+
+/** Stereographic radius = scale * tan(angular distance from center / 2).
+ * The vertical FOV includes unused space outside the horizon in dome mode.
+ */
+export function skyProjectionScale(height: number, verticalFovDeg: number): number | null {
+  if (!finite(height) || height <= 0 || !finite(verticalFovDeg) || verticalFovDeg <= 0 || verticalFovDeg >= 360) return null;
+  return height / (2 * Math.tan(verticalFovDeg * Math.PI / 720));
+}
+
+/** Exact inverse used by dragging and camera consumers; no second projection. */
+export function unprojectSkyPoint(x: number, y: number, basis: SkyViewBasis,
+  width: number, height: number, verticalFovDeg: number, center?: SkyProjectionCenter): SkyVector | null {
+  const scale = skyProjectionScale(height, verticalFovDeg);
+  if (!validBasis(basis) || ![x, y, width].every(finite) || width <= 0 || scale === null) return null;
+  if (center && ![center.x, center.y].every(finite)) return null;
+  const u = (x - (center?.x ?? width / 2)) / scale, v = ((center?.y ?? height / 2) - y) / scale;
+  const squared = u * u + v * v, divisor = 1 + squared;
+  const right = 2 * u / divisor, up = 2 * v / divisor, forward = (1 - squared) / divisor;
+  return [0, 1, 2].map(i => basis.right[i]! * right + basis.up[i]! * up + basis.forward[i]! * forward) as unknown as SkyVector;
 }

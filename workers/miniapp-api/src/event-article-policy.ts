@@ -15,6 +15,9 @@ export interface EventArticleRightsConfirmation { confirmed: true; basis: string
 function text(value: unknown, max: number): value is string {
   return typeof value === "string" && Boolean(value.trim()) && value.length <= max && !value.includes("\uFFFD");
 }
+export function validateEventArticleLicense(value: unknown): asserts value is string {
+  if (typeof value !== "string" || !value.trim() || value.length > 300) throw new Error("event_article_license_invalid");
+}
 export function validateEventArticle(value: unknown): asserts value is AstronomicalEventArticle {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("event_article_invalid");
   const a = value as AstronomicalEventArticle;

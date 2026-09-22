@@ -4,7 +4,7 @@ import { requestIdFromHeaders } from "./request-id.ts";
 import { SpotPublicationBlockedError } from "./spot-completeness-policy.ts";
 
 export function classifyExceptionMessage(message: string) {
-  if (/^event_article_(?:source_unavailable|timeout)$/u.test(message)) return { status: 503, code: "PROVIDER_UNAVAILABLE", retryable: true } as const;
+  if (/^event_article_(?:source_unavailable|dns_unavailable|timeout)$/u.test(message)) return { status: 503, code: "PROVIDER_UNAVAILABLE", retryable: true } as const;
   if (/^event_article_/u.test(message)) return { status: 400, code: "INVALID_INPUT", retryable: false } as const;
   if (/^event_catalog_(?:active_changed|review_baseline_changed|candidate_changed|source_exists|version_exists|candidate_duplicate|candidate_not_reviewable|candidate_not_publishable|already_active)$/u.test(message))
     return { status: 409, code: "CONFLICT", retryable: true } as const;

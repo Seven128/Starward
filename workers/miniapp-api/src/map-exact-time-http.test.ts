@@ -12,6 +12,7 @@ import { MiniappService } from "./miniapp-service.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../../../apps/wechat-miniapp/src/utils/zoned-date.ts";
+import { createScrollSettlement } from "../../../apps/wechat-miniapp/src/components/scroll-settlement.ts";
 
 test("HTTP context and map preserve an off-cadence selected instant", async () => {
   const service = createTestMiniappService();
@@ -39,13 +40,16 @@ test("HTTP context and map preserve an off-cadence selected instant", async () =
     const ast = ts.createSourceFile("frames.ts", frameSource, ts.ScriptTarget.Latest, true);
     const nearest = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "nearestMapTimeFrameIndex");
     assert.ok(nearest);
+    const scrollPositions: number[] = [];
     const component = vm.runInNewContext(ts.transpileModule(nearest.getText(ast).replace("export ", "") + "\n" + componentSource + "\nMapTimeRuler;", {
       compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
     }).outputText, {
       Button: "button", ScrollView: "scroll", Text: "text", View: "view",
       React: { createElement: (type: string, props: object, ...children: unknown[]) => ({ type, props, children: children.flat() }) },
       useState: (value: unknown) => [value, () => {}], useRef: (value: unknown) => ({ current: value }),
-      useEffect() {}, useDidHide() {}, MINIAPP_DESIGN: { geometry: { "target-min": 44 } },
+      useEffect() {}, useDidHide() {}, useDidShow() {}, createScrollSettlement,
+      // Native selector/ScrollViewContext is outside this HTTP/component test.
+      createRulerScrollPosition: () => ({ move: (left: number) => scrollPositions.push(left), cancel() {} }),
       calendarDateInTimezone, clockTimeInTimezone,
     });
     const committed: number[] = [];
@@ -61,6 +65,8 @@ test("HTTP context and map preserve an off-cadence selected instant", async () =
     const adjacent = buttons.find(button => button.props.ariaLabel === "08/06 21:30");
     assert.ok(adjacent);
     adjacent.props.onClick();
+    assert.equal(committed.length, 1);
     assert.equal(scene.timeFrames[committed[0]!].atUtc, "2026-08-06T13:30:00.000Z");
+    assert.equal(scrollPositions.length, 1);
   } finally { await app.close(); }
 });

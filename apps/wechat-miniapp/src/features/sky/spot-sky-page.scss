@@ -911,26 +911,25 @@
 
 .sky-image-status button::after { border: 0; }
 
-/* DOM labels sit above the canvas so long target names and windows remain
- * readable to users and assistive technologies. The canvas itself carries
- * marks only; this layer is intentionally compact and unshadowed. */
+/* Light labels keep projected anchors; full windows stay in list/detail. */
 .sky-orientation-target-label {
   position: absolute;
   z-index: 3;
   max-width: 46vw;
   min-width: 0;
+  margin: 0;
   box-sizing: border-box;
   transform: translate(-8rpx, -50%);
   padding: 4rpx 8rpx;
   display: flex;
   align-items: flex-start;
   gap: 6rpx;
-  border: 1rpx solid var(--border-strong);
-  border-radius: 8rpx;
-  background: rgba(255, 255, 255, 0.92);
+  border: 0;
+  background: transparent;
   color: var(--text-primary);
   pointer-events: auto;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  text-shadow: 0 1Px 8Px var(--canvas);
   text-align: left;
   line-height: inherit;
 }
@@ -939,8 +938,9 @@
 .sky-orientation-target-label:active { opacity: .72; }
 
 .sky-orientation-target-label--event {
-  border-color: var(--accent-warm);
+  color: var(--accent-warm);
 }
+.sky-orientation-target-label--left { flex-direction: row-reverse; transform: translate(calc(-100% + 8rpx), -50%); text-align: right; }
 
 .sky-orientation-target-label__mark {
   width: 16rpx;
@@ -964,26 +964,19 @@
 
 .sky-orientation-target-label__name {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-primary);
   font-size: var(--type-body-secondary-size);
   line-height: var(--type-body-secondary-line);
   font-weight: 600;
 }
 
-.sky-orientation-target-label__meta,
-.sky-orientation-target-label__window {
+.sky-orientation-target-label__meta {
   min-width: 0;
   color: var(--text-secondary);
   font-size: var(--type-metadata-size);
   line-height: var(--type-metadata-line);
-}
-
-.theme-night .sky-orientation-target-label {
-  background: rgba(24, 26, 23, 0.94);
-}
-
-.theme-observation .sky-orientation-target-label {
-  background: rgba(17, 0, 0, 0.96);
 }
 
 .sky-orientation-catalog-label {
@@ -1194,11 +1187,11 @@
 }
 
 .sky-orientation-object-toggle {
-  position: absolute;
+  position: relative;
   z-index: 8;
   top: auto;
-  bottom: calc(env(safe-area-inset-bottom) + 278rpx);
-  right: 16rpx;
+  bottom: auto;
+  right: auto;
   left: auto;
   pointer-events: auto;
 }
@@ -1943,11 +1936,10 @@
   }
 }
 .sky-view-mode {
-  position: absolute;
+  position: relative;
   z-index: 8;
-  bottom: calc(env(safe-area-inset-bottom) + 278rpx);
-  left: 16rpx;
-  max-width: calc(100% - 140Px);
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1955,14 +1947,84 @@
   color: var(--text-primary);
 }
 .sky-view-mode__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 44Px;
   margin: 0;
   padding: 0 12Px;
   border-radius: 999Px;
   font-size: var(--type-action-size);
+  line-height: var(--type-action-line);
   color: var(--text-primary);
   background: var(--surface);
 }
 .sky-view-mode__status { flex-basis: 100%; }
+.sky-orientation-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 8Px;
+  padding-bottom: 8Px;
+  pointer-events: auto;
+}
+
+.sky-cardinal-label {
+  position: absolute;
+  pointer-events: none;
+  font-size: 10Px;
+  line-height: 1;
+  transform: translateY(-100%);
+  color: #dce4ef;
+}
+
+.theme-observation .sky-cardinal-label {
+  color: #ff6b58;
+}
 
 .sky-weather-alerts { max-height: 30vh; }
+
+// Explicit disclosures keep the observing surface free until a control is needed.
+.sky-control-dock {
+  position: absolute;
+  z-index: 12;
+  left: 12Px;
+  bottom: max(12Px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8Px;
+  padding: 0;
+}
+.sky-control-dock__button {
+  min-width: 88Px;
+  min-height: 44Px;
+  margin: 0;
+  padding: 0 10Px;
+  border-radius: 22Px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: var(--type-action-size);
+}
+.sky-control-dock__button[aria-expanded="true"] { border: 1Px solid var(--text-primary); }
+.sky-control-panel {
+  position: absolute;
+  z-index: 11;
+  left: 12Px;
+  right: 12Px;
+  bottom: calc(max(12Px, env(safe-area-inset-bottom)) + 164Px);
+  max-height: calc(100vh - var(--sky-controls-top) - 228Px);
+  overflow-y: auto;
+  pointer-events: auto;
+  border-radius: 12Px;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+.sky-calibration-panel { display: flex; flex-wrap: wrap; gap: 8Px; padding: 12Px; }
+.sky-control-panel--calendar { z-index: 40; }
+.sky-quick-settings {
+  position: absolute;
+  z-index: 10;
+  top: calc(var(--sky-controls-top) + 48Px);
+  right: 12Px;
+  left: 64Px;
+}
+.sky-quick-settings .sky-view-mode { justify-content: flex-end; }

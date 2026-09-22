@@ -14,6 +14,13 @@ export interface PlanReminder {
   items: readonly { itemId: string; text: string; completed: boolean }[];
 }
 
+export interface ReminderSubscriptionPrepareRequest { reminderId: string }
+export type ReminderSubscriptionPrepareData =
+  | { state: "UNAVAILABLE"; reason: "NOT_CONFIGURED" | "REMINDER_NOT_ELIGIBLE" }
+  | { state: "READY"; challengeId: string; scheduleVersion: string; templateId: string; expiresAt: string };
+export interface ReminderSubscriptionReportRequest { choice: "accept" | "reject" | "ban" | "filter" }
+export interface ReminderSubscriptionReportData { recorded: boolean }
+
 /** Server-owned notification state. `notifyOnWechat` remains user intent only. */
 export type PlanReminderNotificationState =
   | "NOT_REQUESTED"
@@ -37,9 +44,12 @@ export interface PlanReminderNotificationStatus {
     | "USER_DID_NOT_REQUEST"
     | "DEPARTURE_TIME_REQUIRED"
     | "TEMPLATE_NOT_CONFIGURED"
+    | "DELIVERY_NOT_CONFIGURED"
     | "AUTHORIZATION_NOT_GRANTED"
     | "WAITING_FOR_TRIGGER"
     | "DELIVERED"
+    | "PROVIDER_ACCEPTED"
+    | "PROVIDER_NOT_ATTEMPTED"
     | "TRIGGER_MISSED"
     | "DEPARTURE_EXPIRED"
     | "PROVIDER_REJECTED"

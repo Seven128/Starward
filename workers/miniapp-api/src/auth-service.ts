@@ -7,6 +7,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import type { MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
+import { encryptWechatDeliveryIdentity } from "./wechat-delivery-identity.ts";
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1_000;
 
@@ -105,9 +106,15 @@ export class AuthService {
       const data = (await response.json()) as WechatCodeSessionResponse;
       if (data.errcode || !data.openid || !data.session_key)
         throw new Error(`wechat_auth_rejected:${data.errcode ?? "missing_identity"}`);
-      return this.repository.findOrCreateWechatUser(
-        this.#digest(`wechat-openid:${data.openid}`),
-      );
+      const identityDigest = this.#digest(`wechat-openid:${data.openid}`);
+      const userId = await this.repository.findOrCreateWechatUser(identityDigest);
+      if (this.config.wechat.deliveryIdentityKey) {
+        await this.repository.saveWechatDeliveryIdentity({
+          userId, identityDigest, appId,
+          ciphertext: encryptWechatDeliveryIdentity(data.openid, userId, appId, this.config.wechat.deliveryIdentityKey),
+        });
+      }
+      return userId;
     } finally {
       clearTimeout(timeout);
     }

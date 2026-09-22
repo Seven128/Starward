@@ -14,6 +14,7 @@ import Taro, { useResize } from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { WeatherAlerts } from "@/components/weather-alerts";
 import { RecentWeather } from "@/components/recent-weather";
+import { SourceAttribution } from "@/components/source-attribution";
 import { AirQuality } from "@/components/air-quality";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { FavoriteStar } from "@/components/selected-card-star";
@@ -645,6 +646,7 @@ export function SpotInformationPanel({
             </View>
             <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
               <Text className="type-label spot-panel__weather-heading">气象条件</Text>
+              {skyRow?.weatherAt ? <SourceAttribution sources={skyReport?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
               <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []}
                 timezone={context?.timezone ?? "Asia/Shanghai"} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
               {skyRow?.weatherAt ? <Text className="type-caption">对应小时预报：{formatSourceTime(skyRow.weatherAt, context?.timezone ?? "Asia/Shanghai")}</Text> : null}

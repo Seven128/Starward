@@ -53,6 +53,24 @@ function withEnvironment<T>(values: NodeJS.ProcessEnv, assertion: () => T): T {
   }
 }
 
+test("delivery identity encryption requires a distinct valid key and defaults to disabled", () => {
+  const environment = releaseEnvironment("TRIAL", "OPEN_METEO_COMMERCIAL");
+  const key = "17".repeat(32);
+  assert.equal(withEnvironment(environment, loadRuntimeConfig).wechat.deliveryIdentityKey, null);
+  assert.equal(withEnvironment({ ...environment, WECHAT_DELIVERY_IDENTITY_KEY: key }, loadRuntimeConfig).wechat.deliveryIdentityKey, key);
+  assert.throws(() => withEnvironment({ ...environment, WECHAT_DELIVERY_IDENTITY_KEY: "invalid" }, loadRuntimeConfig), /wechat_delivery_key_invalid/);
+  assert.throws(() => withEnvironment({ ...environment, MINIAPP_SESSION_SECRET: key, WECHAT_DELIVERY_IDENTITY_KEY: key }, loadRuntimeConfig), /wechat_delivery_key_must_be_independent/);
+});
+
+test("reminder template defaults to unavailable and rejects malformed IDs", () => {
+  const environment = releaseEnvironment("TRIAL", "OPEN_METEO_COMMERCIAL");
+  assert.equal(withEnvironment(environment, loadRuntimeConfig).wechat.subscriptionTemplateId, null);
+  assert.equal(withEnvironment({ ...environment, WECHAT_REMINDER_TEMPLATE_ID: "synthetic-template_1" }, loadRuntimeConfig).wechat.subscriptionTemplateId, "synthetic-template_1");
+  for (const id of ["a/b", "x".repeat(129)]) {
+    assert.throws(() => withEnvironment({ ...environment, WECHAT_REMINDER_TEMPLATE_ID: id }, loadRuntimeConfig), /wechat_reminder_template_id/);
+  }
+});
+
 test("event catalog check interval is configurable within a bounded range", () => {
   const config = withEnvironment(
     { ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS: "3" },
@@ -66,6 +84,13 @@ test("event catalog check interval is configurable within a bounded range", () =
     ),
     /runtime_config_invalid:MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS:0/u,
   );
+});
+
+test("article DNS uses an explicit bounded resolver mode without a private-address fallback", () => {
+  const environment = releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL");
+  assert.equal(withEnvironment(environment, loadRuntimeConfig).eventArticleDnsMode, "SYSTEM");
+  assert.equal(withEnvironment({ ...environment, MINIAPP_EVENT_ARTICLE_DNS_MODE: "CLOUDFLARE_DOH" }, loadRuntimeConfig).eventArticleDnsMode, "CLOUDFLARE_DOH");
+  assert.throws(() => withEnvironment({ ...environment, MINIAPP_EVENT_ARTICLE_DNS_MODE: "unsafe-fallback" }, loadRuntimeConfig), /runtime_config_invalid:MINIAPP_EVENT_ARTICLE_DNS_MODE/);
 });
 
 test("TRIAL and COMMERCIAL use QWeather alone without an Open-Meteo key", () => {

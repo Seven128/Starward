@@ -23,9 +23,13 @@ test("selected AQ hour is exact, independent of current readings and never bridg
 });
 
 test("elapsed freshness hides old current data without discarding still valid forecast", () => {
+  const unknown = airQualityState({ ...body, current: { ...body.current, source: { ...source, retrievedAt: null } } }, "2026-09-15T01:15:00Z", now);
+  assert.equal(unknown.current, null);
+  assert.equal(unknown.forecast?.at, "2026-09-15T01:00:00Z");
+  assert.equal(unknown.failed, true);
   const result = airQualityState(body, "2026-09-15T03:15:00Z", now + 3_600_000);
   assert.equal(result.current, null); assert.equal(result.forecast!.at, "2026-09-15T03:00:00Z");
-  assert.equal(result.failed, true);
+  assert.equal(result.failed, false); assert.equal(result.expired, true);
   const expired = airQualityState(body, "2026-09-15T03:15:00Z", now + 4 * 3_600_000);
   assert.equal(expired.forecast, null); assert.deepEqual(expired.hours, []);
   assert.equal(airQualityState(undefined, "2026-09-15T01:00:00Z", now).failed, false);
@@ -38,4 +42,7 @@ test("no coverage is not an error; failed sibling or stale source retains explic
     assert.equal(result.failed, reason === "REQUEST_FAILED");
   }
   assert.equal(airQualityState({ ...body, current: { ...body.current, state: "STALE_USABLE" } }, "2026-09-15T01:00:00Z", now).failed, true);
+  const failedThenElapsed = airQualityState({ ...body, current: { ...body.current, state: "STALE_USABLE" } }, "2026-09-15T03:00:00Z", now + 3_600_000);
+  assert.equal(failedThenElapsed.current, null); assert.equal(failedThenElapsed.failed, true);
+  assert.ok(failedThenElapsed.forecast, "clock expiry must not erase failure or independent usable data");
 });

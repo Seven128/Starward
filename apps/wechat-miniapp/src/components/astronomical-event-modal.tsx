@@ -1,6 +1,6 @@
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
 import { Button, RootPortal, ScrollView, Text, View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import type { AstronomicalEventLocalVisibility, AstronomicalEventOccurrence, ObservationContext, SourceSummary } from "@starward/miniapp-contracts";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
@@ -52,6 +52,12 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
 }, ref) {
   const reducedMotion = useAppStore((state) => state.preferences.reducedMotion);
   const themeClass = useAppStore((state) => `theme-${state.mode.toLowerCase()}`);
+  const [pageVisible, setPageVisible] = useState(true);
+  useDidHide(() => {
+    setPageVisible(false);
+    useAppStore.getState().clearNotifications("event-modal");
+  });
+  useDidShow(() => setPageVisible(true));
   const [mounted, setMounted] = useState(open);
   const [phase, setPhase] = useState<ModalPhase>("opening");
   const [detailId, setDetailId] = useState<string | null>(initialDetailId);
@@ -102,7 +108,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
 
   const catalog = useResourceQuery({
     queryKey: ["astronomical-events"], queryFn: getAstronomicalEvents,
-    enabled: mounted, staleTime: 6 * 60 * 60 * 1000,
+    enabled: mounted && pageVisible, staleTime: 6 * 60 * 60 * 1000,
   });
   const catalogDetail = catalog.data?.data.events.find(item => item.occurrenceId === detailId);
   const previewDate = mode === "browse" && previewSelection?.occurrenceId === detailId
@@ -110,7 +116,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   const eventRecord = useResourceQuery({
     queryKey: ["astronomical-event-record", detailId, catalog.data?.data.catalogVersion],
     queryFn: (signal) => getAstronomicalEvent(detailId!, signal),
-    enabled: mounted && Boolean(detailId), staleTime: 60_000,
+    enabled: mounted && pageVisible && Boolean(detailId), staleTime: 60_000,
   });
   const detail = useResourceQuery({
     queryKey: ["astronomical-event-modal-detail", detailId, previewDate, mode, catalog.data?.data.catalogVersion, context?.contextId, context?.contextFingerprint, context?.revision],
@@ -119,7 +125,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
       const local = await resolveObservationContext(eventPreviewContextInput(context, previewDate), signal);
       return getAstronomicalEvent(detailId!, signal, local.data.contextId);
     },
-    enabled: mounted && Boolean(detailId) && Boolean(context && previewDate), staleTime: 60_000,
+    enabled: mounted && pageVisible && Boolean(detailId) && Boolean(context && previewDate), staleTime: 60_000,
   });
   const groups = useMemo(() => groupEventsByPeakMonth(catalog.data?.data.events ?? []), [catalog.data?.data.events]);
   const record = eventRecord.data?.data.event.occurrenceId === detailId ? eventRecord.data.data : undefined;
@@ -127,18 +133,18 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   const matchingGeometry = detail.data?.data.event.occurrenceId === detailId && detail.data.data.catalogVersion === record?.catalogVersion ? detail.data.data.localVisibility : null;
   const versionMismatch = Boolean(record && detail.data && detail.data.data.catalogVersion !== record.catalogVersion);
   useEffect(() => {
-    if (versionMismatch) void Promise.all([eventRecord.refetch(), detail.refetch()]);
-  }, [versionMismatch, detail.data?.data.catalogVersion]);
+    if (pageVisible && mounted && versionMismatch) void Promise.all([eventRecord.refetch(), detail.refetch()]);
+  }, [pageVisible, mounted, versionMismatch, detail.data?.data.catalogVersion]);
   const catalogYear = catalog.data?.data.events[0]?.peakDate.slice(0, 4) ?? "2026";
   const catalogFailed = catalog.isError || Boolean(catalog.refreshError) || catalog.data?.dataState === "STALE_USABLE" || catalog.data?.dataState === "UNAVAILABLE";
   const recordFailed = eventRecord.isError || Boolean(eventRecord.refreshError) || eventRecord.data?.dataState === "STALE_USABLE" || eventRecord.data?.dataState === "UNAVAILABLE";
   const geometryFailed = Boolean(context && previewDate) && (detail.isError || Boolean(detail.refreshError) || versionMismatch || detail.data?.dataState === "STALE_USABLE" || detail.data?.dataState === "UNAVAILABLE");
   const detailFailed = recordFailed || geometryFailed;
   useEffect(() => {
-    if (!open || !(detailId ? detailFailed : catalogFailed)) return;
+    if (!pageVisible || !open || !(detailId ? detailFailed : catalogFailed)) return;
     notify({ owner: "event-modal", placement: "floating", tone: "info", title: "天文事件数据异常",
       body: "部分资料暂未更新，可在弹窗中重试。", dedupeKey: detailId ? `${detailId}:${previewDate}` : "catalog" });
-  }, [open, detailId, previewDate, detailFailed, catalogFailed, notify]);
+  }, [pageVisible, open, detailId, previewDate, detailFailed, catalogFailed, notify]);
   useEffect(() => {
     if (open) return;
     useAppStore.getState().clearNotifications("event-modal");

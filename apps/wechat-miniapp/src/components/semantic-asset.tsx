@@ -38,6 +38,8 @@ export type SemanticIconName =
   | "eye"
   | "bulb"
   | "cloud"
+  | "wind"
+  | "telescope"
   | "trash"
   | "wifi-off"
   | "images"
@@ -58,7 +60,7 @@ const B_ICON_ID: Record<SemanticIconName, string> = {
   layers: "layers", refresh: "refresh", conditions: "low-cloud", info: "info",
   compass: "compass", horizon: "horizon", undo: "undo", check: "check",
   download: "download", share: "share", eye: "eye", bulb: "bulb",
-  cloud: "cloud", trash: "trash", "wifi-off": "wifi-off", images: "images",
+  cloud: "cloud", wind: "wind", telescope: "telescope", trash: "trash", "wifi-off": "wifi-off", images: "images",
   sun: "sun", clock: "clock", moon: "moon", meteor: "meteor",
   terrain: "terrain", star: "four-point-star",
 };
@@ -86,6 +88,10 @@ const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   eye: "/assets/icons/eye.svg",
   bulb: "/assets/icons/bulb.svg",
   cloud: "/assets/icons/cloud.svg",
+  wind: "/assets/icons/wind.svg",
+  telescope: "/assets/icons/telescope.svg",
+  sun: "/assets/icons/sun.svg",
+  moon: "/assets/icons/moon.svg",
   trash: "/assets/icons/trash-2.svg",
   "wifi-off": "/assets/icons/wifi-off.svg",
   images: "/assets/icons/images.svg",
@@ -177,7 +183,7 @@ export function SemanticIcon({
           ? { "aria-hidden": true }
           : { role: "img", "aria-label": label ?? name })}
       >
-        {Object.values(MODE_FILE).map(theme => (
+        {(["night", "observation"] as const).map(theme => (
           <Image
             key={theme}
             className={`semantic-icon__theme-source semantic-icon__theme-source--${theme}`}

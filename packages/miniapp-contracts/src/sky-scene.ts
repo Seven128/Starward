@@ -1,101 +1,17 @@
-import type {
-  SkyScene,
-  SkySceneCatalogEntry,
-  DeepSkyScene,
-  DeepSkyScenePoint,
-  SkySceneFrame,
-  SkyScenePoint,
-  SkyTarget,
-  SkyTargetFrame,
-} from "./types.ts";
+import type { SkyScene, DeepSkyScene, DeepSkyScenePoint, SkyTarget, SkyTargetFrame } from "./types.ts";
+import { assertStellarGeometryFrame } from "./stellar-geometry.ts";
+import { assertStellarCatalogReference } from "./stellar-catalog-publication.ts";
+import { STELLAR_SCENE_FORMAT } from "./stellar-scene.ts";
+export { isBrightStarReference, isCelestialObjectReference } from "./celestial-identity.ts";
 
-/** Hard product limits for the catalog-backed Mini Program scene. */
-export const SKY_SCENE_MAX_CATALOG_ENTRIES = 2_048;
-export const SKY_SCENE_MAX_MAGNITUDE_LIMIT = 5.5;
-// The full noon-to-noon axis includes 48 half-hour frames plus a selected
-// instant. Keep the full V<=5 catalog and 0.001-degree geometry. This is an
-// application memory bound, not WeChat's per-key storage or setData limit;
-// response-cache chunks native writes independently.
+export const SKY_SCENE_MAX_CATALOG_ENTRIES = 8_404;
+export const SKY_SCENE_MAX_MAGNITUDE_LIMIT = 6.5;
+// Dynamic frames and independent deep-sky samples only. Static stars are separate.
 export const SKY_SCENE_MAX_SERIALIZED_BYTES = 2 * 1_048_576;
 export const DEEP_SKY_SCENE_MAX_CATALOG_ENTRIES = 128;
-
 const SHA256 = /^[a-f0-9]{64}$/u;
-
-/** Mini Program BSC5P identities; HIP identifiers are aliases, never runtime keys. */
-export function isBrightStarReference(value: unknown): value is string {
-  return typeof value === "string" && /^HR:[1-9]\d{0,3}$/u.test(value) && Number(value.slice(3)) <= 9110;
-}
-
-export function isCelestialObjectReference(value: unknown): value is string {
-  return isBrightStarReference(value) || typeof value === "string" && /^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(value);
-}
-
-function fail(reason: string): never {
-  throw new TypeError(`sky_scene_invalid:${reason}`);
-}
-
-function finite(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
-
-function assertEntry(entry: SkySceneCatalogEntry, index: number): void {
-  if (!entry || typeof entry !== "object") fail(`catalog_entry_${index}`);
-  if (typeof entry.sourceId !== "string" || !entry.sourceId.trim())
-    fail(`catalog_entry_${index}:source_id`);
-  if (!isBrightStarReference(entry.objectRef) || entry.sourceId !== entry.objectRef)
-    fail(`catalog_entry_${index}:object_ref`);
-  if (entry.displayName !== null && (typeof entry.displayName !== "string" || !entry.displayName.trim()))
-    fail(`catalog_entry_${index}:display_name`);
-  if (!finite(entry.magnitude) || entry.magnitude > SKY_SCENE_MAX_MAGNITUDE_LIMIT)
-    fail(`catalog_entry_${index}:g_magnitude`);
-  if (entry.magnitudeBand !== "V" || entry.colorIndexBand !== "B-V")
-    fail(`catalog_entry_${index}:photometry_band`);
-  if (entry.colorIndex !== null && !finite(entry.colorIndex))
-    fail(`catalog_entry_${index}:bp_rp`);
-}
-
-function assertPoint(
-  point: SkyScenePoint,
-  catalogLength: number,
-  seen: Set<number>,
-  index: number,
-): void {
-  if (!point || typeof point !== "object") fail(`frame_point_${index}`);
-  if (
-    !Array.isArray(point) ||
-    point.length !== 3 ||
-    !Number.isInteger(point[0]) ||
-    point[0] < 0 ||
-    point[0] >= catalogLength
-  )
-    fail(`frame_point_${index}:catalog_index`);
-  if (seen.has(point[0])) fail(`frame_point_${index}:duplicate`);
-  seen.add(point[0]);
-  if (!finite(point[1]) || point[1] < 0 || point[1] >= 360)
-    fail(`frame_point_${index}:azimuth`);
-  if (!finite(point[2]) || point[2] < -90 || point[2] > 90)
-    fail(`frame_point_${index}:altitude`);
-}
-
-function assertFrame(
-  frame: SkySceneFrame,
-  expectedAt: string,
-  catalogLength: number,
-  frameIndex: number,
-): void {
-  if (!frame || typeof frame !== "object") fail(`frame_${frameIndex}`);
-  if (frame.at !== expectedAt) fail(`frame_${frameIndex}:at`);
-  if (frame.state === "UNAVAILABLE") {
-    if (frame.points !== null) fail(`frame_${frameIndex}:unavailable_points`);
-    return;
-  }
-  if (frame.state !== "AVAILABLE" || !Array.isArray(frame.points))
-    fail(`frame_${frameIndex}:state`);
-  const seen = new Set<number>();
-  frame.points.forEach((point, index) =>
-    assertPoint(point, catalogLength, seen, index),
-  );
-}
+function fail(reason: string): never { throw new TypeError(`sky_scene_invalid:${reason}`); }
+function finite(value: unknown): value is number { return typeof value === "number" && Number.isFinite(value); }
 
 function assertDeepSky(scene: DeepSkyScene, hourlyAt: readonly string[]) {
   if (!scene || typeof scene !== "object" || !Array.isArray(scene.frames) || scene.frames.length !== hourlyAt.length)
@@ -109,6 +25,8 @@ function assertDeepSky(scene: DeepSkyScene, hourlyAt: readonly string[]) {
   if (scene.state !== "AVAILABLE" || !scene.catalog || scene.unavailableReason !== null)
     fail("deep_sky_available");
   const catalog = scene.catalog;
+  if (catalog.imageRegistration !== undefined && catalog.imageRegistration !== "ICRS_TAN_NORTH_0_1_V1")
+    fail("deep_sky_image_registration");
   if (!catalog.catalogVersion.trim() || !SHA256.test(catalog.catalogHash) || catalog.frame !== "ICRS J2000" ||
     !Array.isArray(catalog.sources) || catalog.sources.length === 0 || !Array.isArray(catalog.entries) ||
     catalog.entries.length === 0 || catalog.entries.length > DEEP_SKY_SCENE_MAX_CATALOG_ENTRIES)
@@ -139,65 +57,33 @@ function assertDeepSky(scene: DeepSkyScene, hourlyAt: readonly string[]) {
   });
 }
 
-/**
- * Validate the public scene shape and its relationship to the report's real
- * hourly slices.  The BFF calls this at its boundary; clients can use it in
- * development checks without owning any astronomy semantics.
- */
-export function assertSkyScene(
-  scene: SkyScene,
-  hourlyAt: readonly string[],
-): asserts scene is SkyScene {
-  if (!scene || typeof scene !== "object") fail("root");
+/** Validate the stars without letting an independent deep-sky failure retire them. */
+export function assertStellarScene(scene: SkyScene, hourlyAt: readonly string[]): void {
+  if (!scene || scene.format !== STELLAR_SCENE_FORMAT || !Array.isArray(scene.frames)) fail("format");
   if (scene.frames.length !== hourlyAt.length) fail("frame_count");
-  scene.frames.forEach((frame, index) => {
-    const expectedAt = hourlyAt[index];
-    if (expectedAt === undefined) fail("hourly_index");
-    assertFrame(frame, expectedAt, scene.catalog?.entries.length ?? 0, index);
-  });
-  if (scene.deepSky !== undefined && scene.deepSky !== null)
-    assertDeepSky(scene.deepSky, hourlyAt);
-
   if (scene.state === "AVAILABLE") {
-    if (!scene.catalog) fail("available_catalog_missing");
-    if (
-      scene.catalog.entries.length === 0 ||
-      scene.catalog.entries.length > SKY_SCENE_MAX_CATALOG_ENTRIES
-    )
-      fail("catalog_count");
-    if (
-      !scene.catalog.catalogVersion.trim() ||
-      !SHA256.test(scene.catalog.catalogHash) ||
-      !finite(scene.catalog.magnitudeLimit) ||
-      scene.catalog.magnitudeLimit > SKY_SCENE_MAX_MAGNITUDE_LIMIT
-    )
-      fail("catalog_identity");
-    if (!Array.isArray(scene.catalog.sources) || scene.catalog.sources.length === 0)
-      fail("catalog_sources");
-    const ids = new Set<string>();
-    scene.catalog.entries.forEach((entry, index) => {
-      assertEntry(entry, index);
-      if (ids.has(entry.sourceId)) fail(`catalog_entry_${index}:duplicate`);
-      ids.add(entry.sourceId);
+    if (!scene.catalog || !scene.observer || scene.unavailableReason !== null) fail("available_shape");
+    assertStellarCatalogReference(scene.catalog);
+    const extended = scene.catalog.catalogVersion === "bsc5p-bright-stars.v2";
+    if (scene.catalog.rowCount !== (extended ? 8404 : 1630) || scene.catalog.magnitudeLimit !== (extended ? 6.5 : 5) ||
+      !Array.isArray(scene.catalog.sources) || scene.catalog.sources.length === 0) fail("catalog_identity");
+    scene.frames.forEach((frame, index) => {
+      if (!frame || frame.at !== hourlyAt[index] || frame.state !== "AVAILABLE" || !frame.geometry) fail("frame_binding");
+      assertStellarGeometryFrame(frame.geometry, { catalog: scene.catalog!, at: hourlyAt[index]!, observer: scene.observer! });
     });
-    if (scene.unavailableReason !== null) fail("available_reason");
-    if (scene.frames.some((frame) => frame.state !== "AVAILABLE"))
-      fail("available_frame_state");
   } else if (scene.state === "UNAVAILABLE") {
-    if (scene.catalog !== null) fail("unavailable_catalog_present");
-    if (
-      typeof scene.unavailableReason !== "string" ||
-      !scene.unavailableReason.trim()
-    )
-      fail("unavailable_reason");
-    if (scene.frames.some((frame) => frame.state !== "UNAVAILABLE"))
-      fail("unavailable_frame_state");
-  } else {
-    fail("state");
-  }
+    if (scene.catalog !== null || scene.observer !== null || typeof scene.unavailableReason !== "string" || !scene.unavailableReason.trim()) fail("unavailable_shape");
+    scene.frames.forEach((frame, index) => {
+      if (!frame || frame.at !== hourlyAt[index] || frame.state !== "UNAVAILABLE" || frame.geometry !== null) fail("unavailable_frame");
+    });
+  } else fail("state");
+}
 
-  const bytes = new TextEncoder().encode(JSON.stringify(scene)).byteLength;
-  if (bytes >= SKY_SCENE_MAX_SERIALIZED_BYTES) fail("serialized_size");
+/** The current report has one factored frame per exact selected-time-axis instant. */
+export function assertSkyScene(scene: SkyScene, hourlyAt: readonly string[]): asserts scene is SkyScene {
+  assertStellarScene(scene, hourlyAt);
+  if (scene.deepSky !== undefined && scene.deepSky !== null) assertDeepSky(scene.deepSky, hourlyAt);
+  if (new TextEncoder().encode(JSON.stringify(scene)).byteLength >= SKY_SCENE_MAX_SERIALIZED_BYTES) fail("serialized_size");
 }
 
 /**

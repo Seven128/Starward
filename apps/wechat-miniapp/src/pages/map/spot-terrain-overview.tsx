@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { Provenance } from "@/components/provenance";
+import { SourceAttribution } from "@/components/source-attribution";
 import { SoftButton } from "@/components/soft-button";
 import { useAppStore } from "@/state/app-store";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
@@ -77,6 +78,7 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
     {failed ? <SoftButton label="重新读取图层" onClick={() => void terrain.refetch()}>重试</SoftButton> : null}
     {lightVisible ? data?.lightPollution.state === "UNAVAILABLE" ? <Text className="spot-terrain__layer-state">光污染：{data.lightPollution.coverageLabel}</Text> : <View className="spot-terrain__legend">{data?.lightPollution.legend.map(item => <View key={item.label}><View style={{ backgroundColor: item.color }} /><Text>{item.label}</Text></View>)}</View> : null}
     <View className="spot-terrain__source" data-control="spot-terrain-source">
+      {lightVisible && lightCells.length > 0 && data?.lightPollution.source ? <SourceAttribution sources={[data.lightPollution.source]} /> : null}
       {data?.datasetVersion ? <Text>{data.datasetVersion}</Text> : null}
       {data?.sourceResolution && data.derivedResolutionM !== null ? <Text>源分辨率 {data.sourceResolution} · 派生约 {data.derivedResolutionM} m · {data.coverageLabel}</Text> : null}
       <Text>不含近处树木、围墙、临时灯及逐方向遮挡角。</Text>

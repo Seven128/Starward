@@ -1,10 +1,14 @@
 # sky · 本对话当前设计资源
 
+> 2026-09-22：下方 Stitch 节点记录仅是当时同步记录，所在项目已隔离，禁止作为新迭代基线。当前局部源仅在页面 ADOPTED.md 声明范围内有效；见 [Stitch 隔离状态](../../../stitch-status.md)。
+
 2026-09-09 用户要求完成最终修订后收敛本对话全部资源到对应 Context、同步 Stitch 并清理废案。本入口明确当前局部设计依据；文件夹名 candidates 保留来源路径，避免破坏现有互链，不表示仍有多个竞争版本。
 
 [当前交互资源](review.html) · [可编辑预览](preview/index.html) · [原稿与历次说明](README.md)
 
 覆盖：地点时间提示、居中小字级天体介绍、共享模糊液态玻璃及长文/暖红/返回。未覆盖区域继续使用页面 ADOPTED.md 中的既有依据。当前预览是 Stitch 生成方向经 Codex 局部集成的 HTML/CSS/JS，可继续编辑；Stitch 原稿、截图和浏览器交互原型不是同一种资源，不能互相冒充。生产开发、真实服务和 WEAPP 真机验收尚未完成。
+
+2026-09-22用户确认的来源披露修订：天体弹窗保留简短署名＋“来源与许可”入口，完整来源卡移至独立小程序页面，返回恢复原天体弹窗。新页面复用现有 CustomNav、Provenance、主题及纵向滚动责任，长网址完整换行；不另行扩展资料内容。此修订由[当前 Screen Contract](../../../../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#explicit-celestial-information-2026-09-09-revision)控制；旧预览未演示独立来源页，不能当作新导航已验证的证据。
 
 材质唯一源：[公共液态玻璃](../../../shared/liquid-glass/README.md)。背景细节有适度模糊，透过颜色和大轮廓，前景文字清晰，浅/暗/暖红由参数适配。
 
@@ -12,8 +16,8 @@
 
 历史原稿/被替代版本仅用于追溯，不与本入口并列指导开发。当前生产方案仍由 Context 的责任、数据与验证边界约束。
 
-## 当前视觉与 Stitch
+## 2026-09-09 视觉与 Stitch 同步记录（历史）
 
-[当前390px视觉](reference/sky-current-2026-09-09.png) · [Stitch项目](https://stitch.withgoogle.com/projects/13823253487989500123)
+[当前390px视觉](reference/sky-current-2026-09-09.png) · [已隔离的Stitch历史项目](https://stitch.withgoogle.com/projects/13823253487989500123)
 
-Stitch当前精确参考节点 `6a638a1d-8607-400b-894f-03c63d4961fe`；它是从当前本地页面输出并同步的截图，不是可编辑HTML节点。可编辑交互源以本目录preview和页面引用的共享资源为准。Stitch保留仍适用的生成底稿/其他状态，清理已替代稿5张；清理前源稿已归档在项目任务记录。
+当时同步的静态参考节点 `6a638a1d-8607-400b-894f-03c63d4961fe`；它是从当前本地页面输出并同步的截图，不是可编辑HTML节点。可编辑交互源以本目录preview和页面引用的共享资源为准。Stitch保留仍适用的生成底稿/其他状态，清理已替代稿5张；清理前源稿已归档在项目任务记录。

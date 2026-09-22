@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createHash } from "node:crypto";
 import raw from "../data/bsc5p-bright-stars.v1.json" with { type: "json" };
-import { bsc5pRowByReference, loadBsc5pBrightStarCatalog, positionBsc5pCatalog, propagateBsc5p, validateBsc5pPack } from "./bsc5p-catalog.ts";
+import extended from "../data/bsc5p-bright-stars.v2.json" with { type: "json" };
+import extendedManifest from "../data/bsc5p-bright-stars.v2.manifest.json" with { type: "json" };
+import { bsc5pRowByReference, loadBsc5pBrightStarCatalog, loadBsc5pStarCatalog, positionBsc5pCatalog, propagateBsc5p, validateBsc5pPack } from "./bsc5p-catalog.ts";
 
 test("real BSC5P subset binds bytes, J2000 identity, original photometry and recognizable names", () => {
   const catalog = loadBsc5pBrightStarCatalog();
-  assert.equal(catalog.rows.length, 1630);
+  assert.equal(catalog.rows.length, 8404);
   assert.equal(catalog.manifest.rowCount, catalog.rows.length);
   assert.equal(catalog.rows.filter(row => row.properName).length, catalog.manifest.namedRowCount);
   for (const [hr, name] of [["2491", "Sirius"], ["7001", "Vega"], ["424", "Polaris"]])
@@ -13,7 +16,38 @@ test("real BSC5P subset binds bytes, J2000 identity, original photometry and rec
   assert.equal(bsc5pRowByReference("HIP:32349"), null);
   assert.ok(catalog.rows.some(row => row.bV === null));
   assert.ok(catalog.rows.some(row => row.vMagCode === "H"));
-  assert.ok(catalog.rows.every(row => row.refEpoch === 2000 && row.vMag <= 5));
+  assert.ok(catalog.rows.every(row => row.refEpoch === 2000 && row.vMag <= 6.5));
+});
+
+test("extended default preserves original astrometry and explicit v1 remains readable", () => {
+  assert.equal(extended.rows.length, 8404);
+  assert.equal(extendedManifest.rowCount, extended.rows.length);
+  assert.equal(extended.magnitudeLimit, 6.5);
+  assert.equal(createHash("sha256").update(JSON.stringify(extended)).digest("hex"), extendedManifest.derivedAssetSha256);
+  const byId = new Map(extended.rows.map(row => [row.sourceId, row]));
+  assert.equal(byId.size, extended.rows.length);
+  assert.equal(extended.rows.filter(row => row.vMag > 5 && row.vMag <= 6.5).length, 6774);
+  for (const old of raw.rows) {
+    const current = byId.get(old.sourceId)!;
+    assert.ok(current, old.sourceId);
+    const { hip, properName, ...facts } = current;
+    const { hip: oldHip, properName: oldName, ...oldFacts } = old;
+    assert.deepEqual(facts, oldFacts, old.sourceId);
+    if (oldHip !== null) assert.equal(hip, oldHip);
+    if (oldName !== null) assert.equal(properName, oldName);
+  }
+  for (const [id, name] of [["HR:596", "Alrescha"], ["HR:6008", "Marsic"],
+    ["HR:1948", "Alnitak"], ["HR:4375", "Alula Australis"]]) {
+    assert.equal(byId.get(id!)?.properName, name);
+  }
+  assert.throws(() => validateBsc5pPack(extended, "bsc5p-bright-stars.v1"), /identity/);
+  const explicit = loadBsc5pStarCatalog("bsc5p-bright-stars.v2");
+  assert.equal(explicit.rows.length, 8404);
+  assert.equal(explicit.catalogHash, extendedManifest.derivedAssetSha256);
+  assert.equal(explicit.magnitudeLimit, 6.5);
+  assert.equal(explicit.manifest.sources.nameIdentities?.responseSha256, extendedManifest.sources.nameIdentities.responseSha256);
+  assert.throws(() => validateBsc5pPack({ ...extended, rows: extended.rows.slice(1) }, "bsc5p-bright-stars.v2"), /identity/);
+  assert.equal(loadBsc5pBrightStarCatalog().rows.length, 8404);
 });
 
 test("malformed identity, nonstellar rows, epoch, units and duplicate rows are rejected", () => {
@@ -25,7 +59,7 @@ test("malformed identity, nonstellar rows, epoch, units and duplicate rows are r
     (pack: any) => { pack.rows[0].bV = Number.NaN; },
     (pack: any) => { pack.rows[1] = pack.rows[0]; },
   ];
-  for (const mutate of invalid) { const pack = structuredClone(raw); mutate(pack); assert.throws(() => validateBsc5pPack(pack), /bsc5p_catalog_invalid/); }
+  for (const mutate of invalid) { const pack = structuredClone(raw); mutate(pack); assert.throws(() => validateBsc5pPack(pack, "bsc5p-bright-stars.v1"), /bsc5p_catalog_invalid/); }
 });
 
 // Independently generated with Astropy 6.1.7: FK5(equinox=J2000), source PM in

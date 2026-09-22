@@ -5,9 +5,14 @@ import test from "node:test";
 import ts from "typescript";
 import { dragSkyView, INITIAL_MANUAL_SKY_VIEW } from "./sky-manual-view.ts";
 import { createSkyViewBasis } from "./sky-view-projection.ts";
+import { createSkyBrowsingCamera } from "./sky-browsing-camera.ts";
+import { pinchFieldOfView, skyDomeFieldOfView, skyDomeProgress } from "./sky-zoom.ts";
+import {NO_SKY_INSETS} from "./sky-viewport.ts";
 
 // Execute the actual page handlers. Native rendering/pointing are separate checks.
-const source = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+let pageSource = readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8");
+if (process.env.MUTATE_SKY_BROWSING_RESTORE === "1") pageSource = pageSource.replace("gesture.startedManual ? gesture.originalManualBasis", "gesture.startedManual ? gesture.startBasis");
+const source = ts.createSourceFile("sky.tsx", pageSource, ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
 const names = new Set(["enterManualView","onSkyTouchStart","onSkyTouchMove","onSkyTouchEnd","onSkyTouchCancel"]);
 const chunks: string[] = [];
 const visit = (node: ts.Node) => {
@@ -20,6 +25,8 @@ const touch = (...points: [number,number][]) => ({ touches:points.map(([x,y])=>(
 function harness(kind: "manual"|"follow"|"permission"|"calibrating") {
   const original = createSkyViewBasis(5,110,20)!;
   const counts = { starts:0, stops:0, picks:0 };
+  const browsingCamera = createSkyBrowsingCamera();
+  browsingCamera.update({localView:original,intent:kind === "manual" ? "manual":"follow",progress:0,at:0});
   const state: any = {
     skyTapRef:{ current:null }, cancelSkyGestureRef:{ current:()=>{} }, compassResumeRef:{current:false},
     manualBasis:kind==="manual" ? original : null, manualBasisRef:{current:kind==="manual" ? original:null},
@@ -30,13 +37,15 @@ function harness(kind: "manual"|"follow"|"permission"|"calibrating") {
     compassLifecycle:{active:kind==="follow" || kind==="calibrating"},
     orientationObjectListOpen:false,datePickerOpen:false,timeSaving:false,
     canvasSize:{width:390,height:780},verticalFovDeg:45,
-    INITIAL_MANUAL_SKY_VIEW, dragSkyView,
+    INITIAL_MANUAL_SKY_VIEW, dragSkyView, browsingCamera, skyDomeProgress, zoomRef:{current:45},
+    stopBrowsingAnimation:()=>browsingCamera.suspend(),
+    viewportInsets:NO_SKY_INSETS,presentedCenter:{x:195,y:390},
     setManualBasis:(basis:unknown)=>{state.manualBasis=basis;state.currentViewBasis=basis;},
     setFollowRequested:(value:boolean)=>state.followRequested=value,
-    setVerticalFovDeg:(value:number)=>state.verticalFovDeg=value,
+    setVerticalFovDeg:(value:number)=>{state.verticalFovDeg=value;state.zoomRef.current=value;},
     stopCompass:()=>{counts.stops++;state.sensorBasis=null;state.compassLifecycle.active=false;},startCompass:()=>{counts.starts++;state.compassLifecycle.active=true;},
-    pinchFieldOfView:(fov:number,start:number,current:number)=>fov*start/current,
-    row:{at:"2026-09-15T12:00:00Z"},reportData:{},skyPickIdentity:()=>({catalogVersion:"actual",catalogHash:"hash"}),
+    pinchFieldOfView,
+    row:{at:"2026-09-15T12:00:00Z"},reportData:{},stellarSupplement:{frame:null},skyPickIdentity:()=>({catalogVersion:"actual",catalogHash:"hash"}),
     paintedSkyObjectsRef:{current:{}},pickPaintedSkyObjects:()=>{counts.picks++;return [];},
     isUnambiguousTapGesture:(g:any)=>g.travelPx<=6 && g.maximumTouches===1,
   };
@@ -55,7 +64,7 @@ test("adding a second finger preserves the whole original transaction for cancel
   const {h,state,counts,original}=harness("manual");
   h.onSkyTouchStart(touch([195,390]));h.onSkyTouchMove(touch([250,330]));
   h.onSkyTouchStart(touch([250,330],[300,330]));h.onSkyTouchMove(touch([230,330],[330,330]));
-  assert.equal(state.verticalFovDeg,22.5);
+  assert.ok(Math.abs(state.verticalFovDeg-22.71896639495375)<1e-9);
   h.onSkyTouchCancel();assert.equal(state.manualBasis,original);assert.equal(state.verticalFovDeg,45);
   assert.equal(counts.starts,0);assert.equal(counts.picks,0);
 });
@@ -87,4 +96,43 @@ test("locked calibration synchronously rejects drag, pinch and selection before 
   h.onSkyTouchEnd({touches:[],changedTouches:[{x:195,y:390}]});
   assert.equal(state.manualBasis,null);assert.equal(state.verticalFovDeg,45);
   assert.equal(counts.stops,0);assert.equal(counts.picks,0);
+});
+
+test("a manual pinch reaches zenith, and cancellation restores its original scale and direction",()=>{
+  const {h,state,original,counts}=harness("manual");
+  h.onSkyTouchStart(touch([95,390],[295,390]));
+  h.onSkyTouchMove(touch([194.95,390],[195.05,390]));
+  assert.equal(state.verticalFovDeg,skyDomeFieldOfView(390,780));
+  const painted=state.browsingCamera.update({localView:state.manualBasis,intent:"manual",progress:1,at:16});
+  assert.ok(painted.view.forward[2]>.999999999);
+  assert.equal(state.manualBasis,original,"zoom does not overwrite the manual input with a rendered camera basis");
+  h.onSkyTouchCancel();
+  assert.equal(state.verticalFovDeg,45);assert.equal(state.manualBasis,original);
+  assert.equal(counts.starts,0,"manual overview never requests a sensor");
+});
+
+test("phone-following pinch widens the browsing camera without replacing or stopping the sensor",()=>{
+  const {h,state,original,counts}=harness("follow");
+  h.onSkyTouchStart(touch([95,390],[295,390]));
+  h.onSkyTouchMove(touch([194.95,390],[195.05,390]));
+  assert.equal(state.verticalFovDeg,skyDomeFieldOfView(390,780));
+  assert.equal(state.manualBasis,null);assert.equal(state.sensorBasis,original);
+  assert.equal(counts.stops,0);
+  h.onSkyTouchEnd({touches:[],changedTouches:[{x:195,y:390}]});assert.equal(counts.picks,0);
+});
+
+test("cancelling a second manual pinch retains the local input, not the already widened displayed view",()=>{
+  const {h,state,original}=harness("manual");
+  const fov=(45+skyDomeFieldOfView(390,780))/2;
+  state.verticalFovDeg=fov;state.zoomRef.current=fov;
+  const wide=state.browsingCamera.update({localView:original,intent:"manual",progress:.5,at:16}).view;
+  state.currentViewBasis=wide;
+  h.onSkyTouchStart(touch([95,390],[295,390]));
+  h.onSkyTouchMove(touch([194.95,390],[195.05,390]));
+  h.onSkyTouchCancel();
+  assert.equal(state.manualBasisRef.current,original);
+  for(const at of [32,48]){
+    const actual=state.browsingCamera.update({localView:state.manualBasisRef.current,intent:"manual",progress:0,at});
+    assert.equal(actual.view,original,"return frame and subsequent local frame must agree");
+  }
 });

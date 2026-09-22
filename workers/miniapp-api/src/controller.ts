@@ -319,7 +319,8 @@ export class MiniappController {
   }
 
   @Get("spots/:spotId/recent-weather")
-  recentWeather(@Param("spotId") spotId: string) {
+  recentWeather(@Param("spotId") spotId: string, @Res({ passthrough: true }) reply: FastifyReply) {
+    reply.header("Cache-Control", "no-store");
     return this.service.getSpotRecentWeather(decodeURIComponent(spotId));
   }
 
@@ -370,13 +371,23 @@ export class MiniappController {
     return this.service.getCelestialObject(decodeURIComponent(reference), locale);
   }
 
+  @Get("sky/deep-sky/:publicationHash/manifest")
+  deepSkyManifest(@Param("publicationHash") publicationHash: string, @Res() reply: FastifyReply) {
+    return reply.header("content-type", "application/json; charset=utf-8")
+      .header("content-disposition", 'attachment; filename="allwise-w3-manifest.json"')
+      .header("cache-control", "public, max-age=31536000, immutable")
+      .header("x-content-type-options", "nosniff")
+      .send(this.service.deepSkyImages.manifest(publicationHash));
+  }
+
   @Get("celestial-objects/:reference/image")
   async celestialObjectImage(
     @Param("reference") reference: string,
     @Query("level") level = "MEDIUM",
+    @Query("publicationHash") publicationHash: string | undefined,
     @Res() reply: FastifyReply,
   ) {
-    const image = await this.service.getDeepSkyImage(decodeURIComponent(reference), level);
+    const image = await this.service.getDeepSkyImage(decodeURIComponent(reference), level, publicationHash);
     reply
       .header("content-type", image.contentType)
       .header("cache-control", "public, max-age=86400")
@@ -519,6 +530,24 @@ export class MiniappController {
     return this.service.setPlanChecklistCompletion(
       await this.service.auth.requirePrincipal(authorization), decodeURIComponent(planId), body, idempotencyKey,
     );
+  }
+
+  @Post("me/observation-plans/:planId/reminder-subscription")
+  async prepareReminderSubscription(
+    @Param("planId") planId: string,
+    @Body() body: import("@starward/miniapp-contracts").ReminderSubscriptionPrepareRequest,
+    @Headers("authorization") authorization?: string,
+  ) {
+    return this.service.prepareReminderSubscription(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(planId), body);
+  }
+
+  @Put("me/reminder-subscriptions/:challengeId")
+  async reportReminderSubscription(
+    @Param("challengeId") challengeId: string,
+    @Body() body: import("@starward/miniapp-contracts").ReminderSubscriptionReportRequest,
+    @Headers("authorization") authorization?: string,
+  ) {
+    return this.service.reportReminderSubscription(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(challengeId), body);
   }
 
   @Delete("me/observation-plans/:planId")

@@ -9,15 +9,24 @@ test("the production floating host stops rendering on page hide and resumes on s
   const ast = ts.createSourceFile("notification.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const host = ast.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "FloatingNotificationHost");
   assert.ok(host);
-  let visible = true;
+  let cursor = 0;
+  const states: unknown[] = [];
+  let safeTop: number | undefined = 97;
   let notifications: { id: string }[] = [];
   let show = () => {};
   let hide = () => {};
+  let resize = () => {};
   const code = ts.transpileModule(host.getText(ast).replace(/^export /, ""), {
     compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 },
   }).outputText;
-  const render = vm.runInNewContext(code + "\nFloatingNotificationHost", {
-    useState: () => [visible, (value: boolean) => { visible = value; }],
+  const renderHost = vm.runInNewContext(code + "\nFloatingNotificationHost", {
+    useState: (initial: unknown) => {
+      const index = cursor++;
+      if (!(index in states)) states[index] = typeof initial === "function" ? initial() : initial;
+      return [states[index], (value: unknown) => { states[index] = value; }];
+    },
+    nativeNavigationInsets: () => ({ safeTop }),
+    useResize: (callback: () => void) => { resize = callback; },
     useDidShow: (callback: () => void) => { show = callback; },
     useDidHide: (callback: () => void) => { hide = callback; },
     useAppStore: (select: any) => select({ notifications }),
@@ -26,11 +35,19 @@ test("the production floating host stops rendering on page hide and resumes on s
     React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
     View: "View", ScrollView: "ScrollView", NotificationRegion: "NotificationRegion",
   });
+  const render = () => { cursor = 0; return renderHost(); };
   assert.ok(render());
+  assert.equal(render().props.style?.["--notification-top"], "97px", "native capsule clearance overrides unsupported CSS safe-area");
+  safeTop = 120; resize();
+  assert.equal(render().props.style?.["--notification-top"], "120px", "resize refreshes native navigation clearance");
   hide();
   assert.equal(render(), null);
+  safeTop = 105;
   show();
   assert.ok(render());
+  assert.equal(render().props.style?.["--notification-top"], "105px", "show rechecks the current native inset");
+  safeTop = undefined; resize();
+  assert.equal(render().props.style?.["--notification-top"], undefined, "unavailable metrics retain the stylesheet fallback");
   notifications = [{ id: "first-notice" }];
   assert.equal(render().children[0].props.scrollIntoView, "first-notice");
   notifications = [{ id: "new-head-after-scrolling" }, ...notifications];

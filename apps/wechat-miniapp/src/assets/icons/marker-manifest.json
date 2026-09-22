@@ -114,6 +114,18 @@
       "sha256": "093c7047ed9105005bdbbf42c4ac4c4a5ef5f13ec402778915bf7a02e84deb69"
     },
     {
+      "path": "moon-day.svg",
+      "sha256": "09442a30c3ae95235db35bef92668d38e4a13181fe4353e872fb8352d34dd0b3"
+    },
+    {
+      "path": "moon-night.svg",
+      "sha256": "5a4794975ed214aa35963428f4924de1dc61cfa51c434335e4032de5ab068500"
+    },
+    {
+      "path": "moon-observation.svg",
+      "sha256": "8fa175f9a6e63f66c75efb9b129eb591af92db2816ba02d6960fc0efa52c3255"
+    },
+    {
       "path": "pencil-day.svg",
       "sha256": "9e76f7a394ae42896aead7e92a4b167609bbc7a820acf56205890c721deddf41"
     },
@@ -148,6 +160,18 @@
     {
       "path": "share-observation.svg",
       "sha256": "7089ea70e085751cf1071cd128e991b07941e8153491b0070dbcd2790436851f"
+    },
+    {
+      "path": "sun-day.svg",
+      "sha256": "987d033c1ff45246c94bb9a68e0529307caee7ac1339be4a1b817765d850489a"
+    },
+    {
+      "path": "sun-night.svg",
+      "sha256": "3e8ffbb1f0aba1f9edf51e0ee61530ad7a9f10bdb6914c2027279eba0be118bb"
+    },
+    {
+      "path": "sun-observation.svg",
+      "sha256": "f83ee2c40631f4c35d0ba0248bf6997b4afbfc89058256eab48903741b97e8b9"
     },
     {
       "path": "tab-map-night.png",
@@ -198,6 +222,18 @@
       "sha256": "d1870dd128e782341a7d7e06a3a658ca2539e07d1b81418ec321ba5798aa0c71"
     },
     {
+      "path": "telescope-day.svg",
+      "sha256": "2880425608488d8ba79b47955b412b9cc98a5c7736fa2c6b76528548ee66a53d"
+    },
+    {
+      "path": "telescope-night.svg",
+      "sha256": "7188d8e390a322dcf0943dca6fd83d6d839dda54a60adf2e304e78c9aff7736e"
+    },
+    {
+      "path": "telescope-observation.svg",
+      "sha256": "937939007d5e4764ae43db9e021bf8ae27548ae5caeccf66e21d4c26eacf3a07"
+    },
+    {
       "path": "trash-2-day.svg",
       "sha256": "263bddc4f7ef2758ae9f72ff9ab33513ab9127c91e56dc316fcf9908a3e6b111"
     },
@@ -220,6 +256,18 @@
     {
       "path": "wifi-off-observation.svg",
       "sha256": "449e8d084c92ec3ec27a757f092c5998a14025d47e90eb64af6c4642d8ab169f"
+    },
+    {
+      "path": "wind-day.svg",
+      "sha256": "f44f7247a2a4de2d977a9ca602d83658aa909dae6df3f3571b3207d014eb69c0"
+    },
+    {
+      "path": "wind-night.svg",
+      "sha256": "df5d18fc9ffa5bd9c672e882cdb2bf856291e10eb7ff83631a747e86210353f4"
+    },
+    {
+      "path": "wind-observation.svg",
+      "sha256": "68edc701ce35cc0a95cd450f9b494006652b832be0cd572b1a7f09df2aba6877"
     }
   ]
 }

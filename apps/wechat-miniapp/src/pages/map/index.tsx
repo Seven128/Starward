@@ -1,3 +1,4 @@
+import { useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
 import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
@@ -38,6 +39,8 @@ import { createTerrainGroundOverlayCoordinator, type TerrainGroundOverlayResult,
 import { useNativeMapRecovery } from "./native-map-recovery";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useResourceQuery } from "@/hooks/use-resource-query";
+import { SourceAttribution } from "@/components/source-attribution";
+import { Provenance } from "@/components/provenance";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
@@ -126,11 +129,6 @@ function isPermissionError(error: unknown) {
   );
 }
 
-function isOfflineError(error: unknown) {
-  const value = error instanceof Error ? error.message : String(error ?? "");
-  return /network|offline|timeout|超时|网络/i.test(value);
-}
-
 interface NativeLayerPolygon {
   points: readonly { latitude: number; longitude: number }[];
   strokeColor: string;
@@ -177,6 +175,7 @@ const overlayLabels: Record<AnalysisOverlay, string> = {
 export default function MapPage() {
   const themeClass = useThemeClass();
   const [coverageExpanded, setCoverageExpanded] = useState(false);
+  const [terrainSourceId, setTerrainSourceId] = useState<string | null>(null);
   const mode = useAppStore((state) => state.mode);
   const committedFilters = useAppStore((state) => state.committedFilters);
   const finderQuery = useAppStore((state) => state.finderQuery);
@@ -394,7 +393,7 @@ export default function MapPage() {
     notify,
   ]);
 
-  const scene = useResourceQuery({
+  const scene = useMapForecastQuery({
     queryKey: [
       "map-scene",
       activeContext?.contextId,
@@ -658,10 +657,11 @@ export default function MapPage() {
     );
   }, [nativeMap.mapId]);
   useEffect(() => {
-    void terrainOverlayCoordinator.apply(nativeMap.pending || mapRuntimeError ? null : terrainGroundOverlay);
-  }, [terrainOverlayCoordinator, terrainGroundOverlay, terrainNativeRetry, nativeMap.pending, mapRuntimeError]);
+    void terrainOverlayCoordinator.apply(nativeMap.pending || mapRuntimeError ? null : terrainGroundOverlay,
+      pageVisible ? "display" : "suspend");
+  }, [terrainOverlayCoordinator, terrainGroundOverlay, terrainNativeRetry, nativeMap.pending, mapRuntimeError, pageVisible]);
   useEffect(() => () => { void terrainOverlayCoordinator.dispose(); }, [terrainOverlayCoordinator]);
-  const spotSky = useResourceQuery({
+  const spotSky = useSkyForecastQuery({
     queryKey: [
       "spot-sky",
       selected?.spotId,
@@ -739,19 +739,26 @@ export default function MapPage() {
           : scene.data?.dataState === "PARTIAL"
             ? "PARTIAL"
             : "READY";
+  const mapContextFailed = Boolean(bootstrapContext.isError || bootstrapContext.refreshError ||
+    bootstrapContext.data?.dataState === "STALE_USABLE");
+  const mapSceneFailed = Boolean(scene.isError || scene.refreshError ||
+    scene.data?.dataState === "STALE_USABLE");
+  const mapDataStale = Boolean(
+    (mapContextFailed && bootstrapContext.data) || (mapSceneFailed && scene.data),
+  );
   useEffect(() => {
-    if (!pageVisible || pageState !== "ERROR") return;
+    if (!pageVisible || pageState === "PERMISSION_DENIED" || (!mapContextFailed && !mapSceneFailed)) return;
     notify({
       owner: "map",
       placement: "floating",
       tone: "info",
       title: "地图数据异常",
-      body: activeContext
-        ? "观星点数据暂时无法读取，可在页面中重试。"
-        : "地图上下文暂时无法恢复，可在页面中重试。",
-      dedupeKey: activeContext ? "map-scene-cold-failed" : "map-context-cold-failed",
+      body: mapContextFailed
+        ? "地图上下文暂时无法更新，可在页面中重试。"
+        : "观星点数据暂时无法更新，可在页面中重试。",
+      dedupeKey: mapContextFailed ? "map-context-failed" : "map-scene-failed",
     });
-  }, [activeContext, notify, pageState, pageVisible]);
+  }, [mapContextFailed, mapSceneFailed, notify, pageState, pageVisible]);
   useEffect(() => {
     if (!pageVisible || !mapRuntimeError) return;
     notify({ owner: "map", placement: "floating", tone: "info", title: "地图显示异常",
@@ -1263,29 +1270,19 @@ export default function MapPage() {
   const refreshMap = async () => {
     setAnnouncement("正在刷新当前区域");
     try {
-      const refreshed = activeContext
-        ? await scene.refetch()
-        : await bootstrapContext.refetch();
-      if (!refreshed) throw new Error("map_refresh_unavailable");
-      const notificationState = useAppStore.getState();
-      for (const item of notificationState.notifications) {
-        if (item.owner === "map" && item.dedupeKey === "map-refresh-failed") {
-          notificationState.dismissNotification(item.id);
-        }
-      }
-      setAnnouncement(refreshed.dataState === "STALE_USABLE"
+      // Retry each failed owner; a cached context must not hide its own failure.
+      // A restored context triggers the scene query with its current identity.
+      const refreshed = await Promise.all([
+        ...(!activeContext || mapContextFailed ? [bootstrapContext.refetch()] : []),
+        ...(activeContext ? [scene.refetch()] : []),
+      ]);
+      if (refreshed.some((result) => !result)) throw new Error("map_refresh_unavailable");
+      setAnnouncement(refreshed.some((result) => result?.dataState === "STALE_USABLE")
         ? "当前仍显示上次结果，尚未获取到更新。"
         : "当前区域已刷新");
     } catch {
-      notify({
-        owner: "map",
-        placement: "inline",
-        tone: "warning",
-        title: "刷新未完成",
-        body: "正在显示上次结果，请稍后重试。",
-        dismissible: true,
-        dedupeKey: "map-refresh-failed",
-      });
+      // Query state owns the floating notification and persistent retry surface.
+      setAnnouncement("刷新未完成，请重试。");
     }
   };
 
@@ -1908,6 +1905,10 @@ export default function MapPage() {
           </View>
 
           <View className="map-feedback-column">
+            {analysisOverlay === "TOTAL_CLOUD" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" ?
+              <View className="map-source-attribution"><SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /></View> : null}
+            {analysisOverlay === "LIGHT" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" && scene.data?.data.layer?.source ?
+              <View className="map-source-attribution"><SourceAttribution sources={[scene.data.data.layer.source]} /></View> : null}
             <NotificationRegion owner="map" placement="inline" />
             {mapRuntimeError || nativeMap.pending ? (
               <StatusPanel
@@ -1917,7 +1918,7 @@ export default function MapPage() {
                 onRecover={nativeMap.retry}
               />
             ) : null}
-            {scene.refreshError ? <StatusPanel
+            {mapDataStale ? <StatusPanel
               state="STALE"
               detail="更新失败，暂时显示上次结果。"
               recoveryLabel="重试"
@@ -1929,18 +1930,13 @@ export default function MapPage() {
               <StatusPanel
                 state={pageState === "ERROR" ? "EMPTY" : pageState}
                 detail={
-                  (bootstrapContext.isError
-                    ? isOfflineError(bootstrapContext.error)
-                      ? "网络不可用，已显示的数据可能过期。"
-                      : errorMessage(bootstrapContext.error)
-                    : scene.isError
-                      ? isOfflineError(scene.error)
-                        ? "网络不可用，已显示的数据可能过期。"
-                        : errorMessage(scene.error)
-                      : (scene.data?.warnings ?? []).join(" ")) ||
-                  (pageState === "EMPTY"
-                    ? "当前区域暂无正式观星点；可以移动地图或使用搜索。"
-                    : "正在加载观星点。")
+                  pageState === "EMPTY"
+                    ? "可以移动地图或搜索其他区域。"
+                    : pageState === "PERMISSION_DENIED"
+                      ? "请登录后重试。"
+                      : pageState === "ERROR"
+                        ? "数据暂时无法加载，请重试。"
+                        : "正在加载观星点。"
                 }
                 recoveryLabel={
                   pageState === "ERROR"
@@ -1951,10 +1947,7 @@ export default function MapPage() {
                 }
                 onRecover={
                   pageState === "ERROR"
-                    ? () =>
-                        void (activeContext
-                          ? scene.refetch()
-                          : bootstrapContext.refetch())
+                    ? () => void refreshMap()
                     : pageState === "PERMISSION_DENIED"
                       ? () => void openMapPage("/pages/auth/index", "登录页面", "auth")
                     : undefined
@@ -2067,7 +2060,7 @@ export default function MapPage() {
                 onExtent={onPanelExtent}
                 onClose={closeSpotPanel}
                 onRecover={() => void spotOverview.refetch()}
-                onSkyRecover={() => void spotSky.refetch()}
+            onSkyRecover={() => void spotSky.refetch()}
                 onFavorite={() => void toggleFavorite(selected.spotId)}
                 onShare={() => void onPanelShare()}
                 onCloud={onPanelCloud}
@@ -2140,7 +2133,13 @@ export default function MapPage() {
                   })}
                 </View>
               </>}>
-
+                {!mapTerrainMissing && terrain.data?.data.source ? <View data-control="map-terrain-source">
+                  <SoftButton label="展开或收起地形来源与许可"
+                    onClick={() => setTerrainSourceId(value => value === terrain.data!.data.source!.id ? null : terrain.data!.data.source!.id)}>
+                    {terrainSourceId === terrain.data.data.source.id ? "收起地形来源与许可" : "地形来源与许可"}
+                  </SoftButton>
+                  {terrainSourceId === terrain.data.data.source.id ? <Provenance source={terrain.data.data.source} showKind={false} /> : null}
+                </View> : null}
                 {visibleLayer === "TOTAL_CLOUD" ? (
                   <>
                     <ObservationDateControl
@@ -2176,6 +2175,7 @@ export default function MapPage() {
                     <Text className="map-layer-sheet__source-note type-caption">
                       云量预报 · 仅覆盖有效数据区域
                     </Text>
+                    <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} />
                     <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" starts={cloudTimeChoices.flatMap(choice => Object.values(choice.frame.spotSignals)
                       .flatMap(signal => signal.weatherAt && signal.cloudPercent !== null ? [signal.weatherAt] : []))}
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} />
@@ -2187,9 +2187,12 @@ export default function MapPage() {
                     live={false}
                   />
                 ) : (
+                  <View>
                   <Text className="map-layer-sheet__source-note type-caption">
                     年度夜光估算 · 不随观测时间变化
                   </Text>
+                  {scene.data?.data.layer?.source ? <SourceAttribution sources={[scene.data.data.layer.source]} /> : null}
+                  </View>
                 )}
                 {scene.data?.data.layer?.legend.length ? (
                   <View className="map-layer-sheet__legend" aria-label="当前图层图例">

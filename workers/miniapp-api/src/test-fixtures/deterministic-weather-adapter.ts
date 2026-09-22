@@ -55,7 +55,7 @@ export class DeterministicWeatherTestAdapter implements WeatherPort {
         ],
       };
     });
-    const source: SourceSummary = {
+    const source: SourceSummary & { retrievedAt: string } = {
       id: `source-weather-test-${input.localDate}-${scenarioSeed.toString(16)}`,
       kind: "TEST_FIXTURE",
       provider: "今晚去观星确定性测试天气",

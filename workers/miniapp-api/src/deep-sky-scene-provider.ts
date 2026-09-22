@@ -11,7 +11,7 @@ import type {
 } from "@starward/miniapp-contracts";
 
 function fixed(value: number) {
-  const rounded = Math.round(value * 1_000) / 1_000;
+  const rounded = Math.round(value * 1_000_000_000) / 1_000_000_000;
   return Object.is(rounded, -0) ? 0 : rounded;
 }
 
@@ -32,7 +32,7 @@ export function deepSkyCatalogSource(): SourceSummary {
     state: "FRESH",
     confidence: 0.95,
     precision: "ICRS J2000 positions and catalog angular extents",
-    limitations: ["仅含OpenNGC中带Messier交叉标识的51个星系/星云类对象；不表示肉眼可见、天气或山体遮挡"],
+    limitations: [...manifest.modifications, "仅含OpenNGC中带Messier交叉标识的51个星系/星云类对象；不表示肉眼可见、天气或山体遮挡"],
   };
 }
 
@@ -68,7 +68,9 @@ export function buildDeepSkyScene(
         longitude: spot.wgs84.longitude,
         elevationM: spot.altitudeM ?? 0,
         catalog,
-      }).filter((point) => point.visible).map<DeepSkyScenePoint>((point) => {
+      }).map<DeepSkyScenePoint>((point) => {
+        // A survey image can straddle the horizon while its center is below it.
+        // Retain the plane; consumers independently clip marks and image rays.
         const catalogIndex = index.get(point.objectRef);
         if (catalogIndex === undefined) throw new Error("deep_sky_identity_invalid");
         return [catalogIndex, fixed(point.azimuthDeg), fixed(point.altitudeDeg),
@@ -83,6 +85,7 @@ export function buildDeepSkyScene(
         catalogVersion: catalog.catalogVersion,
         catalogHash: catalog.catalogHash,
         frame: "ICRS J2000" as const,
+        imageRegistration: "ICRS_TAN_NORTH_0_1_V1" as const,
         sources: [deepSkyCatalogSource()],
         entries,
       },

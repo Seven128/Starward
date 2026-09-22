@@ -4,7 +4,8 @@ import {
   loadDeepSkyCatalog,
 } from "@starward/astronomy-core/deep-sky-catalog";
 import { bsc5pRowByReference, loadBsc5pBrightStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
-import { isCelestialObjectReference } from "@starward/miniapp-contracts";
+import { isCelestialObjectReference, isSaoStarReference } from "@starward/miniapp-contracts";
+import { loadSaoCatalog } from "./sao-catalog-provider.ts";
 import type {
   ApiEnvelope,
   CelestialObjectInformation,
@@ -12,8 +13,10 @@ import type {
 } from "@starward/miniapp-contracts";
 import { bsc5pCatalogSources } from "./sky-scene-catalog-provider.ts";
 import { deepSkyCatalogSource } from "./deep-sky-scene-provider.ts";
+import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 
 const EDITORIAL_REVISION = "starward-celestial-editorial-zh-cn@1";
+const SAO_PRESENTATION_REVISION = "sao-details-zh-cn@2";
 const INTRODUCTIONS: Readonly<Record<string, string>> = Object.freeze({
   "HR:2491": "天狼星是大犬座 α 星，也是 IAU 采用的正式恒星名称。它在当前亮星目录中拥有最低的 V 波段视星等。",
   "HR:7001": "织女星是天琴座 α 星，IAU 正式名称为 Vega。它是北半球夏季夜空中醒目的亮星之一。",
@@ -24,6 +27,16 @@ const INTRODUCTIONS: Readonly<Record<string, string>> = Object.freeze({
 
 function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
+}
+
+function saoHdAlias(hd: string | null, component: string | null): string | null {
+  if (!hd) return null;
+  // HD_Component is a multiplicity code, not a literal component identifier.
+  // https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/sao.html
+  if (component === "1") return `HD ${hd}（较亮分量）`;
+  if (component === "2") return `HD ${hd}（较暗分量）`;
+  if (component === "9") return `HD ${hd} / HD ${Number(hd) + 1}（联合记录）`;
+  return `HD ${hd}`;
 }
 
 function envelope(data: CelestialObjectInformation, sources: readonly SourceSummary[]): ApiEnvelope<CelestialObjectInformation> {
@@ -44,16 +57,36 @@ function envelope(data: CelestialObjectInformation, sources: readonly SourceSumm
 export class CelestialObjectInformationService {
   private readonly cache = new Map<string, ApiEnvelope<CelestialObjectInformation>>();
 
+  constructor(private readonly imagery = new DeepSkyImageryService()) {}
+
   get(reference: string, locale = "zh-CN") {
     if (!isCelestialObjectReference(reference))
       throw new Error("celestial_object_reference_invalid");
     if (locale !== "zh-CN") throw new Error("celestial_object_locale_unsupported");
     const cached = this.cache.get(`${reference}:${locale}`);
     if (cached) return structuredClone(cached);
+    if (isSaoStarReference(reference)) {
+      const {catalog,source}=loadSaoCatalog(),star=catalog.get(reference);
+      if (!star) throw new Error("celestial_object_not_found");
+      const label=reference.replace(':',' '),sources=[source];
+      const hdAlias = saoHdAlias(star.hd, star.hdComponent);
+      const data:CelestialObjectInformation={reference,kind:'STAR',displayName:label,catalogId:label,
+        aliases:[label,...(hdAlias?[hdAlias]:[])],
+        introduction:null,contentState:'BASIC_ONLY',contentRevision:digest({catalog:catalog.catalogHash,editorial:EDITORIAL_REVISION,presentation:SAO_PRESENTATION_REVISION,locale}).slice(0,24),
+        facts:[{label:'视星等（视觉测光）',value:star.visualMagnitude.toFixed(2),unit:'mag'},
+          ...(star.spectralType?[{label:'光谱型',value:star.spectralType === '+++' ? '复合、变化或特殊光谱（目录未区分）' : star.spectralType,unit:null}]:[])],sources,
+        limitations:['保留原始视觉星等，未转换为统一 Johnson V。',
+          '当前只有目录基本资料，尚无已采用的中文介绍；未提供本层采用的距离或色指数。']};
+      const result=envelope(data,sources);this.cache.set(`${reference}:${locale}`,result);
+      if(this.cache.size>256)this.cache.delete(this.cache.keys().next().value!);
+      return structuredClone(result);
+    }
     const deepSkyRow = deepSkyRowByReference(reference);
     if (deepSkyRow) {
       const catalog = loadDeepSkyCatalog();
-      const sources = [deepSkyCatalogSource()];
+      let imagerySource: SourceSummary | null = null;
+      try { imagerySource = this.imagery.source(reference); } catch { /* Catalog facts remain independent of an unavailable image publication. */ }
+      const sources = [deepSkyCatalogSource(), ...(imagerySource ? [imagerySource] : [])];
       const introduction = INTRODUCTIONS[reference] ?? null;
       const aliases = [deepSkyRow.ngcName, ...deepSkyRow.commonNames]
         .filter((value, index, values) => Boolean(value) && values.indexOf(value) === index);
@@ -73,7 +106,7 @@ export class CelestialObjectInformationService {
         introduction,
         facts,
         contentState: introduction ? "READY" : "BASIC_ONLY",
-        contentRevision: digest({ catalog: catalog.catalogHash, editorial: EDITORIAL_REVISION, locale }).slice(0, 24),
+        contentRevision: digest({ catalog: catalog.catalogHash, sources, editorial: EDITORIAL_REVISION, locale }).slice(0, 24),
         sources,
         limitations: [
           "目录资料使用ICRS J2000静态坐标与角尺寸；当前地点和时刻的方位需使用对应天空帧。",
@@ -82,7 +115,7 @@ export class CelestialObjectInformationService {
         ],
       };
       const result = envelope(data, sources);
-      this.cache.set(`${reference}:${locale}`, result);
+      if (imagerySource) this.cache.set(`${reference}:${locale}`, result);
       if (this.cache.size > 256) this.cache.delete(this.cache.keys().next().value!);
       return structuredClone(result);
     }

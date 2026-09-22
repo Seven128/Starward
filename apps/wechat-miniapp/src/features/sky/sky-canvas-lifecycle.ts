@@ -21,6 +21,7 @@ export function measuredCanvasSize(result: unknown): CanvasSize {
 export function createSkyCanvasLifecycle<Frame, Context>(port: {
   measure(done: (result: unknown) => void): void;
   createContext(measurement: unknown, size: CanvasSize): Context;
+  releaseContext?(context: Context): void;
   paint(context: Context, frame: Frame, size: CanvasSize, done: () => void): void;
   sameScene?(completed: Frame, latest: Frame): boolean;
   presented(frame: Frame, size: CanvasSize): void;
@@ -28,11 +29,12 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
   failed(error: unknown, frame: Frame | undefined): void;
 }, clock: CanvasClock = nativeClock) {
   let ready = false, visible = true, mounted = true, disposed = false;
+  let failed = false;
   let epoch = 0, visibilityEpoch = 0, revision = 0, dirty = false, busy = false;
   let latest: Frame | undefined;
   let size: CanvasSize | undefined, context: Context | undefined;
   let scheduled: unknown, deadline: unknown;
-  const active = () => ready && visible && mounted && !disposed;
+  const active = () => ready && visible && mounted && !disposed && !failed;
   const cancelTimers = () => {
     if (scheduled !== undefined) clock.cancel(scheduled);
     if (deadline !== undefined) clock.cancel(deadline);
@@ -43,12 +45,17 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     cancelTimers();
     busy = false;
     size = undefined;
+    const released = context;
     context = undefined;
+    // Clear ownership before release: native failure/re-entrant disposal cannot
+    // release this generation twice or leave stale callbacks able to use it.
+    if (released !== undefined) port.releaseContext?.(released);
     dirty = latest !== undefined;
     if (!disposed) port.invalidated();
   }
   function fail(error: unknown) {
     if (!active()) return;
+    failed = true;
     reset();
     dirty = false;
     port.failed(error, latest);
@@ -114,10 +121,11 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
       schedule();
     },
     ready() { if (!disposed) { ready = true; schedule(); } },
+    retry() { if (!disposed) { failed = false; dirty = latest !== undefined; schedule(); } },
     resize() { if (!disposed) { reset(); schedule(); } },
-    setMounted(value: boolean) { if (mounted !== value && !disposed) { mounted = value; reset(); schedule(); } },
+    setMounted(value: boolean) { if (mounted !== value && !disposed) { mounted = value; failed = false; reset(); schedule(); } },
     hide() { if (!disposed) { visible = false; reset(); latest = undefined; dirty = false; } },
-    show() { if (!disposed) { visible = true; schedule(); } },
+    show() { if (!disposed) { if (!visible) failed = false; visible = true; schedule(); } },
     fail,
     dispose() { disposed = true; reset(); latest = undefined; dirty = false; },
   };

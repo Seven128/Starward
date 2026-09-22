@@ -19,16 +19,17 @@ function canvasFixture() {
   const timing = clockFixture();
   const measurements: ((rect: unknown) => void)[] = [];
   const painted: { frame: number; size: { width: number; height: number }; context: object; done: () => void }[] = [];
-  const presented: number[] = [], errors: unknown[] = [];
+  const presented: number[] = [], errors: unknown[] = [], released: object[] = [];
   let contexts = 0, invalidations = 0, failure = "";
   const canvas = createSkyCanvasLifecycle<number, object>({
     measure: done => { if (failure === "measure") throw Error("query_failed"); measurements.push(done); },
     createContext: () => { if (failure === "context") throw Error("context_failed"); return { id: ++contexts }; },
+    releaseContext: context => released.push(context),
     paint: (context, frame, size, done) => { if (failure === "paint") throw Error("draw_failed"); painted.push({ context, frame, size, done }); },
     presented: frame => presented.push(frame), invalidated: () => { invalidations++; },
     failed: error => errors.push(error),
   }, timing.clock);
-  return { ...timing, canvas, measurements, painted, presented, errors,
+  return { ...timing, canvas, measurements, painted, presented, errors, released,
     counts: () => ({ contexts, invalidations }), fail: (kind: string) => { failure = kind; },
     measure: (size = { width: 375, height: 812 }) => measurements.at(-1)!(size),
   };
@@ -42,6 +43,32 @@ test("canvas measurement rejects missing geometry and accepts both platform resu
   for (const size of [{ width: 375, height: 812 }, { width: 812, height: 375 }]) {
     assert.deepEqual(measuredCanvasSize(size), size);
     assert.deepEqual(measuredCanvasSize([size]), size);
+  }
+});
+
+test("failed GPU surface does not reinitialize on every pose and explicit retry consumes the latest frame", () => {
+  const h = canvasFixture(); h.canvas.ready(); h.fail("context"); h.canvas.request(1); h.tick(); h.measure();
+  for (let i = 2; i <= 100; i++) h.canvas.request(i);
+  assert.equal(h.jobs.size, 0, "a persistent native failure must not start an initialization storm");
+  assert.equal(h.errors.length, 1);
+  h.fail(""); h.canvas.retry(); h.tick(); h.measure(); h.painted.at(-1)!.done();
+  assert.deepEqual(h.presented, [100]);
+  h.canvas.dispose();
+});
+
+test("every acquired GPU generation is released exactly once across reset, failure and late callbacks", () => {
+  for (const action of ["resize", "hide", "removed", "error", "timeout", "dispose"] as const) {
+    const h = canvasFixture(); h.canvas.ready(); h.canvas.request(1); h.tick(); h.measure();
+    const old = h.painted[0]!;
+    if (action === "resize") h.canvas.resize();
+    if (action === "hide") h.canvas.hide();
+    if (action === "removed") h.canvas.setMounted(false);
+    if (action === "error") h.canvas.fail(new Error("context_lost"));
+    if (action === "timeout") h.tick(5000);
+    if (action === "dispose") h.canvas.dispose();
+    old.done(); h.canvas.dispose(); h.canvas.dispose();
+    assert.deepEqual(h.released, [old.context], action);
+    assert.deepEqual(h.presented, [], "released resources must not publish an old frame");
   }
 });
 
@@ -116,7 +143,7 @@ test("measurement, context, draw and missing callback failures invalidate size a
     assert.equal(h.errors.length, 1, failure);
     assert.equal(h.jobs.size, 0, failure);
     assert.ok(h.counts().invalidations > 0);
-    h.fail(""); h.canvas.request(2); h.tick(); h.measure(); h.painted.at(-1)!.done();
+    h.fail(""); h.canvas.request(2); h.canvas.retry(); h.tick(); h.measure(); h.painted.at(-1)!.done();
     assert.deepEqual(h.presented, [2], failure);
     h.canvas.dispose();
     assert.equal(h.jobs.size, 0);

@@ -137,7 +137,7 @@ export function EventCatalogView({ request }: { request: Request }) {
       <label className="field-block">事件目录 JSON<input type="file" accept=".json,application/json" disabled={busy} onChange={event => void chooseFile(event.target.files?.[0])} /></label>
       {upload ? <details open><summary>{fileName} · 导入前预览</summary><CatalogFacts catalog={upload} /></details> : null}
       {upload?.events.some(event => event.article) ? <label className="field-block">包内新增或修改文章的使用权限依据<textarea maxLength={2000} value={uploadBasis} disabled={busy} onChange={event => { setUploadBasis(event.target.value); setRights(false); }} /></label> : null}
-      <label className="field-block"><span><input type="checkbox" checked={rights} disabled={busy} onChange={event => setRights(event.target.checked)} /> 已核对资料来源、版本及数据使用权限</span></label>
+      <label className="field-block"><span><input type="checkbox" checked={rights} disabled={busy} onChange={event => setRights(event.target.checked)} /> 已核对资料来源、版本及本产品商业使用所需的数据权限</span></label>
       <button className="control primary" disabled={writeDisabled || !snapshot || !upload || !sourceId || !rights} onClick={() => void mutate("导入", `${base}/imports`, { sourceId, package: upload, ...(uploadBasis.trim() ? { articleRightsConfirmation: { confirmed: rights, basis: uploadBasis, registeredSourceId: sourceId } } : {}) },
         (fresh, receipt) => receipt.state === "NO_CHANGE" || fresh.recentCandidates.some(row => row.candidateId === (receipt.candidate as Row | undefined)?.candidateId), 0)}>创建待审候选</button>
       <details><summary>登记手动上传来源</summary><form onSubmit={event => { event.preventDefault(); void mutate("来源登记", `${base}/sources/${encodeURIComponent(source.id)}`, {

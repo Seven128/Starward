@@ -16,3 +16,17 @@ export function isProductSource(source: SourceSummary) {
 export function productSourceNames(sources: readonly SourceSummary[]) {
   return [...new Set(sources.filter(isProductSource).map(source => source.provider || source.title).filter(Boolean))].join(" · ");
 }
+
+/** Display mandatory statements verbatim, once per provider and exact text. */
+export function sourceAttributions(sources: readonly SourceSummary[]) {
+  const groups = new Map<string, { name: string; url: string; statements: string[] }>();
+  for (const source of sources.filter(isProductSource)) {
+    const credit = source.attribution;
+    if (!credit) continue;
+    const key = JSON.stringify([credit.name, credit.url]);
+    const group = groups.get(key) ?? { name: credit.name, url: credit.url, statements: [] };
+    for (const statement of credit.statements) if (!group.statements.includes(statement)) group.statements.push(statement);
+    groups.set(key, group);
+  }
+  return [...groups.values()];
+}

@@ -2,6 +2,14 @@
 
 当前状态：来源方案与下列产品取舍已获用户采用，正在基于当前工作区迁移。采用决定不代表各功能、设计资源、数据发布与生产验证已经完成。
 
+本次迁移以**现有产品逻辑所需的外部数据／服务／能力满足商业使用条件，并完成必要的接入替换**为目标。产品展示、加工、缓存、分发及获权方式均须符合所用来源的适用条件；不能仅因接口可调用就认定商用合规。迁移不授权增加无关产品内容或偏离已采用的设计资源。后续扩展先查下方合规速查和对应官方条款，只在用途、版本、获取渠道或合同条件变化时重评受影响项。
+
+**新增检查规则：产品逻辑涉及新增外部服务、能力或数据时，必须在采用与接入前检查商业化合规。** 检查拟用产品／版本是否允许本项目的商业用途，以及实际账号／获取权限、署名、修改、缓存、分发／相同方式共享和平台条件；将结论、主要限制与官方查询入口记入现有 owner。免费、开源、公开可下载或接口调通都不能单独证明已获商用许可。条件未明确时保留待核，不按已获权采用；已有来源扩大用途同样适用，不重复调查无变化部分。
+
+**检查尺度：标准商业服务优先按公开条款直接适配和验证，不把逐项联系供应商设为接入审批。** 已明确的署名、缓存和分发要求由实现落实；账号权益、额度及价格由控制台、合同与实际接口核实。仅在用途明确超出许可、需要豁免，或有影响采用的实质歧义时联系供应商。将开发适配缺口与主体／平台的正式发布条件分开记录，后者不阻塞无依赖的本地开发；Context 保留主要条件和查询入口即可。
+
+**合规迁移与功能开发分开：** 对当前实际使用的来源落实必要的许可、归因、缓存和分发适配；未启用的能力保留启用前条件，不因合规调研自动扩展为完整功能开发。微信提醒当前未启用实际发送：以后启用时核实主体／类目可用模板、用途与字段、用户订阅授权及平台发送规则。模板选择、原生授权弹窗和完整发送链的补开发，不作为本次既有外部能力合规迁移的完成前提；也不能因此声明提醒已经可用或获准发送。
+
 2026-09-14用户确认采用本轮重新调研的最终方案，并要求基于当前工作区继续改造、保留仍适用的部分。适用范围是微信小程序及其必要后端；不改变独立原生App的功能与供应商选择。当前主体、实际发布状态由[发布档案](product-profile.md#current-release-profile)维护，选型采用不等于采购、公开发布或实现验收。
 
 ## 来源与决定的连续性
@@ -14,7 +22,7 @@
 
 ## 采用的能力与边界
 
-用户补充的产品规则：取消底图主题；流星雨复用后台上传、候选审核与发布，并研究获权文章链接提取到候选的低频导入；地区无覆盖以“地区暂无数据”禁用或占位；未来天气只展示实际数据小时，通过问号说明范围限制；最近1–2天天气用于说明已发生事件及对场地的可能影响，真实天气与推断分开。统一“暂无数据”和顶部竖向通知，普通通知可关闭且约3秒带动效退出；关键恢复入口持续可用。地图页面按实际屏幕适配并限制过大尺寸。星空允许手动拖动并保留手机方向跟随。此次迁移须验证相关产品逻辑的全部场景，而非仅运行已有测试。
+用户补充的产品规则：取消底图主题；流星雨复用后台上传、候选审核与发布，并研究获权文章链接提取到候选的低频导入；地区无覆盖以“地区暂无数据”禁用或占位；未来天气只展示实际数据小时，通过问号说明范围限制；最近1–2天天气用于说明已发生事件及对场地的可能影响，真实天气与推断分开。统一“暂无数据”和顶部竖向通知，普通通知可关闭且约3秒带动效退出；关键恢复入口持续可用。地图页面按实际屏幕适配并限制过大尺寸。星空允许手动拖动并保留手机方向跟随。本次验证覆盖受商业化适配影响的现有消费者及必要的成功、缺测和失败路径，重点确认实际来源、署名、缓存与分发义务落地；不以已有测试数量代替这些证据，也不扩展为全产品功能补开发或整套手机／UI验收。
 
 | 能力 | 当前选择与原因 | 对应规则owner |
 | --- | --- | --- |
@@ -77,7 +85,40 @@
 
 ## 具体许可与公开运营条件
 
+### 商业化合规速查
+
+此表记录当前选用范围的主要义务及核查入口，不代替具体版本的许可、合同和平台权限。原始通知、准确署名、数据版本与加工记录留在资产 manifest／NOTICE 和对应实现 owner；产品通过现有来源披露责任满足必要归因，不把研究资料全部塞进页面。
+
+天体资料采用简短署名＋独立小程序“来源与许可”页，完整声明、原始出处和适用的派生数据下载在该页可达，具体职责见[来源披露 owner](areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md)。这是用户为当前个人主体选择的展示方式，不是删除归因或把必须随数据展示的声明统一移出内容页；也不代表网页直跳已获平台支持。
+
+| 外部能力／来源 | 产品需要遵守的主要条件 | 查询入口 |
+| --- | --- | --- |
+| 微信地图、定位、选点、导航 | 当前仅用已采用的平台能力；保留原生地图标识，落实实际 AppID 的位置隐私／权限和适用地理内容责任。不能由平台接口可调用推导独立地图 API 商用授权 | [地图与旅行 owner](areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#external-location-and-travel-capabilities)、[微信地图文档](https://developers.weixin.qq.com/miniprogram/dev/component/map.html)及实际平台后台 |
+| 和风预报、预警、AQ、近期天气 | 使用当前账号获权的服务；清晰署名和风并提供官方入口，保留各源要求的额外归因、原发布信息和真实时间／单位。当前 v1 的 `metadata.attributions` 明确要求与当前数据共同显示；不能只在后端保存或只保留供应商名称。旧接口 `refer.sources` 按其归因规范保留。不得用 GeoAPI 批量建地点索引或暗退非商用源 | [v1 元数据要求](https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/)、[归因规范](https://dev.qweather.com/docs/terms/attribution/)、[使用限制](https://dev.qweather.com/docs/terms/restriction/)、[许可协议入口](https://dev.qweather.com/docs/terms/tos/) |
+| Copernicus GLO-30-F 地形 | 使用指定免费开放版；保留规定版权／来源通知，派生图标明使用 Copernicus WorldDEM-30 加工，保留修改说明。不得把许可扩大到其他 DEM 产品 | [COP-DEM 许可入口](https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM)、[发布器及准确声明](../data-pipelines/terrain/publish_copernicus_dem.py) |
+| EOG 年度 VNL 夜光 | 指定许可覆盖数据按 CC BY 4.0 署名、标注修改；发布器按实际产品名保存 EXHIBIT 1 完整派生通知，小幅地图使用其允许的简短署名，大幅图须遵循标识要求，报告／出版物引用 EXHIBIT 2 对应论文。数据可商用与下载渠道获权分开；使用其 OpenID 程序下载通道时须满足现行订阅要求。年度夜光不冒充现场测量 | [数据许可及署名附件](https://eogdata.mines.edu/files/EOG_products_CC_License.pdf)、[获取规则](https://eogdata.mines.edu/products/register/)、[发布及通知 owner](../data-pipelines/dark-sky/README.md) |
+| BSC5P／SAO 星表 | 使用已核具体发布版本与元数据，保留来源、作者和派生说明；不把 HEASARC／NASA 的一般政策扩大到第三方受限数据，不重新带回 HIP／Tycho 非商业数值 | [BSC5P manifest](../packages/astronomy-core/data/bsc5p-bright-stars.v2.manifest.json)、[SAO manifest](../workers/miniapp-api/assets/sao/catalog.manifest.json)、[HEASARC 数据政策](https://heasarc.gsfc.nasa.gov/docs/heasarc/data_policy.html) |
+| OpenNGC 深空目录 | CC BY-SA 4.0：保留 Mattia Verga 及 contributors 署名、许可链接、Starward 筛选及字段／单位加工说明；分发改编数据时遵守相同方式共享。此目录许可不替代影像许可 | [指定版本与许可](../packages/astronomy-core/data/opengc-messier-deep-sky.v1.manifest.json) |
+| 星座定义、插画、713 个锚点几何 | 分别遵守定义 CC BY-SA 4.0、插画 FAL 1.3、含 SIMBAD 身份关系的独立派生几何 ODbL、Acrux 身份资料 CC BY 4.0。保留分项署名／通知与所需可读数据下载，不把所有资产合并声明为同一许可证 | [分项 NOTICE 与官方链接](../workers/miniapp-api/assets/constellations/NOTICE.txt)、[几何发布 owner](architecture/runtime-and-domain.md#cloud-sky-progressive-imagery) |
+| IRSA AllWISE W3 影像 | 原影像保留 WISE＋NEOWISE 联合声明、IPAC/NASA 与 Atlas 引用；实际 CDS/Aladin HiPS 数据库另有 ODbL、CNRS/Unistra 和独立 DOI。影像集合保留归因、加工说明及机器可读数据／修改下载；OpenNGC 位置字段仍单独 CC BY-SA，不把数据库许可泛化到所有图片或产品代码 | [实际 manifest](../workers/miniapp-api/assets/deep-sky/manifest.json)、[AllWISE 声明](https://irsa.ipac.caltech.edu/data/WISE/docs/release/AllWISE/expsup/sec1_6b.html)、[CDS W3 许可记录](https://alasky.cds.unistra.fr/MocServer/query?ID=CDS%2FP%2FallWISE%2FW3&fmt=html&get=record)、[加工及分发入口](../data-pipelines/deep-sky/README.md#commercial-use-notices-and-distribution) |
+| Astronomy Engine 与 GMN 流星资料 | 算法代码保留 MIT 通知；GMN 指定高层资料按 CC BY 4.0 归因并说明派生。常年参考的授权不包含任意文章／照片或未经核验的年度预报 | [Astronomy Engine LICENSE](https://github.com/cosinekitty/astronomy/blob/master/LICENSE)、[GMN 来源及加工边界](../data-pipelines/meteor-catalog/README.md) |
+| 软件／算法依赖（含 Astronomy Engine、TWGL、Quaternion 等） | 按实际锁定版本的代码许可证落实商用、修改与分发条件，保留要求的 LICENSE 原文及版权／许可通知；数据来源卡不能替代代码许可交付。Mini 的 TWGL／Quaternion 完整通知由构建复制到 `sky/assets/licenses/`；noble-hashes 和已核 React（含 reconciler／scheduler）、Babel runtime、TanStack Query／Zustand／Taro 运行时完整通知复制到主包 `assets/licenses/`。按 Mini workspace 的实际依赖解析版本维护，不能拿根目录另一版本代替；升级时同步原文。此记录不宣称已审完全部间接依赖 | 各 workspace 的 package.json／锁文件、所安装包 LICENSE、[Mini 许可资产](../apps/wechat-miniapp/src/assets/licenses/)与[构建 owner](../apps/wechat-miniapp/config/index.ts) |
+| 文章读取的可选 Cloudflare 公共 DNS | 仅后端显式启用 `CLOUDFLARE_DOH` 时解析文章主机名，适用公共解析器及在线服务条款，禁止滥用或绕过限制；无 SLA，不能据此承诺稳定连通。解析方可见查询域名及服务器来源 IP，当前请求不含文章路径／正文、用户位置或凭据；遵循其隐私条款。此服务不授予文章转载权，若扩为客户端解析、网络设备或 ISP 集成须重新核对隐私和专门署名条件 | [服务条款入口](https://developers.cloudflare.com/1.1.1.1/terms-of-use/)、[在线服务条款](https://www.cloudflare.com/website-terms/)、[公共解析隐私](https://developers.cloudflare.com/1.1.1.1/privacy/public-dns-resolver/)、[SLA 边界](https://developers.cloudflare.com/1.1.1.1/infrastructure/sla-and-support/)、[文章解析 owner](architecture/runtime-and-domain.md) |
+| 文章、照片、投稿及微信账号／审核／订阅消息 | 内容复用须有相应用途授权，导入不等于获权或发布；平台服务按实际主体、类目、隐私、接口及模板授权使用。不能由内容审核成功推定版权或场地事实成立 | [内容与平台产品 owner](areas/main/product-surfaces/wechat-miniapp.md)、[发布档案](product-profile.md#current-release-profile)、实际微信后台及对应内容授权记录 |
+
+和风声明原文由 `SourceSummary.attribution` 经共享 `SourceAttribution` 接入当前数据展示，预警同时保留原发布机构；具体共享责任见[来源披露 owner](areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md)。归因规范要求名称附官方超链接，当前小程序只实现明确标注的复制链接，仍有平台适配缺口。优先按标准要求实现，并核实实际小程序主体与业务域名是否支持；只有需要保留替代方式且公开规则不能明确覆盖时，才联系供应商确认或申请例外。复制测试通过不能证明超链接义务已满足。
+
+用户确认：优先做点击打开官网；当前平台不能实现时，先在 Context 保留待办，不将这一项作为其余迁移工作的阻塞。当前登记为个人主体；[Taro WebView 文档](https://docs.taro.zone/docs/components/open/web-view)说明个人类型小程序不支持该网页容器，普通外部网页还需配置业务域名。当前不加入不能实际使用的网页路由，暂保留明确标注的复制入口。后续主体／网页能力和官网业务域名条件具备时，由共享 `SourceAttribution` 接入官网跳转并验证实际打开；此前仍不得宣称已满足超链接义务。这是延期处理决定，不是供应商豁免，也不要求现在联系供应商。
+
+和风[缓存限制](https://dev.qweather.com/docs/best-practices/cache/#限制)对 GeoAPI 另有约束，不可用天气缓存许可推导地区资料存储权。近期天气仅实时解析地区，不保留 Geo 结果或含地区资料的完成响应缓存；独立天气日值可按既有天气缓存策略复用，HTTP 与客户端离线存储采用 no-store，隐藏／退出时释放地区展示状态。既有地区缓存不构成获权依据。Geo 查询随实际进入／恢复次数产生，成本核算不能继续假定七天地区缓存命中；不因此改变已采用的天气来源或自动采购。
+
+真实和风账号权益、EOG 合法资产与获取方式、微信模板／平台权限，以及地图与中国天气传播的项目级适用条件，分别以实际核定为准；相关未决项不能由本表或适配器存在自动关闭。新增产品逻辑若超出表中用途，应先补相应条件和来源入口，再接入实现；不要求重做无变化的全部研究。
+
 已采用资料按实际产品/版本保存获取来源、许可通知、归因、修改说明和发布清单：GLO-30-F、许可覆盖的EOG年度VNL、HEASARC BSC5P、OpenNGC（实际许可路径`LICENSES/CC-BY-SA-4.0.txt`）、Astronomy Engine MIT、指定IRSA WISE公开影像、GMN CC BY 4.0高层资料。不将某个镜像条款泛化为全部Gaia/Hipparcos，也不将NASA网页统一视为无限素材许可。
+
+云观星星座原插画／连线继续采用 Stellarium v24.4 Modern 的 FAL 1.3／CC BY-SA 4.0。几何 v2 改用 BSC5P／SAO 的 FK5 J2000 坐标和自行；HIP 仅为定义编号，不再导入 ESA 数值。身份关系采用 [SIMBAD 明示 ODbL](https://simbad.cds.unistra.fr/simbad/) 的同对象／系统成员编号；Acrux 使用 [IAU-WGSN／All Skies Encyclopaedia 明确编号](https://ase.exopla.net/index.php/Acrux)，保留作者和 CC BY 4.0。18 个系统用明确成员的等权球面几何代表点绘图，不宣称实测光心，不用于恒星合并／命名／拾取。派生几何单独按 ODbL 提供机器可读下载和归因，定义／插画许可不变。详[几何与发布 owner](architecture/runtime-and-domain.md#cloud-sky-progressive-imagery)。旧 HIP/Tycho CC BY-NC 数值仍非商用输入；镜像泛化条款不能覆盖上游。
+
+SAO J2000作为补充暗星的接入候选：其[NASA具体目录元数据](https://data.nasa.gov/dataset/smithsonian-astrophysical-observatory-star-catalog)标记government-works，[HEASARC目录说明](https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/sao.html)记录SAO/ADC/USNO来源，所用修订早于Hipparcos/Tycho发布；当前核查未发现上述NC冲突。此依据支持继续接入验证，不把CDS未写license本身当作授权，也不覆盖HIP星座坐标。SAO历史视觉星等与较老天体测量须保留局限，不能宣称统一Johnson V或完整至10等；原BSC保留，SAO已按空间分片接入服务与客户端；设备性能按实际证据范围记录。重评条件为具体来源条款冲突、所需精度/覆盖不足或目标运行时预算不合适。
 
 报告保留两组项目级公开运营核定：实际AppID原生地图/选点/叠加组合与新增地理内容的坐标、标识及适用内容责任；中国小时预报/预警原发布单位、发布时间、云量图层传播及适用备案。这些不由数据开放许可、国内供应商身份或预算替代。常规主体、平台位置隐私、内容授权、订阅模板按各自发布owner落实；未完成的能力不声明已获准商业发布，额外必要合同取得实际报价再计入。
 

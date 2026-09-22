@@ -56,6 +56,8 @@ export type MapLayerKind =
 export type CelestialObjectInformationData = CelestialObjectInformation;
 /** Binary JPEG body; this route intentionally does not use ApiEnvelope at runtime. */
 export type CelestialObjectImageData = Uint8Array;
+/** Machine-readable publication download; no ApiEnvelope. */
+export type DeepSkyManifestData = Record<string, unknown>;
 
 export type MapProjectionState =
   | "FRESH"
@@ -228,6 +230,9 @@ export type RouteEstimateData = RouteOverview;
 
 export interface MapSceneData {
   context: ObservationContext;
+  /** Earliest selected-time forecast expiry across candidates before filtering,
+   * including excluded spots. Older cached responses may omit this field. */
+  forecastValidUntil?: string | null;
   spots: readonly SpotSummary[];
   evaluations: Readonly<Record<string, MapSpotEvaluation>>;
   /** Server-owned, selected-time evidence for each returned formal spot. */

@@ -32,7 +32,7 @@ function harness(mutate = (source: string) => source, overrides: Record<string, 
     React: { createElement: (type: any, props: any, ...children: any[]) => ({ type, props: props ?? {}, children }), Fragment: "Fragment" },
     Button: "Button", View: "View", Text: "Text", ScrollView: "ScrollView", RootPortal: "RootPortal", StatusPanel: "StatusPanel",
     SemanticIcon: "SemanticIcon", Provenance: "Provenance", NativeBackBoundary: "NativeBackBoundary", FloatingNotificationHost: "FloatingNotificationHost",
-    forwardRef: (fn: any) => fn, useEffect: () => {}, useImperativeHandle: () => {}, useMemo: (fn: any) => fn(),
+    forwardRef: (fn: any) => fn, useEffect: () => {}, useDidHide: () => {}, useDidShow: () => {}, useImperativeHandle: () => {}, useMemo: (fn: any) => fn(),
     useRef: (initial: any) => ({ current: initial }),
     useState: (initial: any) => { const slot = cursor++; if (!(slot in states)) states[slot] = initial; return [states[slot], (value: any) => { states[slot] = value; }]; },
     useAppStore: (fn: any) => fn({ preferences: { reducedMotion: false }, mode: "DAY", notify: () => {} }),
@@ -60,6 +60,25 @@ test("detail selection stages the viewed identity, then only confirmation commit
   assert.ok(selected);
   find(list, node => node.type === "Button" && text(node) === "确认选择")[0]!.props.onClick();
   assert.deepEqual(committed, ["urs"]);
+});
+
+test("hiding the modal host suspends new queries and notices without losing draft selection", () => {
+  let hide: (() => void) | undefined, show: (() => void) | undefined;
+  const enabled: boolean[] = [], cleared: string[] = [];
+  const store = Object.assign((select: any) => select({ preferences: { reducedMotion: false }, mode: "DAY", notify() {} }), {
+    getState: () => ({ clearNotifications: (owner: string) => cleared.push(owner) }),
+  });
+  const ui = harness(undefined, { useDidHide: (callback: () => void) => { hide = callback; }, useDidShow: (callback: () => void) => { show = callback; }, useAppStore: store,
+    useResourceQuery: (options: any) => {
+      enabled.push(options.enabled);
+      return options.queryKey[0] === "astronomical-events" ? { data: { data: { events: [meteor], sources: [source], catalogVersion: "v1" } }, isPending: false, isError: false, refetch() {} } : { isPending: false, isError: false, refetch() {} };
+    } });
+  const props = { open: true, mode: "select-one", context: { localDate: "2026-12-22", location: { kind: "FORMAL_SPOT" } }, initialOccurrenceIds: ["urs"], initialDetailId: "urs", onClose() {} };
+  ui.render(props); assert.deepEqual(enabled.splice(0), [true, true, true]);
+  hide!(); const hidden = ui.render(props); assert.deepEqual(enabled.splice(0), [false, false, false]); assert.deepEqual(cleared, ["event-modal"]);
+  assert.ok(find(hidden, node => node.type === "Button" && text(node) === "确认选择").length);
+  show!(); const returned = ui.render(props); assert.deepEqual(enabled.splice(0), [true, true, true]);
+  assert.ok(find(returned, node => node.type === "Button" && text(node) === "确认选择").length);
 });
 
 test("detail Back returns to list but backdrop cancels the whole modal, in both modes", () => {

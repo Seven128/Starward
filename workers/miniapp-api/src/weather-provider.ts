@@ -1,4 +1,4 @@
-import { fetchJson, qweatherJwt, qweatherRequestPoint } from "./qweather-client.ts";
+import { fetchJson, qweatherAttribution, qweatherInstant, qweatherJwt, qweatherRequestPoint } from "./qweather-client.ts";
 import { createHash } from "node:crypto";
 import { observationNightBounds } from "@starward/miniapp-contracts";
 import type { DataState, SourceSummary } from "@starward/miniapp-contracts";
@@ -27,11 +27,6 @@ function textOrNull(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-function instantOrNull(value: unknown): string | null {
-  const selected = textOrNull(value);
-  if (!selected || !Number.isFinite(Date.parse(selected))) return null;
-  return new Date(selected).toISOString();
-}
 
 function unique<T>(values: readonly T[]): T[] {
   return [...new Set(values)];
@@ -45,6 +40,7 @@ function digest(value: unknown): string {
 }
 
 function forecastSource(input: {
+  attribution: NonNullable<SourceSummary["attribution"]>;
   id: string;
   provider: string;
   title: string;
@@ -67,6 +63,7 @@ function forecastSource(input: {
 }
 
 function alertSource(input: {
+  attribution: NonNullable<SourceSummary["attribution"]>;
   id: string;
   retrievedAt: string;
   validFrom: string | null;
@@ -151,13 +148,6 @@ export function unavailableWeatherResult(
   };
 }
 
-function normalizedAt(value: string): string {
-  const selected = /(?:Z|[+-]\d\d:\d\d)$/u.test(value) ? value : `${value}Z`;
-  const parsed = new Date(selected);
-  if (!Number.isFinite(parsed.getTime())) throw new Error("weather_time_invalid");
-  return parsed.toISOString();
-}
-
 function weatherWindow(input: Parameters<WeatherPort["getHourly"]>[0]) {
   const night = observationNightBounds(input);
   const start = Date.parse(input.windowUtc?.start ?? night.nightStartUtc);
@@ -239,6 +229,20 @@ interface QWeatherForecastResult
   modelRun: WeatherModelRunSummary | null;
 }
 
+// Re-evaluate interval validity when delivering cached data and after waiting on
+// independent alerts. This projection must never mutate retained source rows.
+function currentForecast(result: QWeatherForecastResult, now: number): QWeatherForecastResult {
+  if (!result.value) return result;
+  const rows = result.value.filter(row => Date.parse(row.at) + 3_600_000 > now);
+  if (rows.length === result.value.length) return result;
+  const state = rows.length ? "PARTIAL" : "EXPIRED";
+  const validFrom = rows[0]?.at ?? result.source.validFrom;
+  return { ...result, value: rows.length ? rows : null, state,
+    errorCode: rows.length ? result.errorCode : "qweather_forecast_expired",
+    source: { ...result.source, state, validFrom },
+    modelRun: result.modelRun ? { ...result.modelRun, state, validFrom: validFrom! } : null };
+}
+
 const QWEATHER_CACHE = Object.freeze({ entries: 128, forecastMs: 30 * 60_000, alertMs: 5 * 60_000, partialMs: 60_000, failureMs: 5_000 });
 
 // Dates/windows do not change either current QWeather endpoint's upstream
@@ -250,7 +254,8 @@ function qweatherSourceKey(config: MiniappRuntimeConfig, input: Parameters<Weath
 
 function qweatherSourceExpiry(result: ProviderResult<unknown>, now: number, ttlMs: number): number {
   if (result.state === "UNAVAILABLE" || result.state === "EXPIRED") return now + QWEATHER_CACHE.failureMs;
-  const retrievedAt = Date.parse(result.source.retrievedAt);
+  const retrievedAt = Date.parse(result.source.retrievedAt ?? "");
+  if (!Number.isFinite(retrievedAt)) return now;
   const validTo = Date.parse(result.source.validTo ?? "");
   return Math.min(retrievedAt + (result.state === "PARTIAL" ? QWEATHER_CACHE.partialMs : ttlMs),
     Number.isFinite(validTo) ? validTo : now);
@@ -277,7 +282,7 @@ export class QWeatherForecastAdapter {
     const { signal, ...sharedInput } = input;
     return waitForCaller(this.cache.get(qweatherSourceKey(this.config, input),
       () => this.fetchHourly(sharedInput),
-      result => qweatherSourceExpiry(result, this.now(), QWEATHER_CACHE.forecastMs)), signal);
+      result => qweatherSourceExpiry(result, this.now(), QWEATHER_CACHE.forecastMs)).then(result => currentForecast(result, this.now())), signal);
   }
 
   private async fetchHourly(
@@ -321,7 +326,7 @@ export class QWeatherForecastAdapter {
         this.transport,
         this.deadlineMs,
       );
-      if (!payload.hours?.length)
+      if (!Array.isArray(payload.hours) || !payload.hours.length)
         throw new Error("qweather_rejected:empty");
       const fetchedAt = new Date(this.now()).toISOString();
       const sourceId = `weather:qweather-weather-v1-hourly:${digest({
@@ -330,7 +335,13 @@ export class QWeatherForecastAdapter {
         metadataTag: payload.metadata?.tag,
         hours: payload.hours,
       })}`;
-      const rows: CanonicalWeatherHour[] = payload.hours.map((hour) => {
+      const identities = payload.hours.flatMap(hour => {
+        const at = qweatherInstant(hour?.forecastTime);
+        return at ? [{ hour, at }] : [];
+      });
+      const counts = new Map<string, number>();
+      for (const row of identities) counts.set(row.at, (counts.get(row.at) ?? 0) + 1);
+      const rows: CanonicalWeatherHour[] = identities.filter(row => counts.get(row.at) === 1).map(({ hour, at }) => {
         const precipitationMm = qweatherMetricValue(
           hour.precipitation?.amount,
           "mm",
@@ -342,7 +353,7 @@ export class QWeatherForecastAdapter {
         const visibilityM = qweatherMetricValue(hour.visibility, "m");
         const weatherCode = numberOrNull(hour.condition?.code);
         return {
-          at: normalizedAt(String(hour.forecastTime)),
+          at,
           cloudPercent: qweatherFractionPercent(hour.cloudCover),
           precipitationMm,
           precipitationProbabilityPercent: qweatherFractionPercent(
@@ -364,9 +375,10 @@ export class QWeatherForecastAdapter {
           evidenceSourceIds: [sourceId],
         };
       });
+      if (!rows.length) throw new Error("qweather_rejected:invalid_hours");
       rows.sort((left, right) => Date.parse(left.at) - Date.parse(right.at));
       const coverageEnd = new Date(Date.parse(rows.at(-1)!.at) + 3_600_000).toISOString();
-      const partial = rows.some(
+      const partial = rows.length !== payload.hours.length || rows.some(
         (row) =>
           row.cloudPercent === null ||
           row.precipitationMm === null ||
@@ -374,6 +386,7 @@ export class QWeatherForecastAdapter {
           row.temperatureC === null,
       );
       const dataSource = forecastSource({
+        attribution: qweatherAttribution(payload.metadata?.attributions),
         id: sourceId,
         provider: "和风天气",
         title: `指定坐标 ${forecastHours} 小时逐小时天气主时间线`,
@@ -394,7 +407,7 @@ export class QWeatherForecastAdapter {
           ...(payload.metadata?.attributions?.filter(Boolean) ?? []),
         ],
       });
-      return {
+      return currentForecast({
         value: rows,
         state: dataSource.state,
         source: dataSource,
@@ -413,7 +426,7 @@ export class QWeatherForecastAdapter {
           state: dataSource.state,
           sourceId,
         },
-      };
+      }, this.now());
     } catch (error) {
       if (input.signal?.aborted) throw error;
       const errorCode =
@@ -530,10 +543,10 @@ export class QWeatherAlertAdapter {
       if (payload.metadata.zeroResult === true && entries.length)
         throw new Error("qweather_alert_zero_result_conflict");
       const validEntries = entries.filter(entry => entry && textOrNull(entry.id) &&
-        instantOrNull(entry.issuedTime) && ["alert", "update", "cancel"].includes(entry.messageType?.code ?? "") &&
-        (!entry.effectiveTime || instantOrNull(entry.effectiveTime)) &&
-        (!entry.onsetTime || instantOrNull(entry.onsetTime)) &&
-        (!entry.expireTime || instantOrNull(entry.expireTime)));
+        qweatherInstant(entry.issuedTime) && ["alert", "update", "cancel"].includes(entry.messageType?.code ?? "") &&
+        (!entry.effectiveTime || qweatherInstant(entry.effectiveTime)) &&
+        (!entry.onsetTime || qweatherInstant(entry.onsetTime)) &&
+        (!entry.expireTime || qweatherInstant(entry.expireTime)));
       if (entries.length && !validEntries.length)
         throw new Error("qweather_alert_rows_invalid");
       const fetchedAt = new Date(this.now()).toISOString();
@@ -541,13 +554,14 @@ export class QWeatherAlertAdapter {
       const now = Date.parse(fetchedAt);
       const alerts = validEntries.map((entry) => {
         const messageType = textOrNull(entry.messageType?.code)?.toLowerCase() ?? null;
-        const expiresAt = instantOrNull(entry.expireTime);
+        const expiresAt = qweatherInstant(entry.expireTime);
         const status = alertStatus({ messageType, expiresAt, now });
         const rawSeverity = textOrNull(entry.severity)?.toLowerCase() ?? "unknown";
         const severity = ["minor", "moderate", "severe", "extreme"].includes(rawSeverity) ? rawSeverity : "unknown";
         const urgency = textOrNull(entry.urgency);
         const certainty = textOrNull(entry.certainty);
         const alert: CanonicalWeatherAlert = {
+          senderName: typeof entry.senderName === "string" && entry.senderName.trim() ? entry.senderName : null,
           id: textOrNull(entry.id)!,
           headline: textOrNull(entry.headline) ?? "官方天气预警",
           description: textOrNull(entry.description) ?? "发布机构未提供详情",
@@ -557,9 +571,9 @@ export class QWeatherAlertAdapter {
           severity,
           urgency,
           certainty,
-          issuedAt: instantOrNull(entry.issuedTime)!,
+          issuedAt: qweatherInstant(entry.issuedTime)!,
           effectiveAt:
-            instantOrNull(entry.effectiveTime) ?? instantOrNull(entry.onsetTime),
+            qweatherInstant(entry.effectiveTime) ?? qweatherInstant(entry.onsetTime),
           expiresAt,
           status,
           material: materialAlert({ status, severity, urgency, certainty }),
@@ -579,6 +593,7 @@ export class QWeatherAlertAdapter {
           )
         : fetchedAt;
       const dataSource = alertSource({
+        attribution: qweatherAttribution(payload.metadata.attributions),
         id: sourceId,
         retrievedAt: fetchedAt,
         validFrom: earliestIssuedAt,
@@ -634,9 +649,10 @@ export class QWeatherCompositeAdapter implements WeatherPort {
 
   async getHourly(input: Parameters<WeatherPort["getHourly"]>[0]): Promise<WeatherEvidenceResult> {
     const window = weatherWindow(input);
-    const [primary, warning] = await Promise.all([
+    const [forecast, warning] = await Promise.all([
       this.forecast.getHourly(input), this.alerts.getAlerts(input),
     ]);
+    const primary = currentForecast(forecast, Date.now());
     const activeAlerts = warning.value ?? [];
     const rows = (primary.value ?? [])
       .filter(row => Date.parse(row.at) >= window.start && Date.parse(row.at) < window.end)

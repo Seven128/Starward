@@ -1,0 +1,16 @@
+Stellarium Modern v24.4, commit ab961cbde42eec8121be0df6ff48292f8d492b54
+Line definitions and image anchor identifiers: Stellarium's team, CC BY-SA 4.0.
+https://creativecommons.org/licenses/by-sa/4.0/
+Illustrations: Johan Meuris, Free Art License 1.3; original PNG bytes retained.
+https://artlibre.org/licence/lal/en/
+https://johanmeuris.eu/work/stellarium-constellation-art/
+Original files: https://raw.githubusercontent.com/Stellarium/stellarium/ab961cbde42eec8121be0df6ff48292f8d492b54/skycultures/modern/
+Separate geometry-v2.json: contains CDS/SIMBAD identity information under ODbL 1.0.
+https://simbad.cds.unistra.fr/simbad/
+https://opendatacommons.org/licenses/odbl/1-0/
+Coordinates/proper motions: BSC5P (Hoffleit & Warren 1991), SAO/ADC/USNO FK5 J2000, HEASARC.
+https://heasarc.gsfc.nasa.gov/docs/heasarc/data_policy.html
+No Hipparcos numerical astrometry. Explicit multiple-system members use geometric representatives, not photocentres.
+HIP60718 component identification only: All Skies Encyclopaedia / IAU-WGSN, Susanne M Hoffmann, Youla Azkarrula, Ian Ridpath.
+https://ase.exopla.net/index.php/Acrux ; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ .
+Geometry and topology retain separate licenses; runtime projection/opacity/tint do not change original downloadable art.

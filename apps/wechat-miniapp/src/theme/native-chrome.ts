@@ -5,6 +5,9 @@ import { NATIVE_CHROME_THEME } from "./design-tokens";
 
 export async function syncNativeChrome(mode: DisplayMode) {
   const theme = NATIVE_CHROME_THEME[mode];
+  // Sky remains dark in day mode; native status text must follow the surface.
+  const isSky = Taro.getCurrentPages().at(-1)?.route === "sky/detail/index";
+  const canvas = isSky && mode !== "OBSERVATION" ? "#080D17" : theme.canvas;
   const hasTabBar = () => {
     const route = Taro.getCurrentPages().at(-1)?.route;
     return route === "pages/map/index" || route === "pages/my/index";
@@ -49,13 +52,13 @@ export async function syncNativeChrome(mode: DisplayMode) {
   };
   await Promise.all([
     Taro.setNavigationBarColor({
-      frontColor: mode === "DAY" ? "#000000" : "#ffffff",
-      backgroundColor: theme.canvas,
+      frontColor: mode === "DAY" && !isSky ? "#000000" : "#ffffff",
+      backgroundColor: canvas,
     }),
     Taro.setBackgroundColor({
-      backgroundColor: theme.canvas,
-      backgroundColorTop: theme.canvas,
-      backgroundColorBottom: theme.canvas,
+      backgroundColor: canvas,
+      backgroundColorTop: canvas,
+      backgroundColorBottom: canvas,
     }),
     syncTabBar(),
   ]);

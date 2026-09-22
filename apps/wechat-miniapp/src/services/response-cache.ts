@@ -85,6 +85,9 @@ function splitChunks(text: string): string[] {
 
 function chunkKey(entry: DiskEntry, index: number) { return CHUNK_PREFIX + entry.id + "." + index; }
 
+// This response embeds GeoAPI fields licensed for live use, not storage.
+const noStoreKey = (key: string) => key.startsWith("spot-recent-weather:");
+
 /**
  * One conditional-response cache, with a larger memory budget than offline disk.
  * Bodies are copy-on-write asynchronous chunks; the small manifest is the only
@@ -171,6 +174,8 @@ export function createResponseCache(storage: Storage, now = Date.now) {
       // Crash leftovers, expired and rejected descriptors never become bodies.
       const active = new Set([...disk.values()].flatMap(item => Array.from({ length: item.chunks }, (_, i) => chunkKey(item, i))));
       for (const key of storage.getStorageInfoSync().keys) if (key.startsWith(CHUNK_PREFIX) && !active.has(key)) remove(key);
+      // Retire both legacy whole-body entries and v2 chunks from older builds.
+      if (Array.isArray(value?.entries) && value.entries.some(row => Array.isArray(row) && typeof row[0] === "string" && noStoreKey(row[0]))) invalidate(noStoreKey);
     } catch { /* Missing/corrupt cache is a miss, never invented product data. */ }
   }
 
@@ -204,6 +209,7 @@ export function createResponseCache(storage: Storage, now = Date.now) {
 
   function get(key: string): CachedResponse | undefined {
     load();
+    if (noStoreKey(key)) return undefined;
     const current = memory.get(key);
     if (current && fresh(current.storedAt)) return current;
     if (current) memory.delete(key);
@@ -234,6 +240,7 @@ export function createResponseCache(storage: Storage, now = Date.now) {
 
   function set(key: string, envelope: ApiEnvelope<unknown>, fence?: RequestFence) {
     load();
+    if (noStoreKey(key)) return;
     if ((fence && !currentFence(key, fence)) || key.length > 4096) return;
     try {
       const text = JSON.stringify(envelope);

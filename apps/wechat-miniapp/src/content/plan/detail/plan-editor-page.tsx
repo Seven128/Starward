@@ -1,3 +1,4 @@
+import { useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, type PlanReminder } from "@starward/miniapp-contracts";
 import { distanceMeters } from "@starward/coordinate-system";
 import { PlanReminderEditor } from "./plan-reminder-editor";
@@ -37,7 +38,7 @@ import {
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { resolvePlanSaveSpotId } from "./plan-save-spot";
-import { observingWindowLabel } from "./plan-time-labels";
+import { PlanReference } from "./plan-reference";
 import { initialPlanSelection, planIdFromRoute } from "./plan-selection";
 import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey as scopedPlanDraftKey, type PlanDraft } from "./plan-draft";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
@@ -279,7 +280,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     enabled: pageVisible && Boolean(activePlan && selectedSpotId && activePlan.spotId === selectedSpotId),
     staleTime: 60_000,
   });
-  const skyQuery = useResourceQuery({
+  const skyQuery = useSkyForecastQuery({
     queryKey: [
       "plan-sky-summary",
       activePlan?.spotId,
@@ -517,15 +518,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     ? distanceMeters({ lat: distanceOrigin.latitude, lon: distanceOrigin.longitude },
       { lat: selectedSpot.wgs84.latitude, lon: selectedSpot.wgs84.longitude }) / 1000 : null;
   const timezone =
+    (!editing ? activePlan?.contextSnapshot.timezone : undefined) ??
     activeContext?.timezone ?? selectedSpot?.timezone ?? "Asia/Shanghai";
-  const primaryWindow = observingWindowLabel(
-    sky?.decision.skyOpportunity.primaryWindow,
-    timezone,
-  );
-  const backupWindow = observingWindowLabel(
-    sky?.decision.skyOpportunity.backupWindow,
-    timezone,
-  );
   const announce = (
     tone: "error" | "warning" | "info" | "success",
     title: string,
@@ -824,7 +818,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           recoveryLabel="重新获取观测条件"
           onRecover={() => void contextQuery.refetch()} /> : null}
         {activePlan && (skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE") ? <StatusPanel state="STALE"
-          detail="天气与夜空数据尚未确认最新状态，当前时窗参考上次结果，出发前请重新核实。"
+          detail="天气与夜空数据尚未更新，暂时显示上次资料。"
           recoveryLabel="重新获取天气与夜空"
           onRecover={() => void skyQuery.refetch()} /> : null}
         {editing && (spotsQuery.refreshError || spotsQuery.data?.dataState === "STALE_USABLE") ? <StatusPanel state="STALE"
@@ -890,17 +884,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               <View className="plan-period" aria-label="计划观测时段">
                 <Text className="plan-period__date">{activePlan.localDate} · 观测时段</Text>
                 <View className="plan-period__time"><Text>{activePlan.localTime}</Text><Text>—</Text><Text>{activePlan.timing?.endLocalTime || "未填写"}</Text></View>
-                <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} 次日 · ` : ""}地点当地时间 · {timezone}</Text>
+                <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} · ` : ""}地点当地时间 · {timezone}</Text>
               </View>
             </View>
-            <View className="plan-section plan-reference" data-od-id="plan-reference">
-              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">✧</Text>观测参考</Text><Text className="plan-section-caption">所选时间段</Text></View>
-              <View className="plan-reference__facts">
-                <View><Text>综合判断</Text><Text>{skyQuery.isPending ? "读取中" : sky?.decision.label ?? "暂不可用"}</Text></View>
-                <View><Text>主时窗</Text><Text>{primaryWindow ?? "暂缺"}</Text></View>
-                <View><Text>备选时窗</Text><Text>{backupWindow ?? "暂缺"}</Text></View>
-              </View>
-            </View>
+            <PlanReference plan={activePlan} report={sky} loading={Boolean(
+              (contextQuery.isPending && contextQuery.isFetching) ||
+              (activeContext && skyQuery.isPending && skyQuery.isFetching)
+            )} />
             {planQuery.isError || planQuery.refreshError || planQuery.data?.dataState === "STALE_USABLE" ? (
               <StatusPanel
                 state="STALE"

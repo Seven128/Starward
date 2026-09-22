@@ -27,33 +27,14 @@ const source: SourceSummary = {
 };
 
 const available: SkyScene = {
-  state: "AVAILABLE",
-  catalog: {
-    catalogVersion: "gaia-dr3-test-v1",
-    catalogHash: "a".repeat(64),
-    magnitudeLimit: 5.5,
-    sources: [source, { ...source, id: "source-wgsn-test", kind: "OFFICIAL_REFERENCE" }],
-    entries: [
-      { sourceId: "HR:1", objectRef: "HR:1", displayName: "Alpha", magnitude: 1.2, magnitudeBand: "V", colorIndex: 0.2, colorIndexBand: "B-V" },
-      { sourceId: "HR:2", objectRef: "HR:2", displayName: null, magnitude: 4.8, magnitudeBand: "V", colorIndex: null, colorIndexBand: "B-V" },
-    ],
-  },
-  frames: [
-    {
-      at: "2026-09-04T12:00:00.000Z",
-      state: "AVAILABLE",
-      points: [
-        [0, 12.5, 34.25],
-        [1, 275, 5],
-      ],
-    },
-    {
-      at: "2026-09-04T12:30:00.000Z",
-      state: "AVAILABLE",
-      points: [[0, 20, 30]],
-    },
-  ],
-  unavailableReason: null,
+  format: "stellar-scene-v2", state: "AVAILABLE", observer: { latitude: 0, longitude: 0, elevationM: 0 },
+  catalog: { catalogVersion: "bsc5p-bright-stars.v2", catalogHash: "a".repeat(64), magnitudeLimit: 6.5, rowCount: 8404, sources: [source] },
+  frames: ["2026-09-04T12:00:00.000Z", "2026-09-04T12:30:00.000Z"].map(at => ({
+    at, state: "AVAILABLE", geometry: { format: "bsc5p-stellar-geometry-v1", referenceAt: "2000-01-01T12:00:00.000Z",
+      catalogVersion: "bsc5p-bright-stars.v2", catalogHash: "a".repeat(64), at,
+      observer: { latitude: 0, longitude: 0, elevationM: 0 }, julianYears: (Date.parse(at)-Date.parse("2000-01-01T12:00:00Z"))/(365.25*86400000),
+      equatorialToEnu: [1,0,0,0,1,0,0,0,1] },
+  })), unavailableReason: null,
   deepSky: {
     state: "AVAILABLE",
     catalog: {
@@ -88,18 +69,18 @@ test("sky scene contract binds every frame to one hourly slice", () => {
         available.frames[0]!.at,
         "2026-09-04T13:00:00.000Z",
       ]),
-    /sky_scene_invalid:frame_1:at/u,
+    /sky_scene_invalid:frame_binding/u,
   );
 });
 
 test("unavailable sky scene is explicit and cannot carry fallback points", () => {
   const scene: SkyScene = {
-    state: "UNAVAILABLE",
+    format: "stellar-scene-v2", observer: null, state: "UNAVAILABLE",
     catalog: null,
     frames: available.frames.map((frame) => ({
       at: frame.at,
       state: "UNAVAILABLE",
-      points: null,
+      geometry: null,
     })),
     unavailableReason: "CATALOG_UNAVAILABLE",
   };
@@ -115,14 +96,14 @@ test("unavailable sky scene is explicit and cannot carry fallback points", () =>
             {
             at: scene.frames[0]!.at,
             state: "UNAVAILABLE",
-            points: [[0, 0, 0]],
+            geometry: available.frames[0]!.geometry,
             },
             scene.frames[1]!,
           ],
         },
         scene.frames.map((frame) => frame.at),
       ),
-    /sky_scene_invalid:frame_0:unavailable_points/u,
+    /sky_scene_invalid:unavailable_frame/u,
   );
 });
 

@@ -82,7 +82,7 @@
   flex: none; padding: 12Px 18Px max(12Px, env(safe-area-inset-bottom));
   display: flex; align-items: center; gap: 12Px; border-top: 1Px solid #eff0f2; background: var(--canvas);
 }
-.event-modal__footer button { min-height: 44Px; margin: 0; border: 0; }
+.event-modal__footer button { min-height: 44Px; margin: 0; border: 0; display: flex; align-items: center; justify-content: center; }
 .event-modal__clear { width: auto; padding: 0 8Px; background: transparent; color: var(--text-secondary); font-size: 12Px; white-space: nowrap; }
 .event-modal__footer .event-modal__confirm { flex: 1; border-radius: 11Px; background: #3d4b60; color: #fff; }
 

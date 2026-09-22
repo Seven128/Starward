@@ -107,7 +107,7 @@ test("heading wraps while beta and gamma reject impossible platform ranges", () 
   assert.equal(createSkyViewBasis(0, 90, 90.001), null);
 });
 
-test("perspective projection preserves angular scale and canvas handedness", () => {
+test("stereographic projection preserves angular scale and canvas handedness", () => {
   const basis = createSkyViewBasis(0, 90, 0);
   assert.ok(basis);
   const center = projectSkyDirection(0, 0, basis, 400, 800, 60);
@@ -149,10 +149,10 @@ test("aspect ratio changes horizontal field without changing vertical field", ()
   const portrait = projectSkyDirection(10, 20, basis, 400, 800, 60);
   const landscape = projectSkyDirection(10, 20, basis, 800, 400, 60);
   assert.ok(portrait && landscape);
-  close(portrait.y, 143.9439580918919, 1e-8);
-  close(landscape.y, 71.97197904594594, 1e-8);
-  close(portrait.x, 322.1629157329115, 1e-8);
-  close(landscape.x, 461.0814578664557, 1e-8);
+  close(portrait.y, 134.82381601487992, 1e-8);
+  close(landscape.y, 67.41190800743996, 1e-8);
+  close(portrait.x, 326.51408487433724, 1e-8);
+  close(landscape.x, 463.2570424371686, 1e-8);
   assert.ok(landscape.x < 800 && portrait.x < 400);
 });
 
@@ -164,7 +164,7 @@ test("invalid projection input is rejected without hidden defaults or clamping",
   assert.equal(projectSkyDirection(0, 0, basis, 0, 800, 60), null);
   assert.equal(projectSkyDirection(0, 0, basis, 400, 0, 60), null);
   assert.equal(projectSkyDirection(0, 0, basis, 400, 800, 0), null);
-  assert.equal(projectSkyDirection(0, 0, basis, 400, 800, 180), null);
+  assert.equal(projectSkyDirection(0, 0, basis, 400, 800, 360), null);
   assert.equal(
     projectSkyDirection(0, 0, { ...basis, right: [2, 0, 0] }, 400, 800, 60),
     null,

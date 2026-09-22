@@ -16,9 +16,9 @@ export function planReminderStatusLabel(status?: PlanReminderNotificationStatus)
 
 export function planReminderStatusDetail(status?: PlanReminderNotificationStatus) {
   if (!status) return "提醒清单不受通知状态影响。";
-  if (status.state === "CAPABILITY_UNAVAILABLE") return "当前 AppID 尚未配置可用订阅模板；清单仍可保存和勾选。";
+  if (status.state === "CAPABILITY_UNAVAILABLE") return "微信通知服务尚未接通；清单仍可保存和勾选。";
   if (status.state === "AUTHORIZATION_REQUIRED") return "需要由用户点击并完成微信订阅授权。";
   if (status.state === "SCHEDULED" && status.triggerAtUtc) return `计划在 ${status.triggerAtUtc} 触发；发送前仍会复核计划版本与授权。`;
-  if (status.state === "RESULT_UNKNOWN") return "服务端会核对微信回执，不会盲目重复发送。";
+  if (status.state === "RESULT_UNKNOWN") return "尚无法确认发送结果；为避免重复通知，不会自动重发。";
   return "提醒清单不受通知状态影响。";
 }

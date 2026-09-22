@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AstronomicalEventCatalogOwner, MemoryAstronomicalEventCatalogStore, builtInAstronomicalEventCatalogPackage, validateAstronomicalEventCatalogPackage, diffAstronomicalEventCatalog } from "./astronomical-event-catalog-owner.ts";
+import { AstronomicalEventCatalogOwner, MemoryAstronomicalEventCatalogStore, builtInAstronomicalEventCatalogPackage, validateAstronomicalEventCatalogPackage, diffAstronomicalEventCatalog, eventCatalogDigest } from "./astronomical-event-catalog-owner.ts";
+import { eventArticleIdentity } from "./event-article-policy.ts";
 import { importEventArticle, type EventArticleImport } from "./event-article-import.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 
@@ -75,6 +76,98 @@ test("client-supplied rights cannot authorize changed text, source, actor or mis
   changedSource.sources.find(source => source.id === changedSource.events[0]!.article!.sourceId)!.license = "另一许可";
   assert.deepEqual(diffAstronomicalEventCatalog(candidate.package, changedSource).articleChanges, [input.occurrenceId]);
   await assert.rejects(owner.importCandidate({ sourceId: input.rights.registeredSourceId, package: changedSource, actorId: "scheduled", trigger: "SCHEDULED" }), /rights_required|registered_source_required/);
+});
+
+test("structured article imports require a bounded license description before rights confirmation", async () => {
+  const { owner, input } = await setup();
+  const candidate = (await importEventArticle(owner, input, "admin:author")).candidate!;
+  for (const license of [undefined, null, "", "   ", "a".repeat(301)]) {
+    const pack = structuredClone(candidate.package);
+    pack.catalogVersion = "article-missing-license";
+    const source = pack.sources.find(source => source.id === pack.events[0]!.article!.sourceId)!;
+    source.license = license as never;
+    await assert.rejects(owner.importCandidate({ sourceId: input.rights.registeredSourceId,
+      package: pack, actorId: "admin:author", articleRightsConfirmation: input.rights }), /event_article_license_invalid/);
+  }
+  assert.equal((await owner.store.listCandidates()).length, 1, "invalid imports never create reviewable candidates");
+  assert.equal(owner.find(input.occurrenceId)!.article, undefined);
+  const pack = structuredClone(candidate.package);
+  pack.catalogVersion = "article-private-permission";
+  const source = pack.sources.find(source => source.id === pack.events[0]!.article!.sourceId)!;
+  source.license = "作者书面商业转载授权";
+  source.licenseUrl = "";
+  const valid = (await owner.importCandidate({ sourceId: input.rights.registeredSourceId,
+    package: pack, actorId: "admin:author", articleRightsConfirmation: input.rights })).candidate!;
+  await publish(owner, valid.candidateId);
+  assert.equal(owner.snapshot().sources.find(item => item.id === source.id)!.license, source.license);
+});
+
+test("a legacy reviewed candidate with missing article license cannot change active or stored publications", async () => {
+  const { owner, store, input } = await setup();
+  const candidate = (await importEventArticle(owner, input, "admin:author")).candidate!;
+  const legacy = structuredClone(candidate);
+  legacy.candidateId += "-legacy";
+  legacy.package.catalogVersion = "legacy-article-candidate";
+  const event = legacy.package.events.find(event => event.occurrenceId === input.occurrenceId)!;
+  const source = legacy.package.sources.find(source => source.id === event.article!.sourceId)!;
+  source.license = "";
+  // Old imports could bind genuine confirmation to an empty license. Model that
+  // stored record directly rather than bypassing the new import validator.
+  legacy.package.articleRights![input.occurrenceId]!.articleSha256 = eventArticleIdentity(event.article!, source);
+  legacy.contentSha256 = eventCatalogDigest(legacy.package);
+  await store.saveCandidate(legacy);
+  await owner.reviewCandidate({ candidateId: legacy.candidateId, decision: "APPROVE", actorId: "admin:review",
+    reason: "旧候选审核", expectedActive: owner.activeIdentity() });
+  const active = owner.snapshot(), storedActive = await store.loadActivePublication();
+  const count = (await store.listPublications()).length;
+  await assert.rejects(owner.publishCandidate({ candidateId: legacy.candidateId, actorId: "admin:publish",
+    reason: "不能重新激活无许可说明的旧资料", expectedActive: owner.activeIdentity() }), /event_article_license_invalid/);
+  assert.deepEqual(owner.snapshot(), active);
+  assert.deepEqual(await store.loadActivePublication(), storedActive);
+  assert.equal((await store.listPublications()).length, count);
+  assert.equal((await store.getCandidate(legacy.candidateId))!.state, "AUTO_PUBLISH_ELIGIBLE");
+});
+
+test("legacy invalid rollback is rejected before persistence while valid article history still restores and initializes", async () => {
+  const { owner, store, input } = await setup();
+  const candidate = (await importEventArticle(owner, input, "admin:author")).candidate!;
+  await publish(owner, candidate.candidateId);
+  const valid = (await store.getPublication(input.catalogVersion))!;
+  const legacy = structuredClone(valid);
+  legacy.publicationId += "-legacy";
+  legacy.catalogVersion = legacy.package.catalogVersion = "legacy-article-publication";
+  legacy.candidateId = null;
+  const event = legacy.package.events.find(event => event.occurrenceId === input.occurrenceId)!;
+  const source = legacy.package.sources.find(source => source.id === event.article!.sourceId)!;
+  source.license = "";
+  legacy.package.articleRights![input.occurrenceId]!.articleSha256 = eventArticleIdentity(event.article!, source);
+  legacy.contentSha256 = eventCatalogDigest(legacy.package);
+  // Seed history as it could have been persisted by the previous implementation.
+  await store.activatePublication(legacy);
+  const current = structuredClone(valid);
+  current.publicationId += "-current";
+  current.catalogVersion = current.package.catalogVersion = "valid-article-after-legacy";
+  current.candidateId = null;
+  const currentEvent = current.package.events.find(event => event.occurrenceId === input.occurrenceId)!;
+  currentEvent.article!.paragraphs = ["后续独立审核的自有测试正文"];
+  const currentSource = current.package.sources.find(source => source.id === currentEvent.article!.sourceId)!;
+  current.package.articleRights![input.occurrenceId]!.articleSha256 = eventArticleIdentity(currentEvent.article!, currentSource);
+  current.contentSha256 = eventCatalogDigest(current.package);
+  await store.activatePublication(current);
+  const restarted = await new AstronomicalEventCatalogOwner(store).initialize();
+  const active = restarted.snapshot(), storedActive = await store.loadActivePublication();
+  const count = (await store.listPublications()).length;
+  await assert.rejects(restarted.rollback({ catalogVersion: legacy.catalogVersion, actorId: "admin:restore",
+    reason: "不能恢复无许可说明的历史资料", expectedActive: restarted.activeIdentity() }), /event_article_license_invalid/);
+  assert.deepEqual(restarted.snapshot(), active);
+  assert.deepEqual(await store.loadActivePublication(), storedActive);
+  assert.equal((await store.listPublications()).length, count);
+  await restarted.rollback({ catalogVersion: valid.catalogVersion, actorId: "admin:restore",
+    reason: "合法历史文章仍可恢复", expectedActive: restarted.activeIdentity() });
+  const restored = await new AstronomicalEventCatalogOwner(store).initialize();
+  assert.deepEqual(restored.find(input.occurrenceId)!.article, valid.package.events.find(event => event.occurrenceId === input.occurrenceId)!.article);
+  assert.deepEqual(restored.snapshot().articleRights, valid.package.articleRights);
+  assert.equal((await store.listPublications()).length, count + 1);
 });
 
 test("structured feed removal is review-required and stale article form cannot overwrite current catalog", async () => {

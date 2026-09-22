@@ -26,12 +26,14 @@ test("AQ standards, source display and concentration units survive; unknown is n
 
 test("current concentrations never fill missing forecast pollutants; gaps and source attribution survive", async () => {
   const adapter = new QWeatherAirQualityAdapter(config, async request => json(new URL(request.toString()).pathname.includes("/current/")
-    ? { indexes: [index()], pollutants: [pollutant(8)], metadata: { attributions: ["原始来源署名"] } }
-    : { hours: [hour("2026-09-15T11:00:00+08:00"), hour()] }), () => start);
+    ? { indexes: [index()], pollutants: [pollutant(8)], metadata: { attributions: [" 原始来源署名\n© AQ "] } }
+    : { hours: [hour("2026-09-15T11:00:00+08:00"), hour()], metadata: { attributions: ["独立预报来源"] } }), () => start);
   const result = await adapter.getAirQuality(input);
   assert.equal(result.current.value!.pollutants[0]!.value, 8);
   assert.deepEqual(result.forecast.value!.map(row => [row.at, row.pollutants]), [["2026-09-15T01:00:00.000Z", []], ["2026-09-15T03:00:00.000Z", []]]);
-  assert.ok(result.current.source.limitations.includes("原始来源署名"));
+  assert.ok(result.current.source.limitations.includes(" 原始来源署名\n© AQ "));
+  assert.deepEqual(result.current.source.attribution, { name: "和风天气", url: "https://www.qweather.com", statements: [" 原始来源署名\n© AQ "] });
+  assert.deepEqual(result.forecast.source.attribution?.statements, ["独立预报来源"]);
   assert.equal(result.current.source.publishedAt, null);
   assert.equal(result.forecast.source.validTo, "2026-09-15T04:00:00.000Z");
 });
@@ -87,8 +89,8 @@ test("a repeated expired upstream package cannot become fresh future data; valid
   for (let attempt = 0; attempt < 2; attempt++) {
     const result = await adapter.getAirQuality(input);
     assert.equal(result.forecast.value, null);
-    assert.equal(result.forecast.state, "UNAVAILABLE");
-    assert.equal(result.forecast.unavailableReason, "REQUEST_FAILED");
+    assert.equal(result.forecast.state, "EXPIRED");
+    assert.equal(result.forecast.unavailableReason, "EXPIRED");
     assert.equal(result.current.state, "FRESH");
     now += 30_000;
   }
@@ -96,6 +98,21 @@ test("a repeated expired upstream package cannot become fresh future data; valid
   const recovered = await adapter.getAirQuality(input);
   assert.equal(recovered.forecast.state, "PARTIAL");
   assert.deepEqual(recovered.forecast.value!.map(row => row.at), ["2026-09-15T01:00:00.000Z"]);
+});
+
+test("elapsed valid hours do not hide malformed or ambiguous hourly evidence", async () => {
+  for (const hours of [
+    [hour("2026-09-14T01:00:00Z"), hour("2026-02-30T01:00:00Z")],
+    [hour("2026-09-14T01:00:00Z"), hour(), hour()],
+    [hour("2026-02-30T01:00:00Z")],
+  ]) {
+    const adapter = new QWeatherAirQualityAdapter(config, async request => json(new URL(request.toString()).pathname.includes("/current/")
+      ? { indexes: [index()] } : { hours }), () => start);
+    const result = await adapter.getAirQuality(input);
+    assert.equal(result.forecast.value, null);
+    assert.equal(result.forecast.unavailableReason, "REQUEST_FAILED");
+    assert.equal(result.current.state, "FRESH");
+  }
 });
 
 test("one canceled caller does not cancel shared AQ requests; failures can recover", async () => {
@@ -131,7 +148,7 @@ test("an hour expiring while either request is in flight cannot be delivered as 
     const pending = adapter.getAirQuality(input);
     await new Promise<void>(resolve => setImmediate(resolve)); release();
     const result = await pending;
-    assert.equal(result.forecast.state, "UNAVAILABLE", `expired during ${delayed} request`);
+    assert.equal(result.forecast.state, "EXPIRED", `expired during ${delayed} request`);
     assert.equal(result.forecast.value, null);
     assert.equal(result.current.state, "FRESH");
   }

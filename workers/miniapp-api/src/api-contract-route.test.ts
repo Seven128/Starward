@@ -5,6 +5,9 @@ import test from "node:test";
 import { RequestMethod } from "@nestjs/common";
 import { METHOD_METADATA, PATH_METADATA } from "@nestjs/common/constants";
 import { MiniappController } from "./controller.ts";
+import { StellarCatalogController } from "./stellar-catalog.controller.ts";
+import { ConstellationController } from "./constellation.controller.ts";
+import { SaoPublicationController } from "./sao-publication.controller.ts";
 
 interface OperationManifest {
   basePath: string;
@@ -64,7 +67,7 @@ test("generated client operation manifest exactly matches the public Nest contro
         `${operation.method} ${normalizePath(`${manifest.basePath}/${operation.path}`)}`,
     )
     .sort();
-  const actual = controllerRoutes(MiniappController);
+  const actual = [MiniappController, StellarCatalogController, ConstellationController, SaoPublicationController].flatMap(controllerRoutes).sort();
   assert.deepEqual(actual, expected);
   assert.equal(new Set(expected).size, expected.length, "duplicate API route");
   assert.equal(

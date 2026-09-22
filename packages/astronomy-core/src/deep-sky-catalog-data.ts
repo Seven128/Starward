@@ -42,6 +42,7 @@ export interface DeepSkyCatalogManifest {
     responseSha256: string;
     responseBytes: number;
   };
+  modifications: readonly string[];
   rowCount: number;
   derivedAssetSha256: string;
   derivedAssetBytes: number;
@@ -79,4 +80,3 @@ function validate(value: unknown): DeepSkyCatalogPack {
 
 export const DEEP_SKY_CATALOG_PACK = validate(rawPack);
 export const DEEP_SKY_CATALOG_MANIFEST = rawManifest as unknown as DeepSkyCatalogManifest;
-

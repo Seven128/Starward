@@ -1,7 +1,11 @@
 import { createAccountProfileClient } from "./account-profile-client";
 import { createSpotEnvironmentClient } from "./spot-environment-client";
 import { projectAdoptedSkyCatalog } from "./sky-report-catalog";
+import { createStellarCatalogClient } from "./stellar-catalog-client";
+import { createSaoCatalogClient } from "./sao-catalog-client";
+import { createConstellationCatalogClient } from "./constellation-catalog-client";
 import { createPlanChecklistClient } from "./plan-checklist-client";
+import { createPlanSubscriptionClient } from "./plan-subscription-client";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
 import { clearPlanSaveRecovery, createPlanSaveRetry, planSaveBelongsTo } from "./plan-save-retry";
@@ -14,6 +18,7 @@ import { contributionSubmitBelongsTo, createContributionSubmitRetry } from "./co
 import { clearProfileSaveRecovery, createProfileLinkRetry, profileSaveBelongsTo } from "./profile-link-retry";
 import {
   MINIAPP_API_BASE_PATH,
+  CONSTELLATION_CATALOG_VERSION,
   isCelestialObjectReference,
   MINIAPP_API_OPERATIONS,
   type ApiEnvelope,
@@ -871,11 +876,48 @@ export function getCelestialObjectInformation(
   });
 }
 
+export const getStellarCatalog = createStellarCatalogClient({
+  request: (reference, signal) => requestOperation(
+    `stellar-catalog:${reference.catalogVersion}:${reference.catalogHash}`, "stellarCatalogGet", {
+      pathParams: { catalogVersion: reference.catalogVersion, catalogHash: reference.catalogHash },
+      ...(signal ? { signal } : {}),
+    }),
+  invalidate: reference => invalidateApiCache(`stellar-catalog:${reference.catalogVersion}:${reference.catalogHash}:`),
+});
+
+export const saoCatalogClient = createSaoCatalogClient({
+  index: signal => requestOperation('sao-index', 'saoIndexGet', { ...(signal ? {signal} : {}) }),
+  tile: (publicationHash, tileId, signal) => requestOperation(`sao-tile:${publicationHash}:${tileId}`, 'saoTileGet', {
+    pathParams: {publicationHash, tileId}, ...(signal ? {signal} : {}),
+  }),
+  invalidateIndex: () => invalidateApiCache('sao-index:'),
+  invalidateTile: (publicationHash, tileId) => invalidateApiCache(`sao-tile:${publicationHash}:${tileId}:`),
+});
+
+export const getConstellationCatalog = createConstellationCatalogClient({
+  request: signal => requestOperation(`constellation-catalog:${CONSTELLATION_CATALOG_VERSION}`, "constellationCatalogGet", {
+    ...(signal ? {signal} : {}),
+  }),
+  invalidate: () => invalidateApiCache("constellation-catalog:"),
+});
+
+export function constellationAssetUrl(catalogHash: string, file: string) {
+  if (!/^[a-f0-9]{64}$/u.test(catalogHash) || !(file === "geometry-v2.json" || /^[a-z_-]+\.png$/u.test(file))) throw new Error("constellation_asset_reference_invalid");
+  return __MINIAPP_API_BASE__.replace(/\/+$/u, "")+MINIAPP_API_BASE_PATH+
+    "/sky/constellations/"+catalogHash+"/assets/"+file;
+}
+
 export function deepSkyImageUrl(reference: string, level: "OVERVIEW" | "MEDIUM" | "DETAIL") {
   if (!/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference))
     throw new Error("deep_sky_image_reference_invalid");
   return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
     "/celestial-objects/" + encodeURIComponent(reference) + "/image?level=" + level;
+}
+
+export function deepSkyManifestUrl(sourceId: string): string | undefined {
+  const match = /^imagery:[^:]+:([a-f0-9]{64})$/u.exec(sourceId);
+  return match ? __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
+    "/sky/deep-sky/" + match[1] + "/manifest" : undefined;
 }
 
 export function getFavorites(signal?: AbortSignal) {
@@ -1016,6 +1058,14 @@ export async function getPlans(signal?: AbortSignal, expectedUserId?: string) {
 
 const retryPlanSave = createPlanSaveRetry(Taro, () => idempotencyKey("plan-save"),
   error => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
+
+export const planReminderSubscription = createPlanSubscriptionClient({
+  request: requestOperation, currentUser: currentDraftUserId,
+  confirmed: async owner => {
+    invalidateApiCache("plans");
+    await miniappQueryClient.invalidateQueries({ queryKey: ["plans", owner], exact: true });
+  },
+});
 
 export const setPlanChecklistCompletion = createPlanChecklistClient({
   request: requestOperation, currentUser: currentDraftUserId,

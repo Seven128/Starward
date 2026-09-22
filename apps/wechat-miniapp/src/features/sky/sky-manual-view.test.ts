@@ -3,7 +3,7 @@ import test from "node:test";
 import { createSkyViewBasis, projectSkyDirection } from "./sky-view-projection.ts";
 import { dragSkyView, INITIAL_MANUAL_SKY_VIEW } from "./sky-manual-view.ts";
 
-for (const fov of [45, 6, 1.5]) {
+for (const fov of [240, 180, 120, 45, 6, 1.5]) {
   test(`grabbed celestial point follows the finger at ${fov} degrees including rolled camera`, () => {
     for (const gamma of [-30,0,30]) {
       const basis = createSkyViewBasis(350,110,gamma)!;

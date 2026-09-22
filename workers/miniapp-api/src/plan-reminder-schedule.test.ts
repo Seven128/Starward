@@ -34,4 +34,5 @@ test("classifies missing, missed and expired triggers without inventing delivery
   const expired = derivePlanReminderSchedules("user:one", plan, new Date("2026-09-11T13:00:00Z"))[0]!;
   assert.deepEqual([missing.state, missed.reason, expired.reason], ["UNSCHEDULABLE", "TRIGGER_MISSED", "DEPARTURE_EXPIRED"]);
   assert.equal(publicReminderStatus(derivePlanReminderSchedules("user:one", plan, new Date("2026-09-10T00:00:00Z"))[0]!, false, new Date("2026-09-10T00:00:00Z")).state, "CAPABILITY_UNAVAILABLE");
+  assert.equal(publicReminderStatus(derivePlanReminderSchedules("user:one", plan, new Date("2026-09-10T00:00:00Z"))[0]!, false, new Date("2026-09-10T00:00:00Z")).reason, "DELIVERY_NOT_CONFIGURED", "an unconnected delivery pipeline does not prove the platform account has no template");
 });

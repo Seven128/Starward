@@ -2,7 +2,7 @@ import { Text, View } from "@tarojs/components";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useEffect, useState } from "react";
 import type { AirQualitySnapshot } from "@starward/miniapp-contracts";
-import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useAirQualityQuery } from "@/hooks/use-forecast-query";
 import { getSpotAirQuality } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
@@ -29,10 +29,10 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
   const [active, setActive] = useState(true);
   const notify = useAppStore(state => state.notify);
   const enabled = active && visible && spotId.startsWith("spot:");
-  const query = useResourceQuery({ queryKey: ["spot-air-quality", spotId], queryFn: signal => getSpotAirQuality(spotId, signal),
+  const query = useAirQualityQuery({ queryKey: ["spot-air-quality", spotId], queryFn: signal => getSpotAirQuality(spotId, signal),
     enabled, staleTime: 60_000, refetchInterval: 60_000 });
   useDidHide(() => setActive(false));
-  useDidShow(() => { setActive(true); if (visible && spotId.startsWith("spot:")) void query.refetch(); });
+  useDidShow(() => setActive(true));
   const envelope = query.data?.data.spotId === spotId ? query.data : undefined;
   const view = airQualityState(envelope?.data, selectedAt, Date.now());
   const failed = view.failed || query.isError || Boolean(query.refreshError) || envelope?.dataState === "STALE_USABLE";
@@ -47,13 +47,13 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
     <Text className="type-secondary">当前区域参考</Text>
     {query.isPending ? <View role="status"><Text className="type-caption">正在加载空气质量…</Text></View>
       : view.current ? <Reading value={view.current} /> : <StatusPanel state="EMPTY" detail="当前空气质量暂无可用数据。" />}
-    {view.current && envelope ? <Text className="type-caption">获取于 {label(envelope.data.current.source.retrievedAt)}，不是点位实测时间</Text> : null}
+    {view.current && envelope?.data.current.source.retrievedAt ? <Text className="type-caption">获取于 {label(envelope.data.current.source.retrievedAt)}，不是点位实测时间</Text> : null}
     <Text className="type-secondary">所选时刻的空气质量预报</Text>
     {view.forecast ? <View><Text className="type-caption">对应小时：{label(view.forecast.at)}</Text><Reading value={view.forecast} /></View>
       : query.isPending ? null : <StatusPanel state="EMPTY" detail="所选时刻暂无空气质量预报。" />}
     <ForecastCoverageNote starts={view.hours.map(hour => hour.at)} timezone={timezone} scopeKey={`${spotId}:${selectedAt}`} scope="air" />
     <Text className="type-caption">不同 AQI 标准保留原值；缺失污染物不补齐。空气质量不等于天文透明度或视宁度。</Text>
-    {envelope?.sources.map(source => <Provenance key={source.id} source={source} />)}
-    {failed || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE" ? <SoftButton label="重试空气质量" onClick={() => void query.refetch()}>重试</SoftButton> : null}
+    {envelope ? [envelope.data.current.source, envelope.data.forecast.source].map(source => <Provenance key={source.id} source={source} />) : null}
+    {failed || view.expired || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE" ? <SoftButton label="重试空气质量" onClick={() => void query.refetch()}>重试</SoftButton> : null}
   </View>;
 }

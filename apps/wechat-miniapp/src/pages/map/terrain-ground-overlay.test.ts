@@ -12,6 +12,30 @@ const target = (src: string): TerrainGroundOverlayTarget => ({
   zIndex: 0,
 });
 
+test("hidden cleanup failure is not reported as a visible terrain failure on return", async () => {
+  const results: { error: unknown | null; target: TerrainGroundOverlayTarget | null }[] = [];
+  let updates = 0;
+  let rejectUpdate = false;
+  const coordinator = createTerrainGroundOverlayCoordinator(91301, () => ({
+    addGroundOverlay: async () => undefined,
+    updateGroundOverlay: async () => {
+      updates++;
+      if (rejectUpdate) throw new Error("visible update failed");
+    },
+    removeGroundOverlay: async () => { throw new Error("hidden native map unavailable"); },
+  }), result => results.push(result));
+  await coordinator.apply(target("/terrain.png"));
+  results.length = 0;
+  await coordinator.apply(null, "suspend");
+  assert.equal(results.length, 0, "hidden cleanup cannot become the next visible error");
+  await coordinator.apply(target("/terrain.png"));
+  assert.equal(updates, 1, "failed removal retains the installed overlay for recovery");
+  assert.equal(results.at(-1)?.error, null);
+  rejectUpdate = true;
+  await coordinator.apply(target("/terrain.png"));
+  assert.match(String(results.at(-1)?.error), /visible update failed/u);
+});
+
 test("a failed native removal remains installed and a retry removes the old overlay", async () => {
   let removalAttempts = 0;
   const results: { error: unknown | null; target: TerrainGroundOverlayTarget | null }[] = [];

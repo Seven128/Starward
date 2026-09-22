@@ -21,6 +21,7 @@ import {
 import type { AstronomicalEventCatalogOwner } from "../astronomical-event-catalog-owner.ts";
 import type { RecentWeatherPort } from "../recent-weather-provider.ts";
 import type { AirQualityPort } from "../air-quality-provider.ts";
+import type { DeepSkyImageryService } from "../deep-sky-imagery.ts";
 
 export function createTestMiniappService(
   input: {
@@ -35,6 +36,7 @@ export function createTestMiniappService(
     skyCatalog?: SkyCatalogProvider;
     cache?: CachePort;
     eventCatalog?: AstronomicalEventCatalogOwner;
+    deepSkyImages?: DeepSkyImageryService;
   } = {},
 ) {
   const config = input.config ?? createTestRuntimeConfig();
@@ -50,5 +52,6 @@ export function createTestMiniappService(
     skyCatalog: input.skyCatalog ?? createTestSkyCatalogProvider(),
     ...(input.eventCatalog ? { eventCatalog: input.eventCatalog } : {}),
     ...(input.cache ? { cache: input.cache } : {}),
+    ...(input.deepSkyImages ? { deepSkyImages: input.deepSkyImages } : {}),
   });
 }

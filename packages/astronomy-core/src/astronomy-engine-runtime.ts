@@ -18,6 +18,7 @@ export const Spherical: AstronomyEngine["Spherical"] = engine.Spherical;
 export const VectorFromSphere: AstronomyEngine["VectorFromSphere"] = engine.VectorFromSphere;
 export const RotateVector: AstronomyEngine["RotateVector"] = engine.RotateVector;
 export const Rotation_EQJ_EQD: AstronomyEngine["Rotation_EQJ_EQD"] = engine.Rotation_EQJ_EQD;
+export const Rotation_EQJ_HOR: AstronomyEngine["Rotation_EQJ_HOR"] = engine.Rotation_EQJ_HOR;
 export const EquatorFromVector: AstronomyEngine["EquatorFromVector"] = engine.EquatorFromVector;
 export const Illumination: AstronomyEngine["Illumination"] =
   engine.Illumination;

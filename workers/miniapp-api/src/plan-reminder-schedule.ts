@@ -110,15 +110,15 @@ export function publicReminderStatus(
     return result("SKIPPED", "DEPARTURE_EXPIRED");
   if ((row.state === "WAITING_AUTHORIZATION" || row.state === "SCHEDULED") && row.triggerAtUtc && Date.parse(row.triggerAtUtc) <= now.getTime())
     return result("SKIPPED", "TRIGGER_MISSED");
-  if (row.state === "WAITING_AUTHORIZATION" && !capabilityConfigured)
-    return result("CAPABILITY_UNAVAILABLE", "TEMPLATE_NOT_CONFIGURED");
+  if ((row.state === "WAITING_AUTHORIZATION" || row.state === "SCHEDULED") && !capabilityConfigured)
+    return result("CAPABILITY_UNAVAILABLE", "DELIVERY_NOT_CONFIGURED");
   const state = row.state === "WAITING_AUTHORIZATION" ? "AUTHORIZATION_REQUIRED"
     : row.state === "UNSCHEDULABLE" || row.state === "CANCELED" ? "SKIPPED"
     : row.state;
   const reasons = new Set([
     "USER_DID_NOT_REQUEST", "DEPARTURE_TIME_REQUIRED", "AUTHORIZATION_NOT_GRANTED",
     "WAITING_FOR_TRIGGER", "DELIVERED", "TRIGGER_MISSED", "DEPARTURE_EXPIRED",
-    "PROVIDER_REJECTED", "PROVIDER_OUTCOME_UNKNOWN",
+    "PROVIDER_REJECTED", "PROVIDER_OUTCOME_UNKNOWN", "PROVIDER_ACCEPTED", "PROVIDER_NOT_ATTEMPTED",
   ]);
   const reason = reasons.has(row.reason) ? row.reason : "PROVIDER_OUTCOME_UNKNOWN";
   return result(state, reason as PlanReminderNotificationStatus["reason"]);

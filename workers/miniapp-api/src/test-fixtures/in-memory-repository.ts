@@ -43,6 +43,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   #spots: readonly SpotSummary[];
   #users = new Set<UserId>();
   #wechatUsers = new Map<string, UserId>();
+  #deliveryIdentities = new Map<UserId, { appId: string; ciphertext: string }>();
   #sessions = new Map<string, { userId: UserId; expiresAt: string }>();
   #library = new InMemoryLibraryStore();
   #contributions = new InMemoryContributionStore();
@@ -59,6 +60,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   resetForAcceptance() {
     this.#users.clear();
     this.#wechatUsers.clear();
+    this.#deliveryIdentities.clear();
     this.#sessions.clear();
     this.#library.reset();
     this.#contributions.reset();
@@ -131,6 +133,17 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     return userId;
   }
 
+  async saveWechatDeliveryIdentity(input: { userId: UserId; identityDigest: string; appId: string; ciphertext: string }) {
+    if (!this.#users.has(input.userId) || this.#wechatUsers.get(input.identityDigest) !== input.userId)
+      throw new Error("wechat_delivery_identity_account_unavailable");
+    this.#deliveryIdentities.set(input.userId, { appId: input.appId, ciphertext: input.ciphertext });
+  }
+
+  async getWechatDeliveryIdentity(userId: UserId, appId: string): Promise<string | null> {
+    const stored = this.#deliveryIdentities.get(userId);
+    return stored?.appId === appId ? stored.ciphertext : null;
+  }
+
   async createSession(input: {
     userId: UserId;
     tokenDigest: string;
@@ -157,6 +170,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     for (const [intentId, item] of this.#formalUploadIntents) if (item.userId === userId) this.#formalUploadIntents.delete(intentId);
     for (const key of this.#formalUploadReceipts.keys()) if (key.startsWith(`${userId}|`)) this.#formalUploadReceipts.delete(key);
     this.#users.delete(userId);
+    this.#deliveryIdentities.delete(userId);
     this.#reminderSchedules.delete(userId);
     this.#avatarObjects.delete(userId);
     for (const [identity, value] of this.#wechatUsers)

@@ -25,10 +25,12 @@ import {
   type SemanticIconName,
 } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
+import { SourceAttribution } from "@/components/source-attribution";
 import { SelectedCardStar } from "@/components/selected-card-star";
 import { FilterSheet } from "@/components/filter-sheet";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useMapForecastQuery } from "@/hooks/use-forecast-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
@@ -217,7 +219,7 @@ export function MapSearchSurface() {
     }
   }, [contextQuery.data?.data, pageVisible, observationContext, mapResetVersion, setObservationContext]);
 
-  const scene = useResourceQuery({
+  const scene = useMapForecastQuery({
     queryKey: [
       "search-scene",
       activeContext?.contextId,
@@ -286,6 +288,8 @@ export function MapSearchSurface() {
       (group) => scene.data?.data.filterEvidence?.[spot.spotId]?.[group].state === "UNKNOWN",
     ),
   );
+  const expiredEmptyFilter = formalSpots.length === 0 && activeFilterGroups.includes("LESS_CLOUD") &&
+    Date.parse(scene.data?.data.forecastValidUntil ?? "") <= Date.now();
   const searchState: PageState = contextQuery.isError
     ? isPermissionError(contextQuery.error)
       ? "PERMISSION_DENIED"
@@ -296,6 +300,7 @@ export function MapSearchSurface() {
         ? isPermissionError(scene.error ?? placeSearch.error)
           ? "PERMISSION_DENIED"
           : "ERROR"
+        : expiredEmptyFilter ? "PARTIAL"
         : formalSpots.length === 0 && candidates.length === 0 && ordinaryPlaces.length === 0
           ? "EMPTY"
           : scene.data?.dataState === "STALE_USABLE" || placeSearch.data?.dataState === "STALE_USABLE"
@@ -615,6 +620,8 @@ export function MapSearchSurface() {
                 (contextQuery.isError ? errorMessage(contextQuery.error) : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
                 (isOfflineError(contextQuery.error ?? scene.error ?? placeSearch.error)
                   ? "网络不可用，请连接后重试。"
+                  : expiredEmptyFilter
+                    ? "少云筛选资料已到期，结果待核验；请刷新资料。"
                   : searchState === "EMPTY"
                     ? "没有匹配的正式观星点；可移动地图或换一个名称。"
                     : searchState === "PARTIAL"
@@ -639,7 +646,7 @@ export function MapSearchSurface() {
         </View>
 
           <View className="spot-search-result-summary">
-            <Text className="type-caption">{formalSpots.length} 个{hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点</Text>
+            <Text className="type-caption">{expiredEmptyFilter ? "筛选结果待核验" : `${formalSpots.length} 个${hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点`}</Text>
           </View>
           <View className="spot-search-partition">
             <Button className="spot-search-partition__toggle" aria-expanded={wantedOpen} onClick={() => setWantedOpen((value) => !value)}>
@@ -658,9 +665,10 @@ export function MapSearchSurface() {
               <SemanticIcon name={otherOpen ? "chevron-up" : "chevron-down"} />
             </Button>
             {otherOpen ? (
-              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={scene.data?.data.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">没有其他符合或待核验的观星点。</Text>
+              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={scene.data?.data.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />) : <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text>
             ) : null}
           </View>
+          {activeFilterGroups.includes("LESS_CLOUD") ? <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
         </ScrollView>
       </View>
       {filterSheetOpen ? <FilterSheet {...(scene.data ? { capabilities: scene.data.data.filterCapabilities.byGroup } : {})} initialCategory={filterCategory} /> : null}

@@ -19,7 +19,7 @@ function harness() {
     useState: () => [active, (value: boolean) => { active = value; }],
     useEffect(fn: () => void, dependencies: unknown[]) { if (!previous || dependencies.some((value, index) => value !== previous![index])) fn(); previous = dependencies; },
     useDidHide(fn: () => void) { hide = fn; }, useDidShow(fn: () => void) { show = fn; },
-    useResourceQuery(value: any) { options = value; return query; }, useAppStore: () => notify,
+    useAirQualityQuery(value: any) { options = value; return query; }, useAppStore: () => notify,
     getSpotAirQuality() {}, airQualityState, Date: TestDate, calendarDateInTimezone, clockTimeInTimezone,
     Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", Provenance: "Provenance", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
     React: { createElement: (type: any, props: any, ...children: any[]) => typeof type === "function" ? type(props) : ({ type, props, children }) },
@@ -47,7 +47,7 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
   h.render(); assert.equal(h.notifications.length, 1);
   assert.equal(h.options.refetchInterval, 60_000);
   h.hide(); h.render(); assert.equal(h.options.enabled, false);
-  h.show(); h.render(); assert.equal(h.options.enabled, true); assert.equal(h.retries, 2);
+  h.show(); h.render(); assert.equal(h.options.enabled, true); assert.equal(h.retries, 1, "resume refresh belongs to the shared query hook");
 });
 
 test("unsupported AQ emits no error, changing spot rejects old readings and pending proposal does not query", () => {

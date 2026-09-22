@@ -214,6 +214,14 @@
 .map-stage--analysis-focused .map-feedback-column {
   top: 16rpx;
 }
+.map-source-attribution {
+  pointer-events: auto;
+  // Required credits share the feedback column, but must leave its action rail usable.
+  margin-right: calc(var(--target-min) + 8Px);
+  padding: 4Px 8Px;
+  background: var(--surface);
+  border-radius: var(--radius-control);
+}
 .map-status:empty {
   display: none;
 }

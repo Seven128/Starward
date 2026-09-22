@@ -1,10 +1,11 @@
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { useEffect, useRef, useState } from "react";
+import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import type { NotificationRecord } from "@/state/notification";
 import { selectNotification, selectNotifications } from "@/state/notification";
 import { useAppStore } from "@/state/app-store";
 import { floatingNotificationNodeId, useFloatingNotificationVisibility } from "./notification-visibility";
+import { nativeNavigationInsets } from "@/theme/native-metrics";
 
 const ICON: Readonly<Record<NotificationRecord["tone"], string>> = {
   error: "!",
@@ -167,15 +168,21 @@ export function NotificationRegion({
 
 export function FloatingNotificationHost() {
   const [visible, setVisible] = useState(true);
+  const [safeTop, setSafeTop] = useState(() => nativeNavigationInsets().safeTop);
   const firstNodeId = useAppStore(state => {
     const first = selectNotifications(state.notifications, "floating")[0];
     return first ? floatingNotificationNodeId(first) : "";
   });
-  useDidShow(() => setVisible(true));
+  useDidShow(() => {
+    setSafeTop(nativeNavigationInsets().safeTop);
+    setVisible(true);
+  });
   useDidHide(() => setVisible(false));
+  useResize(() => setSafeTop(nativeNavigationInsets().safeTop));
   if (!visible) return null;
   return (
-    <View className="notification-host" aria-label="全局通知">
+    <View className="notification-host" aria-label="全局通知"
+      style={{ ...(safeTop === undefined ? {} : { "--notification-top": `${safeTop}px` }) } as CSSProperties}>
       <ScrollView className="notification-host__scroll" scrollY enhanced showScrollbar={false} scrollIntoView={firstNodeId}>
         <NotificationRegion placement="floating" />
       </ScrollView>

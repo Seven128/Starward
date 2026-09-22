@@ -139,7 +139,7 @@ export async function buildOpenNgcMessierDeepSkyCatalog() {
     schemaVersion: "opengc-messier-deep-sky-manifest-v1",
     catalogVersion: pack.catalogVersion,
     source: {
-      provider: "OpenNGC contributors",
+      provider: "OpenNGC — Mattia Verga and contributors",
       release: "v20260501",
       commit: OPENNGC_COMMIT,
       sourceUrl: SOURCE_URL,
@@ -154,6 +154,7 @@ export async function buildOpenNgcMessierDeepSkyCatalog() {
       includedOpenNgcTypes: [...INCLUDED_TYPES.keys()],
       kinds: ["GALAXY", "NEBULA"],
     },
+    modifications: ["Starward 从指定 OpenNGC 版本筛选 51 个带 Messier 标识的星系／星云，统一类型和名称字段，将赤经／赤纬转换为十进制度并重排为 JSON；派生目录继续按 CC BY-SA 4.0 提供。"],
     rowCount: rows.length,
     rowOrder: "Messier number ascending",
     derivedAssetSha256: hash(packText),

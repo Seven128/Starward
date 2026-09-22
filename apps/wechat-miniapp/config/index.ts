@@ -11,6 +11,7 @@ const repoRoot = path.resolve(here, "../../..");
 const sharedSourceInclude = [
   path.resolve(repoRoot, "packages/miniapp-contracts/src"),
   path.resolve(repoRoot, "packages/coordinate-system/src"),
+  path.resolve(repoRoot, "packages/astronomy-core/src/stellar-vectors.ts"),
 ];
 
 const adoptedBRuntimeIconRoot = path.resolve(
@@ -42,6 +43,9 @@ const retainedLegacyIconFiles = [
   "tab-my-selected-night.png", "tab-my-selected-observation.png",
   "trash-2-night.svg", "trash-2-observation.svg", "wifi-off-night.svg",
   "wifi-off-observation.svg",
+  "wind-night.svg", "wind-observation.svg",
+  "telescope-night.svg", "telescope-observation.svg",
+  "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
 ] as const;
 const bIconFiles = {
   main: [
@@ -64,6 +68,7 @@ const bIconFiles = {
     "terrain--day--default.png", "clock--day--default.png",
   ],
   content: [
+    "cloud--day--default.png", "wind--day--default.png", "telescope--day--default.png",
     "account-user--day--default.png", "arrow-left--day--default.png",
     "bell--day--default.png", "bell-off--day--default.png",
     "calendar--day--default.png", "check--day--default.png",
@@ -164,6 +169,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       path.resolve(here, "./accessibility-template.cjs"),
     ],
     alias: {
+      "@starward/astronomy-core/stellar-vectors$": path.resolve(repoRoot, "packages/astronomy-core/src/stellar-vectors.ts"),
       "@": path.resolve(here, "../src"),
       react: path.resolve(here, "../node_modules/react"),
       "@tarojs/plugin-framework-react": path.resolve(
@@ -209,10 +215,22 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "assets/icons", file),
         })),
+        ...["night", "observation"].map((theme) => ({
+          from: path.resolve(here, "../src/assets/semantic", `five-point-star-${theme}.svg`),
+          to: path.resolve(here, "..", outputRoot, "assets/semantic", `five-point-star-${theme}.svg`),
+        })),
         {
           from: path.resolve(here, "../src/assets/media"),
           to: path.resolve(here, "..", outputRoot, "sky/assets/media"),
         },
+        ...["twgl", "quaternion"].map((name) => ({
+          from: path.resolve(here, `../src/assets/licenses/${name}.json`),
+          to: path.resolve(here, "..", outputRoot, `sky/assets/licenses/${name}.json`),
+        })),
+        ...["noble-hashes", "runtime-dependencies"].map((name) => ({
+          from: path.resolve(here, `../src/assets/licenses/${name}.json`),
+          to: path.resolve(here, "..", outputRoot, `assets/licenses/${name}.json`),
+        })),
         ...adoptedBIconCopyPatterns(outputRoot),
       ],
       options: {},

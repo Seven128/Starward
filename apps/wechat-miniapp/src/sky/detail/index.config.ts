@@ -1,4 +1,5 @@
 export default definePageConfig({
   navigationStyle: "custom",
-  backgroundColor: "#11120F",
+  navigationBarTextStyle: "white",
+  backgroundColor: "#080D17",
 });

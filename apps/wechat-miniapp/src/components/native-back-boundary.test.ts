@@ -22,7 +22,9 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
   assert.match(source("../content/settings/index.tsx"), /NativeBackBoundary active=\{Boolean\(sheet\)\} onBack=\{closeSheet\}/u);
   assert.match(source("../pages/map/search-page.tsx"), /NativeBackBoundary active=\{filterSheetOpen\} onBack=\{cancelFilters\}/u);
   assert.match(source("./observation-date-control.tsx"), /<NativeBackBoundary[\s\S]*active=\{open\}[\s\S]*if \(!busy\) onOpenChange\(false\)/u);
-  assert.match(source("../features/sky/spot-sky-page.tsx"), /active=\{Boolean\(selectedTargetId \|\| selectedCatalogObject \|\| catalogPickChoices\.length\)\}[\s\S]*onBack=\{goBack\}/u);
+  const sky = source("../features/sky/spot-sky-page.tsx");
+  assert.equal(sky.match(/<NativeBackBoundary\b/gu)?.length, 1, "date and object disclosures share one native owner");
+  assert.match(sky, /active=\{Boolean\(datePickerOpen \|\| selectedTargetId \|\| selectedCatalogObject \|\| catalogPickChoices\.length\)\}[\s\S]*onBack=\{goBack\}/u);
 });
 
 test("the astronomical event modal keeps its native Back layer outside the visible RootPortal", () => {

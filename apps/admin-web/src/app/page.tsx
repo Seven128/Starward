@@ -686,7 +686,7 @@ function AuthGate({
           <span>actor identity</span>
           <input
             required
-            pattern="admin:[A-Za-z0-9._\\x2d]{1,64}"
+            pattern={"admin:[A-Za-z0-9._\\x2d]{1,64}"}
             value={actor}
             onChange={(event) => onActor(event.target.value)}
             placeholder="admin:your-name"

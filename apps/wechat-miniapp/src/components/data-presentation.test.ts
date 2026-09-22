@@ -18,7 +18,7 @@ function load(path: string, name: string, context: object = {}, mutate = (source
     .map(node => node.getText(source).replace(/^export /u, "")).join("\n");
   return vm.runInNewContext(ts.transpileModule(body + `\n${name};`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
-  }).outputText, { React, Text: "Text", View: "View", SoftButton: "SoftButton", SemanticIcon: "SemanticIcon",
+  }).outputText, { React, Text: "Text", View: "View", SoftButton: "SoftButton", SemanticIcon: "SemanticIcon", SourceAttribution: "SourceAttribution",
     useState: (value: unknown) => [value, () => {}], useRef: (value: unknown) => ({ current: value }), ...context });
 }
 const sample = Object.freeze({ id: "sample", kind: "TEST_FIXTURE", state: "SAMPLE_DATA", provider: "内部测试资料",
@@ -61,6 +61,9 @@ test("internal provenance is absent from cards and summaries without losing real
   assert.equal(sample.kind, "TEST_FIXTURE");
   assert.equal(sample.state, "SAMPLE_DATA");
   assert.deepEqual(sample.limitations, ["仅测试"]);
+  const unknownTime = text(provenance({ source: { ...actual, retrievedAt: null } }));
+  assert.match(unknownTime, /公开资料库.*获取时间未知/s);
+  assert.doesNotMatch(unknownTime, /1970|NaN|Invalid/);
 });
 
 test("map forecast summary never leaks fixture provider or fetch time, and keeps real attribution", () => {

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { AstronomicalEventArticle, AstronomicalEventOccurrence, SourceSummary } from "@starward/miniapp-contracts";
 import type { AstronomicalEventCatalogOwner, EventCatalogActiveIdentity } from "./astronomical-event-catalog-owner.ts";
 import type { EventArticleRightsConfirmation } from "./event-article-policy.ts";
-import { validateEventArticle } from "./event-article-policy.ts";
+import { validateEventArticle, validateEventArticleLicense } from "./event-article-policy.ts";
 
 export interface EventArticleImport {
   occurrenceId: string;
@@ -26,7 +26,7 @@ export async function importEventArticle(owner: AstronomicalEventCatalogOwner, i
   if (input.article !== null) {
     const config = input.rights ? await owner.store.getSourceConfig(input.rights.registeredSourceId) : null;
     if (!config?.enabled) throw new Error("event_article_registered_source_required");
-    if (typeof input.license !== "string" || !input.license.trim() || input.license.length > 300) throw new Error("event_article_license_invalid");
+    validateEventArticleLicense(input.license);
     const id = `source:article:${createHash("sha256").update(`${input.occurrenceId}:${input.article?.originalUrl}`).digest("hex").slice(0, 24)}`;
     article = { ...input.article, sourceId: id };
     validateEventArticle(article);

@@ -49,6 +49,33 @@ function largeEnvelope(size = 707_203) {
   return envelope({ sky: "a星😀".repeat(Math.floor((size - Buffer.byteLength(JSON.stringify(base))) / 8)) });
 }
 
+test("Geo-bearing recent responses are purged from both stored formats and cannot be stored again", async () => {
+  const key = "spot-recent-weather:spot:a:/v2/spots/spot:a/recent-weather:anonymous";
+  for (const format of [1, 2]) {
+    const storage = storageFixture();
+    if (format === 1) {
+      storage.data.set(RESPONSE_CACHE_STORAGE_KEY, { schemaVersion: 1, entries: [
+        [key, { storedAt: clock, envelope: envelope({ region: "restricted-geo" }) }],
+      ] });
+    } else {
+      const prior = createResponseCache(storage, () => clock);
+      prior.set("old-key", envelope({ region: "restricted-geo" }));
+      prior.set("keep:weather", envelope({ precipitation: 2 }));
+      await prior.flush();
+      const manifest = storage.data.get(RESPONSE_CACHE_STORAGE_KEY) as any;
+      manifest.entries = manifest.entries.map(([name, entry]: any) => [name === "old-key" ? key : name, entry]);
+    }
+    const current = createResponseCache(storage, () => clock);
+    current.load();
+    assert.equal(current.get(key), undefined);
+    current.set(key, envelope({ region: "restricted-geo-new" }));
+    await current.flush();
+    assert.equal(current.get(key), undefined);
+    assert.doesNotMatch(JSON.stringify([...storage.data]), /restricted-geo|spot-recent-weather/);
+    if (format === 2) assert.deepEqual(current.get("keep:weather")?.envelope.data, { precipitation: 2 });
+  }
+});
+
 test("byte accounting handles UTF-8, surrogate pairs and serialized storage escaping", () => {
   for (const value of ["ascii", "观星", "😀", "a\ud800b", "\udfff", '"\\\n']) {
     assert.equal(utf8Bytes(value), Buffer.byteLength(value));

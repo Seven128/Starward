@@ -523,10 +523,12 @@
 .plan-section-caption { font-size: 10Px; }
 .plan-section-symbol { margin-right: 7Px; color: var(--accent-warm); font-size: 16Px; font-weight: 400; }
 .plan-reference__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 3Px 12Px; border-radius: 9Px; background: var(--surface-subtle); }
-.plan-reference__facts > view { display: flex; min-height: 48Px; padding: 8Px 0; flex-direction: column; justify-content: center; gap: 3Px; }
-.plan-reference__facts > view > text:first-child { color: var(--text-secondary); font-size: 10Px; }
-.plan-reference__facts > view > text:last-child { color: var(--text-primary); font-size: 12Px; font-weight: 500; }
-.plan-reference__facts > view:first-child { grid-column: 1 / -1; }
+.plan-reference__facts > view { display: flex; min-height: 48Px; padding: 8Px 0; flex-direction: column; justify-content: flex-start; gap: 3Px; }
+.plan-reference__facts > view > text { color: var(--text-primary); font-size: 12Px; font-weight: 500; }
+.plan-reference__heading, .plan-reference__label { display: flex; align-items: center; gap: 7Px; }
+.plan-reference__label { color: var(--text-secondary); font-size: 10Px; }
+.plan-reference__heading .semantic-icon, .plan-reference__label .semantic-icon { flex: 0 0 var(--icon-small); width: var(--icon-small); height: var(--icon-small); }
+.plan-reference__facts { column-gap: 12Px; }
 .plan-route__card { padding: 0; border: 0; border-radius: 0; background: transparent; }
 .plan-route__node { grid-template-columns: 20Px minmax(0, 1fr) max-content; gap: 8Px; min-height: 62Px; padding-bottom: 12Px; }
 .plan-route__node:not(:last-child)::before { top: 12Px; left: 5Px; width: 1Px; }

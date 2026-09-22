@@ -443,7 +443,7 @@ test("generated mode icons exactly match their checked manifest", async () => {
     manifest.authorityTarget,
     "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
   );
-  assert.equal(manifest.assets.length, 54);
+  assert.equal(manifest.assets.length, 66);
   const modeColors = { day: "#282b29", night: "#f5f3ec", observation: "#ff6b58" };
   for (const name of [
     "chevron-right",
@@ -458,6 +458,10 @@ test("generated mode icons exactly match their checked manifest", async () => {
     "eye",
     "bulb",
     "cloud",
+    "wind",
+    "telescope",
+    "sun",
+    "moon",
   ]) {
     const source = await readFile(path.join(iconRoot, `${name}.svg`), "utf8");
     for (const [mode, color] of Object.entries(modeColors)) {

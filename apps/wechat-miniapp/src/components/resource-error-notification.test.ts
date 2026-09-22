@@ -19,14 +19,15 @@ function effect(path: string, marker: string) {
 }
 
 test("map cold data failures emit a floating info while inactive and permission states stay quiet", () => {
-  const run = effect("../pages/map/index.tsx", "map-scene-cold-failed");
+  const effectRun = effect("../pages/map/index.tsx", "map-scene-failed");
+  const run = (context: Record<string, unknown>) => effectRun({ mapContextFailed: false, mapSceneFailed: true, ...context });
   const notices: any[] = [], notify = (value: any) => notices.push(value);
   run({ pageVisible: false, pageState: "ERROR", activeContext: {}, notify });
   run({ pageVisible: true, pageState: "PERMISSION_DENIED", activeContext: {}, notify });
   assert.equal(notices.length, 0);
   run({ pageVisible: true, pageState: "ERROR", activeContext: {}, notify });
   assert.equal(JSON.stringify(notices[0]), JSON.stringify({ owner: "map", placement: "floating", tone: "info", title: "地图数据异常",
-    body: "观星点数据暂时无法读取，可在页面中重试。", dedupeKey: "map-scene-cold-failed" }));
+    body: "观星点数据暂时无法更新，可在页面中重试。", dedupeKey: "map-scene-failed" }));
 });
 
 test("spot resource notifications stay on the visible owning page and replay on return", () => {
@@ -182,4 +183,12 @@ test("shared formal spot lookup reports cache fallback only on its visible owner
   assert.match(readFileSync(new URL("./formal-spot-field.tsx", import.meta.url), "utf8"), /result\.isError \? <StatusPanel state="EMPTY"/);
   assert.match(readFileSync(new URL("../pages/map/search-page.tsx", import.meta.url), "utf8"),
     /searchState !== "READY" && !\(searchState === "STALE" && staleSearchResource\)/);
+});
+
+test("an open event modal cannot publish a late error from a hidden page", () => {
+  const run = effect("./astronomical-event-modal.tsx", 'title: "天文事件数据异常"');
+  const notices: unknown[] = [];
+  const context = { open: true, detailId: "event:1", previewDate: "2026-09-16", detailFailed: true, catalogFailed: false, notify: (notice: unknown) => notices.push(notice) };
+  run({ ...context, pageVisible: false }); assert.equal(notices.length, 0);
+  run({ ...context, pageVisible: true }); assert.equal(notices.length, 1);
 });

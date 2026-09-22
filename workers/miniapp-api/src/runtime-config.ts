@@ -4,6 +4,7 @@ import {
   type FeatureFlags,
 } from "@starward/miniapp-contracts";
 import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog.ts";
+import { validateDeliveryIdentityKey } from "./wechat-delivery-identity.ts";
 
 export type ReleaseProfile = "LOCAL" | "TRIAL" | "COMMERCIAL";
 export type StorageMode = "MEMORY_TEST" | "POSTGRES";
@@ -13,6 +14,7 @@ export type QWeatherForecastHours = number;
 export type RouteProviderMode = "DISABLED";
 export type PlaceSearchProviderMode = "DISABLED";
 export type MediaStorageMode = "LOCAL_FILESYSTEM" | "DISABLED";
+export type EventArticleDnsMode = "SYSTEM" | "CLOUDFLARE_DOH";
 
 export interface MiniappRuntimeConfig {
   releaseProfile: ReleaseProfile;
@@ -41,10 +43,13 @@ export interface MiniappRuntimeConfig {
     appId: string | null;
     appSecret: string | null;
     sessionSecret: string;
+    deliveryIdentityKey?: string | null;
+    subscriptionTemplateId?: string | null;
   };
   trialRegion: string;
   eventCatalogVersion: string;
   eventCatalogCheckIntervalDays: number;
+  eventArticleDnsMode: EventArticleDnsMode;
   darkSkyDatasetVersion: string;
   skyCatalogVersion: string;
   astronomyAlgorithmVersion: string;
@@ -160,7 +165,16 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     appId: value("WECHAT_MINIAPP_APP_ID"),
     appSecret: value("WECHAT_MINIAPP_APP_SECRET"),
     sessionSecret: value("MINIAPP_SESSION_SECRET") ?? "",
+    deliveryIdentityKey: value("WECHAT_DELIVERY_IDENTITY_KEY"),
+    subscriptionTemplateId: value("WECHAT_REMINDER_TEMPLATE_ID"),
   };
+  if (wechat.deliveryIdentityKey) {
+    validateDeliveryIdentityKey(wechat.deliveryIdentityKey);
+    if (wechat.deliveryIdentityKey === wechat.sessionSecret)
+      throw new Error("runtime_config_invalid:wechat_delivery_key_must_be_independent");
+  }
+  if (wechat.subscriptionTemplateId && !/^[A-Za-z0-9_-]{1,128}$/u.test(wechat.subscriptionTemplateId))
+    throw new Error("runtime_config_invalid:wechat_reminder_template_id");
   const darkSkyDatasetVersion =
     value("MINIAPP_DARK_SKY_DATASET_VERSION") ?? "UNAVAILABLE";
   const eventCatalogVersion =
@@ -224,6 +238,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     trialRegion: value("MINIAPP_TRIAL_REGION") ?? "GREATER_BAY_AREA_3H",
     eventCatalogVersion,
     eventCatalogCheckIntervalDays: boundedInteger("MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS", 7, 1, 30),
+    eventArticleDnsMode: oneOf("MINIAPP_EVENT_ARTICLE_DNS_MODE", value("MINIAPP_EVENT_ARTICLE_DNS_MODE"), ["SYSTEM", "CLOUDFLARE_DOH"], "SYSTEM"),
     darkSkyDatasetVersion,
     skyCatalogVersion:
       value("MINIAPP_SKY_CATALOG_VERSION") ?? "iau-bright-targets-2026.1",
@@ -273,6 +288,7 @@ export function createTestRuntimeConfig(
     trialRegion: "TEST",
     eventCatalogVersion: ASTRONOMICAL_EVENT_CATALOG_VERSION,
     eventCatalogCheckIntervalDays: 7,
+    eventArticleDnsMode: "SYSTEM",
     darkSkyDatasetVersion: "test-dark-sky",
     skyCatalogVersion: "test-sky-catalog",
     astronomyAlgorithmVersion: "test-astronomy",

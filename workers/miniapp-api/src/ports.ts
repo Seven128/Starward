@@ -66,6 +66,7 @@ export interface CanonicalWeatherHour {
 }
 
 export interface CanonicalWeatherAlert {
+  senderName?: string | null;
   id: string;
   headline: string;
   description: string;
@@ -218,6 +219,8 @@ export interface MiniappRepositoryPort {
   getContributionFormalBaseline(spotId: SpotId): Promise<ContributionFormalBaseline | null>;
   ensureUser(userId: UserId): Promise<void>;
   findOrCreateWechatUser(identityDigest: string): Promise<UserId>;
+  saveWechatDeliveryIdentity(input: { userId: UserId; identityDigest: string; appId: string; ciphertext: string }): Promise<void>;
+  getWechatDeliveryIdentity(userId: UserId, appId: string): Promise<string | null>;
   createSession(input: {
     userId: UserId;
     tokenDigest: string;

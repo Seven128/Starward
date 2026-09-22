@@ -459,17 +459,20 @@ into the environment-owned API lane only when the API Host, project ID and
 credential ID are available; never paste the private key into the provider
 console, repository or workflow logs.
 
-The tracked API example is the owner-only `TRIAL` staging profile: QWeather is
-the primary/official-alert provider, its Weather API v1 hourly forecast is
-explicitly limited to the free-entitlement-compatible 24-hour window, and
-Open-Meteo non-commercial access is limited to layered-cloud/model evidence. Do
-not add a paid QWeather assumption or an Open-Meteo commercial key to staging. A
-production descriptor instead requires `QWEATHER_FORECAST_HOURS=72`, selects
-`MINIAPP_OPEN_METEO_EVIDENCE_MODE=OPEN_METEO_COMMERCIAL` and supplies its own
-`OPEN_METEO_API_KEY`; the validator rejects either horizon or licence profile
-in the wrong environment. Provider failure remains an attributable
-degraded/unavailable state and never enables fixtures or a hidden horizon
-downgrade.
+The tracked API example remains an owner-only `TRIAL` staging profile. QWeather
+is the Mini Program's sole forecast, official-alert, air-quality and recent
+regional-weather provider. Both environments accept an explicitly configured
+`QWEATHER_FORECAST_HOURS` from 1 through 240; the example requests 240, which is
+not evidence of the account's entitlement or actual returned coverage. Match
+the configured horizon to the authorized service and retain partial coverage
+honestly. The credential must permit Weather Forecast, Weather Warning, Air
+Quality, GeoAPI and Time Machine for the selected capabilities, with the
+environment's actual request-origin restrictions. Enabling a credential scope
+does not purchase data or establish commercial/public-release permission.
+Open-Meteo evidence and its API key are no longer runtime dependencies; do not
+provision them for this migration. Provider failure remains attributable
+degraded/unavailable data and never enables fixtures or a hidden source switch.
+See [the adopted source and commercial conditions](../../project_context/external-capabilities.md).
 
 Generate a candidate descriptor, then validate it before Docker is touched:
 

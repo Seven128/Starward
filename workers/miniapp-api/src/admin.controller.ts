@@ -169,7 +169,7 @@ export class AdminController {
       !source.title ||
       !source.license ||
       !source.precision ||
-      !Number.isFinite(Date.parse(source.retrievedAt)) ||
+      !Number.isFinite(Date.parse(source.retrievedAt ?? "")) ||
       (["OPEN_DATA", "HISTORICAL_RECORD"].includes(source.kind) &&
         !/^https:\/\//u.test(source.sourceUrl))
     )

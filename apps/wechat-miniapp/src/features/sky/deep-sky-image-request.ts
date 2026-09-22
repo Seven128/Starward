@@ -7,6 +7,14 @@ export interface DeepSkyImageAsset {
   tempFilePath: string;
 }
 
+export interface OwnedDeepSkyImageAsset extends DeepSkyImageAsset {
+  /** The page releases this file after neither pending nor decoded imagery uses it. */
+  release(): void;
+}
+
+let requestSequence = 0;
+const requestSession = Date.now().toString(36);
+
 export interface DeepSkyImageRequestOptions {
   url: string;
   responseType: "arraybuffer";
@@ -29,19 +37,32 @@ export interface DeepSkyImageRequestInput {
     catch?: (handler: (error: unknown) => unknown) => unknown;
   };
   writeFile(options: DeepSkyImageWriteOptions): void;
-  onReady(asset: DeepSkyImageAsset): void;
+  removeFile(path: string): void;
+  onReady(asset: OwnedDeepSkyImageAsset): void;
   onError(): void;
   onCancel?(): void;
 }
 
 export function startDeepSkyImageRequest(input: DeepSkyImageRequestInput) {
   let active = true;
+  let written = false, released = false;
+  // Native writes cannot be aborted. A canceled write must never share a file
+  // with its replacement, even for the same object and image level.
+  const tempFilePath = input.asset.tempFilePath.replace(/\.jpg$/i, "") + `-${requestSession}-${++requestSequence}.jpg`;
+  const remove = () => {
+    if (!written) return;
+    written = false;
+    try { input.removeFile(tempFilePath); } catch { /* Best-effort owned cache cleanup. */ }
+  };
+  const release = () => { if (!released) { released = true; remove(); } };
   const fail = () => {
     if (!active) return;
     active = false;
+    release();
     input.onError();
   };
-  const task = input.request({
+  let task: ReturnType<DeepSkyImageRequestInput["request"]> | undefined;
+  try { task = input.request({
     url: input.url,
     responseType: "arraybuffer",
     success: (result) => {
@@ -59,28 +80,28 @@ export function startDeepSkyImageRequest(input: DeepSkyImageRequestInput) {
         fail();
         return;
       }
-      input.writeFile({
-        filePath: input.asset.tempFilePath,
+      try { input.writeFile({
+        filePath: tempFilePath,
         data: result.data,
         success: () => {
-          if (!active) return;
+          written = true;
+          if (!active || released) { remove(); return; }
           active = false;
-          input.onReady({ ...input.asset, fieldDegrees });
+          input.onReady({ ...input.asset, fieldDegrees, tempFilePath, release });
         },
-        fail,
-      });
+        fail: () => { written = true; remove(); fail(); },
+      }); } catch { written = true; remove(); fail(); }
     },
     fail,
-  });
+  }); } catch { fail(); }
   // Taro's RequestTask may also be Promise-like even when callbacks are used.
   // The callback owns product state; consume the duplicate rejection so one
   // native failure cannot escape as an unhandled promise rejection.
-  task.catch?.(() => undefined);
+  task?.catch?.(() => undefined);
 
   return () => {
     if (!active) return;
     active = false;
-    task.abort?.();
-    input.onCancel?.();
+    try { task?.abort?.(); } finally { release(); input.onCancel?.(); }
   };
 }
