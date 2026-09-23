@@ -105,6 +105,8 @@ export function FloatingNotification({ notification, onDismiss }: {
   const [paused, setPaused] = useState(false);
   const closingRef = useRef(false);
   const dismissRef = useRef(onDismiss);
+  const remainingVisibleMs = useRef(3000);
+  const wasVisible = useRef(false);
   dismissRef.current = onDismiss;
   const close = () => { closingRef.current = true; setClosing(true); };
   useEffect(() => () => {
@@ -113,10 +115,24 @@ export function FloatingNotification({ notification, onDismiss }: {
   }, []);
   useEffect(() => {
     // Floating notices are always transient; durable recovery stays inline with the failed task.
-    if (closing || paused || !visible) return;
+    if (!visible) {
+      wasVisible.current = false;
+      remainingVisibleMs.current = 3000;
+      return;
+    }
+    if (!wasVisible.current) {
+      wasVisible.current = true;
+      remainingVisibleMs.current = 3000;
+    }
+    if (closing || paused) return;
     let cancelled = false;
-    const timer = setTimeout(() => { if (!cancelled) close(); }, 3000);
-    return () => { cancelled = true; clearTimeout(timer); };
+    const startedAt = Date.now();
+    const timer = setTimeout(() => { if (!cancelled) close(); }, remainingVisibleMs.current);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      remainingVisibleMs.current = Math.max(0, remainingVisibleMs.current - (Date.now() - startedAt));
+    };
   }, [notification.action, closing, paused, visible]);
   useEffect(() => {
     if (!closing) return;
