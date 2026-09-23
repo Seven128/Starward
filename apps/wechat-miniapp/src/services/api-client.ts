@@ -409,7 +409,9 @@ async function request<T>(
         method,
         timeout: 10_000,
         header,
-        ...(options.body === undefined ? {} : { data: options.body }),
+        // WeChat's request transport can send a bodyless POST as invalid input.
+        // An empty object preserves the operation's no-payload contract.
+        ...(options.body === undefined ? (method === "POST" ? { data: {} } : {}) : { data: options.body }),
         success(response) {
           finish(() => {
             if (response.statusCode === 304 && cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence)) {
@@ -1054,6 +1056,29 @@ export async function getPlans(signal?: AbortSignal, expectedUserId?: string) {
   }, false, owner);
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开页面读取计划。");
   return result;
+}
+
+export async function createPlanShare(planId: string, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  if (session.userId !== owner) throw new Error("账号已变化，请重新打开计划。");
+  const result = await requestOperation("plan-share:" + planId, "planSharePost", {
+    auth: "REQUIRED", pathParams: { planId },
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开计划。");
+  return result;
+}
+
+export function getSharedPlan(token: string, signal?: AbortSignal) {
+  return requestOperation("shared-plan:" + token, "sharedPlanGet", {
+    auth: "NONE", cache: false, pathParams: { token }, ...(signal ? { signal } : {}),
+  }, false);
+}
+
+export function getSharedSpot(spotId: string, signal?: AbortSignal) {
+  return requestOperation("shared-spot:" + spotId, "sharedSpotGet", {
+    auth: "NONE", cache: false, pathParams: { spotId }, ...(signal ? { signal } : {}),
+  }, false);
 }
 
 const retryPlanSave = createPlanSaveRetry(Taro, () => idempotencyKey("plan-save"),

@@ -81,7 +81,7 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
       days.map(day => <View className="recent-weather__day" key={day.localDate}>
         <Text className="type-secondary">{day.localDate}</Text>
         <Text className="type-body">{recentWeatherFacts(day).join(" · ")}</Text>
-      </View>) : <StatusPanel state="EMPTY" detail="地区历史天气尚无可用记录。" />}
+      </View>) : failed ? <StatusPanel state="ERROR" detail="地区历史天气暂时无法获取。" recoveryLabel="重试近期天气" onRecover={() => liveFailed ? setFailedSpot(null) : void query.refetch()} /> : <StatusPanel state="EMPTY" detail="地区历史天气尚无可用记录。" />}
     {stale ? <Text className="type-caption">资料暂未刷新，请重试获取当前地区记录。</Text> : null}
     {implications.map(message => <Text className="type-caption" key={message}>{message}</Text>)}
     {!explanationOpen && days.length ? <SourceAttribution sources={envelope?.sources ?? []} /> : null}
@@ -92,6 +92,6 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
       {envelope?.sources.map(source => <Provenance key={source.id} source={source} />)}
       <Button className="recent-weather__close focus-ring" onClick={() => setExplanationOpen(false)}>收起说明</Button>
     </View> : null}
-    {failed || stale || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE" ? <SoftButton label="重试近期天气" onClick={() => liveFailed ? setFailedSpot(null) : void query.refetch()}>重试</SoftButton> : null}
+    {(days.length || !failed) && (failed || stale || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE") ? <SoftButton label="重试近期天气" onClick={() => liveFailed ? setFailedSpot(null) : void query.refetch()}>重试</SoftButton> : null}
   </View>;
 }

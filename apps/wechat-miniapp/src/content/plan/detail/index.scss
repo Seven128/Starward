@@ -551,10 +551,10 @@
 .plan-check--done .plan-check__box { border-color: var(--primary); background: var(--primary); color: var(--canvas); }
 .plan-check--done > text { color: var(--text-secondary); text-decoration: line-through; }
 .plan-notes > text { color: var(--text-secondary); font-size: 12Px; line-height: 1.8; white-space: pre-wrap; }
-.plan-actions { position: fixed; right: 0; bottom: 0; left: 0; z-index: 30; order: 7; display: flex; padding: 8Px 16Px max(8Px, env(safe-area-inset-bottom)); flex-direction: row; gap: 10Px; border-top: 1Px solid var(--border); background: var(--canvas); }
-.plan-actions .soft-button { min-height: 44Px; margin: 0; }
-.plan-actions .soft-button:first-child { width: 54Px; flex: 0 0 54Px; border: 0; background: transparent; color: var(--text-secondary); }
-.plan-actions .soft-button:last-child { flex: 1; border-radius: 8Px; }
+.plan-actions { position: fixed; right: 0; bottom: 0; left: 0; z-index: 30; order: 7; display: grid; grid-template-columns: minmax(0, 1fr) 72Px minmax(0, 1.45fr); padding: 8Px 16Px max(8Px, env(safe-area-inset-bottom)); gap: 10Px; border-top: 1Px solid var(--border); background: var(--canvas); }
+.plan-actions .soft-button { width: 100%; min-width: 0; min-height: 44Px; margin: 0; white-space: nowrap; }
+.plan-actions .soft-button:first-child { border: 0; background: transparent; color: var(--text-secondary); }
+.plan-actions .soft-button:last-child { border-radius: 8Px; }
 .plan-list--secondary { order: 8; }
 
 .plan-list--secondary {

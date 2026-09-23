@@ -35,18 +35,18 @@
   display: grid;
   grid-template-columns: var(--icon-medium) minmax(0, 1fr) var(--target-min);
   align-items: center;
-  gap: 14rpx;
-  padding: 18rpx 20rpx;
+  gap: 8Px;
+  padding: 8Px 8Px 8Px 12Px;
   border: 1rpx solid var(--border);
   border-left-width: 6rpx;
-  border-radius: 18rpx;
+  border-radius: 12Px;
   background: var(--surface-elevated);
   color: var(--text-primary);
 }
 .notification--floating {
   border: 0;
-  background: #fff;
-  color: #111;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
   box-shadow: var(--elevation-floating);
   pointer-events: auto;
   animation: notification-enter 160ms ease-out;
@@ -54,10 +54,6 @@
 .notification--floating .notification__dismiss,
 .notification--floating .notification__icon {
   color: inherit;
-}
-.theme-observation .notification--floating {
-  background: var(--surface-elevated);
-  color: var(--text-primary);
 }
 .notification--inline {
   width: 100%;
@@ -80,12 +76,16 @@
   grid-row: 1;
   width: var(--icon-medium);
   height: var(--icon-medium);
-  border-radius: 22rpx;
+  border-radius: 50%;
+  background: var(--surface-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid currentColor;
-  font-weight: 700;
+  border: 0;
+}
+.notification__icon .semantic-icon {
+  width: var(--icon-medium);
+  height: var(--icon-medium);
 }
 .notification--error .notification__icon {
   color: var(--danger);

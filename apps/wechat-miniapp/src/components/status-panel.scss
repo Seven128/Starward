@@ -6,3 +6,32 @@
   padding: 16rpx 20rpx;
   border-radius: 32rpx;
 }
+.status-panel--empty {
+  border: 0;
+  background: var(--surface-subtle);
+  align-items: center;
+  text-align: center;
+  gap: 8Px;
+  padding: 20Px 16Px;
+}
+.status-panel--empty-section {
+  min-height: 112Px;
+}
+.status-panel--empty-page {
+  min-height: 240Px;
+  justify-content: center;
+  background: transparent;
+}
+.status-panel__empty-icon {
+  width: 20Px;
+  height: 20Px;
+}
+.status-panel--empty .type-label {
+  color: var(--text-primary);
+}
+.status-panel--empty .type-caption {
+  color: var(--text-secondary);
+}
+.status-panel--error {
+  background: var(--surface-subtle);
+}

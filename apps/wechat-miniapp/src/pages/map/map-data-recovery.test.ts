@@ -95,7 +95,7 @@ test("Map empty/error panel keeps concise recovery instead of rendering provider
   let expression = "";
   const visit = (node: ts.Node) => {
     if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "StatusPanel" &&
-      node.getText(source).includes('state={pageState === "ERROR"')) {
+      node.getText(source).includes('state={pageState}')) {
       const detail = node.attributes.properties.find(item => ts.isJsxAttribute(item) && item.name.getText(source) === "detail") as ts.JsxAttribute;
       expression = (detail.initializer as ts.JsxExpression).expression!.getText(source);
     }

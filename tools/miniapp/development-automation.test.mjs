@@ -170,7 +170,7 @@ test("the actual warm entry tears down owned children/receipt on startup failure
     const expectedOutput = path.resolve(fileURLToPath(new URL("../../apps/wechat-miniapp/dist/weapp", import.meta.url)));
     host.stdout = { write: () => host.emit("SIGINT") };
     const sandbox = {
-      process: host, path, fileURLToPath, AbortController,
+      process: host, path, fileURLToPath, AbortController, nodeEnvironment: (_node, env) => env,
       Date: { now: () => now },
       developmentOptions, canListen: async () => true,
       realpath: async value => scenario === "redirected-output" && value === expectedOutput ? path.join(expectedOutput, "redirect") : value,
@@ -201,7 +201,7 @@ test("the actual warm entry tears down owned children/receipt on startup failure
     if (scenario === "signal") await run; else await assert.rejects(run);
     assert.deepEqual(stopped, started.map((_, index) => index + 1001), scenario);
     const earlyFailure = ["api-failure", "redirected-output"].includes(scenario);
-    assert.equal(cleanupCalls, earlyFailure ? 0 : 1);
+    assert.equal(cleanupCalls, earlyFailure ? 0 : 1, scenario);
     if (earlyFailure) {
       assert.equal(events.includes("reset"), false);
       assert.equal(events.includes("dev:miniapp:weapp"), false);

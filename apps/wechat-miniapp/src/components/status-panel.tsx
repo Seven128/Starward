@@ -1,6 +1,7 @@
 import { View, Text } from "@tarojs/components";
 import type { PageState } from "@starward/miniapp-contracts";
 import { SoftButton } from "./soft-button";
+import { SemanticIcon } from "./semantic-asset";
 
 const TITLES: Record<PageState, string> = {
   INITIAL: "准备加载",
@@ -9,7 +10,7 @@ const TITLES: Record<PageState, string> = {
   EMPTY: "暂无数据",
   PARTIAL: "部分数据可用",
   STALE: "正在使用过期数据",
-  ERROR: "暂无数据",
+  ERROR: "暂时无法获取数据",
   PERMISSION_DENIED: "权限未授予",
 };
 
@@ -25,22 +26,27 @@ export function StatusPanel({
   recoveryLabel,
   onRecover,
   live = true,
+  emptyLevel = "section",
+  title,
 }: {
   state: PageState;
   detail: string;
   recoveryLabel?: string | undefined;
   onRecover?: (() => void) | undefined;
   live?: boolean | undefined;
+  emptyLevel?: "section" | "page" | undefined;
+  title?: string | undefined;
 }) {
   return (
     <View
-      className={`status-panel status-panel--${state.toLowerCase()}`}
+      className={`status-panel status-panel--${state.toLowerCase()}${state === "EMPTY" ? ` status-panel--empty-${emptyLevel}` : ""}`}
       data-control="notification-feedback page-state-recovery"
       role={state === "ERROR" ? "alert" : "status"}
       aria-live={live ? "polite" : undefined}
     >
+      {state === "EMPTY" ? <SemanticIcon name="info" className="status-panel__empty-icon" /> : null}
       {TITLED_STATES.has(state) ? (
-        <Text className="type-label">{TITLES[state]}</Text>
+        <Text className="type-label">{title ?? TITLES[state]}</Text>
       ) : null}
       <Text className="type-caption">{detail}</Text>
       {recoveryLabel && onRecover ? (

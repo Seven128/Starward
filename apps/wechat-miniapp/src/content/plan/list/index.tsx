@@ -61,7 +61,7 @@ export default function PlanListPage() {
           <Button aria-pressed={partition === "past"} onClick={() => choosePartition("past")}>过往</Button>
           <Button className="plan-list-new" onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>＋ 新建</Button>
         </View>
-        {query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE" ? <StatusPanel state={query.data ? "STALE" : "EMPTY"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
+        {query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE" ? <StatusPanel state={query.data ? "STALE" : "ERROR"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
         {query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
         {navigationError ? <View role="alert"><Text>页面暂未打开，请再次点击。</Text></View> : null}
         {entries.map((entry, index) => {
@@ -78,7 +78,7 @@ export default function PlanListPage() {
             </Button>
           </View>;
         })}
-        {query.data && !query.isError && !query.refreshError && !entries.length ? <Text className="plan-list-empty">{partition === "past" ? "还没有过往计划" : "还没有接下来的观星计划"}</Text> : null}
+        {query.data && !query.isError && !query.refreshError && !entries.length ? <StatusPanel state="EMPTY" emptyLevel="page" detail={partition === "past" ? "已结束的计划会显示在这里。" : "新建计划后会显示在这里。"} recoveryLabel={partition === "past" ? undefined : "新建计划"} onRecover={partition === "past" ? undefined : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
       </View>
     </ScrollView>
   </View>;

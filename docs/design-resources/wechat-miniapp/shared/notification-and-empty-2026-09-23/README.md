@@ -1,6 +1,6 @@
 # 共享 Info 提醒与“暂无数据” · 当前采用设计资源
 
-2026-09-23 用户审阅确认本设计；采用范围是小程序跨场景的悬浮 Info 与三层“暂无数据”视觉表达。各页原采用资源在其他构图和状态上继续有效；生产样式尚未迁移。当前可编辑 Stitch 项目中的画板为 [08｜共享 Info 提醒与暂无数据](https://stitch.withgoogle.com/projects/7144519510537620825)；本地保存了[可独立打开的 HTML/CSS 源](preview/index.html)和[完整画面](preview/board.png)。`stitch-input/current-stitch-srcdoc.html` 是从刷新后的当前画板读取的原样源，`preview/index.html` 仅移除了 Stitch 编辑器注入的脚本、样式与游标，保留了产品设计内容。Stitch 修订覆盖了同一画板，未生成第二套页面。
+2026-09-23 用户审阅确认本设计；采用范围是小程序跨场景的悬浮 Info 与三层“暂无数据”视觉表达。各页原采用资源在其他构图和状态上继续有效；2026-09-24 已将共享表达迁入生产 `notification.tsx`、`status-panel.tsx` 及其受影响消费者；日间 390×844 模拟器已观察列表空态、浮动消息和独立请求失败恢复的部分场景，夜间、红光、其他宽度及真机触摸/安全区仍待验证。当前可编辑 Stitch 项目中的画板为 [08｜共享 Info 提醒与暂无数据](https://stitch.withgoogle.com/projects/7144519510537620825)；本地保存了[可独立打开的 HTML/CSS 源](preview/index.html)和[完整画面](preview/board.png)。`stitch-input/current-stitch-srcdoc.html` 是从刷新后的当前画板读取的原样源，`preview/index.html` 仅移除了 Stitch 编辑器注入的脚本、样式与游标，保留了产品设计内容。Stitch 修订覆盖了同一画板，未生成第二套页面。
 
 ## 两个共享职责
 
@@ -19,4 +19,4 @@
 - 本地 HTML/CSS 与 Stitch 画板可继续编辑；画板里的手机画面及状态是静态重复示例，尚不是设计工具原生共享实例或可复用生产组件。图形为生成示意；生产图标应按[当前 B 批图标入口](../icons/ADOPTED.md)映射，不能把示意线稿当作已采用 PNG。
 - 320/375/430 宽度、夜间/红光主题、WEAPP 原生安全区、触摸暂停、读屏及实际数据切换尚未由本静态稿验证。后续生产实现需按当前合同和实际运行时观察。
 
-当前画板的输入与原样源保存在 `stitch-input/`。被修订完全替代的首稿 HTML/截图已按用户确认的清单移入 Windows 回收站。生产 `notification.tsx` 和 `status-panel.tsx` 未在本轮修改。
+当前画板的输入与原样源保存在 `stitch-input/`。被修订完全替代的首稿 HTML/截图已按用户确认的清单移入 Windows 回收站。生产实现继续复用既有共享宿主和状态责任；本资源的示意图形没有被当作生产图标。

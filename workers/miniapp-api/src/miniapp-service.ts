@@ -8,6 +8,7 @@ import {
   type AccountNicknameSaveRequest,
 } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
+import { openPlanShare, sealPlanShare } from "./plan-share-token.ts";
 import { observationFrameTimes } from "./observation-time-axis.ts";
 import {
   type AccountDataExportData,
@@ -44,6 +45,8 @@ import {
   type ObservationContextResolveRequest,
   type ObservationContextUpdateRequest,
   type ObservationPlan,
+  type PlanPublicShareData,
+  type SpotPublicShareData,
   type PlatformKind,
   type PreferenceRankingDisclosure,
   type ProfileLink,
@@ -1995,6 +1998,51 @@ export class MiniappService {
     );
     await this.cache.set(cacheKey, result, 300);
     return result;
+  }
+
+  private async publicShareSpot(spotId: SpotId) {
+    const detail = await this.repository.getDetail(spotId);
+    if (!detail || !["PUBLISHED", "TEMPORARILY_CLOSED"].includes(detail.spot.status)) throw new Error("share_not_found");
+    return detail;
+  }
+
+  async createPlanShare(userId: UserId, planId: string) {
+    const plan = (await this.repository.listPlans(userId)).find(item => item.planId === planId);
+    if (!plan || !plan.timing) throw new Error("share_not_found");
+    await this.publicShareSpot(plan.spotId);
+    const expiresAt = Date.now() + 7 * 86_400_000;
+    return envelope({ token: sealPlanShare({ userId, planId, revision: plan.revision, expiresAt }, this.config.wechat.sessionSecret),
+      expiresAt: new Date(expiresAt).toISOString() }, "FRESH", []);
+  }
+
+  async getSharedPlan(token: string): Promise<ApiEnvelope<PlanPublicShareData>> {
+    const binding = openPlanShare(token, this.config.wechat.sessionSecret);
+    if (!binding) throw new Error("share_not_found");
+    const plan = (await this.repository.listPlans(binding.userId as UserId)).find(item => item.planId === binding.planId);
+    if (!plan || !plan.timing || plan.revision !== binding.revision) throw new Error("share_not_found");
+    const detail = await this.publicShareSpot(plan.spotId);
+    return envelope({ kind: "PLAN", spotId: detail.spot.spotId, spotGcj02: detail.spot.gcj02, spotName: detail.spot.name,
+      spotRegion: detail.spot.region, spotSource: detail.spot.source,
+      localDate: plan.localDate, localTime: plan.localTime,
+      endLocalDate: plan.timing.endLocalDate, endLocalTime: plan.timing.endLocalTime,
+      departureLocalDate: plan.timing.departureLocalDate, departureLocalTime: plan.timing.departureLocalTime,
+      timezone: plan.contextSnapshot.timezone,
+      events: (plan.eventOccurrenceIds ?? []).map(occurrenceId => {
+        const event = this.eventCatalog.find(occurrenceId);
+        return { occurrenceId, displayName: event?.displayName ?? "天象资料暂不可用", kind: event?.kind ?? null,
+          source: event ? this.eventCatalog.sourceFor(event) : null };
+      }), expiresAt: new Date(binding.expiresAt).toISOString() }, "FRESH", []);
+  }
+
+  async getSharedSpot(spotId: SpotId): Promise<ApiEnvelope<SpotPublicShareData>> {
+    const detail = await this.publicShareSpot(spotId);
+    const facts = detail.formalFacts;
+    return envelope({ kind: "SPOT", spotId: detail.spot.spotId, spotGcj02: detail.spot.gcj02, name: detail.spot.name,
+      region: detail.spot.region, address: detail.spot.address,
+      status: detail.spot.status as SpotPublicShareData["status"],
+      opening: facts?.hours ?? null, access: facts?.accessNote ?? facts?.access ?? null,
+      safety: facts?.safety ?? null, parking: facts?.parkingNote ?? facts?.parking ?? null,
+      horizon: facts?.horizon ?? null, source: detail.spot.source }, "FRESH", []);
   }
 
   async savePlan(

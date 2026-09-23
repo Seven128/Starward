@@ -49,7 +49,7 @@ const retainedLegacyIconFiles = [
 ] as const;
 const bIconFiles = {
   main: [
-    "account-user--day--default.png", "account-user--day--selected.png",
+    "account-user--day--default.png",
     "arrow-left--day--default.png", "check--day--default.png",
     "chevron-down--day--default.png", "chevron-right--day--default.png",
     "chevron-up--day--default.png", "close--day--default.png",
@@ -58,8 +58,7 @@ const bIconFiles = {
     "four-point-star--day--default.png", "horizon--day--default.png",
     "images--day--default.png", "layers--day--default.png",
     "low-cloud--day--default.png", "bulb--day--default.png",
-    "location--day--default.png", "map--day--default.png",
-    "map--day--selected.png", "meteor--day--default.png", "moon--day--default.png",
+    "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
     "pencil--day--default.png", "plan-suv--day--default.png",
     "search--day--default.png", "settings--day--default.png",
     "share--day--default.png", "spot-marker--day--default.png",

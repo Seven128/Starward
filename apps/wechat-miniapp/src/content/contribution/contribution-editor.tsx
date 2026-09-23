@@ -146,7 +146,7 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
     <ScrollView scrollY scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
       <View className={`contribution-content${isNewSpotDocument ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
         {form.capabilities.isError || form.capabilities.refreshError || form.capabilities.data?.dataState === "STALE_USABLE" ? (
-          <StatusPanel state={form.capabilities.isError ? "EMPTY" : "STALE"}
+          <StatusPanel state={form.capabilities.isError ? "ERROR" : "STALE"}
             detail="投稿能力状态暂时无法更新；当前输入仍会保留。"
             recoveryLabel="重新获取" onRecover={() => void form.capabilities.refetch()} />
         ) : null}

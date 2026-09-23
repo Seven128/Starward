@@ -50,18 +50,18 @@ test("spot resource notifications stay on the visible owning page and replay on 
   }
 });
 
-test("cold resource errors use the shared no-data placeholder while retaining retry", () => {
+test("cold resource errors stay distinct from true empty results and retain retry", () => {
   const mapSource = readFileSync(new URL("../pages/map/index.tsx", import.meta.url), "utf8");
   const spotSource = readFileSync(new URL("../features/spot/spot-detail-page.tsx", import.meta.url), "utf8");
   const statusSource = readFileSync(new URL("./status-panel.tsx", import.meta.url), "utf8");
-  assert.match(mapSource, /state=\{pageState === "ERROR" \? "EMPTY" : pageState\}/);
-  assert.doesNotMatch(spotSource, /state="ERROR"/);
-  assert.match(statusSource, /ERROR: "暂无数据"/);
+  assert.match(mapSource, /state=\{pageState\}/);
+  assert.match(spotSource, /state="ERROR"/);
+  assert.match(statusSource, /ERROR: "暂时无法获取数据"/);
   assert.match(spotSource, /recoveryLabel="重试概览"/);
   assert.match(mapSource, /pageState === "ERROR"[\s\S]*?"重试"/);
 });
 
-test("independent data pages notify only while visible and keep no-data recovery", () => {
+test("independent data pages notify only while visible and keep error recovery", () => {
   const cases = [
     { path: "../spot/data-source/index.tsx", marker: "data-source-failed", context: {
       validRoute: true, overview: { isError: true, refreshError: null }, spotId: "spot:1" } },
@@ -85,7 +85,7 @@ test("independent data pages notify only while visible and keep no-data recovery
   }
   for (const path of cases.map(item => item.path)) {
     const source = readFileSync(new URL(path, import.meta.url), "utf8");
-    assert.doesNotMatch(source, /state="ERROR"/);
+    assert.match(source, /state="ERROR"|"STALE" : "ERROR"/);
     assert.match(source, /recoveryLabel=/);
   }
 });
@@ -180,7 +180,7 @@ test("shared formal spot lookup reports cache fallback only on its visible owner
   assert.equal(notices.length, 1);
   assert.equal(notices[0].owner, "import");
   assert.equal(notices[0].placement, "floating");
-  assert.match(readFileSync(new URL("./formal-spot-field.tsx", import.meta.url), "utf8"), /result\.isError \? <StatusPanel state="EMPTY"/);
+  assert.match(readFileSync(new URL("./formal-spot-field.tsx", import.meta.url), "utf8"), /result\.isError \? <StatusPanel state="ERROR"/);
   assert.match(readFileSync(new URL("../pages/map/search-page.tsx", import.meta.url), "utf8"),
     /searchState !== "READY" && !\(searchState === "STALE" && staleSearchResource\)/);
 });

@@ -107,7 +107,7 @@ test("a matching known name survives unavailable overview without borrowing anot
 test("saved identity failures and stale search envelopes retain targeted recovery", () => {
   const identity = render({ savedFailed: true, query: "" });
   const identityPanel = identity.elements.find(element => element.type === "status" && element.props.recoveryLabel === "重新获取地点")!;
-  assert.equal(identityPanel.props.state, "EMPTY");
+  assert.equal(identityPanel.props.state, "ERROR");
   identityPanel.props.onRecover();
   assert.equal(identity.savedRetries, 1);
 

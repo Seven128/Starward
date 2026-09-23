@@ -169,7 +169,7 @@ test("floating entries expire, animate, preserve close across page hide, and can
   exiting.timers.at(-1)!.callback();
   assert.equal(exiting.commits(), 1, "cancelled exit cannot commit twice");
   const actionable = mount({ action: { label: "重试" } }); actionable.render();
-  assert.equal(actionable.timers.length, 0, "sole recovery action stays available");
+  assert.equal(actionable.timers[0]?.delay, 3000, "an actionable floating notice still expires");
   const paused = mount();
   paused.render().props.onTouchStart(); paused.render();
   paused.timers[0]!.callback();

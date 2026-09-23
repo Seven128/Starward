@@ -1,3 +1,5 @@
 .source-attribution,
 .source-attribution__credit { display: flex; flex-direction: column; gap: 4Px; min-width: 0; }
 .source-attribution .type-caption { white-space: pre-wrap; overflow-wrap: anywhere; }
+.source-attribution__credit .soft-button { width: 100%; justify-content: flex-start; text-align: left; font-size: 13Px; line-height: 20Px; }
+.source-attribution__credit .soft-button text { white-space: normal; overflow-wrap: anywhere; word-break: break-all; }

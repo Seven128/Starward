@@ -361,7 +361,7 @@ export function SpotDetailPage({
       ) : overview.isError || !detail ? (
         <View className="page-inset">
           <StatusPanel
-            state="EMPTY"
+            state="ERROR"
             detail="地点资料暂时无法加载，请重试。"
             recoveryLabel="重试概览"
             onRecover={() => void overview.refetch()}
@@ -435,7 +435,7 @@ export function SpotDetailPage({
                     <StatusPanel state="LOADING" detail="正在加载攻略。" />
                   ) : guides.isError ? (
                     <StatusPanel
-                      state="EMPTY"
+                      state="ERROR"
                       detail="攻略暂时无法加载，请重试。"
                       recoveryLabel="重试攻略"
                       onRecover={() => void guides.refetch()}
@@ -514,7 +514,7 @@ export function SpotDetailPage({
                     />
                   ) : site.isError ? (
                     <StatusPanel
-                      state="EMPTY"
+                      state="ERROR"
                       detail="场地信息暂时无法加载，请重试。"
                       recoveryLabel="重试场地"
                       onRecover={() => void site.refetch()}

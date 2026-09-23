@@ -292,7 +292,7 @@ export default function FormalFeedbackEditor() {
               else void site.refetch();
             }} />
         ) : null}
-        {query.isError || history.isError ? <StatusPanel state="EMPTY" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={() => { void query.refetch(); void history.refetch(); }} /> : recordError ? <StatusPanel state="EMPTY" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
+        {query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={() => { void query.refetch(); void history.refetch(); }} /> : recordError ? <StatusPanel state="ERROR" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
           {submitted ? <Text className="formal-feedback-review-tag">审核中</Text> : null}
           {reviewReason ? <View className="formal-feedback-review-note"><Text>审核意见</Text><Text>{reviewReason}</Text></View> : null}
           <SpotDocumentFields
@@ -336,4 +336,3 @@ function PhotoGroup({ kind, ids, uploads: allUploads, paths, disabled, onAdd, on
     <Button className="formal-feedback-photo-action" disabled={disabled || ids.length >= 3} onClick={() => void onAdd(kind)}>＋ 添加{label}照片</Button>
   </View>;
 }
-

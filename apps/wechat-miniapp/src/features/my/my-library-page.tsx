@@ -114,6 +114,7 @@ export function MyLibraryPage() {
   const openSettings = () =>
     openPage("/content/settings/index", "设置", "settings");
   const openPlan = () => openPage("/content/plan/list/index", "观星计划", "plan");
+  const openAchievements = () => openPage("/content/achievement/index", "个人行程成就", "achievements");
   const openContribution = () =>
     openPage("/content/contribution/index?manage=1", "观星点创建与反馈", "contribution");
   return (
@@ -158,6 +159,11 @@ export function MyLibraryPage() {
                 loading={library.isPending} unavailable={library.isError || Boolean(library.refreshError)}
                 onOpenAll={openPlan}
                 onOpen={(plan) => void openPage(`/content/plan/detail/index?planId=${encodeURIComponent(plan.planId)}`, "观星计划", "plan")} />
+              <Button className="routine-entry focus-ring" ariaLabel="打开个人行程成就" onClick={openAchievements}>
+                <View className="routine-entry__icon" aria-hidden="true"><SemanticIcon name="star" /></View>
+                <View className="account-row__copy"><Text className="type-section">个人行程成就</Text><Text className="type-caption">按已结束的计划自动统计</Text></View>
+                <View className="account-row__chevron" aria-hidden="true"><SemanticIcon name="chevron-right" /></View>
+              </Button>
               <Button
                 className="routine-entry routine-entry--contribution focus-ring"
                 data-od-id="my-contribution-entry"

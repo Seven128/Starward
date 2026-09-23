@@ -501,7 +501,7 @@ function SkyCatalogInformation({
         <ScrollView scrollY enhanced type="custom" showScrollbar={false} className="sky-object-modal__body">
           {information.isPending ? <StatusPanel state="LOADING" detail={`正在读取${title}的资料…`} /> : null}
           {information.isError ? (
-            <StatusPanel state="EMPTY" detail={errorMessage(information.error)} recoveryLabel="重试资料" onRecover={() => void information.refetch()} />
+            <StatusPanel state="ERROR" detail={errorMessage(information.error)} recoveryLabel="重试资料" onRecover={() => void information.refetch()} />
           ) : null}
           {data ? (
             <>

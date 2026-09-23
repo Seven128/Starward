@@ -4,7 +4,7 @@
 
 当前可编辑消费者：[观星点原型](../comfortable-scale-2026-09-22/preview/map-panel.html)。同一原型被地图、计划与记录中的正式点/提案容器复用；内容身份和可用操作仍由宿主决定。图层选择、筛选、新增/编辑表单原本不可拖动，不因本组件升级而获得手柄或多档。
 
-`motion.js` 是所有原型消费者共用的无 DOM 运动单元；`comfortable-scale…/preview/panel-gestures.js` 是唯一观星点适配器。不是生产 Taro 组件。现有生产 `pages/map/panel-snap.ts` 已有最近100ms速度样本与180ms投影；当前硬夹断边界和 spring 仍需后续迁移。
+`motion.js` 是所有原型消费者共用的无 DOM 运动单元；`comfortable-scale…/preview/panel-gestures.js` 是唯一观星点适配器。不是生产 Taro 组件。生产 `components/elastic-motion.ts` 与 `pages/map/panel-spring.ts` 已承接阻尼、越界回弹和三档选位，`pages/map/index.tsx` 的正式点位抽屉已使用；2026-09-24 模拟器抽查三档和原有动作。真机触摸/滚动竞争及本候选视觉仍待审，本记录不改变待审身份。
 
 边界与规则：
 

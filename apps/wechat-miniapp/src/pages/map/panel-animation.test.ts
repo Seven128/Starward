@@ -8,7 +8,7 @@ test("spring renderer receives one bounded animation and stale completion cannot
   const host: PanelAnimationHost = {
     animate: (_selector, frames, duration, done) => {
       assert.equal(frames[0]!.offset, 0); assert.equal(frames.at(-1)!.offset, 1);
-      assert.ok(duration <= 640); assert.ok(frames.every(frame => frame.height >= 220 && frame.height <= 700));
+      assert.ok(duration <= 650); assert.ok(frames.every(frame => Number.isFinite(frame.height) && frame.height >= 148 && frame.height <= 772));
       callbacks.push(done);
     },
     clearAnimation: (selector, done) => { assert.equal(selector, ".spot-panel"); assert.equal(typeof done, "function"); clears++; done(); },

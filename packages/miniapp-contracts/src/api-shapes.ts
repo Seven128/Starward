@@ -351,6 +351,43 @@ export interface PlansData {
   reminderNotifications: readonly import("./plan-reminders.ts").PlanReminderNotificationStatus[];
 }
 
+/** Explicit public projections; private plan notes, travel, reminders and account data never cross this boundary. */
+export interface PlanPublicShareData {
+  kind: "PLAN";
+  spotId: SpotId;
+  spotGcj02: import("./types.ts").Gcj02Point;
+  spotName: string;
+  spotRegion: string;
+  spotSource: SourceSummary;
+  localDate: string;
+  localTime: string;
+  endLocalDate: string;
+  endLocalTime: string;
+  departureLocalDate: string;
+  departureLocalTime: string;
+  timezone: string;
+  events: readonly { occurrenceId: string; displayName: string; kind: string | null; source: SourceSummary | null }[];
+  expiresAt: string;
+}
+
+export interface SpotPublicShareData {
+  kind: "SPOT";
+  spotId: SpotId;
+  spotGcj02: import("./types.ts").Gcj02Point;
+  name: string;
+  region: string;
+  address: string;
+  status: "PUBLISHED" | "TEMPORARILY_CLOSED";
+  opening: string | null;
+  access: string | null;
+  safety: string | null;
+  parking: string | null;
+  horizon: string | null;
+  source: SourceSummary;
+}
+
+export interface PlanShareLinkData { token: string; expiresAt: string; }
+
 /** Reviewed editorial text; numerical event data retains its own independent source. */
 export interface AstronomicalEventArticle {
   title: string;

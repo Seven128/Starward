@@ -4,6 +4,7 @@ import { MapLayerSheet } from "./map-layer-sheet";
 import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
 import { panelSpringFrames } from "./panel-spring";
+import { elasticPosition, elasticVelocityFactor } from "@/components/elastic-motion";
 import { markerGroups, markerItems } from "./map-markers";
 import { privateContributionMarkerItems, privateContributionMarkers } from "./private-contribution-markers";
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
@@ -1102,7 +1103,9 @@ export default function MapPage() {
     if (!drag.moved) { drag.moved = true; setPanelDragging(true); }
     drag.pointerOffset = offset;
     if (drag.geometry) {
-      drag.offset = drag.geometry[drag.extent] - drag.geometry.startHeight + offset;
+      const rawHeight = drag.geometry.startHeight - offset;
+      const visualHeight = elasticPosition(rawHeight, drag.geometry.small, drag.geometry.large);
+      drag.offset = drag.geometry[drag.extent] - visualHeight;
       setPanelDragOffset(drag.offset);
     }
   };
@@ -1135,9 +1138,11 @@ export default function MapPage() {
     setPanelDragOffset(0);
     if (!drag.moved || !drag.geometry || Math.abs(drag.pointerOffset) < 8) return;
     const velocity = panelReleaseVelocity(drag.samples, drag.releasedAt);
-    const from = drag.geometry.startHeight - drag.pointerOffset;
+    const rawHeight = drag.geometry.startHeight - drag.pointerOffset;
+    const from = elasticPosition(rawHeight, drag.geometry.small, drag.geometry.large);
     const target = releasePanelExtent(drag.geometry, from, drag.extent, velocity);
-    animatePanelExtent(target, drag.geometry, from, -velocity);
+    animatePanelExtent(target, drag.geometry, from,
+      -velocity * elasticVelocityFactor(rawHeight, drag.geometry.small, drag.geometry.large));
   };
 
   const animatePanelExtent = (target: SpotPanelExtent, geometry: PanelSnapGeometry, from: number, velocity = 0) => {
@@ -1464,17 +1469,9 @@ export default function MapPage() {
   };
 
   const onPanelShare = async () => {
+    if (!selected || selected.status !== "PUBLISHED" && selected.status !== "TEMPORARILY_CLOSED") return;
     try {
-      await Taro.showShareMenu({ withShareTicket: true });
-      notify({
-        owner: "map",
-        placement: "inline",
-        tone: "success",
-        title: "请从微信菜单分享",
-        body: "点击右上角“…”分享此观星点。",
-        dismissible: true,
-        dedupeKey: "map-share-ready",
-      });
+      await Taro.navigateTo({ url: `/content/share/index?spotId=${encodeURIComponent(selected.spotId)}` });
     } catch (error) {
       notify({
         owner: "map",
@@ -1912,7 +1909,7 @@ export default function MapPage() {
             <NotificationRegion owner="map" placement="inline" />
             {mapRuntimeError || nativeMap.pending ? (
               <StatusPanel
-                state={nativeMap.pending ? "LOADING" : "EMPTY"}
+                state={nativeMap.pending ? "LOADING" : "ERROR"}
                 detail={nativeMap.pending ? "正在重新加载地图。" : "地图暂时无法显示，可继续搜索观星点。"}
                 recoveryLabel={nativeMap.pending ? undefined : "重试地图"}
                 onRecover={nativeMap.retry}
@@ -1928,7 +1925,7 @@ export default function MapPage() {
             pageState !== "PARTIAL" &&
             pageState !== "STALE" ? (
               <StatusPanel
-                state={pageState === "ERROR" ? "EMPTY" : pageState}
+                state={pageState}
                 detail={
                   pageState === "EMPTY"
                     ? "可以移动地图或搜索其他区域。"

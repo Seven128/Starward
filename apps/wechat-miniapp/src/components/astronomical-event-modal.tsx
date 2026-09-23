@@ -186,7 +186,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
           <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__list" ariaLabel="天文事件列表">
             <View className="event-modal__content">
               {catalog.isPending ? <StatusPanel state="LOADING" detail="正在读取事件目录。" /> : null}
-              {catalogFailed ? <StatusPanel state={catalog.data ? "STALE" : "EMPTY"} detail={catalog.data ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
+              {catalogFailed ? <StatusPanel state={catalog.data ? "STALE" : "ERROR"} detail={catalog.data ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
               {catalog.data && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
               {mode === "select-one" && initialOccurrenceIds.length > 1 ? <StatusPanel state="PARTIAL" detail={`此历史计划保留了 ${initialOccurrenceIds.length} 个关联；只有确认新选择或清除时才会改为最多一个。`} /> : null}
               {catalog.data ? <View className="event-modal__catalogue"><Text>{catalogYear} 事件目录</Text><Text>{catalog.data.data.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES" ? "常年参考与食事件" : "年度资料"}</Text></View> : null}
@@ -210,7 +210,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
           <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__detail" ariaLabel="天文事件详情">
             <View className="event-modal__content">
               {eventRecord.isPending ? <StatusPanel state="LOADING" detail="正在读取事件资料。" /> : null}
-              {recordFailed ? <StatusPanel state={record ? "STALE" : "EMPTY"} detail="事件资料暂未更新；可以返回列表或重试。" recoveryLabel="重试事件资料" onRecover={() => void eventRecord.refetch()} /> : null}
+              {recordFailed ? <StatusPanel state={record ? "STALE" : "ERROR"} detail="事件资料暂未更新；可以返回列表或重试。" recoveryLabel="重试事件资料" onRecover={() => void eventRecord.refetch()} /> : null}
               {selectedDetail ? <EventModalDetail event={selectedDetail} visibility={context ? matchingGeometry : record?.localVisibility ?? null} mode={mode}
                 locationName={context ? (context.location.kind === "FORMAL_SPOT" ? "已选观星点" : context.location.displayName) : null} pending={Boolean(context && previewDate) && detail.isPending}
                 timezone={context?.timezone ?? "Asia/Shanghai"} source={record?.source ?? catalog.data?.data.sources.find(source => source.id === selectedDetail.sourceId)}
@@ -276,7 +276,7 @@ function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate,
       </ScrollView> : mode === "select-one" ? <Text className="type-caption">地点和日期沿用当前计划；关联事件不改变计划安排。</Text> : null}
       {failed && visibility ? <StatusPanel state="STALE" detail="当地条件尚未确认最新状态，以下保留上次结果。" recoveryLabel="重试事件详情" onRecover={onRetry} /> : null}
       {pending ? <StatusPanel state="LOADING" detail="正在计算当地观测条件。" /> : !visibility || visibility.state === "UNAVAILABLE"
-        ? <StatusPanel state="EMPTY" detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed && !visibility ? "重试事件详情" : undefined} onRecover={onRetry} />
+        ? <StatusPanel state={failed && !visibility ? "ERROR" : "EMPTY"} detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed && !visibility ? "重试事件详情" : undefined} onRecover={onRetry} />
         : <>
           <Text className="type-caption">{visibility.reason}</Text>
           {visibility.state === "AVAILABLE" ? <>

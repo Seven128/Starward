@@ -837,7 +837,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         </View>
         {planQuery.isError && !activePlan ? (
           <StatusPanel
-            state="EMPTY"
+            state="ERROR"
             detail={`计划暂时无法加载：${errorMessage(planQuery.error)}`}
             recoveryLabel="重试"
             onRecover={() => void planQuery.refetch().catch(() => {})}
@@ -986,6 +986,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               <Text>{activePlan.notes || "未添加备注"}</Text>
             </View>
             <View className="plan-actions">
+              <SoftButton variant="default" label="分享这份行程" onClick={() => {
+                void Taro.navigateTo({ url: `/content/share/index?planId=${encodeURIComponent(activePlan.planId)}` }).catch(() => announce("warning", "分享页暂未打开", "请稍后重试，计划仍保留。"));
+              }}>分享行程</SoftButton>
               <SoftButton
                 variant="ghost"
                 label="删除观测计划"
@@ -1055,7 +1058,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 />
               ) : contextQuery.isError ? (
                 <StatusPanel
-                  state="EMPTY"
+                  state="ERROR"
                   detail="观测条件暂时无法加载，计划草稿已保留。"
                   recoveryLabel="重试"
                   onRecover={() => void contextQuery.refetch()}
@@ -1064,7 +1067,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <StatusPanel state="LOADING" detail="正在加载正式观星点。" />
               ) : spotsQuery.isError ? (
                 <StatusPanel
-                  state="EMPTY"
+                  state="ERROR"
                   detail="观星点列表暂时无法加载，请重试。"
                   recoveryLabel="重试"
                   onRecover={() => void spotsQuery.refetch()}
@@ -1171,7 +1174,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 </View>;
               })}
               {eventsQuery.isError || eventsQuery.refreshError || eventsQuery.data?.dataState === "STALE_USABLE" ? <StatusPanel
-                state={eventsQuery.isError ? "EMPTY" : "STALE"}
+                state={eventsQuery.isError ? "ERROR" : "STALE"}
                 detail="事件目录暂不可用或尚未确认最新状态；已选择的事件标识仍保留。"
                 recoveryLabel="重试" onRecover={() => void eventsQuery.refetch()} /> : null}
               <SoftButton className="plan-event-picker" disabled={saving || deleting} label="打开天象事件目录" onClick={() => {

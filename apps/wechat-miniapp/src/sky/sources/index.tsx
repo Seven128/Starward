@@ -28,7 +28,7 @@ export default function CelestialSourcesPage() {
     <ScrollView scrollY enhanced showScrollbar={false} className="celestial-sources-scroll">
       <View className="celestial-sources-content page-inset safe-bottom">
         {!valid ? <StatusPanel state="EMPTY" detail="请从天体信息中的来源与许可入口打开本页。" />
-          : unavailable ? <StatusPanel state="EMPTY" detail="来源暂时无法加载。" recoveryLabel="重试" onRecover={() => void information.refetch()} />
+          : unavailable ? <StatusPanel state="ERROR" detail="来源暂时无法加载。" recoveryLabel="重试" onRecover={() => void information.refetch()} />
           : information.isPending ? <StatusPanel state="LOADING" detail="正在加载来源与许可。" />
           : <>
             {information.refreshError || information.data?.dataState === "STALE_USABLE"

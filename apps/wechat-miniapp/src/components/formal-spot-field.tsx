@@ -59,7 +59,7 @@ export function FormalSpotField({ value, knownSpot, disabled, contextId, onChang
         {value ? selectedName ? `已选择：${selectedName}` : "已保留地点关联，名称暂不可用" : "搜索并选择内容实际对应的地点"}
       </Text>
       {savedSpot.isError || savedSpot.refreshError || savedSpot.data?.dataState === "STALE_USABLE" ? (
-        <StatusPanel state={savedSpot.data ? "STALE" : "EMPTY"}
+        <StatusPanel state={savedSpot.data ? "STALE" : "ERROR"}
           detail="已保留地点关联，地点名称尚未确认最新状态。"
           recoveryLabel="重新获取地点" onRecover={() => void savedSpot.refetch()} />
       ) : null}
@@ -70,7 +70,7 @@ export function FormalSpotField({ value, knownSpot, disabled, contextId, onChang
           recoveryLabel="重试搜索" onRecover={() => void result.refetch()} />
       ) : null}
       {!disabled && query.trim() && currentResults ? (
-        result.isError ? <StatusPanel state="EMPTY" detail="地点搜索暂不可用，原有关联已保留。" recoveryLabel="重试搜索" onRecover={() => void result.refetch()} />
+        result.isError ? <StatusPanel state="ERROR" detail="地点搜索暂不可用，原有关联已保留。" recoveryLabel="重试搜索" onRecover={() => void result.refetch()} />
           : result.isPending ? <Text className="type-caption">正在查找正式观星点…</Text>
             : result.data.data.formalSpots.length ? result.data.data.formalSpots.map((spot) => (
               <Button key={spot.spotId} className="soft-button focus-ring"

@@ -68,7 +68,7 @@ export default function DataSourcePage() {
           <StatusPanel state="LOADING" detail="正在加载来源与适用时间。" />
         ) : overview.isError || !detail ? (
           <StatusPanel
-            state="EMPTY"
+            state="ERROR"
             detail="来源暂时无法加载，请重试。"
             recoveryLabel="重试"
             onRecover={() => void overview.refetch()}

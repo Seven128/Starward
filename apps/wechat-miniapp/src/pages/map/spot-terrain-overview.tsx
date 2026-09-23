@@ -61,8 +61,9 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
         return <View key={cell.id} className="spot-terrain__light-cell" ariaLabel={`${cell.label}，${cell.radiance} ${cell.unit}`} style={{ left: `${(cell.boundsGcj02.west - requested.west) / width * 100}%`, top: `${(requested.north - cell.boundsGcj02.north) / height * 100}%`, width: `${(cell.boundsGcj02.east - cell.boundsGcj02.west) / width * 100}%`, height: `${(cell.boundsGcj02.north - cell.boundsGcj02.south) / height * 100}%`, backgroundColor: cell.color }} />;
       }) : null}
       {!terrainVisible && !lightVisible ? <View className="spot-terrain__empty"><Text>地形与光污染均已关闭</Text></View> : null}
-      {!hasPicture && (terrainVisible || lightVisible) ? <View className="spot-terrain__empty"><StatusPanel state={pending ? "LOADING" : "EMPTY"}
-        detail={pending ? "正在加载图层…" : "当前所选图层暂无可用数据。"} /></View> : null}
+      {!hasPicture && (terrainVisible || lightVisible) ? <View className="spot-terrain__empty"><StatusPanel state={pending ? "LOADING" : failed ? "ERROR" : "EMPTY"}
+        detail={pending ? "正在加载图层…" : failed ? "图层暂时无法读取，请重试。" : "当前所选图层暂无可用数据。"}
+        recoveryLabel={failed && !pending ? "重试图层" : undefined} onRecover={failed && !pending ? () => void terrain.refetch() : undefined} /></View> : null}
       <View className="spot-terrain__ring spot-terrain__ring--outer" aria-hidden="true" /><View className="spot-terrain__ring spot-terrain__ring--inner" aria-hidden="true" />
       <Text className="spot-terrain__direction spot-terrain__direction--north">北</Text><Text className="spot-terrain__direction spot-terrain__direction--east">东</Text><Text className="spot-terrain__direction spot-terrain__direction--south">南</Text><Text className="spot-terrain__direction spot-terrain__direction--west">西</Text>
       <Image className="spot-terrain__center" src="/assets/b-icons/spot-marker--day--selected.png" mode="aspectFit" ariaLabel="当前观星点" />
@@ -75,7 +76,7 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
       </Button>)}
     </View>
     {terrainMissing ? <Text className="spot-terrain__layer-state">地形：当前地区暂无数据</Text> : null}
-    {failed ? <SoftButton label="重新读取图层" onClick={() => void terrain.refetch()}>重试</SoftButton> : null}
+    {failed && hasPicture ? <SoftButton label="重新读取图层" onClick={() => void terrain.refetch()}>重试</SoftButton> : null}
     {lightVisible ? data?.lightPollution.state === "UNAVAILABLE" ? <Text className="spot-terrain__layer-state">光污染：{data.lightPollution.coverageLabel}</Text> : <View className="spot-terrain__legend">{data?.lightPollution.legend.map(item => <View key={item.label}><View style={{ backgroundColor: item.color }} /><Text>{item.label}</Text></View>)}</View> : null}
     <View className="spot-terrain__source" data-control="spot-terrain-source">
       {lightVisible && lightCells.length > 0 && data?.lightPollution.source ? <SourceAttribution sources={[data.lightPollution.source]} /> : null}

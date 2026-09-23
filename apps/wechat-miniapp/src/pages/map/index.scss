@@ -1719,6 +1719,9 @@
 .map-panel-layer--dragging .spot-panel {
   transition: none;
 }
+.map-panel-layer--dragging .spot-panel {
+  height: calc(var(--panel-rest-height) - var(--panel-drag-offset, 0px));
+}
 .spot-panel__snap-measures {
   position: absolute;
   width: 0;

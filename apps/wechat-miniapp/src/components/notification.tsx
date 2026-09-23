@@ -6,12 +6,13 @@ import { selectNotification, selectNotifications } from "@/state/notification";
 import { useAppStore } from "@/state/app-store";
 import { floatingNotificationNodeId, useFloatingNotificationVisibility } from "./notification-visibility";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
+import { SemanticIcon } from "./semantic-asset";
 
-const ICON: Readonly<Record<NotificationRecord["tone"], string>> = {
-  error: "!",
-  warning: "!",
-  info: "i",
-  success: "✓",
+const ICON: Readonly<Record<NotificationRecord["tone"], "info" | "check">> = {
+  error: "info",
+  warning: "info",
+  info: "info",
+  success: "check",
 };
 
 export function NotificationComponent({
@@ -39,13 +40,13 @@ export function NotificationComponent({
       aria-live={notification.tone === "error" ? "assertive" : "polite"}
       aria-atomic="true"
     >
-      <Text
+      <View
         className="notification__icon"
         data-od-id="notification-icon"
         aria-hidden="true"
       >
-        {ICON[notification.tone]}
-      </Text>
+        <SemanticIcon name={ICON[notification.tone]} />
+      </View>
       <View className="notification__copy" data-od-id="notification-feedback">
         <Text
           className="notification__title type-label"
@@ -111,8 +112,8 @@ export function FloatingNotification({ notification, onDismiss }: {
     if (closingRef.current) dismissRef.current();
   }, []);
   useEffect(() => {
-    // An action may be the only available recovery; its consumer must retain it.
-    if (notification.action || closing || paused || !visible) return;
+    // Floating notices are always transient; durable recovery stays inline with the failed task.
+    if (closing || paused || !visible) return;
     let cancelled = false;
     const timer = setTimeout(() => { if (!cancelled) close(); }, 3000);
     return () => { cancelled = true; clearTimeout(timer); };

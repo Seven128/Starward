@@ -13,7 +13,7 @@ export function readPanelSnapGeometry(rows: unknown): PanelSnapGeometry | null {
   if (!heights.every(height => typeof height === "number" && Number.isFinite(height) && height > 0)) return null;
   const [startHeight, small, medium, large] = heights as [number, number, number, number];
   if (!(small < medium && medium < large)) return null;
-  return { small, medium, large, startHeight: Math.max(small, Math.min(large, startHeight)) };
+  return { small, medium, large, startHeight: Math.max(small - 72, Math.min(large + 72, startHeight)) };
 }
 
 export function nearestPanelExtent(geometry: PanelSnapGeometry, height: number, current: PanelExtent): PanelExtent {

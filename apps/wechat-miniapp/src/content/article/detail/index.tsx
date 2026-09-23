@@ -112,7 +112,7 @@ export default function ArticlePage() {
           <StatusPanel state="LOADING" detail="正在加载攻略。" />
         ) : !article ? (
           <StatusPanel
-            state="EMPTY"
+            state="ERROR"
             detail="攻略暂不可用，请重试。"
             recoveryLabel="重试攻略"
             onRecover={() => void guides.refetch()}
@@ -185,7 +185,7 @@ export default function ArticlePage() {
                     {FACILITY_LABEL[block.facilityType]}
                   </Text> : null}
                   {site.isPending ? <StatusPanel state="LOADING" detail="正在读取设施记录。" />
-                    : site.isError ? <StatusPanel state="EMPTY" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
+                    : site.isError ? <StatusPanel state="ERROR" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
                     : facility ? <FacilityEvidenceDetails evidence={facility} title={FACILITY_LABEL[block.facilityType]} />
                     : <StatusPanel state="EMPTY" detail="暂无该设施的核验记录，不代表设施可用。" />}
                 </View>

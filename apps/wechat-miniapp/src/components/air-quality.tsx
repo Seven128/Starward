@@ -44,6 +44,7 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
   const label = (at: string) => `${calendarDateInTimezone(new Date(at), timezone)} ${clockTimeInTimezone(new Date(at), timezone)}`;
   return <View className="spot-panel__evidence-group" data-control="spot-air-quality">
     <Text className="type-label">空气质量</Text>
+    {query.isError && !envelope ? <StatusPanel state="ERROR" detail="空气质量暂时无法获取，其他地点信息仍可查看。" recoveryLabel="重试空气质量" onRecover={() => void query.refetch()} /> : <>
     <Text className="type-secondary">当前区域参考</Text>
     {query.isPending ? <View role="status"><Text className="type-caption">正在加载空气质量…</Text></View>
       : view.current ? <Reading value={view.current} /> : <StatusPanel state="EMPTY" detail="当前空气质量暂无可用数据。" />}
@@ -55,5 +56,6 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
     <Text className="type-caption">不同 AQI 标准保留原值；缺失污染物不补齐。空气质量不等于天文透明度或视宁度。</Text>
     {envelope ? [envelope.data.current.source, envelope.data.forecast.source].map(source => <Provenance key={source.id} source={source} />) : null}
     {failed || view.expired || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE" ? <SoftButton label="重试空气质量" onClick={() => void query.refetch()}>重试</SoftButton> : null}
+    </>}
   </View>;
 }

@@ -5,6 +5,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry } from "./panel-snap";
+import { elasticPosition, elasticVelocityFactor } from "@/components/elastic-motion";
 
 test("panel cancellation and multi-touch never commit a pending drag", () => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -31,7 +32,7 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
     panelDrag: { current: null }, bottomPresentation: "spot-panel", panelExtent: "medium", panelSettling: false,
     setPanelExtent: (value: string) => commits.push(value), setPanelDragOffset: (value: number) => offsets.push(value),
     setPanelDragging: (value: boolean) => { dragging = value; },
-    Taro: { createSelectorQuery: () => query, nextTick: () => {} }, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry,
+    Taro: { createSelectorQuery: () => query, nextTick: () => {} }, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, elasticPosition, elasticVelocityFactor,
   }) as Record<string, (event?: unknown) => void>;
   const touch = (y: number, count = 1) => ({ touches: Array.from({ length: count }, () => ({ clientY: y })) });
   for (const cancellation of ["cancel", "second-finger", "multi-start"]) {

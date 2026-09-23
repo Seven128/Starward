@@ -24,6 +24,8 @@ export default defineAppConfig({
         "plan/detail/index",
         "plan/list/index",
         "plan/edit/index",
+        "achievement/index",
+        "share/index",
         "event/list/index",
         "event/detail/index",
         "contribution/index",

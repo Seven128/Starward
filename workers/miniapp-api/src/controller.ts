@@ -502,6 +502,26 @@ export class MiniappController {
     );
   }
 
+  @Post("me/observation-plans/:planId/share")
+  async createPlanShare(
+    @Param("planId") planId: string,
+    @Headers("authorization") authorization?: string,
+  ) {
+    return this.service.createPlanShare(
+      await this.service.auth.requirePrincipal(authorization), decodeURIComponent(planId),
+    );
+  }
+
+  @Get("shares/plans/:token")
+  sharedPlan(@Param("token") token: string) {
+    return this.service.getSharedPlan(token);
+  }
+
+  @Get("shares/spots/:spotId")
+  sharedSpot(@Param("spotId") spotId: string) {
+    return this.service.getSharedSpot(decodeURIComponent(spotId) as SpotId);
+  }
+
   @Put("me/observation-plans/:planId")
   async plan(
     @Param("planId") planId: string,

@@ -18,5 +18,8 @@ apps/wechat-miniapp/src/**/*.scss text eol=lf
 Makefile text eol=lf
 *.png binary
 *.woff2 binary
+workers/miniapp-api/assets/constellations/*.fab text eol=lf
+workers/miniapp-api/assets/constellations/*.ini text eol=lf
+tools/miniapp/semantic-art.mjs text eol=lf
 # Preserve exported resources and evidence exactly for their recorded content hashes.
 docs/design-resources/wechat-miniapp/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol

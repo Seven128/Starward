@@ -1217,10 +1217,10 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(sky, /data-sky-scene-frame-at/u);
   // Wiring only; sky-canvas-time.test.ts executes the production drawing
   // function to establish exact-time selection and missing-frame behavior.
-  assert.match(sky, /exactSkyTimeFrame\(data\.skyScene\.frames, frameAt\)/u);
-  assert.match(sky, /exactSkyTimeFrame\(data\.targetFrames, frameAt\)/u);
+  assert.match(sky, /resolveSkySceneFrame\(reportData\?\.skyScene, row\?\.at\)/u);
+  assert.match(sky, /exactSkyTimeFrame\(reportData\?\.targetFrames, row\?\.at\)/u);
   assert.match(sky, /catalog\.entries\[catalogIndex\]/u);
-  assert.match(sky, /altitudeDeg <= 0/u);
+  assert.match(sky, /altitude <= 0/u);
   assert.match(sky, /星图暂不可用，仍可在对象列表查看天体与事件/u);
   assert.doesNotMatch(sky, /Math\.random/u);
   assert.match(sourceLift, /nativeNavigationInsets\(\)/u);
