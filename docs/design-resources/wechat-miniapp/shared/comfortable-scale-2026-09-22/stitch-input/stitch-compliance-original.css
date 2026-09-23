@@ -1,0 +1,400 @@
+/* ==========================================================================
+   Starward 微信小程序 · 增量功能与来源许可舒适尺度复核补丁 (2026-09-22)
+   复核范围：互斥天空控件、日月食详情、全域来源与许可、长链接复制
+   ========================================================================== */
+
+/* 1. 来源与归因基线 (Source & Provenance Standards) */
+.source-credit {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  color: #475569 !important;
+  padding: 8px 0 !important;
+  min-width: 0 !important;
+}
+
+.source-credit > span {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  display: block !important;
+  margin-bottom: 4px !important;
+}
+
+.source-credit p {
+  font-size: 13.5px !important;
+  line-height: 20px !important;
+  margin: 6px 0 !important;
+  color: #64748b !important;
+}
+
+.source-url {
+  font-size: 13px !important;
+  line-height: 19px !important;
+  color: #64748b !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-all !important;
+  margin: 4px 0 6px !important;
+}
+
+/* 复制链接与交互操作 (Touch Target >= 44px) */
+.source-copy,
+.source-links button {
+  min-height: 44px !important;
+  height: 44px !important;
+  padding: 0 14px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.source-details {
+  border-top: 1px solid #e2e8f0 !important;
+  margin-top: 14px !important;
+}
+
+.source-details > summary {
+  min-height: 48px !important;
+  font-size: 14.5px !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  list-style: none !important;
+}
+
+.source-disclosure {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 18px !important;
+  padding: 16px 18px !important;
+  margin: 12px 0 !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+  overflow-wrap: anywhere !important;
+}
+
+.source-disclosure h3 {
+  font-size: 16px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  margin: 0 0 8px !important;
+}
+
+.source-disclosure p {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  margin: 8px 0 !important;
+}
+
+.source-license {
+  font-size: 13px !important;
+  line-height: 19px !important;
+  color: #64748b !important;
+}
+
+.source-timing {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  margin: 10px 0 !important;
+}
+
+.source-timing > div {
+  display: grid !important;
+  grid-template-columns: 48px 1fr !important;
+  gap: 8px !important;
+  margin: 4px 0 !important;
+}
+
+.source-timing dt {
+  color: #64748b !important;
+}
+
+.source-timing dd {
+  color: #334155 !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+}
+
+.source-status {
+  font-size: 13px !important;
+  line-height: 18px !important;
+  color: #047857 !important;
+  margin-top: 6px !important;
+}
+
+/* 2. 独立纯白来源页 (Dedicated White Sources Page Shell) */
+.sources-page {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+}
+
+.sources-page .source-nav {
+  padding: 48px 18px 12px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.sources-page .source-nav h1 {
+  font-size: 20px !important;
+  line-height: 28px !important;
+  font-weight: 700 !important;
+}
+
+.sources-page .source-nav p {
+  font-size: 13px !important;
+  color: #64748b !important;
+}
+
+.sources-page .source-disclosure {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+}
+
+.source-page-intro {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  color: #475569 !important;
+}
+
+/* 3. 云观星天空互斥控件与暗色玻璃弹层 (Sky Dock, Mutex Panels & Celestial Sheet) */
+body[data-scale-surface="sky"] .sky-dock {
+  left: 16px !important;
+  bottom: 28px !important;
+  gap: 10px !important;
+}
+
+body[data-scale-surface="sky"] .sky-dock button {
+  height: 48px !important;
+  min-height: 48px !important;
+  border-radius: 16px !important;
+  font-size: 14.5px !important;
+  padding: 0 14px !important;
+  gap: 8px !important;
+}
+
+body[data-scale-surface="sky"] .sky-dock button .matte-control-icon,
+body[data-scale-surface="sky"] .sky-dock button img {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+body[data-scale-surface="sky"] .sky-panel {
+  bottom: 28px !important;
+  left: 132px !important;
+  right: 16px !important;
+  border-radius: 22px !important;
+  padding: 18px !important;
+  font-size: 14.5px !important;
+  line-height: 22px !important;
+}
+
+body[data-scale-surface="sky"] .sky-panel h3 {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  margin-bottom: 12px !important;
+}
+
+body[data-scale-surface="sky"] .sky-panel .sky-small {
+  font-size: 13px !important;
+  line-height: 19px !important;
+}
+
+body[data-scale-surface="sky"] .sky-panel button {
+  min-height: 46px !important;
+  font-size: 14px !important;
+  border-radius: 12px !important;
+}
+
+body[data-scale-surface="sky"] .sky-list-row small {
+  font-size: 13px !important;
+  line-height: 18px !important;
+}
+
+/* 时间互斥面板内嵌保护：严禁给时间刻度外加卡片边框 */
+body[data-scale-surface="sky"] .sky-panel-time {
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 180px !important;
+  padding: 16px 0 !important;
+}
+
+body[data-scale-surface="sky"] .sky-panel-time .observation-time,
+body[data-scale-surface="sky"] .sky-panel-time .observation-time #time-ruler,
+body[data-scale-surface="sky"] .sky-panel-time .observation-time #time-track {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body[data-scale-surface="sky"] .sky-panel-time .observation-time button,
+body[data-scale-surface="sky"] .sky-panel-time .observation-time #time-track button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* 天体详情暗色玻璃弹窗 */
+body[data-scale-surface="sky"] #details {
+  border-radius: 26px !important;
+  padding: 22px !important;
+  max-height: 78dvh !important;
+}
+
+body[data-scale-surface="sky"] .celestial-source-entry {
+  min-height: 48px !important;
+  font-size: 15px !important;
+  border-radius: 14px !important;
+  padding: 12px 16px !important;
+}
+
+body[data-scale-surface="sky"] .source-disclosure {
+  background: #172130 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #dce3eb !important;
+}
+
+body[data-scale-surface="sky"] .source-disclosure h3 {
+  color: #f1f5f9 !important;
+}
+
+body[data-scale-surface="sky"] .source-credit,
+body[data-scale-surface="sky"] .source-copy {
+  color: #abbacf !important;
+}
+
+/* 4. 日月食与天文事件详情 (Eclipse Phases & Event Modals) */
+.event-modal {
+  border-radius: 26px !important;
+  width: calc(100% - 24px) !important;
+  max-width: 480px !important;
+  max-height: calc(100dvh - 96px) !important;
+}
+
+.event-modal .event-header {
+  min-height: 60px !important;
+  padding: 14px 18px !important;
+}
+
+.event-modal .event-header h2 {
+  font-size: 19px !important;
+  line-height: 27px !important;
+  font-weight: 600 !important;
+}
+
+.event-modal .event-header button {
+  width: 44px !important;
+  height: 44px !important;
+}
+
+.event-modal .event-name {
+  font-size: 17px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+}
+
+.event-modal .event-period,
+.event-modal .catalogue,
+.event-modal .activity-axis {
+  font-size: 13px !important;
+  line-height: 19px !important;
+}
+
+.event-modal .event-identity h3 {
+  font-size: 24px !important;
+  line-height: 32px !important;
+  font-weight: 700 !important;
+}
+
+.event-modal .local-context {
+  border-radius: 18px !important;
+  padding: 18px !important;
+  margin-bottom: 16px !important;
+}
+
+.event-modal .local-context h4 {
+  font-size: 16px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+}
+
+.event-modal .local-context p {
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+
+/* 日月食各相时刻与仰角 */
+.eclipse-phase {
+  min-height: 46px !important;
+  padding: 12px 0 !important;
+  font-size: 14.5px !important;
+  line-height: 22px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  align-items: baseline !important;
+  justify-content: space-between !important;
+}
+
+.eclipse-phase small {
+  font-size: 13px !important;
+  color: #64748b !important;
+}
+
+.solar-safety {
+  border-radius: 16px !important;
+  padding: 14px 16px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+  margin: 12px 0 !important;
+}
+
+.event-article {
+  padding-top: 20px !important;
+  font-size: 14.5px !important;
+  line-height: 24px !important;
+}
+
+.event-article h3 {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+}
+
+/* 5. 跨模块微调 (Plan, Layers & Shared Spot Card) */
+body[data-scale-surface="plan"] .footnote,
+body[data-scale-surface="plan"] .enddate,
+body[data-scale-surface="plan"] .arrival-note,
+body[data-scale-surface="plan"] .reminder-status small {
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+body[data-scale-surface="layers"] #layer-panel {
+  max-height: 68dvh !important;
+}
+
+.spot-card .matte-control-icon {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.spot-copy p.spot-address {
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  gap: 6px !important;
+  line-height: 20px !important;
+  font-size: 13.5px !important;
+}

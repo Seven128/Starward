@@ -1,0 +1,266 @@
+/* ==========================================================================
+   Starward · 行程成就与双分享页精修补丁 (单文件追加CSS)
+   ========================================================================== */
+
+/* 1. 基础状态修复与外层环境净化：移除黑底外框与演示条 */
+[hidden] {
+  display: none !important;
+}
+
+html, body {
+  background: #f6f5f1 !important;
+  min-height: 100vh !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+.app-viewport {
+  max-width: 100% !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.demo-switcher {
+  display: none !important;
+}
+
+/* 隐藏工程说明、虚构档案号、行踪隐私免责与重复声明文案 */
+.ticket-footer-meta,
+.trip-record-bottom,
+.page-bottom-disclaimer,
+.stat-label-wrap .sub-hint {
+  display: none !important;
+}
+
+/* 2. 行程票（view-trip）票据质感与层级重构 */
+#view-trip {
+  background: transparent !important;
+  padding: 16px !important;
+  max-width: 440px !important;
+  margin: 0 auto !important;
+}
+
+section.share-art {
+  background:
+    radial-gradient(ellipse at 88% 8%, rgba(200, 168, 102, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 12% 92%, rgba(179, 151, 93, 0.05) 0%, transparent 45%),
+    #ffffff !important;
+  border: 1px solid #ebedf0 !important;
+  border-radius: 24px !important;
+  padding: 28px 24px 22px !important;
+  box-shadow: 0 8px 30px rgba(50, 68, 82, 0.07) !important;
+}
+
+/* 票顶品牌与日期码 */
+.ticket-brand-row {
+  border-bottom: 1px dashed #e4eaee !important;
+  padding-bottom: 12px !important;
+}
+
+.ticket-header-content {
+  padding: 16px 0 6px !important;
+}
+
+.ticket-date-sup {
+  font-size: 13px !important;
+  letter-spacing: 0.12em !important;
+  color: #a48443 !important;
+  font-variant-numeric: tabular-nums !important;
+  display: block !important;
+  margin-bottom: 4px !important;
+}
+
+/* 票面主标题增强至 32px */
+.ticket-title {
+  font-size: 32px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  color: #1a2933 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.meteor-track-art {
+  margin: 2px 0 4px !important;
+}
+
+.ticket-notch-divider {
+  margin: 12px -24px 16px !important;
+}
+
+.ticket-notch-left, .ticket-notch-right {
+  background-color: #f6f5f1 !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* 票据信息自然舒展排列：地点第二重点，区域作为副文案 */
+.ticket-body-details {
+  gap: 16px !important;
+  padding-top: 4px !important;
+}
+
+.ticket-body-details .detail-line-item:first-child .detail-line-label {
+  display: none !important;
+}
+
+.ticket-body-details .detail-line-item:first-child .detail-line-val {
+  font-size: 22px !important;
+  line-height: 1.35 !important;
+  font-weight: 700 !important;
+  color: #223440 !important;
+}
+
+.ticket-body-details .detail-line-item:nth-child(2) {
+  margin-top: -12px !important;
+}
+
+.ticket-body-details .detail-line-item:nth-child(2) .detail-line-label {
+  display: none !important;
+}
+
+.ticket-body-details .detail-line-item:nth-child(2) .detail-line-val {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: #728391 !important;
+  font-weight: 400 !important;
+}
+
+/* 时段与天象行：正文 15px，辅助 13px，行高 1.6 */
+.ticket-body-details .detail-line-item:nth-child(n+3) {
+  display: grid !important;
+  grid-template-columns: 84px 1fr !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+}
+
+.detail-line-label {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: #8b9ea8 !important;
+}
+
+.detail-line-val {
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  color: #223440 !important;
+}
+
+/* 3. 来源与折叠说明精简适配 */
+.source-details {
+  border-top: 1px solid #edf1f4 !important;
+  margin-top: 18px !important;
+  padding-top: 8px !important;
+}
+
+.source-details > summary {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: #8899a6 !important;
+}
+
+.source-details p {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: #738491 !important;
+}
+
+/* 4. 个人行程成就（view-achievements）构图强化 */
+#view-achievements {
+  padding: 12px 16px 36px !important;
+  max-width: 440px !important;
+  margin: 0 auto !important;
+}
+
+.achieve-headline h1 {
+  font-size: 26px !important;
+  line-height: 1.3 !important;
+}
+
+.achieve-headline p {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+/* 票册主统计卡与内联指标 */
+.summary-ticket-book {
+  border-radius: 22px !important;
+  background: #ffffff !important;
+  border: 1px solid #ebedf0 !important;
+  box-shadow: 0 6px 20px rgba(50, 68, 82, 0.05) !important;
+}
+
+.stat-number {
+  font-size: 54px !important;
+  line-height: 1 !important;
+}
+
+.stat-label-wrap .primary-label {
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+}
+
+.sub-stat-item {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+/* 列表月份/年份分组标尺与票据联结感 */
+.timeline-filter-bar {
+  margin: 20px 4px 10px !important;
+}
+
+.trip-list-stack {
+  position: relative !important;
+  padding-left: 10px !important;
+}
+
+.trip-list-stack::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 16px !important;
+  bottom: 24px !important;
+  width: 2px !important;
+  background: #dbe3e8 !important;
+  border-radius: 1px !important;
+}
+
+.trip-record-card {
+  position: relative !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  border: 1px solid #edf1f4 !important;
+  box-shadow: 0 4px 14px rgba(50, 68, 82, 0.04) !important;
+  margin-bottom: 14px !important;
+  padding: 16px 18px !important;
+}
+
+.trip-record-title {
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  color: #1e2f3a !important;
+}
+
+.trip-record-mid {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: #5d717f !important;
+  margin-top: 6px !important;
+}
+
+/* 5. 观星点名片（view-spot）适配 */
+#view-spot {
+  padding: 16px !important;
+  max-width: 440px !important;
+  margin: 0 auto !important;
+}
+
+.spot-share-card {
+  border-radius: 24px !important;
+  border: 1px solid #ebedf0 !important;
+}
+
+.spot-fact-row {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}

@@ -4,4 +4,4 @@
 
 复用：公共 observation-time 浏览器控件；现有 astronomy-core Gaia校验/位置计算；现有 sky-view-projection 视锥。示例坐标22.6,114.5不是正式地点记录；示例日期2026-09-09至11的两个观测夜；预览姿态只由画外演示控件注入，不证明真实方向跟随。Vega取项目既有测试的天体测量输入，其他目标由现有天文引擎计算。
 
-来源：Stitch项目 https://stitch.withgoogle.com/projects/13823253487989500123，模式均衡；底层模型unknown；Codex宿主GPT-6，effort unknown，用量null。原稿与本地修订分开。
+来源：已删除的 Stitch 旧项目（ID `13823253487989500123`），模式均衡；底层模型unknown；Codex宿主GPT-6，effort unknown，用量null。原稿与本地修订分开。

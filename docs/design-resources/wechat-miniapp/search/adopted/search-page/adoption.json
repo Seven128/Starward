@@ -10,6 +10,7 @@
   "scope": "Daytime dedicated Search: same map/search field, reveal/return, single horizontal filter strip, two-level filter sheet, retained collapsible result partitions, photo cards and address alignment",
   "date": "2026-09-08",
   "stitchProject": "https://stitch.withgoogle.com/projects/5585184579244766246",
-  "stitchRole": "Historical exploration; final adopted interaction code is stored in this repository",
+  "stitchRole": "Historical exploration; remote project permanently deleted on 2026-09-23; final adopted interaction code is stored in this repository",
+  "stitchProjectDeletedAt": "2026-09-23",
   "mapSelectionDemonstrated": false
 }

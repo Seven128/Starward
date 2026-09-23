@@ -24,7 +24,7 @@
 
 原Map/Plan源保持不变，新修订包各有source-diff.json记录文件及哈希；未改源文件和依赖继续直接复用。HTML演示的iframe及复制文件仅用于独立审阅，不是生产组件拆分方案。共享日期/图标/事件模块仍从一个源导入。
 
-Stitch已同步当前精确参考及规则说明，状态、节点与清理范围见[同步记录](stitch-sync.md)。当前可编辑交互由本目录及完整Map/Plan源持有；Stitch截图索引不冒充可执行共享组件。未采用的生成原稿和简化宿主在定稿时清理，当前[来源记录](provenance.json)保留必要来源说明。
+2026-09-13 曾向旧 Stitch 项目同步精确参考和规则说明，[同步记录](stitch-sync.md)只保留当时事实；该远端旧项目已于 2026-09-23 删除。当前可编辑交互由本目录及完整 Map/Plan 源持有；静态截图不冒充可执行共享组件。当前[来源记录](provenance.json)保留必要来源说明。
 
 设计检查：[结果](verification.json)、[地图大档](reference/map-large.png)、[地形](reference/terrain.png)、[计划完整编辑](reference/plan-editor.png)、[计划单选](reference/plan-single.png)、[事件详情](reference/detail.png)。脚本为`.codex/work-items/three-requirements-2026-09-13/check-repair.cjs`，只证明浏览器设计原型。生产另有服务端历史多关联回归、WEAPP browse/select-one/list-detail交互、非透明RootPortal外壳回归及Android原生Map地形合成证据；Android物理系统Back已实测详情→列表→地图两级返回。焦点恢复的无障碍读屏结果、快速重开、前后台、减少动态效果、iOS和物理平板仍需单列验证。
 

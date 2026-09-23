@@ -1,0 +1,207 @@
+{
+  "weather": {
+    "name": "和风天气",
+    "url": "https://www.qweather.com",
+    "license": "和风天气开发者许可",
+    "licenseUrl": "https://dev.qweather.com/docs/terms/attribution/",
+    "paragraphs": [
+      "天气仅显示当前接口实际返回的小时。超出覆盖的时段显示暂无数据，天文计算与计划仍可使用。",
+      "总云量不代表低云、中云或高云；能见度不能代替透明度与视宁度。"
+    ],
+    "publishedAt": "来源未提供",
+    "retrievedAt": "2026-09-08 17:50 · 北京时间",
+    "validity": "2026-09-08 18:00 至 2026-09-09 06:00 · 北京时间",
+    "precision": "逐小时预报；仅保留当前响应实际返回的时段"
+  },
+  "terrain": {
+    "name": "Copernicus DEM GLO-30",
+    "url": "https://doi.org/10.5270/ESA-c5d3d65",
+    "license": "Copernicus DEM Free & Open",
+    "licenseUrl": "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM",
+    "paragraphs": [
+      "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+      "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+      "Starward resampled the WGS84 DSM onto a GCJ-02 grid, then derived hillshade, elevation colour and transparent no-data pixels.",
+      "2021 年源数据；当前发布覆盖大湾区局部，派生网格约 110.7 米。覆盖外与缺测分别保留，不用于地平线遮挡角计算。"
+    ],
+    "publishedAt": "2026-09-15T04:00:34Z",
+    "validity": "2021 源数据；大湾区局部派生版本 v2",
+    "precision": "源约30米；派生网格110.7米，GCJ-02。非地平线遮挡角。"
+  },
+  "nightlight": {
+    "name": "EOG Annual VNL V2.2",
+    "credit": "Source: EOG, Colorado School of Mines.",
+    "url": "https://eogdata.mines.edu/products/vnl/",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://eogdata.mines.edu/files/EOG_products_CC_License.pdf",
+    "paragraphs": [
+      "This product was made utilizing Annual VNL V2.2 data produced by the Earth Observation Group, Payne Institute for Public Policy, Colorado School of Mines.",
+      "Starward selected the declared AOI, masked insufficient cloud-free coverage and invalid radiance, aggregated valid pixels into relative night-light bands, and sampled spot neighbourhoods; displayed map bounds are converted to GCJ-02.",
+      "年度卫星向上辐亮度估算，不是实时天空亮度、Bortle 等级或现场 SQM 测量。"
+    ]
+  },
+  "engine": {
+    "name": "Astronomy Engine",
+    "url": "https://github.com/cosinekitty/astronomy",
+    "license": "MIT",
+    "licenseUrl": "https://github.com/cosinekitty/astronomy/blob/master/LICENSE",
+    "paragraphs": [
+      "按地点与所选时刻计算天体位置；理论地平线上方不代表现场一定可见，山体、建筑与云层可能遮挡。"
+    ]
+  },
+  "star": {
+    "name": "HEASARC · BSC5P",
+    "url": "https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html",
+    "license": "HEASARC 数据使用政策",
+    "licenseUrl": "https://heasarc.gsfc.nasa.gov/docs/heasarc/data_policy.html",
+    "paragraphs": [
+      "Hoffleit & Warren (1991), Bright Star Catalog, 5th Revised Edition (Preliminary Version); HEASARC, NASA/GSFC",
+      "Starward 筛选亮星、转换坐标并统一标识。星名来源另遵循 IAU WGSN；不使用 Hipparcos 数值天体测量。"
+    ],
+    "retrievedAt": "2026-09-19T10:42:19.214819Z",
+    "validity": "bsc5p-bright-stars.v2",
+    "precision": "J2000 目录位置及自行；字段缺失不补零。"
+  },
+  "deep": {
+    "name": "AllWISE W3 · IRSA / CDS",
+    "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3",
+    "license": "HiPS 数据库 ODbL 1.0；影像 IPAC/NASA",
+    "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "paragraphs": [
+      "This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, and NEOWISE, which is a project of the Jet Propulsion Laboratory/California Institute of Technology. WISE and NEOWISE are funded by the National Aeronautics and Space Administration.",
+      "Contains information from AllWISE W3 HiPS (CDS/Aladin; CNRS/Unistra), made available under the Open Database License (ODbL). Starward offers its imagery selection and arrangement under ODbL; individual AllWISE images retain their separate WISE/NEOWISE acknowledgment and IPAC/NASA rights.",
+      "Starward selected 51 Messier galaxy/nebula targets and published three north-up ICRS TAN JPEG cutouts per target through CDS hips2fits, with 1-99.7 percentile asinh grayscale stretch; these are processed 12 micrometer survey images, not visible-light photographs.",
+      "Historical 12 micrometer survey imagery; it is neither naked-eye appearance nor realtime sky data.",
+      "Source-survey saturation and detector artifacts may remain after bounded stretch and resampling.",
+      "IRSA DOI: 10.26131/IRSA153",
+      "CDS/Aladin — CNRS/Unistra · DOI: 10.26093/cds/aladin/na1n-03"
+    ],
+    "downloadUrl": "http://127.0.0.1:4194/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/data-be36a8b78f449ed788a2f0e0c5a9e46d3c9b0090f6d52ac40a756637ec6775c8.json",
+    "retrievedAt": "来源未提供",
+    "validity": "历史 AllWISE W3 12μm 巡天",
+    "precision": "ICRS TAN 北向上裁片；三档视野，不是可见光或实时影像。"
+  },
+  "opengc": {
+    "name": "OpenNGC · Mattia Verga and contributors",
+    "url": "https://github.com/mattiaverga/OpenNGC/tree/36cb178a0f69dba8bfc03a99c10512831edf1c6b",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://github.com/mattiaverga/OpenNGC/blob/36cb178a0f69dba8bfc03a99c10512831edf1c6b/LICENSES/CC-BY-SA-4.0.txt",
+    "paragraphs": [
+      "Starward 从指定 OpenNGC 版本筛选 51 个带 Messier 标识的星系／星云，统一类型和名称字段，将赤经／赤纬转换为十进制度并重排为 JSON；派生目录继续按 CC BY-SA 4.0 提供。",
+      "Target identities and coordinates are adapted from OpenNGC v20260501, Mattia Verga and contributors, under CC BY-SA 4.0. Starward selected Messier galaxies/nebulae and converted coordinates to decimal degrees; these catalog fields remain CC BY-SA 4.0, separately from the imagery database."
+    ],
+    "publishedAt": "v20260501",
+    "retrievedAt": "2026-09-10T00:15:04.862Z",
+    "validity": "opengc-messier-deep-sky.v20260501",
+    "precision": "目录坐标，ICRS；坐标转为十进制度。"
+  },
+  "constellation": {
+    "name": "Stellarium Modern · 星座资源",
+    "url": "https://github.com/Stellarium/stellarium/tree/ab961cbde42eec8121be0df6ff48292f8d492b54/skycultures/modern",
+    "license": "连线 CC BY-SA 4.0 · 插画 FAL 1.3 · 几何 ODbL 1.0",
+    "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "paragraphs": [
+      "Stellarium Modern v24.4, commit ab961cbde42eec8121be0df6ff48292f8d492b54",
+      "Line definitions and image anchor identifiers: Stellarium's team, CC BY-SA 4.0.",
+      "https://creativecommons.org/licenses/by-sa/4.0/",
+      "Illustrations: Johan Meuris, Free Art License 1.3; original PNG bytes retained.",
+      "https://artlibre.org/licence/lal/en/",
+      "https://johanmeuris.eu/work/stellarium-constellation-art/",
+      "Original files: https://raw.githubusercontent.com/Stellarium/stellarium/ab961cbde42eec8121be0df6ff48292f8d492b54/skycultures/modern/",
+      "Separate geometry-v2.json: contains CDS/SIMBAD identity information under ODbL 1.0.",
+      "https://simbad.cds.unistra.fr/simbad/",
+      "https://opendatacommons.org/licenses/odbl/1-0/",
+      "Coordinates/proper motions: BSC5P (Hoffleit & Warren 1991), SAO/ADC/USNO FK5 J2000, HEASARC.",
+      "https://heasarc.gsfc.nasa.gov/docs/heasarc/data_policy.html",
+      "No Hipparcos numerical astrometry. Explicit multiple-system members use geometric representatives, not photocentres.",
+      "HIP60718 component identification only: All Skies Encyclopaedia / IAU-WGSN, Susanne M Hoffmann, Youla Azkarrula, Ian Ridpath.",
+      "https://ase.exopla.net/index.php/Acrux ; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ .",
+      "Geometry and topology retain separate licenses; runtime projection/opacity/tint do not change original downloadable art."
+    ],
+    "downloadUrl": "http://127.0.0.1:4194/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/data-7d05402fcc7936930dc4f54f4d6055ed7a126f184273f8005eac4fbdcbdcb3e3.json"
+  },
+  "meteor": {
+    "name": "Global Meteor Network",
+    "url": "https://globalmeteornetwork.org/flux/",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "paragraphs": [
+      "Global Meteor Network，2022—2023 历史轨迹与活动参考；Starward 做一度分箱中位数及太阳中心黄道坐标线性漂移拟合。",
+      "年度日期为太阳黄经参考映射，不代表今年精确极大、活动曲线或爆发预报。"
+    ]
+  },
+  "recent": {
+    "name": "和风天气 · 近期天气",
+    "url": "https://www.qweather.com",
+    "license": "和风天气开发者许可",
+    "licenseUrl": "https://dev.qweather.com/docs/terms/attribution/",
+    "paragraphs": [
+      "邻近地区前两个自然日的历史再分析，不含今天；不是点位过去48小时现场实测。未返回字段不补齐。"
+    ],
+    "publishedAt": "来源未提供",
+    "retrievedAt": "来源未提供",
+    "validity": "以本条地区记录或小时为准",
+    "precision": "邻近地区前两个自然日的历史再分析，不含今天；不是点位过去48小时现场实测。未返回字段不补齐。",
+    "credit": "和风天气"
+  },
+  "air": {
+    "name": "和风天气 · 空气质量",
+    "url": "https://www.qweather.com",
+    "license": "和风天气开发者许可",
+    "licenseUrl": "https://dev.qweather.com/docs/terms/attribution/",
+    "paragraphs": [
+      "区域当前空气质量与所选小时预报分别展示；不同AQI标准保留原值。"
+    ],
+    "publishedAt": "来源未提供",
+    "retrievedAt": "来源未提供",
+    "validity": "以本条地区记录或小时为准",
+    "precision": "区域当前空气质量与所选小时预报分别展示；不同AQI标准保留原值。",
+    "credit": "和风天气"
+  },
+  "warning": {
+    "name": "和风天气 · 官方预警",
+    "url": "https://www.qweather.com",
+    "license": "和风天气开发者许可",
+    "licenseUrl": "https://dev.qweather.com/docs/terms/attribution/",
+    "paragraphs": [
+      "预警保留当前数据的原发布机构、发布时间、生效与到期时刻及指令，失败不能推断没有预警。"
+    ],
+    "publishedAt": "来源未提供",
+    "retrievedAt": "来源未提供",
+    "validity": "以本条地区记录或小时为准",
+    "precision": "预警保留当前数据的原发布机构、发布时间、生效与到期时刻及指令，失败不能推断没有预警。",
+    "credit": "和风天气"
+  },
+  "vega": {
+    "name": "NASA Night Sky Network · 织女星介绍",
+    "url": "https://science.nasa.gov/solar-system/skywatching/night-sky-network/summer-triangle-corner-vega/",
+    "license": "NASA 内容使用指引；具体第三方素材权利另行适用",
+    "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "paragraphs": [
+      "介绍资料与天体位置计算分别标注来源。"
+    ]
+  },
+  "editorial": {
+    "name": "Starward · 观测前的准备",
+    "url": "http://127.0.0.1:4194/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/editorial.txt",
+    "license": "Starward 自有文字",
+    "publishedAt": "2026-09-22",
+    "precision": "非科学数据源",
+    "paragraphs": [
+      "文章资料独立于天文目录，不修改事件数值。"
+    ]
+  },
+  "eclipse": {
+    "name": "Astronomy Engine · 日月食计算",
+    "url": "https://github.com/cosinekitty/astronomy",
+    "license": "MIT License",
+    "licenseUrl": "https://github.com/cosinekitty/astronomy/blob/master/LICENSE",
+    "precision": "食甚与食相由 miniapp-event-projection@2.0.0+astronomy-engine@2.1.19 按 UTC 计算；目录日期采用北京时间，所在地时刻单独换算并显示到分钟",
+    "validity": "2026年目录",
+    "paragraphs": [
+      "全球食事件目录是锁定算法的计算结果，不是实时观测公告",
+      "地点可见性必须另行结合观察者坐标、太阳或月球高度计算",
+      "天气和真实地平遮挡不属于该算法目录"
+    ]
+  }
+}

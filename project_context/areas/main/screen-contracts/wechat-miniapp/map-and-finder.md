@@ -74,6 +74,20 @@ Avatar opens album / camera / cancel actions, then preview and explicit save; ni
 
 ## 观星计划：出行与观测的组织职责
 
+### 2026-09-22 新增：个人行程成就与分享
+
+用户确认新增“个人行程成就”（入口在“我的”）、单个行程分享页、观星点分享页，沿用当前设计系统与已确认的舒适尺寸。成就按**已结束的计划自动统计**，不增加签到或实际完成确认门槛。计划时间经过不等于实际到访或观测成功；指标用“已结束计划 / 计划地点 / 关联天象”，不转换成已打卡或已观测。
+
+当前[可编辑待审资源](../../../../../docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/README.md)包含成就票册、行程票、地点名片、海报和空/错/失效状态。此轮是设计资源授权，不是生产页面/API完成或整组视觉采用。分享落地页加可保存海报是本轮设计提案，原生微信分享、小程序码与相册能力仍须后续实施。
+
+- 成就由现有计划身份与结束时刻派生，不维护第二份手工完成账本。当前设计按地点时区的结束年份分组、同一计划去重，地点按formal spot_id、天象按occurrence identity去重；无效时间、已删除/取消和未结束计划不计入。年份筛选作用于同组统计与记录，读取失败与无记录分开。统计口径细节随本轮资源审阅，代表数字不是账户数据。
+- 行程票、成就记录和接收页共用计划公开摘要职责，保留具体计划/地点身份、显式日期、当地时区、计划时段和可选关联天象。默认不含出发地、当前位置、私人备注、清单、提醒、头像昵称。已保存计划可处于未来/进行中/已结束，统一明确计划时间语义，不把关联天象或算法预测宣称为观测实绩。
+- 地点名片只使用正式公开信息；缺少可归属照片时用现有图标与抽象构图，不冒充实拍/真实地图。不复制陈旧天气，不恢复评分/最佳窗口；保留开放、进入、安全和来源。草稿、审核中提案仍不开放分享。
+- 两类分享共用公开对象摘要呈现、来源归因、失效恢复和海报组件；页面几何与字段是变体，不统一私人计划与地点事实的业务存储。流星雨、日月食等来源分别归因，海报保留适用署名。缺少身份、失效或下架不展示其他对象作为回退。
+- 关闭分享恢复原列表/计划详情/地图抽屉与滚动；查看地点保留对应formal spot身份，不无条件打开默认点。原型共用 `share-shell.mjs` 保留宿主；真实冷启动、公共分享凭据、撤销/删除后的权限由后续分享服务实施验证。
+
+My保留原账号、近期计划及创建反馈职责，仅增加成就入口；不是新增一级Tab或公共动态。共享定义、可编辑资源、消费者及验证边界见上述资源包。
+
 天文事件更新采用自动获取为主、后台核对和补录为辅。已接入且稳定的结构化来源经校验可自动发布；首次接入、解析异常、关键时刻明显变化或来源冲突进入后台核对，上传不直接发布。小程序只读服务端已发布事件库，不依赖用户或生产服务访问海外。当前服务无法访问海外接口：优先验证国内权威资料；海外独有数据在采集能力未具备前使用已核对版本及必要的后台导入，不承诺持续自动更新。来源暂时失败不删除事件或用户关联；超出资料覆盖范围显示未获取，不能显示“没有天象”。事件更新保留来源和版本，不能自动修改用户计划的时间。技术与发布规则由 [事件采集与网络边界](../../../../architecture/runtime-and-domain.md#astronomical-event-ingestion-and-network-boundary) 统一维护。
 
 2026-09-08 requirement: 观星计划 organizes departure, travel, arrival and the chosen observing interval. It does not duplicate the full spot document or promise favorable weather. Display observing reference near the top, then travel arrangements, associated events, personal reminder checklists and remarks. Detail and editor share this information hierarchy. New plans have no mandatory system-authored checklist.

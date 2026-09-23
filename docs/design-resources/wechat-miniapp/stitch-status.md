@@ -1,27 +1,32 @@
 # Stitch 资源状态
 
-2026-09-22，按用户“删掉或者隔离旧生成页面”的要求，采用**项目级隔离**。以下八个项目均在官方 Stitch 界面更名并读回确认。项目中既有旧生成页面，也有不同日期的静态参考，因此整体退出当前迭代入口；没有删除其中的必要来源或覆盖仓库采用资源。
+**当前唯一续改入口：[待审｜舒适尺度·星旅分享·公共动效｜09-23](https://stitch.withgoogle.com/projects/7144519510537620825)。** 画布现有 7 张按范围命名的静态总览；对应的 47 个可交互状态在[统一审阅入口](shared/comfortable-scale-2026-09-22/review.html)。续改前先从受影响页面的 `ADOPTED.md` 和下列待审资源核对完整源，不能从浏览器最近项目、历史生成记录或同名旧画板选基线。
 
-| 隔离后的 Stitch 项目 | 当前仓库入口 |
+2026-09-23，用户确认本次旧版本删除清单后，逐项核对项目标题、ID 与本地现行采用源，在官方 Stitch 界面永久删除下列 8 个旧项目，并从项目列表读回消失。其他无关项目未处理。旧项目 ID 只留作历史身份，不再是可打开的资源链接。
+
+| 已删除的 Stitch 旧项目（ID） | 保留的本地现行入口 |
 | --- | --- |
-| [隔离历史稿｜禁止迭代｜地图与观星点反馈](https://stitch.withgoogle.com/projects/13338420663663046308) | [地图](map/ADOPTED.md)、[反馈](feedback/ADOPTED.md)、[创建与反馈](contributions/ADOPTED.md) |
-| [隔离历史稿｜禁止迭代｜观星计划与天文事件](https://stitch.withgoogle.com/projects/1643718854829580633) | [计划](plan/ADOPTED.md)、[事件](events/ADOPTED.md)、[共享事件Modal](shared/astronomical-event-modal/README.md) |
-| [隔离历史稿｜禁止迭代｜云观星](https://stitch.withgoogle.com/projects/13823253487989500123) | [云观星](sky/ADOPTED.md) |
-| [隔离历史稿｜禁止迭代｜搜索](https://stitch.withgoogle.com/projects/5585184579244766246) | [搜索](search/ADOPTED.md) |
-| [隔离历史稿｜禁止迭代｜我的](https://stitch.withgoogle.com/projects/11944978164995734673) | [我的](my/ADOPTED.md) |
-| [隔离历史稿｜禁止迭代｜新增观星点](https://stitch.withgoogle.com/projects/14368046726515999361) | [地图采用入口中的新增观星点范围](map/ADOPTED.md) |
-| [隔离历史稿｜禁止迭代｜图层组件](https://stitch.withgoogle.com/projects/12200684196471900162) | [地图采用入口中的图层范围](map/ADOPTED.md) |
-| [隔离历史稿｜禁止迭代｜观星点信息组件](https://stitch.withgoogle.com/projects/587088532668047776) | [地图完整增量源](map/revisions/three-requirements-2026-09-13/README.md) |
+| 地图与观星点反馈 `13338420663663046308` | [地图](map/ADOPTED.md)、[反馈](feedback/ADOPTED.md)、[创建与反馈](contributions/ADOPTED.md) |
+| 观星计划与天文事件 `1643718854829580633` | [计划](plan/ADOPTED.md)、[事件](events/ADOPTED.md)、[共享事件 Modal](shared/astronomical-event-modal/README.md) |
+| 云观星 `13823253487989500123` | [云观星](sky/ADOPTED.md) |
+| 搜索 `5585184579244766246` | [搜索](search/ADOPTED.md) |
+| 我的 `11944978164995734673` | [我的](my/ADOPTED.md) |
+| 新增观星点 `14368046726515999361` | [地图采用入口中的新增观星点范围](map/ADOPTED.md) |
+| 图层组件 `12200684196471900162` | [地图采用入口中的图层范围](map/ADOPTED.md) |
+| 观星点信息组件 `587088532668047776` | [地图完整增量源](map/revisions/three-requirements-2026-09-13/README.md) |
 
-## 隔离如何生效
+## 保留边界
 
-- Stitch 项目标题统一使用“隔离历史稿｜禁止迭代”；其内部旧“采用版”“当前参考”标题和历史对话均不再构成当前性证明。地图项目内“新增提案审核中态”另加画板级隔离标记。没有声称逐张删除或逐张改名。
-- 本地旧生成导出 `raw/`、`provenance/`、`stitch-feedback-*` 只保留来源身份，由资源总入口和各页采用入口的醒目提示明确隔离，不再作为整页设计起点。源路径不搬动，以保全当前完整预览的真实依赖及引用；不新增或修改 AGENTS.md 来管理资源状态。
-- 当前 `ADOPTED.md` 及其明确引用的可编辑预览、状态变体、公共组件和图标依然有效。尤其 `map/candidates/context-audit-2026-09-09` 是当前增量源的必要依赖，不能按文件夹名认定废案。
-- 旧项目中的静态图片只能说明当时的画面，不能代表当前完整 HTML/CSS/JS 或最新业务交互。历史同步记录保留其日期事实，当前状态由本文件覆盖。
+- 本地 `ADOPTED.md`、其引用的可编辑预览、必要原稿/分件、状态变体、公共组件和 B 批图标继续有效。`map/candidates/context-audit-2026-09-09` 仍是当前完整增量源的依赖，不能按目录名认定废案。
+- 本次用户确认的删除清单仅包含上述 8 个远端项目；本地 `raw/`、`provenance/`、`stitch-feedback-*` 仍含来源记录和部分当前源依赖，未按目录名批量删除。它们不能作为新迭代基线，后续另按资源生命周期核对并确认删除清单。历史 URL 即使留在生成记录中，也不表示远端项目仍可使用；面向审阅者的旧项目链接已移除。
+- 新候选尚待整体视觉审阅，未自动替代各页采用源或生产实现。Stitch 七张静态图不等于原生共享组件、完整交互或可运行小程序。
 
-## 后续尺寸迭代入口
+## 当前候选与后续入口
 
-从 [资源总入口](README.md) → 页面 `ADOPTED.md` → 最新完整源及必要依赖开始，实际打开相应状态，再把当前画面与 [B批3D拟物磨砂图标](shared/icons/ADOPTED.md) 带入新的 Stitch 工作。不得直接续改隔离项目里的旧生成页面。新稿只有经核对并明确采用后才能替代当前入口；本次隔离没有采用新视觉。
+当前项目对应[现有页面尺寸候选](shared/comfortable-scale-2026-09-22/README.md)、[新增星旅与分享](shared/journey-sharing-2026-09-22/README.md)、[共享弹性抽屉](shared/elastic-sheet/README.md)和[公共连续动效](shared/fluid-motion-2026-09-22/README.md)。用户确认样板尺寸方向及成就按已结束计划自动统计，整组仍待审。本项目的旧过程画布已移除，画布已读回 7 张按范围命名的最新静态总览（01 地图/点位至 07 星旅分享）；历史对话输入不构成当前版本。
 
-观星点仍是三档抽屉，保持原 Tab、原完整内容、拖动与底部动作。本轮只授权尺寸、留白和圆润程度调整。最新完整资源重新同步到 Stitch 的工作尚未完成；隔离不能被表述为两端已完全一致。
+从 [资源总入口](README.md) → 页面 `ADOPTED.md` → 最新完整源及必要依赖开始，实际打开相应状态，再把当前画面与 [B 批 3D 拟物磨砂图标](shared/icons/ADOPTED.md) 带入当前 Stitch 工作。已删除旧项目不能续改；新稿只有经核对并明确采用后才能替代当前采用入口。
+
+观星点仍是三档抽屉，保持原 Tab、原完整内容与底部动作。用户后续授权新增星旅成就、双分享页与公共抽屉的阻尼弹性、速度吸附；当前设计原型已覆盖这些范围。Stitch同步的是当前静态总览，47个状态和可拖动交互以本地统一审阅入口为准；不能将图片同步表述为Stitch原生组件、完整交互或生产实现同步。
+
+公共连续动效已在[共享候选](shared/fluid-motion-2026-09-22/README.md)集中实现并接入当前消费者；Stitch本轮只提供文字/CSS建议，未新增静态画板。五个动效审阅入口合并在既有入口首组，完整三档抽屉与分享入口继续保留。
