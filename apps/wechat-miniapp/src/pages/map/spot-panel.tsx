@@ -567,6 +567,10 @@ export function SpotInformationPanel({
                   <Text>我要反馈 ↗</Text>
                 </Button>
               </View>
+              {cloudReady ? <View className="spot-panel__guide-row">
+                <Text>观星攻略</Text>
+                <Button className="spot-panel__text-action" data-control="spot-guide-entry" onClick={() => onEvidence("guides")}>查看攻略 ↗</Button>
+              </View> : null}
               <SpotAdditionalInformation spotId={effectiveSpot.spotId} detail={detail} facilities={facilities}
                 facilityLabel={facilityLabel} onLayoutChange={() => setLayoutVersion(value => value + 1)} />
             </View>

@@ -2985,7 +2985,8 @@
   text-align: left;
 }
 .spot-panel__contact-row,
-.spot-panel__source-row {
+.spot-panel__source-row,
+.spot-panel__guide-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3008,6 +3009,14 @@
   color: #64748b;
 }
 .spot-panel__source-row .spot-panel__text-action--contribution {
+  flex: 0 0 auto;
+  min-height: 44Px;
+  padding: 0;
+  color: #687c72;
+  font-size: 13Px;
+  font-weight: 400;
+}
+.spot-panel__guide-row .spot-panel__text-action {
   flex: 0 0 auto;
   min-height: 44Px;
   padding: 0;
