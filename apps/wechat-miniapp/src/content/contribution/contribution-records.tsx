@@ -76,6 +76,8 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
     .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
   const activeFilter = group === "CREATION" ? creationFilter : feedbackFilter;
   const visible = records.filter((item) => activeFilter === "ALL" || contributionRecordStatus(item).key === activeFilter);
+  const confirmedEmpty = Boolean(form.history.data) && !form.history.refreshError &&
+    form.history.data?.dataState !== "STALE_USABLE";
   const filters = group === "CREATION"
     ? ([['ALL', '全部'], ['DRAFT', '草稿'], ['PENDING', '审核中'], ['ONLINE', '已上线'], ['REJECTED', '未通过']] as const)
     : ([['ALL', '全部'], ['PENDING', '审核中'], ['APPROVED', '已通过'], ['REJECTED', '未通过']] as const);
@@ -94,6 +96,6 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
         {item.review?.reason ? <Text className="contribution-record__reason">审核意见：{item.review.reason}</Text> : null}
         {contributionSubmissionState(item) === "DRAFT" ? <SoftButton label={`继续编辑${recordName(item)}`} disabled={form.submissionCommandBusy} onClick={() => void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>继续编辑</SoftButton> : status.key === "REJECTED" ? <View className="contribution-record__actions"><SoftButton label={`查看${recordName(item)}审核意见`} disabled={form.submissionCommandBusy} onClick={() => setSelected(item)}>查看审核意见</SoftButton><SoftButton label={`修改并重新提交${recordName(item)}`} disabled={form.submissionCommandBusy} onClick={() => item.formalFeedback && item.spotId ? void Taro.navigateTo({ url: `/content/spot-feedback/index?spotId=${encodeURIComponent(item.spotId)}&spotName=${encodeURIComponent(recordName(item))}&submissionId=${encodeURIComponent(item.submissionId)}` }) : void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>修改并重新提交</SoftButton></View> : <SoftButton label={`查看${recordName(item)}本次记录`} disabled={form.submissionCommandBusy} onClick={() => setSelected(item)}>查看提交内容</SoftButton>}
       </View>; })}
-    </View> : <View className="contribution-records__empty"><Text className="type-section">暂无记录</Text><Text className="type-caption">当前分组和筛选下没有记录。</Text></View>}
+    </View> : confirmedEmpty ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无记录" detail="当前分组和筛选下没有记录。" /> : null}
   </View>;
 }

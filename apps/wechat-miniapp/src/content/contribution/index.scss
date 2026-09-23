@@ -324,7 +324,6 @@
 .contribution-record__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; padding: 16rpx 20rpx 20rpx; }
 .contribution-record__actions .soft-button { width: 100%; margin: 0; }
 .contribution-record__reason { display: block; margin: 16rpx 20rpx 0; padding: 14rpx 16rpx; border-left: 4rpx solid var(--warning); background: var(--surface-subtle); color: var(--text-secondary); font-size: var(--type-caption-size); line-height: var(--type-caption-line); }
-.contribution-records__empty { min-height: 320rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8rpx; color: var(--text-secondary); text-align: center; }
 .contribution-record-detail { display: flex; flex-direction: column; gap: 20rpx; }
 .contribution-record-detail__back { align-self: flex-start; min-height: var(--target-min); margin: 0; padding: 0 12rpx; border: 0; background: transparent; color: var(--text-secondary); line-height: var(--target-min); }
 .contribution-record-detail__back::after { border: 0; }
