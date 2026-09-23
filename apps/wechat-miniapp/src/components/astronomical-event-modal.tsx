@@ -187,7 +187,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
             <View className="event-modal__content">
               {catalog.isPending ? <StatusPanel state="LOADING" detail="正在读取事件目录。" /> : null}
               {catalogFailed ? <StatusPanel state={catalog.data ? "STALE" : "ERROR"} detail={catalog.data ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
-              {catalog.data && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
+              {catalog.data && !catalog.refreshError && catalog.data.dataState !== "STALE_USABLE" && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
               {mode === "select-one" && initialOccurrenceIds.length > 1 ? <StatusPanel state="PARTIAL" detail={`此历史计划保留了 ${initialOccurrenceIds.length} 个关联；只有确认新选择或清除时才会改为最多一个。`} /> : null}
               {catalog.data ? <View className="event-modal__catalogue"><Text>{catalogYear} 事件目录</Text><Text>{catalog.data.data.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES" ? "常年参考与食事件" : "年度资料"}</Text></View> : null}
               {groups.map((group) => <View key={group.month} className="event-modal__month">

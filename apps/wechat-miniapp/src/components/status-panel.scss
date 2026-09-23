@@ -15,22 +15,61 @@
   padding: 20Px 16Px;
 }
 .status-panel--empty-section {
-  min-height: 112Px;
+  min-height: 144Px;
+  border: 1rpx solid var(--border);
+  border-radius: 14Px;
+  justify-content: center;
+}
+.status-panel--empty-field {
+  min-height: 0;
+  padding: 4Px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  align-items: flex-start;
+  text-align: left;
+  gap: 2Px;
+}
+.status-panel__field-value {
+  color: var(--text-secondary);
+  font-size: 14Px;
+  line-height: 20Px;
 }
 .status-panel--empty-page {
-  min-height: 240Px;
+  min-height: max(240Px, calc(100vh - 184Px - env(safe-area-inset-bottom)));
   justify-content: center;
   background: transparent;
 }
 .status-panel__empty-icon {
-  width: 20Px;
-  height: 20Px;
+  width: 24Px;
+  height: 24Px;
+  margin-bottom: 6Px;
+}
+.status-panel--empty-page .status-panel__empty-icon {
+  width: 36Px;
+  height: 36Px;
+  margin-bottom: 10Px;
 }
 .status-panel--empty .type-label {
   color: var(--text-primary);
+  font-size: 15Px;
+  line-height: 22Px;
 }
 .status-panel--empty .type-caption {
   color: var(--text-secondary);
+  font-size: 13Px;
+  line-height: 20Px;
+  max-width: 280Px;
+}
+.status-panel--empty-field .type-caption { max-width: none; }
+.status-panel--empty .status-panel__recovery.soft-button {
+  min-height: 44Px;
+  margin-top: 8Px;
+  padding: 0 18Px;
+  border: 0;
+  border-radius: 999Px;
+  background: var(--surface-subtle);
+  box-shadow: none;
 }
 .status-panel--error {
   background: var(--surface-subtle);

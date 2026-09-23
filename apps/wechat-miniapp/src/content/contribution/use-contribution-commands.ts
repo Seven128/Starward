@@ -67,7 +67,7 @@ function createSaveDraft(form: ContributionForm, assertAccount: () => void) {
       form.applyDraft(response.data, form.phase);
       await form.history.refetch().catch(() => undefined);
       assertAccount();
-      if (!quiet)
+      if (!quiet && form.kind !== "NEW_SPOT_PROPOSAL")
         form.announce(
           "success",
           "草稿已保存",
@@ -401,7 +401,9 @@ function createSubmit(
       form.announce(
         "success",
         "已提交审核",
-        "反馈已进入审核，不会直接改变公开地点资料。",
+        form.kind === "NEW_SPOT_PROPOSAL"
+          ? "新增观星点已进入审核，审核结果不等于正式发布。"
+          : "反馈已进入审核，不会直接改变公开地点资料。",
       );
     } catch (error) {
       const uncertain = awaitingReceipt && !(error instanceof ContributionSubmitStorageError) && (!(error instanceof MiniappApiError) || error.statusCode >= 500 || error.statusCode === 408);

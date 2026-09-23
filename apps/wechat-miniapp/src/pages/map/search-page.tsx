@@ -329,6 +329,11 @@ export function MapSearchSurface() {
     else if (scene.refreshError || scene.data?.dataState === "STALE_USABLE") void scene.refetch();
     else void placeSearch.refetch();
   };
+  const retryFailedSearchResource = () => {
+    if (contextQuery.isError) void contextQuery.refetch();
+    else if (scene.isError) void scene.refetch();
+    else if (placeSearch.isError) void placeSearch.refetch();
+  };
 
   const blurSearch = () => {
     setFocused(false);
@@ -613,7 +618,8 @@ export function MapSearchSurface() {
           <NotificationRegion owner="search" placement="inline" />
           {staleSearchResource ? <StatusPanel state="STALE" detail="部分搜索资料尚未确认最新状态，当前结果仍会保留。"
             recoveryLabel="重新获取" onRecover={retryStaleSearchResource} /> : null}
-          {searchState !== "READY" && !(searchState === "STALE" && staleSearchResource) ? (
+          {searchState !== "READY" && !(searchState === "STALE" && staleSearchResource)
+            && (searchState !== "PARTIAL" || expiredEmptyFilter) ? (
             <StatusPanel
               state={searchState}
               detail={
@@ -624,12 +630,11 @@ export function MapSearchSurface() {
                     ? "少云筛选资料已到期，结果待核验；请刷新资料。"
                   : searchState === "EMPTY"
                     ? "没有匹配的正式观星点；可移动地图或换一个名称。"
-                    : searchState === "PARTIAL"
-                      ? "部分结果资料不全，请留意缺失标记。"
-                      : "正在搜索观星点。")
+                    : "正在搜索观星点。")
               }
-              recoveryLabel={searchState === "ERROR" || searchState === "PERMISSION_DENIED" ? "返回地图重试" : undefined}
-              onRecover={() => void leaveSearch()}
+              recoveryLabel={searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
+              onRecover={searchState === "ERROR" ? retryFailedSearchResource : searchState === "PERMISSION_DENIED"
+                ? () => void Taro.navigateTo({ url: "/pages/auth/index" }) : undefined}
             />
           ) : null}
           {incompleteActiveCoverage.length ? (

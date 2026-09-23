@@ -61,7 +61,7 @@ export default function AchievementPage() {
                 <View className="achievement-record__footer"><Text>计划已结束</Text><Text>查看行程 ›</Text></View>
               </Button>;
             })}
-          </> : <StatusPanel state="EMPTY" emptyLevel="page" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="新建计划" onRecover={() => void Taro.navigateTo({ url: "/content/plan/edit/index?new=1" })} />}
+          </> : !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无星旅记录" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void Taro.navigateTo({ url: "/content/plan/edit/index?new=1" })} /> : null}
         </> : null}
         {navigationError ? <StatusPanel state="ERROR" detail="行程暂未打开，请再次点击。" /> : null}
       </View>

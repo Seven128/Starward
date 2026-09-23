@@ -81,7 +81,7 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
       days.map(day => <View className="recent-weather__day" key={day.localDate}>
         <Text className="type-secondary">{day.localDate}</Text>
         <Text className="type-body">{recentWeatherFacts(day).join(" · ")}</Text>
-      </View>) : failed ? <StatusPanel state="ERROR" detail="地区历史天气暂时无法获取。" recoveryLabel="重试近期天气" onRecover={() => liveFailed ? setFailedSpot(null) : void query.refetch()} /> : <StatusPanel state="EMPTY" detail="地区历史天气尚无可用记录。" />}
+      </View>) : failed ? <StatusPanel state="ERROR" detail="地区历史天气暂时无法获取。" recoveryLabel="重试近期天气" onRecover={() => liveFailed ? setFailedSpot(null) : void query.refetch()} /> : <StatusPanel state="EMPTY" emptyIcon="cloud" detail="该地区近期暂无天气记录。" />}
     {stale ? <Text className="type-caption">资料暂未刷新，请重试获取当前地区记录。</Text> : null}
     {implications.map(message => <Text className="type-caption" key={message}>{message}</Text>)}
     {!explanationOpen && days.length ? <SourceAttribution sources={envelope?.sources ?? []} /> : null}

@@ -514,7 +514,7 @@ This section is the complete canonical visual-system profile for `target.system.
 
 2026-09-22 尺度修订保留原交互：观星点信息组件仍为原地图抽屉，原档位、拖动、内部Tab/章节行为、内容与固定操作不变。调整限定为内容文字、图标、留白及局部圆角；不能将静态大档截图推导成独立详情页、简化内容或新的导航方式。
 
-2026-09-22 尺度方向修订：用户真机反馈当前“小巧”过小，后续小程序设计候选改为正常移动端舒适可读的尺寸与自然圆润。旧“紧凑/小巧”仅保留去冗余、组织有效信息的含义，不再要求压小字级、图标、按钮或卡片；字体层级、行距、内容留白与圆角一起调整，不能整页缩放。现有精确令牌及已采用资源仍标识当前实现/采用基线，新几何需由本轮实际设计确认后再迁移；不将本轮候选参数自动投射到生产或原生 App。
+2026-09-22 尺度方向修订：用户真机反馈当前“小巧”过小，后续小程序设计候选改为正常移动端舒适可读的尺寸与自然圆润。旧“紧凑/小巧”仅保留去冗余、组织有效信息的含义，不再要求压小字级、图标、按钮或卡片；字体层级、行距、内容留白与圆角一起调整，不能整页缩放。现有精确令牌及已采用资源仍标识当前实现/采用基线；2026-09-24 依用户进一步确认的跨页舒适尺度方向，在 Map/Search、我的、设置、计划、共享地点资料表单及天文事件目录的生产 owner 内作局部选择和实测修正。其余候选几何仍待审，不将整包候选参数自动投射到生产或原生 App。
 
 2026-09-08 用户明确：持续从新增资源、具体反馈和采用修订中完善项目的风格偏好与UIUX原则，使设计系统更准确地符合用户预期；设计判断依据随之更新。采用表示当前范围内接受该方案，不定义客观“完成度”、审美等级或新页面必须达到的比较门槛。按[Context校准规则](project_context/context-maintenance.md#持续校准设计系统与用户偏好)在原owner更新适用范围，避免只累积资源或复制上一页。“精致、适当丰富、舒适可读、自然圆润”是当前默认要求（尺度依2026-09-22反馈修订）；简洁指信息和操作清晰，不能解释成取消材质、卡片、图标、视觉重心和动效。除非明确要求线框或只讨论结构，不交付等待用户要求“再美化”的基础壳。
 
@@ -625,7 +625,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 3. **组件内部留白**：文字、图标、thumb 与可见边缘之间必须保留稳定呼吸；compact 水平 6–8px、ordinary 8–10px、final 12–16px，卡片 6–8px compact / 8–10px normal。
 4. **视觉重量留白**：字号、字重、行高、边框明度、填色面积与 thumb 比例共同限制“占满感”。默认文字 400、动作/选中 500、结论/主标题 600；不能用更粗字、更深边或更大填色补偿层级不足。
 
-可见几何与命中几何分离：紧凑选择可见 `56rpx`，普通动作 60–68rpx，最终承诺 80–88rpx；交互包装始终至少 88rpx，扩展区不得与相邻目标重叠。不要为了命中合同把背景、描边、图标和文字一起撑到 88rpx。通用 text/search field 可见表面 `80rpx`，其 input wrapper/target 为 `88rpx`；日间 Map/Search 共用框采用 §5A.1 的36px可见面及至少44px独立命中区。textarea 自然更高。
+可见几何与命中几何分离：紧凑选择可见 `56rpx`，普通动作 60–68rpx，最终承诺 80–88rpx；交互包装始终至少 88rpx，扩展区不得与相邻目标重叠。不要为了命中合同把背景、描边、图标和文字一起撑到 88rpx。通用 text/search field 可见表面 `80rpx`，其 input wrapper/target 为 `88rpx`；日间 Map/Search 共用框采用 §5A.1 的44px可见面及52px独立命中区。textarea 自然更高。
 
 #### 4.2 语义圆角
 
@@ -688,7 +688,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 | Cards / containment 卡片容纳 | 留白、字级、分隔线是默认容纳；卡片只包一个可独立识别的对象 | 重复事实使用行/带/矩阵；长卡可容纳一个观星点对象并用内部分隔行组织 | 不嵌套卡片；不把每个状态/指标/选择做成卡；卡内不放多个竞争 CTA |
 | Buttons / actions 按钮动作 | 命中区至少 44px；可见面可更小但扩展区不重叠；一个局部主动作 | compact 28px、ordinary 30–34px、final 40–44px；只有最终承诺可全宽并使用 meteor | 不把每个按钮都做 44/48px 实心大面；不让普通重试/导航看起来像提交 |
 | Visual focus 视觉焦点 | 触摸反馈、编辑态与键盘焦点分流；pressed/selected/disabled 各自有语义 | touch=80ms press 后恢复；input=光标+1px 浅变化；keyboard=`:focus-visible` 内侧下边缘 | 不把焦点当普通移动状态展出；不用完整深蓝框、offset 外环、双框、光晕或命中盒描边 |
-| Mobile adaptation 移动适配 | 验证触控、键盘、读屏、长标签与安全区 | Search field 过渡前后保持同一可见面，日间采用 §5A.1 的36px框/至少44px target；large panel只填充主导航上方、名称/地点下方的轻量横向吸顶章节Tab、compact action rail与bottom layer sheet避让安全区 | 不以隐藏、裁切或压缩表格通过窄屏；不显示 scrollbar chrome；不把桌面栏位仅缩小后塞进 320px |
+| Mobile adaptation 移动适配 | 验证触控、键盘、读屏、长标签与安全区 | Search field 过渡前后保持同一可见面，日间采用 §5A.1 的44px框/52px target；large panel只填充主导航上方、名称/地点下方的轻量横向吸顶章节Tab、compact action rail与bottom layer sheet避让安全区 | 不以隐藏、裁切或压缩表格通过窄屏；不显示 scrollbar chrome；不把桌面栏位仅缩小后塞进 320px |
 
 ### 5. 布局、平台与可访问性
 
@@ -712,17 +712,17 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.0 已采用观星点信息组件（三档）
 
-地图唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/map/ADOPTED.md)。2026-09-08用户确认small/medium/large组件完成，采用[三档资源](docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)及最终动效；覆盖日间正式点位的基本信息、天文、相关媒体和底部操作。其具体几何/颜色/图标/动效替换本文件内该组件的旧rpx和中档静态表达，不自动推广到其他页面/主题。生产组件、接口和生成tokens尚未迁移；本次资源/规范采用不触发生产生成。
+地图唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/map/ADOPTED.md)。2026-09-08用户确认small/medium/large组件完成，采用[三档资源](docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)及最终动效；覆盖日间正式点位的基本信息、天文、相关媒体和底部操作。其具体构图/颜色/图标/动效替换本文件内该组件的旧rpx和中档静态表达，不自动推广到其他页面/主题。2026-09-24按用户确认的舒适尺度方向修订当前生产阅读尺度，见下表；[跨页舒适尺度候选](docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)的整组视觉仍待审，这次局部尺度修订不构成整组采用。其他未覆盖的生产迁移状态见各资源入口。
 
 | 角色 | 采用表达（逻辑px，具体级联值以采用源文件为准） |
 | --- | --- |
-| 字体尺度 | 保持原B紧凑尺度；地点名18px，地区/事实正文12px；不因三档高度不同整体缩放 |
+| 字体尺度 | 地点名22px/30px，地区与身份事实13px/20px，路线16px/24px、说明13px/20px；三档共用同一文字尺度，不整体缩放 |
 | 面板 | 同一保留文档、全宽白色紧凑身份区；small/medium保留顶部圆角；large无论身份或有无图片均全宽方角，内部卡片不受影响；最终档位基准及安全区映射见采用包 |
 | 章节 | 首屏隐藏，地形边界出现；一级同文档定位、短圆头渐变滑动指示；第二章起标题位于卡片外 |
 | 设施 | 停车/洗手间上下各一张无框无阴影照片卡，开放时间为文字；仅图片虚化/局部遮罩，无图为纯色事实卡 |
 | 天文 | 全宽白色圆角模块，相关数据紧凑分组；内层底#FBFBFC、无框，月相亮黄/灰 |
 | 导航 | 右向且居中的纯箭头，无文字/边框/背景；具名且完整44px命中区 |
-| 三动作 | 想去/云观星/分享；等宽、可见32px、圆角7px、文字12px、图文间距6px、完整44px命中区，无边框 |
+| 三动作 | 想去/云观星/分享；等宽、可见32px、圆角7px、文字14px、图文间距6px、完整44px命中区，无边框 |
 | 动作背景 | 想去浅蓝白云#DFEFFC→#F6FAFF；选中想去与云观星夜空#61697E→#535C71，星位不同；分享#FBEFE3、文字#70563E |
 | 想去动效 | 主星顺时针360°/820ms、缩至.94；两副流星冲入渐显、不等待夜空；取消逆向接管live状态；主星黄绿拖尾避开副星头部 |
 
@@ -732,8 +732,8 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.1 Map 主体与悬浮 Search
 
-- 地图连续铺满 route 的可用内容区，是唯一地图对象。顶部只放一个 fixed floating Search field。日间 Map/Search 共用框沿用已采用地图的实测样式：左右16px、可见高36px、文字13px、圆角pill、浅边框、白色90%填色、无阴影，独立命中区至少44px；顶部按实际系统/微信安全区映射，资源中 top=90px 是示例设备值，不可硬编码到所有设备。两态使用相同位置与尺寸；其余具体组合见 Search 采用包。未覆盖主题仍沿用原 `24rpx` inset、`safe-top + 16rpx`、`80rpx` visible/`88rpx` target、`radius-panel` 和对应主题 surface/border/elevation。框不承载 filters、results、快捷入口或说明副标题；activation 进入专用 Search page。
-- Location/layer edge actions 日间按已采用稿使用36px可见面、44px target、8px间距，glyph 16px；未覆盖主题沿用原 `52–56rpx` 可见面、`88rpx` target、`8rpx` 间距，glyph `24–28rpx`。Layer trigger 只打开第 5A.4 节的随内容伸缩 bottom sheet；原独立`观测条件`卡片并入sheet，不在地图右侧展开文字rail。普通底图、默认marker、卫星、交通、雷达、风、温度不得被补成choice。
+- 地图连续铺满 route 的可用内容区，是唯一地图对象。顶部只放一个 fixed floating Search field。日间 Map/Search 共用框在当前舒适尺度修订下为左右16px、可见高44px、文字15px、圆角pill、浅边框、白色90%填色、无阴影，独立命中区52px；顶部按实际系统/微信安全区映射，资源中 top=90px 是示例设备值，不可硬编码到所有设备。两态使用相同位置与尺寸；其余具体组合见 Search 采用包。未覆盖主题仍沿用原 `24rpx` inset、`safe-top + 16rpx`、`80rpx` visible/`88rpx` target、`radius-panel` 和对应主题 surface/border/elevation。框不承载 filters、results、快捷入口或说明副标题；activation 进入专用 Search page。
+- Location/layer edge actions 日间当前尺度为44px可见面、52px target、8px间距，glyph 22px；未覆盖主题沿用原 `52–56rpx` 可见面、`88rpx` target、`8rpx` 间距，glyph `24–28rpx`。Layer trigger 只打开第 5A.4 节的随内容伸缩 bottom sheet；原独立`观测条件`卡片并入sheet，不在地图右侧展开文字rail。普通底图、默认marker、卫星、交通、雷达、风、温度不得被补成choice。
 - Formal marker 默认 `32rpx` neutral core + `2rpx border-strong` + 下锚点；selected 使用 `40rpx`、`sky-soft` core、`2rpx sky` boundary 和 panel-visible/programmatic state。禁止 glow、pulse、particle。真实 hit geometry 由 native adapter 另证，Search result list/semantic list 是完整非手势替代。
 - Marker 直接以`medium`打开 `map-spot-information-panel`，不保留 selected callout、Finder Sheet 或独立 detail route。非 marker map tap 从 panel 当前 live position 执行 `220ms exit` 向下离场，完成后才移除 hit/semantics，不得瞬间消失。
 
@@ -935,7 +935,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 - **Anatomy**：范围标签、query input、搜索/返回glyph、必要helper/loading、suggestion/result region；日间Map/Search框按§5A.1采用值，未覆盖variant保留12px input与11–12px glyph。trailing clear/close只在不与Back重复且owner明确需要的其他variant中可选，当前Map/Search两态均无。
 - **Variants / states**：idle、editing、query、loading、suggestions、result、empty、error，以及inline scoped/filter search；editing用光标与1rpx浅色调变化，不展示持续“焦点框”状态。
-- **Geometry**：日间Map/Search使用§5A.1的36px可见框与至少44px独立target；未覆盖variant保留visible `80rpx`、wrapper/target `88rpx`。suggestion/result row≥`88rpx`；紧邻所筛选集合，不脱离上下文。Map→Search使用同一stationary frame；glyph在同一leading slot交叉替换，其余field几何不变。
+- **Geometry**：日间Map/Search使用§5A.1的44px可见框与52px独立target；未覆盖variant保留visible `80rpx`、wrapper/target `88rpx`。suggestion/result row≥`88rpx`；紧邻所筛选集合，不脱离上下文。Map→Search使用同一stationary frame；glyph在同一leading slot交叉替换，其余field几何不变。
 - **A11y / composition**：永久说明搜索范围；有用placeholder不替代label；listbox/option或等价列表语义；输入、建议和Back均可键盘操作并播报结果数。Entry可autofocus，但outside tap必须能blur/收IME/关suggestions且不离开Search，随后可重新focus；系统/微信Back和edge-back与leading Back同义。
 - **Do not**：不做无范围的全局搜索暗示；不把 search 藏进 generic Input；不以空白屏替代 empty/error 说明。
 
@@ -1117,7 +1117,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 
 ### 小程序新增观星点采用覆盖
-Map ADOPTED/add-spot 为新地点表单的日间构图依据，覆盖旧 contribution 全页构图/observed time 顺序；反馈页复用同一纵向表单语言，全量回填、变更对比及冻结语义以 Shared State 新合同为准。加号与定位、图层均36px视觉/至少44px命中；active亮边与柔雾呼吸。新增弹层无手柄、不可拖动，顶边锚定原加号位置，上下滑入退出；搜索与工具同步淡出。表单用一个滚动文档和章节Tab，浅灰分组、左对齐横向单选，照片入口和固定高度说明框无触摸高亮。保存状态位于大标题右侧，不增加底栏高度。轻量提交等待默认按钮内spinner，禁止重复提交且保留内容；不能伪造进度或成功回执。必填浅红星号按产品字段语义标记，不强制20字说明或到访时间。
+Map ADOPTED/add-spot 为新地点表单的日间构图依据，覆盖旧 contribution 全页构图/observed time 顺序；反馈页复用同一纵向表单语言，全量回填、变更对比及冻结语义以 Shared State 新合同为准。加号与定位、图层在本次舒适尺度局部修订后共用§5A.1的44px可见面/52px命中；active亮边与柔雾呼吸。新增弹层无手柄、不可拖动，顶边锚定原加号位置，上下滑入退出；搜索与工具同步淡出。表单用一个滚动文档和章节Tab，浅灰分组、左对齐横向单选，照片入口和固定高度说明框无触摸高亮。保存状态位于大标题右侧，不增加底栏高度。轻量提交等待默认按钮内spinner，禁止重复提交且保留内容；不能伪造进度或成功回执。必填浅红星号按产品字段语义标记，不强制20字说明或到访时间。
 
 新增草稿/审核地图状态：灰色草稿点展示本人的草稿信息组件，并经编辑入口回填表单；加号总是新空表单；审核中点沿用星形正式点针，右上角14px级钟表徽标（非成功勾选、非加载转圈），文字替代语义含审核中。信息组件继续使用同一正式组件几何，标题旁小型浅暖色“审核中”tag；审核中隐藏想去/分享，仅保留云观星并填充可用动作行。正式点恢复原三动作。
 

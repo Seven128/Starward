@@ -90,12 +90,12 @@ export default function DataSourcePage() {
                   {group.sources.map((source) => <Provenance source={source} showKind={false} key={source.id} />)}
                 </View>
               ))
-            ) : (
+            ) : !overview.refreshError && overview.data?.dataState !== "STALE_USABLE" ? (
               <StatusPanel
                 state="EMPTY"
                 detail="当前没有符合来源与时效要求的记录。"
               />
-            )}
+            ) : null}
             <View className="source-principles card">
               <Text className="type-section">使用这些资料前</Text>
               <Text className="type-body">

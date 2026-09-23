@@ -1,7 +1,7 @@
 import { View, Text } from "@tarojs/components";
 import type { PageState } from "@starward/miniapp-contracts";
 import { SoftButton } from "./soft-button";
-import { SemanticIcon } from "./semantic-asset";
+import { SemanticIcon, type SemanticIconName } from "./semantic-asset";
 
 const TITLES: Record<PageState, string> = {
   INITIAL: "准备加载",
@@ -27,6 +27,7 @@ export function StatusPanel({
   onRecover,
   live = true,
   emptyLevel = "section",
+  emptyIcon,
   title,
 }: {
   state: PageState;
@@ -34,7 +35,8 @@ export function StatusPanel({
   recoveryLabel?: string | undefined;
   onRecover?: (() => void) | undefined;
   live?: boolean | undefined;
-  emptyLevel?: "section" | "page" | undefined;
+  emptyLevel?: "field" | "section" | "page" | undefined;
+  emptyIcon?: SemanticIconName | undefined;
   title?: string | undefined;
 }) {
   return (
@@ -44,8 +46,9 @@ export function StatusPanel({
       role={state === "ERROR" ? "alert" : "status"}
       aria-live={live ? "polite" : undefined}
     >
-      {state === "EMPTY" ? <SemanticIcon name="info" className="status-panel__empty-icon" /> : null}
-      {TITLED_STATES.has(state) ? (
+      {state === "EMPTY" && emptyLevel !== "field" ? <SemanticIcon name={emptyIcon ?? (emptyLevel === "page" ? "star" : "info")} className="status-panel__empty-icon" /> : null}
+      {state === "EMPTY" && emptyLevel === "field" ? <Text className="status-panel__field-value">暂无数据</Text> : null}
+      {TITLED_STATES.has(state) && !(state === "EMPTY" && emptyLevel === "field") ? (
         <Text className="type-label">{title ?? TITLES[state]}</Text>
       ) : null}
       <Text className="type-caption">{detail}</Text>

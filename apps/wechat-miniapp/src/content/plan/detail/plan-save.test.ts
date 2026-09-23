@@ -77,10 +77,10 @@ test("incomplete timing preserves the draft and never dispatches a save", async 
   assert.deepEqual(page.calls, ["notice"]);
 });
 
-test("dedicated editor returns only after a confirmed save; navigation failure retains the saved result", async () => {
-  for (const navigationFails of [false, true]) {
+test("dedicated editor opens the saved plan without a back stack or when back navigation fails", async () => {
+  for (const scenario of ["back", "direct", "back-fails", "all-navigation-fails"] as const) {
     const page = runtime();
-    let saved = 0, back = 0, cleared = 0, suspended = 0, restored = 0;
+    let saved = 0, back = 0, detail = 0, cleared = 0, suspended = 0, restored = 0;
     Object.assign(page.context, {
       dedicatedEditor: true,
       saveObservationPlan: async () => ({ data: { planId: "plan", revision: 3 } }),
@@ -91,14 +91,25 @@ test("dedicated editor returns only after a confirmed save; navigation failure r
         suspendForProgrammaticLeave: () => { suspended++; },
         restoreAfterFailedProgrammaticLeave: () => { restored++; },
       },
-      Taro: { setStorageSync() {}, navigateBack: async () => { back++; if (navigationFails) throw new Error("navigation_failed"); } },
+      Taro: {
+        setStorageSync() {},
+        getCurrentPages: () => scenario === "direct" || scenario === "all-navigation-fails" ? [{}] : [{}, {}],
+        navigateBack: async () => { back++; if (scenario === "back-fails") throw new Error("navigation_failed"); },
+        redirectTo: async ({ url }: { url: string }) => {
+          detail++;
+          assert.equal(url, "/content/plan/detail/index?planId=plan");
+          if (scenario === "all-navigation-fails") throw new Error("detail_failed");
+        },
+      },
     });
     await page.save();
-    assert.equal(saved, 1); assert.equal(cleared, 1); assert.equal(back, 1);
+    assert.equal(saved, 1); assert.equal(cleared, 1);
+    assert.equal(back, scenario === "back" || scenario === "back-fails" ? 1 : 0);
+    assert.equal(detail, scenario === "back" ? 0 : 1);
     assert.equal(suspended, 1);
-    assert.equal(restored, navigationFails ? 1 : 0);
+    assert.equal(restored, scenario === "all-navigation-fails" ? 1 : 0);
     assert.equal(page.context.draftBaseRevision.current, 3);
     assert.equal(page.context.mutationBusy.current, false);
-    assert.deepEqual(page.calls, navigationFails ? ["notice", "notice"] : ["notice"]);
+    assert.deepEqual(page.calls, scenario === "all-navigation-fails" ? ["notice", "notice"] : ["notice"]);
   }
 });

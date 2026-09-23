@@ -659,9 +659,15 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       );
       if (dedicatedEditor) {
         nativeLeaveGuard.suspendForProgrammaticLeave();
-        try { await Taro.navigateBack(); } catch {
+        const openSavedPlan = () => Taro.redirectTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(response.data.planId)}` });
+        let hasPriorPage = false;
+        try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
+        try {
+          if (hasPriorPage) await Taro.navigateBack().catch(openSavedPlan);
+          else await openSavedPlan();
+        } catch {
           nativeLeaveGuard.restoreAfterFailedProgrammaticLeave();
-          announce("warning", "计划已保存，暂时无法返回", "无需重复保存，请再次返回。");
+          announce("warning", "计划已保存，暂时无法打开详情", "无需重复保存，可从观星计划列表查看。");
         }
       }
     } catch (error) {
@@ -1246,7 +1252,12 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           if (!scopedDraftUserId() || !(await beforeLeavingEditor())) return;
           if (dedicatedEditor) {
             nativeLeaveGuard.suspendForProgrammaticLeave();
-            try { await Taro.navigateBack(); } catch {
+            let hasPriorPage = false;
+            try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
+            try {
+              if (hasPriorPage) await Taro.navigateBack().catch(() => Taro.switchTab({ url: "/pages/my/index" }));
+              else await Taro.switchTab({ url: "/pages/my/index" });
+            } catch {
               nativeLeaveGuard.restoreAfterFailedProgrammaticLeave();
               announce("warning", "暂时无法返回", "当前内容保留，请再次返回。");
             }

@@ -10,6 +10,7 @@ import { SharePoster } from "@/components/share-poster";
 import { useThemeClass } from "@/hooks/use-theme";
 import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
+import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import "./index.scss";
 
 type Shared = PlanPublicShareData | SpotPublicShareData;
@@ -17,6 +18,16 @@ type ShareState = { kind: "loading" } | { kind: "missing" } | { kind: "error" } 
 
 function decode(value: string | undefined): string {
   try { return decodeURIComponent(value ?? ""); } catch { return ""; }
+}
+
+function shareExpiryLabel(expiresAt: string, timezone: string): string {
+  const expiry = new Date(expiresAt);
+  if (!Number.isFinite(expiry.getTime())) return "有效期暂不可用";
+  try {
+    return `${calendarDateInTimezone(expiry, timezone)} ${clockTimeInTimezone(expiry, timezone)}（${timezone}）`;
+  } catch {
+    return "有效期暂不可用";
+  }
 }
 
 export default function SharedJourneyPage() {
@@ -91,7 +102,7 @@ export default function SharedJourneyPage() {
                 <Text>关联天象：{event.displayName}</Text>
                 {event.source ? <Provenance source={event.source} /> : <Text className="type-caption">天象资料暂不可用</Text>}
               </View>)}
-              <Text className="type-caption">此链接有效至 {data.expiresAt}；计划修改后需重新分享。</Text>
+              <Text className="type-caption">此链接有效至 {shareExpiryLabel(data.expiresAt, data.timezone)}；计划修改后需重新分享。</Text>
               <Provenance source={data.spotSource} />
             </> : <>
               <Text className="type-secondary">{data.address}</Text>

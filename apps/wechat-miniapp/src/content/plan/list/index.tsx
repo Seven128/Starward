@@ -78,7 +78,11 @@ export default function PlanListPage() {
             </Button>
           </View>;
         })}
-        {query.data && !query.isError && !query.refreshError && !entries.length ? <StatusPanel state="EMPTY" emptyLevel="page" detail={partition === "past" ? "已结束的计划会显示在这里。" : "新建计划后会显示在这里。"} recoveryLabel={partition === "past" ? undefined : "新建计划"} onRecover={partition === "past" ? undefined : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
+        {query.data && !query.isError && !query.refreshError && query.data.dataState !== "STALE_USABLE" && !entries.length ? <StatusPanel state="EMPTY" emptyLevel="page"
+          title={partition === "past" ? "暂无过往计划" : "暂无观星计划"}
+          detail={partition === "past" ? "已结束的计划会显示在这里。" : "新建计划后会显示在这里。"}
+          recoveryLabel={partition === "past" ? "查看接下来" : "＋ 新建计划"}
+          onRecover={partition === "past" ? () => choosePartition("upcoming") : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
       </View>
     </ScrollView>
   </View>;

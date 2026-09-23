@@ -119,6 +119,16 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
   const requestClose = async () => {
     if (await confirmLeave()) onClose?.();
   };
+  const leaveAfterWithdrawal = () => {
+    if (embedded) { onClose?.(); return; }
+    const fallback = () => Taro.switchTab({ url: managesRecords ? "/pages/my/index" : "/pages/map/index" });
+    let hasPriorPage = false;
+    try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
+    void (hasPriorPage ? Taro.navigateBack().catch(fallback) : fallback()).catch(() => {
+      form.selectKind(form.kind);
+      form.announce("warning", "草稿已删除", "返回页面暂时失败；本页已解除旧草稿身份，请使用返回按钮离开。");
+    });
+  };
   const title = form.kind === "NEW_SPOT_PROPOSAL"
     ? (forceNew ? "新增观星点" : form.draft ? "编辑观星点" : "新增观星点")
     : "现场反馈与纠错";
@@ -172,12 +182,12 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
             <View id="feedback-location"><ContributionLocationSection form={form} commands={commands} /></View>
             <View id="feedback-media"><ContributionMediaSection form={form} commands={commands} /></View>
           </>}
-          {!isNewSpotDocument ? <ContributionActions form={form} commands={commands} onWithdrawn={() => embedded ? onClose?.() : void Taro.navigateBack()} /> : null}
+          {!isNewSpotDocument ? <ContributionActions form={form} commands={commands} onWithdrawn={leaveAfterWithdrawal} /> : null}
           {!embedded ? <ContributionHistory form={form} onResume={() => setResumeAttempt(value => value + 1)} /> : null}
         </>}
       </View>
     </ScrollView>
-    {isNewSpotDocument ? <View className="contribution-document-actions safe-bottom"><ContributionActions form={form} commands={commands} onWithdrawn={() => embedded ? onClose?.() : void Taro.navigateBack()} /></View> : null}
+    {isNewSpotDocument ? <View className="contribution-document-actions safe-bottom"><ContributionActions form={form} commands={commands} onWithdrawn={leaveAfterWithdrawal} /></View> : null}
   </View>;
 }
 

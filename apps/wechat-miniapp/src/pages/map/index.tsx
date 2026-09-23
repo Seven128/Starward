@@ -1127,22 +1127,42 @@ export default function MapPage() {
           const horizontal = Math.abs(x - drag.startX);
           if (horizontal >= 8 && horizontal >= Math.abs(y - drag.startY)) { onHandleTouchCancel(); return; }
         }
-        drag.samples = [...drag.samples, { y, at: drag.releasedAt }].slice(-12);
-        drag.pointerOffset = y - drag.startY;
-        if (Math.abs(drag.pointerOffset) >= 8) drag.moved = true;
+        const lastRendered = drag.samples.at(-1);
+        // A release event can report a default (0, 0) or a point that was
+        // never drawn. It may inform velocity only if it is continuous with
+        // the last move; the spring always starts at the rendered height.
+        if (!lastRendered || Math.abs(y - lastRendered.y) <= Math.max(48, (drag.releasedAt - lastRendered.at) * 3)) {
+          drag.samples = [...drag.samples, { y, at: drag.releasedAt }].slice(-12);
+          drag.pointerOffset = y - drag.startY;
+          if (Math.abs(drag.pointerOffset) >= 8) drag.moved = true;
+        }
       }
     }
-    setPanelDragging(false);
-    if (!drag.geometry) { drag.released = true; return; }
-    panelDrag.current = null;
-    setPanelDragOffset(0);
-    if (!drag.moved || !drag.geometry || Math.abs(drag.pointerOffset) < 8) return;
+    drag.released = true;
+    if (!drag.geometry) return;
+    if (!drag.moved || Math.abs(drag.pointerOffset) < 8) {
+      panelDrag.current = null;
+      setPanelDragOffset(0);
+      setPanelDragging(false);
+      return;
+    }
+    const geometry = drag.geometry;
     const velocity = panelReleaseVelocity(drag.samples, drag.releasedAt);
-    const rawHeight = drag.geometry.startHeight - drag.pointerOffset;
-    const from = elasticPosition(rawHeight, drag.geometry.small, drag.geometry.large);
-    const target = releasePanelExtent(drag.geometry, from, drag.extent, velocity);
-    animatePanelExtent(target, drag.geometry, from,
-      -velocity * elasticVelocityFactor(rawHeight, drag.geometry.small, drag.geometry.large));
+    const request = ++springRequest.current;
+    // The bridge may have a newer touch offset than the last rendered View.
+    // Keep that View in place until the selector query reads its actual height.
+    Taro.createSelectorQuery().select(".spot-panel").boundingClientRect().exec(rows => {
+      if (springRequest.current !== request || panelDrag.current !== drag) return;
+      const measured = rows?.[0]?.height;
+      const from = typeof measured === "number" && Number.isFinite(measured) && measured > 0
+        ? measured : geometry[drag.extent] - drag.offset;
+      const target = releasePanelExtent(geometry, from, drag.extent, velocity);
+      panelDrag.current = null;
+      setPanelDragOffset(0);
+      setPanelDragging(false);
+      animatePanelExtent(target, geometry, from,
+        -velocity * elasticVelocityFactor(from, geometry.small, geometry.large));
+    });
   };
 
   const animatePanelExtent = (target: SpotPanelExtent, geometry: PanelSnapGeometry, from: number, velocity = 0) => {
@@ -1156,17 +1176,15 @@ export default function MapPage() {
       },
       clearAnimation: (_selector, complete) => { setPanelCssMotion(null); complete(); },
     };
-    setPanelExtent(target);
-    if (host && typeof host.animate === "function" && typeof host.clearAnimation === "function" && frames.length > 1) {
+    if (frames.length > 1) {
       springTarget.current = target;
       setPanelSettling(true);
-      const request = ++springRequest.current;
-      Taro.nextTick(() => {
-        if (springRequest.current !== request || springTarget.current !== target) return;
-        panelSpring.current.start(host, frames, () => { springTarget.current = null; setPanelSettling(false); });
-      });
+      springRequest.current += 1;
+      // Install the first CSS height in the same render as the new extent.
+      // Waiting for nextTick exposes the target height for one frame first.
+      panelSpring.current.start(host, frames, () => { springTarget.current = null; setPanelSettling(false); });
     }
-
+    setPanelExtent(target);
   };
 
   const onPanelExtent = (target: SpotPanelExtent) => {
@@ -1921,7 +1939,8 @@ export default function MapPage() {
               recoveryLabel="重试"
               onRecover={() => void refreshMap()}
             /> : null}
-            {pageState !== "READY" &&
+            {!(pageState === "EMPTY" && bottomPresentation === "spot-panel") &&
+            pageState !== "READY" &&
             pageState !== "PARTIAL" &&
             pageState !== "STALE" ? (
               <StatusPanel
@@ -2180,6 +2199,7 @@ export default function MapPage() {
                 ) : visibleLayerUnavailable ? (
                   <StatusPanel
                     state="EMPTY"
+                    emptyLevel="field"
                     detail="当前地区暂无光污染数据。"
                     live={false}
                   />

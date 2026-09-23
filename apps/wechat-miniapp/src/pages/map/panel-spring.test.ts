@@ -11,6 +11,7 @@ test("spring preserves initial height, follows release direction and settles exa
   assert.ok(reversed[1]!.height < 400, "opposing release velocity is not discarded");
   for (const frames of [forward, reversed, panelSpringFrames({ ...base, from: 690, to: 700, velocity: 3 }), panelSpringFrames({ ...base, from: 225, to: 220, velocity: -3 })]) {
     assert.ok(frames.every(frame => Number.isFinite(frame.height)));
+    assert.ok(frames.slice(1).every(frame => frame.height >= base.min && frame.height <= base.max));
     assert.ok(frames.reduce((sum, frame) => sum + frame.duration, 0) <= 650);
   }
   assert.equal(forward.at(-1)!.height, 600);
@@ -18,6 +19,17 @@ test("spring preserves initial height, follows release direction and settles exa
   const regrab = panelSpringFrames({ ...base, from: forward[4]!.height, to: 350, velocity: -0.5 });
   assert.equal(regrab[0]!.height, forward[4]!.height);
   assert.equal(regrab.at(-1)!.height, 350);
+});
+
+test("boundary snaps never overshoot and recoil after a fast release or an elastic pull", () => {
+  for (const [from, to, velocity] of [[350, 700, 3], [690, 700, 3], [730, 700, -1], [350, 220, -3], [190, 220, 1]]) {
+    const frames = panelSpringFrames({ from: from!, to: to!, velocity: velocity!, min: 220, max: 700 });
+    assert.equal(frames[0]!.height, from);
+    assert.equal(frames.at(-1)!.height, to);
+    assert.ok(frames.slice(1).every(frame => from! > to! ? frame.height >= to! : frame.height <= to!), `${from} to ${to} crossed the destination`);
+    if (from! > 700) assert.ok(frames.every(frame => frame.height <= from!), "release must not expand farther than the user's pull");
+    if (from! < 220) assert.ok(frames.every(frame => frame.height >= from!), "release must not collapse farther than the user's pull");
+  }
 });
 
 test("reduced motion settles without animation and invalid geometry produces no frames", () => {

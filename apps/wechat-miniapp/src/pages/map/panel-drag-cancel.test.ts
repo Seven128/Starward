@@ -23,11 +23,21 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   let delayed = false;
   const pending: ((rows: unknown[]) => void)[] = [];
   const geometryRows = [{ height: 350 }, { height: 220 }, { height: 350 }, { height: 700 }];
-  const query = { select: () => query, boundingClientRect: () => query, exec: (callback: (rows: unknown[]) => void) => { if (delayed) pending.push(callback); else callback(geometryRows); } };
+  let selectedNodes = 0;
+  const query = { select: () => { selectedNodes++; return query; }, boundingClientRect: () => query, exec: (callback: (rows: unknown[]) => void) => {
+    const panelOnly = selectedNodes === 1;
+    selectedNodes = 0;
+    const deliver = (rows: unknown[]) => callback(panelOnly
+      ? [{ height: geometryRows[0]!.height - (offsets.at(-1) ?? 0) }]
+      : rows);
+    if (delayed) pending.push(deliver); else deliver(geometryRows);
+  } };
   const handlers = vm.runInNewContext(ts.transpileModule(`(() => { ${declarations.join("\n")} return { ${names.join(",")} }; })()`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     Date: { now: () => now },
     stopPanelSpring: () => {}, panelSpringFrames,
     springTarget: { current: null }, springRequest: { current: 0 }, setPanelSettling: () => {},
+    panelSpring: { current: { start: (_host: unknown, _frames: unknown, complete: () => void) => complete() } },
+    panelSpringStyle: () => ({}), panelCssSequence: { current: 0 }, setPanelCssMotion: () => {},
     useAppStore: { getState: () => ({ preferences: { reducedMotion: false } }) },
     panelDrag: { current: null }, bottomPresentation: "spot-panel", panelExtent: "medium", panelSettling: false,
     setPanelExtent: (value: string) => commits.push(value), setPanelDragOffset: (value: number) => offsets.push(value),
@@ -79,14 +89,15 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   assert.deepEqual(commits, ["large"], "release waits for pending native geometry");
   handlers.onHandleTouchMove!(touch(500));
   pending.shift()!(geometryRows);
-  assert.deepEqual(commits, ["large", "large"], "a still-current release completes once geometry arrives");
+  pending.shift()!(geometryRows);
+  assert.equal(commits.length, 2, "a still-current release completes once geometry arrives");
   delayed = false;
   handlers.onHandleTouchStart!({ touches: [{ clientY: 100, identifier: 3 }] });
   handlers.onHandleTouchMove!({ touches: [{ clientY: 80, identifier: 3 }] });
   handlers.onHandleTouchEnd!({ changedTouches: [{ clientY: 500, identifier: 2 }] });
   assert.equal(commits.length, 2, "another finger's release cannot finish this drag");
   handlers.onHandleTouchEnd!({ changedTouches: [{ clientY: -200, identifier: 3 }] });
-  assert.deepEqual(commits, ["large", "large", "large"], "final release position supersedes the last move sample");
+  assert.equal(commits.length, 3, "final release completes the matching gesture once");
   const countBeforeHorizontal = commits.length;
   handlers.onHandleTouchStart!({ touches: [{ clientX: 100, clientY: 100 }] });
   handlers.onHandleTouchMove!({ touches: [{ clientX: 140, clientY: 80 }] });

@@ -2584,8 +2584,9 @@
   .spot-panel--spring { animation: none; }
 }
 
-/* Adopted Map and spot-information geometry (390 × 844 reference baseline). */
+/* Map geometry with the confirmed comfortable reading scale at 390 × 844. */
 .map-page {
+  --map-search-height: 52Px;
   --map-search-top: calc(env(safe-area-inset-top) + 44Px);
   --map-title-top: calc(env(safe-area-inset-top) + 4Px);
   width: 100vw;
@@ -2605,7 +2606,7 @@
   pointer-events: none;
 }
 .map-app-title > text {
-  font-size: 17Px;
+  font-size: 20Px;
   font-weight: 600;
   line-height: 24Px;
   letter-spacing: -0.3Px;
@@ -2625,9 +2626,14 @@
 }
 .map-search-entry > text {
   color: #94a3b8;
-  font-size: 13Px;
+  font-size: 15Px;
   font-weight: 400;
 }
+.map-search-entry > .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
+.map-tool { width: 52Px; min-width: 52Px; height: 52Px; min-height: 52Px; }
+.map-tool::before { inset: 4Px; }
+.map-tool > .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
+.map-tool--location { width: 52Px; min-width: 52Px; }
 .map-search-entry > .semantic-icon {
   color: #94a3b8;
 }
@@ -2763,16 +2769,16 @@
 .spot-panel__title {
   min-width: 0;
   color: #0f172a;
-  font-size: 18Px;
+  font-size: 22Px;
   font-weight: 700;
-  line-height: 26Px;
+  line-height: 30Px;
   letter-spacing: -.25Px;
 }
 .spot-panel__region {
   flex: 0 0 auto;
   color: #64748b;
-  font-size: 12Px;
-  line-height: 18Px;
+  font-size: 13Px;
+  line-height: 20Px;
 }
 .spot-panel__identity-meta {
   gap: 4Px 8Px;
@@ -2784,8 +2790,8 @@
   gap: 10Px;
   margin-top: 8Px;
   color: #64748b;
-  font-size: 11Px;
-  line-height: 18Px;
+  font-size: 13Px;
+  line-height: 20Px;
 }
 .spot-panel__location-facts > text:first-child {
   min-width: 0;
@@ -2820,16 +2826,16 @@
 .spot-panel__block--route .spot-panel__value {
   display: block;
   color: #0f172a;
-  font-size: 14Px;
+  font-size: 16Px;
   font-weight: 600;
-  line-height: 20Px;
+  line-height: 24Px;
 }
 .spot-panel__route-note {
   display: block;
   margin-top: 2Px;
   color: #64748b;
-  font-size: 11Px;
-  line-height: 18Px;
+  font-size: 13Px;
+  line-height: 20Px;
 }
 .spot-panel__block--route .spot-panel__text-action {
   position: relative;
@@ -2853,9 +2859,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 34Px;
+  min-height: 44Px;
   color: #475569;
-  font-size: 12Px;
+  font-size: 14Px;
   border-bottom: 1rpx solid #f1f5f9;
 }
 .spot-panel__hours-row > view {
@@ -2884,21 +2890,21 @@
 }
 .spot-panel__safety-facts .type-secondary {
   color: #64748b;
-  font-size: 11Px;
-  line-height: 16Px;
+  font-size: 13Px;
+  line-height: 18Px;
 }
 .spot-panel__safety-facts .type-body {
   color: #334155;
-  font-size: 12Px;
+  font-size: 15Px;
   font-weight: 500;
-  line-height: 18Px;
+  line-height: 22Px;
 }
 .spot-panel__access-guidance {
   display: block;
   margin-top: 8Px;
   color: #8b6426;
-  font-size: 11Px;
-  line-height: 18Px;
+  font-size: 13Px;
+  line-height: 20Px;
 }
 .spot-panel__block--facility {
   padding: 8Px 0 0;
@@ -2907,16 +2913,16 @@
 .spot-panel__facilities {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 8Px;
+  gap: 12Px;
 }
 .spot-panel__facility,
 .spot-panel__facility--described {
   position: relative;
   display: block;
-  min-height: 52Px;
-  padding: 12Px;
+  min-height: 84Px;
+  padding: 14Px 16Px;
   border: 0;
-  border-radius: 10Px;
+  border-radius: 18Px;
   background: #f8fafc;
   overflow: hidden;
   isolation: isolate;
@@ -2946,21 +2952,21 @@
 }
 .spot-panel__facility-name {
   color: #334155;
-  font-size: 12Px;
+  font-size: 15Px;
   font-weight: 500;
-  line-height: 18Px;
+  line-height: 22Px;
 }
 .spot-panel__facility-status {
   color: #475569;
-  font-size: 11Px;
-  line-height: 18Px;
+  font-size: 13Px;
+  line-height: 20Px;
 }
 .spot-panel__facility-summary {
   display: block;
   margin-top: 6Px;
   color: #475569;
-  font-size: 11Px;
-  line-height: 17Px;
+  font-size: 13Px;
+  line-height: 20Px;
 }
 .spot-panel__more-site {
   display: flex;
@@ -2975,7 +2981,7 @@
   border-radius: 0;
   background: transparent;
   color: #475569;
-  font-size: 11Px;
+  font-size: 14Px;
   text-align: left;
 }
 .spot-panel__contact-row,
@@ -2984,11 +2990,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12Px;
-  min-height: 38Px;
+  min-height: 44Px;
   border-bottom: 1rpx solid #f1f5f9;
   color: #475569;
-  font-size: 11Px;
-  line-height: 17Px;
+  font-size: 13Px;
+  line-height: 20Px;
 }
 .spot-panel__contact-row > text:last-child {
   color: #94a3b8;
@@ -3006,14 +3012,14 @@
   min-height: 44Px;
   padding: 0;
   color: #687c72;
-  font-size: 11Px;
+  font-size: 13Px;
   font-weight: 400;
 }
 .spot-panel__more-site > text:last-child {
   color: #64748b;
-  font-size: 10Px;
+  font-size: 12Px;
 }
-.spot-panel__more-site-trailing { display: flex; align-items: center; gap: 8Px; color: var(--text-secondary); font-size: 10Px; }
+.spot-panel__more-site-trailing { display: flex; align-items: center; gap: 8Px; color: var(--text-secondary); font-size: 12Px; }
 .spot-panel__more-site-trailing .semantic-icon { width: 14Px; height: 14Px; }
 .spot-panel__additional-site-content { display: flex; flex-direction: column; gap: 8Px; padding: 8Px 0 12Px; color: var(--text-secondary); }
 .spot-panel__additional-facility { display: flex; flex-direction: column; gap: 4Px; padding: 8Px 0; border-bottom: 1Px solid var(--border); }
@@ -3161,7 +3167,7 @@
   right: var(--spot-panel-inline-padding);
   left: var(--spot-panel-inline-padding);
   justify-content: flex-start;
-  min-height: 44Px;
+  min-height: 48Px;
   margin: 0;
   padding: 0;
   border-bottom: 1rpx solid #f1f5f9;
@@ -3179,10 +3185,10 @@
   flex: 0 0 auto;
   width: auto;
   min-width: 58Px;
-  height: 44Px;
-  min-height: 44Px;
+  height: 48Px;
+  min-height: 48Px;
   padding: 0 8Px;
-  font-size: 12Px;
+  font-size: 15Px;
 }
 .spot-panel__section-tab--active::before {
   bottom: 3Px;
@@ -3221,7 +3227,7 @@
   border: 0;
   border-radius: 7Px;
   color: #344b60;
-  font-size: 12Px;
+  font-size: 14Px;
   font-weight: 400;
   line-height: 20Px;
 }
@@ -3289,4 +3295,9 @@
     margin-right: -14Px !important;
     margin-left: -14Px !important;
   }
+}
+.map-page--panel-small .map-feedback-column .status-panel--empty,
+.map-page--panel-medium .map-feedback-column .status-panel--empty,
+.map-page--panel-large .map-feedback-column .status-panel--empty {
+  display: none;
 }

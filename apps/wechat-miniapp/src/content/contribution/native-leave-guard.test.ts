@@ -18,5 +18,5 @@ test("standalone editors guard both custom and native Back while dirty", () => {
   assert.match(planSource, /beforeBack=\{beforeLeavingEditor\}/u);
   assert.match(planSource, /onBackAuthorized=\{nativeLeaveGuard\.suspendForProgrammaticLeave\}/u);
   assert.match(planSource, /onBackFailure=\{nativeLeaveGuard\.restoreAfterFailedProgrammaticLeave\}/u);
-  assert.match(planSource, /nativeLeaveGuard\.suspendForProgrammaticLeave\(\);[\s\S]*?Taro\.navigateBack\(\);[\s\S]*?nativeLeaveGuard\.restoreAfterFailedProgrammaticLeave\(\)/u);
+  assert.match(planSource, /nativeLeaveGuard\.suspendForProgrammaticLeave\(\);[\s\S]*?Taro\.getCurrentPages\(\)\.length > 1;[\s\S]*?Taro\.navigateBack\(\)\.catch\(openSavedPlan\);[\s\S]*?nativeLeaveGuard\.restoreAfterFailedProgrammaticLeave\(\)/u);
 });
