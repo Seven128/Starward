@@ -5,12 +5,12 @@ import type { PlanPublicShareData, SpotPublicShareData } from "@starward/miniapp
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
 import { Provenance } from "@/components/provenance";
-import { StatusPanel } from "@/components/status-panel";
+import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { SharePoster } from "@/components/share-poster";
 import { useThemeClass } from "@/hooks/use-theme";
 import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
-import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
+import { displayZonedShareExpiry } from "@/utils/zoned-date";
 import "./index.scss";
 
 type Shared = PlanPublicShareData | SpotPublicShareData;
@@ -20,14 +20,9 @@ function decode(value: string | undefined): string {
   try { return decodeURIComponent(value ?? ""); } catch { return ""; }
 }
 
-function shareExpiryLabel(expiresAt: string, timezone: string): string {
-  const expiry = new Date(expiresAt);
-  if (!Number.isFinite(expiry.getTime())) return "有效期暂不可用";
-  try {
-    return `${calendarDateInTimezone(expiry, timezone)} ${clockTimeInTimezone(expiry, timezone)}（${timezone}）`;
-  } catch {
-    return "有效期暂不可用";
-  }
+function PublicSpotFact({ label, value }: { label: string; value: string | null }) {
+  return <View className="shared-journey__row"><Text>{label}</Text>
+    <Text className={value ? "" : "shared-journey__missing"}>{value || EMPTY_FIELD_VALUE}</Text></View>;
 }
 
 export default function SharedJourneyPage() {
@@ -102,16 +97,16 @@ export default function SharedJourneyPage() {
                 <Text>关联天象：{event.displayName}</Text>
                 {event.source ? <Provenance source={event.source} /> : <Text className="type-caption">天象资料暂不可用</Text>}
               </View>)}
-              <Text className="type-caption">此链接有效至 {shareExpiryLabel(data.expiresAt, data.timezone)}；计划修改后需重新分享。</Text>
+              <Text className="type-caption">此链接有效至 {displayZonedShareExpiry(data.expiresAt, data.timezone)}；计划修改后需重新分享。</Text>
               <Provenance source={data.spotSource} />
             </> : <>
               <Text className="type-secondary">{data.address}</Text>
               {data.status === "TEMPORARILY_CLOSED" ? <Text className="shared-journey__alert">此观星点暂时关闭，请勿按旧信息进入。</Text> : null}
-              <View className="shared-journey__row"><Text>开放</Text><Text>{data.opening || "暂无资料"}</Text></View>
-              <View className="shared-journey__row"><Text>进入</Text><Text>{data.access || "暂无资料"}</Text></View>
-              <View className="shared-journey__row"><Text>安全</Text><Text>{data.safety || "暂无资料"}</Text></View>
-              <View className="shared-journey__row"><Text>停车</Text><Text>{data.parking || "暂无资料"}</Text></View>
-              <View className="shared-journey__row"><Text>视野</Text><Text>{data.horizon || "暂无资料"}</Text></View>
+              <PublicSpotFact label="开放" value={data.opening} />
+              <PublicSpotFact label="进入" value={data.access} />
+              <PublicSpotFact label="安全" value={data.safety} />
+              <PublicSpotFact label="停车" value={data.parking} />
+              <PublicSpotFact label="视野" value={data.horizon} />
               <Provenance source={data.source} />
             </>}
           </View>

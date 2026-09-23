@@ -2,8 +2,9 @@ import Taro from "@tarojs/taro";
 import { Button, Canvas, Text, View } from "@tarojs/components";
 import { useEffect, useState } from "react";
 import type { PlanPublicShareData, SourceSummary, SpotPublicShareData } from "@starward/miniapp-contracts";
-import { StatusPanel } from "./status-panel";
+import { EMPTY_FIELD_VALUE, StatusPanel } from "./status-panel";
 import { useAppStore } from "@/state/app-store";
+import { displayZonedShareExpiry } from "@/utils/zoned-date";
 import "./share-poster.scss";
 
 type PublicShare = PlanPublicShareData | SpotPublicShareData;
@@ -21,7 +22,7 @@ function posterLines(data: PublicShare): { heading: string; lines: string[]; sou
       `地点时区  ${data.timezone}`,
       ...data.events.map(event => `关联天象  ${event.displayName}`),
       "计划结束不代表已到访或观测成功。",
-      `分享有效至  ${data.expiresAt.slice(0, 10)}`,
+      `分享有效至  ${displayZonedShareExpiry(data.expiresAt, data.timezone)}`,
     ],
     sources: [data.spotSource, ...data.events.flatMap(event => event.source ? [event.source] : [])],
   };
@@ -31,38 +32,61 @@ function posterLines(data: PublicShare): { heading: string; lines: string[]; sou
       `正式观星点 · ${data.region}`,
       data.address,
       ...(data.status === "TEMPORARILY_CLOSED" ? ["此观星点暂时关闭，请勿按旧信息进入。"] : []),
-      `开放  ${data.opening || "暂无资料"}`,
-      `进入  ${data.access || "暂无资料"}`,
-      `安全  ${data.safety || "暂无资料"}`,
-      `停车  ${data.parking || "暂无资料"}`,
-      `视野  ${data.horizon || "暂无资料"}`,
+      `开放  ${data.opening || EMPTY_FIELD_VALUE}`,
+      `进入  ${data.access || EMPTY_FIELD_VALUE}`,
+      `安全  ${data.safety || EMPTY_FIELD_VALUE}`,
+      `停车  ${data.parking || EMPTY_FIELD_VALUE}`,
+      `视野  ${data.horizon || EMPTY_FIELD_VALUE}`,
     ],
     sources: [data.source],
   };
 }
 
-function wrap(text: string, width: number): string[] {
+function wrap(text: string, maxWidth: number, fontSize: number): string[] {
+  const advance = (char: string) => fontSize * (/\s/u.test(char) ? 0.35 : /[\x00-\x7f]/u.test(char) ? 0.68 : 1);
   const rows: string[] = [];
   for (const paragraph of text.split("\n")) {
     let row = "";
-    for (const char of paragraph) {
-      if (row.length >= width) { rows.push(row); row = ""; }
-      row += char;
+    let rowWidth = 0;
+    for (const token of paragraph.match(/[A-Za-z0-9:/._-]+|\s+|./gu) ?? []) {
+      const tokenWidth = [...token].reduce((sum, char) => sum + advance(char), 0);
+      if (row && rowWidth + tokenWidth > maxWidth) {
+        rows.push(row.trimEnd());
+        row = "";
+        rowWidth = 0;
+      }
+      if (!row && /^\s+$/u.test(token)) continue;
+      if (tokenWidth > maxWidth) {
+        for (const char of token) {
+          const charWidth = advance(char);
+          if (row && rowWidth + charWidth > maxWidth) {
+            rows.push(row.trimEnd());
+            row = "";
+            rowWidth = 0;
+          }
+          row += char;
+          rowWidth += charWidth;
+        }
+      } else {
+        row += token;
+        rowWidth += tokenWidth;
+      }
     }
-    rows.push(row);
+    rows.push(row.trimEnd());
   }
   return rows;
 }
 
 function posterLayout(data: PublicShare) {
   const content = posterLines(data);
-  const heading = wrap(content.heading, 12);
-  const body = content.lines.map(line => wrap(line, 20));
+  const contentWidth = WIDTH - 44;
+  const heading = wrap(content.heading, contentWidth, 22);
+  const body = content.lines.map(line => wrap(line, contentWidth, 13));
   const credits = content.sources.map(source => [
-    ...wrap(`${source.attribution?.name || source.provider} · ${source.title}`, 25),
-    ...(source.attribution?.statements.flatMap(statement => wrap(statement, 25)) ?? []),
-    ...wrap(`许可：${source.license}`, 25),
-    ...wrap(source.sourceUrl, 43),
+    ...wrap(`${source.attribution?.name || source.provider} · ${source.title}`, contentWidth, 11),
+    ...(source.attribution?.statements.flatMap(statement => wrap(statement, contentWidth, 11)) ?? []),
+    ...wrap(`许可：${source.license}`, contentWidth, 11),
+    ...wrap(source.sourceUrl, contentWidth, 11),
   ]);
   const bodyTop = 83 + heading.length * 28 + 12;
   const divider = bodyTop + body.reduce((height, rows) => height + rows.length * 21 + 8, 0) + 8;

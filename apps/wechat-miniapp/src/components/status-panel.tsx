@@ -3,11 +3,13 @@ import type { PageState } from "@starward/miniapp-contracts";
 import { SoftButton } from "./soft-button";
 import { SemanticIcon, type SemanticIconName } from "./semantic-asset";
 
+export const EMPTY_FIELD_VALUE = "暂无数据";
+
 const TITLES: Record<PageState, string> = {
   INITIAL: "准备加载",
   LOADING: "正在加载",
   READY: "数据已就绪",
-  EMPTY: "暂无数据",
+  EMPTY: EMPTY_FIELD_VALUE,
   PARTIAL: "部分数据可用",
   STALE: "正在使用过期数据",
   ERROR: "暂时无法获取数据",
@@ -47,7 +49,7 @@ export function StatusPanel({
       aria-live={live ? "polite" : undefined}
     >
       {state === "EMPTY" && emptyLevel !== "field" ? <SemanticIcon name={emptyIcon ?? (emptyLevel === "page" ? "star" : "info")} className="status-panel__empty-icon" /> : null}
-      {state === "EMPTY" && emptyLevel === "field" ? <Text className="status-panel__field-value">暂无数据</Text> : null}
+      {state === "EMPTY" && emptyLevel === "field" ? <Text className="status-panel__field-value">{EMPTY_FIELD_VALUE}</Text> : null}
       {TITLED_STATES.has(state) && !(state === "EMPTY" && emptyLevel === "field") ? (
         <Text className="type-label">{title ?? TITLES[state]}</Text>
       ) : null}

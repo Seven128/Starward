@@ -6,6 +6,14 @@ export function displayBeijingTimestamp(value: string): string {
   } catch { return "时间暂不可用"; }
 }
 
+/** Keep public share page and poster expiry in the plan's local timezone. */
+export function displayZonedShareExpiry(value: string, timezone: string): string {
+  try {
+    const date = new Date(value);
+    return `${calendarDateInTimezone(date, timezone)} ${clockTimeInTimezone(date, timezone)}（${timezone}）`;
+  } catch { return "有效期暂不可用"; }
+}
+
 /** Serialize a Gregorian calendar date in the requested IANA zone, not a display locale. */
 export function calendarDateInTimezone(date: Date, timezone: string): string {
   assertUsableDate(date);

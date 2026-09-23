@@ -4,6 +4,7 @@ import {
   calendarDateInTimezone,
   clockTimeInTimezone,
   displayBeijingTimestamp,
+  displayZonedShareExpiry,
 } from "./zoned-date";
 
 test("history timestamps show Beijing calendar rollover and reject unavailable instants", () => {
@@ -18,4 +19,10 @@ test("modern Shanghai and Hong Kong dates retain protocol semantics", () => {
     assert.equal(calendarDateInTimezone(instant, timezone), "2026-09-12");
     assert.equal(clockTimeInTimezone(instant, timezone), "00:05");
   }
+});
+
+test("public share expiry keeps its plan timezone across the UTC day boundary", () => {
+  assert.equal(displayZonedShareExpiry("2026-09-06T18:05:00Z", "Asia/Shanghai"),
+    "2026-09-07 02:05（Asia/Shanghai）");
+  assert.equal(displayZonedShareExpiry("invalid", "Asia/Shanghai"), "有效期暂不可用");
 });
