@@ -40,7 +40,8 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
   const h = harness(); h.set({ data: body, dataState: "PARTIAL", sources: [] });
   const tree = h.render();
   assert.match(text(tree), /所选时刻.*对应小时.*中国 AQI.*32.*优/s);
-  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "ERROR" && /当前区域参考/.test(node.props.detail)));
+  assert.ok(!find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
   assert.equal(h.notifications.length, 1);
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
   assert.equal(find(tree, node => node.type === "ForecastCoverageNote").props.scope, "air");
@@ -52,10 +53,26 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
 
 test("unsupported AQ emits no error, changing spot rejects old readings and pending proposal does not query", () => {
   const h = harness(); h.set({ data: { ...body, current: { ...body.current, unavailableReason: "NO_DATA" } }, dataState: "PARTIAL", sources: [] });
-  h.render(); assert.equal(h.notifications.length, 0);
+  assert.ok(find(h.render(), node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.equal(h.notifications.length, 0);
   assert.doesNotMatch(text(h.render("spot:b")), /中国 AQI|32/);
   assert.equal(h.render("contribution:private"), null); assert.equal(h.options.enabled, false);
   h.show(); assert.equal(h.retries, 0);
+});
+
+test("forecast request failure keeps a valid current reading without claiming an empty forecast", () => {
+  const h = harness();
+  h.set({ data: { ...body,
+    current: { value: { indexes: [{ code: "cn-mee", name: "中国 AQI", display: "26", category: "优" }], pollutants: [] }, state: "FRESH", unavailableReason: null, source },
+    forecast: { value: null, state: "UNAVAILABLE", unavailableReason: "REQUEST_FAILED", source },
+  }, dataState: "PARTIAL", sources: [] });
+  const tree = h.render();
+  assert.match(text(tree), /当前区域参考.*中国 AQI.*26.*优/s);
+  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "ERROR" && /空气质量预报/.test(node.props.detail)));
+  assert.ok(!find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.ok(!find(tree, node => node.type === "ForecastCoverageNote"));
+  find(tree, node => node.type === "SoftButton").props.onClick();
+  assert.equal(h.retries, 1);
 });
 
 test("sample AQ keeps values and ordinary failure recovery without adding test explanations", () => {
