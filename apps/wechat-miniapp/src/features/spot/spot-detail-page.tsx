@@ -151,6 +151,12 @@ export function SpotDetailPage({
     queryFn: (signal) => getSpotGuides(spotId, signal),
     enabled: validRoute && pageVisible && segment === "GUIDES" && overview.data?.data.spot.spotId === spotId,
   });
+  const confirmedGuidesEmpty = Boolean(
+    guides.data &&
+    !guides.refreshError &&
+    guides.data.dataState !== "STALE_USABLE" &&
+    guides.data.data.guides.length === 0,
+  );
   const site = useResourceQuery({
     queryKey: ["spot-site", spotId],
     queryFn: (signal) => getSpotSite(spotId, signal),
@@ -441,7 +447,7 @@ export function SpotDetailPage({
                       onRecover={() => void guides.refetch()}
                     />
                   ) : !guides.data?.data.guides.length ? (
-                    <StatusPanel state="EMPTY" detail="暂无本地点的攻略；可继续查看场地与来源资料。" />
+                    confirmedGuidesEmpty ? <StatusPanel state="EMPTY" detail="暂无本地点的攻略；可继续查看场地与来源资料。" /> : null
                   ) : (
                     guides.data.data.guides.map((guide) => {
                       const thumbnail = guideThumbnail(guide, detail.spot.media);
