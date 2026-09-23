@@ -99,6 +99,12 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
   “重试地图” recreates the native Map instance while retaining the application's viewport, selection and data. The `native-map-recovery` owner waits for that instance's native update or error and restores retry on timeout; clearing an error flag alone is not recovery. Each instance owns its native callbacks and terrain overlay context. Old drag debounce or leave-confirmation callbacks cannot commit after replacement, and old overlay cleanup cannot remove the new instance's overlay. Already committed user location/selection requests remain with their application data owners.
 - `page-state-recovery` is the shared recovery family for INITIAL/LOADING/READY/EMPTY/PARTIAL/STALE/ERROR/PERMISSION_DENIED. It never substitutes realistic fake values for missing data and never hides usable static content because a dynamic layer failed.
 
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/notification-and-empty-2026-09-23/README.md" -->
+
+2026-09-23 用户要求统一跨场景的悬浮 `info` 消息，并把“暂无数据”建立为可沿用的设计资源；审阅后确认采用[共享提示与空态资源](../../../../../docs/design-resources/wechat-miniapp/shared/notification-and-empty-2026-09-23/README.md)所示的日间视觉范围。`notification-feedback` 的浮动 info 由 Map/Search、点位天气与地形、Sky、My/Settings 及事件弹窗等实际数据或异步操作消费者共用同一紧凑表达；消息只交代受影响对象、结果及必要的下一步，合计一两句话，详细原因与可持续重试仍归受影响区域。缺测/无覆盖不因空态重复弹提醒，现有单宿主、去重、可见计时和安全区责任不变。
+
+`page-state-recovery` 的空内容按字段值、章节局部和列表/整页三个占用层级表达：点位事实值不另起状态卡，近期天气等局部空态留在原章节阅读轴上，计划/记录等真正空列表保留其页面身份与可执行入口。请求错误、旧值可用、权限或部分覆盖保留各自状态及实际恢复路径，不借“暂无数据”伪装成成功的空查询，也不在同一当前画面并列真实空结果和请求失败。共享资源只替代这些状态的日间视觉表达，不替代各页其余采用构图或生产实现。
+
 ## Responsive, Density, Motion And Accessibility Contract
 
 - Current scope is standard font at 320/375/390/430 logical-pixel widths and applicable safe areas; large-font/200% work is paused by the owner. DESIGN.md owns exact typography, geometry and token conversion, and information-design.md owns density methods. Visible surfaces may be compact while actionable hit areas remain at least 44 logical pixels; 88rpx is not equivalent across widths. Do not shrink text or enlarge every content row to achieve either density or hit-target compliance.

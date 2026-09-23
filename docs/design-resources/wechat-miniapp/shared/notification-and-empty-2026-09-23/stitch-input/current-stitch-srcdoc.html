@@ -1,0 +1,1243 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1320, initial-scale=1.0">
+<title>08｜共享 Info 提醒与暂无数据</title>
+<style>
+/* ==========================================================================
+   Starward 微信小程序 · 设计审阅板
+   08｜共享 Info 提醒与暂无数据
+   基准规范：390×844 逻辑视口、舒适尺度、B批拟物磨砂图标、自然圆润
+   ========================================================================== */
+
+:root {
+  --bg-sand: #f5f4ef;
+  --board-bg: #eceae3;
+  --surface: #ffffff;
+  --surface-subtle: #f8fafb;
+  --text-main: #1f2e38;
+  --text-regular: #3d5160;
+  --text-muted: #5e7382;
+  --text-sub: #889ba8;
+  --border-line: #e3ebef;
+  --border-card: rgba(220, 229, 235, 0.7);
+  --gold: #b3975d;
+  --gold-light: #f6efe1;
+  --blue-primary: #3d5666;
+  --blue-hover: #2e4350;
+  --radius-card: 20px;
+  --radius-inner: 14px;
+  --radius-pill: 9999px;
+  --shadow-float: 0 8px 24px -4px rgba(35, 52, 65, 0.12), 0 2px 6px -1px rgba(35, 52, 65, 0.05);
+  --shadow-subtle: 0 4px 16px rgba(50, 68, 82, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 40px 48px 64px;
+  background-color: var(--board-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  min-width: 1300px;
+}
+
+/* 画板头部 */
+.board-header {
+  max-width: 1240px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(136, 155, 168, 0.25);
+  padding-bottom: 16px;
+}
+
+.board-title-group h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.board-title-group p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.board-meta-badge {
+  font-size: 13px;
+  color: var(--text-sub);
+  background: rgba(255, 255, 255, 0.65);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(227, 235, 239, 0.8);
+}
+
+/* 三栏手机视口容器 (390×844) */
+.viewports-grid {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.column-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.column-header {
+  padding: 0 6px;
+}
+
+.column-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.column-header h2 .col-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a08140;
+  background: var(--gold-light);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.column-header p {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+/* 390×844 真机视口 */
+.device-viewport {
+  width: 390px;
+  height: 844px;
+  background-color: var(--bg-sand);
+  border-radius: 38px;
+  box-shadow: 0 20px 48px -8px rgba(22, 34, 44, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.85);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 状态栏 + 胶囊 (44px) */
+.status-bar {
+  height: 44px;
+  padding: 12px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  z-index: 50;
+  user-select: none;
+}
+
+.status-time {
+  font-size: 14.5px;
+  letter-spacing: -0.02em;
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wechat-capsule {
+  width: 86px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.wechat-capsule-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* 微信顶部导航栏高度 44px */
+.nav-bar {
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 40;
+}
+
+.nav-bar-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* 图标基础 */
+.matte-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   第 1 列：地图浮动 Info 提醒
+   ========================================================================== */
+.map-canvas-mock {
+  position: absolute;
+  inset: 0;
+  background: #e1ebed;
+  z-index: 1;
+}
+
+.map-svg-mock {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.map-top-bar {
+  position: relative;
+  z-index: 40;
+  padding: 6px 16px 8px;
+}
+
+.search-capsule-mock {
+  height: 42px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  box-shadow: 0 2px 10px rgba(31, 46, 56, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.search-capsule-mock span {
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+/* 浮动 Info 堆叠区 */
+.floating-info-stack {
+  position: relative;
+  z-index: 45;
+  padding: 8px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 8px 律动 */
+}
+
+/* 单条浮动条 */
+.floating-info-bar {
+  height: 48px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: var(--shadow-float);
+  border: 1px solid rgba(220, 229, 235, 0.85);
+  display: flex;
+  align-items: center;
+  padding: 0 6px 0 14px;
+  position: relative;
+  transition: all 160ms ease;
+}
+
+.info-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.info-bar-left .info-symbol {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-bar-text {
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 4px;
+}
+
+/* 关闭按钮：热区 >= 44px，视觉图形小（14px） */
+.info-close-hitbox {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+}
+
+.info-close-hitbox:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.close-cross-glyph {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sub);
+}
+
+/* 成功/轻量复制状态微调色彩，几何完全一致 */
+.floating-info-bar.is-success .info-bar-text {
+  color: var(--text-main);
+}
+
+/* 警戒轻微改小图标色 */
+.floating-info-bar.is-warning .info-bar-text {
+  color: var(--text-main);
+}
+
+/* 地图底栏小抽屉提示 */
+.map-bottom-peek {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 22px 22px 0 0;
+  padding: 12px 18px 24px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.drawer-drag-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #d8e2e7;
+  margin: 0 auto 12px;
+}
+
+.drawer-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-title-row h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.drawer-title-row span {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+/* ==========================================================================
+   第 2 列：中侧 点位详情 字段缺值与章节局部空态
+   ========================================================================== */
+.spot-detail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 抽屉头部卡 */
+.spot-header-card {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  padding: 18px 18px 14px;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-subtle);
+}
+
+.spot-name-sup {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.spot-name-main {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 4px 0 8px;
+}
+
+.spot-dist-row {
+  font-size: 13.5px;
+  color: var(--text-regular);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 基本信息字段列表：不装盒，安静次要文字表达缺值 */
+.spot-section-card {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-subtle);
+}
+
+.spot-section-card h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.field-pair-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field-pair-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f2f5f7;
+}
+
+.field-pair-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.field-label {
+  color: var(--text-muted);
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.field-val-present {
+  color: var(--text-main);
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+}
+
+/* 规范约束：字段只用安静的次要文字、不装盒、不造假数据 */
+.field-val-nodata {
+  color: var(--text-sub);
+  font-weight: 400;
+  font-size: 13.5px;
+  text-align: right;
+  flex: 1;
+  letter-spacing: 0.02em;
+}
+
+/* 天气章节局部空态：与章节标题/真实内容同轴，轻薄分隔和小语义图形 */
+.weather-section-wrap {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  padding: 18px;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-subtle);
+}
+
+.weather-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.weather-header-row h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.weather-header-row .weather-source-hint {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+/* 局部空态组件 */
+.section-inline-empty {
+  padding: 24px 16px 20px;
+  background: var(--surface-subtle);
+  border-radius: var(--radius-inner);
+  border: 1px dashed #e1eaef;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.inline-empty-glyph {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.75;
+}
+
+.inline-empty-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.inline-empty-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 240px;
+}
+
+/* 下方并列一个具有正常数据的对照预览卡片 */
+.spot-subtle-hint-card {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  padding: 14px 18px;
+  border: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   第 3 列：右侧 我的/计划列表 整页空态与请求异常对照
+   ========================================================================== */
+.plans-view-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-sand);
+}
+
+/* 页面顶部标题与选项卡 */
+.plans-header-area {
+  padding: 6px 20px 14px;
+}
+
+.plans-page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.plans-tabs-row {
+  display: flex;
+  gap: 18px;
+  margin-top: 14px;
+  border-bottom: 1px solid #e7edf0;
+  padding-bottom: 6px;
+}
+
+.plans-tab-item {
+  font-size: 14px;
+  color: var(--text-muted);
+  padding-bottom: 6px;
+  position: relative;
+  cursor: pointer;
+}
+
+.plans-tab-item.is-active {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.plans-tab-item.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 1px;
+}
+
+/* 整页真正空态：内容区留适度呼吸，小巧 B 系语义插图，仅在真实可执行时给新建动作 */
+.full-page-empty-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px 30px;
+  text-align: center;
+}
+
+.empty-star-illustration {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-headline {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.empty-state-subtext {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 220px;
+  margin-bottom: 22px;
+}
+
+/* 真实普通“新建计划”按钮 */
+.btn-create-plan-action {
+  height: 44px;
+  padding: 0 22px;
+  background: var(--blue-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  border: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(61, 86, 102, 0.2);
+  cursor: pointer;
+}
+
+.btn-create-plan-action:hover {
+  background: var(--blue-hover);
+}
+
+/* 请求错误的局部对照卡片（挂在底部）：让真实空和失败在视觉/文案上清晰可辨 */
+.error-contrast-drawer {
+  margin: 0 16px 20px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  border: 1px solid #f0dada;
+  box-shadow: 0 3px 12px rgba(160, 40, 40, 0.05);
+}
+
+.error-contrast-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.error-contrast-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-contrast-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.error-contrast-texts h5 {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #3b2828;
+}
+
+.error-contrast-texts p {
+  font-size: 12px;
+  color: #8c6a6a;
+  margin-top: 1px;
+}
+
+.btn-retry-compact {
+  height: 32px;
+  padding: 0 14px;
+  background: #fdf5f5;
+  border: 1px solid #ebd0d0;
+  color: #8a3434;
+  border-radius: var(--radius-pill);
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btn-retry-compact:active {
+  background: #fae8e8;
+}
+
+/* 底部安全区与 Home 棒 */
+.bottom-safe-indicator {
+  width: 134px;
+  height: 5px;
+  background: #202b33;
+  opacity: 0.2;
+  border-radius: 3px;
+  margin: 8px auto 6px;
+  flex-shrink: 0;
+}
+
+/* 规范说明附签 */
+.spec-footnote-bar {
+  max-width: 1240px;
+  margin: 28px auto 0;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(220, 229, 235, 0.8);
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+</style>
+<style>.floating-info-bar { height: auto !important; min-height: 48px !important; padding: 6px 6px 6px 14px !important; } .info-bar-text { white-space: normal !important; text-overflow: clip !important; word-break: break-word !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }</style><style data-stitch-injected>
+  /* Hide scrollbars on ALL elements (Webkit) */
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbars on ALL elements (Firefox) */
+  * {
+    scrollbar-width: none;
+  }
+
+  /* Suppress horizontal overflow and legacy IE/Edge */
+  html, body {
+    overflow-x: hidden !important;
+    -ms-overflow-style: none;
+    min-height: auto !important;
+  }
+
+  /* Global text selection highlight color override inside all iframe modes */
+  ::selection {
+    background-color: rgba(96, 86, 240, 0.3) !important;
+    color: inherit !important;
+  }
+  ::-moz-selection {
+    background-color: rgba(96, 86, 240, 0.3) !important;
+    color: inherit !important;
+  }
+
+  /* Suppress browser default focus outlines and box-shadow glows globally */
+  *:focus, *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+</style><script data-stitch-injected>(function pt(){window.addEventListener(`message`,async function(e){let t=e.data;if(!t||t.type!==`capture_screenshot`||e.source!==window.parent)return;let n=t.requestId,r=t.captureEngineSource,i=t.options||{},a=window.innerWidth,o=window.innerHeight,s=window.scrollX,c=window.scrollY,l=document.documentElement,u=l.style.width,d=l.style.height,f=l.style.overflow,p=l.style.position;try{if(!window.snapdom&&r){let e=document.createElement(`script`);e.setAttribute(`data-stitch-injected`,``),e.textContent=r,document.head.appendChild(e)}let e=window.snapdom;if(!e){window.parent.postMessage({type:`screenshot_error`,requestId:n,errorCode:`CAPTURE_ENGINE_UNAVAILABLE`,error:`Capture engine not available. Ensure source is sent with the capture request.`},`*`);return}let t=i.exclude||[`[data-stitch-injected]`];window.scrollTo(0,0),l.style.width=a+`px`,l.style.height=o+`px`,l.style.overflow=`hidden`,l.style.position=`relative`;let u=await(await e(document.documentElement,{exclude:t,embedFonts:!0,scale:i.scale||1,plugins:[{name:`stitch-viewport-clip`,afterClone:function(e){let t=e.clone;if(!(t instanceof HTMLElement))return;t.style.position=`relative`,t.style.width=a+`px`,t.style.height=o+`px`,t.style.overflow=`hidden`;let n=[],r=t.querySelectorAll(`*`);for(let e=0;e<r.length;e++){let t=r[e];t instanceof HTMLElement&&(t.style.position||(t.__snapdomComputedStyle||window.getComputedStyle(t)).position)===`fixed`&&n.push(t)}if(s!==0||c!==0){let e=t.querySelector(`body`);e&&(e.style.marginTop=-c+`px`,e.style.marginLeft=-s+`px`)}for(let e=0;e<n.length;e++)n[e].style.position=`absolute`,t.appendChild(n[e])}}]})).toCanvas({width:a,height:o}),d=i.format||`image/jpeg`,f=i.quality??.8,p=u.toDataURL(d,f);window.parent.postMessage({type:`screenshot_captured`,requestId:n,dataUrl:p,width:a,height:o},`*`)}catch(e){window.parent.postMessage({type:`screenshot_error`,requestId:n,error:e instanceof Error?e.message:String(e)},`*`)}finally{l.style.width=u,l.style.height=d,l.style.overflow=f,l.style.position=p,window.scrollTo(s,c)}})})();</script><script data-stitch-injected>(function gt(){let e=`__stitch-highlight-css`,t=`stitch-highlight-element`,n=null;function r(){if(document.getElementById(e))return;let n=document.createElement(`style`);n.id=e,n.textContent=[`@keyframes stitch-highlight-pulse {`,`  0%, 100% { box-shadow: 0 0 0 3px rgba(113,105,237,0.8), 0 0 12px 4px rgba(113,105,237,0.3); }`,`  50%      { box-shadow: 0 0 0 3px rgba(113,105,237,0.4), 0 0 6px 2px rgba(113,105,237,0.15); }`,`}`,`.`+t+` {`,`  outline: 3px solid rgba(113,105,237,0.8) !important;`,`  outline-offset: 2px !important;`,`  animation: stitch-highlight-pulse 1.5s ease-in-out infinite !important;`,`  border-radius: inherit;`,`}`].join(`
+`),document.head.appendChild(n)}function i(e){let t=e.toLowerCase().trim(),n=document.createTreeWalker(document.body,NodeFilter.SHOW_ELEMENT,null),r=null,i=-1,a=n.nextNode();for(;a;){if((a.textContent||``).trim().toLowerCase().includes(t)){let e=0,t=a.parentElement;for(;t;)e++,t=t.parentElement;e>i&&(i=e,r=a)}a=n.nextNode()}return r}function a(e){setTimeout(function(){let t=e.getBoundingClientRect(),n=window.innerWidth||1,r=window.innerHeight||1;window.parent.postMessage({type:`stitch:highlight-element-rect`,normalizedX:(t.left+t.width/2)/n,normalizedY:(t.top+t.height/2)/r,normalizedWidth:t.width/n,normalizedHeight:t.height/r},`*`)},400)}window.addEventListener(`message`,function(e){if(!e.data||e.data.type!==`stitch:highlight-element`)return;n&&=(n.classList.remove(t),null);let{text:o,selector:s}=e.data;if(!o&&!s)return;r();let c=null;if(o&&(c=i(o)),!c&&s)try{c=document.querySelector(s)}catch{}c&&(c.classList.add(t),c.scrollIntoView({behavior:`smooth`,block:`center`}),n=c,a(c))})})();</script><script data-stitch-injected>(function yt(){let e=0;window.onerror=function(){e++},window.addEventListener(`unhandledrejection`,function(){e++});let t=console.error;console.error=function(...n){e++,t.apply(console,n)};function n(e=`actual`){if(e===`scrollbox`)return document.documentElement.scrollHeight;let t=document.body?.children;if(!t)return document.documentElement.scrollHeight;let n=0;for(let e=0;e<t.length;e++){let r=t[e];if(r.tagName===`SCRIPT`||r.tagName===`STYLE`||r.hasAttribute(`data-stitch-injected`)||window.getComputedStyle(r).position===`fixed`)continue;let i=r.getBoundingClientRect().bottom+window.scrollY;i>n&&(n=i)}return n||document.documentElement.scrollHeight}window.__stitchMeasureContentHeight=n,window.__stitchReportDimensions=function(t=`actual`){typeof window>`u`||!window.parent||window.parent.postMessage({type:`stitch:content-dimensions`,height:n(t),errorCount:e},`*`)};function r(){typeof window>`u`||window.__stitchReportDimensions?.(`actual`)}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,()=>setTimeout(r,50)):setTimeout(r,50),window.addEventListener(`load`,()=>setTimeout(r,100)),document.addEventListener(`visibilitychange`,()=>{document.visibilityState===`visible`&&setTimeout(r,100)}),window.addEventListener(`message`,e=>{e.data?.type===`stitch:request-dimensions`&&setTimeout(r,50)})})();</script><style data-stitch-injected>
+  /* ─── Animation styles ─── */
+  .stitch-anim-highlight {
+    outline: 2px solid #6056f080;
+    outline-offset: 2px;
+    border-radius: 4px;
+    transition: outline-color 0.4s ease;
+  }
+  .stitch-anim-highlight-fade {
+    outline-color: transparent;
+  }
+  @keyframes stitch-anim-fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes stitch-anim-pure-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .stitch-anim-fade-in {
+    animation: stitch-anim-fade-in 0.3s ease forwards;
+  }
+
+  /* ─── Drawing rectangle overlay ─── */
+  .stitch-anim-draw-overlay {
+    position: fixed;
+    border: 2px solid #6056f099;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 998;
+    clip-path: polygon(
+      0% 0%, 0% 0%,
+      0% 0%, 0% 0%,
+      0% 0%, 0% 0%
+    );
+    animation: stitch-anim-draw-rect 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes stitch-anim-draw-rect {
+    0%   { clip-path: polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%); }
+    30%  { clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 100% 0%, 0% 0%, 0% 0%); }
+    55%  { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 100% 100%, 0% 0%, 0% 0%); }
+    80%  { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 100%, 0% 0%); }
+    100% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 0% 0%); }
+  }
+  .stitch-anim-draw-overlay.fading {
+    animation: stitch-anim-border-fade 0.5s ease forwards;
+  }
+  @keyframes stitch-anim-border-fade {
+    to { opacity: 0; }
+  }
+  /* ─── Image reveal crossfade ─── */
+  .stitch-anim-img-dimming {
+    transition: opacity 0.2s ease !important;
+    opacity: 0.15 !important;
+  }
+  .stitch-anim-img-revealing {
+    transition: opacity 0.35s ease !important;
+    opacity: 1 !important;
+  }
+  .stitch-anim-cursor::after {
+    content: '|';
+    font-weight: 100;
+    animation: stitch-anim-blink 0.6s step-end infinite;
+    color: #6056f0B3;
+    margin-left: 1px;
+  }
+  @keyframes stitch-anim-blink {
+    50% { opacity: 0; }
+  }
+
+  /* ─── AI Agent Cursor ─── */
+  #stitch-agent-cursor {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 0px;
+    transition: left 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                top 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.25s ease;
+    opacity: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
+  }
+  #stitch-agent-cursor.working {
+    animation: stitch-anim-wobble 0.8s ease-in-out infinite;
+  }
+  #stitch-agent-cursor.drawing {
+    animation: none;
+    transition: left 0.12s linear, top 0.12s linear, opacity 0.25s ease;
+  }
+  @keyframes stitch-anim-wobble {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25%  { transform: translate(1px, -1px) rotate(2deg); }
+    50%  { transform: translate(-1px, 1px) rotate(-1deg); }
+    75%  { transform: translate(1px, 0px) rotate(1deg); }
+  }
+  #stitch-agent-cursor .cursor-pointer {
+    display: block;
+  }
+  #stitch-agent-cursor .cursor-text,
+  #stitch-agent-cursor .cursor-paint {
+    display: none;
+  }
+  #stitch-agent-cursor.text-mode .cursor-pointer,
+  #stitch-agent-cursor.text-mode .cursor-paint {
+    display: none;
+  }
+  #stitch-agent-cursor.text-mode .cursor-text {
+    display: block;
+  }
+  #stitch-agent-cursor.paint-mode .cursor-pointer,
+  #stitch-agent-cursor.paint-mode .cursor-text {
+    display: none;
+  }
+  #stitch-agent-cursor.paint-mode .cursor-paint {
+    display: block;
+  }
+  #stitch-cursor-label {
+    margin-top: 14px;
+    margin-left: -3px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+
+  /* ─── Active Element Indicator ─── */
+  @keyframes stitch-indicator-pulse {
+    0%, 100% {
+      opacity: 1.0;
+      border-color: #6056f0B3;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    }
+    50% {
+      opacity: 0.5;
+      border-color: #7168f6E6;
+      box-shadow: 0 4px 16px #7168f666, inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+  }
+  .stitch-active-indicator {
+    position: absolute;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, #6056f033, #7168f633);
+    border: 1.5px solid #6056f0B3;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    animation: stitch-indicator-pulse 1.5s ease-in-out infinite;
+    pointer-events: auto;
+    cursor: not-allowed;
+    z-index: 3;
+  }
+</style></head>
+<body>
+
+  <!-- 画板主标题与审阅说明 -->
+  <header class="board-header">
+    <div class="board-title-group">
+      <h1 class="">Starward · 08｜共享 Info 提醒与暂无数据</h1>
+      <p class="">390×844 真实移动端局部比例 · 统一自然圆润与信息呼吸节奏 · 严禁无意义大插画与框盒伪造</p>
+    </div>
+    <div class="board-meta-badge">
+      跨场景组件审阅板 · 2026-09-22
+    </div>
+  </header>
+
+  <!-- 三视口并列展示 -->
+  <main class="viewports-grid">
+
+    <!-- ==================== 左侧：地图顶部安全区浮动 Info ==================== -->
+    <section class="column-wrap">
+      <div class="column-header">
+        <h2 class="">左侧：浮动 Info 提醒 <span class="col-badge">地图/全局</span></h2>
+        <p class="">轻量白底轻抬升条 · 8px垂直节奏 · 避让胶囊与搜索 · 独立关闭热区≥44px</p>
+      </div>
+
+      <div class="device-viewport">
+        <!-- 模拟地图底图 -->
+        <div class="map-canvas-mock" aria-hidden="true">
+          <svg class="map-svg-mock" viewBox="0 0 390 844" fill="none">
+            <rect width="390" height="844" fill="#dbe6eb"></rect>
+            <!-- 抽象等高线与海岸轮廓 -->
+            <path d="M-20 180 Q 80 140 180 200 T 420 160 L 420 0 L -20 0 Z" fill="#cfdee5"></path>
+            <path d="M-30 420 C 60 380, 150 460, 260 410 C 340 370, 390 390, 420 380 L 420 844 L -30 844 Z" fill="#eaf2f5"></path>
+            <path d="M 40 520 C 120 480, 180 540, 290 500 C 350 480, 390 510, 410 490" stroke="#c0d5df" stroke-width="2" stroke-dasharray="4 4" fill="none"></path>
+            <circle cx="210" cy="460" r="18" fill="rgba(61, 86, 102, 0.12)"></circle>
+            <circle cx="210" cy="460" r="6" fill="#3d5666"></circle>
+          </svg>
+        </div>
+
+        <!-- 顶部系统状态栏 -->
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <div class="wechat-capsule">
+              <span class="">•••</span>
+              <div class="wechat-capsule-divider"></div>
+              <span class="">⊙</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 搜索胶囊栏 -->
+        <div class="map-top-bar">
+          <div class="search-capsule-mock">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#68808f" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+            <span class="">搜索观星点、经纬度</span>
+          </div>
+        </div>
+
+        <!-- 浮动 Info 堆叠区 (三条同尺寸、8px节奏、清晰一句文案) -->
+        <div class="floating-info-stack" role="region" aria-label="浮动系统通知">
+          
+          <!-- 提醒 1：地图未显示正常态 (主要审阅条) -->
+          <div class="floating-info-bar">
+            <div class="info-bar-left">
+              <span class="info-symbol">
+                <!-- B批磨砂 info 语义图标 -->
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="#3d5666" fill-opacity="0.12"></circle>
+                  <circle cx="12" cy="7.5" r="1.5" fill="#3d5666"></circle>
+                  <rect x="10.8" y="10.5" width="2.4" height="6.5" rx="1.2" fill="#3d5666"></rect>
+                </svg>
+              </span>
+              <span class="info-bar-text">地图暂未显示，可搜索地点或重试。</span>
+            </div>
+            <button class="info-close-hitbox" aria-label="关闭提示">
+              <span class="close-cross-glyph">✕</span>
+            </button>
+          </div>
+
+          <!-- 提醒 2：近期天气暂未更新状态 (紧凑样式) -->
+          <div class="floating-info-bar is-warning">
+            <div class="info-bar-left">
+              <span class="info-symbol">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="#b3975d" fill-opacity="0.16"></circle>
+                  <circle cx="12" cy="7.5" r="1.5" fill="#967b43"></circle>
+                  <rect x="10.8" y="10.5" width="2.4" height="6.5" rx="1.2" fill="#967b43"></rect>
+                </svg>
+              </span>
+              <span class="info-bar-text">近期天气暂未更新，原有资料仍可查看。</span>
+            </div>
+            <button class="info-close-hitbox" aria-label="关闭提示">
+              <span class="close-cross-glyph">✕</span>
+            </button>
+          </div>
+
+          <!-- 提醒 3：链接已复制状态 (轻量反馈) -->
+          <div class="floating-info-bar is-success">
+            <div class="info-bar-left">
+              <span class="info-symbol">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="#366b59" fill-opacity="0.15"></circle>
+                  <path d="M7.5 12.5L10.5 15.5L16.5 9.5" stroke="#2d5e4e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+              </span>
+              <span class="info-bar-text">链接已复制。</span>
+            </div>
+            <button class="info-close-hitbox" aria-label="关闭提示">
+              <span class="close-cross-glyph">✕</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- 底部地图抽屉露出 -->
+        <div class="map-bottom-peek">
+          <div class="drawer-drag-handle"></div>
+          <div class="drawer-title-row">
+            <h3 class="">星湾观星点</h3>
+            <span class="">滨海 · 东岸 · 128m</span>
+          </div>
+        </div>
+
+        <div class="bottom-safe-indicator" style="position: absolute; bottom: 4px; left: 0; right: 0;"></div>
+      </div>
+    </section>
+
+
+    <!-- ==================== 中侧：点位详情字段值与章节局部空态 ==================== -->
+    <section class="column-wrap">
+      <div class="column-header">
+        <h2 class="">中侧：局部空态与缺值 <span class="col-badge">地图信息抽屉</span></h2>
+        <p class="">地图底图上拉展开抽屉 · 字段缺值安静次要文字不装盒 · 天气章节同轴局部空态</p>
+      </div>
+
+      <div class="device-viewport" style="background-color: #f7f9fa;"><div class="map-canvas-mock" aria-hidden="true" style="height: 80px; position: absolute; top: 0px; left: 0px; right: 0px;"><svg class="map-svg-mock" viewBox="0 0 390 80" fill="none"><rect width="390" height="80" fill="#dbe6eb"></rect><path d="M-20 50 Q 80 25 180 60 T 420 40 L 420 0 L -20 0 Z" fill="#cfdee5"></path><circle cx="195" cy="48" r="14" fill="rgba(61, 86, 102, 0.12)"></circle><circle cx="195" cy="48" r="4.5" fill="#3d5666"></circle></svg></div><div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><div class="wechat-capsule"><span class="">•••</span><div class="wechat-capsule-divider"></div><span class="">⊙</span></div></div></div><div class="spot-drawer-container" style="position: absolute; inset: 76px 0px 0px; background: rgb(255, 255, 255); border-radius: 20px 20px 0px 0px; box-shadow: rgba(35, 52, 65, 0.1) 0px -4px 20px; display: flex; flex-direction: column; overflow: hidden;"><div class="drawer-drag-handle" style="margin: 10px auto 12px; width: 40px; height: 4px; border-radius: 2px; background: #d0dbe2; flex-shrink: 0;"></div><div class="spot-detail-scroll" style="flex: 1; overflow-y: auto; padding: 2px 20px 24px; display: flex; flex-direction: column; gap: 16px;"><div class="spot-header-card" style="background: transparent; border: none; box-shadow: none; padding: 0;"><span class="spot-name-sup" style="font-size: 13px; color: var(--text-muted);">广东 · 深圳 · 滨海东岸</span><h3 class="spot-name-main" style="font-size: 21px; font-weight: 700; color: var(--text-main); margin: 3px 0 4px;">星湾观星点</h3><div class="spot-dist-row" style="font-size: 13px; color: var(--text-sub);"><span class="">海拔 128m · 视野开阔</span></div></div><div class="spot-section-card" style="background: var(--surface-subtle); border-radius: 16px; padding: 16px; border: 1px solid var(--border-line); box-shadow: none;"><h4 style="font-size: 14.5px; font-weight: 600; color: var(--text-main); margin-bottom: 12px;" class="">配套与场地信息</h4><div class="field-pair-list"><div class="field-pair-row"><span class="field-label">开放时段</span><span class="field-val-present">18:00 — 次日 06:00</span></div><div class="field-pair-row"><span class="field-label">夜间照明</span><span class="field-val-present">步道微光，台阶需自备</span></div><div class="field-pair-row"><span class="field-label">停车设施</span><span class="field-val-nodata">暂无数据</span></div><div class="field-pair-row"><span class="field-label">洗手间</span><span class="field-val-nodata">暂无数据</span></div></div></div><div class="weather-section-wrap" style="background: var(--surface-subtle); border-radius: 16px; padding: 16px 18px 20px; border: 1px solid var(--border-line); box-shadow: none;"><div class="weather-header-row" style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; border-bottom: 1px solid rgba(220, 229, 235, 0.6); padding-bottom: 8px;"><h4 style="font-size: 14.5px; font-weight: 600; color: var(--text-main);" class="">近期天气</h4><span class="weather-source-hint" style="font-size: 12px; color: var(--text-sub); font-weight: 400;">邻近地区 · 前两日</span></div><div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 16px 0 10px;"><div class="inline-empty-glyph" style="margin-bottom: 8px; opacity: 0.6;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M7 16.5H16.5C18.43 16.5 20 14.93 20 13C20 11.23 18.68 9.77 16.96 9.54C16.5 6.96 14.25 5 11.5 5C8.98 5 6.87 6.64 6.2 8.95C4.38 9.32 3 10.9 3 12.8C3 14.84 4.66 16.5 6.7 16.5" stroke="#697f8e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="inline-empty-title" style="font-size: 15px; font-weight: 600; color: var(--text-main); line-height: 1.3;">暂无数据</div><div class="inline-empty-desc" style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">该地区近两日暂无天气记录</div></div></div></div><div class="bottom-safe-indicator" style="margin: 6px auto 10px;"></div></div></div>
+    </section>
+
+
+    <!-- ==================== 右侧：我的/计划列表 整页空态与请求异常对照 ==================== -->
+    <section class="column-wrap">
+      <div class="column-header">
+        <h2 class="">右侧：整页空态与异常 <span class="col-badge">我的 · 计划列表</span></h2>
+        <p class="">留适度呼吸 · 柔和抽象星点 · 普通新建动作 · 下附请求错误对照</p>
+      </div>
+
+      <div class="device-viewport">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <div class="wechat-capsule">
+              <span class="">•••</span>
+              <div class="wechat-capsule-divider"></div>
+              <span class="">⊙</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 计划列表页容器 -->
+        <div class="plans-view-container">
+          
+          <!-- 页面原生标题与切换 -->
+          <div class="plans-header-area">
+            <h3 class="plans-page-title">观星计划</h3>
+            <div class="plans-tabs-row">
+              <span class="plans-tab-item is-active">接下来</span>
+              <span class="plans-tab-item">过往</span>
+            </div>
+          </div>
+
+          <!-- 真正空结果：内容区留适度呼吸，标题/正文/新建计划动作 -->
+          <div class="full-page-empty-box">
+            <div class="empty-star-illustration" aria-hidden="true">
+              <!-- 小巧 B 系四角星与抽象星点 -->
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="22" fill="#ffffff" stroke="#e6eef2" stroke-width="1.2"></circle>
+                <path d="M24 12C24 17.5 28.5 22 34 22C28.5 22 24 26.5 24 32C24 26.5 19.5 22 14 22C19.5 22 24 17.5 24 12Z" fill="#b3975d" fill-opacity="0.35"></path>
+                <circle cx="33" cy="14" r="2" fill="#889ba8"></circle>
+                <circle cx="15" cy="31" r="1.5" fill="#889ba8"></circle>
+              </svg>
+            </div>
+            
+            <h4 class="empty-state-headline">暂无观星计划</h4>
+            <p class="empty-state-subtext">新建计划后会显示在这里。</p>
+            
+            <button class="btn-create-plan-action" style="background: rgba(31, 46, 56, 0.08); color: rgb(45, 61, 73); border: 1px solid rgba(61, 86, 102, 0.16); box-shadow: none; font-size: 14.5px; height: 42px; font-weight: 500;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="">新建计划</span></button>
+          </div>
+
+          <!-- 请求错误局部对照：让真实空和失败在视觉/文案上清晰可辨 -->
+          
+
+        </div>
+
+        <div class="bottom-safe-indicator"></div>
+      </div>
+    <div style="margin-top: 14px; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(220, 229, 235, 0.85); border-radius: 16px; padding: 12px 14px;"><div style="font-size: 11.5px; font-weight: 600; color: #8c6a6a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;" class=""><span style="width: 6px; height: 6px; border-radius: 50%; background: #c54a4a;"></span>异常状态对照 · 请求失败时替换列表内容</div><div class="error-contrast-drawer" role="alert" style="margin: 0; background: #ffffff; border-radius: 14px; padding: 12px 14px; border: 1px solid #f0dada; box-shadow: 0 2px 8px rgba(160, 40, 40, 0.05);"><div class="error-contrast-inner"><div class="error-contrast-info"><span class="error-contrast-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#f5dede"></circle><line x1="12" y1="8" x2="12" y2="12" stroke="#993b3b" stroke-width="2" stroke-linecap="round"></line><circle cx="12" cy="16" r="1.2" fill="#993b3b"></circle></svg></span><div class="error-contrast-texts"><h5 style="font-size: 13px; font-weight: 600; color: #3b2828;" class="">暂未读取到计划</h5><p style="font-size: 12px; color: #8c6a6a; margin-top: 2px;" class="">网络连接较弱或服务响应超时</p></div></div><button class="btn-retry-compact">重试</button></div></div></div></section>
+
+  </main>
+
+  <!-- 底部规范附注 -->
+  <footer class="spec-footnote-bar">
+    <div class=""><strong>分层设计原则：</strong>浮动 Info (轻抬升避让胶囊) · 字段缺值 (安静次要文字不装盒) · 局部空态 (同轴轻薄轻图形) · 整页空态 (适度呼吸与明确主行为)</div>
+    <div class="">Starward Wechat MiniApp · 390×844 Design Contract</div>
+  </footer>
+
+
+
+
+
+
+
+<script data-stitch-injected>window.__STITCH_CONFIG__={"screenId":"46a9936c70664e4381411573ab6b34da","targetOrigin":"https://app-companion-430619.appspot.com","disableAnimations":false};(function(){var S={PING:"direct_edit_ping",PONG:"direct_edit_pong",READY:"direct_edit_ready",EDIT:{ACTIVATE:"direct_edit_activate",EXIT:"direct_edit_exit",DESELECT:"direct_edit_deselect",ESCAPE:"direct_edit_escape",TOOL_SWITCH:"direct_edit_tool_switch",SCAN:"direct_edit_scan",FOCUS_AT:"direct_edit_focus_at",FOCUS_ELEMENT:"direct_edit_focus_element",ENTRY_FOCUS:"direct_edit_entry_focus",ELEMENT_CLICKED:"direct_edit_element_clicked",PANEL_DISMISS:"direct_edit_panel_dismiss",SELECTED_RECT:"direct_edit_selected_rect",IMAGE_RECTS:"direct_edit_image_rects",QUERY_SELECTOR:"direct_edit_query_selector",QUERY_RESULT:"direct_edit_query_result",SELECTOR_SANITIZED:"direct_edit_selector_sanitized",SHOW_ACTIVE_INDICATOR:"direct_edit_show_active_indicator",BIND_ACTIVE_INDICATORS:"direct_edit_bind_active_indicators",HIDE_ACTIVE_INDICATORS:"direct_edit_hide_active_indicators",APPLY_DOM_OPERATIONS:"apply_dom_operations",APPLY_HTML_SNAPSHOT:"apply_html_snapshot",DELETE_ELEMENT:"direct_edit_delete_element",REPLACE_IMAGE:"direct_edit_replace",TEXT_CHANGED:"direct_edit_text_changed",ZOOM_LEVEL:"direct_edit_zoom_level",ZOOM:"direct_edit_zoom",CTRL_HELD:"direct_edit_ctrl_held",PINCH_ZOOM:"direct_edit_pinch_zoom",KEYBOARD_SHORTCUT:"direct_edit_keyboard_shortcut",EVENT_FAILED:"direct_edit_event_failed",ERROR:"direct_edit_error"},STREAM:{UPDATE:"stitch-html-update",END:"stitch-stream-end",REWRITE:"stitch-html-full-rewrite"},SCREENSHOT:{REQUEST:"capture_screenshot",SUCCESS:"screenshot_captured",ERROR:"screenshot_error"},HIGHLIGHT:{REQUEST:"stitch:highlight-element",RESPONSE:"stitch:highlight-element-rect"},DIMENSIONS:{REQUEST:"stitch:request-dimensions",RESPONSE:"stitch:content-dimensions"},INTERACTIVE:{CLICK:"interactive_click",DOUBLE_CLICK:"interactive_double_click",REQUEST_EDIT:"interactive_request_edit",WHEEL_PASSTHROUGH:"interactive_wheel_passthrough",MIDDLE_PAN:"iframe_middle_pan",CONTEXT_MENU:"iframe_contextmenu",SPACE_HELD:"iframe_space_held",NODE_DRAG_START:"interactive_node_drag_start",NODE_DRAG_MOVE:"interactive_node_drag_move",NODE_DRAG_END:"interactive_node_drag_end"},PROTOTYPE:{SET_MODE:"setMode",SET_STATE:"setState",UPDATE_LINKS:"updateLinks",SHOW_HOTSPOTS:"showHotspots",CLEAR_SELECTION:"clearSelection",SELECT_ELEMENT:"selectElement",ENABLE_TEXT_EDIT:"enableTextEdit",DISABLE_TEXT_EDIT:"disableTextEdit",REPLACE_IMAGE:"replaceImage",SET_INTERACTIVE:"setInteractive",GO_BACK:"goBack",GO_FORWARD:"goForward",HEARTBEAT:"iframe_heartbeat",LEGACY_HEARTBEAT:"prototype_heartbeat",ELEMENT_CLICKED:"elementClicked",ELEMENT_DESELECTED:"elementDeselected",TEXT_CHANGED:"textChanged",TEXT_EDIT_ENDED:"textEditEnded",TEXT_EDIT_REQUESTED:"textEditRequested",NAVIGATE:"navigate",CLICKED:"iframeClicked",CURRENT_PAGE_CHANGED:"currentPageChanged"},SET_MODE:"stitch_set_mode"},_g=new Set([S.READY,S.PONG,S.EDIT.TEXT_CHANGED,S.EDIT.ELEMENT_CLICKED,S.EDIT.SELECTED_RECT,S.EDIT.IMAGE_RECTS,S.EDIT.QUERY_RESULT,S.EDIT.SELECTOR_SANITIZED,S.EDIT.ENTRY_FOCUS,S.EDIT.TOOL_SWITCH,S.EDIT.CTRL_HELD,S.EDIT.PINCH_ZOOM,S.EDIT.KEYBOARD_SHORTCUT,S.EDIT.ESCAPE,S.EDIT.ZOOM,S.EDIT.PANEL_DISMISS,S.EDIT.EVENT_FAILED,S.EDIT.ERROR]),he="",me="";function to(e,o){he=e,me=o}function oo(e){e&&(he=e)}function I(e,o){try{window.parent.postMessage({type:e,screenId:he,...o},me)}catch(g){console.error("[DirectEdit] postMsg failed",g)}}function C(e,o,g){I(S.EDIT.ERROR,{message:e,error:o!=null?String(o):void 0,...g})}function go(e){return!(e.source!==window.parent||e.origin!==me&&e.origin!=="null")}var n={INJECTED:"data-stitch-injected",CURSOR:"data-stitch-cursor",SCROLL_LOCK:"data-stitch-scroll-lock",CSS_VH:"data-stitch-css-vh",VH:"data-stitch-vh",ADDED_CLASSES:"data-stitch-added-classes",SWAPPABLE:"data-stitch-swappable",SWAP_KIND:"data-stitch-swap-kind",SWAP_ACTIVE:"data-stitch-swap-active",SWAP_HOVER:"data-stitch-swap-hover",EDITABLE_IDX:"data-stitch-editable-idx",ANIM_OPACITY:"data-stitch-anim-opacity",ORIG_OPACITY:"data-stitch-orig-opacity",PENDING_SRC:"data-stitch-pending-src",INDICATOR:"data-stitch-indicator",INDICATOR_SELECTOR:"data-stitch-indicator-selector"},h={INJECTED:`[${n.INJECTED}]`,CURSOR:`[${n.CURSOR}]`,SCROLL_LOCK:`[${n.SCROLL_LOCK}]`,VH:`[${n.VH}]`,CSS_VH:`[${n.CSS_VH}]`,SWAPPABLE:`[${n.SWAPPABLE}]`,SWAP_ACTIVE:`[${n.SWAP_ACTIVE}]`,SWAP_HOVER:`[${n.SWAP_HOVER}]`,EDITABLE_IDX:`[${n.EDITABLE_IDX}]`,ANIM_OPACITY:`[${n.ANIM_OPACITY}]`,ORIG_OPACITY:`[${n.ORIG_OPACITY}]`,PENDING_SRC:`[${n.PENDING_SRC}]`,INDICATOR:`[${n.INDICATOR}]`,INDICATOR_SELECTOR:`[${n.INDICATOR_SELECTOR}]`},xe="cursor-text",x="stitch-scan-entry",$="stitch-scan-entry-img",w="stitch-anim-fade-in",$e="stitch-anim-draw-overlay",Ie="stitch-anim-img-dimming",le="stitch-anim-img-revealing",ro=".material-icons,.material-icons-outlined,.material-icons-round,.material-icons-sharp,.material-icons-two-tone,.material-symbols-outlined,.material-symbols-rounded,.material-symbols-sharp",q='[contenteditable="true"]',D=h.SWAPPABLE,ao=new Set(["HTML","HEAD","BODY","MAIN"]),qe=`h1,h2,h3,h4,h5,h6,p,a,button,li,td,th,label,blockquote,figcaption,details,summary,legend,caption,${ro}`,Qe=`[contenteditable], ${D}, ${h.EDITABLE_IDX}, .${x}, .${$}, ${h.ANIM_OPACITY}, .${Ie}, .${le}, .${w}`,so=class{PLACEHOLDER_IMG="data:image/svg+xml;base64,"+btoa('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" rx="8" fill="#e8eaed"/><path d="M170 130 l30 40 l20-15 l40 55 H140z" fill="#bdc1c6"/><circle cx="250" cy="120" r="18" fill="#bdc1c6"/></svg>');agentCursor=null;cursorMoved=!1;elementsToFadeIn=[];imagesToReveal=[];imageRevealRunning=!1;failedSrcs={};elementDrawRunning=!1;headComplete=!1;fontsReady=!1;disableAnimations=!1;isStreaming=!1;elementAnimationCounts=new Map;intervalId=null;onError;clearAnimationCounts(){this.elementAnimationCounts.clear()}constructor(e=!1,o){this.disableAnimations=e,this.onError=o,this.intervalId=setInterval(()=>this.processFadeIn(),50)}stopAnimationLoop(){this.intervalId&&(clearInterval(this.intervalId),this.intervalId=null)}moveCursor(e,o){if(this.agentCursor||(this.agentCursor=document.getElementById("stitch-agent-cursor")),!this.agentCursor||!e)return;const g=e.getBoundingClientRect(),r=g.width;let a=g.height;if(e===document.body&&a===0&&(a=500),r===0||a===0)return;const i=g.left+12,_=g.top+12;this.agentCursor.style.left=i+"px",this.agentCursor.style.top=_+"px",this.agentCursor.style.opacity="1",this.agentCursor.style.display="",this.agentCursor.classList.add("working"),this.agentCursor.classList.remove("text-mode","paint-mode"),o==="text"&&this.agentCursor.classList.add("text-mode"),o==="paint"&&this.agentCursor.classList.add("paint-mode")}hideCursorIfIdle(){this.isStreaming||(this.agentCursor||(this.agentCursor=document.getElementById("stitch-agent-cursor")),this.agentCursor&&this.elementsToFadeIn.length===0&&this.imagesToReveal.length===0&&!this.imageRevealRunning&&!this.elementDrawRunning&&(this.agentCursor.style.display="none",this.agentCursor.classList.remove("working","drawing","text-mode","paint-mode")))}processFadeIn(){const e=Date.now();for(let o=this.elementsToFadeIn.length-1;o>=0;o--){const g=this.elementsToFadeIn[o];if(e>=g.time){let r=!0;if(g.hl&&!this.imageRevealRunning&&!this.elementDrawRunning){this.elementDrawRunning=!0,this.moveCursor(g.el,"pointer");const a=g.el.getBoundingClientRect();if(a.width===0||a.height===0){g.el.style.opacity="",g.el.removeAttribute(n.ANIM_OPACITY),g.el.classList.add(w),this.elementsToFadeIn.splice(o,1),this.elementDrawRunning=!1;continue}const i=document.createElement("div");if(i.className=$e,i.setAttribute(n.INJECTED,""),i.style.left=a.left-3+"px",i.style.top=a.top-3+"px",i.style.width=a.width+6+"px",i.style.height=a.height+6+"px",document.body.appendChild(i),this.agentCursor||(this.agentCursor=document.getElementById("stitch-agent-cursor")),this.agentCursor){this.agentCursor.classList.add("drawing"),this.agentCursor.classList.remove("working");const _=6;setTimeout(()=>{this.agentCursor&&(this.agentCursor.style.left=a.right-_+"px",this.agentCursor.style.top=a.top+_+"px")},100),setTimeout(()=>{this.agentCursor&&(this.agentCursor.style.left=a.right-_+"px",this.agentCursor.style.top=a.bottom-_+"px")},200),setTimeout(()=>{this.agentCursor&&(this.agentCursor.style.left=a.left+_+"px",this.agentCursor.style.top=a.bottom-_+"px")},300)}setTimeout(()=>{g.el.style.opacity="",g.el.removeAttribute(n.ANIM_OPACITY),g.el.classList.add(w),this.agentCursor&&(this.agentCursor.classList.remove("drawing"),this.agentCursor.classList.add("working")),i.classList.add("fading"),setTimeout(()=>{i.remove()},500),this.elementDrawRunning=!1},400)}else g.hl&&(this.imageRevealRunning||this.elementDrawRunning)?r=!1:(g.el.style.opacity="",g.el.removeAttribute(n.ANIM_OPACITY),g.el.classList.add(w));r&&this.elementsToFadeIn.splice(o,1)}}this.elementsToFadeIn.length===0&&this.hideCursorIfIdle()}processNextImage(){let e=!1;try{if(!this.fontsReady)return;if(this.imageRevealRunning||this.imagesToReveal.length===0){this.imagesToReveal.length===0&&!this.imageRevealRunning&&this.hideCursorIfIdle();return}this.imageRevealRunning=!0;const o=this.imagesToReveal.shift();e=!0,this.moveCursor(o.el,"pointer"),setTimeout(()=>{let g;try{const r=o.el.getBoundingClientRect();if(r.width===0||r.height===0){o.el.setAttribute("src",o.newSrc),o.el.removeAttribute(n.PENDING_SRC),o.el.src=o.newSrc,this.imageRevealRunning=!1,this.processNextImage();return}if(g=document.createElement("div"),g.className=$e,g.setAttribute(n.INJECTED,""),g.style.left=r.left-3+"px",g.style.top=r.top-3+"px",g.style.width=r.width+6+"px",g.style.height=r.height+6+"px",document.body.appendChild(g),this.agentCursor||(this.agentCursor=document.getElementById("stitch-agent-cursor")),this.agentCursor){this.agentCursor.classList.add("drawing","paint-mode"),this.agentCursor.classList.remove("working");const a=6;setTimeout(()=>{this.agentCursor&&(this.agentCursor.style.left=r.right-a+"px",this.agentCursor.style.top=r.top+a+"px")},100),setTimeout(()=>{this.agentCursor&&(this.agentCursor.style.left=r.right-a+"px",this.agentCursor.style.top=r.bottom-a+"px")},200),setTimeout(()=>{this.agentCursor&&(this.agentCursor.style.left=r.left+a+"px",this.agentCursor.style.top=r.bottom-a+"px")},300)}setTimeout(()=>{try{o.el.classList.add(Ie),setTimeout(()=>{try{o.el.setAttribute("src",o.newSrc),o.el.removeAttribute(n.PENDING_SRC),o.el.src=o.newSrc;let a=!1;const i=()=>{try{if(a)return;a=!0,o.el.classList.remove(Ie),o.el.classList.add(le),setTimeout(()=>{o.el.classList.remove(le)},400)}catch(_){this.onError?.("processNextImage async revealImg failed",_)}};o.el.onload=i,setTimeout(i,800)}catch(a){this.onError?.("processNextImage async setAttribute failed",a)}},250),this.agentCursor&&(this.agentCursor.classList.remove("drawing","paint-mode"),this.agentCursor.classList.add("working")),g?.classList.add("fading"),setTimeout(()=>{g?.remove()},500),setTimeout(()=>{this.imageRevealRunning=!1,this.processNextImage()},700)}catch(a){this.onError?.("processNextImage nested async failed",a),this.imageRevealRunning=!1,g?.remove(),this.processNextImage()}},400)}catch(r){this.onError?.("processNextImage async failed",r),this.imageRevealRunning=!1,g?.remove(),this.processNextImage()}},300)}catch(o){this.onError?.("processNextImage failed",o),this.imageRevealRunning=!1,e&&this.processNextImage()}}applyOperationToElement(e,o,g,r,a,i=!0){const _=(t,s,E=!0)=>{if(!i||this.disableAnimations||t.nodeType!==1)return;const T=this.elementAnimationCounts.get(t)??0;if(T>=2||this.elementsToFadeIn.some(c=>c.el===t&&c.actionGroup===s))return;this.elementAnimationCounts.set(t,T+1);const M=t.style.opacity;M&&t.setAttribute(n.ORIG_OPACITY,M),t.style.opacity="0",t.setAttribute(n.ANIM_OPACITY,"true"),this.isStreaming||t.classList.remove(w),this.elementsToFadeIn.push({el:t,time:Date.now()+300,hl:E,actionGroup:s}),this.cursorMoved||(this.moveCursor(t,"pointer"),this.cursorMoved=!0)};switch(o){case"replace_content":typeof g=="string"&&(e.innerHTML=g,i&&(e.children.length>0?Array.from(e.children).forEach(t=>_(t,"content",!0)):_(e,"content",!0)));break;case"replace_text":typeof g=="string"&&(e.textContent=g,i&&_(e,"content",!0));break;case"replace_element":if(typeof g=="string"){const t=document.createElement("template");t.innerHTML=g;const s=Array.from(t.content.childNodes);s.length>0?(e.replaceWith(...s),s.forEach(E=>{E.nodeType===1&&_(E,"content",!0)})):e.outerHTML=g}else g instanceof Node&&(e.replaceWith(g),g.nodeType===1&&_(g,"content",!0));break;case"insert_before":typeof g=="string"?(e.insertAdjacentHTML("beforebegin",g),i&&e.previousElementSibling&&_(e.previousElementSibling,"content",!0)):g instanceof Node&&(e.parentNode?.insertBefore(g,e),i&&g.nodeType===1&&_(g,"content",!0));break;case"insert_after":typeof g=="string"?(e.insertAdjacentHTML("afterend",g),i&&e.nextElementSibling&&_(e.nextElementSibling,"content",!0)):g instanceof Node&&(e.parentNode?.insertBefore(g,e.nextSibling),i&&g.nodeType===1&&_(g,"content",!0));break;case"append_child":typeof g=="string"?(e.insertAdjacentHTML("beforeend",g),i&&e.lastElementChild&&_(e.lastElementChild,"content",!0)):g instanceof Node&&(e.appendChild(g),i&&g.nodeType===1&&_(g,"content",!0));break;case"prepend_child":typeof g=="string"?(e.insertAdjacentHTML("afterbegin",g),i&&e.firstElementChild&&_(e.firstElementChild,"content",!0)):g instanceof Node&&(e.insertBefore(g,e.firstChild),i&&g.nodeType===1&&_(g,"content",!0));break;case"remove_element":e.remove();break;case"set_attribute":if(r&&a!==void 0){if(e.tagName==="IMG"&&r==="src"&&a!==this.PLACEHOLDER_IMG&&i&&!this.disableAnimations){const t=e.getAttribute("src")||"";if(t===this.PLACEHOLDER_IMG||!t||t==="about:srcdoc"||t==="about:blank"){if(this.failedSrcs[a])return;let s=!1;for(let E=0;E<this.imagesToReveal.length;E++)if(this.imagesToReveal[E].el===e){this.imagesToReveal[E].newSrc=a,e.setAttribute(n.PENDING_SRC,a),s=!0;break}s||(this.imagesToReveal.push({el:e,newSrc:a}),e.setAttribute(n.PENDING_SRC,a));return}}e.setAttribute(r,a),i&&_(e,"style",!0)}break;case"remove_attribute":r&&(e.removeAttribute(r),i&&_(e,"style",!0));break;case"set_style":r&&a!==void 0&&(e.style[r]=a,i&&_(e,"style",!0));break;case"add_class":{const t=a||(typeof g=="string"?g:void 0);t&&(e.classList.add(...t.split(" ").filter(Boolean)),i&&_(e,"style",!0));break}case"remove_class":{const t=a||(typeof g=="string"?g:void 0);t&&(e.classList.remove(...t.split(" ").filter(Boolean)),i&&_(e,"style",!0));break}}}syncNodes(e,o){try{const g=new Set([n.ANIM_OPACITY,n.ORIG_OPACITY,"data-original-icon",n.PENDING_SRC]),r=w;e.nodeType===1&&(Array.from(e.attributes).forEach(_=>{if(g.has(_.name))return;const t=o.getAttribute(_.name);let s=_.value,E=t;if(_.name==="class"&&(s=s.split(" ").filter(T=>T&&T!==r).join(" "),E=(t||"").split(" ").filter(T=>T&&T!==r).join(" ")),E!==s){const T=o.tagName==="IMG"&&_.name==="src";this.applyOperationToElement(o,"set_attribute",void 0,_.name,_.value,T)}}),Array.from(o.attributes).forEach(_=>{if(!g.has(_.name)&&!e.hasAttribute(_.name)&&_.name!=="data-stream"&&_.name!=="id"){if(_.name==="src"&&_.value===this.PLACEHOLDER_IMG)return;this.applyOperationToElement(o,"remove_attribute",void 0,_.name,void 0,!1)}}));const a=e.childNodes,i=[];Array.from(o.childNodes).forEach(_=>{if(_.nodeType===1){const t=_;if(t.id==="stitch-agent-cursor"||t.hasAttribute(n.INJECTED))return}i.push(_)});for(let _=0;_<a.length;_++){const t=a[_],s=i[_];if(s)if(t.nodeType===s.nodeType&&t.tagName===s.tagName)t.nodeType===3?t.textContent!==s.textContent&&(s.textContent=t.textContent):t.nodeType===1&&this.syncNodes(t,s);else{const E=t.cloneNode(!0);this.applyOperationToElement(s,"replace_element",E,void 0,void 0,!0)}else{const E=t.cloneNode(!0);this.applyOperationToElement(o,"append_child",E,void 0,void 0,!0)}}for(let _=a.length;_<i.length;_++){const t=i[_];t.nodeType===1?this.applyOperationToElement(t,"remove_element",void 0,void 0,void 0,!0):t.parentNode?.removeChild(t)}}catch(g){this.onError?.("syncNodes failed",g)}}fixImages(){document.querySelectorAll("img").forEach(e=>{try{const o=e.getAttribute("src");(!o||o==="about:srcdoc"||o==="about:blank"||o===this.PLACEHOLDER_IMG)&&(e.setAttribute("src",this.PLACEHOLDER_IMG),e.src=this.PLACEHOLDER_IMG),e.onerror=()=>{if(e.getAttribute("src")!==this.PLACEHOLDER_IMG){const g=e.getAttribute("src");g&&(this.failedSrcs[g]=!0),e.setAttribute("src",this.PLACEHOLDER_IMG),e.src=this.PLACEHOLDER_IMG}}}catch(o){this.onError?.("fixImages failed on element",o)}})}ICON_FALLBACK="circle";iconCheckCtx=null;singleGlyphWidth=0;initIconCheck(){this.iconCheckCtx=document.createElement("canvas").getContext("2d"),this.iconCheckCtx&&(this.iconCheckCtx.font='24px "Material Symbols Outlined"',this.singleGlyphWidth=this.iconCheckCtx.measureText("search").width)}isValidIcon(e){return!this.iconCheckCtx||!this.singleGlyphWidth?!0:this.iconCheckCtx.measureText(e).width<=this.singleGlyphWidth*1.5}fixBrokenIcons(){this.fontsReady&&(this.iconCheckCtx||this.initIconCheck(),document.querySelectorAll(".material-symbols-outlined").forEach(e=>{try{const o=(e.textContent||"").trim();o&&o!==this.ICON_FALLBACK&&!this.isValidIcon(o)&&(e.setAttribute("data-original-icon",o),e.textContent=this.ICON_FALLBACK)}catch(o){this.onError?.("fixBrokenIcons failed on element",o)}}))}},_o=class{injScripts={};injLinks={};injMeta={};sq=[];sqRunning=!1;prevBodyHtml="";pendingBodyDoc=null;pendingBodyHtml=null;constructor(e,o){this.animationEngine=e,this.targetOrigin=o}get scriptsReady(){return this.sq.length===0&&!this.sqRunning}runSQ(){if(this.sqRunning||this.sq.length===0){this.scriptsReady&&this.flushPendingBody();return}this.sqRunning=!0;const e=this.sq.shift(),o=document.createElement("script");e.src?(o.src=e.src,o.onload=()=>{this.sqRunning=!1,this.runSQ()},o.onerror=()=>{this.sqRunning=!1,this.runSQ()}):o.textContent=e.text,e.id&&(o.id=e.id),document.head.appendChild(o),e.src||(this.sqRunning=!1,this.runSQ())}flushPendingBody(){if(!this.pendingBodyDoc||!this.pendingBodyHtml)return;const e=this.pendingBodyDoc,o=this.pendingBodyHtml;if(this.pendingBodyDoc=null,this.pendingBodyHtml=null,document.getElementById("tailwind-config")&&window.tailwind){const g=this.injScripts["tailwind-config"];if(typeof g=="string")try{new Function(g)()}catch{}}this.renderBody(e,o)}handleHtmlUpdate(e,o=!0){const g=this.animationEngine.isStreaming,r=this.animationEngine.disableAnimations;o?this.animationEngine.isStreaming=!0:(this.animationEngine.isStreaming=!1,this.animationEngine.disableAnimations=!0);const a=new DOMParser().parseFromString(e,"text/html"),i=Array.from(a.head.children),_=a.body?a.body.innerHTML:"";if(!document.getElementById("stitch-icon-hide")&&!this.animationEngine.fontsReady){const M=document.createElement("style");M.id="stitch-icon-hide",M.setAttribute("data-stitch-injected",""),M.textContent='[class*="material-symbols"],[class*="material-icons"] { visibility: hidden !important; }',document.head.appendChild(M)}if(!this.animationEngine.headComplete&&(e.indexOf("</head>")!==-1||e.indexOf("<body")!==-1)){this.animationEngine.headComplete=!0;const M=()=>{this.animationEngine.fontsReady=!0;const c=document.getElementById("stitch-icon-hide");c&&c.remove()};document.fonts&&document.fonts.status==="loaded"?M():document.fonts?document.fonts.ready.then(M):M()}i.forEach(M=>{if(M.tagName==="SCRIPT"){const c=M.getAttribute("src")||"";if(c)this.injScripts[c]||(this.injScripts[c]=!0,this.sq.push({src:c,text:"",id:M.id||""}));else if(M.id){const d=M.textContent||"";if(this.animationEngine.headComplete&&d!==this.injScripts[M.id]){let l=!1;try{new Function(d),l=!0}catch{}if(l){this.injScripts[M.id]=d;const b=document.getElementById(M.id);b&&b.remove();const ce=document.createElement("script");ce.id=M.id,ce.textContent="try{"+d+"}catch(_e){}";try{document.head.appendChild(ce)}catch{}}}}}else if(M.tagName==="LINK"){let c=M.getAttribute("href")||"";if((c.indexOf("Material+Symbols")!==-1||c.indexOf("Material+Icons")!==-1)&&(c=c.replace("display=swap","display=block")),c&&!this.injLinks[c]){this.injLinks[c]=!0;const d=document.importNode(M,!0);d.setAttribute("href",c),document.head.appendChild(d)}}else if(M.tagName==="META"){const c=M.getAttribute("name")||M.getAttribute("charset")||M.getAttribute("http-equiv")||"";c&&!this.injMeta[c]&&(this.injMeta[c]=!0,document.head.appendChild(document.importNode(M,!0)))}}),this.runSQ();const t=[];a.head.querySelectorAll("style").forEach(M=>{t.push(M.textContent||"")});const s=t.join("\\n---\\n"),E=document.querySelectorAll("style[data-stream]"),T=[];E.forEach(M=>{T.push(M.textContent||"")}),s!==T.join("\\n---\\n")&&(E.forEach(M=>M.remove()),t.forEach(M=>{const c=document.createElement("style");c.setAttribute("data-stream",""),c.setAttribute("data-stitch-injected",""),c.textContent=M,document.head.appendChild(c)})),this.animationEngine.headComplete&&a.body&&Array.from(a.body.attributes).forEach(M=>{document.body.getAttribute(M.name)!==M.value&&document.body.setAttribute(M.name,M.value)}),this.animationEngine.headComplete&&a.body&&_.length>0&&_!==this.prevBodyHtml&&(this.scriptsReady?this.renderBody(a,_):(this.pendingBodyDoc=a,this.pendingBodyHtml=_)),Array.from(a.documentElement.attributes).forEach(M=>{document.documentElement.setAttribute(M.name,M.value)}),o||(this.animationEngine.isStreaming=g,this.animationEngine.disableAnimations=r)}renderBody(e,o){this.prevBodyHtml=o,this.animationEngine.cursorMoved=!1,this.animationEngine.syncNodes(e.body,document.body),this.animationEngine.fixBrokenIcons(),this.animationEngine.fixImages(),this.animationEngine.processNextImage(),setTimeout(()=>{window.__stitchReportDimensions?.("scrollbox")},50)}handleStreamEnd(){this.animationEngine.isStreaming=!1,this.animationEngine.fontsReady=!0;const e=document.getElementById("stitch-icon-hide");e&&e.remove();const o=this.animationEngine.agentCursor||document.getElementById("stitch-agent-cursor");o&&(o.style.display="none"),setTimeout(()=>{window.__stitchReportDimensions?.()},100)}handleHtmlFinalize(e){document.open(),document.write(e),document.close()}},Ae=typeof window<"u"?window:globalThis;Ae.goog||(Ae.goog={}),Ae.goog.getMsg||(Ae.goog.getMsg=(e,o)=>{let g=e;if(o)for(const[r,a]of Object.entries(o))g=g.replaceAll(`{$${r}}`,()=>a);return g}),RegExp.prototype.toJSON=RegExp.prototype.toString;var Ze;(function(e){e.DISCONNECTED="disconnected",e.RECONNECTING="reconnecting",e.BUSY="busy",e.CONNECTED="connected",e.DONE="done",e.ERROR="error"})(Ze||(Ze={}));var ze;(function(e){e[e.EXPORT_CLICK_UNSPECIFIED=0]="EXPORT_CLICK_UNSPECIFIED",e[e.EXPORT_CLICK_FIGMA=1]="EXPORT_CLICK_FIGMA",e[e.EXPORT_CLICK_CODE=2]="EXPORT_CLICK_CODE",e[e.EXPORT_CLICK_DOWNLOAD=3]="EXPORT_CLICK_DOWNLOAD",e[e.EXPORT_CLICK_FIREBASE=4]="EXPORT_CLICK_FIREBASE",e[e.EXPORT_CLICK_AIS=5]="EXPORT_CLICK_AIS",e[e.EXPORT_CLICK_JULES=6]="EXPORT_CLICK_JULES",e[e.EXPORT_CLICK_LOVABLE=7]="EXPORT_CLICK_LOVABLE",e[e.EXPORT_CLICK_BOLT=8]="EXPORT_CLICK_BOLT"})(ze||(ze={}));var je;(function(e){e[e.THREAD_FILTER_UNSPECIFIED=0]="THREAD_FILTER_UNSPECIFIED",e[e.ACTIVE=1]="ACTIVE",e[e.RESOLVED=2]="RESOLVED",e[e.ALL=3]="ALL"})(je||(je={}));var Je;(function(e){e[e.CAN_ACCESS_STITCH=0]="CAN_ACCESS_STITCH",e[e.DEFAULT_MODEL=8]="DEFAULT_MODEL",e[e.RELEASE_STAGE_TAG=9]="RELEASE_STAGE_TAG",e[e.STITCH_OUTAGE=10]="STITCH_OUTAGE",e[e.GENERATE_PRD=25]="GENERATE_PRD",e[e.GENERATE_PITCH_DECK=26]="GENERATE_PITCH_DECK",e[e.ANNOTATIONS_AS_TEXT=30]="ANNOTATIONS_AS_TEXT",e[e.INFO_PANEL=31]="INFO_PANEL",e[e.ASSISTANT_TOOLS=34]="ASSISTANT_TOOLS",e[e.DIRECT_EDIT_HTML=36]="DIRECT_EDIT_HTML",e[e.ANNOTATION_MOVE_TOOL=41]="ANNOTATION_MOVE_TOOL",e[e.ASSISTANT_PLATFORM_AGNOSTIC=44]="ASSISTANT_PLATFORM_AGNOSTIC",e[e.COPY_SCREENS=45]="COPY_SCREENS",e[e.IS_INTERNAL_TESTER=47]="IS_INTERNAL_TESTER",e[e.CANCEL_SESSIONS=49]="CANCEL_SESSIONS",e[e.UPLOAD_TEXT_FILES=54]="UPLOAD_TEXT_FILES",e[e.LIVE_MODE=55]="LIVE_MODE",e[e.CORGI_MODE=56]="CORGI_MODE",e[e.DIVRIOTS_FIGMA_EXPORT=58]="DIVRIOTS_FIGMA_EXPORT",e[e.GLOBAL_EXPORT_BUTTON=60]="GLOBAL_EXPORT_BUTTON",e[e.SHOW_CHAT_WHEN_LOADING=61]="SHOW_CHAT_WHEN_LOADING",e[e.ENABLE_AUTO_URL_DETECTION=65]="ENABLE_AUTO_URL_DETECTION",e[e.IMAGE_TO_CODE_UGC=66]="IMAGE_TO_CODE_UGC",e[e.STICKY_NOTES=67]="STICKY_NOTES",e[e.DESIGN_SYSTEM=68]="DESIGN_SYSTEM",e[e.DEPRECATE_LEGACY_AGENT=69]="DEPRECATE_LEGACY_AGENT",e[e.GENIE=70]="GENIE",e[e.FAVOURITES=71]="FAVOURITES",e[e.STUDIO=72]="STUDIO",e[e.EXPORT_MCP=73]="EXPORT_MCP",e[e.HTML_SANITIZATION=74]="HTML_SANITIZATION",e[e.IFRAME_CSP_HEADERS=75]="IFRAME_CSP_HEADERS",e[e.LIVE_MODE_SCREEN_SHARE=76]="LIVE_MODE_SCREEN_SHARE",e[e.ENABLE_PROTOTYPES_V2=77]="ENABLE_PROTOTYPES_V2",e[e.PROMPT_REWRITER=78]="PROMPT_REWRITER",e[e.DESIGN_SUGGESTIONS=79]="DESIGN_SUGGESTIONS",e[e.STYLE_TUNER=81]="STYLE_TUNER",e[e.VARIANT_SUGGESTIONS=82]="VARIANT_SUGGESTIONS",e[e.FIGMA_IMPORT_URL=83]="FIGMA_IMPORT_URL",e[e.ENABLE_PROTOTYPE_ZERO_STATE=84]="ENABLE_PROTOTYPE_ZERO_STATE",e[e.LIVE_MODE_MODEL=86]="LIVE_MODE_MODEL",e[e.ENABLE_RESET_EMAIL_SETTINGS=87]="ENABLE_RESET_EMAIL_SETTINGS",e[e.ENABLE_NEW_EXAMPLES=88]="ENABLE_NEW_EXAMPLES",e[e.PHOTOS_IMPORT=89]="PHOTOS_IMPORT",e[e.DESIGN_FOCUS_TIMER=91]="DESIGN_FOCUS_TIMER",e[e.UPLOAD_PDF_FILES=92]="UPLOAD_PDF_FILES",e[e.DRIVE_IMPORT=93]="DRIVE_IMPORT",e[e.STREAMING_SESSION=94]="STREAMING_SESSION",e[e.AIS_EXPORT_API=95]="AIS_EXPORT_API",e[e.PUNCTUAL_INTEGRATION=97]="PUNCTUAL_INTEGRATION",e[e.FIRST_PARTY_PRESETS=98]="FIRST_PARTY_PRESETS",e[e.CANVAS_RENDER_FIDELITY=99]="CANVAS_RENDER_FIDELITY",e[e.ENABLE_INPLACE_SCREEN_EDITING=100]="ENABLE_INPLACE_SCREEN_EDITING",e[e.CANVAS_LIVE_BY_DEFAULT=101]="CANVAS_LIVE_BY_DEFAULT",e[e.NEW_FONTS=102]="NEW_FONTS",e[e.DESIGN_SYSTEM_V2=103]="DESIGN_SYSTEM_V2",e[e.STREAMING_ANIMATION=104]="STREAMING_ANIMATION",e[e.EXPORT_NETLIFY=105]="EXPORT_NETLIFY",e[e.SKIP_FIG_PARSING=106]="SKIP_FIG_PARSING",e[e.FIG_UPLOAD=107]="FIG_UPLOAD",e[e.DIRECT_EDIT_2_0=108]="DIRECT_EDIT_2_0",e[e.PASTE_FROM_FIGMA=109]="PASTE_FROM_FIGMA",e[e.DS_FROM_GITHUB=110]="DS_FROM_GITHUB",e[e.IDEATE_SKILL=111]="IDEATE_SKILL",e[e.AUTO_PAN_TO_NEW_SCREENS=112]="AUTO_PAN_TO_NEW_SCREENS",e[e.TEXT_NODE=113]="TEXT_NODE",e[e.ENABLE_RELOAD_ON_AUTH_FAILURE=114]="ENABLE_RELOAD_ON_AUTH_FAILURE",e[e.REMOVE_DEVICE_TYPE_TOGGLE=115]="REMOVE_DEVICE_TYPE_TOGGLE",e[e.SYNC_EXTERNAL_INSTANCES=116]="SYNC_EXTERNAL_INSTANCES",e[e.COMMENTS_V1=117]="COMMENTS_V1",e[e.ENABLE_BLANK_CANVAS=118]="ENABLE_BLANK_CANVAS",e[e.DIRECT_EDIT_TOOLS=119]="DIRECT_EDIT_TOOLS",e[e.DIRECT_EDIT_FLOW_LAYOUT=120]="DIRECT_EDIT_FLOW_LAYOUT",e[e.SPEED_BALANCED_MODE=121]="SPEED_BALANCED_MODE",e[e.YJS_LIVE_CANVAS=122]="YJS_LIVE_CANVAS"})(Je||(Je={}));var et;(function(e){e.ADDED="ADDED",e.REMOVED="REMOVED"})(et||(et={}));var tt;(function(e){e.PRESENCE="PRESENCE",e.COMMENT="COMMENT",e.SCREEN="SCREEN"})(tt||(tt={}));var ot;(function(e){e.CREATED="CREATED",e.UPDATED="UPDATED",e.DELETED="DELETED",e.RESOLVED="RESOLVED",e.UNDELETED="UNDELETED",e.THREAD_CREATED="THREAD_CREATED",e.THREAD_UPDATED="THREAD_UPDATED",e.THREAD_DELETED="THREAD_DELETED",e.THREAD_UNDELETED="THREAD_UNDELETED"})(ot||(ot={}));var gt;(function(e){e.UPSERTED="UPSERTED",e.DELETED="DELETED"})(gt||(gt={}));var rt;(function(e){e[e.CLIENT_CAPABILITY_UNSPECIFIED=0]="CLIENT_CAPABILITY_UNSPECIFIED",e[e.CLIENT_CAPABILITY_YJS=1]="CLIENT_CAPABILITY_YJS"})(rt||(rt={}));var at;(function(e){e[e.OPERATION_UNSPECIFIED=0]="OPERATION_UNSPECIFIED",e[e.ADDED=1]="ADDED",e[e.UPDATED=2]="UPDATED",e[e.DELETED=3]="DELETED"})(at||(at={}));var st;(function(e){e[e.UNSPECIFIED=0]="UNSPECIFIED",e[e.POSITIVE=1]="POSITIVE",e[e.NEGATIVE=2]="NEGATIVE",e[e.FAVOURITE=3]="FAVOURITE"})(st||(st={}));var _t;(function(e){e[e.DESIGN_FEEDBACK_REASON_UNSPECIFIED=0]="DESIGN_FEEDBACK_REASON_UNSPECIFIED",e[e.DESIGN_DOESNT_MATCH_PROMPT=1]="DESIGN_DOESNT_MATCH_PROMPT",e[e.EDIT_DOESNT_MATCH_PROMPT=2]="EDIT_DOESNT_MATCH_PROMPT",e[e.DESCRIPTION_DOESNT_MATCH=3]="DESCRIPTION_DOESNT_MATCH",e[e.COMPONENT_ISSUE=4]="COMPONENT_ISSUE",e[e.INCORRECT_THEME=5]="INCORRECT_THEME",e[e.FIGMA_EXPORT_FAILED=6]="FIGMA_EXPORT_FAILED",e[e.OTHER=7]="OTHER"})(_t||(_t={}));var it;(function(e){e[e.UNSPECIFIED=0]="UNSPECIFIED",e[e.TEXT_TO_UI=1]="TEXT_TO_UI",e[e.IMAGE_TO_UI=2]="IMAGE_TO_UI",e[e.IMAGE_TO_UI_PRO=5]="IMAGE_TO_UI_PRO",e[e.TEXT_TO_APP=3]="TEXT_TO_APP",e[e.TEXT_TO_UI_PRO=4]="TEXT_TO_UI_PRO",e[e.TEXT_TO_UI_PRO_IMAGE_SPACE=6]="TEXT_TO_UI_PRO_IMAGE_SPACE",e[e.DESIGN=7]="DESIGN"})(it||(it={}));var Et;(function(e){e[e.UNSPECIFIED=0]="UNSPECIFIED",e[e.PUBLIC=1]="PUBLIC",e[e.PRIVATE=2]="PRIVATE"})(Et||(Et={}));var nt;(function(e){e[e.ORIGIN_UNSPECIFIED=0]="ORIGIN_UNSPECIFIED",e[e.STITCH=1]="STITCH",e[e.IMPORTED_FROM_GALILEO=2]="IMPORTED_FROM_GALILEO"})(nt||(nt={}));var St;(function(e){e[e.ROLE_UNSPECIFIED=0]="ROLE_UNSPECIFIED",e[e.OWNER=1]="OWNER",e[e.READER=2]="READER"})(St||(St={}));var Mt;(function(e){e.UNSPECIFIED="UNSPECIFIED",e.SCREEN_INSTANCE="SCREEN_INSTANCE",e.DESIGN_SYSTEM_INSTANCE="DESIGN_SYSTEM_INSTANCE",e.GROUP_INSTANCE="GROUP_INSTANCE",e.TEXT_INSTANCE="TEXT_INSTANCE"})(Mt||(Mt={}));var Tt;(function(e){e.UNSPECIFIED="unspecified",e.CHAT_MESSAGE="chat_message",e.EDIT_THEME="edit_theme",e.GENERATE_VARIANTS="generate_variants",e.REGENERATE_DESIGN="regenerate_design",e.ANNOTATE="annotate",e.GENERATE_PROTOTYPE="generate_prototype",e.EDIT_PROTOTYPE="edit_prototype",e.PREDICTIVE_HEATMAP="predictive_heatmap",e.GENERATE_PRD="generate_prd",e.IMAGE_TO_CODE="image_to_code",e.GENERATE_SLIDES="generate_slides",e.APPLY_DESIGN_SYSTEM="apply_design_system",e.APP_STORE_ASSETS="app_store_assets",e.MARKETING_KIT="marketing_kit",e.ACCESSIBILITY_AUDIT="accessibility_audit",e.MISSING_STATES="missing_states",e.DEV_HANDOFF="dev_handoff",e.WEB_ASSETS="web_assets",e.GENERATE_PROTOTYPE_V2="generate_prototype_v2",e.EDIT_PROTOTYPE_V2="edit_prototype_v2",e.PROTOTYPE_V2_SESSION="prototype_v2_session",e.EXTRACT_DESIGN_SYSTEM="extract_design_system",e.UPDATE_DESIGN_SYSTEM="update_design_system",e.UX_CRITIQUE="ux_critique",e.DIRECT_EDIT_AI="direct_edit_ai",e.UPLOAD_FILE="upload_file"})(Tt||(Tt={}));var ct;(function(e){e.UNSPECIFIED="unspecified",e.TURBO_AGENT="turbo_agent",e.PRO_AGENT="pro_agent",e.IMAGE_AGENT="image_agent",e.IMAGE_PRO_AGENT="image_pro_agent",e.GENIE_AGENT="genie_agent",e.HATTER_AGENT="hatter_agent",e.GEMINI_3_AGENT="gemini_3_agent"})(ct||(ct={}));var It;(function(e){e.UNSPECIFIED="unspecified",e.NEW="new",e.RUNNING="running",e.DONE="done",e.CANCELLED="cancelled",e.FAILED="failed",e.WAITING_FOR_RESOURCE="waiting_for_resource"})(It||(It={}));var lt;(function(e){e[e.GENIE_STATE_UNSPECIFIED=0]="GENIE_STATE_UNSPECIFIED",e[e.GENIE_STATE_DONE=1]="GENIE_STATE_DONE"})(lt||(lt={}));var At;(function(e){e.UNSPECIFIED="unspecified",e.MOBILE="mobile",e.DESKTOP="desktop",e.TABLET="tablet",e.AGNOSTIC="agnostic"})(At||(At={}));var dt;(function(e){e.UNSPECIFIED="unspecified",e.LIGHT="light",e.DARK="dark"})(dt||(dt={}));var Ot;(function(e){e.UNSPECIFIED="Unspecified",e.BE_VIETNAM_PRO="Be Vietnam Pro",e.EPILOGUE="Epilogue",e.INTER="Inter",e.LEXEND="Lexend",e.MANROPE="Manrope",e.NEWSREADER="Newsreader",e.NOTO_SERIF="Noto Serif",e.PLUS_JAKARTA_SANS="Plus Jakarta Sans",e.PUBLIC_SANS="Public Sans",e.SPACE_GROTESK="Space Grotesk",e.SPLINE_SANS="Spline Sans",e.WORK_SANS="Work Sans",e.DOMINE="Domine",e.LIBRE_CASLON_TEXT="Libre Caslon Text",e.EB_GARAMOND="EB Garamond",e.LITERATA="Literata",e.SOURCE_SERIF_FOUR="Source Serif 4",e.MONTSERRAT="Montserrat",e.METROPOLIS="Metropolis",e.SOURCE_SANS_THREE="Source Sans 3",e.NUNITO_SANS="Nunito Sans",e.ARIMO="Arimo",e.HANKEN_GROTESK="Hanken Grotesk",e.RUBIK="Rubik",e.GEIST="Geist",e.DM_SANS="DM Sans",e.IBM_PLEX_SANS="IBM Plex Sans",e.SORA="Sora",e.ANYBODY="Anybody",e.ANTON="Anton",e.ARCHIVO_NARROW="Archivo Narrow",e.ATKINSON_HYPERLEGIBLE_NEXT="Atkinson Hyperlegible Next",e.BARLOW_CONDENSED="Barlow Condensed",e.BEBAS_NEUE="Bebas Neue",e.BODONI_MODA="Bodoni Moda",e.BRICOLAGE_GROTESQUE="Bricolage Grotesque",e.CHIVO="Chivo",e.CLIMATE_CRISIS="Climate Crisis",e.COMFORTAA="Comfortaa",e.COURIER_PRIME="Courier Prime",e.FIRA_SANS="Fira Sans",e.GOOGLE_SANS="Google Sans",e.GOOGLE_SANS_CODE="Google Sans Code",e.GOOGLE_SANS_FLEX="Google Sans Flex",e.GOOGLE_SANS_MONO="Google Sans Mono",e.GOOGLE_SANS_TEXT="Google Sans Text",e.IBM_PLEX_SERIF="IBM Plex Serif",e.JETBRAINS_MONO="JetBrains Mono",e.KARLA="Karla",e.LIBRE_FRANKLIN="Libre Franklin",e.MERRIWEATHER="Merriweather",e.NOTO_SANS="Noto Sans",e.OPEN_SANS="Open Sans",e.OSWALD="Oswald",e.OUTFIT="Outfit",e.PLAYFAIR_DISPLAY="Playfair Display",e.POIRET_ONE="Poiret One",e.QUESTRIAL="Questrial",e.QUICKSAND="Quicksand",e.RALEWAY="Raleway",e.ROBOTO_FLEX="Roboto Flex",e.SPACE_MONO="Space Mono",e.SYNE="Syne",e.VOLLKORN="Vollkorn"})(Ot||(Ot={}));var Nt;(function(e){e[e.UNSPECIFIED=0]="UNSPECIFIED",e[e.ROUND_FOUR=1]="ROUND_FOUR",e[e.ROUND_EIGHT=2]="ROUND_EIGHT",e[e.ROUND_TWELVE=3]="ROUND_TWELVE",e[e.ROUND_FULL=4]="ROUND_FULL"})(Nt||(Nt={}));var Gt;(function(e){e[e.UNSPECIFIED=0]="UNSPECIFIED",e[e.LEVEL_1=1]="LEVEL_1",e[e.LEVEL_2=2]="LEVEL_2",e[e.LEVEL_3=3]="LEVEL_3",e[e.LEVEL_4=4]="LEVEL_4"})(Gt||(Gt={}));var ut;(function(e){e.UNSPECIFIED="unspecified",e.MONOCHROME="monochrome",e.NEUTRAL="neutral",e.TONAL_SPOT="tonal_spot",e.VIBRANT="vibrant",e.EXPRESSIVE="expressive",e.FIDELITY="fidelity",e.CONTENT="content",e.RAINBOW="rainbow",e.FRUIT_SALAD="fruit_salad"})(ut||(ut={}));var Dt;(function(e){e.COMPONENT_TYPE_UNSPECIFIED="component_type_unspecified",e.IMAGE="image",e.TEXT="text",e.BUTTON="button",e.INPUT="input",e.CONTAINER="container"})(Dt||(Dt={}));var Rt;(function(e){e.UNSPECIFIED="screen_status_unspecified",e.IN_PROGRESS="in_progress",e.COMPLETE="complete",e.FAILED="failed"})(Rt||(Rt={}));var vt;(function(e){e.UNSPECIFIED="display_mode_unspecified",e.SCREENSHOT="screenshot",e.HTML="html",e.CODE="code",e.MARKDOWN="markdown",e.STICKY_NOTE="sticky_note",e.SVG="svg",e.TABLE="table",e.MERMAID="mermaid",e.SHADER="shader",e.CHECKLIST="checklist",e.CHART="chart",e.PDF="pdf",e.FIGMA="figma"})(vt||(vt={}));var Lt;(function(e){e.UNSPECIFIED="unspecified",e.FREEFORM_TEXT="freeform_text",e.MULTIPLE_CHOICE="multiple_choice",e.SINGLE_CHOICE="single_choice",e.YES_NO="yes_no",e.RATING_SCALE="rating_scale"})(Lt||(Lt={}));var Ct;(function(e){e.UNSPECIFIED="unspecified",e.DESIGN="design",e.IMAGE="image",e.PROTOTYPE="prototype",e.DOCUMENT="document",e.PROTOTYPE_V2="prototype_v2",e.VIDEO="video"})(Ct||(Ct={}));var Pt;(function(e){e.UNSPECIFIED="status_unspecified",e.STARTED="started",e.COMPLETED="completed",e.FAILED="failed"})(Pt||(Pt={}));var ht;(function(e){e[e.PROJECT_IMPORT_STATE_UNSPECIFIED=0]="PROJECT_IMPORT_STATE_UNSPECIFIED",e[e.NEVER_IMPORTED=2]="NEVER_IMPORTED",e[e.IMPORT_FAILED=3]="IMPORT_FAILED",e[e.IMPORT_SUCCESS=4]="IMPORT_SUCCESS",e[e.IMPORT_PENDING=5]="IMPORT_PENDING"})(ht||(ht={}));var mt;(function(e){e.REPLACE_CONTENT="replace_content",e.REPLACE_ELEMENT="replace_element",e.APPEND_CHILD="append_child",e.PREPEND_CHILD="prepend_child",e.INSERT_BEFORE="insert_before",e.INSERT_AFTER="insert_after",e.SET_ATTRIBUTE="set_attribute",e.REMOVE_ATTRIBUTE="remove_attribute",e.ADD_CLASS="add_class",e.REMOVE_CLASS="remove_class",e.REMOVE_ELEMENT="remove_element",e.SET_STYLE="set_style"})(mt||(mt={}));var m="Stitch",re="Gemini",f="Figma",ig=16,fe="Nano Banana",Eg=goog.getMsg("Product name, {$stitchProductName} (beta)",{stitchProductName:m}),ng=goog.getMsg("{$stitchProductName} avatar",{stitchProductName:m}),Sg=goog.getMsg("{$stitchProductName} Privacy Notice",{stitchProductName:m}),Mg=goog.getMsg("{$stitchProductName} Subprocessors",{stitchProductName:m}),Tg=goog.getMsg(`*Last modified: September 9, 2026*
+
+Google and its affiliates engage the third-party entities in the table below to perform limited activities in connection with Stitch. The table shows what activity each entity performs.
+
+### Third-Party Subprocessors
+
+| Entity Name | Activity | Country where processing is performed | Website |
+| :--- | :--- | :--- | :--- |
+| **Composio, Inc.** | Third-party tool and API integrations on the user’s behalf | *United States of America* | [composio.dev](https://composio.dev) |`),cg=goog.getMsg(`*Last modified: September 9, 2026*
+
+Google and its affiliates engage the third-party entities in the table below to perform limited activities in connection with Stitch. The table shows what activity each entity performs.
+
+### Third-Party Subprocessors
+
+| Entity Name | Activity | Country where processing is performed | Website |
+| :--- | :--- | :--- | :--- |
+| **Sampark Inc, (dba Composio)** | Third-party tool and API integrations on the user’s behalf | *United States of America* | [composio.dev](https://composio.dev) |`),Ig=goog.getMsg("Subprocessors"),lg=goog.getMsg("Additional Terms of Service for {$stitchProductName}",{stitchProductName:m}),Ag=goog.getMsg(`**You’re the Driver.** Stitch outputs are not always guaranteed to be accurate. You can use Stitch workspaces, projects and canvases to collaborate with other users on your team and are responsible for ensuring your team’s use of Stitch aligns with your organization’s internal policies and legal obligations.
+
+* **Review your work:** You are responsible for supervising Stitch. You must independently verify all AI-generated suggestions—including code commits and repository changes—before taking action.
+* **Autonomous Actions:** If you authorize the product to act autonomously, you assume all responsibility for the impact on your project or production systems.
+* **Notice:** You agree to notify all team members whose data may be processed by Stitch about these Terms and the [Privacy Notice](/terms/privacy).
+
+**Connected Third Party Services.** Stitch may connect to your external development environments or tools (like GitHub) at your direction. By connecting an external service, you authorize Google to access and share data with that service on your behalf to perform tasks like suggested bug fixes. You confirm that you have the authority to connect these services and that your use complies with those third-party terms.`),dg=goog.getMsg("Terms of Service"),Og=goog.getMsg("Privacy for {$stitchProductName}",{stitchProductName:m}),Ng=goog.getMsg(`**Last updated: September 30, 2026**
+
+This notice and the [Google Privacy Policy](https://policies.google.com/privacy) describe how Stitch handles your data.
+
+### Your Control Over AI Training
+
+You are in control of whether your data is used to train Google’s generative AI models:
+
+* **Your Data is Protected:** Google does not train our generative AI models on your full connected codebase or other 3P integrations or the full data within your connected development environments (like GitHub or Render).
+If you opt in to training, we only learn from the specific interactions you have with Stitch or feedback you submit.
+* **Training & Opt In:** By default, we will not train on any of your data.
+If you opt in to training, we may train our generative AI models on activity traces within Stitch and feedback provided. Activity traces may include your interactions with Stitch, including context fragments (such as relevant code or data), your specific prompts, Stitch’s suggestions and outputs, and how you interact with those suggestions.
+
+### How we use your data
+
+When you use Stitch, we process your data in line with our [Privacy Policy](https://policies.google.com/privacy) and this Privacy Notice to provide, improve, and develop Google products and services. For example:
+
+* **Product Improvement:** We may use this data to improve Stitch generally. In line with our commitment above, we won’t train our generative AI models on your data unless you’ve opted in to training.
+* **Quality Review:** A sample of your data may also be reviewed by trained human reviewers to ensure quality.
+* **Feedback:** When you share thumbs up or thumbs down feedback, we’ll also collect the associated content – like your prompts, conversations, uploads, and the outputs received (e.g., chats, generated designs, etc.) – so we can understand the issue. This data is handled in line with our [Google Privacy Policy](https://policies.google.com/privacy) and is used to help us improve the product for everyone.`),Gg=goog.getMsg("Website URL"),ug=goog.getMsg("{$figmaProductName} selection link",{figmaProductName:f}),Dg=goog.getMsg("Add from Drive"),Rg=goog.getMsg("Import from Photos"),vg=goog.getMsg("Failed to connect to {$figmaProductName}. Please try again.",{figmaProductName:f}),Lg=goog.getMsg("Failed to open Google Drive. Please try again."),Cg=goog.getMsg("Failed to open Google Photos. Please try again."),Pg=goog.getMsg("Paste {$figmaProductName} selection link...",{figmaProductName:f}),hg=goog.getMsg("Explore creative directions with {$nanoBananaProductName} image model.",{nanoBananaProductName:fe}),mg=goog.getMsg("Explore creative directions with our most advanced image model."),fg=goog.getMsg("Design fast with {$geminiModel}. Export designs to code or {$figmaProductName}.",{geminiModel:`${re} Flash`,figmaProductName:f}),pg=goog.getMsg("High-quality designs in HTML with {$geminiModel}. Export to coding agents.",{geminiModel:`${re} 3 Flash`}),yg=goog.getMsg("Uses {$geminiModel}. Prioritizes maximum quality and reasoning over speed.",{geminiModel:`${re} 3.1 Pro`}),bg=goog.getMsg("Redesign existing apps or sites with {$nanoBananaProProductName}. Attach a screenshot.",{nanoBananaProProductName:`${fe} Pro`}),Ug=goog.getMsg("Bring a problem to solve and see solutions."),Bg=goog.getMsg("{$geminiModel} for rapid collaboration, still good quality.",{geminiModel:`${re} 3.5 Flash-Lite`}),Hg=goog.getMsg("{$geminiModel} for a balance between speed and high quality.",{geminiModel:`${re} 3.8 Flash`}),wg=goog.getMsg("Speed"),Yg=goog.getMsg("Balanced"),Vg=goog.getMsg("Bring a problem to solve and see solutions."),Fg=goog.getMsg("Mode switching is locked during ideation"),kg=goog.getMsg("New"),Wg=goog.getMsg("Create high-quality designs with the Hatter agent."),Xg=goog.getMsg("{$stitchName} Settings",{stitchName:m}),Kg=goog.getMsg("Manage Account"),xg=goog.getMsg("Switch Account"),$g=goog.getMsg("Sign out"),qg=goog.getMsg("Sign In"),Qg=goog.getMsg("Terms & Privacy"),Zg=goog.getMsg("Third Party Notices"),zg=goog.getMsg("Account Menu"),jg=goog.getMsg("FAQ"),Jg=goog.getMsg("Forum"),er=goog.getMsg("Prompt Guide"),tr=goog.getMsg("Send Feedback"),or=goog.getMsg("Privacy Notice"),gr=goog.getMsg("Rename Project"),rr=goog.getMsg("Share"),ar=goog.getMsg("Standard Mode"),sr=goog.getMsg("Share Project"),_r=goog.getMsg("Enable sharing & remixing"),ir=goog.getMsg("Anyone with the link can access this project"),Er=goog.getMsg("Only you can access this project"),nr=goog.getMsg("By making your project public, you allow anyone with the link to view and remix its generated designs and code. You can revoke public access at any time, but this will not remove already remixed designs."),Sr=goog.getMsg("Copy link"),Mr=goog.getMsg("Copy link to prototype"),Tr=goog.getMsg("Link copied to clipboard!"),cr=goog.getMsg("This is an example project"),Ir=goog.getMsg("This content was created by another person. It may be inaccurate or unsafe."),lr=goog.getMsg("This content was generated by a {$stitchProductName} user. Do not enter sensitive information as it may be seen by the owner.",{stitchProductName:m}),Ar=goog.getMsg("Design history"),dr=goog.getMsg("Recent"),Or=goog.getMsg("Yesterday"),Nr=goog.getMsg("Last 7 days"),Gr=goog.getMsg("Last 30 days"),ur=goog.getMsg("This Year"),Dr=goog.getMsg("Last Year"),Rr=goog.getMsg("Project Brief"),vr=goog.getMsg("Generate a product requirements document for your project."),Lr=goog.getMsg("Generating..."),Cr=goog.getMsg("Failed to generate Project Brief"),Pr=goog.getMsg("Examples"),hr=goog.getMsg("Failed to load projects"),mr=goog.getMsg("Need inspiration?"),fr=goog.getMsg("Explore"),pr=goog.getMsg("Previous examples"),yr=goog.getMsg("Next examples"),br=goog.getMsg("Create new"),Ur=goog.getMsg("New Project"),Br=goog.getMsg("Start a new design"),Hr=goog.getMsg("Start a new"),wr=goog.getMsg("design"),Yr=goog.getMsg("Welcome to {$stitchProductName}..",{stitchProductName:m}),Vr=goog.getMsg("App"),Fr=goog.getMsg("Web"),kr=goog.getMsg("Desktop"),Wr=goog.getMsg("Device"),Xr=goog.getMsg("Generate designs"),Kr=goog.getMsg("Try these prompts"),xr=goog.getMsg("Describe your design"),$r=goog.getMsg("What native mobile app shall we design?"),qr=goog.getMsg("Drop files to upload them for your designs"),Qr=goog.getMsg("What responsive web experience shall we design?"),Zr=goog.getMsg("Describe your redesign or edit. Select or attach a screenshot for best results."),zr=goog.getMsg("The file size must be 5MB or smaller"),jr=goog.getMsg("{$figmaProductName} files must be 200MB or smaller",{figmaProductName:f}),Jr=goog.getMsg("Failed to process Figma file {$fileName}",{fileName:"{fileName}"}),ea=goog.getMsg("No design tokens found in {$fileName}. The file may not contain published styles.",{fileName:"{fileName}"}),ta=goog.getMsg("Processing Figma files..."),oa=goog.getMsg("Figma File"),ga=goog.getMsg("Imported {$count} screen(s) from Figma.",{count:"{count}"}),ra=goog.getMsg("No screens found for the Figma link."),aa=goog.getMsg("Failed to import Figma selection."),sa=goog.getMsg("Imported {$count} screen(s) from Figma clipboard.",{count:"{count}"}),_a=goog.getMsg("Failed to import from Figma clipboard."),ia=goog.getMsg("Failed to upload files. Please try again later."),Ea=goog.getMsg("Importing from Figma clipboard…"),na=goog.getMsg("Figma paste"),Sa=goog.getMsg("Project has reached the limit of 50 uploaded images."),Ma=goog.getMsg("Only JPG and PNG are supported"),Ta=goog.getMsg("Uploading image..."),ca=goog.getMsg("File not allowed. Please try a different one."),Ia=goog.getMsg("Only image (JPG, PNG) and text (html, txt, md) files are supported"),la=goog.getMsg("Please enter a valid URL (e.g., https://example.com)"),Aa=goog.getMsg("Please enter a valid GitHub repository URL (e.g., https://github.com/owner/repo)"),da=goog.getMsg("Dark"),Oa=goog.getMsg("Light"),Na=goog.getMsg("System"),Ga=goog.getMsg("Theme updated!"),ua=goog.getMsg("Appearance"),Da=goog.getMsg("Color"),Ra=goog.getMsg("Custom"),va=goog.getMsg("Corner radius"),La=goog.getMsg("Font"),Ca=goog.getMsg("Search fonts..."),Pa=goog.getMsg("Recommended"),ha=goog.getMsg("Google Fonts"),ma=goog.getMsg("No fonts found"),fa=goog.getMsg("Apply theme"),pa=goog.getMsg("DESIGN.md"),ya=goog.getMsg("Start with your design"),ba=goog.getMsg("Blank project"),Ua=goog.getMsg("DESIGN.md is a design system document that describes the desired look and feel of your product."),Ba=goog.getMsg("Upload a DESIGN.md"),Ha=goog.getMsg("Drag in a DESIGN.md file from your computer"),wa=goog.getMsg("Paste a DESIGN.md"),Ya=goog.getMsg("Paste DESIGN.md markdown and save"),Va=goog.getMsg("Generate from codebase"),Fa=goog.getMsg("Copy a prompt for your coding agent"),ka=goog.getMsg("From the web"),Wa=goog.getMsg("Browse popular DESIGN.md repositories"),Xa=goog.getMsg("Import from Figma"),Ka=goog.getMsg("Upload a .fig file or connect account"),xa=goog.getMsg("Drop a DESIGN.md file here, or browse to upload from your computer. Files up to 10 MB."),$a=goog.getMsg("Paste the contents of a DESIGN.md file below, then save to continue."),qa=goog.getMsg("Copy this prompt into your coding agent. It will analyze your codebase and produce a DESIGN.md file at the project root."),Qa=goog.getMsg("Browse popular DESIGN.md repositories. These repositories are maintained by 3rd parties and are not endorsed or affiliated with Stitch and Google. Review all content and paste with care."),Za=goog.getMsg(`# DESIGN.md
+
+## Overview
+Describe the product, users, and goals…
+
+## Screens
+- Home
+- Details
+- Settings
+
+## Components
+…`),za=goog.getMsg("Save"),ja=goog.getMsg("Prompt copied to clipboard"),Ja=goog.getMsg("Back"),es=goog.getMsg("Browse"),ts=goog.getMsg("Clear"),os=goog.getMsg("Copy prompt"),gs=goog.getMsg("Copied!"),rs=goog.getMsg("Drop your .fig file here"),as=goog.getMsg("Drop your DESIGN.md file here"),ss=goog.getMsg("Open docs"),_s=goog.getMsg("or"),is=goog.getMsg("File size exceeds 10 MB limit"),Es=goog.getMsg(`Analyze the design system of this codebase with the goal of creating a DESIGN.md file in the project root and giving the user a file for easy copy & pasting.
+
+Reference material:
+  Overview : https://stitch.withgoogle.com/docs/design-md/overview/
+  Format   : https://stitch.withgoogle.com/docs/design-md/format/
+  Spec     : https://github.com/google-labs-code/design.md
+
+Examples from the spec repo:
+  https://github.com/google-labs-code/design.md/blob/main/examples/atmospheric-glass/DESIGN.md
+  https://github.com/google-labs-code/design.md/blob/main/examples/paws-and-paths/DESIGN.md
+
+Requirements:
+- Begin with YAML frontmatter containing all structured design tokens
+  (colors, typography, spacing, elevation, motion, radii, shadows, etc.)
+- Follow with free-form Markdown that describes the look & feel and
+  captures design intent that token values alone cannot convey
+- The file must be entirely self-contained — do not reference any
+  files, variables, or paths from the codebase
+- All token values must use valid YAML design token format
+
+If you have access to a running local server or screenshots of the
+product, compare your DESIGN.md against the rendered UI. Revise until
+both the YAML tokens and the written description faithfully capture
+the product's visual identity.`),ns=goog.getMsg("Delete"),Ss=goog.getMsg("Edit Element"),Ms=goog.getMsg("Edit Text"),Ts=goog.getMsg("Edit With AI"),cs=goog.getMsg("Edit Image"),Is=goog.getMsg("Enter URL"),ls=goog.getMsg("Paste URL..."),As=goog.getMsg("Please enter a valid image URL"),ds=goog.getMsg("Annotate image"),Os=goog.getMsg("Save annotation"),Ns=goog.getMsg("Annotate"),Gs=goog.getMsg("Draft will be discarded"),us=goog.getMsg("You have annotations that will be lost if you exit. Are you sure want to exit?"),Ds=goog.getMsg("You are getting a preview of Annotation Editing, powered by {$nanoBananaProductName} 🍌.",{nanoBananaProductName:fe}),Rs=goog.getMsg("Please let us know what you think"),vs=goog.getMsg("Note: During the preview period, the resulting screen will not exportable to code"),Ls=goog.getMsg("Okay, got it!"),Cs=goog.getMsg("Preparing the canvas..."),Ps=goog.getMsg("Failed to load screen for annotations. Please try again later."),hs=goog.getMsg("Example user"),ms=goog.getMsg("Stitch user"),fs=goog.getMsg("You"),ps=goog.getMsg("Delete Project"),ys=goog.getMsg("Are you sure you want to permanently delete this design? This action cannot be undone."),bs=goog.getMsg("Delete"),Us=goog.getMsg("Deleting..."),Bs=goog.getMsg("What would you like to change or create?"),Hs=goog.getMsg("Want to ask Stitch to do something?"),ws=goog.getMsg("{$remixLink} to make your own updates!",{remixLink:"[RemixLink]"}),Ys=goog.getMsg("Remix this project"),Vs=goog.getMsg("Click to create a copy of this project that's just for you!"),Fs=goog.getMsg("{$stitchProductName} can make mistakes. Please check its work.",{stitchProductName:m}),ks=goog.getMsg("Web Search"),Ws=goog.getMsg("Show more"),Xs=goog.getMsg("Show less"),Ks=goog.getMsg("Generate variations"),xs=goog.getMsg("Click to generate multiple variations"),$s=goog.getMsg("Generate variations ✅"),qs=goog.getMsg("Number of options"),Qs=goog.getMsg("Creative range"),Zs=goog.getMsg("Refine"),zs=goog.getMsg("Explore"),js=goog.getMsg("Reimagine"),Js=goog.getMsg("Offer options with more subtle changes"),e_=goog.getMsg("Be creative, but nothing crazy"),t_=goog.getMsg("Open your mind to very varied options"),o_=goog.getMsg("Custom instructions"),g_=goog.getMsg("Aspects to vary"),r_=goog.getMsg("Failed to create variants. Please try again later."),a_=goog.getMsg("Failed to create. Please try again later."),s_=goog.getMsg("Prompt"),__=goog.getMsg("Design"),i_=goog.getMsg("Code"),E_=goog.getMsg("Copy code"),n_=goog.getMsg("Expanded image"),S_=goog.getMsg('Design copied to clipboard. Press "{$macPasteShortcut}" or "{$otherPasteShortcut}" in {$figmaProductName} to paste.',{macPasteShortcut:"Cmd+V",otherPasteShortcut:"Ctrl+V",figmaProductName:f}),M_=goog.getMsg("Settings"),T_=goog.getMsg("Save changes"),c_=goog.getMsg("API key"),I_=goog.getMsg("Create key"),l_=goog.getMsg("Abuse auto-detection on"),A_=goog.getMsg("For your protection, we automatically disable any API keys found to be publicly exposed to prevent abuse."),d_=goog.getMsg("API key"),O_=goog.getMsg("Created at"),N_=goog.getMsg("Last used"),G_=goog.getMsg("No keys to display"),u_=goog.getMsg("Remember to use your API keys securely. Don't share or embed them in public code."),D_=goog.getMsg("Your use of the Stitch API is governed by the Google Terms and Use Policy, and the Google APIs Terms, and your Stitch settings. The Stitch [Privacy Notice](/privacy) describes how your data is handled"),R_=goog.getMsg("Learn more"),v_=goog.getMsg("Delete API key"),L_=goog.getMsg("Delete API key"),C_=goog.getMsg("Are you sure you want to delete this API key?"),P_=goog.getMsg("Cutting your key"),h_=goog.getMsg("API key created successfully!"),m_=goog.getMsg("API key deleted successfully!"),f_=goog.getMsg("Failed to create API key"),p_=goog.getMsg("Failed to delete API key"),y_=goog.getMsg("You have reached the maximum number of API keys."),b_=goog.getMsg("Copied to clipboard"),U_=goog.getMsg("Failed to copy"),B_=goog.getMsg("Failed to get API keys"),H_=goog.getMsg("Copy key"),w_=goog.getMsg("Never"),Y_=goog.getMsg("Email Preferences"),V_=goog.getMsg("Receive emails for model updates, offers, useful tips and news about Stitch."),F_=goog.getMsg("Receive invitations for future research studies from Stitch and Google Labs"),k_=goog.getMsg("Receive emails for model updates, offers, useful tips and news about Stitch"),W_=goog.getMsg("Receive invitations for future research studies from Stitch and Google Labs"),X_=goog.getMsg("Receive notification, sharing and other project specific emails"),K_=goog.getMsg("View Code"),x_=goog.getMsg("Copy to {$figmaProductName}",{figmaProductName:f}),$_=goog.getMsg("Theme editing is disabled for read-only projects"),q_=goog.getMsg("Theme controls only available in Standard Mode"),Q_=goog.getMsg("Theme controls not available for images"),Z_=goog.getMsg("Theme Controls not available yet with the upload image feature"),z_=goog.getMsg("{$figmaProductName} Export not available for imported projects",{figmaProductName:f}),j_=goog.getMsg("{$figmaProductName} Export not available yet with the upload image feature",{figmaProductName:f}),J_=goog.getMsg("{$figmaProductName} export only available in Standard Mode",{figmaProductName:f}),ei=goog.getMsg("Do not include any sensitive or personal information."),ti=goog.getMsg("Example projects cannot be edited"),oi=goog.getMsg("Variant designs cannot be edited"),gi=goog.getMsg("Please wait until designs have loaded"),ri=goog.getMsg("Attach a screenshot, sketch or visual inspiration"),ai=goog.getMsg("Seed Image"),si=goog.getMsg("Create an interactive Prototype by selecting more than one screen"),_i=goog.getMsg("Good result"),ii=goog.getMsg("Bad result"),Ei=goog.getMsg("Remixing will create a new Project with all the screens in the current Project"),ni=goog.getMsg("Read our documentation"),Si=goog.getMsg("Join us on Discord!"),Mi=goog.getMsg("See our latest posts"),Ti=goog.getMsg("What's new?"),ci=goog.getMsg("Design for desktop Web"),Ii=goog.getMsg("Design for a native mobile App"),li=goog.getMsg("Sending..."),Ai=goog.getMsg("Thanks for your feedback!"),di=goog.getMsg("What needs to be improved?"),Oi=goog.getMsg("Provide feedback on the generated variants"),Ni=goog.getMsg("Help us improve these designs"),Gi=goog.getMsg("What did you like or dislike about these variants? (e.g. text, layout, colors)"),ui=goog.getMsg("How are the variants that I generated? Feedback helps improve this feature."),Di=goog.getMsg("Rate the designs"),Ri=goog.getMsg("Generating React App..."),vi=goog.getMsg("Analyzing screen layout and hierarchy..."),Li=goog.getMsg("Identifying interactive elements..."),Ci=goog.getMsg("Connecting navigation flows..."),Pi=goog.getMsg("Synthesizing interaction logic..."),hi=goog.getMsg("Optimizing transition physics..."),mi=goog.getMsg("Finalizing prototype assembly..."),fi=goog.getMsg("Detecting clickable regions..."),pi=goog.getMsg("Mapping navigation hotspots..."),yi=goog.getMsg("Inferring component states..."),bi=goog.getMsg("Constructing interaction graph..."),Ui=goog.getMsg("Simulating user flows..."),Bi=goog.getMsg("Applying physics engine..."),Hi=goog.getMsg("Refining gesture recognition..."),wi=goog.getMsg("Linking visual states..."),Yi=goog.getMsg("Generating micro-interactions..."),Vi=goog.getMsg("Compiling preview assets..."),Fi=goog.getMsg("Failed to load screen"),ki=goog.getMsg("Creating Prototype"),Wi=goog.getMsg("Prototype Created"),Xi=goog.getMsg("View"),Ki=goog.getMsg("Error creating the Prototype"),xi=goog.getMsg("Editing your Prototype"),$i=goog.getMsg("Your Prototype is ready"),qi=goog.getMsg("Error editing your Prototype"),Qi=goog.getMsg("Creating React App"),Zi=goog.getMsg("React App Created"),zi=goog.getMsg("Error creating the React App"),ji=goog.getMsg("Editing your React App"),Ji=goog.getMsg("Your React App is ready"),eE=goog.getMsg("Error editing your React App"),tE=goog.getMsg("Prototype editor"),oE=goog.getMsg("Try selecting an element on the screen below to edit, connect, or imagine a new connected screen"),gE=goog.getMsg("Tip:"),rE=goog.getMsg("Edit this screen with AI"),aE=goog.getMsg("Edit screen with AI · Click an element for more options"),sE=goog.getMsg("Edit text"),_E=goog.getMsg("Edit image"),iE=goog.getMsg("Imagine a new screen"),EE=goog.getMsg("Loading new screen ideas..."),nE=goog.getMsg("Build this screen"),SE=goog.getMsg("Imagine Screen"),ME=goog.getMsg("Screen generation failed"),TE=goog.getMsg("Failed to create new screen"),cE=goog.getMsg("Failed to create screen"),IE=goog.getMsg("Failed to layout the generated screen."),lE=goog.getMsg("Updates in progress"),AE=goog.getMsg("Prototype updates are still being processed. If you exit now, the updates may be lost."),dE=goog.getMsg("Exit anyway"),OE=goog.getMsg("Back to canvas"),NE=goog.getMsg("Remove screen"),GE=goog.getMsg("Are you sure you want to remove this screen from the prototype? Any connections to this screen will also be removed."),uE=goog.getMsg("Remove"),DE=goog.getMsg("Remove Screen"),RE=goog.getMsg("Hold tight! I'm connecting your screens"),vE=goog.getMsg("Saving connections"),LE=goog.getMsg("Screens in prototype"),CE=goog.getMsg("Your screen is being created. Once ready, it will be automatically linked to the prototype. You can work on other screens in the meantime."),PE=goog.getMsg("Your screen is being updated. The changes will appear automatically once they are ready."),hE=goog.getMsg("Your new screen is being generated. Once ready, it will be automatically linked to the prototype. You can work on other screens in the meantime."),mE=goog.getMsg("Creating your Screen"),fE=goog.getMsg("Editing your Screen"),pE=goog.getMsg("Imagining your new screen"),yE=goog.getMsg("Edit Screen"),bE=goog.getMsg("Edit Element"),UE=goog.getMsg("Selected Element"),BE=goog.getMsg("Describe how you want to change this screen..."),HE=goog.getMsg("Describe how you want to change this element..."),wE=goog.getMsg("How do you want to change this screen?"),YE=goog.getMsg("How do you want to change this element?"),VE=goog.getMsg("Creating Instant Prototype..."),FE=goog.getMsg("Instant Prototype Created"),kE=goog.getMsg("Failed to save Prototype"),WE=goog.getMsg("Remove this screen from the prototype"),XE=goog.getMsg("Build Instant Prototypes"),KE=goog.getMsg("Prototypes let you connect screens together to create interactive prototypes. Add your first screen to get started."),xE=goog.getMsg("Instant Prototype"),$E=goog.getMsg("Instant Prototype"),qE=goog.getMsg("Generate Instant Prototype"),QE=goog.getMsg("Instant Prototypes"),ZE=goog.getMsg("Create Instant Prototype"),zE=goog.getMsg("The quickest way to connect your screens into an interactive flow and share it."),jE=goog.getMsg("Stitch React App"),JE=goog.getMsg("Create React App"),en=goog.getMsg("Generate a fully interactive React app from your selected screens."),tn=goog.getMsg("Add to Chat"),on=goog.getMsg("Edit Prototype"),gn=goog.getMsg("Edit React App"),rn=goog.getMsg("Edit"),an=goog.getMsg("Prototype"),sn=goog.getMsg("React App"),_n=goog.getMsg("Pitchdeck"),En=goog.getMsg("Regenerate"),nn=goog.getMsg("Code version"),Sn=goog.getMsg("Design System"),Mn=goog.getMsg("DESIGN.md"),Tn=goog.getMsg("Update to Latest Design System"),cn=goog.getMsg("Predictive Heatmap"),In=goog.getMsg("Missing States"),ln=goog.getMsg("Generate Missing States"),An=goog.getMsg("Missing states are ready"),dn=goog.getMsg("Animate"),On=goog.getMsg("Animate screen"),Nn=goog.getMsg("Animated screen is ready"),Gn=goog.getMsg("Accessibility Audit"),un=goog.getMsg("Generate Accessibility Audit"),Dn=goog.getMsg("Accessibility audit is ready"),Rn=goog.getMsg("Switch to Light Mode"),vn=goog.getMsg("Switch to Dark Mode"),Ln=goog.getMsg("Show Offscreen Indicators"),Cn=goog.getMsg("Hide Offscreen Indicators"),Pn=goog.getMsg("1 screen"),hn=goog.getMsg("{$count} screens",{count:"{count}"}),mn=goog.getMsg("1 document"),fn=goog.getMsg("{$count} documents",{count:"{count}"}),pn=goog.getMsg("1 design system"),yn=goog.getMsg("{$count} design systems",{count:"{count}"}),bn=goog.getMsg("1 text"),Un=goog.getMsg("{$count} texts",{count:"{count}"}),Bn=goog.getMsg("1 item"),Hn=goog.getMsg("{$count} items",{count:"{count}"}),wn=goog.getMsg("Format: {$presetName}",{presetName:"{presetName}"}),Yn=goog.getMsg("Save Format Preset"),Vn=goog.getMsg("Define how your screens should be arranged using natural language."),Fn=goog.getMsg("Preset Name"),kn=goog.getMsg("e.g. My Flow Layout"),Wn=goog.getMsg("Layout Description"),Xn=goog.getMsg('e.g. "Design systems on the left vertically. All screens horizontally. Variations below each screen."'),Kn=goog.getMsg("Please enter a preset name"),xn=goog.getMsg("Please describe how to arrange your screens"),$n=goog.getMsg('Could not parse any layout rules. Try using keywords like "left", "right", "top", "bottom", "horizontal", "vertical" with category names like "screens", "images", "design systems", "variations".'),qn=goog.getMsg("Save Preset"),Qn=goog.getMsg("Desktop Web Version"),Zn=goog.getMsg("Desktop Web Versions"),zn=goog.getMsg("Mobile App Version"),jn=goog.getMsg("Mobile App Versions"),Jn=goog.getMsg("Generate Desktop Web Version"),eS=goog.getMsg("Generate Desktop Web Versions"),tS=goog.getMsg("Generate Mobile App Version"),oS=goog.getMsg("Generate Mobile App Versions"),gS=goog.getMsg("Normalize Width"),rS=goog.getMsg("Normalize Height"),aS=goog.getMsg("Desktop version is ready"),sS=goog.getMsg("Desktop versions are ready"),_S=goog.getMsg("New screens are ready"),iS=goog.getMsg("Mobile app version is ready"),ES=goog.getMsg("Mobile app versions are ready"),nS=goog.getMsg("Add to Presets"),SS=goog.getMsg("Added to Presets"),MS=goog.getMsg("Updated Preset"),TS=goog.getMsg("Failed to upload design file."),cS=goog.getMsg("Design system successfully imported."),IS=goog.getMsg("DESIGN.md successfully imported."),lS=goog.getMsg("Failed to import design system."),AS=goog.getMsg("Failed to import DESIGN.md."),dS=goog.getMsg("Failed to delete design system."),OS=goog.getMsg("Failed to delete DESIGN.md."),NS=goog.getMsg("Design system not found"),GS=goog.getMsg("DESIGN.md not found"),uS=goog.getMsg("Stitch will auto-select based on your prompt unless a specific Design System is picked."),DS=goog.getMsg("My Design System"),RS=goog.getMsg("Untitled Design System"),vS=goog.getMsg("Enter a name for your design system"),LS=goog.getMsg("DESIGN.md"),CS=goog.getMsg("User Presets"),PS=goog.getMsg("Stitch Presets"),hS=goog.getMsg("Use DESIGN.md"),mS=goog.getMsg("Edit DESIGN.md"),fS=goog.getMsg("Use DESIGN.md"),pS=goog.getMsg("Back to DESIGN.md list"),yS=goog.getMsg("Start with your design"),bS=goog.getMsg("Start with your design"),US=goog.getMsg("DESIGN.md is an open-source standard document that describes the desired look and feel of your product."),BS=goog.getMsg("Learn more"),HS=goog.getMsg("Paste existing DESIGN.md"),wS=goog.getMsg("Paste a DESIGN.md file here…"),YS=goog.getMsg("Drag and drop files"),VS=goog.getMsg("Upload a DESIGN.md file"),FS=goog.getMsg("Upload code, images, fonts and logos"),kS=goog.getMsg("Drop .fig or {$selectFileLink}",{selectFileLink:"{selectFileLink}"}),WS=goog.getMsg("Upload a .fig file"),XS=goog.getMsg("To get a .fig file, open your Figma project and use File > Save local copy."),KS=goog.getMsg("Learn more"),xS=goog.getMsg("Public GitHub repository"),$S=goog.getMsg("Or {$getInstructionsLink} to generate a DESIGN.md from your private repo with your coding agent",{getInstructionsLink:"{getInstructionsLink}"}),qS=goog.getMsg("get instructions"),QS=goog.getMsg("https://github.com/owner/repo"),ZS=goog.getMsg("Add website"),zS=goog.getMsg("https://example.com"),jS=goog.getMsg("Additional instructions"),JS=goog.getMsg("e.g., Favor dark mode examples from the design files. The attached image is an example of the brand logo."),eM=goog.getMsg("Continue"),tM=goog.getMsg("Back"),oM=goog.getMsg("Failed to create DESIGN.md. Please try again."),gM=goog.getMsg("UX Flow Critique"),rM=goog.getMsg("Critique Consistency"),aM=goog.getMsg("Connecting your screens"),sM=goog.getMsg("Building your interactive prototype..."),_M=goog.getMsg("Creating your screen"),iM=goog.getMsg("AI is generating your design..."),EM=goog.getMsg("Generate screen"),nM=goog.getMsg("Dashboard"),SM=goog.getMsg("Try now"),MM=goog.getMsg("Easy edits"),TM=goog.getMsg("Iterate and tweak designs to build an interface that works best for you."),cM=goog.getMsg("Export code"),IM=goog.getMsg("Export static HTML code that matches the design and Figma export."),lM=goog.getMsg("Build with Gemini"),AM=goog.getMsg("Leverage some of the latest AI models from Google DeepMind to generate designs."),dM=goog.getMsg("You can own your design"),OM=goog.getMsg("Use your original generations as you see fit. Export designs to Figma to fiddle further or copy the code to use how you’d like."),NM=goog.getMsg("Swirly grainy gradient of pink, blues, purples, and black"),GM=goog.getMsg("Stack of UI designs in perspective"),uM=goog.getMsg("Scrolling through generated screens"),DM=goog.getMsg("Closeup of mouse pointer adjusting a design"),RM=goog.getMsg("Gemini spark"),vM=goog.getMsg("Design at the speed of AI"),LM=goog.getMsg("Transform ideas into UI designs for mobile and web applications."),CM=goog.getMsg("AI for your UI"),PM=goog.getMsg("Write a few words, attach an image and watch your UI come to life"),hM=goog.getMsg("Available now"),mM=goog.getMsg("Free of charge"),fM=goog.getMsg("Stitch makes UI creation incredibly simple. No matter your background or expertise, Stitch will help you bring your ideas to life."),pM=goog.getMsg("Start designing"),yM=goog.getMsg("*Available to 18+ users in select countries and territories."),bM=goog.getMsg("Personal Google Account required."),UM=goog.getMsg("Questions?"),BM=goog.getMsg("What is Stitch?"),HM=goog.getMsg("Stitch is an AI-powered tool to help application builders generate high-quality user interfaces for mobile and web apps, and easily export them to Figma, or directly access the frontend code.  It uses some of the latest AI models from Google DeepMind."),wM=goog.getMsg("Where is Stitch available?"),YM=goog.getMsg("We’re working to bring our tools to as many people as possible. The site is currently available in English only to 18+ users in 212 countries."),VM=goog.getMsg("Can I use designs generated from Stitch for commercial purposes?"),FM=goog.getMsg('Google does not claim ownership over original designs or code that you generate with Stitch, as detailed in the <a rel="noopener noreferrer" target="_blank" href="https://policies.google.com/terms#toc-content">Google Terms of Service</a>: "Some of our services allow you to generate original content. Google won’t claim ownership over that content." You are responsible for fully reviewing and complying with the terms.'),kM=goog.getMsg("Can I import data from Galileo AI?"),WM=goog.getMsg("Yes, if you are a former Galileo AI user, you can upload your conversation history via the settings page. This will allow you to access and view your past conversations with Galileo. Please note that you will not be able to continue these imported conversations within Stitch."),XM=goog.getMsg("I want to get in touch with the Stitch team, how can I reach out?"),KM=goog.getMsg('For any inquiry, contact us on X at <a rel="noopener noreferrer" target="_blank" href="https://x.com/stitchbygoogle">@stitchbygoogle</a>'),xM=goog.getMsg("Reimagine your site for different audiences"),$M=goog.getMsg("Redesigned site for a younger audience"),qM=goog.getMsg("Redesign this page for a younger audience "),QM=goog.getMsg("Generate new pages, on brand"),ZM=goog.getMsg("Create the next page"),zM=goog.getMsg("Create the page that people see when they click “Tech that connects”"),jM=goog.getMsg("Magically edit your app"),JM=goog.getMsg("Add a section."),eT=goog.getMsg("Add a section that asks “what are you hungry for?” Use emojis for responses :) "),tT=goog.getMsg("Solve business problems"),oT=goog.getMsg("Improve the number of conversions"),gT=goog.getMsg("Improve the number of users who add to cart  "),rT=goog.getMsg("New feature! Export to **Google AI Studio**"),aT=goog.getMsg("Before"),sT=goog.getMsg("After"),_T=goog.getMsg("See it for yourself"),iT=goog.getMsg("New in Stitch"),ET=goog.getMsg("Introducing"),nT=goog.getMsg("Redesign Agent"),ST=goog.getMsg("Redesign and edit your app with a screenshot or URL"),MT=goog.getMsg("With a little help from 🍌 Pro"),TT=goog.getMsg("Watch a demo"),cT=goog.getMsg("Oops! Page Not Found."),IT=goog.getMsg("This page doesn't exist or isn't shared with you."),lT=goog.getMsg("Go to Homepage"),AT=goog.getMsg("Reload"),dT=goog.getMsg("Sorry, we hit a snag."),OT=goog.getMsg("Send Feedback"),NT=goog.getMsg("Sorry, Stitch is unavailable."),GT=goog.getMsg("Could not copy the design. Please try again later."),uT=goog.getMsg("Could not copy the code. Please try again later."),DT=goog.getMsg("Could not copy the code. Please grant clipboard permission in your browser settings and try again."),RT=goog.getMsg("Please allow Stitch clipboard access, or use Ctrl-V or Command-V."),vT=goog.getMsg("Preparing"),LT=goog.getMsg("Trying to paste a file? Use Ctrl-V or Command-V."),CT=goog.getMsg("Something unexpected happened, and Stitch couldn't complete your generation. Please try again in a moment."),PT=goog.getMsg("We're currently experiencing high demand, please try again later."),hT=goog.getMsg("Save"),mT=goog.getMsg("Screens"),fT=goog.getMsg("Close"),pT=goog.getMsg("Preview"),yT=goog.getMsg("State"),bT=goog.getMsg("Save & Apply"),UT=goog.getMsg("Select state"),BT=goog.getMsg("Back"),HT=goog.getMsg("Forward"),wT=goog.getMsg("Refresh"),YT=goog.getMsg("Click to copy"),VT=goog.getMsg("Details"),FT=goog.getMsg("Exit Zen Mode"),kT=goog.getMsg("Pick custom color"),WT=goog.getMsg("Style Tuner"),XT=goog.getMsg("Shortcut Keys"),KT=goog.getMsg("Debug"),xT=goog.getMsg("Enable 3P Cookies"),$T=goog.getMsg("General"),qT=goog.getMsg("Edit"),QT=goog.getMsg("Tools"),ZT=goog.getMsg("View"),zT=goog.getMsg("Navigation"),jT=goog.getMsg("Cut"),JT=goog.getMsg("Download selected"),ec=goog.getMsg("Select All"),tc=goog.getMsg("Nudge selected"),oc=goog.getMsg("Align selected"),gc=goog.getMsg("Format"),rc=goog.getMsg("Select Tool"),ac=goog.getMsg("Pan Tool"),sc=goog.getMsg("Zoom Tool (hold)"),_c=goog.getMsg("Pan (hold)"),ic=goog.getMsg("Zoom In"),Ec=goog.getMsg("Zoom Out"),nc=goog.getMsg("Zoom to 100%"),Sc=goog.getMsg("Zoom to Fit"),Mc=goog.getMsg("Zoom to Selection"),Tc=goog.getMsg("Focus on Selection"),cc=goog.getMsg("Next Screen"),Ic=goog.getMsg("Previous Screen"),lc=goog.getMsg("Screen Above"),Ac=goog.getMsg("Screen Below"),dc=goog.getMsg("X-Ray: see connections to and from your selected canvas item"),Oc=goog.getMsg("Failed to create project, Please try again later."),Nc=goog.getMsg("Failed to update theme, Please try again later."),Gc=goog.getMsg("We ran into an issue while submitting feedback, please try again soon"),uc=goog.getMsg("Feedback sent"),Dc=goog.getMsg("You don't have permission to edit this project."),Rc=goog.getMsg("Unable to update settings, please try again later"),vc=goog.getMsg("You've hit your max concurrent generations, please wait for generations to finish."),Lc=goog.getMsg("Please wait for current generations to finish for this project."),Cc=goog.getMsg("You've reached your Redesign quota for today. This is a temporary quota during the launch period. You may still use the Turbo and Pro."),Pc=goog.getMsg("You've reached your daily limit of {LIMIT} generated screens. Your limit will reset tomorrow."),hc=goog.getMsg("Generation limited, check your credits in settings"),mc=goog.getMsg("You have {REMAINING} Redesign screens remaining today! Have fun!"),fc=goog.getMsg("Switching voice…"),pc=goog.getMsg("Switching to {$voice}…",{voice:"{voice}"}),yc=goog.getMsg("Takes effect on next session"),bc=goog.getMsg("Adding a splash of color..."),Uc=goog.getMsg("Adjusting spacing..."),Bc=goog.getMsg("Assembling components..."),Hc=goog.getMsg("Bringing your vision to life..."),wc=goog.getMsg("Coloring outside the lines..."),Yc=goog.getMsg("Composing the screen..."),Vc=goog.getMsg("Crafting..."),Fc=goog.getMsg("Creating..."),kc=goog.getMsg("Designing..."),Wc=goog.getMsg("Doodling..."),Xc=goog.getMsg("Forging final design..."),Kc=goog.getMsg("Generating..."),xc=goog.getMsg("Generating Screen"),$c=goog.getMsg("Generating Image"),qc=goog.getMsg("Generating Video"),Qc=goog.getMsg("Generating Shader"),Zc=goog.getMsg("Generating Document"),zc=goog.getMsg("Imagining..."),jc=goog.getMsg("Iterating on your design..."),Jc=goog.getMsg("Laying out..."),eI=goog.getMsg("Making the pixels dance..."),tI=goog.getMsg("Mocking up..."),oI=goog.getMsg("Perfecting the details..."),gI=goog.getMsg("Polishing the pixels..."),rI=goog.getMsg("Rendering the view..."),aI=goog.getMsg("Shading..."),sI=goog.getMsg("Sketching..."),_I=goog.getMsg("Stitching..."),iI=goog.getMsg("Structuring the elements..."),EI=goog.getMsg("Styling..."),nI=goog.getMsg("Loading..."),SI=goog.getMsg("Unleashing creativity..."),MI=goog.getMsg("Researching design patterns..."),TI=goog.getMsg("Exploring styles..."),cI=goog.getMsg("Crafting components..."),II=goog.getMsg("Ensuring consistency..."),lI=goog.getMsg("Applying design taste..."),AI=goog.getMsg("Curating the color palette..."),dI=goog.getMsg("Balancing the elements..."),OI=goog.getMsg("Organizing the hierarchy..."),NI=goog.getMsg("Choosing typography..."),GI=goog.getMsg("Adding finishing touches..."),uI=goog.getMsg("Vibe designing..."),DI=goog.getMsg("almost there..."),RI=goog.getMsg("any second now..."),vI=goog.getMsg("just a moment more..."),LI=goog.getMsg("really soon..."),CI=goog.getMsg("wrapping up..."),PI=goog.getMsg("Starting the engine..."),hI=goog.getMsg("Warming up..."),mI=goog.getMsg("Initializing the canvas..."),fI=goog.getMsg("Preparing the tools..."),pI=goog.getMsg("Collecting the crayons..."),yI=goog.getMsg("Gathering inspiration..."),bI=goog.getMsg("Sharpening the pencils..."),UI=goog.getMsg("Mixing the paints..."),BI=goog.getMsg("Setting up the workspace..."),HI=goog.getMsg("Loading the creative assets..."),wI=goog.getMsg("Your design has been deleted"),YI=goog.getMsg("Deleted"),VI=goog.getMsg("Deleted task"),FI=goog.getMsg("Go to all projects"),kI=goog.getMsg("Download"),WI=goog.getMsg("Download Project"),XI=goog.getMsg("Saving..."),KI=goog.getMsg("Edit"),xI=goog.getMsg("Apply"),$I=goog.getMsg("Undo"),qI=goog.getMsg("Changes saved"),QI=goog.getMsg("Error saving"),ZI=goog.getMsg("Saving..."),zI=goog.getMsg("Design has unsaved changes"),jI=goog.getMsg("You have unsaved changes in the current tab"),JI=goog.getMsg("Reset"),el=goog.getMsg("Redo"),tl=goog.getMsg("Copy"),ol=goog.getMsg("Copy Content"),gl=goog.getMsg("Content copied to clipboard"),rl=goog.getMsg("Failed to copy content"),al=goog.getMsg("Paste"),sl=goog.getMsg("Help"),_l=goog.getMsg("Helpful Links"),il=goog.getMsg("Docs"),El=goog.getMsg("Discord"),nl=goog.getMsg("Dismiss"),Sl=goog.getMsg("Usage Today"),Ml=goog.getMsg("Daily Credits"),Tl=goog.getMsg("Image Screens"),cl=goog.getMsg("Cancel"),Il=goog.getMsg("Exit"),ll=goog.getMsg("Remix"),Al=goog.getMsg("Remixing this project."),dl=goog.getMsg("Finished creating your Remix!"),Ol=goog.getMsg("Sorry, something went wrong. Please try again in a few seconds."),Nl=goog.getMsg("Open"),Gl=goog.getMsg("Please remix this project."),ul=goog.getMsg("I have remixed your project and it is ready for further design."),Dl=goog.getMsg("Duplicate"),Rl=goog.getMsg("Duplicate Project"),vl=goog.getMsg("Command menu"),Ll=goog.getMsg("What's New"),Cl=goog.getMsg("What's new"),Pl=goog.getMsg("Google I/O: 5 Major Upgrades"),hl=goog.getMsg("Streaming, start with your existing design, in-place AI edits, motion on canvas, and more export options"),ml=goog.getMsg("Meet the new Stitch"),fl=goog.getMsg("AI-native canvas, smarter design agent, voice, instant prototypes, design systems, DESIGN.md, and more"),pl=goog.getMsg("Gemini 3.1"),yl=goog.getMsg("When you need the ultimate in reasoning, quality, and attention to detail, 3.1 Pro is for you"),bl=goog.getMsg("Direct Edits"),Ul=goog.getMsg("Edit text and images directly on your canvas"),Bl=goog.getMsg("Figma Export"),Hl=goog.getMsg("Export designs to Figma as editable layers"),wl=goog.getMsg("Loading prototype..."),Yl=goog.getMsg("Duplicating this project."),Vl=goog.getMsg("This will create a new project with all the screens and content from the current project. Are you sure you want to continue?"),Fl=goog.getMsg("Shhh, the pixels are sleeping! Stitch is taking a quick power nap and is currently unavailable. We'll be back online once we're refreshed and ready to create."),kl=goog.getMsg("We're pushing pixels at maximum speed! The studio is processing a high volume of new designs, which may slow things down. Your request is safe in the queue."),Wl=goog.getMsg("Delete this request"),Xl=goog.getMsg("Code failed to generate"),Kl=goog.getMsg("Select a font"),xl=goog.getMsg("Shared"),$l=goog.getMsg("Shared with others"),ql=goog.getMsg("Private to only me"),Ql=goog.getMsg("Export"),Zl=goog.getMsg("Code to Clipboard"),zl=goog.getMsg("Code copied to clipboard"),jl=goog.getMsg("Copy"),Jl=goog.getMsg("Copying..."),eA=goog.getMsg("Failed to copy HTML. Please try again."),tA=goog.getMsg("Live Mode (Preview) is temporarily unavailable, please try again later"),oA=goog.getMsg("Build me an app with screens that look like this."),gA=goog.getMsg(" You can hotlink images from the html"),rA=goog.getMsg("Export"),aA=goog.getMsg("Create Task"),sA=goog.getMsg("Build with AI Studio"),_A=goog.getMsg("AI studio will open and html and image files will download in the background. It may take a minute or two to export many screens."),iA=goog.getMsg("You are about to export your Stitch data to Google AI Studio. Once in AI Studio, your content will be governed by the [AI Studio Terms of Service](https://ai.google.dev/terms) and [Generative AI Prohibited Use Policy](https://policies.google.com/terms/generative-ai/use-policy)."),EA=goog.getMsg("MCP"),nA=goog.getMsg("Select your IDE or CLI"),SA=goog.getMsg("Select an API key"),MA=goog.getMsg("No API keys found"),TA=goog.getMsg("Create API key"),cA=goog.getMsg("MCP configuration copied to clipboard"),IA=goog.getMsg("Cursor"),lA=goog.getMsg("Antigravity"),AA=goog.getMsg("VS Code"),dA=goog.getMsg("Claude Code"),OA=goog.getMsg("Gemini CLI"),NA=goog.getMsg("Codex"),GA=goog.getMsg("OpenCode"),uA=goog.getMsg("Step 1: Install the Stitch extension"),DA=goog.getMsg("Step 2: The extension will prompt for your API key on first use"),RA=goog.getMsg("Connect your IDE or CLI to Stitch via the Model Context Protocol (MCP)."),vA=goog.getMsg("Client"),LA=goog.getMsg("API Key"),CA=goog.getMsg("Configuration"),PA=goog.getMsg("Prompt"),hA=goog.getMsg("Prompt copied!"),mA=goog.getMsg("Setup MCP"),fA=goog.getMsg("Need to connect your client?"),pA=goog.getMsg("Copy Prompt"),yA=goog.getMsg("Netlify"),bA=goog.getMsg("Deploy"),UA=goog.getMsg("Deploying…"),BA=goog.getMsg("Deployed to Netlify"),HA=goog.getMsg("Failed to deploy to Netlify"),wA=goog.getMsg("Claim URL"),YA=goog.getMsg("Deploy a single screen as a live website on Netlify. After deploying, claim the URL to manage it."),VA=goog.getMsg("Select a single screen to deploy to Netlify"),FA=goog.getMsg("You are about to deploy your Stitch data to Netlify. Once on Netlify, your content will be governed by the [Netlify Terms of Use](https://www.netlify.com/legal/terms-of-use/)."),kA=goog.getMsg("Lovable"),WA=goog.getMsg("Build with Lovable"),XA=goog.getMsg("Lovable will open with your screen designs and HTML. Use it to build a full working app from your designs."),KA=goog.getMsg("You are about to export your Stitch data to Lovable. Once in Lovable, your content will be governed by the [Lovable Terms of Service](https://lovable.dev/terms)."),xA=goog.getMsg("Bolt"),$A=goog.getMsg("Build with Bolt"),qA=goog.getMsg("Bolt will open with your screen designs and HTML. Use it to build a full working app from your designs."),QA=goog.getMsg("You are about to export your Stitch data to Bolt. Once in Bolt, your content will be governed by the [Bolt Terms of Service](https://bolt.new/legal/terms)."),ZA=goog.getMsg("App Store Assets"),zA=goog.getMsg("Ready-to-use marketing visuals & screenshots"),jA=goog.getMsg("Adds app icon, store screenshots, feature graphic, and a store description to the canvas."),JA=goog.getMsg("Web Assets"),ed=goog.getMsg("Favicons, touch icons & web manifest"),td=goog.getMsg("Generates favicons, Apple touch icons, and a web manifest JSON file for your web app."),od=goog.getMsg("Marketing Kit"),gd=goog.getMsg("Social media templates & brand assets"),rd=goog.getMsg("Places social media cards, banner ads, and email header images on the canvas."),ad=goog.getMsg("Predictive Heatmap"),sd=goog.getMsg("AI-powered attention analysis & flows"),_d=goog.getMsg("Generates a heatmap overlay on each selected screen showing predicted user attention areas."),id=goog.getMsg("UX Critique"),Ed=goog.getMsg("Expert review of usability & interaction"),nd=goog.getMsg("Produces an annotated critique document on the canvas with actionable improvement suggestions."),Sd=goog.getMsg("Accessibility Audit"),Md=goog.getMsg("Automated WCAG contrast & compliance"),Td=goog.getMsg("Creates a WCAG compliance report and a visual overlay with contrast ratios and alt-text suggestions on the canvas."),cd=goog.getMsg("Missing States"),Id=goog.getMsg("Generate loading, empty & error states"),ld=goog.getMsg("Adds empty, error, and loading state screens next to each selected screen on the canvas."),Ad=goog.getMsg("Dev Handoff Kit"),dd=goog.getMsg("React Prototype"),Od=goog.getMsg("Slides"),Nd=goog.getMsg("Animate"),Gd=goog.getMsg("Design specs & token definitions"),ud=goog.getMsg("Generates a design spec sheet with spacing, typography, and color tokens on the canvas."),Dd=goog.getMsg("Generating…"),Rd=goog.getMsg("Generate Selected"),vd=goog.getMsg("Select screens on the canvas first"),Ld=goog.getMsg("Click to generate"),Cd=goog.getMsg("Creating..."),Pd=goog.getMsg("Building..."),hd=goog.getMsg("Make this real."),md=goog.getMsg("Help me build these screens"),fd=goog.getMsg("Use the design system from this website: {WEBSITE_URL}"),pd=goog.getMsg("Use the design system from this design.md file"),yd=goog.getMsg("Use the design system from this .fig file"),bd=goog.getMsg("the GitHub repository at {URL}"),Ud=goog.getMsg("the website at {URL}"),Bd=goog.getMsg("Create a design system using {SOURCES}."),Hd=goog.getMsg("AI Studio"),wd=goog.getMsg("Build this multi-screen app with the following navigation flow."),Yd=goog.getMsg("Figma"),Vd=goog.getMsg("Your HTML will be sent to code.to.design and processed according to their [Terms of Service](https://divriots.com/legal/code.to.design/terms) and [Privacy Policy](https://divriots.com/legal/code.to.design/privacy)"),Fd=goog.getMsg("Upload .fig file"),kd=goog.getMsg("Convert"),Wd=goog.getMsg("Converting..."),Xd=goog.getMsg("Export is limited to {$maxScreens} screens. Please deselect some screens to continue.",{maxScreens:String(16)}),Kd=goog.getMsg(".zip"),xd=goog.getMsg("No result"),$d=goog.getMsg("PREVIEW"),qd=goog.getMsg("Upload Images"),Qd=goog.getMsg("Upload Image"),Zd=goog.getMsg("Uploaded images generate stable public URLs to support HTML exports, take care with highly confidential or private assets"),zd=goog.getMsg("Upload Files"),jd=goog.getMsg("Sending..."),Jd=goog.getMsg("Copy"),eO=goog.getMsg("Paste"),tO=goog.getMsg("Add Note"),oO=goog.getMsg("Add Text"),gO=goog.getMsg("Upload file"),rO=goog.getMsg("Add"),aO=goog.getMsg("Show Connections"),sO=goog.getMsg("Format"),_O=goog.getMsg("Duplicate"),iO=goog.getMsg("Delete"),EO=goog.getMsg("Edit Theme"),nO=goog.getMsg("Make changes"),SO=goog.getMsg("You're interacting!"),MO=goog.getMsg("Prototype"),TO=goog.getMsg("Connect and Preview with Instant Prototypes"),cO=goog.getMsg("Waiting for screens to finish generating"),IO=goog.getMsg("No compatible screens to connect and preview"),lO=goog.getMsg("Select some screens to connect and preview"),AO=goog.getMsg("Make change"),dO=goog.getMsg("Select elements"),OO=goog.getMsg("Click elements to select"),NO=goog.getMsg("Describe your changes..."),GO=goog.getMsg("Double click to open"),uO=goog.getMsg("Prototype (select >1 screens)"),DO=goog.getMsg("Download"),RO=goog.getMsg("Reload"),vO=goog.getMsg("Variations"),LO=goog.getMsg("Copied"),CO=goog.getMsg("Copied color"),PO=goog.getMsg("Failed to copy"),hO=goog.getMsg("Duplicated"),mO=goog.getMsg("Screen duplicated. Edits will affect all linked copies."),fO=goog.getMsg("Copied as PNG"),pO=goog.getMsg("Copied link"),yO=goog.getMsg("Copied as code"),bO=goog.getMsg("No image available to copy"),UO=goog.getMsg("Failed to copy PNG"),BO=goog.getMsg("Failed to copy link"),HO=goog.getMsg("Failed to copy code"),wO=goog.getMsg("Unable to load"),YO=goog.getMsg("Unable to load — showing preview"),VO=goog.getMsg("Retry"),FO=goog.getMsg("No selection available"),kO=goog.getMsg("No code available to copy"),WO=goog.getMsg("Uploaded"),XO=goog.getMsg("My Projects"),KO=goog.getMsg("Shared with me"),xO=goog.getMsg("Search projects"),$O=goog.getMsg("Mobile"),qO=goog.getMsg("Tablet"),QO=goog.getMsg("Desktop"),ZO=goog.getMsg("Open Direct link"),zO=goog.getMsg("Show QR Code"),jO=goog.getMsg("Scan QR Code"),JO=goog.getMsg("Scan this code with your mobile device to view the preview."),eN=goog.getMsg("For information about how to use the API, see the [API documentation](/docs/mcp/setup)."),tN=goog.getMsg("Open Editor"),oN=goog.getMsg("Preview screen not found / or was deleted"),gN=goog.getMsg("Hold SHIFT while dragging to snap screens to equal spacing between neighbors"),rN=goog.getMsg("Select 3+ screens and use Arrange to evenly space them horizontally or vertically"),aN=goog.getMsg("Right-click and use Copy As for quick access to PNG, Code, or Link formats"),sN=goog.getMsg("Click Edit Prototype to add interactive hotspots and build click-through demos"),_N=goog.getMsg("Use the Align menu to snap multiple screens to Left, Right, Top, Bottom, or Center"),iN=goog.getMsg("Multi-select screens and apply commands like Align, Copy, or Duplicate in one action"),EN=goog.getMsg("Use the command palette to discover all available actions for your selection"),nN=goog.getMsg("Right-click any screen and choose Variants to explore Layout, Color, or Font variations"),SN=goog.getMsg("Select a screen and hit X to see connections"),MN=goog.getMsg("Use the Format menu to quickly arrange your screens on the canvas"),TN=goog.getMsg("Format considers your favorited screens to organize the canvas ✨"),cN=goog.getMsg("Try Align by Width or Align by Height in the Arrange menu to normalize screen sizes"),IN=goog.getMsg("Use the Distribute menu to evenly space your screens on the canvas"),lN=goog.getMsg("Duplicate works on multi-selections too - great for creating screen families"),AN=goog.getMsg("Download multiple screens at once by selecting them all first"),dN=goog.getMsg("Check out the Export Panel for full control over format and quality"),ON=goog.getMsg("Adding screens to chat gives Stitch the context it needs for better edits"),NN=goog.getMsg("Select multiple screens to quickly align them to edges or centers"),GN=goog.getMsg("Evenly space 3+ selected screens horizontally or vertically"),uN=goog.getMsg("Arrange"),DN=goog.getMsg("Distribute Horizontal Space"),RN=goog.getMsg("Distribute Vertical Space"),vN=goog.getMsg("Tidy Horizontal Space"),LN=goog.getMsg("Tidy Vertical Space"),CN=goog.getMsg("Tip:"),PN=goog.getMsg("No Preview"),hN=goog.getMsg("Add to favourites"),mN=goog.getMsg("Agent log"),fN=goog.getMsg("Loading…"),pN=goog.getMsg("Copy prompt"),yN=goog.getMsg("Copied!"),bN=goog.getMsg("Edit prompt"),UN=goog.getMsg("Drag to canvas or click to select"),BN=goog.getMsg("Questions from Stitch"),HN=goog.getMsg("Submit answers"),wN=goog.getMsg("Answers submitted"),YN=goog.getMsg("Answer questions"),VN=goog.getMsg("Remove from favourites"),FN=goog.getMsg("Enhance prompt"),kN=goog.getMsg("Enhancing…"),WN=goog.getMsg("Add Screen to Prototype"),XN=goog.getMsg("Add Screen"),KN=goog.getMsg("All screens added."),xN=goog.getMsg("Connect Element"),$N=goog.getMsg("No HTML screens available."),qN=goog.getMsg("No available screens to choose from."),QN=goog.getMsg("Replace Screen"),ZN=goog.getMsg('Replace "{screenName}"'),zN=goog.getMsg("Select a new screen to replace the current screen. All existing links will be preserved."),jN=goog.getMsg("Replace Screen"),JN=goog.getMsg("Replace this screen with another"),eG=goog.getMsg("Select Initial Screen"),tG=goog.getMsg("Set as Initial Screen"),oG=goog.getMsg("Prototype Settings"),gG=goog.getMsg("Instant Prototypes"),rG=goog.getMsg("Connect your screens into an interactive, click-through prototype. Add screens, define transitions, and preview your flow — all in one place."),aG=goog.getMsg("Create a new prototype"),sG=goog.getMsg("Welcome to the Prototype editor"),_G=goog.getMsg("Your screens are connected and ready to preview on the device frame. Add, replace or imagine new screens from the left panel. All changes sync back to the canvas automatically."),iG=goog.getMsg("Let's go!"),EG=goog.getMsg("Welcome to the prototype editor! Your screens are connected and ready to interact. Add, edit, and connect more screens to create an interactive app experience."),nG=goog.getMsg("This screen was edited or deleted on the canvas. Replace it with another screen?"),SG=goog.getMsg("Replace Screen"),MG=goog.getMsg("Cancel"),TG=goog.getMsg("Agent messages"),cG=goog.getMsg("No updates from the agent"),IG=goog.getMsg("Untitled Screen"),lG=goog.getMsg("Select Prototype"),AG=goog.getMsg("Prototype"),dG=goog.getMsg("{count} screens"),OG=goog.getMsg("Saving in progress…"),NG=goog.getMsg("Additional instructions..."),GG=goog.getMsg("Generate variants with the selected configuration"),uG=goog.getMsg("No screens selected"),DG=goog.getMsg("Multiple screens selected"),RG=goog.getMsg("Select screens on the canvas to see export options."),vG=goog.getMsg("Quick Tips"),LG=goog.getMsg("Select All"),CG=goog.getMsg("Press"),PG=goog.getMsg("Design Focus Timer"),hG=goog.getMsg("Start"),mG=goog.getMsg("Pause"),fG=goog.getMsg("Reset Timer"),pG=goog.getMsg("Generate {LABEL}"),yG=goog.getMsg("Grid layout"),bG=goog.getMsg("Masonry layout"),UG=goog.getMsg("on a selected screen"),BG=goog.getMsg("Favourites"),HG=goog.getMsg("Press"),wG=goog.getMsg("Quick Tips"),YG=goog.getMsg("Toggle favourite"),VG=goog.getMsg("Star your best screens to collect them here."),FG=goog.getMsg("No favourites yet"),kG=goog.getMsg("Canvas mode"),WG=goog.getMsg("Edit"),XG=goog.getMsg("Edit mode (inspect & style components) [E]"),KG=goog.getMsg("Interact"),xG=goog.getMsg("Interact mode (preview & test app)"),$G=goog.getMsg("Working"),qG=goog.getMsg("Thinking"),QG=goog.getMsg("Editing Theme"),ZG=goog.getMsg("Generating Variants"),zG=goog.getMsg("Building Prototype"),jG=goog.getMsg("Regenerating Design"),JG=goog.getMsg("Annotating"),eu=goog.getMsg("Generating Prototype"),tu=goog.getMsg("Editing Prototype"),ou=goog.getMsg("Editing Image"),gu=goog.getMsg("Generating Heatmap"),ru=goog.getMsg("Generating PRD"),au=goog.getMsg("Converting Image to Code"),su=goog.getMsg("Generating Slides"),_u=goog.getMsg("Critiquing Design"),iu=goog.getMsg("Applying Design System"),Eu=goog.getMsg("Generating App Store Assets"),nu=goog.getMsg("Creating Marketing Kit"),Su=goog.getMsg("Running Accessibility Audit"),Mu=goog.getMsg("Finding Missing States"),Tu=goog.getMsg("Preparing Dev Handoff"),cu=goog.getMsg("Generating Web Assets"),Iu=goog.getMsg("Extracting Design System"),lu=goog.getMsg("Updating Design System"),Au=goog.getMsg("Running UX Critique"),du=goog.getMsg("Editing Element"),Ou=goog.getMsg("Task"),Nu=goog.getMsg("Chat Message"),Gu=goog.getMsg("Edit Theme"),uu=goog.getMsg("Generate Variants"),Du=goog.getMsg("Regenerate Design"),Ru=goog.getMsg("Annotate"),vu=goog.getMsg("Generate Prototype"),Lu=goog.getMsg("Edit Prototype"),Cu=goog.getMsg("Image Edit"),Pu=goog.getMsg("Predictive Heatmap"),hu=goog.getMsg("Generate PRD"),mu=goog.getMsg("Image to Code"),fu=goog.getMsg("Generate Slides"),pu=goog.getMsg("Critique Design"),yu=goog.getMsg("Apply Design System"),bu=goog.getMsg("App Store Assets"),Uu=goog.getMsg("Marketing Kit"),Bu=goog.getMsg("Accessibility Audit"),Hu=goog.getMsg("Missing States"),wu=goog.getMsg("Dev Handoff"),Yu=goog.getMsg("Web Assets"),Vu=goog.getMsg("Prototype Session"),Fu=goog.getMsg("Extract Design System"),ku=goog.getMsg("Update Design System"),Wu=goog.getMsg("UX Critique"),Xu=goog.getMsg("Edit Element"),Ku=goog.getMsg("Comment - C"),xu=goog.getMsg("Add a comment"),$u=goog.getMsg("Send comment"),qu=goog.getMsg("Resolve comment"),Qu=goog.getMsg("Edit"),Zu=goog.getMsg("Cancel"),zu=goog.getMsg("Save"),ju=goog.getMsg("Delete thread"),Ju=goog.getMsg("Delete reply"),eD=goog.getMsg("Close"),tD=goog.getMsg("Reply..."),oD=goog.getMsg("Send reply"),gD=goog.getMsg("Loading replies..."),rD=goog.getMsg("Failed to post"),aD=goog.getMsg("Retry"),sD=goog.getMsg("Failed to post ({$count})",{count:"{count}"}),_D=goog.getMsg("Retry all"),iD=goog.getMsg("Dismiss"),ED=goog.getMsg("Delete"),nD=goog.getMsg("Comments"),SD=goog.getMsg("Resolved comments"),MD=goog.getMsg("No comments yet"),TD=goog.getMsg("No resolved comments yet"),cD=goog.getMsg("Resolve"),ID=goog.getMsg("Re-open"),lD=goog.getMsg("More options"),AD=goog.getMsg("Active comments"),dD=goog.getMsg("Resolved comments"),OD=goog.getMsg("Back to active comments"),ND=goog.getMsg("1 reply"),GD=goog.getMsg("{$count} replies",{count:"{count}"}),uD=goog.getMsg("Back");function io(e){const o=Array.from(e.querySelectorAll(h.VH));e.hasAttribute&&e.hasAttribute(n.VH)&&o.push(e),o.forEach(g=>{let r=g.getAttribute("class")||"";(g.getAttribute(n.VH)||"").split("|||").forEach(a=>{const i=a.split("===");i.length===2&&(r=r.split(/\s+/).map(_=>_===i[0]?i[1]:_).join(" "))}),g.setAttribute("class",r),g.removeAttribute(n.VH)}),Array.from(e.querySelectorAll(`style[${n.CSS_VH}]`)).forEach(g=>{const r=g.getAttribute(n.CSS_VH);r&&(/<\/style\s*>/i.test(r)||(g.textContent=r),g.removeAttribute(n.CSS_VH))})}function Eo(){window.__Stitch=window.__Stitch||{},window.__Stitch.cleanups=window.__Stitch.cleanups||[],window.__Stitch.registerCleanup=window.__Stitch.registerCleanup||(e=>{window.__Stitch.cleanups.push(e)}),window.__Stitch.getCleanHtml=window.__Stitch.getCleanHtml||(()=>{const e=document.documentElement.cloneNode(!0);e.querySelectorAll(`${h.INJECTED}, ${h.SCROLL_LOCK}, ${h.CURSOR}, [data-stream], #stitch-icon-reveal`).forEach(g=>g.remove());const o=e.querySelector("head");return o&&o.querySelectorAll("style").forEach(g=>{if(g.hasAttribute(n.INJECTED)||g.hasAttribute(n.CSS_VH)||g.id||g.className)return;const r=g.textContent||"";(r.includes("/*! tailwindcss v")||r.includes("/* ! tailwindcss v"))&&g.remove()}),e.querySelectorAll(h.PENDING_SRC).forEach(g=>{g.setAttribute("src",g.getAttribute(n.PENDING_SRC)),g.removeAttribute(n.PENDING_SRC)}),window.__Stitch.cleanups.forEach(g=>{try{g(e)}catch(r){C("Error in cleanup function",r,{errorSource:"direct_edit"})}}),e.querySelectorAll("[style]").forEach(g=>{(g.getAttribute("style")?.trim()===""||g.getAttribute("style")===null)&&g.removeAttribute("style")}),"<!DOCTYPE html>"+e.outerHTML})}function no(){window.__Stitch&&window.__Stitch.registerCleanup&&window.__Stitch.registerCleanup(e=>{e.querySelectorAll(Qe).forEach(o=>{if(o.hasAttribute("contenteditable")){o.removeAttribute("contenteditable"),o.removeAttribute("spellcheck");const g=o.getAttribute(n.ADDED_CLASSES);g&&(o.classList.remove(...g.split(" ")),o.removeAttribute(n.ADDED_CLASSES))}if(o.hasAttribute(n.EDITABLE_IDX)&&o.removeAttribute(n.EDITABLE_IDX),o.hasAttribute(n.SWAPPABLE)&&(o.removeAttribute(n.SWAPPABLE),o.removeAttribute(n.SWAP_KIND),o.removeAttribute("tabindex"),o.removeAttribute("role"),o.removeAttribute("aria-label"),o.removeAttribute(n.SWAP_ACTIVE),o.removeAttribute(n.SWAP_HOVER)),(o.classList.contains("stitch-scan-entry")||o.classList.contains("stitch-scan-entry-img"))&&(o.classList.remove(x,$),o.style.animationDelay=""),o.hasAttribute(n.ANIM_OPACITY)){o.removeAttribute(n.ANIM_OPACITY);const g=o.getAttribute(n.ORIG_OPACITY);o.style.opacity=g||"",o.removeAttribute(n.ORIG_OPACITY),o.classList.remove(w)}else o.classList.contains("stitch-anim-fade-in")&&o.classList.remove(w);(o.classList.contains("stitch-anim-img-dimming")||o.classList.contains("stitch-anim-img-revealing"))&&o.classList.remove(Ie,le)}),io(e)})}var P="150%",U="125%",O={caption:{letterSpacing:"0.015em",fontWeight:"500"},label:{letterSpacing:"0.015em",fontWeight:"700"},body:{fontWeight:"400"},subtitle:{fontWeight:"500"},title:{fontWeight:"700"},headline:{fontWeight:"700",letterSpacing:"-0.025em"},display:{fontWeight:"700",letterSpacing:"-0.033em"}},DD={"caption-sm":["11px",{...O.caption,lineHeight:P,fontWeight:"400"}],caption:["12px",{...O.caption,lineHeight:P}],"label-sm":["13px",{...O.label,lineHeight:P}],"label-md":["14px",{...O.label,lineHeight:P}],"label-lg":["16px",{...O.label,lineHeight:P}],"body-sm":["13px",{...O.body,lineHeight:P}],"body-md":["14px",{...O.body,lineHeight:P}],"body-lg":["16px",{...O.body,lineHeight:P}],"subtitle-sm":["13px",{...O.subtitle,lineHeight:P}],"subtitle-md":["14px",{...O.subtitle,lineHeight:P}],"subtitle-lg":["16px",{...O.subtitle,lineHeight:P,fontWeight:"600"}],"title-sm":["16px",{...O.title,lineHeight:U}],"title-md":["18px",{...O.title,lineHeight:U}],"title-lg":["22px",{...O.title,lineHeight:U,letterSpacing:"-0.015em"}],"headline-sm":["24px",{...O.headline,lineHeight:U}],"headline-md":["28px",{...O.headline,lineHeight:U}],"headline-lg":["32px",{...O.headline,lineHeight:U}],"display-sm":["36px",{...O.display,lineHeight:U}],"display-md":["48px",{...O.display,lineHeight:U}],"display-lg":["64px",{...O.display,lineHeight:U,fontWeight:"900"}]},So={100:"rgba(255, 255, 255, 1.0)",90:"rgba(255, 255, 255, 0.9)",75:"rgba(255, 255, 255, 0.75)",50:"rgba(255, 255, 255, 0.5)",25:"rgba(255, 255, 255, 0.25)",15:"rgba(255, 255, 255, 0.15)",10:"rgba(255, 255, 255, 0.10)","05":"rgba(255, 255, 255, 0.05)"},A=(function(e){return e.Greyscale="Greyscale",e.Blue="Blue",e.Red="Red",e.Gold="Gold",e.Green="Green",e.Pink="Pink",e.Purple="Purple",e.Brown="Brown",e.Yellow="Yellow",e.Teal="Teal",e.Blurple="Blurple",e.Orange="Orange",e})({}),de=(function(e){return e.Light="Light",e.Dark="Dark",e})({}),Mo={50:"#f8f9fa",100:"#f1f3f4",200:"#e8eaed",300:"#dadce0",400:"#bdc1c6",500:"#9aa0a6",600:"#80868b",700:"#5f6368",800:"#3c4043",900:"#202124",White:"#ffffff",Black:"#000000"},Q={5:"rgba(218, 220, 224, 0.05)",10:"rgba(218, 220, 224, 0.1)",15:"rgba(218, 220, 224, 0.15)",25:"rgba(218, 220, 224, 0.25)",50:"rgba(218, 220, 224, 0.5)",75:"rgba(218, 220, 224, 0.75)",90:"rgba(218, 220, 224, 0.9)"},Oe={5:"rgba(22, 23, 24, 0.05)",10:"rgba(22, 23, 24, 0.1)",15:"rgba(22, 23, 24, 0.15)",25:"rgba(22, 23, 24, 0.25)",50:"rgba(22, 23, 24, 0.5)",75:"rgba(22, 23, 24, 0.75)",90:"rgba(22, 23, 24, 0.9)"},R=(e,o)=>({Neutral:Mo,Color:e,State:{White:Q,Grey:Oe,Color:{5:`${o}0D`,15:`${o}26`,25:`${o}40`,50:`${o}80`,75:`${o}BF`,90:`${o}E6`}}}),B={[A.Greyscale]:R({100:"#f1f3f4",200:"#e8eaed",300:"#dadce0",500:"#80868b",600:"#3c4043",700:"#202124","400 (Base)":"#9aa0a6"},"#9aa0a6"),[A.Blue]:R({100:"#cfe1ff",200:"#9abffd",300:"#6ba0f8",500:"#2b6ad2",600:"#1855b8",700:"#0b1a34","400 (Base)":"#4285f4"},"#4285f4"),[A.Red]:R({100:"#ffd2cd",200:"#fe6e6e",300:"#e9493c",500:"#b22f25",600:"#aa1a0f",700:"#330f0c","400 (Base)":"#e94235"},"#e94235"),[A.Gold]:R({100:"#faecc0",200:"#f8da82",300:"#f6c024",500:"#a67b00",600:"#7b5d06",700:"#413103","400 (Base)":"#fabb05"},"#fabb05"),[A.Green]:R({100:"#bee1c7",200:"#78d390",300:"#5acb78",500:"#269443",600:"#207737",700:"#0a2d13","400 (Base)":"#34a853"},"#34a853"),[A.Pink]:R({100:"#ffd7fc",200:"#fab2f4",300:"#f793ef",500:"#db48cf",600:"#93308b",700:"#461842","400 (Base)":"#f468e9"},"#f468e9"),[A.Purple]:R({100:"#e9d9ff",200:"#d0b3fa",300:"#ba8bfc",500:"#7c3cd5",600:"#6429b9",700:"#34185b","400 (Base)":"#9154e7"},"#9154e7"),[A.Brown]:R({100:"#f3e1d1",200:"#d4baa2",300:"#ae9075",500:"#644a33",600:"#533c28",700:"#281c13","400 (Base)":"#755940"},"#755940"),[A.Yellow]:R({100:"#e8ecb1",200:"#d7de6d",300:"#d0dc30",500:"#909b06",600:"#676f02",700:"#2a2e01","400 (Base)":"#d0dd1e"},"#d0dd1e"),[A.Teal]:R({100:"#c7efea",200:"#a7ece3",300:"#56e2d0",500:"#1f7e72",600:"#165950",700:"#112e2a","400 (Base)":"#40d9c6"},"#40d9c6"),[A.Blurple]:R({100:"#d3d4ff",200:"#989aff",300:"#7168f6",500:"#4f44e1",600:"#322b96",700:"#19182f","400 (Base)":"#6056f0"},"#6056f0"),[A.Orange]:R({100:"#ffded3",200:"#ffbba5",300:"#ff906c",500:"#a14629",600:"#8d3114",700:"#401f14","400 (Base)":"#d4633e"},"#d4633e")},ft={[de.Light]:{Foreground:{Color:{100:"Color.700",200:"Color.600",300:"Color.500"},Neutral:{100:"Neutral.900",200:"Neutral.800",300:"Neutral.700",400:"Neutral.600",0:"Neutral.Black"},State:{5:"State.Grey.5",10:"State.Grey.10",15:"State.Grey.15",25:"State.Grey.25",50:"State.Grey.50",75:"State.Grey.75",90:"State.Grey.90"}},Background:{Color:{100:"Color.100",200:"Color.200",300:"Color.300"},Neutral:{100:"Neutral.100",200:"Neutral.200",300:"Neutral.300",400:"Neutral.400",0:"Neutral.White"},State:{5:"State.White.5",10:"State.White.10",15:"State.White.15",25:"State.White.25",50:"State.White.50",75:"State.White.75",90:"State.White.90"}},Shadow:{Color:{Soft:"rgba(0, 0, 0, 0.25)",Harsh:"rgba(0, 0, 0, 0.4)"}}},[de.Dark]:{Foreground:{Color:{100:"Color.100",200:"Color.200",300:"Color.300"},Neutral:{100:"Neutral.100",200:"Neutral.200",300:"Neutral.300",400:"Neutral.400",0:"Neutral.White"},State:{5:"State.White.5",10:"State.White.10",15:"State.White.15",25:"State.White.25",50:"State.White.50",75:"State.White.75",90:"State.White.90"}},Background:{Color:{100:"Color.700",200:"Color.600",300:"Color.500"},Neutral:{100:"Neutral.900",200:"Neutral.800",300:"Neutral.700",400:"Neutral.600",0:"Neutral.Black"},State:{5:"State.Grey.5",10:"State.Grey.10",15:"State.Grey.15",25:"State.Grey.25",50:"State.Grey.50",75:"State.Grey.75",90:"State.Grey.90"}},Shadow:{Color:{Soft:"rgba(0, 0, 0, 0.5)",Harsh:"rgba(0, 0, 0, 0.5)"}}}};function pt(e){const o=e.match(/rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\s*\)/);if(o)return{r:parseInt(o[1]),g:parseInt(o[2]),b:parseInt(o[3]),a:o[4]!==void 0?parseFloat(o[4]):1};const g=e.replace("#","");return{r:parseInt(g.substring(0,2),16),g:parseInt(g.substring(2,4),16),b:parseInt(g.substring(4,6),16),a:g.length>6?parseInt(g.substring(6,8),16)/255:1}}function Z(e,o){const g=pt(e),r=pt(o),a=r.a+g.a*(1-r.a);return a===0?"rgba(0, 0, 0, 0)":`rgba(${Math.round((r.r*r.a+g.r*g.a*(1-r.a))/a)}, ${Math.round((r.g*r.a+g.g*g.a*(1-r.a))/a)}, ${Math.round((r.b*r.a+g.b*g.a*(1-r.a))/a)}, ${Math.round(a*1e3)/1e3})`}function To(e){const o=B[e];function g(_){const t=_.split(".");let s=o;for(const E of t)s=s[E];return s}function r(_){return Object.fromEntries(Object.entries(_).map(([t,s])=>[t,g(s)]))}const a=ft[de.Light],i=ft[de.Dark];return{color:{blurple:{400:B[A.Blurple].Color["400 (Base)"],300:B[A.Blurple].Color[300]}},foreground:{color:{light:r(a.Foreground.Color),dark:r(i.Foreground.Color)},neutral:{light:r(a.Foreground.Neutral),dark:r(i.Foreground.Neutral)},state:{light:r(a.Foreground.State),dark:r(i.Foreground.State)}},background:{color:{light:r(a.Background.Color),dark:r(i.Background.Color)},neutral:{light:r(a.Background.Neutral),dark:r(i.Background.Neutral)},state:{light:r(a.Background.State),dark:r(i.Background.State)},accent:{light:B[A.Blurple].Color["400 (Base)"],dark:B[A.Blurple].Color[300]},stateColor:{light:{enabled:Z(Q[50],Q[15]),hover:Z(Q[50],Q[50]),pressed:Z(Q[5],o.State.Color[75])},dark:{enabled:Z(Oe[50],o.State.Color[15]),hover:Z(Oe[50],o.State.Color[50]),pressed:Z(Oe[5],o.State.Color[75])}},white:So},shadow:{light:a.Shadow.Color,dark:i.Shadow.Color}}}var RD=To(A.Greyscale);function pe(e,o){return`rgba(${parseInt(e.slice(1,3),16)}, ${parseInt(e.slice(3,5),16)}, ${parseInt(e.slice(5,7),16)}, ${o})`}var yt=B[A.Blurple].Color[200],vD=B[A.Blurple].Color[300],ae=B[A.Blurple].Color["400 (Base)"],LD=B[A.Blurple].Color[500],bt=pe(ae,.3),Ne=pe(ae,.9),Ut=pe(ae,0),se=null,_e=null;function ye(e){se&&(se.textContent=e?'*{cursor:crosshair!important}[contenteditable="true"]:focus,.cursor-text:focus{cursor:text!important}':"")}function be(e){_e&&(_e.textContent=e?"html,body{overflow:hidden!important}":"")}function co(){se=document.createElement("style"),se.setAttribute(n.CURSOR,""),document.head.appendChild(se),_e=document.createElement("style"),_e.setAttribute(n.SCROLL_LOCK,""),document.head.appendChild(_e);const e=document.createElement("style");e.setAttribute(n.INJECTED,""),e.textContent=["*:focus,*:focus-visible{outline:none!important;box-shadow:none!important}",`::selection{background-color:${bt}!important;color:inherit!important}`,`::-moz-selection{background-color:${bt}!important;color:inherit!important}`,"*{user-select:none!important;-webkit-user-select:none!important}","img{-webkit-user-drag:none!important;user-drag:none!important}","@keyframes stitch-scan-flash{",`0%{outline:3px solid ${Ne};outline-offset:-1px}`,`60%{outline:3px solid ${Ne};outline-offset:-1px}`,`100%{outline:3px solid ${Ut};outline-offset:4px}}`,"@keyframes stitch-scan-flash-img{",`0%{outline:3px solid ${Ne};outline-offset:-1px}`,`60%{outline:3px solid ${Ne};outline-offset:-1px}`,`100%{outline:3px solid ${Ut};outline-offset:4px}}`,`.${x}{animation:stitch-scan-flash 1.5s ease-out forwards}`,`.${$}{animation:stitch-scan-flash-img 1.5s ease-out forwards}`].join(""),document.head.appendChild(e)}function Bt(e){return e.matches(".material-icons,.material-icons-outlined,.material-icons-round,.material-icons-sharp,.material-icons-two-tone,.material-symbols-outlined,.material-symbols-rounded,.material-symbols-sharp")||e.closest(".material-icons,.material-icons-outlined,.material-icons-round,.material-icons-sharp,.material-icons-two-tone,.material-symbols-outlined,.material-symbols-rounded,.material-symbols-sharp")!==null}function Ht(e){return!Array.from(e.childNodes).some(o=>o.nodeType===Node.TEXT_NODE?(o.textContent||"").trim().length>0:o.nodeType===Node.ELEMENT_NODE?Bt(o)?!1:!Ht(o):!1)}function wt(e){if(!e||e===document.body)return!1;for(const o of e.childNodes)if(o.nodeType===3&&o.textContent?.trim())return!0;return!1}function ie(){window.doDirectEditSetup=ie;let e=0,o=0;document.querySelectorAll("h1,h2,h3,h4,h5,h6,p,span,div,button,a,label,li,td,th,blockquote").forEach(r=>{if(Bt(r)){r.setAttribute("contenteditable","false");return}if(Ht(r))return;const a=wt(r),i=r.tagName;(i==="BUTTON"||i==="A"||i==="DIV"||i==="LABEL")&&!a&&r.children.length>0||(r.setAttribute("contenteditable","true"),r.setAttribute("spellcheck","false"),r.setAttribute(n.EDITABLE_IDX,String(e++)),r.classList.contains("cursor-text")||(r.classList.add(xe),r.setAttribute(n.ADDED_CLASSES,xe)))}),document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(r=>{r.hasAttribute(n.EDITABLE_IDX)||r.setAttribute(n.EDITABLE_IDX,String(e++))});function g(r,a){r.setAttribute(n.SWAPPABLE,String(o++)),r.setAttribute(n.SWAP_KIND,a),r.setAttribute("tabindex","0"),r.setAttribute("role","button"),r.setAttribute("aria-label","Replace image")}document.querySelectorAll("img").forEach(r=>{r.naturalWidth>0&&r.naturalWidth<24||r.naturalHeight>0&&r.naturalHeight<24||g(r,"img")}),document.querySelectorAll('[style*="background-image"]').forEach(r=>{if(!r.style.backgroundImage?.includes("url("))return;const a=r.getBoundingClientRect();a.width<24||a.height<24||r.hasAttribute(n.SWAPPABLE)||g(r,"bg")})}function Io(e){const g=[];let r=e;for(;r&&r!==document.documentElement;){const a=r.tagName.toLowerCase();if(a==="body"){g.unshift("body");break}const i=new Map,_=r.getAttribute(n.VH);_&&_.split("|||").forEach(E=>{const T=E.indexOf("===");T>0&&i.set(E.slice(0,T),E.slice(T+3))});let t=a+Array.from(r.classList).filter(E=>!E.startsWith("stitch-")&&E!=="cursor-text"&&E!=="stitch-scan-entry"&&E!=="stitch-scan-entry-img").map(E=>i.get(E)??E).slice(0,3).map(E=>`.${CSS.escape(E)}`).join("");const s=r.parentElement;if(s){const E=Array.from(s.children).filter(T=>T.tagName===r.tagName);if(E.length>1){const T=E.indexOf(r)+1;t+=`:nth-of-type(${T})`}}g.unshift(t),r=r.parentElement}return g.join(" > ")}function lo(){const e=new Map;return document.querySelectorAll(h.VH).forEach(o=>{const g=o.getAttribute(n.VH);g&&g.split("|||").forEach(r=>{const a=r.indexOf("===");if(a>0){const i=r.slice(0,a),_=r.slice(a+3);e.set(i,_)}})}),e}function Ao(){const e={};document.querySelectorAll(D).forEach(o=>{const g=Number(o.getAttribute(n.SWAPPABLE)),r=o.getBoundingClientRect();r.width<=0||r.height<=0||(e[g]={x:r.x,y:r.y,width:r.width,height:r.height})}),I(S.EDIT.IMAGE_RECTS,{rects:e})}function Oo(){return window.__Stitch?.getCleanHtml?.()??document.documentElement.outerHTML}function k(e,o){I(S.EDIT.TEXT_CHANGED,{html:Oo(),height:window.__stitchMeasureContentHeight?.()??document.documentElement.scrollHeight,...e!=null&&{eventId:e},...o!=null&&{isRollback:o}})}var No=new Set(["replace_content","replace_element","insert_before","insert_after","append_child","prepend_child","remove_element","set_attribute","remove_attribute","set_style","add_class","remove_class"]),Yt=["nth-last-of-type","nth-last-child","placeholder-shown","nth-of-type","focus-visible","first-of-type","last-of-type","only-of-type","focus-within","indeterminate","nth-child","first-child","last-child","only-child","out-of-range","read-write","read-only","any-link","in-range","required","optional","disabled","default","checked","enabled","invalid","visited","target","active","hover","focus","empty","valid","where","link","lang","root","not","has","dir","is"].map(e=>e.replace(/[-/]/g,"\\$&")).join("|"),Go=/(?:^#([0-9][a-zA-Z0-9_-]*)|(?<=[\s>+~,\w.\])(])#([0-9][a-zA-Z0-9_-]*))/g,uo=/\\\[([^\]]*=[^\]]*)\\\]/g,Do=/(?<=\d)(?<!\\)\.(?=\d)/g,Ro=/(?:(?<=[\w\]])(?<!\\)\/(?=\d)|(?:(?<=group)|(?<=peer))(?<!\\)\/(?=[a-zA-Z]))/g,vo=new RegExp(`(?<=\\.)([a-zA-Z0-9_-]+(?:\\\\[:\\[/\\\\\\].][a-zA-Z0-9_-]*)*)(?<!\\\\):(?!(?:${Yt})(?:[^a-zA-Z0-9_-]|$))`,"g"),Lo=new RegExp(`(?<=\\\\:)([a-zA-Z0-9_-]+)(?<!\\\\):(?!(?:${Yt})(?:[^a-zA-Z0-9_-]|$))(?=[a-zA-Z])`,"g"),Co=/(?<=\.)([a-zA-Z0-9_:-]+-)(?<!\\)\[([^\]]*)\]/g,Po=/\\\[([^\]]*)\\\]/g,ho=/(?<=[\\.:a-zA-Z0-9_-])(?<!\\)!(?=[a-zA-Z])/g;function mo(e,o){let g=o;return g=g.replace(/\\"/g,'"').replace(/\\'/g,"'"),g=g.replace(/\\:/g,":").replace(/\\\//g,"/").replace(/\\#/g,"#").replace(/\\%/g,"%"),`[${g}]`}function fo(e,o){let g=o;return g=g.replace(/(?<!\\)%/g,"\\%"),g=g.replace(/(?<!\\)#/g,"\\#"),g=g.replace(/(?<!\\)\(/g,"\\("),g=g.replace(/(?<!\\)\)/g,"\\)"),g=g.replace(/(?<!\\),/g,"\\,"),g=g.replace(/(?<!\\)'/g,"\\'"),g=g.replace(/(?<!\\)"/g,'\\"'),`\\[${g}\\]`}function Ee(e,o,g){try{let r=e;r=r.replace(Go,(i,_,t)=>`[id="${_||t}"]`),r=r.replace(uo,mo),r=r.replace(Co,"$1\\[$2\\]"),r=r.replace(Ro,"\\/"),r=r.replace(vo,"$1\\:"),r=r.replace(Lo,"$1\\:"),r=r.replace(Do,"\\."),r=r.replace(Po,fo),r=r.replace(ho,"\\!");const a=lo();if(a.size>0){const i=[];a.forEach((_,t)=>{i.push([_,t])}),i.sort((_,t)=>t[0].length-_[0].length);for(const[_,t]of i){const s=CSS.escape(_),E=CSS.escape(t),T=s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),M=new RegExp("(?<=\\.)"+T+"(?=[.#\\[\\s>+~,:]|$)","g");r=r.replace(M,E)}}return r!==e&&I(S.EDIT.SELECTOR_SANITIZED,{original:e,sanitized:r,source:o,action:g}),r}catch(r){return C(`makeSelectorSafe threw on: ${e}`,r,{errorType:"SelectorEscapeFailure",selector:e,source:o,action:g,errorSource:"selector_escape"}),e}}function Ge(e,o,g,r){C(o,r,{errorType:e,errorMessage:o,selector:g.cssSelector,action:g.action,operation:JSON.stringify(g),errorSource:"session_event"})}function po(e,o,g){o.cursorMoved=!1,o.clearAnimationCounts();let r=!1,a="";e?.forEach(i=>{if(!No.has(i.action)){const t=`Unsupported action: ${i.action}`;Ge("UnsupportedAction",t,i),a||(a=t),r=!0;return}let _;try{const t=Ee(i.cssSelector,"dom_operation",i.action);_=document.querySelectorAll(t)}catch(t){const s=t instanceof Error?t.name:"Error",E=t instanceof Error?t.message:String(t);Ge(s,E,i,t),a||(a=`${s}: ${E}`),r=!0;return}if(_.length===0){const t=`No elements found for selector: ${i.cssSelector}`;Ge("NoElementsFound",t,i),a||(a=t),r=!0;return}_.forEach(t=>{try{o.applyOperationToElement(t,i.action,i.content,i.attrName,i.attrValue,!0)}catch(s){const E=`applyOperationToElement failed for ${i.action}: ${s instanceof Error?s.message:String(s)}`;Ge("ApplyFailed",E,i,s),a||(a=E),r=!0}})}),ie(),u(),Ao(),o.processNextImage(),r?g&&I(S.EDIT.EVENT_FAILED,{eventId:g,errorMessage:a||"Unknown error occurred."}):k(g)}var W=1,CD=2,PD=4,p=document.createElement("div");p.setAttribute(n.INJECTED,""),p.style.cssText="position:fixed;inset:0;z-index:2147483647;pointer-events:none;overflow:hidden;display:none;",document.documentElement.appendChild(p);var Vt=!1;function Ft(e){Vt=e,!e&&!Ue()?z(!1):e&&z(!0)}function Ue(){return p.querySelectorAll(".stitch-active-indicator").length>0}function z(e){!e&&Ue()||(p.style.display=e?"":"none")}var N=null,j=null,v=null,Y=null,V=null;function Be(e){N=e}function He(e){j=e}function yo(e){v=e}function kt(e){Y=e}function Wt(e){V=e}function bo(e){return V===e}function ue(){return V}function Uo(){return Y}function Bo(){return W}function De(e,o){const g=document.createElement("div");return g.style.cssText=`position:absolute;pointer-events:none;display:none;box-sizing:border-box;border-style:solid;border-color:${e};z-index:${o};border-radius:4px;`,p.appendChild(g),g}var we=De(yt,1),Ye=De(ae,2),Xt=De(yt,1),Re=De(ae,2);function L(e,o,g=0){if(!o){e.style.display="none";return}const r=o.getBoundingClientRect();if(!r||r.width<=0||r.height<=0){e.style.display="none";return}const a=2/W,i=g/W,_=document.documentElement.clientWidth,t=document.documentElement.clientHeight;let s=r.left-a-i,E=r.top-a-i,T=r.right+a+i,M=r.bottom+a+i;s=Math.max(0,s),E=Math.max(0,E),T=Math.min(_,T),M=Math.min(t,M);const c=T-s,d=M-E;if(c<=0||d<=0){e.style.display="none";return}e.style.borderWidth=`${a}px`,e.style.left=`${s}px`,e.style.top=`${E}px`,e.style.width=`${c}px`,e.style.height=`${d}px`,e.style.display="block"}function ne(e,...o){if(!e)return!1;for(const g of o)if(g&&g!==e&&e.contains(g))return!0;return!1}function Ho(e,o,g,r){const a=e.getBoundingClientRect(),i=g.getBoundingClientRect();if(!a||!i)return!1;const _=2/W,t=o/W,s=r/W;return!(a.right+_+t<i.left-_-s||a.left-_-t>i.right+_+s||a.bottom+_+t<i.top-_-s||a.top-_-t>i.bottom+_+s)}function wo(){const e=j??V,o=N&&N===V&&!j,g=v&&v===Y,r=N&&!o&&!ne(N,e),a=v&&!g&&!r&&!ne(v,N,e);return r?{kind:"text",element:N}:a?{kind:"image",element:v}:null}function u(){const e=j??V,o=N&&N===V&&!j,g=v&&v===Y,r=N&&!o&&!ne(N,e),a=v&&!g&&!r&&!ne(v,N,e),i=Y&&!ne(Y,N,e),_=r&&N&&e&&N!==e&&Ho(N,4,e,4);we.style.zIndex=_?"2":"1",Ye.style.opacity=_?"0.3":"1",L(we,r?N:null,4),L(Ye,e,4),L(Xt,a?v:null,0),L(Re,i?Y:null,0),p.querySelectorAll(".stitch-active-indicator").forEach(t=>{const s=t.getAttribute(n.INDICATOR_SELECTOR);let E=null;if(s)try{E=document.querySelector(s)}catch(T){C(`Invalid indicator selector: "${s}"`,T,{errorSource:"selector_escape",selector:s})}L(t,E,4),E&&(t.style.pointerEvents="auto")})}function Yo(e){const o=Ee(e,"show_indicator");let g=null;try{g=document.querySelector(o)}catch(a){C(`Invalid indicator selector: "${o}" (original: "${e}")`,a,{errorSource:"selector_escape",selector:e})}if(!g)return;const r=document.createElement("div");r.className="stitch-active-indicator",r.setAttribute(n.INDICATOR,"pending"),r.setAttribute(n.INDICATOR_SELECTOR,o),p.appendChild(r),L(r,g,4),r.style.pointerEvents="auto",z(!0)}function Vo(e,o="pending"){const g=p.querySelectorAll(`[${n.INDICATOR}="${CSS.escape(o)}"]`);g.forEach(r=>r.setAttribute(n.INDICATOR,e)),g.length>0&&z(!0)}function Fo(e){p.querySelectorAll(`[${n.INDICATOR}="${CSS.escape(e)}"]`).forEach(o=>o.remove()),!Ue()&&!Vt&&z(!1)}function ko(e){W=e,u()}function Kt(){N=null,j=null,v=null,Y=null,V=null,L(we,null),L(Ye,null),L(Xt,null),L(Re,null)}var Ve=!1;function xt(){Ve=!1}function $t(){if(Ve)return;Ve=!0;const e=document.querySelectorAll(`${q},${qe}`),o=document.querySelectorAll(D);e.forEach(g=>{g.classList.add(x);const r=Math.round(Math.max(0,g.getBoundingClientRect().top)/3);g.style.animationDelay=`${r}ms`}),o.forEach(g=>{g.classList.add($);const r=Math.round(Math.max(0,g.getBoundingClientRect().top)/3);g.style.animationDelay=`${r}ms`}),setTimeout(()=>{document.querySelectorAll(`.${x},.${$}`).forEach(g=>{g.classList.remove(x,$),g.style.animationDelay=""})},2500)}var J="view",ve=!1;function Fe(e){if(J===e)return;const o=J;J=e,o==="directEdit"&&$o(),e==="directEdit"?xo():(ye(!1),z(!1),be(!1))}function F(){return J}function y(){return J==="directEdit"}function Wo(){J="view",ve=!1}function Xo(){ve=!0}function Ko(){return ve}function xo(){ye(!0),be(!0),Ft(!0),ie()}function $o(){document.activeElement instanceof HTMLElement&&document.activeElement.blur(),window.getSelection()?.removeAllRanges(),qo(),Kt(),Ft(!1),ye(!1),be(!1),ve=!1,typeof xt=="function"&&xt()}function qo(){document.querySelectorAll(Qe).forEach(e=>{if(e.hasAttribute("contenteditable")){e.removeAttribute("contenteditable"),e.removeAttribute("spellcheck");const o=e.getAttribute(n.ADDED_CLASSES);o&&(e.classList.remove(...o.split(" ")),e.removeAttribute(n.ADDED_CLASSES))}e.hasAttribute(n.EDITABLE_IDX)&&e.removeAttribute(n.EDITABLE_IDX),e.hasAttribute(n.SWAPPABLE)&&(e.removeAttribute(n.SWAPPABLE),e.removeAttribute(n.SWAP_KIND),e.removeAttribute("tabindex"),e.removeAttribute("role"),e.removeAttribute("aria-label"),e.removeAttribute(n.SWAP_ACTIVE),e.removeAttribute(n.SWAP_HOVER))})}var ee=null,Le=null,ke=null,te=0,qt=0,oe=0,Se=!1,X=!1,We=new WeakSet,Qt=5,G=null,Me=!1;function Qo(e,o,g){const r=Math.abs(o)>Math.abs(g)?"horizontal":"vertical";let a=e instanceof Element?e:null;for(;a;){const _=window.getComputedStyle(a),t=_.overflowY,s=_.overflowX;if(r==="vertical"&&g!==0&&(t==="auto"||t==="scroll")){const E=a.scrollHeight-a.clientHeight;if(E>1){const T=a.scrollTop<=0&&g<0,M=a.scrollTop>=E-1&&g>0;if(!T&&!M)return!0}}if(r==="horizontal"&&o!==0&&(s==="auto"||s==="scroll")){const E=a.scrollWidth-a.clientWidth;if(E>1){const T=a.scrollLeft<=0&&o<0,M=a.scrollLeft>=E-1&&o>0;if(!T&&!M)return!0}}a=a.parentElement}const i=document.scrollingElement||document.documentElement;if(r==="vertical"&&g!==0){const _=i.scrollHeight-i.clientHeight;if(_>1){const t=i.scrollTop<=0&&g<0,s=i.scrollTop>=_-1&&g>0;if(!t&&!s)return!0}}if(r==="horizontal"&&o!==0){const _=i.scrollWidth-i.clientWidth;if(_>1){const t=i.scrollLeft<=0&&o<0,s=i.scrollLeft>=_-1&&o>0;if(!t&&!s)return!0}}return!1}function Xe(){window.getSelection()?.removeAllRanges()}function Zo(){document.activeElement instanceof HTMLElement&&document.activeElement.blur(),Xe(),ee=null,Kt(),I(S.EDIT.ESCAPE)}function K(){const e=document.querySelector(h.SWAP_ACTIVE);e&&e.removeAttribute(n.SWAP_ACTIVE),kt(null),L(Re,null)}function zo(e,o){Xe(),Wt(e),o&&He(null),u()}function Te(){Wt(null),u()}function Zt(e){const o=e;if(e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement)o.focus(),!e.value&&e.placeholder&&(e.value=e.placeholder),e.select();else{o.focus();const g=window.getSelection(),r=document.createRange();r.selectNodeContents(e),g?.removeAllRanges(),g?.addRange(r)}}function zt(e){K(),e.setAttribute(n.SWAP_ACTIVE,""),kt(e),L(Re,e)}function Ce(e,o,g,r,a){e==="image"?zt(o):zo(o,a);const i=Number(o.getAttribute(e==="image"?n.SWAPPABLE:n.EDITABLE_IDX)),_=o.getBoundingClientRect(),t=Io(o),s=o.tagName.toLowerCase();let E;if(e==="image")if(o.getAttribute(n.SWAP_KIND)==="bg"){const T=o.style.backgroundImage?.match(/url\(["']?(.+?)["']?\)/);T&&(E=T[1])}else o instanceof HTMLImageElement&&(E=o.src);I(S.EDIT.ELEMENT_CLICKED,{kind:e,index:i,clickX:g,clickY:r,rect:{x:_.x,y:_.y,width:_.width,height:_.height},selector:t,tagName:s,...E!=null&&{src:E},...e==="text"&&{innerHTML:o instanceof HTMLInputElement||o instanceof HTMLTextAreaElement?o.placeholder||"":o.innerHTML},...a&&{readonly:!0}})}function jt(e,o){for(const g of document.elementsFromPoint(e,o)){const r=g.closest(D);if(r)return r}return null}function Jt(e,o){const g=document.caretRangeFromPoint?.(e,o)??(()=>{const r=document.caretPositionFromPoint?.(e,o);if(!r)return null;const a=document.createRange();return a.setStart(r.offsetNode,r.offset),a.collapse(!0),a})();if(g){const r=window.getSelection();r?.removeAllRanges(),r?.addRange(g)}}function jo(e,o,g,r){if(e==="image"){K();const a=document.querySelector(`${D}[${n.SWAPPABLE}="${o}"]`);a instanceof HTMLElement&&a.focus()}else{const a=document.querySelector(`[${n.EDITABLE_IDX}="${o}"]`);if(!a)return;g!=null&&r!=null?(a.focus(),Jt(g,r)):Zt(a)}}function eo(e,o,g,r){const a=o.getBoundingClientRect(),i=Bo(),_=e==="image"?2/i+2:6/i+2;I(S.EDIT.ENTRY_FOCUS,{kind:e,rect:{x:a.x-_,y:a.y-_,width:a.width+_*2,height:a.height+_*2}}),e==="image"&&zt(o),setTimeout(()=>Ce(e,o,g,r),500)}function Jo(e,o){const g=document.elementFromPoint(e,o);let r=g?.closest(D)??null;const a=g?.closest(q);if(r||(r=jt(e,o)),r&&(!a||a.contains(r)))eo("image",r,e,o);else if(a)eo("text",a,e,o);else{const i=document.querySelector(q);i instanceof HTMLElement&&i.focus()}}function eg(e,o,g){let r=null;if(g)try{const a=Ee(g,"replace_element");r=document.querySelector(a)}catch(a){C("Invalid selector in replaceElement",a,{selector:g,errorSource:"direct_edit"})}r||(r=document.querySelector(`${D}[${n.SWAPPABLE}="${e}"]`)),r&&(r.getAttribute(n.SWAP_KIND)==="bg"?r.style.backgroundImage=`url("${o.replace(/"/g,'\\"')}")`:r.src=o,k(),setTimeout(ge,100))}function tg(e){if(typeof e!="string")return;let o=null;try{const g=Ee(e,"query_selector");o=document.querySelector(g)}catch(g){C("Invalid query selector",g,{selector:e,errorSource:"direct_edit"})}I(S.EDIT.QUERY_RESULT,{selector:e,innerHTML:o?.innerHTML??""})}function H(e){if(!e||!(e instanceof Element)||ao.has(e.tagName))return null;if(Ke(e))return e;const o=e.closest(q);if(o){const g=e.closest(qe);return g&&o.contains(g)&&g!==o?g:o}return wt(e)||e.textContent?.trim()||e.matches("img, svg, input, textarea, select")||e.querySelector("img, svg")||e.querySelector("input, textarea, select")?e:null}function Ke(e){if(!e||!(e instanceof Element))return!1;const o=e.tagName;return o==="INPUT"||o==="TEXTAREA"||o==="SELECT"}function ge(){const e={};document.querySelectorAll(D).forEach(o=>{const g=Number(o.getAttribute(n.SWAPPABLE)),r=o.getBoundingClientRect();r.width<=0||r.height<=0||(e[g]={x:r.x,y:r.y,width:r.width,height:r.height})}),I(S.EDIT.IMAGE_RECTS,{rects:e})}function og(e=!1){oe||(oe=requestAnimationFrame(()=>{oe=0,ge(),u(),e&&(Uo()||ue())&&(K(),Te(),I(S.EDIT.PANEL_DISMISS))}))}function gg(){const e=ue();if(!e)return;const o=e.getBoundingClientRect();o.width<=0&&o.height<=0||I(S.EDIT.SELECTED_RECT,{rect:{x:o.x,y:o.y,width:o.width,height:o.height}})}function rg(e,o){window.addEventListener("message",t=>{if(!go(t))return;t.data?.screenId&&oo(t.data.screenId);const s=t.data?.type;if(s)switch(s){case S.EDIT.APPLY_DOM_OPERATIONS:po(t.data.operations,e,t.data.eventId);break;case S.EDIT.ACTIVATE:Fe("directEdit");break;case S.EDIT.DELETE_ELEMENT:{const E=t.data.selector;if(typeof E=="string")try{const T=Ee(E,"delete_element"),M=document.querySelector(T);M&&(e.applyOperationToElement(M,"remove_element"),y()&&ie(),u(),k(),setTimeout(()=>{k(),ge()},100))}catch(T){C("Failed to delete element",T,{selector:E,errorSource:"direct_edit"})}break}case S.EDIT.APPLY_HTML_SNAPSHOT:{const E=t.data.html,T=t.data.animate!==!1,M=t.data.eventId;if(typeof E=="string"){const c=new DOMParser().parseFromString(E,"text/html");if(c.body){Array.from(document.body.attributes).forEach(l=>{c.body.hasAttribute(l.name)||document.body.removeAttribute(l.name)}),Array.from(c.body.attributes).forEach(l=>{document.body.getAttribute(l.name)!==l.value&&document.body.setAttribute(l.name,l.value)});const d=e.disableAnimations;T||(e.disableAnimations=!0);try{e.syncNodes(c.body,document.body),e.fixBrokenIcons(),e.fixImages(),e.processNextImage()}finally{e.disableAnimations=d}Array.from(document.documentElement.attributes).forEach(l=>{c.documentElement.hasAttribute(l.name)||document.documentElement.removeAttribute(l.name)}),Array.from(c.documentElement.attributes).forEach(l=>{document.documentElement.getAttribute(l.name)!==l.value&&document.documentElement.setAttribute(l.name,l.value)}),y()&&ie(),u(),k(M,!0),setTimeout(()=>{k(M,!0),ge()},100)}}break}case S.PING:I(S.PONG);break;case S.STREAM.UPDATE:o.handleHtmlUpdate(t.data.html,t.data.animate!==!1);break;case S.STREAM.END:o.handleStreamEnd();break;case S.STREAM.REWRITE:o.handleHtmlFinalize(t.data.html);break;case S.EDIT.EXIT:Fe("view");break;case S.EDIT.ZOOM_LEVEL:ko(t.data.zoom??1);break;case S.EDIT.DESELECT:K(),Te();break;case S.EDIT.SHOW_ACTIVE_INDICATOR:Yo(t.data.selector);break;case S.EDIT.BIND_ACTIVE_INDICATORS:Vo(t.data.sessionName,t.data.from);break;case S.EDIT.HIDE_ACTIVE_INDICATORS:Fo(t.data.sessionName);break;case S.EDIT.FOCUS_ELEMENT:jo(t.data.kind,t.data.index,t.data.clickX,t.data.clickY);break;case S.EDIT.FOCUS_AT:Jo(t.data.x,t.data.y);break;case S.EDIT.SCAN:Ko()||(Xo(),$t());break;case S.EDIT.REPLACE_IMAGE:eg(t.data.index,t.data.newSrc,t.data.selector);break;case S.EDIT.QUERY_SELECTOR:tg(t.data.selector);break;case S.SET_MODE:{const E=t.data.mode;(E==="view"||E==="interactive"||E==="directEdit")&&Fe(E);break}}}),document.addEventListener("click",t=>{t.target?.closest?.("a")&&t.preventDefault()}),document.addEventListener("mousemove",t=>{if(!y())return;const s=t.clientX,E=t.clientY;te||(te=requestAnimationFrame(()=>{te=0;const T=jt(s,E);T!==Le&&(Le&&Le.removeAttribute(n.SWAP_HOVER),T&&T.setAttribute(n.SWAP_HOVER,""),Le=T,yo(T),u())}))}),document.addEventListener("mousedown",t=>{if(!y())return;qt=t.timeStamp;const s=t.target;if(!s)return;if(Ke(s)){document.activeElement!==s&&t.preventDefault();return}const E=s.closest(q);if(!E||document.activeElement===E||E===ue()||document.activeElement&&E.contains(document.activeElement)&&document.activeElement.isContentEditable)return;const T=s.closest(D);T&&E.contains(T)});function g(t,s=!1){if(!y())return;const E=t.target;if(!E)return;if(Ke(E)){if(document.activeElement===E)return;if(bo(E)){Zt(E);return}K(),Te();const b=!!E.placeholder;Ce("text",E,t.clientX,t.clientY,b?void 0:!0);return}const T=E instanceof Element?E:E.parentElement;T?.closest("a")&&t.preventDefault();const M=T?.closest("label");M&&M.querySelector("input,textarea,select")&&t.preventDefault();const c=wo();let d=null,l="text";if(c)d=c.element,l=c.kind;else if(E){const b=T?.closest(D);b?(d=b,l="image"):(d=H(T),l="text")}if(d){const b=d.getAttribute("contenteditable")==="true",ce=!b;if(!s&&l==="text"&&b&&document.activeElement===d&&ue()===d){const sg=t.timeStamp-qt<100;t.detail===1&&sg&&Jt(t.clientX,t.clientY);return}K(),Te(),Ce(l,d,t.clientX,t.clientY,ce);return}K(),Te(),I(S.EDIT.PANEL_DISMISS)}document.addEventListener("click",t=>g(t,!1)),document.addEventListener("keydown",t=>{if(!y()||t.key!=="Enter"&&t.key!==" ")return;const s=t.target,E=s?.closest(D);if(!E)return;const T=s?.closest(q);if(T&&!T.contains(E))return;t.preventDefault();const M=E.getBoundingClientRect();Ce("image",E,M.left+M.width/2,M.top+M.height/2)}),Promise.all(Array.from(document.querySelectorAll(D)).map(t=>t.tagName!=="IMG"||t.complete?Promise.resolve():new Promise(s=>{t.addEventListener("load",s,{once:!0}),t.addEventListener("error",s,{once:!0})}))).then(ge),window.addEventListener("resize",()=>og()),document.addEventListener("wheel",t=>{if(t.ctrlKey||t.metaKey){t.preventDefault(),I(S.INTERACTIVE.WHEEL_PASSTHROUGH,{deltaX:t.deltaX,deltaY:t.deltaY,clientX:t.clientX,clientY:t.clientY,ctrlKey:t.ctrlKey,metaKey:t.metaKey});return}const s=F();(s==="directEdit"||s==="interactive")&&(Qo(t.target,t.deltaX,t.deltaY)||(t.preventDefault(),I(S.INTERACTIVE.WHEEL_PASSTHROUGH,{deltaX:t.deltaX,deltaY:t.deltaY})))},{passive:!1}),document.addEventListener("contextmenu",t=>{const s=F();if(s==="interactive"){t.preventDefault(),I(S.INTERACTIVE.CONTEXT_MENU,{clientX:t.clientX,clientY:t.clientY});return}s==="directEdit"&&(t.preventDefault(),g(t,!0))});const r=new MutationObserver(t=>{const s=t.some(E=>E.type==="childList");requestAnimationFrame(()=>{u(),s&&ge()})});let a=!1,i=null;document.body?r.observe(document.body,{childList:!0,subtree:!0,characterData:!0}):(i=new MutationObserver(()=>{!a&&document.body&&(i?.disconnect(),i=null,r.observe(document.body,{childList:!0,subtree:!0,characterData:!0}))}),i.observe(document.documentElement,{childList:!0})),document.addEventListener("mouseenter",t=>{if(!y())return;const s=H(t.target);s&&(ee=s,Be(s),u())},!0),document.addEventListener("mouseleave",t=>{if(!y())return;const s=H(t.target),E=H(t.relatedTarget);s&&E===s||s&&ee===s&&(E?(ee=E,Be(E)):(ee=null,Be(null)),u())},!0),document.addEventListener("focusin",t=>{const s=H(t.target);s&&(ee=s,ke=s,He(s),u())}),document.addEventListener("input",t=>{if(!y())return;const s=H(t.target);s&&(We.add(s),gg())}),document.addEventListener("focusout",t=>{const s=H(t.target);s&&(ke===s&&(ke=null,He(null),u()),y()&&We.has(s)&&(We.delete(s),(s instanceof HTMLInputElement||s instanceof HTMLTextAreaElement)&&(s.value&&(s.placeholder=s.value),s.value=""),k()))}),document.addEventListener("keydown",t=>{const s=t.key,E=H(t.target),T=E!==null||H(document.activeElement)!==null,M=(s==="z"||s==="Z")&&(t.metaKey||t.ctrlKey)&&!t.shiftKey,c=(s==="z"||s==="Z")&&(t.metaKey||t.ctrlKey)&&t.shiftKey||(s==="y"||s==="Y")&&(t.ctrlKey||t.metaKey&&!t.shiftKey);if(!T&&(M||c)){t.preventDefault(),t.stopPropagation(),t.stopImmediatePropagation(),I(S.EDIT.KEYBOARD_SHORTCUT,{shortcut:c?"redo":"undo"});return}if(s==="Escape"){t.preventDefault(),t.stopPropagation(),t.stopImmediatePropagation(),T?(document.activeElement instanceof HTMLElement&&document.activeElement.blur(),Xe()):Zo();return}if((s==="+"||s==="="||s==="-"||s==="_")&&(t.metaKey||t.ctrlKey)){t.preventDefault(),t.stopPropagation(),I(S.EDIT.ZOOM,{action:s==="-"||s==="_"?"out":"in"});return}if(T){if(t.stopPropagation(),t.stopImmediatePropagation(),!E)return;(s===" "||s==="Spacebar")&&E.closest("button,a")!==null&&(t.preventDefault(),document.execCommand("insertText",!1," "));return}if((s===" "||s==="Spacebar")&&!t.repeat){t.preventDefault(),t.stopPropagation(),X||(X=!0,I(S.INTERACTIVE.SPACE_HELD,{held:!0}));return}if(s==="v"||s==="V"){t.preventDefault(),t.stopPropagation(),I(S.EDIT.TOOL_SWITCH,{tool:"select"});return}if(s==="h"||s==="H"){t.preventDefault(),t.stopPropagation(),I(S.EDIT.TOOL_SWITCH,{tool:"pan"});return}if((s==="z"||s==="Z")&&!t.metaKey&&!t.ctrlKey){t.preventDefault(),t.stopPropagation(),I(S.EDIT.TOOL_SWITCH,{tool:"zoom"});return}if((s==="e"||s==="E")&&F()==="interactive"){t.preventDefault(),t.stopPropagation(),I(S.INTERACTIVE.REQUEST_EDIT);return}}),document.addEventListener("keydown",t=>{(t.key==="Control"||t.key==="Meta")&&!Se&&(Se=!0,I(S.EDIT.CTRL_HELD,{held:!0}))}),document.addEventListener("keyup",t=>{(t.key==="Control"||t.key==="Meta")&&Se&&(Se=!1,I(S.EDIT.CTRL_HELD,{held:!1}))}),document.addEventListener("keyup",t=>{(t.key===" "||t.key==="Spacebar")&&X&&(X=!1,I(S.INTERACTIVE.SPACE_HELD,{held:!1}))}),window.addEventListener("blur",()=>{Se=!1,X&&(X=!1,I(S.INTERACTIVE.SPACE_HELD,{held:!1}))});function _(t){return t instanceof Element?!!t.closest('a, button, input, textarea, select, [role="button"], [onclick], [contenteditable="true"]'):!1}return document.addEventListener("pointerdown",t=>{Me=!1,F()==="interactive"&&t.button===0&&(X||_(t.target)||(G={startScreenX:t.screenX,startScreenY:t.screenY,startClientX:t.clientX,startClientY:t.clientY,pointerId:t.pointerId,isDragging:!1}))}),document.addEventListener("pointermove",t=>{if(!G||G.pointerId!==t.pointerId)return;if(t.buttons===0){G.isDragging&&(document.body.style.cursor="",document.body.style.userSelect="",I(S.INTERACTIVE.NODE_DRAG_END,{})),G=null;return}if(F()!=="interactive"){G=null;return}if(!G.isDragging){const T=t.clientX-G.startClientX,M=t.clientY-G.startClientY;if(Math.abs(T)<Qt&&Math.abs(M)<Qt)return;G.isDragging=!0,document.body.style.cursor="grabbing",document.body.style.userSelect="none",I(S.INTERACTIVE.NODE_DRAG_START,{})}const s=t.screenX-G.startScreenX,E=t.screenY-G.startScreenY;I(S.INTERACTIVE.NODE_DRAG_MOVE,{deltaX:s,deltaY:E})}),document.addEventListener("pointerup",t=>{!G||G.pointerId!==t.pointerId||(G.isDragging&&(document.body.style.cursor="",document.body.style.userSelect="",Me=!0,setTimeout(()=>{Me=!1},0),I(S.INTERACTIVE.NODE_DRAG_END,{})),G=null)}),document.addEventListener("pointerdown",t=>{F()==="interactive"&&t.button===1&&(t.preventDefault(),I(S.INTERACTIVE.MIDDLE_PAN,{clientX:t.clientX,clientY:t.clientY}))}),document.addEventListener("click",t=>{if(F()==="interactive"){if(Me){Me=!1;return}I(S.INTERACTIVE.CLICK,{clientX:t.clientX,clientY:t.clientY})}}),document.addEventListener("dblclick",t=>{F()==="interactive"&&(t.preventDefault(),t.stopPropagation(),I(S.INTERACTIVE.DOUBLE_CLICK,{clientX:t.clientX,clientY:t.clientY}))}),function(){a=!0,i?.disconnect(),oe&&(cancelAnimationFrame(oe),oe=0),te&&(cancelAnimationFrame(te),te=0),r.disconnect(),e.stopAnimationLoop(),Wo()}}function ag(e,o,g=!1){let r=()=>{};try{Eo(),to(e,o),window.addEventListener("error",_=>{C(_.message,_.error)}),co();const a=new so(g,(_,t)=>{C(_,t,{errorSource:a?.isStreaming?"streaming":"session_event"})}),i=new _o(a,o);no(),r=rg(a,i),window.__StitchDebug={triggerScan:()=>$t(),postReady:()=>I(S.READY),handleHtml:_=>i.handleHtmlUpdate(_)},I(S.READY)}catch(a){C("Failed to initialize iframe direct edit",a,{errorSource:"direct_edit"})}return r}var Pe=window.__STITCH_CONFIG__;Pe?ag(Pe.screenId,Pe.targetOrigin,Pe.disableAnimations):console.error("[DirectEdit] Missing __STITCH_CONFIG__ — script cannot initialize.")})();
+</script>
+<div id="stitch-agent-cursor" data-stitch-injected style="left:-40px;top:-40px;">
+  <svg class="cursor-pointer" width="20" height="20" viewBox="0 0 34 34" fill="none">
+    <path d="M15.0624 32.3549L5.16251 5.48544L32.0324 15.3848L19.3046 19.6276L15.0624 32.3549Z" fill="#7168f6"/>
+    <path d="M4.80877 5.13207C4.94657 4.99427 5.15206 4.94886 5.33496 5.01606L32.205 14.9156C32.4041 14.9889 32.5354 15.1799 32.5323 15.392C32.529 15.6043 32.392 15.7924 32.1905 15.8595L19.6994 20.0227L15.5369 32.5131C15.4697 32.7145 15.2824 32.8509 15.0701 32.8542C14.8578 32.8575 14.6664 32.7268 14.5929 32.5276L4.69276 5.65826L4.67343 5.5892C4.63863 5.42535 4.68814 5.25283 4.80877 5.13207Z" stroke="rgba(255,255,255,0.15)" stroke-linejoin="round"/>
+  </svg>
+  <svg class="cursor-text" width="20" height="28" viewBox="0 0 20 28" fill="none">
+    <path d="M6 2h8M6 26h8M10 2v24" stroke="#7168f6" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+  <svg class="cursor-paint" width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M18.5 1.5c.8-.8 2.1-.8 2.8 0 .8.8.8 2.1 0 2.8L11 14.5l-3.5 1 1-3.5L18.5 1.5z" fill="#7168f6" stroke="#4f44e1" stroke-width="1" stroke-linejoin="round"/>
+    <path d="M7 14.5c-2 2-3.5 4-3.5 5.5 0 1.5 1 2.5 2.5 2.5 1.5 0 3.5-1.5 5.5-3.5" stroke="#7168f6" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M4 20c-.5.5-1.2 1-2 1.2" stroke="#6056f0" stroke-width="1" stroke-linecap="round"/>
+  </svg>
+  <svg id="stitch-cursor-label" width="28" height="14" viewBox="0 0 28 14" fill="none">
+    <rect width="28" height="14" rx="7" fill="#7168f6"/>
+    <circle cx="10.5" cy="7" r="1.8" fill="white"/>
+    <circle cx="17.5" cy="7" r="1.8" fill="white"/>
+  </svg>
+</div>
+</body></html>

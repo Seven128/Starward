@@ -1028,6 +1028,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 - **Anatomy**：发生原因、影响范围、仍可用内容、真实恢复动作。
 - **Variants / states**：empty、local error、offline、permission denied/recovery；局部扁平状态与全页 friendly panel。
+- **暂无数据层级**：字段缺值直接使用同一 label/value 轴上的次要值文字，不另套容器；章节无内容时在原章节阅读轴上使用紧凑的状态名、必要的范围说明与小语义图形；列表或整页确实为空时保留原页头、导航和任务入口，以适度留白、短标题和一句有用说明承载空态。只在真实可执行时给一个普通动作。请求失败必须与真实空结果使用不同的文案和恢复入口，不能在同一当前状态里同时展示两者。
 - **Geometry**：局部状态靠行/带；仅权限或全页恢复可用friendly且padding最多`28rpx`；动作ordinary `60–68rpx`而非默认final。
 - **A11y / composition**：错误关联受影响区域；恢复结果播报；拒绝权限后核心浏览仍可继续。
 - **Do not**：不清空仍可信内容；不把每个状态做卡；不提供不存在的恢复按钮或用强迫式主 CTA。
@@ -1036,6 +1037,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 - **Anatomy**：短结果、可选单一 undo/action、关闭/超时策略。
 - **Variants / states**：非当前对象可见的异步 success acknowledgement、copy/save acknowledgement、error、offline、undo；单行优先。
+- **浮动 info 文案**：一次只说清受影响对象及当前结果，必要时补可行的下一步，总量为一句、最多两句。标题与正文若并存不能复述同一件事；不要把完整来源、诊断、可用内容清单或恢复说明塞进悬浮条。长句可换至第二行，不以省略号隐藏关键结果或恢复路径；完整说明留在受影响区域。
 - **Geometry**：消息12px/18px、动作11px/16px；动作target≥88rpx；elevation-1；位于顶部安全区与系统导航下方，竖向堆叠，不改变底部sticky final action或页面布局。
 - **A11y / composition**：status/alert 按严重度；自动消失可暂停；重复事件按 owner/dedupe key 合并；小程序不同事件可顶部紧凑叠放最多3条，白底黑字无边框，3秒自动关闭或手动关闭，上浮淡出；重要错误同时保留行内恢复路径；一个 transaction 最多一个 floating feedback。
 - **Do not**：selection、filter、expand/collapse、tab/segment、navigation、favorite success、time scrub、layer choice 和 mode state 不弹 toast/snackbar/modal，局部 visible state 就是第一反馈；重要错误不只靠 toast，不放多个动作，不遮挡主导航或最终承诺，不逐帧播报 direct manipulation。
