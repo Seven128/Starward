@@ -218,6 +218,7 @@ export interface MiniappRepositoryPort {
   getDetail(spotId: SpotId): Promise<SpotDetail | null>;
   getContributionFormalBaseline(spotId: SpotId): Promise<ContributionFormalBaseline | null>;
   ensureUser(userId: UserId): Promise<void>;
+  findWechatUser(identityDigest: string): Promise<UserId | null>;
   findOrCreateWechatUser(identityDigest: string): Promise<UserId>;
   saveWechatDeliveryIdentity(input: { userId: UserId; identityDigest: string; appId: string; ciphertext: string }): Promise<void>;
   getWechatDeliveryIdentity(userId: UserId, appId: string): Promise<string | null>;

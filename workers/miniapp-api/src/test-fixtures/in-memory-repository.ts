@@ -124,6 +124,10 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     this.#contributions.ensureUser(userId);
   }
 
+  async findWechatUser(identityDigest: string) {
+    return this.#wechatUsers.get(identityDigest) ?? null;
+  }
+
   async findOrCreateWechatUser(identityDigest: string) {
     const existing = this.#wechatUsers.get(identityDigest);
     if (existing) return existing;

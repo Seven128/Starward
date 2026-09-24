@@ -703,6 +703,15 @@ export class PostgresMiniappRepository
     });
   }
 
+  async findWechatUser(identityDigest: string): Promise<UserId | null> {
+    const existing = await this.pool.query<{ user_id: UserId }>(
+      `SELECT i.user_id FROM wechat_identities i JOIN users u USING (user_id)
+        WHERE i.identity_digest = $1 AND u.state = 'ACTIVE'`,
+      [identityDigest],
+    );
+    return existing.rows[0]?.user_id ?? null;
+  }
+
   async findOrCreateWechatUser(identityDigest: string): Promise<UserId> {
     return this.#transaction(async (client) => {
       const existing = await client.query<{ user_id: UserId }>(
