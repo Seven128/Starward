@@ -108,9 +108,59 @@ test("real meteor conditions render their window and moon; missing direction has
   const unavailable = detail({ ...props, visibility: { state: "UNAVAILABLE", reason: "方向缺测" } });
   const panels = find(unavailable, node => node.type === "StatusPanel");
   assert.equal(panels.length, 1);
-  assert.equal(panels[0]!.props.state, "EMPTY");
+  assert.equal(panels[0]!.props.state, "PARTIAL");
   assert.doesNotMatch(text(unavailable), /最佳几何时刻|95%/);
   assert.equal(find(detail({ ...props, visibility: { state: "NOT_VISIBLE", reason: "地平线以下" } }), node => node.type === "StatusPanel").length, 0);
+});
+
+test("an unavailable local projection stays distinct from a true empty result, including failed refresh", () => {
+  const props = { event: meteor, mode: "browse", previewDate: "2026-12-22", onPreviewDate: () => {},
+    locationName: "北京", timezone: "Asia/Shanghai", pending: false, source, catalogVersion: "v1",
+    visibility: { state: "UNAVAILABLE", reason: "当前地点的观测条件暂不可用。" }, onRetry: () => {} };
+  const detail = harness().detail;
+  const unavailable = find(detail(props), node => node.type === "StatusPanel");
+  assert.deepEqual(unavailable.map(node => node.props.state), ["PARTIAL"]);
+  assert.equal(unavailable[0]!.props.detail, props.visibility.reason);
+  const failed = find(detail({ ...props, failed: true }), node => node.type === "StatusPanel");
+  assert.deepEqual(failed.map(node => node.props.state), ["ERROR"]);
+  assert.equal(failed[0]!.props.recoveryLabel, "重试事件详情");
+});
+
+test("catalog failure and unavailable envelopes never render a second true-empty card", () => {
+  for (const dataState of ["UNAVAILABLE", "FRESH"]) {
+    const ui = harness(undefined, {
+      useResourceQuery: (options: any) => options.queryKey[0] === "astronomical-events"
+        ? { data: { data: { events: [], sources: [], catalogVersion: "v1" }, dataState },
+          isPending: false, isError: dataState === "FRESH", refetch: () => {} }
+        : { isPending: false, isError: false, refetch: () => {} },
+    });
+    const tree = ui.render({ open: true, mode: "browse", context: null, onClose: () => {} });
+    assert.deepEqual(find(tree, node => node.type === "StatusPanel").map(node => node.props.state), ["ERROR"]);
+  }
+});
+
+test("a failed catalog refresh keeps usable event rows and one retry state", () => {
+  const ui = harness(undefined, {
+    useResourceQuery: (options: any) => options.queryKey[0] === "astronomical-events"
+      ? { data: { data: { events: [meteor], sources: [source], catalogVersion: "v1" }, dataState: "FRESH" },
+        isPending: false, isError: false, refreshError: new Error("offline"), refetch: () => {} }
+      : { isPending: false, isError: false, refetch: () => {} },
+  });
+  const tree = ui.render({ open: true, mode: "browse", context: null, onClose: () => {} });
+  assert.deepEqual(find(tree, node => node.type === "StatusPanel").map(node => node.props.state), ["STALE"]);
+  assert.equal(find(tree, node => node.props.ariaLabel === "查看小熊座流星雨详情").length, 1);
+});
+
+test("only a confirmed empty catalog uses the shared empty state", () => {
+  for (const [dataState, expected] of [["FRESH", "EMPTY"], ["PARTIAL", "PARTIAL"]] as const) {
+    const ui = harness(undefined, {
+      useResourceQuery: (options: any) => options.queryKey[0] === "astronomical-events"
+        ? { data: { data: { events: [], sources: [], catalogVersion: "v1" }, dataState }, isPending: false, isError: false, refetch: () => {} }
+        : { isPending: false, isError: false, refetch: () => {} },
+    });
+    const tree = ui.render({ open: true, mode: "browse", context: null, onClose: () => {} });
+    assert.deepEqual(find(tree, node => node.type === "StatusPanel").map(node => node.props.state), [expected]);
+  }
 });
 
 test("fixed eclipse date and phases cannot masquerade as the caller's September date", () => {

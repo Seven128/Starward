@@ -137,6 +137,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   }, [pageVisible, mounted, versionMismatch, detail.data?.data.catalogVersion]);
   const catalogYear = catalog.data?.data.events[0]?.peakDate.slice(0, 4) ?? "2026";
   const catalogFailed = catalog.isError || Boolean(catalog.refreshError) || catalog.data?.dataState === "STALE_USABLE" || catalog.data?.dataState === "UNAVAILABLE";
+  const canKeepCatalog = Boolean(catalog.data?.data.events.length) && catalog.data?.dataState !== "UNAVAILABLE";
   const recordFailed = eventRecord.isError || Boolean(eventRecord.refreshError) || eventRecord.data?.dataState === "STALE_USABLE" || eventRecord.data?.dataState === "UNAVAILABLE";
   const geometryFailed = Boolean(context && previewDate) && (detail.isError || Boolean(detail.refreshError) || versionMismatch || detail.data?.dataState === "STALE_USABLE" || detail.data?.dataState === "UNAVAILABLE");
   const detailFailed = recordFailed || geometryFailed;
@@ -186,8 +187,9 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
           <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__list" ariaLabel="天文事件列表">
             <View className="event-modal__content">
               {catalog.isPending ? <StatusPanel state="LOADING" detail="正在读取事件目录。" /> : null}
-              {catalogFailed ? <StatusPanel state={catalog.data ? "STALE" : "ERROR"} detail={catalog.data ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
-              {catalog.data && !catalog.refreshError && catalog.data.dataState !== "STALE_USABLE" && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
+              {catalogFailed ? <StatusPanel state={canKeepCatalog ? "STALE" : "ERROR"} detail={canKeepCatalog ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
+              {catalog.data?.dataState === "PARTIAL" && !catalogFailed ? <StatusPanel state="PARTIAL" detail="事件目录仅有部分资料，重试可检查是否有新内容。" recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
+              {catalog.data?.dataState === "FRESH" && !catalogFailed && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
               {mode === "select-one" && initialOccurrenceIds.length > 1 ? <StatusPanel state="PARTIAL" detail={`此历史计划保留了 ${initialOccurrenceIds.length} 个关联；只有确认新选择或清除时才会改为最多一个。`} /> : null}
               {catalog.data ? <View className="event-modal__catalogue"><Text>{catalogYear} 事件目录</Text><Text>{catalog.data.data.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES" ? "常年参考与食事件" : "年度资料"}</Text></View> : null}
               {groups.map((group) => <View key={group.month} className="event-modal__month">
@@ -274,9 +276,9 @@ function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate,
           aria-pressed={previewDate === day.value} onClick={() => onPreviewDate(day.value)}><Text>{day.weekday}</Text><Text>{day.day}</Text></Button>)}
         </View>
       </ScrollView> : mode === "select-one" ? <Text className="type-caption">地点和日期沿用当前计划；关联事件不改变计划安排。</Text> : null}
-      {failed && visibility ? <StatusPanel state="STALE" detail="当地条件尚未确认最新状态，以下保留上次结果。" recoveryLabel="重试事件详情" onRecover={onRetry} /> : null}
+      {failed && visibility && visibility.state !== "UNAVAILABLE" ? <StatusPanel state="STALE" detail="当地条件尚未确认最新状态，以下保留上次结果。" recoveryLabel="重试事件详情" onRecover={onRetry} /> : null}
       {pending ? <StatusPanel state="LOADING" detail="正在计算当地观测条件。" /> : !visibility || visibility.state === "UNAVAILABLE"
-        ? <StatusPanel state={failed && !visibility ? "ERROR" : "EMPTY"} detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed && !visibility ? "重试事件详情" : undefined} onRecover={onRetry} />
+        ? <StatusPanel state={failed ? "ERROR" : "PARTIAL"} detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed ? "重试事件详情" : undefined} onRecover={onRetry} />
         : <>
           <Text className="type-caption">{visibility.reason}</Text>
           {visibility.state === "AVAILABLE" ? <>
