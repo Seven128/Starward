@@ -63,6 +63,24 @@
   box-shadow: 0 1Px 5Px #26334218;
 }
 .formal-feedback-photo__red-label { display: none; }
+.formal-feedback-upload-recovery {
+  display: flex;
+  flex-direction: column;
+  gap: 8Px;
+  margin: 12Px 0;
+}
+.formal-feedback-upload-recovery > button {
+  align-self: flex-start;
+  min-height: 44Px;
+  margin: 0;
+  padding: 0 12Px;
+  border: 1Px solid var(--border);
+  border-radius: 7Px;
+  background: var(--surface);
+  color: var(--danger);
+  font-size: 14Px;
+}
+.formal-feedback-upload-recovery > button::after { display: none; }
 
 .theme-night.formal-feedback-page,
 .theme-observation.formal-feedback-page,

@@ -159,7 +159,7 @@ function isEnvelope(value: unknown): value is AnyEnvelope {
   return isResponseEnvelope(value);
 }
 
-function idempotencyKey(prefix: string) {
+export function idempotencyKey(prefix: string) {
   return (
     prefix +
     ":" +
@@ -1375,23 +1375,21 @@ export async function createContributionDraft(
   });
 }
 
-const retryFormalContributionSubmit = createMutationRetry(() => idempotencyKey("formal-contribution-submit"));
-
-export async function submitFormalContribution(input: ContributionFormalSubmitRequest) {
+export async function ensureContributionOwner() {
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
-  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
-  return retryFormalContributionSubmit(session.userId, input, async retryKey => {
-    const response = await requestOperation("formal-contribution-submit", "formalContributionSubmitPost", {
-      body: input,
-      auth: "REQUIRED",
-      idempotencyKey: retryKey,
-    }, false, session.userId);
-    if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
-    invalidateApiCache("contributions");
-    await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
-    return response;
-  });
+  if (initiatingOwner && initiatingOwner !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return session.userId;
+}
+
+export async function submitFormalContribution(input: ContributionFormalSubmitRequest, retryKey: string, owner: string) {
+  const response = await requestOperation("formal-contribution-submit", "formalContributionSubmitPost", {
+    body: input, auth: "REQUIRED", idempotencyKey: retryKey,
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对反馈结果。");
+  invalidateApiCache("contributions");
+  await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
+  return response;
 }
 
 export async function getContributionMedia(
@@ -1412,17 +1410,17 @@ export async function getContributionMedia(
   return result;
 }
 
-export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest) {
-  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-intent") });
+export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest, retryKey: string, owner: string) {
+  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
-export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest) {
-  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload") });
+export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest, retryKey: string, owner: string) {
+  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
-export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest) {
-  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-complete") });
+export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest, retryKey: string, owner: string) {
+  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
-export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number) {
-  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-remove") });
+export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number, retryKey: string, owner: string) {
+  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
 
 const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contribution-update"));
