@@ -30,7 +30,6 @@
 .spot-media-viewer__arrow { position: absolute; z-index: 2; top: 50%; width: 44Px; padding: 0; transform: translateY(-50%); font-size: 26Px; line-height: 1; }
 .spot-media-viewer__arrow--previous { left: 8Px; }
 .spot-media-viewer__arrow--next { right: 8Px; }
-.spot-media-viewer__arrow:disabled { visibility: hidden; }
 .spot-media-viewer__caption { position: absolute; right: 0; bottom: calc(env(safe-area-inset-bottom) + 12Px); left: 0; display: flex; flex-direction: column; gap: 6Px; max-height: 22vh; overflow: auto; padding: 12Px 24Px; color: rgba(255, 255, 255, .74); font-size: 11Px; line-height: 18Px; }
 .spot-media-viewer__caption > text:first-child { color: #fff; font-size: 13Px; line-height: 20Px; }
 .spot-media-viewer--dragging .spot-media-viewer__close,

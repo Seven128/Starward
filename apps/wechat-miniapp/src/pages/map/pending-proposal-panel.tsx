@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
+import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
@@ -35,6 +36,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const owner = currentDraftUserId();
   const mediaKey = model.media.map(item => item.uploadId).join("|");
   const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
+  const galleryPosition = useSpotMediaGalleryPosition(mediaScope);
   const leadMedia = model.media[0];
   const handleInDocument = extent === "large" && Boolean(leadMedia);
   const panelHandle = <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
@@ -118,10 +120,11 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
       <ScrollView className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
         {leadMedia ? <View className="spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
-          <ScrollView className="spot-panel__media-strip" scrollX={model.media.length > 1} enhanced showScrollbar={false}
+          <ScrollView className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}
             ariaLabel={`${model.name}提交照片`}
             onScroll={(event) => {
               const width = Taro.getWindowInfo().windowWidth || 390;
+              galleryPosition.onScroll(event);
               const start = Math.floor(event.detail.scrollLeft / (width * .68 + 8));
               if (Number.isFinite(start)) setMediaWindowStart(Math.max(0, Math.min(model.media.length - 1, start)));
             }}>
@@ -130,7 +133,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
                 const photo = mediaState[item.uploadId];
                 return <Button className="spot-panel__media-slide" key={item.uploadId}
                   ariaLabel={`查看${item.label} ${index + 1}，共 ${model.media.length} 张`}
-                  onClick={() => { setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
+                  onClick={() => { galleryPosition.remember(); setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
                   {photo?.state === "ready" && photo.src
                     ? <Image className="spot-panel__media-image" src={photo.src} mode="aspectFill" lazyLoad ariaLabel={item.label} />
                     : <View className="spot-panel__proposal-media-placeholder"><Text>{item.label}</Text><Text>{photo?.state === "error" ? "照片暂时无法读取" : "正在读取照片…"}</Text></View>}

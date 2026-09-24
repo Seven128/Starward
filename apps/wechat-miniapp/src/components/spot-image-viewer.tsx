@@ -98,10 +98,12 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
                 onRetry?.(index);
               }}>重试照片</Button> : null}
           </View>}
-        {media.length > 1 ? <>
-          <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--previous" disabled={index === 0} ariaLabel="上一张照片" onClick={() => onIndexChange(index - 1)}>‹</Button>
-          <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--next" disabled={index === media.length - 1} ariaLabel="下一张照片" onClick={() => onIndexChange(index + 1)}>›</Button>
-        </> : null}
+        {index > 0
+          ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--previous" ariaLabel="上一张照片" onClick={() => onIndexChange(index - 1)}>‹</Button>
+          : null}
+        {index < media.length - 1
+          ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--next" ariaLabel="下一张照片" onClick={() => onIndexChange(index + 1)}>›</Button>
+          : null}
       </View>
       <View className="spot-media-viewer__caption"><Text>{current.caption}</Text><Text>{index + 1} / {media.length}{current.attribution ? ` · ${current.attribution}` : ""}</Text></View>
     </View>

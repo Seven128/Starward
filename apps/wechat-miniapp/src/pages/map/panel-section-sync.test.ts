@@ -53,7 +53,8 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   let setup = "", scroll = "";
   const visit = (node: ts.Node) => {
     if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes("astronomyOffset.current = null")) setup = node.arguments[0].getText(source);
-    if (ts.isJsxAttribute(node) && node.name.getText(source) === "onScroll" && node.initializer && ts.isJsxExpression(node.initializer)) scroll = node.initializer.expression!.getText(source);
+    if (ts.isJsxAttribute(node) && node.name.getText(source) === "onScroll" && node.parent.getText(source).includes('id="spot-panel-scroll"')
+      && node.initializer && ts.isJsxExpression(node.initializer)) scroll = node.initializer.expression!.getText(source);
     ts.forEachChild(node, visit);
   };
   visit(source);

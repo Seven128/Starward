@@ -37,6 +37,7 @@ import { SpotTerrainOverview } from "./spot-terrain-overview";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SpotPlanEntry } from "@/features/spot/spot-plan-entry";
 import { SpotImageViewer } from "@/components/spot-image-viewer";
+import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
 export type SpotPanelPhase = "idle" | "closing";
@@ -313,6 +314,7 @@ export function SpotInformationPanel({
   const media = effectiveSpot.media.filter((item) =>
     mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
   );
+  const galleryPosition = useSpotMediaGalleryPosition(`${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`);
   const route = detail?.route;
   const facilities = detail?.spot.facilities ?? effectiveSpot.facilities;
   const prominentFacilities = facilities.filter((facility) => facility.type === "PARKING" || facility.type === "TOILET");
@@ -433,16 +435,10 @@ export function SpotInformationPanel({
           <View id="spot-panel-document-start" className="spot-panel__document-start" aria-hidden="true" />
           {media.length ? (
             <View className="spot-panel__media" data-control="spot-media-gallery">
-              <ScrollView className="spot-panel__media-strip" scrollX={media.length > 1} enhanced showScrollbar={false} ariaLabel={`${effectiveSpot.name}现场照片`}>
-                <View
-                  className="spot-panel__media-track"
-                  style={{
-                    width: media.length > 1
-                      ? `${media.length * 510 + (media.length - 1) * 16 + 46}rpx`
-                      : "100%",
-                  }}
-                >
-                  {media.map((item, index) => <Button className="spot-panel__media-slide" key={item.id} ariaLabel={`查看现场照片 ${index + 1}，共 ${media.length} 张`} onClick={() => setViewerIndex(index)}>
+              <ScrollView className="spot-panel__media-strip" scrollX={media.length > 1} scrollLeft={galleryPosition.returnLeft}
+                onScroll={galleryPosition.onScroll} enhanced showScrollbar={false} ariaLabel={`${effectiveSpot.name}现场照片`}>
+                <View className="spot-panel__media-track">
+                  {media.map((item, index) => <Button className="spot-panel__media-slide" key={item.id} ariaLabel={`查看现场照片 ${index + 1}，共 ${media.length} 张`} onClick={() => { galleryPosition.remember(); setViewerIndex(index); }}>
                     <Image
                       className="spot-panel__media-image"
                       src={item.thumbnailPath || item.localPath}
