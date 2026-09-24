@@ -56,7 +56,7 @@ const bIconFiles = {
     "cloud--day--default.png", "compass--day--default.png",
     "eye--day--default.png", "filter--day--default.png",
     "four-point-star--day--default.png", "horizon--day--default.png",
-    "images--day--default.png", "layers--day--default.png",
+    "images--day--default.png", "info--day--default.png", "layers--day--default.png",
     "low-cloud--day--default.png", "bulb--day--default.png",
     "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
     "pencil--day--default.png", "plan-suv--day--default.png",
@@ -96,6 +96,7 @@ const bIconFiles = {
   sky: [
     "arrow-left--day--default.png", "close--day--default.png",
     "compass--day--default.png", "horizon--day--default.png",
+    "info--day--default.png",
   ],
 } as const;
 
@@ -227,10 +228,14 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, `../src/assets/licenses/${name}.json`),
           to: path.resolve(here, "..", outputRoot, `sky/assets/licenses/${name}.json`),
         })),
-        ...["noble-hashes", "runtime-dependencies"].map((name) => ({
+        ...["noble-hashes"].map((name) => ({
           from: path.resolve(here, `../src/assets/licenses/${name}.json`),
           to: path.resolve(here, "..", outputRoot, `assets/licenses/${name}.json`),
         })),
+        {
+          from: path.resolve(here, "../src/assets/licenses/runtime-dependencies.json"),
+          to: path.resolve(here, "..", outputRoot, "content/assets/licenses/runtime-dependencies.json"),
+        },
         ...adoptedBIconCopyPatterns(outputRoot),
       ],
       options: {},

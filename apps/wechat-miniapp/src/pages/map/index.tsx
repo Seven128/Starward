@@ -88,6 +88,7 @@ import { PendingProposalPanel } from "./pending-proposal-panel";
 import { privateContributionSelectionTransition } from "./private-contribution-transition";
 import {
   layerSheetOverlay,
+  lightLayerContentState,
   mapLayerKindForOverlay,
 } from "./map-layer-selection";
 import { cameraCenterForVisibleMapTarget } from "./map-camera";
@@ -777,6 +778,12 @@ export default function MapPage() {
     scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay) &&
       scene.data.data.layer.state === "UNAVAILABLE",
   );
+  const lightLayerState = lightLayerContentState({
+    pending: scene.isPending,
+    failed: Boolean(scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"),
+    hasData: Boolean(scene.data),
+    unavailable: visibleLayerUnavailable,
+  });
 
   const leaveSelectedLocationForMapPoint = () => {
     extentBeforeLayer.current = null;
@@ -1928,7 +1935,7 @@ export default function MapPage() {
                 onRecover={nativeMap.retry}
               />
             ) : null}
-            {mapDataStale ? <StatusPanel
+            {mapDataStale && !(bottomPresentation === "layer-sheet" && visibleLayer === "LIGHT" && !mapContextFailed && lightLayerState === "STALE") ? <StatusPanel
               state="STALE"
               detail="更新失败，暂时显示上次结果。"
               recoveryLabel="重试"
@@ -2191,11 +2198,28 @@ export default function MapPage() {
                       .flatMap(signal => signal.weatherAt && signal.cloudPercent !== null ? [signal.weatherAt] : []))}
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} />
                   </>
-                ) : visibleLayerUnavailable ? (
+                ) : lightLayerState === "LOADING" ? (
+                  <StatusPanel state="LOADING" detail="正在确认当前地区的光污染覆盖。" live={false} />
+                ) : lightLayerState === "ERROR" || lightLayerState === "STALE" ? (
+                  <View>
+                    <StatusPanel
+                      state={lightLayerState}
+                      detail={lightLayerState === "STALE"
+                        ? visibleLayerUnavailable ? "光污染资料更新失败，上次无覆盖结果尚未确认。" : "光污染资料更新失败，暂时保留上次结果。"
+                        : "光污染资料暂时无法获取。"}
+                      recoveryLabel="重新获取"
+                      onRecover={() => void refreshMap()}
+                      live={false}
+                    />
+                    {lightLayerState === "STALE" && !visibleLayerUnavailable && scene.data?.data.layer?.source ?
+                      <SourceAttribution sources={[scene.data.data.layer.source]} /> : null}
+                  </View>
+                ) : lightLayerState === "EMPTY" ? (
                   <StatusPanel
                     state="EMPTY"
-                    emptyLevel="field"
-                    detail="当前地区暂无光污染数据。"
+                    emptyLevel="section"
+                    title="暂无光污染数据"
+                    detail="当前地区尚无已发布的年度夜光网格。"
                     live={false}
                   />
                 ) : (

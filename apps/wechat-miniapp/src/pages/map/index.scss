@@ -2205,6 +2205,10 @@
   box-sizing: border-box;
   padding: 18rpx 32rpx 8Px;
 }
+.map-layer-sheet__content .status-panel--empty-section {
+  min-height: 96Px;
+  padding: 12Px 16Px;
+}
 .map-layer-sheet__footer { flex: 0 0 auto; box-sizing: border-box; padding: 0 32rpx 22rpx; }
 .reduced-motion .map-layer-sheet { transition: none; }
 .map-layer-sheet--cloud .map-layer-sheet__content {

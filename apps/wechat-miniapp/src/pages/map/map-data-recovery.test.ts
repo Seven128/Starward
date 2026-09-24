@@ -5,7 +5,8 @@ import test from "node:test";
 import ts from "typescript";
 
 // Exercise the actual page's projection, notification effect and recovery JSX.
-function renderFailure(owner: "scene" | "context", cached: boolean, visible = true) {
+function renderFailure(owner: "scene" | "context", cached: boolean, visible = true,
+  presentation: "none" | "layer-sheet" = "none", layer: "TOTAL_CLOUD" | "LIGHT" = "TOTAL_CLOUD") {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations: string[] = [];
   let effect = "", recovery = "";
@@ -30,10 +31,17 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const code = `${declarations.join("\n")}\n(${effect})();\n({ recovery: Boolean(${recovery}), pageState });`;
   const result = vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     scene, bootstrapContext, pageVisible: visible, activeContext: {}, spots: [{}],
+    bottomPresentation: presentation, visibleLayer: layer, lightLayerState: "STALE",
     isPermissionError: () => false, notify: (notice: { placement: string; tone: string }) => notices.push(notice),
   });
   return { ...result, notices };
 }
+
+test("a light layer failure owns its visible retry while a failed map context keeps global recovery", () => {
+  assert.equal(renderFailure("scene", true, true, "layer-sheet", "LIGHT").recovery, false);
+  assert.equal(renderFailure("context", true, true, "layer-sheet", "LIGHT").recovery, true);
+  assert.equal(renderFailure("scene", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, true);
+});
 
 for (const owner of ["scene", "context"] as const) {
   for (const cached of [false, true]) {

@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import test from "node:test";
 import { inspectCandidate } from "./inspect-production.mjs";
 
@@ -36,4 +38,17 @@ test("built production candidate follows registered routes and package limits", 
   assert.equal(inspection.package_limits.per_package_bytes, 2 * 1024 * 1024);
   assert.equal(inspection.package_limits.aggregate_bytes, 20 * 1024 * 1024);
 
+});
+
+test("shared section empty icon is packaged for every Mini Program consumer", () => {
+  const root = path.resolve("apps/wechat-miniapp/dist/weapp");
+  for (const packageName of ["main", "content", "spot", "sky"]) {
+    const prefix = packageName === "main" ? "" : packageName;
+    assert.equal(existsSync(path.join(root, prefix, "assets/b-icons/info--day--default.png")), true,
+      `${packageName} StatusPanel must resolve its adopted info icon`);
+  }
+});
+
+test("runtime dependency licenses remain bundled after moving out of the main package", () => {
+  assert.equal(existsSync(path.resolve("apps/wechat-miniapp/dist/weapp/content/assets/licenses/runtime-dependencies.json")), true);
 });
