@@ -68,6 +68,9 @@ export default function SettingsPage() {
     syncNow,
     status: preferenceSyncStatus,
   } = usePreferencesSync();
+  const needsAccountRecovery = preferenceSyncStatus.startsWith("账户尚未恢复");
+  const canRetryPreferenceSync = preferenceSyncStatus.includes("仅保存在本机") ||
+    preferenceSyncStatus.includes("等待重试");
 
   useEffect(() => () => { if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current); }, []);
   useDidHide(() => {
@@ -274,24 +277,17 @@ export default function SettingsPage() {
           {preferenceSyncStatus ? (
             <StatusPanel
               state={
+                needsAccountRecovery ||
                 preferenceSyncStatus.includes("仅保存在本机") ||
                 preferenceSyncStatus.includes("云端偏好已有更新")
                   ? "STALE"
                   : "READY"
               }
               detail={preferenceSyncStatus}
-              recoveryLabel={
-                preferenceSyncStatus.includes("仅保存在本机") ||
-                preferenceSyncStatus.includes("等待重试")
-                  ? "重试同步"
-                  : undefined
-              }
-              onRecover={
-                preferenceSyncStatus.includes("仅保存在本机") ||
-                preferenceSyncStatus.includes("等待重试")
-                  ? () => void syncNow()
-                  : undefined
-              }
+              recoveryLabel={needsAccountRecovery ? "返回我的" : canRetryPreferenceSync ? "重试同步" : undefined}
+              onRecover={needsAccountRecovery
+                ? () => void Taro.switchTab({ url: "/pages/my/index" })
+                : canRetryPreferenceSync ? () => void syncNow() : undefined}
             />
           ) : null}
 

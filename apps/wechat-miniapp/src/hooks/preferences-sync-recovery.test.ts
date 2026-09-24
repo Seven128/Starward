@@ -4,6 +4,33 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
+test("a dirty local preference waits for an identified account before any cloud write", async () => {
+  const source = ts.createSourceFile("sync.ts", readFileSync(new URL("./use-preferences-sync.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const declaration = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "usePreferencesSync");
+  assert.ok(declaration);
+  const statuses: string[] = [];
+  let writes = 0;
+  const state = { preferences: { equipment: "双筒望远镜" }, preferencesDirty: true, preferencesRevision: 4 };
+  const store = Object.assign((select: (value: unknown) => unknown) => select(state), { getState: () => state });
+  const create = vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /, "") + "\nusePreferencesSync;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    useAppStore: store, useCallback: (callback: unknown) => callback, useEffect() {},
+    useRef: (current: unknown) => ({ current }), useState: () => ["", (message: string) => statuses.push(message)],
+    cloneUserPreferences: (value: unknown) => structuredClone(value), currentDraftUserId: () => null,
+    savePreferences: async () => { writes++; return { data: { preferences: { equipment: "双筒望远镜" }, revision: 5 } }; },
+    getPreferences: async () => assert.fail("no conflict read expected"), MiniappApiError: Error,
+    setTimeout: () => assert.fail("no retry expected"), clearTimeout() {}, errorMessage: () => "unexpected error",
+  });
+  assert.equal(await create().syncNow(), false);
+  assert.equal(writes, 0);
+  assert.equal(state.preferencesRevision, 4);
+  assert.equal(state.preferencesDirty, true);
+  assert.match(statuses.at(-1) ?? "", /本机|账户/);
+  state.preferencesRevision = 0;
+  assert.equal(await create().syncNow(), false);
+  assert.equal(writes, 0);
+  assert.match(statuses.at(-1) ?? "", /账户尚未恢复/);
+});
+
 test("editing during a save retains the new edit and retries with the acknowledged revision", async () => {
   const source = ts.createSourceFile("sync.ts", readFileSync(new URL("./use-preferences-sync.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "usePreferencesSync");
