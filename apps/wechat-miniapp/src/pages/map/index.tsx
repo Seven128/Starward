@@ -83,6 +83,7 @@ import {
   type SpotPanelExtent,
 } from "./spot-panel";
 import { projectSpotPanelResource } from "./spot-panel-resource-projection";
+import { shouldOpenSpotForSelection } from "./spot-open-intent";
 import { mediaIsRenderable } from "./spot-panel-media";
 import { PendingProposalPanel } from "./pending-proposal-panel";
 import { privateContributionSelectionTransition } from "./private-contribution-transition";
@@ -1691,12 +1692,14 @@ export default function MapPage() {
     if ((!explicitOpenRequested && lastHandledSelectedId.current === selectedSpotId) || !selected) return;
     lastHandledSelectedId.current = selectedSpotId;
     lastHandledSpotOpenVersion.current = spotOpenRequestVersion;
-    if (
-      bottomPresentation !== "spot-panel" ||
-      !detailContextReady ||
-      activeContext?.location.kind !== "FORMAL_SPOT" ||
-      activeContext.location.spotId !== selectedSpotId
-    ) {
+    if (shouldOpenSpotForSelection({
+      explicitOpenRequested,
+      bottomPresentation,
+      detailContextReady,
+      contextKind: activeContext?.location.kind ?? null,
+      contextSpotId: activeContext?.location.kind === "FORMAL_SPOT" ? activeContext.location.spotId : null,
+      selectedSpotId,
+    })) {
       void (async () => {
         if (!(await confirmEditorLeave())) return;
         editorLeaveGuard.current = null;
