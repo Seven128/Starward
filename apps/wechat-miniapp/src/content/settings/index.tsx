@@ -36,6 +36,16 @@ function writeJsonFile(filePath: string, data: string) {
   });
 }
 
+function removeJsonFile(filePath: string) {
+  return new Promise<void>((resolve, reject) => {
+    Taro.getFileSystemManager().unlink({
+      filePath,
+      success: () => resolve(),
+      fail: (result) => reject(new Error(result.errMsg)),
+    });
+  });
+}
+
 export default function SettingsPage() {
   const themeClass = useThemeClass();
   const preferences = useAppStore((state) => state.preferences);
@@ -89,6 +99,7 @@ export default function SettingsPage() {
     accountActionPending.current = true;
     setDataAction("EXPORT");
     let filePath: string | null = null;
+    let fileWritten = false;
     try {
       const response = await exportAccountData();
       const root = Taro.env.USER_DATA_PATH;
@@ -96,8 +107,9 @@ export default function SettingsPage() {
       const fileName = `starward-account-${response.data.generatedAt
         .replace(/[:.]/gu, "-")}.json`;
       const destination = `${root}/${fileName}`;
-      await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
       filePath = destination;
+      await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
+      fileWritten = true;
       await Taro.shareFileMessage({ filePath, fileName });
       const currentState = useAppStore.getState();
       for (const notification of currentState.notifications) {
@@ -114,14 +126,21 @@ export default function SettingsPage() {
         dedupeKey: "settings-account-exported",
       });
     } catch (error) {
+      let cleanupFailed = false;
+      if (filePath) {
+        try { await removeJsonFile(filePath); }
+        catch { cleanupFailed = true; }
+      }
       notify({
         owner: "settings",
         placement: "inline",
-        tone: filePath ? "warning" : "error",
-        title: filePath ? "文件已生成，尚未分享" : "账户数据导出失败",
-        body: filePath
-          ? "微信文件分享未完成；可再次点击下载并重试。"
-          : errorMessage(error),
+        tone: fileWritten || cleanupFailed ? "warning" : "error",
+        title: cleanupFailed ? "本机临时文件未清除" : fileWritten ? "文件分享未完成" : "账户数据导出失败",
+        body: cleanupFailed
+          ? "账户数据可能仍留在本机临时文件中；请通过微信清理本小程序的数据后重试。"
+          : fileWritten
+            ? "微信文件分享未完成；已清理本次临时文件，可重新下载。"
+            : errorMessage(error),
         dismissible: true,
         dedupeKey: "settings-account-export-failed",
       });
