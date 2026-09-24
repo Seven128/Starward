@@ -316,7 +316,7 @@ export function SpotInformationPanel({
     mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
   );
   const galleryPosition = useSpotMediaGalleryPosition(`${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`);
-  useHiddenNativeScrollbar("spot-panel-scroll", extent === "large", effectiveSpot.spotId);
+  useHiddenNativeScrollbar("spot-panel-scroll", extent !== "small", `${effectiveSpot.spotId}:${extent}`);
   useHiddenNativeScrollbar("spot-panel-media-strip", extent === "large" && media.length > 1, effectiveSpot.spotId);
   const route = detail?.route;
   const facilities = detail?.spot.facilities ?? effectiveSpot.facilities;

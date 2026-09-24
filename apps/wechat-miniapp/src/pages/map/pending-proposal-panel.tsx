@@ -38,7 +38,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const mediaKey = model.media.map(item => item.uploadId).join("|");
   const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
   const galleryPosition = useSpotMediaGalleryPosition(mediaScope);
-  useHiddenNativeScrollbar("spot-proposal-scroll", extent === "large", mediaScope);
+  useHiddenNativeScrollbar("spot-proposal-scroll", extent !== "small", `${mediaScope}:${extent}`);
   useHiddenNativeScrollbar("spot-proposal-media-strip", extent === "large" && model.media.length > 1, mediaScope);
   const leadMedia = model.media[0];
   const handleInDocument = extent === "large" && Boolean(leadMedia);
