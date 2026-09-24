@@ -106,7 +106,10 @@ function RecordDetail({ item, onBack }: { item: ContributionSubmission; onBack()
   </View>;
 }
 
-export function ContributionRecords({ form }: { form: ContributionForm }) {
+export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroupChange, onFilterChange }: {
+  form: ContributionForm; onDetailOpen(): void; onDetailClose(): void;
+  onGroupChange(group: ContributionRecordGroup): void; onFilterChange(): void;
+}) {
   const [group, setGroup] = useState<ContributionRecordGroup>("CREATION");
   const [creationFilter, setCreationFilter] = useState<CreationFilter>("ALL");
   const [feedbackFilter, setFeedbackFilter] = useState<FeedbackFilter>("ALL");
@@ -117,6 +120,8 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
   const openingVersion = useRef(0);
   const openingAbort = useRef<AbortController | null>(null);
   useEffect(() => () => { openingVersion.current++; openingAbort.current?.abort(); }, []);
+  const showDetail = (item: ContributionSubmission) => { onDetailOpen(); setSelected(item); };
+  const closeDetail = () => { setSelected(null); onDetailClose(); };
   const cancelOpening = () => {
     openingVersion.current++;
     openingAbort.current?.abort();
@@ -163,7 +168,7 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
     if (action === "EDIT") return <SoftButton label={`继续编辑${name}`} disabled={busy}
       onClick={() => void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>继续编辑</SoftButton>;
     if (action === "REVIEW_AND_EDIT") return <View className="contribution-record__actions">
-      <SoftButton label={`查看${name}审核意见`} disabled={busy} onClick={() => setSelected(item)}>查看审核意见</SoftButton>
+      <SoftButton label={`查看${name}审核意见`} disabled={busy} onClick={() => showDetail(item)}>查看审核意见</SoftButton>
       <SoftButton label={`修改并重新提交${name}`} disabled={busy} onClick={() => item.formalFeedback && item.spotId
         ? void Taro.navigateTo({ url: `/content/spot-feedback/index?spotId=${encodeURIComponent(item.spotId)}&spotName=${encodeURIComponent(name)}&submissionId=${encodeURIComponent(item.submissionId)}` })
         : void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>修改并重新提交</SoftButton>
@@ -177,13 +182,13 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
           title={openError.missing ? "当前不可公开查看" : undefined}
           detail={openError.missing ? "这个正式观星点当前不可公开查看；本次提交记录仍可查看。" : "正式观星点暂时无法打开，请检查网络后重试。"}
           recoveryLabel={openError.missing ? "查看本次记录" : "重试打开"}
-          onRecover={() => openError.missing ? setSelected(item) : void openPublishedSpot(item)} />
-        {!openError.missing ? <SoftButton label={`查看${name}本次提交记录`} onClick={() => setSelected(item)}>查看本次记录</SoftButton> : null}
+          onRecover={() => openError.missing ? showDetail(item) : void openPublishedSpot(item)} />
+        {!openError.missing ? <SoftButton label={`查看${name}本次提交记录`} onClick={() => showDetail(item)}>查看本次记录</SoftButton> : null}
       </> : null}
     </>;
-    return <SoftButton label={`查看${name}本次记录`} disabled={busy} onClick={() => setSelected(item)}>查看提交内容</SoftButton>;
+    return <SoftButton label={`查看${name}本次记录`} disabled={busy} onClick={() => showDetail(item)}>查看提交内容</SoftButton>;
   };
-  if (selected) return <RecordDetail item={selected} onBack={() => setSelected(null)} />;
+  if (selected) return <RecordDetail item={selected} onBack={closeDetail} />;
 
   const records = form.submissions
     .filter((item) => contributionRecordGroup(item) === group)
@@ -200,9 +205,9 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
   return <View className="contribution-records" data-control="contribution-records">
     <SelectionTabs className="contribution-records__groups" semantics="tabs" label="记录类型"
       items={[{ id: "CREATION", label: "创建的观星点", controlId: "contribution-group-creation" }, { id: "FEEDBACK", label: "反馈编辑", controlId: "contribution-group-feedback" }] as const}
-      activeId={group} onSelect={(next) => { cancelOpening(); setGroup(next); }} itemClassName="contribution-records__group" activeItemClassName="contribution-records__group--active" />
+      activeId={group} onSelect={(next) => { if (next === group) return; cancelOpening(); onGroupChange(next); setGroup(next); }} itemClassName="contribution-records__group" activeItemClassName="contribution-records__group--active" />
     <View className="contribution-records__filters" aria-label="状态筛选">
-      {filters.map(([key, label]) => <Button key={key} className={`chip focus-ring${activeFilter === key ? " chip--selected" : ""}`} aria-pressed={activeFilter === key} onClick={() => { cancelOpening(); group === "CREATION" ? setCreationFilter(key as CreationFilter) : setFeedbackFilter(key as FeedbackFilter); }}>{label}</Button>)}
+      {filters.map(([key, label]) => <Button key={key} className={`chip focus-ring${activeFilter === key ? " chip--selected" : ""}`} aria-pressed={activeFilter === key} onClick={() => { if (key === activeFilter) return; cancelOpening(); onFilterChange(); group === "CREATION" ? setCreationFilter(key as CreationFilter) : setFeedbackFilter(key as FeedbackFilter); }}>{label}</Button>)}
     </View>
     {form.history.refreshError || form.history.data?.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="记录尚未确认最新状态，暂时显示上次内容。" recoveryLabel="重新获取" onRecover={() => void form.history.refetch().catch(() => {})} /> : null}
     {form.history.isPending ? <StatusPanel state="LOADING" detail="正在读取创建与反馈记录。" /> : form.history.isError ? <StatusPanel state="ERROR" detail="暂时无法读取记录。" recoveryLabel="重试" onRecover={() => void form.history.refetch().catch(() => {})} /> : visible.length ? <View className="contribution-records__list">

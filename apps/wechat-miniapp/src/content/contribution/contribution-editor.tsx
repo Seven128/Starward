@@ -1,6 +1,7 @@
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
+import type { BaseEventOrig, ScrollViewProps } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ContributionMediaKind, ContributionSubmission } from "@starward/miniapp-contracts";
 import { parseCoordinateInput } from "./coordinate-input";
 import { NotificationRegion } from "@/components/notification";
@@ -13,8 +14,8 @@ import { contributionValidationAnchor } from "./validation-anchor";
 import { ContributionCandidateAddressControl, ContributionCandidateCoordinateConsent, ContributionContextSection, ContributionEvidenceSection, ContributionLocationSection } from "./contribution-form-sections";
 import { ContributionActions, ContributionHistory, ContributionMediaSection } from "./contribution-media-history";
 import { useContributionCommands } from "./use-contribution-commands";
-import { useContributionForm } from "./use-contribution-form";
-import { ContributionRecords } from "./contribution-records";
+import { useContributionForm, type ContributionForm } from "./use-contribution-form";
+import type { ContributionRecordGroup } from "./contribution-record-model";
 import { ToggleField } from "@/components/toggle-field";
 import { SpotDocumentFields } from "../spot-document-fields";
 import { SPOT_DOCUMENT_CHAPTERS, type SpotDocumentChapter } from "../spot-document";
@@ -33,12 +34,21 @@ export interface ContributionCandidatePreview {
 
 export type ContributionLeaveGuard = () => Promise<boolean>;
 
-export function ContributionEditor({ managesRecords = false, embedded = false, embeddedHeightPx, forceNew, submissionId, onClose, onSubmitted, onCandidateChange, onLeaveGuardChange }: {
-  managesRecords?: boolean; embedded?: boolean; embeddedHeightPx?: number; forceNew?: boolean; submissionId?: string;
+export interface ContributionRecordsNavigation {
+  onDetailOpen(): void;
+  onDetailClose(): void;
+  onGroupChange(group: ContributionRecordGroup): void;
+  onFilterChange(): void;
+}
+
+export function ContributionEditor({ renderRecords, embedded = false, embeddedHeightPx, forceNew, submissionId, onClose, onSubmitted, onCandidateChange, onLeaveGuardChange }: {
+  renderRecords?: (form: ContributionForm, navigation: ContributionRecordsNavigation) => ReactNode;
+  embedded?: boolean; embeddedHeightPx?: number; forceNew?: boolean; submissionId?: string;
   onClose?: () => void; onSubmitted?: (submission: ContributionSubmission) => void;
   onCandidateChange?: (candidate: ContributionCandidatePreview | null) => void;
   onLeaveGuardChange?: (guard: ContributionLeaveGuard | null) => void;
 }) {
+  const managesRecords = renderRecords !== undefined;
   const themeClass = useThemeClass();
   const form = useContributionForm({
     ...(forceNew === undefined ? {} : { forceNew }),
@@ -49,6 +59,13 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
   const [validationAnchor, setValidationAnchor] = useState("");
   const [resumeAttempt, setResumeAttempt] = useState(0);
   const [documentChapter, setDocumentChapter] = useState<SpotDocumentChapter>("place");
+  const [recordsScrollTop, setRecordsScrollTop] = useState(0);
+  const recordsScrollPosition = useRef(0);
+  const recordsSavedPosition = useRef(0);
+  const recordsScrollHeld = useRef(false);
+  const recordsScrollTransition = useRef(0);
+  const recordsGroup = useRef<ContributionRecordGroup>("CREATION");
+  const recordsGroupPositions = useRef<Record<ContributionRecordGroup, number>>({ CREATION: 0, FEEDBACK: 0 });
   const submittedId = useRef("");
   const handoffWasOpen = useRef(false);
   useEffect(() => {
@@ -151,6 +168,42 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
     setDocumentChapter(chapter);
     setValidationAnchor(`formal-feedback-${chapter}`);
   };
+  const openRecordDetail = () => {
+    recordsScrollTransition.current++;
+    recordsSavedPosition.current = recordsScrollPosition.current;
+    recordsScrollHeld.current = true;
+    setRecordsScrollTop(0);
+  };
+  const closeRecordDetail = () => {
+    const version = ++recordsScrollTransition.current;
+    recordsScrollPosition.current = recordsSavedPosition.current;
+    setRecordsScrollTop(recordsSavedPosition.current);
+    Taro.nextTick(() => { if (recordsScrollTransition.current === version) recordsScrollHeld.current = false; });
+  };
+  const settleRecordsScroll = () => {
+    const version = ++recordsScrollTransition.current;
+    recordsScrollHeld.current = true;
+    Taro.nextTick(() => { if (recordsScrollTransition.current === version) recordsScrollHeld.current = false; });
+  };
+  const changeRecordsGroup = (next: ContributionRecordGroup) => {
+    settleRecordsScroll();
+    recordsGroupPositions.current[recordsGroup.current] = recordsScrollPosition.current;
+    recordsGroup.current = next;
+    recordsScrollPosition.current = recordsGroupPositions.current[next];
+    setRecordsScrollTop(recordsScrollPosition.current);
+  };
+  const changeRecordsFilter = () => {
+    settleRecordsScroll();
+    recordsScrollPosition.current = 0;
+    recordsGroupPositions.current[recordsGroup.current] = 0;
+    setRecordsScrollTop(0);
+  };
+  const onRecordsScroll = (event: BaseEventOrig<ScrollViewProps.onScrollDetail>) => {
+    if (recordsScrollHeld.current) return;
+    recordsScrollPosition.current = event.detail.scrollTop;
+    recordsGroupPositions.current[recordsGroup.current] = event.detail.scrollTop;
+    setRecordsScrollTop(event.detail.scrollTop);
+  };
   return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
     {commands.handoffWarning}
     {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text><Text className="contribution-editor-save-state">{savedState}</Text><Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : form.hasFormalSpot ? "现场反馈与纠错" : title} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
@@ -163,14 +216,15 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
       activeItemClassName="is-active"
       indicatorClassName="formal-feedback-tabs__line"
     /> : null}
-    <ScrollView scrollY scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
+    <ScrollView scrollY {...(managesRecords ? { scrollTop: recordsScrollTop, onScroll: onRecordsScroll } : {})} scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
       <View className={`contribution-content${isNewSpotDocument ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
         {form.capabilities.isError || form.capabilities.refreshError || form.capabilities.data?.dataState === "STALE_USABLE" ? (
           <StatusPanel state={form.capabilities.isError ? "ERROR" : "STALE"}
             detail="投稿能力状态暂时无法更新；当前输入仍会保留。"
             recoveryLabel="重新获取" onRecover={() => void form.capabilities.refetch()} />
         ) : null}
-        {managesRecords ? <ContributionRecords form={form} /> : <>
+        {managesRecords ? renderRecords(form, { onDetailOpen: openRecordDetail, onDetailClose: closeRecordDetail,
+          onGroupChange: changeRecordsGroup, onFilterChange: changeRecordsFilter }) : <>
           {form.localRecovery ? <View className="contribution-card contribution-local-recovery card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void form.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
           {form.localStorageError ? <StatusPanel state="ERROR" detail="本机输入暂时无法保存，请先保留本页。" /> : null}
           {!embedded && !isNewSpotDocument ? <View id="feedback-context"><ContributionContextSection form={form} /></View> : null}
