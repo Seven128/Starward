@@ -1,6 +1,6 @@
-import Taro, { useRouter, useShareAppMessage } from "@tarojs/taro";
+import Taro, { useDidShow, useRouter, useShareAppMessage } from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PlanPublicShareData, SpotPublicShareData } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
@@ -35,28 +35,42 @@ export default function SharedJourneyPage() {
   const spotId = decode(router.params.spotId);
   const [state, setState] = useState<ShareState>({ kind: "loading" });
   const [attempt, setAttempt] = useState(0);
+  const hasShown = useRef(false);
+  const requestEpoch = useRef(0);
+
+  useDidShow(() => {
+    if (!hasShown.current) {
+      hasShown.current = true;
+      return;
+    }
+    requestEpoch.current += 1;
+    setState({ kind: "loading" });
+    setAttempt(value => value + 1);
+  });
 
   useEffect(() => {
     let cancelled = false;
+    const epoch = ++requestEpoch.current;
+    const stillCurrent = () => !cancelled && requestEpoch.current === epoch;
     setState({ kind: "loading" });
     void (async () => {
       try {
         if (planId && !token && !spotId) {
           const link = await createPlanShare(planId);
           const publicPlan = await getSharedPlan(link.data.token);
-          if (!cancelled) setState({ kind: "ready", data: publicPlan.data,
+          if (stillCurrent()) setState({ kind: "ready", data: publicPlan.data,
             path: `/content/share/index?token=${encodeURIComponent(link.data.token)}` });
         } else if (token && !planId && !spotId) {
           const publicPlan = await getSharedPlan(token);
-          if (!cancelled) setState({ kind: "ready", data: publicPlan.data,
+          if (stillCurrent()) setState({ kind: "ready", data: publicPlan.data,
             path: `/content/share/index?token=${encodeURIComponent(token)}` });
         } else if (spotId && !planId && !token) {
           const publicSpot = await getSharedSpot(spotId);
-          if (!cancelled) setState({ kind: "ready", data: publicSpot.data,
+          if (stillCurrent()) setState({ kind: "ready", data: publicSpot.data,
             path: `/content/share/index?spotId=${encodeURIComponent(publicSpot.data.spotId)}` });
-        } else if (!cancelled) setState({ kind: "missing" });
+        } else if (stillCurrent()) setState({ kind: "missing" });
       } catch (error) {
-        if (!cancelled) setState({ kind: error instanceof MiniappApiError &&
+        if (stillCurrent()) setState({ kind: error instanceof MiniappApiError &&
           (error.code === "NOT_FOUND" || error.code === "STALE_REJECTED") ? "missing" : "error" });
       }
     })();
