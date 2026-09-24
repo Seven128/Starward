@@ -16,6 +16,8 @@ export type PlaceSearchProviderMode = "DISABLED";
 export type MediaStorageMode = "LOCAL_FILESYSTEM" | "DISABLED";
 export type EventArticleDnsMode = "SYSTEM" | "CLOUDFLARE_DOH";
 
+const LOCAL_MEMORY_TEST_SESSION_SECRET = "test-only-session-secret-not-for-release";
+
 export interface MiniappRuntimeConfig {
   releaseProfile: ReleaseProfile;
   storageMode: StorageMode;
@@ -164,7 +166,10 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   const wechat = {
     appId: value("WECHAT_MINIAPP_APP_ID"),
     appSecret: value("WECHAT_MINIAPP_APP_SECRET"),
-    sessionSecret: value("MINIAPP_SESSION_SECRET") ?? "",
+    sessionSecret: value("MINIAPP_SESSION_SECRET") ?? (
+      releaseProfile === "LOCAL" && storageMode === "MEMORY_TEST" && authMode === "LOCAL_TEST"
+        ? LOCAL_MEMORY_TEST_SESSION_SECRET : ""
+    ),
     deliveryIdentityKey: value("WECHAT_DELIVERY_IDENTITY_KEY"),
     subscriptionTemplateId: value("WECHAT_REMINDER_TEMPLATE_ID"),
   };
@@ -284,7 +289,7 @@ export function createTestRuntimeConfig(
       privateKeyPem: null,
       forecastHours: 240,
     },
-    wechat: { appId: null, appSecret: null, sessionSecret: "test-only-session-secret-not-for-release" },
+    wechat: { appId: null, appSecret: null, sessionSecret: LOCAL_MEMORY_TEST_SESSION_SECRET },
     trialRegion: "TEST",
     eventCatalogVersion: ASTRONOMICAL_EVENT_CATALOG_VERSION,
     eventCatalogCheckIntervalDays: 7,
