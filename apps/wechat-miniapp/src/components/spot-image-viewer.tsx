@@ -93,6 +93,11 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     if (closing.current) return;
     closing.current = true;
     clearFlightTimers();
+    if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
+    reboundTimer.current = null;
+    start.current = null;
+    last.current = null;
+    axis.current = null;
     if (reducedMotion) { onClose(); return; }
     readPhotoSource(index, source => {
       const ratio = imageRatio?.id === current?.id ? imageRatio?.value : null;
@@ -113,6 +118,9 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
       flightFinishTimer.current = setTimeout(onClose, 340);
     });
   };
+  const changeIndex = (next: number) => {
+    if (!closing.current) onIndexChange(next);
+  };
   closeRef.current = requestClose;
 
   useEffect(() => {
@@ -128,6 +136,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     setEntered(true);
   }, [reducedMotion]);
   useEffect(() => {
+    if (closing.current) return;
     if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
     setFrame(REST_FRAME);
     setChromeHidden(false);
@@ -204,13 +213,14 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     <View className="spot-media-viewer__content" style={{ "--viewer-drag-x": `${frame.x}px`, "--viewer-drag-y": `${frame.y}px`, "--viewer-scale": String(frame.scale) } as CSSProperties}>
       <View className="spot-media-viewer__stage"
         onTouchStart={(event) => {
-          if (!entered || !current.src || unavailable) return;
+          if (closing.current || !entered || !current.src || unavailable) return;
           if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
           start.current = touchPoint(event);
           last.current = start.current;
           axis.current = null;
         }}
         onTouchMove={(event) => {
+          if (closing.current) return;
           const origin = start.current, point = touchPoint(event);
           if (!origin || !point) return;
           last.current = point;
@@ -222,6 +232,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
           setFrame(viewerDragFrame(axis.current, dx, dy, index, media.length));
         }}
         onTouchEnd={(event) => {
+          if (closing.current) return;
           const origin = start.current;
           const reported = touchPoint(event, true) ?? touchPoint(event);
           const point = viewerEndPoint(reported, last.current);
@@ -229,10 +240,10 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
           start.current = null; last.current = null; axis.current = null;
           const result = viewerRelease(gesture, origin && point ? point.x - origin.x : 0, origin && point ? point.y - origin.y : 0, index, media.length);
           if (result.kind === "close") { requestClose(); return; }
-          if (result.kind === "page") { onIndexChange(result.index); return; }
+          if (result.kind === "page") { changeIndex(result.index); return; }
           rebound();
         }}
-        onTouchCancel={() => { start.current = null; last.current = null; axis.current = null; rebound(); }}>
+        onTouchCancel={() => { if (closing.current) return; start.current = null; last.current = null; axis.current = null; rebound(); }}>
         {current.src && !unavailable
           ? <Image key={`${current.id}:${retryNonce}`} className="spot-media-viewer__image" src={current.src} mode="aspectFit" ariaLabel={current.alt}
               onLoad={(event) => {
@@ -258,10 +269,10 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
               }}>重试照片</Button> : null}
           </View>}
         {index > 0
-          ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--previous" ariaLabel="上一张照片" onClick={() => onIndexChange(index - 1)}>‹</Button>
+          ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--previous" ariaLabel="上一张照片" onClick={() => changeIndex(index - 1)}>‹</Button>
           : null}
         {index < media.length - 1
-          ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--next" ariaLabel="下一张照片" onClick={() => onIndexChange(index + 1)}>›</Button>
+          ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--next" ariaLabel="下一张照片" onClick={() => changeIndex(index + 1)}>›</Button>
           : null}
       </View>
       <View className="spot-media-viewer__caption"><Text>{current.caption}</Text><Text>{index + 1} / {media.length}{current.attribution ? ` · ${current.attribution}` : ""}</Text></View>
