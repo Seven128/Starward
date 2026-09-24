@@ -2,6 +2,7 @@ import Taro from "@tarojs/taro";
 import { Button, Image, RootPortal, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { SemanticIcon } from "./semantic-asset";
+import { REST_FRAME, viewerDragFrame, viewerEndPoint, viewerRelease, type ViewerDragFrame, type ViewerGestureAxis, type ViewerTouchPoint } from "./spot-image-viewer-gesture";
 import "./spot-image-viewer.scss";
 
 export type SpotViewerMedia = {
@@ -13,9 +14,7 @@ export type SpotViewerMedia = {
   state?: "loading" | "error" | "ready";
 };
 
-type TouchPoint = { x: number; y: number };
-
-function touchPoint(event: unknown, changed = false): TouchPoint | null {
+function touchPoint(event: unknown, changed = false): ViewerTouchPoint | null {
   const value = event as { touches?: ArrayLike<{ clientX?: number; clientY?: number }>; changedTouches?: ArrayLike<{ clientX?: number; clientY?: number }> };
   const touch = (changed ? value.changedTouches : value.touches)?.[0];
   return Number.isFinite(touch?.clientX) && Number.isFinite(touch?.clientY)
@@ -32,12 +31,15 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   onRetry?: (index: number) => void;
   onBackHandlerChange?: (handler: (() => void) | null) => void;
 }) {
-  const [dragY, setDragY] = useState(0);
+  const [frame, setFrame] = useState<ViewerDragFrame>(REST_FRAME);
   const [chromeHidden, setChromeHidden] = useState(false);
+  const [gestureActive, setGestureActive] = useState(false);
   const [decodeFailedId, setDecodeFailedId] = useState<string | null>(null);
   const [retryNonce, setRetryNonce] = useState(0);
-  const start = useRef<TouchPoint | null>(null);
-  const axis = useRef<"horizontal" | "vertical" | null>(null);
+  const start = useRef<ViewerTouchPoint | null>(null);
+  const last = useRef<ViewerTouchPoint | null>(null);
+  const axis = useRef<ViewerGestureAxis | null>(null);
+  const reboundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const current = media[index];
   const unavailable = Boolean(current && (current.state === "error" || (current.state === "ready" && !current.src) || decodeFailedId === current.id));
 
@@ -50,42 +52,62 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     return () => onBackHandlerChange?.(null);
   }, [onBackHandlerChange, onClose]);
   useEffect(() => {
-    setDragY(0);
+    if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
+    setFrame(REST_FRAME);
     setChromeHidden(false);
+    setGestureActive(false);
     setDecodeFailedId(null);
   }, [index]);
+  useEffect(() => () => { if (reboundTimer.current !== null) clearTimeout(reboundTimer.current); }, []);
+
+  const rebound = () => {
+    setGestureActive(false);
+    setFrame(REST_FRAME);
+    if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
+    reboundTimer.current = setTimeout(() => {
+      reboundTimer.current = null;
+      setChromeHidden(false);
+    }, 170);
+  };
 
   if (!current) return null;
 
-  return <RootPortal><View className={`spot-media-viewer${chromeHidden ? " spot-media-viewer--dragging" : ""}`}
-    style={{ "--viewer-backdrop-opacity": String(Math.max(.35, 1 - Math.max(0, dragY) / 450)) } as CSSProperties}
+  return <RootPortal><View className={`spot-media-viewer${chromeHidden ? " spot-media-viewer--chrome-hidden" : ""}${gestureActive ? " spot-media-viewer--gesture-active" : ""}`}
+    style={{ "--viewer-backdrop-opacity": String(frame.backdrop) } as CSSProperties}
     role="dialog" ariaLabel={`${name}照片查看器，第 ${index + 1} 张，共 ${media.length} 张`} catchMove>
     <Button className="spot-media-viewer__close" ariaLabel="关闭照片查看器" onClick={onClose}><SemanticIcon name="close" /></Button>
-    <View className="spot-media-viewer__content" style={{ "--viewer-drag-y": `${dragY}px`, "--viewer-scale": String(Math.max(0.86, 1 - Math.abs(dragY) / 900)) } as CSSProperties}>
+    <View className="spot-media-viewer__content" style={{ "--viewer-drag-x": `${frame.x}px`, "--viewer-drag-y": `${frame.y}px`, "--viewer-scale": String(frame.scale) } as CSSProperties}>
       <View className="spot-media-viewer__stage"
-    onTouchStart={(event) => { start.current = touchPoint(event); axis.current = null; setDragY(0); }}
-    onTouchMove={(event) => {
-      const origin = start.current, point = touchPoint(event);
-      if (!origin || !point) return;
-      const dx = point.x - origin.x, dy = point.y - origin.y;
-      if (!axis.current && Math.max(Math.abs(dx), Math.abs(dy)) >= 8) axis.current = Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
-      if (!axis.current) return;
-      setChromeHidden(true);
-      if (axis.current === "vertical") setDragY(Math.max(-180, Math.min(180, dy)));
-    }}
-    onTouchEnd={(event) => {
-      const origin = start.current, point = touchPoint(event, true), gesture = axis.current;
-      start.current = null; axis.current = null;
-      if (origin && point && gesture === "vertical" && point.y - origin.y >= 88) { onClose(); return; }
-      if (origin && point && gesture === "horizontal") {
-        const delta = point.x - origin.x;
-        if (delta <= -60 && index < media.length - 1) onIndexChange(index + 1);
-        if (delta >= 60 && index > 0) onIndexChange(index - 1);
-      }
-      setDragY(0);
-      setChromeHidden(false);
-    }}
-    onTouchCancel={() => { start.current = null; axis.current = null; setDragY(0); setChromeHidden(false); }}>
+        onTouchStart={(event) => {
+          if (!current.src || unavailable) return;
+          if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
+          start.current = touchPoint(event);
+          last.current = start.current;
+          axis.current = null;
+        }}
+        onTouchMove={(event) => {
+          const origin = start.current, point = touchPoint(event);
+          if (!origin || !point) return;
+          last.current = point;
+          const dx = point.x - origin.x, dy = point.y - origin.y;
+          if (!axis.current && Math.max(Math.abs(dx), Math.abs(dy)) >= 8) axis.current = Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
+          if (!axis.current) return;
+          setGestureActive(true);
+          setChromeHidden(true);
+          setFrame(viewerDragFrame(axis.current, dx, dy, index, media.length));
+        }}
+        onTouchEnd={(event) => {
+          const origin = start.current;
+          const reported = touchPoint(event, true) ?? touchPoint(event);
+          const point = viewerEndPoint(reported, last.current);
+          const gesture = axis.current;
+          start.current = null; last.current = null; axis.current = null;
+          const result = viewerRelease(gesture, origin && point ? point.x - origin.x : 0, origin && point ? point.y - origin.y : 0, index, media.length);
+          if (result.kind === "close") { onClose(); return; }
+          if (result.kind === "page") { onIndexChange(result.index); return; }
+          rebound();
+        }}
+        onTouchCancel={() => { start.current = null; last.current = null; axis.current = null; rebound(); }}>
         {current.src && !unavailable
           ? <Image key={`${current.id}:${retryNonce}`} className="spot-media-viewer__image" src={current.src} mode="aspectFit" ariaLabel={current.alt}
               onError={() => { setDecodeFailedId(current.id); setChromeHidden(false); }} />
