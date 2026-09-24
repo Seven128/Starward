@@ -208,8 +208,9 @@ export function SpotDetailPage({
         <CustomNav title="观星点详情" back />
         <View className="page-inset">
           <StatusPanel
-            state="EMPTY"
-            detail={mapReturnFailed ? "地图暂未打开，请重试。" : "无法确认当前观星点，请返回地图重新选择。"}
+            state="ERROR"
+            title="观星点无法确认"
+            detail={mapReturnFailed ? "地图暂未打开，请重试。" : "缺少当前地点或观测上下文，请返回地图重新选择。"}
             recoveryLabel={mapReturnFailed ? "重试返回地图" : "返回地图"}
             onRecover={() => void returnToMap()}
           />
