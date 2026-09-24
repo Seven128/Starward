@@ -266,35 +266,40 @@ export function MapSearchSurface() {
     staleTime: 0,
   });
 
-  const sceneSpots = scene.data?.data.spots ?? [];
+  // The debounced request still belongs to the previous input for a short
+  // interval. Its rows must not remain actionable under the new input.
+  const queryPending = finderQuery.trim() !== debouncedQuery;
+  const visibleScene = queryPending ? null : scene.data?.data;
+  const visiblePlaces = queryPending ? null : placeSearch.data?.data;
+  const sceneSpots = visibleScene?.spots ?? [];
   const formalSpots = sceneSpots;
   const wanted = formalSpots.filter((spot) => favoriteIds.includes(spot.spotId));
   const other = formalSpots.filter((spot) => !favoriteIds.includes(spot.spotId));
-  const candidates = placeSearch.data?.data.candidates ?? [];
-  const ordinaryPlaces = placeSearch.data?.data.ordinaryPlaces ?? [];
+  const candidates = visiblePlaces?.candidates ?? [];
+  const ordinaryPlaces = visiblePlaces?.ordinaryPlaces ?? [];
   const activeFilterGroups = FILTER_GROUPS
     .map((group) => group.key)
     .filter((group) => committedFilters[group].length > 0);
   const incompleteActiveCoverage = activeFilterGroups
-    .map((group) => ({ group, capability: scene.data?.data.filterCapabilities.byGroup[group] }))
+    .map((group) => ({ group, capability: visibleScene?.filterCapabilities.byGroup[group] }))
     .filter((item) => item.capability && item.capability.state !== "AVAILABLE");
   const hasUnknownIncludedSpot = formalSpots.some((spot) =>
     activeFilterGroups.some(
-      (group) => scene.data?.data.filterEvidence?.[spot.spotId]?.[group].state === "UNKNOWN",
+      (group) => visibleScene?.filterEvidence?.[spot.spotId]?.[group].state === "UNKNOWN",
     ),
   );
-  const expiredEmptyFilter = formalSpots.length === 0 && activeFilterGroups.includes("LESS_CLOUD") &&
-    Date.parse(scene.data?.data.forecastValidUntil ?? "") <= Date.now();
+  const expiredEmptyFilter = !queryPending && formalSpots.length === 0 && activeFilterGroups.includes("LESS_CLOUD") &&
+    Date.parse(visibleScene?.forecastValidUntil ?? "") <= Date.now();
   const staleSearchResource = Boolean(
     contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE" ||
-    scene.refreshError || scene.data?.dataState === "STALE_USABLE" ||
-    placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE",
+    (!queryPending && (scene.refreshError || scene.data?.dataState === "STALE_USABLE" ||
+      placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE")),
   );
   const searchState: PageState = contextQuery.isError
     ? isPermissionError(contextQuery.error)
       ? "PERMISSION_DENIED"
       : "ERROR"
-    : !activeContext || scene.isPending || (debouncedQuery.length > 0 && placeSearch.isPending)
+    : queryPending || !activeContext || scene.isPending || (debouncedQuery.length > 0 && placeSearch.isPending)
       ? "LOADING"
       : scene.isError || placeSearch.isError
         ? isPermissionError(scene.error ?? placeSearch.error)
@@ -310,13 +315,15 @@ export function MapSearchSurface() {
               : "READY";
   useEffect(() => {
     if (!pageVisible) return;
-    const requestError = contextQuery.error ?? contextQuery.refreshError ?? scene.error ?? scene.refreshError ?? placeSearch.error ?? placeSearch.refreshError;
-    const staleFallback = contextQuery.data?.dataState === "STALE_USABLE" || scene.data?.dataState === "STALE_USABLE" || placeSearch.data?.dataState === "STALE_USABLE";
+    const requestError = contextQuery.error ?? contextQuery.refreshError ??
+      (queryPending ? null : scene.error ?? scene.refreshError ?? placeSearch.error ?? placeSearch.refreshError);
+    const staleFallback = contextQuery.data?.dataState === "STALE_USABLE" ||
+      (!queryPending && (scene.data?.dataState === "STALE_USABLE" || placeSearch.data?.dataState === "STALE_USABLE"));
     if ((!requestError && !staleFallback) || (requestError && isPermissionError(requestError))) return;
     notify({ owner: "search", placement: "floating", tone: "info",
       title: "搜索数据异常", body: "地点与观星点结果暂时无法更新，可在页面中重试。",
       dedupeKey: "search-resource-failed" });
-  }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible,
+  }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible, queryPending,
     placeSearch.data?.dataState, placeSearch.error, placeSearch.refreshError, scene.data?.dataState,
     scene.error, scene.refreshError]);
   const retryStaleSearchResource = () => {
@@ -524,9 +531,10 @@ export function MapSearchSurface() {
             onClick={(event) => event.stopPropagation()}
           >
             {nativeLocationEntry}
-            {debouncedQuery ? (
+            {finderQuery.trim() ? (
               <View className="spot-search-suggestions">
-                {placeSearch.data?.data.formalSpots.map((spot) => (
+                {queryPending ? <Text className="type-caption spot-search-query-status">正在查找地点。</Text> : null}
+                {visiblePlaces?.formalSpots.map((spot) => (
                   <Button key={spot.spotId} className="spot-search-suggestion" onClick={() => void selectFormal(spot)}>
                     <Text>{spot.name}</Text>
                     <Text className="type-caption">{spot.region || "正式观星点"}</Text>
@@ -544,7 +552,7 @@ export function MapSearchSurface() {
                     <Text className="type-caption">普通地点 · 只移动地图{result.region || result.address ? ` · ${result.region || result.address}` : ""}</Text>
                   </Button>
                 ))}
-                {!placeSearch.isPending && !placeSearch.isError && !placeSearch.data?.data.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
+                {!queryPending && !placeSearch.isPending && !placeSearch.isError && !visiblePlaces?.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
                   <Text className="type-caption spot-search-query-status">没有匹配结果；可以换一个名称或城市。</Text>
                 ) : null}
               </View>
@@ -616,8 +624,8 @@ export function MapSearchSurface() {
             <StatusPanel
               state={searchState}
               detail={
-                (contextQuery.isError ? errorMessage(contextQuery.error) : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
-                (isOfflineError(contextQuery.error ?? scene.error ?? placeSearch.error)
+                (contextQuery.isError ? errorMessage(contextQuery.error) : queryPending ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
+                (isOfflineError(contextQuery.error ?? (queryPending ? null : scene.error ?? placeSearch.error))
                   ? "网络不可用，请连接后重试。"
                   : expiredEmptyFilter
                     ? "少云筛选资料已到期，结果待核验；请刷新资料。"
@@ -644,7 +652,8 @@ export function MapSearchSurface() {
         </View>
 
           <View className="spot-search-result-summary">
-            <Text className="type-caption">{expiredEmptyFilter ? "筛选结果待核验"
+            <Text className="type-caption">{queryPending ? "搜索结果更新中"
+              : expiredEmptyFilter ? "筛选结果待核验"
               : formalSpots.length === 0 && searchState === "STALE" ? "搜索结果待更新"
               : formalSpots.length === 0 && (searchState === "ERROR" || searchState === "PERMISSION_DENIED") ? "搜索结果暂不可用"
               : `${formalSpots.length} 个${hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点`}</Text>
@@ -656,7 +665,7 @@ export function MapSearchSurface() {
               <SemanticIcon name={wantedOpen ? "chevron-up" : "chevron-down"} />
             </Button>
             {wantedOpen ? (
-              wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={scene.data?.data.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
+              wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
                 : showPartitionEmpty ? <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text> : null
             ) : null}
           </View>
@@ -667,7 +676,7 @@ export function MapSearchSurface() {
               <SemanticIcon name={otherOpen ? "chevron-up" : "chevron-down"} />
             </Button>
             {otherOpen ? (
-              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={scene.data?.data.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
+              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
                 : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null
             ) : null}
           </View>
