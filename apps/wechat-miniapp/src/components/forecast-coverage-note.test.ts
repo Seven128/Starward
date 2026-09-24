@@ -40,6 +40,11 @@ test("question disclosure opens, closes, distinguishes map coverage and resets a
   assert.equal(section.props.emptyLevel, "section");
   assert.match(section.props.detail, /地图采样点/);
   assert.doesNotMatch(text(empty), /暂无数据/);
+  const emptyAir = render({ ...input, starts: [], scopeKey: "air:empty", scope: "air" } as typeof input);
+  const airSection = (emptyAir.children as any[]).find(child => child?.type === "StatusPanel");
+  assert.match(airSection.props.detail, /空气质量小时预报/);
+  assert.match(airSection.props.detail, /若有读数/,
+    "an empty forecast must not promise a current reading when both AQ segments are unavailable");
   const stale = render({ ...input, starts: [], scopeKey: "map:stale", scope: "map", stale: true } as typeof input);
   assert.equal(stale, null);
   const staleWithRange = render({ ...input, scopeKey: "map:stale-range", scope: "map", stale: true } as typeof input);
