@@ -39,8 +39,19 @@ test("editor host labels the selected formal spot instead of the previous contex
     selectedSpotId: "spot:hk",
     formalSpots: [{ spotId: "spot:hk", timezone: "Asia/Hong_Kong" }],
     activePlan: { spotId: "spot:main", contextSnapshot: { timezone: "Asia/Shanghai" } },
-    activeContext: { timezone: "Asia/Shanghai" },
+    activeContext: { timezone: "Asia/Shanghai", location: { kind: "FORMAL_SPOT", spotId: "spot:main" } },
   }), "Asia/Hong_Kong");
+});
+
+test("editor host has no destination timezone before a formal spot is selected", () => {
+  const expression = expressions();
+  assert.equal(expression.timezone({
+    editing: true,
+    selectedSpotId: null,
+    formalSpots: [{ spotId: "spot:main", timezone: "Asia/Shanghai" }],
+    activePlan: null,
+    activeContext: { timezone: "Asia/Shanghai", location: { kind: "COORDINATE" } },
+  }), null);
 });
 
 test("disabled Sky query after context failure is unavailable, not an endless pending load", () => {

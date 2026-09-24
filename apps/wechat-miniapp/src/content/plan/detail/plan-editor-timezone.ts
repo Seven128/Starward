@@ -7,9 +7,11 @@ export function planEditorTimezone(input: {
   formalSpots: readonly Pick<SpotSummary, "spotId" | "timezone">[];
   activePlan: ObservationPlan | null;
   contextTimezone: string | null;
-}): string {
-  if (!input.editing) return input.activePlan?.contextSnapshot.timezone ?? input.contextTimezone ?? "Asia/Shanghai";
+  contextSpotId: SpotId | null;
+}): string | null {
+  if (!input.editing) return input.activePlan?.contextSnapshot.timezone ?? null;
+  if (!input.selectedSpotId) return null;
   return input.formalSpots.find(spot => spot.spotId === input.selectedSpotId)?.timezone ??
-    (input.activePlan?.spotId === input.selectedSpotId ? input.activePlan.contextSnapshot.timezone : undefined) ??
-    input.contextTimezone ?? "Asia/Shanghai";
+    (input.activePlan?.spotId === input.selectedSpotId ? input.activePlan.contextSnapshot.timezone : null) ??
+    (input.contextSpotId === input.selectedSpotId ? input.contextTimezone : null);
 }

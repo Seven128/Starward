@@ -554,6 +554,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const timezone = planEditorTimezone({
     editing, selectedSpotId, formalSpots, activePlan,
     contextTimezone: activeContext?.timezone ?? null,
+    contextSpotId: activeContext?.location.kind === "FORMAL_SPOT" ? activeContext.location.spotId : null,
   });
   const announce = (
     tone: "error" | "warning" | "info" | "success",
@@ -635,6 +636,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     });
     if (!spotId) {
       showFieldError("location", "请先选择一个正式观星点；本页草稿仍保留。");
+      return;
+    }
+    if (!timezone) {
+      showFieldError("location", "当前观星点时区暂不可确认；请重新获取地点后保存，输入仍保留。");
       return;
     }
     if (
@@ -947,7 +952,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               <View className="plan-period" aria-label="计划观测时段">
                 <Text className="plan-period__date">{activePlan.localDate} · 观测时段</Text>
                 <View className="plan-period__time"><Text>{activePlan.localTime}</Text><Text>—</Text><Text>{activePlan.timing?.endLocalTime || "未填写"}</Text></View>
-                <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} · ` : ""}地点当地时间 · {timezone}</Text>
+                <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} · ` : ""}地点当地时间 · {activePlan.contextSnapshot.timezone}</Text>
               </View>
             </View>
             {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
@@ -1214,7 +1219,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             {fieldErrorView("timing")}
             <View className="form-group">
               <PlanTimingFields value={timing} disabled={saving || deleting}
-                timezone={formalSpots.find((spot) => spot.spotId === selectedSpotId)?.timezone ?? activePlan?.contextSnapshot.timezone ?? "Asia/Shanghai"}
+                timezone={timezone}
                 onChange={(value) => { retainDraft({ timing: value }); setTiming(value); clearFieldError("timing"); }} />
             </View>
             <View className="plan-editor-form__heading">

@@ -8,12 +8,14 @@ export const emptyPlanTiming = (): PlanTiming => ({
 /** User input only: route or weather estimates never write these fields. */
 export function PlanTimingFields({ value, timezone, disabled, onChange }: {
   value: PlanTiming;
-  timezone: string;
+  timezone: string | null;
   disabled: boolean;
   onChange(value: PlanTiming): void;
 }) {
   return <View>
-    <Text className="plan-form-footnote">观星点当地时间 · {timezone}，支持跨日观测。</Text>
+    <Text className="plan-form-footnote">{timezone
+      ? `观星点当地时间 · ${timezone}，支持跨日观测。`
+      : "选择正式观星点后显示当地时区；支持跨日观测。"}</Text>
     <View className="plan-fields-card">
     {([
       ["观测结束", "endLocalDate", "endLocalTime"],
