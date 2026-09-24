@@ -579,7 +579,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'const bootstrapPage = await waitForCurrentPageReady(',
     "resolveOfficialCli(cliPath)",
     "assertWechatDevtoolsLoginReady(officialCliInvocation)",
-    '"E:\\\\微信开发者工具\\\\cli.bat"',
+    '"D:\\\\微信web开发者工具\\\\cli.bat"',
     '"[data-od-id=\'my-settings-action\']",\n    ".my-settings-gear"',
     "cwd: invocation.cwd ?? root",
     "cwd: root",

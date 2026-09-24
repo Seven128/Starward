@@ -87,14 +87,14 @@ if (
   throw new Error(`unknown_native_acceptance_text_size:${acceptanceTextSize}`);
 const cliPath =
   process.env.STARWARD_WECHAT_DEVTOOLS_CLI ??
-  "E:\\微信开发者工具\\cli.bat";
+  "D:\\微信web开发者工具\\cli.bat";
 const wechatIdeSkillCliPath = path.join(path.dirname(cliPath), "wechatide.cmd");
 let officialCliInvocation;
 const sourceProjectPath = path.join(root, "apps", "wechat-miniapp");
 const installationStorageKey = "starward.wechat-miniapp.installation.current";
 const authSessionStorageKey = "starward.wechat-miniapp.auth.current";
-const canonicalWorkspaceRoot = "E:\\Dev\\Starward";
-const wechatReservedRunTempRoot = "E:\\Dev\\.starward-tmp";
+const canonicalWorkspaceRoot = "D:\\dev\\Starward";
+const wechatReservedRunTempRoot = "D:\\dev\\.starward-tmp";
 const wechatProcessTemp = process.env.LOCALAPPDATA
   ? path.join(process.env.LOCALAPPDATA, "Temp")
   : null;
