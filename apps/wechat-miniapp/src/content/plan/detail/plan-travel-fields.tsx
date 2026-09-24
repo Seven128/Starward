@@ -2,6 +2,7 @@ import { Input, Picker, Text, View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useEffect, useRef, useState } from "react";
 import { SoftButton } from "@/components/soft-button";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { choosePlatformLocation } from "@/services/platform-location";
 import { currentDraftUserId, errorMessage } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
@@ -67,7 +68,7 @@ export function PlanTravelFields({ value, disabled, ownerKey, onChange }: {
       <Picker mode="selector" range={modes.map(item => item.label)} value={modeIndex} disabled={disabled}
         aria-label={`交通方式：${planTravelModeLabel(value.mode)}`}
         onChange={event => onChange({ ...value, mode: modes[Number(event.detail.value)]?.value ?? value.mode })}>
-        <View className="plan-field-value plan-field-value--select focus-ring"><Text>{planTravelModeLabel(value.mode)}</Text><Text aria-hidden="true">⌄</Text></View>
+        <View className="plan-field-value plan-field-value--select focus-ring"><Text>{planTravelModeLabel(value.mode)}</Text><SemanticIcon name="chevron-down" className="plan-field-row__chevron" /></View>
       </Picker>
     </View>
   </View>;

@@ -888,7 +888,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   .catch(() => announce("warning", "观星点详情暂未打开", "计划内容保持不变，请重试。"));
               }}>
                 <Text className="plan-hero__title">{selectedSpot?.name ?? "点位资料暂不可用"}</Text>
-                <Text className="plan-hero__chevron" aria-hidden="true">›</Text>
+                <SemanticIcon name="chevron-right" className="plan-hero__chevron" />
               </Button>
               <Text className="plan-hero__subtitle">{selectedSpot?.region ?? "正式点位资料暂不可用；计划内容仍保留。"}</Text>
               <View className="plan-period" aria-label="计划观测时段">

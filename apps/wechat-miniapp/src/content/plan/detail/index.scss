@@ -501,7 +501,7 @@
 .plan-hero__spot-row { display: flex; width: 100%; min-height: 44Px; margin: -6Px 0 0; padding: 0; align-items: center; justify-content: space-between; gap: 8Px; border: 0; background: transparent; color: var(--text-primary); text-align: left; }
 .plan-hero__spot-row::after { border: 0; }
 .plan-hero__title { margin: 0; font-size: 22Px; line-height: 1.36; font-weight: 700; }
-.plan-hero__chevron { color: var(--text-tertiary); font-size: 18Px; }
+.plan-hero__chevron { flex: 0 0 16Px; width: 16Px; height: 16Px; }
 .plan-hero__subtitle { margin-top: 5Px; font-size: 13.5Px; line-height: 1.5; }
 .plan-period { position: relative; margin-top: 14Px; padding: 16Px 18Px; border-radius: 18Px; background: var(--surface-subtle); }
 .plan-period::before { content: ""; position: absolute; top: 15Px; bottom: 15Px; left: 0; width: 3Px; border-radius: 3Px; background: var(--accent-warm); }
