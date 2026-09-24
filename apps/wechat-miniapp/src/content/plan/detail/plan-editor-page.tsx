@@ -1107,8 +1107,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               ) : formalSpots.length === 0 ? (
                 <StatusPanel
                   state="EMPTY"
-                  detail="暂无可选正式观星点，暂不能新建计划。"
-                  recoveryLabel="返回地图选点"
+                  detail="当前没有可用的正式观星点，暂不能创建计划。"
+                  recoveryLabel="返回地图"
                   onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
                 />
               ) : null}
@@ -1142,16 +1142,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <View className="plan-fields-card plan-field-row field--readonly" role="status">
                   <Text className="plan-field-row__label">观星点</Text><Text className="plan-field-row__value">{selectedSpot?.name ?? "当前计划点位资料暂不可用"}</Text>
                 </View>
-              ) : (
-                <View
-                  className="plan-fields-card plan-field-row field--disabled"
-                  role="button"
-                  aria-label="选择正式观星点"
-                  aria-disabled="true"
-                >
-                  <Text className="plan-field-row__label">观星点</Text><Text className="plan-field-row__value">暂无可选正式观星点</Text>
-                </View>
-              )}
+              ) : null}
             </View>
             <View className="plan-editor-form__heading">
               <Text className="type-section">留给星空的时间</Text>
@@ -1299,7 +1290,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           }
           setEditing(false);
         }}>取消</SoftButton>
-        <SoftButton variant="primary" disabled={saving || deleting} label="保存观测计划" onClick={() => void save()}>
+        <SoftButton variant="primary" disabled={saving || deleting || (!activePlan && formalSpots.length === 0)} label="保存观测计划" onClick={() => void save()}>
           {saving ? "保存中…" : "保存计划"}
         </SoftButton>
       </View> : null}
