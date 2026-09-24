@@ -4,7 +4,8 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { planContextIdentity } from "../../../services/plan-save-retry";
-import { parsePlanReminders, resolvePlanTiming } from "@starward/miniapp-contracts";
+import { parsePlanReminders, resolvePlanTiming, type PlanTravel } from "@starward/miniapp-contracts";
+import { planTravelNeedsExplicitOrigin } from "./plan-travel";
 
 function runtime(changeAccount = false) {
   const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -18,17 +19,18 @@ function runtime(changeAccount = false) {
   class Conflict extends Error { code = "CONFLICT"; }
   const calls: string[] = [], submitted: number[] = [];
   const context = {
-    parsePlanReminders, resolvePlanTiming, reminders: [],
+    parsePlanReminders, resolvePlanTiming, planTravelNeedsExplicitOrigin, reminders: [],
     planContextIdentity,
     PlanSaveRecoveryError: class extends Error {},
     mutationBusy: { current: false }, conflictPlan: null as unknown,
-    activePlanId: "plan", activePlan: { planId: "plan", revision: 9, spotId: "spot" },
+    activePlanId: "plan" as string | null, activePlan: { planId: "plan", revision: 9, spotId: "spot",
+      contextSnapshot: { schemaVersion: "observation-context-snapshot-v2", routeOrigin: null } } as unknown,
     scopedDraftUserId: () => "owner" as string | null,
-    activeContext: { contextId: "context", location: {} },
+    activeContext: { contextId: "context", location: {}, routeOrigin: null as { displayName: string } | null },
     resolvePlanSaveSpotId: () => "spot", selectedSpotId: "spot", formalSpots: [],
     localDate: "2026-09-06", localTime: "22:00", timezone: "Asia/Shanghai", notes: "my draft",
     timing: { endLocalDate: "2026-09-07", endLocalTime: "02:00", departureLocalDate: "2026-09-06", departureLocalTime: "20:00" },
-    travel: { origin: "深圳", mode: "DRIVING" }, eventOccurrenceIds: [],
+    travel: { origin: "深圳", mode: "DRIVING" } as PlanTravel, eventOccurrenceIds: [],
     draftBaseRevision: { current: 2 },
     setSaving() {}, planDraftKey: () => "draft", MiniappApiError: Conflict,
     saveObservationPlan: async (_plan: unknown, _context: unknown, revision: number) => {
@@ -40,6 +42,7 @@ function runtime(changeAccount = false) {
     replacePlans: () => calls.push("replace"),
     setConflictPlan: (plan: unknown) => { context.conflictPlan = plan; },
     announce: () => calls.push("notice"), errorMessage: () => "error",
+    showFieldError: (field: string) => calls.push(`field:${field}`),
   };
   const save = vm.runInNewContext(ts.transpileModule(declaration + "\nsave;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
@@ -74,7 +77,31 @@ test("incomplete timing preserves the draft and never dispatches a save", async 
   assert.deepEqual(page.submitted, []);
   assert.equal(page.context.timing.endLocalTime, "");
   assert.equal(page.context.notes, "my draft");
-  assert.deepEqual(page.calls, ["notice"]);
+  assert.deepEqual(page.calls, ["field:timing"]);
+});
+
+test("an unconfirmed map origin in a restored new-plan draft cannot be saved as departure", async () => {
+  for (const origin of ["当前地图中心", "本次授权位置", "深圳湾海滨公园"]) {
+    const page = runtime();
+    page.context.activePlanId = null;
+    page.context.activePlan = null;
+    page.context.activeContext.routeOrigin = { displayName: origin };
+    page.context.travel = { origin, mode: "DRIVING" };
+    await page.save();
+    assert.deepEqual(page.submitted, []);
+    assert.deepEqual(page.calls, ["field:travel"]);
+    assert.equal(page.context.travel.origin, origin);
+  }
+});
+
+test("explicitly edited departure text is not mistaken for an old automatic Map default", async () => {
+  const page = runtime();
+  page.context.activePlanId = null;
+  page.context.activePlan = null;
+  page.context.activeContext.routeOrigin = { displayName: "当前地图中心" };
+  page.context.travel = { origin: "当前地图中心", mode: "DRIVING", originLocation: null };
+  await page.save();
+  assert.deepEqual(page.submitted, [2]);
 });
 
 test("dedicated editor opens the saved plan without a back stack or when back navigation fails", async () => {

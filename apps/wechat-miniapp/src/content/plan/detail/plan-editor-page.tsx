@@ -44,7 +44,7 @@ import { initialPlanSelection, planIdFromRoute } from "./plan-selection";
 import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey as scopedPlanDraftKey, type PlanDraft } from "./plan-draft";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { PlanTimingFields, emptyPlanTiming } from "./plan-timing-fields";
-import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel } from "./plan-travel-fields";
+import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel-fields";
 import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
@@ -648,6 +648,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     }
     if (!travel.origin.trim()) {
       showFieldError("travel", "请填写实际出发地；当前输入仍保留。");
+      return;
+    }
+    const routeOriginName = activePlan?.contextSnapshot.schemaVersion === "observation-context-snapshot-v2"
+      ? activePlan.contextSnapshot.routeOrigin?.displayName ?? null
+      : activeContext.routeOrigin?.displayName ?? null;
+    if (planTravelNeedsExplicitOrigin(travel, routeOriginName)) {
+      showFieldError("travel", "地图位置不能自动作为实际出发地；请重新填写或在微信地图选择，当前草稿已保留。");
       return;
     }
     try {

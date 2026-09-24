@@ -9,7 +9,7 @@ import { useAppStore } from "@/state/app-store";
 import { PLAN_TRAVEL_ORIGIN_MAX_LENGTH, type PlanTravel, type PlanTravelMode } from "@starward/miniapp-contracts";
 import { emptyPlanTravel, planTravelModeLabel } from "./plan-travel";
 
-export { emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel } from "./plan-travel";
+export { emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel";
 
 const modes: readonly { value: PlanTravelMode; label: string }[] = [
   { value: "DRIVING", label: "驾车" },
