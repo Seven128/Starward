@@ -2,6 +2,23 @@ import { CONTRIBUTION_FORMAL_FIELD_KEYS, type ContributionSubmission } from "@st
 
 export type ContributionRecordGroup = "CREATION" | "FEEDBACK";
 
+export interface ContributionRecordDetailSelection {
+  owner: string | null;
+  submissionId: ContributionSubmission["submissionId"];
+}
+
+/** Resolve private detail from the latest account result, never from a clicked row snapshot. */
+export function resolveContributionRecordDetail(
+  selection: ContributionRecordDetailSelection,
+  currentOwner: string | null,
+  submissions: readonly ContributionSubmission[] | null,
+) {
+  if (!selection.owner || currentOwner !== selection.owner) return { state: "ACCOUNT_CHANGED" } as const;
+  if (!submissions) return { state: "UNAVAILABLE" } as const;
+  const item = submissions.find(value => value.submissionId === selection.submissionId);
+  return item ? { state: "CURRENT", item } as const : { state: "MISSING" } as const;
+}
+
 export function contributionRecordGroup(item: ContributionSubmission): ContributionRecordGroup {
   return item.kind === "NEW_SPOT_PROPOSAL" ? "CREATION" : "FEEDBACK";
 }

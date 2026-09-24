@@ -18,7 +18,7 @@ import {
   TOPICS,
 } from "./contribution-model";
 import type { ContributionForm } from "./use-contribution-form";
-import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts, type ContributionRecordGroup } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts, resolveContributionRecordDetail, type ContributionRecordDetailSelection, type ContributionRecordGroup } from "./contribution-record-model";
 
 type CreationFilter = "ALL" | "DRAFT" | "PENDING" | "ONLINE" | "REJECTED";
 type FeedbackFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
@@ -113,14 +113,17 @@ export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroup
   const [group, setGroup] = useState<ContributionRecordGroup>("CREATION");
   const [creationFilter, setCreationFilter] = useState<CreationFilter>("ALL");
   const [feedbackFilter, setFeedbackFilter] = useState<FeedbackFilter>("ALL");
-  const [selected, setSelected] = useState<ContributionSubmission | null>(null);
+  const [selected, setSelected] = useState<ContributionRecordDetailSelection | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [openError, setOpenError] = useState<{ id: string; missing: boolean } | null>(null);
   const opening = useRef(false);
   const openingVersion = useRef(0);
   const openingAbort = useRef<AbortController | null>(null);
   useEffect(() => () => { openingVersion.current++; openingAbort.current?.abort(); }, []);
-  const showDetail = (item: ContributionSubmission) => { onDetailOpen(); setSelected(item); };
+  const showDetail = (item: ContributionSubmission) => {
+    onDetailOpen();
+    setSelected({ owner: currentDraftUserId(), submissionId: item.submissionId });
+  };
   const closeDetail = () => { setSelected(null); onDetailClose(); };
   const cancelOpening = () => {
     openingVersion.current++;
@@ -188,7 +191,27 @@ export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroup
     </>;
     return <SoftButton label={`查看${name}本次记录`} disabled={busy} onClick={() => showDetail(item)}>查看提交内容</SoftButton>;
   };
-  if (selected) return <RecordDetail item={selected} onBack={closeDetail} />;
+  if (selected) {
+    const detail = resolveContributionRecordDetail(selected, currentDraftUserId(), form.history.data?.data.submissions ?? null);
+    if (detail.state === "ACCOUNT_CHANGED") return <StatusPanel state="ERROR" title="账号已变化"
+      detail="这条记录属于之前的账号，请返回列表重新读取当前账号记录。"
+      recoveryLabel="返回记录列表" onRecover={closeDetail} />;
+    if (detail.state === "UNAVAILABLE") return <View className="contribution-record-detail">
+      {form.history.isPending ? <StatusPanel state="LOADING" detail="正在读取当前账号的记录。" />
+        : <StatusPanel state="ERROR" detail="暂时无法读取当前账号的记录。" recoveryLabel="重新获取"
+          onRecover={() => void form.history.refetch().catch(() => {})} />}
+      <SoftButton label="返回记录列表" onClick={closeDetail}>返回记录</SoftButton>
+    </View>;
+    if (detail.state === "MISSING") return <StatusPanel state="ERROR" title="记录已不可用"
+      detail="当前账号的记录列表中没有这条记录，请返回列表查看最新状态。"
+      recoveryLabel="返回记录列表" onRecover={closeDetail} />;
+    return <>
+      {form.history.refreshError || form.history.data?.dataState === "STALE_USABLE" ?
+        <StatusPanel state="STALE" detail="记录尚未确认最新状态，暂时显示上次内容。" recoveryLabel="重新获取"
+          onRecover={() => void form.history.refetch().catch(() => {})} /> : null}
+      <RecordDetail item={detail.item} onBack={closeDetail} />
+    </>;
+  }
 
   const records = form.submissions
     .filter((item) => contributionRecordGroup(item) === group)

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
-import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts, resolveContributionRecordDetail } from "./contribution-record-model";
 
 function record(patch: Partial<ContributionSubmission>): ContributionSubmission {
   return {
@@ -60,6 +60,19 @@ test("record detail selects the latest immutable submission attempt", () => {
   });
   assert.equal(contributionFrozenAttempt(item)?.attemptNo, 2);
   assert.equal(contributionFrozenAttempt(item)?.snapshot.detail, "第二次冻结内容");
+});
+
+test("open record detail follows the current account result instead of retaining an old review snapshot", () => {
+  const initial = record({ submissionState: "PENDING_REVIEW", revision: 2 });
+  const reviewed = record({ submissionState: "CHANGES_REQUESTED", revision: 3,
+    review: { resolution: "CHANGES_REQUESTED", reason: "请补充路况", reviewedAt: "2026-09-11T00:00:00.000Z" } });
+  const selection = { owner: "account-a", submissionId: initial.submissionId };
+  assert.deepEqual(resolveContributionRecordDetail(selection, "account-a", [initial]), { state: "CURRENT", item: initial });
+  assert.deepEqual(resolveContributionRecordDetail(selection, "account-a", [reviewed]), { state: "CURRENT", item: reviewed });
+  assert.deepEqual(resolveContributionRecordDetail(selection, "account-a", []), { state: "MISSING" });
+  assert.deepEqual(resolveContributionRecordDetail(selection, "account-a", null), { state: "UNAVAILABLE" });
+  assert.deepEqual(resolveContributionRecordDetail(selection, "account-b", [reviewed]), { state: "ACCOUNT_CHANGED" });
+  assert.deepEqual(resolveContributionRecordDetail(selection, null, [reviewed]), { state: "ACCOUNT_CHANGED" });
 });
 
 test("new-spot record identity keeps submitted fields, including a literal missing-value phrase", () => {
