@@ -190,6 +190,8 @@ export default function ArticlePage() {
                   {site.isPending ? <StatusPanel state="LOADING" detail="正在读取设施记录。" />
                     : site.isError ? <StatusPanel state="ERROR" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
                     : facility ? <FacilityEvidenceDetails evidence={facility} title={FACILITY_LABEL[block.facilityType]} />
+                    : site.refreshError || site.data?.dataState === "STALE_USABLE"
+                      ? <StatusPanel state="PARTIAL" detail="设施记录尚未确认最新状态，暂不能判断是否缺失。" />
                     : <StatusPanel state="EMPTY" detail="暂无该设施的核验记录，不代表设施可用。" />}
                 </View>
               );

@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-function render(options: { pending?: boolean; failed?: boolean; article?: boolean; valid?: boolean; refreshFailed?: boolean; staleEnvelope?: boolean; fixture?: boolean; spotId?: string; paragraph?: string; facilityState?: "pending" | "failed" | "missing" | "cached-error" | "stale" }) {
+function render(options: { pending?: boolean; failed?: boolean; article?: boolean; valid?: boolean; refreshFailed?: boolean; staleEnvelope?: boolean; fixture?: boolean; spotId?: string; paragraph?: string; facilityState?: "pending" | "failed" | "missing" | "cached-error" | "stale" | "cached-missing" | "stale-missing" }) {
   const source = ts.createSourceFile("article.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const page = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "ArticlePage")!;
   const result = page.body!.statements.find(ts.isReturnStatement)!;
@@ -22,10 +22,10 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
     overview: { isPending: options.pending, isError: options.failed, refetch: () => retries.push("overview") },
     site: {
       isPending: options.facilityState === "pending", isError: options.facilityState === "failed",
-      refreshError: options.facilityState === "cached-error" ? new Error("offline") : undefined,
-      data: options.facilityState === "cached-error" || options.facilityState === "stale" ? {
-        dataState: options.facilityState === "stale" ? "STALE_USABLE" : "FRESH",
-        data: { facilities: [{ type: "PARKING", status: "UNAVAILABLE", summary: "道路封闭，不能停车" }] },
+      refreshError: options.facilityState === "cached-error" || options.facilityState === "cached-missing" ? new Error("offline") : undefined,
+      data: ["cached-error", "stale", "cached-missing", "stale-missing"].includes(options.facilityState ?? "") ? {
+        dataState: options.facilityState === "stale" || options.facilityState === "stale-missing" ? "STALE_USABLE" : "FRESH",
+        data: { facilities: options.facilityState === "cached-missing" || options.facilityState === "stale-missing" ? [] : [{ type: "PARKING", status: "UNAVAILABLE", summary: "道路封闭，不能停车" }] },
       } : undefined,
       refetch: () => retries.push("site"),
     }, FACILITY_LABEL: { PARKING: "停车" }, GUIDE_AUTHOR_LABELS: { SELF: "作者" }, formatDisplayDate: () => "未知日期",
@@ -112,6 +112,26 @@ test("stale facility evidence retains its closure warning and has one targeted r
     assert.match(output, /使用条件可能已变化/);
     assert.match(output, /道路封闭，不能停车/);
     assert.match(output, /UNAVAILABLE/);
+    assert.doesNotMatch(output, /暂无该设施的核验记录/);
+    const recoveries: (() => void)[] = [];
+    function visit(node: any) {
+      if (!node || typeof node !== "object") return;
+      if (node.props?.recoveryLabel === "重试设施资料") recoveries.push(node.props.onRecover);
+      for (const value of Object.values(node)) if (typeof value === "object") visit(value);
+    }
+    visit(tree);
+    assert.equal(recoveries.length, 1);
+    recoveries[0]!();
+    assert.deepEqual(retries, ["site"]);
+  }
+});
+
+test("a missing facility in an old site response is not a confirmed empty record after refresh fails", () => {
+  for (const facilityState of ["cached-missing", "stale-missing"] as const) {
+    const { tree, retries } = render({ facilityState });
+    const output = JSON.stringify(tree);
+    assert.match(output, /正文独立保留/);
+    assert.match(output, /设施记录尚未确认最新状态/);
     assert.doesNotMatch(output, /暂无该设施的核验记录/);
     const recoveries: (() => void)[] = [];
     function visit(node: any) {
