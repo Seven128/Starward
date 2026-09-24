@@ -41,7 +41,10 @@ function removeJsonFile(filePath: string) {
     Taro.getFileSystemManager().unlink({
       filePath,
       success: () => resolve(),
-      fail: (result) => reject(new Error(result.errMsg)),
+      fail: (result) => {
+        if (/ENOENT|no such file|file not exist|文件不存在/iu.test(result.errMsg)) resolve();
+        else reject(new Error(result.errMsg));
+      },
     });
   });
 }
@@ -114,19 +117,24 @@ export default function SettingsPage() {
       await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
       fileWritten = true;
       await Taro.shareFileMessage({ filePath, fileName });
+      let cleanupFailed = false;
+      try { await removeJsonFile(filePath); filePath = null; }
+      catch { cleanupFailed = true; }
       const currentState = useAppStore.getState();
       for (const notification of currentState.notifications) {
-        if (notification.owner === "settings" && notification.dedupeKey === "settings-account-export-failed")
+        if (notification.owner === "settings" && ["settings-account-export-failed", "settings-account-export-cleanup-failed", "settings-account-exported"].includes(notification.dedupeKey ?? ""))
           currentState.dismissNotification(notification.id);
       }
       notify({
         owner: "settings",
-        placement: "floating",
-        tone: "success",
-        title: "账户数据已生成",
-        body: "账户数据文件已分享。",
+        placement: cleanupFailed ? "inline" : "floating",
+        tone: cleanupFailed ? "warning" : "success",
+        title: cleanupFailed ? "本机临时文件未清除" : "账户数据已生成",
+        body: cleanupFailed
+          ? "文件已分享，但账户数据仍留在本机临时文件中；请通过微信清理本小程序的数据。"
+          : "账户数据文件已分享。",
         dismissible: true,
-        dedupeKey: "settings-account-exported",
+        dedupeKey: cleanupFailed ? "settings-account-export-cleanup-failed" : "settings-account-exported",
       });
     } catch (error) {
       let cleanupFailed = false;
