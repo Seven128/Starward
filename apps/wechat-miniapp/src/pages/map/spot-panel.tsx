@@ -438,7 +438,7 @@ export function SpotInformationPanel({
               <ScrollView className="spot-panel__media-strip" scrollX={media.length > 1} scrollLeft={galleryPosition.returnLeft}
                 onScroll={galleryPosition.onScroll} enhanced showScrollbar={false} ariaLabel={`${effectiveSpot.name}现场照片`}>
                 <View className="spot-panel__media-track">
-                  {media.map((item, index) => <Button className="spot-panel__media-slide" key={item.id} ariaLabel={`查看现场照片 ${index + 1}，共 ${media.length} 张`} onClick={() => { galleryPosition.remember(); setViewerIndex(index); }}>
+                  {media.map((item, index) => <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.id} ariaLabel={`查看现场照片 ${index + 1}，共 ${media.length} 张`} onClick={() => { galleryPosition.remember(); setViewerIndex(index); }}>
                     <Image
                       className="spot-panel__media-image"
                       src={item.thumbnailPath || item.localPath}
@@ -731,7 +731,7 @@ export function SpotInformationPanel({
           state: "ready" as const,
         }))}
         index={viewerIndex}
-        onIndexChange={setViewerIndex}
+        onIndexChange={(index) => { galleryPosition.reveal(index, media.length, Taro.getWindowInfo().windowWidth); setViewerIndex(index); }}
         onClose={() => setViewerIndex(null)}
         {...(onViewerBackHandlerChange ? { onBackHandlerChange: onViewerBackHandlerChange } : {})}
       /> : null}

@@ -131,7 +131,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
             <View className="spot-panel__media-track">
               {model.media.map((item, index) => {
                 const photo = mediaState[item.uploadId];
-                return <Button className="spot-panel__media-slide" key={item.uploadId}
+                return <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.uploadId}
                   ariaLabel={`查看${item.label} ${index + 1}，共 ${model.media.length} 张`}
                   onClick={() => { galleryPosition.remember(); setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
                   {photo?.state === "ready" && photo.src
@@ -185,7 +185,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
       name={model.name}
       media={viewerMedia}
       index={viewerIndex}
-      onIndexChange={setViewerIndex}
+      onIndexChange={(index) => { galleryPosition.reveal(index, viewerMedia.length, Taro.getWindowInfo().windowWidth); setViewerIndex(index); }}
       onClose={() => setViewerIndex(null)}
       onRetry={(index) => loadMedia(index, true)}
       {...(onViewerBackHandlerChange ? { onBackHandlerChange: onViewerBackHandlerChange } : {})}

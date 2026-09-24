@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { REST_FRAME, viewerDragFrame, viewerEndPoint, viewerRelease } from "./spot-image-viewer-gesture.ts";
+import { REST_FRAME, viewerDragFrame, viewerEndPoint, viewerImageRect, viewerRelease, viewerSourceRect, viewerStageRect } from "./spot-image-viewer-gesture.ts";
 
 test("photo follows a permitted horizontal drag and resists the gallery edge", () => {
   assert.equal(viewerDragFrame("horizontal", -90, 4, 0, 3).x, -90);
@@ -25,4 +25,15 @@ test("release uses the last valid move when WEAPP reports an empty end point", (
   assert.deepEqual(viewerEndPoint({ x: 0, y: 0 }, { x: 160, y: 470 }), { x: 160, y: 470 });
   assert.deepEqual(viewerEndPoint({ x: 160, y: 410 }, { x: 160, y: 470 }), { x: 160, y: 410 });
   assert.deepEqual(viewerEndPoint(null, { x: 160, y: 470 }), { x: 160, y: 470 });
+});
+
+test("photo flight uses only a visible source crop and the actual viewport stage", () => {
+  assert.deepEqual(viewerSourceRect({ left: 12, top: 59, width: 296, height: 116 }, 320, 700), { left: 12, top: 59, width: 296, height: 116 });
+  assert.equal(viewerSourceRect({ left: 12, top: 282, width: 296, height: 0 }, 320, 700), null);
+  assert.equal(viewerSourceRect({ left: 12, top: -20, width: 296, height: 116 }, 320, 700), null);
+  assert.deepEqual(viewerStageRect(320, 700), { left: 0, top: 120, width: 320, height: 460 });
+  assert.deepEqual(viewerImageRect(320, 700, 1.6), { left: 0, top: 250, width: 320, height: 200 });
+  const dragged = viewerStageRect(320, 700, { x: 0, y: 120, scale: .8, backdrop: .5 });
+  assert.ok(Math.abs(dragged.left - 32) < .001);
+  assert.deepEqual({ top: dragged.top, width: dragged.width, height: dragged.height }, { top: 286, width: 256, height: 368 });
 });

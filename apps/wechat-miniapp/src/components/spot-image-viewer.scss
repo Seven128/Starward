@@ -5,6 +5,7 @@
   display: block;
   background: rgba(19, 20, 25, var(--viewer-backdrop-opacity, .98));
   color: #fff;
+  transition: background-color 300ms ease-out;
 }
 .spot-media-viewer__close,
 .spot-media-viewer__arrow,
@@ -23,8 +24,14 @@
 }
 .spot-media-viewer__close { position: absolute; z-index: 3; top: calc(env(safe-area-inset-top) + 44Px); left: 16Px; width: 44Px; padding: 0; }
 .spot-media-viewer__close .semantic-icon { width: 18Px; height: 18Px; }
-.spot-media-viewer__content { position: absolute; inset: 0; width: 100%; transform: translate(var(--viewer-drag-x), var(--viewer-drag-y)) scale(var(--viewer-scale)); transform-origin: center; transition: transform 160ms ease-out; }
+.spot-media-viewer__content { position: absolute; inset: 0; width: 100%; opacity: 0; transform: translate(var(--viewer-drag-x), var(--viewer-drag-y)) scale(var(--viewer-scale)); transform-origin: center; transition: transform 160ms ease-out, opacity 120ms ease-out; }
+.spot-media-viewer--entered .spot-media-viewer__content { opacity: 1; }
+.spot-media-viewer__flight { position: absolute; z-index: 4; overflow: hidden; border-radius: 12Px; pointer-events: none; }
+.spot-media-viewer__flight--moving { border-radius: 0; transition: left 300ms cubic-bezier(.22,.7,.22,1), top 300ms cubic-bezier(.22,.7,.22,1), width 300ms cubic-bezier(.22,.7,.22,1), height 300ms cubic-bezier(.22,.7,.22,1), border-radius 300ms ease-out; }
+.spot-media-viewer__flight--closing { border-radius: 12Px; }
+.spot-media-viewer__flight-image { display: block; width: 100%; height: 100%; }
 .spot-media-viewer--gesture-active .spot-media-viewer__content { transition: none; }
+.spot-media-viewer--reduced, .spot-media-viewer--reduced .spot-media-viewer__content { transition: none; }
 .spot-media-viewer__stage { position: absolute; top: 50%; left: 0; display: flex; align-items: center; justify-content: center; width: 100%; height: min(72vh, calc(100vh - 240Px)); transform: translateY(-50%); }
 .spot-media-viewer__image { display: block; width: 100%; height: 100%; }
 .spot-media-viewer__unavailable { display: flex; flex-direction: column; align-items: center; gap: 12Px; color: rgba(255, 255, 255, .8); }
@@ -36,4 +43,4 @@
 .spot-media-viewer--chrome-hidden .spot-media-viewer__close,
 .spot-media-viewer--chrome-hidden .spot-media-viewer__arrow,
 .spot-media-viewer--chrome-hidden .spot-media-viewer__caption { visibility: hidden; pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .spot-media-viewer__content { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .spot-media-viewer, .spot-media-viewer__content, .spot-media-viewer__flight--moving { transition: none; } }

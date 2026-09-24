@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { photoRevealLeft } from "./spot-media-gallery-geometry";
 
 /** Keep the native horizontal ScrollView at its source crop while a photo viewer is open. */
 export function useSpotMediaGalleryPosition(identity: string) {
@@ -15,5 +16,12 @@ export function useSpotMediaGalleryPosition(identity: string) {
   }, []);
   const remember = useCallback(() => setReturnLeft(liveLeft.current), []);
 
-  return { returnLeft, onScroll, remember };
+  const reveal = useCallback((index: number, count: number, width: number) => {
+    const left = photoRevealLeft(index, count, width);
+    if (left === null) return;
+    liveLeft.current = left;
+    setReturnLeft(left);
+  }, []);
+
+  return { returnLeft, onScroll, remember, reveal };
 }
