@@ -8,9 +8,15 @@ export interface EndedPlanRecord {
 
 /** A plan ending is a calendar fact, never proof of a visit or observation. */
 export function endedPlanRecords(plans: readonly ObservationPlan[], now = new Date()): EndedPlanRecord[] {
-  const byId = new Map<string, EndedPlanRecord>();
+  const latestById = new Map<string, ObservationPlan>();
   for (const plan of plans) {
-    if (!plan.timing || !plan.planId || !plan.spotId) continue;
+    if (!plan.planId) continue;
+    const previous = latestById.get(plan.planId);
+    if (!previous || previous.revision < plan.revision) latestById.set(plan.planId, plan);
+  }
+  const records: EndedPlanRecord[] = [];
+  for (const plan of latestById.values()) {
+    if (!plan.timing || !plan.spotId) continue;
     try {
       const endedAtUtc = zonedLocalToUtc({
         localDate: plan.timing.endLocalDate,
@@ -19,11 +25,10 @@ export function endedPlanRecords(plans: readonly ObservationPlan[], now = new Da
       });
       if (Date.parse(endedAtUtc) > now.getTime()) continue;
       const record = { plan, endedAtUtc, year: Number(plan.timing.endLocalDate.slice(0, 4)) };
-      const previous = byId.get(plan.planId);
-      if (!previous || previous.plan.revision < plan.revision) byId.set(plan.planId, record);
+      records.push(record);
     } catch { /* An invalid legacy wall time is not a completed plan. */ }
   }
-  return [...byId.values()].sort((left, right) => right.endedAtUtc.localeCompare(left.endedAtUtc) || left.plan.planId.localeCompare(right.plan.planId));
+  return records.sort((left, right) => right.endedAtUtc.localeCompare(left.endedAtUtc) || left.plan.planId.localeCompare(right.plan.planId));
 }
 
 export function achievementSummary(records: readonly EndedPlanRecord[]) {

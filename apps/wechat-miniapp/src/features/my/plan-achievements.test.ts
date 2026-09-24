@@ -24,3 +24,13 @@ test("achievements count ended plans, distinct formal places and event identitie
   assert.deepEqual(achievementSummary(records), { endedPlans: 2, places: 1, events: 1 });
   assert.equal(records[0]?.year, 2026);
 });
+
+test("a newer plan revision controls whether its identity has ended", () => {
+  const ended = plan("plan:changed", "2026-07-02", "spot:old");
+  const rescheduled = { ...plan("plan:changed", "2026-12-31", "spot:new"), revision: 2 };
+  const invalid = { ...plan("plan:changed", "invalid", "spot:new"), revision: 3 };
+  const now = new Date("2026-09-24T00:00:00Z");
+  assert.deepEqual(endedPlanRecords([ended, rescheduled], now), []);
+  assert.deepEqual(endedPlanRecords([rescheduled, ended], now), []);
+  assert.deepEqual(endedPlanRecords([ended, invalid], now), []);
+});
