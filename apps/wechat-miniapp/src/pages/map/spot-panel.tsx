@@ -21,7 +21,7 @@ import { FavoriteStar } from "@/components/selected-card-star";
 import { SpotAdditionalInformation } from "./spot-additional-information";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SelectionTabs } from "@/components/selection-tabs";
-import { StatusPanel } from "@/components/status-panel";
+import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { MapTimeRuler } from "./time-ruler";
 import { ObservationDateControl } from "@/components/observation-date-control";
 import { MoonPhaseImage, moonPhaseLabel } from "@/components/moon-phase";
@@ -324,8 +324,12 @@ export function SpotInformationPanel({
   const visibleFacilities = prominentFacilities.length ? prominentFacilities : facilities.slice(0, 2);
   const mediaById = new Map(media.map((item) => [item.id, item]));
   const formalFacts = detail?.formalFacts;
+  const detailLoading = !detail && detailPending;
+  const detailUnavailable = !detail && Boolean(detailError);
+  const detailFieldFallback = detailLoading ? "正在加载" : detailUnavailable ? "暂未获取" : null;
+  const detailMissingFallback = detailFieldFallback ?? "待核验";
   const address = formalFacts?.address ?? effectiveSpot.address;
-  const openingHours = formalFacts?.hours?.trim() || "开放时间待核验";
+  const openingHours = formalFacts?.hours?.trim() || `开放时间${detailMissingFallback}`;
   const source = effectiveSpot.source;
   const sourceTime = isProductSource(source) ? formatSourceTime(source.retrievedAt, context?.timezone ?? "Asia/Shanghai") : null;
   const skyRow = skyReport ? exactSkyRow(skyReport.hourly, astronomyAt) : null;
@@ -489,9 +493,9 @@ export function SpotInformationPanel({
               <View className="spot-panel__block-heading">
               <View className="spot-panel__route-copy">
               <Text className="spot-panel__value">
-                {spotRouteSummary(route, Boolean(detail), detailPending)}
+                {spotRouteSummary(route, detailLoading, detailUnavailable)}
               </Text>
-              <Text className="spot-panel__route-note">{route?.parkingGuidance || route?.lastRoad || formalFacts?.parkingNote || "停车与末段道路信息待核验"}</Text>
+              <Text className="spot-panel__route-note">{route?.parkingGuidance || route?.lastRoad || formalFacts?.parkingNote || `停车与末段道路信息${detailMissingFallback}`}</Text>
               </View>
                 <Button className="spot-panel__text-action" data-control="spot-navigation-action" ariaLabel={`查看${effectiveSpot.name}路线`} onClick={onNavigate}>
                   <SemanticIcon name="compass" />
@@ -508,15 +512,15 @@ export function SpotInformationPanel({
               <View className="spot-panel__safety-facts">
                 <View className="spot-panel__metric">
                   <Text className="type-secondary">开放状态</Text>
-                  <Text className="type-body">{formalFacts?.openness?.trim() || opennessLabel(detail?.accessAndSafety?.openness)}</Text>
+                  <Text className="type-body">{formalFacts?.openness?.trim() || detailFieldFallback || opennessLabel(detail?.accessAndSafety?.openness)}</Text>
                 </View>
                 <View className="spot-panel__metric">
                   <Text className="type-secondary">合法进入</Text>
-                  <Text className="type-body">{formalFacts?.access?.trim() || legalAccessLabel(detail?.accessAndSafety?.legalAccess)}</Text>
+                  <Text className="type-body">{formalFacts?.access?.trim() || detailFieldFallback || legalAccessLabel(detail?.accessAndSafety?.legalAccess)}</Text>
                 </View>
                 <View className="spot-panel__metric">
                   <Text className="type-secondary">夜间安全</Text>
-                  <Text className="type-body">{formalFacts?.safety?.trim() || nightSafetyLabel(detail?.accessAndSafety?.nightSafety)}</Text>
+                  <Text className="type-body">{formalFacts?.safety?.trim() || detailFieldFallback || nightSafetyLabel(detail?.accessAndSafety?.nightSafety)}</Text>
                 </View>
               </View>
               {(formalFacts?.accessNote?.trim() || detail?.accessAndSafety?.guidance[0]) ? <Text className="spot-panel__access-guidance">{formalFacts?.accessNote?.trim() || detail?.accessAndSafety?.guidance[0]}</Text> : null}
@@ -538,12 +542,12 @@ export function SpotInformationPanel({
                     {facility.summary ? <Text className="spot-panel__facility-summary">{facility.summary}</Text> : null}
                   </View>
                 </View>;
-              }) : <Text className="type-caption">设施信息待核验</Text>}
+              }) : <Text className="type-caption">{`设施信息${detailMissingFallback}`}</Text>}
               </View>
               {formalFacts?.contact?.trim() ? <View className="spot-panel__contact-row">
                 <Text>门禁 / 负责人电话</Text><Text>{formalFacts.contact.trim()}</Text>
               </View> : <View className="spot-panel__contact-row">
-                <Text>门禁 / 负责人电话</Text><Text>暂无数据</Text>
+                <Text>门禁 / 负责人电话</Text><Text>{detailFieldFallback ?? EMPTY_FIELD_VALUE}</Text>
               </View>}
               <View className="spot-panel__source-row">
                 <Text>{productSourceNames([source]) ? `资料：${productSourceNames([source])}` : "资料暂无数据"}{sourceTime ? ` · ${sourceTime.slice(0, 5)}核验` : ""}</Text>
