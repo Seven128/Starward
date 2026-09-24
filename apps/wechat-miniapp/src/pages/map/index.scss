@@ -2783,7 +2783,8 @@
   position: relative;
   display: block;
   min-height: 0;
-  padding: 16Px 0 4Px;
+  // Keep the title below the compact handle hint in no-media and cropped states.
+  padding: 30Px 0 4Px;
 }
 .spot-panel.spot-panel--large.spot-panel--with-media .spot-panel__handle-band--document {
   position: relative;
