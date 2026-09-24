@@ -35,6 +35,7 @@ import { mediaIsRenderable } from "./spot-panel-media";
 import { spotRouteSummary } from "./spot-panel-route-summary";
 import { SpotTerrainOverview } from "./spot-terrain-overview";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
+import { SpotPlanEntry } from "@/features/spot/spot-plan-entry";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
 export type SpotPanelPhase = "idle" | "closing";
@@ -489,6 +490,8 @@ export function SpotInformationPanel({
               <Text>{effectiveSpot.altitudeM === null ? "海拔待核验" : `海拔 ${Math.round(effectiveSpot.altitudeM)}m`}</Text>
             </View>
           </View>
+
+          <SpotPlanEntry spotId={effectiveSpot.spotId} />
 
           <View className="spot-panel__section" ariaLabel="场地资料">
             {detailPending ? <StatusPanel state="LOADING" detail="正在加载地点信息" /> : null}
