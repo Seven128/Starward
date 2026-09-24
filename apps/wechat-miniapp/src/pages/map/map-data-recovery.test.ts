@@ -11,7 +11,7 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const declarations: string[] = [];
   let effect = "", recovery = "";
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale"].includes(node.name.getText(source)))
+    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale", "cloudLayerOwnsSceneError"].includes(node.name.getText(source)))
       declarations.push(`const ${node.getText(source)};`);
     if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes('title: "地图数据异常"'))
       effect = node.arguments[0]!.getText(source);
@@ -31,16 +31,17 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const code = `${declarations.join("\n")}\n(${effect})();\n({ recovery: Boolean(${recovery}), pageState });`;
   const result = vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     scene, bootstrapContext, pageVisible: visible, activeContext: {}, spots: [{}],
-    bottomPresentation: presentation, visibleLayer: layer, lightLayerState: "STALE",
+    bottomPresentation: presentation, visibleLayer: layer, lightLayerState: "STALE", cloudTimeChoices: [],
     isPermissionError: () => false, notify: (notice: { placement: string; tone: string }) => notices.push(notice),
   });
   return { ...result, notices };
 }
 
-test("a light layer failure owns its visible retry while a failed map context keeps global recovery", () => {
+test("light and cloud layer failures own their visible retries while a failed map context keeps global recovery", () => {
   assert.equal(renderFailure("scene", true, true, "layer-sheet", "LIGHT").recovery, false);
   assert.equal(renderFailure("context", true, true, "layer-sheet", "LIGHT").recovery, true);
-  assert.equal(renderFailure("scene", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, true);
+  assert.equal(renderFailure("scene", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, false);
+  assert.equal(renderFailure("context", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, true);
 });
 
 for (const owner of ["scene", "context"] as const) {

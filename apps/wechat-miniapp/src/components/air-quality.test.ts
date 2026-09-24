@@ -84,3 +84,16 @@ test("sample AQ keeps values and ordinary failure recovery without adding test e
   find(tree, node => node.type === "SoftButton").props.onClick();
   assert.equal(h.retries, 1);
 });
+
+test("positive current retrieval and selected-hour heading remain separate reading rows", () => {
+  const h = harness();
+  h.set({ data: { ...body,
+    current: { value: { indexes: [{ code: "cn-mee", name: "中国 AQI", display: "0", category: "优" }], pollutants: [] },
+      state: "FRESH", unavailableReason: null, source },
+  }, dataState: "FRESH", sources: [] });
+  const tree = h.render();
+  assert.match(text(tree), /中国 AQI.*0.*获取于.*所选时刻的空气质量预报/s);
+  assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__retrieved-at"));
+  assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__segment-heading" &&
+    /所选时刻的空气质量预报/.test(text(node))));
+});

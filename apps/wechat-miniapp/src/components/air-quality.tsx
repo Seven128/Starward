@@ -48,13 +48,13 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
   return <View className="spot-panel__evidence-group" data-control="spot-air-quality">
     <Text className="type-label">空气质量</Text>
     {query.isError && !envelope ? <StatusPanel state="ERROR" detail="空气质量暂时无法获取，其他地点信息仍可查看。" recoveryLabel="重试空气质量" onRecover={() => void query.refetch()} /> : <>
-    <Text className="type-secondary">当前区域参考</Text>
+    <View className="air-quality__segment-heading"><Text className="type-secondary">当前区域参考</Text></View>
     {query.isPending ? <View role="status"><Text className="type-caption">正在加载空气质量…</Text></View>
       : view.current ? <Reading value={view.current} /> : currentUnavailableByFailure
         ? <StatusPanel state="ERROR" detail="当前区域参考读数暂未获取；可在本节重试。" />
         : <StatusPanel state="EMPTY" emptyLevel="field" detail="当前区域没有可用的空气质量读数。" />}
-    {view.current && envelope?.data.current.source.retrievedAt ? <Text className="type-caption">获取于 {label(envelope.data.current.source.retrievedAt)}，不是点位实测时间</Text> : null}
-    <Text className="type-secondary">所选时刻的空气质量预报</Text>
+    {view.current && envelope?.data.current.source.retrievedAt ? <View className="air-quality__retrieved-at"><Text className="type-caption">获取于 {label(envelope.data.current.source.retrievedAt)}，不是点位实测时间</Text></View> : null}
+    <View className="air-quality__segment-heading"><Text className="type-secondary">所选时刻的空气质量预报</Text></View>
     {view.forecast ? <View><Text className="type-caption">对应小时：{label(view.forecast.at)}</Text><Reading value={view.forecast} /></View>
       : query.isPending ? null : forecastUnavailableByFailure
         ? <StatusPanel state="ERROR" detail="所选时刻的空气质量预报暂未获取；可在本节重试。" />
