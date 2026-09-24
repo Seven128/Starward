@@ -10,6 +10,7 @@ import { SoftButton } from "@/components/soft-button";
 import { useAppStore } from "@/state/app-store";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
 import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
+import { terrainLayerAvailability } from "./terrain-layer-availability";
 
 export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visible: boolean }) {
   const [radiusKm, setRadiusKm] = useState(5);
@@ -33,10 +34,13 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
   const lightCells = data?.lightPollution.cells ?? [];
   const ready = Boolean(data && data.state !== "UNAVAILABLE" && terrain.imagePath);
   const notify = useAppStore(state => state.notify);
-  const terrainMissing = data?.state === "UNAVAILABLE" && !data.failureCode;
-  const lightMissing = data?.lightPollution.state === "UNAVAILABLE" && !data.lightPollution.failureCode;
-  const terrainFailed = Boolean(terrain.isError || terrain.refreshError || terrain.imageError || data?.failureCode);
-  const lightFailed = Boolean(terrain.isError || terrain.refreshError || data?.lightPollution.failureCode);
+  const requestFailed = Boolean(terrain.isError || terrain.refreshError);
+  const terrainAvailability = terrainLayerAvailability(data?.state, data?.failureCode, requestFailed);
+  const lightAvailability = terrainLayerAvailability(data?.lightPollution.state, data?.lightPollution.failureCode, requestFailed);
+  const terrainMissing = terrainAvailability === "EMPTY";
+  const lightMissing = lightAvailability === "EMPTY";
+  const terrainFailed = terrainAvailability === "ERROR" || Boolean(terrain.imageError);
+  const lightFailed = lightAvailability === "ERROR";
   const failed = (terrainVisible && terrainFailed) || (lightVisible && lightFailed);
   const hasPicture = (terrainVisible && ready) || (lightVisible && lightCells.length > 0);
   const pending = terrain.isPending || (terrainVisible && terrain.imagePending);

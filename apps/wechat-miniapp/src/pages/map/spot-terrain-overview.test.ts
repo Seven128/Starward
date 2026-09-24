@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import * as geometry from "./terrain-geometry";
+import { terrainLayerAvailability } from "./terrain-layer-availability";
 
 function harness() {
   const ast = ts.createSourceFile("terrain.tsx", readFileSync(new URL("./spot-terrain-overview.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -12,7 +13,7 @@ function harness() {
   let si = 0, ei = 0, pending: (() => void)[] = [], query: any, retries = 0, imageFailures = 0;
   const notify = (value: any) => notices.push(value);
   const component = vm.runInNewContext(ts.transpileModule(declaration.getText(ast).replace(/^export /, "") + ";SpotTerrainOverview;", { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
-    ...geometry, useMemo: (fn: () => unknown) => fn(), useAppStore: () => notify,
+    ...geometry, terrainLayerAvailability, useMemo: (fn: () => unknown) => fn(), useAppStore: () => notify,
     useState(initial: any) { const i = si++; if (!(i in states)) states[i] = initial; return [states[i], (next: any) => states[i] = typeof next === "function" ? next(states[i]) : next]; },
     useEffect(fn: () => void, values: any[]) { const i = ei++; if (!deps[i] || values.some((value, n) => value !== deps[i]![n])) pending.push(fn); deps[i] = values; },
     useTerrainOverlay: () => query,
@@ -80,6 +81,18 @@ test("both uncovered layers share one empty placeholder without test-only explan
   assert.equal(nodes(tree).some(node => node.type === "SoftButton"), false); assert.equal(h.notices.length, 0);
   assert.match(text(tree), /光污染：当前地区暂无数据/);
   assert.doesNotMatch(text(tree), /测试数据说明|示例说明|仅供测试|地形加载失败|源分辨率 null/);
+});
+
+test("a failed refresh of old uncovered layers shows error without asserting current missing coverage", async () => {
+  const h = harness(); h.set({ refreshError: new Error("network timeout"), data: { data: { ...base, state: "UNAVAILABLE", datasetVersion: null, sourceResolution: null, derivedResolutionM: null,
+    lightPollution: { state: "UNAVAILABLE", cells: [], legend: [], coverageLabel: "当前地区暂无数据" } } } });
+  const tree = h.render(), all = nodes(tree);
+  assert.equal(all.filter(node => node.type === "StatusPanel" && node.props.state === "ERROR").length, 1);
+  assert.doesNotMatch(text(tree), /地形：当前地区暂无数据|光污染：当前地区暂无数据/);
+  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "地形，已开启" && !node.props.disabled));
+  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启" && !node.props.disabled));
+  await all.find(node => node.type === "StatusPanel").props.onRecover();
+  assert.equal(h.retries, 1);
 });
 
 test("native image decode failure is returned to the terrain owner", () => {

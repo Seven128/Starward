@@ -57,6 +57,7 @@ import {
 import { useAppStore, type AnalysisOverlay } from "@/state/app-store";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
+import { terrainLayerAvailability } from "./terrain-layer-availability";
 import {
   nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
@@ -612,8 +613,11 @@ export default function MapPage() {
   }, pageVisible && (terrainEnabled || bottomPresentation === "layer-sheet"), pageVisible && terrainEnabled);
   const [terrainNativeError, setTerrainNativeError] = useState<unknown | null>(null);
   const [terrainNativeRetry, setTerrainNativeRetry] = useState(0);
-  const mapTerrainMissing = terrain.data?.data.state === "UNAVAILABLE" && !terrain.data.data.failureCode;
-  const mapTerrainFailed = Boolean(terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode || terrainNativeError);
+  const mapTerrainAvailability = terrainLayerAvailability(
+    terrain.data?.data.state, terrain.data?.data.failureCode, Boolean(terrain.isError || terrain.refreshError),
+  );
+  const mapTerrainMissing = mapTerrainAvailability === "EMPTY";
+  const mapTerrainFailed = mapTerrainAvailability === "ERROR" || Boolean(terrain.imageError || terrainNativeError);
   useEffect(() => {
     if (!pageVisible || (!terrainEnabled && !terrainNativeError) || !mapTerrainFailed) return;
     notify({ owner: "map-terrain", placement: "floating", tone: "info", title: "地形数据异常",
