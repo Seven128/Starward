@@ -39,6 +39,7 @@ import {
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { resolvePlanSaveSpotId } from "./plan-save-spot";
+import { planEditorTimezone } from "./plan-editor-timezone";
 import { PlanReference } from "./plan-reference";
 import { initialPlanSelection, planIdFromRoute } from "./plan-selection";
 import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey as scopedPlanDraftKey, type PlanDraft } from "./plan-draft";
@@ -550,9 +551,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const straightDistanceKm = selectedSpot && distanceOrigin
     ? distanceMeters({ lat: distanceOrigin.latitude, lon: distanceOrigin.longitude },
       { lat: selectedSpot.wgs84.latitude, lon: selectedSpot.wgs84.longitude }) / 1000 : null;
-  const timezone =
-    (!editing ? activePlan?.contextSnapshot.timezone : undefined) ??
-    activeContext?.timezone ?? selectedSpot?.timezone ?? "Asia/Shanghai";
+  const timezone = planEditorTimezone({
+    editing, selectedSpotId, formalSpots, activePlan,
+    contextTimezone: activeContext?.timezone ?? null,
+  });
   const announce = (
     tone: "error" | "warning" | "info" | "success",
     title: string,

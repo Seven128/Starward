@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { planEditorTimezone } from "./plan-editor-timezone";
 
 // Evaluate the real host expressions; query mocks alone missed the disabled/loading bug.
 function expressions() {
@@ -20,15 +21,26 @@ function expressions() {
   };
   visit(source);
   assert.ok(timezone && loading && endDate);
-  const run = (expression: string, context: object) => vm.runInNewContext(ts.transpileModule(`(${expression})`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context);
+  const run = (expression: string, context: object) => vm.runInNewContext(ts.transpileModule(`(${expression})`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, { planEditorTimezone, ...context });
   return { timezone: (c: object) => run(timezone, c), loading: (c: object) => run(loading, c), endDate: (c: object) => run(endDate, c) };
 }
 
 test("saved plan preserves its timezone and full multi-day ending during context failure", () => {
   const activePlan = { contextSnapshot: { timezone: "America/New_York" }, localDate: "2026-09-13", timing: { endLocalDate: "2026-09-16" } };
   const expression = expressions();
-  assert.equal(expression.timezone({ editing: false, activePlan, activeContext: null, selectedSpot: null }), "America/New_York");
+  assert.equal(expression.timezone({ editing: false, selectedSpotId: null, formalSpots: [], activePlan, activeContext: null }), "America/New_York");
   assert.equal(expression.endDate({ activePlan }), "至 2026-09-16 · ");
+});
+
+test("editor host labels the selected formal spot instead of the previous context timezone", () => {
+  const expression = expressions();
+  assert.equal(expression.timezone({
+    editing: true,
+    selectedSpotId: "spot:hk",
+    formalSpots: [{ spotId: "spot:hk", timezone: "Asia/Hong_Kong" }],
+    activePlan: { spotId: "spot:main", contextSnapshot: { timezone: "Asia/Shanghai" } },
+    activeContext: { timezone: "Asia/Shanghai" },
+  }), "Asia/Hong_Kong");
 });
 
 test("disabled Sky query after context failure is unavailable, not an endless pending load", () => {
