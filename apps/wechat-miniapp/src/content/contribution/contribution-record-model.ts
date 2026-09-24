@@ -21,6 +21,14 @@ export function contributionRecordStatus(item: ContributionSubmission) {
   return { key: "PENDING", label: "审核中", tone: "neutral" } as const;
 }
 
+export function contributionRecordPrimaryAction(item: ContributionSubmission) {
+  if (item.submissionState === "DRAFT" || (!item.submissionState && item.state === "DRAFT")) return "EDIT" as const;
+  const status = contributionRecordStatus(item);
+  if (status.key === "REJECTED") return "REVIEW_AND_EDIT" as const;
+  if (status.key === "ONLINE" && item.spotId) return "OPEN_PUBLISHED_SPOT" as const;
+  return "READ_SUBMISSION" as const;
+}
+
 export function contributionFrozenAttempt(item: ContributionSubmission) {
   return item.attempts?.at(-1) ?? null;
 }

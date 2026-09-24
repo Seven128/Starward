@@ -91,9 +91,13 @@ test("temporary cache reset is synchronous but reports durable write success onl
     assert.equal(store.getState().notifications.length, 0, "the caller owns feedback after all cache owners finish");
     flush();
     assert.equal(await pending, !failWrites);
+    store.getState().setPreference("equipment", "旧账号的望远镜");
     assert.equal(store.getState().resetAfterAccountDeletion(), !failWrites);
     assert.equal(store.getState().favoriteIds.length, 0);
     assert.equal(store.getState().plans.length, 0);
+    assert.equal(store.getState().preferences.equipment, DEFAULT_USER_PREFERENCES.equipment);
+    assert.equal(store.getState().preferencesRevision, 0);
+    assert.equal(store.getState().preferencesDirty, false);
   }
 });
 

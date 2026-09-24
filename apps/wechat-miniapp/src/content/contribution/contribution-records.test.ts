@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
-import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
 
 function record(patch: Partial<ContributionSubmission>): ContributionSubmission {
   return {
@@ -39,6 +39,15 @@ test("record groups and labels preserve creation, review and publication meaning
   assert.equal(contributionRecordStatus(record({ submissionState: "ACCEPTED", publicationImpact: "SPOT_PUBLISHED" })).key, "ONLINE");
   assert.equal(contributionRecordStatus(record({ kind: "CORRECTION", submissionState: "ACCEPTED" })).key, "APPROVED");
   assert.equal(contributionRecordStatus(record({ kind: "FIELD_REPORT", submissionState: "CHANGES_REQUESTED" })).key, "REJECTED");
+});
+
+test("published creation opens its current formal spot while pending and approved feedback keep frozen records", () => {
+  assert.equal(contributionRecordPrimaryAction(record({ submissionState: "DRAFT" })), "EDIT");
+  assert.equal(contributionRecordPrimaryAction(record({ submissionState: "PENDING_REVIEW" })), "READ_SUBMISSION");
+  assert.equal(contributionRecordPrimaryAction(record({ submissionState: "REJECTED" })), "REVIEW_AND_EDIT");
+  assert.equal(contributionRecordPrimaryAction(record({ submissionState: "ACCEPTED", publicationImpact: "SPOT_PUBLISHED", spotId: "spot:published" as never })), "OPEN_PUBLISHED_SPOT");
+  assert.equal(contributionRecordPrimaryAction(record({ submissionState: "ACCEPTED", publicationImpact: "SPOT_PUBLISHED", spotId: null })), "READ_SUBMISSION");
+  assert.equal(contributionRecordPrimaryAction(record({ kind: "CORRECTION", submissionState: "ACCEPTED", publicationImpact: "ACTIVE_REVISION_UPDATED", spotId: "spot:published" as never })), "READ_SUBMISSION");
 });
 
 test("record detail selects the latest immutable submission attempt", () => {
