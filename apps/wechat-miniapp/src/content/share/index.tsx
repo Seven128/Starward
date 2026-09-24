@@ -69,6 +69,10 @@ export default function SharedJourneyPage() {
   } : { title: "星遥观星地图", path: "/pages/map/index" });
 
   const data = state.kind === "ready" ? state.data : null;
+  const requestedKind = (planId && !token && !spotId) || (token && !planId && !spotId)
+    ? "PLAN" : spotId && !planId && !token ? "SPOT" : null;
+  const shareKind = data?.kind ?? requestedKind;
+  const shareTitle = shareKind === "PLAN" ? "行程分享" : shareKind === "SPOT" ? "观星点分享" : "公开分享";
   const openMap = () => {
     if (data) {
       setViewport({ center: { latitude: data.spotGcj02.latitude, longitude: data.spotGcj02.longitude }, zoom: 11 });
@@ -78,7 +82,7 @@ export default function SharedJourneyPage() {
   };
   return <View className={`${themeClass} shared-journey`}>
     <FloatingNotificationHost />
-    <CustomNav title={data?.kind === "PLAN" ? "行程分享" : "观星点分享"} back backFallbackTab="/pages/map/index" />
+    <CustomNav title={shareTitle} back backFallbackTab="/pages/map/index" />
     <ScrollView scrollY enhanced showScrollbar={false} className="shared-journey__scroll">
       <View className="shared-journey__content page-inset safe-bottom">
         {state.kind === "loading" ? <StatusPanel state="LOADING" detail="正在读取公开分享内容。" /> : null}
