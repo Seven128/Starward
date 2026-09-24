@@ -3,7 +3,7 @@ import { choosePlatformLocation } from "@/services/platform-location";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import type { CSSProperties } from "react";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { Button, Image, Input, ScrollView, Text, View } from "@tarojs/components";
+import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import {
@@ -27,6 +27,7 @@ import {
 import { StatusPanel } from "@/components/status-panel";
 import { SourceAttribution } from "@/components/source-attribution";
 import { SelectedCardStar } from "@/components/selected-card-star";
+import { SpotIdentityContent } from "@/components/spot-identity-content";
 import { FilterSheet } from "@/components/filter-sheet";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useResourceQuery } from "@/hooks/use-resource-query";
@@ -681,12 +682,7 @@ function SearchResultCard({ spot, evidence, activeGroups, onSelect }: { spot: Sp
   const unknown = activeGroups.filter((group) => evidence?.[group].state === "UNKNOWN");
   return <View className="spot-search-result-entry">
     <Button className={`spot-identity-card${mediaSrc ? " spot-identity-card--with-media" : ""}`} data-control="spot-search-result-card" onClick={onSelect} ariaLabel={`选择${spot.name}${unknown.length ? `，${unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}资料待核验` : ""}`}>
-      {mediaSrc ? <Image className="spot-identity-card__media" src={mediaSrc} mode="aspectFill" lazyLoad ariaLabel={media?.alt || `${spot.name}现场照片`} /> : null}
-      <View className="spot-identity-card__copy">
-        <Text className="spot-identity-card__region">{spot.region || "区域暂无数据"}</Text>
-        <Text className="spot-identity-card__title">{spot.name}</Text>
-        {address ? <View className="spot-identity-card__address"><SemanticIcon name="location" /><Text className="spot-identity-card__address-text">{address}</Text></View> : null}
-      </View>
+      <SpotIdentityContent region={spot.region || "区域暂无数据"} name={spot.name} address={address} mediaSrc={mediaSrc} mediaAlt={media?.alt || `${spot.name}现场照片`} />
     </Button>
     {unknown.length ? <Text className="spot-search-result-entry__evidence type-caption">待核验：{unknown.map((group) => FILTER_LABEL_BY_GROUP[group]).join("、")}</Text> : null}
   </View>;

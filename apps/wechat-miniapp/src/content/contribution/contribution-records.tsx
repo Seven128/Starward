@@ -4,7 +4,7 @@ import { CONTRIBUTION_FORMAL_FIELD_KEYS } from "@starward/miniapp-contracts";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { SelectionTabs } from "@/components/selection-tabs";
-import { SemanticIcon } from "@/components/semantic-asset";
+import { SpotIdentityContent } from "@/components/spot-identity-content";
 import { displayBeijingTimestamp } from "@/utils/zoned-date";
 import { useState } from "react";
 import Taro from "@tarojs/taro";
@@ -31,11 +31,7 @@ function recordName(item: ContributionSubmission) {
 function ContributionSpotIdentityCard({ item }: { item: ContributionSubmission }) {
   const identity = contributionRecordIdentity(item);
   return <View className="spot-identity-card">
-    <View className="spot-identity-card__copy">
-      <Text className="spot-identity-card__region">{identity.region}</Text>
-      <Text className="spot-identity-card__title">{identity.name}</Text>
-      {identity.address ? <View className="spot-identity-card__address"><SemanticIcon name="location" /><Text className="spot-identity-card__address-text">{identity.address}</Text></View> : null}
-    </View>
+    <SpotIdentityContent {...identity} />
   </View>;
 }
 
