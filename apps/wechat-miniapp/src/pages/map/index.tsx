@@ -1063,8 +1063,8 @@ export default function MapPage() {
     const startX = touch?.clientX ?? touch?.pageX;
     const drag = { startY, startX: typeof startX === "number" && Number.isFinite(startX) ? startX : undefined, identifier: touch?.identifier, extent: panelExtent, samples: [{ y: startY, at: Date.now() }], releasedAt: 0, moved: false, offset: 0, pointerOffset: 0, geometry: null as PanelSnapGeometry | null, released: false };
     panelDrag.current = drag;
-    setPanelDragOffset(0);
-    setPanelDragging(false);
+    // An interrupted release may still own the visible drag frame. Keep it
+    // until native geometry is read, then hand that exact frame to this drag.
     const query = Taro.createSelectorQuery();
     for (const selector of [".spot-panel", ".spot-panel__snap-small", ".spot-panel__snap-medium", ".spot-panel__snap-large"]) query.select(selector).boundingClientRect();
     query.exec(rows => {
