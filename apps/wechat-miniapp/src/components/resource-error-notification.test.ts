@@ -104,7 +104,7 @@ test("successful cache fallbacks still emit the shared floating data warning", (
       overview: { isError: false, refreshError: null, data: { dataState: "FRESH" } },
       site: { isError: false, refreshError: null, data: { dataState: "FRESH" } }, articleId: "article:1" } },
     { path: "../pages/map/search-page.tsx", marker: "search-resource-failed", context: {
-      queryPending: false,
+      queryUnconfirmed: false,
       contextQuery: { error: null, refreshError: null, data: { dataState: "STALE_USABLE" } },
       scene: { error: null, refreshError: null, data: { dataState: "FRESH" } },
       placeSearch: { error: null, refreshError: null, data: { dataState: "FRESH" } }, isPermissionError: () => false } },

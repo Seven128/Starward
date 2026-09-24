@@ -252,7 +252,7 @@ export function MapSearchSurface() {
         signal,
       ),
     enabled: pageVisible && Boolean(activeContext),
-    staleTime: 60_000,
+    staleTime: debouncedQuery ? 0 : 60_000,
   });
 
   const placeSearch = useResourceQuery({
@@ -269,8 +269,9 @@ export function MapSearchSurface() {
   // The debounced request still belongs to the previous input for a short
   // interval. Its rows must not remain actionable under the new input.
   const queryPending = finderQuery.trim() !== debouncedQuery;
-  const visibleScene = queryPending ? null : scene.data?.data;
-  const visiblePlaces = queryPending ? null : placeSearch.data?.data;
+  const queryUnconfirmed = queryPending || Boolean(debouncedQuery && (scene.isFetching || placeSearch.isFetching));
+  const visibleScene = queryUnconfirmed ? null : scene.data?.data;
+  const visiblePlaces = queryUnconfirmed ? null : placeSearch.data?.data;
   const sceneSpots = visibleScene?.spots ?? [];
   const formalSpots = sceneSpots;
   const wanted = formalSpots.filter((spot) => favoriteIds.includes(spot.spotId));
@@ -288,18 +289,18 @@ export function MapSearchSurface() {
       (group) => visibleScene?.filterEvidence?.[spot.spotId]?.[group].state === "UNKNOWN",
     ),
   );
-  const expiredEmptyFilter = !queryPending && formalSpots.length === 0 && activeFilterGroups.includes("LESS_CLOUD") &&
+  const expiredEmptyFilter = !queryUnconfirmed && formalSpots.length === 0 && activeFilterGroups.includes("LESS_CLOUD") &&
     Date.parse(visibleScene?.forecastValidUntil ?? "") <= Date.now();
   const staleSearchResource = Boolean(
     contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE" ||
-    (!queryPending && (scene.refreshError || scene.data?.dataState === "STALE_USABLE" ||
+    (!queryUnconfirmed && (scene.refreshError || scene.data?.dataState === "STALE_USABLE" ||
       placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE")),
   );
   const searchState: PageState = contextQuery.isError
     ? isPermissionError(contextQuery.error)
       ? "PERMISSION_DENIED"
       : "ERROR"
-    : queryPending || !activeContext || scene.isPending || (debouncedQuery.length > 0 && placeSearch.isPending)
+    : queryUnconfirmed || !activeContext || scene.isPending || (debouncedQuery.length > 0 && placeSearch.isPending)
       ? "LOADING"
       : scene.isError || placeSearch.isError
         ? isPermissionError(scene.error ?? placeSearch.error)
@@ -316,25 +317,25 @@ export function MapSearchSurface() {
   useEffect(() => {
     if (!pageVisible) return;
     const requestError = contextQuery.error ?? contextQuery.refreshError ??
-      (queryPending ? null : scene.error ?? scene.refreshError ?? placeSearch.error ?? placeSearch.refreshError);
+      (queryUnconfirmed ? null : scene.error ?? scene.refreshError ?? placeSearch.error ?? placeSearch.refreshError);
     const staleFallback = contextQuery.data?.dataState === "STALE_USABLE" ||
-      (!queryPending && (scene.data?.dataState === "STALE_USABLE" || placeSearch.data?.dataState === "STALE_USABLE"));
+      (!queryUnconfirmed && (scene.data?.dataState === "STALE_USABLE" || placeSearch.data?.dataState === "STALE_USABLE"));
     if ((!requestError && !staleFallback) || (requestError && isPermissionError(requestError))) return;
     notify({ owner: "search", placement: "floating", tone: "info",
       title: "搜索数据异常", body: "地点与观星点结果暂时无法更新，可在页面中重试。",
       dedupeKey: "search-resource-failed" });
-  }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible, queryPending,
+  }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible, queryUnconfirmed,
     placeSearch.data?.dataState, placeSearch.error, placeSearch.refreshError, scene.data?.dataState,
     scene.error, scene.refreshError]);
-  const retryStaleSearchResource = () => {
-    if (contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE") void contextQuery.refetch();
-    else if (scene.refreshError || scene.data?.dataState === "STALE_USABLE") void scene.refetch();
-    else void placeSearch.refetch();
-  };
-  const retryFailedSearchResource = () => {
-    if (contextQuery.isError) void contextQuery.refetch();
-    else if (scene.isError) void scene.refetch();
-    else if (placeSearch.isError) void placeSearch.refetch();
+  const retrySearchResources = () => {
+    const requests: Promise<unknown>[] = [];
+    if (contextQuery.isError || contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE")
+      requests.push(contextQuery.refetch());
+    if (activeContext && (scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"))
+      requests.push(scene.refetch());
+    if (debouncedQuery && (placeSearch.isError || placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE"))
+      requests.push(placeSearch.refetch());
+    void Promise.all(requests).catch(() => {});
   };
   const showPartitionEmpty = !staleSearchResource && (searchState === "READY" || searchState === "PARTIAL");
 
@@ -533,7 +534,7 @@ export function MapSearchSurface() {
             {nativeLocationEntry}
             {finderQuery.trim() ? (
               <View className="spot-search-suggestions">
-                {queryPending ? <Text className="type-caption spot-search-query-status">正在查找地点。</Text> : null}
+                {queryUnconfirmed ? <Text className="type-caption spot-search-query-status">正在查找地点。</Text> : null}
                 {visiblePlaces?.formalSpots.map((spot) => (
                   <Button key={spot.spotId} className="spot-search-suggestion" onClick={() => void selectFormal(spot)}>
                     <Text>{spot.name}</Text>
@@ -552,7 +553,7 @@ export function MapSearchSurface() {
                     <Text className="type-caption">普通地点 · 只移动地图{result.region || result.address ? ` · ${result.region || result.address}` : ""}</Text>
                   </Button>
                 ))}
-                {!queryPending && !placeSearch.isPending && !placeSearch.isError && !visiblePlaces?.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
+                {!queryUnconfirmed && !placeSearch.isPending && !placeSearch.isError && !visiblePlaces?.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
                   <Text className="type-caption spot-search-query-status">没有匹配结果；可以换一个名称或城市。</Text>
                 ) : null}
               </View>
@@ -618,14 +619,14 @@ export function MapSearchSurface() {
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
           {staleSearchResource ? <StatusPanel state="STALE" detail="部分搜索资料尚未确认最新状态，当前结果仍会保留。"
-            recoveryLabel="重新获取" onRecover={retryStaleSearchResource} /> : null}
+            recoveryLabel="重新获取" onRecover={retrySearchResources} /> : null}
           {searchState !== "READY" && !(searchState === "STALE" && staleSearchResource)
             && (searchState !== "PARTIAL" || expiredEmptyFilter) ? (
             <StatusPanel
               state={searchState}
               detail={
-                (contextQuery.isError ? errorMessage(contextQuery.error) : queryPending ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
-                (isOfflineError(contextQuery.error ?? (queryPending ? null : scene.error ?? placeSearch.error))
+                (contextQuery.isError ? errorMessage(contextQuery.error) : queryUnconfirmed ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
+                (isOfflineError(contextQuery.error ?? (queryUnconfirmed ? null : scene.error ?? placeSearch.error))
                   ? "网络不可用，请连接后重试。"
                   : expiredEmptyFilter
                     ? "少云筛选资料已到期，结果待核验；请刷新资料。"
@@ -634,7 +635,7 @@ export function MapSearchSurface() {
                     : "正在搜索观星点。")
               }
               recoveryLabel={searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
-              onRecover={searchState === "ERROR" ? retryFailedSearchResource : searchState === "PERMISSION_DENIED"
+              onRecover={searchState === "ERROR" ? retrySearchResources : searchState === "PERMISSION_DENIED"
                 ? () => void Taro.navigateTo({ url: "/pages/auth/index" }) : undefined}
             />
           ) : null}
@@ -652,7 +653,7 @@ export function MapSearchSurface() {
         </View>
 
           <View className="spot-search-result-summary">
-            <Text className="type-caption">{queryPending ? "搜索结果更新中"
+            <Text className="type-caption">{queryUnconfirmed ? "搜索结果更新中"
               : expiredEmptyFilter ? "筛选结果待核验"
               : formalSpots.length === 0 && searchState === "STALE" ? "搜索结果待更新"
               : formalSpots.length === 0 && (searchState === "ERROR" || searchState === "PERMISSION_DENIED") ? "搜索结果暂不可用"
