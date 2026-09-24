@@ -7,7 +7,7 @@ import { NativeBackBoundary } from "./native-back-boundary";
 type PendingHandoff = { resolve: (accepted: boolean) => void };
 
 /** An app-owned warning before an unthemed WeChat surface in observation mode. */
-export function useRedLightHandoff() {
+export function useRedLightHandoff({ nativeBackBoundary = true }: { nativeBackBoundary?: boolean } = {}) {
   const mode = useAppStore(state => state.mode);
   const pending = useRef<PendingHandoff | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export function useRedLightHandoff() {
   }, []);
 
   const warning = detail ? <>
-    <NativeBackBoundary active onBack={() => finish(false)} />
+    {nativeBackBoundary ? <NativeBackBoundary active onBack={() => finish(false)} /> : null}
     <RootPortal>
       <View className="red-light-handoff__scrim" catchMove onClick={() => finish(false)}>
         <View className="red-light-handoff__dialog" role="dialog" aria-modal="true" aria-label="微信界面可能亮屏"
@@ -46,5 +46,5 @@ export function useRedLightHandoff() {
       </View>
     </RootPortal>
   </> : null;
-  return { confirm, warning };
+  return { confirm, warning, active: detail !== null, cancel: () => finish(false) };
 }

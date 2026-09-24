@@ -13,6 +13,7 @@ import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { restoreMapBootstrapContext } from "./context-restore";
 import { canApplyContextRestore } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import {
   Button,
@@ -170,6 +171,7 @@ const overlayLabels: Record<AnalysisOverlay, string> = {
 
 export default function MapPage() {
   const themeClass = useThemeClass();
+  const navigationHandoff = useRedLightHandoff({ nativeBackBoundary: false });
   const [coverageExpanded, setCoverageExpanded] = useState(false);
   const [terrainSourceId, setTerrainSourceId] = useState<string | null>(null);
   const mode = useAppStore((state) => state.mode);
@@ -1369,6 +1371,15 @@ export default function MapPage() {
 
   const handleMapPresentationSystemBack = () => {
     setMapPresentationBackBoundaryVisible(false);
+    if (navigationHandoff.active) {
+      navigationHandoff.cancel();
+      if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
+      mapPresentationBackBoundaryRearm.current = setTimeout(() => {
+        mapPresentationBackBoundaryRearm.current = null;
+        if (bottomPresentationRef.current === "spot-panel") setMapPresentationBackBoundaryVisible(true);
+      }, 0);
+      return;
+    }
     if (eventModalOpenRef.current) {
       const remainsOpen = eventModalRef.current?.back() ?? false;
       if (remainsOpen) {
@@ -1572,6 +1583,8 @@ export default function MapPage() {
       return;
     }
     try {
+      const allowed = await navigationHandoff.confirm("微信导航界面可能较亮，无法跟随红光模式。");
+      if (!allowed || !current()) return;
       const safety = spotDetail?.accessAndSafety;
       if (safety && (safety.explicitDanger || safety.openness === "CLOSED" || safety.legalAccess === "PROHIBITED" || safety.nightSafety === "DANGER")) {
         const warning = await Taro.showModal({
@@ -1810,6 +1823,7 @@ export default function MapPage() {
       data-delivery-target={__DELIVERY_TARGET__}
     >
       {!eventModalPresent ? <FloatingNotificationHost /> : null}
+      {navigationHandoff.warning}
       <PageContainer
         show={mapPresentationBackBoundaryVisible}
         duration={1}

@@ -1,4 +1,5 @@
 import { FloatingNotificationHost } from "@/components/notification";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
@@ -105,6 +106,7 @@ export function SpotDetailPage({
   const spotId = safeParam(router.params.spotId);
   const routeContextId = safeParam(router.params.contextId);
   const themeClass = useThemeClass();
+  const navigationHandoff = useRedLightHandoff();
   const segment = initialSegment;
   const [mapReturnFailed, setMapReturnFailed] = useState(false);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
@@ -249,6 +251,8 @@ export function SpotDetailPage({
       notify({ owner: "spot-detail", placement: "inline", tone: "warning", title: "坐标不对外开放", body: "该点位不允许向外部地图发送精确坐标；请查看公开的到达说明。", dismissible: true, dedupeKey: `spot-navigation-restricted:${detail.spot.spotId}` });
       return;
     }
+    const allowed = await navigationHandoff.confirm("微信导航选项和地图界面可能较亮，无法跟随红光模式。");
+    if (!allowed || !current()) return;
     const hasTravelBlocker = Boolean(
       detail.accessAndSafety.explicitDanger ||
         detail.accessAndSafety.openness === "CLOSED" ||
@@ -337,6 +341,7 @@ export function SpotDetailPage({
       data-spot-id={spotId}
     >
       <FloatingNotificationHost />
+      {navigationHandoff.warning}
       <CustomNav
         title={segment === "GUIDES" ? "观星攻略" : segment === "SITE" ? "场地资料" : "地点概览"}
         back

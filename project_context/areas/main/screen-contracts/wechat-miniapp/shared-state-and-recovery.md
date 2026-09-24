@@ -122,6 +122,8 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 微信原生选点无法随观测红光着色。`components/red-light-handoff.tsx`负责在打开不可着色界面之前显示应用内黑红确认和取消，`services/platform-location.ts`在红光模式只接受消费者已明确确认的交接；当前消费者为 Search 的微信地点选择、计划出发地选择、新增点位地址选择。各消费者仍负责自身页面/账户/草稿身份和异步结果，取消不调用原生选点、不改变当前输入。官方WEAPP 320×700 已抽样确认三处应用内提示、取消，以及 Search 显式继续后才打开微信选点；真机系统颜色、Back和其它原生交接仍需分别验证。此处实现映射不扩大任何视觉候选的采用范围。
 
+正式观星点地图面板“路线”和场地资料页“去这里”也复用该红光交接提示；地图已有页面级原生返回层，提示关闭由它接管，场地资料页使用共享返回边界。两处仅在显式继续后才进入原生地图或导航选项，已有公开坐标和出行阻断规则仍各自生效。当前官方WEAPP模拟器已确认两处提示原图与取消返回原上下文；原生返回键、真机亮度以及原生导航完成未验证。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.
