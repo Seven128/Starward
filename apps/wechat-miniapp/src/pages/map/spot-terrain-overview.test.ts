@@ -61,11 +61,15 @@ test("image failure preserves light, emits one notice and retains a working retr
   assert.equal(nodes(recovered).some(node => node.type === "SoftButton"), false);
 });
 
-test("light failure preserves terrain and hiding the consumer suppresses new notices", () => {
-  const h = harness(); h.set({ imagePath: "/local/terrain.png", data: { data: { ...base, lightPollution: { state: "UNAVAILABLE", cells: [], legend: [], failureCode: "LIGHT_READ_FAILED" } } } });
+test("light failure preserves terrain, offers retry and never reports missing coverage", async () => {
+  const h = harness(); h.set({ imagePath: "/local/terrain.png", data: { data: { ...base, lightPollution: { state: "UNAVAILABLE", cells: [], legend: [], coverageLabel: "当前地区暂无数据", failureCode: "LIGHT_READ_FAILED" } } } });
   const tree = h.render(false); assert.equal(h.notices.length, 0);
   assert.ok(nodes(tree).some(node => node.type === "Image" && node.props.src === "/local/terrain.png"));
   assert.equal(nodes(tree).some(node => node.type === "StatusPanel"), false);
+  assert.match(text(tree), /光污染：暂时无法读取/);
+  assert.doesNotMatch(text(tree), /光污染：当前地区暂无数据/);
+  await nodes(tree).find(node => node.type === "SoftButton" && node.props.label === "重新读取图层").props.onClick();
+  assert.equal(h.retries, 1);
   h.render(true); assert.equal(h.notices.length, 1);
 });
 
@@ -74,6 +78,7 @@ test("both uncovered layers share one empty placeholder without test-only explan
     lightPollution: { state: "UNAVAILABLE", cells: [], legend: [], coverageLabel: "当前地区暂无数据" } } } });
   const tree = h.render(); assert.equal(nodes(tree).filter(node => node.type === "StatusPanel" && node.props.state === "EMPTY").length, 1);
   assert.equal(nodes(tree).some(node => node.type === "SoftButton"), false); assert.equal(h.notices.length, 0);
+  assert.match(text(tree), /光污染：当前地区暂无数据/);
   assert.doesNotMatch(text(tree), /测试数据说明|示例说明|仅供测试|地形加载失败|源分辨率 null/);
 });
 
