@@ -4,6 +4,7 @@ import { CONTRIBUTION_FORMAL_FIELD_KEYS } from "@starward/miniapp-contracts";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { SelectionTabs } from "@/components/selection-tabs";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { displayBeijingTimestamp } from "@/utils/zoned-date";
 import { useState } from "react";
 import Taro from "@tarojs/taro";
@@ -15,7 +16,7 @@ import {
   TOPICS,
 } from "./contribution-model";
 import type { ContributionForm } from "./use-contribution-form";
-import { contributionFrozenAttempt, contributionRecordGroup, contributionRecordStatus, type ContributionRecordGroup } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordGroup, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts, type ContributionRecordGroup } from "./contribution-record-model";
 
 type CreationFilter = "ALL" | "DRAFT" | "PENDING" | "ONLINE" | "REJECTED";
 type FeedbackFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
@@ -24,18 +25,16 @@ const FORMAL_FIELD_LABELS: Record<(typeof CONTRIBUTION_FORMAL_FIELD_KEYS)[number
 };
 
 function recordName(item: ContributionSubmission) {
-  return item.spotNameSnapshot ?? item.candidateLocation?.displayName ?? "地点待定";
-}
-
-function recordRegion(item: ContributionSubmission) {
-  return item.candidateLocation?.region ?? (item.spotId ? "正式观星点" : "地区资料未提供");
+  return contributionRecordIdentity(item).name;
 }
 
 function ContributionSpotIdentityCard({ item }: { item: ContributionSubmission }) {
+  const identity = contributionRecordIdentity(item);
   return <View className="spot-identity-card">
     <View className="spot-identity-card__copy">
-      <Text className="spot-identity-card__region">{recordRegion(item)}</Text>
-      <Text className="spot-identity-card__title">{recordName(item)}</Text>
+      <Text className="spot-identity-card__region">{identity.region}</Text>
+      <Text className="spot-identity-card__title">{identity.name}</Text>
+      {identity.address ? <View className="spot-identity-card__address"><SemanticIcon name="location" /><Text className="spot-identity-card__address-text">{identity.address}</Text></View> : null}
     </View>
   </View>;
 }
@@ -44,6 +43,7 @@ function RecordDetail({ item, onBack }: { item: ContributionSubmission; onBack()
   const status = contributionRecordStatus(item);
   const latestAttempt = contributionFrozenAttempt(item);
   const frozen = latestAttempt?.snapshot ?? item;
+  const submittedPlace = contributionSubmittedPlaceFacts(item);
   return <View className="contribution-record-detail" data-control="contribution-record-detail">
     <Button className="contribution-record-detail__back focus-ring" ariaLabel="返回记录列表" onClick={onBack}>‹ <Text>返回记录</Text></Button>
     <View className="contribution-record-card--detail"><ContributionSpotIdentityCard item={item} /><View className="contribution-record-card__extension"><Text className={`contribution-status-pill contribution-status-pill--${status.tone}`}>{status.label}</Text><Text className="type-caption contribution-record-card__meta">{KIND_LABEL[item.kind]} · 更新 {displayBeijingTimestamp(item.updatedAt)}</Text></View></View>
@@ -51,7 +51,12 @@ function RecordDetail({ item, onBack }: { item: ContributionSubmission; onBack()
     <View className="contribution-readonly-section">
       <Text className="type-section">本次提交内容</Text>
       {latestAttempt ? <Text className="type-caption">第 {latestAttempt.attemptNo} 次提交 · {displayBeijingTimestamp(latestAttempt.submittedAt)}</Text> : null}
-      {frozen.formalFeedback ? <View className="contribution-frozen-diff">{CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key => Object.prototype.hasOwnProperty.call(frozen.formalFeedback!.proposal.fields,key)).map(key => <View key={key}><Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="contribution-frozen-diff__old">{frozen.formalFeedback!.baseline.fields[key] || "未填写"}</Text><Text> → </Text><Text>{frozen.formalFeedback!.proposal.fields[key] || "已清空"}</Text></View>)}</View> : <><Text className="type-body">{frozen.detail || "没有文字说明"}</Text><Text className="type-caption">涉及事实：{frozen.topics.length ? frozen.topics.map((topic) => TOPICS.find((entry) => entry.key === topic)?.label ?? "其他").join(" · ") : "未提供"}</Text></>}
+      {submittedPlace ? <View className="contribution-submitted-facts">
+        {submittedPlace.selectedLocation ? <Text className="type-secondary">选点：{submittedPlace.selectedLocation}</Text> : null}
+        {submittedPlace.fields.map(({ key, value }) => <View className="contribution-submitted-facts__row" key={key}>
+          <Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="type-body">{value || "未填写"}</Text>
+        </View>)}
+      </View> : frozen.formalFeedback ? <View className="contribution-frozen-diff">{CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key => Object.prototype.hasOwnProperty.call(frozen.formalFeedback!.proposal.fields,key)).map(key => <View key={key}><Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="contribution-frozen-diff__old">{frozen.formalFeedback!.baseline.fields[key] || "未填写"}</Text><Text> → </Text><Text>{frozen.formalFeedback!.proposal.fields[key] || "已清空"}</Text></View>)}</View> : <><Text className="type-body">{frozen.detail || "没有文字说明"}</Text><Text className="type-caption">涉及事实：{frozen.topics.length ? frozen.topics.map((topic) => TOPICS.find((entry) => entry.key === topic)?.label ?? "其他").join(" · ") : "未提供"}</Text></>}
       <Text className="type-caption">媒体：{frozen.media.length} 项</Text>
     </View>
     <View className="contribution-readonly-section">

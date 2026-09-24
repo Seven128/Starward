@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
-import { contributionFrozenAttempt, contributionRecordGroup, contributionRecordStatus } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordGroup, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
 
 function record(patch: Partial<ContributionSubmission>): ContributionSubmission {
   return {
@@ -51,4 +51,48 @@ test("record detail selects the latest immutable submission attempt", () => {
   });
   assert.equal(contributionFrozenAttempt(item)?.attemptNo, 2);
   assert.equal(contributionFrozenAttempt(item)?.snapshot.detail, "第二次冻结内容");
+});
+
+test("new-spot record identity keeps submitted fields, including a literal missing-value phrase", () => {
+  const candidateLocation = { displayName: "位置原名", region: "广东省深圳市盐田区",
+    wgs84: { system: "WGS84" as const, latitude: 22.588, longitude: 114.302 } };
+  const submission = record({ submissionState: "PENDING_REVIEW", candidateLocation,
+    candidateProfile: { fields: { name: "未保存的新名称", address: "未保存的新地址" }, media: {} },
+    attempts: [{ attemptId: "attempt:1", attemptNo: 1, baseRevision: 1,
+      submittedAt: "2026-09-24T00:00:00.000Z", review: null,
+      snapshot: { kind: "NEW_SPOT_PROPOSAL", spotId: null, spotNameSnapshot: null,
+        candidateLocation, observedAt: null, topics: [], detail: "", rightsConfirmed: false,
+        preciseLocationConsent: true, media: [],
+        candidateProfile: { fields: { name: " 暂无数据 ", address: "暂无数据" }, media: {} } } }],
+  });
+  assert.deepEqual(contributionRecordIdentity(submission), {
+    name: "暂无数据", region: "广东省深圳市盐田区", address: "暂无数据",
+  });
+  assert.deepEqual(contributionRecordIdentity(record({ candidateLocation,
+    candidateProfile: { fields: { name: " ", address: " " }, media: {} } })), {
+    name: "位置原名", region: "广东省深圳市盐田区", address: null,
+  });
+  assert.equal(contributionRecordIdentity(record({ kind: "CORRECTION", spotNameSnapshot: "正式观星点",
+    candidateProfile: { fields: { name: "用户建议的新名" }, media: {} } })).name, "正式观星点");
+});
+
+test("new-spot read-only record presents frozen structured submission rather than legacy report text", () => {
+  const candidateLocation = { displayName: "选点原名", region: "广东省深圳市盐田区",
+    wgs84: { system: "WGS84" as const, latitude: 22.588, longitude: 114.302 } };
+  const item = record({ submissionState: "PENDING_REVIEW", candidateLocation,
+    candidateProfile: { fields: { name: "未保存名称", detail: "未保存说明" }, media: {} },
+    attempts: [{ attemptId: "attempt:1", attemptNo: 1, baseRevision: 1,
+      submittedAt: "2026-09-24T00:00:00.000Z", review: null,
+      snapshot: { kind: "NEW_SPOT_PROPOSAL", spotId: null, spotNameSnapshot: null,
+        candidateLocation, observedAt: null, topics: [], detail: "", rightsConfirmed: false,
+        preciseLocationConsent: true, media: [], candidateProfile: { fields: {
+          name: "暂无数据", address: "暂无数据", openness: "有条件开放",
+          detail: "东南方向视野较开阔。" }, media: {} } } }],
+  });
+  assert.deepEqual(contributionSubmittedPlaceFacts(item), {
+    selectedLocation: "选点原名 · 广东省深圳市盐田区",
+    fields: [{ key: "address", value: "暂无数据" }, { key: "name", value: "暂无数据" },
+      { key: "openness", value: "有条件开放" }, { key: "detail", value: "东南方向视野较开阔。" }],
+  });
+  assert.equal(contributionSubmittedPlaceFacts(record({ kind: "CORRECTION" })), null);
 });

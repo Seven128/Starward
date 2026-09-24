@@ -17,6 +17,7 @@ import {
 } from "./contribution-model";
 import type { ContributionCommands } from "./use-contribution-commands";
 import type { ContributionForm } from "./use-contribution-form";
+import { contributionRecordIdentity } from "./contribution-record-model";
 
 export function ContributionMediaSection({
   form,
@@ -519,7 +520,5 @@ function statusTone(
 }
 
 function submissionName(item: ContributionForm["submissions"][number]) {
-  return (
-    item.spotNameSnapshot ?? item.candidateLocation?.displayName ?? "地点待定"
-  );
+  return contributionRecordIdentity(item).name;
 }

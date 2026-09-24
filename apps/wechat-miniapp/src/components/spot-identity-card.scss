@@ -20,12 +20,12 @@
 .spot-identity-card__copy { position: relative; z-index: 1; min-height: 90Px; padding: 14Px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; box-sizing: border-box; }
 .spot-identity-card--with-media { background: #fff; }
 .spot-identity-card--with-media .spot-identity-card__copy { background: linear-gradient(90deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.82) 48%,rgba(255,255,255,.28) 82%,rgba(255,255,255,.04) 100%); }
-.spot-identity-card__region { display: block; margin-bottom: 4Px; color: #86909c; font-size: 11Px; line-height: 14Px; }
-.spot-identity-card__title { display: block; min-width: 0; color: #1d2129; font-size: 14Px; line-height: 20Px; font-weight: 600; letter-spacing: -.025em; white-space: normal; overflow-wrap: anywhere; }
+.spot-identity-card__region { display: block; margin-bottom: 4Px; color: #86909c; font-size: var(--type-metadata-size); line-height: var(--type-metadata-line); }
+.spot-identity-card__title { display: block; min-width: 0; color: #1d2129; font-size: var(--type-section-size); line-height: var(--type-section-line); font-weight: var(--type-section-weight); white-space: normal; overflow-wrap: anywhere; }
 .spot-identity-card--with-media .spot-identity-card__title { max-width: 72%; }
-.spot-identity-card__address { max-width: 90%; margin-top: 8Px; display: grid; grid-template-columns: 14Px minmax(0,1fr); align-items: start; column-gap: 4Px; color: #646f7f; }
-.spot-identity-card__address .semantic-icon { width: 14Px; height: 14Px; margin-top: 1Px; color: #a3abb8; }
-.spot-identity-card__address-text { min-width: 0; display: block; font-size: 12Px; line-height: 16Px; white-space: normal; overflow-wrap: anywhere; }
+.spot-identity-card__address { max-width: 90%; margin-top: 8Px; display: grid; grid-template-columns: 16Px minmax(0,1fr); align-items: start; column-gap: 5Px; color: #646f7f; }
+.spot-identity-card__address .semantic-icon { width: 16Px; height: 16Px; margin-top: 2Px; color: #a3abb8; }
+.spot-identity-card__address-text { min-width: 0; display: block; font-size: var(--type-body-secondary-size); line-height: var(--type-body-secondary-line); white-space: normal; overflow-wrap: anywhere; }
 .large-text .spot-identity-card__copy { min-height: max(90Px, var(--target-min)); }
 @media (max-width: 350px) { .spot-identity-card--with-media .spot-identity-card__title { max-width: 78%; } }
 @media (prefers-reduced-motion: reduce) { .spot-identity-card { transition: none; } }

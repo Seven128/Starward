@@ -1,4 +1,4 @@
-import type { ContributionSubmission } from "@starward/miniapp-contracts";
+import { CONTRIBUTION_FORMAL_FIELD_KEYS, type ContributionSubmission } from "@starward/miniapp-contracts";
 
 export type ContributionRecordGroup = "CREATION" | "FEEDBACK";
 
@@ -23,4 +23,41 @@ export function contributionRecordStatus(item: ContributionSubmission) {
 
 export function contributionFrozenAttempt(item: ContributionSubmission) {
   return item.attempts?.at(-1) ?? null;
+}
+
+function present(value: string | null | undefined) {
+  return value?.trim() || null;
+}
+
+function recordSource(item: ContributionSubmission) {
+  return item.submissionState === "DRAFT" ? item : contributionFrozenAttempt(item)?.snapshot ?? item;
+}
+
+/** A creation record names the authored place, not the map picker label. */
+export function contributionRecordIdentity(item: ContributionSubmission) {
+  const submitted = recordSource(item);
+  const candidate = submitted.candidateLocation ?? item.candidateLocation;
+  const profile = submitted.candidateProfile ?? item.candidateProfile;
+  return {
+    name: item.kind === "NEW_SPOT_PROPOSAL"
+      ? present(profile?.fields.name) ?? present(candidate?.displayName) ?? "地点待定"
+      : present(item.spotNameSnapshot) ?? present(candidate?.displayName) ?? "地点待定",
+    region: candidate?.region ?? (item.spotId ? "正式观星点" : "地区资料未提供"),
+    address: item.kind === "NEW_SPOT_PROPOSAL" ? present(profile?.fields.address) : null,
+  };
+}
+
+/** A submitted creation record shows its structured frozen proposal, not legacy report text. */
+export function contributionSubmittedPlaceFacts(item: ContributionSubmission) {
+  if (item.kind !== "NEW_SPOT_PROPOSAL") return null;
+  const submitted = recordSource(item);
+  const location = submitted.candidateLocation ?? item.candidateLocation;
+  const profile = submitted.candidateProfile ?? item.candidateProfile;
+  return {
+    selectedLocation: location ? `${location.displayName} · ${location.region}` : null,
+    fields: CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key =>
+      Object.prototype.hasOwnProperty.call(profile?.fields ?? {}, key)).map(key => ({
+      key, value: profile?.fields[key] ?? "",
+    })),
+  };
 }
