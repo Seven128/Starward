@@ -973,36 +973,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 onRecover={() => void contextQuery.refetch()}
               />
             ) : null}
-            <View className="plan-section plan-events" data-od-id="plan-events">
-              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">◌</Text>天文事件</Text></View>
-              {(activePlan.eventOccurrenceIds ?? []).map(id => {
-                const event = eventCatalog.find(item => item.occurrenceId === id);
-                return <Button key={id} className="plan-event-row" onClick={() => { setEventDetailId(id); setEventModalOpen(true); }}>
-                  <Text>{event?.displayName ?? "事件资料暂不可用"}</Text>
-                  <Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : id}</Text>
-                </Button>;
-              })}
-              {!activePlan.eventOccurrenceIds?.length ? <StatusPanel state="EMPTY" emptyLevel="section"
-                title="暂无关联事件" detail="编辑计划可关联一项天文事件。" /> : null}
-            </View>
-            <View className="plan-section plan-preparation" data-od-id="plan-preparation">
-              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">☷</Text>提醒与清单</Text><Text className="plan-section-caption">{activePlan.reminders?.length ?? 0}/5 个提醒</Text></View>
-              <Text className="plan-form-footnote">通知状态按每组记录，清单可独立使用。</Text>
-              {(activePlan.reminders ?? []).map(reminder => {
-                const notification = reminderNotifications.find(status => status.planId === activePlan.planId && status.reminderId === reminder.reminderId);
-                return <View className="plan-reminder" key={reminder.reminderId}>
-                <View className="plan-reminder__heading"><View className="plan-reminder__heading-copy">
-                  <Text className="plan-reminder__title">{reminder.title?.trim() || "个人提醒"}</Text>
-                  <Text className="plan-reminder__offset">出发前 {reminder.hoursBeforeDeparture} 小时</Text>
-                </View><Text>{reminder.items.filter(item => item.completed).length}/{reminder.items.length}</Text></View>
-                <View className="plan-reminder__status"><Text>提醒与清单已保存</Text><Text>{planReminderStatusLabel(notification)}</Text></View>
-                <Text className="plan-reminder__status-detail">{planReminderStatusDetail(notification)}</Text>
-                {reminder.items.map(item => <Button key={item.itemId} className={`plan-check ${item.completed ? "plan-check--done" : ""}`} disabled={checklistSaving} aria-pressed={item.completed} aria-label={`${item.text}，${item.completed ? "已完成" : "未完成"}`}
-                    onClick={() => { void toggleReminderItem(reminder.reminderId, item.itemId, !item.completed); }}><View className="plan-check__box"><Text>✓</Text></View><Text>{item.text}</Text></Button>)}
-              </View>})}
-              {!activePlan.reminders?.length ? <StatusPanel state="EMPTY" emptyLevel="section"
-                title="暂无个人提醒" detail="编辑计划可添加出发提醒和个人清单。" /> : null}
-            </View>
             <View className="plan-section plan-route" data-od-id="plan-route-nodes">
               <View className="plan-section-heading">
                 <Text className="type-section"><Text className="plan-section-symbol">↗</Text>出行安排</Text>
@@ -1045,6 +1015,36 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 {siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
                   ? <SoftButton variant="ghost" label="重新获取场地信息" onClick={() => void siteOverviewQuery.refetch()} /> : null}
               </View>
+            </View>
+            <View className="plan-section plan-events" data-od-id="plan-events">
+              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">◌</Text>天文事件</Text></View>
+              {(activePlan.eventOccurrenceIds ?? []).map(id => {
+                const event = eventCatalog.find(item => item.occurrenceId === id);
+                return <Button key={id} className="plan-event-row" onClick={() => { setEventDetailId(id); setEventModalOpen(true); }}>
+                  <Text>{event?.displayName ?? "事件资料暂不可用"}</Text>
+                  <Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : id}</Text>
+                </Button>;
+              })}
+              {!activePlan.eventOccurrenceIds?.length ? <StatusPanel state="EMPTY" emptyLevel="section"
+                title="暂无关联事件" detail="编辑计划可关联一项天文事件。" /> : null}
+            </View>
+            <View className="plan-section plan-preparation" data-od-id="plan-preparation">
+              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">☷</Text>提醒与清单</Text><Text className="plan-section-caption">{activePlan.reminders?.length ?? 0}/5 个提醒</Text></View>
+              <Text className="plan-form-footnote">通知状态按每组记录，清单可独立使用。</Text>
+              {(activePlan.reminders ?? []).map(reminder => {
+                const notification = reminderNotifications.find(status => status.planId === activePlan.planId && status.reminderId === reminder.reminderId);
+                return <View className="plan-reminder" key={reminder.reminderId}>
+                <View className="plan-reminder__heading"><View className="plan-reminder__heading-copy">
+                  <Text className="plan-reminder__title">{reminder.title?.trim() || "个人提醒"}</Text>
+                  <Text className="plan-reminder__offset">出发前 {reminder.hoursBeforeDeparture} 小时</Text>
+                </View><Text>{reminder.items.filter(item => item.completed).length}/{reminder.items.length}</Text></View>
+                <View className="plan-reminder__status"><Text>提醒与清单已保存</Text><Text>{planReminderStatusLabel(notification)}</Text></View>
+                <Text className="plan-reminder__status-detail">{planReminderStatusDetail(notification)}</Text>
+                {reminder.items.map(item => <Button key={item.itemId} className={`plan-check ${item.completed ? "plan-check--done" : ""}`} disabled={checklistSaving} aria-pressed={item.completed} aria-label={`${item.text}，${item.completed ? "已完成" : "未完成"}`}
+                    onClick={() => { void toggleReminderItem(reminder.reminderId, item.itemId, !item.completed); }}><View className="plan-check__box"><Text>✓</Text></View><Text>{item.text}</Text></Button>)}
+              </View>})}
+              {!activePlan.reminders?.length ? <StatusPanel state="EMPTY" emptyLevel="section"
+                title="暂无个人提醒" detail="编辑计划可添加出发提醒和个人清单。" /> : null}
             </View>
             <View className="plan-section plan-notes" data-od-id="plan-notes">
               <View className="plan-section-heading"><Text className="type-section">备注</Text></View>
