@@ -420,7 +420,7 @@ export function SpotInformationPanel({
 
       <View className="spot-panel__scroll-frame">
         <ScrollView
-          className="spot-panel__scroll"
+          className="spot-panel__scroll spot-panel__scroll--full-bleed-plan"
           id="spot-panel-scroll"
           scrollY={extent !== "small"}
           {...(restoredScrollTop === undefined ? {} : { scrollTop: restoredScrollTop })}
