@@ -57,8 +57,10 @@ export default function PlanListPage() {
     <ScrollView scrollY scrollTop={scrollTop} onScroll={event => { scrollPositions.current[partition] = event.detail.scrollTop; setScrollTop(event.detail.scrollTop); }} className="plan-list-scroll" showScrollbar={false} enhanced>
       <View className="plan-list-content">
         <View className="plan-list-filters" role="group" aria-label="计划时间分区">
-          <Button aria-pressed={partition === "upcoming"} onClick={() => choosePartition("upcoming")}>接下来</Button>
-          <Button aria-pressed={partition === "past"} onClick={() => choosePartition("past")}>过往</Button>
+          <Button className={partition === "upcoming" ? "plan-list-filter--active" : ""}
+            aria-pressed={partition === "upcoming"} onClick={() => choosePartition("upcoming")}>接下来</Button>
+          <Button className={partition === "past" ? "plan-list-filter--active" : ""}
+            aria-pressed={partition === "past"} onClick={() => choosePartition("past")}>过往</Button>
           <Button className="plan-list-new" onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>＋ 新建</Button>
         </View>
         {query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE" ? <StatusPanel state={query.data ? "STALE" : "ERROR"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
