@@ -950,6 +950,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             </View>
             {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
               failed={!sky && (skyQuery.isError || Boolean(skyQuery.refreshError) || skyQuery.data?.dataState === "STALE_USABLE")}
+              stale={Boolean(sky && (skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE"))}
               onRetry={() => void skyQuery.refetch()} loading={Boolean(
               (contextQuery.isPending && contextQuery.isFetching) ||
               (activeContext && skyQuery.isPending && skyQuery.isFetching)

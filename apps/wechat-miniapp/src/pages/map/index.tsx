@@ -2194,9 +2194,9 @@ export default function MapPage() {
                       云量预报 · 仅覆盖有效数据区域
                     </Text>
                     <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} />
-                    <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" starts={cloudTimeChoices.flatMap(choice => Object.values(choice.frame.spotSignals)
+                    {(!scene.isPending || scene.data) && !(mapSceneFailed && !scene.data) ? <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" stale={mapSceneFailed} starts={cloudTimeChoices.flatMap(choice => Object.values(choice.frame.spotSignals)
                       .flatMap(signal => signal.weatherAt && signal.cloudPercent !== null ? [signal.weatherAt] : []))}
-                      timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} />
+                      timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} /> : null}
                   </>
                 ) : lightLayerState === "LOADING" ? (
                   <StatusPanel state="LOADING" detail="正在确认当前地区的光污染覆盖。" live={false} />

@@ -17,7 +17,7 @@ test("question disclosure opens, closes, distinguishes map coverage and resets a
       const previous = dependencies[effectIndex];
       if (!previous || deps.some((value, index) => value !== previous[index])) effects.push(fn);
       dependencies[effectIndex++] = deps;
-    }, forecastCoverage, calendarDateInTimezone, clockTimeInTimezone, Button: "Button", Text: "Text", View: "View",
+    }, forecastCoverage, calendarDateInTimezone, clockTimeInTimezone, StatusPanel: "StatusPanel", Button: "Button", Text: "Text", View: "View",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   const input = { starts: ["2026-09-15T12:00:00Z"], timezone: "Asia/Shanghai", scopeKey: "spot:a" };
@@ -34,4 +34,14 @@ test("question disclosure opens, closes, distinguishes map coverage and resets a
   assert.doesNotMatch(text(tree), /未返回及中断/);
   find(tree, "说明天气数据范围").props.onClick(); tree = render({ ...input, scopeKey: "map:b", scope: "map" } as typeof input);
   assert.match(text(tree), /地图采样点/); assert.match(text(tree), /不代表整片区域/);
+  const empty = render({ ...input, starts: [], scopeKey: "map:empty", scope: "map" } as typeof input);
+  const section = (empty.children as any[]).find(child => child?.type === "StatusPanel");
+  assert.equal(section.props.state, "EMPTY");
+  assert.equal(section.props.emptyLevel, "section");
+  assert.match(section.props.detail, /地图采样点/);
+  assert.doesNotMatch(text(empty), /暂无数据/);
+  const stale = render({ ...input, starts: [], scopeKey: "map:stale", scope: "map", stale: true } as typeof input);
+  assert.equal(stale, null);
+  const staleWithRange = render({ ...input, scopeKey: "map:stale-range", scope: "map", stale: true } as typeof input);
+  assert.match(text(staleWithRange), /上次获取的预报时段/);
 });

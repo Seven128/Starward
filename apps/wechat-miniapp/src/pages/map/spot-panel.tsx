@@ -657,7 +657,7 @@ export function SpotInformationPanel({
               {skyReport ? <>
               <Text className="type-label spot-panel__weather-heading">气象条件</Text>
               {skyRow?.weatherAt ? <SourceAttribution sources={skyReport?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
-              <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []}
+              <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []} stale={Boolean(skyError || skyStale)}
                 timezone={context?.timezone ?? "Asia/Shanghai"} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
               {skyRow?.weatherAt ? <Text className="type-caption">对应小时预报：{formatSourceTime(skyRow.weatherAt, context?.timezone ?? "Asia/Shanghai")}</Text> : null}
               <View className="spot-panel__evidence-group" ariaLabel="总云量">
