@@ -63,6 +63,15 @@
   display: none;
 }
 
+.plan-field-error {
+  padding: 10rpx 14rpx;
+  border-left: 3rpx solid var(--danger);
+  color: var(--danger);
+  background: var(--surface);
+  font-size: var(--type-body-secondary-size);
+  line-height: var(--type-body-secondary-line);
+}
+
 .plan-hero {
   position: relative;
   overflow: hidden;

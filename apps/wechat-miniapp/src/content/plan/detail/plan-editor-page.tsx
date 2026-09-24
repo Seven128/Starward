@@ -58,6 +58,8 @@ function today(timezone = "Asia/Shanghai") {
   return calendarDateInTimezone(new Date(), timezone);
 }
 
+type PlanValidationField = "location" | "start" | "timing" | "travel" | "reminders";
+
 export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedEditor?: boolean } = {}) {
   const router = useRouter();
   const requestedSpotId = spotIdFromPlanRoute(router.params.spotId);
@@ -268,6 +270,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       ? existing.contextSnapshot.routeOrigin?.displayName ?? ""
       : observationContext?.routeOrigin?.displayName ?? "",
   ));
+  const [fieldError, setFieldError] = useState<{ field: PlanValidationField; message: string; sequence: number } | null>(null);
+  const [validationAnchor, setValidationAnchor] = useState("");
   const [eventOccurrenceIds, setEventOccurrenceIds] = useState<readonly string[]>(
     withRequestedEvent(restoredDraft?.eventOccurrenceIds ?? existing?.eventOccurrenceIds ?? []),
   );
@@ -368,6 +372,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     hydratedPlanId.current = plan.planId;
     newPlanRequested.current = false;
     setActivePlanId(plan.planId);
+    setFieldError(null);
+    setValidationAnchor("");
     const draft = readDraft(plan.planId);
     setConflictPlan(draft && draft.baseRevision === undefined ? plan : null);
     draftBaseRevision.current = draft?.baseRevision ?? plan.revision;
@@ -402,6 +408,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     setConflictPlan(null);
     newPlanRequested.current = true;
     setEditing(true);
+    setFieldError(null);
+    setValidationAnchor("");
     const nextDate = requestedEventDate ?? observationContext?.localDate ?? today(observationContext?.timezone);
     setActivePlanId(null);
     setSelectedSpotId(
@@ -571,6 +579,22 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     }
     catch { setDraftStorageFailed(true); announce("warning", "草稿暂未保存在本机", "当前输入仍在页面中，请保存成功后再离开。"); }
   };
+  const showFieldError = (field: PlanValidationField, message: string) => {
+    const sequence = (fieldError?.sequence ?? 0) + 1;
+    setFieldError({ field, message, sequence });
+    setValidationAnchor(`plan-validation-${field}-${sequence}`);
+  };
+  const clearFieldError = (field: PlanValidationField) => {
+    if (fieldError?.field === field) {
+      setFieldError(null);
+      setValidationAnchor("");
+    }
+  };
+  const fieldErrorView = (field: PlanValidationField) => fieldError?.field === field ? (
+    <View id={`plan-validation-${field}-${fieldError.sequence}`} className="plan-field-error" role="alert" aria-live="assertive">
+      <Text>{fieldError.message}</Text>
+    </View>
+  ) : null;
   const save = async () => {
     if (mutationBusy.current) return;
     if (conflictPlan) {
@@ -601,37 +625,29 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       contextLocation: activeContext.location,
     });
     if (!spotId) {
-      announce(
-        "error",
-        "计划未保存",
-        "请先选择一个正式观星点；本页草稿仍保留。",
-      );
+      showFieldError("location", "请先选择一个正式观星点；本页草稿仍保留。");
       return;
     }
     if (
       !/^\d{4}-\d{2}-\d{2}$/u.test(localDate) ||
       !/^\d{2}:\d{2}$/u.test(localTime)
     ) {
-      announce(
-        "error",
-        "计划未保存",
-        "日期或时间格式无效；本页草稿仍保留，可修正后重试。",
-      );
+      showFieldError("start", "日期或时间格式无效；本页草稿仍保留，可修正后重试。");
       return;
     }
     if (!timing.endLocalDate || !timing.endLocalTime || !timing.departureLocalDate || !timing.departureLocalTime) {
-      announce("error", "计划未保存", "请选择观测结束日期、时间和计划出发日期、时间；输入仍保留。");
+      showFieldError("timing", "请选择观测结束日期、时间和计划出发日期、时间；输入仍保留。");
       return;
     }
     if (!travel.origin.trim()) {
-      announce("error", "计划未保存", "请填写实际出发地；当前输入仍保留。");
+      showFieldError("travel", "请填写实际出发地；当前输入仍保留。");
       return;
     }
     try {
       resolvePlanTiming({ localDate, localTime, timezone, timing });
     } catch (error) {
       const reason = error instanceof Error ? error.message : "";
-      announce("error", "计划未保存",
+      showFieldError("timing",
         reason === "plan_end_must_follow_start"
           ? "观测结束必须晚于开始；当前输入仍保留。"
           : reason === "plan_departure_must_precede_start"
@@ -641,7 +657,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     }
     let validatedReminders: PlanReminder[];
     try { validatedReminders = parsePlanReminders(reminders); } catch {
-      announce("error", "提醒清单未保存", "请填写提醒名称、清单内容与有效提前小时；最多5组、每组20项。");
+      showFieldError("reminders", "请填写提醒名称、清单内容与有效提前小时；最多5组、每组20项。");
       return;
     }
     const planId =
@@ -854,7 +870,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         backOdId="my-plan-back-action"
         backFallbackTab="/pages/my/index"
       />
-      <ScrollView className="plan-editor__scroll hide-scrollbar" scrollY enhanced showScrollbar={false}>
+      <ScrollView className="plan-editor__scroll hide-scrollbar" scrollY enhanced showScrollbar={false} scrollIntoView={validationAnchor}>
       <View className="plan-content safe-bottom">
         {contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE" ? <StatusPanel state="STALE"
           detail="以下仍使用上次的地点与时间资料，尚未确认最新状态。"
@@ -1075,6 +1091,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 保存后仍需在出发前复核天气与到达条件。
               </Text>
             </View>
+            {fieldErrorView("location")}
             <View className="form-group plan-location-field">
               {contextQuery.isPending && contextQuery.isFetching ? (
                 <StatusPanel
@@ -1122,7 +1139,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   value={selectedSpotIndex}
                   onChange={(event) => {
                     const spot = formalSpots[Number(event.detail.value)];
-                    if (spot) { retainDraft({ selectedSpotId: spot.spotId }); setSelectedSpotId(spot.spotId); }
+                    if (spot) { retainDraft({ selectedSpotId: spot.spotId }); setSelectedSpotId(spot.spotId); clearFieldError("location"); }
                   }}
                 >
                   <View className="plan-fields-card plan-field-row focus-ring"
@@ -1147,6 +1164,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <View className="plan-editor-form__heading">
               <Text className="type-section">留给星空的时间</Text>
             </View>
+            {fieldErrorView("start")}
             <View className="plan-fields-card">
               <View className="plan-field-row">
                 <Text className="plan-field-row__label">开始观测</Text>
@@ -1156,7 +1174,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   aria-label={`观测地点当地日期：${localDate}`}
                   disabled={saving || deleting}
                   value={localDate}
-                  onChange={(event) => { retainDraft({ localDate: event.detail.value }); setLocalDate(event.detail.value); }}
+                  onChange={(event) => { retainDraft({ localDate: event.detail.value }); setLocalDate(event.detail.value); clearFieldError("start"); clearFieldError("timing"); }}
                 >
                   <View className="plan-field-value focus-ring">
                     <Text>{localDate.replaceAll("-", "/")}</Text>
@@ -1167,7 +1185,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   aria-label={`观测地点当地时间：${localTime}`}
                   disabled={saving || deleting}
                   value={localTime}
-                  onChange={(event) => { retainDraft({ localTime: event.detail.value }); setLocalTime(event.detail.value); }}
+                  onChange={(event) => { retainDraft({ localTime: event.detail.value }); setLocalTime(event.detail.value); clearFieldError("start"); clearFieldError("timing"); }}
                 >
                   <View className="plan-field-value focus-ring">
                     <Text>{localTime}</Text>
@@ -1176,16 +1194,18 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 </View>
               </View>
             </View>
+            {fieldErrorView("timing")}
             <View className="form-group">
               <PlanTimingFields value={timing} disabled={saving || deleting}
                 timezone={formalSpots.find((spot) => spot.spotId === selectedSpotId)?.timezone ?? activePlan?.contextSnapshot.timezone ?? "Asia/Shanghai"}
-                onChange={(value) => { retainDraft({ timing: value }); setTiming(value); }} />
+                onChange={(value) => { retainDraft({ timing: value }); setTiming(value); clearFieldError("timing"); }} />
             </View>
             <View className="plan-editor-form__heading">
               <Text className="type-section">出发安排</Text>
             </View>
+            {fieldErrorView("travel")}
             <PlanTravelFields value={travel} disabled={saving || deleting} ownerKey={`${planOwner}:${activePlanId ?? "new"}`}
-              onChange={(value) => { retainDraft({ travel: value }); setTravel(value); }} />
+              onChange={(value) => { retainDraft({ travel: value }); setTravel(value); clearFieldError("travel"); }} />
             <Text className="plan-form-footnote">
               出发地、交通方式和时间由你填写。出发前可通过微信地图核实到达方式。
             </Text>
@@ -1213,7 +1233,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <View className="plan-editor-form__heading">
               <Text className="type-section">自己的提醒清单</Text>
             </View>
-            <PlanReminderEditor reminders={reminders} onChange={value => { retainDraft({ reminders: value }); setReminders(value); }} />
+            {fieldErrorView("reminders")}
+            <PlanReminderEditor reminders={reminders} onChange={value => { retainDraft({ reminders: value }); setReminders(value); clearFieldError("reminders"); }} />
             <View className="form-group plan-notes-field">
               <Text className="type-section">备注</Text>
               <Textarea
