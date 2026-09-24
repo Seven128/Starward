@@ -2182,6 +2182,12 @@ export default function MapPage() {
                 </View> : null}
                 {visibleLayer === "TOTAL_CLOUD" ? (
                   <>
+                    {mapSceneFailed && !cloudTimeChoices.length ? <StatusPanel
+                      state={scene.data ? "STALE" : "ERROR"}
+                      detail="云量时间切片暂不可用，当前不能选择预报时刻。"
+                      recoveryLabel="重试地图数据"
+                      onRecover={() => void refreshMap()}
+                    /> : null}
                     <ObservationDateControl
                       dates={mapDateOptions}
                       selectedDate={selectedMapCivilDate}
@@ -2203,6 +2209,7 @@ export default function MapPage() {
                       selectedAt={activeContext?.selectedAtUtc ?? ""}
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"}
                       disabled={!activeContext || !cloudTimeChoices.length || timeSaving}
+                      emptyMessage={scene.isPending && !scene.data ? "正在读取云量时间切片。" : mapSceneFailed ? "云量时间切片暂不可用，请重试地图数据。" : "当前日期没有可用的云量时间切片。"}
                       onPreview={(index) => {
                         const choice = cloudTimeChoices[index];
                         if (!choice) return;

@@ -12,5 +12,7 @@ test("reselecting the same formal spot is an open intent that restores medium", 
   };
   assert.equal(shouldOpenSpotForSelection({ ...ready, explicitOpenRequested: false }), false);
   assert.equal(shouldOpenSpotForSelection({ ...ready, explicitOpenRequested: true }), true);
-  assert.equal(shouldOpenSpotForSelection({ ...ready, explicitOpenRequested: false, bottomPresentation: "layer-sheet" }), true);
+  assert.equal(shouldOpenSpotForSelection({ ...ready, explicitOpenRequested: false, bottomPresentation: "layer-sheet" }), false);
+  assert.equal(shouldOpenSpotForSelection({ ...ready, explicitOpenRequested: false, bottomPresentation: "spot-editor" }), false);
+  assert.equal(shouldOpenSpotForSelection({ ...ready, explicitOpenRequested: true, bottomPresentation: "layer-sheet" }), true);
 });

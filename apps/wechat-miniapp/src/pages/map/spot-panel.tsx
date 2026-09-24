@@ -619,6 +619,7 @@ export function SpotInformationPanel({
                 selectedAt={context?.selectedAtUtc ?? ""}
                 timezone={context?.timezone ?? "Asia/Shanghai"}
                 disabled={!context || !timeFrames.length || timeSaving}
+                emptyMessage={skyPending && !skyReport ? "正在读取天文时间切片。" : skyError || skyStale ? "天文时间切片暂不可用，请重试天文资料。" : "本观测夜没有可用的时间切片。"}
                 onPreview={onTimePreview}
                 onCommit={onTimeCommit}
                 onCancel={onTimeCancel}

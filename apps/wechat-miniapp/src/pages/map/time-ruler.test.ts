@@ -23,7 +23,7 @@ test("map and panel clocks keep midnight in 00–23 hours on the correct date", 
   }
 });
 
-function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z") {
+function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z", frames: { atUtc: string }[] = [{ atUtc: "2026-09-06T12:00:00Z" }, { atUtc: "2026-09-06T13:00:00Z" }], emptyMessage = "当前日期没有可用的时间切片。") {
   const positions:number[]=[];
   const effects: (() => void | (() => void))[] = [];
   let hide = () => {};
@@ -43,18 +43,29 @@ function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z") {
   const previews: number[] = [], commits: number[] = [];
   let cancelled = 0;
   const root: Element = component({
-    frames: [{ atUtc: "2026-09-06T12:00:00Z" }, { atUtc: "2026-09-06T13:00:00Z" }],
+    frames,
     selectedAt, timezone: "UTC", disabled,
+    emptyMessage,
     onPreview: (index: number) => previews.push(index), onCommit: (index: number) => commits.push(index),
     onCancel: () => { cancelled++; },
   });
-  const scroll = root.children.find((child) => child?.type === "scroll")!;
+  const scroll = root.children.find((child) => child?.type === "scroll");
   const cleanups = effects.map((effect) => effect());
-  return { positions, root, scroll: scroll.props, previews, commits, hide: () => hide(),
+  return { positions, root, scroll: scroll?.props ?? {}, previews, commits, hide: () => hide(),
     unmount: () => cleanups.forEach((cleanup) => cleanup?.()),
     changeInputs: () => effects.at(-1)!(),
     get cancelled() { return cancelled; } };
 }
+test("an empty ruler shows its consumer's actual loading, failure or zero-result meaning", () => {
+  for (const message of ["正在读取云量时间切片。", "云量时间切片暂不可用，请重试地图数据。", "当前日期没有可用的云量时间切片。"] ) {
+    const ruler = render(true, "2026-09-06T12:00:00Z", [], message);
+    const tree = JSON.stringify(ruler.root);
+    assert.ok(tree.includes(message));
+    assert.doesNotMatch(tree, /"暂无数据"/);
+  }
+  const pending = JSON.stringify(render(true, "", [], "正在读取云量时间切片。").root);
+  assert.doesNotMatch(pending, /暂无数据/);
+});
 const event = { detail: { scrollLeft: 44 } };
 const singleTouch = { touches: [{ identifier: 1 }] };
 const twoTouches = { touches: [{ identifier: 1 }, { identifier: 2 }] };

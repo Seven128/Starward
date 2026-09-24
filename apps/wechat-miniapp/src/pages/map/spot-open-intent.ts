@@ -7,6 +7,9 @@ export function shouldOpenSpotForSelection(input: {
   contextSpotId: string | null;
   selectedSpotId: string;
 }) {
+  if (!input.explicitOpenRequested &&
+      input.bottomPresentation !== "none" &&
+      input.bottomPresentation !== "spot-panel") return false;
   return input.explicitOpenRequested ||
     input.bottomPresentation !== "spot-panel" ||
     !input.detailContextReady ||
