@@ -777,6 +777,8 @@ export default function MapPage() {
     : localDateForNow();
   const mapTodayCivilDate = mapDateOptions[7] ?? selectedMapCivilDate;
   const visibleLayer = layerSheetOverlay(analysisOverlay);
+  const cloudLayerOwnsSceneError = bottomPresentation === "layer-sheet" &&
+    visibleLayer === "TOTAL_CLOUD" && mapSceneFailed && !mapContextFailed && !cloudTimeChoices.length;
   const visibleLayerUnavailable = Boolean(
     scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay) &&
       scene.data.data.layer.state === "UNAVAILABLE",
@@ -1957,7 +1959,7 @@ export default function MapPage() {
                 onRecover={nativeMap.retry}
               />
             ) : null}
-            {mapDataStale && !(bottomPresentation === "layer-sheet" && visibleLayer === "LIGHT" && !mapContextFailed && lightLayerState === "STALE") ? <StatusPanel
+            {mapDataStale && !cloudLayerOwnsSceneError && !(bottomPresentation === "layer-sheet" && visibleLayer === "LIGHT" && !mapContextFailed && lightLayerState === "STALE") ? <StatusPanel
               state="STALE"
               detail="更新失败，暂时显示上次结果。"
               recoveryLabel="重试"
@@ -1966,7 +1968,7 @@ export default function MapPage() {
             {!(pageState === "EMPTY" && bottomPresentation === "spot-panel") &&
             pageState !== "READY" &&
             pageState !== "PARTIAL" &&
-            pageState !== "STALE" ? (
+            pageState !== "STALE" && !(cloudLayerOwnsSceneError && pageState === "ERROR") ? (
               <StatusPanel
                 state={pageState}
                 detail={
