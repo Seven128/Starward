@@ -268,7 +268,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const [travel, setTravel] = useState(restoredDraft?.travel ?? existing?.travel ?? emptyPlanTravel(
     existing?.contextSnapshot.schemaVersion === "observation-context-snapshot-v2"
       ? existing.contextSnapshot.routeOrigin?.displayName ?? ""
-      : observationContext?.routeOrigin?.displayName ?? "",
+      : "",
   ));
   const [fieldError, setFieldError] = useState<{ field: PlanValidationField; message: string } | null>(null);
   const [validationAnchor, setValidationAnchor] = useState("");
@@ -423,13 +423,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     setLocalDate(nextDate);
     setLocalTime("22:00");
     setTiming(emptyPlanTiming());
-    setTravel(emptyPlanTravel(observationContext?.routeOrigin?.displayName ?? ""));
+    setTravel(emptyPlanTravel());
     setReminders([]);
     setEventOccurrenceIds(requestedEventOccurrenceId ? [requestedEventOccurrenceId] : []);
     setNotes("");
     initialDraft.current = {
       timing: emptyPlanTiming(),
-      travel: emptyPlanTravel(observationContext?.routeOrigin?.displayName ?? ""),
+      travel: emptyPlanTravel(),
       eventOccurrenceIds: requestedEventOccurrenceId ? [requestedEventOccurrenceId] : [],
       selectedSpotId:
         requestedSpotId ?? (observationContext?.location?.kind === "FORMAL_SPOT"
