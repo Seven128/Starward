@@ -90,18 +90,10 @@ import {
   mapLayerKindForOverlay,
 } from "./map-layer-selection";
 import { cameraCenterForVisibleMapTarget } from "./map-camera";
+import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
   return calendarDateInTimezone(new Date(), timezone);
-}
-
-function currentTimezoneHint(): "Asia/Shanghai" | "Asia/Hong_Kong" {
-  try {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return timezone === "Asia/Hong_Kong" ? timezone : "Asia/Shanghai";
-  } catch {
-    return "Asia/Shanghai";
-  }
 }
 
 function formatContextTime(value: string, timezone: string) {

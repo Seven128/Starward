@@ -42,20 +42,12 @@ import {
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
+import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { canApplyContextRestore } from "@/services/observation-context-version";
 import "./search-page.scss";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
   return calendarDateInTimezone(new Date(), timezone);
-}
-
-function currentTimezoneHint(): "Asia/Shanghai" | "Asia/Hong_Kong" {
-  try {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return timezone === "Asia/Hong_Kong" ? timezone : "Asia/Shanghai";
-  } catch {
-    return "Asia/Shanghai";
-  }
 }
 
 function isRenderableMedia(media: SpotSummary["media"][number]) {

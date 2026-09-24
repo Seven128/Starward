@@ -1,7 +1,7 @@
 import { useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, resolvePlanTiming, type PlanReminder } from "@starward/miniapp-contracts";
-import { distanceMeters } from "@starward/coordinate-system";
+import { distanceMeters, gcj02ToWgs84 } from "@starward/coordinate-system";
 import { PlanReminderEditor } from "./plan-reminder-editor";
 import { confirmPlanEditorLeave } from "./leave-editor";
 import { planChecklistStorageKey } from "./plan-checklist";
@@ -47,6 +47,7 @@ import { PlanTimingFields, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel } from "./plan-travel-fields";
 import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
+import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { planContextIdentity, PlanSaveRecoveryError } from "@/services/plan-save-retry";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
@@ -92,6 +93,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const observationContext = useAppStore(
     (state) => state.observationContext,
   );
+  const viewport = useAppStore((state) => state.viewport);
   const explicitNew = router.params.new === "1";
   const initialSelection = initialPlanSelection(requestedPlanId, plans, explicitNew);
   const draftOwner = useRef(createDraftOwner(currentDraftUserId()));
@@ -137,6 +139,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           observationContext?.contextId,
           observationContext?.contextFingerprint,
           observationContext?.revision,
+          Number(viewport.center.latitude.toFixed(5)),
+          Number(viewport.center.longitude.toFixed(5)),
         ],
     queryFn: async (signal) => {
       const requestingOwner = scopedDraftUserId();
@@ -193,13 +197,30 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       }, signal);
       if (observationContext)
         return restoreObservationContext(observationContext, signal);
-      throw new Error("plan_observation_context_missing");
+      const point = gcj02ToWgs84({
+        lat: viewport.center.latitude,
+        lon: viewport.center.longitude,
+        system: "GCJ-02",
+      });
+      const timezoneHint = currentTimezoneHint();
+      return resolveObservationContext({
+        location: {
+          kind: "MAP_POINT",
+          displayName: "当前地图中心",
+          wgs84: { system: "WGS84", latitude: point.lat, longitude: point.lon },
+          source: "MAP_VIEWPORT",
+          timezoneHint,
+        },
+        localDate: today(timezoneHint),
+        targetProfile: "DAILY",
+      }, signal);
       };
       const response = await loadContext();
       if (scopedDraftUserId() !== requestingOwner) throw new Error("账号已变化，请重新打开计划。");
       return { ...response, owner: requestingOwner };
     },
-    enabled: pageVisible && Boolean(scopedDraftUserId() && (observationContext || planSnapshot || requestedSpotId)),
+    enabled: pageVisible && Boolean(scopedDraftUserId() &&
+      (observationContext || planSnapshot || requestedSpotId || (newPlanRequested.current && !requestedPlanId))),
     staleTime: 60_000,
   });
   const activeContext = contextQuery.data?.data ?? null;
@@ -1055,14 +1076,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               </Text>
             </View>
             <View className="form-group plan-location-field">
-              {!activeContext ? (
-                <StatusPanel
-                  state="EMPTY"
-                  detail="请先返回地图，让应用建立观测地点、日期与时区，再新建计划。"
-                  recoveryLabel="返回地图"
-                  onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
-                />
-              ) : contextQuery.isPending ? (
+              {contextQuery.isPending && contextQuery.isFetching ? (
                 <StatusPanel
                   state="LOADING"
                   detail="正在恢复观测地点、日期与时区。"
@@ -1073,6 +1087,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   detail="观测条件暂时无法加载，计划草稿已保留。"
                   recoveryLabel="重试"
                   onRecover={() => void contextQuery.refetch()}
+                />
+              ) : !activeContext ? (
+                <StatusPanel
+                  state="ERROR"
+                  detail="尚未确认观测地点、日期与时区，请返回地图重新选择地点。"
+                  recoveryLabel="返回地图"
+                  onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
                 />
               ) : spotsQuery.isPending ? (
                 <StatusPanel state="LOADING" detail="正在加载正式观星点。" />
@@ -1087,6 +1108,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <StatusPanel
                   state="EMPTY"
                   detail="暂无可选正式观星点，暂不能新建计划。"
+                  recoveryLabel="返回地图选点"
+                  onRecover={() => Taro.switchTab({ url: "/pages/map/index" })}
                 />
               ) : null}
               {formalSpots.length ? (
