@@ -30,3 +30,15 @@ test("pending proposal media keeps the submitted category order and identity", (
     { uploadId: "upload:site", label: "现场照片" },
   ]);
 });
+
+test("a submitted literal placeholder word remains candidate data, while missing identity falls back", () => {
+  const submission = {
+    candidateLocation: { displayName: "位置原名", region: "深圳" },
+    candidateProfile: { fields: { name: " 暂无数据 ", address: "暂无数据" }, media: {} },
+  } as unknown as ContributionSubmission;
+  assert.equal(pendingProposalPanelValues(submission).name, "暂无数据");
+  assert.equal(pendingProposalPanelValues(submission).address, "暂无数据");
+  const missing = { ...submission, candidateProfile: { fields: { name: "  ", address: "" }, media: {} } } as unknown as ContributionSubmission;
+  assert.equal(pendingProposalPanelValues(missing).name, "位置原名");
+  assert.equal(pendingProposalPanelValues(missing).address, "深圳");
+});
