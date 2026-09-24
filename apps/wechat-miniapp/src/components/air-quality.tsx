@@ -61,8 +61,8 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
         : <StatusPanel state="EMPTY" emptyLevel="field" detail="所选时刻没有空气质量预报。" />}
     {forecastUnavailableByFailure && view.hours.length === 0 ? null : <ForecastCoverageNote starts={view.hours.map(hour => hour.at)} timezone={timezone} scopeKey={`${spotId}:${selectedAt}`} scope="air" stale={forecastUnavailableByFailure} />}
     <Text className="type-caption">不同 AQI 标准保留原值；缺失污染物不补齐。空气质量不等于天文透明度或视宁度。</Text>
-    {envelope ? [envelope.data.current.source, envelope.data.forecast.source].map(source => <Provenance key={source.id} source={source} />) : null}
     {failed || view.expired || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE" ? <SoftButton label="重试空气质量" onClick={() => void query.refetch()}>重试</SoftButton> : null}
+    {envelope ? [envelope.data.current.source, envelope.data.forecast.source].map(source => <Provenance key={source.id} source={source} />) : null}
     </>}
   </View>;
 }

@@ -32,6 +32,8 @@ function harness() {
 const text = (value: any): string => value == null || typeof value === "boolean" ? "" : Array.isArray(value) ? value.map(text).join("") : typeof value === "object" ? text(value.children) : String(value);
 const find = (value: any, predicate: (node: any) => boolean): any => Array.isArray(value) ? value.map(child => find(child, predicate)).find(Boolean)
   : value && typeof value === "object" ? predicate(value) ? value : find(value.children, predicate) : null;
+const typesInReadingOrder = (value: any): string[] => Array.isArray(value) ? value.flatMap(typesInReadingOrder)
+  : value && typeof value === "object" ? [String(value.type), ...typesInReadingOrder(value.children)] : [];
 const source = { retrievedAt: "2026-09-15T00:00:00Z" };
 const body = { spotId: "spot:a", current: { value: null, state: "UNAVAILABLE", unavailableReason: "REQUEST_FAILED", source },
   forecast: { value: [{ at: "2026-09-15T01:00:00Z", indexes: [{ code: "cn-mee", name: "中国 AQI", display: "32", category: "优" }], pollutants: [] }], state: "FRESH", source } };
@@ -43,6 +45,8 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
   assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "ERROR" && /当前区域参考/.test(node.props.detail)));
   assert.ok(!find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
   assert.equal(h.notifications.length, 1);
+  const order = typesInReadingOrder(tree);
+  assert.ok(order.indexOf("SoftButton") < order.indexOf("Provenance"), "failed readings must offer retry before the long source disclosure");
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
   assert.equal(find(tree, node => node.type === "ForecastCoverageNote").props.scope, "air");
   h.render(); assert.equal(h.notifications.length, 1);
