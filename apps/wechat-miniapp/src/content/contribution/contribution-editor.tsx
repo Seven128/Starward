@@ -202,9 +202,9 @@ function CandidatePhotoGroup({ kind, form, commands }: {
     <View className="formal-feedback-photo-list">
       {media.map((item) => <View className="formal-feedback-photo contribution-document-photo" key={item.uploadId}>
         {form.candidateMediaPreviews[item.uploadId]
-          ? <Image src={form.candidateMediaPreviews[item.uploadId]!} mode="aspectFill" />
+          ? <><Image src={form.candidateMediaPreviews[item.uploadId]!} mode="aspectFill" /><Text className="formal-feedback-photo__red-label">{label}照片</Text></>
           : <Text>{item.state === "UPLOADED" || item.state === "ATTACHED" ? `${label}照片` : item.state === "EXPIRED" ? "照片已过期" : "照片上传中"}</Text>}
-        <Button disabled={form.commandBusy} aria-label={`移除${label}照片`} onClick={() => void commands.removeMedia(item.uploadId)}>×</Button>
+        <Button disabled={form.commandBusy} aria-label={`移除${label}照片`} onClick={() => void commands.removeMedia(item.uploadId)}><Text className="formal-feedback-photo__remove-glyph">×</Text></Button>
       </View>)}
     </View>
     <Button className="formal-feedback-photo-action" disabled={form.commandBusy || media.length >= 3} onClick={() => void commands.addMedia(kind)}>＋ 添加{label}照片</Button>

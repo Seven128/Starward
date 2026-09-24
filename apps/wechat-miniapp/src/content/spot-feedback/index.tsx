@@ -332,7 +332,7 @@ function PhotoGroup({ kind, ids, uploads: allUploads, paths, disabled, onAdd, on
   const label = kind === "parking" ? "停车" : kind === "toilet" ? "洗手间" : "现场";
   const uploads = new Map<string, ContributionFormalMediaUpload>(allUploads.filter(value => value.kind === kind).map(value => [value.uploadId, value]));
   return <View className="formal-feedback-photo-group">
-    <View className="formal-feedback-photo-list">{ids.map(id => <View className="formal-feedback-photo" key={id}>{paths[id] ? <Image src={paths[id]!} mode="aspectFill" /> : <Text>{uploads.has(id) ? "图片" : "原照片"}</Text>}<Button disabled={disabled} ariaLabel={`移除${label}照片`} onClick={() => void onRemove(id)}>×</Button></View>)}</View>
+    <View className="formal-feedback-photo-list">{ids.map(id => <View className="formal-feedback-photo" key={id}>{paths[id] ? <><Image src={paths[id]!} mode="aspectFill" /><Text className="formal-feedback-photo__red-label">{label}照片</Text></> : <Text>{uploads.has(id) ? "图片" : "原照片"}</Text>}<Button disabled={disabled} ariaLabel={`移除${label}照片`} onClick={() => void onRemove(id)}><Text className="formal-feedback-photo__remove-glyph">×</Text></Button></View>)}</View>
     <Button className="formal-feedback-photo-action" disabled={disabled || ids.length >= 3} onClick={() => void onAdd(kind)}>＋ 添加{label}照片</Button>
   </View>;
 }

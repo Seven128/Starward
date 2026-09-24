@@ -818,6 +818,10 @@
   }
 }
 .contribution-frozen-diff>view{padding:9Px 0;border-bottom:1Px solid var(--line-subtle)}.contribution-frozen-diff>view>text{font-size:12Px;line-height:18Px}.contribution-frozen-diff__old{text-decoration:line-through;color:#a88a83;margin-right:4Px}
+.theme-night .contribution-frozen-diff__old,
+.theme-observation .contribution-frozen-diff__old,
+.theme-night .contribution-coordinate-placeholder,
+.theme-observation .contribution-coordinate-placeholder { color: var(--text-tertiary); }
 .contribution-submitted-facts { display: flex; flex-direction: column; gap: 8Px; }
 .contribution-submitted-facts__row { display: flex; flex-direction: column; gap: 4Px; padding: 8Px 0; border-bottom: 1Px solid var(--line-subtle); }
 .contribution-route-root {
