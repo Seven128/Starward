@@ -123,6 +123,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   useEffect(() => {
     if (!reducedMotion) return;
     clearFlightTimers();
+    if (closing.current) { onClose(); return; }
     setFlight(null);
     setEntered(true);
   }, [reducedMotion]);
@@ -238,7 +239,15 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
                 const width = Number(event.detail.width), height = Number(event.detail.height);
                 if (width > 0 && height > 0) setImageRatio({ id: current.id, value: width / height });
               }}
-              onError={() => { openingStarted.current = true; clearFlightTimers(); setFlight(null); setEntered(true); setDecodeFailedId(current.id); setChromeHidden(false); }} />
+              onError={() => {
+                if (closing.current) return;
+                openingStarted.current = true;
+                clearFlightTimers();
+                setFlight(null);
+                setEntered(true);
+                setDecodeFailedId(current.id);
+                setChromeHidden(false);
+              }} />
           : <View className="spot-media-viewer__unavailable">
             <Text>{unavailable ? "照片暂时无法读取" : "正在读取照片…"}</Text>
             {unavailable
