@@ -6,6 +6,7 @@ import { selectNotification, selectNotifications } from "@/state/notification";
 import { useAppStore } from "@/state/app-store";
 import { floatingNotificationNodeId, useFloatingNotificationVisibility } from "./notification-visibility";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
+import { currentNotificationPageRoute } from "@/state/notification-page-route";
 import { SemanticIcon } from "./semantic-asset";
 
 const ICON: Readonly<Record<NotificationRecord["tone"], "info" | "check">> = {
@@ -151,15 +152,17 @@ export function FloatingNotification({ notification, onDismiss }: {
 export function NotificationRegion({
   owner,
   placement = "inline",
+  pageRoute,
 }: {
   owner?: string;
   placement?: NotificationRecord["placement"];
+  pageRoute?: string;
 }) {
   const queue = useAppStore((state) => state.notifications);
   const dismiss = useAppStore((state) => state.dismissNotification);
   if (placement === "floating") {
     return <View className="notification-stack">
-      {selectNotifications(queue, placement, owner).slice(0, 3).map((notification) => (
+      {selectNotifications(queue, placement, owner, pageRoute).slice(0, 3).map((notification) => (
         <FloatingNotification
           key={`${notification.id}-${notification.createdAt}-${notification.occurrences}`}
           notification={notification}
@@ -186,8 +189,9 @@ export function NotificationRegion({
 export function FloatingNotificationHost() {
   const [visible, setVisible] = useState(true);
   const [safeTop, setSafeTop] = useState(() => nativeNavigationInsets().safeTop);
+  const pageRoute = currentNotificationPageRoute();
   const firstNodeId = useAppStore(state => {
-    const first = selectNotifications(state.notifications, "floating")[0];
+    const first = pageRoute ? selectNotifications(state.notifications, "floating", undefined, pageRoute)[0] : undefined;
     return first ? floatingNotificationNodeId(first) : "";
   });
   useDidShow(() => {
@@ -196,12 +200,12 @@ export function FloatingNotificationHost() {
   });
   useDidHide(() => setVisible(false));
   useResize(() => setSafeTop(nativeNavigationInsets().safeTop));
-  if (!visible) return null;
+  if (!visible || !pageRoute) return null;
   return (
     <View className="notification-host" aria-label="全局通知"
       style={{ ...(safeTop === undefined ? {} : { "--notification-top": `${safeTop}px` }) } as CSSProperties}>
       <ScrollView className="notification-host__scroll" scrollY enhanced showScrollbar={false} scrollIntoView={firstNodeId}>
-        <NotificationRegion placement="floating" />
+        <NotificationRegion placement="floating" pageRoute={pageRoute} />
       </ScrollView>
     </View>
   );

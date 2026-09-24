@@ -7,6 +7,7 @@ import {
   dismissNotification,
   enqueueNotification,
   selectNotification,
+  selectNotifications,
   type NotificationIntent,
   type NotificationRecord,
 } from "./notification";
@@ -179,6 +180,15 @@ test("dedupe keys are scoped by owner and placement", () => {
   queue = enqueueNotification(queue, { ...intent, body: "重试失败" }, 4);
   assert.equal(queue.length, 3);
   assert.equal(queue[0]!.occurrences, 2);
+});
+
+test("floating messages retain their source page and never replace or cover another page", () => {
+  const intent = { owner: "terrain", placement: "floating" as const, tone: "info" as const, title: "图层异常", body: "请在图层重试", dedupeKey: "terrain" };
+  let queue = enqueueNotification([], { ...intent, pageRoute: "pages/map/index" }, 1);
+  queue = enqueueNotification(queue, { ...intent, pageRoute: "pages/my/index" }, 2);
+  assert.equal(queue.length, 2, "the same event key on another page must not overwrite the first page's notice");
+  assert.deepEqual(selectNotifications(queue, "floating", undefined, "pages/map/index").map(item => item.pageRoute), ["pages/map/index"]);
+  assert.deepEqual(selectNotifications(queue, "floating", undefined, "pages/my/index").map(item => item.pageRoute), ["pages/my/index"]);
 });
 
 test("same-millisecond bursts retain unique dismissible identities at the queue bound", () => {

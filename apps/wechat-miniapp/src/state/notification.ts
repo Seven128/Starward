@@ -18,6 +18,8 @@ export interface NotificationIntent {
   action?: NotificationAction | undefined;
   dismissible?: boolean;
   dedupeKey?: string;
+  /** Floating messages belong to the page that produced them. */
+  pageRoute?: string;
 }
 
 export interface NotificationRecord extends NotificationIntent {
@@ -36,8 +38,9 @@ let notificationSequence = 0;
 
 function identity(intent: NotificationIntent) {
   return (
-    (intent.dedupeKey ? [intent.owner, intent.placement, intent.dedupeKey].join("\u001f") : undefined) ??
+    (intent.dedupeKey ? [intent.pageRoute, intent.owner, intent.placement, intent.dedupeKey].join("\u001f") : undefined) ??
     [
+      intent.pageRoute,
       intent.owner,
       intent.placement,
       intent.tone,
@@ -101,12 +104,14 @@ export function selectNotifications(
   queue: readonly NotificationRecord[],
   placement: NotificationPlacement,
   owner?: string,
+  pageRoute?: string,
 ) {
   return queue
     .filter(
       (item) =>
         item.placement === placement &&
-        (owner === undefined || item.owner === owner),
+        (owner === undefined || item.owner === owner) &&
+        (pageRoute === undefined || item.pageRoute === pageRoute),
     )
     .sort(
       (left, right) =>

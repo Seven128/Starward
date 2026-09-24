@@ -33,6 +33,7 @@ import {
   type NotificationIntent,
   type NotificationRecord,
 } from "./notification";
+import { currentNotificationPageRoute } from "./notification-page-route";
 import acceptanceBootstrapJson from "./acceptance-bootstrap.json";
 
 const STORAGE_KEY = "starward.wechat-miniapp.state.current";
@@ -391,8 +392,9 @@ export const useAppStore = create<AppState>((set, get) => {
       });
     },
     notify(intent) {
+      const pageRoute = intent.placement === "floating" ? intent.pageRoute ?? currentNotificationPageRoute() : undefined;
       set((state) => ({
-        notifications: enqueueNotification(state.notifications, intent),
+        notifications: enqueueNotification(state.notifications, pageRoute ? { ...intent, pageRoute } : intent),
       }));
     },
     dismissNotification(id) {
