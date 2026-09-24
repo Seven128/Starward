@@ -328,8 +328,11 @@
   content: "";
   border: 0;
   border-radius: 999Px;
-  background: rgba(255, 255, 255, .94);
+  background: var(--surface-elevated);
   box-shadow: var(--elevation-floating);
+}
+.theme-day.spot-search-page .spot-search-field::before {
+  background: rgba(255, 255, 255, .94);
 }
 .spot-search-field__leading,
 .spot-search-field__input {

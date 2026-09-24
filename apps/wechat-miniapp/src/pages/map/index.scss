@@ -3361,3 +3361,117 @@
 .map-page--panel-large .map-feedback-column .status-panel--empty {
   display: none;
 }
+
+.map-observation-cover {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10Px;
+  padding: calc(var(--map-search-top) + var(--map-search-height) + 16Px) 88Px 100Px 16Px;
+  box-sizing: border-box;
+  background: var(--canvas);
+  color: var(--text-primary);
+  text-align: left;
+  pointer-events: auto;
+}
+.map-observation-cover > text:first-child { font-size: 16Px; font-weight: 600; }
+.map-observation-cover > text:last-child { font-size: 13Px; line-height: 20Px; }
+
+.theme-night.map-page,
+.theme-observation.map-page {
+  .map-search-entry::before { background: var(--surface-elevated); }
+  .map-search-entry > text,
+  .map-search-entry > .semantic-icon { color: var(--text-secondary); }
+  .map-tool--layer-active { color: var(--primary); }
+  .map-tool--layer-active::before {
+    border-color: var(--choice-selected-border);
+    background: var(--choice-selected-surface);
+  }
+}
+
+// The adopted day composition above has literal colors. Keep its geometry in
+// every mode, while the Map owner maps its readable surfaces back to the
+// shared night and observation roles.
+.theme-night.map-page,
+.theme-observation.map-page {
+  .spot-panel__title,
+  .spot-panel__block--route .spot-panel__value,
+  .spot-panel__hours-row > view,
+  .spot-panel__safety-facts .type-body,
+  .spot-panel__facility-name {
+    color: var(--text-primary);
+  }
+
+  .spot-panel__region,
+  .spot-panel__location-facts,
+  .spot-panel__route-note,
+  .spot-panel__hours-row,
+  .spot-panel__safety-facts .type-secondary,
+  .spot-panel__facility-status,
+  .spot-panel__facility-summary,
+  .spot-panel__more-site,
+  .spot-panel__contact-row,
+  .spot-panel__source-row,
+  .spot-panel__guide-row,
+  .spot-panel__source-row > text:first-child,
+  .spot-panel__more-site > text:last-child {
+    color: var(--text-secondary);
+  }
+
+  .spot-panel__block--route .spot-panel__text-action,
+  .spot-panel__source-row .spot-panel__text-action--contribution,
+  .spot-panel__guide-row .spot-panel__text-action {
+    color: var(--primary);
+  }
+
+  .spot-panel__hours-row .semantic-icon,
+  .spot-panel__contact-row > text:last-child {
+    color: var(--text-tertiary);
+  }
+
+  .spot-panel__access-guidance { color: var(--warning); }
+  .spot-panel__handle-bar { background: var(--border-strong); }
+  .spot-panel__facility,
+  .spot-panel__facility--described,
+  .spot-panel__media-slide { background: var(--surface-subtle); }
+  .spot-panel__section-rail,
+  .spot-panel__action-lane { background: var(--surface); }
+
+  .spot-panel__block,
+  .spot-panel__block--route,
+  .spot-panel__hours-row,
+  .spot-panel__access-compact,
+  .spot-panel__more-site,
+  .spot-panel__contact-row,
+  .spot-panel__source-row,
+  .spot-panel__guide-row,
+  .spot-panel__section-rail { border-bottom-color: var(--border); }
+
+  .spot-panel__facility-shade {
+    background: linear-gradient(90deg, var(--surface) 0%, var(--surface) 55%, transparent);
+  }
+
+  .spot-panel__action,
+  .spot-panel__action--cloud,
+  .spot-panel__action--favorite.spot-panel__action--active,
+  .spot-panel__action--share { color: var(--text-primary); }
+  .spot-panel__action::before { background: var(--surface-subtle); }
+  .spot-panel__action--cloud::before,
+  .spot-panel__action--favorite.spot-panel__action--active::before {
+    background: var(--choice-selected-surface);
+  }
+  .spot-panel__action--share::before { background: var(--icon-coral-soft); }
+  .spot-panel__action--cloud:disabled { color: var(--text-tertiary); }
+  .spot-panel__section-tab--active::before { background: var(--primary); }
+}
+
+.theme-observation.map-page {
+  .spot-panel__facility-shade { background: var(--surface); }
+  .spot-panel__action::before { border: 1Px solid var(--border); }
+  .spot-panel__media-caption,
+  .spot-panel__media-credit { background: var(--surface-elevated); }
+}

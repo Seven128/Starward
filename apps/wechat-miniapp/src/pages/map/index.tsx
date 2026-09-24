@@ -1852,6 +1852,11 @@ export default function MapPage() {
             aria-label="正式观星点地图；搜索提供等价可访问结果"
           />
 
+          {mode === "OBSERVATION" ? <View className="map-observation-cover" aria-label="红光模式已隐藏微信地图底图，可通过搜索查找观星点">
+            <Text>红光模式已隐藏微信地图底图</Text>
+            <Text>通过上方搜索查找观星点；在设置切回日间或夜间可查看地图。</Text>
+          </View> : null}
+
           <View className="map-app-title" aria-hidden="true">
             <Text>今晚去观星</Text>
           </View>
