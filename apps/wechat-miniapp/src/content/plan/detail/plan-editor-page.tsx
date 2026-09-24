@@ -1,4 +1,5 @@
 import { useSkyForecastQuery } from "@/hooks/use-forecast-query";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, resolvePlanTiming, type PlanReminder } from "@starward/miniapp-contracts";
 import { distanceMeters } from "@starward/coordinate-system";
 import { PlanReminderEditor } from "./plan-reminder-editor";
@@ -1119,6 +1120,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                         (spot) => spot.spotId === selectedSpotId,
                       )?.name ?? "请选择正式观星点"}
                     </Text>
+                    <SemanticIcon name="chevron-down" className="plan-field-row__chevron" />
                   </View>
                 </Picker>
               ) : activePlan ? (

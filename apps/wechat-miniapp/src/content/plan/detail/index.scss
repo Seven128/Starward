@@ -459,6 +459,7 @@
 .plan-field-row__label { width: 76Px; flex: 0 0 76Px; color: var(--text-secondary); font-size: 13.5Px; }
 .plan-field-row__value, .plan-field-input, .plan-field-value { min-width: 0; color: var(--text-primary); font-size: 14.5Px; }
 .plan-field-row__value { flex: 1; }
+.plan-field-row__chevron { flex: 0 0 16Px; width: 16Px; height: 16Px; color: var(--text-secondary); }
 .plan-field-input { flex: 1; min-height: 46Px; }
 .plan-field-row__controls { display: flex; min-width: 0; flex: 1; align-items: center; gap: 10Px; }
 .plan-field-row__controls > picker:first-child { flex: 1; min-width: 0; }
