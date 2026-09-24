@@ -1,5 +1,5 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
 import { CustomNav } from "@/components/custom-nav";
 import { Provenance, SOURCE_KIND_LABEL, isProductSource } from "@/components/provenance";
@@ -61,8 +61,11 @@ export default function DataSourcePage() {
       <View className="sources-content page-inset safe-bottom">
         {!validRoute ? (
           <StatusPanel
-            state="EMPTY"
-            detail="请从正式观星点详情中的来源入口打开本页。"
+            state="ERROR"
+            title="来源入口不可用"
+            detail="无法确认当前观星点，请返回地图重新选择正式观星点。"
+            recoveryLabel="返回地图"
+            onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })}
           />
         ) : overview.isPending ? (
           <StatusPanel state="LOADING" detail="正在加载来源与适用时间。" />

@@ -1,5 +1,5 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Image, ScrollView, Text, View } from "@tarojs/components";
 import { articleMedia } from "@/features/spot/guide-media";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
@@ -105,8 +105,11 @@ export default function ArticlePage() {
       <View className="article-content page-inset safe-bottom">
         {!validRoute ? (
           <StatusPanel
-            state="EMPTY"
-            detail="请从正式观星点详情中的攻略入口打开本文。"
+            state="ERROR"
+            title="攻略入口不可用"
+            detail="无法确认当前观星点或文章，请返回地图重新选择正式观星点。"
+            recoveryLabel="返回地图"
+            onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })}
           />
         ) : loading ? (
           <StatusPanel state="LOADING" detail="正在加载攻略。" />
