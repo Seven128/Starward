@@ -1,5 +1,6 @@
 import Taro from "@tarojs/taro";
 import { choosePlatformLocation } from "@/services/platform-location";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
 import { useRef } from "react";
 import { createContributionCommandLock } from "./command-lock";
@@ -464,15 +465,17 @@ function createWithdrawDraft(form: ContributionForm, assertAccount: () => void) 
   };
 }
 
-function createChooseCandidateLocation(form: ContributionForm, assertAccount: () => void) {
+function createChooseCandidateLocation(form: ContributionForm, assertAccount: () => void, confirmHandoff: (message: string) => Promise<boolean>) {
   return async () => {
     try {
       assertAccount();
       const ownerPage = Taro.getCurrentPages().at(-1);
+      const allowed = await confirmHandoff("微信选点界面可能较亮，无法跟随红光模式。");
+      if (!allowed) return;
       const selected = await choosePlatformLocation({ isCurrent: () => {
         assertAccount();
         return Taro.getCurrentPages().at(-1) === ownerPage;
-      } });
+      }, allowUnthemedHandoff: true });
       if (!selected) return;
       assertAccount();
       form.selectCandidateLocation({
@@ -490,6 +493,7 @@ function createChooseCandidateLocation(form: ContributionForm, assertAccount: ()
 }
 
 export function useContributionCommands(form: ContributionForm) {
+  const handoff = useRedLightHandoff();
   const exclusive = useRef(createContributionCommandLock(form.setCommandBusy)).current;
   const assertAccount = useRef(createContributionAccountGuard(currentDraftUserId)).current;
   const guard = <A extends unknown[], R,>(command: (...args: A) => Promise<R>, allowPending = false) =>
@@ -510,7 +514,8 @@ export function useContributionCommands(form: ContributionForm) {
   const saveDraft = createSaveDraft(form, assertAccount);
   return {
     saveDraft: guard(saveDraft),
-    chooseCandidateLocation: guard(createChooseCandidateLocation(form, assertAccount)),
+    chooseCandidateLocation: guard(createChooseCandidateLocation(form, assertAccount, handoff.confirm)),
+    handoffWarning: handoff.warning,
     useCurrentLocation: guard(createUseCurrentLocation(form, assertAccount)),
     addMedia: guard(createAddMedia(form, saveDraft, assertAccount)),
     retryMedia: guard(createRetryMedia(form, assertAccount)),

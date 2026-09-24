@@ -1,0 +1,9 @@
+.red-light-handoff__scrim { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 16Px; box-sizing: border-box; background: #050000; }
+.red-light-handoff__dialog { width: 100%; max-width: 360Px; padding: 20Px; box-sizing: border-box; border: 1Px solid #a63f3f; border-radius: 20Px; background: #170000; color: #ff9b9b; }
+.red-light-handoff__title { display: block; font-size: 18Px; line-height: 26Px; font-weight: 600; }
+.red-light-handoff__detail { display: block; margin-top: 12Px; font-size: 14Px; line-height: 22Px; color: #e77474; }
+.red-light-handoff__actions { display: flex; gap: 10Px; margin-top: 20Px; }
+.red-light-handoff__actions > button { flex: 1; min-height: 44Px; margin: 0; padding: 0 8Px; border-radius: 22Px; font-size: 14Px; line-height: 44Px; }
+.red-light-handoff__actions > button::after { border: 0; }
+.red-light-handoff__cancel { border: 1Px solid #a63f3f; background: #170000; color: #ff9b9b; }
+.red-light-handoff__continue { border: 1Px solid #a63f3f; background: #a63f3f; color: #050000; }

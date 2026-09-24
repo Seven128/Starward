@@ -30,6 +30,7 @@ import { SelectedCardStar } from "@/components/selected-card-star";
 import { SpotIdentityContent } from "@/components/spot-identity-content";
 import { FilterSheet } from "@/components/filter-sheet";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useMapForecastQuery } from "@/hooks/use-forecast-query";
 import { useThemeClass } from "@/hooks/use-theme";
@@ -113,6 +114,7 @@ const FILTER_LABEL_BY_GROUP = Object.fromEntries(
 export function MapSearchSurface() {
   const { statusBarHeight, safeTop } = nativeNavigationInsets();
   const themeClass = useThemeClass();
+  const handoff = useRedLightHandoff();
   const finderQuery = useAppStore((state) => state.finderQuery);
   const committedFilters = useAppStore((state) => state.committedFilters);
   const filterSheetOpen = useAppStore((state) => state.filterSheetOpen);
@@ -424,7 +426,9 @@ export function MapSearchSurface() {
     const ownerPage = Taro.getCurrentPages().at(-1);
     const current = () => version === selectionVersion.current && Taro.getCurrentPages().at(-1) === ownerPage;
     try {
-      const selected = await choosePlatformLocation({ isCurrent: current, center: viewport.center });
+      const allowed = await handoff.confirm("微信选点界面可能较亮，无法跟随红光模式。");
+      if (!allowed || !current()) return;
+      const selected = await choosePlatformLocation({ isCurrent: current, center: viewport.center, allowUnthemedHandoff: true });
       if (!selected || !current()) return;
       nativeSelectionPending.current = null;
       await moveMapReference({
@@ -469,6 +473,7 @@ export function MapSearchSurface() {
       onClick={blurSearch}
     >
       <FloatingNotificationHost />
+      {handoff.warning}
       <NativeBackBoundary active={filterSheetOpen} onBack={cancelFilters} />
       <View className="spot-search-shell" data-control="spot-search-shell">
         <View className="spot-search-title-row">

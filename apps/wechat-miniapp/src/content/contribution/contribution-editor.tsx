@@ -143,6 +143,7 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
     setValidationAnchor(`formal-feedback-${chapter}`);
   };
   return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
+    {commands.handoffWarning}
     {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text><Text className="contribution-editor-save-state">{savedState}</Text><Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : form.hasFormalSpot ? "现场反馈与纠错" : title} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
     {isNewSpotDocument ? <SelectionTabs
       className="formal-feedback-tabs contribution-document-tabs"
