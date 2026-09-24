@@ -480,16 +480,10 @@ export function MapSearchSurface() {
         >
           <Button
             className="spot-search-field__leading focus-ring"
-            ariaLabel={focused ? "返回地图" : "聚焦搜索"}
-            onClick={() => {
-              if (focused) void leaveSearch();
-              else {
-                setFocused(true);
-                setSuggestionsOpen(true);
-              }
-            }}
+            ariaLabel="返回地图"
+            onClick={() => void leaveSearch()}
           >
-            <SemanticIcon name={focused ? "arrow-left" : "search"} />
+            <SemanticIcon name="arrow-left" />
           </Button>
           <Input
             className="spot-search-field__input"
