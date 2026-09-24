@@ -1,13 +1,15 @@
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useState } from "react";
+import Taro from "@tarojs/taro";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
 
 export function PendingProposalPanel({ submission, variant = "PENDING", extent, phase, onExtent, onClose, onCloud, onEdit,
-  onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel }: {
+  onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel, onViewerBackHandlerChange }: {
   submission: ContributionSubmission;
   variant?: "DRAFT" | "PENDING";
   extent: SpotPanelExtent;
@@ -20,11 +22,19 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   onHandleTouchMove: (event: unknown) => void;
   onHandleTouchEnd: (event?: unknown) => void;
   onHandleTouchCancel: () => void;
+  onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
 }) {
   const model = pendingProposalPanelValues(submission);
   const draft = variant === "DRAFT";
-  const [mediaAttempt, setMediaAttempt] = useState(0);
-  const [media, setMedia] = useState<{ state: "idle" | "loading" | "error" | "ready"; src?: string }>({ state: "idle" });
+  const [mediaState, setMediaState] = useState<Record<string, { state: "loading" | "error" | "ready"; src?: string }>>({});
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [mediaWindowStart, setMediaWindowStart] = useState(0);
+  const mediaRequests = useRef(new Map<string, AbortController>());
+  const mediaStateRef = useRef(mediaState);
+  mediaStateRef.current = mediaState;
+  const owner = currentDraftUserId();
+  const mediaKey = model.media.map(item => item.uploadId).join("|");
+  const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
   const leadMedia = model.media[0];
   const handleInDocument = extent === "large" && Boolean(leadMedia);
   const panelHandle = <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
@@ -45,31 +55,50 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
         onClick={onClose}><SemanticIcon name="close" /></Button>
     </View>
   </View>;
-  useEffect(() => {
-    if (!leadMedia) {
-      setMedia({ state: "idle" });
-      return;
-    }
-    const owner = currentDraftUserId();
-    if (!owner) {
-      setMedia({ state: "error" });
-      return;
-    }
+  const loadMedia = useCallback((index: number, retry = false) => {
+    const item = model.media[index];
+    if (!item) return;
+    const id = item.uploadId;
+    if (mediaRequests.current.has(id) || (!retry && mediaStateRef.current[id]?.state === "ready")) return;
+    if (!owner) { setMediaState(previous => ({ ...previous, [id]: { state: "error" } })); return; }
     const controller = new AbortController();
-    let active = true;
-    setMedia({ state: "loading" });
-    void getContributionMedia(submission.submissionId, leadMedia.uploadId, controller.signal, owner)
+    mediaRequests.current.set(id, controller);
+    setMediaState(previous => ({ ...previous, [id]: { state: "loading" } }));
+    void getContributionMedia(submission.submissionId, id, controller.signal, owner)
       .then((response) => {
-        if (active) setMedia({ state: "ready", src: `data:${response.data.mimeType};base64,${response.data.dataBase64}` });
+        if (!controller.signal.aborted) setMediaState(previous => ({ ...previous, [id]: { state: "ready", src: `data:${response.data.mimeType};base64,${response.data.dataBase64}` } }));
       })
       .catch(() => {
-        if (active) setMedia({ state: "error" });
-      });
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [leadMedia?.uploadId, mediaAttempt, submission.submissionId]);
+        if (!controller.signal.aborted) setMediaState(previous => ({ ...previous, [id]: { state: "error" } }));
+      })
+      .finally(() => { if (mediaRequests.current.get(id) === controller) mediaRequests.current.delete(id); });
+  }, [mediaScope]);
+  useEffect(() => {
+    mediaRequests.current.forEach(controller => controller.abort());
+    mediaRequests.current.clear();
+    mediaStateRef.current = {};
+    setMediaState({});
+    setViewerIndex(null);
+    setMediaWindowStart(0);
+    return () => { mediaRequests.current.forEach(controller => controller.abort()); mediaRequests.current.clear(); };
+  }, [mediaScope]);
+  useEffect(() => { if (leadMedia) loadMedia(0); }, [leadMedia?.uploadId, loadMedia]);
+  useEffect(() => {
+    if (extent !== "large") return;
+    for (let index = mediaWindowStart; index < Math.min(model.media.length, mediaWindowStart + 3); index++) loadMedia(index);
+  }, [extent, mediaWindowStart, mediaKey, loadMedia]);
+  useEffect(() => {
+    if (viewerIndex === null) return;
+    loadMedia(viewerIndex);
+    if (viewerIndex + 1 < model.media.length) loadMedia(viewerIndex + 1);
+  }, [viewerIndex, mediaKey, loadMedia]);
+  const viewerMedia: SpotViewerMedia[] = model.media.map(item => ({
+    id: item.uploadId,
+    ...(mediaState[item.uploadId]?.src ? { src: mediaState[item.uploadId]!.src } : {}),
+    alt: item.label,
+    caption: item.label,
+    state: mediaState[item.uploadId]?.state ?? "loading",
+  }));
   return <View
     id="spot-information-panel"
     className={`spot-panel spot-panel--proposal spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${leadMedia ? " spot-panel--with-media" : ""}`}
@@ -88,14 +117,28 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
     <View className="spot-panel__scroll-frame">
       <ScrollView className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
-        {leadMedia ? <View className="spot-panel__proposal-media" ariaLabel={`${leadMedia.label}，共${model.media.length}张`}>
-          {media.state === "ready" && media.src
-            ? <Image className="spot-panel__proposal-media-image" src={media.src} mode="aspectFill" lazyLoad ariaLabel={leadMedia.label} />
-            : <View className="spot-panel__proposal-media-placeholder">
-              <Text className="type-caption">{media.state === "error" ? "照片暂时无法读取" : "正在读取提交照片…"}</Text>
-              {media.state === "error" ? <Button className="spot-panel__proposal-media-retry focus-ring" onClick={() => setMediaAttempt((value) => value + 1)}>重试</Button> : null}
-            </View>}
-          {media.state === "ready" ? <View className="spot-panel__proposal-media-overlay"><Text>{leadMedia.label}</Text><Text>{model.media.length} 张</Text></View> : null}
+        {leadMedia ? <View className="spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
+          <ScrollView className="spot-panel__media-strip" scrollX={model.media.length > 1} enhanced showScrollbar={false}
+            ariaLabel={`${model.name}提交照片`}
+            onScroll={(event) => {
+              const width = Taro.getWindowInfo().windowWidth || 390;
+              const start = Math.floor(event.detail.scrollLeft / (width * .68 + 8));
+              if (Number.isFinite(start)) setMediaWindowStart(Math.max(0, Math.min(model.media.length - 1, start)));
+            }}>
+            <View className="spot-panel__media-track">
+              {model.media.map((item, index) => {
+                const photo = mediaState[item.uploadId];
+                return <Button className="spot-panel__media-slide" key={item.uploadId}
+                  ariaLabel={`查看${item.label} ${index + 1}，共 ${model.media.length} 张`}
+                  onClick={() => { setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
+                  {photo?.state === "ready" && photo.src
+                    ? <Image className="spot-panel__media-image" src={photo.src} mode="aspectFill" lazyLoad ariaLabel={item.label} />
+                    : <View className="spot-panel__proposal-media-placeholder"><Text>{item.label}</Text><Text>{photo?.state === "error" ? "照片暂时无法读取" : "正在读取照片…"}</Text></View>}
+                  <Text className="spot-panel__media-caption">{index + 1} / {model.media.length}</Text>
+                </Button>;
+              })}
+            </View>
+          </ScrollView>
         </View> : null}
         {handleInDocument ? panelHandle : null}
         <View className="spot-panel__identity">
@@ -135,6 +178,15 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
         </View>
       </ScrollView>
     </View>
+    {viewerIndex !== null && viewerMedia[viewerIndex] ? <SpotImageViewer
+      name={model.name}
+      media={viewerMedia}
+      index={viewerIndex}
+      onIndexChange={setViewerIndex}
+      onClose={() => setViewerIndex(null)}
+      onRetry={(index) => loadMedia(index, true)}
+      {...(onViewerBackHandlerChange ? { onBackHandlerChange: onViewerBackHandlerChange } : {})}
+    /> : null}
     <View className="spot-panel__action-lane">
       <View className="spot-panel__action-bar spot-panel__action-bar--proposal" role="toolbar" ariaLabel={`${draft ? "草稿" : "审核中"}点位动作`}>
         {draft

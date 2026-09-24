@@ -9,7 +9,7 @@ import type {
   SpotDetail,
   SpotSummary,
 } from "@starward/miniapp-contracts";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import Taro, { useResize } from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { WeatherAlerts } from "@/components/weather-alerts";
@@ -36,6 +36,7 @@ import { spotRouteSummary } from "./spot-panel-route-summary";
 import { SpotTerrainOverview } from "./spot-terrain-overview";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SpotPlanEntry } from "@/features/spot/spot-plan-entry";
+import { SpotImageViewer } from "@/components/spot-image-viewer";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
 export type SpotPanelPhase = "idle" | "closing";
@@ -107,14 +108,6 @@ function legalAccessLabel(value: SpotDetail["accessAndSafety"]["legalAccess"] | 
 
 function nightSafetyLabel(value: SpotDetail["accessAndSafety"]["nightSafety"] | undefined) {
   return value === "NO_KNOWN_HAZARD" ? "未发现危险" : value === "CAUTION" ? "需要留意" : value === "DANGER" ? "存在危险" : "待核验";
-}
-
-function touchClientY(event: unknown, changed = false) {
-  const points = (event as { touches?: ArrayLike<{ clientY?: number }>; changedTouches?: ArrayLike<{ clientY?: number }> })?.[
-    changed ? "changedTouches" : "touches"
-  ];
-  const value = points?.[0]?.clientY;
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function formatLunarEvent(value: string | null, timezone: string, empty: string) {
@@ -191,6 +184,7 @@ export function SpotInformationPanel({
   onNavigate,
   onContribution,
   onEvidence,
+  onViewerBackHandlerChange,
 }: {
   spot: SpotSummary;
   visible?: boolean;
@@ -233,11 +227,10 @@ export function SpotInformationPanel({
   onNavigate: () => void;
   onContribution: () => void;
   onEvidence: (kind: "guides" | "field" | "sources", articleId?: string) => void;
+  onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
 }) {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
-  const [viewerDragY, setViewerDragY] = useState(0);
-  const viewerTouchStart = useRef<number | null>(null);
   const [section, setSection] = useState<
     (typeof PANEL_SECTIONS)[number]["id"]
   >(PANEL_SECTIONS[0]!.id);
@@ -264,17 +257,8 @@ export function SpotInformationPanel({
   }, [visible, spot.spotId]);
   useEffect(() => {
     if (visible) return;
-    viewerTouchStart.current = null;
     setViewerIndex(null);
-    setViewerDragY(0);
   }, [visible]);
-  useEffect(() => {
-    if (viewerIndex === null) return;
-    void Taro.hideTabBar({ animation: false }).catch(() => undefined);
-    return () => {
-      void Taro.showTabBar({ animation: false }).catch(() => undefined);
-    };
-  }, [viewerIndex]);
   const [layoutVersion, setLayoutVersion] = useState(0);
   const scrollMeasureTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
@@ -285,9 +269,7 @@ export function SpotInformationPanel({
   useResize(() => setLayoutVersion(value => value + 1));
   useEffect(() => {
     lastScroll.current = { spotId: spot.spotId, top: 0 };
-    viewerTouchStart.current = null;
     setViewerIndex(null);
-    setViewerDragY(0);
     setRestoredScrollTop(undefined);
     setSection("spot-panel-overview");
     setSectionRequest({ id: "spot-panel-document-start", spotId: spot.spotId });
@@ -742,53 +724,21 @@ export function SpotInformationPanel({
         />
       </View>
 
-      {viewerIndex !== null && media[viewerIndex] ? <View
-        className="spot-media-viewer"
-        role="dialog"
-        ariaLabel={`${effectiveSpot.name}现场照片查看器，第 ${viewerIndex + 1} 张，共 ${media.length} 张`}
-        catchMove
-        onTouchStart={(event) => {
-          viewerTouchStart.current = touchClientY(event);
-          setViewerDragY(0);
-        }}
-        onTouchMove={(event) => {
-          const start = viewerTouchStart.current;
-          const current = touchClientY(event);
-          if (start === null || current === null) return;
-          setViewerDragY(Math.max(-180, Math.min(180, current - start)));
-        }}
-        onTouchEnd={(event) => {
-          const start = viewerTouchStart.current;
-          const end = touchClientY(event, true);
-          viewerTouchStart.current = null;
-          if (start !== null && end !== null && Math.abs(end - start) >= 88) setViewerIndex(null);
-          setViewerDragY(0);
-        }}
-        onTouchCancel={() => {
-          viewerTouchStart.current = null;
-          setViewerDragY(0);
-        }}
-      >
-        <Button className="spot-media-viewer__close" ariaLabel="关闭现场照片查看器" onClick={() => setViewerIndex(null)}><SemanticIcon name="close" /></Button>
-        <View
-          className="spot-media-viewer__content"
-          style={{
-            "--viewer-drag-y": `${viewerDragY}px`,
-            "--viewer-scale": String(Math.max(0.86, 1 - Math.abs(viewerDragY) / 900)),
-          } as CSSProperties}
-        >
-          <View className="spot-media-viewer__stage">
-            <Image className="spot-media-viewer__image" src={media[viewerIndex]!.localPath || media[viewerIndex]!.thumbnailPath} mode="aspectFit" ariaLabel={media[viewerIndex]!.alt || `${effectiveSpot.name}现场照片`} />
-            <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--previous" disabled={viewerIndex === 0} ariaLabel="上一张现场照片" onClick={() => setViewerIndex((index) => index === null ? null : Math.max(0, index - 1))}>‹</Button>
-            <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--next" disabled={viewerIndex === media.length - 1} ariaLabel="下一张现场照片" onClick={() => setViewerIndex((index) => index === null ? null : Math.min(media.length - 1, index + 1))}>›</Button>
-          </View>
-          <View className="spot-media-viewer__caption">
-            <Text>{media[viewerIndex]!.caption || media[viewerIndex]!.alt || "现场资料"}</Text>
-            <Text>{viewerIndex + 1} / {media.length} · {media[viewerIndex]!.photographer || "来源未注明"} · {media[viewerIndex]!.license}</Text>
-          </View>
-        </View>
-      </View> : null}
-
+      {viewerIndex !== null && media[viewerIndex] ? <SpotImageViewer
+        name={effectiveSpot.name}
+        media={media.map(item => ({
+          id: item.id,
+          src: item.localPath || item.thumbnailPath,
+          alt: item.alt || `${effectiveSpot.name}现场照片`,
+          caption: item.caption || item.alt || "现场资料",
+          attribution: `${item.photographer || "来源未注明"} · ${item.license}`,
+          state: "ready" as const,
+        }))}
+        index={viewerIndex}
+        onIndexChange={setViewerIndex}
+        onClose={() => setViewerIndex(null)}
+        {...(onViewerBackHandlerChange ? { onBackHandlerChange: onViewerBackHandlerChange } : {})}
+      /> : null}
       <View className="spot-panel__action-lane">
         <View
           className="spot-panel__action-bar"

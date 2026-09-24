@@ -224,6 +224,8 @@ export default function MapPage() {
   bottomPresentationRef.current = bottomPresentation;
   const [mapPresentationBackBoundaryVisible, setMapPresentationBackBoundaryVisible] = useState(false);
   const mapPresentationBackBoundaryRearm = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imageViewerBack = useRef<(() => void) | null>(null);
+  const registerImageViewerBack = useCallback((handler: (() => void) | null) => { imageViewerBack.current = handler; }, []);
   const [spotEditorTarget, setSpotEditorTarget] = useState<{ forceNew: boolean; submissionId?: string }>({ forceNew: true });
   const editorLeaveGuard = useRef<ContributionLeaveGuard | null>(null);
   const editorLeaveRequest = useRef<Promise<boolean> | null>(null);
@@ -1393,6 +1395,15 @@ export default function MapPage() {
       }
       return;
     }
+    if (imageViewerBack.current) {
+      imageViewerBack.current();
+      if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
+      mapPresentationBackBoundaryRearm.current = setTimeout(() => {
+        mapPresentationBackBoundaryRearm.current = null;
+        if (bottomPresentationRef.current === "spot-panel") setMapPresentationBackBoundaryVisible(true);
+      }, 0);
+      return;
+    }
     const presentation = bottomPresentationRef.current;
     if (presentation === "layer-sheet") {
       closeLayerSheet();
@@ -2065,6 +2076,7 @@ export default function MapPage() {
                 onHandleTouchMove={onHandleTouchMove}
                 onHandleTouchEnd={onHandleTouchEnd}
                 onHandleTouchCancel={onHandleTouchCancel}
+                onViewerBackHandlerChange={registerImageViewerBack}
               /> : selected ? <SpotInformationPanel
                 settling={panelSettling}
                 springMotion={panelCssMotion}
@@ -2100,6 +2112,7 @@ export default function MapPage() {
                 onHandleTouchMove={onHandleTouchMove}
                 onHandleTouchEnd={onHandleTouchEnd}
                 onHandleTouchCancel={onHandleTouchCancel}
+                onViewerBackHandlerChange={registerImageViewerBack}
                 onExtent={onPanelExtent}
                 onClose={closeSpotPanel}
                 onRecover={() => void spotOverview.refetch()}
