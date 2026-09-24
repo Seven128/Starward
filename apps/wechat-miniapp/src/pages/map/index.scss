@@ -15,6 +15,12 @@
   transform: none;
   --notification-available-height: max(0Px, calc(100vh - var(--map-search-top) - var(--map-search-height) - 8Px - var(--notification-bottom-reserve)));
 }
+// The large spot document occupies the search area. Keep transient feedback
+// above its fixed actions instead of covering the date and time controls.
+.map-page--panel-large .notification-host {
+  top: max(var(--notification-top), calc(100vh - var(--notification-bottom-reserve) - 156Px));
+  --notification-available-height: 156Px;
+}
 .map-workspace {
   position: relative;
   flex: 1;
