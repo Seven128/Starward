@@ -937,7 +937,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               {(activePlan.reminders ?? []).map(reminder => {
                 const notification = reminderNotifications.find(status => status.planId === activePlan.planId && status.reminderId === reminder.reminderId);
                 return <View className="plan-reminder" key={reminder.reminderId}>
-                <View className="plan-reminder__heading"><Text>◷　出发前 {reminder.hoursBeforeDeparture} 小时</Text><Text>{reminder.items.filter(item => item.completed).length}/{reminder.items.length}</Text></View>
+                <View className="plan-reminder__heading"><View className="plan-reminder__heading-copy">
+                  <Text className="plan-reminder__title">{reminder.title?.trim() || "个人提醒"}</Text>
+                  <Text className="plan-reminder__offset">出发前 {reminder.hoursBeforeDeparture} 小时</Text>
+                </View><Text>{reminder.items.filter(item => item.completed).length}/{reminder.items.length}</Text></View>
                 <View className="plan-reminder__status"><Text>提醒与清单已保存</Text><Text>{planReminderStatusLabel(notification)}</Text></View>
                 <Text className="plan-reminder__status-detail">{planReminderStatusDetail(notification)}</Text>
                 {reminder.items.map(item => <Button key={item.itemId} className={`plan-check ${item.completed ? "plan-check--done" : ""}`} disabled={checklistSaving} aria-pressed={item.completed} aria-label={`${item.text}，${item.completed ? "已完成" : "未完成"}`}

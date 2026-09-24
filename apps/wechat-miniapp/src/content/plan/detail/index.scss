@@ -535,7 +535,10 @@
 .plan-route__source-note { margin-top: 8Px; padding-top: 8Px; font-size: 12Px; }
 .plan-event-row { min-height: 44Px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .plan-reminder { margin: 0 0 14Px; }
-.plan-reminder__heading { display: flex; min-height: 40Px; align-items: center; justify-content: space-between; gap: 8Px; color: var(--primary); font-size: 14Px; }
+.plan-reminder__heading { display: flex; min-height: 48Px; align-items: center; justify-content: space-between; gap: 8Px; color: var(--primary); font-size: 14Px; }
+.plan-reminder__heading-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2Px; }
+.plan-reminder__title { font-size: 14Px; line-height: 20Px; font-weight: 600; word-break: break-word; }
+.plan-reminder__offset { color: var(--text-secondary); font-size: 12Px; line-height: 18Px; }
 .plan-reminder__heading > text:last-child { color: var(--text-tertiary); font-size: 10Px; }
 .plan-reminder__status { display: flex; min-height: 32Px; align-items: center; gap: 8Px; color: var(--text-secondary); font-size: 12Px; }
 .plan-reminder__status > text:last-child { color: var(--accent-warm); text-decoration: underline; text-underline-offset: 4Px; }
