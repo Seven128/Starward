@@ -174,6 +174,7 @@ export function ContributionRecords({ form }: { form: ContributionForm }) {
       </SoftButton>
       {openError?.id === item.submissionId ? <>
         <StatusPanel state="ERROR"
+          title={openError.missing ? "当前不可公开查看" : undefined}
           detail={openError.missing ? "这个正式观星点当前不可公开查看；本次提交记录仍可查看。" : "正式观星点暂时无法打开，请检查网络后重试。"}
           recoveryLabel={openError.missing ? "查看本次记录" : "重试打开"}
           onRecover={() => openError.missing ? setSelected(item) : void openPublishedSpot(item)} />
