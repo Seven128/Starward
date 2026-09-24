@@ -24,6 +24,7 @@ test("editing during a save retains the new edit and retries with the acknowledg
     useAppStore: store, useCallback: (callback: unknown) => callback, useEffect() {},
     useRef: (current: unknown) => ({ current }), useState: () => ["", () => {}],
     cloneUserPreferences: (value: unknown) => structuredClone(value),
+    currentDraftUserId: () => "user:test",
     savePreferences: (preferences: { equipment: string }, revision: number) => {
       writes.push({ equipment: preferences.equipment, revision });
       return new Promise(resolve => { finish = resolve; });
@@ -71,6 +72,7 @@ test("a failed conflict readback keeps local preferences without a half-second r
     useRef: (current: unknown) => ({ current }),
     useState: () => ["", (message: string) => statuses.push(message)],
     cloneUserPreferences: (value: unknown) => structuredClone(value),
+    currentDraftUserId: () => "user:test",
     savePreferences: async () => { writes++; throw new ApiError(); },
     getPreferences: async () => { throw new Error("offline"); },
     MiniappApiError: ApiError,
@@ -85,4 +87,44 @@ test("a failed conflict readback keeps local preferences without a half-second r
   assert.equal(state.preferences, preferences);
   assert.equal(state.preferencesRevision, 1);
   assert.equal(state.preferencesDirty, true);
+});
+
+test("fresh lower-revision conflict retries the preserved local preference against the server revision", async () => {
+  const source = ts.createSourceFile("sync.ts", readFileSync(new URL("./use-preferences-sync.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const declaration = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "usePreferencesSync");
+  assert.ok(declaration);
+  class Conflict extends Error { code = "CONFLICT"; }
+  const timers: Array<() => unknown> = [];
+  const writes: number[] = [];
+  const state = {
+    preferences: { contributionStatusReminder: true }, preferencesDirty: true, preferencesRevision: 5,
+    rebasePreferencesAfterConflict(record: { revision: number }) { this.preferencesRevision = record.revision; },
+    markPreferencesSynced(record: { preferences: { contributionStatusReminder: boolean }; revision: number }) {
+      this.preferences = record.preferences; this.preferencesRevision = record.revision; this.preferencesDirty = false;
+    },
+  };
+  const store = Object.assign((select: (value: unknown) => unknown) => select(state), { getState: () => state });
+  const create = vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /, "") + "\nusePreferencesSync;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    useAppStore: store, useCallback: (callback: unknown) => callback, useEffect() {},
+    useRef: (current: unknown) => ({ current }), useState: () => ["", () => {}],
+    cloneUserPreferences: (value: unknown) => structuredClone(value), currentDraftUserId: () => "user:test",
+    savePreferences: async (preferences: { contributionStatusReminder: boolean }, revision: number) => {
+      writes.push(revision);
+      if (revision === 5) throw new Conflict();
+      return { data: { preferences, revision: 2 } };
+    },
+    getPreferences: async () => ({ dataState: "FRESH", data: { preferences: { contributionStatusReminder: false }, revision: 1 } }),
+    MiniappApiError: Conflict, setTimeout: (callback: () => unknown) => { timers.push(callback); return timers.length; },
+    clearTimeout() {}, errorMessage: () => "unexpected error",
+  });
+  const hook = create();
+  assert.equal(await hook.syncNow(), false);
+  assert.equal(state.preferencesRevision, 1);
+  assert.equal(state.preferences.contributionStatusReminder, true);
+  assert.equal(timers.length, 1);
+  timers[0]!();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(writes, [5, 1]);
+  assert.equal(state.preferencesDirty, false);
+  assert.equal(state.preferencesRevision, 2);
 });

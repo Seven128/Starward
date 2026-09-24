@@ -116,6 +116,16 @@ test("older account readback cannot roll back saved preferences or a newer local
   assert.equal(store.getState().preferencesRevision, 9);
 });
 
+test("fresh conflict readback rebases a dirty edit even when the server revision is lower", () => {
+  const { store } = loadStore();
+  store.getState().markPreferencesSynced({ preferences: { ...DEFAULT_USER_PREFERENCES }, revision: 5, updatedAt: "2026-09-07T01:00:00Z" });
+  store.getState().setPreference("contributionStatusReminder", true);
+  store.getState().rebasePreferencesAfterConflict({ preferences: { ...DEFAULT_USER_PREFERENCES }, revision: 1, updatedAt: "2026-09-24T01:00:00Z" });
+  assert.equal(store.getState().preferences.contributionStatusReminder, true);
+  assert.equal(store.getState().preferencesRevision, 1);
+  assert.equal(store.getState().preferencesDirty, true);
+});
+
 test("default-region reset is atomic, retains user content and cannot be undone by focus restoration", () => {
   const { store, flush, storage } = loadStore();
   const initialViewport = JSON.stringify(store.getState().viewport);

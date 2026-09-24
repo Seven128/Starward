@@ -943,6 +943,7 @@ export async function getUserLibrary(signal?: AbortSignal, expectedUserId?: stri
 export function getPreferences(signal?: AbortSignal) {
   return requestOperation("preferences", "preferencesGet", {
     auth: "REQUIRED",
+    cache: false,
     ...(signal ? { signal } : {}),
   });
 }

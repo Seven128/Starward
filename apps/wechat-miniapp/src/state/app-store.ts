@@ -112,6 +112,7 @@ interface AppState extends PersistedState {
     value: UserPreferences[K],
   ): void;
   applyServerPreferences(record: UserPreferencesRecord): void;
+  rebasePreferencesAfterConflict(record: UserPreferencesRecord): void;
   markPreferencesSynced(record: UserPreferencesRecord): void;
   setViewport(patch: Partial<MapViewportState>): void;
   resetMapToDefaultRegion(): void;
@@ -445,6 +446,17 @@ export const useAppStore = create<AppState>((set, get) => {
               preferencesUpdatedAt: record.updatedAt,
             },
       );
+    },
+    rebasePreferencesAfterConflict(record) {
+      commit((state) => state.preferencesDirty ? {
+        preferencesRevision: record.revision,
+        preferencesUpdatedAt: record.updatedAt,
+      } : {
+        preferences: record.preferences,
+        preferencesRevision: record.revision,
+        preferencesDirty: false,
+        preferencesUpdatedAt: record.updatedAt,
+      });
     },
     markPreferencesSynced(record) {
       commit({
