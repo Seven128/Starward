@@ -15,6 +15,7 @@ export function SoftButton({
   className?: string;
   onClick?: () => void;
 }>) {
+  const content = children === undefined ? label : children;
   return (
     <Button
       className={`soft-button soft-button--${variant} focus-ring${
@@ -24,10 +25,10 @@ export function SoftButton({
       disabled={disabled}
       onClick={() => { if (!disabled) onClick?.(); }}
     >
-      {typeof children === "string" || typeof children === "number" ? (
-        <Text>{children}</Text>
+      {typeof content === "string" || typeof content === "number" ? (
+        <Text>{content}</Text>
       ) : (
-        children
+        content
       )}
     </Button>
   );

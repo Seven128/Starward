@@ -9,10 +9,10 @@ test("shared button forwards native disabled state and prevents disabled callbac
   const output = ts.transpileModule(source, { compilerOptions: {
     target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React,
   } }).outputText;
-  const exports: { SoftButton?: (props: unknown) => { props: { disabled: boolean; onClick(): void; ariaLabel: string } } } = {};
+  const exports: { SoftButton?: (props: unknown) => { props: { disabled: boolean; onClick(): void; ariaLabel: string }; children: unknown[] } } = {};
   vm.runInNewContext(output, {
     exports, require: () => ({ Button: "button", Text: "text" }),
-    React: { createElement: (_type: unknown, props: unknown) => ({ props }) },
+    React: { createElement: (_type: unknown, props: unknown, ...children: unknown[]) => ({ props, children }) },
   });
   let calls = 0;
   for (const disabled of [true, false, true]) {
@@ -22,4 +22,18 @@ test("shared button forwards native disabled state and prevents disabled callbac
     button.props.onClick();
   }
   assert.equal(calls, 1);
+});
+
+test("shared button without children renders its action label visibly", () => {
+  const source = readFileSync(new URL("./soft-button.tsx", import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: {
+    target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React,
+  } }).outputText;
+  const exports: { SoftButton?: (props: unknown) => { children: Array<{ children: unknown[] }> } } = {};
+  vm.runInNewContext(output, {
+    exports, require: () => ({ Button: "button", Text: "text" }),
+    React: { createElement: (_type: unknown, props: unknown, ...children: unknown[]) => ({ props, children }) },
+  });
+  const button = exports.SoftButton!({ label: "重新获取场地信息" });
+  assert.equal(button.children[0]?.children[0], "重新获取场地信息");
 });
