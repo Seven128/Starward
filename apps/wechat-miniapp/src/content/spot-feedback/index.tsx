@@ -37,6 +37,7 @@ import {
 } from "../spot-document";
 import "./index.scss";
 import { MEDIA_RIGHTS_MODAL } from "../contribution/media-rights-modal";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 
 function valuesFrom(baseline: ContributionFormalBaseline) {
   const values = emptySpotDocumentValues();
@@ -66,6 +67,7 @@ export default function FormalFeedbackEditor() {
   const spotName = decodeURIComponent(router.params.spotName ?? "");
   const submissionId = decodeURIComponent(router.params.submissionId ?? "");
   const themeClass = useThemeClass();
+  const mediaHandoff = useRedLightHandoff();
   const notify = useAppStore(state => state.notify);
   const [pageVisible, setPageVisible] = useState(true);
   useDidShow(() => setPageVisible(true));
@@ -76,6 +78,16 @@ export default function FormalFeedbackEditor() {
   const [baseline, setBaseline] = useState<ContributionFormalBaseline | null>(null);
   const [values, setValues] = useState<SpotDocumentValues | null>(null);
   const [chapter, setChapter] = useState<(typeof CHAPTERS)[number][0]>("place");
+  const [scrollAnchor, setScrollAnchor] = useState("formal-feedback-place");
+  const handoffWasOpen = useRef(false);
+  useEffect(() => {
+    if (mediaHandoff.active) { handoffWasOpen.current = true; return; }
+    if (!handoffWasOpen.current) return;
+    handoffWasOpen.current = false;
+    setScrollAnchor("");
+    const timer = setTimeout(() => setScrollAnchor(`formal-feedback-${chapter}`), 32);
+    return () => clearTimeout(timer);
+  }, [mediaHandoff.active, chapter]);
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [conflicts, setConflicts] = useState<readonly ContributionFormalConflict[]>([]);
@@ -187,7 +199,7 @@ export default function FormalFeedbackEditor() {
   }), []);
   const nativeLeaveGuard = useNativeEditorLeaveGuard(hasChanges && !submitted, "当前反馈尚未提交，确定离开吗？");
   const setField = (key: ContributionFormalFieldKey, value: string) => setValues(current => current ? { ...current, [key]: value } : current);
-  const jump = (next: typeof chapter) => { setChapter(next); };
+  const jump = (next: typeof chapter) => { setChapter(next); setScrollAnchor(`formal-feedback-${next}`); };
   const syncMediaProposal = (intent: ContributionFormalUploadIntent) => {
     if (!baseline) return;
     setValues(current => current ? { ...current } : current);
@@ -196,6 +208,8 @@ export default function FormalFeedbackEditor() {
   };
   const addPhoto = async (kind: ContributionMediaKind) => {
     if (!baseline || busy || uploading || submitted) return;
+    const allowed = await mediaHandoff.confirm("微信相册、相机及图片授权界面可能较亮，无法跟随红光模式。");
+    if (!allowed) return;
     if (!rightsConfirmed) {
       const consent = await Taro.showModal(MEDIA_RIGHTS_MODAL);
       if (!consent.confirm) return;
@@ -270,6 +284,7 @@ export default function FormalFeedbackEditor() {
   };
 
   return <View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
+    {mediaHandoff.warning}
     <FloatingNotificationHost />
     <CustomNav title={`${baseline?.fields.name ?? (spotName || "观星点")}反馈页`} back beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
     <SelectionTabs className="formal-feedback-tabs"
@@ -279,7 +294,7 @@ export default function FormalFeedbackEditor() {
       onSelect={jump}
       activeItemClassName="is-active"
       indicatorClassName="formal-feedback-tabs__line" />
-    <ScrollView scrollY scrollIntoView={`formal-feedback-${chapter}`} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
+    <ScrollView scrollY scrollIntoView={scrollAnchor} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
       <View className="formal-feedback-body safe-bottom">
         <NotificationRegion owner="contribution" placement="inline" />
         {query.refreshError || query.data?.dataState === "STALE_USABLE" ||

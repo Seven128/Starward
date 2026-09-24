@@ -8,6 +8,7 @@ import { currentDraftUserId, getAccountAvatar, getAccountProfile, saveAccountAva
 import { miniappQueryClient } from "@/services/query-client";
 import { useAppStore } from "@/state/app-store";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 
 function avatarMime(path: string): AccountAvatarMimeType {
   if (/\.png(?:$|\?)/iu.test(path)) return "image/png";
@@ -23,6 +24,7 @@ function readBase64(filePath: string) {
 }
 
 export function MyAvatar({ owner }: { owner: string | null }) {
+  const mediaHandoff = useRedLightHandoff({ nativeBackBoundary: false });
   const profile = useResourceQuery({ queryKey: ["account-profile", owner], enabled: Boolean(owner), queryFn: signal => getAccountProfile(owner!, signal), staleTime: 30_000 });
   const avatar = useResourceQuery({ queryKey: ["account-avatar", owner, profile.data?.data.avatar?.version ?? "none"], enabled: Boolean(owner && profile.data?.data.avatar), queryFn: signal => getAccountAvatar(owner!, signal), staleTime: Infinity });
   const notify = useAppStore(state => state.notify);
@@ -36,6 +38,8 @@ export function MyAvatar({ owner }: { owner: string | null }) {
   const pick = async (sourceType: "album" | "camera") => {
     if (!owner) return;
     try {
+      const allowed = await mediaHandoff.confirm("微信相册或相机界面可能较亮，无法跟随红光模式。");
+      if (!allowed || currentDraftUserId() !== owner) return;
       const result = await Taro.chooseMedia({ count: 1, mediaType: ["image"], sourceType: [sourceType], sizeType: ["compressed"] });
       const file = result.tempFiles[0];
       if (!file || !Number.isSafeInteger(file.size) || file.size <= 0 || file.size > 10_000_000) throw new Error("图片需小于 10 MB");
@@ -68,7 +72,8 @@ export function MyAvatar({ owner }: { owner: string | null }) {
   const saved = avatar.data?.data;
   const savedSrc = saved ? `data:${saved.mimeType};base64,${saved.dataBase64}` : "";
   return <>
-    <NativeBackBoundary active={sheet || Boolean(preview)} onBack={close} />
+    <NativeBackBoundary active={sheet || Boolean(preview) || mediaHandoff.active} onBack={() => mediaHandoff.active ? mediaHandoff.cancel() : close()} />
+    {mediaHandoff.warning}
     <Button className="profile-summary__avatar focus-ring" data-control="my-avatar-action" aria-label="更换头像" onClick={() => setSheet(true)}>
       {savedSrc ? <Image className="profile-summary__avatar-image" src={savedSrc} mode="aspectFill" style={{ transform: `scale(${saved!.zoom})` }} /> : <SemanticIcon name="account-user" />}
     </Button>

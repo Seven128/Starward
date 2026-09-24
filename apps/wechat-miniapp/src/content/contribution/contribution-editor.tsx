@@ -50,6 +50,15 @@ export function ContributionEditor({ managesRecords = false, embedded = false, e
   const [resumeAttempt, setResumeAttempt] = useState(0);
   const [documentChapter, setDocumentChapter] = useState<SpotDocumentChapter>("place");
   const submittedId = useRef("");
+  const handoffWasOpen = useRef(false);
+  useEffect(() => {
+    if (commands.handoffActive) { handoffWasOpen.current = true; return; }
+    if (!handoffWasOpen.current) return;
+    handoffWasOpen.current = false;
+    setValidationAnchor("");
+    const timer = setTimeout(() => setValidationAnchor(`formal-feedback-${documentChapter}`), 32);
+    return () => clearTimeout(timer);
+  }, [commands.handoffActive, documentChapter]);
   useEffect(() => {
     setValidationAnchor("");
     const target = contributionValidationAnchor(form.validationField);

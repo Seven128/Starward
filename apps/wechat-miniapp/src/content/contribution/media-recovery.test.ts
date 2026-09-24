@@ -68,7 +68,7 @@ test("retrying an existing image keeps its revision and the unsaved form intact"
     formInput() { assert.fail("retry must not save the whole form"); },
     setUploading() {}, announce() {}, history: { refetch: async () => {} },
   };
-  const retry = create(form, () => { if (!accountValid) throw new Error("changed"); });
+  const retry = create(form, () => { if (!accountValid) throw new Error("changed"); }, async () => true);
   await retry(target.uploadId);
   assert.deepEqual(requests, [{ working: draft, upload: target }]);
   assert.equal(form.detail, "尚未保存的文字");
@@ -78,7 +78,7 @@ test("retrying an existing image keeps its revision and the unsaved form intact"
   assert.equal(requests.length, 1);
   form.rightsConfirmed = false;
   await retry(target.uploadId);
-  assert.equal(picked, 2, "unconfirmed rights must not open a picker");
+  assert.equal(picked, 1, "changed account and unconfirmed rights must not open another picker");
 });
 
 test("uploaded media distinguishes missing size from a reported zero", () => {

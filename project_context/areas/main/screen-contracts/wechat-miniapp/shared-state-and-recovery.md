@@ -124,6 +124,8 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 正式观星点地图面板“路线”和场地资料页“去这里”也复用该红光交接提示；地图已有页面级原生返回层，提示关闭由它接管，场地资料页使用共享返回边界。两处仅在显式继续后才进入原生地图或导航选项，已有公开坐标和出行阻断规则仍各自生效。当前官方WEAPP模拟器已确认两处提示原图与取消返回原上下文；原生返回键、真机亮度以及原生导航完成未验证。
 
+新增点位添加/重试照片、正式点反馈照片和“我的”头像相册/拍照使用同一红光交接提示，置于原生相册、相机及图片授权界面之前；照片权利、上传和账号规则仍由各自业务owner控制。头像沿用已有原生返回层。新增点位“说明”章节取消提示后恢复章节滚动位置，不能只保留高亮Tab而跳回地点字段。当前官方WEAPP模拟器已核对头像与新增点位提示及取消；正式反馈在本机样本处于审核中，上传入口不可操作，其红光媒体路径与真机界面仍未获运行时证据。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.

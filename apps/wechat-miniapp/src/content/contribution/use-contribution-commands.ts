@@ -214,21 +214,16 @@ function createAddMedia(
   form: ContributionForm,
   saveDraft: ReturnType<typeof createSaveDraft>,
   assertAccount: () => void,
+  confirmHandoff: (message: string) => Promise<boolean>,
 ) {
   return async (kind?: ContributionMediaKind) => {
-    if (!form.rightsConfirmed) {
-      if (kind) {
-        const consent = await Taro.showModal(MEDIA_RIGHTS_MODAL);
-        if (!consent.confirm) return;
-        form.setRightsConfirmed(true);
-      } else {
+    if (!form.rightsConfirmed && !kind) {
       form.announce(
         "warning",
         "请先确认图片权利",
         "只有你有权提交且同意用于核验的图片才能上传。",
       );
       return;
-      }
     }
     const mediaInGroup = kind
       ? form.currentMedia.filter((item) => item.kind === kind)
@@ -237,6 +232,15 @@ function createAddMedia(
     if (availableSlots <= 0) {
       form.announce("warning", "图片已达上限", kind ? "这一组最多上传 3 张图片。" : "每条反馈最多上传 3 张图片。");
       return;
+    }
+    const allowed = await confirmHandoff("微信相册、相机及图片授权界面可能较亮，无法跟随红光模式。");
+    if (!allowed) return;
+    try { assertAccount(); } catch (error) { form.announce("error", "账号已变化", errorMessage(error)); return; }
+    if (!form.rightsConfirmed && kind) {
+      const consent = await Taro.showModal(MEDIA_RIGHTS_MODAL);
+      if (!consent.confirm) return;
+      assertAccount();
+      form.setRightsConfirmed(true);
     }
     let choice;
     try {
@@ -279,12 +283,16 @@ function createAddMedia(
 function createRetryMedia(
   form: ContributionForm,
   assertAccount: () => void,
+  confirmHandoff: (message: string) => Promise<boolean>,
 ) {
   return async (uploadId: ContributionUploadId) => {
     if (!form.rightsConfirmed) {
       form.announce("warning", "请先确认图片权利", "确认图片权利后才能继续上传。");
       return;
     }
+    const allowed = await confirmHandoff("微信相册或相机界面可能较亮，无法跟随红光模式。");
+    if (!allowed) return;
+    try { assertAccount(); } catch (error) { form.announce("error", "账号已变化", errorMessage(error)); return; }
     const choice = await chooseImage(1).catch((error) => {
       form.announce("error", "无法选择图片", errorMessage(error));
       return null;
@@ -516,9 +524,10 @@ export function useContributionCommands(form: ContributionForm) {
     saveDraft: guard(saveDraft),
     chooseCandidateLocation: guard(createChooseCandidateLocation(form, assertAccount, handoff.confirm)),
     handoffWarning: handoff.warning,
+    handoffActive: handoff.active,
     useCurrentLocation: guard(createUseCurrentLocation(form, assertAccount)),
-    addMedia: guard(createAddMedia(form, saveDraft, assertAccount)),
-    retryMedia: guard(createRetryMedia(form, assertAccount)),
+    addMedia: guard(createAddMedia(form, saveDraft, assertAccount, handoff.confirm)),
+    retryMedia: guard(createRetryMedia(form, assertAccount, handoff.confirm)),
     removeMedia: guard(createRemoveMedia(form, assertAccount)),
     withdrawDraft: guard(createWithdrawDraft(form, assertAccount)),
     submit: guard(createSubmit(form, saveDraft, assertAccount), true),

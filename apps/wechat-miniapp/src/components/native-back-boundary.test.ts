@@ -18,7 +18,11 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
   assert.match(boundary, /if \(activeRef\.current\) setArmed\(true\)/u);
 
   assert.match(source("../features/my/my-nickname.tsx"), /NativeBackBoundary active=\{editing\} onBack=\{cancel\}/u);
-  assert.match(source("../features/my/my-avatar.tsx"), /NativeBackBoundary active=\{sheet \|\| Boolean\(preview\)\} onBack=\{close\}/u);
+  const avatar = source("../features/my/my-avatar.tsx");
+  assert.equal(avatar.match(/<NativeBackBoundary\b/gu)?.length, 1, "avatar sheet and red handoff share one native owner");
+  assert.match(avatar, /NativeBackBoundary active=\{sheet \|\| Boolean\(preview\) \|\| mediaHandoff\.active\}/u);
+  assert.match(avatar, /mediaHandoff\.active \? mediaHandoff\.cancel\(\) : close\(\)/u);
+  assert.match(avatar, /useRedLightHandoff\(\{ nativeBackBoundary: false \}\)/u);
   assert.match(source("../content/settings/index.tsx"), /NativeBackBoundary active=\{Boolean\(sheet\)\} onBack=\{closeSheet\}/u);
   assert.match(source("../pages/map/search-page.tsx"), /NativeBackBoundary active=\{filterSheetOpen\} onBack=\{cancelFilters\}/u);
   assert.match(source("./observation-date-control.tsx"), /<NativeBackBoundary[\s\S]*active=\{open\}[\s\S]*if \(!busy\) onOpenChange\(false\)/u);
