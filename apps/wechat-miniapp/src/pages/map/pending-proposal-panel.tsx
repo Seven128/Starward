@@ -26,6 +26,25 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const [mediaAttempt, setMediaAttempt] = useState(0);
   const [media, setMedia] = useState<{ state: "idle" | "loading" | "error" | "ready"; src?: string }>({ state: "idle" });
   const leadMedia = model.media[0];
+  const handleInDocument = extent === "large" && Boolean(leadMedia);
+  const panelHandle = <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
+    <Button className="spot-panel__handle focus-ring" data-control="map-spot-panel-handle"
+      ariaLabel={`拖动调整${draft ? "草稿" : "审核中"}观星点信息面板大小`}
+      onTouchStart={onHandleTouchStart} onTouchMove={onHandleTouchMove}
+      onTouchEnd={onHandleTouchEnd} onTouchCancel={onHandleTouchCancel}>
+      <View className="spot-panel__handle-bar" aria-hidden="true" />
+    </Button>
+    <View className="spot-panel__extent-actions" role="group" ariaLabel={`调整或关闭${draft ? "草稿" : "审核中"}观星点信息面板`}>
+      <Button className="spot-panel__extent-button" disabled={extent === "small"}
+        ariaLabel={extent === "large" ? "收起为中档面板" : "收起为小档面板"}
+        onClick={() => onExtent(extent === "large" ? "medium" : "small")}><SemanticIcon name="chevron-down" /></Button>
+      <Button className="spot-panel__extent-button" disabled={extent === "large"}
+        ariaLabel={extent === "small" ? "展开为中档面板" : "展开为大档面板"}
+        onClick={() => onExtent(extent === "small" ? "medium" : "large")}><SemanticIcon name="chevron-up" /></Button>
+      <Button className="spot-panel__extent-button spot-panel__extent-button--close" ariaLabel={`关闭${draft ? "草稿" : "审核中"}观星点信息面板`}
+        onClick={onClose}><SemanticIcon name="close" /></Button>
+    </View>
+  </View>;
   useEffect(() => {
     if (!leadMedia) {
       setMedia({ state: "idle" });
@@ -53,7 +72,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   }, [leadMedia?.uploadId, mediaAttempt, submission.submissionId]);
   return <View
     id="spot-information-panel"
-    className={`spot-panel spot-panel--proposal spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}`}
+    className={`spot-panel spot-panel--proposal spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${leadMedia ? " spot-panel--with-media" : ""}`}
     data-control="map-pending-proposal-panel"
     data-proposal-id={submission.submissionId}
     data-extent={extent}
@@ -65,34 +84,10 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
       <View className="spot-panel__snap-medium" />
       <View className="spot-panel__snap-large" />
     </View>
-    <View className="spot-panel__handle-band">
-      <Button className="spot-panel__handle focus-ring" data-control="map-spot-panel-handle"
-        ariaLabel={`拖动调整${draft ? "草稿" : "审核中"}观星点信息面板大小`}
-        onTouchStart={onHandleTouchStart} onTouchMove={onHandleTouchMove}
-        onTouchEnd={onHandleTouchEnd} onTouchCancel={onHandleTouchCancel}>
-        <View className="spot-panel__handle-bar" aria-hidden="true" />
-      </Button>
-      <View className="spot-panel__extent-actions" role="group" ariaLabel={`调整或关闭${draft ? "草稿" : "审核中"}观星点信息面板`}>
-        <Button className="spot-panel__extent-button" disabled={extent === "small"}
-          ariaLabel={extent === "large" ? "收起为中档面板" : "收起为小档面板"}
-          onClick={() => onExtent(extent === "large" ? "medium" : "small")}><SemanticIcon name="chevron-down" /></Button>
-        <Button className="spot-panel__extent-button" disabled={extent === "large"}
-          ariaLabel={extent === "small" ? "展开为中档面板" : "展开为大档面板"}
-          onClick={() => onExtent(extent === "small" ? "medium" : "large")}><SemanticIcon name="chevron-up" /></Button>
-        <Button className="spot-panel__extent-button spot-panel__extent-button--close" ariaLabel={`关闭${draft ? "草稿" : "审核中"}观星点信息面板`}
-          onClick={onClose}><SemanticIcon name="close" /></Button>
-      </View>
-    </View>
+    {!handleInDocument ? panelHandle : null}
     <View className="spot-panel__scroll-frame">
       <ScrollView className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
-        <View className="spot-panel__identity">
-          <View className="spot-panel__proposal-title-row">
-            <Text className="spot-panel__title">{model.name}</Text>
-            <Text className="spot-panel__proposal-status">{draft ? "草稿" : "审核中"}</Text>
-          </View>
-          <Text className="spot-panel__address type-caption">{model.address}</Text>
-        </View>
         {leadMedia ? <View className="spot-panel__proposal-media" ariaLabel={`${leadMedia.label}，共${model.media.length}张`}>
           {media.state === "ready" && media.src
             ? <Image className="spot-panel__proposal-media-image" src={media.src} mode="aspectFill" lazyLoad ariaLabel={leadMedia.label} />
@@ -102,6 +97,14 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
             </View>}
           {media.state === "ready" ? <View className="spot-panel__proposal-media-overlay"><Text>{leadMedia.label}</Text><Text>{model.media.length} 张</Text></View> : null}
         </View> : null}
+        {handleInDocument ? panelHandle : null}
+        <View className="spot-panel__identity">
+          <View className="spot-panel__proposal-title-row">
+            <Text className="spot-panel__title">{model.name}</Text>
+            <Text className="spot-panel__proposal-status">{draft ? "草稿" : "审核中"}</Text>
+          </View>
+          <Text className="spot-panel__address type-caption">{model.address}</Text>
+        </View>
         <View className="spot-panel__section" ariaLabel="提交资料">
           <View className="spot-panel__block">
             <Text className="type-label">开放时间</Text>

@@ -1737,10 +1737,11 @@ export default function MapPage() {
 
   const panelHasMedia = Boolean(
     bottomPresentation === "spot-panel" &&
-      !selectedProposal &&
-      selected?.media.some((media) =>
-        mediaIsRenderable(media, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
-      ),
+      (selectedProposal
+        ? (["parking", "toilet", "site"] as const).some(kind =>
+            Boolean(selectedProposal.candidateProfile?.media[kind]?.length))
+        : selected?.media.some((media) =>
+            mediaIsRenderable(media, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__))),
   );
   const panelPosition =
     bottomPresentation === "spot-panel"

@@ -1908,10 +1908,11 @@
 .spot-panel__proposal-note { padding: 12rpx 0 24rpx; }
 .spot-panel__proposal-media {
   position: relative;
-  height: 116rpx;
-  margin: 0 0 12rpx;
+  height: var(--panel-media-height);
+  margin: var(--panel-media-margin-top) calc(var(--spot-panel-inline-padding) * -1) calc(12Px * var(--panel-media-reveal));
   overflow: hidden;
-  border-radius: 12rpx;
+  opacity: var(--panel-media-reveal);
+  transition: height 180ms ease-out, margin 180ms ease-out, opacity 180ms ease-out;
   background: var(--surface-subtle);
 }
 .spot-panel__proposal-media-image,
