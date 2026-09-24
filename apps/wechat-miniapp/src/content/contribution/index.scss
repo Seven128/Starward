@@ -834,6 +834,18 @@
   background: #69778d;
   color: #fff;
 }
+.theme-night .contribution-page .contribution-document-actions .soft-button--default,
+.theme-observation .contribution-page .contribution-document-actions .soft-button--default {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+}
+.theme-night .contribution-page .contribution-document-actions .soft-button--primary,
+.theme-observation .contribution-page .contribution-document-actions .soft-button--primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
 .contribution-document-photo image {
   width: 100%;
   height: 100%;

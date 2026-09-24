@@ -63,6 +63,7 @@ export function SpotDocumentFields({
         value={values.detail}
         maxlength={2000}
         placeholder={SPOT_DOCUMENT_PLACEHOLDERS.detail ?? ""}
+        placeholderClass="formal-feedback-placeholder"
         onInput={(event) => onChange("detail", event.detail.value)}
       />
       {renderPhotoGroup?.("site")}
@@ -89,6 +90,6 @@ export function SpotDocumentField({ fieldKey, value, baseline, disabled, onChang
     <Text className="formal-feedback-field__label">{SPOT_DOCUMENT_LABELS[fieldKey]}{required ? <Text className="formal-feedback-required"> *</Text> : null}</Text>
     {choices ? <View className="formal-feedback-choices">{choices.map((choice) =>
       <Button key={choice || "unknown"} disabled={disabled} className={value === choice ? "is-selected" : ""} onClick={() => onChange(fieldKey, choice)}>{choice || "不清楚"}</Button>)}</View>
-      : <Input disabled={disabled} value={value} maxlength={fieldKey === "detail" ? 2000 : 300} placeholder={SPOT_DOCUMENT_PLACEHOLDERS[fieldKey] ?? ""} onInput={(event) => onChange(fieldKey, event.detail.value)} />}
+      : <Input disabled={disabled} value={value} maxlength={fieldKey === "detail" ? 2000 : 300} placeholder={SPOT_DOCUMENT_PLACEHOLDERS[fieldKey] ?? ""} placeholderClass="formal-feedback-placeholder" onInput={(event) => onChange(fieldKey, event.detail.value)} />}
   </View>;
 }
