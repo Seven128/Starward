@@ -3,13 +3,15 @@ import type { ObservationPlan, SkyReport } from "@starward/miniapp-contracts";
 import { SourceAttribution } from "@/components/source-attribution";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { StatusPanel } from "@/components/status-panel";
 import { planReference } from "./plan-reference-model";
 
-export function PlanReference({ plan, report, loading }: { plan: ObservationPlan; report: SkyReport | null; loading: boolean }) {
+export function PlanReference({ plan, report, loading, failed, onRetry }: { plan: ObservationPlan; report: SkyReport | null; loading: boolean; failed: boolean; onRetry: () => void }) {
   const facts = planReference(plan, report);
   return <View className="plan-section plan-reference" data-od-id="plan-reference">
     <View className="plan-section-heading"><View className="plan-reference__heading"><SemanticIcon name="telescope" /><Text className="type-section">观测参考</Text></View></View>
-    {loading ? <Text className="type-caption">正在加载</Text> : <>
+    {failed ? <StatusPanel state="ERROR" detail="天气与夜空动态条件暂未获取；计划和出发安排仍可查看。"
+      recoveryLabel="重试动态条件" onRecover={onRetry} /> : loading ? <Text className="type-caption">正在加载</Text> : <>
       <Text className="plan-form-footnote">{facts.nightRange ? `天文资料：${facts.nightRange}` : "天文资料暂无数据"}</Text>
       <View className="plan-reference__facts">
         <View><View className="plan-reference__label"><SemanticIcon name="sun" /><Text>天黑与晨光</Text></View><Text>天文昏影终 {facts.dusk}</Text><Text>天文晨光始 {facts.dawn}</Text></View>

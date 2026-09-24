@@ -406,7 +406,6 @@
   width: 100%;
 }
 
-.plan-empty,
 .plan-editor-form {
   display: flex;
   flex-direction: column;
@@ -417,10 +416,6 @@
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-}
-
-.plan-empty .soft-button {
-  width: 100%;
 }
 
 .plan-editor-form__heading {
@@ -614,6 +609,16 @@
 
 .plan-editor .status-panel--loading {
   background: var(--surface);
+}
+.plan-editor .status-panel--empty {
+  border: 0;
+  background: var(--surface-subtle);
+}
+.plan-editor .status-panel--empty-section {
+  border: 1rpx solid var(--border);
+}
+.plan-editor .status-panel--empty-page {
+  background: transparent;
 }
 
 @media (max-width: 340px) {

@@ -18,7 +18,7 @@ import {
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
 import { SoftButton } from "@/components/soft-button";
-import { StatusPanel } from "@/components/status-panel";
+import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import {
@@ -786,7 +786,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   };
   const showMissingRequestedPlan = Boolean(
     requestedPlanId && !newPlanRequested.current && !activePlan &&
-    planQuery.data && !planQuery.isPending && !planQuery.isError,
+    planQuery.data && !planQuery.isPending && !planQuery.isError && !planQuery.refreshError &&
+    planQuery.data.dataState !== "STALE_USABLE",
   );
   const showCreateEmpty = Boolean(
     !requestedPlanId &&
@@ -795,6 +796,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       planQuery.data &&
       !planQuery.isPending &&
       !planQuery.isError &&
+      !planQuery.refreshError &&
+      planQuery.data.dataState !== "STALE_USABLE" &&
       plans.length === 0,
   );
   if (formOwner.current && planOwner !== formOwner.current) return (
@@ -873,21 +876,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             onRecover={() => void planQuery.refetch().catch(() => {})}
           />
         ) : null}
-        {showCreateEmpty ? (
-          <View className="plan-empty card">
-            <Text className="type-section">还没有已保存计划</Text>
-            <Text className="type-caption">
-              选择观星点、日期和当地时间，安排一次观测。
-            </Text>
-            <SoftButton
-              variant="primary"
-              label="新建观测计划"
-              onClick={startNewPlan}
-            >
-              新建观测计划
-            </SoftButton>
-          </View>
-        ) : null}
+        {showCreateEmpty ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无观星计划"
+          detail="选择观星点、日期和当地时间，安排一次观测。"
+          recoveryLabel="新建观测计划" onRecover={startNewPlan} /> : null}
         {activePlan && !editing ? (
           <>
             <View className="plan-hero" data-od-id="plan-summary">
@@ -906,10 +897,12 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} · ` : ""}地点当地时间 · {timezone}</Text>
               </View>
             </View>
-            <PlanReference plan={activePlan} report={sky} loading={Boolean(
+            {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
+              failed={!sky && (skyQuery.isError || Boolean(skyQuery.refreshError) || skyQuery.data?.dataState === "STALE_USABLE")}
+              onRetry={() => void skyQuery.refetch()} loading={Boolean(
               (contextQuery.isPending && contextQuery.isFetching) ||
               (activeContext && skyQuery.isPending && skyQuery.isFetching)
-            )} />
+            )} />}
             {planQuery.isError || planQuery.refreshError || planQuery.data?.dataState === "STALE_USABLE" ? (
               <StatusPanel
                 state="STALE"
@@ -926,14 +919,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 onRecover={() => void contextQuery.refetch()}
               />
             ) : null}
-            {skyQuery.isError ? (
-              <StatusPanel
-                state="STALE"
-                detail="天气与夜空动态条件暂不可用；计划和出发复核仍可继续，恢复后可重试。"
-                recoveryLabel="重试动态条件"
-                onRecover={() => void skyQuery.refetch()}
-              />
-            ) : null}
             <View className="plan-section plan-events" data-od-id="plan-events">
               <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">◌</Text>天文事件</Text></View>
               {(activePlan.eventOccurrenceIds ?? []).map(id => {
@@ -943,7 +928,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   <Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : id}</Text>
                 </Button>;
               })}
-              {!activePlan.eventOccurrenceIds?.length ? <Text className="type-caption">尚未关联天象事件</Text> : null}
+              {!activePlan.eventOccurrenceIds?.length ? <StatusPanel state="EMPTY" emptyLevel="section"
+                title="暂无关联事件" detail="编辑计划可关联一项天文事件。" /> : null}
             </View>
             <View className="plan-section plan-preparation" data-od-id="plan-preparation">
               <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">☷</Text>提醒与清单</Text><Text className="plan-section-caption">{activePlan.reminders?.length ?? 0}/5 个提醒</Text></View>
@@ -957,7 +943,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 {reminder.items.map(item => <Button key={item.itemId} className={`plan-check ${item.completed ? "plan-check--done" : ""}`} disabled={checklistSaving} aria-pressed={item.completed} aria-label={`${item.text}，${item.completed ? "已完成" : "未完成"}`}
                     onClick={() => { void toggleReminderItem(reminder.reminderId, item.itemId, !item.completed); }}><View className="plan-check__box"><Text>✓</Text></View><Text>{item.text}</Text></Button>)}
               </View>})}
-              {!activePlan.reminders?.length ? <Text className="type-caption">尚未添加个人提醒</Text> : null}
+              {!activePlan.reminders?.length ? <StatusPanel state="EMPTY" emptyLevel="section"
+                title="暂无个人提醒" detail="编辑计划可添加出发提醒和个人清单。" /> : null}
             </View>
             <View className="plan-section plan-route" data-od-id="plan-route-nodes">
               <View className="plan-section-heading">
@@ -982,7 +969,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                     <View className="plan-route__node-copy">
                       <Text className="plan-route__node-title">到达与停车信息</Text>
                       <Text className="plan-route__node-detail">{siteRoute?.lastRoad || siteRoute?.parkingGuidance
-                        ? [siteRoute.lastRoad, siteRoute.parkingGuidance].filter(Boolean).join(" · ") : "暂无数据"}</Text>
+                        ? [siteRoute.lastRoad, siteRoute.parkingGuidance].filter(Boolean).join(" · ")
+                        : siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
+                          ? "场地信息暂未获取" : EMPTY_FIELD_VALUE}</Text>
                     </View>
                     {straightDistanceKm != null
                       ? <Text className="plan-route__node-meta">直线 {straightDistanceKm.toFixed(1)} km</Text> : null}
