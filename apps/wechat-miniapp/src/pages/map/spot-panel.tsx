@@ -38,6 +38,7 @@ import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SpotPlanEntry } from "@/features/spot/spot-plan-entry";
 import { SpotImageViewer } from "@/components/spot-image-viewer";
 import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
 export type SpotPanelPhase = "idle" | "closing";
@@ -315,6 +316,8 @@ export function SpotInformationPanel({
     mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
   );
   const galleryPosition = useSpotMediaGalleryPosition(`${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`);
+  useHiddenNativeScrollbar("spot-panel-scroll", extent === "large", effectiveSpot.spotId);
+  useHiddenNativeScrollbar("spot-panel-media-strip", extent === "large" && media.length > 1, effectiveSpot.spotId);
   const route = detail?.route;
   const facilities = detail?.spot.facilities ?? effectiveSpot.facilities;
   const prominentFacilities = facilities.filter((facility) => facility.type === "PARKING" || facility.type === "TOILET");
@@ -435,7 +438,7 @@ export function SpotInformationPanel({
           <View id="spot-panel-document-start" className="spot-panel__document-start" aria-hidden="true" />
           {media.length ? (
             <View className="spot-panel__media" data-control="spot-media-gallery">
-              <ScrollView className="spot-panel__media-strip" scrollX={media.length > 1} scrollLeft={galleryPosition.returnLeft}
+              <ScrollView id="spot-panel-media-strip" className="spot-panel__media-strip" scrollX={media.length > 1} scrollLeft={galleryPosition.returnLeft}
                 onScroll={galleryPosition.onScroll} enhanced showScrollbar={false} ariaLabel={`${effectiveSpot.name}现场照片`}>
                 <View className="spot-panel__media-track">
                   {media.map((item, index) => <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.id} ariaLabel={`查看现场照片 ${index + 1}，共 ${media.length} 张`} onClick={() => { galleryPosition.remember(); setViewerIndex(index); }}>

@@ -5,6 +5,7 @@ import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
 import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
@@ -37,6 +38,8 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const mediaKey = model.media.map(item => item.uploadId).join("|");
   const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
   const galleryPosition = useSpotMediaGalleryPosition(mediaScope);
+  useHiddenNativeScrollbar("spot-proposal-scroll", extent === "large", mediaScope);
+  useHiddenNativeScrollbar("spot-proposal-media-strip", extent === "large" && model.media.length > 1, mediaScope);
   const leadMedia = model.media[0];
   const handleInDocument = extent === "large" && Boolean(leadMedia);
   const panelHandle = <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
@@ -117,10 +120,10 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
     </View>
     {!handleInDocument ? panelHandle : null}
     <View className="spot-panel__scroll-frame">
-      <ScrollView className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
+      <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
         {leadMedia ? <View className="spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
-          <ScrollView className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}
+          <ScrollView id="spot-proposal-media-strip" className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}
             ariaLabel={`${model.name}提交照片`}
             onScroll={(event) => {
               const width = Taro.getWindowInfo().windowWidth || 390;
