@@ -62,6 +62,26 @@ test("saving uses the draft revision and requires review after conflict without 
   assert.equal(page.context.mutationBusy.current, false);
 });
 
+test("two save taps during an unresolved request dispatch once and preserve the draft after failure", async () => {
+  const page = runtime();
+  let rejectRequest: ((error: Error) => void) | undefined;
+  let dispatched = 0;
+  page.context.saveObservationPlan = async () => {
+    dispatched++;
+    return new Promise((_resolve, reject) => { rejectRequest = reject; });
+  };
+  const first = page.save();
+  await page.save();
+  assert.equal(dispatched, 1);
+  assert.equal(page.context.mutationBusy.current, true);
+  assert.equal(page.context.notes, "my draft");
+  assert.ok(rejectRequest);
+  rejectRequest(new Error("network receipt unknown"));
+  await first;
+  assert.equal(page.context.mutationBusy.current, false);
+  assert.equal(page.context.notes, "my draft");
+});
+
 test("a conflict arriving after account change cannot refresh or replace the new account's plans", async () => {
   const page = runtime(true);
   await page.save();
