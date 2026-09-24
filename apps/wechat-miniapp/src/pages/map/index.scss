@@ -5,6 +5,16 @@
   display: flex;
   flex-direction: column;
 }
+
+// Keep transient notices clear of the map's search entry and right-hand tools.
+// The shared host still owns safe-area metrics, visibility and expiry.
+.map-page .notification-host {
+  top: calc(var(--map-search-top) + var(--map-search-height) + 8Px);
+  left: 16Px;
+  width: calc(100% - 96Px);
+  transform: none;
+  --notification-available-height: max(0Px, calc(100vh - var(--map-search-top) - var(--map-search-height) - 8Px - var(--notification-bottom-reserve)));
+}
 .map-workspace {
   position: relative;
   flex: 1;
