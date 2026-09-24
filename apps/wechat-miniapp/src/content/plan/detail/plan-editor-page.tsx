@@ -270,8 +270,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       ? existing.contextSnapshot.routeOrigin?.displayName ?? ""
       : observationContext?.routeOrigin?.displayName ?? "",
   ));
-  const [fieldError, setFieldError] = useState<{ field: PlanValidationField; message: string; sequence: number } | null>(null);
+  const [fieldError, setFieldError] = useState<{ field: PlanValidationField; message: string } | null>(null);
   const [validationAnchor, setValidationAnchor] = useState("");
+  const validationToken = useRef(0);
   const [eventOccurrenceIds, setEventOccurrenceIds] = useState<readonly string[]>(
     withRequestedEvent(restoredDraft?.eventOccurrenceIds ?? existing?.eventOccurrenceIds ?? []),
   );
@@ -372,6 +373,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     hydratedPlanId.current = plan.planId;
     newPlanRequested.current = false;
     setActivePlanId(plan.planId);
+    validationToken.current += 1;
     setFieldError(null);
     setValidationAnchor("");
     const draft = readDraft(plan.planId);
@@ -408,6 +410,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     setConflictPlan(null);
     newPlanRequested.current = true;
     setEditing(true);
+    validationToken.current += 1;
     setFieldError(null);
     setValidationAnchor("");
     const nextDate = requestedEventDate ?? observationContext?.localDate ?? today(observationContext?.timezone);
@@ -580,18 +583,22 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     catch { setDraftStorageFailed(true); announce("warning", "草稿暂未保存在本机", "当前输入仍在页面中，请保存成功后再离开。"); }
   };
   const showFieldError = (field: PlanValidationField, message: string) => {
-    const sequence = (fieldError?.sequence ?? 0) + 1;
-    setFieldError({ field, message, sequence });
-    setValidationAnchor(`plan-validation-${field}-${sequence}`);
+    const token = ++validationToken.current;
+    setFieldError({ field, message });
+    setValidationAnchor("");
+    Taro.nextTick(() => {
+      if (validationToken.current === token) setValidationAnchor(`plan-validation-${field}`);
+    });
   };
   const clearFieldError = (field: PlanValidationField) => {
     if (fieldError?.field === field) {
+      validationToken.current += 1;
       setFieldError(null);
       setValidationAnchor("");
     }
   };
   const fieldErrorView = (field: PlanValidationField) => fieldError?.field === field ? (
-    <View id={`plan-validation-${field}-${fieldError.sequence}`} className="plan-field-error" role="alert" aria-live="assertive">
+    <View id={`plan-validation-${field}`} className="plan-field-error" role="alert" aria-live="assertive">
       <Text>{fieldError.message}</Text>
     </View>
   ) : null;
