@@ -307,7 +307,7 @@ export default function SettingsPage() {
           <SettingsDataActions dataAction={dataAction} openSheet={openSheet} />
         </View>
       </ScrollView>
-      {sheet ? <SettingsSheet sheet={sheet} locationPreference={preferences.locationPreference}
+      {sheet ? <SettingsSheet sheet={sheet} mode={mode} locationPreference={preferences.locationPreference}
         closing={sheetClosing}
         busy={dataAction !== null}
         close={closeSheet}
