@@ -1,5 +1,8 @@
 .share-poster { display: flex; flex-direction: column; gap: 12Px; align-items: center; }
 .share-poster > .type-section { align-self: stretch; }
-.share-poster__canvas { width: 320Px; max-width: 100%; border: 1Px solid var(--border); border-radius: 16Px; overflow: hidden; background: #fffdf8; }
+.share-poster__canvas { width: 320Px; max-width: 100%; border: 1Px solid var(--border); border-radius: 16Px; overflow: hidden; background: var(--surface-elevated); }
 .share-poster__save { width: 100%; min-height: 44Px; margin: 0; border: 1Px solid var(--border); border-radius: 22Px; background: var(--surface-elevated); color: var(--text-primary); }
 .share-poster__save::after { border: 0; }
+.share-poster__handoff { width: 100%; }
+.share-poster__cancel { width: 100%; min-height: 44Px; margin: 8Px 0 0; border: 1Px solid var(--border); border-radius: 22Px; background: var(--surface-elevated); color: var(--text-primary); }
+.share-poster__cancel::after { border: 0; }

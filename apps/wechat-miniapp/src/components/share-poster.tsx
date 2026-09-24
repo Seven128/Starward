@@ -1,7 +1,7 @@
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import { Button, Canvas, Text, View } from "@tarojs/components";
 import { useEffect, useState } from "react";
-import type { PlanPublicShareData, SourceSummary, SpotPublicShareData } from "@starward/miniapp-contracts";
+import type { DisplayMode, PlanPublicShareData, SourceSummary, SpotPublicShareData } from "@starward/miniapp-contracts";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "./status-panel";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
@@ -95,14 +95,21 @@ function posterLayout(data: PublicShare) {
   return { heading, body, credits, bodyTop, divider, creditsTop, height };
 }
 
-function paint(data: PublicShare, onDrawn?: () => void) {
+const POSTER_COLORS: Record<DisplayMode, { background: string; accent: string; text: string; divider: string; muted: string }> = {
+  DAY: { background: "#fffdf8", accent: "#4859b8", text: "#282b29", divider: "#d9dce7", muted: "#5c6473" },
+  NIGHT: { background: "#07152b", accent: "#1677ff", text: "#edf5ff", divider: "#56779e", muted: "#a7bdd9" },
+  OBSERVATION: { background: "#170000", accent: "#a63f3f", text: "#ff9b9b", divider: "#a63f3f", muted: "#e77474" },
+};
+
+function paint(data: PublicShare, mode: DisplayMode, onDrawn?: () => void) {
   const layout = posterLayout(data);
+  const colors = POSTER_COLORS[mode];
   const ctx = Taro.createCanvasContext(ID);
-  ctx.setFillStyle("#fffdf8");
+  ctx.setFillStyle(colors.background);
   ctx.fillRect(0, 0, WIDTH, layout.height);
-  ctx.setFillStyle("#4859b8");
+  ctx.setFillStyle(colors.accent);
   ctx.fillRect(0, 0, WIDTH, 8);
-  ctx.setFillStyle("#282b29");
+  ctx.setFillStyle(colors.text);
   ctx.setFontSize(16);
   ctx.fillText("今晚去观星", 22, 42);
   ctx.setFontSize(22);
@@ -117,12 +124,12 @@ function paint(data: PublicShare, onDrawn?: () => void) {
     }
     y += 8;
   }
-  ctx.setStrokeStyle("#d9dce7");
+  ctx.setStrokeStyle(colors.divider);
   ctx.beginPath();
   ctx.moveTo(22, layout.divider);
   ctx.lineTo(WIDTH - 22, layout.divider);
   ctx.stroke();
-  ctx.setFillStyle("#5c6473");
+  ctx.setFillStyle(colors.muted);
   ctx.setFontSize(11);
   ctx.fillText("资料与许可", 22, layout.divider + 22);
   let sourceY = layout.creditsTop;
@@ -137,18 +144,24 @@ function paint(data: PublicShare, onDrawn?: () => void) {
 }
 
 export function SharePoster({ data }: { data: PublicShare }) {
+  const mode = useAppStore(state => state.mode);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<"permission" | "export" | null>(null);
-  useEffect(() => { Taro.nextTick(() => paint(data)); }, [data]);
+  const [error, setError] = useState<"red-light-warning" | "permission" | "export" | null>(null);
+  useEffect(() => { setError(null); Taro.nextTick(() => paint(data, mode)); }, [data, mode]);
+  useDidShow(() => { Taro.nextTick(() => paint(data, useAppStore.getState().mode)); });
 
-  const save = async () => {
+  const save = async (allowUnthemedHandoff = false) => {
     if (busy) return;
+    if (mode === "OBSERVATION" && !allowUnthemedHandoff) {
+      setError("red-light-warning");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       const image = await new Promise<string>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("poster_draw_timeout")), 6000);
-        paint(data, () => {
+        paint(data, mode, () => {
           void Taro.canvasToTempFilePath({ canvasId: ID, fileType: "png", width: WIDTH, height: posterLayout(data).height,
             destWidth: WIDTH * 2, destHeight: posterLayout(data).height * 2 }).then(result => {
             clearTimeout(timeout);
@@ -167,9 +180,15 @@ export function SharePoster({ data }: { data: PublicShare }) {
 
   return <View className="share-poster">
     <Text className="type-section">分享海报</Text>
-    <Canvas className="share-poster__canvas" canvasId={ID}
+    <Canvas key={mode} className="share-poster__canvas" canvasId={ID}
       style={{ height: `${posterLayout(data).height}px` }} />
     <Button className="share-poster__save" disabled={busy} onClick={() => void save()}>{busy ? "正在保存…" : "保存海报到相册"}</Button>
+    {error === "red-light-warning" ? <View className="share-poster__handoff">
+      <StatusPanel state="PARTIAL"
+        detail="相册界面可能亮屏。微信相册授权及保存界面可能显示亮白色。可先取消，在设置中切换日间或夜间再保存。"
+        recoveryLabel="仍要保存" onRecover={() => void save(true)} />
+      <Button className="share-poster__cancel" onClick={() => setError(null)}>暂不保存</Button>
+    </View> : null}
     {error === "permission" ? <StatusPanel state="ERROR" title="相册权限未开启"
       detail="请在微信设置中允许保存到相册，再返回重试。" recoveryLabel="打开设置"
       onRecover={() => void Taro.openSetting()} /> : null}
