@@ -21,7 +21,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { SelectionTabs } from "@/components/selection-tabs";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
-import { completeFormalContributionUpload, createFormalContributionUpload, createFormalUploadIntent, errorMessage, getContributionFormalBaseline, getContributionMedia, getContributions, getSpotContributionMedia, getSpotSite, removeFormalContributionUpload, submitFormalContribution } from "@/services/api-client";
+import { completeFormalContributionUpload, createFormalContributionUpload, createFormalUploadIntent, errorMessage, getContributionFormalBaseline, getContributionMedia, getContributions, getSpotContributionMedia, getSpotSite, MiniappApiError, removeFormalContributionUpload, submitFormalContribution } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { ToggleField } from "@/components/toggle-field";
 import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contribution-model";
@@ -89,6 +89,7 @@ export default function FormalFeedbackEditor() {
     return () => clearTimeout(timer);
   }, [mediaHandoff.active, chapter]);
   const [busy, setBusy] = useState(false);
+  const submitBusy = useRef(false);
   const [submitted, setSubmitted] = useState(false);
   const [conflicts, setConflicts] = useState<readonly ContributionFormalConflict[]>([]);
   const [currentBaseline, setCurrentBaseline] = useState<ContributionFormalBaseline | null>(null);
@@ -252,11 +253,12 @@ export default function FormalFeedbackEditor() {
     finally{setUploading(false);}
   };
   const submit = async () => {
-    if (!baseline || !proposal || !hasChanges || busy || submitted) return;
+    if (!baseline || !proposal || !hasChanges || busy || submitBusy.current || submitted) return;
     if (activeConflicts.length && activeConflicts.some(conflict => !resolutions[`${conflict.kind}:${conflict.key}`])) {
       notify({ owner: "contribution", placement: "floating", tone: "warning", title: "请先处理资料冲突", body: "每一项冲突都要选择使用当前资料或我的修改。", dismissible: true });
       return;
     }
+    submitBusy.current = true;
     setBusy(true);
     try {
       const fieldResolutions: Record<string, ContributionConflictResolution> = {};
@@ -279,8 +281,9 @@ export default function FormalFeedbackEditor() {
         notify({ owner: "contribution", placement: "inline", tone: "success", title: "已提交反馈", body: "反馈已进入审核，正式地点资料暂不改变。", dismissible: true });
       }
     } catch (error) {
-      notify({ owner: "contribution", placement: "floating", tone: "error", title: "提交失败", body: `${errorMessage(error)}；本页输入仍保留。`, dismissible: true });
-    } finally { setBusy(false); }
+      const rejected = error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408 && !error.retryable;
+      notify({ owner: "contribution", placement: "floating", tone: rejected ? "error" : "warning", title: rejected ? "提交失败" : "提交结果未确认", body: rejected ? `${errorMessage(error)}；本页输入仍保留。` : `${errorMessage(error)}；本页输入仍保留，请原样重试或到“我的”核对待审记录。`, dismissible: true });
+    } finally { submitBusy.current = false; setBusy(false); }
   };
 
   return <View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
