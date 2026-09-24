@@ -12,7 +12,9 @@ test("pending proposal panel projects only the submitted candidate fields withou
   assert.equal(value.name, "海风观星台");
   assert.equal(value.address, "东岸观景台");
   assert.deepEqual(value.opening, ["开放", "暂无数据"]);
-  assert.deepEqual(value.facilities[0], ["停车", "有", "暂无数据"]);
+  assert.deepEqual(value.facilities[0], ["停车", "有", undefined]);
+  assert.deepEqual(value.access, ["暂无数据", undefined]);
+  assert.equal(value.road, undefined);
   assert.equal(value.safety, "暂无数据");
   assert.deepEqual(value.media, []);
 });
@@ -34,10 +36,12 @@ test("pending proposal media keeps the submitted category order and identity", (
 test("a submitted literal placeholder word remains candidate data, while missing identity falls back", () => {
   const submission = {
     candidateLocation: { displayName: "位置原名", region: "深圳" },
-    candidateProfile: { fields: { name: " 暂无数据 ", address: "暂无数据" }, media: {} },
+    candidateProfile: { fields: { name: " 暂无数据 ", address: "暂无数据", accessNote: "暂无数据", parkingNote: "暂无数据" }, media: {} },
   } as unknown as ContributionSubmission;
   assert.equal(pendingProposalPanelValues(submission).name, "暂无数据");
   assert.equal(pendingProposalPanelValues(submission).address, "暂无数据");
+  assert.equal(pendingProposalPanelValues(submission).access[1], "暂无数据");
+  assert.equal(pendingProposalPanelValues(submission).facilities[0][2], "暂无数据");
   const missing = { ...submission, candidateProfile: { fields: { name: "  ", address: "" }, media: {} } } as unknown as ContributionSubmission;
   assert.equal(pendingProposalPanelValues(missing).name, "位置原名");
   assert.equal(pendingProposalPanelValues(missing).address, "深圳");

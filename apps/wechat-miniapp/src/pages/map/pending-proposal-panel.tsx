@@ -113,14 +113,14 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
           <View className="spot-panel__block">
             <Text className="type-label">到达与安全</Text>
             <View className="spot-panel__proposal-pair"><Text>{model.access[0]}</Text><Text>{model.safety}</Text></View>
-            <Text className="type-caption">{model.access[1]}</Text>
-            <Text className="type-caption">{model.road}</Text>
+            {model.access[1] ? <Text className="type-caption">{model.access[1]}</Text> : null}
+            {model.road ? <Text className="type-caption">{model.road}</Text> : null}
           </View>
           <View className="spot-panel__block">
             <Text className="type-label">设施</Text>
             <View className="spot-panel__facilities">{model.facilities.map(([label, state, note]) =>
               <View className={`spot-panel__facility${note ? " spot-panel__facility--described" : ""}`} key={label}>
-                <Text className="spot-panel__facility-name">{label}</Text><Text className="spot-panel__facility-status type-secondary">{state}</Text>
+                <View className="spot-panel__facility-heading"><Text className="spot-panel__facility-name">{label}</Text><Text className="spot-panel__facility-status type-secondary">{state}</Text></View>
                 {note ? <Text className="spot-panel__facility-summary type-caption">{note}</Text> : null}
               </View>)}</View>
           </View>
