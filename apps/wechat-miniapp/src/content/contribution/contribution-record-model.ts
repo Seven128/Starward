@@ -61,3 +61,10 @@ export function contributionSubmittedPlaceFacts(item: ContributionSubmission) {
     })),
   };
 }
+
+/** Use a completed upload from this draft or frozen attempt; never borrow nearby-spot media. */
+export function contributionRecordCover(item: ContributionSubmission) {
+  const media = recordSource(item).media;
+  const ready = media.filter(value => value.state === "ATTACHED" || value.state === "UPLOADED");
+  return ready.find(value => value.kind === "site") ?? ready[0] ?? null;
+}

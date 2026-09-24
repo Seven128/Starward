@@ -329,6 +329,8 @@
 .contribution-record-detail__back::after { border: 0; }
 .contribution-record-card--detail { overflow: hidden; border: 1rpx solid var(--border); border-radius: 22rpx; background: var(--surface-subtle); }
 .contribution-record-card--detail .spot-identity-card { margin: 0; background: transparent; }
+.contribution-record-cover-retry { position: relative; z-index: 1; min-height: 44Px; margin: 0 14Px 10Px; padding: 0 10Px; border: 1Px solid var(--border); border-radius: 10Px; background: var(--surface); color: var(--text-secondary); font-size: var(--type-action-size); line-height: var(--type-action-line); }
+.contribution-record-cover-retry::after { border: 0; }
 .contribution-review-note, .contribution-readonly-section { padding: 22rpx 24rpx; display: flex; flex-direction: column; gap: 10rpx; border-radius: 20rpx; background: var(--surface); }
 .contribution-review-note { border-left: 4rpx solid var(--warning); background: var(--surface-subtle); }
 @media (min-width: 375px) {

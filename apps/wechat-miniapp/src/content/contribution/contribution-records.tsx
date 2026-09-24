@@ -6,8 +6,9 @@ import { StatusPanel } from "@/components/status-panel";
 import { SelectionTabs } from "@/components/selection-tabs";
 import { SpotIdentityContent } from "@/components/spot-identity-content";
 import { displayBeijingTimestamp } from "@/utils/zoned-date";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Taro from "@tarojs/taro";
+import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import {
   contributionSubmissionState,
   KIND_LABEL,
@@ -16,7 +17,7 @@ import {
   TOPICS,
 } from "./contribution-model";
 import type { ContributionForm } from "./use-contribution-form";
-import { contributionFrozenAttempt, contributionRecordGroup, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts, type ContributionRecordGroup } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts, type ContributionRecordGroup } from "./contribution-record-model";
 
 type CreationFilter = "ALL" | "DRAFT" | "PENDING" | "ONLINE" | "REJECTED";
 type FeedbackFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
@@ -28,10 +29,50 @@ function recordName(item: ContributionSubmission) {
   return contributionRecordIdentity(item).name;
 }
 
-function ContributionSpotIdentityCard({ item }: { item: ContributionSubmission }) {
+function ContributionSpotIdentityCard({ item, eager = false }: { item: ContributionSubmission; eager?: boolean }) {
   const identity = contributionRecordIdentity(item);
-  return <View className="spot-identity-card">
-    <SpotIdentityContent {...identity} />
+  const cover = contributionRecordCover(item);
+  const owner = currentDraftUserId();
+  const nodeId = `contribution-cover-${String(item.submissionId).replace(/[^a-zA-Z0-9_-]/gu, "-")}`;
+  const [visible, setVisible] = useState(eager);
+  const [preview, setPreview] = useState<{ owner: string; uploadId: string; src: string } | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (!cover || eager) return;
+    let disposed = false;
+    let observer: Taro.IntersectionObserver | undefined;
+    Taro.nextTick(() => {
+      if (disposed) return;
+      try {
+        const page = Taro.getCurrentInstance().page;
+        if (!page) return;
+        observer = Taro.createIntersectionObserver(page, { thresholds: [0], initialRatio: 0 });
+        observer.relativeToViewport().observe(`#${nodeId}`, result => {
+          if (!disposed && typeof result.intersectionRatio === "number" && result.intersectionRatio > 0) setVisible(true);
+        });
+      } catch {
+        observer?.disconnect();
+      }
+    });
+    return () => { disposed = true; observer?.disconnect(); };
+  }, [cover?.uploadId, eager, nodeId]);
+  useEffect(() => {
+    if (!cover || !visible || !owner) return;
+    const controller = new AbortController();
+    setFailed(false);
+    void getContributionMedia(item.submissionId, cover.uploadId, controller.signal, owner)
+      .then(response => {
+        if (!controller.signal.aborted && currentDraftUserId() === owner)
+          setPreview({ owner, uploadId: cover.uploadId, src: `data:${response.data.mimeType};base64,${response.data.dataBase64}` });
+      })
+      .catch(() => { if (!controller.signal.aborted) setFailed(true); });
+    return () => controller.abort();
+  }, [attempt, cover?.uploadId, item.submissionId, owner, visible]);
+  const src = preview?.owner === owner && preview?.uploadId === cover?.uploadId ? preview.src : null;
+  return <View id={nodeId} className={`spot-identity-card${src ? " spot-identity-card--with-media" : ""}`}>
+    <SpotIdentityContent {...identity} mediaSrc={src} mediaAlt={`${identity.name}本次提交照片`} />
+    {cover && failed && !src ? <Button className="contribution-record-cover-retry focus-ring" onClick={() => setAttempt(value => value + 1)}>照片暂时无法显示，重试</Button> : null}
   </View>;
 }
 
@@ -42,7 +83,7 @@ function RecordDetail({ item, onBack }: { item: ContributionSubmission; onBack()
   const submittedPlace = contributionSubmittedPlaceFacts(item);
   return <View className="contribution-record-detail" data-control="contribution-record-detail">
     <Button className="contribution-record-detail__back focus-ring" ariaLabel="返回记录列表" onClick={onBack}>‹ <Text>返回记录</Text></Button>
-    <View className="contribution-record-card--detail"><ContributionSpotIdentityCard item={item} /><View className="contribution-record-card__extension"><Text className={`contribution-status-pill contribution-status-pill--${status.tone}`}>{status.label}</Text><Text className="type-caption contribution-record-card__meta">{KIND_LABEL[item.kind]} · 更新 {displayBeijingTimestamp(item.updatedAt)}</Text></View></View>
+    <View className="contribution-record-card--detail"><ContributionSpotIdentityCard item={item} eager /><View className="contribution-record-card__extension"><Text className={`contribution-status-pill contribution-status-pill--${status.tone}`}>{status.label}</Text><Text className="type-caption contribution-record-card__meta">{KIND_LABEL[item.kind]} · 更新 {displayBeijingTimestamp(item.updatedAt)}</Text></View></View>
     {item.review?.reason ? <View className="contribution-review-note"><Text className="type-label">审核意见</Text><Text className="type-body">{item.review.reason}</Text></View> : null}
     <View className="contribution-readonly-section">
       <Text className="type-section">本次提交内容</Text>

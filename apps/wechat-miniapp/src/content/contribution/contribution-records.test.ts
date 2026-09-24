@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
-import { contributionFrozenAttempt, contributionRecordGroup, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
 
 function record(patch: Partial<ContributionSubmission>): ContributionSubmission {
   return {
@@ -95,4 +95,23 @@ test("new-spot read-only record presents frozen structured submission rather tha
       { key: "openness", value: "有条件开放" }, { key: "detail", value: "东南方向视野较开阔。" }],
   });
   assert.equal(contributionSubmittedPlaceFacts(record({ kind: "CORRECTION" })), null);
+});
+
+test("record cover belongs to the frozen submission and prefers an attached site photo", () => {
+  const photo = (id: string, state: "ATTACHED" | "UPLOADED", kind: "site" | "parking") => ({
+    uploadId: id as never, kind, state, originalName: `${id}.png`, mimeType: "image/png" as const,
+    declaredByteSize: 80, byteSize: 80, sha256: "hash", createdAt: "2026-09-24T00:00:00.000Z",
+    expiresAt: "2026-09-25T00:00:00.000Z", uploadedAt: "2026-09-24T00:00:00.000Z",
+  });
+  const frozen = record({ submissionState: "PENDING_REVIEW", media: [photo("new", "ATTACHED", "site")],
+    attempts: [{ attemptId: "attempt:1", attemptNo: 1, baseRevision: 1,
+      submittedAt: "2026-09-24T00:00:00.000Z", review: null,
+      snapshot: { kind: "NEW_SPOT_PROPOSAL", spotId: null, spotNameSnapshot: null,
+        candidateLocation: null, observedAt: null, topics: [], detail: "", rightsConfirmed: true,
+        preciseLocationConsent: true, media: [photo("parking", "UPLOADED", "parking"), photo("site", "UPLOADED", "site")],
+      } }],
+  });
+  assert.equal(contributionRecordCover(frozen)?.uploadId, "site");
+  assert.equal(contributionRecordCover(record({ media: [] })), null);
+  assert.equal(contributionRecordCover(record({ media: [photo("draft", "UPLOADED", "site")] }))?.uploadId, "draft");
 });
