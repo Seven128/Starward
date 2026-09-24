@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { planContextIdentity } from "../../../services/plan-save-retry";
-import { parsePlanReminders } from "@starward/miniapp-contracts";
+import { parsePlanReminders, resolvePlanTiming } from "@starward/miniapp-contracts";
 
 function runtime(changeAccount = false) {
   const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -18,7 +18,7 @@ function runtime(changeAccount = false) {
   class Conflict extends Error { code = "CONFLICT"; }
   const calls: string[] = [], submitted: number[] = [];
   const context = {
-    parsePlanReminders, reminders: [],
+    parsePlanReminders, resolvePlanTiming, reminders: [],
     planContextIdentity,
     PlanSaveRecoveryError: class extends Error {},
     mutationBusy: { current: false }, conflictPlan: null as unknown,
@@ -26,7 +26,7 @@ function runtime(changeAccount = false) {
     scopedDraftUserId: () => "owner" as string | null,
     activeContext: { contextId: "context", location: {} },
     resolvePlanSaveSpotId: () => "spot", selectedSpotId: "spot", formalSpots: [],
-    localDate: "2026-09-06", localTime: "22:00", notes: "my draft",
+    localDate: "2026-09-06", localTime: "22:00", timezone: "Asia/Shanghai", notes: "my draft",
     timing: { endLocalDate: "2026-09-07", endLocalTime: "02:00", departureLocalDate: "2026-09-06", departureLocalTime: "20:00" },
     travel: { origin: "深圳", mode: "DRIVING" }, eventOccurrenceIds: [],
     draftBaseRevision: { current: 2 },

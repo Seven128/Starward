@@ -29,6 +29,12 @@ test("ordinary malformed product input remains an input error", () => {
   });
 });
 
+test("invalid plan wall times are input errors rather than provider outages", () => {
+  for (const message of ["plan_end_must_follow_start", "plan_departure_must_precede_start", "plan_timing_invalid",
+    "observation_local_date_invalid", "observation_local_time_invalid", "observation_local_time_nonexistent_or_ambiguous"])
+    assert.deepEqual(classifyExceptionMessage(message), { status: 400, code: "INVALID_INPUT", retryable: false });
+});
+
 test("erased evidence and deleted accounts cannot enter a retry loop", () => {
   for (const message of ["contribution_account_deleted", "operation_receipt_privacy_erased"])
     assert.deepEqual(classifyExceptionMessage(message), { status: 410, code: "STALE_REJECTED", retryable: false });

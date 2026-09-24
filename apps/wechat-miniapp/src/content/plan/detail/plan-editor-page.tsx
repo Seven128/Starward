@@ -1,5 +1,5 @@
 import { useSkyForecastQuery } from "@/hooks/use-forecast-query";
-import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, type PlanReminder } from "@starward/miniapp-contracts";
+import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, resolvePlanTiming, type PlanReminder } from "@starward/miniapp-contracts";
 import { distanceMeters } from "@starward/coordinate-system";
 import { PlanReminderEditor } from "./plan-reminder-editor";
 import { confirmPlanEditorLeave } from "./leave-editor";
@@ -603,6 +603,18 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     }
     if (!travel.origin.trim()) {
       announce("error", "计划未保存", "请填写实际出发地；当前输入仍保留。");
+      return;
+    }
+    try {
+      resolvePlanTiming({ localDate, localTime, timezone, timing });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "";
+      announce("error", "计划未保存",
+        reason === "plan_end_must_follow_start"
+          ? "观测结束必须晚于开始；当前输入仍保留。"
+          : reason === "plan_departure_must_precede_start"
+            ? "计划出发必须早于开始观测；当前输入仍保留。"
+            : "计划时间无效；当前输入仍保留，可修正后重试。");
       return;
     }
     let validatedReminders: PlanReminder[];
