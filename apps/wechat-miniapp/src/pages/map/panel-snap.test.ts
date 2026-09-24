@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { nearestPanelExtent, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry } from "./panel-snap";
+import { nearestPanelExtent, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry } from "./panel-snap";
+
+test("release starts at the last bounded drag frame when native measurement is stale", () => {
+  const geometry = { small: 156, medium: 368, large: 661, startHeight: 368 };
+  assert.equal(panelReleaseStartHeight(geometry, 661, 700), 661);
+  assert.equal(panelReleaseStartHeight(geometry, 608, 368), 608);
+  assert.equal(panelReleaseStartHeight(geometry, 608, 609), 609);
+  assert.equal(panelReleaseStartHeight(geometry, 661, undefined), 661);
+});
 
 test("system Back steps through panel extents before closing the small panel", () => {
   assert.equal(previousPanelExtent("large"), "medium");

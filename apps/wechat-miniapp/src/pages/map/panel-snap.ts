@@ -31,6 +31,14 @@ export function panelHeightProgress(geometry: PanelSnapGeometry, height: number)
   return Math.max(0, Math.min(1, fraction));
 }
 
+/** Native geometry can lag the final move; never restart a release from a stale frame. */
+export function panelReleaseStartHeight(geometry: PanelSnapGeometry, visualHeight: number, measuredHeight: unknown): number {
+  const current = Math.max(geometry.small, Math.min(geometry.large, visualHeight));
+  return typeof measuredHeight === "number" && Number.isFinite(measuredHeight) &&
+    Math.abs(measuredHeight - current) <= 2
+    ? Math.max(geometry.small, Math.min(geometry.large, measuredHeight)) : current;
+}
+
 
 export type PanelMotionSample = { y: number; at: number };
 

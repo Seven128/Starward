@@ -3,12 +3,12 @@ import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
 import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
-import { panelSpringFrames } from "./panel-spring";
-import { elasticPosition, elasticVelocityFactor } from "@/components/elastic-motion";
+import { panelDragHeight, panelSpringFrames } from "./panel-spring";
+import { elasticVelocityFactor } from "@/components/elastic-motion";
 import { markerGroups, markerItems } from "./map-markers";
 import { privateContributionMarkerItems, privateContributionMarkers } from "./private-contribution-markers";
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
-import { panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
+import { panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { restoreMapBootstrapContext } from "./context-restore";
 import { canApplyContextRestore } from "@/services/observation-context-version";
@@ -1104,7 +1104,7 @@ export default function MapPage() {
     drag.pointerOffset = offset;
     if (drag.geometry) {
       const rawHeight = drag.geometry.startHeight - offset;
-      const visualHeight = elasticPosition(rawHeight, drag.geometry.small, drag.geometry.large);
+      const visualHeight = panelDragHeight(rawHeight, drag.geometry.small, drag.geometry.large);
       drag.offset = drag.geometry[drag.extent] - visualHeight;
       setPanelDragOffset(drag.offset);
     }
@@ -1149,13 +1149,12 @@ export default function MapPage() {
     const geometry = drag.geometry;
     const velocity = panelReleaseVelocity(drag.samples, drag.releasedAt);
     const request = ++springRequest.current;
-    // The bridge may have a newer touch offset than the last rendered View.
-    // Keep that View in place until the selector query reads its actual height.
+    // Keep the dragged frame in place while checking native geometry; a late
+    // selector result must not restart the spring above the visible top stop.
     Taro.createSelectorQuery().select(".spot-panel").boundingClientRect().exec(rows => {
       if (springRequest.current !== request || panelDrag.current !== drag) return;
       const measured = rows?.[0]?.height;
-      const from = typeof measured === "number" && Number.isFinite(measured) && measured > 0
-        ? measured : geometry[drag.extent] - drag.offset;
+      const from = panelReleaseStartHeight(geometry, geometry[drag.extent] - drag.offset, measured);
       const target = releasePanelExtent(geometry, from, drag.extent, velocity);
       panelDrag.current = null;
       setPanelDragOffset(0);

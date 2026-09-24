@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { panelSpringFrames } from "./panel-spring";
+import { panelDragHeight, panelSpringFrames } from "./panel-spring";
+
+test("dragging beyond the large snap holds its top boundary before release", () => {
+  assert.equal(panelDragHeight(608, 156, 661), 608);
+  assert.equal(panelDragHeight(748, 156, 661), 661);
+  assert.ok(panelDragHeight(120, 156, 661) < 156, "the lower edge retains bounded elastic feedback");
+});
+
+test("release already at a snap does not install a no-op CSS animation", () => {
+  assert.deepEqual(panelSpringFrames({ from: 661, to: 661, velocity: 0, min: 156, max: 661 }),
+    [{ height: 661, duration: 0 }]);
+});
 
 test("spring preserves initial height, follows release direction and settles exactly within bounds", () => {
   const base = { from: 400, to: 600, velocity: 1, min: 220, max: 700 };
