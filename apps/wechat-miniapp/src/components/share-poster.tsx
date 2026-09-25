@@ -163,6 +163,7 @@ export function SharePoster({ data }: { data: PublicShare }) {
     }
     setBusy(true);
     setError(null);
+    let failureStage: "export" | "album" = "export";
     try {
       const image = await new Promise<string>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("poster_draw_timeout")), 6000);
@@ -174,12 +175,16 @@ export function SharePoster({ data }: { data: PublicShare }) {
           }, cause => { clearTimeout(timeout); reject(cause); });
         });
       });
+      failureStage = "album";
       await Taro.saveImageToPhotosAlbum({ filePath: image });
       useAppStore.getState().notify({ owner: "share-poster", placement: "floating", tone: "success",
         title: "海报已保存", body: "可在相册查看公开分享海报。", dedupeKey: "share-poster-saved" });
     } catch {
-      const settings = await Taro.getSetting().catch(() => null);
-      setError(settings?.authSetting?.["scope.writePhotosAlbum"] === false ? "permission" : "export");
+      if (failureStage === "export") setError("export");
+      else {
+        const settings = await Taro.getSetting().catch(() => null);
+        setError(settings?.authSetting?.["scope.writePhotosAlbum"] === false ? "permission" : "export");
+      }
     } finally { setBusy(false); }
   };
 
