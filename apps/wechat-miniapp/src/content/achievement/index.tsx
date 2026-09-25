@@ -1,6 +1,6 @@
-import Taro, { useDidShow } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Picker, ScrollView, Text, View } from "@tarojs/components";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
@@ -8,18 +8,28 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, getPlans } from "@/services/api-client";
-import { achievementSummary, endedPlanRecords } from "@/features/my/plan-achievements";
+import { achievementSummary, endedPlanRecords, nextPlanEndAt } from "@/features/my/plan-achievements";
 import "./index.scss";
 
 export default function AchievementPage() {
   const themeClass = useThemeClass();
   const owner = currentDraftUserId();
   const [now, setNow] = useState(() => new Date());
+  const [visible, setVisible] = useState(true);
   const [year, setYear] = useState<number | null>(null);
   const [navigationError, setNavigationError] = useState(false);
   const plans = useResourceQuery({ queryKey: ["plans", owner ?? "unresolved:achievements"],
     queryFn: signal => getPlans(signal, owner ?? undefined), staleTime: 30_000 });
-  useDidShow(() => { setNow(new Date()); void plans.refetch(); });
+  useDidShow(() => { setVisible(true); setNow(new Date()); void plans.refetch(); });
+  useDidHide(() => setVisible(false));
+  useEffect(() => {
+    if (!visible || !plans.data) return;
+    const next = nextPlanEndAt(plans.data.data.plans, now);
+    if (next === null) return;
+    const delay = Math.max(1, Math.min(next - Date.now() + 1, 2_147_483_647));
+    const timer = setTimeout(() => setNow(new Date()), delay);
+    return () => clearTimeout(timer);
+  }, [visible, plans.data, now]);
   const all = useMemo(() => endedPlanRecords(plans.data?.data.plans ?? [], now), [plans.data, now]);
   const years = useMemo(() => [...new Set(all.map(record => record.year))], [all]);
   const selectedYear = year && years.includes(year) ? year : years[0] ?? null;

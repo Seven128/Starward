@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ObservationPlan } from "@starward/miniapp-contracts";
-import { achievementSummary, endedPlanRecords } from "./plan-achievements";
+import { achievementSummary, endedPlanRecords, nextPlanEndAt } from "./plan-achievements";
 
 const plan = (id: string, end: string, spotId = "spot:1", eventOccurrenceIds: string[] = []): ObservationPlan => ({
   planId: id as ObservationPlan["planId"], spotId: spotId as ObservationPlan["spotId"],
@@ -33,4 +33,15 @@ test("a newer plan revision controls whether its identity has ended", () => {
   assert.deepEqual(endedPlanRecords([ended, rescheduled], now), []);
   assert.deepEqual(endedPlanRecords([rescheduled, ended], now), []);
   assert.deepEqual(endedPlanRecords([ended, invalid], now), []);
+});
+
+test("the next completion boundary uses the latest valid plan revision and local timezone", () => {
+  const now = new Date("2026-09-24T00:00:00Z");
+  const old = plan("plan:changed", "2026-12-31");
+  const movedEarlier = { ...plan("plan:changed", "2026-09-25"), revision: 2 };
+  const later = plan("plan:later", "2026-09-26");
+  assert.equal(nextPlanEndAt([old, movedEarlier, later, plan("plan:bad", "invalid")], now), Date.parse("2026-09-24T18:00:00Z"));
+  assert.equal(nextPlanEndAt([movedEarlier, later], new Date("2026-09-24T18:00:00Z")), Date.parse("2026-09-25T18:00:00Z"));
+  assert.equal(nextPlanEndAt([movedEarlier], new Date("2026-09-24T18:00:00Z")), null);
+  assert.equal(nextPlanEndAt([old, { ...plan("plan:changed", "invalid"), revision: 3 }], now), null);
 });
