@@ -12,7 +12,7 @@ import { requestOneShotLocation } from "@/services/one-shot-location";
 import "./index.scss";
 
 const LOCATION_STATE_LABEL: Record<LocationState, string> = {
-  DEFAULT_REGION: "使用默认区域", REQUESTING: "正在获取位置",
+  DEFAULT_REGION: "使用默认区域", AUTHORIZED: "定位已授权，尚未取得本次位置", REQUESTING: "正在获取位置",
   GRANTED: "已取得一次位置", DENIED: "定位权限未授予", UNAVAILABLE: "位置暂不可用",
 };
 
@@ -58,15 +58,18 @@ export default function PermissionPage() {
       const settings = await Taro.openSetting();
       const permission = settings.authSetting?.["scope.userLocation"];
       if (permission === false) setLocationState("DENIED");
+      else if (permission === true && locationState !== "GRANTED") setLocationState("AUTHORIZED");
       if (typeof permission === "boolean") notify({
         owner: "map", placement: "inline", tone: permission ? "info" : "warning",
         title: permission ? "定位权限已开启" : "定位权限未开启",
         body: permission ? "尚未重新获取位置；点击定位按钮获取本次位置。" : "原地图仍可浏览，也可手动搜索地点。",
         action: undefined, dismissible: true, dedupeKey: "map-location-request",
       });
-      setFeedbackState(permission === false ? "PERMISSION_DENIED" : "INITIAL");
+      setFeedbackState(permission === false ? "PERMISSION_DENIED" : permission === true && locationState === "GRANTED" ? "READY" : "INITIAL");
       setFeedback(permission === true
-        ? "定位权限已开启；本次尚未获取位置。请主动点击请求一次位置，或返回地图定位。"
+        ? locationState === "GRANTED"
+          ? "定位权限已开启；本次位置已获取。可返回地图，或主动再次定位。"
+          : "定位权限已开启；本次尚未获取位置。请主动点击请求一次位置，或返回地图定位。"
         : permission === false
           ? "定位权限未开启；原地图和手动搜索仍可使用。"
           : "尚未取得定位授权状态；没有获取位置，你仍可手动选择地点。");

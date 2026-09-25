@@ -92,7 +92,7 @@ export interface PersistedState {
 }
 
 export type LocationState =
-  "DEFAULT_REGION" | "REQUESTING" | "GRANTED" | "DENIED" | "UNAVAILABLE";
+  "DEFAULT_REGION" | "AUTHORIZED" | "REQUESTING" | "GRANTED" | "DENIED" | "UNAVAILABLE";
 
 interface AppState extends PersistedState {
   accountOwnerId: string | null;

@@ -73,6 +73,36 @@ function actualCallback(page: "map" | "auth", name: string, ports: object): () =
   }).outputText, ports, { timeout: 1000 });
 }
 
+test("granting permission after a denial clears the stale denial without claiming a GPS fix", async () => {
+  const states: string[] = [];
+  const feedback: string[] = [];
+  const run = actualCallback("auth", "openPermissions", {
+    Taro: { openSetting: async () => ({ authSetting: { "scope.userLocation": true } }) },
+    locationRequestBusy: { current: false }, locationState: "DENIED",
+    setBusy: () => {}, setFeedbackState: () => {},
+    setFeedback: (value: string) => feedback.push(value),
+    setLocationState: (state: string) => states.push(state), notify: () => {},
+  });
+  await run();
+  assert.deepEqual(states, ["AUTHORIZED"]);
+  assert.match(feedback.at(-1) ?? "", /已开启.*尚未获取位置/u);
+});
+
+test("reopening settings after a successful one-shot fix keeps the acquired-location state", async () => {
+  const states: string[] = [], panels: string[] = [], feedback: string[] = [];
+  const run = actualCallback("auth", "openPermissions", {
+    Taro: { openSetting: async () => ({ authSetting: { "scope.userLocation": true } }) },
+    locationRequestBusy: { current: false }, locationState: "GRANTED",
+    setBusy: () => {}, setFeedbackState: (value: string) => panels.push(value),
+    setFeedback: (value: string) => feedback.push(value),
+    setLocationState: (state: string) => states.push(state), notify: () => {},
+  });
+  await run();
+  assert.deepEqual(states, []);
+  assert.equal(panels.at(-1), "READY");
+  assert.match(feedback.at(-1) ?? "", /本次位置已获取/u);
+});
+
 function mapHarness(native: Port, resolveContext: (point: unknown, source: string) => Promise<unknown>) {
   const states: string[] = [];
   const viewports: unknown[] = [];
@@ -245,7 +275,8 @@ test("actual permission settings never invent a GPS fix or treat unknown as refu
     let calls = 0;
     const run = actualCallback("auth", "openPermissions", {
       Taro: { openSetting: () => { calls++; return pending.promise; } },
-      locationRequestBusy: { current: false }, setBusy: (value: boolean) => busy.push(value),
+      locationRequestBusy: { current: false }, locationState: "DEFAULT_REGION",
+      setBusy: (value: boolean) => busy.push(value),
       setLocationState: (value: string) => states.push(value),
       setFeedback: (value: string) => feedback.push(value), setFeedbackState: (value: string) => panels.push(value),
       notify: (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent); },
@@ -254,7 +285,7 @@ test("actual permission settings never invent a GPS fix or treat unknown as refu
     if (permission === "ERROR") pending.reject(new Error("synthetic settings failure"));
     else pending.resolve({ authSetting: { "scope.userLocation": permission } });
     await first;
-    assert.deepEqual(states, permission === false ? ["DENIED"] : []);
+    assert.deepEqual(states, permission === false ? ["DENIED"] : permission === true ? ["AUTHORIZED"] : []);
     assert.equal(panels.at(-1), permission === false ? "PERMISSION_DENIED" : permission === "ERROR" ? "ERROR" : "INITIAL");
     assert.match(feedback.at(-1)!, permission === true ? /尚未获取位置/ : permission === false ? /未开启/ : permission === "ERROR" ? /请重试/ : /尚未取得/);
     assert.deepEqual(busy, [true, false]);
