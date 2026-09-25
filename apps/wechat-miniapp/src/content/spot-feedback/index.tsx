@@ -1,6 +1,6 @@
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   CONTRIBUTION_FORMAL_FIELD_KEYS,
   type ContributionConflictResolution,
@@ -74,14 +74,19 @@ export default function FormalFeedbackEditor() {
   const themeClass = useThemeClass();
   const mediaHandoff = useRedLightHandoff();
   const notify = useAppStore(state => state.notify);
+  const accountOwnerId = useAppStore(state => state.accountOwnerId);
+  const mountId = useId();
+  const historyUserId = currentDraftUserId();
   const [pageVisible, setPageVisible] = useState(true);
   useDidShow(() => setPageVisible(true));
   useDidHide(() => setPageVisible(false));
   const query = useResourceQuery({ queryKey: ["contribution-formal-baseline", spotId], queryFn: signal => getContributionFormalBaseline(spotId, signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
-  const history = useResourceQuery({ queryKey: ["contributions", "formal-feedback", spotId], queryFn: signal => getContributions(signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
+  const history = useResourceQuery({ queryKey: ["contributions", "formal-feedback", spotId, historyUserId ?? `unresolved:${mountId}`], queryFn: signal => getContributions(signal, historyUserId ?? undefined), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
   const site = useResourceQuery({ queryKey: ["spot-site", "formal-feedback", spotId], queryFn: signal => getSpotSite(spotId, signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
   const [baseline, setBaseline] = useState<ContributionFormalBaseline | null>(null);
   const editorOwner = useRef<string | null>(null);
+  const ownerChanged = editorOwner.current !== null &&
+    (accountOwnerId !== editorOwner.current || currentDraftUserId() !== editorOwner.current);
   const [values, setValues] = useState<SpotDocumentValues | null>(null);
   const [chapter, setChapter] = useState<(typeof CHAPTERS)[number][0]>("place");
   const [scrollAnchor, setScrollAnchor] = useState("formal-feedback-place");
@@ -131,8 +136,9 @@ export default function FormalFeedbackEditor() {
   }, [history.data?.dataState, history.isError, history.refreshError, notify, pageVisible, query.data?.dataState,
     query.isError, query.refreshError, site.data?.dataState, site.isError, site.refreshError, spotId]);
   useEffect(() => {
-    if (!query.data?.data || !history.data?.data || baseline) return;
-    editorOwner.current = currentDraftUserId();
+    if (!query.data?.data || !history.data?.data || baseline || !accountOwnerId ||
+      currentDraftUserId() !== accountOwnerId) return;
+    editorOwner.current = accountOwnerId;
     if (submissionId) {
       const record = history.data.data.submissions.find(item => item.submissionId === submissionId);
       if (!record?.formalFeedback || !["REJECTED", "CHANGES_REQUESTED"].includes(record.submissionState)) {
@@ -163,9 +169,9 @@ export default function FormalFeedbackEditor() {
       return;
     }
     setBaseline(query.data.data); setValues(valuesFrom(query.data.data)); setMediaSelection(createFormalMediaSelection(query.data.data));
-  }, [baseline, history.data, query.data, spotId, submissionId]);
+  }, [accountOwnerId, baseline, history.data, query.data, spotId, submissionId]);
   useEffect(() => {
-    if (!pageVisible || !activeSubmissionId || !priorMedia.length) return;
+    if (!pageVisible || ownerChanged || !activeSubmissionId || !priorMedia.length) return;
     let active = true;
     void loadAvailableMediaPreviews(priorMedia.map(media => media.uploadId), async id => {
       const response = await getContributionMedia(activeSubmissionId as never, id as ContributionUploadId);
@@ -176,9 +182,9 @@ export default function FormalFeedbackEditor() {
       setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
     });
     return () => { active = false; };
-  }, [activeSubmissionId, pageVisible, previewRetry, priorMedia]);
+  }, [activeSubmissionId, ownerChanged, pageVisible, previewRetry, priorMedia]);
   useEffect(() => {
-    if (!pageVisible || !baseline || !site.data?.data) return;
+    if (!pageVisible || ownerChanged || !baseline || !site.data?.data) return;
     let active = true;
     const canonical = new Map(site.data.data.media.map(media => [media.id, media.thumbnailPath || media.localPath]));
     const ids = [...new Set(Object.values(baseline.media).flat())];
@@ -194,7 +200,7 @@ export default function FormalFeedbackEditor() {
       setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
     });
     return () => { active = false; };
-  }, [baseline, pageVisible, previewRetry, site.data, spotId]);
+  }, [baseline, ownerChanged, pageVisible, previewRetry, site.data, spotId]);
   const proposal = useMemo(() => baseline && values ? proposalFrom(baseline, values) : null, [baseline, values]);
   const changedKeys = proposal ? Object.keys(proposal.fields) as ContributionFormalFieldKey[] : [];
   const mediaProposal = useMemo(() => baseline && mediaSelection ? formalMediaProposal(baseline, mediaSelection) : {}, [baseline, mediaSelection]);
@@ -225,9 +231,10 @@ export default function FormalFeedbackEditor() {
       cancelText: "继续编辑",
     })).confirm,
   }), []);
-  const nativeLeaveGuard = useNativeEditorLeaveGuard(hasChanges && !submitted, "当前反馈尚未提交，确定离开吗？");
+  const nativeLeaveGuard = useNativeEditorLeaveGuard(hasChanges && !submitted && !ownerChanged, "当前反馈尚未提交，确定离开吗？");
   const assertEditorOwner = () => {
-    if (!editorOwner.current || currentDraftUserId() !== editorOwner.current)
+    if (!editorOwner.current || currentDraftUserId() !== editorOwner.current ||
+      useAppStore.getState().accountOwnerId !== editorOwner.current)
       throw new Error("账号已变化，请返回并重新打开反馈页。");
   };
   const setField = (key: ContributionFormalFieldKey, value: string) => setValues(current => current ? { ...current, [key]: value } : current);
@@ -379,7 +386,7 @@ export default function FormalFeedbackEditor() {
   return <View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     {mediaHandoff.warning}
     <FloatingNotificationHost />
-    <CustomNav title={`${baseline?.fields.name ?? (spotName || "观星点")}反馈页`} back beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
+    <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} back beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
     <SelectionTabs className="formal-feedback-tabs"
       items={CHAPTERS.map(([id, label]) => ({ id, label }))}
       activeId={chapter}
@@ -390,13 +397,13 @@ export default function FormalFeedbackEditor() {
     <ScrollView scrollY scrollIntoView={scrollAnchor} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
       <View className="formal-feedback-body safe-bottom">
         <NotificationRegion owner="contribution" placement="inline" />
-        {query.refreshError || query.data?.dataState === "STALE_USABLE" ||
+        {!ownerChanged && (query.refreshError || query.data?.dataState === "STALE_USABLE" ||
         history.refreshError || history.data?.dataState === "STALE_USABLE" ||
-        site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE" ? (
+        site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE") ? (
           <StatusPanel state="STALE" detail="部分正式地点或反馈资料尚未确认最新状态，当前输入仍会保留。"
             recoveryLabel="重新获取" onRecover={retryResourceFailures} />
         ) : null}
-        {query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : recordError ? <StatusPanel state="ERROR" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
+        {ownerChanged ? <StatusPanel state="ERROR" detail="账号已变化，请返回观星点后重新打开反馈页。" recoveryLabel="返回地图" onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })} /> : query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : recordError ? <StatusPanel state="ERROR" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
           {submitted ? <Text className="formal-feedback-review-tag">审核中</Text> : null}
           {reviewReason ? <View className="formal-feedback-review-note"><Text>审核意见</Text><Text>{reviewReason}</Text></View> : null}
           <SpotDocumentFields
