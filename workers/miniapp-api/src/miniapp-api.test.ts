@@ -99,6 +99,15 @@ test("Macao map points retain the Macao zone while neighboring Zhuhai remains ma
         const scene = await service.getMapScene({ contextId: context.contextId, layer: "NORMAL" });
         assert.ok(scene.sources.some((source) => source.id === "tz-boundary:asia-macau:2026d" &&
           source.attribution?.statements.some((statement) => statement.includes("ODbL"))));
+        const changedTime = await service.updateObservationContext(context.contextId, {
+          expectedRevision: context.revision,
+          selectedAt: "2026-09-26T15:30:00.000Z",
+        });
+        assert.equal(changedTime.data.timezone, "Asia/Macau");
+        assert.equal(changedTime.data.timezoneSource?.id, "tz-boundary:asia-macau:2026d");
+        assert.ok(changedTime.sources.some((source) => source.id === "tz-boundary:asia-macau:2026d"));
+        const readback = await service.getObservationContext(context.contextId);
+        assert.equal(readback.data.timezoneSource?.id, "tz-boundary:asia-macau:2026d");
       }
     }
   } finally { await service.onModuleDestroy(); }
