@@ -28,6 +28,8 @@ import { useAppStore } from "@/state/app-store";
 import { ToggleField } from "@/components/toggle-field";
 import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contribution-model";
 import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, removeFormalMedia, type FormalMediaSelection } from "./formal-media-selection";
+import { loadAvailableMediaPreviews } from "./formal-media-preview";
+import { retryFailedFormalResources } from "./formal-feedback-resources";
 import { confirmEditorLeave } from "@/hooks/editor-leave";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { SpotDocumentFields } from "../spot-document-fields";
@@ -103,6 +105,8 @@ export default function FormalFeedbackEditor() {
   const completionSource = useRef<{ uploadId: string; dataBase64: string } | null>(null);
   const [sessionUnconfirmed, setSessionUnconfirmed] = useState(false);
   const [previewPaths, setPreviewPaths] = useState<Record<string, string>>({});
+  const [previewFailures, setPreviewFailures] = useState<readonly string[]>([]);
+  const [previewRetry, setPreviewRetry] = useState(0);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [resubmissionRevision, setResubmissionRevision] = useState<number | null>(null);
@@ -159,30 +163,36 @@ export default function FormalFeedbackEditor() {
     setBaseline(query.data.data); setValues(valuesFrom(query.data.data)); setMediaSelection(createFormalMediaSelection(query.data.data));
   }, [baseline, history.data, query.data, spotId, submissionId]);
   useEffect(() => {
-    if (!activeSubmissionId || !priorMedia.length) return;
+    if (!pageVisible || !activeSubmissionId || !priorMedia.length) return;
     let active = true;
-    void Promise.all(priorMedia.map(async media => {
-      const response = await getContributionMedia(activeSubmissionId as never, media.uploadId);
-      return [media.uploadId, `data:${response.data.mimeType};base64,${response.data.dataBase64}`] as const;
-    })).then(entries => { if (active) setPreviewPaths(current => ({ ...current, ...Object.fromEntries(entries) })); }).catch(() => undefined);
+    void loadAvailableMediaPreviews(priorMedia.map(media => media.uploadId), async id => {
+      const response = await getContributionMedia(activeSubmissionId as never, id as ContributionUploadId);
+      return `data:${response.data.mimeType};base64,${response.data.dataBase64}`;
+    }).then(({ paths, failedIds }) => {
+      if (!active) return;
+      setPreviewPaths(current => ({ ...current, ...paths }));
+      setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
+    });
     return () => { active = false; };
-  }, [activeSubmissionId, priorMedia]);
+  }, [activeSubmissionId, pageVisible, previewRetry, priorMedia]);
   useEffect(() => {
-    if (!baseline || !site.data?.data) return;
+    if (!pageVisible || !baseline || !site.data?.data) return;
     let active = true;
     const canonical = new Map(site.data.data.media.map(media => [media.id, media.thumbnailPath || media.localPath]));
     const ids = [...new Set(Object.values(baseline.media).flat())];
-    void Promise.all(ids.map(async id => {
+    void loadAvailableMediaPreviews(ids, async id => {
       const known = canonical.get(id);
-      if (known && !known.startsWith("/v2/spots/")) return [id, known] as const;
-      if (!id.startsWith("upload:")) return [id, known ?? ""] as const;
+      if (known && !known.startsWith("/v2/spots/")) return known;
+      if (!id.startsWith("upload:")) return known ?? "";
       const response = await getSpotContributionMedia(spotId, id as ContributionUploadId);
-      return [id, `data:${response.data.mimeType};base64,${response.data.dataBase64}`] as const;
-    })).then(entries => {
-      if (active) setPreviewPaths(current => ({ ...current, ...Object.fromEntries(entries.filter(([, path]) => path)) }));
-    }).catch(() => undefined);
+      return `data:${response.data.mimeType};base64,${response.data.dataBase64}`;
+    }).then(({ paths, failedIds }) => {
+      if (!active) return;
+      setPreviewPaths(current => ({ ...current, ...paths }));
+      setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
+    });
     return () => { active = false; };
-  }, [baseline, site.data, spotId]);
+  }, [baseline, pageVisible, previewRetry, site.data, spotId]);
   const proposal = useMemo(() => baseline && values ? proposalFrom(baseline, values) : null, [baseline, values]);
   const changedKeys = proposal ? Object.keys(proposal.fields) as ContributionFormalFieldKey[] : [];
   const mediaProposal = useMemo(() => baseline && mediaSelection ? formalMediaProposal(baseline, mediaSelection) : {}, [baseline, mediaSelection]);
@@ -195,6 +205,11 @@ export default function FormalFeedbackEditor() {
     return same ? [] : [{ ...conflict, proposedValue: proposed } as ContributionFormalConflict];
   }), [conflicts, mediaProposal, proposal]);
   const hasChanges = changedKeys.length > 0 || Object.keys(mediaProposal).length > 0;
+  const retryResourceFailures = () => { void retryFailedFormalResources(
+    { isError: query.isError, refreshError: query.refreshError, dataState: query.data?.dataState, refetch: () => query.refetch() },
+    { isError: history.isError, refreshError: history.refreshError, dataState: history.data?.dataState, refetch: () => history.refetch() },
+    { isError: site.isError, refreshError: site.refreshError, dataState: site.data?.dataState, refetch: () => site.refetch() },
+  ); };
   const leaveState = useRef({ busy: busy || uploading, dirty: hasChanges && !submitted });
   leaveState.current = { busy: busy || uploading, dirty: hasChanges && !submitted };
   const confirmLeave = useCallback(() => confirmEditorLeave({
@@ -366,13 +381,9 @@ export default function FormalFeedbackEditor() {
         history.refreshError || history.data?.dataState === "STALE_USABLE" ||
         site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE" ? (
           <StatusPanel state="STALE" detail="部分正式地点或反馈资料尚未确认最新状态，当前输入仍会保留。"
-            recoveryLabel="重新获取" onRecover={() => {
-              if (query.refreshError || query.data?.dataState === "STALE_USABLE") void query.refetch();
-              else if (history.refreshError || history.data?.dataState === "STALE_USABLE") void history.refetch();
-              else void site.refetch();
-            }} />
+            recoveryLabel="重新获取" onRecover={retryResourceFailures} />
         ) : null}
-        {query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={() => { void query.refetch(); void history.refetch(); }} /> : recordError ? <StatusPanel state="ERROR" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
+        {query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : recordError ? <StatusPanel state="ERROR" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
           {submitted ? <Text className="formal-feedback-review-tag">审核中</Text> : null}
           {reviewReason ? <View className="formal-feedback-review-note"><Text>审核意见</Text><Text>{reviewReason}</Text></View> : null}
           <SpotDocumentFields
@@ -380,7 +391,7 @@ export default function FormalFeedbackEditor() {
             baseline={baseline}
             disabled={busy || submitted}
             onChange={setField}
-            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} disabled={busy||uploading||submitted} onAdd={addPhoto} onRemove={removePhoto} />}
+            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={() => setPreviewRetry(current => current + 1)} disabled={busy||uploading||submitted} onAdd={addPhoto} onRemove={removePhoto} />}
             notesFooter={<>
               {visibleUploads.length ? <ToggleField disabled={busy||uploading||submitted} id="formal-feedback-photo-rights" label="我有权使用这些照片" checked={rightsConfirmed} onChange={setRightsConfirmed} stateLabels={{checked:"已确认",unchecked:"未确认"}} /> : null}
               {pendingUpload ? <View className="formal-feedback-upload-recovery">
@@ -415,11 +426,12 @@ function Conflict({ conflict, value, onChange }: { conflict: ContributionFormalC
   </View>;
 }
 
-function PhotoGroup({ kind, ids, uploads: allUploads, paths, disabled, onAdd, onRemove }: { kind: ContributionMediaKind; ids: readonly string[]; uploads: readonly ContributionFormalMediaUpload[]; paths: Record<string,string>; disabled: boolean; onAdd(kind: ContributionMediaKind): Promise<void>; onRemove(uploadId: string): Promise<void> }) {
+function PhotoGroup({ kind, ids, uploads: allUploads, paths, failedIds, onRetry, disabled, onAdd, onRemove }: { kind: ContributionMediaKind; ids: readonly string[]; uploads: readonly ContributionFormalMediaUpload[]; paths: Record<string,string>; failedIds: readonly string[]; onRetry(): void; disabled: boolean; onAdd(kind: ContributionMediaKind): Promise<void>; onRemove(uploadId: string): Promise<void> }) {
   const label = kind === "parking" ? "停车" : kind === "toilet" ? "洗手间" : "现场";
   const uploads = new Map<string, ContributionFormalMediaUpload>(allUploads.filter(value => value.kind === kind).map(value => [value.uploadId, value]));
   return <View className="formal-feedback-photo-group">
     <View className="formal-feedback-photo-list">{ids.map(id => <View className="formal-feedback-photo" key={id}>{paths[id] ? <><Image src={paths[id]!} mode="aspectFill" /><Text className="formal-feedback-photo__red-label">{label}照片</Text></> : <Text>{uploads.has(id) ? "图片" : "原照片"}</Text>}<Button disabled={disabled} ariaLabel={`移除${label}照片`} onClick={() => void onRemove(id)}><Text className="formal-feedback-photo__remove-glyph">×</Text></Button></View>)}</View>
+    {ids.some(id => failedIds.includes(id) && !paths[id]) ? <StatusPanel state="ERROR" detail={`${label}照片暂时无法预览，其他资料仍可查看。`} recoveryLabel="重试照片预览" onRecover={onRetry} /> : null}
     <Button className="formal-feedback-photo-action" disabled={disabled || ids.length >= 3} onClick={() => void onAdd(kind)}>＋ 添加{label}照片</Button>
   </View>;
 }
