@@ -1,4 +1,5 @@
-import { zonedLocalToUtc, type ObservationPlan } from "@starward/miniapp-contracts";
+import type { ObservationPlan } from "@starward/miniapp-contracts";
+import { planInterval } from "../plan/plan-interval";
 
 export interface EndedPlanRecord {
   plan: ObservationPlan;
@@ -18,14 +19,7 @@ function latestPlans(plans: readonly ObservationPlan[]) {
 
 function planEndAt(plan: ObservationPlan): number | null {
   if (!plan.timing || !plan.spotId) return null;
-  try {
-    const end = Date.parse(zonedLocalToUtc({
-      localDate: plan.timing.endLocalDate,
-      localTime: plan.timing.endLocalTime,
-      timezone: plan.contextSnapshot.timezone,
-    }));
-    return Number.isFinite(end) ? end : null;
-  } catch { return null; }
+  return planInterval(plan)?.end ?? null;
 }
 
 /** The visible achievement page can refresh exactly when a plan becomes ended. */

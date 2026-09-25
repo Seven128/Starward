@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ObservationPlan } from "@starward/miniapp-contracts";
-import { planEndLabel, planListEntries } from "./plan-list-model";
+import { nextPlanListBoundary, planEndLabel, planListEntries } from "./plan-list-model";
 
 const plan = (id: string, date: string, start: string, endDate = date, end = "23:59") => ({
   planId: id, localDate: date, localTime: start,
@@ -37,4 +37,15 @@ test("plans from different timezones sort by actual instant across New Year", ()
     [entry.plan.planId, entry.ongoing, entry.invalid]),
   [["shanghai", true, false], ["next-year", false, false], ["utc", false, false]]);
   assert.equal(planEndLabel(shanghai), "次日 02:00");
+});
+
+test("the list refreshes at the next valid start and end, including a spot-timezone boundary", () => {
+  const current = plan("current", "2026-09-09", "23:00", "2026-09-10", "02:00");
+  const next = plan("next", "2026-09-10", "03:00", "2026-09-10", "05:00");
+  const invalid = { ...plan("invalid", "2026-09-10", "01:00"), contextSnapshot: {
+    timezone: "UTC", selectedAtUtc: "2026-09-10T02:00:00Z",
+  } } as ObservationPlan;
+  assert.equal(nextPlanListBoundary([current, next, invalid], new Date("2026-09-10T01:00:00Z")), Date.parse("2026-09-10T02:00:00Z"));
+  assert.equal(nextPlanListBoundary([current, next, invalid], new Date("2026-09-10T02:00:00Z")), Date.parse("2026-09-10T03:00:00Z"));
+  assert.equal(nextPlanListBoundary([current], new Date("2026-09-10T02:00:00Z")), null);
 });

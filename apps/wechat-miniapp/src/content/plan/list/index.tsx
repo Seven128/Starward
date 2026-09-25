@@ -10,7 +10,7 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, getPlans } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
-import { planEndLabel, planListEntries, type PlanPartition } from "./plan-list-model";
+import { nextPlanListBoundary, planEndLabel, planListEntries, type PlanPartition } from "./plan-list-model";
 import { planTravelModeLabel } from "../detail/plan-travel-fields";
 import "./index.scss";
 
@@ -24,18 +24,24 @@ export default function PlanListPage() {
   const [pageVisible, setPageVisible] = useState(true);
   const [scrollTop, setScrollTop] = useState(0);
   const scrollPositions = useRef({ upcoming: 0, past: 0 });
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null), navigating = useRef(false);
+  const navigating = useRef(false);
   const owner = currentDraftUserId();
   const notify = useAppStore((state) => state.notify);
   const query = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mount}`],
     queryFn: signal => getPlans(signal, owner ?? undefined), enabled: pageVisible, staleTime: 15_000 });
-  const stop = () => { if (timer.current !== null) clearInterval(timer.current); timer.current = null; };
   useDidShow(() => {
-    setPageVisible(true); refreshIdentity(v => v + 1); setNow(new Date()); stop();
-    timer.current = setInterval(() => setNow(new Date()), 30_000);
+    setPageVisible(true); refreshIdentity(v => v + 1); setNow(new Date());
     void query.refetch();
   });
-  useDidHide(() => { setPageVisible(false); stop(); }); useEffect(() => stop, []);
+  useDidHide(() => setPageVisible(false));
+  useEffect(() => {
+    if (!pageVisible || !query.data) return;
+    const relevant = query.data.data.plans.filter(plan => !spotId || plan.spotId === spotId);
+    const next = nextPlanListBoundary(relevant, now);
+    if (next === null) return;
+    const timer = setTimeout(() => setNow(new Date()), Math.max(1, Math.min(next - Date.now() + 1, 2_147_483_647)));
+    return () => clearTimeout(timer);
+  }, [pageVisible, query.data, spotId, now]);
   useEffect(() => {
     if (!pageVisible || (!query.isError && !query.refreshError && query.data?.dataState !== "STALE_USABLE")) return;
     notify({ owner: "plan-list", placement: "floating", tone: "info",

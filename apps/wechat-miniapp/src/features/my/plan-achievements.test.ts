@@ -45,3 +45,15 @@ test("the next completion boundary uses the latest valid plan revision and local
   assert.equal(nextPlanEndAt([movedEarlier], new Date("2026-09-24T18:00:00Z")), null);
   assert.equal(nextPlanEndAt([old, { ...plan("plan:changed", "invalid"), revision: 3 }], now), null);
 });
+
+test("an invalid or mismatched observing start cannot become an achievement", () => {
+  const now = new Date("2026-09-24T00:00:00Z");
+  const malformed = { ...plan("plan:malformed", "2026-07-02"), localTime: "25:00" };
+  const mismatched = { ...plan("plan:mismatch", "2026-07-02"), contextSnapshot: {
+    ...plan("plan:mismatch", "2026-07-02").contextSnapshot, selectedAtUtc: "2026-07-01T14:00:00Z",
+  } };
+  const reversed = plan("plan:reversed", "2026-06-30");
+  assert.deepEqual(endedPlanRecords([malformed, mismatched, reversed], now), []);
+  const futureInvalid = { ...malformed, timing: { ...malformed.timing!, endLocalDate: "2026-12-31" } };
+  assert.equal(nextPlanEndAt([futureInvalid], now), null);
+});
