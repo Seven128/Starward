@@ -148,6 +148,10 @@ Rollback creates a bounded unique catalog version; HTTP routing must accept the 
 - day资源采用不扩展到night/observation。严格暖红主题继续使用原合法资产/呈现直到有合规变体，不能直接套彩色PNG或整屏滤镜；真实月相、数据图形及地图供应商标识也不由装饰性图标替换。
 - 代表性验证覆盖小尺寸清晰度、透明边缘、导航非颜色状态、四态锚点、想去反复中断、不同消费者/主题以及实际打包体积。静态71份约2.11MiB的清单不等于最终主包大小；Web替换和素材像素检查不证明WEAPP渲染、动效或真机质量。
 
+### Mini Program coordinate conversion boundary
+
+`packages/coordinate-system` owns WGS84↔GCJ-02 conversion for the Mini Program, its API and the existing native map consumer. The earlier rectangle was only a quick rejection bound and included neighboring places such as Islamabad, causing a WeChat-selected coordinate to shift by hundreds of metres when saved as WGS84. The shared converter now also checks an approximate 69-point GCJ-02 distortion footprint before applying the shift; locations outside it retain their numerical coordinates. This footprint is technical coverage, not a political boundary. Its point data comes from [PRCoords' CC0 source](https://github.com/Artoria2e5/PRCoords/blob/master/js/misc/insane_is_in_china.js) under the project's [CC0/GPL dual license](https://github.com/Artoria2e5/PRCoords#license); only the CC0 permission is used and no runtime dependency was added. The inverse and map-view provenance use conversion version v3. Border-adjacent provider behaviour and actual phone GPS/map alignment still require device evidence; revise the footprint if those inputs show a mismatch rather than assuming this approximation is exact.
+
 ### Mini Program terrain and directional-light evidence
 
 2026-09-13用户确认以可获得数据为范围。产品主图与分项未知状态由[地形owner](../areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)维护。当前实现发布一份大湾区中心85 km的Copernicus DEM GLO-30实样及其来源/哈希/覆盖manifest，并经BFF、客户端缓存与原生MapContext叠加消费；这不构成任意地点覆盖或20%误差承诺。

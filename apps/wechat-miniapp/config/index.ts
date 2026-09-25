@@ -30,8 +30,7 @@ const retainedLegacyIconFiles = [
   "account-user-night.svg", "account-user-observation.svg",
   "arrow-left-light.png", "bulb-night.svg", "bulb-observation.svg",
   "chevron-right-night.svg", "chevron-right-observation.svg",
-  "cloud-night.svg", "cloud-observation.svg", "download-night.svg",
-  "download-observation.svg", "draft-marker.png", "eye-night.svg",
+  "cloud-night.svg", "cloud-observation.svg", "draft-marker.png", "eye-night.svg",
   "eye-observation.svg", "filter-night.svg", "filter-observation.svg",
   "formal-spot-marker-night.png", "formal-spot-marker-observation.png",
   "formal-spot-marker-selected-night.png", "formal-spot-marker-selected-observation.png",
@@ -41,11 +40,16 @@ const retainedLegacyIconFiles = [
   "tab-map-night.png", "tab-map-observation.png", "tab-map-selected-night.png",
   "tab-map-selected-observation.png", "tab-my-night.png", "tab-my-observation.png",
   "tab-my-selected-night.png", "tab-my-selected-observation.png",
-  "trash-2-night.svg", "trash-2-observation.svg", "wifi-off-night.svg",
+  "wifi-off-night.svg",
   "wifi-off-observation.svg",
-  "wind-night.svg", "wind-observation.svg",
   "telescope-night.svg", "telescope-observation.svg",
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
+] as const;
+// These legacy night/observation icons are used only by content pages.
+const contentLegacyIconFiles = [
+  "download-night.svg", "download-observation.svg",
+  "trash-2-night.svg", "trash-2-observation.svg",
+  "wind-night.svg", "wind-observation.svg",
 ] as const;
 const bIconFiles = {
   main: [
@@ -215,6 +219,10 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
         ...retainedLegacyIconFiles.map((file) => ({
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "assets/icons", file),
+        })),
+        ...contentLegacyIconFiles.map((file) => ({
+          from: path.resolve(here, "../src/assets/icons", file),
+          to: path.resolve(here, "..", outputRoot, "content/assets/icons", file),
         })),
         ...["night", "observation"].map((theme) => ({
           from: path.resolve(here, "../src/assets/semantic", `five-point-star-${theme}.svg`),
