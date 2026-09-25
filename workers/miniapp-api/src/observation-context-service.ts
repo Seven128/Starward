@@ -37,15 +37,15 @@ function timezoneForTrialPoint(
     longitude <= 116.8;
   if (!inTrialRegion)
     throw new Error("observation_timezone_resolution_unavailable");
-  if (hint) return hint;
   const inHongKongLongitude = longitude >= 113.78 && longitude <= 114.52;
   if (inHongKongLongitude && latitude >= 22.12 && latitude <= 22.45)
     return "Asia/Hong_Kong" as const;
   if (!inHongKongLongitude || latitude >= 22.58)
     return "Asia/Shanghai" as const;
   // The Shenzhen/Hong Kong land border cannot be classified safely by a
-  // broad bounding box. Require an explicit map/geocoder timezone hint in
-  // this narrow band rather than silently attaching the wrong IANA zone.
+  // broad bounding box. Preserve the existing hint in this narrow band;
+  // other map points use the supported geographic region, not device zone.
+  if (hint) return hint;
   throw new Error("observation_timezone_resolution_ambiguous");
 }
 

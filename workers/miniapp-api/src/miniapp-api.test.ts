@@ -35,6 +35,23 @@ function testService() {
   });
 }
 
+test("clear map-point timezone regions are not overridden by the device hint", async () => {
+  const service = testService();
+  try {
+    for (const [latitude, longitude, hint, expected] of [
+      [22.282, 114.16, "Asia/Shanghai", "Asia/Hong_Kong"],
+      [22.56, 114.59, "Asia/Hong_Kong", "Asia/Shanghai"],
+    ] as const) {
+      const context = (await service.resolveObservationContext({
+        location: { kind: "MAP_POINT", displayName: "时区测试地点",
+          wgs84: { system: "WGS84", latitude, longitude }, source: "MAP_VIEWPORT", timezoneHint: hint },
+        localDate: "2026-09-26",
+      })).data;
+      assert.equal(context.timezone, expected);
+    }
+  } finally { await service.onModuleDestroy(); }
+});
+
 async function user(service: MiniappService, suffix: string) {
   return (
     await service.login({
