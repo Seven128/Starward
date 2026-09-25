@@ -23,6 +23,10 @@ function touchPoint(event: unknown, changed = false): ViewerTouchPoint | null {
     : null;
 }
 
+function activeTouchCount(event: unknown): number {
+  return (event as { touches?: ArrayLike<unknown> }).touches?.length ?? 0;
+}
+
 function readPhotoSource(index: number, callback: (rect: ViewerRect | null) => void) {
   const { windowWidth, windowHeight } = Taro.getWindowInfo();
   let finished = false;
@@ -65,6 +69,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   const start = useRef<ViewerTouchPoint | null>(null);
   const last = useRef<ViewerTouchPoint | null>(null);
   const axis = useRef<ViewerGestureAxis | null>(null);
+  const multiTouchBlocked = useRef(false);
   const reboundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flightStartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flightFinishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -120,6 +125,12 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   };
   const changeIndex = (next: number) => {
     if (!closing.current) onIndexChange(next);
+  };
+  const cancelTouchGesture = () => {
+    start.current = null;
+    last.current = null;
+    axis.current = null;
+    rebound();
   };
   closeRef.current = requestClose;
 
@@ -214,6 +225,12 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
       <View className="spot-media-viewer__stage"
         onTouchStart={(event) => {
           if (closing.current || !entered || !current.src || unavailable) return;
+          if (activeTouchCount(event) !== 1) {
+            multiTouchBlocked.current = true;
+            cancelTouchGesture();
+            return;
+          }
+          if (multiTouchBlocked.current) return;
           if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
           start.current = touchPoint(event);
           last.current = start.current;
@@ -221,6 +238,12 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
         }}
         onTouchMove={(event) => {
           if (closing.current) return;
+          if (multiTouchBlocked.current) return;
+          if (activeTouchCount(event) !== 1) {
+            multiTouchBlocked.current = true;
+            cancelTouchGesture();
+            return;
+          }
           const origin = start.current, point = touchPoint(event);
           if (!origin || !point) return;
           last.current = point;
@@ -233,6 +256,11 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
         }}
         onTouchEnd={(event) => {
           if (closing.current) return;
+          if (multiTouchBlocked.current || activeTouchCount(event) > 0) {
+            multiTouchBlocked.current = activeTouchCount(event) > 0;
+            cancelTouchGesture();
+            return;
+          }
           const origin = start.current;
           const reported = touchPoint(event, true) ?? touchPoint(event);
           const point = viewerEndPoint(reported, last.current);
@@ -243,7 +271,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
           if (result.kind === "page") { changeIndex(result.index); return; }
           rebound();
         }}
-        onTouchCancel={() => { if (closing.current) return; start.current = null; last.current = null; axis.current = null; rebound(); }}>
+        onTouchCancel={() => { if (closing.current) return; multiTouchBlocked.current = false; cancelTouchGesture(); }}>
         {current.src && !unavailable
           ? <Image key={`${current.id}:${retryNonce}`} className="spot-media-viewer__image" src={current.src} mode="aspectFit" ariaLabel={current.alt}
               onLoad={(event) => {
