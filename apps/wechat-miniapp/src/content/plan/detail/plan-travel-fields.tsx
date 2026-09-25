@@ -54,7 +54,7 @@ export function PlanTravelFields({ value, disabled, ownerKey, onChange }: {
     } finally { pending.current = false; if (mounted.current) setChoosing(false); }
   };
   const modeIndex = Math.max(0, modes.findIndex(item => item.value === value.mode));
-  return <View className="plan-fields-card plan-travel-fields">
+  return <View className="plan-travel-fields">
     {handoff.warning}
     <View className="plan-field-row">
       <Text className="plan-field-row__label">出发地</Text>

@@ -44,7 +44,7 @@ import { PlanReference } from "./plan-reference";
 import { initialPlanSelection, planIdFromRoute } from "./plan-selection";
 import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey as scopedPlanDraftKey, type PlanDraft } from "./plan-draft";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
-import { PlanTimingFields, emptyPlanTiming } from "./plan-timing-fields";
+import { PlanDepartureTimeFields, PlanObservationEndField, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel-fields";
 import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
@@ -59,7 +59,7 @@ function today(timezone = "Asia/Shanghai") {
   return calendarDateInTimezone(new Date(), timezone);
 }
 
-type PlanValidationField = "location" | "start" | "timing" | "travel" | "reminders";
+type PlanValidationField = "location" | "start" | "timing" | "departure" | "travel" | "reminders";
 
 export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedEditor?: boolean } = {}) {
   const router = useRouter();
@@ -649,8 +649,24 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       showFieldError("start", "日期或时间格式无效；本页草稿仍保留，可修正后重试。");
       return;
     }
-    if (!timing.endLocalDate || !timing.endLocalTime || !timing.departureLocalDate || !timing.departureLocalTime) {
-      showFieldError("timing", "请选择观测结束日期、时间和计划出发日期、时间；输入仍保留。");
+    if (!timing.endLocalDate || !timing.endLocalTime) {
+      showFieldError("timing", "请选择观测结束日期和时间；输入仍保留。");
+      return;
+    }
+    if (!timing.departureLocalDate || !timing.departureLocalTime) {
+      showFieldError("departure", "请选择计划出发日期和时间；输入仍保留。");
+      return;
+    }
+    try {
+      resolvePlanTiming({ localDate, localTime, timezone, timing });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "";
+      showFieldError(reason === "plan_departure_must_precede_start" ? "departure" : "timing",
+        reason === "plan_end_must_follow_start"
+          ? "观测结束必须晚于开始；当前输入仍保留。"
+          : reason === "plan_departure_must_precede_start"
+            ? "计划出发必须早于开始观测；当前输入仍保留。"
+            : "计划时间无效；当前输入仍保留，可修正后重试。");
       return;
     }
     if (!travel.origin.trim()) {
@@ -662,18 +678,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       : activeContext.routeOrigin?.displayName ?? null;
     if (planTravelNeedsExplicitOrigin(travel, routeOriginName)) {
       showFieldError("travel", "地图位置不能自动作为实际出发地；请重新填写或在微信地图选择，当前草稿已保留。");
-      return;
-    }
-    try {
-      resolvePlanTiming({ localDate, localTime, timezone, timing });
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : "";
-      showFieldError("timing",
-        reason === "plan_end_must_follow_start"
-          ? "观测结束必须晚于开始；当前输入仍保留。"
-          : reason === "plan_departure_must_precede_start"
-            ? "计划出发必须早于开始观测；当前输入仍保留。"
-            : "计划时间无效；当前输入仍保留，可修正后重试。");
       return;
     }
     let validatedReminders: PlanReminder[];
@@ -1198,7 +1202,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   aria-label={`观测地点当地日期：${localDate}`}
                   disabled={saving || deleting}
                   value={localDate}
-                  onChange={(event) => { retainDraft({ localDate: event.detail.value }); setLocalDate(event.detail.value); clearFieldError("start"); clearFieldError("timing"); }}
+                  onChange={(event) => { retainDraft({ localDate: event.detail.value }); setLocalDate(event.detail.value); clearFieldError("start"); clearFieldError("timing"); clearFieldError("departure"); }}
                 >
                   <View className="plan-field-value focus-ring">
                     <Text>{localDate.replaceAll("-", "/")}</Text>
@@ -1209,7 +1213,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   aria-label={`观测地点当地时间：${localTime}`}
                   disabled={saving || deleting}
                   value={localTime}
-                  onChange={(event) => { retainDraft({ localTime: event.detail.value }); setLocalTime(event.detail.value); clearFieldError("start"); clearFieldError("timing"); }}
+                  onChange={(event) => { retainDraft({ localTime: event.detail.value }); setLocalTime(event.detail.value); clearFieldError("start"); clearFieldError("timing"); clearFieldError("departure"); }}
                 >
                   <View className="plan-field-value focus-ring">
                     <Text>{localTime}</Text>
@@ -1217,19 +1221,24 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 </Picker>
                 </View>
               </View>
-            </View>
-            {fieldErrorView("timing")}
-            <View className="form-group">
-              <PlanTimingFields value={timing} disabled={saving || deleting}
-                timezone={timezone}
+              <PlanObservationEndField value={timing} disabled={saving || deleting}
                 onChange={(value) => { retainDraft({ timing: value }); setTiming(value); clearFieldError("timing"); }} />
             </View>
+            {fieldErrorView("timing")}
+            <Text className="plan-form-footnote">{timezone
+              ? `观星点当地时间 · ${timezone}，支持跨日观测。`
+              : "选择正式观星点后显示当地时区；支持跨日观测。"}</Text>
             <View className="plan-editor-form__heading">
               <Text className="type-section">出发安排</Text>
             </View>
-            {fieldErrorView("travel")}
-            <PlanTravelFields value={travel} disabled={saving || deleting} ownerKey={`${planOwner}:${activePlanId ?? "new"}`}
-              onChange={(value) => { retainDraft({ travel: value }); setTravel(value); clearFieldError("travel"); }} />
+            {fieldErrorView("departure")}
+            <View className="plan-fields-card">
+              <PlanDepartureTimeFields value={timing} disabled={saving || deleting}
+                onChange={(value) => { retainDraft({ timing: value }); setTiming(value); clearFieldError("departure"); }} />
+              {fieldErrorView("travel")}
+              <PlanTravelFields value={travel} disabled={saving || deleting} ownerKey={`${planOwner}:${activePlanId ?? "new"}`}
+                onChange={(value) => { retainDraft({ travel: value }); setTravel(value); clearFieldError("travel"); }} />
+            </View>
             <Text className="plan-form-footnote">
               出发地、交通方式和时间由你填写。出发前可通过微信地图核实到达方式。
             </Text>
