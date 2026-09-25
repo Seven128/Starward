@@ -67,8 +67,8 @@ export default function AchievementPage() {
               const spotName = plans.data?.data.planSpots?.find(spot => spot.spotId === plan.spotId)?.name ?? "地点资料暂不可用";
               return <Button key={plan.planId} className="achievement-record" aria-label={`查看${spotName}的已结束计划`} onClick={() => void openPlan(plan.planId)}>
                 <Text className="achievement-record__title">{spotName}</Text>
-                <Text className="type-caption">{plan.localDate} {plan.localTime} — {plan.timing?.endLocalDate} {plan.timing?.endLocalTime} · {plan.contextSnapshot.timezone}</Text>
-                <Text className="type-caption">{plan.eventOccurrenceIds?.length ? `关联天象 ${plan.eventOccurrenceIds.length} 项` : "未关联天象"}</Text>
+                <Text className="achievement-record__time">{plan.localDate} {plan.localTime} — {plan.timing?.endLocalDate} {plan.timing?.endLocalTime} · {plan.contextSnapshot.timezone}</Text>
+                <Text className="achievement-record__event">{plan.eventOccurrenceIds?.length ? `关联天象 ${plan.eventOccurrenceIds.length} 项` : "未关联天象"}</Text>
                 <View className="achievement-record__footer"><Text>计划已结束</Text><Text>查看行程 ›</Text></View>
               </Button>;
             })}

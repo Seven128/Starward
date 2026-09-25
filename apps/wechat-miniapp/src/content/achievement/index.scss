@@ -14,4 +14,5 @@
 .achievement-record::after { border: 0; }
 .achievement-record:active { background: var(--pressed-overlay); }
 .achievement-record__title { font-size: 17Px; line-height: 24Px; font-weight: 600; }
-.achievement-record__footer { display: flex; justify-content: space-between; padding-top: 12Px; border-top: 1Px solid var(--border); color: var(--text-secondary); font-size: 13Px; }
+.achievement-record__time, .achievement-record__event { color: var(--text-secondary); font-size: var(--type-body-secondary-size); line-height: var(--type-body-secondary-line); overflow-wrap: anywhere; }
+.achievement-record__footer { display: flex; justify-content: space-between; padding-top: 12Px; border-top: 1Px solid var(--border); color: var(--text-secondary); font-size: var(--type-action-size); line-height: var(--type-action-line); }
