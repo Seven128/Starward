@@ -267,6 +267,13 @@
   width: 26rpx;
   height: 26rpx;
 }
+.spot-search-partition__body {
+  overflow: hidden;
+}
+.spot-search-partition__body--closed {
+  visibility: hidden;
+  pointer-events: none;
+}
 .spot-search-empty {
   display: block;
   padding: 14rpx 12rpx;

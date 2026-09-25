@@ -46,10 +46,19 @@ import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { canApplyContextRestore } from "@/services/observation-context-version";
+import { SearchResultPartition } from "./search-result-partition";
 import "./search-page.scss";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
   return calendarDateInTimezone(new Date(), timezone);
+}
+
+function partitionContentRevision(spots: readonly SpotSummary[], showEmpty: boolean, groups: readonly FilterGroupKey[], evidence?: Record<string, SpotFilterEvidence>) {
+  return JSON.stringify([showEmpty, spots.map(spot => [
+    spot.spotId, spot.name, spot.region, spot.address,
+    spot.media.filter(isRenderableMedia)[0]?.thumbnailPath,
+    groups.filter(group => evidence?.[spot.spotId]?.[group].state === "UNKNOWN"),
+  ])]);
 }
 
 function isRenderableMedia(media: SpotSummary["media"][number]) {
@@ -140,8 +149,6 @@ export function MapSearchSurface() {
   const notify = useAppStore((state) => state.notify);
   const [focused, setFocused] = useState(true);
   const [suggestionsOpen, setSuggestionsOpen] = useState(true);
-  const [wantedOpen, setWantedOpen] = useState(true);
-  const [otherOpen, setOtherOpen] = useState(true);
   const [pageVisible, setPageVisible] = useState(true);
   const [debouncedQuery, setDebouncedQuery] = useState(finderQuery.trim());
   const [announcement, setAnnouncement] = useState("");
@@ -661,28 +668,14 @@ export function MapSearchSurface() {
               : formalSpots.length === 0 && (searchState === "ERROR" || searchState === "PERMISSION_DENIED") ? "搜索结果暂不可用"
               : `${formalSpots.length} 个${hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点`}</Text>
           </View>
-          <View className="spot-search-partition">
-            <Button className="spot-search-partition__toggle" aria-expanded={wantedOpen} onClick={() => setWantedOpen((value) => !value)}>
-              <Text className="type-section">想去</Text>
-              <Text className="type-caption">{wanted.length}</Text>
-              <SemanticIcon name={wantedOpen ? "chevron-up" : "chevron-down"} />
-            </Button>
-            {wantedOpen ? (
-              wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
-                : showPartitionEmpty ? <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text> : null
-            ) : null}
-          </View>
-          <View className="spot-search-partition">
-            <Button className="spot-search-partition__toggle" aria-expanded={otherOpen} onClick={() => setOtherOpen((value) => !value)}>
-              <Text className="type-section">其他观星点</Text>
-              <Text className="type-caption">{other.length}</Text>
-              <SemanticIcon name={otherOpen ? "chevron-up" : "chevron-down"} />
-            </Button>
-            {otherOpen ? (
-              other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
-                : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null
-            ) : null}
-          </View>
+          <SearchResultPartition id="wanted" label="想去" count={wanted.length} contentRevision={partitionContentRevision(wanted, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={preferences.reducedMotion}>
+            {wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
+              : showPartitionEmpty ? <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text> : null}
+          </SearchResultPartition>
+          <SearchResultPartition id="other" label="其他观星点" count={other.length} contentRevision={partitionContentRevision(other, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={preferences.reducedMotion}>
+            {other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
+              : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null}
+          </SearchResultPartition>
           {activeFilterGroups.includes("LESS_CLOUD") ? <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
         </ScrollView>
       </View>
