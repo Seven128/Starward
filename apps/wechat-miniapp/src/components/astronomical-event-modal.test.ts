@@ -196,6 +196,13 @@ test("fixed eclipse date and phases cannot masquerade as the caller's September 
   assert.equal(find(tree, node => node.props.ariaLabel === "弹窗内预览日期").length, 0);
 });
 
+test("an eclipse without an observation location keeps the source's Beijing date instead of inventing a local date", () => {
+  const tree = harness().detail({ event: eclipse, mode: "browse", previewDate: eclipse.peakDate, onPreviewDate: () => {},
+    locationName: null, timezone: "Asia/Shanghai", pending: false, visibility: { state: "UNAVAILABLE", reason: "选择地点后可计算当地几何条件。" } });
+  assert.match(text(tree), /食甚日期（北京时间）2026\/08\/13/);
+  assert.doesNotMatch(text(tree), /事件当地日期|以下时刻采用 Asia\/Shanghai 时区/);
+});
+
 test("fixture metadata never creates a source heading or catalog-version explanation", () => {
   const tree = harness().detail({ event: meteor, mode: "browse", previewDate: "2026-12-22", onPreviewDate: () => {}, timezone: "Asia/Shanghai", pending: false,
     source: { ...source, kind: "TEST_FIXTURE", state: "SAMPLE_DATA" }, catalogVersion: "test-version" });

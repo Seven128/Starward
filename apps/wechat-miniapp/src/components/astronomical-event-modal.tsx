@@ -259,7 +259,7 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
   const presentation = eventDatePresentation(event);
   const previewDays = useMemo(() => eventPreviewDays(event), [event.activeStartDate, event.activeEndDate]);
   const hasLocalContext = Boolean(locationName || visibility?.locationName);
-  const eclipseDate = event.kind !== "METEOR_SHOWER" && event.peakAtUtc
+  const eclipseDate = hasLocalContext && event.kind !== "METEOR_SHOWER" && event.peakAtUtc
     ? visibility?.localDate ?? calendarDateInTimezone(new Date(event.peakAtUtc), timezone) : null;
   return <View className="event-modal-detail">
     <View className="event-modal-detail__hero"><SemanticIcon name={event.kind === "METEOR_SHOWER" ? "meteor" : "moon"} /><View><Text>{eventKindLabel(event)} · {event.peakDate.slice(0, 4)}</Text><Text>{event.displayName}</Text></View></View>
