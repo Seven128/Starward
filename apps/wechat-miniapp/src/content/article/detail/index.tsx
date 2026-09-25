@@ -91,7 +91,7 @@ export default function ArticlePage() {
       title: failed[0]!, body: failed[1]!, dedupeKey: `article-resource-failed:${articleId}:${failed[2]}` });
   }, [articleId, guides.data?.dataState, guides.isError, guides.refreshError, notify, overview.data?.dataState,
     overview.isError, overview.refreshError, pageVisible, site.data?.dataState, site.isError, site.refreshError, validRoute]);
-  const loading = guides.isPending && !article;
+  const loading = (guides.isPending || guides.isFetching) && !article;
 
   return (
     <View className={themeClass + " article-page"}>
@@ -113,6 +113,16 @@ export default function ArticlePage() {
           />
         ) : loading ? (
           <StatusPanel state="LOADING" detail="正在加载攻略。" />
+        ) : !article && guides.data?.data?.spotId === spotId &&
+          !guides.isError && !guides.refreshError &&
+          (guides.data.dataState === "FRESH" || guides.data.dataState === "PARTIAL") ? (
+          <StatusPanel
+            state="EMPTY"
+            title="这篇攻略暂无内容"
+            detail="这篇攻略不在当前观星点资料中，可查看本地点的其它攻略。"
+            recoveryLabel="查看本地点攻略"
+            onRecover={() => void Taro.redirectTo({ url: `/spot/guides/index?spotId=${encodeURIComponent(spotId)}&contextId=${encodeURIComponent(contextId)}` })}
+          />
         ) : !article ? (
           <StatusPanel
             state="ERROR"

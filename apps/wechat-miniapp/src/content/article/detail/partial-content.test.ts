@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-function render(options: { pending?: boolean; failed?: boolean; article?: boolean; valid?: boolean; refreshFailed?: boolean; staleEnvelope?: boolean; fixture?: boolean; spotId?: string; paragraph?: string; facilityState?: "pending" | "failed" | "missing" | "cached-error" | "stale" | "cached-missing" | "stale-missing" }) {
+function render(options: { pending?: boolean; failed?: boolean; article?: boolean; confirmedMissing?: boolean; fetching?: boolean; valid?: boolean; refreshFailed?: boolean; staleEnvelope?: boolean; fixture?: boolean; spotId?: string; paragraph?: string; facilityState?: "pending" | "failed" | "missing" | "cached-error" | "stale" | "cached-missing" | "stale-missing" }) {
   const source = ts.createSourceFile("article.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const page = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "ArticlePage")!;
   const result = page.body!.statements.find(ts.isReturnStatement)!;
@@ -14,11 +14,13 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
     blocks: [{ type: "paragraph", text: options.paragraph ?? "正文独立保留" }, ...(options.facilityState ? [{ type: "facility_ref", facilityType: "PARKING" }] : [{ type: "media", mediaId: "missing" }])],
   };
   const retries: string[] = [];
+  const navigations: string[] = [];
   const context: Record<string, unknown> = {
     React: { Fragment: "Fragment", createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
-    __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: options.fixture === true, spotId: options.spotId ?? "spot:real",
+    __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: options.fixture === true, spotId: options.spotId ?? "spot:real", contextId: "ctx:current",
+    Taro: { redirectTo: ({ url }: { url: string }) => navigations.push(url) },
     themeClass: "day", validRoute: options.valid !== false, article, detail: undefined,
-    guides: { data: options.staleEnvelope ? { dataState: "STALE_USABLE" } : undefined, isPending: false, isError: false, refreshError: options.refreshFailed ? new Error("offline") : undefined, refetch: () => retries.push("guides") },
+    guides: { data: options.staleEnvelope ? { dataState: "STALE_USABLE" } : options.confirmedMissing ? { dataState: "FRESH", data: { spotId: options.spotId ?? "spot:real", guides: [] } } : undefined, isPending: false, isFetching: options.fetching, isError: false, refreshError: options.refreshFailed ? new Error("offline") : undefined, refetch: () => retries.push("guides") },
     overview: { isPending: options.pending, isError: options.failed, refetch: () => retries.push("overview") },
     site: {
       isPending: options.facilityState === "pending", isError: options.facilityState === "failed",
@@ -34,7 +36,7 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
   const tree = vm.runInNewContext(ts.transpileModule(`const ${loading.getText(source)}; (${result.expression!.getText(source)});`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
   }).outputText, context);
-  return { tree, retries };
+  return { tree, retries, navigations };
 }
 
 test("article body survives pending or failed overview without inventing media", () => {
@@ -51,6 +53,33 @@ test("missing article and invalid route never display a borrowed body", () => {
   assert.doesNotMatch(JSON.stringify(render({ article: false }).tree), /正文独立保留/);
   assert.match(JSON.stringify(render({ article: false }).tree), /重试攻略/);
   assert.doesNotMatch(JSON.stringify(render({ valid: false }).tree), /正文独立保留/);
+});
+
+test("a successful guide list without the requested article offers the current spot's guide list", () => {
+  const { tree, retries, navigations } = render({ article: false, confirmedMissing: true });
+  const output = JSON.stringify(tree);
+  assert.match(output, /这篇攻略不在当前观星点资料中/);
+  assert.doesNotMatch(output, /攻略暂不可用，请重试/);
+  let recovery: { state: string; onRecover: () => void } | undefined;
+  function visit(node: any) {
+    if (!node || typeof node !== "object") return;
+    if (node.type === "StatusPanel" && node.props?.recoveryLabel === "查看本地点攻略") recovery = node.props;
+    for (const value of Object.values(node)) if (typeof value === "object") visit(value);
+  }
+  visit(tree);
+  assert.equal(recovery?.state, "EMPTY");
+  recovery!.onRecover();
+  assert.deepEqual(navigations, ["/spot/guides/index?spotId=spot%3Areal&contextId=ctx%3Acurrent"]);
+  assert.deepEqual(retries, []);
+});
+
+test("an old or refreshing directory cannot confirm that an article is missing", () => {
+  assert.doesNotMatch(JSON.stringify(render({ article: false, confirmedMissing: true, fetching: true }).tree), /这篇攻略不在当前观星点资料中/);
+  for (const options of [{ article: false, staleEnvelope: true }, { article: false, confirmedMissing: true, refreshFailed: true }]) {
+    const output = JSON.stringify(render(options).tree);
+    assert.match(output, /攻略暂不可用，请重试/);
+    assert.doesNotMatch(output, /查看本地点攻略/);
+  }
 });
 
 test("failed refresh and stale envelopes retain article text with a working recovery", () => {
