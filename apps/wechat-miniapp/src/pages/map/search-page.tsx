@@ -633,6 +633,8 @@ export function MapSearchSurface() {
             && (searchState !== "PARTIAL" || expiredEmptyFilter) ? (
             <StatusPanel
               state={searchState}
+              emptyLevel={searchState === "EMPTY" ? "page" : undefined}
+              title={searchState === "EMPTY" ? "没有匹配的观星点" : undefined}
               detail={
                 (contextQuery.isError ? errorMessage(contextQuery.error) : queryUnconfirmed ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
                 (isOfflineError(contextQuery.error ?? (queryUnconfirmed ? null : scene.error ?? placeSearch.error))
@@ -640,12 +642,13 @@ export function MapSearchSurface() {
                   : expiredEmptyFilter
                     ? "少云筛选资料已到期，结果待核验；请刷新资料。"
                   : searchState === "EMPTY"
-                    ? "没有匹配的正式观星点；可移动地图或换一个名称。"
+                    ? "换个名称搜索，或返回地图移动到其他区域。"
                     : "正在搜索观星点。")
               }
-              recoveryLabel={searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
+              recoveryLabel={searchState === "EMPTY" ? "换个名称" : searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
               onRecover={searchState === "ERROR" ? retrySearchResources : searchState === "PERMISSION_DENIED"
-                ? () => void Taro.navigateTo({ url: "/pages/auth/index" }) : undefined}
+                ? () => void Taro.navigateTo({ url: "/pages/auth/index" }) : searchState === "EMPTY"
+                  ? () => { setFinderQuery(""); setFocused(true); setSuggestionsOpen(true); } : undefined}
             />
           ) : null}
           {incompleteActiveCoverage.length ? (
@@ -661,6 +664,7 @@ export function MapSearchSurface() {
           ) : null}
         </View>
 
+          {searchState !== "EMPTY" ? <>
           <View className="spot-search-result-summary">
             <Text className="type-caption">{queryUnconfirmed ? "搜索结果更新中"
               : expiredEmptyFilter ? "筛选结果待核验"
@@ -676,6 +680,7 @@ export function MapSearchSurface() {
             {other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null}
           </SearchResultPartition>
+          </> : null}
           {activeFilterGroups.includes("LESS_CLOUD") ? <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
         </ScrollView>
       </View>

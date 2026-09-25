@@ -206,6 +206,9 @@
   flex-direction: column;
   gap: 8rpx;
 }
+.spot-search-feedback .status-panel--empty-page {
+  min-height: max(220Px, calc(100vh - 320Px - env(safe-area-inset-bottom)));
+}
 .spot-search-filter-evidence {
   margin: 0 4rpx;
   padding: 14rpx 16rpx;
