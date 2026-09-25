@@ -30,7 +30,7 @@ import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contri
 import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, removeFormalMedia, type FormalMediaSelection } from "./formal-media-selection";
 import { loadAvailableMediaPreviews } from "../contribution/media-preview";
 import { formalFeedbackFrozenView } from "../contribution/formal-feedback-snapshot";
-import { retryFailedFormalResources } from "./formal-feedback-resources";
+import { resolveRequestedFormalFeedback, retryFailedFormalResources } from "./formal-feedback-resources";
 import { confirmEditorLeave } from "@/hooks/editor-leave";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { SpotDocumentFields } from "../spot-document-fields";
@@ -117,10 +117,10 @@ export default function FormalFeedbackEditor() {
   const [uploading, setUploading] = useState(false);
   const [resubmissionRevision, setResubmissionRevision] = useState<number | null>(null);
   const [reviewReason, setReviewReason] = useState("");
-  const [recordError, setRecordError] = useState("");
   const [activeSubmissionId, setActiveSubmissionId] = useState("");
   const [priorMedia, setPriorMedia] = useState<readonly ContributionFormalMediaUpload[]>([]);
   const [mediaSelection, setMediaSelection] = useState<FormalMediaSelection | null>(null);
+  const requestedFeedback = resolveRequestedFormalFeedback(history, spotId, submissionId);
   useEffect(() => {
     if (!pageVisible) return;
     const failed = query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE"
@@ -140,11 +140,8 @@ export default function FormalFeedbackEditor() {
       currentDraftUserId() !== accountOwnerId) return;
     editorOwner.current = accountOwnerId;
     if (submissionId) {
-      const record = history.data.data.submissions.find(item => item.submissionId === submissionId);
-      if (!record?.formalFeedback || !["REJECTED", "CHANGES_REQUESTED"].includes(record.submissionState)) {
-        setRecordError("这条反馈不存在、已进入其他状态，或不属于当前账号。");
-        return;
-      }
+      if (requestedFeedback.status !== "READY") return;
+      const record = requestedFeedback.record;
       const prior = record.formalFeedback;
       const restored = valuesFrom(prior.baseline);
       for (const [key,value] of Object.entries(prior.proposal.fields)) restored[key as ContributionFormalFieldKey] = value ?? "";
@@ -169,7 +166,7 @@ export default function FormalFeedbackEditor() {
       return;
     }
     setBaseline(query.data.data); setValues(valuesFrom(query.data.data)); setMediaSelection(createFormalMediaSelection(query.data.data));
-  }, [accountOwnerId, baseline, history.data, query.data, spotId, submissionId]);
+  }, [accountOwnerId, baseline, history.data, history.isFetching, history.refreshError, query.data, spotId, submissionId]);
   useEffect(() => {
     if (!pageVisible || ownerChanged || !activeSubmissionId || !priorMedia.length) return;
     let active = true;
@@ -387,7 +384,7 @@ export default function FormalFeedbackEditor() {
     {mediaHandoff.warning}
     <FloatingNotificationHost />
     <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} back beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
-    {!ownerChanged ? <SelectionTabs className="formal-feedback-tabs"
+    {!ownerChanged && (requestedFeedback.status !== "UNAVAILABLE" || baseline) ? <SelectionTabs className="formal-feedback-tabs"
       items={CHAPTERS.map(([id, label]) => ({ id, label }))}
       activeId={chapter}
       label="反馈章节"
@@ -400,10 +397,10 @@ export default function FormalFeedbackEditor() {
         {!ownerChanged && !query.isError && !history.isError && (query.refreshError || query.data?.dataState === "STALE_USABLE" ||
         history.refreshError || history.data?.dataState === "STALE_USABLE" ||
         site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE") ? (
-          <StatusPanel state="STALE" detail="部分正式地点或反馈资料尚未确认最新状态，当前输入仍会保留。"
+          <StatusPanel state="STALE" detail={baseline ? "部分正式地点或反馈资料尚未确认最新状态，当前输入仍会保留。" : "部分正式地点或反馈资料尚未确认最新状态，请重新获取后再编辑。"}
             recoveryLabel="重新获取" onRecover={retryResourceFailures} />
         ) : null}
-        {ownerChanged ? <StatusPanel state="ERROR" title="账号已变化" detail="请返回观星点后重新打开反馈页。" recoveryLabel="返回地图" onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })} /> : query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : recordError ? <StatusPanel state="ERROR" detail={recordError} /> : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
+        {ownerChanged ? <StatusPanel state="ERROR" title="账号已变化" detail="请返回观星点后重新打开反馈页。" recoveryLabel="返回地图" onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })} /> : query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : requestedFeedback.status === "UNAVAILABLE" && !baseline ? <StatusPanel state="ERROR" title="无法继续编辑这条反馈" detail="这条反馈不存在、已进入其他状态，或不属于当前账号。请到“我的”核对最新记录。" recoveryLabel="返回我的记录" onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> : !baseline && (query.refreshError || query.data?.dataState === "STALE_USABLE" || history.refreshError || history.data?.dataState === "STALE_USABLE") ? null : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
           {submitted ? <Text className="formal-feedback-review-tag">审核中</Text> : null}
           {reviewReason ? <View className="formal-feedback-review-note"><Text>审核意见</Text><Text>{reviewReason}</Text></View> : null}
           <SpotDocumentFields
@@ -433,7 +430,7 @@ export default function FormalFeedbackEditor() {
         </>}
       </View>
     </ScrollView>
-    {!ownerChanged ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || submitted || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : submitted ? "审核中" : "提交反馈"}</Button></View> : null}
+    {!ownerChanged && (requestedFeedback.status !== "UNAVAILABLE" || baseline) ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || submitted || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : submitted ? "审核中" : "提交反馈"}</Button></View> : null}
   </View>;
 }
 
