@@ -340,8 +340,9 @@ async function request<T>(
     recordAcceptanceDiagnostic(key, "start", Taro.getEnv());
 
     const scope = options.session?.userId ?? "anonymous";
+    const apiBase = __MINIAPP_API_BASE__.replace(/\/+$/u, "");
     const exactCacheKey =
-      responseCacheKey(key, path) + ":" + String(scope);
+      responseCacheKey(key, apiBase, path) + ":" + String(scope);
     const cached =
       method === "GET" && options.cache !== false
         ? responseCache.get(exactCacheKey)
@@ -409,7 +410,7 @@ async function request<T>(
         return;
       }
       task = Taro.request<ApiEnvelope<T> | ApiError>({
-        url: __MINIAPP_API_BASE__.replace(/\/+$/u, "") + path,
+        url: apiBase + path,
         method,
         timeout: 10_000,
         header,

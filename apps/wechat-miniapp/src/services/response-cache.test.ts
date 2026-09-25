@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { ApiEnvelope } from "@starward/miniapp-contracts";
 import { createResponseCache, MAX_STALE_AGE_MS, RESPONSE_CACHE_LIMITS, RESPONSE_CACHE_STORAGE_KEY, utf8Bytes } from "./response-cache";
-import { transportHarness } from "./api-request-test-support";
+import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
+import { responseCacheKey } from "./cache-policy";
 
 const clock = 1_800_000_000_000;
+const transportKey = (group: string, path: string, scope = "anonymous") =>
+  responseCacheKey(group, TEST_API_BASE, path) + ":" + scope;
 function envelope(data: unknown = { value: 1 }, etag = "etag-1"): ApiEnvelope<unknown> {
   return { apiVersion: "v2", generatedAt: new Date(clock).toISOString(), validAt: new Date(clock).toISOString(), requestId: "synthetic-cache-test", etag,
     dataState: "FRESH", warnings: [], sources: [], data };
@@ -263,6 +266,30 @@ test("conditional transport reuse remains exact to URL and account, including la
   }
 });
 
+test("a persisted representation from another API origin cannot send its ETag or become offline data", async () => {
+  const path = "/v2/me/contributions";
+  const session = { userId: "account:a", accessToken: "synthetic" };
+  const old = transportHarness(false, () => {}, false, "http://127.0.0.1:8788");
+  const first = old.request("contributions", path, { session });
+  old.calls.at(-1)!.success({ statusCode: 200, data: old.response });
+  await first; await old.flush();
+
+  const current = transportHarness(false, () => {}, false, "http://127.0.0.1:8787");
+  for (const [key, value] of old.storage) current.storage.set(key, structuredClone(value));
+  const failed = current.request("contributions", path, { session });
+  assert.equal(current.calls.at(-1)!.header["If-None-Match"], undefined);
+  current.calls.at(-1)!.fail({ errMsg: "offline" });
+  await assert.rejects(failed, /offline/);
+  const recovered = current.request("contributions", path, { session });
+  assert.equal(current.calls.at(-1)!.header["If-None-Match"], undefined);
+  const fresh = { ...current.response, etag: "current-origin", data: { value: "current" } };
+  current.calls.at(-1)!.success({ statusCode: 200, data: fresh });
+  assert.deepEqual((await recovered).data, fresh.data);
+  await current.flush();
+  assert.equal(current.responseCache.get(responseCacheKey("contributions", "http://127.0.0.1:8787", path) + ":account:a")?.envelope.etag, fresh.etag);
+  old.queryClient.clear(); current.queryClient.clear();
+});
+
 test("mutation invalidation prevents 304/stale reuse and late cache repopulation", async () => {
   for (const outcome of ["304", "failure", "200"]) {
     const h = transportHarness(); await h.seed();
@@ -273,7 +300,7 @@ test("mutation invalidation prevents 304/stale reuse and late cache repopulation
     if (outcome === "200") assert.equal(await pending, h.response);
     else await assert.rejects(pending);
     await h.flush();
-    assert.equal(h.responseCache.get("scene:/scene:anonymous"), undefined);
+    assert.equal(h.responseCache.get(transportKey("scene", "/scene")), undefined);
     assert.equal(h.storage.size, 0);
   }
 });
@@ -309,7 +336,7 @@ test("Settings cache clearing cancels discovery reads and preserves account data
     assert.equal(h.responseCache.get(key + ":/resource:a"), undefined);
     assert.equal(h.queryClient.getQueryData([key, "a"]), undefined);
   }
-  assert.equal(h.responseCache.get("map-scene:/next:anonymous"), undefined);
+  assert.equal(h.responseCache.get(transportKey("map-scene", "/next")), undefined);
   for (const key of ["favorites", "plans", "preferences", "profile-links"]) {
     assert.ok(h.responseCache.get(key + ":/resource:a"));
     assert.deepEqual(h.queryClient.getQueryData([key, "a"]), { key });
@@ -339,20 +366,20 @@ test("selective clearing preserves unrelated in-flight 304, stale fallback and n
     const result = await pending;
     assert.equal(result.dataState, outcome === "failure" ? "STALE_USABLE" : "FRESH");
     await h.flush();
-    assert.equal(h.responseCache.get("plans:/v2/plans:b")!.envelope.etag, outcome === "200" ? "newer" : h.response.etag);
+    assert.equal(h.responseCache.get(transportKey("plans", "/v2/plans", "b"))!.envelope.etag, outcome === "200" ? "newer" : h.response.etag);
     h.queryClient.clear();
   }
 });
 
 test("a memory eviction does not revoke an identical still-valid disk representation", async () => {
   const h = transportHarness(); await h.seed();
-  const original = h.responseCache.get("scene:/scene:anonymous");
+  const original = h.responseCache.get(transportKey("scene", "/scene"));
   const pending = h.request("scene", "/scene");
   const base = envelope({ value: "" });
   const size = RESPONSE_CACHE_LIMITS.memoryBytes / 2 - utf8Bytes(JSON.stringify(base));
   for (let i = 0; i < 2; i++) h.responseCache.set("memory-only:" + i, { ...base, data: { value: "x".repeat(size) } });
   await h.flush();
-  const restored = h.responseCache.get("scene:/scene:anonymous");
+  const restored = h.responseCache.get(transportKey("scene", "/scene"));
   assert.notEqual(restored, original, "memory entry was really evicted");
   assert.deepEqual(restored?.envelope, original?.envelope);
   h.calls.at(-1)!.success({ statusCode: 304, data: undefined });

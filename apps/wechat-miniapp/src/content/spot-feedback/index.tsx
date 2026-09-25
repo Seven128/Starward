@@ -121,6 +121,7 @@ export default function FormalFeedbackEditor() {
   const [priorMedia, setPriorMedia] = useState<readonly ContributionFormalMediaUpload[]>([]);
   const [mediaSelection, setMediaSelection] = useState<FormalMediaSelection | null>(null);
   const requestedFeedback = resolveRequestedFormalFeedback(history, spotId, submissionId);
+  const hasEditorContent = Boolean(baseline && values);
   useEffect(() => {
     if (!pageVisible) return;
     const failed = query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE"
@@ -384,7 +385,7 @@ export default function FormalFeedbackEditor() {
     {mediaHandoff.warning}
     <FloatingNotificationHost />
     <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} back beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
-    {!ownerChanged && (requestedFeedback.status !== "UNAVAILABLE" || baseline) ? <SelectionTabs className="formal-feedback-tabs"
+    {!ownerChanged && hasEditorContent ? <SelectionTabs className="formal-feedback-tabs"
       items={CHAPTERS.map(([id, label]) => ({ id, label }))}
       activeId={chapter}
       label="反馈章节"
@@ -430,7 +431,7 @@ export default function FormalFeedbackEditor() {
         </>}
       </View>
     </ScrollView>
-    {!ownerChanged && (requestedFeedback.status !== "UNAVAILABLE" || baseline) ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || submitted || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : submitted ? "审核中" : "提交反馈"}</Button></View> : null}
+    {!ownerChanged && hasEditorContent ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || submitted || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : submitted ? "审核中" : "提交反馈"}</Button></View> : null}
   </View>;
 }
 

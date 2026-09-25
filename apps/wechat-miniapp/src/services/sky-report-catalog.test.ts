@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import { projectAdoptedSkyCatalog } from "./sky-report-catalog";
-import { transportHarness } from "./api-request-test-support";
+import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
+import { responseCacheKey } from "./cache-policy";
 import { isCelestialObjectReference } from "@starward/miniapp-contracts";
 
 const source = ts.createSourceFile("api-client.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -46,7 +47,7 @@ test("upgraded client rejects retired star cache after restart on offline and 30
     assert.equal(result.sources.some((item: any) => item.id === "catalog:stars"), false);
     assert.ok(result.warnings.some((message: string) => message.includes("联网后刷新")));
     // Retired bytes cannot leak via an untouched cached object after projection.
-    assert.equal((current.responseCache.get("scene:/scene:anonymous")?.envelope.data as any).skyScene.catalog.entries[0].objectRef, "HIP:32349");
+    assert.equal((current.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).skyScene.catalog.entries[0].objectRef, "HIP:32349");
     old.queryClient.clear(); current.queryClient.clear();
   }
 });
