@@ -955,27 +955,12 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} · ` : ""}地点当地时间 · {activePlan.contextSnapshot.timezone}</Text>
               </View>
             </View>
-            {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
-              failed={!sky && (skyQuery.isError || Boolean(skyQuery.refreshError) || skyQuery.data?.dataState === "STALE_USABLE")}
-              stale={Boolean(sky && (skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE"))}
-              onRetry={() => void skyQuery.refetch()} loading={Boolean(
-              (contextQuery.isPending && contextQuery.isFetching) ||
-              (activeContext && skyQuery.isPending && skyQuery.isFetching)
-            )} />}
             {planQuery.isError || planQuery.refreshError || planQuery.data?.dataState === "STALE_USABLE" ? (
               <StatusPanel
                 state="STALE"
                 detail="当前计划尚未确认最新状态，正在显示上次获取的记录；本页修改已保留。"
                 recoveryLabel="重试"
                 onRecover={() => void planQuery.refetch().catch(() => {})}
-              />
-            ) : null}
-            {contextQuery.isError ? (
-              <StatusPanel
-                state="ERROR"
-                detail="计划的观测上下文暂不可恢复；计划、检查项仍保留，不会改用另一个地点或日期。"
-                recoveryLabel="重试动态条件"
-                onRecover={() => void contextQuery.refetch()}
               />
             ) : null}
             <View className="plan-section plan-route" data-od-id="plan-route-nodes">
@@ -1021,6 +1006,21 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   ? <SoftButton variant="ghost" label="重新获取场地信息" onClick={() => void siteOverviewQuery.refetch()} /> : null}
               </View>
             </View>
+            {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
+              failed={!sky && (skyQuery.isError || Boolean(skyQuery.refreshError) || skyQuery.data?.dataState === "STALE_USABLE")}
+              stale={Boolean(sky && (skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE"))}
+              onRetry={() => void skyQuery.refetch()} loading={Boolean(
+              (contextQuery.isPending && contextQuery.isFetching) ||
+              (activeContext && skyQuery.isPending && skyQuery.isFetching)
+            )} />}
+            {contextQuery.isError ? (
+              <StatusPanel
+                state="ERROR"
+                detail="计划的观测上下文暂不可恢复；计划、检查项仍保留，不会改用另一个地点或日期。"
+                recoveryLabel="重试动态条件"
+                onRecover={() => void contextQuery.refetch()}
+              />
+            ) : null}
             <View className="plan-section plan-events" data-od-id="plan-events">
               <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">◌</Text>天文事件</Text></View>
               {(activePlan.eventOccurrenceIds ?? []).map(id => {

@@ -518,8 +518,8 @@
 .plan-period__time { display: flex; align-items: baseline; gap: 9Px; color: var(--text-primary); font-size: 28Px; line-height: 1.4; font-weight: 500; }
 .plan-period__time > text:nth-child(2) { color: var(--text-secondary); font-size: 13Px; }
 .plan-section { gap: 9Px; padding: 14Px 0; border-top: 1Px solid var(--border); }
-.plan-reference { order: 2; }
-.plan-route { order: 3; }
+.plan-route { order: 2; }
+.plan-reference { order: 3; }
 .plan-events { order: 4; }
 .plan-preparation { order: 5; }
 .plan-notes { order: 6; }
