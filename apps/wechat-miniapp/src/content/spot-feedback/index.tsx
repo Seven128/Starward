@@ -409,7 +409,7 @@ export default function FormalFeedbackEditor() {
             baseline={baseline}
             disabled={busy || submitted}
             onChange={setField}
-            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={() => setPreviewRetry(current => current + 1)} disabled={busy||uploading||submitted} onAdd={addPhoto} onRemove={removePhoto} />}
+            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={() => setPreviewRetry(current => current + 1)} disabled={busy||uploading||submitted} readOnly={submitted} onAdd={addPhoto} onRemove={removePhoto} />}
             notesFooter={<>
               {visibleUploads.length ? <ToggleField disabled={busy||uploading||submitted} id="formal-feedback-photo-rights" label="我有权使用这些照片" checked={rightsConfirmed} onChange={setRightsConfirmed} stateLabels={{checked:"已确认",unchecked:"未确认"}} /> : null}
               {pendingUpload ? <View className="formal-feedback-upload-recovery">
@@ -444,12 +444,13 @@ function Conflict({ conflict, value, onChange }: { conflict: ContributionFormalC
   </View>;
 }
 
-function PhotoGroup({ kind, ids, uploads: allUploads, paths, failedIds, onRetry, disabled, onAdd, onRemove }: { kind: ContributionMediaKind; ids: readonly string[]; uploads: readonly ContributionFormalMediaUpload[]; paths: Record<string,string>; failedIds: readonly string[]; onRetry(): void; disabled: boolean; onAdd(kind: ContributionMediaKind): Promise<void>; onRemove(uploadId: string): Promise<void> }) {
+function PhotoGroup({ kind, ids, uploads: allUploads, paths, failedIds, onRetry, disabled, readOnly, onAdd, onRemove }: { kind: ContributionMediaKind; ids: readonly string[]; uploads: readonly ContributionFormalMediaUpload[]; paths: Record<string,string>; failedIds: readonly string[]; onRetry(): void; disabled: boolean; readOnly: boolean; onAdd(kind: ContributionMediaKind): Promise<void>; onRemove(uploadId: string): Promise<void> }) {
+  if (readOnly && ids.length === 0) return null;
   const label = kind === "parking" ? "停车" : kind === "toilet" ? "洗手间" : "现场";
   const uploads = new Map<string, ContributionFormalMediaUpload>(allUploads.filter(value => value.kind === kind).map(value => [value.uploadId, value]));
   return <View className="formal-feedback-photo-group">
-    <View className="formal-feedback-photo-list">{ids.map(id => <View className="formal-feedback-photo" key={id}>{paths[id] ? <><Image src={paths[id]!} mode="aspectFill" /><Text className="formal-feedback-photo__red-label">{label}照片</Text></> : <Text>{uploads.has(id) ? "图片" : "原照片"}</Text>}<Button disabled={disabled} ariaLabel={`移除${label}照片`} onClick={() => void onRemove(id)}><Text className="formal-feedback-photo__remove-glyph">×</Text></Button></View>)}</View>
+    <View className="formal-feedback-photo-list">{ids.map(id => <View className="formal-feedback-photo" key={id}>{paths[id] ? <><Image src={paths[id]!} mode="aspectFill" /><Text className="formal-feedback-photo__red-label">{label}照片</Text></> : <Text>{uploads.has(id) ? "图片" : "原照片"}</Text>}{!readOnly ? <Button disabled={disabled} ariaLabel={`移除${label}照片`} onClick={() => void onRemove(id)}><Text className="formal-feedback-photo__remove-glyph">×</Text></Button> : null}</View>)}</View>
     {ids.some(id => failedIds.includes(id) && !paths[id]) ? <StatusPanel state="ERROR" detail={`${label}照片暂时无法预览，其他资料仍可查看。`} recoveryLabel="重试照片预览" onRecover={onRetry} /> : null}
-    <Button className="formal-feedback-photo-action" disabled={disabled || ids.length >= 3} onClick={() => void onAdd(kind)}>＋ 添加{label}照片</Button>
+    {!readOnly ? <Button className="formal-feedback-photo-action" disabled={disabled || ids.length >= 3} onClick={() => void onAdd(kind)}>＋ 添加{label}照片</Button> : null}
   </View>;
 }
