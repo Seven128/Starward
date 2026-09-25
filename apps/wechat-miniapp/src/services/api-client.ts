@@ -62,6 +62,7 @@ import {
 import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
 import { createDeviceFailureReporter } from "./device-request-diagnostic";
 import { miniappQueryClient } from "./query-client";
+import { useAppStore } from "@/state/app-store";
 import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, type CachedResponse } from "./response-cache";
 import { createMutationRetry } from "./mutation-retry";
 import {
@@ -216,7 +217,8 @@ function readStoredSession(): AuthSessionData | null {
       !Number.isFinite(Date.parse(session.expiresAt)) ||
       Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
     ) {
-      Taro.removeStorageSync(SESSION_STORAGE_KEY);
+      try { Taro.removeStorageSync(SESSION_STORAGE_KEY); } catch { /* No stale identity may remain active in memory. */ }
+      useAppStore.getState().bindAccount(null);
       return null;
     }
     return session;
@@ -232,6 +234,8 @@ export function currentDraftUserId(): string | null {
 
 function clearStoredSession() {
   sessionPromise = null;
+  if (useAppStore.getState().accountOwnerId !== erasedStoredAccountId)
+    useAppStore.getState().bindAccount(null);
   try {
     Taro.removeStorageSync(SESSION_STORAGE_KEY);
     return true;
@@ -524,7 +528,10 @@ export const { getAccountProfile, saveAccountNickname, getAccountAvatar, saveAcc
 async function ensureSession(force = false): Promise<AuthSessionData> {
   if (!force) {
     const stored = readStoredSession();
-    if (stored) return stored;
+    if (stored) {
+      useAppStore.getState().bindAccount(stored.userId);
+      return stored;
+    }
     if (sessionPromise) return sessionPromise;
   } else {
     clearStoredSession();
@@ -546,6 +553,7 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
     if (result.data.userId === erasedStoredAccountId)
       throw new Error("account_identity_revoked");
     Taro.setStorageSync(SESSION_STORAGE_KEY, result.data);
+    useAppStore.getState().bindAccount(result.data.userId);
     return result.data;
   })();
   try {

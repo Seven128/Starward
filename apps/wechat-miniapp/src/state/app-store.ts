@@ -37,6 +37,9 @@ import { currentNotificationPageRoute } from "./notification-page-route";
 import acceptanceBootstrapJson from "./acceptance-bootstrap.json";
 
 const STORAGE_KEY = "starward.wechat-miniapp.state.current";
+const ACCOUNT_STORAGE_PREFIX = "starward.wechat-miniapp.state.account.";
+const UNCLAIMED_STORAGE_KEY = "starward.wechat-miniapp.state.unclaimed";
+const AUTH_STORAGE_KEY = "starward.wechat-miniapp.auth.current";
 
 export interface MapViewportState {
   center: { latitude: number; longitude: number };
@@ -69,6 +72,7 @@ export interface SourceLiftRuntimeState {
 }
 
 export interface PersistedState {
+  accountOwnerId?: string | null;
   mode: DisplayMode;
   priorMode: Exclude<DisplayMode, "OBSERVATION">;
   preferences: UserPreferences;
@@ -91,6 +95,7 @@ export type LocationState =
   "DEFAULT_REGION" | "REQUESTING" | "GRANTED" | "DENIED" | "UNAVAILABLE";
 
 interface AppState extends PersistedState {
+  accountOwnerId: string | null;
   priorMode: Exclude<DisplayMode, "OBSERVATION">;
   draftFilters: FilterState;
   filterSnapshot: FilterState;
@@ -101,6 +106,7 @@ interface AppState extends PersistedState {
   notifications: NotificationRecord[];
   sourceLift: SourceLiftRuntimeState;
   hydrate(): void;
+  bindAccount(ownerId: string | null): void;
   notify(intent: NotificationIntent): void;
   dismissNotification(id: string): void;
   clearNotifications(owner?: string): void;
@@ -162,14 +168,51 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function loadPersisted(): Partial<PersistedState> {
+function loadStoredState(key: string): Partial<PersistedState> {
   try {
-    const stored = Taro.getStorageSync(STORAGE_KEY) as unknown;
+    const stored = Taro.getStorageSync(key) as unknown;
     const value = typeof stored === "string" ? JSON.parse(stored) : stored;
     return isRecord(value) ? (value as Partial<PersistedState>) : {};
   } catch {
     return {};
   }
+}
+
+function storedSessionIdentity(): { userId: string; active: boolean } | null {
+  try {
+    const value = Taro.getStorageSync(AUTH_STORAGE_KEY) as unknown;
+    if (!isRecord(value) || typeof value.userId !== "string" ||
+      typeof value.accessToken !== "string" || typeof value.expiresAt !== "string") return null;
+    const expiry = Date.parse(value.expiresAt);
+    return { userId: value.userId, active: Number.isFinite(expiry) && expiry > Date.now() + 60_000 };
+  } catch { return null; }
+}
+
+const freshlyStashedOwners = new Set<string>();
+let persistedOwnerSeen: string | null = null;
+
+function loadPersisted(ownerId: string | null): Partial<PersistedState> {
+  if (!ownerId) return {};
+  const current = loadStoredState(STORAGE_KEY);
+  if (current.accountOwnerId === ownerId) return current;
+  const previous = loadStoredState(ACCOUNT_STORAGE_PREFIX + ownerId);
+  return previous.accountOwnerId === ownerId ? previous : { accountOwnerId: ownerId };
+}
+
+function preserveDisplacedCurrent(nextOwnerId: string) {
+  if (persistedOwnerSeen === nextOwnerId) return;
+  const current = loadStoredState(STORAGE_KEY);
+  if (!Object.keys(current).length) return;
+  const previousOwner = current.accountOwnerId;
+  if (!previousOwner) {
+    if (!Object.keys(loadStoredState(UNCLAIMED_STORAGE_KEY)).length)
+      Taro.setStorageSync(UNCLAIMED_STORAGE_KEY, current);
+    return;
+  }
+  if (previousOwner === nextOwnerId) return;
+  if (freshlyStashedOwners.has(previousOwner)) return;
+  Taro.setStorageSync(ACCOUNT_STORAGE_PREFIX + previousOwner,
+    { ...current, accountOwnerId: previousOwner });
 }
 
 function persisted(state: AppState): PersistedState {
@@ -179,6 +222,7 @@ function persisted(state: AppState): PersistedState {
       ? null
       : state.observationContext;
   return {
+    accountOwnerId: state.accountOwnerId,
     mode: durableMode,
     priorMode: state.priorMode,
     preferences: { ...state.preferences, displayMode: durableMode },
@@ -196,6 +240,16 @@ function persisted(state: AppState): PersistedState {
     favoriteIds: state.favoriteIds,
     plans: state.plans,
   };
+}
+
+function saveOwnedCurrent(state: AppState): boolean {
+  const ownerId = state.accountOwnerId;
+  if (!ownerId) return false;
+  preserveDisplacedCurrent(ownerId);
+  Taro.setStorageSync(STORAGE_KEY, persisted(state));
+  persistedOwnerSeen = ownerId;
+  freshlyStashedOwners.clear();
+  return true;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -293,7 +347,8 @@ function usableObservationContext(value: unknown): ObservationContext | null {
   } } : null;
 }
 
-const BOOTSTRAP_STATE = loadPersisted();
+const BOOTSTRAP_SESSION = storedSessionIdentity();
+const BOOTSTRAP_STATE = loadPersisted(BOOTSTRAP_SESSION?.active ? BOOTSTRAP_SESSION.userId : null);
 const BOOTSTRAP_MODE = restoreStartupMode(
   BOOTSTRAP_STATE.mode,
   BOOTSTRAP_STATE.priorMode,
@@ -310,13 +365,14 @@ export const useAppStore = create<AppState>((set, get) => {
     set(patch as Partial<AppState>);
     queueMicrotask(() => {
       try {
-        Taro.setStorageSync(STORAGE_KEY, persisted(get()));
+        saveOwnedCurrent(get());
       } catch {
         /* storage denial is surfaced by callers where material */
       }
     });
   };
   return {
+    accountOwnerId: BOOTSTRAP_STATE.accountOwnerId ?? null,
     mode: BOOTSTRAP_MODE,
     priorMode: restorePriorMode(
       BOOTSTRAP_STATE.mode,
@@ -359,10 +415,12 @@ export const useAppStore = create<AppState>((set, get) => {
     hydrate() {
       if (runtimeHydrated) return;
       runtimeHydrated = true;
-      const saved = loadPersisted();
+      const session = storedSessionIdentity();
+      const saved = loadPersisted(session?.active ? session.userId : null);
       const startupMode = restoreStartupMode(saved.mode, saved.priorMode);
       set({
         ...saved,
+        accountOwnerId: saved.accountOwnerId ?? null,
         mode: startupMode,
         preferences: {
           ...DEFAULT_USER_PREFERENCES,
@@ -389,6 +447,9 @@ export const useAppStore = create<AppState>((set, get) => {
           saved.committedFilters ?? EMPTY_FILTER_STATE,
         ),
         priorMode: restorePriorMode(saved.mode, saved.priorMode),
+        selectedSpotId: saved.selectedSpotId ?? null,
+        searchHistory: saved.searchHistory ?? [],
+        favoriteIds: saved.favoriteIds ?? [],
         plans: Array.isArray(saved.plans) ? saved.plans : [],
       });
     },
@@ -494,11 +555,12 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     setObservationContext(observationContext) {
       set({ observationContext });
+      if (!get().accountOwnerId) return;
       try {
         // Observation Context binds every downstream request and route. Persist
         // this rare transition before navigation so a background page cannot
         // leave storage one context behind the in-memory owner.
-        Taro.setStorageSync(STORAGE_KEY, persisted(get()));
+        saveOwnedCurrent(get());
       } catch {
         // The active session still remains correct in memory. Restart recovery
         // fails closed when storage is unavailable.
@@ -643,8 +705,11 @@ export const useAppStore = create<AppState>((set, get) => {
       }));
     },
     clearLocalCache() {
+      const ownerId = get().accountOwnerId;
+      if (!ownerId) return Promise.resolve(false);
       try {
         Taro.removeStorageSync(STORAGE_KEY);
+        persistedOwnerSeen = null;
       } catch {
         /* The replacement below can still remove the old recovery fields. */
       }
@@ -661,23 +726,81 @@ export const useAppStore = create<AppState>((set, get) => {
         searchHistory: [],
       });
       return new Promise<boolean>((resolve) => queueMicrotask(() => {
+        if (get().accountOwnerId !== ownerId) { resolve(false); return; }
         try {
-          Taro.setStorageSync(STORAGE_KEY, persisted(get()));
-          resolve(true);
+          resolve(saveOwnedCurrent(get()));
         } catch {
           resolve(false);
         }
       }));
     },
+    bindAccount(ownerId) {
+      if (get().accountOwnerId === ownerId) return;
+      const previous = get();
+      if (previous.accountOwnerId) {
+        try {
+          Taro.setStorageSync(ACCOUNT_STORAGE_PREFIX + previous.accountOwnerId, persisted(previous));
+          freshlyStashedOwners.add(previous.accountOwnerId);
+        } catch { /* Current identity still changes in memory; old disk state remains owner-tagged. */ }
+      }
+      const saved = loadPersisted(ownerId);
+      const mode = restoreStartupMode(saved.mode, saved.priorMode);
+      const retainAnonymousMap = !previous.accountOwnerId && Boolean(ownerId) && (
+        previous.selectedSpotId !== null || previous.observationContext !== null ||
+        previous.finderQuery.length > 0 ||
+        previous.viewport.center.latitude !== DEFAULT_VIEWPORT.center.latitude ||
+        previous.viewport.center.longitude !== DEFAULT_VIEWPORT.center.longitude ||
+        previous.viewport.zoom !== DEFAULT_VIEWPORT.zoom
+      );
+      const filters = cloneFilterState(retainAnonymousMap
+        ? previous.committedFilters : saved.committedFilters ?? EMPTY_FILTER_STATE);
+      set({
+        accountOwnerId: ownerId,
+        mode,
+        priorMode: restorePriorMode(saved.mode, saved.priorMode),
+        preferences: { ...DEFAULT_USER_PREFERENCES, ...saved.preferences, displayMode: mode },
+        preferencesRevision: saved.preferencesRevision ?? 0,
+        preferencesDirty: saved.preferencesDirty ?? false,
+        preferencesUpdatedAt: saved.preferencesUpdatedAt ?? null,
+        viewport: retainAnonymousMap ? previous.viewport : { ...DEFAULT_VIEWPORT, ...saved.viewport },
+        finderQuery: retainAnonymousMap ? previous.finderQuery : saved.finderQuery ?? "",
+        observationContext: retainAnonymousMap ? previous.observationContext : usableObservationContext(saved.observationContext),
+        analysisOverlay: retainAnonymousMap ? previous.analysisOverlay : saved.analysisOverlay ?? "NONE",
+        terrainEnabled: retainAnonymousMap ? previous.terrainEnabled : saved.terrainEnabled ?? false,
+        committedFilters: filters,
+        draftFilters: cloneFilterState(filters),
+        filterSnapshot: cloneFilterState(filters),
+        selectedSpotId: retainAnonymousMap ? previous.selectedSpotId : saved.selectedSpotId ?? null,
+        searchHistory: retainAnonymousMap ? previous.searchHistory : [],
+        favoriteIds: saved.favoriteIds ?? [],
+        plans: Array.isArray(saved.plans) ? saved.plans : [],
+        filterSheetOpen: false,
+        locationState: "DEFAULT_REGION",
+        mapResetVersion: previous.mapResetVersion + 1,
+        spotOpenRequestVersion: previous.spotOpenRequestVersion + 1,
+        notifications: [],
+        sourceLift: { owner: null, phase: "IDLE", variant: null, origin: null,
+          finishOptions: { restoreMap: true, discardFilterDraft: true } },
+      });
+      if (!ownerId) return;
+      try {
+        saveOwnedCurrent(get());
+      }
+      catch { /* In-memory account isolation remains in force. */ }
+    },
     resetAfterAccountDeletion() {
       let removed = true;
       try {
         Taro.removeStorageSync(STORAGE_KEY);
+        persistedOwnerSeen = null;
+        if (get().accountOwnerId)
+          Taro.removeStorageSync(ACCOUNT_STORAGE_PREFIX + get().accountOwnerId);
       } catch {
         // The server receipt remains authoritative; in-memory state is still reset.
         removed = false;
       }
       set({
+        accountOwnerId: null,
         mode: "DAY",
         priorMode: "DAY",
         preferences: { ...DEFAULT_USER_PREFERENCES },

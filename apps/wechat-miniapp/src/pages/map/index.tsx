@@ -188,6 +188,7 @@ export default function MapPage() {
   const spotOpenRequestVersion = useAppStore((state) => state.spotOpenRequestVersion);
   const locationState = useAppStore((state) => state.locationState);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
+  const accountOwnerId = useAppStore((state) => state.accountOwnerId);
   const setObservationContext = useAppStore(
     (state) => state.setObservationContext,
   );
@@ -396,6 +397,7 @@ export default function MapPage() {
   const scene = useMapForecastQuery({
     queryKey: [
       "map-scene",
+      accountOwnerId,
       activeContext?.contextId,
       activeContext?.contextFingerprint,
       activeContext?.revision,
@@ -435,9 +437,10 @@ export default function MapPage() {
   });
 
   useEffect(() => {
+    if (accountOwnerId !== currentDraftUserId()) return;
     const ids = scene.data?.data.favoriteSpotIds;
     if (ids) useAppStore.getState().replaceFavoriteIds(ids);
-  }, [scene.data?.data.favoriteSpotIds]);
+  }, [accountOwnerId, scene.data?.data.favoriteSpotIds]);
 
   useEffect(() => {
     if (analysisOverlay === "OPPORTUNITY") setAnalysisOverlay("TOTAL_CLOUD");
