@@ -287,6 +287,7 @@ export function MapSearchSurface() {
   const other = formalSpots.filter((spot) => !favoriteIds.includes(spot.spotId));
   const candidates = visiblePlaces?.candidates ?? [];
   const ordinaryPlaces = visiblePlaces?.ordinaryPlaces ?? [];
+  const hasRetainedSearchResults = formalSpots.length > 0 || candidates.length > 0 || ordinaryPlaces.length > 0;
   const activeFilterGroups = FILTER_GROUPS
     .map((group) => group.key)
     .filter((group) => committedFilters[group].length > 0);
@@ -627,7 +628,9 @@ export function MapSearchSurface() {
 
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
-          {staleSearchResource ? <StatusPanel state="STALE" detail="部分搜索资料尚未确认最新状态，当前结果仍会保留。"
+          {staleSearchResource ? <StatusPanel state="STALE" detail={hasRetainedSearchResults
+            ? "部分搜索资料尚未确认最新状态，当前结果仍会保留。"
+            : "当前没有可保留的搜索结果；资料暂时无法更新。"}
             recoveryLabel="重新获取" onRecover={retrySearchResources} /> : null}
           {searchState !== "READY" && !(searchState === "STALE" && staleSearchResource)
             && (searchState !== "PARTIAL" || expiredEmptyFilter) ? (
@@ -664,7 +667,7 @@ export function MapSearchSurface() {
           ) : null}
         </View>
 
-          {searchState !== "EMPTY" ? <>
+          {formalSpots.length > 0 || searchState === "READY" || searchState === "PARTIAL" ? <>
           <View className="spot-search-result-summary">
             <Text className="type-caption">{queryUnconfirmed ? "搜索结果更新中"
               : expiredEmptyFilter ? "筛选结果待核验"
