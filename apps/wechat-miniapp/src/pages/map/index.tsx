@@ -1559,7 +1559,7 @@ export default function MapPage() {
     } catch (error) {
       notify({
         owner: "map",
-        placement: "inline",
+        placement: "floating",
         tone: "warning",
         title: "系统分享暂不可用",
         body: `${errorMessage(error)}。请稍后重试。`,
@@ -1582,7 +1582,7 @@ export default function MapPage() {
     } catch {
       notify({
         owner: "map",
-        placement: "inline",
+        placement: "floating",
         tone: "warning",
         title: `${title}暂未打开`,
         body: "请稍后重试，当前地点和时间已保留。",
@@ -1594,7 +1594,7 @@ export default function MapPage() {
 
   const onPanelEvidence = (kind: "guides" | "field" | "sources", articleId?: string) => {
     if (!selected || !activeContext || !detailContextReady || !spotDetail) {
-      notify({ owner: "map", placement: "inline", tone: "warning", title: "地点资料尚未就绪", body: "请稍后重试；当前地点和时间会保留。", dismissible: true, dedupeKey: "map-evidence-not-ready" });
+      notify({ owner: "map", placement: "floating", tone: "warning", title: "地点资料尚未就绪", body: "请稍后重试；当前地点和时间会保留。", dismissible: true, dedupeKey: "map-evidence-not-ready" });
       return;
     }
     if (articleId && !spotDetail.guides.some(guide => guide.articleId === articleId && guide.spotId === selected.spotId)) return;
@@ -1610,7 +1610,7 @@ export default function MapPage() {
     if (selected.visibilityPolicy !== "PUBLIC_EXACT") {
       notify({
         owner: "map",
-        placement: "inline",
+        placement: "floating",
         tone: "warning",
         title: "坐标不对外开放",
         body: "该点位不允许向外部地图发送精确坐标；请查看公开的到达说明。",
@@ -1625,7 +1625,7 @@ export default function MapPage() {
     ) {
       notify({
         owner: "map",
-        placement: "inline",
+        placement: "floating",
         tone: "warning",
         title: "坐标暂不可用",
         body: "请先查看到达说明。",
@@ -1658,7 +1658,7 @@ export default function MapPage() {
       if (!current()) return;
       notify({
         owner: "map",
-        placement: "inline",
+        placement: "floating",
         tone: "warning",
         title: "外部地图未打开",
         body: `${errorMessage(error)}。请稍后重试，或查看到达说明。`,
@@ -1678,7 +1678,7 @@ export default function MapPage() {
     ) {
       notify({
         owner: "map",
-        placement: "inline",
+        placement: "floating",
         tone: "warning",
         title: "观测信息尚未就绪",
         body: "地点观测信息正在加载，请稍后重试。",
@@ -1703,7 +1703,7 @@ export default function MapPage() {
   const onProposalCloud = async (submission: import("@starward/miniapp-contracts").ContributionSubmission) => {
     const location = submission.candidateLocation;
     if (!location || !submission.preciseLocationConsent) {
-      notify({ owner: "map", placement: "inline", tone: "warning", title: "观测位置不可用", body: "该审核中点位没有可用于本账号云观星的精确坐标。", dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
+      notify({ owner: "map", placement: "floating", tone: "warning", title: "观测位置不可用", body: "该审核中点位没有可用于本账号云观星的精确坐标。", dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
       return;
     }
     const operation = ++navigationEpoch.current;
@@ -1731,7 +1731,7 @@ export default function MapPage() {
       await openMapPage(`/sky/detail/index?${params}`, "云观星", "proposal-sky");
     } catch (error) {
       if (operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId || isMiniappRequestCancelled(error)) return;
-      notify({ owner: "map", placement: "inline", tone: "warning", title: "观测信息暂不可用", body: `${errorMessage(error)}。提案和当前地图状态已保留。`, dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
+      notify({ owner: "map", placement: "floating", tone: "warning", title: "观测信息暂不可用", body: `${errorMessage(error)}。提案和当前地图状态已保留。`, dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
     }
   };
 
