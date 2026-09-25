@@ -412,7 +412,7 @@ export default function FormalFeedbackEditor() {
             onChange={setField}
             renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={() => setPreviewRetry(current => current + 1)} disabled={busy||uploading||submitted} readOnly={submitted} onAdd={addPhoto} onRemove={removePhoto} />}
             notesFooter={<>
-              {visibleUploads.length ? <ToggleField disabled={busy||uploading||submitted} id="formal-feedback-photo-rights" label="我有权使用这些照片" checked={rightsConfirmed} onChange={setRightsConfirmed} stateLabels={{checked:"已确认",unchecked:"未确认"}} /> : null}
+              {!submitted && visibleUploads.length ? <ToggleField disabled={busy||uploading} id="formal-feedback-photo-rights" label="我有权使用这些照片" checked={rightsConfirmed} onChange={setRightsConfirmed} stateLabels={{checked:"已确认",unchecked:"未确认"}} /> : null}
               {pendingUpload ? <View className="formal-feedback-upload-recovery">
                 <StatusPanel state="STALE" detail="这张照片的上传尚未完成。请重新选择原图续传，或放弃这张照片；文字修改仍保留。" recoveryLabel="重新选择原图" onRecover={() => void addPhoto(pendingUpload.kind)} />
                 <Button disabled={busy||uploading||submitted} onClick={() => void removePhoto(pendingUpload.uploadId)}>放弃这张照片</Button>
