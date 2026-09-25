@@ -1976,11 +1976,12 @@ export default function MapPage() {
             ) : null}
             {mapDataStale && !cloudLayerOwnsSceneError && !(bottomPresentation === "layer-sheet" && visibleLayer === "LIGHT" && !mapContextFailed && lightLayerState === "STALE") ? <StatusPanel
               state="STALE"
-              detail="更新失败，暂时显示上次结果。"
+              detail={spots.length > 0 ? "更新失败，暂时显示上次结果。" : "上次结果没有观星点；当前资料暂时无法更新。"}
               recoveryLabel="重试"
               onRecover={() => void refreshMap()}
             /> : null}
             {!(pageState === "EMPTY" && bottomPresentation === "spot-panel") &&
+            !(pageState === "EMPTY" && mapDataStale) &&
             pageState !== "READY" &&
             pageState !== "PARTIAL" &&
             pageState !== "STALE" && !(cloudLayerOwnsSceneError && pageState === "ERROR") ? (
