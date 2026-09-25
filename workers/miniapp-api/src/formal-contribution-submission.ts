@@ -59,7 +59,7 @@ export function buildFormalContributionResult(input: {
   };
   const revision = existing ? existing.revision + 1 : 1;
   const attemptNo = (existing?.attempts.length ?? 0) + 1;
-  const detail = rebased.proposal.fields.detail ?? input.request.proposal.fields.detail ?? "";
+  const detail = rebased.proposal.fields.detail ?? "";
   const referencedUploadIds = new Set(Object.values(rebased.proposal.media).flatMap(value => value ?? []));
   const snapshot = {
     kind: input.request.kind,
