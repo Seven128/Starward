@@ -45,6 +45,7 @@ test("source link explicitly copies the actual official URL, without claiming na
   const h = harness();
   const button = nodes(h.render({ sources: [source()] })).find(node => node.type === "SoftButton");
   assert.equal(button.props.label, "复制和风天气官方链接");
+  assert.match(button.children.join(""), /^复制链接 · 和风天气 · https:\/\//u);
   button.props.onClick(); await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(h.copied(), "https://www.qweather.com/");
   assert.ok(nodes(h.render({ sources: [source()] })).some(node => node.children?.includes("来源链接已复制，可在浏览器中查看。")));

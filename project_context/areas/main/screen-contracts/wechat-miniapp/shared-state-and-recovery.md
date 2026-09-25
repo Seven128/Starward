@@ -30,6 +30,8 @@ EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，�
 
 官方外链的目标交互是点击打开网页。当前个人主体的网页容器条件不满足，用户同意先记录待办、保留现有明确标注的复制入口，不用失效的网页路由替代。条件具备后统一在 `SourceAttribution` 完成跳转及实际打开验证；这一延期不阻塞其余外部能力迁移，也不等于供应商免除超链接要求。
 
+2026-09-25 当前复制交互的可见名称已与实际动作一致：`Provenance` 的原始出处、许可和下载入口直接写明“复制”，供应商 `SourceAttribution` 的链接行也写明“复制链接”，继续保留原网址、来源声明与复制后的成功/失败反馈。官方WEAPP已抽样从正式点来源页复制Astronomy Engine原始出处和MIT许可链接，并从地图天气归因行复制和风天气官方地址；这不证明网页已直接打开、所有供应商组合或真机外部跳转，目标交互仍按上段条件处理。
+
 ## Shared icon resource
 
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md" -->
