@@ -66,6 +66,7 @@ export default function SettingsPage() {
   const sheetCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accountActionPending = useRef(false);
   const [modeGestureCaptured, setModeGestureCaptured] = useState(false);
+  const [scrollTop, setScrollTop] = useState(0);
   const {
     updatePreference,
     syncNow,
@@ -275,6 +276,8 @@ export default function SettingsPage() {
       />
       <ScrollView
         scrollY={!modeGestureCaptured}
+        scrollTop={scrollTop}
+        onScroll={event => setScrollTop(event.detail.scrollTop)}
         enhanced
         bounces={false}
         showScrollbar={false}
