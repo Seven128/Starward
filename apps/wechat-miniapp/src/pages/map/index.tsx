@@ -97,6 +97,15 @@ import {
 import { cameraCenterForVisibleMapTarget } from "./map-camera";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 
+function panelViewportSize(): { width: number; height: number } | null {
+  try {
+    const { windowWidth, windowHeight } = Taro.getWindowInfo();
+    return Number.isFinite(windowWidth) && windowWidth > 0 && Number.isFinite(windowHeight) && windowHeight > 0
+      ? { width: windowWidth, height: windowHeight }
+      : null;
+  } catch { return null; }
+}
+
 function localDateForNow(timezone = "Asia/Shanghai") {
   return calendarDateInTimezone(new Date(), timezone);
 }
@@ -268,6 +277,9 @@ export default function MapPage() {
   const selectedProposal = selectedProposalState?.owner === currentContributionOwner
     ? selectedProposalState.submission
     : null;
+  const panelGeometryIdentity = selectedProposal
+    ? `proposal:${currentContributionOwner}:${selectedProposal.submissionId}`
+    : `formal:${selectedSpotId ?? ""}`;
   const setSelectedProposal = useCallback((submission: ContributionSubmission | null) => {
     const owner = currentDraftUserId();
     setSelectedProposalState(submission && owner ? { owner, submission } : null);
@@ -297,6 +309,12 @@ export default function MapPage() {
     pointerOffset: number;
     geometry: PanelSnapGeometry | null;
     released: boolean;
+  } | null>(null);
+  const panelSnapCache = useRef<{
+    identity: string;
+    width: number;
+    height: number;
+    geometry: PanelSnapGeometry;
   } | null>(null);
   const lastHandledSelectedId = useRef<string | null>(null);
   const lastHandledSpotOpenVersion = useRef(0);
@@ -1066,6 +1084,26 @@ export default function MapPage() {
     if (bottomPresentation === "spot-panel") closeSpotPanel();
   };
 
+  useEffect(() => {
+    panelSnapCache.current = null;
+    if (bottomPresentation !== "spot-panel" || !pageVisible || panelPhase !== "idle") return;
+    let cancelled = false;
+    // The first move must not wait for four native selector measurements.
+    // Cache only snap rulers; an interrupted spring still measures its live height.
+    Taro.nextTick(() => {
+      if (cancelled) return;
+      const query = Taro.createSelectorQuery();
+      for (const selector of [".spot-panel", ".spot-panel__snap-small", ".spot-panel__snap-medium", ".spot-panel__snap-large"]) query.select(selector).boundingClientRect();
+      query.exec(rows => {
+        if (cancelled) return;
+        const geometry = readPanelSnapGeometry(rows);
+        const viewport = panelViewportSize();
+        if (geometry && viewport) panelSnapCache.current = { identity: panelGeometryIdentity, ...viewport, geometry };
+      });
+    });
+    return () => { cancelled = true; panelSnapCache.current = null; };
+  }, [bottomPresentation, panelGeometryIdentity, pageVisible, panelPhase, mode, preferences.largeText]);
+
   const onHandleTouchCancel = () => {
     stopPanelSpring();
     panelDrag.current = null;
@@ -1104,6 +1142,14 @@ export default function MapPage() {
     const startX = touch?.clientX ?? touch?.pageX;
     const drag = { startY, startX: typeof startX === "number" && Number.isFinite(startX) ? startX : undefined, identifier: touch?.identifier, extent: panelExtent, samples: [{ y: startY, at: Date.now() }], releasedAt: 0, moved: false, offset: 0, pointerOffset: 0, geometry: null as PanelSnapGeometry | null, released: false };
     panelDrag.current = drag;
+    const viewport = panelViewportSize();
+    const cached = panelSnapCache.current;
+    if (cached && viewport && cached.identity === panelGeometryIdentity && cached.width === viewport.width && cached.height === viewport.height && !panelSettling && !springTarget.current) {
+      drag.geometry = { ...cached.geometry, startHeight: cached.geometry[panelExtent] };
+      stopPanelSpring();
+      setPanelDragging(true);
+      return;
+    }
     // An interrupted release may still own the visible drag frame. Keep it
     // until native geometry is read, then hand that exact frame to this drag.
     const query = Taro.createSelectorQuery();
@@ -1113,6 +1159,8 @@ export default function MapPage() {
       drag.geometry = readPanelSnapGeometry(rows);
       stopPanelSpring();
       if (!drag.geometry) { onHandleTouchCancel(); return; }
+      const measuredViewport = panelViewportSize();
+      if (measuredViewport) panelSnapCache.current = { identity: panelGeometryIdentity, ...measuredViewport, geometry: drag.geometry };
       if (drag.released) { onHandleTouchEnd(); return; }
       const visualHeight = panelDragHeight(
         drag.geometry.startHeight - drag.pointerOffset,

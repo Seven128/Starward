@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry } from "./panel-snap";
+import { panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, type PanelSnapGeometry } from "./panel-snap";
 import { elasticVelocityFactor } from "@/components/elastic-motion";
 
 test("panel cancellation and multi-touch never commit a pending drag", () => {
@@ -24,6 +24,7 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   const pending: ((rows: unknown[]) => void)[] = [];
   const geometryRows = [{ height: 350 }, { height: 220 }, { height: 350 }, { height: 700 }];
   let selectedNodes = 0;
+  const panelSnapCache = { current: null as null | { identity: string; width: number; height: number; geometry: PanelSnapGeometry } };
   const query = { select: () => { selectedNodes++; return query; }, boundingClientRect: () => query, exec: (callback: (rows: unknown[]) => void) => {
     const panelOnly = selectedNodes === 1;
     selectedNodes = 0;
@@ -39,10 +40,10 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
     panelSpring: { current: { start: (_host: unknown, _frames: unknown, complete: () => void) => complete() } },
     panelSpringStyle: () => ({}), panelCssSequence: { current: 0 }, setPanelCssMotion: () => {},
     useAppStore: { getState: () => ({ preferences: { reducedMotion: false } }) },
-    panelDrag: { current: null }, bottomPresentation: "spot-panel", panelExtent: "medium", panelSettling: false,
+    panelDrag: { current: null }, panelSnapCache, panelGeometryIdentity: "formal:spot:a", panelViewportSize: () => ({ width: 390, height: 844 }), bottomPresentation: "spot-panel", panelExtent: "medium", panelSettling: false,
     setPanelExtent: (value: string) => commits.push(value), setPanelDragOffset: (value: number) => offsets.push(value),
     setPanelDragging: (value: boolean) => { dragging = value; },
-    Taro: { createSelectorQuery: () => query, nextTick: () => {} }, panelDragHeight, panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, elasticVelocityFactor,
+    Taro: { createSelectorQuery: () => query, nextTick: () => {}, getWindowInfo: () => ({ windowWidth: 390, windowHeight: 844 }) }, panelDragHeight, panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, elasticVelocityFactor,
   }) as Record<string, (event?: unknown) => void>;
   const touch = (y: number, count = 1) => ({ touches: Array.from({ length: count }, () => ({ clientY: y })) });
   for (const cancellation of ["cancel", "second-finger", "multi-start"]) {
@@ -55,6 +56,7 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
     assert.equal(offsets.at(-1), 0);
   }
   delayed = true;
+  panelSnapCache.current = null;
   handlers.onHandleTouchStart!(touch(100));
   handlers.onHandleTouchMove!(touch(-400));
   pending.shift()!(geometryRows);
@@ -67,6 +69,7 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   const visibleOffset = offsets.at(-1);
   assert.ok(visibleOffset! < 0);
   delayed = true;
+  panelSnapCache.current = null;
   handlers.onHandleTouchStart!(touch(100));
   assert.equal(offsets.at(-1), visibleOffset, "a second touch keeps the visible frame until native geometry arrives");
   assert.equal(dragging, true);
@@ -97,12 +100,14 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   handlers.onHandleTouchEnd!();
   assert.deepEqual(commits, ["large"]);
   delayed = true;
+  panelSnapCache.current = null;
   handlers.onHandleTouchStart!(touch(100));
   handlers.onHandleTouchMove!(touch(-200));
   handlers.onHandleTouchCancel!();
   pending.shift()!(geometryRows);
   handlers.onHandleTouchEnd!();
   assert.deepEqual(commits, ["large"], "late geometry cannot revive a cancelled gesture");
+  panelSnapCache.current = null;
   handlers.onHandleTouchStart!(touch(100));
   handlers.onHandleTouchMove!(touch(-200));
   handlers.onHandleTouchEnd!();
@@ -146,6 +151,7 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   handlers.onHandleTouchEnd!();
   assert.equal(commits.at(-1), "medium", "holding before release discards old momentum");
   geometryRows[0]!.height = 480;
+  panelSnapCache.current = null;
   now = 3000;
   handlers.onHandleTouchStart!(touch(100));
   assert.equal(offsets.at(-1), -130, "re-grab freezes the measured intermediate height rather than the logical anchor");
@@ -153,6 +159,14 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   handlers.onHandleTouchMove!(touch(80));
   assert.equal(offsets.at(-1), -150, "continued drag stays attached to the measured presentation height");
   handlers.onHandleTouchCancel!();
+  delayed = true;
+  pending.length = 0;
+  panelSnapCache.current = { identity: "formal:spot:a", width: 390, height: 844, geometry: { small: 220, medium: 350, large: 700, startHeight: 350 } };
+  handlers.onHandleTouchStart!(touch(100));
+  handlers.onHandleTouchMove!(touch(70));
+  assert.equal(offsets.at(-1), -30, "a warmed resting panel must follow the first native move before another geometry callback");
+  handlers.onHandleTouchCancel!();
+  pending.length = 0;
   geometryRows[0]!.height = 350;
   delayed = true;
   const beforeSupersededExtent = commits.length;
