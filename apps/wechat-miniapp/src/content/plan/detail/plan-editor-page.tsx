@@ -1113,6 +1113,12 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         ) : null}
         {editing ? (
           <View className="plan-editor-form" data-od-id="plan-editor-form">
+            {isDirty && (draftStorageFailed || recoveredLocalDraft) ? <StatusPanel
+              state="PARTIAL"
+              detail={draftStorageFailed
+                ? "最新修改仅保留在当前页面，尚未存入本机草稿。请保存成功后再离开。"
+                : "已恢复未保存的草稿，请核对后保存。"}
+            /> : null}
             <View className="plan-editor-form__heading">
               <Text className="type-section">这次去哪里</Text>
               <Text className="type-caption">
@@ -1299,14 +1305,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 >已核对，保留本页修改</SoftButton>
               </View>
             ) : null}
-            {isDirty ? (
+            {isDirty && !draftStorageFailed && !recoveredLocalDraft ? (
               <StatusPanel
                 state="PARTIAL"
-                detail={draftStorageFailed
-                  ? "最新修改仅保留在当前页面，尚未存入本机草稿。请保存成功后再离开。"
-                  : recoveredLocalDraft
-                  ? "已恢复未保存的草稿，请核对后保存。"
-                  : "修改已暂存本机，尚未保存到计划。"}
+                detail="修改已暂存本机，尚未保存到计划。"
               />
             ) : null}
             {planQuery.isError || planQuery.refreshError || planQuery.data?.dataState === "STALE_USABLE" ? (
