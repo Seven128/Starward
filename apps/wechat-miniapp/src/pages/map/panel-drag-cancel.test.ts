@@ -54,6 +54,14 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
     assert.deepEqual(commits, []);
     assert.equal(offsets.at(-1), 0);
   }
+  delayed = true;
+  handlers.onHandleTouchStart!(touch(100));
+  handlers.onHandleTouchMove!(touch(-400));
+  pending.shift()!(geometryRows);
+  assert.equal(offsets.at(-1), geometryRows[2]!.height - geometryRows[3]!.height,
+    "a fast move before native geometry returns cannot render above the large top stop");
+  handlers.onHandleTouchCancel!();
+  delayed = false;
   handlers.onHandleTouchStart!(touch(100));
   handlers.onHandleTouchMove!(touch(-100));
   const visibleOffset = offsets.at(-1);

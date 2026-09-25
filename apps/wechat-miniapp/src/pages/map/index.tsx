@@ -1114,7 +1114,12 @@ export default function MapPage() {
       stopPanelSpring();
       if (!drag.geometry) { onHandleTouchCancel(); return; }
       if (drag.released) { onHandleTouchEnd(); return; }
-      drag.offset = drag.geometry[drag.extent] - drag.geometry.startHeight + drag.pointerOffset;
+      const visualHeight = panelDragHeight(
+        drag.geometry.startHeight - drag.pointerOffset,
+        drag.geometry.small,
+        drag.geometry.large,
+      );
+      drag.offset = drag.geometry[drag.extent] - visualHeight;
       setPanelDragOffset(drag.offset);
       setPanelDragging(true);
     });
