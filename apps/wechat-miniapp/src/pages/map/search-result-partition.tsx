@@ -91,8 +91,8 @@ export function SearchResultPartition({ id, label, count, contentRevision, reduc
       <SemanticIcon name={expanded ? "chevron-up" : "chevron-down"} />
     </Button>
     <View id={bodyId}
-      className={`spot-search-partition__body${hidden ? " spot-search-partition__body--closed" : ""}`}
-      aria-hidden={hidden}
+      className={`spot-search-partition__body${expanded ? "" : " spot-search-partition__body--target-closed"}${hidden ? " spot-search-partition__body--closed" : ""}`}
+      aria-hidden={hidden || !expanded}
       style={{ height: displayHeight === null ? "auto" : `${displayHeight}px`, opacity: naturalHeight.current ? (displayHeight ?? naturalHeight.current) / naturalHeight.current : expanded ? 1 : 0 }}>
       <View id={innerId} className="spot-search-partition__inner">{children}</View>
     </View>

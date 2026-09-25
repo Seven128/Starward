@@ -277,6 +277,18 @@
   visibility: hidden;
   pointer-events: none;
 }
+@media (prefers-reduced-motion: reduce) {
+  .spot-search-partition__body {
+    height: auto !important;
+    opacity: 1 !important;
+  }
+  .spot-search-partition__body--target-closed {
+    height: 0 !important;
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
 .spot-search-empty {
   display: block;
   padding: 14rpx 12rpx;
