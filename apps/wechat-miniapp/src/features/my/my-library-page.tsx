@@ -137,7 +137,7 @@ export function MyLibraryPage() {
           {library.isError || library.refreshError || library.data?.dataState === "STALE_USABLE" ? (
             <StatusPanel
               state={library.data ? "STALE" : "ERROR"}
-              detail={library.data ? "账户资料尚未确认最新状态，暂时显示上次记录。" : `账户资料暂不可用：${errorMessage(library.error)}。`}
+              detail={library.data ? "账户资料尚未确认最新状态，暂时显示上次记录。" : `账户资料暂不可用：${errorMessage(library.error)}。计划与偏好尚未同步。`}
               recoveryLabel="重试同步"
               onRecover={() => void library.refetch()}
             />
@@ -190,12 +190,6 @@ export function MyLibraryPage() {
             <StatusPanel
               state="LOADING"
               detail="正在回读计划与偏好；账户摘要保持可用。"
-            />
-          ) : null}
-          {library.isError ? (
-            <StatusPanel
-              state="PARTIAL"
-              detail="本页不会因服务端失败伪造新的计划或偏好；现有本机投影保持只读，联网后可重试。"
             />
           ) : null}
         </View>
