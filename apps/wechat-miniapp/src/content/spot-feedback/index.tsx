@@ -29,6 +29,7 @@ import { ToggleField } from "@/components/toggle-field";
 import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contribution-model";
 import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, removeFormalMedia, type FormalMediaSelection } from "./formal-media-selection";
 import { loadAvailableMediaPreviews } from "../contribution/media-preview";
+import { formalFeedbackFrozenView } from "../contribution/formal-feedback-snapshot";
 import { retryFailedFormalResources } from "./formal-feedback-resources";
 import { confirmEditorLeave } from "@/hooks/editor-leave";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
@@ -152,11 +153,12 @@ export default function FormalFeedbackEditor() {
     const pending = history.data.data.submissions.find(item => item.spotId === spotId && item.submissionState === "PENDING_REVIEW" && item.formalFeedback);
     if (pending?.formalFeedback) {
       const frozen = pending.formalFeedback;
-      const restored = valuesFrom(frozen.baseline);
-      for (const [key, value] of Object.entries(frozen.resolvedProposal.fields)) restored[key as ContributionFormalFieldKey] = value ?? "";
+      const view = formalFeedbackFrozenView(frozen);
+      const restored = valuesFrom(view.baseline);
+      for (const [key, value] of Object.entries(view.proposal.fields)) restored[key as ContributionFormalFieldKey] = value ?? "";
       const frozenMedia = pending.media.map(media => ({ ...media, kind: mediaKindOf(frozen, media.uploadId) }));
-      setBaseline(frozen.baseline); setValues(restored); setSubmitted(true); setActiveSubmissionId(pending.submissionId);
-      setPriorMedia(frozenMedia); setMediaSelection(createFormalMediaSelection(frozen.baseline, frozen.resolvedProposal, frozenMedia.map(media => media.uploadId)));
+      setBaseline(view.baseline); setValues(restored); setSubmitted(true); setActiveSubmissionId(pending.submissionId);
+      setPriorMedia(frozenMedia); setMediaSelection(createFormalMediaSelection(view.baseline, view.proposal, frozenMedia.map(media => media.uploadId)));
       setRightsConfirmed(pending.rightsConfirmed);
       return;
     }
@@ -354,6 +356,17 @@ export default function FormalFeedbackEditor() {
         setConflicts(response.data.conflicts); setCurrentBaseline(response.data.currentBaseline); setResolutions({});
         notify({ owner: "contribution", placement: "floating", tone: "warning", title: "正式资料已有更新", body: "请在下方逐项核对原值、当前值和你的修改。", dismissible: true });
       } else {
+        const frozen = response.data.submission.formalFeedback;
+        if (frozen) {
+          const view = formalFeedbackFrozenView(frozen);
+          const accepted = valuesFrom(view.baseline);
+          for (const [key, value] of Object.entries(view.proposal.fields)) accepted[key as ContributionFormalFieldKey] = value ?? "";
+          const attached = response.data.submission.media.map(media => ({ ...media, kind: mediaKindOf(frozen, media.uploadId) }));
+          setBaseline(view.baseline); setValues(accepted);
+          setPriorMedia(attached);
+          setMediaSelection(createFormalMediaSelection(view.baseline, view.proposal, attached.map(media => media.uploadId)));
+        }
+        setActiveSubmissionId(response.data.submission.submissionId);
         setSubmitted(true); setConflicts([]);
         notify({ owner: "contribution", placement: "inline", tone: "success", title: "已提交反馈", body: "反馈已进入审核，正式地点资料暂不改变。", dismissible: true });
       }

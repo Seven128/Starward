@@ -99,12 +99,13 @@ test("feedback submit takes a synchronous busy lock until the first request sett
     uploadIntent: null, activeSubmissionId: "", resubmissionRevision: null,
     MiniappApiError: class extends Error {},
     submitBusy: { current: false }, mediaBusy: { current: false }, setBusy: () => undefined, setSubmitted: (value: boolean) => { submitted = value; },
+    setActiveSubmissionId: () => undefined,
     assertEditorOwner: () => undefined,
     setConflicts: () => undefined, notify: (notice: { title: string; tone: string }) => { notices.push(notice); }, errorMessage: (error: Error) => error.message,
     submitFormalContribution: async () => {
       calls++;
       if (calls === 1) return new Promise((_resolve, reject) => { rejectFirst = reject; });
-      return { data: { state: "PENDING_REVIEW" } };
+      return { data: { state: "SUBMITTED", submission: { submissionId: "contribution:one", formalFeedback: null } } };
     },
   }) as () => Promise<void>;
   const first = submit();

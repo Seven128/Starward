@@ -30,6 +30,9 @@ test("formal feedback frozen summary excludes a detail edit abandoned during reb
   });
   assert.equal(result.state, "SUBMITTED");
   if (result.state !== "SUBMITTED") return;
+  assert.deepEqual(result.submission.formalFeedback?.baseline, original);
+  assert.deepEqual(result.submission.formalFeedback?.proposal.fields, { detail: "我原先的修改", hours: "19:00—次日05:00" });
+  assert.deepEqual(result.submission.formalFeedback?.resolvedBaseline, latest);
   assert.deepEqual(result.submission.formalFeedback?.resolvedProposal.fields, { hours: "19:00—次日05:00" });
   assert.equal(result.submission.detail, "");
   assert.equal(result.submission.attempts[0]?.snapshot.detail, "");

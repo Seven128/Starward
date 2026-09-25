@@ -55,6 +55,7 @@ export function buildFormalContributionResult(input: {
   const formalFeedback = {
     baseline: structuredClone(input.request.baseline),
     proposal: structuredClone(input.request.proposal),
+    resolvedBaseline: structuredClone(input.currentBaseline),
     resolvedProposal: structuredClone(rebased.proposal),
   };
   const revision = existing ? existing.revision + 1 : 1;

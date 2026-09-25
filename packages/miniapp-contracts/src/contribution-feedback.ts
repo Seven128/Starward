@@ -71,6 +71,8 @@ export interface ContributionFormalFeedbackSnapshot {
   baseline: ContributionFormalBaseline;
   /** User-authored differences against baseline. Missing keys were untouched. */
   proposal: ContributionFormalProposal;
+  /** Canonical version used for the accepted differences. Older snapshots omit it. */
+  resolvedBaseline?: ContributionFormalBaseline;
   /** Proposal after rebasing onto the version verified at submission time. */
   resolvedProposal: ContributionFormalProposal;
 }
