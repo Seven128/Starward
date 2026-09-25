@@ -470,7 +470,7 @@
 .plan-field-row__controls > picker:last-child { flex: 0 0 72Px; }
 .plan-field-value { display: flex; min-height: 44Px; align-items: center; justify-content: space-between; }
 .plan-field-value--select { min-width: 190Px; }
-.plan-form-footnote { display: block; margin: 6Px 0 8Px; color: var(--text-secondary); font-size: 12.5Px; line-height: 1.6; }
+.plan-form-footnote { display: block; margin: 6Px 0 8Px; color: var(--text-secondary); font-size: 14Px; line-height: 1.5; }
 .plan-location-field { margin-bottom: 7Px; }
 .plan-event-picker { width: auto !important; min-height: 44Px; margin: -8Px 0; padding: 0; color: var(--primary); background: transparent; }
 .plan-event-picker::after { border: 0; }
@@ -511,10 +511,10 @@
 .plan-hero__spot-row::after { border: 0; }
 .plan-hero__title { margin: 0; font-size: 22Px; line-height: 1.36; font-weight: 700; }
 .plan-hero__chevron { flex: 0 0 16Px; width: 16Px; height: 16Px; }
-.plan-hero__subtitle { margin-top: 5Px; font-size: 13.5Px; line-height: 1.5; }
+.plan-hero__subtitle { margin-top: 5Px; font-size: 14Px; line-height: 1.5; }
 .plan-period { position: relative; margin-top: 14Px; padding: 16Px 18Px; border-radius: 18Px; background: var(--surface-subtle); }
 .plan-period::before { content: ""; position: absolute; top: 15Px; bottom: 15Px; left: 0; width: 3Px; border-radius: 3Px; background: var(--accent-warm); }
-.plan-period__date, .plan-period__meta { display: block; color: var(--text-secondary); font-size: 13Px; }
+.plan-period__date, .plan-period__meta { display: block; color: var(--text-secondary); font-size: 14Px; }
 .plan-period__time { display: flex; align-items: baseline; gap: 9Px; color: var(--text-primary); font-size: 28Px; line-height: 1.4; font-weight: 500; }
 .plan-period__time > text:nth-child(2) { color: var(--text-secondary); font-size: 13Px; }
 .plan-section { gap: 9Px; padding: 14Px 0; border-top: 1Px solid var(--border); }
@@ -539,9 +539,9 @@
 .plan-route__node:not(:last-child)::before { top: 12Px; left: 5Px; width: 1Px; }
 .plan-route__dot { width: 9Px; height: 9Px; margin-top: 5Px; border: 2Px solid var(--canvas); box-shadow: 0 0 0 1Px var(--primary); }
 .plan-route__node-title { font-size: 15Px; font-weight: 500; }
-.plan-route__node-detail { font-size: 13Px; }
+.plan-route__node-detail { font-size: 14Px; }
 .plan-route__node-meta { font-size: 12Px; }
-.plan-route__source-note { margin-top: 8Px; padding-top: 8Px; font-size: 12Px; }
+.plan-route__source-note { margin-top: 8Px; padding-top: 8Px; font-size: 14Px; }
 .plan-event-row { min-height: 44Px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .plan-reminder { margin: 0 0 14Px; }
 .plan-reminder__heading { display: flex; min-height: 48Px; align-items: center; justify-content: space-between; gap: 8Px; color: var(--primary); font-size: 14Px; }

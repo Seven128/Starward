@@ -6,12 +6,12 @@
 .plan-list-filters button::after, .plan-list-row::after { border: 0; }
 .plan-list-filters .plan-list-filter--active { border-bottom: 2Px solid #b7a16d; color: var(--text-primary); }
 .plan-list-filters .plan-list-new { margin-left: auto; }
-.plan-list-date { display: block; margin: 18Px 0 7Px; color: var(--text-secondary); font-size: 12Px; }
+.plan-list-date { display: block; margin: 18Px 0 7Px; color: var(--text-secondary); font-size: 14Px; }
 .plan-list-row { display: block; width: 100%; margin: 0 0 12Px; padding: 16Px 14Px; border: 0; border-left: 2Px solid #c6b486; border-radius: 16Px; background: var(--surface-subtle); color: var(--text-primary); text-align: left; white-space: normal; line-height: 1.5; }
 .plan-list-row__heading { display: flex; align-items: center; justify-content: space-between; gap: 12Px; font-size: 17Px; font-weight: 600; }
 .plan-list-row__heading .semantic-icon { width: 14Px; height: 14Px; flex-basis: 14Px; }
 .plan-list-row__time, .plan-list-row__meta { display: block; margin-top: 6Px; color: var(--text-secondary); font-size: 14Px; }
-.plan-list-row__meta { font-size: 12.5Px; }
+.plan-list-row__meta { font-size: 14Px; }
 .plan-list-empty { display: block; padding: 30Px 6Px; color: var(--text-secondary); text-align: center; }
 .large-text .plan-list-row__heading { font-size: 18Px; }
 .large-text .plan-list-row__time, .large-text .plan-list-row__meta, .large-text .plan-list-date { font-size: 14Px; }
