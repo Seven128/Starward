@@ -381,6 +381,7 @@ export default function FormalFeedbackEditor() {
     } finally { submitBusy.current = false; setBusy(false); }
   };
 
+  const showSubmit = !ownerChanged && hasEditorContent && !submitted;
   return <View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     {mediaHandoff.warning}
     <FloatingNotificationHost />
@@ -393,7 +394,7 @@ export default function FormalFeedbackEditor() {
       activeItemClassName="is-active"
       indicatorClassName="formal-feedback-tabs__line" /> : null}
     <ScrollView scrollY scrollIntoView={scrollAnchor} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
-      <View className="formal-feedback-body safe-bottom">
+      <View className={`formal-feedback-body safe-bottom${showSubmit ? "" : " formal-feedback-body--without-submit"}`}>
         <NotificationRegion owner="contribution" placement="inline" />
         {!ownerChanged && !query.isError && !history.isError && (query.refreshError || query.data?.dataState === "STALE_USABLE" ||
         history.refreshError || history.data?.dataState === "STALE_USABLE" ||
@@ -431,7 +432,7 @@ export default function FormalFeedbackEditor() {
         </>}
       </View>
     </ScrollView>
-    {!ownerChanged && hasEditorContent ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || submitted || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : submitted ? "审核中" : "提交反馈"}</Button></View> : null}
+    {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : "提交反馈"}</Button></View> : null}
   </View>;
 }
 

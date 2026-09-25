@@ -115,3 +115,4 @@
 }
 .formal-feedback-review-note{margin:12Px 0 0;padding:11Px 12Px;background:#fff9eb;border-radius:8Px}.formal-feedback-review-note text{display:block;font-size:12Px;line-height:18Px}.formal-feedback-review-note text:first-child{font-weight:650;color:#8c713d;margin-bottom:3Px}
 .formal-feedback-choices::-webkit-scrollbar{width:0;height:0;display:none}
+.formal-feedback-body.safe-bottom.formal-feedback-body--without-submit{padding-bottom:max(20Px, env(safe-area-inset-bottom))}
