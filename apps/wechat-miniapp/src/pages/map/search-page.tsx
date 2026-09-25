@@ -123,6 +123,7 @@ export function MapSearchSurface() {
   const preferences = useAppStore((state) => state.preferences);
   const viewport = useAppStore((state) => state.viewport);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
+  const accountOwnerId = useAppStore((state) => state.accountOwnerId);
   const searchHistory = useAppStore((state) => state.searchHistory);
   const mapResetVersion = useAppStore((state) => state.mapResetVersion);
   const setFinderQuery = useAppStore((state) => state.setFinderQuery);
@@ -217,6 +218,7 @@ export function MapSearchSurface() {
   const scene = useMapForecastQuery({
     queryKey: [
       "search-scene",
+      accountOwnerId,
       activeContext?.contextId,
       activeContext?.contextFingerprint,
       activeContext?.revision,
