@@ -163,6 +163,29 @@ test("only a confirmed empty catalog uses the shared empty state", () => {
   }
 });
 
+test("a missing observation context does not offer a date control that cannot query local conditions", () => {
+  const queries: any[] = [];
+  const ui = harness(undefined, {
+    useResourceQuery: (options: any) => {
+      queries.push(options);
+      return options.queryKey[0] === "astronomical-events"
+        ? { data: { data: { events: [meteor], sources: [source], catalogVersion: "v1" }, dataState: "FRESH" }, isPending: false, isError: false, refetch() {} }
+        : { isPending: false, isError: false, refetch() {} };
+    },
+  });
+  const modal = ui.render({ open: true, mode: "browse", context: null, initialDetailId: "urs", onClose() {} });
+  assert.equal(queries.find(query => query.queryKey[0] === "astronomical-event-modal-detail").enabled, false);
+  const detailProps = find(modal, node => node.type === ui.detail)[0]!.props;
+  const detail = ui.detail(detailProps);
+  assert.equal(find(detail, node => node.props.ariaLabel === "弹窗内预览日期").length, 0);
+  assert.match(text(detail), /取得观测位置后可逐夜查看当地条件/);
+  const withContext = ui.render({ open: true, mode: "browse", context: { contextId: "ctx", contextFingerprint: "fingerprint", revision: 1,
+    localDate: "2026-01-03", location: { kind: "MAP_POINT", displayName: "地图中心" }, timezone: "Asia/Shanghai" }, initialDetailId: "urs", onClose() {} });
+  const readyProps = find(withContext, node => node.type === ui.detail)[0]!.props;
+  assert.equal(readyProps.canPreviewDate, true);
+  assert.equal(find(ui.detail(readyProps), node => node.props.ariaLabel === "弹窗内预览日期").length, 1);
+});
+
 test("fixed eclipse date and phases cannot masquerade as the caller's September date", () => {
   const tree = harness().detail({ event: eclipse, mode: "browse", previewDate: "2026-09-13", onPreviewDate: () => {}, locationName: "北京", timezone: "Asia/Shanghai", pending: false,
     visibility: { state: "NOT_VISIBLE", reason: "地平线以下", phases: [{ key: "PEAK", localDateTime: "2026-08-13 01:46", altitudeDeg: -18 }] } });

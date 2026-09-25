@@ -220,6 +220,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
                 articleSource={record?.articleSource}
                 failed={geometryFailed} onRetry={() => { void eventRecord.refetch(); if (context && previewDate) void detail.refetch(); }}
                 previewDate={previewDate ?? selectedDetail.peakDate}
+                canPreviewDate={Boolean(context)}
                 onPreviewDate={(date) => setPreviewSelection({ occurrenceId: selectedDetail.occurrenceId, date })} /> : null}
               {mode === "select-one" && selectedDetail ? <Button className="event-modal-detail__select" disabled={phase === "closing"}
                 onClick={() => { setDraftSelection(selectedDetail.occurrenceId); setDetailId(null); }}>选择此事件</Button> : null}
@@ -238,11 +239,12 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   </>;
 });
 
-function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, catalogVersion, failed, onRetry }: {
+function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, catalogVersion, failed, onRetry }: {
   event: AstronomicalEventOccurrence;
   visibility: AstronomicalEventLocalVisibility | null;
   mode: ModalMode;
   previewDate: string;
+  canPreviewDate?: boolean;
   onPreviewDate: (date: string) => void;
   locationName: string | null;
   pending: boolean;
@@ -256,6 +258,7 @@ function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate,
   const shortDate = (value: string) => value.slice(5).replace("-", ".");
   const presentation = eventDatePresentation(event);
   const previewDays = useMemo(() => eventPreviewDays(event), [event.activeStartDate, event.activeEndDate]);
+  const hasLocalContext = Boolean(locationName || visibility?.locationName);
   const eclipseDate = event.kind !== "METEOR_SHOWER" && event.peakAtUtc
     ? visibility?.localDate ?? calendarDateInTimezone(new Date(event.peakAtUtc), timezone) : null;
   return <View className="event-modal-detail">
@@ -266,16 +269,16 @@ function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate,
     <View className="event-modal-detail__axis"><Text>{shortDate(event.activeStartDate)} 开始</Text><Text>{shortDate(event.peakDate)} {presentation.ticket}</Text><Text>{shortDate(event.activeEndDate)} 结束</Text></View>
     <View className="event-modal-detail__section"><Text className="type-section">当地观测条件</Text>
       <View className="event-modal-detail__context-row"><Text>观星点</Text><Text>{visibility?.locationName ?? locationName ?? "尚未选择地点"}</Text></View>
-      <View className="event-modal-detail__context-row"><Text>{eclipseDate ? "事件当地日期" : "观测日期"}</Text><Text>{(eclipseDate ?? previewDate).replaceAll("-", "/")}</Text></View>
-      <Text className="type-caption">以下时刻采用 {visibility?.timezone ?? timezone} 时区。</Text>
+      <View className="event-modal-detail__context-row"><Text>{eclipseDate ? "事件当地日期" : hasLocalContext ? "观测日期" : presentation.date}</Text><Text>{(eclipseDate ?? previewDate).replaceAll("-", "/")}</Text></View>
+      {hasLocalContext ? <Text className="type-caption">以下时刻采用 {visibility?.timezone ?? timezone} 时区。</Text> : null}
       {eclipseDate ? <Text className="type-caption">按这次日月食实际发生时刻计算；{mode === "select-one" ? "计划" : "地图"}日期仍为 {previewDate.replaceAll("-", "/")}，不会随事件改变。</Text> : null}
-      {mode === "browse" && event.kind === "METEOR_SHOWER" ? <ScrollView scrollX enhanced showScrollbar={false} className="event-modal-detail__days" ariaLabel="弹窗内预览日期">
+      {mode === "browse" && event.kind === "METEOR_SHOWER" && canPreviewDate ? <ScrollView scrollX enhanced showScrollbar={false} className="event-modal-detail__days" ariaLabel="弹窗内预览日期">
         <View className="event-modal-detail__day-strip" role="group">
         {previewDays.map((day) => <Button key={day.value} className={previewDate === day.value ? "is-selected" : ""}
           ariaLabel={`${day.value}${day.value === event.peakDate ? `，${presentation.date}` : ""}`}
           aria-pressed={previewDate === day.value} onClick={() => onPreviewDate(day.value)}><Text>{day.weekday}</Text><Text>{day.day}</Text></Button>)}
         </View>
-      </ScrollView> : mode === "select-one" ? <Text className="type-caption">地点和日期沿用当前计划；关联事件不改变计划安排。</Text> : null}
+      </ScrollView> : mode === "browse" && event.kind === "METEOR_SHOWER" ? <Text className="type-caption">取得观测位置后可逐夜查看当地条件。</Text> : mode === "select-one" ? <Text className="type-caption">地点和日期沿用当前计划；关联事件不改变计划安排。</Text> : null}
       {failed && visibility && visibility.state !== "UNAVAILABLE" ? <StatusPanel state="STALE" detail="当地条件尚未确认最新状态，以下保留上次结果。" recoveryLabel="重试事件详情" onRecover={onRetry} /> : null}
       {pending ? <StatusPanel state="LOADING" detail="正在计算当地观测条件。" /> : !visibility || visibility.state === "UNAVAILABLE"
         ? <StatusPanel state={failed ? "ERROR" : "PARTIAL"} detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed ? "重试事件详情" : undefined} onRecover={onRetry} />
